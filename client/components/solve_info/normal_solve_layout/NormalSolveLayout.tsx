@@ -19,6 +19,7 @@ import { getApiBase } from '../../../util/api-base';
 import { canReadSync } from '../../../lib/sync-gate';
 import { useMe } from '../../../util/hooks/useMe';
 import SendSolveModal from '../send_solve/SendSolveModal';
+import PhaseBreakdown from '../phase_breakdown/PhaseBreakdown';
 import './NormalSolveLayout.scss';
 
 const b = block('solve-info');
@@ -174,6 +175,11 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 						<Button text={t('solve_info.view_as_stats')} onClick={openTextModal} />
 					</div>
 				</div>
+
+				<PhaseBreakdown
+					phaseSplits={effSolve.phase_splits}
+					rawTime={effSolve.raw_time}
+				/>
 
 				<div className={b('inline-notes')}>
 					<legend>{t('solve_info.notes_label')}</legend>

@@ -75,6 +75,10 @@ export class SolveInput {
 
 	@Field(() => Float)
 	inspection_time?: number;
+
+	// "<method>:<ms>,<ms>,..." — see shared/util/solve/multiphase.ts
+	@Field({ nullable: true })
+	phase_splits?: string;
 }
 
 @ObjectType()
@@ -156,6 +160,10 @@ export class Solve {
 
 	@Field()
 	share_code: string;
+
+	// "<method>:<ms>,<ms>,..." — see shared/util/solve/multiphase.ts
+	@Field({ nullable: true })
+	phase_splits?: string;
 
 	@Field(() => [SolveMethodStep])
 	solve_method_steps?: SolveMethodStep[];

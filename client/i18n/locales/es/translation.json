@@ -1290,7 +1290,14 @@
         "qiyi_warning_how_it_works": "Cómo funciona esta función:",
         "qiyi_warning_step1": "Después de un solve, presiona restart en el dispositivo → el tiempo se reinicia y la inspección comienza automáticamente (un solo toque).",
         "qiyi_warning_step2": "Este comportamiento combinado ocurre en un solo toque porque el dispositivo no envía una segunda señal de restart.",
-        "qiyi_warning_critical": "⚠️ Cuando está desactivada: el botón restart solo reinicia el tiempo. Para iniciar la inspección, presiona espacio en el teclado o coloca las manos en el dispositivo."
+        "qiyi_warning_critical": "⚠️ Cuando está desactivada: el botón restart solo reinicia el tiempo. Para iniciar la inspección, presiona espacio en el teclado o coloca las manos en el dispositivo.",
+        "category_multi_phase": "Multifase",
+        "multi_phase_count": "Número de fases",
+        "multi_phase_count_desc": "Cada pulsación de espacio o de la pantalla durante el solve cierra una fase. La última detiene el cronómetro.",
+        "multi_phase_count_n": "{{n}} fases",
+        "multi_phase_off": "Desactivado",
+        "multi_phase_method": "Método",
+        "multi_phase_label_n": "Nombre de la fase {{n}}"
     },
     "data_settings": {
         "force_reload": "Forzar recarga",
@@ -2506,7 +2513,8 @@
         "reminders": "Recordatorios",
         "count_room_solves": "Contar resoluciones en salas",
         "goal_confetti": "Confeti de meta",
-        "solves_progress": "{{current}}/{{target}} resoluciones"
+        "solves_progress": "{{current}}/{{target}} resoluciones",
+        "smart_analysis": "Análisis de Cubo Inteligente"
     },
     "room_timer": {
         "save": "GUARDAR",
@@ -4411,5 +4419,53 @@
         "state_mismatch": "La verificación de sesión no coincidió. Suele pasar al recargar la página o volver a un enlace antiguo. Empieza de nuevo desde la página de inicio de sesión.",
         "retry_button": "Volver al inicio de sesión",
         "access_denied": "No diste permiso, así que el inicio de sesión no se completó. Puedes intentarlo de nuevo cuando quieras."
+    },
+    "multi_phase": {
+        "breakdown_title": "Desglose por Fases",
+        "breakdown_note": "Los tiempos se miden en cada pulsación, por lo que incluyen tu propio tiempo de reacción.",
+        "phase_n": "Fase {{n}}",
+        "method": {
+            "cfop": "CFOP",
+            "cfop2look": "CFOP (2-Look)",
+            "roux": "Roux",
+            "zz": "ZZ",
+            "petrus": "Petrus",
+            "custom": "Personalizado",
+            "generic": "Genérico"
+        },
+        "step": {
+            "cross": "Cross",
+            "f2l": "F2L",
+            "f2l_1": "F2L 1",
+            "f2l_2": "F2L 2",
+            "f2l_3": "F2L 3",
+            "f2l_4": "F2L 4",
+            "f2l_12": "F2L 1-2",
+            "f2l_34": "F2L 3-4",
+            "ll": "LL",
+            "oll": "OLL",
+            "pll": "PLL",
+            "ocll": "OCLL",
+            "blocks": "FB+SB",
+            "fb": "FB",
+            "sb": "SB",
+            "cmll": "CMLL",
+            "lse": "LSE",
+            "eo": "EO",
+            "eolr": "EOLR",
+            "l4c": "L4C",
+            "eoline": "EOLine",
+            "eoline_f2l": "EOLine+F2L",
+            "oll_2l": "2L-OLL",
+            "pll_2l": "2L-PLL",
+            "eoll": "EOLL",
+            "cpll": "CPLL",
+            "epll": "EPLL",
+            "block_222": "2x2x2",
+            "block_223": "2x2x3",
+            "f2l_finish": "F2L",
+            "f2l_left": "F2L-L",
+            "f2l_right": "F2L-R"
+        }
     }
 }

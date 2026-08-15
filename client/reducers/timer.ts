@@ -46,6 +46,7 @@ const defaultTimerState = {
 	addTwoToSolve: false,
 	stackMatInit: false,
 	canStart: false,
+	phaseSplits: [],
 
 	disabled: false,
 	scramble: ''
@@ -110,7 +111,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'TURN_SMART_CUBE_BATCH': {
-			const { moves } = action.payload;
+			const { moves, facelets } = action.payload;
 			if (!moves || moves.length === 0) return state;
 
 			// Fiziksel küp çözüldüyse ve timer çalışıyorsa, yeni hamle kabul etme
@@ -140,11 +141,21 @@ export default (state = initialState, action) => {
 				? (lastMove?.completedAt || Date.now())
 				: state.lastSmartMoveTime;
 
+			// Cube state that belongs to these moves, applied in the same update so no
+			// listener can observe the new state without the moves that caused it.
+			const statePatch: Partial<TimerStore> = {};
+			if (facelets && facelets !== state.smartCurrentState) {
+				statePatch.smartCurrentState = facelets;
+				statePatch.smartStateSeq = (state.smartStateSeq || 0) + 1;
+				statePatch.smartPhysicallySolved = facelets === state.smartSolvedState;
+			}
+
 			return {
 				...state,
 				smartTurns,
 				smartPickUpTime: newPickUpTime,
 				lastSmartMoveTime,
+				...statePatch,
 			};
 		}
 

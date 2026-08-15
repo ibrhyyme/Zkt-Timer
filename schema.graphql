@@ -287,7 +287,7 @@ type Query {
   topAverages(scrambleSubset: String, page: Int, cubeType: String): [TopAverage]
   customCubeTypes: [CustomCubeType]
   notificationPreferences: NotificationPreference
-  adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
+  adminUserSearch(sort: AdminUserSortInput, filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
   adminExportUserData(userId: String): String
   adminMyPushTokens: [PushTokenInfo]
@@ -616,6 +616,7 @@ type Solve {
   smart_pick_up_time: Float
   inspection_time: Float
   share_code: String
+  phase_splits: String
   solve_method_steps: [SolveMethodStep]
   solve_views: [SolveView]
   smart_device: SmartDevice
@@ -2881,6 +2882,7 @@ input SolveInput {
   smart_put_down_time: Float
   smart_pick_up_time: Float
   inspection_time: Float
+  phase_splits: String
 }
 
 input ProfileInput {
@@ -3379,6 +3381,21 @@ input PaginationArgsInput {
   page: Int = 0
   pageSize: Int = 25
   searchQuery: String = ""
+}
+
+input AdminUserSortInput {
+  field: AdminUserSortField
+  direction: AdminUserSortDirection
+}
+
+enum AdminUserSortField {
+  created_at
+  last_seen_at
+}
+
+enum AdminUserSortDirection {
+  asc
+  desc
 }
 
 input AdminUserFiltersInput {

@@ -67,6 +67,7 @@ export class SolveResolver {
 				created_at: true,
 				started_at: true,
 				ended_at: true,
+				phase_splits: true,
 				solve_method_steps: true,
 			},
 			// Deterministic tie-break: created_at alone is not unique (a bulk import
@@ -116,6 +117,7 @@ export class SolveResolver {
 				created_at: true,
 				started_at: true,
 				ended_at: true,
+				phase_splits: true,
 				solve_method_steps: true,
 			},
 			// Deterministic tie-break: created_at alone is not unique (a bulk import
@@ -160,6 +162,7 @@ export class SolveResolver {
 				created_at: true,
 				started_at: true,
 				ended_at: true,
+				phase_splits: true,
 				solve_method_steps: true,
 			},
 		});

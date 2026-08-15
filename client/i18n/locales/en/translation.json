@@ -1290,7 +1290,14 @@
         "qiyi_warning_how_it_works": "How this feature works:",
         "qiyi_warning_step1": "After a solve, press restart on the device → time resets and inspection starts automatically (single tap).",
         "qiyi_warning_step2": "This combined behavior happens in one tap because the device does not send a 2nd restart signal.",
-        "qiyi_warning_critical": "⚠️ When off: the restart button only resets the time. To start inspection, press space on the keyboard or place your hands on the device."
+        "qiyi_warning_critical": "⚠️ When off: the restart button only resets the time. To start inspection, press space on the keyboard or place your hands on the device.",
+        "category_multi_phase": "Multi-Phase",
+        "multi_phase_count": "Number of phases",
+        "multi_phase_count_desc": "Each press of space or the screen mid-solve closes a phase. The last press stops the timer.",
+        "multi_phase_count_n": "{{n}} phases",
+        "multi_phase_off": "Off",
+        "multi_phase_method": "Method",
+        "multi_phase_label_n": "Phase {{n}} label"
     },
     "data_settings": {
         "force_reload": "Force reload",
@@ -2506,7 +2513,8 @@
         "reminders": "Reminders",
         "count_room_solves": "Count room solves",
         "goal_confetti": "Goal Confetti",
-        "solves_progress": "{{current}}/{{target}} solves"
+        "solves_progress": "{{current}}/{{target}} solves",
+        "smart_analysis": "Smart Cube Analysis"
     },
     "room_timer": {
         "save": "SAVE",
@@ -4496,5 +4504,53 @@
         "state_mismatch": "Session check did not match. This usually happens after refreshing the page or returning to an old link. Start again from the login page.",
         "retry_button": "Back to login",
         "access_denied": "You did not grant permission, so sign-in was not completed. You can try again any time."
+    },
+    "multi_phase": {
+        "breakdown_title": "Phase Breakdown",
+        "breakdown_note": "Splits are measured at each press, so they include your own reaction time.",
+        "phase_n": "Phase {{n}}",
+        "method": {
+            "cfop": "CFOP",
+            "cfop2look": "CFOP (2-Look)",
+            "roux": "Roux",
+            "zz": "ZZ",
+            "petrus": "Petrus",
+            "custom": "Custom",
+            "generic": "Generic"
+        },
+        "step": {
+            "cross": "Cross",
+            "f2l": "F2L",
+            "f2l_1": "F2L 1",
+            "f2l_2": "F2L 2",
+            "f2l_3": "F2L 3",
+            "f2l_4": "F2L 4",
+            "f2l_12": "F2L 1-2",
+            "f2l_34": "F2L 3-4",
+            "ll": "LL",
+            "oll": "OLL",
+            "pll": "PLL",
+            "ocll": "OCLL",
+            "blocks": "FB+SB",
+            "fb": "FB",
+            "sb": "SB",
+            "cmll": "CMLL",
+            "lse": "LSE",
+            "eo": "EO",
+            "eolr": "EOLR",
+            "l4c": "L4C",
+            "eoline": "EOLine",
+            "eoline_f2l": "EOLine+F2L",
+            "oll_2l": "2L-OLL",
+            "pll_2l": "2L-PLL",
+            "eoll": "EOLL",
+            "cpll": "CPLL",
+            "epll": "EPLL",
+            "block_222": "2x2x2",
+            "block_223": "2x2x3",
+            "f2l_finish": "F2L",
+            "f2l_left": "F2L-L",
+            "f2l_right": "F2L-R"
+        }
     }
 }

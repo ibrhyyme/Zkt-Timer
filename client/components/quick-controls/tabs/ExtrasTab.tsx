@@ -12,6 +12,7 @@ import { CaretDown, CaretUp, Crown, Minus, Plus } from 'phosphor-react';
 import { TimerModuleType } from '../../timer/@types/enums';
 import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
 import { useSlamStop } from '../../../util/slam-stop/settings';
+import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared/util/solve/multiphase';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
 import SlamSensitivitySlider from './SlamSensitivitySlider';
@@ -205,6 +206,7 @@ export default function ExtrasTab({
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
+	const multiPhaseCount = useSettings('multi_phase_count');
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
 	const streamerMode = useSettings('streamer_mode');
@@ -291,6 +293,11 @@ export default function ExtrasTab({
 		{ label: 'CFFFFOOPP', value: 'cffffoopp' }, // Detailed (Cross, F2L1...4, 2-look OLL/PLL?) - User requested name.
 	].filter((opt) => !(mobileMode && opt.value === 'cffffoopp')); // On mobile, 11 lines don't fit, cffffoopp hidden
 
+	const multiPhaseOptions = [{ label: t('quick_controls.none'), value: '1' }];
+	for (let c = MULTI_PHASE_MIN_COUNT; c <= MULTI_PHASE_MAX_COUNT; c++) {
+		multiPhaseOptions.push({ label: t('timer_settings.multi_phase_count_n', { n: c }), value: String(c) });
+	}
+
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center space-x-1.5 mb-1">
@@ -344,13 +351,24 @@ export default function ExtrasTab({
 				onChange={(val) => setSetting('freeze_time', val)}
 			/>
 
+			{/* Smart cube breakdown — derived from move data, not from split presses. */}
 			<ExtrasSelect
-				label={t('quick_controls.multi_phase')}
+				label={t('quick_controls.smart_analysis')}
 				value={analysisMode || 'none'}
 				options={analysisOptions}
 				hidden={timerType !== 'smart' || hideSmartCubeFeatures}
 				openUp
 				onChange={(val) => setSetting('smart_cube_analysis_mode', val)}
+			/>
+
+			{/* Manual splits — keyboard/touch only; a smart cube already breaks the solve down. */}
+			<ExtrasSelect
+				label={t('quick_controls.multi_phase')}
+				value={String(multiPhaseCount ?? 1)}
+				options={multiPhaseOptions}
+				hidden={timerType !== 'keyboard' || manualEntry}
+				openUp
+				onChange={(val) => setSetting('multi_phase_count', parseInt(val))}
 			/>
 
 			<ExtrasSelect

@@ -145,7 +145,10 @@ export default class SmartCube {
 		store.dispatch(turnSmartCube(cleanMove, new Date()));
 	};
 
-	alertTurnCubeBatch = (moves) => {
+	// `facelets` is the cube state after these moves. Drivers that track state pass
+	// it so Redux applies moves and state together; without it the state update is a
+	// separate dispatch and can overtake the moves it belongs to.
+	alertTurnCubeBatch = (moves, facelets = null) => {
 		const store = getStore();
 		if (!moves || moves.length === 0) return;
 
@@ -155,9 +158,12 @@ export default class SmartCube {
 			completedAt: m.timestamp || m.completedAt || Date.now(),
 			cubeTimestamp: m.cubeTimestamp ?? null,
 			localTimestamp: m.localTimestamp ?? null,
+			// Pulled back from the cube's move history after a dropped packet, so its
+			// timestamp is the moment of recovery, not the moment of the turn.
+			recovered: m.recovered === true,
 		}));
 
-		store.dispatch(turnSmartCubeBatch(formattedMoves));
+		store.dispatch(turnSmartCubeBatch(formattedMoves, facelets));
 	};
 
 	alertCubeState = (state) => {

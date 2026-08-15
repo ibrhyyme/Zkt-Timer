@@ -421,6 +421,10 @@ model Solve {
   smart_device_id      String?
   share_code           String?           @unique
   from_timer           Boolean           @default(true)
+  // Manual multi-phase splits: "<method>:<ms>,<ms>,..." cumulative from timer start.
+  // See shared/util/solve/multiphase.ts — deliberately not SolveMethodStep rows, which
+  // carry millisecond-accurate smart cube data rather than human reaction time.
+  phase_splits         String?
   custom_scramble      Boolean           @default(false)
   training_session_id  String?
   session              Session?          @relation(fields: [session_id], references: [id], onDelete: Cascade)

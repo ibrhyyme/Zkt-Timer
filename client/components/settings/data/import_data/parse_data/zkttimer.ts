@@ -76,6 +76,7 @@ const IMPORTABLE_SOLVE_FIELDS = [
 	'smart_put_down_time',
 	'smart_pick_up_time',
 	'inspection_time',
+	'phase_splits',
 ] as const;
 
 function pickImportableFields(solve: Solve): Solve {

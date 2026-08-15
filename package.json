@@ -54,7 +54,7 @@
 	},
 	"private": true,
 	"author": "ZKT Timer Team",
-	"license": "Zkt-Timer, Inc. All Rights Reserved",
+	"license": "GPL-3.0-only",
 	"dependencies": {
 		"@apollo/client": "^3.3.13",
 		"@aws-sdk/client-cloudfront": "^3.1024.0",

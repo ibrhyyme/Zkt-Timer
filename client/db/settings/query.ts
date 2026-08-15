@@ -2,6 +2,7 @@ import { getSettingsDb, SettingValue } from './init';
 import { CustomCubeType } from '../../@types/generated/graphql';
 import { TimerModuleType } from '../../components/timer/@types/enums';
 import { APP_THEME_PRESETS } from '../../util/themes/theme_consts';
+import { MultiPhaseMethod } from '../../../shared/util/solve/multiphase';
 
 export type TimerLayoutPosition = 'bottom' | 'left' | 'right';
 
@@ -70,7 +71,12 @@ export interface AllSettings {
 	scramble_color_neutral: 'none' | 'dual' | 'six';
 	highlight_pbs: 'off' | 'color' | 'bold';
 	inspection_except_bld: boolean;
+	// Manual phase splitting on the keyboard/touch timer. 1 = off, 2-6 = number of
+	// phases the solve is split into. See shared/util/solve/multiphase.ts.
 	multi_phase_count: number;
+	multi_phase_method: MultiPhaseMethod;
+	// Only read when the method is 'custom'. One entry per phase, empty means "Phase N".
+	multi_phase_custom_labels: string[];
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
 	smart_cube_show: boolean;
@@ -161,6 +167,8 @@ const defaultSettings: AllSettings = {
 	highlight_pbs: 'color',
 	inspection_except_bld: false,
 	multi_phase_count: 1,
+	multi_phase_method: 'cfop',
+	multi_phase_custom_labels: [],
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
 	smart_cube_show: true,

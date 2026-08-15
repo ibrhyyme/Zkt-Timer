@@ -417,10 +417,10 @@ export default class MoYu32 extends SmartCube {
 		}
 		this.deviceTimeOffset = locTime - this.deviceTime;
 
-		// Push cube state and moves to Redux
+		// Push moves and the resulting cube state to Redux in ONE dispatch — two
+		// dispatches let the state land before the moves that produced it.
 		if (batch.length > 0) {
-			this.alertTurnCubeBatch(batch);
-			this.alertCubeState(this.prevCube.asString());
+			this.alertTurnCubeBatch(batch, this.prevCube.asString());
 		}
 	}
 

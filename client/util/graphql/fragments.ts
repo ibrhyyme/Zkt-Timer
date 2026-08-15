@@ -106,6 +106,7 @@ export const SOLVE_FRAGMENT = gql`
 		smart_pick_up_time
 		smart_put_down_time
 		inspection_time
+		phase_splits
 		smart_device {
 			id
 			name

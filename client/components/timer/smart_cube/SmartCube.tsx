@@ -48,6 +48,14 @@ import * as THREE from 'three';
 const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
+// A move stamped within this window of the scramble being declared complete came
+// from the scramble itself, not from the solve. A human needs a few hundred ms to
+// let go of the last scramble turn and begin solving, so the window stays narrow.
+const LATE_SCRAMBLE_MOVE_WINDOW_MS = 50;
+// Safety valve: never swallow more than this many turns per scramble, so a skewed
+// cube clock cannot stop the timer from ever starting.
+const MAX_LATE_SCRAMBLE_DROPS = 3;
+
 // Scramble-complete beep. On iOS, route through the native AVAudioPlayer
 // (.ambient + .mixWithOthers) so background music keeps playing; fall back to
 // web Audio when the native plugin is unavailable (Android/web).
@@ -97,6 +105,9 @@ export default function SmartCube() {
 	const connect = useRef(new Connect());
 
 	const scrambleCompletedAtRef = useRef<Date | null>(null);
+	// Counts turns swallowed as "late scramble moves" since the current scramble was
+	// completed; reset whenever a scramble completes.
+	const lateScrambleDropsRef = useRef(0);
 	const [domReady, setDomReady] = useState(false);
 	useEffect(() => setDomReady(true), []);
 
@@ -864,13 +875,40 @@ export default function SmartCube() {
 			// handed to Redux in batches. A FACELETS packet can therefore complete the
 			// scramble while the final scramble move is still queued; that move then
 			// arrives here and looks like the first move of the solve. Measured on a
-			// GAN 12 UI: 3 of 12 solves started the timer on the last scramble move.
-			// A real first solve move always takes the cube AWAY from the scramble
-			// target, so if the cube is still sitting on the target this turn belonged
-			// to the scramble.
-			if (targetFaceletsRef.current && cubejs.current.asString() === targetFaceletsRef.current) {
-				dbgTimer(`CHECK_START | turn ${firstSolveTurn.turn} left the cube ON the scramble target — treating it as a late scramble move, timer NOT started`);
-				return;
+			// GAN 12 UI: it started the timer on the last scramble move in 2 of 12
+			// solves, and the display trace showed the real first solve move landing
+			// 2.3s and 3.4s later (the user was still inspecting).
+			//
+			// Two independent signals mark such a turn, because either one alone has a
+			// blind spot:
+			//   - the cube is still on the scramble target: only holds when every
+			//     queued move arrived in the same batch
+			//   - the turn is older than the moment the scramble was declared complete:
+			//     holds regardless of batching, but leans on the cube's clock offset
+			const cubeOnTarget = !!targetFaceletsRef.current
+				&& cubejs.current.asString() === targetFaceletsRef.current;
+			const turnAt = firstSolveTurn.completedAt ? new Date(firstSolveTurn.completedAt).getTime() : 0;
+			const turnPredatesScrambleEnd = !!turnAt
+				&& turnAt < scrambleCompletedAtRef.current.getTime() + LATE_SCRAMBLE_MOVE_WINDOW_MS;
+			// Pulled back from the cube's move history after a dropped packet. It was
+			// physically turned before the scramble finished, and its timestamp is the
+			// recovery moment, which is why the two checks above cannot see it. This
+			// was the remaining path: measured on a GAN i4, 2 of 6 solves.
+			const turnWasRecovered = firstSolveTurn.recovered === true;
+
+			if (cubeOnTarget || turnPredatesScrambleEnd || turnWasRecovered) {
+				// Cap it: if the cube clock were badly skewed, an unbounded rule could
+				// swallow real solve moves and the timer would never start.
+				if (lateScrambleDropsRef.current < MAX_LATE_SCRAMBLE_DROPS) {
+					lateScrambleDropsRef.current++;
+					dbgTimer(`CHECK_START | dropping late scramble move ${firstSolveTurn.turn} (onTarget=${cubeOnTarget}, predates=${turnPredatesScrambleEnd}, recovered=${turnWasRecovered}, drop ${lateScrambleDropsRef.current}/${MAX_LATE_SCRAMBLE_DROPS}) — timer NOT started`);
+					// The scramble already ended, so these turns must not be counted as
+					// solve moves. Clearing also lets the turns effect rebuild the tracker
+					// from the scramble.
+					setTimerParams({ smartTurns: [] });
+					return;
+				}
+				dbgTimer(`CHECK_START | late-scramble drop limit reached — accepting ${firstSolveTurn.turn} as first solve move`);
 			}
 
 			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
@@ -1079,6 +1117,7 @@ export default function SmartCube() {
 			// CRITICAL FIX: Use the ORIGINAL scramble (target state), not the current transient 'scramble'
 			// (which might be just a short correction path).
 			preservedScrambleRef.current = originalScrambleRef.current || scramble;
+			lateScrambleDropsRef.current = 0;
 
 			// Rebuild the tracker from the scramble here rather than leaving it to the
 			// smartTurns effect: that effect skips the rebuild when no BLE move was ever

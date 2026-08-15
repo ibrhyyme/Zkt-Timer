@@ -22,6 +22,7 @@ import { getStore } from '../../store';
 import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
+import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
 
 let endLocked = false;
 
@@ -89,6 +90,7 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 		finalTime: 0,
 		lastSmartSolveStats: null,
 		dnfTime: false,
+		phaseSplits: [],
 	});
 
 	emitEvent('startTimerEvent', {
@@ -115,6 +117,9 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 	endLocked = true;
 	let finalTime = finalTimeMilli;
+
+	// Read before the reset below clears it — saveSolve runs on a later tick.
+	const phaseSplits: number[] = getTimerStore('phaseSplits') || [];
 
 	const currentTime = Date.now();
 	const now = (endTimestamp && (currentTime - endTimestamp) < 2000) ? endTimestamp : currentTime;
@@ -166,6 +171,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		lastSmartMoveTime: 0,
 		dnfTime: false,
 		addTwoToSolve: false,
+		phaseSplits: [],
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
 	});
 
@@ -205,6 +211,21 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			}
 		}
 
+		// Multi-phase splits recorded during the solve. Stored as one string on the solve
+		// rather than as method steps — see shared/util/solve/multiphase.ts.
+		if (phaseSplits.length && isMultiPhaseActive(getSetting('multi_phase_count'))) {
+			// Custom labels are written into the solve, not looked up from settings later:
+			// otherwise editing them would relabel every solve already recorded.
+			const serialized = serializePhaseSplits(
+				phaseSplits,
+				getSetting('multi_phase_method'),
+				getSetting('multi_phase_custom_labels')
+			);
+			if (serialized) {
+				overridesCombined.phase_splits = serialized;
+			}
+		}
+
 		const useSpaceWithSmart = getSetting('use_space_with_smart_cube');
 		if (useSpaceWithSmart) {
 			if (context.smartPickUpTime) {
@@ -240,6 +261,7 @@ export function resetTimerParams(context: ITimerContext, skipScramble?: boolean)
 		canStart: false,
 		smartCanStart: false,
 		timeStartedAt: null,
+		phaseSplits: [],
 		// Reset smart cube data
 		smartTurns: [],
 		smartPickUpTime: 0,

@@ -501,6 +501,9 @@ class GanGen3ProtocolDriver {
 							timestamp: timestamp,
 							localTimestamp: null,
 							cubeTimestamp: null,
+							// Recovered from move history: it happened in the past, and
+							// `timestamp` above is the recovery moment, not the turn.
+							recovered: true,
 							face: face,
 							direction: direction,
 							move: move.trim(),
@@ -751,6 +754,9 @@ class GanGen4ProtocolDriver {
 						timestamp: timestamp,
 						localTimestamp: null, // Recovered moves have no local timestamp
 						cubeTimestamp: null,   // Must be estimated by interpolation
+						// Recovered from move history: it happened in the past, and
+						// `timestamp` above is the recovery moment, not the turn.
+						recovered: true,
 						face: face,
 						direction: direction,
 						move: move.trim(),
@@ -1325,6 +1331,7 @@ export default class GAN extends SmartCube {
 					timestamp: moveTimestamp,
 					cubeTimestamp: event.cubeTimestamp ?? null,
 					localTimestamp: event.localTimestamp ?? null,
+					recovered: event.recovered === true,
 				});
 
 				// Debounced flush
@@ -1352,6 +1359,14 @@ export default class GAN extends SmartCube {
 		// Consumer receives only gap-free MOVE events.
 
 		} else if (event.type == 'FACELETS') {
+			// Publish any queued moves BEFORE this state. The state we are about to
+			// report already contains them, so letting it go first would make those
+			// moves look like they came afterwards — that is exactly how the last
+			// scramble move ended up being treated as the first solve move.
+			if (this.moveQueue.length) {
+				this.flushMoveQueue();
+			}
+
 			const trackerState = this._trackerCube.asString();
 			const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 			const isSolved = event.facelets === SOLVED;
@@ -1411,10 +1426,15 @@ export default class GAN extends SmartCube {
 		// Copy batch and clear queue
 		const batch = [...this.moveQueue];
 		this.moveQueue = [];
-		this.moveFlushTimeout = null;
+		if (this.moveFlushTimeout) {
+			clearTimeout(this.moveFlushTimeout);
+			this.moveFlushTimeout = null;
+		}
 
-		// Send single batch to Redux
-		this.alertTurnCubeBatch(batch);
+		// Send moves AND the resulting cube state in one dispatch. The tracker already
+		// has these moves applied, so consumers never see a state that disagrees with
+		// the move list.
+		this.alertTurnCubeBatch(batch, this._trackerCube.asString());
 	};
 
 	// Tell the cube to treat its current physical position as solved. The cube tracks

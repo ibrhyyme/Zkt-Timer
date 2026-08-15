@@ -3,10 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import {
+	isMultiPhaseActive,
+	MULTI_PHASE_LABEL_MAX_LENGTH,
+	MULTI_PHASE_MAX_COUNT,
+	MULTI_PHASE_METHODS,
+	MULTI_PHASE_MIN_COUNT,
+	MultiPhaseMethod,
+	sanitizePhaseLabel,
+} from '../../../../shared/util/solve/multiphase';
+import { getPhaseLabels } from '../../../util/solve/multiphase_labels';
+import {
 	TimerSettingsGroup,
 	TimerSettingsToggle,
 	TimerSettingsNumber,
 	TimerSettingsSelect,
+	TimerSettingsText,
 } from './TimerSettingsRow';
 
 export default function TimerSettings() {
@@ -29,6 +40,31 @@ export default function TimerSettings() {
 	// Confirmations
 	const confirmDeleteSolve = useSettings('confirm_delete_solve');
 	const confirmDeleteSeason = useSettings('confirm_delete_season');
+
+	// Multi-phase
+	const multiPhaseCount = useSettings('multi_phase_count');
+	const multiPhaseMethod = useSettings('multi_phase_method');
+	const multiPhaseCustomLabels = useSettings('multi_phase_custom_labels');
+	const multiPhaseOn = isMultiPhaseActive(multiPhaseCount);
+	const multiPhaseCustom = multiPhaseOn && multiPhaseMethod === 'custom';
+
+	const phaseCountOptions = [{ label: t('timer_settings.multi_phase_off'), value: '1' }];
+	for (let c = MULTI_PHASE_MIN_COUNT; c <= MULTI_PHASE_MAX_COUNT; c++) {
+		phaseCountOptions.push({ label: t('timer_settings.multi_phase_count_n', { n: c }), value: String(c) });
+	}
+
+	// Preview of the labels the current pairing produces, so the effect of the choice is
+	// visible without starting a solve.
+	const phasePreview = multiPhaseOn
+		? getPhaseLabels(t, multiPhaseCount, multiPhaseMethod, multiPhaseCustomLabels).join('  /  ')
+		: '';
+
+	function setCustomLabel(index: number, value: string) {
+		const next = (multiPhaseCustomLabels || []).slice();
+		while (next.length < MULTI_PHASE_MAX_COUNT) next.push('');
+		next[index] = sanitizePhaseLabel(value);
+		setSetting('multi_phase_custom_labels', next);
+	}
 
 	return (
 		<div className="space-y-2">
@@ -110,6 +146,39 @@ export default function TimerSettings() {
 					hidden={!inspection}
 					onClick={() => toggleSetting('inspection_except_bld')}
 				/>
+			</TimerSettingsGroup>
+
+			{/* Multi-phase */}
+			<TimerSettingsGroup id="timer-multi-phase" label={t('timer_settings.category_multi_phase')}>
+				<TimerSettingsSelect
+					label={t('timer_settings.multi_phase_count')}
+					description={t('timer_settings.multi_phase_count_desc')}
+					value={String(multiPhaseCount ?? 1)}
+					options={phaseCountOptions}
+					onChange={(v) => setSetting('multi_phase_count', parseInt(v))}
+				/>
+				<TimerSettingsSelect
+					label={t('timer_settings.multi_phase_method')}
+					description={phasePreview}
+					value={multiPhaseMethod || 'cfop'}
+					options={MULTI_PHASE_METHODS.map((m) => ({
+						label: t(`multi_phase.method.${m}`),
+						value: m,
+					}))}
+					hidden={!multiPhaseOn}
+					onChange={(v) => setSetting('multi_phase_method', v as MultiPhaseMethod)}
+				/>
+				{multiPhaseCustom &&
+					Array.from({ length: multiPhaseCount }).map((_, i) => (
+						<TimerSettingsText
+							key={i}
+							label={t('timer_settings.multi_phase_label_n', { n: i + 1 })}
+							value={multiPhaseCustomLabels?.[i] || ''}
+							placeholder={t('multi_phase.phase_n', { n: i + 1 })}
+							maxLength={MULTI_PHASE_LABEL_MAX_LENGTH}
+							onChange={(v) => setCustomLabel(i, v)}
+						/>
+					))}
 			</TimerSettingsGroup>
 
 			{/* Confirmations */}

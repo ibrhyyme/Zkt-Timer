@@ -1290,7 +1290,14 @@
         "qiyi_warning_how_it_works": "Как работает эта функция:",
         "qiyi_warning_step1": "После сборки нажмите restart на устройстве → время сбрасывается и инспекция запускается автоматически (одно нажатие).",
         "qiyi_warning_step2": "Это объединённое поведение происходит за одно нажатие, поскольку устройство не отправляет 2-й сигнал restart.",
-        "qiyi_warning_critical": "⚠️ Когда выключено: кнопка restart только сбрасывает время. Чтобы запустить инспекцию, нажмите пробел на клавиатуре или положите руки на устройство."
+        "qiyi_warning_critical": "⚠️ Когда выключено: кнопка restart только сбрасывает время. Чтобы запустить инспекцию, нажмите пробел на клавиатуре или положите руки на устройство.",
+        "category_multi_phase": "Многофазный режим",
+        "multi_phase_count": "Количество фаз",
+        "multi_phase_count_desc": "Каждое нажатие пробела или экрана во время сборки закрывает фазу. Последнее нажатие останавливает таймер.",
+        "multi_phase_count_n": "{{n}} фаз",
+        "multi_phase_off": "Выключено",
+        "multi_phase_method": "Метод",
+        "multi_phase_label_n": "Название фазы {{n}}"
     },
     "data_settings": {
         "force_reload": "Принудительная перезагрузка",
@@ -2506,7 +2513,8 @@
         "reminders": "Напоминания",
         "count_room_solves": "Считать сборки в комнатах",
         "goal_confetti": "Конфетти при достижении цели",
-        "solves_progress": "{{current}}/{{target}} сборок"
+        "solves_progress": "{{current}}/{{target}} сборок",
+        "smart_analysis": "Анализ смарт-куба"
     },
     "room_timer": {
         "save": "СОХРАНИТЬ",
@@ -4413,5 +4421,53 @@
         "state_mismatch": "Проверка сессии не совпала. Обычно это происходит после обновления страницы или возврата по старой ссылке. Начните заново со страницы входа.",
         "retry_button": "Вернуться ко входу",
         "access_denied": "Вы не дали разрешение, поэтому вход не завершён. Можете попробовать снова в любой момент."
+    },
+    "multi_phase": {
+        "breakdown_title": "Разбивка по фазам",
+        "breakdown_note": "Отрезки фиксируются в момент нажатия, поэтому они включают ваше собственное время реакции.",
+        "phase_n": "Фаза {{n}}",
+        "method": {
+            "cfop": "CFOP",
+            "cfop2look": "CFOP (2-Look)",
+            "roux": "Roux",
+            "zz": "ZZ",
+            "petrus": "Petrus",
+            "custom": "Свой",
+            "generic": "Общий"
+        },
+        "step": {
+            "cross": "Cross",
+            "f2l": "F2L",
+            "f2l_1": "F2L 1",
+            "f2l_2": "F2L 2",
+            "f2l_3": "F2L 3",
+            "f2l_4": "F2L 4",
+            "f2l_12": "F2L 1-2",
+            "f2l_34": "F2L 3-4",
+            "ll": "LL",
+            "oll": "OLL",
+            "pll": "PLL",
+            "ocll": "OCLL",
+            "blocks": "FB+SB",
+            "fb": "FB",
+            "sb": "SB",
+            "cmll": "CMLL",
+            "lse": "LSE",
+            "eo": "EO",
+            "eolr": "EOLR",
+            "l4c": "L4C",
+            "eoline": "EOLine",
+            "eoline_f2l": "EOLine+F2L",
+            "oll_2l": "2L-OLL",
+            "pll_2l": "2L-PLL",
+            "eoll": "EOLL",
+            "cpll": "CPLL",
+            "epll": "EPLL",
+            "block_222": "2x2x2",
+            "block_223": "2x2x3",
+            "f2l_finish": "F2L",
+            "f2l_left": "F2L-L",
+            "f2l_right": "F2L-R"
+        }
     }
 }

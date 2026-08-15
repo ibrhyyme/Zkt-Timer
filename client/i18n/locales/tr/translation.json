@@ -1297,7 +1297,14 @@
         "qiyi_warning_how_it_works": "Bu özellik nasıl çalışır:",
         "qiyi_warning_step1": "Çözümden sonra cihazda restart tuşuna basın → süre sıfırlanır ve inceleme otomatik başlar (tek tuş).",
         "qiyi_warning_step2": "Bu birleşik davranış cihazın 2. restart sinyali göndermemesi nedeniyle tek tıkla yapılır.",
-        "qiyi_warning_critical": "⚠️ Kapalı iken: restart tuşu sadece süreyi sıfırlar. İnceleme başlatmak için klavyeden boşluk veya cihazda eli koymanız gerekir."
+        "qiyi_warning_critical": "⚠️ Kapalı iken: restart tuşu sadece süreyi sıfırlar. İnceleme başlatmak için klavyeden boşluk veya cihazda eli koymanız gerekir.",
+        "category_multi_phase": "Çoklu Faz",
+        "multi_phase_count": "Faz sayısı",
+        "multi_phase_count_desc": "Çözüm sürerken boşluk tuşuna ya da ekrana her basışınız bir fazı kapatır, son basış süreyi durdurur.",
+        "multi_phase_count_n": "{{n}} faz",
+        "multi_phase_off": "Kapalı",
+        "multi_phase_method": "Metot",
+        "multi_phase_label_n": "{{n}}. faz adı"
     },
     "data_settings": {
         "force_reload": "Zorla yeniden yükle",
@@ -2489,7 +2496,7 @@
         "show_recognition_split": "Tanıma/Uygulama Gösterimi (masaüstü)",
         "freeze_time": "Dondurma Süresi (sn)",
         "none": "Yok",
-        "multi_phase": "Multi-Evre",
+        "multi_phase": "Çoklu Faz",
         "timer_type_description": "Timer türünü seçin (sadece bir tane aktif olabilir)",
         "keyboard": "Klavye",
         "touch": "Dokunmatik",
@@ -2513,7 +2520,8 @@
         "reminders": "Hatırlatmalar",
         "count_room_solves": "Odalardaki çözümleri say",
         "goal_confetti": "Hedefe Konfeti",
-        "solves_progress": "{{current}}/{{target}} çözüm"
+        "solves_progress": "{{current}}/{{target}} çözüm",
+        "smart_analysis": "Akıllı Küp Analizi"
     },
     "room_timer": {
         "save": "KAYDET",
@@ -4501,5 +4509,53 @@
         "state_mismatch": "Oturum doğrulaması eşleşmedi. Bu genelde sayfayı yenilediğinde veya eski bir bağlantıya geri döndüğünde olur. Giriş sayfasından baştan dene.",
         "retry_button": "Giriş sayfasına dön",
         "access_denied": "İzin vermedin, bu yüzden giriş tamamlanmadı. Fikrini değiştirirsen tekrar deneyebilirsin."
+    },
+    "multi_phase": {
+        "breakdown_title": "Faz Kırılımı",
+        "breakdown_note": "Süreler boşluk tuşuna bastığınız anlarda ölçülür, kendi tepki süreniz de bu sürelere dahildir.",
+        "phase_n": "Faz {{n}}",
+        "method": {
+            "cfop": "CFOP",
+            "cfop2look": "CFOP (2-Look)",
+            "roux": "Roux",
+            "zz": "ZZ",
+            "petrus": "Petrus",
+            "custom": "Özel",
+            "generic": "Genel"
+        },
+        "step": {
+            "cross": "Cross",
+            "f2l": "F2L",
+            "f2l_1": "F2L 1",
+            "f2l_2": "F2L 2",
+            "f2l_3": "F2L 3",
+            "f2l_4": "F2L 4",
+            "f2l_12": "F2L 1-2",
+            "f2l_34": "F2L 3-4",
+            "ll": "LL",
+            "oll": "OLL",
+            "pll": "PLL",
+            "ocll": "OCLL",
+            "blocks": "FB+SB",
+            "fb": "FB",
+            "sb": "SB",
+            "cmll": "CMLL",
+            "lse": "LSE",
+            "eo": "EO",
+            "eolr": "EOLR",
+            "l4c": "L4C",
+            "eoline": "EOLine",
+            "eoline_f2l": "EOLine+F2L",
+            "oll_2l": "2L-OLL",
+            "pll_2l": "2L-PLL",
+            "eoll": "EOLL",
+            "cpll": "CPLL",
+            "epll": "EPLL",
+            "block_222": "2x2x2",
+            "block_223": "2x2x3",
+            "f2l_finish": "F2L",
+            "f2l_left": "F2L-L",
+            "f2l_right": "F2L-R"
+        }
     }
 }

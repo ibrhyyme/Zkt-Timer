@@ -79,6 +79,9 @@ export interface TimerStore {
 	addTwoToSolve?: boolean;
 	stackMatInit?: boolean;
 	canStart?: boolean;
+	// Multi-phase: elapsed milliseconds at each mid-solve split press, ascending.
+	// Holds count-1 entries by the time the solve ends.
+	phaseSplits?: number[];
 	smartCubeConnected?: boolean;
 	smartCubeConnecting?: boolean;
 	smartCubeScanning?: boolean;

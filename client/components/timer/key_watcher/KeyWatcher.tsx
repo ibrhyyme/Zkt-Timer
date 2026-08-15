@@ -17,6 +17,8 @@ import { setTimerParam, setTimerParams } from '../helpers/params';
 import block from '../../../styles/bem';
 import { endTimer, resetTimerParams, startTimer, startInspection } from '../helpers/events';
 import { useDocumentListener, useWindowListener } from '../../../util/hooks/useListener';
+import { hapticImpact } from '../../../util/native-plugins';
+import { isMultiPhaseActive } from '../../../../shared/util/solve/multiphase';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSettings } from '../../../db/settings/query';
@@ -61,6 +63,7 @@ export default function KeyWatcher(props: Props) {
 	const inspection = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
+	const multiPhaseCount = useSettings('multi_phase_count');
 
 	// Slam-to-stop: native-only extra stop trigger for the touch timer
 	useSlamToStop(context);
@@ -239,6 +242,46 @@ export default function KeyWatcher(props: Props) {
 		}
 	}
 
+	/**
+	 * Records a mid-solve phase split. Returns true when the press was consumed as a
+	 * split, meaning the timer must keep running.
+	 */
+	function recordPhaseSplit(eventTimestamp?: number): boolean {
+		if (!isMultiPhaseActive(multiPhaseCount) || !timeStartedAt) {
+			return false;
+		}
+
+		// A smart cube derives its own breakdown from move data, which is both finer and
+		// free of reaction time. Hardware timers never reach this handler at all.
+		if (smartCubeSelected(context)) {
+			return false;
+		}
+
+		// Never swallow the stop press in a head-to-head solve: a forgotten setting would
+		// otherwise cost the user the round.
+		if (context.matchMode) {
+			return false;
+		}
+
+		// Read from the store rather than context: two presses can land inside a single
+		// React render, and a stale array would overwrite the previous split.
+		const splits = getTimerStore('phaseSplits') || [];
+		if (splits.length >= multiPhaseCount - 1) {
+			return false;
+		}
+
+		const now = Date.now();
+		const pressedAt = (eventTimestamp && (now - eventTimestamp) < 2000) ? eventTimestamp : now;
+		const previous = splits.length ? splits[splits.length - 1] : 0;
+		// Splits must stay strictly ascending — the display and the duration maths both
+		// assume it, and a clock adjustment mid-solve could otherwise invert two entries.
+		const elapsed = Math.max(pressedAt - timeStartedAt.getTime(), previous + 1);
+
+		setTimerParam('phaseSplits', [...splits, elapsed]);
+		hapticImpact('light');
+		return true;
+	}
+
 	function keydownSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
 
@@ -272,6 +315,13 @@ export default function KeyWatcher(props: Props) {
 			if (!touch) {
 				stopKeyHeldRef.current = true;
 			}
+
+			// Multi-phase: the first count-1 presses close a phase and leave the timer
+			// running. Only the last press falls through and stops the solve.
+			if (recordPhaseSplit(eventTimestamp)) {
+				return;
+			}
+
 			endTimer(context, undefined, undefined, eventTimestamp);
 
 			if (inspection) {

@@ -328,17 +328,21 @@ export default class QiYi extends SmartCube {
 
 			// FACELETS comparison (drift control)
 			const newFacelet = this.parseFacelet(msg.slice(7, 34));
+			// Moves and the state they produce go out in ONE dispatch. Publishing the
+			// state on its own first (as the mismatch branch used to) lets a consumer
+			// see the new state before the moves, which makes the last scramble move
+			// look like the first move of the solve.
 			if (newFacelet !== curFacelet) {
 				console.warn('[qiyi] facelet mismatch — resync to', newFacelet);
 				this.prevCube = Cube.fromString(newFacelet);
-				this.alertCubeState(newFacelet);
 				if (batch.length > 0) {
-					this.alertTurnCubeBatch(batch);
+					this.alertTurnCubeBatch(batch, newFacelet);
+				} else {
+					this.alertCubeState(newFacelet);
 				}
 			} else {
 				if (batch.length > 0) {
-					this.alertTurnCubeBatch(batch);
-					this.alertCubeState(curFacelet);
+					this.alertTurnCubeBatch(batch, curFacelet);
 				}
 			}
 

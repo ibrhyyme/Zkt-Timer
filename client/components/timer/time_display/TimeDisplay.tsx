@@ -17,6 +17,7 @@ import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
 import QiyiTimer from './qiyitimer/QiyiTimer';
 import SolveDiff from './SolveDiff';
+import MultiPhaseIndicator from './multi_phase/MultiPhaseIndicator';
 import OfflineModeIndicator from './OfflineModeIndicator';
 
 const b = block('time-display');
@@ -291,6 +292,8 @@ export default function TimeDisplay() {
 				<div style={{ marginTop: mobileMode ? '-5px' : '0' }}>
 					{!matchMode && <SolveDiff />}
 				</div>
+
+				<MultiPhaseIndicator />
 
 				{/* Mobile smart cube: SmartStats artık SOL kolonda LiveAnalysisOverlay altinda render ediliyor (SmartCube.tsx portal). */}
 			</div>

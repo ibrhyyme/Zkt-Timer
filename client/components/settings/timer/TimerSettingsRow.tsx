@@ -386,3 +386,56 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 		</div>
 	);
 }
+
+// --- Text ---
+
+interface TimerSettingsTextProps {
+	label: string;
+	description?: string;
+	value: string;
+	placeholder?: string;
+	maxLength?: number;
+	hidden?: boolean;
+	onChange: (val: string) => void;
+}
+
+export function TimerSettingsText({ label, description, value, placeholder, maxLength, hidden, onChange }: TimerSettingsTextProps) {
+	// Held locally while typing and committed on blur: every commit rewrites the whole
+	// platform prefs blob, so a request per keystroke would be wasteful.
+	const [draft, setDraft] = useState(value);
+	const [focused, setFocused] = useState(false);
+
+	if (hidden) return null;
+
+	const shown = focused ? draft : value;
+
+	const commit = () => {
+		setFocused(false);
+		if (draft !== value) onChange(draft);
+	};
+
+	return (
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+			<div className="flex flex-col mr-4">
+				<span className="font-medium transition-colors text-text">{label}</span>
+				{description && <span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>}
+			</div>
+			<input
+				type="text"
+				value={shown}
+				placeholder={placeholder}
+				maxLength={maxLength}
+				onFocus={() => {
+					setDraft(value);
+					setFocused(true);
+				}}
+				onChange={(e) => setDraft(e.target.value)}
+				onBlur={commit}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+				}}
+				className="w-36 px-3 py-1.5 rounded-lg bg-button border border-text/[0.1] text-sm text-text text-center focus:border-primary focus:outline-none transition-colors"
+			/>
+		</div>
+	);
+}

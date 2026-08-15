@@ -81,6 +81,7 @@ fragment SolveFragment on Solve {
 	smart_turns
 	smart_put_down_time
 	inspection_time
+	phase_splits
 	smart_device {
 		id
 		name

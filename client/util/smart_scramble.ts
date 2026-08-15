@@ -5,6 +5,9 @@ import { solveAsync } from './solver_worker_manager';
 export interface SmartTurn {
 	turn: string;
 	time?: number;
+	// Recovered from the cube's move history after a dropped BLE packet: the turn
+	// happened earlier than its timestamp suggests.
+	recovered?: boolean;
 }
 
 let solverReady = false;
