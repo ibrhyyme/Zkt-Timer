@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
+import {useParams, useHistory, useRouteMatch, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, formatAttempts, competitorDisplayName, competitorFlag} from '../shared';
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
@@ -22,10 +22,33 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		'/zkt-competitions/:competitionId/live/:eventId/:roundNumber?'
 	);
 
+	const location = useLocation();
+
 	const urlEventId = matchEvent?.params.eventId;
 	const urlRoundNumber = matchEvent?.params.roundNumber
 		? parseInt(matchEvent.params.roundNumber, 10)
 		: null;
+	// A day-split event has two rounds numbered 1, so the number alone does not
+	// name a round: the path would always resolve to whichever came first, and a
+	// link to the second day's round opened the first day's. The day rides along
+	// as a query so the existing route (and every link already shared) still works.
+	const urlDay = (() => {
+		const raw = new URLSearchParams(location.search).get('day');
+		const n = raw ? parseInt(raw, 10) : NaN;
+		return Number.isFinite(n) ? n : null;
+	})();
+
+	/** The round a path+day pair points at, preferring an exact day match. */
+	const findRoundInUrl = (rounds: any[]) => {
+		if (!urlRoundNumber) return undefined;
+		const sameNumber = rounds.filter((r: any) => r.roundNumber === urlRoundNumber);
+		if (sameNumber.length === 0) return undefined;
+		if (urlDay !== null) {
+			const exact = sameNumber.find((r: any) => (r.dayIndex ?? 0) === urlDay);
+			if (exact) return exact;
+		}
+		return sameNumber[0];
+	};
 
 	// selectedEventId is the WCA event id (e.g. "333"); "" = welcome screen.
 	const [selectedEventId, setSelectedEventId] = useState<string>(
@@ -39,9 +62,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		selectedEvent?.rounds[0];
 	const [selectedRoundId, setSelectedRoundId] = useState<string>(
 		urlRoundNumber && selectedEvent
-			? selectedEvent.rounds.find((r: any) => r.roundNumber === urlRoundNumber)?.roundId ||
-					defaultRound?.roundId ||
-					''
+			? findRoundInUrl(selectedEvent.rounds)?.roundId || defaultRound?.roundId || ''
 			: defaultRound?.roundId || ''
 	);
 	const selectedRound = selectedEvent?.rounds.find((r: any) => r.roundId === selectedRoundId);
@@ -58,27 +79,43 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 	// results endpoint accepts either, so pass the UUID for stability.
 	const {results, loading, refresh} = useZktLiveResults(detail.id, selectedRoundId);
 
-	// Final round = the event's last round. Medals (gold/silver/bronze) show on
-	// the top 3 throughout the final round (live), regardless of status.
+	// Final round = the last round of THIS round's own day-chain, which the
+	// federation already worked out (`isFinalOfChain`). Taking the event's
+	// highest round number instead is wrong on a day-split event: each day runs
+	// its own final, and only the later day's would have got the medals.
+	// The fallback is the old rule, for a federation too old to send the flag.
 	const isFinalRound = !!(
 		selectedRound &&
 		selectedEvent &&
-		selectedRound.roundNumber ===
-			Math.max(...(selectedEvent.rounds || []).map((r: any) => r.roundNumber))
+		(selectedRound.isFinal ??
+			selectedRound.roundNumber ===
+				Math.max(...(selectedEvent.rounds || []).map((r: any) => r.roundNumber)))
 	);
+
+	// A day-split event runs a whole chain per day, so the event has two "1. Tur"s
+	// and two finals. Without the day on the label they are indistinguishable and
+	// the reader has no way to tell which one is theirs.
+	const roundLabel = (r: any) =>
+		`${r.isFinal ? t('round_final') : t('round_n', {n: r.roundNumber})}${
+			r.dayLabel ? ` · ${r.dayLabel}` : ''
+		}`;
 
 	function handleEventChange(eventId: string) {
 		setSelectedEventId(eventId);
 		history.push(`/zkt-competitions/${competitionId}/live/${eventId}`);
 	}
 
+	/** Path to a round, carrying its day when the event runs one chain per day. */
+	function roundPath(eventId: string, r: any) {
+		const base = `/zkt-competitions/${competitionId}/live/${eventId}/${r.roundNumber}`;
+		return r.dayIndex ? `${base}?day=${r.dayIndex}` : base;
+	}
+
 	function handleRoundChange(roundId: string) {
 		setSelectedRoundId(roundId);
 		const r = selectedEvent?.rounds.find((rr: any) => rr.roundId === roundId);
 		if (r && selectedEvent) {
-			history.push(
-				`/zkt-competitions/${competitionId}/live/${selectedEvent.eventId}/${r.roundNumber}`
-			);
+			history.push(roundPath(selectedEvent.eventId, r));
 		}
 	}
 
@@ -121,12 +158,12 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 												className={b('event-chip-btn', {active: true})}
 												onClick={() => {
 													setSelectedEventId(ev.eventId);
-													history.push(`/zkt-competitions/${competitionId}/live/${ev.eventId}/${r.roundNumber}`);
+													history.push(roundPath(ev.eventId, r));
 												}}
 												style={{animation: 'zkt-pulse 1.4s ease-in-out infinite'}}
 											>
 												<span className={`cubing-icon event-${ev.eventId}`} />
-												<span>{getEventName(ev.eventId)} {t('round_n', {n: r.roundNumber})}</span>
+												<span>{getEventName(ev.eventId)} {roundLabel(r)}</span>
 												<span className={b('round-chip-status', {active: true})}>CANLI</span>
 											</button>
 										))
@@ -151,9 +188,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 										className={b('all-rounds-card', {[r.status.toLowerCase()]: true})}
 										onClick={() => {
 											setSelectedEventId(ev.eventId);
-											history.push(
-												`/zkt-competitions/${competitionId}/live/${ev.eventId}/${r.roundNumber}`
-											);
+											history.push(roundPath(ev.eventId, r));
 										}}
 									>
 										<span className={`cubing-icon event-${ev.eventId}`} style={{fontSize: 22}} />
@@ -162,7 +197,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 												{getEventName(ev.eventId)}
 											</span>
 											<span className={b('all-rounds-card-round')}>
-												{t('round_n', {n: r.roundNumber})}
+												{roundLabel(r)}
 											</span>
 										</div>
 										<span className={b('round-chip-status', {[r.status.toLowerCase()]: true})}>
@@ -188,7 +223,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								})}
 								onClick={() => handleRoundChange(r.roundId)}
 							>
-								{t('round_n', {n: r.roundNumber})}
+								{roundLabel(r)}
 								<span className={b('round-chip-status', {[r.status.toLowerCase()]: true})}>
 									{t(`round_status_${r.status.toLowerCase()}`)}
 								</span>

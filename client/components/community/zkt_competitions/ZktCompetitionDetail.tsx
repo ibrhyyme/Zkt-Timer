@@ -244,11 +244,25 @@ export default function ZktCompetitionDetail() {
 
 	// "Happening now" — rounds currently OPEN/ACTIVE (Competitor-groups style
 	// live highlight, driven purely by round status).
-	const liveRounds: Array<{eventId: string; roundNumber: number}> = [];
+	// The day rides along: a day-split event has two rounds numbered 1, so the
+	// chip has to say which one is live and its link has to point at that one.
+	const liveRounds: Array<{
+		eventId: string;
+		roundNumber: number;
+		dayIndex?: number;
+		dayLabel?: string;
+		isFinal?: boolean;
+	}> = [];
 	for (const ev of detail.events) {
 		for (const r of ev.rounds) {
 			if (r.status === 'OPEN' || r.status === 'ACTIVE') {
-				liveRounds.push({eventId: ev.eventId, roundNumber: r.roundNumber});
+				liveRounds.push({
+					eventId: ev.eventId,
+					roundNumber: r.roundNumber,
+					dayIndex: r.dayIndex,
+					dayLabel: r.dayLabel,
+					isFinal: r.isFinal,
+				});
 			}
 		}
 	}
@@ -346,17 +360,20 @@ export default function ZktCompetitionDetail() {
 						<span className={b('live-now-label')}>{t('live_now')}</span>
 						{liveRounds.map((lr) => (
 							<button
-								key={`${lr.eventId}-${lr.roundNumber}`}
+								key={`${lr.eventId}-${lr.roundNumber}-${lr.dayIndex ?? 0}`}
 								type="button"
 								className={b('live-now-chip')}
 								onClick={() =>
 									history.push(
-										`/zkt-competitions/${competitionId}/live/${lr.eventId}/${lr.roundNumber}`
+										`/zkt-competitions/${competitionId}/live/${lr.eventId}/${lr.roundNumber}` +
+											(lr.dayIndex ? `?day=${lr.dayIndex}` : '')
 									)
 								}
 							>
 								<span className={`cubing-icon event-${lr.eventId}`} />
-								{getEventName(lr.eventId)} — {t('round_n', {n: lr.roundNumber})}
+								{getEventName(lr.eventId)} —{' '}
+								{lr.isFinal ? t('round_final') : t('round_n', {n: lr.roundNumber})}
+								{lr.dayLabel ? ` · ${lr.dayLabel}` : ''}
 							</button>
 						))}
 					</div>
