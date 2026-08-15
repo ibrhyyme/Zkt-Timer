@@ -941,10 +941,18 @@ $zkt-info-green: #45d97c;
 			border-color: rgba(var(--primary-color), 0.5);
 		}
 
+		// Same rule as the mode buttons: outline + text carry the selection, the
+		// fill stays a hint. A solid tint here read as a dark blue pill.
 		&--active {
 			border-color: rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.14);
+			background: rgba(var(--primary-color), 0.09);
 			color: rgb(var(--primary-color));
+			font-weight: 700;
+
+			.theme-dark & {
+				color: $zkt-info-blue;
+				border-color: rgba(var(--primary-color), 0.85);
+			}
 		}
 	}
 
@@ -1329,16 +1337,31 @@ $zkt-info-green: #45d97c;
 			border-color: rgba(var(--primary-color), 0.4);
 		}
 
+		// Selection is carried by a bright outline and bright text over a barely
+		// tinted fill, rather than by a heavy block of colour: the filled version
+		// read as a dark blue slab and buried the label inside it.
 		&--schedule.cd-zkt-comp__person-mode-btn--active {
-			background: rgba(var(--primary-color), 0.18);
-			border-color: rgba(var(--primary-color), 0.5);
-			color: $zkt-info-blue;
+			background: rgba(var(--primary-color), 0.09);
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
+
+			// The raw primary is too dim to read on a dark ground, so the dark
+			// theme takes the lighter tint of the same hue.
+			.theme-dark & {
+				color: $zkt-info-blue;
+				border-color: rgba(var(--primary-color), 0.85);
+			}
 		}
 
 		&--results.cd-zkt-comp__person-mode-btn--active {
-			background: rgba(var(--success-color), 0.18);
-			border-color: rgba(var(--success-color), 0.5);
-			color: $zkt-info-green;
+			background: rgba(var(--success-color), 0.09);
+			border-color: rgb(var(--success-color));
+			color: rgb(var(--success-color));
+
+			.theme-dark & {
+				color: $zkt-info-green;
+				border-color: rgba(var(--success-color), 0.85);
+			}
 		}
 	}
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import {useParams, useHistory, useRouteMatch, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, formatAttempts, competitorDisplayName, competitorFlag} from '../shared';
@@ -50,11 +50,56 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		return sameNumber[0];
 	};
 
+	// ── Competition day
+	// A day-split competition runs a whole chain per day, so without a day the
+	// page shows both mornings at once: two "1. Tur"s, two finals, and no way to
+	// tell which one is being run right now. Everyone here attends exactly one
+	// day, so the page shows one day and the reader picks it.
+	const compDays: Array<{position: number; label: string; date?: string}> = detail.days || [];
+	const isDaySplit = compDays.length >= 2;
+
+	/** The day this competition is on today, or null when it is not running. */
+	const todayDay = (() => {
+		if (!isDaySplit) return null;
+		const today = new Date().toDateString();
+		const match = compDays.find((d) => d.date && new Date(d.date).toDateString() === today);
+		return match ? match.position : null;
+	})();
+
+	// Opening on competition day lands on today's day, which is the one the
+	// reader is standing in. The URL wins when it names a day (a shared link),
+	// and outside the competition the first day is the sensible start.
+	const [selectedDay, setSelectedDay] = useState<number>(() => {
+		if (!isDaySplit) return 0;
+		if (urlDay !== null && urlDay > 0) return urlDay;
+		return todayDay ?? compDays[0].position;
+	});
+
+	/**
+	 * The rounds of an event that belong on the selected day: that day's own
+	 * chain, plus every round that belongs to no day — the shared final everyone
+	 * comes back for, and any event pinned to run once. Those are genuinely on
+	 * both days' pages, which is what the organizer means by a shared round.
+	 */
+	const roundsForDay = (rounds: any[]) =>
+		!isDaySplit ? rounds : rounds.filter((r: any) => !r.dayIndex || r.dayIndex === selectedDay);
+
 	// selectedEventId is the WCA event id (e.g. "333"); "" = welcome screen.
 	const [selectedEventId, setSelectedEventId] = useState<string>(
 		urlEventId && detail.events.some((e: any) => e.eventId === urlEventId) ? urlEventId : ''
 	);
-	const selectedEvent = detail.events.find((e: any) => e.eventId === selectedEventId);
+	// An event with nothing on the selected day is not on this day's page at all.
+	const visibleEvents = useMemo(
+		() => detail.events.filter((ev: any) => roundsForDay(ev.rounds).length > 0),
+		[detail.events, isDaySplit, selectedDay]
+	);
+	// Rebuilt with the day's rounds only. Memoised because it is an effect
+	// dependency below, and a fresh object every render would re-run the effect
+	// on every render rather than when the event or the day actually changes.
+	const selectedEvent = useMemo(() => {
+		const raw = detail.events.find((e: any) => e.eventId === selectedEventId);
+		return raw ? {...raw, rounds: roundsForDay(raw.rounds)} : undefined;
+	}, [detail.events, selectedEventId, isDaySplit, selectedDay]);
 
 	const defaultRound =
 		selectedEvent?.rounds.find((r: any) => r.status === 'ACTIVE') ||
@@ -92,23 +137,47 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 				Math.max(...(selectedEvent.rounds || []).map((r: any) => r.roundNumber)))
 	);
 
-	// A day-split event runs a whole chain per day, so the event has two "1. Tur"s
-	// and two finals. Without the day on the label they are indistinguishable and
-	// the reader has no way to tell which one is theirs.
+	// The day filter already answers "which day is this", so repeating it on every
+	// round would be noise. It is only spelled out when there is no filter to read
+	// it from, i.e. on a competition that is not split across days.
 	const roundLabel = (r: any) =>
 		`${r.isFinal ? t('round_final') : t('round_n', {n: r.roundNumber})}${
-			r.dayLabel ? ` · ${r.dayLabel}` : ''
+			!isDaySplit && r.dayLabel ? ` · ${r.dayLabel}` : ''
 		}`;
+
+	function handleDayChange(position: number) {
+		setSelectedDay(position);
+		// The open round belongs to the day being left, so it always goes. The
+		// EVENT stays if it also runs on the new day: someone reading 3x3 on day A
+		// who taps day B wants 3x3 on day B, not the front page.
+		setSelectedRoundId('');
+		const raw = detail.events.find((e: any) => e.eventId === selectedEventId);
+		const stillRuns =
+			raw && raw.rounds.some((r: any) => !r.dayIndex || r.dayIndex === position);
+		const nextEvent = stillRuns ? selectedEventId : '';
+		setSelectedEventId(nextEvent);
+		history.push(
+			`/zkt-competitions/${competitionId}/live${nextEvent ? `/${nextEvent}` : ''}?day=${position}`
+		);
+	}
 
 	function handleEventChange(eventId: string) {
 		setSelectedEventId(eventId);
-		history.push(`/zkt-competitions/${competitionId}/live/${eventId}`);
+		history.push(
+			`/zkt-competitions/${competitionId}/live/${eventId}` +
+				(isDaySplit ? `?day=${selectedDay}` : '')
+		);
 	}
 
-	/** Path to a round, carrying its day when the event runs one chain per day. */
+	/**
+	 * Path to a round, carrying the day. A round of a day-chain names its own
+	 * day; a shared round has none, so it carries the day being viewed — without
+	 * that, opening the shared final would drop the reader back to day one.
+	 */
 	function roundPath(eventId: string, r: any) {
 		const base = `/zkt-competitions/${competitionId}/live/${eventId}/${r.roundNumber}`;
-		return r.dayIndex ? `${base}?day=${r.dayIndex}` : base;
+		const day = r.dayIndex || (isDaySplit ? selectedDay : 0);
+		return day ? `${base}?day=${day}` : base;
 	}
 
 	function handleRoundChange(roundId: string) {
@@ -125,8 +194,22 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 
 	return (
 		<div className={b('live-tab')}>
+			{isDaySplit && (
+				<div className={b('day-filter')}>
+					{compDays.map((d) => (
+						<button
+							key={d.position}
+							className={b('day-chip', {active: selectedDay === d.position})}
+							onClick={() => handleDayChange(d.position)}
+						>
+							{d.label}
+						</button>
+					))}
+				</div>
+			)}
+
 			<div className={b('event-chips')}>
-				{detail.events.map((ev: any) => (
+				{visibleEvents.map((ev: any) => (
 					<button
 						key={ev.eventId}
 						className={b('event-chip-btn', {active: selectedEventId === ev.eventId})}
@@ -142,15 +225,17 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 			{!selectedEvent && (
 				<div>
 					{/* Active rounds */}
-					{detail.events.some((ev: any) => ev.rounds.some((r: any) => r.status === 'ACTIVE')) && (
+					{visibleEvents.some((ev: any) =>
+						roundsForDay(ev.rounds).some((r: any) => r.status === 'ACTIVE')
+					) && (
 						<div style={{marginBottom: '2rem'}}>
 							<h3 className={b('section-title')}>
 								<Broadcast weight="fill" style={{marginRight: 6, color: 'rgb(var(--primary-color))'}} />
 								{t('active_rounds')}
 							</h3>
 							<div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
-								{detail.events.flatMap((ev: any) =>
-									ev.rounds
+								{visibleEvents.flatMap((ev: any) =>
+									roundsForDay(ev.rounds)
 										.filter((r: any) => r.status === 'ACTIVE')
 										.map((r: any) => (
 											<button
@@ -180,8 +265,8 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					<div style={{marginTop: '2rem'}}>
 						<h3 className={b('section-title')}>{t('all_rounds')}</h3>
 						<div className={b('all-rounds-grid')}>
-							{detail.events.map((ev: any) =>
-								ev.rounds.map((r: any) => (
+							{visibleEvents.map((ev: any) =>
+								roundsForDay(ev.rounds).map((r: any) => (
 									<button
 										key={r.roundId}
 										type="button"
