@@ -58,8 +58,10 @@ mobile to end a solve by setting the phone down.
 
 ### Smart Cubes (Bluetooth)
 Connect Bluetooth smart cubes over BLE and watch every turn happen in real time. It supports the GAN, Giiker,
-Particula, MoYu, and QiYi cube protocols (ported from cstimer), with a live 3D cube visualization, gyroscope
-orientation, MAC discovery, full move replay, and per-case statistics for OLL and PLL.
+Particula, MoYu, and QiYi cube protocols, with a live 3D cube visualization, gyroscope orientation, MAC
+discovery, full move replay, and per-case statistics for OLL and PLL. The protocol parsing logic is adapted
+from csTimer; the connection layer, reconnect handling, native BLE adapter for iOS and Android, and the
+visualization are built for Zkt Timer.
 
 ### Algorithm Trainer
 Drill OLL, PLL, F2L, ZBLL, and many more algorithm sets, each with its own statistics, smart queue ordering,
@@ -115,15 +117,14 @@ yarn dev               # client build + server
 
 The full stack (PostgreSQL, Redis, app server) runs with `docker compose up`.
 
-## Credits & Gratitude
+## Credits & References
 
-I built Zkt Timer by gathering inspiration from many different open-source projects and bringing them together
-under a single roof. Along the way, I solved some problems in my own way, adapted ideas where they fit, and
-rewrote others from scratch. But whatever the path, this project would not exist without the work that came
-before it.
+Zkt Timer was built by bringing together work from many open-source projects. Some parts were ported and
+adapted, some were rewritten in a different language, and some were designed from scratch for this project.
+Each reference is documented individually, stating both what was taken from it and what was built on top.
 
-I offer my deepest gratitude and endless thanks to the authors and developers of every project that inspired
-or guided me. Full attribution for each one is on my **[Credits page](https://zktimer.app/credits)**.
+Full attribution is on the **[Credits page](https://zktimer.app/credits)**, along with the features that were
+designed for Zkt Timer itself. My thanks go to the authors and developers of every project listed there.
 
 ## License
 

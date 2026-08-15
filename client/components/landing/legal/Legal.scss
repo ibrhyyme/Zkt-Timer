@@ -102,6 +102,12 @@
 			background: rgba(255, 255, 255, 0.06);
 			border-color: rgba(255, 255, 255, 0.15);
 		}
+
+		// no avatar on these, so an accent edge stands in for the missing column
+		&--original {
+			border-left: 3px solid var(--primary-color);
+			padding-left: 16px;
+		}
 	}
 
 	&__avatar {

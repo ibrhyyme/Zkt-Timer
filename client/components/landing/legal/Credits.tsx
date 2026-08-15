@@ -83,14 +83,6 @@ const INSPIRATIONS: Reference[] = [
 		descKey: 'credits.inspiration_wcalive',
 	},
 	{
-		project: 'RecordRanks',
-		user: 'Deni Mintsaev (mintydev)',
-		username: 'mintydev',
-		link: 'https://codeberg.org/mintydev/RecordRanks',
-		descKey: 'credits.inspiration_recordranks',
-		avatarOverride: 'https://codeberg.org/avatars/c11d08c95c19a69e97f6f2ecaf88bc74',
-	},
-	{
 		project: 'Rubik-Cube',
 		user: 'Dev-tanay',
 		username: 'Dev-tanay',
@@ -104,13 +96,22 @@ const INSPIRATIONS: Reference[] = [
 		link: 'https://github.com/Roman-/pll_recognition_trainer',
 		descKey: 'credits.inspiration_pllrecognition',
 	},
-	{
-		project: 'FiveTimer',
-		user: 'The Six Sides',
-		username: '',
-		link: 'https://apps.apple.com/app/id471548639',
-		descKey: 'credits.inspiration_fivetimer',
-	},
+];
+
+// Features built for Zkt Timer itself. Listed before the references so the page
+// does not read as if the product were only the sum of what it borrowed.
+interface Original {
+	titleKey: string;
+	descKey: string;
+}
+
+const ORIGINALS: Original[] = [
+	{titleKey: 'credits.original_notifications_title', descKey: 'credits.original_notifications'},
+	{titleKey: 'credits.original_radar_title', descKey: 'credits.original_radar'},
+	{titleKey: 'credits.original_native_title', descKey: 'credits.original_native'},
+	{titleKey: 'credits.original_offline_title', descKey: 'credits.original_offline'},
+	{titleKey: 'credits.original_battle_title', descKey: 'credits.original_battle'},
+	{titleKey: 'credits.original_cubercard_title', descKey: 'credits.original_cubercard'},
 ];
 
 const LIBRARIES: Reference[] = [
@@ -127,13 +128,6 @@ const LIBRARIES: Reference[] = [
 		username: 'afedotov',
 		link: 'https://github.com/afedotov/gan-web-bluetooth',
 		descKey: 'credits.libraries_ganweb',
-	},
-	{
-		project: 'csTimer',
-		user: 'cs0x7f',
-		username: 'cs0x7f',
-		link: 'https://github.com/cs0x7f/cstimer',
-		descKey: 'credits.libraries_cstimer',
 	},
 	{
 		project: 'cubejs',
@@ -184,6 +178,19 @@ function ReferenceItem({item, t}: {item: Reference; t: TFunction}) {
 	);
 }
 
+function OriginalItem({item, t}: {item: Original; t: TFunction}) {
+	return (
+		<li className={b('ref-item', {original: true})}>
+			<div className={b('ref-body')}>
+				<div className={b('ref-header')}>
+					<strong>{t(item.titleKey)}</strong>
+				</div>
+				<div className={b('ref-desc')} dangerouslySetInnerHTML={{__html: t(item.descKey)}} />
+			</div>
+		</li>
+	);
+}
+
 export default function Credits() {
 	const {t} = useTranslation();
 	const location = useLocation();
@@ -214,6 +221,14 @@ export default function Credits() {
 			<p>
 				<em>{t('credits.intro_signature')}</em>
 			</p>
+
+			<h2>{t('credits.originals_title')}</h2>
+			<p dangerouslySetInnerHTML={{__html: t('credits.originals_desc')}} />
+			<ul className={b('refs')}>
+				{ORIGINALS.map((it) => (
+					<OriginalItem key={it.titleKey} item={it} t={t} />
+				))}
+			</ul>
 
 			<h2>{t('credits.inspiration_title')}</h2>
 			<p dangerouslySetInnerHTML={{__html: t('credits.inspiration_desc')}} />
