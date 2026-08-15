@@ -4122,6 +4122,8 @@
         "tab_schedule": "Programa",
         "no_schedule_yet": "Aún no se agregó un programa",
         "schedule_untimed": "Sin horario",
+        "schedule_now": "Ahora",
+        "schedule_minutes": "{{count}} min",
         "schedule_add_custom": "Añadir actividad personalizada",
         "schedule_item_title": "Título",
         "schedule_item_placeholder": "Almuerzo, apertura, premiación...",

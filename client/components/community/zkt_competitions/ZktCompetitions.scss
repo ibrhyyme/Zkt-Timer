@@ -2706,9 +2706,9 @@ $zkt-info-green: #45d97c;
 
 	&__schedule-item {
 		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: 0.6rem 0.9rem;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.7rem 0.9rem;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-left: 4px solid rgba(var(--text-color), 0.25);
@@ -2717,15 +2717,53 @@ $zkt-info-green: #45d97c;
 		&--round {
 			border-left-color: rgb(var(--primary-color));
 		}
+
+		// The block running right now, which on competition day is the only one
+		// most people are looking for.
+		&--live {
+			border-color: rgba(var(--error-color), 0.45);
+			box-shadow: 0 0 0 1px rgba(var(--error-color), 0.35);
+		}
+	}
+
+	&__schedule-item-head {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	&__schedule-item-body {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
 	}
 
 	&__schedule-item-time {
-		min-width: 110px;
 		flex-shrink: 0;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		font-size: 14px;
 		color: rgb(var(--primary-color));
+	}
+
+	&__schedule-item-duration {
+		font-size: 12px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		opacity: 0.75;
+	}
+
+	&__schedule-item-now {
+		padding: 1px 8px;
+		border-radius: 999px;
+		background: rgba(var(--error-color), 0.15);
+		color: rgb(var(--error-color));
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.4px;
+		text-transform: uppercase;
 	}
 
 	&__schedule-item-title {
@@ -2734,6 +2772,257 @@ $zkt-info-green: #45d97c;
 		font-size: 14px;
 		font-weight: 600;
 		color: rgb(var(--text-color));
+		min-width: 0;
+	}
+
+	&__schedule-item-room {
+		flex-shrink: 0;
+		padding: 1px 8px;
+		border: 1px solid rgba(var(--text-color), 0.3);
+		border-radius: 999px;
+		font-size: 11px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+	}
+
+	// ── Room legend (both views share it)
+	&__schedule-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 1rem;
+		padding: 0.5rem 0.75rem;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 10px;
+	}
+
+	&__schedule-legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__schedule-legend-dot {
+		width: 12px;
+		height: 12px;
+		border-radius: 4px;
+		background: rgb(var(--primary-color));
+	}
+
+	// ── View switch: timetable on a desktop, list on a phone. Both are in the
+	// DOM so the server can render either; the viewport picks.
+	&__schedule-view--timeline {
+		display: none;
+
+		@media (min-width: 769px) {
+			display: block;
+		}
+	}
+
+	&__schedule-view--list {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+
+		@media (min-width: 769px) {
+			display: none;
+		}
+	}
+}
+
+// ── Desktop timetable
+.cd-zkt-comp {
+	&__timeline {
+		display: flex;
+		flex-direction: column;
+		gap: 1.75rem;
+	}
+
+	&__timeline-day-title {
+		font-size: 16px;
+		font-weight: 800;
+		margin: 0 0 0.6rem 0;
+		color: rgb(var(--text-color));
+		text-transform: capitalize;
+	}
+
+	&__timeline-day-name {
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__timeline-grid {
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 12px;
+		padding: 0.75rem 0.9rem 1.1rem;
+	}
+
+	&__timeline-head {
+		display: flex;
+		gap: 4px;
+		margin-bottom: 0.6rem;
+	}
+
+	// Matches the rail width below so the room headers sit over their columns.
+	&__timeline-head-rail {
+		width: 64px;
+		flex-shrink: 0;
+	}
+
+	&__timeline-head-room {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-bottom: 5px;
+		border-bottom: 3px solid rgba(var(--text-color), 0.25);
+		font-size: 13px;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__timeline-body {
+		position: relative;
+		display: flex;
+		gap: 4px;
+		padding-left: 64px;
+	}
+
+	&__timeline-rail {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 64px;
+		height: 100%;
+	}
+
+	&__timeline-rail-hour {
+		position: absolute;
+		left: 0;
+		// Half the label's line-height, so the text centres on its hour line.
+		transform: translateY(-50%);
+		font-size: 12px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--text-color));
+		opacity: 0.7;
+	}
+
+	&__timeline-lines {
+		position: absolute;
+		top: 0;
+		left: 64px;
+		right: 0;
+		height: 100%;
+		pointer-events: none;
+	}
+
+	&__timeline-line {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: rgba(var(--text-color), 0.1);
+	}
+
+	&__timeline-column {
+		position: relative;
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	&__timeline-block {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		overflow: hidden;
+		padding: 5px 8px;
+		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-left: 4px solid rgba(var(--text-color), 0.35);
+		background: rgb(var(--module-color));
+		// Lifts the block off the hour lines drawn underneath it.
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+
+		&--round {
+			border-left-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.12);
+		}
+
+		&--live {
+			border-color: rgba(var(--error-color), 0.5);
+			box-shadow: 0 0 0 1px rgba(var(--error-color), 0.4);
+		}
+
+		// Too short for two lines: the title wins, the time moves inline.
+		&--compact {
+			flex-direction: row;
+			align-items: center;
+			gap: 6px;
+			padding: 2px 8px;
+		}
+	}
+
+	&__timeline-block-time {
+		flex-shrink: 0;
+		font-size: 11px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--primary-color));
+	}
+
+	&__timeline-block-title {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		min-width: 0;
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__timeline-block-day {
+		font-size: 11px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__timeline-now {
+		position: absolute;
+		left: 64px;
+		right: 0;
+		height: 2px;
+		background: rgb(var(--error-color));
+		// Above the blocks, which are the only other positioned thing here.
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	&__timeline-now-label {
+		position: absolute;
+		top: -9px;
+		// On the right end of the line: the left end sits over the hour rail and
+		// covered the very hour label the marker is pointing at.
+		right: 4px;
+		padding: 1px 6px;
+		border-radius: 999px;
+		background: rgb(var(--error-color));
+		color: #fff;
+		font-size: 10px;
+		font-weight: 800;
+		letter-spacing: 0.3px;
+		text-transform: uppercase;
 	}
 }
 

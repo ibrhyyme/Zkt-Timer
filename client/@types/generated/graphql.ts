@@ -4638,11 +4638,13 @@ export type ZktPublicCompetitionDetail = {
   organizers?: Maybe<Array<Maybe<ZktPublicNamed>>>;
   podiums?: Maybe<Array<Maybe<ZktPublicPodium>>>;
   registrationCount?: Maybe<Scalars['Int']>;
+  rooms?: Maybe<Array<ZktPublicRoom>>;
   schedule?: Maybe<Array<Maybe<ZktPublicScheduleEntry>>>;
   slug?: Maybe<Scalars['String']>;
   startDate?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   tabs?: Maybe<Array<Maybe<ZktPublicTab>>>;
+  timezone?: Maybe<Scalars['String']>;
 };
 
 export type ZktPublicCompetitionList = {
@@ -4827,6 +4829,13 @@ export type ZktPublicRegisteredCompetitor = {
   wcaId?: Maybe<Scalars['String']>;
 };
 
+export type ZktPublicRoom = {
+  __typename?: 'ZktPublicRoom';
+  color?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
 export type ZktPublicRoundGroup = {
   __typename?: 'ZktPublicRoundGroup';
   dayIndex?: Maybe<Scalars['Int']>;
@@ -4834,6 +4843,7 @@ export type ZktPublicRoundGroup = {
   endTime?: Maybe<Scalars['String']>;
   groupId?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
+  roomId?: Maybe<Scalars['String']>;
   startTime?: Maybe<Scalars['String']>;
 };
 
@@ -4857,6 +4867,7 @@ export type ZktPublicScheduleEntry = {
   __typename?: 'ZktPublicScheduleEntry';
   endTime?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  roomId?: Maybe<Scalars['String']>;
   startTime?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
 };

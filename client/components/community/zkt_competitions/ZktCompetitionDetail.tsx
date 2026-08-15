@@ -72,6 +72,12 @@ const DETAIL_QUERY = gql`
 				content
 				order
 			}
+			timezone
+			rooms {
+				id
+				name
+				color
+			}
 			events {
 				eventId
 				eventName
@@ -95,6 +101,7 @@ const DETAIL_QUERY = gql`
 						endTime
 						dayIndex
 						dayLabel
+						roomId
 					}
 				}
 			}
@@ -103,6 +110,7 @@ const DETAIL_QUERY = gql`
 				title
 				startTime
 				endTime
+				roomId
 			}
 			podiums {
 				eventId

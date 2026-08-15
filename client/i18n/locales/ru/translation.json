@@ -4122,6 +4122,8 @@
         "tab_schedule": "Расписание",
         "no_schedule_yet": "Расписание ещё не добавлено",
         "schedule_untimed": "Время не указано",
+        "schedule_now": "Сейчас",
+        "schedule_minutes": "{{count}} мин",
         "schedule_add_custom": "Добавить событие",
         "schedule_item_title": "Название",
         "schedule_item_placeholder": "Обед, открытие, награждение...",

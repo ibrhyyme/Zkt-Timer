@@ -4156,6 +4156,8 @@
         "tab_schedule": "Program",
         "no_schedule_yet": "Henüz program eklenmemiş",
         "schedule_untimed": "Saati belirtilmemiş",
+        "schedule_now": "Şimdi",
+        "schedule_minutes": "{{count}} dk",
         "schedule_add_custom": "Özel Etkinlik Ekle",
         "schedule_item_title": "Başlık",
         "schedule_item_placeholder": "Öğle arası, açılış, ödül töreni...",

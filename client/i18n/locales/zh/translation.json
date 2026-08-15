@@ -4152,6 +4152,8 @@
         "tab_schedule": "日程",
         "no_schedule_yet": "尚未添加日程",
         "schedule_untimed": "未设置时间",
+        "schedule_now": "进行中",
+        "schedule_minutes": "{{count}} 分钟",
         "schedule_add_custom": "添加自定义活动",
         "schedule_item_title": "标题",
         "schedule_item_placeholder": "午餐、开幕、颁奖...",

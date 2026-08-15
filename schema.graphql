@@ -2412,6 +2412,7 @@ type ZktPublicRoundGroup {
   endTime: String
   dayIndex: Int
   dayLabel: String
+  roomId: String
 }
 
 type ZktPublicDetailRound {
@@ -2454,6 +2455,13 @@ type ZktPublicScheduleEntry {
   title: String
   startTime: String
   endTime: String
+  roomId: String
+}
+
+type ZktPublicRoom {
+  id: String
+  name: String
+  color: String
 }
 
 type ZktPublicPodiumEntry {
@@ -2494,6 +2502,8 @@ type ZktPublicCompetitionDetail {
   delegates: [ZktPublicNamed]
   organizers: [ZktPublicNamed]
   tabs: [ZktPublicTab]
+  timezone: String
+  rooms: [ZktPublicRoom!]
   events: [ZktPublicDetailEvent]
   schedule: [ZktPublicScheduleEntry]
   podiums: [ZktPublicPodium]

@@ -111,6 +111,10 @@ export class ZktPublicRoundGroup {
 
 	@Field({nullable: true})
 	dayLabel?: string;
+
+	/** Room this group runs in; resolves against the detail's `rooms`. */
+	@Field({nullable: true})
+	roomId?: string;
 }
 
 @ObjectType()
@@ -219,6 +223,23 @@ export class ZktPublicScheduleEntry {
 
 	@Field({nullable: true})
 	endTime?: string;
+
+	/** Room this item runs in; resolves against the detail's `rooms`. */
+	@Field({nullable: true})
+	roomId?: string;
+}
+
+@ObjectType()
+export class ZktPublicRoom {
+	@Field()
+	id: string;
+
+	@Field()
+	name: string;
+
+	/** Hex colour the organizer picked for the stage, used by the timeline. */
+	@Field()
+	color: string;
 }
 
 @ObjectType()
@@ -336,6 +357,23 @@ export class ZktPublicCompetitionDetail {
 
 	@Field(() => [ZktPublicTab])
 	tabs: ZktPublicTab[];
+
+	/**
+	 * IANA zone the competition runs in ("Europe/Istanbul"). Every time in this
+	 * payload is UTC, and the schedule has to be drawn in the VENUE's zone: a
+	 * competitor reading from abroad otherwise sees a program shifted by their
+	 * own offset. Nullable for the same reason as `days` — an undeployed
+	 * federation omits the key and must not take the page down.
+	 */
+	@Field({nullable: true})
+	timezone?: string;
+
+	/**
+	 * Stages the competition runs in, in the organizer's order. Empty or absent
+	 * when none were defined, which is the ordinary single-hall case.
+	 */
+	@Field(() => [ZktPublicRoom], {nullable: true})
+	rooms?: ZktPublicRoom[];
 
 	@Field(() => [ZktPublicDetailEvent])
 	events: ZktPublicDetailEvent[];

@@ -4151,6 +4151,8 @@
         "tab_schedule": "Schedule",
         "no_schedule_yet": "No schedule added yet",
         "schedule_untimed": "Time not set",
+        "schedule_now": "Now",
+        "schedule_minutes": "{{count}} min",
         "schedule_add_custom": "Add Custom Activity",
         "schedule_item_title": "Title",
         "schedule_item_placeholder": "Lunch, opening, awards...",
