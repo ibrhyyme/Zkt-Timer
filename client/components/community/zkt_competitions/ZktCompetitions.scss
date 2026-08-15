@@ -2861,7 +2861,7 @@ $zkt-info-green: #45d97c;
 // Mirrors the federation site's own schedule so the two read the same.
 .cd-zkt-comp {
 	&__timeline {
-		--zkt-hour-h: 104px;
+		--zkt-hour-h: 116px;
 
 		@media (max-width: 768px) {
 			// A phone needs more room per hour or a 30-minute block has nowhere to
@@ -2883,6 +2883,10 @@ $zkt-info-green: #45d97c;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 12px;
 		padding: 0.75rem 0.9rem 1.1rem;
+
+		@media (max-width: 768px) {
+			padding: 0.6rem 0.5rem 0.9rem;
+		}
 	}
 
 	&__timeline-head {
@@ -2895,6 +2899,10 @@ $zkt-info-green: #45d97c;
 	&__timeline-head-rail {
 		width: 58px;
 		flex-shrink: 0;
+
+		@media (max-width: 768px) {
+			width: 42px;
+		}
 	}
 
 	&__timeline-head-day {
@@ -2907,6 +2915,10 @@ $zkt-info-green: #45d97c;
 		color: rgb(var(--primary-color));
 		text-align: center;
 		white-space: nowrap;
+
+		@media (max-width: 768px) {
+			font-size: 12.5px;
+		}
 	}
 
 	&__timeline-head-weekday {
@@ -2918,6 +2930,11 @@ $zkt-info-green: #45d97c;
 		display: flex;
 		gap: 4px;
 		padding-left: 58px;
+
+		@media (max-width: 768px) {
+			padding-left: 42px;
+			gap: 3px;
+		}
 	}
 
 	&__timeline-rail {
@@ -2926,6 +2943,10 @@ $zkt-info-green: #45d97c;
 		left: 0;
 		width: 58px;
 		height: 100%;
+
+		@media (max-width: 768px) {
+			width: 42px;
+		}
 	}
 
 	&__timeline-rail-hour {
@@ -2943,6 +2964,14 @@ $zkt-info-green: #45d97c;
 			font-size: 11px;
 			opacity: 0.5;
 		}
+
+		@media (max-width: 768px) {
+			font-size: 10px;
+
+			&.cd-zkt-comp__timeline-rail-hour--half {
+				font-size: 9px;
+			}
+		}
 	}
 
 	&__timeline-lines {
@@ -2952,6 +2981,10 @@ $zkt-info-green: #45d97c;
 		right: 0;
 		height: 100%;
 		pointer-events: none;
+
+		@media (max-width: 768px) {
+			left: 42px;
+		}
 	}
 
 	&__timeline-line {
@@ -2972,9 +3005,10 @@ $zkt-info-green: #45d97c;
 		min-width: 140px;
 
 		@media (max-width: 768px) {
-			// Narrower than this and a block shows "Chec…" instead of "Check-in".
-			// Two days still fit a phone; a third scrolls, which beats truncating.
-			min-width: 158px;
+			// No floor on a phone: the whole programme has to fit the screen width,
+			// so the days share whatever there is instead of forcing a sideways
+			// scroll. Titles wrap and clamp rather than pushing the grid wider.
+			min-width: 0;
 		}
 	}
 
@@ -2989,6 +3023,10 @@ $zkt-info-green: #45d97c;
 		padding: 6px 8px;
 		border-radius: 8px;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+
+		@media (max-width: 768px) {
+			padding: 4px 5px;
+		}
 
 		&--live {
 			outline: 2px solid rgb(var(--error-color));
@@ -3021,6 +3059,8 @@ $zkt-info-green: #45d97c;
 		font-size: 13px;
 		font-weight: 800;
 		line-height: 1.25;
+		// Wrap inside the column instead of widening it.
+		overflow-wrap: anywhere;
 		// Two lines, then ellipsis: an event round title with a day suffix does
 		// not fit one line in a 150px column, and a third line would push the
 		// time out of a short block.
@@ -3028,6 +3068,11 @@ $zkt-info-green: #45d97c;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
+
+		@media (max-width: 768px) {
+			font-size: 11.5px;
+			-webkit-line-clamp: 3;
+		}
 	}
 
 	&__timeline-block-time {
@@ -3036,6 +3081,10 @@ $zkt-info-green: #45d97c;
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		opacity: 0.9;
+
+		@media (max-width: 768px) {
+			font-size: 10.5px;
+		}
 	}
 
 	&__timeline-now {
@@ -3047,6 +3096,10 @@ $zkt-info-green: #45d97c;
 		// Above the blocks, the only other positioned thing here.
 		z-index: 2;
 		pointer-events: none;
+
+		@media (max-width: 768px) {
+			left: 42px;
+		}
 	}
 
 	&__timeline-now-label {

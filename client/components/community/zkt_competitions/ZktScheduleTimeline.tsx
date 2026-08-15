@@ -13,8 +13,12 @@ const HOUR_VAR = 'var(--zkt-hour-h)';
 const px = (hours: number) => `calc(${HOUR_VAR} * ${hours})`;
 /** Placeholder span for a block whose end the organizer left open. */
 const FALLBACK_DURATION_HOURS = 0.5;
-/** Below this a block cannot fit title and time on separate lines. */
-const COMPACT_HOURS = 0.6;
+/**
+ * Below this a block cannot fit title and time on separate lines. A half-hour
+ * block CAN — that is the commonest item on a schedule (check-in, the tutorial,
+ * lunch) and squeezing it onto one line truncated its name to "Kayı…".
+ */
+const COMPACT_HOURS = 0.34;
 
 // Federation colour rule, kept identical so the two schedules read the same:
 // event rounds take their room's colour (a default teal when the organizer
@@ -164,7 +168,10 @@ export default function ZktScheduleTimeline({rows, locale, timezone, labels}: Pr
 	return (
 		<div className={b('timeline')}>
 			<div className={b('timeline-scroll')}>
-				<div className={b('timeline-grid')} style={{minWidth: `${120 + days.length * 150}px`}}>
+				{/* No width floor here: the columns carry their own minimum, which is
+				    dropped on a phone so the whole programme fits the screen instead
+				    of forcing a sideways scroll. */}
+				<div className={b('timeline-grid')}>
 					<div className={b('timeline-head')}>
 						<span className={b('timeline-head-rail')} />
 						{days.map((day) => (
