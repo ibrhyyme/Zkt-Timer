@@ -134,16 +134,23 @@ export function buildScheduleRows(
 			}`;
 
 			if (byDayRoom.size === 0) {
+				// No timed groups. The organizer may still have placed the ROUND on
+				// the calendar — that is how the second day of a day-split event is
+				// usually laid out, since groups only get times once assignments are
+				// made. Reading only the groups made those rounds vanish.
+				const rm = room(r.roomId);
 				rows.push({
 					id: r.roundId,
 					title: name,
-					start: null,
-					end: null,
+					start: r.startTime || null,
+					end: r.endTime || null,
 					isRound: true,
 					eventId: ev.eventId,
 					roundNumber: r.roundNumber,
 					dayLabel: r.dayLabel ?? null,
 					dayName: r.dayLabel ?? null,
+					roomName: rm?.name ?? null,
+					roomColor: rm?.color ?? null,
 				});
 				continue;
 			}

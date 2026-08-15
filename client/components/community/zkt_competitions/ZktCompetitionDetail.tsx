@@ -94,6 +94,9 @@ const DETAIL_QUERY = gql`
 					dayIndex
 					dayLabel
 					isFinal
+					startTime
+					endTime
+					roomId
 					groups {
 						groupId
 						groupNumber

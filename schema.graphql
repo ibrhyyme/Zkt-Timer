@@ -2435,6 +2435,9 @@ type ZktPublicDetailRound {
   dayIndex: Int
   dayLabel: String
   isFinal: Boolean
+  startTime: String
+  endTime: String
+  roomId: String
   groups: [ZktPublicRoundGroup]
 }
 

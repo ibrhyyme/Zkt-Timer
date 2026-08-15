@@ -173,6 +173,21 @@ export class ZktPublicDetailRound {
 	@Field({nullable: true})
 	isFinal?: boolean;
 
+	/**
+	 * The round's own slot on the timetable. Set when the organizer placed the
+	 * round on the calendar instead of timing its groups — such a round has NO
+	 * timed groups, and a schedule built only from groups drops it entirely.
+	 */
+	@Field({nullable: true})
+	startTime?: string;
+
+	@Field({nullable: true})
+	endTime?: string;
+
+	/** Room the round runs in; resolves against the detail's `rooms`. */
+	@Field({nullable: true})
+	roomId?: string;
+
 	@Field(() => [ZktPublicRoundGroup])
 	groups: ZktPublicRoundGroup[];
 }

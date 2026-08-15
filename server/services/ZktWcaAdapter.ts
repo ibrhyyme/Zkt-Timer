@@ -174,10 +174,33 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 		return byRoom.get(name)!;
 	};
 
+	// "Skewb — 1. Tur". The bare event name left the reader with two identical
+	// "Skewb" blocks and no way to tell round 1 from the final.
+	const activityLabel = (ev: any, r: any) => {
+		const event = ev.eventName || WcaApiService.getEventName(ev.eventId);
+		return `${event} — ${r.isFinal ? 'Final' : roundName(r.roundNumber)}`;
+	};
+
 	for (const ev of d.events || []) {
 		for (const r of ev.rounds || []) {
 			const timed = (r.groups || []).filter((g: any) => g.startTime);
-			if (timed.length === 0) continue;
+			if (timed.length === 0) {
+				// No timed groups, but the organizer may have placed the ROUND on the
+				// calendar. That is how the second day of a day-split event is usually
+				// laid out (groups get times only once assignments are made), and
+				// ignoring it made those rounds disappear from the programme.
+				if (!r.startTime) continue;
+				roomBucket(r.roomId ?? null).activities.push({
+					activityId: activityId++,
+					name: activityLabel(ev, r),
+					activityCode: `${ev.eventId}-r${r.roundNumber}`,
+					startTime: r.startTime,
+					endTime: r.endTime || r.startTime,
+					dayIndex: r.dayIndex ?? 0,
+					dayLabel: r.dayLabel ?? undefined,
+				});
+				continue;
+			}
 			// One block per room the round actually runs in: a round split across two
 			// stages is two sessions, not one spanning both.
 			const perRoom = new Map<string, {start: string; end: string; roomId: string | null}>();
@@ -195,7 +218,7 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 			for (const [, span] of perRoom) {
 				roomBucket(span.roomId).activities.push({
 					activityId: activityId++,
-					name: ev.eventName || WcaApiService.getEventName(ev.eventId),
+					name: activityLabel(ev, r),
 					// The day is part of the code: without it a day-split event emits
 					// two activities both called "333-r1".
 					activityCode: `${ev.eventId}-r${r.roundNumber}`,

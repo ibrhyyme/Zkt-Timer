@@ -4712,12 +4712,15 @@ export type ZktPublicDetailRound = {
   cutoffCs?: Maybe<Scalars['Int']>;
   dayIndex?: Maybe<Scalars['Int']>;
   dayLabel?: Maybe<Scalars['String']>;
+  endTime?: Maybe<Scalars['String']>;
   format?: Maybe<Scalars['String']>;
   groups?: Maybe<Array<Maybe<ZktPublicRoundGroup>>>;
   isFinal?: Maybe<Scalars['Boolean']>;
   numEntered?: Maybe<Scalars['Int']>;
+  roomId?: Maybe<Scalars['String']>;
   roundId?: Maybe<Scalars['String']>;
   roundNumber?: Maybe<Scalars['Int']>;
+  startTime?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
   timeLimitCs?: Maybe<Scalars['Int']>;
   totalExpected?: Maybe<Scalars['Int']>;
