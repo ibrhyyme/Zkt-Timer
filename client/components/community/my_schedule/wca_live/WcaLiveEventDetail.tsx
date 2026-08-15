@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useHistory} from 'react-router-dom';
+import {useHistory, useLocation} from 'react-router-dom';
 import {ArrowClockwise, Warning} from 'phosphor-react';
 import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMedal, RecordTag, EventIcon} from '../shared';
 import {useLiveRoundResults} from '../useLiveResults';
@@ -49,26 +49,83 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		return me?.name || null;
 	}, [detail?.myWcaId, detail?.myRegistrantId, detail?.competitors]);
 
+	// ── Competition day (day-split ZKT competitions only)
+	// Such an event runs a whole chain per day, so it has two rounds numbered 1
+	// and two numbered 2. Showing all four at once left the reader with
+	// "1. Tur · 2. Tur · 1. Tur · 2. Tur" and no way to tell which pair is the
+	// day they are attending. Empty on every WCA competition, where this whole
+	// block collapses to the old behaviour.
+	const location = useLocation();
+	const compDays: Array<{position: number; label: string; date?: string}> = detail?.days || [];
+	const isDaySplit = compDays.length >= 2;
+
+	const urlDay = useMemo(() => {
+		const raw = new URLSearchParams(location.search).get('day');
+		const n = raw ? parseInt(raw, 10) : NaN;
+		return Number.isFinite(n) && n > 0 ? n : null;
+	}, [location.search]);
+
+	const [selectedDay, setSelectedDay] = useState<number>(() => {
+		if (!isDaySplit) return 0;
+		if (urlDay !== null) return urlDay;
+		// On competition day the reader is standing in one of these days; start
+		// there. Otherwise the day the viewer is registered for, else the first.
+		const today = new Date().toDateString();
+		const running = compDays.find((d) => d.date && new Date(d.date).toDateString() === today);
+		if (running) return running.position;
+		const mine = detail?.myDayLabel
+			? compDays.find((d) => d.label === detail.myDayLabel)
+			: undefined;
+		return mine?.position ?? compDays[0].position;
+	});
+
+	// A link that names a day wins over the local choice.
+	useEffect(() => {
+		if (urlDay !== null && urlDay !== selectedDay) setSelectedDay(urlDay);
+	}, [urlDay]);
+
+	/** Rounds on the selected day, plus the shared ones that belong to no day. */
+	const visibleRounds = useMemo(() => {
+		const all = event?.rounds || [];
+		if (!isDaySplit) return all;
+		return all.filter((r: any) => !r.dayIndex || r.dayIndex === selectedDay);
+	}, [event?.rounds, isDaySplit, selectedDay]);
+
 	const defaultRound = useMemo(() => {
-		if (!event?.rounds || event.rounds.length === 0) return null;
-		const active = event.rounds.find((r: any) => r.active);
+		if (visibleRounds.length === 0) return null;
+		const active = visibleRounds.find((r: any) => r.active);
 		if (active) return active;
-		const finishedRounds = event.rounds.filter((r: any) => r.finished);
+		const finishedRounds = visibleRounds.filter((r: any) => r.finished);
 		if (finishedRounds.length > 0) return finishedRounds[finishedRounds.length - 1];
-		return event.rounds[0];
-	}, [event]);
+		return visibleRounds[0];
+	}, [visibleRounds]);
 
 	const selectedRound = useMemo(() => {
-		if (!roundNumber || !event?.rounds) return defaultRound;
-		return event.rounds.find((r: any) => r.number === roundNumber) || defaultRound;
-	}, [event, roundNumber, defaultRound]);
+		if (!roundNumber || visibleRounds.length === 0) return defaultRound;
+		// Within one day the number identifies the round again; across days it
+		// never did, which is why the day rides in the query string.
+		return visibleRounds.find((r: any) => r.number === roundNumber) || defaultRound;
+	}, [visibleRounds, roundNumber, defaultRound]);
+
+	/** Path to a round, carrying the day so a shared link opens the right one. */
+	const roundPath = useCallback(
+		(round: any) => {
+			const base = `/competitions/${competitionId}/wca-live/${event?.eventId}/${round.number}`;
+			const day = round.dayIndex || (isDaySplit ? selectedDay : 0);
+			return day ? `${base}?day=${day}` : base;
+		},
+		[competitionId, event?.eventId, isDaySplit, selectedDay]
+	);
 
 	useEffect(() => {
-		if (!event?.rounds || event.rounds.length === 0) return;
-		if (!roundNumber && defaultRound) {
-			history.replace(`/competitions/${competitionId}/wca-live/${event.eventId}/${defaultRound.number}`);
+		if (visibleRounds.length === 0) return;
+		// Also fires when the day changes and the round in the URL belongs to the
+		// day being left, which would otherwise show the other day's results.
+		const stillVisible = visibleRounds.some((r: any) => r.number === roundNumber);
+		if ((!roundNumber || !stillVisible) && defaultRound) {
+			history.replace(roundPath(defaultRound));
 		}
-	}, [roundNumber, defaultRound, event?.eventId, competitionId, history, event?.rounds]);
+	}, [roundNumber, defaultRound, visibleRounds, history, roundPath]);
 
 	useEffect(() => {
 		setModalRow(null);
@@ -211,17 +268,41 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</button>
 			</div>
 
+			{/* Competition day: only one day's chain is shown at a time. */}
+			{isDaySplit && (
+				<div className={b('wca-live-days')}>
+					{compDays.map((day) => (
+						<button
+							key={day.position}
+							className={b('wca-live-day-tab', {active: selectedDay === day.position})}
+							onClick={() => {
+								setSelectedDay(day.position);
+								history.push(
+									`/competitions/${competitionId}/wca-live/${event.eventId}?day=${day.position}`
+								);
+							}}
+						>
+							{day.label}
+						</button>
+					))}
+				</div>
+			)}
+
 			{/* Round tabs */}
 			<div className={b('wca-live-rounds')}>
-				{(event?.rounds || []).map((round: any) => {
+				{visibleRounds.map((round: any) => {
 					const isSelected = round.liveRoundId === selectedRound.liveRoundId;
 					return (
 						<button
 							key={round.liveRoundId}
 							className={b('wca-live-round-tab', {active: isSelected})}
-							onClick={() => history.push(`/competitions/${competitionId}/wca-live/${event.eventId}/${round.number}`)}
+							onClick={() => history.push(roundPath(round))}
 						>
-							<span className={b('wca-live-round-name')}>{round.name}</span>
+							<span className={b('wca-live-round-name')}>
+								{/* The federation names a round by its number; a chain's last
+								    round is a final and reads better as one. */}
+								{round.isFinal ? t('zkt_comp.round_final') : round.name}
+							</span>
 							<span className={b('wca-live-status-badge', {[getRoundStatusModifier(round)]: true})}>
 								{getRoundStatusLabel(round)}
 							</span>

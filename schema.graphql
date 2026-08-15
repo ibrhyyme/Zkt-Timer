@@ -1811,6 +1811,9 @@ type WcaLiveRoundInfo {
   timeLimit: WcaLiveTimeLimit
   cutoff: WcaLiveCutoff
   advancementCondition: WcaLiveAdvancementCondition
+  dayIndex: Int
+  dayLabel: String
+  isFinal: Boolean
 }
 
 type WcaLiveEventInfo {
@@ -1825,6 +1828,8 @@ type WcaLiveScheduleActivity {
   activityCode: String
   startTime: String
   endTime: String
+  dayIndex: Int
+  dayLabel: String
 }
 
 type WcaLiveScheduleRoom {

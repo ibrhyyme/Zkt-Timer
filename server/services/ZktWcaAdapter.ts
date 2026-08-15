@@ -109,6 +109,12 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 			liveRoundId: r.roundId,
 			number: r.roundNumber,
 			name: roundName(r.roundNumber),
+			// A day-split event runs a chain per day, so it has two rounds numbered
+			// 1. Dropping the day here left the viewer with "1. Tur, 2. Tur, 1. Tur,
+			// 2. Tur" and no way to tell which pair is the day they are attending.
+			dayIndex: r.dayIndex ?? 0,
+			dayLabel: r.dayLabel ?? undefined,
+			isFinal: r.isFinal ?? undefined,
 			open: r.status === 'OPEN',
 			finished: r.status === 'FINISHED',
 			active: r.status === 'ACTIVE',
@@ -148,27 +154,78 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 		})),
 	}));
 
-	// Schedule: a single venue/room whose activities are the competition rounds
-	// (span derived from their groups). Feeds the WCA Live welcome schedule.
+	// Schedule: the competition's whole programme, in the rooms the organizer
+	// defined. Feeds the WCA Live welcome schedule and the Programme tab.
+	//
+	// Rounds are spanned from their groups; the organizer's own items (check-in,
+	// lunch, the award ceremony) come from `d.schedule` and used to be dropped
+	// entirely, which is why the programme read as nothing but event rounds.
+	const roomById = new Map<string, {name: string; color?: string}>(
+		(d.rooms || []).map((r: any) => [r.id, {name: r.name, color: r.color}])
+	);
+	const fallbackRoom = d.location || '';
 	let activityId = 1;
-	const activities: any[] = [];
+	// Keyed by room name so parallel stages stay separate columns downstream.
+	const byRoom = new Map<string, {name: string; color?: string; activities: any[]}>();
+	const roomBucket = (roomId?: string | null) => {
+		const room = roomId ? roomById.get(roomId) : undefined;
+		const name = room?.name || fallbackRoom;
+		if (!byRoom.has(name)) byRoom.set(name, {name, color: room?.color, activities: []});
+		return byRoom.get(name)!;
+	};
+
 	for (const ev of d.events || []) {
 		for (const r of ev.rounds || []) {
-			const starts = (r.groups || []).map((g: any) => g.startTime).filter(Boolean).sort();
-			const ends = (r.groups || []).map((g: any) => g.endTime || g.startTime).filter(Boolean).sort();
-			if (starts.length === 0) continue;
-			activities.push({
-				activityId: activityId++,
-				name: ev.eventName || WcaApiService.getEventName(ev.eventId),
-				activityCode: `${ev.eventId}-r${r.roundNumber}`,
-				startTime: starts[0],
-				endTime: ends[ends.length - 1] || starts[starts.length - 1],
-			});
+			const timed = (r.groups || []).filter((g: any) => g.startTime);
+			if (timed.length === 0) continue;
+			// One block per room the round actually runs in: a round split across two
+			// stages is two sessions, not one spanning both.
+			const perRoom = new Map<string, {start: string; end: string; roomId: string | null}>();
+			for (const g of timed) {
+				const roomId = g.roomId ?? null;
+				const key = roomId ?? '';
+				const end = g.endTime || g.startTime;
+				const cur = perRoom.get(key);
+				if (!cur) perRoom.set(key, {start: g.startTime, end, roomId});
+				else {
+					if (g.startTime < cur.start) cur.start = g.startTime;
+					if (end > cur.end) cur.end = end;
+				}
+			}
+			for (const [, span] of perRoom) {
+				roomBucket(span.roomId).activities.push({
+					activityId: activityId++,
+					name: ev.eventName || WcaApiService.getEventName(ev.eventId),
+					// The day is part of the code: without it a day-split event emits
+					// two activities both called "333-r1".
+					activityCode: `${ev.eventId}-r${r.roundNumber}`,
+					startTime: span.start,
+					endTime: span.end,
+					dayIndex: r.dayIndex ?? 0,
+					dayLabel: r.dayLabel ?? undefined,
+				});
+			}
 		}
 	}
-	const schedule = activities.length
-		? [{name: d.location || '', rooms: [{name: d.location || '', color: undefined, activities}]}]
-		: [];
+
+	for (const item of d.schedule || []) {
+		if (!item.startTime) continue;
+		roomBucket(item.roomId).activities.push({
+			activityId: activityId++,
+			name: item.title,
+			// No activity code: these are not rounds, and a parser that reads one
+			// would route "Lunch" to an event page.
+			activityCode: '',
+			startTime: item.startTime,
+			endTime: item.endTime || item.startTime,
+		});
+	}
+
+	for (const room of byRoom.values()) {
+		room.activities.sort((a, b) => String(a.startTime).localeCompare(String(b.startTime)));
+	}
+	const rooms = [...byRoom.values()].filter((r) => r.activities.length > 0);
+	const schedule = rooms.length ? [{name: d.location || '', rooms}] : [];
 
 	return {compId, name: d.name || '', events, schedule, records: [], podiums};
 }

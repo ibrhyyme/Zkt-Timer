@@ -456,6 +456,22 @@ export class WcaLiveRoundInfo {
 
 	@Field(() => WcaLiveAdvancementCondition, {nullable: true})
 	advancementCondition?: WcaLiveAdvancementCondition;
+
+	/**
+	 * Day-chain this round belongs to on a day-split ZKT competition: such an
+	 * event runs a whole chain per day, so it has two "1. Tur"s and the number
+	 * alone does not identify a round. 0/null on every WCA competition and on the
+	 * shared rounds that belong to no single day.
+	 */
+	@Field(() => Int, {nullable: true})
+	dayIndex?: number;
+
+	@Field({nullable: true})
+	dayLabel?: string;
+
+	/** Last round of its own chain — what the viewer reads as "Final". */
+	@Field({nullable: true})
+	isFinal?: boolean;
 }
 
 @ObjectType()
@@ -486,6 +502,17 @@ export class WcaLiveScheduleActivity {
 
 	@Field()
 	endTime: string;
+
+	/**
+	 * Day this block runs on, on a day-split ZKT competition. WCIF has no such
+	 * concept, so it is absent on every WCA competition and the schedule simply
+	 * reads by date there.
+	 */
+	@Field(() => Int, {nullable: true})
+	dayIndex?: number;
+
+	@Field({nullable: true})
+	dayLabel?: string;
 }
 
 @ObjectType()

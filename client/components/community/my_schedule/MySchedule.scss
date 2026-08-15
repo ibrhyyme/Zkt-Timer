@@ -3017,6 +3017,48 @@
 		}
 	}
 
+	// Competition-day switch above the round tabs. Present only on a day-split
+	// ZKT competition, where each day runs its own chain of rounds.
+	&__wca-live-days {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-bottom: 0.85rem;
+	}
+
+	&__wca-live-day-tab {
+		display: inline-flex;
+		align-items: center;
+		min-height: 40px;
+		padding: 8px 16px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 999px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+
+		// Outline + text carry the selection; a solid fill read as a dark slab.
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.09);
+			color: rgb(var(--primary-color));
+			font-weight: 700;
+
+			// The raw primary is too dim to read on a dark ground.
+			.theme-dark & {
+				color: #6ea8ff;
+				border-color: rgba(var(--primary-color), 0.85);
+			}
+		}
+	}
+
 	&__wca-live-round-tab {
 		display: inline-flex;
 		align-items: center;

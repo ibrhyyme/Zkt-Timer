@@ -513,6 +513,9 @@ query wcaLiveCompetitionOverview($input: WcaLiveOverviewInput!) {
 					type
 					level
 				}
+				dayIndex
+				dayLabel
+				isFinal
 			}
 		}
 		schedule {
@@ -526,6 +529,8 @@ query wcaLiveCompetitionOverview($input: WcaLiveOverviewInput!) {
 					activityCode
 					startTime
 					endTime
+					dayIndex
+					dayLabel
 				}
 			}
 		}

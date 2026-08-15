@@ -1,16 +1,17 @@
 import React, {useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast} from 'phosphor-react';
+import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast, CalendarBlank} from 'phosphor-react';
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
 import FollowBellButton from './FollowBellButton';
+import CompetitionSchedule from './CompetitionSchedule';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
 	getEventShortName, formatRoundFormat,
 } from './shared';
 
-type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live';
+type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live' | 'schedule';
 
 export default function CompetitionDetail() {
 	const {t, i18n} = useTranslation();
@@ -43,8 +44,15 @@ export default function CompetitionDetail() {
 	TABS.push(
 		{id: 'events', label: t('my_schedule.tab_events'), icon: ListBullets, count: detail.events.length},
 		{id: 'rankings', label: t('my_schedule.tab_rankings'), icon: ChartBar},
-		{id: 'info', label: t('my_schedule.tab_info'), icon: Globe},
 	);
+
+	// The whole programme, not just the viewer's own assignments. It rides on the
+	// live overview, so it is offered wherever that exists.
+	if (detail.wcaLiveCompId) {
+		TABS.push({id: 'schedule', label: t('zkt_comp.tab_schedule'), icon: CalendarBlank});
+	}
+
+	TABS.push({id: 'info', label: t('my_schedule.tab_info'), icon: Globe});
 
 	function handleTabClick(tabId: TabId) {
 		if (tabId === 'wca-live') {
@@ -141,6 +149,7 @@ export default function CompetitionDetail() {
 						t={t}
 					/>
 				)}
+				{activeTab === 'schedule' && <CompetitionSchedule />}
 				{activeTab === 'info' && (
 					<InfoTab info={detail.info} isZkt={isZktCompetition} t={t} />
 				)}
