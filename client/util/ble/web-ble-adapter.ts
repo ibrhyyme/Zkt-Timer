@@ -51,7 +51,9 @@ export class WebBleAdapter implements BleAdapter {
 			characteristics: new Map(),
 		});
 
-		return { deviceId: id, name: device.name || '' };
+		// BluetoothDevice.id is stable for this origin across sessions, unlike the
+		// per-call `id` above, so it is what per-cube storage must key on.
+		return { deviceId: id, name: device.name || '', persistentId: device.id || undefined };
 	}
 
 	async connect(device: BleDevice, onDisconnect?: () => void): Promise<void> {

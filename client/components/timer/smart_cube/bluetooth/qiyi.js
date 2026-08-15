@@ -11,6 +11,7 @@ import Cube from 'cubejs';
 import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
+import { readCachedMac, readAnyMac, writeCachedMac, clearCachedMac, cubeStorageId } from './mac_cache';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -169,15 +170,16 @@ export default class QiYi extends SmartCube {
 			defaultMac = 'CC:A3:00:00:' + this.deviceName.slice(-4, -2) + ':' + this.deviceName.slice(-2);
 		}
 
-		// 3) Cache
-		const cached = localStorage.getItem(MAC_CACHE_KEY);
+		// 3) Cache. Keyed by device: one shared entry per brand meant a second cube of
+		// the same brand always started with the first one's MAC and failed to connect.
+		const cached = readCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device));
 		if (cached) {
 			return cached;
 		}
 
 		// 4) Ask the user via modal. Returns a normalized MAC or null (cancelled).
 		// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
-		return await requestMacFromUser({ defaultMac, deviceName: this.deviceName });
+		return await requestMacFromUser({ defaultMac: defaultMac || readAnyMac(MAC_CACHE_KEY), deviceName: this.deviceName });
 	}
 
 	async init() {
@@ -223,7 +225,8 @@ export default class QiYi extends SmartCube {
 			this._handshakeTimer = null;
 			if (this._connected) return;
 			console.warn('[qiyi] handshake timeout — wrong MAC or cube unresponsive');
-			try { localStorage.removeItem(MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			// Forget only this cube's entry; other cubes keep theirs.
+			clearCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device));
 			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
 			this.alertScanError('wrong_mac');
 		}, HANDSHAKE_TIMEOUT_MS);
@@ -238,7 +241,7 @@ export default class QiYi extends SmartCube {
 			this._handshakeTimer = null;
 		}
 		if (this._pendingMac) {
-			try { localStorage.setItem(MAC_CACHE_KEY, this._pendingMac); } catch (e) { /* ignore */ }
+			writeCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device), this._pendingMac);
 		}
 		this.alertConnected({
 			device: {

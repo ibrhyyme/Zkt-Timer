@@ -216,10 +216,26 @@ export default class Connect extends SmartCube {
 	};
 
 	disconnect = async () => {
+		// Let the cube class tear itself down first. Without this its silence timers,
+		// battery poll and pending move queue kept running against a dead link and
+		// interfered with the next cube the user connected to.
+		if (this.activeCube && typeof this.activeCube.disconnect === 'function') {
+			try {
+				await this.activeCube.disconnect();
+			} catch (e) {
+				console.warn('[BLE-CONNECT] activeCube.disconnect() failed:', e?.message);
+			}
+		}
+		this.activeCube = null;
+
 		if (!this.device || !this.adapter) {
 			return;
 		}
-		await this.adapter.disconnect(this.device);
+		try {
+			await this.adapter.disconnect(this.device);
+		} catch (e) {
+			// Already gone (the cube class may have closed it) — nothing to do.
+		}
 		this.device = null;
 	};
 }

@@ -10,6 +10,7 @@ import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
+import { readCachedMac, readAnyMac, writeCachedMac, clearCachedMac, cubeStorageId } from './mac_cache';
 import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
 
 // Simple linear regression: y = slope * x + intercept
@@ -1064,8 +1065,9 @@ export default class GAN extends SmartCube {
 	retryCount = 0;
 
 	customMacAddressProvider = async (device, isFallbackCall) => {
-		const CACHE_KEY = GAN_MAC_CACHE_KEY;
-		const cachedMac = localStorage.getItem(CACHE_KEY);
+		// Keyed by device: two cubes of the same brand used to share one entry, so the
+		// second cube always started with the first one's MAC and failed to connect.
+		const cachedMac = readCachedMac(GAN_MAC_CACHE_KEY, cubeStorageId(device));
 
 		// Capacitor Android: deviceId IS the BLE MAC address (iOS/web return null here).
 		const nativeMac = macFromNativeDeviceId(device.deviceId);
@@ -1091,7 +1093,9 @@ export default class GAN extends SmartCube {
 		let macAddress;
 		if (isFallbackCall) {
 			// Fallback (auto retries exhausted) — ask the user via modal.
-			macAddress = await requestMacFromUser({ defaultMac: cachedMac, deviceName: this.device?.name });
+			// No entry for this device: offer any MAC we have seen as a starting point,
+			// the user still has to confirm it.
+			macAddress = await requestMacFromUser({ defaultMac: cachedMac || readAnyMac(GAN_MAC_CACHE_KEY), deviceName: this.device?.name });
 		} else {
 			// On native, watchAdvertisements won't work; skip the manual prompt entirely.
 			if (isNative()) {
@@ -1214,7 +1218,8 @@ export default class GAN extends SmartCube {
 		this._handshakeTimer = setTimeout(() => {
 			this._handshakeTimer = null;
 			console.warn('[GAN] handshake timeout — wrong MAC or cube unresponsive');
-			try { localStorage.removeItem(GAN_MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			// Forget only this cube's entry; other cubes keep theirs.
+			clearCachedMac(GAN_MAC_CACHE_KEY, cubeStorageId(this.device));
 			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
 			this.alertScanError('wrong_mac');
 		}, GAN_HANDSHAKE_TIMEOUT_MS);
@@ -1228,7 +1233,7 @@ export default class GAN extends SmartCube {
 			this._handshakeTimer = null;
 		}
 		if (this._pendingMac) {
-			try { localStorage.setItem(GAN_MAC_CACHE_KEY, this._pendingMac); } catch (e) { /* ignore */ }
+			writeCachedMac(GAN_MAC_CACHE_KEY, cubeStorageId(this.device), this._pendingMac);
 			this._pendingMac = null;
 		}
 	};

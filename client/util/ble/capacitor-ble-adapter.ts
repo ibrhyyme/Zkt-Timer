@@ -73,6 +73,8 @@ export class CapacitorBleAdapter implements BleAdapter {
 			deviceId,
 			name: entry.name,
 			manufacturerData: entry.manufacturerData,
+			// Native ids are the platform MAC/UUID, already stable across connections.
+			persistentId: deviceId,
 		});
 	}
 

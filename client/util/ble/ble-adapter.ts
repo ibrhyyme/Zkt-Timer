@@ -2,6 +2,14 @@ export interface BleDevice {
 	deviceId: string;
 	name: string;
 	manufacturerData?: Map<number, DataView>;
+	/**
+	 * Identity that survives across connections, for remembering per-cube data such
+	 * as the MAC address. `deviceId` cannot be used for that on web: it is minted per
+	 * requestDevice() call, so the same cube gets a new one every time it connects.
+	 * Web fills this from BluetoothDevice.id (stable per origin), native from the
+	 * platform device id (already a MAC/UUID).
+	 */
+	persistentId?: string;
 }
 
 /**
