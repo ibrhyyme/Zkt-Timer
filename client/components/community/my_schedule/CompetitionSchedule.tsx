@@ -100,20 +100,21 @@ export default function CompetitionSchedule() {
 				</div>
 			)}
 
-			<div className={zktB('schedule-view', {timeline: true})}>
-				<ZktScheduleTimeline
-					rows={rows}
-					locale={locale}
-					showRooms={showRooms}
-					labels={{now: t('zkt_comp.schedule_now')}}
-				/>
-			</div>
+			<ZktScheduleTimeline
+				rows={rows}
+				locale={locale}
+				labels={{now: t('zkt_comp.schedule_now')}}
+			/>
 
-			<div className={zktB('schedule-view', {list: true})}>
-				{days.map(({day, rows: dayRows}) => (
-					<div key={day || 'untimed'} className={zktB('schedule-day')}>
+			{/* Blocks with no time cannot be placed on the grid; listed here so
+			    they are not simply dropped. */}
+			<div className={zktB('schedule-loose')}>
+				{days
+					.filter(({day}) => !day)
+					.map(({rows: dayRows}) => (
+					<div key="untimed" className={zktB('schedule-day')}>
 						<h3 className={zktB('schedule-day-title')}>
-							{day || t('zkt_comp.schedule_untimed')}
+							{t('zkt_comp.schedule_untimed')}
 						</h3>
 						<div className={zktB('schedule-rows')}>
 							{dayRows.map((row) => {

@@ -2857,25 +2857,25 @@ $zkt-info-green: #45d97c;
 	}
 }
 
-// ── Desktop timetable
+// ── Programme grid: one column per day, an hour rail down the left.
+// Mirrors the federation site's own schedule so the two read the same.
 .cd-zkt-comp {
 	&__timeline {
-		display: flex;
-		flex-direction: column;
-		gap: 1.75rem;
+		--zkt-hour-h: 104px;
+
+		@media (max-width: 768px) {
+			// A phone needs more room per hour or a 30-minute block has nowhere to
+			// put its title.
+			--zkt-hour-h: 128px;
+		}
 	}
 
-	&__timeline-day-title {
-		font-size: 16px;
-		font-weight: 800;
-		margin: 0 0 0.6rem 0;
-		color: rgb(var(--text-color));
-		text-transform: capitalize;
-	}
-
-	&__timeline-day-name {
-		font-weight: 700;
-		color: rgb(var(--primary-color));
+	// Two days fit a phone; more than that scrolls sideways rather than
+	// squeezing every column into an unreadable strip.
+	&__timeline-scroll {
+		overflow-x: auto;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	&__timeline-grid {
@@ -2891,57 +2891,64 @@ $zkt-info-green: #45d97c;
 		margin-bottom: 0.6rem;
 	}
 
-	// Matches the rail width below so the room headers sit over their columns.
+	// Matches the rail width below so day headings sit over their columns.
 	&__timeline-head-rail {
-		width: 64px;
+		width: 58px;
 		flex-shrink: 0;
 	}
 
-	&__timeline-head-room {
+	&__timeline-head-day {
 		flex: 1 1 0;
 		min-width: 0;
-		padding-bottom: 5px;
-		border-bottom: 3px solid rgba(var(--text-color), 0.25);
-		font-size: 13px;
+		padding-bottom: 6px;
+		border-bottom: 2px solid rgba(var(--primary-color), 0.35);
+		font-size: 15px;
 		font-weight: 800;
-		color: rgb(var(--text-color));
+		color: rgb(var(--primary-color));
 		text-align: center;
 		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+	}
+
+	&__timeline-head-weekday {
+		font-weight: 700;
 	}
 
 	&__timeline-body {
 		position: relative;
 		display: flex;
 		gap: 4px;
-		padding-left: 64px;
+		padding-left: 58px;
 	}
 
 	&__timeline-rail {
 		position: absolute;
 		top: 0;
 		left: 0;
-		width: 64px;
+		width: 58px;
 		height: 100%;
 	}
 
 	&__timeline-rail-hour {
 		position: absolute;
 		left: 0;
-		// Half the label's line-height, so the text centres on its hour line.
+		// Half the label line-height, so the text centres on its own line.
 		transform: translateY(-50%);
 		font-size: 12px;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		color: rgb(var(--text-color));
-		opacity: 0.7;
+		opacity: 0.75;
+
+		&--half {
+			font-size: 11px;
+			opacity: 0.5;
+		}
 	}
 
 	&__timeline-lines {
 		position: absolute;
 		top: 0;
-		left: 64px;
+		left: 58px;
 		right: 0;
 		height: 100%;
 		pointer-events: none;
@@ -2952,54 +2959,58 @@ $zkt-info-green: #45d97c;
 		left: 0;
 		right: 0;
 		height: 1px;
-		background: rgba(var(--text-color), 0.1);
+		background: rgba(var(--text-color), 0.12);
+
+		&--half {
+			background: rgba(var(--text-color), 0.06);
+		}
 	}
 
 	&__timeline-column {
 		position: relative;
 		flex: 1 1 0;
-		min-width: 0;
+		min-width: 140px;
+
+		@media (max-width: 768px) {
+			// Narrower than this and a block shows "Chec…" instead of "Check-in".
+			// Two days still fit a phone; a third scrolls, which beats truncating.
+			min-width: 158px;
+		}
 	}
 
+	// Solid fill, like the federation grid: the colour IS the category (room for
+	// a round, grey for everything else), so it has to carry the whole block.
 	&__timeline-block {
 		position: absolute;
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
 		overflow: hidden;
-		padding: 5px 8px;
+		padding: 6px 8px;
 		border-radius: 8px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-left: 4px solid rgba(var(--text-color), 0.35);
-		background: rgb(var(--module-color));
-		// Lifts the block off the hour lines drawn underneath it.
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-
-		&--round {
-			border-left-color: rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.12);
-		}
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
 
 		&--live {
-			border-color: rgba(var(--error-color), 0.5);
-			box-shadow: 0 0 0 1px rgba(var(--error-color), 0.4);
+			outline: 2px solid rgb(var(--error-color));
+			outline-offset: -2px;
 		}
 
-		// Too short for two lines: the title wins, the time moves inline.
+		// Too short for two lines: the title wins and the time sits beside it.
 		&--compact {
 			flex-direction: row;
 			align-items: center;
 			gap: 6px;
-			padding: 2px 8px;
-		}
-	}
+			padding: 3px 8px;
 
-	&__timeline-block-time {
-		flex-shrink: 0;
-		font-size: 11px;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
-		color: rgb(var(--primary-color));
+			.cd-zkt-comp__timeline-block-title {
+				-webkit-line-clamp: 1;
+				font-size: 12px;
+			}
+
+			.cd-zkt-comp__timeline-block-time {
+				font-size: 11px;
+			}
+		}
 	}
 
 	&__timeline-block-title {
@@ -3008,26 +3019,32 @@ $zkt-info-green: #45d97c;
 		gap: 5px;
 		min-width: 0;
 		font-size: 13px;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		white-space: nowrap;
+		font-weight: 800;
+		line-height: 1.25;
+		// Two lines, then ellipsis: an event round title with a day suffix does
+		// not fit one line in a 150px column, and a third line would push the
+		// time out of a short block.
 		overflow: hidden;
-		text-overflow: ellipsis;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
 	}
 
-	&__timeline-block-day {
-		font-size: 11px;
-		font-weight: 700;
-		color: rgb(var(--primary-color));
+	&__timeline-block-time {
+		flex-shrink: 0;
+		font-size: 12px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+		opacity: 0.9;
 	}
 
 	&__timeline-now {
 		position: absolute;
-		left: 64px;
+		left: 58px;
 		right: 0;
 		height: 2px;
 		background: rgb(var(--error-color));
-		// Above the blocks, which are the only other positioned thing here.
+		// Above the blocks, the only other positioned thing here.
 		z-index: 2;
 		pointer-events: none;
 	}
@@ -3035,8 +3052,6 @@ $zkt-info-green: #45d97c;
 	&__timeline-now-label {
 		position: absolute;
 		top: -9px;
-		// On the right end of the line: the left end sits over the hour rail and
-		// covered the very hour label the marker is pointing at.
 		right: 4px;
 		padding: 1px 6px;
 		border-radius: 999px;

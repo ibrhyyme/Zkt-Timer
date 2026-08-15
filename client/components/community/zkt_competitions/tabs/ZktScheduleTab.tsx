@@ -23,9 +23,10 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 	const rows = buildScheduleRows(detail, (n) => t('round_n', {n}), t('round_final'));
 	const days = groupRowsByDay(rows, locale, tz);
 	const rooms = collectRooms(rows);
-	// One hall (or none named) means the room says nothing: no legend, no badge,
-	// and the block accent stays the round/custom colour instead of the stage's.
+	// One hall (or none named) means the room says nothing: no legend, no badge.
 	const showRooms = rooms.length > 1;
+	// Untimed blocks cannot be placed on a grid; the list below covers them.
+	const hasTimedRows = rows.some((r) => r.start);
 
 	// The clock only exists after mount, for the same hydration reason.
 	const [now, setNow] = useState<number | null>(null);
@@ -94,30 +95,23 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 				</div>
 			)}
 
-			<div className={b('schedule-view', {timeline: true})}>
-				<ZktScheduleTimeline
-					rows={rows}
-					locale={locale}
-					timezone={tz}
-					dayNameOf={dayNameOf}
-					showRooms={showRooms}
-					labels={{now: t('schedule_now')}}
-				/>
-			</div>
+			{/* The grid is the programme on every screen, phone included — the
+			    federation's own schedule reads that way and this has to match it. */}
+			<ZktScheduleTimeline
+				rows={rows}
+				locale={locale}
+				timezone={tz}
+				labels={{now: t('schedule_now')}}
+			/>
 
-			<div className={b('schedule-view', {list: true})}>
-				{days.map(({day, rows: dayRows}) => (
-					<div key={day || 'untimed'} className={b('schedule-day')}>
-						<h3 className={b('schedule-day-title')}>
-							{day || t('schedule_untimed')}
-							{/* Only a day with its own name adds anything here; an unnamed day
-							    is labelled by the very date this heading already shows. */}
-							{daysAreNamed &&
-								(() => {
-									const name = dayNameOf(dayRows);
-									return name ? <span className={b('schedule-day-name')}> · {name}</span> : null;
-								})()}
-						</h3>
+			{/* A block with no time cannot be placed on the grid, so it is listed
+			    underneath rather than dropped. Empty on a finished schedule. */}
+			<div className={b('schedule-loose')}>
+				{days
+					.filter(({day}) => !day)
+					.map(({day, rows: dayRows}) => (
+					<div key="untimed" className={b('schedule-day')}>
+						<h3 className={b('schedule-day-title')}>{t('schedule_untimed')}</h3>
 						<div className={b('schedule-rows')}>
 							{dayRows.map((row) => {
 								const live = now !== null && isRowNow(row, now);
