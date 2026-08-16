@@ -46,8 +46,10 @@ import TimerTypePicker from '../timer/header_control/TimerTypePicker';
 import SettingsDropdown from '../quick-controls/SettingsDropdown';
 import { openModal, closeModal } from '../../actions/general';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
+import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
+import { setTimerParams } from '../timer/helpers/params';
 import { preflightChecks } from '../timer/smart_cube/preflight';
 import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
 import { cubeTimestampLinearFit, TimestampedMove } from '../../util/smart_cube_timing';
@@ -377,10 +379,15 @@ function FriendlyRoomContent() {
     const reduxSmartPhysicallySolved = useSelector((state: any) => state.timer?.smartPhysicallySolved || false);
     const reduxLastSmartMoveTime = useSelector((state: any) => state.timer?.lastSmartMoveTime || 0);
     const reduxSmartStateSeq = useSelector((state: any) => state.timer?.smartStateSeq || 0);
+    const reduxSmartCubeScanError = useSelector((state: any) => state.timer?.smartCubeScanError || null);
 
     const [smartCubeConnecting, setSmartCubeConnecting] = useState(false);
     const smartConnectRef = useRef<Connect | null>(null);
     const smartCubeSolveSubmittedRef = useRef(false);
+    // Native BLE has no OS-level device chooser: adapter.requestDevice() stays pending until
+    // BleScanningModal calls selectScannedDevice. Without the picker a room scan just hangs
+    // until the scan timeout, which is why the cube connected on the timer page but not here.
+    const smartScanModalOpenRef = useRef(false);
 
     // Use Redux state for connected status and timer
     const smartCubeConnected = reduxSmartCubeConnected;
@@ -391,34 +398,128 @@ function FriendlyRoomContent() {
     const smartCubeSolving = reduxSolving;
     const smartCubeFinalTime = reduxFinalTime;
 
+    const clearSmartBleParams = () => {
+        setTimerParams({
+            smartCubeScanning: false,
+            smartCubeConnecting: false,
+            smartCubeScanError: null,
+            smartCubeConnectStep: null,
+            smartScanDevices: [],
+        });
+    };
+
+    const closeSmartScanModal = () => {
+        if (!smartScanModalOpenRef.current) return;
+        smartScanModalOpenRef.current = false;
+        dispatch(closeModal());
+    };
+
+    const cancelSmartScan = () => {
+        smartConnectRef.current?.cancelScan?.();
+        closeSmartScanModal();
+        clearSmartBleParams();
+        setSmartCubeConnecting(false);
+    };
+
+    const retrySmartScan = () => {
+        // alertScanning resets the picker's phase; failures come back through alertScanError.
+        smartConnectRef.current?.connect()?.catch(() => { /* surfaced via alertScanError */ });
+    };
+
     const handleConnectSmartCube = async () => {
         if (smartCubeConnecting || smartCubeConnected) return;
         setSmartCubeConnecting(true);
+
+        // Assign before connecting: leaving the room mid-scan must be able to cancel it.
+        const conn = new Connect();
+        smartConnectRef.current = conn;
+
+        if (isNative()) {
+            // Wipe leftovers from an earlier session so the picker never opens on a stale error.
+            clearSmartBleParams();
+            smartScanModalOpenRef.current = true;
+            dispatch(openModal(
+                <BleScanningModal
+                    mode="smartcube"
+                    onCancel={cancelSmartScan}
+                    onRetry={retrySmartScan}
+                />,
+                {
+                    position: 'bottom',
+                    hideCloseButton: true,
+                    disableBackdropClick: true,
+                }
+            ));
+        } else {
+            const available = !!navigator.bluetooth && (await navigator.bluetooth.getAvailability());
+            if (!available) {
+                smartConnectRef.current = null;
+                setSmartCubeConnecting(false);
+                dispatch(openModal(<BluetoothErrorMessage />));
+                return;
+            }
+        }
+
+        // connect() swallows its own failures and reports them through the alert* callbacks
+        // (which feed the picker), so this never rejects — the catch is only a safety net.
         try {
-            const conn = new Connect();
-            await conn.connect(); // This opens Bluetooth device picker and waits for selection
-            smartConnectRef.current = conn;
-
-            // Connection successful
-            setSmartCubeConnecting(false);
-
+            await conn.connect();
         } catch (err) {
             console.error('Smart Cube connection failed:', err);
-            // Show user friendly error for Bluetooth cancellation or missing support
-            const msg = err.name === 'NotFoundError' || err.message?.includes('cancelled')
-                ? t('rooms.connection_cancelled')
-                : t('rooms.connection_error') + ': ' + (err.message || t('rooms.unknown_error'));
-            toastError(msg);
-            setSmartCubeConnecting(false);
         }
+        setSmartCubeConnecting(false);
     };
 
     const disconnectSmartCube = () => {
+        // Cancel first: a scan may still be pending if the user never picked a cube.
+        smartConnectRef.current?.cancelScan?.();
+        closeSmartScanModal();
+
         if (smartConnectRef.current) {
             smartConnectRef.current.disconnect();
             smartConnectRef.current = null;
         }
+
+        // Mirrors SmartCube.tsx disconnectBluetooth — without this the shared timer slice keeps
+        // reporting a connected cube and the room's bluetooth button stays green.
+        setTimerParams({
+            smartCanStart: false,
+            smartCubeConnected: false,
+            smartCubeConnecting: false,
+            smartCubeScanning: false,
+            smartCubeScanError: null,
+            smartCubeConnectStep: null,
+            smartScanDevices: [],
+            smartTurns: [],
+            smartDeviceId: '',
+            smartCurrentState: null,
+            smartGyroSupported: false,
+            smartOutOfSync: false,
+        });
+        setSmartCubeConnecting(false);
     };
+
+    // Connection established — alertConnected already closed the picker, so only drop our handle.
+    // Dispatching closeModal() again here would pop whatever modal the user opened next.
+    useEffect(() => {
+        if (smartCubeConnected) {
+            smartScanModalOpenRef.current = false;
+        }
+    }, [smartCubeConnected]);
+
+    // Surface wrong-MAC handshake failures on web (native shows the picker's error state instead).
+    // Without this the cube would silently fail after the watchdog.
+    useEffect(() => {
+        if (reduxSmartCubeScanError === 'wrong_mac' && !isNative()) {
+            toastError(t('smart_cube.wrong_mac_desc'));
+            setTimerParams({
+                smartCubeScanError: null,
+                smartCubeScanning: false,
+                smartCubeConnecting: false,
+            });
+            setSmartCubeConnecting(false);
+        }
+    }, [reduxSmartCubeScanError]);
 
     // ========== SMART CUBE TIMER LOGIC ==========
     // This replicates SmartCube.tsx checkForStartAfterTurn logic for rooms
