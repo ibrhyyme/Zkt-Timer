@@ -386,10 +386,14 @@
 			position: fixed;
 			inset: 0;
 			width: 100vw;
-			height: 100vh;
+			// The keyboard covers the bottom of the viewport instead of shrinking it (the
+			// native build runs KeyboardResize.None, and iOS Safari does the same on the
+			// web), so a full-height sheet puts its composer behind the keyboard.
+			// --keyboard-h is written by useKeyboardInset.
+			height: calc(100vh - var(--keyboard-h, 0px));
 			// dvh accounts for the browser chrome that appears and disappears while
 			// scrolling; without it the composer hides under the address bar.
-			height: 100dvh;
+			height: calc(100dvh - var(--keyboard-h, 0px));
 			max-width: none;
 			max-height: none;
 			border: none;
@@ -398,6 +402,12 @@
 			padding-bottom: var(--safe-area-inset-bottom);
 			box-sizing: border-box;
 			animation: chatSheetUp 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+		}
+
+		// The keyboard already covers the home indicator, so the inset would only add a
+		// dead strip under the composer.
+		&--keyboard .#{$namespace}-chat-bubbles__window {
+			padding-bottom: 0;
 		}
 
 		// The stack would sit on top of its own full-screen window.

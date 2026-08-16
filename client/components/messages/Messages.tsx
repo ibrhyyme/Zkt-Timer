@@ -49,6 +49,7 @@ import {
 	SetMessageReactionDocument,
 } from '../../@types/generated/graphql';
 import {useDmEditListener, useDmMessageListener, useDmReactionListener, useDmPresence, useDmUnsendListener, useTypingIndicator, useReadReceipt, refreshInbox, decrementInbox, useInbox} from '../../util/hooks/useInbox';
+import {useKeyboardInset} from '../../util/hooks/useKeyboardInset';
 import {useMe} from '../../util/hooks/useMe';
 import {getDateFromNow, getFullFormattedDate} from '../../util/dates';
 import {getTimeString} from '../../util/time';
@@ -180,6 +181,10 @@ function MessagesPage() {
 
 	const otherTyping = useTypingIndicator(activeId);
 	const otherReadAt = useReadReceipt(activeId);
+	// On a phone this screen is the whole viewport, and the keyboard covers the bottom
+	// of it without resizing the WebView. Without subtracting its height the composer,
+	// and the newest messages with it, sit behind the keyboard while you type.
+	const keyboardInset = useKeyboardInset();
 	// Throttle: one "typing" per interval instead of one per keystroke, plus a single
 	// "stopped" once the person pauses.
 	const typingSentAt = useRef(0);
@@ -339,7 +344,9 @@ function MessagesPage() {
 		if (list) {
 			list.scrollTo({top: list.scrollHeight, behavior: 'smooth'});
 		}
-	}, [messages.length]);
+		// The keyboard shortens the list as well as moving the composer: without this the
+		// last message is the one that disappears behind it the moment you tap to reply.
+	}, [messages.length, keyboardInset]);
 
 	// The sender withdrew a message: drop it from the open thread and refresh the list
 	// preview, which may have been showing the text that no longer exists.
@@ -1197,7 +1204,10 @@ function MessagesPage() {
 	}
 
 	return (
-		<div className={b({'thread-open': Boolean(activeId) || composing})}>
+		<div
+			className={b({'thread-open': Boolean(activeId) || composing, keyboard: keyboardInset > 0})}
+			style={{'--keyboard-h': `${keyboardInset}px`} as React.CSSProperties}
+		>
 			<Header path="/messages" title={t('messages.page_title')} />
 			{/* Every other page picks the mobile nav up from PageTitle. This screen draws
 			    its own header instead, so without mounting MobileNav here the edge notch

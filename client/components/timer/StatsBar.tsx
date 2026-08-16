@@ -9,7 +9,7 @@ import { getTimeString } from '../../util/time';
 import { StatsModuleBlock } from '../../../server/schemas/StatsModule.schema';
 import { openModal } from '../../actions/general';
 import HistoryModal from '../modules/history/history_modal/HistoryModal';
-import { useKeyboardOpen } from '../../util/hooks/useKeyboardOpen';
+import { useKeyboardOpen } from '../../util/hooks/useKeyboardInset';
 import block from '../../styles/bem';
 import './StatsBar.scss';
 

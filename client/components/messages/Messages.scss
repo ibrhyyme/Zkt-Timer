@@ -922,15 +922,26 @@
 		inset: 0;
 		width: 100%;
 		max-width: none;
-		height: 100vh;
+		// The keyboard covers the bottom of the viewport without shrinking it: the native
+		// build runs KeyboardResize.None + interactive-widget=overlays-content, and iOS
+		// Safari never moves the layout viewport for a keyboard either. So `100dvh` stays
+		// full height while the keyboard is up and the composer ends up behind it, which is
+		// what iOS users reported. --keyboard-h is written by useKeyboardInset.
+		height: calc(100vh - var(--keyboard-h, 0px));
 		// dvh so the composer does not slide under the browser's address bar.
-		height: 100dvh;
+		height: calc(100dvh - var(--keyboard-h, 0px));
 		min-height: 0;
 		margin: 0;
 		border-radius: 0;
 		padding-top: var(--safe-area-inset-top);
 		padding-bottom: var(--safe-area-inset-bottom);
 		box-sizing: border-box;
+
+		// The keyboard sits over the home indicator, and its reported height already covers
+		// that strip, so keeping the inset would leave a dead gap under the composer.
+		&--keyboard {
+			padding-bottom: 0;
+		}
 
 		&__list {
 			box-shadow: none;

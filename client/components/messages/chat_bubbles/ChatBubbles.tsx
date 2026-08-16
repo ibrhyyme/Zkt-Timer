@@ -26,6 +26,7 @@ import {
 	MarkConversationReadDocument,
 } from '../../../@types/generated/graphql';
 import {useDmEditListener, useDmMessageListener, useDmPresence, useDmUnsendListener, refreshInbox} from '../../../util/hooks/useInbox';
+import {useKeyboardInset} from '../../../util/hooks/useKeyboardInset';
 import {useMe} from '../../../util/hooks/useMe';
 import {isPro} from '../../../lib/pro';
 import {useGeneral} from '../../../util/hooks/useGeneral';
@@ -163,6 +164,9 @@ export default function ChatBubbles() {
 	// still be reopened from localStorage, so the window checks for itself.
 	const [threadAccepted, setThreadAccepted] = useState(false);
 	const bottomRef = useRef<HTMLDivElement>(null);
+	// On a phone the open window is the whole screen, and the keyboard covers the bottom
+	// of it without resizing the WebView, so the composer has to be lifted by hand.
+	const keyboardInset = useKeyboardInset();
 
 	const [position, setPosition] = useState<Position>(DEFAULT_POSITION);
 	// While the finger is down the stack follows it anywhere on screen. Only on release
@@ -553,7 +557,9 @@ export default function ChatBubbles() {
 			}
 		});
 		return () => cancelAnimationFrame(id);
-	}, [messages.length, openId, loading]);
+		// keyboardInset shortens the window on a phone, so the newest message has to be
+		// pulled back into view the moment the keyboard takes half the screen.
+	}, [messages.length, openId, loading, keyboardInset]);
 
 	// The messages page already is the inbox; a floating copy of it would be noise.
 	const onMessagesPage = location.pathname.startsWith('/messages');
@@ -603,10 +609,17 @@ export default function ChatBubbles() {
 				// Drives the full-screen sheet on phones, where the stack has to get out
 				// of the way of its own window.
 				open: Boolean(openBubble),
+				// Only while a window is open: the closed stack is a small floating thing
+				// that the keyboard has no reason to move.
+				keyboard: Boolean(openBubble) && keyboardInset > 0,
 			})}
 			// Vertical placement is free-form, so it cannot live in the stylesheet.
 			// translate keeps the stack centred on the point it was dropped at.
-			style={{...dragStyle, ['--chat-window-max-h' as any]: `${maxWindowHeight}px`}}
+			style={{
+				...dragStyle,
+				['--chat-window-max-h' as any]: `${maxWindowHeight}px`,
+				['--keyboard-h' as any]: `${openBubble ? keyboardInset : 0}px`,
+			}}
 		>
 			{openBubble && (
 				<div className={b('window')}>
