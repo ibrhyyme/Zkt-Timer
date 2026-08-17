@@ -4578,7 +4578,6 @@
         "title": "Akıllı Küp Telemetrisi",
         "days": "{{count}} gün",
         "refresh": "Yenile",
-        "download": "CSV indir ({{count}})",
         "hint": "Her satır bir çözüm. \"Hamle akışı\" küpün temiz veri gönderdiğini, kurtarma sütunları ise hamle kaybı yaşandığını gösterir. Kurtarma sayısı yüksek olan küpler sorunlu olanlardır.",
         "loading": "Yükleniyor...",
         "empty": "Henüz kayıt yok. Site Ayarları sayfasından telemetriyi açman gerekiyor.",
@@ -4592,6 +4591,8 @@
         "col_desync": "Senkron kaybı",
         "col_late": "Geç hamle",
         "col_median": "Ortanca gecikme",
-        "col_p95": "P95 gecikme"
+        "col_p95": "P95 gecikme",
+        "download_all": "Tüm veriyi CSV indir",
+        "exporting": "Hazırlanıyor..."
     }
 }

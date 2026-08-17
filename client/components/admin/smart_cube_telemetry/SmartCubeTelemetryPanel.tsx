@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useQuery} from '@apollo/client';
+import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import {
@@ -20,22 +20,50 @@ const WINDOWS = [1, 3, 7, 30];
  */
 export default function SmartCubeTelemetryPanel() {
 	const {t} = useTranslation();
-	const [days, setDays] = useState(3);
+	const [days, setDays] = useState(7);
+	const client = useApolloClient();
 
 	const {data, loading, refetch} = useQuery(SmartCubeTelemetrySummaryDocument, {
 		variables: {days},
 		fetchPolicy: 'cache-and-network',
 	});
 
-	const {data: rowData, refetch: refetchRows} = useQuery(SmartCubeTelemetryRowsDocument, {
-		variables: {limit: 2000},
-		fetchPolicy: 'cache-and-network',
-	});
-
 	const summary = data?.smartCubeTelemetrySummary || [];
-	const rows = rowData?.smartCubeTelemetryRows || [];
+	const [exporting, setExporting] = useState(false);
 
-	function downloadCsv() {
+	/**
+	 * Pages through the whole table rather than taking a single capped slice. A week of a
+	 * live study is well past any single-query limit, and a truncated export would quietly
+	 * answer the question with only the most recent slice of it.
+	 */
+	async function fetchAllRows(): Promise<any[]> {
+		const PAGE = 2000;
+		const all: any[] = [];
+		for (let offset = 0; ; offset += PAGE) {
+			const res = await client.query({
+				query: SmartCubeTelemetryRowsDocument,
+				variables: {limit: PAGE, offset},
+				fetchPolicy: 'network-only',
+			});
+			const page = res.data?.smartCubeTelemetryRows || [];
+			all.push(...page);
+			if (page.length < PAGE) break;
+			// Safety valve against an unbounded loop if the server ever ignores the offset.
+			if (all.length > 500_000) break;
+		}
+		return all;
+	}
+
+	async function downloadCsv() {
+		setExporting(true);
+		let rows: any[] = [];
+		try {
+			rows = await fetchAllRows();
+		} catch (e) {
+			setExporting(false);
+			return;
+		}
+		setExporting(false);
 		if (!rows.length) return;
 
 		const headers = [
@@ -65,7 +93,6 @@ export default function SmartCubeTelemetryPanel() {
 
 	function reload() {
 		void refetch({days});
-		void refetchRows({limit: 2000});
 	}
 
 	return (
@@ -86,8 +113,8 @@ export default function SmartCubeTelemetryPanel() {
 						))}
 					</div>
 					<Button gray onClick={reload}>{t('smart_telemetry.refresh')}</Button>
-					<Button primary onClick={downloadCsv} disabled={!rows.length}>
-						{t('smart_telemetry.download', {count: rows.length})}
+					<Button primary onClick={() => void downloadCsv()} disabled={exporting}>
+						{exporting ? t('smart_telemetry.exporting') : t('smart_telemetry.download_all')}
 					</Button>
 				</div>
 			</div>

@@ -372,7 +372,7 @@ type Query {
   socialPreference: SocialPreference
   dmPresence(userIds: [String]): [String]
   messageReports(page: Int, status: ReportStatus): MessageReportList
-  smartCubeTelemetryRows(cubeType: String, limit: Int): [SmartCubeTelemetryRow]
+  smartCubeTelemetryRows(offset: Int, cubeType: String, limit: Int): [SmartCubeTelemetryRow]
   smartCubeTelemetrySummary(days: Int): [SmartCubeTelemetrySummary]
 }
 

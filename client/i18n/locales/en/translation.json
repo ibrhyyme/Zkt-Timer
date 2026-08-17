@@ -4573,7 +4573,6 @@
         "title": "Smart Cube Telemetry",
         "days": "{{count}} days",
         "refresh": "Refresh",
-        "download": "Download CSV ({{count}})",
         "hint": "One row per solve. \"Move stream\" means the cube reported cleanly; the recovery columns mean a move packet was lost. Cubes with high recovery counts are the problematic ones.",
         "loading": "Loading...",
         "empty": "No records yet. Enable telemetry from the Site Config page.",
@@ -4587,6 +4586,8 @@
         "col_desync": "Out of sync",
         "col_late": "Late move",
         "col_median": "Median lag",
-        "col_p95": "P95 lag"
+        "col_p95": "P95 lag",
+        "download_all": "Download all as CSV",
+        "exporting": "Preparing..."
     }
 }

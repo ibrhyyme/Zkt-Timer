@@ -4572,7 +4572,6 @@
         "title": "智能魔方遥测",
         "days": "{{count}} 天",
         "refresh": "刷新",
-        "download": "下载 CSV ({{count}})",
         "hint": "每行一次还原。“移动流”表示魔方数据干净；恢复列表示丢包。恢复次数高的魔方是有问题的。",
         "loading": "加载中...",
         "empty": "暂无记录。请在站点配置页面启用遥测。",
@@ -4586,6 +4585,8 @@
         "col_desync": "失步",
         "col_late": "延迟移动",
         "col_median": "中位延迟",
-        "col_p95": "P95 延迟"
+        "col_p95": "P95 延迟",
+        "download_all": "下载全部 CSV",
+        "exporting": "准备中..."
     }
 }

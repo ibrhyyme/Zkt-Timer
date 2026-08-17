@@ -86,12 +86,16 @@ export class SmartCubeTelemetryResolver {
 	async smartCubeTelemetryRows(
 		@Arg('limit', () => Int, { nullable: true }) limit: number,
 		@Arg('cubeType', { nullable: true }) cubeType: string,
+		@Arg('offset', () => Int, { nullable: true }) offset: number,
 		@Ctx() context: GraphQLContext
 	): Promise<SmartCubeTelemetryRow[]> {
 		try {
 			const rows = await context.prisma.smartCubeTelemetry.findMany({
 				where: cubeType ? { cube_type: cubeType } : undefined,
-				orderBy: { created_at: 'desc' },
+				// Oldest first with a stable order: the CSV export pages through this, and a
+				// newest-first order would reshuffle pages as new solves land mid-export.
+				orderBy: [{ created_at: 'asc' }, { id: 'asc' }],
+				skip: Math.max(0, offset || 0),
 				take: Math.min(limit || 500, 5000),
 				include: { user: { select: { username: true } } },
 			});
