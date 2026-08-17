@@ -32,6 +32,10 @@ export class SmartCubeTelemetryInput {
 	@Field(() => Int, { nullable: true })
 	turn_count?: number;
 
+	/** Cube battery percentage at the moment of the event, when the cube reports one. */
+	@Field(() => Int, { nullable: true })
+	battery_level?: number;
+
 	@Field({ nullable: true })
 	is_native?: boolean;
 
@@ -81,6 +85,9 @@ export class SmartCubeTelemetryRow {
 	@Field(() => Int, { nullable: true })
 	turn_count?: number;
 
+	@Field(() => Int, { nullable: true })
+	battery_level?: number;
+
 	@Field()
 	is_native: boolean;
 
@@ -129,4 +136,15 @@ export class SmartCubeTelemetrySummary {
 
 	@Field(() => Int)
 	p95_lag_ms: number;
+
+	/**
+	 * Mean battery on solves that finished cleanly versus solves that needed a recovery.
+	 * If a weak transmitter really is behind the dropped packets, these two numbers pull
+	 * apart; if they sit on top of each other, battery is not the story.
+	 */
+	@Field(() => Int)
+	avg_battery_clean: number;
+
+	@Field(() => Int)
+	avg_battery_recovered: number;
 }

@@ -4588,6 +4588,7 @@
         "col_median": "Median lag",
         "col_p95": "P95 lag",
         "download_all": "Download all as CSV",
-        "exporting": "Preparing..."
+        "exporting": "Preparing...",
+        "col_battery": "Battery (clean/recovered)"
     }
 }

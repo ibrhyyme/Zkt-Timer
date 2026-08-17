@@ -5,6 +5,7 @@ import { toastError } from '../../../../util/toast';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../../api';
 import { closeModal } from '../../../../actions/general';
+import { setTelemetryBattery } from '../../../../util/smart_cube/telemetry';
 
 export default class SmartCube {
 	alertScanning = () => {
@@ -133,6 +134,10 @@ export default class SmartCube {
 		setTimerParams({
 			smartCubeBatteryLevel: level,
 		});
+		// Mirrored into telemetry so every recorded event carries the battery level the cube
+		// had at the time, which is what lets the study test the "low battery drops packets"
+		// theory instead of guessing at it.
+		setTelemetryBattery(level);
 	};
 
 	alertTurnCube = (move) => {

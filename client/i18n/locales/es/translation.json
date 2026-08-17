@@ -4503,6 +4503,7 @@
         "col_median": "Latencia mediana",
         "col_p95": "Latencia P95",
         "download_all": "Descargar todo en CSV",
-        "exporting": "Preparando..."
+        "exporting": "Preparando...",
+        "col_battery": "Batería (limpio/recuperado)"
     }
 }

@@ -947,6 +947,8 @@ query SmartCubeTelemetrySummary($days: Int) {
 		late_scramble_events
 		median_lag_ms
 		p95_lag_ms
+		avg_battery_clean
+		avg_battery_recovered
 	}
 }
 
@@ -962,6 +964,7 @@ query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int) {
 		detection_lag_ms
 		time_ms
 		turn_count
+		battery_level
 		is_native
 		app_version
 		created_at

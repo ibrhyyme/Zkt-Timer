@@ -4593,6 +4593,7 @@
         "col_median": "Ortanca gecikme",
         "col_p95": "P95 gecikme",
         "download_all": "Tüm veriyi CSV indir",
-        "exporting": "Hazırlanıyor..."
+        "exporting": "Hazırlanıyor...",
+        "col_battery": "Pil (temiz/kurtarma)"
     }
 }

@@ -66,6 +66,7 @@ export class SmartCubeTelemetryResolver {
 					detection_lag_ms: clampInt(e.detection_lag_ms, 600000),
 					time_ms: clampInt(e.time_ms, 3600000),
 					turn_count: clampInt(e.turn_count, 10000),
+					battery_level: clampInt(e.battery_level, 100),
 					is_native: !!e.is_native,
 					app_version: e.app_version ? String(e.app_version).slice(0, 32) : null,
 				}));
@@ -112,6 +113,7 @@ export class SmartCubeTelemetryResolver {
 				detection_lag_ms: r.detection_lag_ms ?? undefined,
 				time_ms: r.time_ms ?? undefined,
 				turn_count: r.turn_count ?? undefined,
+				battery_level: r.battery_level ?? undefined,
 				is_native: r.is_native,
 				app_version: r.app_version || undefined,
 				created_at: r.created_at,
@@ -147,7 +149,9 @@ export class SmartCubeTelemetryResolver {
 					COUNT(*) FILTER (WHERE event_type = 'out_of_sync')                             AS out_of_sync_events,
 					COUNT(*) FILTER (WHERE event_type = 'late_scramble_move')                      AS late_scramble_events,
 					COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY detection_lag_ms), 0)     AS median_lag_ms,
-					COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY detection_lag_ms), 0)    AS p95_lag_ms
+					COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY detection_lag_ms), 0)    AS p95_lag_ms,
+					COALESCE(AVG(battery_level) FILTER (WHERE detection_source = 'tracker'), 0)     AS avg_battery_clean,
+					COALESCE(AVG(battery_level) FILTER (WHERE detection_source LIKE 'facelets%'), 0) AS avg_battery_recovered
 				FROM smart_cube_telemetry
 				WHERE created_at > NOW() - ($1 || ' days')::interval
 				GROUP BY cube_type, device_name
@@ -168,6 +172,8 @@ export class SmartCubeTelemetryResolver {
 				late_scramble_events: Number(r.late_scramble_events || 0),
 				median_lag_ms: Math.round(Number(r.median_lag_ms || 0)),
 				p95_lag_ms: Math.round(Number(r.p95_lag_ms || 0)),
+				avg_battery_clean: Math.round(Number(r.avg_battery_clean || 0)),
+				avg_battery_recovered: Math.round(Number(r.avg_battery_recovered || 0)),
 			}));
 		} catch (error) {
 			console.error('[SmartCubeTelemetry] summary failed:', error);

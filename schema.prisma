@@ -515,6 +515,11 @@ model SmartCubeTelemetry {
   time_ms          Int?
   turn_count       Int?
 
+  /// Cube battery percentage at the time of the event. A weak transmitter drops more BLE
+  /// packets, so this is the column that tests whether "the cube misbehaves when low" is
+  /// real or folklore. Null when the cube never reported a level.
+  battery_level Int?
+
   is_native   Boolean @default(false)
   app_version String?
 

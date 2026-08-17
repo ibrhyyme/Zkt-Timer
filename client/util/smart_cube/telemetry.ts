@@ -29,6 +29,7 @@ interface TelemetryRow {
 	detection_lag_ms?: number;
 	time_ms?: number;
 	turn_count?: number;
+	battery_level?: number;
 	is_native?: boolean;
 	app_version?: string;
 }
@@ -46,6 +47,13 @@ let listenersBound = false;
 
 /** Identity of the cube currently connected. Set once per connection, read on every row. */
 let currentDevice: { name: string; type: string } | null = null;
+
+/**
+ * Last battery percentage the cube reported. Stamped onto every row so the study can test
+ * whether dropped move packets track a draining battery, which is the obvious suspect for
+ * a weak transmitter but has never been measured here.
+ */
+let currentBattery: number | null = null;
 
 function appVersion(): string | undefined {
 	if (typeof window === 'undefined') return undefined;
@@ -65,6 +73,12 @@ function bindLifecycleListeners(): void {
 
 export function setTelemetryDevice(name: string | null, type: string | null): void {
 	currentDevice = name ? { name, type: type || 'unknown' } : null;
+	// A new connection means a new cube; do not carry the previous one's battery over.
+	currentBattery = null;
+}
+
+export function setTelemetryBattery(level: number | null | undefined): void {
+	currentBattery = typeof level === 'number' && Number.isFinite(level) ? level : null;
 }
 
 async function flush(): Promise<void> {
@@ -88,7 +102,12 @@ async function flush(): Promise<void> {
 function enqueue(row: TelemetryRow): void {
 	bindLifecycleListeners();
 
-	buffer.push({ ...row, is_native: isNative(), app_version: appVersion() });
+	buffer.push({
+		...row,
+		battery_level: currentBattery ?? undefined,
+		is_native: isNative(),
+		app_version: appVersion(),
+	});
 	if (buffer.length > MAX_BUFFER) buffer = buffer.slice(-MAX_BUFFER);
 
 	if (buffer.length >= FLUSH_AT) {

@@ -68,7 +68,7 @@ export default function SmartCubeTelemetryPanel() {
 
 		const headers = [
 			'created_at', 'username', 'device_name', 'cube_type', 'surface', 'event_type',
-			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'is_native', 'app_version',
+			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'is_native', 'app_version',
 		];
 
 		const escape = (v: any) => {
@@ -141,6 +141,7 @@ export default function SmartCubeTelemetryPanel() {
 								<th>{t('smart_telemetry.col_late')}</th>
 								<th>{t('smart_telemetry.col_median')}</th>
 								<th>{t('smart_telemetry.col_p95')}</th>
+								<th>{t('smart_telemetry.col_battery')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -149,6 +150,11 @@ export default function SmartCubeTelemetryPanel() {
 								const total = s.via_tracker + fallbacks;
 								// Share of solves the move stream could not finish on its own.
 								const fallbackPct = total > 0 ? Math.round((fallbacks / total) * 100) : 0;
+								// How much lower the battery sat on the solves that needed a recovery.
+								// A real gap here is evidence for the weak-transmitter theory.
+								const batteryGap = s.avg_battery_recovered > 0
+									? s.avg_battery_clean - s.avg_battery_recovered
+									: 0;
 
 								return (
 									<tr key={`${s.cube_type}-${s.device_name}`} className={b('row', {warn: fallbackPct >= 10})}>
@@ -163,6 +169,11 @@ export default function SmartCubeTelemetryPanel() {
 										<td className={b('cell', {warn: s.late_scramble_events > 0})}>{s.late_scramble_events}</td>
 										<td>{s.median_lag_ms} ms</td>
 										<td className={b('cell', {warn: s.p95_lag_ms > 500})}>{s.p95_lag_ms} ms</td>
+										<td className={b('cell', {warn: batteryGap >= 10})}>
+											{s.avg_battery_recovered > 0
+												? `${s.avg_battery_clean}% / ${s.avg_battery_recovered}%`
+												: '-'}
+										</td>
 									</tr>
 								);
 							})}

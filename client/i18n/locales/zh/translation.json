@@ -4587,6 +4587,7 @@
         "col_median": "中位延迟",
         "col_p95": "P95 延迟",
         "download_all": "下载全部 CSV",
-        "exporting": "准备中..."
+        "exporting": "准备中...",
+        "col_battery": "电量（正常/恢复）"
     }
 }
