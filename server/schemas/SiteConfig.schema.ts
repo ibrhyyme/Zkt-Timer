@@ -99,6 +99,9 @@ export class SiteConfig {
 	@Field()
 	wca_backfill_enabled: boolean;
 
+	@Field()
+	smart_telemetry_enabled: boolean;
+
 	@Field(() => [FeatureOverrideEntry])
 	featureOverrides: FeatureOverrideEntry[];
 
@@ -324,6 +327,9 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	wca_backfill_enabled?: boolean;
+
+	@Field({nullable: true})
+	smart_telemetry_enabled?: boolean;
 
 	@Field(() => [FeatureOverrideEntryInput], {nullable: true})
 	featureOverrides?: FeatureOverrideEntryInput[];

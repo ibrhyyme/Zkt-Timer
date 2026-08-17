@@ -1730,7 +1730,8 @@
         "music_now_playing": "正在播放",
         "music_volume": "音量",
         "music_stop": "停止",
-        "music_rate_limit": "请稍后再试"
+        "music_rate_limit": "请稍后再试",
+        "scramble_the_cube": "打乱魔方"
     },
     "profile": {
         "remove": "移除",
@@ -1954,7 +1955,8 @@
         "algorithms": "算法",
         "promo": "促销",
         "site_config": "站点配置",
-        "media": "媒体"
+        "media": "媒体",
+        "smart_telemetry": "魔方遥测"
     },
     "feature_access": {
         "title": "特殊访问",
@@ -2642,7 +2644,8 @@
         "cube_mismatch_message": "需要先还原魔方才能继续",
         "reset_cube_state": "重置魔方状态",
         "solve_cube_to_start": "还原魔方以开始",
-        "solve_cube_for_scramble": "还原魔方以获取新的打乱！"
+        "solve_cube_for_scramble": "还原魔方以获取新的打乱！",
+        "settings": "智能魔方设置"
     },
     "smart_scramble": {
         "ready": "准备开始",
@@ -4564,5 +4567,25 @@
             "f2l_left": "F2L-L",
             "f2l_right": "F2L-R"
         }
+    },
+    "smart_telemetry": {
+        "title": "智能魔方遥测",
+        "days": "{{count}} 天",
+        "refresh": "刷新",
+        "download": "下载 CSV ({{count}})",
+        "hint": "每行一次还原。“移动流”表示魔方数据干净；恢复列表示丢包。恢复次数高的魔方是有问题的。",
+        "loading": "加载中...",
+        "empty": "暂无记录。请在站点配置页面启用遥测。",
+        "col_device": "设备",
+        "col_protocol": "协议",
+        "col_solves": "还原次数",
+        "col_users": "用户",
+        "col_tracker": "移动流",
+        "col_grace": "FACELETS 恢复",
+        "col_poll": "轮询恢复",
+        "col_desync": "失步",
+        "col_late": "延迟移动",
+        "col_median": "中位延迟",
+        "col_p95": "P95 延迟"
     }
 }

@@ -155,6 +155,7 @@ query siteConfig {
 		presence_enabled
 		pro_enabled
 		wca_backfill_enabled
+		smart_telemetry_enabled
 		featureOverrides {
 			feature
 			mode
@@ -930,5 +931,39 @@ query blockedUsers {
 query messageRecipientSearch($query: String!) {
 	messageRecipientSearch(query: $query) {
 		...PublicUserFragment
+	}
+}
+
+query SmartCubeTelemetrySummary($days: Int) {
+	smartCubeTelemetrySummary(days: $days) {
+		cube_type
+		device_name
+		solves
+		distinct_users
+		via_tracker
+		via_grace
+		via_poll
+		out_of_sync_events
+		late_scramble_events
+		median_lag_ms
+		p95_lag_ms
+	}
+}
+
+query SmartCubeTelemetryRows($limit: Int, $cubeType: String) {
+	smartCubeTelemetryRows(limit: $limit, cubeType: $cubeType) {
+		id
+		username
+		device_name
+		cube_type
+		surface
+		event_type
+		detection_source
+		detection_lag_ms
+		time_ms
+		turn_count
+		is_native
+		app_version
+		created_at
 	}
 }

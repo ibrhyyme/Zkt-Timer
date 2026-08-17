@@ -1,4 +1,5 @@
 import type {KPattern, KPatternData, KPuzzle} from 'cubing/kpuzzle';
+import {isValidFacelets} from '../smart_cube/facelets';
 
 // Lazy-loaded cubing modules (ESM-only, cannot be statically imported in SSR)
 let KPUZZLE_333: KPuzzle;
@@ -145,9 +146,15 @@ export function patternToGANFacelets(pattern: KPattern): string {
 
 /**
  * Convert Kociemba facelet string (54 characters) to cubing.js KPattern.
+ *
+ * Rejects malformed payloads up front. A half-decoded FACELETS packet (byte offsets differ
+ * between GAN firmware revisions) still has 54 characters, and without this check its
+ * unknown stickers become -1 indices that build a plausible-looking but wrong pattern —
+ * which then re-anchors the trainer's match and desyncs it silently.
  */
 export function faceletsToPattern(facelets: string): KPattern | null {
 	if (!KPUZZLE_333) return null;
+	if (!isValidFacelets(facelets)) return null;
 
 	const stickers: number[] = [];
 	facelets.match(/.{9}/g)?.forEach((face) => {

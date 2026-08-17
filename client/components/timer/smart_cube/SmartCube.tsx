@@ -13,9 +13,8 @@ import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import { initSmartSolver, IncrementalCompressor, matchScrambleWithCommutative, invertMove } from '../../../util/smart_scramble';
-import { initSolverWorker, solveAsync } from '../../../util/solver_worker_manager';
-import { getReverseTurns } from '../../../util/solve/turns';
+import { initSmartSolver } from '../../../util/smart_scramble';
+import { initSolverWorker } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
@@ -26,7 +25,7 @@ import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
 import { analyzeCurrentState } from '../../../util/solve/live_analysis_core';
-import { endTimer, startTimer, startInspection, getSmartCubeClockSkew } from '../helpers/events';
+import { endTimer, startTimer, startInspection } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
 import { saveSolve } from '../helpers/save';
@@ -42,19 +41,15 @@ import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
 import { onVisibilityChange } from '../../../util/app-visibility';
-import type { TwistyPlayer } from 'cubing/twisty';
-import * as THREE from 'three';
+import { SmartSolveEngine, SmartEngineEvent } from '../../../util/smart_cube';
+import { recordEngineEvent } from '../../../util/smart_cube/telemetry';
+import SmartCubeView, { SmartCubeViewHandle } from './cube_view/SmartCubeView';
 
 const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
-// A move stamped within this window of the scramble being declared complete came
-// from the scramble itself, not from the solve. A human needs a few hundred ms to
-// let go of the last scramble turn and begin solving, so the window stays narrow.
-const LATE_SCRAMBLE_MOVE_WINDOW_MS = 50;
-// Safety valve: never swallow more than this many turns per scramble, so a skewed
-// cube clock cannot stop the timer from ever starting.
-const MAX_LATE_SCRAMBLE_DROPS = 3;
+// The late-scramble-move window and drop cap now live with the rule that uses them,
+// in client/util/smart_cube/solve_engine.ts.
 
 // Scramble-complete beep. On iOS, route through the native AVAudioPlayer
 // (.ambient + .mixWithOthers) so background music keeps playing; fall back to
@@ -78,9 +73,7 @@ const _log = (cat: string, color: string, ...args: any[]) => {
 	console.log(`%c[SC ${cat}] %c${ts}ms`, `color:${color};font-weight:bold`, 'color:gray', ...args);
 };
 const dbgMove = (...a: any[]) => _log('MOVE', '#2196F3', ...a);
-const dbgMatch = (...a: any[]) => _log('MATCH', '#4CAF50', ...a);
 const dbgCorr = (...a: any[]) => _log('CORR', '#FF5722', ...a);
-const dbgFace = (...a: any[]) => _log('FACE', '#9C27B0', ...a);
 const dbgTimer = (...a: any[]) => _log('TIMER', '#FF9800', ...a);
 const dbgReset = (...a: any[]) => _log('RESET', '#607D8B', ...a);
 const dbgSync = (...a: any[]) => _log('SYNC', '#00BCD4', ...a);
@@ -90,18 +83,6 @@ export default function SmartCube() {
 	const dispatch = useDispatch();
 	const context = useContext(TimerContext);
 
-	const containerRef = useRef<HTMLDivElement>(null);
-	const twistyPlayerRef = useRef<TwistyPlayer | null>(null);
-
-	// References for Gyro Logic
-	const twistySceneRef = useRef<THREE.Scene | null>(null);
-	const twistyVantageRef = useRef<any>(null);
-	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
-	const HOME_ORIENTATION = useRef(new THREE.Quaternion().setFromEuler(new THREE.Euler(15 * Math.PI / 180, -20 * Math.PI / 180, 0)));
-	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
-	const animFrameRef = useRef<number | null>(null);
-
-	const cubejs = useRef(new Cube());
 	const connect = useRef(new Connect());
 
 	const scrambleCompletedAtRef = useRef<Date | null>(null);
@@ -227,17 +208,26 @@ export default function SmartCube() {
 	}, [scramble]);
 
 	const targetFaceletsRef = useRef<string | null>(null);
-	const compressorRef = useRef(new IncrementalCompressor());
+
+	// ── Shared solve engine ──
+	// Scramble matching, correction hints, solve detection and the safety nets all live in
+	// client/util/smart_cube now, so the timer, friendly rooms and any future surface make
+	// the same decisions from the same code instead of drifting copies.
+	const engineRef = useRef<SmartSolveEngine | null>(null);
+	const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
+
+	if (!engineRef.current) {
+		engineRef.current = new SmartSolveEngine((event) => engineEventRef.current(event));
+	}
 
 
 
 
-	// Reset incremental state when scramble or offset changes (new correction applied)
+	// A new scramble (or a correction applied mid-scramble) invalidates the previous
+	// completion, so the timer cannot start off a stale stamp. The engine resets its own
+	// compressor and offsets inside setScramble.
 	useEffect(() => {
-		dbgCorr(`COMPRESSOR RESET | scramble: ${scramble?.slice(0, 40)}... | offset: ${smartTurnOffset}`);
-		compressorRef.current.reset();
-		validationCacheRef.current.lastValidatedLength = 0;
-		// When new scramble arrives, old scramble completion is invalidated — prevent timer from starting accidentally
+		dbgCorr(`SCRAMBLE RESET | scramble: ${scramble?.slice(0, 40)}... | offset: ${smartTurnOffset}`);
 		scrambleCompletedAtRef.current = null;
 	}, [scramble, smartTurnOffset]);
 
@@ -268,499 +258,117 @@ export default function SmartCube() {
 		}
 	}, [scramble, originalScramble]);
 
+	// Assigned every render so the engine, created once, always reaches the current closure.
+	engineEventRef.current = (event: SmartEngineEvent) => {
+		// Field study: batched client-side, dropped server-side unless the site flag is on.
+		recordEngineEvent(event, 'timer');
 
-	// Initialize TwistyPlayer
-	useEffect(() => {
-		if (!containerRef.current) return;
+		switch (event.type) {
+			case 'SCRAMBLE_COMPLETE': {
+				scrambleCompletedAtRef.current = new Date(event.at);
+				setTimerParams({ smartCanStart: true, smartUndoMoves: null });
 
-		// Clean up previous player
-		containerRef.current.innerHTML = '';
-		if (animFrameRef.current) {
-			cancelAnimationFrame(animFrameRef.current);
-		}
-
-		let twisty: TwistyPlayer;
-		let cancelled = false;
-
-		const initTwisty = async () => {
-			try {
-				const { TwistyPlayer } = await import('cubing/twisty');
-				if (cancelled) return;
-
-				twisty = new TwistyPlayer({
-					puzzle: '3x3x3',
-					visualization: 'PG3D',
-					alg: '',
-					experimentalSetupAnchor: 'start',
-					background: 'none',
-					controlPanel: 'none',
-					hintFacelets: 'none',
-					experimentalDragInput: 'none',
-					cameraLatitude: 0,
-					cameraLongitude: 0,
-					cameraLatitudeLimit: 0,
-					tempoScale: 5  // Same as reference (gan-cube-sample) — visible but fast animation
-				});
-
-				if (containerRef.current) {
-					containerRef.current.appendChild(twisty);
-					twisty.style.width = "100%";
-					twisty.style.height = "100%";
-					twistyPlayerRef.current = twisty;
+				if (!audioThrottleRef.current) {
+					audioThrottleRef.current = true;
+					setTimeout(() => { audioThrottleRef.current = false; }, 2000);
+					playScrambleCompleteSound();
 				}
 
-				// Start Animation Loop for Gyro
-				let animRunning = true;
-
-				const animate = async () => {
-					if (cancelled || !animRunning) return;
-
-					if (!twistySceneRef.current || !twistyVantageRef.current) {
-						try {
-							const vantageList = await (twisty as any).experimentalCurrentVantages();
-							twistyVantageRef.current = [...vantageList][0];
-							twistySceneRef.current = await twistyVantageRef.current.scene.scene();
-						} catch (e) {
-							// Scene not ready yet
-						}
-					}
-
-					if (twistySceneRef.current && twistyVantageRef.current) {
-						twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
-						twistyVantageRef.current.render();
-					}
-
-					animFrameRef.current = requestAnimationFrame(animate);
-				};
-				animate();
-
-				// Stop render loop when moving to background, resume when returning to foreground
-				unsubVisibility = onVisibilityChange((visible) => {
-					if (visible && !animRunning && !cancelled) {
-						animRunning = true;
-						animate();
-					} else if (!visible) {
-						animRunning = false;
-						if (animFrameRef.current) {
-							cancelAnimationFrame(animFrameRef.current);
-							animFrameRef.current = null;
-						}
-					}
-				});
-
-			} catch (error) {
-				console.error("Failed to load TwistyPlayer:", error);
-			}
-		};
-
-		let unsubVisibility: (() => void) | undefined;
-		initTwisty();
-
-		return () => {
-			cancelled = true;
-			unsubVisibility?.();
-			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-			if (containerRef.current) containerRef.current.innerHTML = '';
-		};
-	}, []);
-
-	// Apply turns to TwistyPlayer - WITHOUT Animation Await (Fire and Forget)
-	const appliedTurnsRef = useRef<number>(0);
-	// Validation cache to prevent duplicate checks
-	const validationCacheRef = useRef({
-		lastValidatedLength: 0,
-		lastMatchedIndex: 0,
-	});
-
-	// ── Logical tracker (cubejs) synchronisation ──
-	// Solve detection compares the tracker against smartSolvedState, so the tracker
-	// must mirror the physical cube at all times. Rebuilding it only from the
-	// smartTurns effect below is not enough: that path is gated on
-	// appliedTurnsRef > 0 and never runs when a scramble completes without a single
-	// BLE move (cube already sitting at the target state, e.g. after a reconnect).
-	// The tracker then stays solved and any cancelling pair like R R' registers as a
-	// finished solve.
-	function resetTrackerBookkeeping() {
-		// Mark every turn recorded so far as already accounted for. Zeroing this
-		// instead would make the smartTurns effect replay the whole backlog onto the
-		// freshly built tracker — a real case after a Bluetooth drop, where the turns
-		// from before the drop are still in Redux.
-		appliedTurnsRef.current = smartTurnsRef.current?.length || 0;
-		validationCacheRef.current.lastValidatedLength = 0;
-		validationCacheRef.current.lastMatchedIndex = 0;
-		compressorRef.current.reset();
-	}
-
-	function setTrackerFromScramble(scrambleStr: string): boolean {
-		const moves = (scrambleStr || '').split(' ').filter(m => m.trim());
-		if (!moves.length) return false;
-		try {
-			const fresh = new Cube();
-			for (const move of moves) fresh.move(move);
-			cubejs.current = fresh;
-			resetTrackerBookkeeping();
-			return true;
-		} catch (e) {
-			console.warn('[SmartCube] tracker rebuild from scramble failed:', e);
-			return false;
-		}
-	}
-
-	function setTrackerToSolved() {
-		cubejs.current = new Cube();
-		resetTrackerBookkeeping();
-		if (twistyPlayerRef.current) {
-			twistyPlayerRef.current.alg = '';
-			// Scene changed — reset refs
-			twistySceneRef.current = null;
-			twistyVantageRef.current = null;
-		}
-	}
-
-	// A FACELETS payload can be malformed (byte-offset differences between GAN
-	// firmware revisions). Verify it describes a real cube before trusting it over
-	// the tracker we already have.
-	function isValidFacelets(facelets: string): boolean {
-		if (!facelets || facelets.length !== 54) return false;
-		const counts: Record<string, number> = {};
-		for (const ch of facelets) counts[ch] = (counts[ch] || 0) + 1;
-		return ['U', 'R', 'F', 'D', 'L', 'B'].every(f => counts[f] === 9);
-	}
-
-	// Bring the 3D view to a given facelets state. The player is driven by moves,
-	// so the state is reached by replaying the inverse of its solution.
-	async function syncVisualToFacelets(facelets: string) {
-		const twisty = twistyPlayerRef.current;
-		if (!twisty) return;
-		try {
-			twisty.alg = '';
-			twistySceneRef.current = null;
-			twistyVantageRef.current = null;
-			if (facelets === DEFAULT_SOLVED_STATE) return;
-			const solution = await solveAsync(Cube.fromString(facelets).toJSON());
-			// The solve runs in a worker; if the cube moved meanwhile, replaying the
-			// setup would fight with the moves already applied by the turns effect.
-			if (smartCurrentStateRef.current !== facelets) return;
-			const setupMoves = getReverseTurns((solution || '').trim());
-			for (const move of setupMoves) {
-				(twisty as any).experimentalAddMove(move, { cancel: false });
-			}
-		} catch (e) {
-			console.warn('[SmartCube] visual sync to physical state failed:', e);
-		}
-	}
-
-	function syncTrackerToFacelets(facelets: string): boolean {
-		if (!isValidFacelets(facelets)) {
-			console.warn('[SmartCube] ignoring malformed FACELETS during sync');
-			return false;
-		}
-		try {
-			cubejs.current = Cube.fromString(facelets);
-		} catch (e) {
-			console.warn('[SmartCube] FACELETS parse failed during sync:', e);
-			return false;
-		}
-		resetTrackerBookkeeping();
-		void syncVisualToFacelets(facelets);
-		return true;
-	}
-
-	useEffect(() => {
-		if (smartTurns.length > appliedTurnsRef.current && twistyPlayerRef.current) {
-
-			// BATCH PROCESSING: Apply all new turns at once
-			const newTurns = smartTurns.slice(appliedTurnsRef.current);
-
-			// [BATCH] race signature: if scramble finished + multiple moves in same tick
-			// strongest hypothesis for issue 2 (timer auto-start)
-			dbgMove(`BATCH count=${newTurns.length} | new=[${newTurns.map(t => t.turn).join(' ')}] | total=${smartTurns.length} | scrambleCompleted=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt}`);
-			if (newTurns.length > 1 && scrambleCompletedAtRef.current && !timeStartedAt) {
-				dbgMove(`!!! BATCH RACE SUSPECT — ${newTurns.length} moves in same tick + scramble finished + timer not started yet. One of these may be counted as "first solve move"!`);
+				resetMoves(false, true);
+				if (inspectionEnabled) {
+					startInspection(context);
+				}
+				break;
 			}
 
-			newTurns.forEach(turnObj => {
-				// Send to TwistyPlayer
-				(twistyPlayerRef.current as any).experimentalAddMove(turnObj.turn, { cancel: false });
+			case 'UNDO_MOVES':
+				setTimerParams({ smartUndoMoves: event.moves });
+				break;
 
-				// Sync Logical State
-				cubejs.current.move(turnObj.turn);
-			});
+			case 'SCRAMBLE_PROGRESS':
+				// The scramble display used to run its own matcher over the raw turn stream,
+				// which could disagree with the engine — a stray turn after a solve showed
+				// the first move as half-done on a physically solved cube.
+				setTimerParams({ smartMatchStatus: event.matchStatus });
+				break;
 
-			dbgMove(`+${newTurns.length} moves:`, newTurns.map(t => t.turn).join(' '),
-				`| total: ${smartTurns.length} | cubejs: ${cubejs.current.asString().slice(0, 18)}...`);
-
-			appliedTurnsRef.current = smartTurns.length;
-
-			// VALIDATION: Only call once after batch (not per move)
-			checkForStartAfterTurnBatch(smartTurns);
-
-			const isSolved = cubejs.current.asString() === smartSolvedState;
-			if (isSolved || smartPhysicallySolved) {
-				dbgTimer(`SOLVE DETECT | cubejs_solved: ${isSolved} | facelets_solved: ${smartPhysicallySolved} | timeStartedAt: ${!!timeStartedAt}`);
+			case 'TIMER_START': {
+				startTimer(event.startedAt);
+				scrambleCompletedAtRef.current = null;
+				setInspectionTime(Math.floor((event.inspectionMs / 1000) * 100) / 100);
+				setTimerParams({ smartCanStart: false });
+				break;
 			}
-			// Fallback: cubejs incorrect (cascading gap) but physical cube is solved
-			if (!useSpaceWithSmartCube && (isSolved || (smartPhysicallySolved && timeStartedAt)) && smartTurns.length) {
-				// Use last move timestamp in both paths (prevents display overshoot)
-				const lastMove = smartTurns[smartTurns.length - 1];
-				const endTs = lastMove?.completedAt || lastSmartMoveTime || undefined;
-				if (needsCubeReset) {
-					// Post-abort: physical cube solved, reset and generate new scramble
-					resetMoves(true, false, endTs);
+
+			case 'SOLVE_COMPLETE': {
+				const { result } = event;
+				if (needsCubeResetRef.current) {
+					// Post-abort: the physical cube is solved again, so take a fresh scramble.
+					resetMoves(true, false, result.endedAt);
 					setNeedsCubeReset(false);
 					resetScramble(context);
 				} else {
-					resetMoves(false, false, endTs);
+					resetMoves(false, false, result.endedAt);
 				}
+				break;
 			}
 
-			// NOTE: startState is now set inside resetMoves(isScrambleFinish=true).
-			// Setting it here after solve finishes is incorrect: cubejs becomes solved state and
-			// phase tracking breaks for the next solve.
-		} else if (smartTurns.length === 0 && appliedTurnsRef.current > 0) {
-			// Reset detected
-			cubejs.current = new Cube();
+			case 'LATE_SCRAMBLE_MOVE':
+				// Belongs to the scramble, not the solve. Clearing lets the engine rebuild
+				// its tracker from the scramble instead of counting it as a solve move.
+				setTimerParams({ smartTurns: [] });
+				break;
 
-			if (preservedScrambleRef.current) {
-				// Scramble finished, initialize to scrambled state
-				// We DO NOT reset TwistyPlayer.alg here. We want to keep the visual state (orientation/rotations) as is.
-				// The user just finished scrambling, so the visual state IS the scrambled state.
-
-				// Initialize with scramble moves — do not trust FACELETS
-				// (on some cube models FACELETS parsing can be incorrect, move tracking is more reliable)
-				const targetScramble = originalScrambleRef.current || preservedScrambleRef.current;
-				const moves = targetScramble.split(' ').filter(m => m.trim());
-				for (const move of moves) {
-					cubejs.current.move(move);
-				}
-			} else {
-				// Solve finished or manual reset, initialize to solved state
-				if (twistyPlayerRef.current) {
-					twistyPlayerRef.current.alg = '';
-					// Scene changed — reset refs
-					twistySceneRef.current = null;
-					twistyVantageRef.current = null;
-				}
-			}
-
-			appliedTurnsRef.current = 0;
-			validationCacheRef.current.lastValidatedLength = 0;
-			validationCacheRef.current.lastMatchedIndex = 0;
-			compressorRef.current.reset();
-			// Update startState only if NOT already set by resetMoves(isScrambleFinish=true).
-			// If preservedScrambleRef exists, resetMoves already set correct startState —
-			// overwriting here creates race condition with stale smartCurrentState.
-			if (!preservedScrambleRef.current) {
-				setStartState(cubejs.current.asString());
-			}
-		}
-	}, [smartTurns, smartSolvedState]);
-
-	// FACELETS safety net: stop timer if physical cube is solved
-	// Does NOT touch cubejs - only checks physical state
-	//
-	// RACE CONDITION PROTECTION: BLE move event and FACELETS event arrive in parallel.
-	// FACELETS sometimes arrives FIRST (cube state changed) → move event not yet in Redux →
-	// resetMoves would commit smartTurns incomplete → last move not recorded, carries to next
-	// scramble and would be "undone".
-	// Wait 350ms: if BLE move arrives within this time, useEffect[smartTurns] automatically
-	// triggers resetMoves (timeStartedAt resets → this setTimeout guard fails).
-	// If not, FACELETS engages as fallback anyway.
-	useEffect(() => {
-		if (
-			!smartPhysicallySolved ||
-			!timeStartedAt ||
-			useSpaceWithSmartCube
-		) {
-			return;
-		}
-
-		dbgFace(`FACELETS SOLVE SAFETY NET armed (350ms) | smartStateSeq: ${smartStateSeq} | lastSmartMoveTime: ${lastSmartMoveTime} | now: ${Date.now()} | delay: ${lastSmartMoveTime ? Date.now() - lastSmartMoveTime : 'N/A'}ms`);
-
-		const tid = setTimeout(() => {
-			// If timeStartedAt still exists after 350ms, BLE move event did not arrive
-			// — commit via FACELETS as fallback.
-			dbgFace(`FACELETS SOLVE SAFETY NET fire (BLE move delayed)`);
-			if (needsCubeReset) {
-				resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
-				setNeedsCubeReset(false);
-				resetScramble(context);
-			} else {
-				resetMovesRef.current?.(false, false, lastSmartMoveTimeRef.current || undefined);
-			}
-		}, 350);
-
-		return () => clearTimeout(tid);
-	}, [smartStateSeq, timeStartedAt]);
-
-	// FACELETS scramble completion safety net:
-	// smartCurrentState is updated from BLE on each FACELETS event.
-	// If physical cube reaches target state, complete without waiting for move matcher.
-	useEffect(() => {
-		if (!smartCurrentState || !targetFaceletsRef.current) return;
-		if (timeStartedAt || !scramble) return; // do not run during solve or when no scramble exists
-		if (useSpaceWithSmartCube || smartCubeConnecting) return;
-		// Do not retrigger if scramble already completed (via correction or matcher)
-		if (scrambleCompletedAtRef.current) return;
-
-		// If cube is solved during correction mode → restore original scramble
-		// Scenario: mixed cube connected → correction path shown → user could not complete
-		// (TOO_MANY) → solved cube → now track original scramble from solved cube
-		if (smartCurrentState === DEFAULT_SOLVED_STATE && originalScramble && scramble !== originalScramble) {
-			dbgSync('Cube solved during correction — restoring original scramble');
-			setTimerParams({
-				scramble: originalScramble,
-				smartTurnOffset: smartTurns.length,
-				smartUndoMoves: null,
-			});
-			return;
-		}
-
-		if (smartCurrentState === targetFaceletsRef.current) {
-			dbgFace('FACELETS SCRAMBLE SAFETY NET triggered — physical cube at target (useEffect)',
-				`\n  facelets: ${smartCurrentState.slice(0, 27)}...`,
-				`\n  target:   ${targetFaceletsRef.current.slice(0, 27)}...`,
-				`\n  scramble: ${scramble?.slice(0, 50)}`,
-				`\n  origScramble: ${originalScramble || 'null'}`
-			);
-
-			scrambleCompletedAtRef.current = new Date();
-
-			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
-
-			if (!audioThrottleRef.current) {
-				audioThrottleRef.current = true;
-				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				playScrambleCompleteSound();
-			}
-
-			resetMoves(false, true);
-			if (inspectionEnabled) {
-				startInspection(context);
-			}
-		}
-	}, [smartStateSeq]);
-
-	// Polling safety: check every 1s if physical cube is solved (bypasses React dependency issues)
-	useEffect(() => {
-		if (!timeStartedAt || useSpaceWithSmartCube) return;
-
-		const interval = setInterval(() => {
-			if (smartPhysicallySolvedRef.current) {
-				dbgFace('POLLING SAFETY NET — physical cube solved, stopping timer');
-				if (needsCubeResetRef.current) {
-					resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
+			case 'OUT_OF_SYNC':
+				if (event.out) {
+					// Any "scramble done" stamp left from before belongs to a state we can
+					// no longer vouch for.
+					scrambleCompletedAtRef.current = null;
+					setTimerParams({ smartCanStart: false, smartOutOfSync: true });
 				} else {
-					resetMovesRef.current?.(false, false, lastSmartMoveTimeRef.current || undefined);
+					setTimerParams({ smartOutOfSync: false });
 				}
-			}
-		}, 1000);
+				break;
 
-		return () => clearInterval(interval);
-	}, [timeStartedAt, useSpaceWithSmartCube]);
-
-	// Direct Gyro Subscription (Bypassing Redux)
-	useEffect(() => {
-		if (!connect.current || !connect.current.activeCube) return;
-
-		const activeCube = connect.current.activeCube as any;
-
-		// If the active cube supports direct subscription (added in gan.js)
-		if (activeCube && typeof activeCube.subscribeGyro === 'function') {
-			// Announced here rather than when the first packet arrives. A stationary
-			// cube sends nothing, so waiting for data would hide the reset action until
-			// the user happened to move the cube, which is the opposite of when they
-			// need it. Resetting the gyro on a cube that has none is harmless: it only
-			// clears a basis that was never set.
-			setTimerParams({ smartGyroSupported: true });
-
-			const unsubscribe = activeCube.subscribeGyro((event: any) => {
-				if (event.type === 'GYRO' && event.quaternion) {
-					const { x: qx, y: qy, z: qz, w: qw } = event.quaternion;
-					const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
-
-					if (!gyroBasisRef.current) {
-						// Full basis: capture complete first reading and invert
-						// Same approach as reference (gan-cube-sample)
-						gyroBasisRef.current = quat.clone().conjugate();
-					}
-
-					cubeQuaternion.current.copy(quat.premultiply(gyroBasisRef.current).premultiply(HOME_ORIENTATION.current));
-				}
-			});
-
-			return () => {
-				unsubscribe();
-			};
+			case 'TRACKER_RESYNCED':
+				// The 3D view is driven by moves, so it is now showing a state that never
+				// happened. Replay it to the state the cube actually reports.
+				cubeViewRef.current?.syncToFacelets(event.facelets);
+				break;
 		}
+	};
 
-		// No gyro on this connection. Stated rather than left alone: a Bluetooth drop
-		// does not run the disconnect handler, so without this a cube with a gyroscope
-		// followed by one without would leave the reset action showing for a cube that
-		// cannot use it. The effect owns the answer for the current connection.
-		setTimerParams({ smartGyroSupported: false });
-	}, [smartCubeConnected]); // Re-subscribe if connection changes
-
-	// ── Initial Sync: when cube connects, read physical state and calculate scramble ──
-	const initialSyncDoneRef = useRef(false);
+	// ── Engine inputs ──
+	useEffect(() => {
+		if (useSpaceWithSmartCube) return;
+		// Matching follows the displayed scramble (which may be a correction path); the
+		// facelets target always follows the original.
+		engineRef.current?.setScramble(scramble || '', originalScramble || scramble || '');
+	}, [scramble, originalScramble, useSpaceWithSmartCube]);
 
 	useEffect(() => {
-		if (!smartCubeConnected || !smartCurrentState || !scramble) return;
-		if (timeStartedAt) return; // Do not run during solve
-		if (initialSyncDoneRef.current) return;
-		initialSyncDoneRef.current = true;
-
-		const SOLVED = DEFAULT_SOLVED_STATE;
-		const currentFacelets = smartCurrentState;
-
-		if (currentFacelets === SOLVED) {
-			dbgSync('Cube SOLVED when connected — tracker reset to solved');
-			setTrackerToSolved();
-			setTimerParams({ smartOutOfSync: false });
-			return;
-		}
-
-		// Cube reports a scrambled state. This is the normal situation after a
-		// reconnect: the cube keeps its own state and never saw the moves made while
-		// Bluetooth was off, so it can disagree with the cube in the user's hands.
-		// Mirror what the cube reports instead of assuming solved — a tracker that
-		// starts solved turns any cancelling pair into a bogus finished solve.
-		if (!syncTrackerToFacelets(currentFacelets)) {
-			dbgSync(`FACELETS unusable (${currentFacelets.slice(0, 18)}...) — tracker left untouched`);
-			return;
-		}
-
-		const atTarget = !!targetFaceletsRef.current && currentFacelets === targetFaceletsRef.current;
-		dbgSync(`Connected with scrambled cube — tracker synced | atScrambleTarget: ${atTarget}`);
-
-		if (atTarget) {
-			// Cube is exactly at the scramble target; the normal completion path can
-			// take over from here.
-			setTimerParams({ smartOutOfSync: false });
-			return;
-		}
-
-		// Neither solved nor at the scramble target. Any "scramble done" stamp left
-		// from before the disconnect belongs to a state we can no longer vouch for.
-		scrambleCompletedAtRef.current = null;
-		setTimerParams({ smartCanStart: false, smartOutOfSync: true });
-	}, [smartCubeConnected, smartCurrentState]);
-
-	// Clear the out-of-sync warning once the cube reports a state we can work with
-	// again (user solved it, or marked it solved).
-	useEffect(() => {
-		if (!smartOutOfSync || !smartCurrentState) return;
-		if (smartCurrentState === DEFAULT_SOLVED_STATE || smartCurrentState === targetFaceletsRef.current) {
-			setTimerParams({ smartOutOfSync: false });
-		}
-	}, [smartStateSeq, smartOutOfSync]);
-
-	// Reset initial sync when disconnected (so it runs again on reconnect)
-	useEffect(() => {
-		if (!smartCubeConnected) {
-			initialSyncDoneRef.current = false;
-		}
+		engineRef.current?.setConnected(smartCubeConnected);
 	}, [smartCubeConnected]);
+
+	useEffect(() => {
+		if (useSpaceWithSmartCube) return;
+		engineRef.current?.pushTurns(smartTurns);
+	}, [smartTurns, useSpaceWithSmartCube]);
+
+	useEffect(() => {
+		if (useSpaceWithSmartCube || !smartCurrentState) return;
+		engineRef.current?.pushFacelets(smartCurrentState);
+	}, [smartStateSeq, useSpaceWithSmartCube]);
+
+	useEffect(() => () => engineRef.current?.dispose(), []);
+
+
+	// 3D view, gyro and the move mirror live in <SmartCubeView>, shared with friendly rooms.
+	const cubeViewRef = useRef<SmartCubeViewHandle>(null);
+
+	// Initial sync, out-of-sync detection and the FACELETS re-anchor all live in the
+	// engine (reconcileTracker). It runs on every facelets packet rather than once per
+	// connection, so a cube that drifts mid-session recovers too.
 
 	useEffect(() => {
 		return () => {
@@ -836,190 +444,8 @@ export default function SmartCube() {
 	const audioThrottleRef = useRef(false);
 
 	// Batch validation wrapper with cache
-	function checkForStartAfterTurnBatch(currentTurns: any[]) {
-		// Skip if scrambling hasn't started or cube needs reset (DNF/abort — user is solving cube, not scrambling)
-		if (!scramble || timeStartedAt || needsCubeReset) return;
-
-		// CACHE CHECK: Skip if no new moves since last validation
-		if (currentTurns.length === validationCacheRef.current.lastValidatedLength) {
-			return;
-		}
-
-		// Perform validation (existing logic)
-		checkForStartAfterTurn(currentTurns);
-
-		// Update cache
-		validationCacheRef.current.lastValidatedLength = currentTurns.length;
-	}
-
-	function checkForStartAfterTurn(currentTurns: any[]) {
-		if (useSpaceWithSmartCube || smartCubeConnecting) return;
-
-		// [CHECK_START] Entry — track which state we enter with on each checkForStartAfterTurn call
-		const lastTurn = currentTurns[currentTurns.length - 1];
-		dbgTimer(`CHECK_START entry | currentTurns.length=${currentTurns.length} | lastTurn=${lastTurn?.turn || '-'} (completedAt=${lastTurn?.completedAt || '-'}) | scrambleCompletedAtRef=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt} | scramble.head=${scramble?.slice(0, 30) || 'null'}`);
-
-		if (scrambleCompletedAtRef.current) {
-			const firstSolveTurn = currentTurns[currentTurns.length - 1];
-
-			// GUARD: after scramble finishes, resetMoves clears smartTurns.
-			// This clearing triggers useEffect with empty array — prevent startTimer being
-			// accidentally called before user physically makes a move.
-			// Wait until real "first solve move" arrives.
-			if (!firstSolveTurn) {
-				dbgTimer('CHECK_START | scrambleCompletedAtRef set but no new solve move yet — waiting');
-				return;
-			}
-
-			// The cube reports FACELETS and MOVE as separate packets, and moves are
-			// handed to Redux in batches. A FACELETS packet can therefore complete the
-			// scramble while the final scramble move is still queued; that move then
-			// arrives here and looks like the first move of the solve. Measured on a
-			// GAN 12 UI: it started the timer on the last scramble move in 2 of 12
-			// solves, and the display trace showed the real first solve move landing
-			// 2.3s and 3.4s later (the user was still inspecting).
-			//
-			// Two independent signals mark such a turn, because either one alone has a
-			// blind spot:
-			//   - the cube is still on the scramble target: only holds when every
-			//     queued move arrived in the same batch
-			//   - the turn is older than the moment the scramble was declared complete:
-			//     holds regardless of batching, but leans on the cube's clock offset
-			const cubeOnTarget = !!targetFaceletsRef.current
-				&& cubejs.current.asString() === targetFaceletsRef.current;
-			const turnAt = firstSolveTurn.completedAt ? new Date(firstSolveTurn.completedAt).getTime() : 0;
-			const turnPredatesScrambleEnd = !!turnAt
-				&& turnAt < scrambleCompletedAtRef.current.getTime() + LATE_SCRAMBLE_MOVE_WINDOW_MS;
-			// Pulled back from the cube's move history after a dropped packet. It was
-			// physically turned before the scramble finished, and its timestamp is the
-			// recovery moment, which is why the two checks above cannot see it. This
-			// was the remaining path: measured on a GAN i4, 2 of 6 solves.
-			const turnWasRecovered = firstSolveTurn.recovered === true;
-
-			if (cubeOnTarget || turnPredatesScrambleEnd || turnWasRecovered) {
-				// Cap it: if the cube clock were badly skewed, an unbounded rule could
-				// swallow real solve moves and the timer would never start.
-				if (lateScrambleDropsRef.current < MAX_LATE_SCRAMBLE_DROPS) {
-					lateScrambleDropsRef.current++;
-					dbgTimer(`CHECK_START | dropping late scramble move ${firstSolveTurn.turn} (onTarget=${cubeOnTarget}, predates=${turnPredatesScrambleEnd}, recovered=${turnWasRecovered}, drop ${lateScrambleDropsRef.current}/${MAX_LATE_SCRAMBLE_DROPS}) — timer NOT started`);
-					// The scramble already ended, so these turns must not be counted as
-					// solve moves. Clearing also lets the turns effect rebuild the tracker
-					// from the scramble.
-					setTimerParams({ smartTurns: [] });
-					return;
-				}
-				dbgTimer(`CHECK_START | late-scramble drop limit reached — accepting ${firstSolveTurn.turn} as first solve move`);
-			}
-
-			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
-			// [CHECK_START] detailed context BEFORE startTimer call — is it first solve move or part of scramble batch?
-			dbgTimer(`!!! TIMER START triggered | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble finished=${msSinceScrambleEnd}ms ago | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | last 3 moves=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);
-			dbgTimer('TIMER START — scramble already completed, first move received');
-			startTimer(firstSolveTurn?.completedAt);
-			let it = msSinceScrambleEnd / 1000;
-			it = Math.floor(it * 100) / 100;
-
-			scrambleCompletedAtRef.current = null;
-
-			setInspectionTime(it);
-			setTimerParams({ smartCanStart: false });
-			return;
-		}
-
-		if (!currentTurns.length || timeStartedAt || !scramble) return;
-
-		// FACELETS-based completion: is physical cube at target state?
-		// Independent from move matcher, most reliable method.
-		// Double moves like L2 = L'+L', wrong moves, etc. do not cause issues.
-		if (targetFaceletsRef.current && smartCurrentState === targetFaceletsRef.current) {
-			dbgFace('FACELETS MATCH (checkForStart) — physical cube at target!');
-
-			scrambleCompletedAtRef.current = new Date();
-
-			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
-
-			if (!audioThrottleRef.current) {
-				audioThrottleRef.current = true;
-				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				playScrambleCompleteSound();
-			}
-
-			resetMoves(false, true);
-			if (inspectionEnabled) {
-				startInspection(context);
-			}
-			return;
-		}
-
-		const offset = smartTurnOffset || 0;
-		const relevantTurns = offset > 0 ? currentTurns.slice(offset) : currentTurns;
-
-		// Use incremental compressor — only processes new turns
-		const userMoves = compressorRef.current.processNew(relevantTurns);
-		const expectedMoves = scramble.split(' ').filter(m => m.trim());
-		const { matched, matchStatus } = matchScrambleWithCommutative(expectedMoves, userMoves);
-
-		dbgMatch(
-			`offset: ${offset} | relevantTurns: ${relevantTurns.length} | compressed: [${userMoves.join(' ')}]`,
-			`\n  expected: [${expectedMoves.join(' ')}]`,
-			`\n  matched: ${matched} | status: [${matchStatus.join(', ')}]`,
-			`\n  cubejs: ${cubejs.current.asString().slice(0, 27)}...`,
-			`\n  facelets: ${smartCurrentState?.slice(0, 27) || 'null'}...`,
-			`\n  target:   ${targetFaceletsRef.current?.slice(0, 27) || 'null'}...`,
-		);
-
-		if (matched) {
-			// Move matcher matched — verify with cubejs (independent from FACELETS lag)
-			// cubejs updates synchronously on each move event, FACELETS can lag by 1+ batches
-			if (smartCubeConnected && targetFaceletsRef.current) {
-				const cubejsState = cubejs.current.asString();
-				if (cubejsState !== targetFaceletsRef.current) {
-					// BLE move loss — FACELETS safety net will catch
-					dbgMatch('MATCHED but cubejs DOES NOT MATCH — waiting for FACELETS safety net',
-						`\n  cubejs:  ${cubejsState.slice(0, 27)}...`,
-						`\n  target:  ${targetFaceletsRef.current.slice(0, 27)}...`);
-					return;
-				}
-				// cubejs matched — safe even if FACELETS is behind
-			}
-			dbgMatch('SCRAMBLE COMPLETED (move matcher + cubejs confirmed)');
-
-			scrambleCompletedAtRef.current = new Date();
-
-			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
-
-			if (!audioThrottleRef.current) {
-				audioThrottleRef.current = true;
-				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				playScrambleCompleteSound();
-			}
-
-			resetMoves(false, true);
-			if (inspectionEnabled) {
-				startInspection(context);
-			}
-		} else if (matchStatus.includes('wrong')) {
-			// Wrong move detected — calculate and show undo sequence
-			const firstWrongIdx = matchStatus.indexOf('wrong');
-			const wrongUserMoves = userMoves.slice(firstWrongIdx);
-
-			if (wrongUserMoves.length > 7) {
-				// 8+ wrong moves — show solve cube message
-				dbgCorr(`WRONG detected | ${wrongUserMoves.length} wrong moves — TOO_MANY`);
-				setTimerParams({ smartUndoMoves: ['TOO_MANY'] });
-			} else {
-				const undoSequence = wrongUserMoves.slice().reverse().map(invertMove);
-				dbgCorr(`WRONG detected | undo sequence: [${undoSequence.join(' ')}]`);
-				setTimerParams({ smartUndoMoves: undoSequence });
-			}
-		} else if (matchStatus.includes('half')) {
-			// Partial match — orange color provides sufficient info
-			setTimerParams({ smartUndoMoves: null });
-		} else {
-			// All perfect or pending — clear undo
-			setTimerParams({ smartUndoMoves: null });
-		}
-	}
+	// checkForStartAfterTurn / checkForStartAfterTurnBatch moved into the shared engine
+	// (SmartSolveEngine.evaluateScramble + tryStartTimer). Rooms run the exact same code.
 
 	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
 		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | endTimestamp: ${endTimestamp || 'not set'} | isSolveEnd: ${!!timeStartedAt}`);
@@ -1119,15 +545,9 @@ export default function SmartCube() {
 			preservedScrambleRef.current = originalScrambleRef.current || scramble;
 			lateScrambleDropsRef.current = 0;
 
-			// Rebuild the tracker from the scramble here rather than leaving it to the
-			// smartTurns effect: that effect skips the rebuild when no BLE move was ever
-			// applied (cube already at the target state), which used to leave the tracker
-			// solved and let R R' end the solve instantly.
-			setTrackerFromScramble(preservedScrambleRef.current);
-
-			// For phase tracking: save cube state when scramble finishes
-			// This allows LiveAnalysisOverlay to analyze from correct starting state
-			const scrambledState = cubejs.current.asString();
+			// The engine aligned its tracker to the scramble target before emitting
+			// SCRAMBLE_COMPLETE, so phase tracking reads the state from there.
+			const scrambledState = engineRef.current?.trackerState || DEFAULT_SOLVED_STATE;
 			setStartState(scrambledState);
 
 			if (targetFaceletsRef.current && scrambledState !== targetFaceletsRef.current) {
@@ -1137,7 +557,7 @@ export default function SmartCube() {
 			preservedScrambleRef.current = null;
 			// "Mark as solved" / "reset cube state": the tracker must follow, otherwise
 			// it keeps the pre-reset state and the next solve never registers as done.
-			if (markSolved) setTrackerToSolved();
+			if (markSolved) engineRef.current?.markSolved();
 		}
 
 		setTimerParams({
@@ -1354,7 +774,7 @@ export default function SmartCube() {
 	}
 
 	function resetGyro() {
-		gyroBasisRef.current = null;
+		cubeViewRef.current?.resetGyro();
 	}
 
 	let actionButton = null;
@@ -1429,14 +849,22 @@ export default function SmartCube() {
 	return (
 		<div className={b({ mobile: mobileMode })}>
 			<div className={b('wrapper')}>
-				{/* Keep the ref mounted even when hidden — the TwistyPlayer must stay
-				    initialized because move application (and therefore scramble/solve
-				    detection) is coupled to twistyPlayerRef. We only collapse it
-				    visually via the --hidden modifier. */}
+				{/* Kept mounted even when hidden: tearing the player down would lose the
+				    visual state, and the mirror would have to replay from scratch. */}
 				<div className={b('cube', { hidden: !smartCubeShow })}>
-					<div
-						ref={containerRef}
-						style={{ width: effectiveCubeSize, height: effectiveCubeSize }}
+					<SmartCubeView
+						ref={cubeViewRef}
+						connect={connect.current}
+						connected={smartCubeConnected}
+						size={effectiveCubeSize}
+						keepVisualOnClear={!!preservedScrambleRef.current}
+						onStreamCleared={() => {
+							// Only when the clear was not a finished scramble: resetMoves already
+							// set startState in that case, and overwriting it here would race.
+							if (!preservedScrambleRef.current) {
+								setStartState(engineRef.current?.trackerState || DEFAULT_SOLVED_STATE);
+							}
+						}}
 					/>
 				</div>
 				{/* Status row directly under the cube: connection glyph (only shown as a
@@ -1454,7 +882,7 @@ export default function SmartCube() {
 				</div>
 				{!mobileMode && (
 					<div className={b('stats-container')}>
-						<LiveAnalysisOverlay startState={startState || (cubejs.current ? cubejs.current.asString() : null)} />
+						<LiveAnalysisOverlay startState={startState || engineRef.current?.trackerState || null} />
 						<SmartStats />
 					</div>
 				)}
@@ -1466,7 +894,7 @@ export default function SmartCube() {
 							</div>
 						)}
 						<LiveAnalysisOverlay
-							startState={startState || (cubejs.current ? cubejs.current.asString() : null)}
+							startState={startState || engineRef.current?.trackerState || null}
 							mobile={true}
 						/>
 						<SmartStats mobile={true} />

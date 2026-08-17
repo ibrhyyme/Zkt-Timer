@@ -1,0 +1,111 @@
+.cd-smart-telemetry {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	&__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__title {
+		font-size: 20px;
+		font-weight: 700;
+		margin: 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__windows {
+		display: flex;
+		border: 1px solid var(--theme-border);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	&__window {
+		padding: 6px 12px;
+		font-size: 13px;
+		font-weight: 600;
+		background: transparent;
+		border: none;
+		color: var(--theme-text);
+		cursor: pointer;
+
+		&--active {
+			background: var(--primary-color);
+			color: var(--theme-background);
+		}
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 13px;
+		color: var(--theme-text);
+	}
+
+	&__empty {
+		padding: 32px;
+		text-align: center;
+		font-weight: 600;
+		border: 1px dashed var(--theme-border);
+		border-radius: 12px;
+	}
+
+	// Many columns; let the table scroll rather than squeezing the page.
+	&__table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--theme-border);
+		border-radius: 12px;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+		white-space: nowrap;
+
+		th,
+		td {
+			padding: 10px 12px;
+			text-align: left;
+			border-bottom: 1px solid var(--theme-border);
+		}
+
+		th {
+			font-weight: 700;
+			position: sticky;
+			top: 0;
+			background: var(--theme-module);
+		}
+
+		tbody tr:last-child td {
+			border-bottom: none;
+		}
+	}
+
+	&__device {
+		font-weight: 700;
+	}
+
+	&__row {
+		&--warn {
+			background: rgba(255, 152, 0, 0.08);
+		}
+	}
+
+	&__cell {
+		&--warn {
+			color: #ff9800;
+			font-weight: 700;
+		}
+	}
+}

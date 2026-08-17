@@ -1737,7 +1737,8 @@
         "music_now_playing": "Şu An Çalınıyor",
         "music_volume": "Ses Seviyesi",
         "music_stop": "Durdur",
-        "music_rate_limit": "Tekrar aramadan önce bekleyin"
+        "music_rate_limit": "Tekrar aramadan önce bekleyin",
+        "scramble_the_cube": "Küpü karıştır"
     },
     "profile": {
         "remove": "Kaldır",
@@ -1961,7 +1962,8 @@
         "algorithms": "Algoritmalar",
         "promo": "Promo",
         "site_config": "Site Ayarları",
-        "media": "Medya"
+        "media": "Medya",
+        "smart_telemetry": "Küp Telemetrisi"
     },
     "feature_access": {
         "title": "Özel erişim",
@@ -2649,7 +2651,8 @@
         "cube_mismatch_message": "Devam edebilmemiz için küpün çözülmüş olması gerekiyor",
         "reset_cube_state": "Küp durumunu sıfırla",
         "solve_cube_to_start": "Başlamak için küpü çöz",
-        "solve_cube_for_scramble": "Yeni karıştırma için küpü çözün!"
+        "solve_cube_for_scramble": "Yeni karıştırma için küpü çözün!",
+        "settings": "Akıllı küp ayarları"
     },
     "smart_scramble": {
         "ready": "Başlamaya Hazırsın",
@@ -4570,5 +4573,25 @@
             "f2l_left": "F2L-L",
             "f2l_right": "F2L-R"
         }
+    },
+    "smart_telemetry": {
+        "title": "Akıllı Küp Telemetrisi",
+        "days": "{{count}} gün",
+        "refresh": "Yenile",
+        "download": "CSV indir ({{count}})",
+        "hint": "Her satır bir çözüm. \"Hamle akışı\" küpün temiz veri gönderdiğini, kurtarma sütunları ise hamle kaybı yaşandığını gösterir. Kurtarma sayısı yüksek olan küpler sorunlu olanlardır.",
+        "loading": "Yükleniyor...",
+        "empty": "Henüz kayıt yok. Site Ayarları sayfasından telemetriyi açman gerekiyor.",
+        "col_device": "Cihaz",
+        "col_protocol": "Protokol",
+        "col_solves": "Çözüm",
+        "col_users": "Kullanıcı",
+        "col_tracker": "Hamle akışı",
+        "col_grace": "FACELETS kurtarma",
+        "col_poll": "Yoklama kurtarma",
+        "col_desync": "Senkron kaybı",
+        "col_late": "Geç hamle",
+        "col_median": "Ortanca gecikme",
+        "col_p95": "P95 gecikme"
     }
 }

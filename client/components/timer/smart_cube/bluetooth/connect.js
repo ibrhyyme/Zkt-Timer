@@ -8,6 +8,7 @@ import QiYi from './qiyi';
 import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
 import { setTimerParams } from '../../helpers/params';
+import { setTelemetryDevice } from '../../../../util/smart_cube/telemetry';
 
 /**
  * Maps an advertised device name to its cube protocol class.
@@ -109,6 +110,10 @@ export default class Connect extends SmartCube {
 		const { cube, cubeType } = createCubeForDevice(device, this.adapter);
 
 		console.log(`[BLE-CONNECT] _initCube | type: ${cubeType} | name: ${device.name} | id: ${device.deviceId}`);
+
+		// Identify the cube for the telemetry study. Set here rather than at each call site
+		// so every surface reports the same model string for the same physical cube.
+		setTelemetryDevice(device.name || null, cubeType);
 
 		if (cube) {
 			this.activeCube = cube;

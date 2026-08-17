@@ -33,7 +33,7 @@ import LeftSettingsDrawer from '../layout/nav/left_settings_drawer/LeftSettingsD
 import EditRoomModal from './EditRoomModal';
 import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
-import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
+import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
 import { is3x3CubeType } from '../timer/helpers/util';
@@ -50,10 +50,10 @@ import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { setTimerParams } from '../timer/helpers/params';
-import { preflightChecks } from '../timer/smart_cube/preflight';
-import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
-import { cubeTimestampLinearFit, TimestampedMove } from '../../util/smart_cube_timing';
-import Cube from 'cubejs';
+import { SmartTurn } from '../../util/smart_scramble';
+import { SmartSolveEngine, SmartEngineEvent } from '../../util/smart_cube';
+import { recordEngineEvent } from '../../util/smart_cube/telemetry';
+import SmartCubeView, { SmartCubeViewHandle } from '../timer/smart_cube/cube_view/SmartCubeView';
 import NotificationLog, { NotificationItem } from './NotificationLog';
 import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
 import ReactDOM from 'react-dom';
@@ -380,6 +380,12 @@ function FriendlyRoomContent() {
     const reduxLastSmartMoveTime = useSelector((state: any) => state.timer?.lastSmartMoveTime || 0);
     const reduxSmartStateSeq = useSelector((state: any) => state.timer?.smartStateSeq || 0);
     const reduxSmartCubeScanError = useSelector((state: any) => state.timer?.smartCubeScanError || null);
+    // The cube's own report of its physical state. Rooms ignored this for years and
+    // trusted the move stream alone, which is why a single dropped BLE packet left the
+    // timer running forever.
+    const reduxSmartCurrentState = useSelector((state: any) => state.timer?.smartCurrentState || null);
+    const reduxSmartBatteryLevel = useSelector((state: any) => state.timer?.smartCubeBatteryLevel);
+    const reduxSmartGyroSupported = useSelector((state: any) => state.timer?.smartGyroSupported || false);
 
     const [smartCubeConnecting, setSmartCubeConnecting] = useState(false);
     const smartConnectRef = useRef<Connect | null>(null);
@@ -544,12 +550,14 @@ function FriendlyRoomContent() {
     const INACTIVITY_TIMEOUT_MS = 5000;
     const smartInspectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const smartTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const cubejsRef = useRef(new Cube());
-    const processedTurnsRef = useRef(0);
-    const scrambleTurnCountRef = useRef(0);
-    const sessionStartRef = useRef(0);
-    const prevScrambleRef = useRef<string | undefined>(undefined);
-    const prevConnectedRef = useRef(false);
+    // Correction hint produced by the engine ("do D2 to get back on track").
+    const [smartUndoMoves, setSmartUndoMoves] = useState<string[] | null>(null);
+    const [smartOutOfSync, setSmartOutOfSync] = useState(false);
+    // Per-move scramble match from the engine. Deriving it here from the raw turn stream
+    // is what let the display disagree with the matcher that decides when a scramble ends.
+    const [smartMatchStatus, setSmartMatchStatus] = useState<('perfect' | 'half' | 'wrong' | 'pending')[]>([]);
+    const [smartCubeMenuOpen, setSmartCubeMenuOpen] = useState(false);
+    const roomCubeViewRef = useRef<SmartCubeViewHandle>(null);
 
     // Throttled status update
     const lastStatusRef = useRef<string>('');
@@ -570,44 +578,6 @@ function FriendlyRoomContent() {
             getSocket().emit(FriendlyRoomClientEvent.SEND_STATUS, roomId, status);
         }, STATUS_THROTTLE_MS);
     }, [roomId]);
-
-    // 1. Connection Reset Check & Reset on Scramble Change
-    useEffect(() => {
-        // A. Connection Reset: If just connected, reset history
-        if (smartCubeConnected && !prevConnectedRef.current) {
-            sessionStartRef.current = smartTurns.length;
-            processedTurnsRef.current = smartTurns.length;
-            scrambleTurnCountRef.current = 0;
-            setSmartScrambleCompletedAt(null);
-            setSmartInspecting(false);
-            setSmartTiming(false);
-        }
-        prevConnectedRef.current = smartCubeConnected;
-
-        // B. Scramble Reset
-        if (room?.current_scramble === prevScrambleRef.current) return;
-        prevScrambleRef.current = room?.current_scramble;
-
-        cubejsRef.current = new Cube();
-
-        // Start processing turns from NOW
-        processedTurnsRef.current = smartTurns.length;
-        sessionStartRef.current = smartTurns.length;
-        scrambleTurnCountRef.current = 0;
-
-        setSmartScrambleCompletedAt(null);
-        setSmartInspecting(false);
-        setSmartInspectionTime(inspectionDelay ?? 15);
-        setSmartTiming(false);
-        setSmartTimerStartedAt(null);
-        setSmartElapsedTime(0);
-        setSmartReviewing(false);
-        setSmartFinalTime(0);
-
-        // Clear intervals
-        if (smartInspectionIntervalRef.current) clearInterval(smartInspectionIntervalRef.current);
-        if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
-    }, [room?.current_scramble, smartTurns, smartCubeConnected]);
 
     // 2. Handle Inspection Setting Change
     useEffect(() => {
@@ -630,179 +600,151 @@ function FriendlyRoomContent() {
         }
     }, []);
 
-    // 2. Process turns & Handle Timer Logic (Main Loop)
-    useEffect(() => {
-        if (!smartCubeConnected || !room?.current_scramble || !me) return;
+    // ── Smart cube engine ──
+    // The same engine the timer page drives. Rooms used to carry a hand-copied snapshot
+    // of the timer's rules that had drifted years behind: no facelets cross-check, no
+    // safety nets, its own correction maths. Every difference between the two pages was
+    // a bug users hit here and not there.
+    const engineRef = useRef<SmartSolveEngine | null>(null);
+    const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
 
-        let turnsProcessedThisCycle = false;
+    if (!engineRef.current) {
+        engineRef.current = new SmartSolveEngine(
+            (event) => engineEventRef.current(event),
+            { solvedState: reduxSmartSolvedState }
+        );
+    }
 
-        // Check for Redux reset (smartTurns cleared)
-        if (smartTurns.length < processedTurnsRef.current) {
-            processedTurnsRef.current = 0;
-            scrambleTurnCountRef.current = 0;
-            sessionStartRef.current = 0;
-            // No need to reset cube here, we do it at start timing
-        }
+    // Assigned every render so the engine, which is created once, always reaches the
+    // current closure instead of the one from first mount.
+    engineEventRef.current = (event: SmartEngineEvent) => {
+        // Field study: batched client-side, dropped server-side unless the site flag is on.
+        recordEngineEvent(event, 'room');
 
-        // Apply new turns to virtual cube
-        if (smartTurns.length > processedTurnsRef.current) {
-            // Only apply turns if we are TIMING or REVIEWING
-            if ((smartTiming && smartTimerStartedAt) || smartReviewing) {
-                for (let i = processedTurnsRef.current; i < smartTurns.length; i++) {
-                    cubejsRef.current.move(smartTurns[i].turn);
-                }
-            }
+        switch (event.type) {
+            case 'SCRAMBLE_COMPLETE': {
+                setSmartScrambleCompletedAt(new Date(event.at));
+                setSmartUndoMoves(null);
 
-            processedTurnsRef.current = smartTurns.length;
-            turnsProcessedThisCycle = true;
-        }
-
-        const currentCubeState = (smartTiming || smartReviewing) ? cubejsRef.current.asString() : '';
-        const isSolved = smartTiming ? (currentCubeState === reduxSmartSolvedState || reduxSmartPhysicallySolved) : false;
-        const isSolvedAnytime = currentCubeState === reduxSmartSolvedState || reduxSmartPhysicallySolved;
-
-        // Warning if user messes up cube during review
-        const warning = smartReviewing && !isSolvedAnytime ? t('rooms.solve_cube_for_scramble') : undefined;
-        setSmartWarning(warning);
-
-
-
-        // --- STOP LOGIC ---
-        // If timer is running and cube is solved
-        if (smartTiming && isSolved && smartTimerStartedAt) {
-            setSmartTiming(false);
-
-            // Linear fit ile Bluetooth gecikmesini düzelt (normal timer ile aynı yöntem)
-            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
-            const { finalTimeMs } = cubeTimestampLinearFit(solutionTurns as unknown as TimestampedMove[], smartTimerStartedAt);
-            let timeMs = Math.round(finalTimeMs);
-            // Fallback: linear fit geçersizse ham timestamp farkını kullan
-            if (timeMs <= 0) {
-                timeMs = (reduxSmartPhysicallySolved && reduxLastSmartMoveTime)
-                    ? reduxLastSmartMoveTime - smartTimerStartedAt
-                    : Date.now() - smartTimerStartedAt;
-            }
-
-            setSmartTimerStartedAt(null);
-            if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
-
-            // Enter review mode
-            setSmartFinalTime(timeMs);
-
-            // Calculate stats
-            const turnCount = solutionTurns.length;
-            const timeInSeconds = timeMs / 1000;
-            const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
-
-            setSmartStats({ turns: turnCount, tps });
-            setSmartReviewing(true);
-            return;
-        }
-
-        // --- START LOGIC ---
-        if (!smartTiming) {
-            // A. Check if scramble is just completed
-            // Only consider turns from the current session
-            const currentSessionTurns = smartTurns.slice(sessionStartRef.current);
-
-            if (!smartScrambleCompletedAt && currentSessionTurns.length > 0) {
-                if (preflightChecks(currentSessionTurns, room.current_scramble)) {
-                    setSmartScrambleCompletedAt(new Date());
-
-                    // Play success sound
-                    if (successAudioRef.current) {
-                        successAudioRef.current.currentTime = 0;
-                        successAudioRef.current.play().catch(e => console.warn('Audio play failed:', e));
-                    }
-
-                    scrambleTurnCountRef.current = smartTurns.length; // Record absolute index
-
-                    // Start inspection if enabled
-                    if (inspection && !smartInspectionIntervalRef.current) {
-                        const inspDelay = inspectionDelay ?? 15;
-                        setSmartInspecting(true);
-                        setSmartInspectionTime(inspDelay);
-                        const inspectionStart = Date.now();
-                        smartInspectionIntervalRef.current = setInterval(() => {
-                            const elapsed = (Date.now() - inspectionStart) / 1000;
-                            const remaining = inspDelay - elapsed;
-                            setSmartInspectionTime(remaining);
-
-                            if (remaining <= -2) {
-                                // DNF logic handled by submit/timeout if needed
-                            }
-                        }, 100);
-                    }
-                }
-            }
-
-            // B. Start Timer on first move AFTER scramble completion
-            if (smartScrambleCompletedAt && turnsProcessedThisCycle) {
-                // Stop inspection
-                if (smartInspecting) {
-                    setSmartInspecting(false);
-                    if (smartInspectionIntervalRef.current) clearInterval(smartInspectionIntervalRef.current);
+                if (successAudioRef.current) {
+                    successAudioRef.current.currentTime = 0;
+                    successAudioRef.current.play().catch(e => console.warn('Audio play failed:', e));
                 }
 
-                // Start Timer
+                if (inspection && !smartInspectionIntervalRef.current) {
+                    const inspDelay = inspectionDelay ?? 15;
+                    setSmartInspecting(true);
+                    setSmartInspectionTime(inspDelay);
+                    const inspectionStart = Date.now();
+                    smartInspectionIntervalRef.current = setInterval(() => {
+                        setSmartInspectionTime(inspDelay - (Date.now() - inspectionStart) / 1000);
+                    }, 100);
+                }
+                break;
+            }
+
+            case 'UNDO_MOVES':
+                setSmartUndoMoves(event.moves);
+                break;
+
+            case 'SCRAMBLE_PROGRESS':
+                setSmartMatchStatus(event.matchStatus);
+                break;
+
+            case 'TIMER_START':
+                if (smartInspectionIntervalRef.current) {
+                    clearInterval(smartInspectionIntervalRef.current);
+                    smartInspectionIntervalRef.current = null;
+                }
+                setSmartInspecting(false);
+                setSmartScrambleCompletedAt(null);
                 setSmartTiming(true);
-                setSmartTimerStartedAt(Date.now());
-                setSmartScrambleCompletedAt(null); // Consumed
+                setSmartTimerStartedAt(event.startedAt);
                 setSmartElapsedTime(0);
+                break;
 
-                // RESET VIRTUAL CUBE WITH SCRAMBLE
-                cubejsRef.current = new Cube();
-                const moves = room.current_scramble.split(' ');
-                moves.forEach(m => {
-                    if (m.trim()) cubejsRef.current.move(m);
-                });
-
-                // Apply ONLY the solution moves (filtering out scramble moves)
-                const startIdx = scrambleTurnCountRef.current;
-                for (let i = startIdx; i < smartTurns.length; i++) {
-                    cubejsRef.current.move(smartTurns[i].turn);
+            case 'SOLVE_COMPLETE': {
+                const { result } = event;
+                setSmartTiming(false);
+                setSmartTimerStartedAt(null);
+                if (smartTimerIntervalRef.current) {
+                    clearInterval(smartTimerIntervalRef.current);
+                    smartTimerIntervalRef.current = null;
                 }
+                // timeMs is already corrected for BLE lag and stamped from the cube's own
+                // clock, so a late detection no longer inflates the displayed time.
+                setSmartFinalTime(result.timeMs);
+                setSmartStats({ turns: result.turnCount, tps: result.tps });
+                setSmartReviewing(true);
+                if (needsCubeReset) setNeedsCubeReset(false);
+                break;
             }
-        }
-    }, [smartTurns, smartCubeConnected, room?.current_scramble, smartTiming, smartScrambleCompletedAt, smartInspecting, inspection, smartTimerStartedAt, smartReviewing, reduxSmartSolvedState]);
 
-    // M' move safety net: if physical cube is solved, stop timer
-    // Not in main useEffect's reduxSmartPhysicallySolved dependency, so separate useEffect
+            case 'LATE_SCRAMBLE_MOVE':
+                // The turn belongs to the scramble, not the solve. Clearing the stream lets
+                // the engine rebuild its tracker from the scramble.
+                setTimerParams({ smartTurns: [] });
+                break;
+
+            case 'OUT_OF_SYNC':
+                setSmartOutOfSync(event.out);
+                break;
+
+            case 'TRACKER_RESYNCED':
+                // The 3D view is driven by moves, so after a re-anchor it is showing a state
+                // that never happened. Replay it to what the cube actually reports.
+                roomCubeViewRef.current?.syncToFacelets(event.facelets);
+                break;
+        }
+    };
+
+    // ── Engine inputs ──
+    // Each signal gets its own effect so a change in one does not replay the others.
     useEffect(() => {
-        if (
-            reduxSmartPhysicallySolved &&
-            smartTiming &&
-            smartTimerStartedAt
-        ) {
-            console.log('[FriendlyRoom] Safety net: STOPPING TIMER (physically solved)');
-            setSmartTiming(false);
-            const timeMs = (reduxLastSmartMoveTime || Date.now()) - smartTimerStartedAt;
-            setSmartTimerStartedAt(null);
-            if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
+        engineRef.current?.setScramble(room?.current_scramble || '');
 
-            setSmartFinalTime(timeMs);
+        setSmartReviewing(false);
+        setSmartFinalTime(0);
+        setSmartStats(null);
+        setSmartElapsedTime(0);
+        setSmartInspecting(false);
+        setSmartInspectionTime(inspectionDelay ?? 15);
+        setSmartUndoMoves(null);
 
-            // Calculate stats
-            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
-            const turnCount = solutionTurns.length;
-            const timeInSeconds = timeMs / 1000;
-            const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
-
-            setSmartStats({ turns: turnCount, tps });
-            setSmartReviewing(true);
+        if (smartInspectionIntervalRef.current) {
+            clearInterval(smartInspectionIntervalRef.current);
+            smartInspectionIntervalRef.current = null;
         }
-    }, [reduxSmartStateSeq, smartTiming]);
+        if (smartTimerIntervalRef.current) {
+            clearInterval(smartTimerIntervalRef.current);
+            smartTimerIntervalRef.current = null;
+        }
+    }, [room?.current_scramble]);
 
-    // When physical cube is solved, auto-clear mismatch flag
     useEffect(() => {
-        if (reduxSmartPhysicallySolved && needsCubeReset) {
-            setNeedsCubeReset(false);
-            sessionStartRef.current = smartTurns.length;
-            processedTurnsRef.current = smartTurns.length;
-            scrambleTurnCountRef.current = 0;
-            cubejsRef.current = new Cube();
-        }
-    }, [reduxSmartStateSeq]);
+        engineRef.current?.setConnected(smartCubeConnected);
+    }, [smartCubeConnected]);
+
+    useEffect(() => {
+        if (timerType !== 'smart') return;
+        engineRef.current?.pushTurns(smartTurns);
+    }, [smartTurns, timerType]);
+
+    useEffect(() => {
+        if (timerType !== 'smart' || !reduxSmartCurrentState) return;
+        engineRef.current?.pushFacelets(reduxSmartCurrentState);
+    }, [reduxSmartStateSeq, timerType]);
+
+    useEffect(() => () => engineRef.current?.dispose(), []);
+
+    // Review warning: the cube has to be solved before the next scramble can be tracked.
+    useEffect(() => {
+        setSmartWarning(
+            smartReviewing && !reduxSmartPhysicallySolved
+                ? t('rooms.solve_cube_for_scramble')
+                : undefined
+        );
+    }, [smartReviewing, reduxSmartPhysicallySolved, t]);
 
     // 5 seconds inactivity → show abort button
     useEffect(() => {
@@ -869,25 +811,8 @@ function FriendlyRoomContent() {
         };
     }, [smartTiming, smartTimerStartedAt]);
 
-    // Reset smart cube state on new scramble
-    useEffect(() => {
-        setSmartScrambleCompletedAt(null);
-        setSmartInspecting(false);
-        setSmartInspectionTime(inspectionDelay ?? 15);
-        setSmartTiming(false);
-        setSmartTimerStartedAt(null);
-        setSmartElapsedTime(0);
-        processedTurnsRef.current = 0;
-
-        if (smartInspectionIntervalRef.current) {
-            clearInterval(smartInspectionIntervalRef.current);
-            smartInspectionIntervalRef.current = null;
-        }
-        if (smartTimerIntervalRef.current) {
-            clearInterval(smartTimerIntervalRef.current);
-            smartTimerIntervalRef.current = null;
-        }
-    }, [room?.current_scramble]);
+    // Scramble-change reset lives in the engine input effect above; keeping a second copy
+    // here raced with it (both cleared the same intervals from different render passes).
 
     // Smart cube solve submission effects are placed after alreadySolvedThisRound is declared
 
@@ -1308,11 +1233,9 @@ function FriendlyRoomContent() {
         setSmartStats(null);
         setSmartScrambleCompletedAt(null);
         if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
-        // Turn processing'i sıfırla - yeniden scramble yapabilsin
-        sessionStartRef.current = smartTurns.length;
-        processedTurnsRef.current = smartTurns.length;
-        scrambleTurnCountRef.current = 0;
-        cubejsRef.current = new Cube();
+        // Abandon the attempt without committing; the engine rewinds to the scramble phase.
+        engineRef.current?.abort();
+        setSmartUndoMoves(null);
         setShowAbortDialog(false);
         setSmartAbortVisible(false);
         setNeedsCubeReset(true);
@@ -1326,10 +1249,10 @@ function FriendlyRoomContent() {
 
     function handleSmartResetCubeState() {
         setNeedsCubeReset(false);
-        sessionStartRef.current = smartTurns.length;
-        processedTurnsRef.current = smartTurns.length;
-        scrambleTurnCountRef.current = 0;
-        cubejsRef.current = new Cube();
+        // Re-anchor to the solved state: the user is telling us the cube is physically solved.
+        engineRef.current?.markSolved();
+        setSmartUndoMoves(null);
+        setSmartOutOfSync(false);
     }
 
     // Check if user already solved this round
@@ -1753,11 +1676,12 @@ function FriendlyRoomContent() {
                             ) : timerType === 'smart' && smartCubeConnected ? (
                                 // Smart cube: show colored scramble with correction hints
                                 (() => {
-                                    const currentSessionTurns = smartTurns.slice(sessionStartRef.current);
-                                    const smartScramble = processSmartTurns(currentSessionTurns);
+                                    // Progress and correction both come from the engine, so the
+                                    // display can never disagree with the matcher that decides
+                                    // when the scramble is done. The old code ran its own
+                                    // positional diff here, which is why a correction hint kept
+                                    // repeating after the user had already performed it.
                                     const scrambleParts = room.current_scramble.split(' ');
-                                    const failedMoves: string[] = [];
-                                    let orangeMiddle = false;
 
                                     if (smartScrambleCompletedAt) {
                                         return (
@@ -1768,41 +1692,21 @@ function FriendlyRoomContent() {
                                         );
                                     }
 
-                                    // First pass: detect failed moves
-                                    for (let i = 0; i < scrambleParts.length; i++) {
-                                        const turn = scrambleParts[i];
-                                        const smartTurn = smartScramble[i];
-
-                                        if (failedMoves.length === 0 && smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
-                                            // Green - correct
-                                        } else if (smartScramble.length > i && rawTurnIsSame(smartTurn, turn) && isTwo(turn) && !orangeMiddle) {
-                                            // Orange - half done
-                                            orangeMiddle = true;
-                                        } else if (smartScramble.length > i) {
-                                            // Red - wrong move, add to failedMoves
-                                            failedMoves.push(smartTurn);
-                                        }
+                                    if (smartOutOfSync || (smartUndoMoves?.length === 1 && smartUndoMoves[0] === 'TOO_MANY')) {
+                                        return (
+                                            <span className="text-red-400 font-bold animate-pulse">
+                                                {t('rooms.solve_cube_to_start')}
+                                            </span>
+                                        );
                                     }
 
-                                    // If there are failed moves, show correction (reverse of failed moves)
-                                    if (failedMoves.length > 0) {
-                                        // Too many wrong moves - just tell user to solve the cube
-                                        if (failedMoves.length > 7) {
-                                            return (
-                                                <span className="text-red-400 font-bold animate-pulse">
-                                                    {t('rooms.solve_cube_to_start')}
-                                                </span>
-                                            );
-                                        }
-
-                                        // Show correction moves
-                                        const correctionMoves = reverseScramble(failedMoves);
+                                    if (smartUndoMoves?.length) {
                                         return (
                                             <div className="flex flex-col items-center gap-1">
                                                 <span className="text-text text-xs uppercase tracking-wider">{t('rooms.correction')}:</span>
                                                 <div>
-                                                    {correctionMoves.map((move, i) => (
-                                                        <span key={`fix-${move}-${i}`} className="text-red-400 font-bold">
+                                                    {smartUndoMoves.map((move, i) => (
+                                                        <span key={"fix-" + move + "-" + i} className="text-red-400 font-bold">
                                                             {move}{' '}
                                                         </span>
                                                     ))}
@@ -1811,21 +1715,15 @@ function FriendlyRoomContent() {
                                         );
                                     }
 
-                                    // Normal display with colors
-                                    orangeMiddle = false;
                                     return scrambleParts.map((turn, i) => {
-                                        const smartTurn = smartScramble[i];
-                                        let colorClass = 'text-text'; // default
-
-                                        if (smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
-                                            colorClass = 'text-green-400'; // completed
-                                        } else if (smartScramble.length > i && rawTurnIsSame(smartTurn, turn) && isTwo(turn) && !orangeMiddle) {
-                                            colorClass = 'text-orange-400'; // half done (X2 moves)
-                                            orangeMiddle = true;
-                                        }
+                                        const status = smartMatchStatus[i];
+                                        const colorClass =
+                                            status === 'perfect' ? 'text-green-400'
+                                                : status === 'half' ? 'text-orange-400'
+                                                    : 'text-text';
 
                                         return (
-                                            <span key={`${turn}-${i}`} className={colorClass}>
+                                            <span key={turn + "-" + i} className={colorClass}>
                                                 {turn}{' '}
                                             </span>
                                         );
@@ -2175,14 +2073,87 @@ function FriendlyRoomContent() {
                             </div>
                         </div>
 
-                        {/* Cube Preview (Restored & Resized) */}
-                        <div className="w-[110px] h-[80px] md:w-[140px] md:h-[100px] flex items-center justify-center bg-transparent ml-4 shrink-0">
-                            <ScrambleVisual
-                                scramble={room.current_scramble}
-                                cubeType={room.cube_type}
-                                width="100%"
-                                compact
-                            />
+                        {/* Cube preview. With a smart cube connected the flat scramble drawing is
+                            redundant — the physical cube is the source of truth — so the live 3D
+                            view takes its place, same component the timer page uses. */}
+                        <div
+                            className={`w-[110px] md:w-[140px] flex flex-col items-center justify-center bg-transparent ml-4 shrink-0 ${
+                                // The 3D view carries a battery/settings row under it, so a fixed
+                                // height clipped it by ~8px. Let the column size itself here; the
+                                // flat preview keeps the original fixed box.
+                                timerType === 'smart' && smartCubeConnected
+                                    ? 'min-h-[80px] md:min-h-[100px]'
+                                    : 'h-[80px] md:h-[100px]'
+                            }`}
+                        >
+                            {timerType === 'smart' && smartCubeConnected ? (
+                                <>
+                                    <SmartCubeView
+                                        ref={roomCubeViewRef}
+                                        connect={smartConnectRef.current}
+                                        connected={smartCubeConnected}
+                                        size={isMobile ? 68 : 88}
+                                    />
+                                    <div className="flex items-center gap-2 -mt-0.5">
+                                        {typeof reduxSmartBatteryLevel === 'number' && (
+                                            <span className="text-[10px] font-bold text-green-400">{reduxSmartBatteryLevel}%</span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setSmartCubeMenuOpen((v) => !v)}
+                                            className="text-text/70 hover:text-text transition-colors"
+                                            title={t('smart_cube.settings')}
+                                        >
+                                            <Gear size={14} weight="bold" />
+                                        </button>
+                                    </div>
+                                    {smartCubeMenuOpen && (
+                                        <div className="absolute bottom-16 right-4 z-20 flex flex-col items-stretch gap-1 p-2 rounded-lg bg-module border border-text/[0.1] min-w-[190px] shadow-lg">
+                                            <button
+                                                type="button"
+                                                className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors disabled:opacity-40"
+                                                disabled={smartTiming}
+                                                onClick={() => {
+                                                    handleSmartResetCubeState();
+                                                    setSmartCubeMenuOpen(false);
+                                                }}
+                                            >
+                                                {t('smart_cube.mark_as_solved')}
+                                            </button>
+                                            {reduxSmartGyroSupported && (
+                                                <button
+                                                    type="button"
+                                                    className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors"
+                                                    onClick={() => {
+                                                        roomCubeViewRef.current?.resetGyro();
+                                                        setSmartCubeMenuOpen(false);
+                                                    }}
+                                                >
+                                                    {t('smart_cube.reset_gyro')}
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors disabled:opacity-40"
+                                                disabled={smartTiming}
+                                                onClick={() => {
+                                                    disconnectSmartCube();
+                                                    setSmartCubeMenuOpen(false);
+                                                }}
+                                            >
+                                                {t('smart_cube.disconnect')}
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <ScrambleVisual
+                                    scramble={room.current_scramble}
+                                    cubeType={room.cube_type}
+                                    width="100%"
+                                    compact
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -2222,12 +2193,9 @@ function FriendlyRoomContent() {
                     setSmartStats(null);
                     setSmartTiming(false);
                     setSmartElapsedTime(0);
-                    // Reset turn processing to current position
-                    sessionStartRef.current = smartTurns.length;
-                    processedTurnsRef.current = smartTurns.length;
-                    scrambleTurnCountRef.current = 0;
-                    // Reset virtual cube for fresh scramble matching
-                    cubejsRef.current = new Cube();
+                    setSmartUndoMoves(null);
+                    // Rewind the engine to the scramble phase so the round can be re-solved.
+                    engineRef.current?.abort();
                 }}
                 onStatusChange={handleStatusChange}
                 onOpenSettings={() => {/* no-op — gear → sol drawer'a tasindi */}}

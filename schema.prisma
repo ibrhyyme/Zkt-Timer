@@ -83,6 +83,7 @@ model UserAccount {
   sessions                      Session[]
   settings                      Setting?
   smart_device                  SmartDevice[]
+  smart_cube_telemetry          SmartCubeTelemetry[]
   solves                        Solve[]
   solve_views                   SolveView[]             @relation("solve_view_user")
   viewed_solve                  SolveView[]             @relation("solve_view_viewer")
@@ -306,6 +307,10 @@ model SiteConfig {
   presence_enabled     Boolean  @default(true)
   pro_enabled          Boolean  @default(false)
   wca_backfill_enabled Boolean  @default(true)
+  /// Field study of smart cube behaviour across models. Off by default and meant to be
+  /// switched on for a few days at a time: it records one row per solve, so leaving it on
+  /// indefinitely grows a table nobody reads.
+  smart_telemetry_enabled Boolean @default(false)
   feature_overrides    Json     @default("{}")
   updated_at           DateTime @updatedAt @default(now())
   updated_by           String?
@@ -479,6 +484,45 @@ model SmartDevice {
 
   @@index([user_id])
   @@map("smart_device")
+}
+
+/// One row per smart cube solve (plus anomaly rows), recorded only while
+/// SiteConfig.smart_telemetry_enabled is on. Exists to answer a question the codebase
+/// cannot: which cube models report clean move streams and which ones lean on the
+/// facelets fallbacks, measured across real users instead of the three cubes on one desk.
+///
+/// Deliberately free of solve content: no scramble, no move list, no times beyond the
+/// duration. Deleting a user cascades their rows away.
+model SmartCubeTelemetry {
+  id       String  @id @default(uuid())
+  user_id  String?
+  user     UserAccount? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  /// Advertised BLE name, e.g. "GANi4_F568". Identifies the model, not the person.
+  device_name String
+  /// Protocol class picked by createCubeForDevice: GAN, MoYu, QiYi, Giiker, Particula.
+  cube_type   String
+  /// Which screen produced this: timer, room, trainer.
+  surface     String
+  /// solve | out_of_sync | late_scramble_move | scan_error | disconnect
+  event_type  String
+
+  /// For solve rows: which detection path finished it (tracker, facelets-grace, facelets-poll).
+  detection_source String?
+  /// Milliseconds between the last physical move and the app noticing the solve ended.
+  /// This is the number that shows up to a user as the timer "jumping backwards".
+  detection_lag_ms Int?
+  time_ms          Int?
+  turn_count       Int?
+
+  is_native   Boolean @default(false)
+  app_version String?
+
+  created_at DateTime @default(now())
+
+  @@index([created_at])
+  @@index([cube_type, event_type])
+  @@map("smart_cube_telemetry")
 }
 
 model SolveMethodStep {

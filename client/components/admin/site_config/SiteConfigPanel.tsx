@@ -29,7 +29,7 @@ const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWi
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'smart_telemetry_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algorithm trainer page'},
@@ -372,6 +372,25 @@ export default function SiteConfigPanel() {
 						className={b('toggle', {on: (config as any).wca_backfill_enabled !== false})}
 						onClick={() => handleToggle('wca_backfill_enabled', (config as any).wca_backfill_enabled !== false)}
 						disabled={saving === 'wca_backfill_enabled'}
+					>
+						<span className={b('toggle-track')}>
+							<span className={b('toggle-thumb')} />
+						</span>
+					</button>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Smart Cube Telemetry</div>
+						<div className={b('row-desc')}>
+							Records one row per smart cube solve (device model, detection path, detection lag)
+							to compare how different cube models behave in the field. Meant to run for a few
+							days at a time, then be switched off. Results: /admin/smart-telemetry
+						</div>
+					</div>
+					<button
+						className={b('toggle', {on: !!(config as any).smart_telemetry_enabled})}
+						onClick={() => handleToggle('smart_telemetry_enabled', !!(config as any).smart_telemetry_enabled)}
+						disabled={saving === 'smart_telemetry_enabled'}
 					>
 						<span className={b('toggle-track')}>
 							<span className={b('toggle-thumb')} />

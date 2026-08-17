@@ -21,6 +21,9 @@ const smartState = {
 	originalScramble: '',
 	smartTurnOffset: 0,
 	smartUndoMoves: null,
+	// Per-move scramble match produced by the shared solve engine. The display reads this
+	// instead of re-deriving it, so UI and engine can never disagree.
+	smartMatchStatus: [],
 	smartAbortVisible: false,
 	smartStateSeq: 0,
 	smartPhysicallySolved: false,

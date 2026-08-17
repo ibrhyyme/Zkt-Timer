@@ -1730,7 +1730,8 @@
         "music_now_playing": "Now Playing",
         "music_volume": "Volume",
         "music_stop": "Stop",
-        "music_rate_limit": "Please wait before searching again"
+        "music_rate_limit": "Please wait before searching again",
+        "scramble_the_cube": "Scramble the cube"
     },
     "profile": {
         "remove": "Remove",
@@ -1954,7 +1955,8 @@
         "algorithms": "Algorithms",
         "promo": "Promo",
         "site_config": "Site Config",
-        "media": "Media"
+        "media": "Media",
+        "smart_telemetry": "Cube Telemetry"
     },
     "feature_access": {
         "title": "Special access",
@@ -2642,7 +2644,8 @@
         "cube_mismatch_message": "The cube needs to be solved before we can proceed",
         "reset_cube_state": "Reset cube state",
         "solve_cube_to_start": "Solve the cube to start",
-        "solve_cube_for_scramble": "Solve the cube for a new scramble!"
+        "solve_cube_for_scramble": "Solve the cube for a new scramble!",
+        "settings": "Smart cube settings"
     },
     "smart_scramble": {
         "ready": "Ready to Start",
@@ -4565,5 +4568,25 @@
             "f2l_left": "F2L-L",
             "f2l_right": "F2L-R"
         }
+    },
+    "smart_telemetry": {
+        "title": "Smart Cube Telemetry",
+        "days": "{{count}} days",
+        "refresh": "Refresh",
+        "download": "Download CSV ({{count}})",
+        "hint": "One row per solve. \"Move stream\" means the cube reported cleanly; the recovery columns mean a move packet was lost. Cubes with high recovery counts are the problematic ones.",
+        "loading": "Loading...",
+        "empty": "No records yet. Enable telemetry from the Site Config page.",
+        "col_device": "Device",
+        "col_protocol": "Protocol",
+        "col_solves": "Solves",
+        "col_users": "Users",
+        "col_tracker": "Move stream",
+        "col_grace": "FACELETS recovery",
+        "col_poll": "Poll recovery",
+        "col_desync": "Out of sync",
+        "col_late": "Late move",
+        "col_median": "Median lag",
+        "col_p95": "P95 lag"
     }
 }

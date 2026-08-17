@@ -51,6 +51,7 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 		presence_enabled
 		pro_enabled
 		wca_backfill_enabled
+		smart_telemetry_enabled
 		featureOverrides {
 			feature
 			mode
@@ -479,5 +480,11 @@ mutation updateSocialPreference($input: UpdateSocialPreferenceInput!) {
 		read_receipts
 		typing_indicator
 		online_status
+	}
+}
+
+mutation RecordSmartCubeTelemetry($events: [SmartCubeTelemetryInput!]!) {
+	recordSmartCubeTelemetry(events: $events) {
+		accepted
 	}
 }

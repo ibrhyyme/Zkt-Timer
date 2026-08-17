@@ -372,6 +372,8 @@ type Query {
   socialPreference: SocialPreference
   dmPresence(userIds: [String]): [String]
   messageReports(page: Int, status: ReportStatus): MessageReportList
+  smartCubeTelemetryRows(cubeType: String, limit: Int): [SmartCubeTelemetryRow]
+  smartCubeTelemetrySummary(days: Int): [SmartCubeTelemetrySummary]
 }
 
 type Mutation {
@@ -576,6 +578,7 @@ type Mutation {
   unblockUser(userId: String): Boolean
   updateSocialPreference(input: UpdateSocialPreferenceInput): SocialPreference
   resolveMessageReport(note: String, action: ReportStatus, reportId: String): Boolean
+  recordSmartCubeTelemetry(events: [SmartCubeTelemetryInput]): SmartCubeTelemetryResult
 }
 
 type SmartDevice {
@@ -1322,6 +1325,7 @@ type SiteConfig {
   presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
+  smart_telemetry_enabled: Boolean
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
 }
@@ -2829,6 +2833,41 @@ type BlockedUser {
   created_at: DateTime
 }
 
+type SmartCubeTelemetryResult {
+  accepted: Int
+}
+
+type SmartCubeTelemetryRow {
+  id: String
+  user_id: String
+  username: String
+  device_name: String
+  cube_type: String
+  surface: String
+  event_type: String
+  detection_source: String
+  detection_lag_ms: Int
+  time_ms: Int
+  turn_count: Int
+  is_native: Boolean
+  app_version: String
+  created_at: DateTime
+}
+
+type SmartCubeTelemetrySummary {
+  cube_type: String
+  device_name: String
+  solves: Int
+  distinct_users: Int
+  via_tracker: Int
+  via_grace: Int
+  via_poll: Int
+  out_of_sync_events: Int
+  late_scramble_events: Int
+  median_lag_ms: Int
+  p95_lag_ms: Int
+}
+
 type Notification {
   id: String
   user_id: String
@@ -2992,6 +3031,7 @@ input UpdateSiteConfigInput {
   presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
+  smart_telemetry_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
 }
 
@@ -3393,6 +3433,19 @@ input UpdateSocialPreferenceInput {
   read_receipts: Boolean
   typing_indicator: Boolean
   online_status: Boolean
+}
+
+input SmartCubeTelemetryInput {
+  device_name: String
+  cube_type: String
+  surface: String
+  event_type: String
+  detection_source: String
+  detection_lag_ms: Int
+  time_ms: Int
+  turn_count: Int
+  is_native: Boolean
+  app_version: String
 }
 
 input PaginationArgsInput {

@@ -1730,7 +1730,8 @@
         "music_now_playing": "Reproduciendo",
         "music_volume": "Volumen",
         "music_stop": "Detener",
-        "music_rate_limit": "Espere antes de buscar de nuevo"
+        "music_rate_limit": "Espere antes de buscar de nuevo",
+        "scramble_the_cube": "Mezcla el cubo"
     },
     "profile": {
         "remove": "Quitar",
@@ -1954,7 +1955,8 @@
         "algorithms": "Algoritmos",
         "promo": "Promo",
         "site_config": "Configuración del sitio",
-        "media": "Medios"
+        "media": "Medios",
+        "smart_telemetry": "Telemetría"
     },
     "feature_access": {
         "title": "Acceso especial",
@@ -2642,7 +2644,8 @@
         "cube_mismatch_message": "El cubo debe estar resuelto antes de poder continuar",
         "reset_cube_state": "Restablecer estado del cubo",
         "solve_cube_to_start": "Resuelve el cubo para comenzar",
-        "solve_cube_for_scramble": "¡Resuelve el cubo para una nueva mezcla!"
+        "solve_cube_for_scramble": "¡Resuelve el cubo para una nueva mezcla!",
+        "settings": "Ajustes del cubo inteligente"
     },
     "smart_scramble": {
         "ready": "Listo para Comenzar",
@@ -4480,5 +4483,25 @@
             "f2l_left": "F2L-L",
             "f2l_right": "F2L-R"
         }
+    },
+    "smart_telemetry": {
+        "title": "Telemetría del cubo inteligente",
+        "days": "{{count}} días",
+        "refresh": "Actualizar",
+        "download": "Descargar CSV ({{count}})",
+        "hint": "Una fila por resolución. \"Flujo de movimientos\" significa que el cubo informó correctamente; las columnas de recuperación indican pérdida de paquetes. Los cubos con muchas recuperaciones son los problemáticos.",
+        "loading": "Cargando...",
+        "empty": "Aún no hay registros. Activa la telemetría en Configuración del sitio.",
+        "col_device": "Dispositivo",
+        "col_protocol": "Protocolo",
+        "col_solves": "Resoluciones",
+        "col_users": "Usuarios",
+        "col_tracker": "Flujo de movimientos",
+        "col_grace": "Recuperación FACELETS",
+        "col_poll": "Recuperación por sondeo",
+        "col_desync": "Desincronización",
+        "col_late": "Movimiento tardío",
+        "col_median": "Latencia mediana",
+        "col_p95": "Latencia P95"
     }
 }

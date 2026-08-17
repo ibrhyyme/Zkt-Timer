@@ -54,6 +54,7 @@ import AdminEmail from '../admin/email/AdminEmail';
 import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
 import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
+import SmartCubeTelemetryPanel from '../admin/smart_cube_telemetry/SmartCubeTelemetryPanel';
 import AdminMedia from '../admin/media/AdminMedia';
 import AdminZktCompetitions from '../admin/zkt_competitions/AdminZktCompetitions';
 import CompetitionDashboard from '../admin/zkt_competitions/CompetitionDashboard';
@@ -287,6 +288,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/promo-codes', App, Admin, AdminPromoCodes, true, false, true),
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
 	route('/admin/media', App, Admin, AdminMedia, true, false, true),
+	route('/admin/smart-telemetry', App, Admin, SmartCubeTelemetryPanel, true, false, true),
 
 	// ZKT competition management — standalone (out of the Admin layout). Admin-only
 	// link in the avatar dropdown for now; mods keep URL access (see server/router.tsx).

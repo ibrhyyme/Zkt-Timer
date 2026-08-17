@@ -28,6 +28,7 @@ export interface SiteConfigData {
 	presence_enabled: boolean;
 	pro_enabled: boolean;
 	wca_backfill_enabled: boolean;
+	smart_telemetry_enabled: boolean;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
 	featureOverrides: FeatureOverrideEntryData[];
 	updated_at: Date;
@@ -44,6 +45,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	presence_enabled: true,
 	pro_enabled: false,
 	wca_backfill_enabled: true,
+	smart_telemetry_enabled: false,
 	feature_overrides: {},
 };
 
@@ -62,6 +64,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			presence_enabled: false,
 			pro_enabled: false,
 			wca_backfill_enabled: false,
+			smart_telemetry_enabled: false,
 			feature_overrides: {},
 			featureOverrides: [],
 			updated_at: new Date(),

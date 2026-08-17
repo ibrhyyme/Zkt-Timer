@@ -1,7 +1,6 @@
 import React, { ReactNode, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import block from '../../../../../styles/bem';
-import { processSmartTurns, matchScrambleWithCommutative } from '../../../../../util/smart_scramble';
 import { TimerContext } from '../../../Timer';
 import { useSettings } from '../../../../../util/hooks/useSettings';
 import { getAnyColorStringAsRgb } from '../../../../../util/themes/theme_util';
@@ -26,17 +25,15 @@ export default function SmartScramble() {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 
-	const { smartTurns, scramble, smartCanStart, smartTurnOffset, smartUndoMoves, smartNeedsCubeReset, smartOutOfSync } = context;
+	const { scramble, smartCanStart, smartUndoMoves, smartNeedsCubeReset, smartOutOfSync, smartMatchStatus } = context;
 
-	// Only consider turns after the offset (turns before offset are from pre-correction history)
-	const offset = smartTurnOffset || 0;
-	const relevantTurns = offset > 0 ? smartTurns.slice(offset) : smartTurns;
-
-	const userMoves = processSmartTurns(relevantTurns);
 	const expectedMoves = scramble.split(' ').filter(m => m.trim());
 
-	// Use matching function that handles commutative moves
-	const { matchStatus } = matchScrambleWithCommutative(expectedMoves, userMoves);
+	// Comes from the shared solve engine. This used to be re-derived here from the raw
+	// turn stream, which could disagree with the engine that actually decides when the
+	// scramble is done: a stray turn after a solve painted the first move "half done"
+	// while the cube sat physically solved.
+	const matchStatus = smartMatchStatus || [];
 
 	// Green-based themes: render matched moves in blue so they stand out from green text.
 	const useBlueMatch = isGreenBaseColor(useSettings('text_color'));

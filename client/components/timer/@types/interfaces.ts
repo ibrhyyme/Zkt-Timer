@@ -107,6 +107,7 @@ export interface TimerStore {
 	originalScramble?: string;
 	smartTurnOffset?: number;
 	smartUndoMoves?: string[] | null;
+	smartMatchStatus?: ('perfect' | 'half' | 'wrong' | 'pending')[];
 	lastSmartSolveStats?: {
 		turns: number;
 		tps: number;

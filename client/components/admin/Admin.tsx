@@ -21,6 +21,7 @@ const SECONDARY_TABS = [
 	{id: 'promo-codes', link: '/admin/promo-codes', labelKey: 'admin_nav.promo'},
 	{id: 'media', link: '/admin/media', labelKey: 'admin_nav.media'},
 	{id: 'site-config', link: '/admin/site-config', labelKey: 'admin_nav.site_config'},
+	{id: 'smart-telemetry', link: '/admin/smart-telemetry', labelKey: 'admin_nav.smart_telemetry'},
 ];
 
 interface Props {
