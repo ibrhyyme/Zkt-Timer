@@ -226,7 +226,10 @@ function utilscramble(type: string, len?: number): string {
 			);
 		case 'mgmp': return pochscramble(10, Math.ceil((length || 70) / 10));
 		case 'pyrm': {
-			const ret = mega([['U'], ['L'], ['R'], ['B']], ['', "'"], length || 25);
+			// '!' is a padding char that keeps every move exactly 3 chars wide
+			// ("U! " / "U' "), which is what addPyrTips' substr math relies on.
+			// It is stripped again below.
+			const ret = mega([['U'], ['L'], ['R'], ['B']], ['!', "'"], length || 25);
 			return addPyrTips(ret, 3).replace(/!/g, '');
 		}
 		case 'sq1h': return sq1_scramble(1, length || 40);

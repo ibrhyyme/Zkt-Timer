@@ -57,6 +57,8 @@ export function mega(
 type MegaArgs = [(string | string[])[][], string[] | 0] | [(string | string[])[][], string[] | 0, number];
 
 const args: Record<string, MegaArgs> = {
+	'2223': [[['U'], ['R'], ['F']], cubesuff],     // 2x2x2 3-gen (U, R, F)
+	'skb': [[['R'], ['L'], ['B'], ['U']], ['', "'"]], // Skewb random-move
 	'333o': [[['U', 'D'], ['R', 'L'], ['F', 'B']], cubesuff],
 	'444': [[['U', 'D', 'u'], ['R', 'L', 'r'], ['F', 'B', 'f']], cubesuff],
 	'444m': [[['U', 'D', 'Uw'], ['R', 'L', 'Rw'], ['F', 'B', 'Fw']], cubesuff],
@@ -75,6 +77,8 @@ const args: Record<string, MegaArgs> = {
 
 // Default lengths for mega-based scrambles
 const defaultLengths: Record<string, number> = {
+	'2223': 25,
+	'skb': 25,
 	'333o': 25,
 	'444': 40, '444m': 40,
 	'555': 60, '555wca': 60,
