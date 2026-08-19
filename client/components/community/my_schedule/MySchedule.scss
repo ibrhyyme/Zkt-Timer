@@ -614,6 +614,13 @@
 		margin: 0 0 0.35rem;
 	}
 
+	&__header-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-bottom: 0.6rem;
+	}
+
 	&__my-status {
 		display: flex;
 		align-items: center;

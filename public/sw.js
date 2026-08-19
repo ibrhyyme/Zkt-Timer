@@ -129,6 +129,13 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Takvim dosyalari (.ics) ve Google Takvim yonlendirmesi: SW intercept etmesin.
+  // Bunlar navigate modunda istenir, yani HTML dalina duserdi: response cache'e
+  // yazilir ve indirme/redirect davranisi SW'nin elinden gecerdi.
+  if (url.pathname.startsWith('/calendar/')) {
+    return;
+  }
+
   // Worker bundle'lari (scramble/cross-solver/solver): SW intercept etme.
   // Versiyonlu URL (?v=RELEASE) + browser cache tazeligi saglar; static handler
   // cacheUrl=pathname oldugu icin ?v= burada ise yaramaz, o yuzden komple bypass.

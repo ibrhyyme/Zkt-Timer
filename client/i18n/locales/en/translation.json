@@ -1,4 +1,15 @@
 {
+    "add_to_calendar": {
+        "button": "Add to Calendar",
+        "title": "Add to Calendar",
+        "google": "Google Calendar",
+        "google_hint": "Opens a prefilled event",
+        "ics": "Apple Calendar, Outlook and others",
+        "ics_hint": "Downloads an .ics file",
+        "note": "The competition is added as an all-day event. Round times can shift on the day, so follow the schedule in the app.",
+        "done": "Done",
+        "event_description": "Schedule and results on Zkt Timer:"
+    },
     "nav": {
         "timer": "Timer",
         "rooms": "Rooms",

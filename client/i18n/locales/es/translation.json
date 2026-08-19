@@ -1,4 +1,15 @@
 {
+    "add_to_calendar": {
+        "button": "Añadir al calendario",
+        "title": "Añadir al calendario",
+        "google": "Google Calendar",
+        "google_hint": "Abre un evento prerrellenado",
+        "ics": "Apple Calendar, Outlook y otros",
+        "ics_hint": "Descarga un archivo .ics",
+        "note": "La competición se añade como evento de todo el día. Los horarios de las rondas pueden cambiar ese día, así que sigue el programa en la aplicación.",
+        "done": "Hecho",
+        "event_description": "Horario y resultados en Zkt Timer:"
+    },
     "nav": {
         "timer": "Timer",
         "rooms": "Salas",

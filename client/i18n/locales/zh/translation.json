@@ -1,4 +1,15 @@
 {
+    "add_to_calendar": {
+        "button": "添加到日历",
+        "title": "添加到日历",
+        "google": "Google 日历",
+        "google_hint": "打开预填的活动页面",
+        "ics": "Apple 日历、Outlook 及其他",
+        "ics_hint": "下载 .ics 文件",
+        "note": "比赛将作为全天活动添加到日历。比赛当天各轮次时间可能变动，请在应用中查看最新赛程。",
+        "done": "完成",
+        "event_description": "赛程与成绩请见 Zkt Timer："
+    },
     "nav": {
         "timer": "计时器",
         "rooms": "房间",

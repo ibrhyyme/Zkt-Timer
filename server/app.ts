@@ -45,6 +45,7 @@ import { updateLastSeen } from './services/last_seen';
 import { initCronJobs } from './services/cron';
 import { initWebhookListeners } from './webhooks';
 import { exposeResourcesForSearchEngines } from './middlewares/search_engines';
+import { exposeCompetitionCalendars } from './middlewares/calendar';
 import { initSearch } from './services/search';
 import { getWcaRedirectUri } from '../shared/integration';
 
@@ -238,6 +239,7 @@ app.use((req, res, next) => {
 
 initWebhookListeners();
 exposeResourcesForSearchEngines();
+exposeCompetitionCalendars();
 
 app.use((req, res, next) => {
 	req.headers.origin = req.headers.origin || req.headers.host;

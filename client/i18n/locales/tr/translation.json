@@ -1,4 +1,15 @@
 {
+    "add_to_calendar": {
+        "button": "Takvime Ekle",
+        "title": "Takvime Ekle",
+        "google": "Google Takvim",
+        "google_hint": "Etkinlik ekranı hazır gelir",
+        "ics": "Apple Takvim, Outlook ve diğerleri",
+        "ics_hint": ".ics dosyası indirilir",
+        "note": "Yarışma, takvime tüm gün etkinliği olarak eklenir. Tur saatleri yarışma günü değişebildiği için programı uygulamadan takip edin.",
+        "done": "Bitti",
+        "event_description": "Program ve sonuçlar Zkt Timer'da:"
+    },
     "nav": {
         "timer": "Timer",
         "rooms": "Odalar",

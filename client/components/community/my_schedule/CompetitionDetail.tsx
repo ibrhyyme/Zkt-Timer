@@ -5,6 +5,7 @@ import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broa
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
 import FollowBellButton from './FollowBellButton';
+import AddToCalendarButton from '../../common/add_to_calendar/AddToCalendarButton';
 import CompetitionSchedule from './CompetitionSchedule';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
@@ -66,6 +67,9 @@ export default function CompetitionDetail() {
 		<div className={b('detail')}>
 			<div className={b('detail-header')}>
 				<h2 className={b('comp-name')}>{detail.competitionName}</h2>
+				<div className={b('header-actions')}>
+					<AddToCalendarButton competitionId={detail.competitionId} />
+				</div>
 				{/* Day-split competition (ZKT): every competitor attends exactly ONE of
 				    these days, so the schedule below is not "the competition" for any
 				    one person — and turning up on the wrong morning is not fixable. */}

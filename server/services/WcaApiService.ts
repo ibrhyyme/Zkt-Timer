@@ -414,6 +414,23 @@ export class WcaApiService {
 	}
 
 	/**
+	 * Fetch a single competition's public record (name, dates, venue, city).
+	 * Deliberately not the WCIF: WCIF payloads reach several MB for large
+	 * competitions, and the calendar export only needs the header fields.
+	 */
+	static async fetchCompetitionInfo(competitionId: string): Promise<any | null> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/competitions/${competitionId}`, {
+				timeout: 15000,
+			});
+			return response.data || null;
+		} catch (error) {
+			console.error(`Failed to fetch WCA competition ${competitionId}:`, error.message);
+			return null;
+		}
+	}
+
+	/**
 	 * Fetch all competition results for a person
 	 */
 	static async fetchPersonResults(wcaId: string): Promise<any[]> {

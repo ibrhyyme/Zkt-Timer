@@ -18,6 +18,7 @@ export enum RedisNamespace {
 	WCA_COMPETITIONS = 'cd:wca:competitions',
 	WCA_RESULTS = 'cd:wca:results',
 	WCA_WCIF = 'cd:wca:wcif',
+	WCA_COMP_INFO = 'cd:wca:compinfo',
 	WCA_WORLD_RECORDS = 'cd:wca:worldrecords',
 	WCA_RANKINGS = 'cd:wca:rankings',
 	ZKT_COMP_LIST = 'cd:zktcomp:list',
