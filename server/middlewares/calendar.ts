@@ -63,6 +63,11 @@ function toDate(value: any): Date | null {
 	return isNaN(date.getTime()) ? null : date;
 }
 
+/** Inverse of toDate: the calendar day as "YYYY-MM-DD", read in UTC. */
+function isoDay(date: Date): string {
+	return date.toISOString().slice(0, 10);
+}
+
 function sendIcs(res: any, name: string, event: IcsEvent) {
 	const body = buildIcsCalendar(name, [event]);
 	const safe = safeFileName(name);
@@ -186,6 +191,53 @@ function register(path: string, loader: CalendarLoader) {
 			sendIcs(res, loaded.name, loaded.event);
 		} catch (e) {
 			logger.warn('Calendar export failed', {path, id, error: e?.message});
+			res.status(502).end();
+		}
+	});
+
+	// Plain event fields for the native calendar plugin. The plugin writes into the
+	// phone's own calendar, so it needs the values, not a file: dates stay as a
+	// plain calendar day because each platform anchors an all-day event
+	// differently, and only the platform knows which anchor its calendar wants.
+	global.app.get(`${path}/meta`, async (req, res) => {
+		const id = String(req.params.id || '');
+		if (!isValidId(id)) {
+			res.status(400).end();
+			return;
+		}
+		try {
+			const loaded = await loader(req, id);
+			if (!loaded) {
+				res.status(404).end();
+				return;
+			}
+			const {event} = loaded;
+
+			// This route is fetched by XHR from the native shell, whose origin is
+			// capacitor://localhost, while the browser fetches it from the site
+			// origin. The global cors() middleware runs with credentials:true and
+			// therefore echoes a per-origin Allow-Origin header, and the edge cache
+			// rule ("cache everything for requests without a session cookie") does
+			// not vary on Origin. A cached copy would hand one origin the other
+			// origin's header and break CORS for hours.
+			//
+			// Two guards: never store it, and make the header origin-independent so
+			// a cached copy could not poison anything even if it happened. The data
+			// is public and carries no credentials.
+			res.setHeader('Cache-Control', 'private, no-store');
+			res.setHeader('Access-Control-Allow-Origin', '*');
+			res.removeHeader('Access-Control-Allow-Credentials');
+			res.json({
+				title: event.summary,
+				startDate: isoDay(event.startDate),
+				endDate: isoDay(event.endDate),
+				location: event.location || '',
+				notes: event.description || '',
+				url: event.url || '',
+				cancelled: Boolean(event.cancelled),
+			});
+		} catch (e) {
+			logger.warn('Calendar meta failed', {path, id, error: e?.message});
 			res.status(502).end();
 		}
 	});
