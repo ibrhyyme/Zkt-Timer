@@ -8,7 +8,11 @@
         "ics_hint": "下载 .ics 文件",
         "note": "比赛将作为全天活动添加到日历。比赛当天各轮次时间可能变动，请在应用中查看最新赛程。",
         "done": "完成",
-        "event_description": "赛程与成绩请见 Zkt Timer："
+        "event_description": "赛程与成绩请见 Zkt Timer：",
+        "native_saved": "比赛已添加到日历。",
+        "native_denied": "未授予日历权限。你可以用其他方式添加。",
+        "native_error": "无法打开日历应用。",
+        "cancelled_prefix": "已取消"
     },
     "nav": {
         "timer": "计时器",

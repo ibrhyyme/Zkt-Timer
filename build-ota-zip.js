@@ -15,6 +15,15 @@
  * plugin/API that older binaries don't ship — otherwise old apps OTA into a bundle
  * that calls plugins they don't have.
  *
+ * ...but it CANNOT gate a single platform, so do not reach for it when adding one
+ * plugin. The value is compared against the native app version, and the two
+ * platforms live in disjoint number spaces: Android versionName is 1.6.x while
+ * iOS CFBundleShortVersionString is 2.0.x. Raising it to 1.6.2 lets every iOS
+ * binary through (2 > 1); raising it to 2.0.18 cuts EVERY Android device off from
+ * all future bundles. For a new plugin, make the web layer degrade at runtime
+ * instead: probe for the plugin and fall back when it is absent. See
+ * client/util/native-calendar.ts and client/util/slam-stop/plugin.ts.
+ *
  * Run AFTER build-native-bundle.js: node build-ota-zip.js
  */
 require('dotenv').config();

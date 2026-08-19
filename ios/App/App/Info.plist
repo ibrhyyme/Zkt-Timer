@@ -64,5 +64,7 @@
 	<string>Zkt Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Zkt Timer needs Bluetooth to communicate with smart cubes.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Zkt Timer adds competitions you choose to your calendar. It never reads your existing events.</string>
 </dict>
 </plist>

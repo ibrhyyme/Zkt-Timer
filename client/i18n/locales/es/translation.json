@@ -8,7 +8,11 @@
         "ics_hint": "Descarga un archivo .ics",
         "note": "La competición se añade como evento de todo el día. Los horarios de las rondas pueden cambiar ese día, así que sigue el programa en la aplicación.",
         "done": "Hecho",
-        "event_description": "Horario y resultados en Zkt Timer:"
+        "event_description": "Horario y resultados en Zkt Timer:",
+        "native_saved": "Competición añadida a tu calendario.",
+        "native_denied": "No se concedió acceso al calendario. Puedes añadirla de otra forma.",
+        "native_error": "No se pudo abrir la aplicación de calendario.",
+        "cancelled_prefix": "CANCELADA"
     },
     "nav": {
         "timer": "Timer",

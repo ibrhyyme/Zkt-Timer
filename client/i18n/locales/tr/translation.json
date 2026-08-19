@@ -8,7 +8,11 @@
         "ics_hint": ".ics dosyası indirilir",
         "note": "Yarışma, takvime tüm gün etkinliği olarak eklenir. Tur saatleri yarışma günü değişebildiği için programı uygulamadan takip edin.",
         "done": "Bitti",
-        "event_description": "Program ve sonuçlar Zkt Timer'da:"
+        "event_description": "Program ve sonuçlar Zkt Timer'da:",
+        "native_saved": "Yarışma takvimine eklendi.",
+        "native_denied": "Takvim izni verilmedi. Diğer seçeneklerle ekleyebilirsin.",
+        "native_error": "Takvim uygulaması açılamadı.",
+        "cancelled_prefix": "İPTAL"
     },
     "nav": {
         "timer": "Timer",
