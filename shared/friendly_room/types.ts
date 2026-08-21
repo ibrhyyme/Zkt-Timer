@@ -2,6 +2,9 @@
 
 export interface FriendlyRoomData {
     id: string;
+    // URL segment for this room. Null on rooms created before slugs shipped, which keep
+    // addressing themselves by id.
+    slug: string | null;
     name: string;
     cube_type: string;
     max_players: number;
@@ -77,6 +80,7 @@ export interface SessionTakeoverPayload {
 
 export interface AlreadyInOtherRoomPayload {
     current_room_id: string;
+    current_room_slug: string | null;
     current_room_name: string;
 }
 

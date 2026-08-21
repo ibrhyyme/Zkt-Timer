@@ -13,6 +13,7 @@ import {
     canManageRoom,
     canAssignRoles,
 } from '../../shared/friendly_room/roles';
+import { slugifyRoomName } from '../../shared/friendly_room/slug';
 import { PublicUserAccount } from '../schemas/UserAccount.schema';
 import * as bcrypt from 'bcryptjs';
 
@@ -90,6 +91,39 @@ function generateScrambleForCubeType(cubeType: string): string {
     }
 }
 
+// Slugs are unique, so two people naming a room the same thing race on the insert.
+// Recomputing the suffix and retrying is cheaper than locking the table.
+const CREATE_ROOM_SLUG_ATTEMPTS = 3;
+
+// Lowest free slug for a name: "cuma-yarisi", then "-2", "-3", ... Deleting a room frees
+// its slug again, and rooms are deleted as soon as the last participant leaves.
+async function generateUniqueSlug(name: string): Promise<string> {
+    const base = slugifyRoomName(name);
+    const taken = await prisma().friendlyRoom.findMany({
+        where: { OR: [{ slug: base }, { slug: { startsWith: `${base}-` } }] },
+        select: { slug: true },
+    });
+
+    const used = new Set(taken.map((r) => r.slug || ''));
+    if (!used.has(base)) return base;
+
+    for (let i = 2; i < 1000; i++) {
+        const candidate = `${base}-${i}`;
+        if (!used.has(candidate)) return candidate;
+    }
+    return `${base}-${Date.now().toString(36)}`;
+}
+
+// Resolve a /rooms/<segment> URL to a room. The segment is either a slug or a raw id;
+// slugifyRoomName never emits an id-shaped string, so the OR lookup is unambiguous.
+export async function resolveRoomKey(key: string): Promise<{ id: string; slug: string | null } | null> {
+    if (!key || typeof key !== 'string') return null;
+    return prisma().friendlyRoom.findFirst({
+        where: { OR: [{ id: key }, { slug: key }] },
+        select: { id: true, slug: true },
+    });
+}
+
 // Create a new room
 export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUserAccount): Promise<FriendlyRoomData> {
     // Hash password if provided. Cap length before bcrypt (bounds CPU input) — sliced
@@ -104,47 +138,70 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
     // Generate initial scramble
     const initialScramble = generateScrambleForCubeType(cubeType);
 
-    const room = await prisma().friendlyRoom.create({
-        data: {
-            name: input.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH),
-            password: hashedPassword,
-            cube_type: cubeType,
+    const name = input.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH);
 
-            max_players: Math.max(FriendlyRoomConst.MIN_PLAYERS, Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS)),
-            is_private: input.is_private || false,
-            current_scramble: initialScramble,
-            scramble_index: 1,
-            status: 'WAITING',
-            created_by_id: user.id,
-            original_creator_id: user.id,
-            participants: {
-                create: {
-                    user_id: user.id,
-                    is_ready: false,
-                },
-            },
-            scramble_history: {
-                create: { scramble_index: 1, scramble: initialScramble },
+    const include = {
+        created_by: {
+            select: { id: true, username: true },
+        },
+        participants: {
+            include: {
+                user: { select: { id: true, username: true } },
+                solves: true,
             },
         },
-        include: {
-            created_by: {
-                select: { id: true, username: true },
-            },
-            participants: {
-                include: {
-                    user: { select: { id: true, username: true } },
-                    solves: true,
-                },
-            },
-            scramble_history: {
-                orderBy: { scramble_index: 'asc' },
-                select: { scramble_index: true, scramble: true },
-            },
+        scramble_history: {
+            orderBy: { scramble_index: 'asc' as const },
+            select: { scramble_index: true, scramble: true },
         },
-    });
+    };
 
-    return mapRoomToData(room);
+    let lastError: any = null;
+    for (let attempt = 0; attempt < CREATE_ROOM_SLUG_ATTEMPTS; attempt++) {
+        // Final attempt uses a timestamp suffix that cannot lose another race.
+        const slug =
+            attempt < CREATE_ROOM_SLUG_ATTEMPTS - 1
+                ? await generateUniqueSlug(name)
+                : `${slugifyRoomName(name)}-${Date.now().toString(36)}`;
+
+        try {
+            const room = await prisma().friendlyRoom.create({
+                data: {
+                    name,
+                    slug,
+                    password: hashedPassword,
+                    cube_type: cubeType,
+
+                    max_players: Math.max(FriendlyRoomConst.MIN_PLAYERS, Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS)),
+                    is_private: input.is_private || false,
+                    current_scramble: initialScramble,
+                    scramble_index: 1,
+                    status: 'WAITING',
+                    created_by_id: user.id,
+                    original_creator_id: user.id,
+                    participants: {
+                        create: {
+                            user_id: user.id,
+                            is_ready: false,
+                        },
+                    },
+                    scramble_history: {
+                        create: { scramble_index: 1, scramble: initialScramble },
+                    },
+                },
+                include,
+            });
+
+            return mapRoomToData(room);
+        } catch (error: any) {
+            // slug is the only unique column on FriendlyRoom, so P2002 always means the
+            // name was claimed between the lookup and the insert.
+            if (error.code !== 'P2002') throw error;
+            lastError = error;
+        }
+    }
+
+    throw lastError;
 }
 
 // Get room by ID
@@ -760,6 +817,7 @@ function mapRoomToData(room: any): FriendlyRoomData {
     const DELETED_USER_LABEL = 'Deleted user';
     return {
         id: room.id,
+        slug: room.slug ?? null,
         name: room.name,
         cube_type: room.cube_type,
         max_players: room.max_players,

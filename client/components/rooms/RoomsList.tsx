@@ -9,6 +9,7 @@ import {
     FriendlyRoomServerEvent,
     FriendlyRoomSocketRoom,
     MyActiveRoomPayload,
+    roomPath,
 } from '../../../shared/friendly_room';
 import CreateRoomModal from './CreateRoomModal';
 import RoomCard from './RoomCard';
@@ -57,7 +58,7 @@ function RoomsListContent() {
         // Listen for room created (navigate to new room if I created it)
         socket.on(FriendlyRoomServerEvent.ROOM_CREATED, (room: FriendlyRoomData) => {
             // Navigate to the newly created room
-            history.push(`/rooms/${room.id}`);
+            history.push(roomPath(room));
         });
 
         // Listen for room deleted
@@ -89,7 +90,7 @@ function RoomsListContent() {
     }
 
     function handleJoinRoom(room: FriendlyRoomData) {
-        history.push(`/rooms/${room.id}`);
+        history.push(roomPath(room));
     }
 
     const publicRooms = rooms.filter((r) => !r.is_private);

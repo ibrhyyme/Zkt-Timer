@@ -963,6 +963,9 @@ enum FriendlyRoomStatus {
 
 model FriendlyRoom {
   id               String                    @id @default(uuid())
+  // URL slug derived from the room name at creation. Nullable so existing rooms survive
+  // db push; they keep addressing themselves by id.
+  slug             String?                   @unique
   name             String
   password         String?
   cube_type        String                    @default("333")

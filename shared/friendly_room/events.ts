@@ -7,6 +7,7 @@ export enum FriendlyRoomClientEvent {
     LEAVE_ROOM = 'leaveFriendlyRoom',
     GET_ROOMS = 'getFriendlyRooms',
     GET_ROOM = 'getFriendlyRoom',
+    RESOLVE_ROOM_KEY = 'friendlyRoomResolveKey', // slug-or-id URL segment -> room id
     TOGGLE_READY = 'friendlyRoomToggleReady',
     SUBMIT_SOLVE = 'friendlyRoomSubmitSolve',
     SEND_CHAT = 'friendlyRoomSendChat',
@@ -35,6 +36,7 @@ export enum FriendlyRoomServerEvent {
     ROOM_UPDATED = 'friendlyRoomUpdated',
     ROOM_DELETED = 'friendlyRoomDeleted',
     ROOM_DATA = 'friendlyRoomData',
+    ROOM_KEY_RESOLVED = 'friendlyRoomKeyResolved',
     PLAYER_JOINED = 'friendlyRoomPlayerJoined',
     PLAYER_LEFT = 'friendlyRoomPlayerLeft',
     PLAYER_READY_CHANGED = 'friendlyRoomPlayerReadyChanged',

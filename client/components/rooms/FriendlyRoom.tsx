@@ -34,6 +34,7 @@ import EditRoomModal from './EditRoomModal';
 import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
 import { FriendlyRoomRole, getFriendlyRoomRole, canManageRoom } from '../../../shared/friendly_room/roles';
+import { looksLikeRoomId, roomPath } from '../../../shared/friendly_room/slug';
 import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
@@ -63,6 +64,8 @@ import { PRO_GATED_TIMER_TYPES } from '../timer/helpers/pro_timer_types';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
+    // The /rooms/<segment> URL carries a slug ("cuma-aksami-yarisi"), or a raw id for
+    // rooms created before slugs shipped and for links shared back then.
     roomId: string;
 }
 
@@ -94,18 +97,29 @@ export default function FriendlyRoom() {
 
 function FriendlyRoomContent() {
     const { t } = useTranslation();
-    const { roomId } = useParams<ParamsType>();
+    const { roomId: roomKey } = useParams<ParamsType>();
     const history = useHistory();
     const me = useMe();
     const userIsPro = isPro(me);
     const dispatch = useDispatch();
+
+    // Slug -> id resolution. Every socket event below still speaks raw ids, so the URL
+    // segment is translated exactly once and the rest of the component is unchanged.
+    // An id URL needs no round-trip; a slug URL waits for ROOM_KEY_RESOLVED.
+    const [resolved, setResolved] = useState<{ id: string; slug: string | null } | null>(
+        () => (looksLikeRoomId(roomKey) ? { id: roomKey, slug: null } : null)
+    );
+    // A resolution is valid for both URL forms of the same room, so the canonical-URL
+    // rewrite below does not invalidate it. A different room in the URL zeroes roomId
+    // and re-triggers resolution.
+    const roomId = resolved && (roomKey === resolved.id || roomKey === resolved.slug) ? resolved.id : '';
 
     const [room, setRoom] = useState<FriendlyRoomData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [needsPassword, setNeedsPassword] = useState(false);
     const [takenOver, setTakenOver] = useState(false);
-    const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; name: string } | null>(null);
+    const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; slug: string | null; name: string } | null>(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
     // Desktop edit popover (EditRoomDropdown) open state — shared so the cube-type chip can open the same popover
     const [editPopoverOpen, setEditPopoverOpen] = useState(false);
@@ -820,11 +834,61 @@ function FriendlyRoomContent() {
     // Throttled status update
 
 
+    // Translate the URL segment into a room id (slug URLs only).
+    useEffect(() => {
+        if (roomId) return;
+        if (!roomKey) return;
+
+        const socket = getSocket();
+
+        const onResolved = (payload: { key: string; room_id: string | null; slug: string | null }) => {
+            if (payload.key !== roomKey) return;
+            if (!payload.room_id) {
+                setError(t('rooms.room_not_found'));
+                setLoading(false);
+                return;
+            }
+            setResolved({ id: payload.room_id, slug: payload.slug });
+        };
+
+        socket.on(FriendlyRoomServerEvent.ROOM_KEY_RESOLVED, onResolved);
+        socket.emit(FriendlyRoomClientEvent.RESOLVE_ROOM_KEY, roomKey);
+
+        return () => {
+            socket.off(FriendlyRoomServerEvent.ROOM_KEY_RESOLVED, onResolved);
+        };
+    }, [roomKey, roomId, t]);
+
+    // Learn the slug from room state — an id URL never went through RESOLVE_ROOM_KEY.
+    // Must land before the rewrite below, otherwise the new URL would not match the
+    // resolution and roomId would flicker back to empty.
+    useEffect(() => {
+        if (!room) return;
+        setResolved((prev) => {
+            // Late ROOM_DATA for a room we already navigated away from must not drag the
+            // URL back to it.
+            if (!prev || prev.id !== room.id) return prev;
+            return prev.slug === room.slug ? prev : { id: room.id, slug: room.slug };
+        });
+    }, [room?.id, room?.slug]);
+
+    // Rewrite an id URL to the canonical slug URL. Legacy rooms have no slug and keep
+    // their id in the address bar.
+    useEffect(() => {
+        if (!resolved?.slug) return;
+        if (roomKey === resolved.slug) return;
+        history.replace(`/rooms/${resolved.slug}`);
+    }, [resolved, roomKey, history]);
+
     // Reconnect flag: socket reconnect should do full ROOM_DATA hydration
     const isReconnectingRef = useRef(false);
 
     // Fetch room data
     useEffect(() => {
+        // Slug URL: wait for resolution — the server rejects an empty room id anyway,
+        // but JOIN_ROOM would surface it as a full-screen error.
+        if (!roomId) return;
+
         const socket = getSocket();
 
         // Request room data
@@ -875,7 +939,7 @@ function FriendlyRoomContent() {
 
         // Single active session: user is already in another room
         socket.on(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, (data: AlreadyInOtherRoomPayload) => {
-            setAlreadyInRoom({ id: data.current_room_id, name: data.current_room_name });
+            setAlreadyInRoom({ id: data.current_room_id, slug: data.current_room_slug, name: data.current_room_name });
             setLoading(false);
         });
 
@@ -1103,7 +1167,7 @@ function FriendlyRoomContent() {
     const lastDisconnectRef = useRef<number | null>(null);
 
     useEffect(() => {
-        if (!me) return;
+        if (!me || !roomId) return;
 
         const socket = getSocket();
 
@@ -1337,7 +1401,7 @@ function FriendlyRoomContent() {
     }
 
     if (alreadyInRoom) {
-        const currentRoomId = alreadyInRoom.id;
+        const currentRoomPath = roomPath(alreadyInRoom);
         return (
             <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background p-4 text-text">
                 <AlreadyInOtherRoomModal
@@ -1346,7 +1410,7 @@ function FriendlyRoomContent() {
                         // State'i hemen temizle, navigasyondan sonra yeni JOIN tetiklenecek
                         setAlreadyInRoom(null);
                         setLoading(true);
-                        history.push(`/rooms/${currentRoomId}`);
+                        history.push(currentRoomPath);
                     }}
                     onCancel={() => {
                         setAlreadyInRoom(null);

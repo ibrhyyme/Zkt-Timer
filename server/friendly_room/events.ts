@@ -22,6 +22,7 @@ import {
     nextScramble,
     startRoom,
     getRoomForClient,
+    resolveRoomKey,
     updateRoom,
     kickParticipant,
     banParticipant,
@@ -184,6 +185,25 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
+    // Resolve a /rooms/<segment> URL (slug or raw id) to the room id. Every other socket
+    // event keeps taking the id, so this is the only place slugs are understood.
+    client.on(FriendlyRoomClientEvent.RESOLVE_ROOM_KEY, async (key: string) => {
+        try {
+            if (typeof key !== 'string' || !key) return;
+            if (!(await socketRateLimit(client, 'resolve_key', 60, 60))) return;
+
+            const resolved = await resolveRoomKey(key);
+            client.emit(FriendlyRoomServerEvent.ROOM_KEY_RESOLVED, {
+                key,
+                room_id: resolved?.id ?? null,
+                slug: resolved?.slug ?? null,
+            });
+        } catch (error) {
+            logger.error('Error resolving room key', { error });
+            client.emit(FriendlyRoomServerEvent.ROOM_KEY_RESOLVED, { key, room_id: null, slug: null });
+        }
+    });
+
     // Get single room
     client.on(FriendlyRoomClientEvent.GET_ROOM, async (roomId: string) => {
         try {
@@ -242,6 +262,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     });
                     client.emit(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, {
                         current_room_id: existingRoom.id,
+                        current_room_slug: existingRoom.slug,
                         current_room_name: existingRoom.name,
                     });
                     return;
@@ -322,6 +343,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                         });
                         client.emit(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, {
                             current_room_id: existingRoom.id,
+                            current_room_slug: existingRoom.slug,
                             current_room_name: existingRoom.name,
                         });
                         return;
