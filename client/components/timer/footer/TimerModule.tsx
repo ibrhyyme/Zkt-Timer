@@ -144,10 +144,12 @@ export default function TimerModule(props: Props) {
 		dropdown = null;
 	}
 
+	// Every module looks the same. This used to box only the odd-indexed ones
+	// (`index % 2 !== 0`), so neighbouring modules of the same kind rendered
+	// differently for no reason other than their position. Separation now comes from
+	// a hairline between modules, defined in TimerFooter.scss so it can follow the
+	// layout direction.
 	const wrapperClass = ['group', 'h-full', 'w-full', 'p-3', 'overflow-hidden', 'relative'];
-	if (index % 2 !== 0) {
-		wrapperClass.push('rounded-lg', 'border-4', 'border-tmo-background/10', 'bg-tm-module/10');
-	}
 	// Clock küpü için özel class
 	if (moduleType === TimerModuleType.SCRAMBLE && cubeType === 'clock') {
 		wrapperClass.push('clock-scramble');

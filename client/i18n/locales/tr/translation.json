@@ -787,7 +787,7 @@
         }
     },
     "account_nav": {
-        "page_title": "Hesap",
+        "page_title": "Hesap Ayarları",
         "personal_info": "Kişisel Bilgiler",
         "password": "Şifre",
         "notifications": "Bildirimler",
@@ -1687,6 +1687,14 @@
         "banned": "Yasaklılar",
         "no_banned": "Yasaklı kullanıcı yok",
         "unban": "YASAĞI KALDIR",
+        "role_owner": "Sahip",
+        "role_moderator": "Moderatör",
+        "role_moderator_short": "MOD",
+        "make_moderator": "MODERATÖR YAP",
+        "remove_moderator": "YETKİYİ AL",
+        "transfer_ownership": "SAHİPLİĞİ DEVRET",
+        "transfer_ownership_confirm": "Oda sahipliğini {{name}} kullanıcısına devrediyorsun. Bundan sonra odayı o yönetecek ve seni odadan atabilecek. Onaylıyor musun?",
+        "you": "SEN",
         "close": "KAPAT",
         "done": "BİTTİ",
         "protected_room": "Şifreli Oda",

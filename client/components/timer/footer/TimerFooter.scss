@@ -124,6 +124,16 @@
 			}
 		}
 
+		// Modules are separated by a hairline rather than by boxing every second one.
+		// The rule follows the layout direction: a vertical line between columns, a
+		// horizontal one between stacked rows. Mobile already separates with `gap`,
+		// so it is excluded.
+		&--layout-bottom:not(#{$self}__body--mobile) {
+			> .group + .group {
+				border-left: 1px solid rgba(var(--text-color), 0.12);
+			}
+		}
+
 		&--layout-bottom {
 			display: grid;
 			overflow: hidden;
@@ -228,6 +238,11 @@
 			grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
 			height: 100%;
 			overflow: hidden;
+
+			// Stacked column: the hairline runs horizontally instead.
+			> .group + .group {
+				border-top: 1px solid rgba(var(--text-color), 0.12);
+			}
 		}
 	}
 }

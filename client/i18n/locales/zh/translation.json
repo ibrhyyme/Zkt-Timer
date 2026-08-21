@@ -780,7 +780,7 @@
         }
     },
     "account_nav": {
-        "page_title": "账户",
+        "page_title": "账户设置",
         "personal_info": "个人信息",
         "password": "密码",
         "notifications": "通知",
@@ -1680,6 +1680,14 @@
         "banned": "已封禁",
         "no_banned": "没有被封禁的用户",
         "unban": "解除封禁",
+        "role_owner": "房主",
+        "role_moderator": "管理员",
+        "role_moderator_short": "管理",
+        "make_moderator": "设为管理员",
+        "remove_moderator": "取消管理员",
+        "transfer_ownership": "转让房主",
+        "transfer_ownership_confirm": "你正在把房主身份转让给 {{name}}。之后由对方管理房间，并且可以把你移出房间。确定吗？",
+        "you": "你",
         "close": "关闭",
         "done": "完成",
         "protected_room": "受保护的房间",

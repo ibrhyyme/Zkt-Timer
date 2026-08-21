@@ -3,17 +3,24 @@
 .#{$namespace}-common-button {
 	$self: &;
 
-	border-radius: 4px;
+	// One scale: 32 / 38 / 46. The old 29px default (and 25px small) predate any
+	// touch-target guidance and read as cramped on every screen.
+	// Radius and weight are unified to the values the gray theme already used —
+	// seven of eight buttons on a page were 8px/600 while the primary was 4px/400.
+	border-radius: 8px;
 	color: rgb(var(--text-color));
-	font-family: 'Source Sans Pro', sans-serif;
-	height: 29px;
-	padding: 0 10px;
+	// Inherit the app typeface. This said 'Source Sans Pro', which is not loaded
+	// anywhere, so buttons fell through to the browser default.
+	font-family: inherit;
+	height: 38px;
+	padding: 0 16px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.95rem;
-	font-weight: 400;
+	font-size: 0.875rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
 	box-sizing: border-box;
 
 	>*:not(:last-child) {
@@ -21,15 +28,15 @@
 	}
 
 	&--large {
-		height: 42px;
-		font-size: 1.05rem;
-		padding: 0 15px;
+		height: 46px;
+		font-size: 0.95rem;
+		padding: 0 22px;
 	}
 
 	&--small {
-		font-size: 0.85rem;
-		height: 25px;
-		padding: 0 7px;
+		font-size: 0.8125rem;
+		height: 32px;
+		padding: 0 12px;
 	}
 
 	&:disabled,

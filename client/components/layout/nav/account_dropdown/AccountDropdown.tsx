@@ -74,7 +74,10 @@ export default function AccountDropdown() {
 		key: 'account',
 		label: t('account_dropdown.account'),
 		icon: <IdentificationCard weight="bold" />,
-		link: '/account/personal-info',
+		// /account is the section index. On mobile that shows the section list;
+		// on desktop the route mounts the same child as /account/personal-info,
+		// so the desktop view is unchanged.
+		link: '/account',
 	});
 	items.push({
 		key: 'settings',

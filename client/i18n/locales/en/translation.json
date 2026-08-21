@@ -780,7 +780,7 @@
         }
     },
     "account_nav": {
-        "page_title": "Account",
+        "page_title": "Account Settings",
         "personal_info": "Personal Info",
         "password": "Password",
         "notifications": "Notifications",
@@ -1680,6 +1680,14 @@
         "banned": "Banned",
         "no_banned": "No banned users",
         "unban": "UNBAN",
+        "role_owner": "Owner",
+        "role_moderator": "Moderator",
+        "role_moderator_short": "MOD",
+        "make_moderator": "MAKE MODERATOR",
+        "remove_moderator": "REMOVE MODERATOR",
+        "transfer_ownership": "TRANSFER OWNERSHIP",
+        "transfer_ownership_confirm": "You are transferring room ownership to {{name}}. They will run the room from now on and will be able to remove you from it. Continue?",
+        "you": "YOU",
         "close": "CLOSE",
         "done": "DONE",
         "protected_room": "Protected Room",

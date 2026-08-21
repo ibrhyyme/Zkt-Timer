@@ -780,7 +780,7 @@
         }
     },
     "account_nav": {
-        "page_title": "Cuenta",
+        "page_title": "Ajustes de cuenta",
         "personal_info": "Información personal",
         "password": "Contraseña",
         "notifications": "Notificaciones",
@@ -1680,6 +1680,14 @@
         "banned": "Prohibidos",
         "no_banned": "No hay usuarios prohibidos",
         "unban": "DESBLOQUEAR",
+        "role_owner": "Propietario",
+        "role_moderator": "Moderador",
+        "role_moderator_short": "MOD",
+        "make_moderator": "HACER MODERADOR",
+        "remove_moderator": "QUITAR MODERADOR",
+        "transfer_ownership": "TRANSFERIR PROPIEDAD",
+        "transfer_ownership_confirm": "Vas a transferir la propiedad de la sala a {{name}}. A partir de ahora gestionará la sala y podrá expulsarte. ¿Continuar?",
+        "you": "TÚ",
         "close": "CERRAR",
         "done": "HECHO",
         "protected_room": "Sala protegida",
