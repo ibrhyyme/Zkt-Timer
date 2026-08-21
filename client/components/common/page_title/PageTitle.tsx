@@ -33,10 +33,6 @@ export default function PageTitle(props: Props) {
 					</div>
 				</div>
 			</h1>
-			<div className={b('lines')}>
-				<div className={b('line')} />
-				<div className={b('line', { secondary: true })} />
-			</div>
 
 			{children ? <div className={b('content')}>{children}</div> : null}
 		</div>

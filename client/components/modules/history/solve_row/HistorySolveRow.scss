@@ -4,7 +4,7 @@
 	width: 100%;
 	display: flex;
 	flex-direction: row;
-	height: 36px;
+	height: 40px;
 	padding-right: 5px;
 	box-sizing: border-box;
 	justify-content: space-between;
@@ -60,21 +60,45 @@
 		}
 	}
 
+	// Hierarchy comes from size and weight, never from opacity. The row used to
+	// fade these to 0.3 and reveal them on hover, which left +2, DNF and delete
+	// looking identical and unreadable until you went looking for them.
 	&__index {
-		opacity: 0.6;
+		font-size: 0.8rem;
+		font-weight: 500;
 	}
 
 	&__action {
-		transition: opacity 0.1s ease-in-out;
-		opacity: 0.3;
-		font-size: 1rem !important;
+		font-size: 0.72rem !important;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		height: 26px !important;
+		min-height: 26px !important;
+		padding: 0 2px !important;
+		border-radius: 0 !important;
+		transition: box-shadow 0.1s ease-in-out;
+		box-shadow: inset 0 -2px 0 transparent;
 
 		&:hover {
-			opacity: 0.7;
+			box-shadow: inset 0 -2px 0 rgba(var(--text-color), 0.35);
 		}
 
+		// A penalty that is switched on is underlined in its own meaning colour,
+		// which the Button's warning/danger themes already provide.
 		&--active {
-			opacity: 1 !important;
+			box-shadow: inset 0 -2px 0 currentColor;
+		}
+
+		// Delete is not a penalty toggle: no underline, and a gap that separates it
+		// from the +2 / DNF pair.
+		&--remove {
+			margin-left: 22px !important;
+			font-size: 0.95rem !important;
+			box-shadow: none;
+
+			&:hover {
+				box-shadow: none;
+			}
 		}
 	}
 
@@ -118,8 +142,7 @@
 
 		>i {
 			color: rgb(var(--text-color));
-			opacity: 0.6;
-			font-size: 0.9rem;
+			font-size: 0.8rem;
 			margin-left: 8px;
 			position: relative;
 			top: 1px;

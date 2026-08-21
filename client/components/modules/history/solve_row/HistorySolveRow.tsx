@@ -64,7 +64,7 @@ function HistorySolveRow(props: Props) {
 			actions = (
 				<Button
 					title="Delete solve"
-					className={b('action', { active: true })}
+					className={b('action', { remove: true })}
 					icon={<X />}
 					flat
 					white
@@ -92,9 +92,11 @@ function HistorySolveRow(props: Props) {
 						text="DNF"
 						onClick={dnfSolve}
 					/>
+					{/* Deleting is not a penalty, so it does not take the active
+					    underline the +2 / DNF toggles use. */}
 					<Button
 						title="Delete solve"
-						className={b('action', { active: true })}
+						className={b('action', { remove: true })}
 						icon={<X />}
 						flat
 						white

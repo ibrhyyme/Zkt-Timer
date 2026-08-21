@@ -9,7 +9,11 @@
 	margin-top: calc(-1 * var(--wrapper-padding));
 	padding-top: var(--wrapper-padding);
 	margin-bottom: 0;
-	padding-bottom: 2.667rem;
+	// The two accent rules that used to sit under the title are gone; the heading
+	// carries its own weight now, and a single hairline separates the sticky bar
+	// from the content behind it.
+	padding-bottom: 1.1rem;
+	border-bottom: 1px solid rgba(var(--text-color), 0.12);
 
 	@media (max-width: 768px), (max-height: 500px) {
 		top: 0;
@@ -22,32 +26,16 @@
 		flex-direction: row;
 		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		align-items: center;
-		font-weight: 500;
-		font-size: 2.7rem;
+		font-weight: 700;
+		// Scales down on narrow phones so two-word titles ("Hesap Ayarları",
+		// "Account Settings") stay on one line.
+		font-size: clamp(2rem, 7.5vw, 2.7rem);
+		letter-spacing: -0.01em;
 
 		i {
 			position: relative;
 			top: 3px;
 			margin-right: 0.8rem;
-		}
-	}
-
-	&__lines {
-		display: flex;
-		flex-direction: row;
-		margin-bottom: 2rem;
-	}
-
-	&__line {
-		background-color: rgb(var(--primary-color));
-		height: 4px;
-		width: 3.333rem;
-		border-radius: 4px;
-		margin-right: 0.333rem;
-
-		&--secondary {
-			width: 2.333rem;
-			background-color: rgb(var(--secondary-color));
 		}
 	}
 
@@ -69,12 +57,6 @@
 				grid-column: 2;
 				grid-row: 1;
 				justify-self: start;
-			}
-
-			.#{$namespace}-page-title__lines {
-				grid-column: 1 / -1;
-				grid-row: 2;
-				margin-bottom: 0.5rem;
 			}
 		}
 	}
@@ -104,18 +86,19 @@
 	// Desktop: nav already shows active page so title repetition unnecessary.
 	// Mobile override (max-width:768px / max-height:500px) uses exact complement
 	// so it doesn't accidentally trigger on landscape/short screens.
-	// NOTE: must come AFTER &__title / &__lines definitions — at equal specificity,
-	// later source wins, otherwise display:flex overrides our display:none.
+	// NOTE: must come AFTER the &__title definition — at equal specificity, later
+	// source wins, otherwise display:flex overrides our display:none.
 	@media (min-width: 769px) and (min-height: 501px) {
-		&__title,
-		&__lines {
-			display: none;
-		}
-
-		// When title block disappears, no empty sticky bar/gap remains.
-		// margin-top:0 -> wrapper's natural --wrapper-padding top spacing returns = breathing room.
+		// When the title block disappears, no empty sticky bar/gap remains.
+		// margin-top:0 -> wrapper's natural --wrapper-padding top spacing returns.
+		// These sit before the nested rule so Sass does not warn about ordering.
 		margin-top: 0;
 		padding-top: 0;
 		padding-bottom: 0;
+		border-bottom: none;
+
+		&__title {
+			display: none;
+		}
 	}
 }
