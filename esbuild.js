@@ -104,6 +104,11 @@ require('esbuild')
 		},
 		pure: !dev ? ['console.log', 'console.warn', 'console.info'] : [],
 		loader: {'.js': 'jsx'},
+		// Fonts are served straight from public/ at runtime, so the url() in
+		// styles/fonts.scss is a request path and not a file esbuild should bundle.
+		// Without this it tries to resolve /fonts/... against the source tree and the
+		// build fails.
+		external: ['/fonts/*'],
 		plugins: [
 			postCssPlugin({
 				postcss: {

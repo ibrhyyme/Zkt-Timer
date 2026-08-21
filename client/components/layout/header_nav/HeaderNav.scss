@@ -26,6 +26,8 @@
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
+		// The brand is the one thing that must never wrap or compress.
+		white-space: nowrap;
 
 		a {
 			display: flex;
@@ -49,15 +51,33 @@
 	&__center {
 		display: flex;
 		justify-content: center;
-		flex: 1;
-		margin: 0 1.333rem;
+		// Without min-width: 0 a flex child refuses to shrink below its content,
+		// which is why the bar overflowed at every width under 1520px.
+		flex: 1 1 auto;
+		min-width: 0;
+		margin: 0 clamp(0.4rem, 1.4vw, 1.333rem);
 	}
 
 	&__nav {
 		display: flex;
 		align-items: center;
-		gap: 0.533rem;
+		gap: clamp(0.15rem, 0.45vw, 0.533rem);
 		position: relative;
+		min-width: 0;
+		flex-wrap: nowrap;
+		// Last-resort guard: if the strip still cannot fit, it scrolls itself
+		// instead of pushing the page into a horizontal scroll.
+		overflow-x: auto;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+
+		a {
+			flex-shrink: 0;
+			white-space: nowrap;
+		}
 	}
 
 	&__pill {
@@ -74,7 +94,7 @@
 	&__right {
 		display: flex;
 		align-items: center;
-		gap: 0.8rem;
+		gap: clamp(0.3rem, 0.75vw, 0.8rem);
 		flex-shrink: 0;
 	}
 
@@ -200,7 +220,16 @@
 		}
 	}
 
-	@media (max-width: 900px) {
+	// Space is given back in order of least value: the username first, then the
+	// tab labels. Thresholds come from the measured content width (1424px) rather
+	// than from round numbers.
+	@media (max-width: 1560px) {
+		.#{$namespace}-nav-account-dropdown__username {
+			display: none;
+		}
+	}
+
+	@media (max-width: 1460px) {
 		#{$self}__nav {
 			gap: 0.267rem;
 

@@ -13,7 +13,7 @@
 		text-transform: uppercase;
 		font-weight: 900;
 		margin: 20px 0 10px;
-		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		flex-direction: row;
 		display: flex;
 		align-items: center;
@@ -33,7 +33,7 @@
 		color: #343434;
 		font-weight: 400;
 		margin-bottom: 10px;
-		font-family: Gelion, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	}
 
 	&__signup {
@@ -82,7 +82,7 @@
 			font-weight: 300;
 			font-size: clamp(1.3rem, 3vw, 1.5rem) !important;
 			line-height: 140%;
-			font-family: Gelion, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+			font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 			div {
 				position: relative;

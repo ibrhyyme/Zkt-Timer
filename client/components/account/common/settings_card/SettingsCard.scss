@@ -48,10 +48,10 @@
 		min-width: 0;
 	}
 
-	// Kontora is the app's display face (page titles already use it); reusing it here
+	// Archivo is the app's display face (page titles already use it); reusing it here
 	// ties the settings pages to the rest of the product rather than to a default UI font.
 	&__title {
-		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		font-size: 1.5rem;
 		font-weight: 500;
 		letter-spacing: -0.01em;

@@ -1,42 +1,35 @@
-@mixin fontFace($name, $suffix, $weight: null, $style: null, $exts: eot woff2 woff ttf svg) {
-    $src: null;
+// Archivo — the app's UI typeface. Self-hosted, SIL Open Font License 1.1
+// (see public/fonts/archivo/OFL.txt).
+//
+// One variable file carries the whole system: width 62.5–125% and weight 400–900,
+// so display and body share a family instead of pulling in separate faces.
+// Numerals are tabular, which matters everywhere solve times are listed.
+//
+// This replaces the Kontora/Gelion declarations that referenced font files which
+// were never added to the repo — every one of those rules silently fell back to
+// Arial, so the app shipped with no typeface of its own.
 
-    @each $ext in $exts {
-        $url: "/fonts/" + $name + "/" + $name + " " + $suffix + "." + $ext;
-        $src: append($src, url($url) format(quote($ext)), comma);
-    }
-
-    @font-face {
-        font-family: quote($name);
-        font-style: $style;
-        font-weight: $weight;
-        src: $src;
-    }
+@font-face {
+	font-family: 'Archivo';
+	src: url('/fonts/archivo/archivo-latin.woff2') format('woff2-variations');
+	font-weight: 400 900;
+	font-stretch: 62.5% 125%;
+	font-style: normal;
+	font-display: swap;
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+		U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+		U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-// Kontora
-@include fontFace("Kontora", "Thin", 100, normal, woff2 woff);
-@include fontFace("Kontora", "Light", 200, normal, woff2 woff);
-@include fontFace("Kontora", "Regular", 300, normal, woff2 woff);
-@include fontFace("Kontora", "Medium", 400, normal, woff2 woff);
-@include fontFace("Kontora", "SemiBold", 500, normal, woff2 woff);
-@include fontFace("Kontora", "Bold", 600, normal, woff2 woff);
-@include fontFace("Kontora", "ExtraBold", 700, normal, woff2 woff);
-@include fontFace("Kontora", "Black", 800, normal, woff2 woff);
-@include fontFace("Kontora", "ExtraBlack", 900, normal, woff2 woff);
-
-// Gelion
-@include fontFace("Gelion", "Thin", 100, normal, woff2 woff);
-@include fontFace("Gelion", "Thin Italic", 100, italic, woff2 woff);
-@include fontFace("Gelion", "Light", 200, normal, woff2 woff);
-@include fontFace("Gelion", "Light Italic", 200, italic, woff2 woff);
-@include fontFace("Gelion", "Regular", 300, normal, woff2 woff);
-@include fontFace("Gelion", "Regular Italic", 300, italic, woff2 woff);
-@include fontFace("Gelion", "Medium", 400, normal, woff2 woff);
-@include fontFace("Gelion", "Medium Italic", 400, italic, woff2 woff);
-@include fontFace("Gelion", "SemiBold", 500, normal, woff2 woff);
-@include fontFace("Gelion", "SemiBold Italic", 500, italic, woff2 woff);
-@include fontFace("Gelion", "Bold", 600, normal, woff2 woff);
-@include fontFace("Gelion", "Bold Italic", 600, italic, woff2 woff);
-@include fontFace("Gelion", "Black", 700, normal, woff2 woff);
-@include fontFace("Gelion", "Black Italic", 700, italic, woff2 woff);
+// Turkish needs this subset: ş ğ ı İ live in Latin Extended-A.
+@font-face {
+	font-family: 'Archivo';
+	src: url('/fonts/archivo/archivo-latinext.woff2') format('woff2-variations');
+	font-weight: 400 900;
+	font-stretch: 62.5% 125%;
+	font-style: normal;
+	font-display: swap;
+	unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+		U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+		U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

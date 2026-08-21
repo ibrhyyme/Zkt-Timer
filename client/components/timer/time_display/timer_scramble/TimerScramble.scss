@@ -88,6 +88,12 @@
 		}
 	}
 
+	// Tablet / small-laptop band: the control bar and the scramble cannot share a
+	// row, so the scramble starts below it.
+	@media (max-width: 1249px) and (min-width: 1024px) {
+		margin-top: 58px;
+	}
+
 	&__body {
 		display: flex;
 		flex-direction: row;
@@ -101,9 +107,19 @@
 		font-family: 'Roboto Mono', monospace;
 		line-height: clamp(1.5rem, 2vw, 2rem);
 
-		// Küçük ekranlarda wrap edebilir
+		// Wrapping must be available at every width, not only under 1200px: a
+		// Megaminx or 7x7 scramble overruns the line long before that.
+		flex-wrap: wrap;
+
+		// The picker bar is an absolutely-positioned overlay whose left cluster
+		// occupies ~410px. This box is centred, so the clearance it needs grows as
+		// the viewport shrinks and no fixed padding can express it. Narrowing the
+		// box keeps it clear of the cluster at any width.
+		@media (min-width: 1250px) {
+			max-width: min(1200px, calc(100vw - 820px));
+		}
+
 		@media (max-width: 1200px) {
-			flex-wrap: wrap;
 			font-size: clamp(0.9rem, 2vw, 1.2rem);
 			line-height: clamp(1.2rem, 2.5vw, 1.8rem);
 		}
