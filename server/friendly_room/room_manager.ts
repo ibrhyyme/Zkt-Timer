@@ -6,6 +6,13 @@ import {
     CreateFriendlyRoomInput,
 } from '../../shared/friendly_room';
 import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../shared/friendly_room/consts';
+import {
+    FriendlyRoomRole,
+    getFriendlyRoomRole,
+    canModerateRole,
+    canManageRoom,
+    canAssignRoles,
+} from '../../shared/friendly_room/roles';
 import { PublicUserAccount } from '../schemas/UserAccount.schema';
 import * as bcrypt from 'bcryptjs';
 
@@ -42,6 +49,13 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
     'minx': 'mgmp',
     'fto': 'ftoso',
 };
+
+// Resolve a user's rank inside a room row loaded by getRoom(). Non-participants always
+// land on PARTICIPANT, so only people actually in the room can hold moderator powers.
+function getRoleInRoom(room: any, userId: string): FriendlyRoomRole {
+    const participant = room.participants?.find((p: any) => p.user_id === userId);
+    return getFriendlyRoomRole(room.created_by_id, userId, participant?.is_moderator);
+}
 
 // Normalize invalid/old cube_types to default
 function normalizeCubeType(cubeType: string | null | undefined): string {
@@ -324,8 +338,11 @@ export async function removeParticipant(
     // Check if the leaving user was the admin (creator)
     let newAdminId: string | undefined;
     if (room.created_by_id === userId) {
-        // Transfer admin to the next participant (oldest by join time)
-        const newAdmin = remainingParticipants[0];
+        // Transfer admin to the oldest moderator, falling back to the oldest participant.
+        // is_moderator is deliberately left untouched: this hand-off is temporary (the
+        // original creator reclaims the room on rejoin), so the stand-in drops back to
+        // moderator instead of losing the badge.
+        const newAdmin = remainingParticipants.find((p) => p.is_moderator) || remainingParticipants[0];
         await prisma().friendlyRoom.update({
             where: { id: roomId },
             data: { created_by_id: newAdmin.user_id },
@@ -417,8 +434,8 @@ export async function nextScramble(roomId: string, userId: string): Promise<Frie
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    // Only creator can advance scramble
-    if (room.created_by_id !== userId) return null;
+    // Owner or moderator can advance scramble
+    if (!canManageRoom(getRoleInRoom(room, userId))) return null;
 
     const newScramble = generateScrambleForCubeType(room.cube_type);
     const newIndex = room.scramble_index + 1;
@@ -449,8 +466,8 @@ export async function startRoom(roomId: string, userId: string): Promise<Friendl
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    // Only creator can start
-    if (room.created_by_id !== userId) return null;
+    // Owner or moderator can start
+    if (!canManageRoom(getRoleInRoom(room, userId))) return null;
 
     // Need at least 1 participant
     if (room.participants.length < 1) return null;
@@ -486,8 +503,8 @@ export async function updateRoom(
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    // Only creator or site admin can update
-    if (room.created_by_id !== userId && !isAdmin) return null;
+    // Owner, moderator or site admin can update
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, userId))) return null;
 
     const data: any = {};
     if (updates.name) data.name = updates.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH);
@@ -549,11 +566,14 @@ export async function kickParticipant(roomId: string, requesterId: string, targe
     const room = await getRoom(roomId);
     if (!room) return false;
 
-    // Only creator or site admin can kick
-    if (room.created_by_id !== requesterId && !isAdmin) return false;
-
     // Can't kick self (use leave instead) - unless admin is kicking from outside
     if (requesterId === targetUserId && !isAdmin) return false;
+
+    // Rank check: you may only kick someone strictly below you. A moderator therefore
+    // cannot kick the owner or a fellow moderator. Site admins bypass the hierarchy.
+    if (!isAdmin && !canModerateRole(getRoleInRoom(room, requesterId), getRoleInRoom(room, targetUserId))) {
+        return false;
+    }
 
     const result = await removeParticipant(roomId, targetUserId);
     return !!result.room || result.deleted;
@@ -564,11 +584,13 @@ export async function banParticipant(roomId: string, requesterId: string, target
     const room = await getRoom(roomId);
     if (!room) return false;
 
-    // Only creator or site admin can ban
-    if (room.created_by_id !== requesterId && !isAdmin) return false;
-
     // Can't ban self
     if (requesterId === targetUserId) return false;
+
+    // Same rank rule as kick - the owner can never be banned by their own moderators.
+    if (!isAdmin && !canModerateRole(getRoleInRoom(room, requesterId), getRoleInRoom(room, targetUserId))) {
+        return false;
+    }
 
     // Add to ban list
     await prisma().friendlyRoomBan.upsert({
@@ -600,8 +622,8 @@ export async function unbanParticipant(
     const room = await getRoom(roomId);
     if (!room) return false;
 
-    // Only creator or site admin can unban
-    if (room.created_by_id !== requesterId && !isAdmin) return false;
+    // Owner, moderator or site admin can unban
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, requesterId))) return false;
 
     try {
         await prisma().friendlyRoomBan.delete({
@@ -624,7 +646,7 @@ export async function getBannedUsersForRoom(
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    if (room.created_by_id !== requesterId && !isAdmin) return null;
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, requesterId))) return null;
 
     const bans = await prisma().friendlyRoomBan.findMany({
         where: { room_id: roomId },
@@ -646,6 +668,75 @@ export async function getBannedUsersForRoom(
         username: userMap.get(b.user_id) ?? 'Deleted user',
         banned_at: b.banned_at.toISOString(),
     }));
+}
+
+// Promote or demote a moderator (room owner or site admin only).
+// Moderators cannot mint more moderators - that would let one compromised moderator
+// flood the room with equals and deadlock the hierarchy.
+export async function setModerator(
+    roomId: string,
+    requesterId: string,
+    targetUserId: string,
+    makeModerator: boolean,
+    isAdmin: boolean = false
+): Promise<{ user_id: string; username: string; is_moderator: boolean } | null> {
+    const room = await getRoom(roomId);
+    if (!room) return null;
+
+    if (!isAdmin && !canAssignRoles(getRoleInRoom(room, requesterId))) return null;
+
+    // The owner already outranks every moderator; flagging them would be meaningless
+    // and would make the rank calculation ambiguous after a transfer.
+    if (room.created_by_id === targetUserId) return null;
+
+    const target = room.participants.find((p) => p.user_id === targetUserId);
+    if (!target) return null;
+
+    const username = target.user?.username ?? 'Deleted user';
+    if (!!target.is_moderator === makeModerator) {
+        return { user_id: targetUserId, username, is_moderator: makeModerator };
+    }
+
+    await prisma().friendlyRoomParticipant.update({
+        where: { id: target.id },
+        data: { is_moderator: makeModerator },
+    });
+
+    return { user_id: targetUserId, username, is_moderator: makeModerator };
+}
+
+// Hand the room over to another participant (current owner only).
+//
+// original_creator_id moves with the ownership on purpose: addParticipant restores the
+// room to the original creator when they rejoin, so leaving it behind would silently
+// undo the transfer the moment the previous owner reconnected.
+export async function transferOwnership(
+    roomId: string,
+    requesterId: string,
+    targetUserId: string
+): Promise<{ room: FriendlyRoomData; new_owner_username: string } | null> {
+    const room = await getRoom(roomId);
+    if (!room) return null;
+
+    if (room.created_by_id !== requesterId) return null;
+    if (targetUserId === requesterId) return null;
+
+    const target = room.participants.find((p) => p.user_id === targetUserId);
+    if (!target) return null;
+
+    await prisma().friendlyRoom.update({
+        where: { id: roomId },
+        data: {
+            created_by_id: targetUserId,
+            original_creator_id: targetUserId,
+        },
+    });
+
+    const updatedRoom = await getRoom(roomId);
+    return {
+        room: mapRoomToData(updatedRoom),
+        new_owner_username: target.user?.username ?? 'Deleted user',
+    };
 }
 
 // Toggle spectator mode
@@ -688,6 +779,7 @@ function mapRoomToData(room: any): FriendlyRoomData {
             username: p.user?.username ?? DELETED_USER_LABEL,
             is_ready: p.is_ready,
             is_spectator: p.is_spectator || false,
+            is_moderator: p.is_moderator || false,
             joined_at: p.joined_at.toISOString(),
             solves: p.solves?.map((s: any) => ({
                 id: s.id,

@@ -32,6 +32,7 @@ export interface FriendlyRoomParticipantData {
     username: string;
     is_ready: boolean;
     is_spectator: boolean;
+    is_moderator: boolean;
     joined_at: string;
     current_solve?: FriendlyRoomSolveData;
     solves: FriendlyRoomSolveData[];

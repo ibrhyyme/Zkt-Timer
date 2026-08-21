@@ -33,6 +33,7 @@ import LeftSettingsDrawer from '../layout/nav/left_settings_drawer/LeftSettingsD
 import EditRoomModal from './EditRoomModal';
 import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
+import { FriendlyRoomRole, getFriendlyRoomRole, canManageRoom } from '../../../shared/friendly_room/roles';
 import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
@@ -1035,6 +1036,21 @@ function FriendlyRoomContent() {
             }
         });
 
+        // Handle moderator promotion / demotion
+        socket.on(FriendlyRoomServerEvent.MODERATOR_CHANGED, (data: { room_id: string; user_id: string; is_moderator: boolean }) => {
+            if (data.room_id === roomId) {
+                setRoom((prev) => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        participants: prev.participants.map((p) =>
+                            p.user_id === data.user_id ? { ...p, is_moderator: data.is_moderator } : p
+                        ),
+                    };
+                });
+            }
+        });
+
         // Handle spectator mode changes
         socket.on(FriendlyRoomServerEvent.SPECTATOR_CHANGED, (data: { room_id: string; user_id: string; is_spectator: boolean }) => {
             if (data.room_id === roomId) {
@@ -1074,6 +1090,7 @@ function FriendlyRoomContent() {
             socket.off(FriendlyRoomServerEvent.ROOM_DELETED);
             socket.off(FriendlyRoomServerEvent.ADMIN_CHANGED);
             socket.off(FriendlyRoomServerEvent.USER_STATUS);
+            socket.off(FriendlyRoomServerEvent.MODERATOR_CHANGED);
             socket.off(FriendlyRoomServerEvent.SPECTATOR_CHANGED);
             socket.off(FriendlyRoomServerEvent.NOTIFICATION);
             socket.off(FriendlyRoomServerEvent.SESSION_TAKEOVER);
@@ -1351,11 +1368,15 @@ function FriendlyRoomContent() {
         );
     }
 
-    const isHost = me?.id === room.created_by.id;
+    const myParticipant = room.participants.find((p) => p.user_id === me?.id);
+    const myRole = getFriendlyRoomRole(room.created_by.id, me?.id, myParticipant?.is_moderator);
+    const isHost = myRole === FriendlyRoomRole.OWNER;
+    // Owner and moderators share the room controls (edit, start, next scramble, manage
+    // users). Deleting the room and assigning roles stay owner-only.
+    const canManage = canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
 
     // Calculate current user's stats for bottom panel
-    const myParticipant = room.participants.find((p) => p.user_id === me?.id);
     const mySolves = myParticipant?.solves || [];
 
     // Get valid times (not DNF), apply +2 penalty
@@ -1404,8 +1425,8 @@ function FriendlyRoomContent() {
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style (mobile blue, desktop dark glassmorphism — distinct tone from scramble area + clear border) */}
                 <div className="flex items-center justify-between bg-blue-600 md:bg-text/[0.04] md:backdrop-blur-2xl md:border-b md:border-text/[0.15] px-3 md:px-4 py-2 md:py-3 shadow-lg md:shadow-[0_6px_24px_rgba(0,0,0,0.35)] z-30 relative gap-2">
-                    {/* Hamburger Menu (Only for Host) — glassmorphism */}
-                    {isHost ? (
+                    {/* Hamburger Menu (Host + moderators) — glassmorphism */}
+                    {canManage ? (
                         <div className="relative z-50 shrink-0" ref={hostMenuRef}>
                             <button
                                 className={`p-1.5 md:p-2 rounded-lg transition-all border ${
@@ -1450,14 +1471,18 @@ function FriendlyRoomContent() {
                                             <Users size={18} weight="bold" />
                                             {t('rooms.manage_users')}
                                         </button>
-                                        <div className="h-px bg-text/[0.1] my-1.5 mx-1" />
-                                        <button
-                                            onClick={handleDeleteRoom}
-                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-red-300 flex items-center gap-3 transition-colors"
-                                        >
-                                            <Trash size={18} weight="bold" />
-                                            {t('rooms.delete_room')}
-                                        </button>
+                                        {isHost && (
+                                            <>
+                                                <div className="h-px bg-text/[0.1] my-1.5 mx-1" />
+                                                <button
+                                                    onClick={handleDeleteRoom}
+                                                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-red-300 flex items-center gap-3 transition-colors"
+                                                >
+                                                    <Trash size={18} weight="bold" />
+                                                    {t('rooms.delete_room')}
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -1469,7 +1494,7 @@ function FriendlyRoomContent() {
                             <h1 className="text-lg md:text-xl font-bold tracking-tight text-white md:text-text m-0 leading-none truncate block">
                                 {room.name}
                             </h1>
-                            {isHost && (
+                            {canManage && (
                                 isMobile ? (
                                     <button
                                         onClick={() => setEditModalOpen(true)}
@@ -1501,13 +1526,13 @@ function FriendlyRoomContent() {
                         </div>
                         <span
                             onClick={() => {
-                                if (!isHost) return;
+                                if (!canManage) return;
                                 // Desktop opens the same edit popover as the pencil; mobile uses the modal
                                 if (isMobile) setEditModalOpen(true);
                                 else setEditPopoverOpen(true);
                             }}
-                            className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold tracking-wider text-white md:text-primary bg-white/20 md:bg-primary/12 border border-white/10 md:border-primary/25 backdrop-blur-sm transition-all ${isHost ? 'cursor-pointer hover:bg-white/30 md:hover:bg-primary/20' : ''}`}
-                            title={isHost ? t('rooms.click_to_change_event') : undefined}
+                            className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold tracking-wider text-white md:text-primary bg-white/20 md:bg-primary/12 border border-white/10 md:border-primary/25 backdrop-blur-sm transition-all ${canManage ? 'cursor-pointer hover:bg-white/30 md:hover:bg-primary/20' : ''}`}
+                            title={canManage ? t('rooms.click_to_change_event') : undefined}
                         >
                             {room.cube_type.toUpperCase()}
                         </span>
@@ -1611,7 +1636,7 @@ function FriendlyRoomContent() {
                             <MusicNote weight="bold" size={18} />
                         </button>
 
-                        {isHost && isActive && (
+                        {canManage && isActive && (
                             <button
                                 onClick={handleNextScramble}
                                 className={`${isMobile ? 'h-8 px-2.5 text-[10px]' : 'px-3.5 py-1.5 text-xs'} bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-md transition-all whitespace-nowrap shadow-[0_4px_14px_rgba(59,130,246,0.4)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.55)] hover:-translate-y-px`}
@@ -1925,6 +1950,7 @@ function FriendlyRoomContent() {
                                     userStatuses={userStatuses}
                                     currentUserId={me?.id}
                                     scrambleHistory={room.scramble_history}
+                                    hostId={room.created_by.id}
                                 />
                             </div>
 
@@ -1982,7 +2008,7 @@ function FriendlyRoomContent() {
                                 {t('rooms.waiting_for_players')}
                             </h2>
                             <p className="text-text text-sm md:text-base">
-                                {isHost
+                                {canManage
                                     ? t('rooms.host_start_instruction')
                                     : t('rooms.guest_wait_instruction')}
                             </p>
@@ -2003,7 +2029,7 @@ function FriendlyRoomContent() {
 
                             {/* Center: Action Button (Desktop: Center Column) */}
                             <div className="shrink-0 flex flex-col items-center justify-center gap-4 py-2 md:py-0 md:h-[500px]">
-                                {isHost ? (
+                                {canManage ? (
                                     <div className="relative group">
                                         <button
                                             onClick={(e) => {
@@ -2246,11 +2272,20 @@ function FriendlyRoomContent() {
                 onClose={() => setManageUsersModalOpen(false)}
                 roomId={roomId}
                 participants={room.participants}
+                ownerId={room.created_by.id}
+                viewerId={me?.id ?? ''}
+                viewerRole={myRole}
                 onKick={(userId) => {
                     getSocket().emit(FriendlyRoomClientEvent.KICK_USER, roomId, userId);
                 }}
                 onBan={(userId) => {
                     getSocket().emit(FriendlyRoomClientEvent.BAN_USER, roomId, userId);
+                }}
+                onSetModerator={(userId, isModerator) => {
+                    getSocket().emit(FriendlyRoomClientEvent.SET_MODERATOR, roomId, userId, isModerator);
+                }}
+                onTransferOwnership={(userId) => {
+                    getSocket().emit(FriendlyRoomClientEvent.TRANSFER_OWNERSHIP, roomId, userId);
                 }}
             />
             <RoomMusicPlayer

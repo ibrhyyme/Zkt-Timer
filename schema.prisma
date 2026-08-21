@@ -1009,6 +1009,7 @@ model FriendlyRoomParticipant {
   user_id      String
   is_ready     Boolean             @default(false)
   is_spectator Boolean             @default(false)
+  is_moderator Boolean             @default(false)
   joined_at    DateTime            @default(now())
 
   room      FriendlyRoom        @relation(fields: [room_id], references: [id], onDelete: Cascade)

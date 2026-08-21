@@ -11,6 +11,9 @@ interface RoomTableProps {
     userStatuses?: { [userId: string]: string };
     currentUserId?: string;
     scrambleHistory?: FriendlyRoomScrambleHistoryEntry[];
+    // Owner id — used to suppress the MOD badge on the owner, who can carry a stale
+    // is_moderator flag after ownership moved to them.
+    hostId?: string;
 }
 
 // Timer component for dynamic countdown
@@ -29,7 +32,7 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [] }: RoomTableProps) {
+function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [], hostId }: RoomTableProps) {
     const { t } = useTranslation();
     const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
@@ -228,6 +231,11 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                             return (
                                 <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center gap-1 py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'} ${p.is_spectator ? 'opacity-70' : ''}`}>
                                     <span className="truncate">{p.username}</span>
+                                    {p.is_moderator && p.user_id !== hostId && (
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-sky-400 bg-sky-400/15 px-1.5 py-0.5 rounded-sm shrink-0">
+                                            {t('rooms.role_moderator_short')}
+                                        </span>
+                                    )}
                                     {p.is_spectator && (
                                         <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-sm shrink-0">
                                             {t('rooms.spectator')}
@@ -379,6 +387,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
 function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
     if (prev.scrambleIndex !== next.scrambleIndex) return false;
     if (prev.currentUserId !== next.currentUserId) return false;
+    if (prev.hostId !== next.hostId) return false;
     if (prev.userStatuses !== next.userStatuses) return false;
     if ((prev.scrambleHistory?.length ?? 0) !== (next.scrambleHistory?.length ?? 0)) return false;
 
@@ -394,6 +403,7 @@ function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
             pa.user_id !== pb.user_id ||
             pa.username !== pb.username ||
             pa.is_spectator !== pb.is_spectator ||
+            pa.is_moderator !== pb.is_moderator ||
             pa.solves.length !== pb.solves.length
         ) return false;
     }

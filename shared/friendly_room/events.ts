@@ -24,6 +24,8 @@ export enum FriendlyRoomClientEvent {
     SIGNAL_BACK = 'friendlyRoomSignalBack', // Tab visible again
     GET_BANNED_USERS = 'friendlyRoomGetBannedUsers',
     UNBAN_USER = 'friendlyRoomUnbanUser',
+    SET_MODERATOR = 'friendlyRoomSetModerator', // Owner: promote/demote a moderator
+    TRANSFER_OWNERSHIP = 'friendlyRoomTransferOwnership', // Owner: hand the room to someone else
 }
 
 export enum FriendlyRoomServerEvent {
@@ -42,6 +44,7 @@ export enum FriendlyRoomServerEvent {
     CHAT_MESSAGE = 'friendlyRoomChatMessage',
     ROOM_STARTED = 'friendlyRoomStarted',
     ADMIN_CHANGED = 'friendlyRoomAdminChanged',
+    MODERATOR_CHANGED = 'friendlyRoomModeratorChanged',
     ADMIN_ROOM_DATA = 'friendlyRoomAdminRoomData',
     USER_STATUS = 'friendlyRoomUserStatus',
     ERROR = 'friendlyRoomError',

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendlyRoomData, FriendlyRoomClientEvent } from '../../../shared/friendly_room';
+import { FriendlyRoomRole } from '../../../shared/friendly_room/roles';
 import Button from '../common/button/Button';
 import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye, MapPin } from 'phosphor-react';
 import { socketClient } from '../../util/socket/socketio';
@@ -182,12 +183,20 @@ export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom
                     <ManageUsersModal
                         isOpen={manageUsersModalOpen}
                         onClose={() => setManageUsersModalOpen(false)}
+                        roomId={room.id}
                         participants={room.participants}
+                        ownerId={room.created_by.id}
+                        viewerId=""
+                        viewerRole={FriendlyRoomRole.PARTICIPANT}
+                        isSiteAdmin
                         onKick={(userId) => {
                             getSocket().emit(FriendlyRoomClientEvent.KICK_USER, room.id, userId);
                         }}
                         onBan={(userId) => {
                             getSocket().emit(FriendlyRoomClientEvent.BAN_USER, room.id, userId);
+                        }}
+                        onSetModerator={(userId, isModerator) => {
+                            getSocket().emit(FriendlyRoomClientEvent.SET_MODERATOR, room.id, userId, isModerator);
                         }}
                     />
                     <ViewRoomStatsModal

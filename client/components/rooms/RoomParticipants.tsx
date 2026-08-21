@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
-import { Crown, Check, Timer } from 'phosphor-react';
+import { Crown, Check, Timer, ShieldCheck } from 'phosphor-react';
 import { getTimeString } from '../../util/time';
 
 interface RoomParticipantsProps {
@@ -12,10 +12,11 @@ interface RoomParticipantsProps {
 
 export default function RoomParticipants({ participants, currentScrambleIndex, hostId }: RoomParticipantsProps) {
     const { t } = useTranslation();
-    // Sort participants: host first, then by solve count
+    // Sort participants: host first, then moderators, then by solve count
     const sortedParticipants = [...participants].sort((a, b) => {
         if (a.user_id === hostId) return -1;
         if (b.user_id === hostId) return 1;
+        if (!!a.is_moderator !== !!b.is_moderator) return a.is_moderator ? -1 : 1;
         return b.solves.length - a.solves.length;
     });
 
@@ -43,6 +44,9 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
                             <div className="flex items-center gap-2">
                                 {isHost && (
                                     <Crown size={16} weight="fill" className="text-orange-500" />
+                                )}
+                                {!isHost && participant.is_moderator && (
+                                    <ShieldCheck size={16} weight="fill" className="text-sky-400" />
                                 )}
                                 <span className={`font-medium ${isHost ? 'text-text' : 'text-text'}`}>
                                     {participant.username}

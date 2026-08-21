@@ -30,6 +30,8 @@ import {
     getBannedUsersForRoom,
     toggleSpectator,
     deleteRoom,
+    setModerator,
+    transferOwnership,
 } from './room_manager';
 import { sendChatMessage } from './chat';
 import { logger } from '../services/logger';
@@ -830,6 +832,83 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             }
         } catch (error) {
             logger.error('Error toggling spectator mode', { error });
+        }
+    });
+
+    // Promote / demote a moderator (room owner or site admin)
+    client.on(FriendlyRoomClientEvent.SET_MODERATOR, async (roomId: string, targetUserId: string, isModerator: boolean) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (typeof targetUserId !== 'string' || !targetUserId) return;
+            if (typeof isModerator !== 'boolean') return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'set_moderator', 20, 60, user.id))) return;
+
+            const result = await setModerator(roomId, user.id, targetUserId, isModerator, user.admin === true);
+            if (!result) {
+                // Not ERROR: the client turns ERROR into a full-screen "room not found"
+                // page, which would throw the owner out of their own live room.
+                client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Moderatör güncellenemedi' });
+                return;
+            }
+
+            const socketRoom = getFriendlyRoomSocketRoom(roomId);
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.MODERATOR_CHANGED, {
+                room_id: roomId,
+                user_id: result.user_id,
+                is_moderator: result.is_moderator,
+            });
+
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
+                type: 'INFO',
+                message: result.is_moderator
+                    ? `${result.username} moderatör oldu`
+                    : `${result.username} artık moderatör değil`,
+            });
+        } catch (error) {
+            logger.error('Error changing moderator', { error });
+            client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Moderatör güncellenemedi' });
+        }
+    });
+
+    // Transfer room ownership (current owner only — site admins deliberately excluded,
+    // taking over someone's room is not a moderation action)
+    client.on(FriendlyRoomClientEvent.TRANSFER_OWNERSHIP, async (roomId: string, targetUserId: string) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (typeof targetUserId !== 'string' || !targetUserId) return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'transfer_ownership', 10, 60, user.id))) return;
+
+            const result = await transferOwnership(roomId, user.id, targetUserId);
+            if (!result) {
+                client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Sahiplik devredilemedi' });
+                return;
+            }
+
+            const socketRoom = getFriendlyRoomSocketRoom(roomId);
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.ADMIN_CHANGED, {
+                room_id: roomId,
+                new_admin_id: targetUserId,
+            });
+
+            // Full resync: the previous owner drops to a plain participant, so every client
+            // has to recompute what its own buttons are allowed to do.
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
+
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
+                type: 'INFO',
+                message: `Oda sahipliği ${result.new_owner_username} kullanıcısına devredildi`,
+            });
+        } catch (error) {
+            logger.error('Error transferring room ownership', { error });
+            client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Sahiplik devredilemedi' });
         }
     });
 

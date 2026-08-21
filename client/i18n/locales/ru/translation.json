@@ -780,7 +780,7 @@
         }
     },
     "account_nav": {
-        "page_title": "Аккаунт",
+        "page_title": "Настройки аккаунта",
         "personal_info": "Личная информация",
         "password": "Пароль",
         "notifications": "Уведомления",
@@ -1680,6 +1680,14 @@
         "banned": "Забаненные",
         "no_banned": "Нет забаненных пользователей",
         "unban": "РАЗБАНИТЬ",
+        "role_owner": "Владелец",
+        "role_moderator": "Модератор",
+        "role_moderator_short": "МОД",
+        "make_moderator": "СДЕЛАТЬ МОДЕРАТОРОМ",
+        "remove_moderator": "СНЯТЬ МОДЕРАТОРА",
+        "transfer_ownership": "ПЕРЕДАТЬ ВЛАДЕНИЕ",
+        "transfer_ownership_confirm": "Вы передаёте владение комнатой пользователю {{name}}. С этого момента комнатой управляет он, и он сможет исключить вас. Продолжить?",
+        "you": "ВЫ",
         "close": "ЗАКРЫТЬ",
         "done": "ГОТОВО",
         "protected_room": "Защищённая комната",
