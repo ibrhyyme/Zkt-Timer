@@ -521,7 +521,7 @@ export default function Sessions() {
 					/>
 					<SortableList
 						{...sortableConfig}
-						helperClass="cd-session-row--sortable-helper"
+						helperClass="zt-session-row--sortable-helper"
 						selectSession={selectSession}
 						setSelectedSessionId={setSelectedSessionId}
 						sessions={allSessions}

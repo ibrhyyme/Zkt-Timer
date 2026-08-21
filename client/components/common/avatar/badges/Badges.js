@@ -62,7 +62,7 @@ export default class Badges extends React.Component {
 		}
 
 		if (ems.length) {
-			emblems = <div className="cd-avatar__emblems">{ems}</div>;
+			emblems = <div className="zt-avatar__emblems">{ems}</div>;
 		}
 
 		return emblems;

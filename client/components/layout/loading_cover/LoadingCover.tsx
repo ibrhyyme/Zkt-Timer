@@ -104,9 +104,9 @@ export default function LoadingCover(props: Props) {
 				fadeOut,
 			})}
 		>
-			<span className="cd-logo spin" aria-label="Zkt Timer" style={{ width: '8rem', height: '8rem' }}>
-				<img className="cd-logo__img cd-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
-				<img className="cd-logo__img cd-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
+			<span className="zt-logo spin" aria-label="Zkt Timer" style={{ width: '8rem', height: '8rem' }}>
+				<img className="zt-logo__img zt-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
+				<img className="zt-logo__img zt-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
 			</span>
 			{!fadeOut && loadedSolves > 0 && !stuck && (
 				// A restore in flight. Shown instead of the retry prompt so a user

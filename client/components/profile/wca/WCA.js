@@ -26,7 +26,7 @@ export default function WCA({ myProfile, user }) {
 	u.searchParams.set('state', markNativeOAuthState('/account/linked-accounts'));
 
 	return (
-		<div className="cd-profile__wca">
+		<div className="zt-profile__wca">
 			<LinkButton text={t('wca_integration.link_account')} to={u.toString()} blue />
 		</div>
 	);

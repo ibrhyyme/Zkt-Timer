@@ -140,9 +140,9 @@ export default class EditProfile extends React.Component {
 		} = this.state;
 
 		return (
-			<div className="cd-profile__edit">
-				<div className="cd-profile__edit__grid">
-					<div className="cd-profile__edit__bio">
+			<div className="zt-profile__edit">
+				<div className="zt-profile__edit__grid">
+					<div className="zt-profile__edit__bio">
 						<TextArea
 							maxLength={250}
 							fullWidth
@@ -209,7 +209,7 @@ export default class EditProfile extends React.Component {
 						onChange={this.handleChange}
 					/>
 				</div>
-				<div className="cd-profile__edit__actions">
+				<div className="zt-profile__edit__actions">
 					<Button
 						text="Update Profile"
 						primary

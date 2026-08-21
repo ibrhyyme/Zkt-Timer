@@ -425,7 +425,7 @@ export default function App(props: Props = {}) {
 
 	if (standalone) {
 		return (
-			<div className="cd-app-standalone">
+			<div className="zt-app-standalone">
 				{hideTopNav ? null : <TopNav />}
 				{children}
 			</div>
@@ -445,7 +445,7 @@ export default function App(props: Props = {}) {
 			);
 		}
 
-		modalOutput = <div className="cd-modal--list">{modalList}</div>;
+		modalOutput = <div className="zt-modal--list">{modalList}</div>;
 	}
 
 	const wrapperProps = {

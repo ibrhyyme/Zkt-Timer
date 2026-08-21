@@ -81,7 +81,7 @@ export default function CubeTypes() {
 				<Button text={t('common.create_new')} primary icon={<Plus weight="bold" />} onClick={addCustomCubeType} />
 			</div>
 			<div className={b('table')}>
-				<table className="cd-table">
+				<table className="zt-table">
 					<thead>
 						<tr>
 							<th>{t('timer_settings.cube_types_col_cube')}</th>

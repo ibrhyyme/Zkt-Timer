@@ -70,7 +70,7 @@ export default function TimerFooter() {
 			if (matchMode && customModules.length > 0) {
 				const mod = customModules[0];
 				modules.push(
-					<div key="mobile-match-history" className="cd-timer-footer__mobile-match-history">
+					<div key="mobile-match-history" className="zt-timer-footer__mobile-match-history">
 						<TimerModule index={0} customOptions={mod} />
 					</div>
 				);
@@ -85,9 +85,9 @@ export default function TimerFooter() {
 					// Index 1: Points/Stats -> Right Column (Full Height now)
 					// Index 2: Chat/Scramble -> HIDDEN on mobile as per request
 					if (i === 0) {
-						className = 'cd-timer-footer__mobile-history';
+						className = 'zt-timer-footer__mobile-history';
 					} else if (i === 1) {
-						className = 'cd-timer-footer__mobile-stats';
+						className = 'zt-timer-footer__mobile-stats';
 						style = { gridRow: '1 / 3' }; // Make it take full height of the right column
 					} else {
 						return; // Skip other modules (Chat/Scramble)
@@ -104,7 +104,7 @@ export default function TimerFooter() {
 			// Special 3-section layout for mobile (Default)
 			// Left: Solutions (History)
 			modules.push(
-				<div key="mobile-history" className="cd-timer-footer__mobile-history">
+				<div key="mobile-history" className="zt-timer-footer__mobile-history">
 					<TimerModule
 						index={0}
 						moduleType={TimerModuleType.HISTORY}
@@ -117,7 +117,7 @@ export default function TimerFooter() {
 			);
 			// Right top: Statistics (4 blocks)
 			modules.push(
-				<div key="mobile-stats" className="cd-timer-footer__mobile-stats">
+				<div key="mobile-stats" className="zt-timer-footer__mobile-stats">
 					<TimerModule
 						index={1}
 						moduleType={TimerModuleType.STATS}
@@ -130,7 +130,7 @@ export default function TimerFooter() {
 			);
 			// Right bottom: Scramble visual
 			modules.push(
-				<div key="mobile-scramble" className="cd-timer-footer__mobile-scramble">
+				<div key="mobile-scramble" className="zt-timer-footer__mobile-scramble">
 					<TimerModule
 						index={2}
 						moduleType={TimerModuleType.SCRAMBLE}

@@ -37,10 +37,10 @@ class User extends React.Component {
 
 	render() {
 		const {banned, user} = this.state;
-		let className = 'cd-admin__users__user';
+		let className = 'zt-admin__users__user';
 
 		if (banned) {
-			className += ' cd-admin__users__user--banned';
+			className += ' zt-admin__users__user--banned';
 		}
 
 		let blurb = null;

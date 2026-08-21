@@ -1,4 +1,4 @@
-.cd-my-schedule {
+.zt-my-schedule {
 	width: 100%;
 	padding: 0.5rem;
 
@@ -55,7 +55,7 @@
 		);
 		border-radius: 999px;
 		box-shadow: 0 0 10px rgba(74, 158, 255, 0.6);
-		animation: cd-wca-loading-bar 1.4s ease-in-out infinite;
+		animation: zt-wca-loading-bar 1.4s ease-in-out infinite;
 	}
 
 	&__wca-loading-text {
@@ -258,7 +258,7 @@
 	// Registered WCA comps still get a coloured rail: it is the viewer's own row.
 	// Excluding finished here keeps the grey "past" rail below winning, which it
 	// would otherwise lose on specificity.
-	&__zkt-card--wca.cd-my-schedule__zkt-card--mine:not(.cd-my-schedule__zkt-card--finished) &__zkt-card-rail {
+	&__zkt-card--wca.zt-my-schedule__zkt-card--mine:not(.zt-my-schedule__zkt-card--finished) &__zkt-card-rail {
 		background: rgb(var(--primary-color));
 	}
 
@@ -304,7 +304,7 @@
 		flex-wrap: wrap;
 		gap: 0.5rem;
 
-		.cd-my-schedule__zkt-status {
+		.zt-my-schedule__zkt-status {
 			margin-left: auto;
 		}
 	}
@@ -822,7 +822,7 @@
 		height: 2px;
 		width: 40%;
 		background: linear-gradient(90deg, transparent, rgb(var(--primary-color)), transparent);
-		animation: cd-search-progress 1.1s linear infinite;
+		animation: zt-search-progress 1.1s linear infinite;
 	}
 
 	// Event filter (competition list discovery)
@@ -1113,11 +1113,11 @@
 			height: 0;
 		}
 
-		input:checked + .cd-my-schedule__radar-toggle-track {
+		input:checked + .zt-my-schedule__radar-toggle-track {
 			background: rgb(var(--primary-color));
 		}
 
-		input:checked + .cd-my-schedule__radar-toggle-track::before {
+		input:checked + .zt-my-schedule__radar-toggle-track::before {
 			transform: translateX(0.95rem);
 		}
 	}
@@ -2331,16 +2331,16 @@
 		display: flex;
 		flex-direction: column;
 
-		&--competitor .cd-my-schedule__activity-role-row:nth-child(even) {
+		&--competitor .zt-my-schedule__activity-role-row:nth-child(even) {
 			background: rgba(34, 197, 94, 0.06);
 		}
-		&--scrambler .cd-my-schedule__activity-role-row:nth-child(even) {
+		&--scrambler .zt-my-schedule__activity-role-row:nth-child(even) {
 			background: rgba(234, 179, 8, 0.06);
 		}
-		&--runner .cd-my-schedule__activity-role-row:nth-child(even) {
+		&--runner .zt-my-schedule__activity-role-row:nth-child(even) {
 			background: rgba(249, 115, 22, 0.06);
 		}
-		&--judge .cd-my-schedule__activity-role-row:nth-child(even) {
+		&--judge .zt-my-schedule__activity-role-row:nth-child(even) {
 			background: rgba(59, 130, 246, 0.06);
 		}
 	}
@@ -2781,7 +2781,7 @@
 		height: 0.5rem;
 		border-radius: 50%;
 		background: #22c55e;
-		animation: cd-live-pulse 1.5s ease-in-out infinite;
+		animation: zt-live-pulse 1.5s ease-in-out infinite;
 	}
 
 	&__wca-live-skeleton {
@@ -2801,7 +2801,7 @@
 		);
 		background-size: 200% 100%;
 		border-radius: 0.4rem;
-		animation: cd-skeleton-shimmer 1.4s linear infinite;
+		animation: zt-skeleton-shimmer 1.4s linear infinite;
 	}
 
 	&__wca-live-show-more {
@@ -2852,13 +2852,13 @@
 		line-height: 1;
 	}
 
-	&__wca-live-result-row--rank-1 .cd-my-schedule__wca-live-rank {
+	&__wca-live-result-row--rank-1 .zt-my-schedule__wca-live-rank {
 		background: rgba(255, 215, 0, 0.18);
 	}
-	&__wca-live-result-row--rank-2 .cd-my-schedule__wca-live-rank {
+	&__wca-live-result-row--rank-2 .zt-my-schedule__wca-live-rank {
 		background: rgba(192, 192, 192, 0.15);
 	}
-	&__wca-live-result-row--rank-3 .cd-my-schedule__wca-live-rank {
+	&__wca-live-result-row--rank-3 .zt-my-schedule__wca-live-rank {
 		background: rgba(205, 127, 50, 0.18);
 	}
 
@@ -2907,7 +2907,7 @@
 			right: 0.5rem;
 			color: #22c55e;
 			font-size: 0.6rem;
-			animation: cd-live-pulse 1.5s ease-in-out infinite;
+			animation: zt-live-pulse 1.5s ease-in-out infinite;
 		}
 	}
 
@@ -2998,7 +2998,7 @@
 	}
 
 	&__wca-live-result-row--questionable {
-		.cd-my-schedule__wca-live-rank {
+		.zt-my-schedule__wca-live-rank {
 			background: rgba(234, 179, 8, 0.85);
 			color: #000;
 		}
@@ -3116,7 +3116,7 @@
 		&--live {
 			background: rgba(239, 68, 68, 0.18);
 			color: #ef4444;
-			animation: cd-live-pulse 1.5s ease-in-out infinite;
+			animation: zt-live-pulse 1.5s ease-in-out infinite;
 		}
 
 		&--open {
@@ -3271,7 +3271,7 @@
 
 	&__wca-live-result-row {
 		&--advancing {
-			.cd-my-schedule__wca-live-rank {
+			.zt-my-schedule__wca-live-rank {
 				background: rgba(34, 197, 94, 0.85);
 				color: rgb(var(--text-color));
 			}
@@ -3326,7 +3326,7 @@
 		display: inline-block;
 		white-space: nowrap;
 
-		.cd-record-tag {
+		.zt-record-tag {
 			position: absolute;
 			top: -0.5rem;
 			right: -0.9rem;
@@ -3351,7 +3351,7 @@
 		@media (max-width: 600px) {
 			background: rgba(59, 130, 246, 0.25) !important;
 
-			.cd-my-schedule__me-badge {
+			.zt-my-schedule__me-badge {
 				display: none;
 			}
 		}
@@ -3371,7 +3371,7 @@
 		justify-content: center;
 		z-index: 9999;
 		padding: 1rem;
-		animation: cd-fade-in 0.15s ease-out;
+		animation: zt-fade-in 0.15s ease-out;
 	}
 
 	&__wca-live-modal {
@@ -3382,7 +3382,7 @@
 		border-radius: 0.85rem 0.85rem 0.5rem 0.5rem;
 		padding: 1.25rem;
 		color: rgb(var(--text-color));
-		animation: cd-slide-up 0.2s ease-out;
+		animation: zt-slide-up 0.2s ease-out;
 	}
 
 	&__wca-live-modal-header {
@@ -3829,13 +3829,13 @@
 		}
 
 		// Round adi (TUR sutunu) sol hizali, beyaz
-		.cd-my-schedule__wca-live-person-name {
+		.zt-my-schedule__wca-live-person-name {
 			color: rgb(var(--text-color));
 			font-weight: 600;
 		}
 
 		// Best ve Average sutunlari beyaz, ortalama daha kalin
-		.cd-my-schedule__wca-live-time {
+		.zt-my-schedule__wca-live-time {
 			color: rgb(var(--text-color));
 			font-weight: 600;
 
@@ -3846,7 +3846,7 @@
 		}
 
 		// Attempt cell'leri tam beyaz (mevcut 0.82 opacity'i override et)
-		.cd-my-schedule__wca-live-attempt {
+		.zt-my-schedule__wca-live-attempt {
 			color: rgb(var(--text-color));
 			font-weight: 500;
 		}
@@ -3855,20 +3855,20 @@
 	// Web: sutun genislikleri sabit ki uzun sureler hizayi bozmasin
 	@media (min-width: 769px) {
 		&__competitor-results-event &__wca-live-results-table {
-			.cd-my-schedule__wca-live-th-name {
+			.zt-my-schedule__wca-live-th-name {
 				width: 8rem;
 			}
 
-			.cd-my-schedule__wca-live-th-rank {
+			.zt-my-schedule__wca-live-th-rank {
 				width: 3rem;
 			}
 
-			.cd-my-schedule__wca-live-th-attempt {
+			.zt-my-schedule__wca-live-th-attempt {
 				width: 4.4rem;
 			}
 
 			// Best ve Average sutun min-width
-			th:not(.cd-my-schedule__wca-live-th-name):not(.cd-my-schedule__wca-live-th-rank):not(.cd-my-schedule__wca-live-th-attempt) {
+			th:not(.zt-my-schedule__wca-live-th-name):not(.zt-my-schedule__wca-live-th-rank):not(.zt-my-schedule__wca-live-th-attempt) {
 				width: 5rem;
 			}
 		}
@@ -3877,7 +3877,7 @@
 	// Mobil: ortalama kalin daha buyuk
 	@media (max-width: 768px) {
 		&__competitor-results-event &__wca-live-results-table {
-			.cd-my-schedule__wca-live-time--strong {
+			.zt-my-schedule__wca-live-time--strong {
 				font-weight: 800;
 				font-size: 0.95rem;
 			}
@@ -3891,47 +3891,47 @@
 	}
 }
 
-@keyframes cd-live-pulse {
+@keyframes zt-live-pulse {
 	0%, 100% { opacity: 1; transform: scale(1); }
 	50% { opacity: 0.4; transform: scale(0.85); }
 }
 
-@keyframes cd-fade-in {
+@keyframes zt-fade-in {
 	from { opacity: 0; }
 	to { opacity: 1; }
 }
 
-@keyframes cd-slide-up {
+@keyframes zt-slide-up {
 	from { transform: translateY(100%); }
 	to { transform: translateY(0); }
 }
 
-@keyframes cd-search-progress {
+@keyframes zt-search-progress {
 	0% { left: -40%; }
 	100% { left: 100%; }
 }
 
 // Edge runner: top + bottom yatay olarak surekli dolasiyor (zit yon)
-@keyframes cd-wca-loading-bar {
+@keyframes zt-wca-loading-bar {
 	0%   { left: -35%; }
 	100% { left: 100%; }
 }
 
-@keyframes cd-edge-top {
+@keyframes zt-edge-top {
 	0%   { transform: translateX(-100%); }
 	100% { transform: translateX(333%); }
 }
 
-@keyframes cd-edge-bottom {
+@keyframes zt-edge-bottom {
 	0%   { transform: translateX(100%); }
 	100% { transform: translateX(-333%); }
 }
 
-@keyframes cd-edge-right { 0% {} 100% {} }
+@keyframes zt-edge-right { 0% {} 100% {} }
 
-@keyframes cd-skeleton-shimmer {
+@keyframes zt-skeleton-shimmer {
 	0%   { background-position: 200% 0; }
 	100% { background-position: -200% 0; }
 }
 
-@keyframes cd-edge-left { 0% {} 100% {} }
+@keyframes zt-edge-left { 0% {} 100% {} }

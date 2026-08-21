@@ -1,6 +1,6 @@
 @import '../../../styles/config';
 
-.cd-common__dropdown {
+.zt-common__dropdown {
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -31,7 +31,7 @@
 		}
 
 		> button,
-		> .cd-common__button__wrapper > button,
+		> .zt-common__button__wrapper > button,
 		> a {
 			display: flex;
 			flex-direction: row;

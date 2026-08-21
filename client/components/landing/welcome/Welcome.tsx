@@ -80,9 +80,9 @@ export default function Welcome() {
 				{faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
 			</Helmet>
 
-			<div className="cd-welcome min-h-screen bg-[#050505] text-white">
+			<div className="zt-welcome min-h-screen bg-[#050505] text-white">
 				<div
-					className="cd-welcome__scroll-progress"
+					className="zt-welcome__scroll-progress"
 					style={{width: `${scrollProgress * 100}%`}}
 				/>
 				<HeroSection />

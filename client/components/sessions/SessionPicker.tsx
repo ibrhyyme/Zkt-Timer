@@ -139,7 +139,7 @@ export default function SessionPicker(props: Props) {
 	const NO_SESSION = '__no_session__';
 
 	return (
-		<div className="cd-session-picker">
+		<div className="zt-session-picker">
 			<FancyDropdown
 				value={selectedSession?.id || NO_SESSION}
 				onValueChange={handleValueChange}

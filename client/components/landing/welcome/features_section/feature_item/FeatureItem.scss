@@ -1,6 +1,6 @@
 @import '../../../../../styles/config.scss';
 
-.cd-welcome-feature-item {
+.zt-welcome-feature-item {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 4rem;
@@ -11,21 +11,21 @@
 	// ============================================
 
 	&--position-right {
-		.cd-welcome-feature-item__text {
+		.zt-welcome-feature-item__text {
 			order: 2;
 		}
 
-		.cd-welcome-feature-item__image-wrapper {
+		.zt-welcome-feature-item__image-wrapper {
 			order: 1;
 		}
 	}
 
 	&--position-left {
-		.cd-welcome-feature-item__text {
+		.zt-welcome-feature-item__text {
 			order: 1;
 		}
 
-		.cd-welcome-feature-item__image-wrapper {
+		.zt-welcome-feature-item__image-wrapper {
 			order: 2;
 		}
 	}
@@ -200,16 +200,16 @@
 	// ============================================
 
 	&:hover {
-		.cd-welcome-feature-item__image {
+		.zt-welcome-feature-item__image {
 			transform: scale(1.02);
 			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 		}
 
-		.cd-welcome-feature-item__image-glow {
+		.zt-welcome-feature-item__image-glow {
 			opacity: 0.6;
 		}
 
-		.cd-welcome-feature-item__mini-cube {
+		.zt-welcome-feature-item__mini-cube {
 			animation-duration: 3s, 4s;
 		}
 	}
@@ -227,16 +227,16 @@
 		gap: 2rem;
 
 		// Force order on mobile: text first, image second
-		.cd-welcome-feature-item__text,
-		.cd-welcome-feature-item__image-wrapper {
+		.zt-welcome-feature-item__text,
+		.zt-welcome-feature-item__image-wrapper {
 			order: initial !important;
 		}
 
-		.cd-welcome-feature-item__text {
+		.zt-welcome-feature-item__text {
 			order: 1 !important;
 		}
 
-		.cd-welcome-feature-item__image-wrapper {
+		.zt-welcome-feature-item__image-wrapper {
 			order: 2 !important;
 			aspect-ratio: 16 / 9; // Daha geniş oran mobil için
 
@@ -251,7 +251,7 @@
 		}
 
 		// Mobilde görseli zoom yapmadan tam göster
-		.cd-welcome-feature-item__image {
+		.zt-welcome-feature-item__image {
 			object-fit: contain;
 			background: rgba(255, 255, 255, 0.02);
 		}

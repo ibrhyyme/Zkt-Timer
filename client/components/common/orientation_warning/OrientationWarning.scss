@@ -1,6 +1,6 @@
 @import '../../../styles/config';
 
-.cd-orientation-warning {
+.zt-orientation-warning {
     position: fixed;
     top: 0;
     left: 0;
@@ -55,7 +55,7 @@
 // Telefon boyutundaki cihazlarda landscape'te goster
 // max-height: 500px → tum telefonlar (tablet'lerde gosterilmez)
 @media screen and (orientation: landscape) and (max-height: 500px) {
-    .cd-orientation-warning {
+    .zt-orientation-warning {
         display: flex;
     }
 }

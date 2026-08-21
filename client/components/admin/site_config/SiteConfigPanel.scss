@@ -1,4 +1,4 @@
-.cd-site-config-panel {
+.zt-site-config-panel {
 	max-width: 720px;
 	margin: 1rem auto;
 	padding: 1.5rem;
@@ -76,7 +76,7 @@
 			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 		}
 
-		&:not(:last-child) .cd-site-config-panel__row {
+		&:not(:last-child) .zt-site-config-panel__row {
 			border-bottom: none;
 		}
 	}
@@ -154,7 +154,7 @@
 		transform: translateX(22px);
 	}
 
-	&__toggle--on.cd-site-config-panel__toggle--danger &__toggle-track {
+	&__toggle--on.zt-site-config-panel__toggle--danger &__toggle-track {
 		background: #ef4444;
 	}
 
@@ -178,7 +178,7 @@
 		border-radius: 50%;
 		background: #22c55e;
 		box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
-		animation: cd-site-config-pulse 1.8s infinite;
+		animation: zt-site-config-pulse 1.8s infinite;
 		flex-shrink: 0;
 		align-self: center;
 	}
@@ -424,7 +424,7 @@
 	}
 }
 
-@keyframes cd-site-config-pulse {
+@keyframes zt-site-config-pulse {
 	0% {
 		box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
 	}

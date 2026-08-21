@@ -1,18 +1,18 @@
-.cd-community {
+.zt-community {
 	position: relative;
 
 	&__nav {
 		// On mobile, bottom spacing is reduced since there's no tab bar
 		@media (max-width: 768px), (max-height: 500px) {
-			.cd-page-title {
+			.zt-page-title {
 				padding-bottom: 0.85rem !important;
 			}
 
-			.cd-page-title__title {
+			.zt-page-title__title {
 				font-size: 2.2rem;
 			}
 
-			.cd-page-title__lines {
+			.zt-page-title__lines {
 				margin-bottom: 0.85rem;
 			}
 		}

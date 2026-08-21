@@ -1,18 +1,18 @@
 @import '../../styles/config';
 @import 'TimerLayout';
 
-.cd-timer--focused.cd-timer--started {
-	.cd-timer__time__scramble {
+.zt-timer--focused.zt-timer--started {
+	.zt-timer__time__scramble {
 		display: none;
 	}
 }
 
-.cd-timer--mobile.cd-timer--started {
-	.cd-timer__time__scramble {
+.zt-timer--mobile.zt-timer--started {
+	.zt-timer__time__scramble {
 		display: none;
 	}
 
-	.cd-timer__wrapper {
+	.zt-timer__wrapper {
 		grid-template-columns: 1fr !important;
 	}
 }
@@ -21,11 +21,11 @@
 // it back to readable. Covers desktop + mobile (TimeDisplay shares this root).
 //
 // NOTE: the root container <div> AND the big time <h1> both carry the same
-// `cd-time-display` base class (both call b() in TimeDisplay.tsx). Mirror the
+// `zt-time-display` base class (both call b() in TimeDisplay.tsx). Mirror the
 // container DIV only — if the h1 is also matched it gets flipped twice (parent +
 // self) and renders upright while the diff under it reads mirrored.
-.cd-timer--streamerMode {
-	div.cd-time-display {
+.zt-timer--streamerMode {
+	div.zt-time-display {
 		transform: scaleX(-1);
 	}
 
@@ -51,7 +51,7 @@
 // horizontal). On mobile the existing mobileNewLayout already fills + centers and
 // the time auto-scales to fit, so we leave it alone (forcing a huge font there
 // would overflow long times like "1:05.50").
-.cd-timer--streamerMode:not(.cd-timer--mobile) {
+.zt-timer--streamerMode:not(.zt-timer--mobile) {
 	// !important beats the inline fontSize the h1 carries (timerTimeSize px).
 	h1.#{$namespace}-time-display {
 		font-size: clamp(5rem, 16vw, 15rem) !important;
@@ -89,7 +89,7 @@ body.streamer-mode-active {
 }
 
 // Desktop immersive background (Pro timer bg): bleed the background image up behind the
-// global header nav so it covers the full screen. `.cd-timer` has no overflow:hidden on
+// global header nav so it covers the full screen. `.zt-timer` has no overflow:hidden on
 // desktop, so the absolutely-positioned image can overflow above its box into the nav
 // region; the nav itself is made transparent + scrimmed in HeaderNav.scss. Scoped to the
 // body class Timer toggles only on desktop when a bg image exists — no other page, and no
@@ -180,14 +180,14 @@ body.timer-immersive-bg {
 				// Override the base `width: 100%` so the timer box hugs the digits
 				// (otherwise flex-basis:auto would make it fill the row and shove
 				// the cube off to the side).
-				> .cd-time-display {
+				> .zt-time-display {
 					flex: 0 0 auto;
 					width: auto;
 					min-width: 0;
 				}
 
 				// Cube paints above the timer (defensive) and keeps its own slot.
-				> .cd-smart-cube {
+				> .zt-smart-cube {
 					flex: 0 0 auto;
 					position: relative;
 					z-index: 2;
@@ -447,7 +447,7 @@ body.timer-immersive-bg {
 			transition: opacity 0.1s ease;
 		}
 
-		.cd-daily-goal-progress {
+		.zt-daily-goal-progress {
 			pointer-events: none;
 			opacity: 0;
 			transition: opacity 0.1s ease;
@@ -458,10 +458,10 @@ body.timer-immersive-bg {
 		// Except smart cube visual and phase analysis
 		#{$self}__mobile-layout {
 
-			.cd-timer-controls,
-			.cd-timer-dashboard,
-			.cd-mobile-timer-scramble,
-			.cd-daily-goal-progress {
+			.zt-timer-controls,
+			.zt-timer-dashboard,
+			.zt-mobile-timer-scramble,
+			.zt-daily-goal-progress {
 				opacity: 0;
 				pointer-events: none;
 				transition: opacity 0.1s ease;
@@ -469,7 +469,7 @@ body.timer-immersive-bg {
 		}
 
 		// StatsBar outside mobile-layout — hide separately
-		.cd-stats-bar {
+		.zt-stats-bar {
 			opacity: 0;
 			pointer-events: none;
 			transition: opacity 0.1s ease;
@@ -514,7 +514,7 @@ body.timer-immersive-bg {
 			overflow-y: hidden;
 			overscroll-behavior: none;
 
-			.cd-mobile-timer-scramble {
+			.zt-mobile-timer-scramble {
 				flex: 0 0 auto;
 				min-height: 60px;
 			}
@@ -537,7 +537,7 @@ body.timer-immersive-bg {
 		flex: 0 0 auto;
 		padding: 0.25rem 0;
 
-		.cd-scramble-visual {
+		.zt-scramble-visual {
 			max-width: 140px;
 
 			svg,
@@ -610,7 +610,7 @@ body.timer-immersive-bg {
 		overflow: visible; // Removed overflow hidden, allow cube to show if it overflows
 
 		// SmartCube component mobile shrink - CANVAS SIZE NOW AUTOMATICALLY ADJUSTED
-		.cd-smart-cube {
+		.zt-smart-cube {
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -682,14 +682,14 @@ body.timer-immersive-bg {
 		user-select: none;
 		-webkit-user-select: none;
 
-		.cd-common__emblem {
+		.zt-common__emblem {
 			padding: 0.55rem 1.1rem !important;
 			border-radius: 999px !important;
 			margin-bottom: 0;
 			transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.2s ease;
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 
-			.cd-common__emblem__body {
+			.zt-common__emblem__body {
 				gap: 0.45rem;
 			}
 
@@ -707,13 +707,13 @@ body.timer-immersive-bg {
 			}
 		}
 
-		&:hover:not(&--disabled) .cd-common__emblem {
+		&:hover:not(&--disabled) .zt-common__emblem {
 			transform: scale(1.04);
 			filter: brightness(1.08);
 			box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
 		}
 
-		&:active:not(&--disabled) .cd-common__emblem {
+		&:active:not(&--disabled) .zt-common__emblem {
 			transform: scale(0.97);
 		}
 
@@ -724,11 +724,11 @@ body.timer-immersive-bg {
 
 		// Mobile: kompakt boyut — kisa telefonlarda timer ekranina sigsin
 		@media (max-width: 768px) {
-			.cd-common__emblem {
+			.zt-common__emblem {
 				padding: 0.3rem 0.7rem !important;
 				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 
-				.cd-common__emblem__body {
+				.zt-common__emblem__body {
 					gap: 0.3rem;
 				}
 
@@ -775,12 +775,12 @@ body.timer-immersive-bg {
 		overflow: visible;
 
 		// Desktop has zoom: 0.4 — on mobile JS effectiveCubeSize is already viewport-aware
-		.cd-smart-cube__cube {
+		.zt-smart-cube__cube {
 			zoom: 1 !important;
 			margin: 0 !important;
 		}
 
-		.cd-smart-cube__cube canvas {
+		.zt-smart-cube__cube canvas {
 			width: 100% !important;
 			height: 100% !important;
 			max-width: 100%;
@@ -789,7 +789,7 @@ body.timer-immersive-bg {
 		}
 
 		// Battery + BT emblem should stick to cube, not move down
-		.cd-smart-cube__info {
+		.zt-smart-cube__info {
 			margin-top: 0;
 		}
 	}
@@ -801,8 +801,8 @@ body.timer-immersive-bg {
 		justify-content: center;
 		flex: 0 0 auto;
 		width: 100%;
-		padding: 0 !important; // cd-timer__main mobile padding-top: 60px override
-		margin: 0 !important;  // cd-timer__main--mobile margin-bottom: 20px override
+		padding: 0 !important; // zt-timer__main mobile padding-top: 60px override
+		margin: 0 !important;  // zt-timer__main--mobile margin-bottom: 20px override
 		touch-action: none;
 	}
 }

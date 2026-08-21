@@ -137,7 +137,7 @@ export default function History(props: Props) {
 
 	if (!solves.length) {
 		return (
-			<div className="cd-history">
+			<div className="zt-history">
 				<Empty text={t('timer_modules.no_solves_yet')} />
 			</div>
 		);
@@ -152,9 +152,9 @@ export default function History(props: Props) {
 
 	return (
 		<GlobalHotKeys handlers={HOTKEY_HANDLERS} keyMap={HOTKEY_MAP}>
-			<div className="cd-history h-full">
-				<div className="cd-history__table h-full">
-					<div ref={scrollRef} className="cd-history__list h-full overflow-y-auto">
+			<div className="zt-history h-full">
+				<div className="zt-history__table h-full">
+					<div ref={scrollRef} className="zt-history__list h-full overflow-y-auto">
 						<ReactList itemRenderer={renderSolveRow} length={solves.length} type="uniform" />
 					</div>
 				</div>

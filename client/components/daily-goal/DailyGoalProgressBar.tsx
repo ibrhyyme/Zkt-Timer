@@ -42,7 +42,7 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 	const cubeName = getCubeTypeBucketLabel(cubeType, scrambleSubset) || getCubeTypeInfoById(cubeType)?.name || cubeType;
 
 	return (
-		<div className={`cd-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
+		<div className={`zt-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
 			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-button rounded-full overflow-hidden border border-text/[0.06]`}>
 				{/* Fill bar */}
 				<div

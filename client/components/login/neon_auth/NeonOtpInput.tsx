@@ -140,7 +140,7 @@ export default function NeonOtpInput({
 	}
 
 	const complete = value.length >= length || status === 'verifying';
-	const gooId = `cd-neon-otp-goo-${size}`;
+	const gooId = `zt-neon-otp-goo-${size}`;
 
 	return (
 		<div className={b()} data-size={size} data-merge={complete ? 'true' : 'false'}>

@@ -1,4 +1,4 @@
-.cd-logo {
+.zt-logo {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -18,11 +18,11 @@
 	}
 
 	.theme-light & {
-		.cd-logo__img--dark {
+		.zt-logo__img--dark {
 			display: none;
 		}
 
-		.cd-logo__img--light {
+		.zt-logo__img--light {
 			display: block;
 		}
 	}

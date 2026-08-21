@@ -1,6 +1,6 @@
 @import '../../styles/config';
 
-.cd-mobile-timer-scramble {
+.zt-mobile-timer-scramble {
     width: 100%;
     padding: 1.5rem 1rem 0.5rem; // Distance from header at top, close to timer below
     text-align: center;
@@ -35,7 +35,7 @@
     }
 
     // SmartScramble spans with wrapping
-    .cd-timer-scramble__turn {
+    .zt-timer-scramble__turn {
         display: inline;
     }
 

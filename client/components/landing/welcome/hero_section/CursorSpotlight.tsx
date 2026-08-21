@@ -41,5 +41,5 @@ export default function CursorSpotlight() {
 		};
 	}, []);
 
-	return <div ref={ref} className="cd-cursor-spotlight" aria-hidden />;
+	return <div ref={ref} className="zt-cursor-spotlight" aria-hidden />;
 }

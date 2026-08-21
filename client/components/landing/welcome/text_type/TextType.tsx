@@ -118,18 +118,18 @@ export default function TextType({
 	]);
 
 	return (
-		<span ref={containerRef} className={className ? `cd-text-type ${className}` : 'cd-text-type'}>
+		<span ref={containerRef} className={className ? `zt-text-type ${className}` : 'zt-text-type'}>
 			{/* Hidden sizers — stacked in same grid cell, tallest sets height */}
 			{textArray.map((t, i) => (
-				<span key={i} className="cd-text-type__sizer" aria-hidden="true">
+				<span key={i} className="zt-text-type__sizer" aria-hidden="true">
 					{t}{showCursor ? cursorCharacter : ''}
 				</span>
 			))}
 			{/* Visible typed text */}
-			<span className="cd-text-type__content">
+			<span className="zt-text-type__content">
 				{displayedText}
 				{showCursor && (
-					<span ref={cursorRef} className="cd-text-type__cursor">
+					<span ref={cursorRef} className="zt-text-type__cursor">
 						{cursorCharacter}
 					</span>
 				)}

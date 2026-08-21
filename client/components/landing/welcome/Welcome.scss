@@ -82,10 +82,10 @@
 // ============================================
 
 @media (prefers-reduced-motion: reduce) {
-	.cd-welcome,
-	.cd-welcome *,
-	.cd-welcome *::before,
-	.cd-welcome *::after {
+	.zt-welcome,
+	.zt-welcome *,
+	.zt-welcome *::before,
+	.zt-welcome *::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
@@ -97,7 +97,7 @@
 // Shared Utility Classes
 // ============================================
 
-.cd-welcome {
+.zt-welcome {
 	position: relative;
 
 	// Film grain / noise overlay — tum sayfaya

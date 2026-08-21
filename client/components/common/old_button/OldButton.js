@@ -98,7 +98,7 @@ class OldButton extends React.Component {
 			error,
 		} = this.props;
 
-		const baseClass = 'cd-common__button';
+		const baseClass = 'zt-common__button';
 		const classes = [baseClass];
 
 		if (className) {
@@ -177,7 +177,7 @@ class OldButton extends React.Component {
 
 		let infoSpan = null;
 		if (info) {
-			infoSpan = <p className="cd-common__button__info">{info}</p>;
+			infoSpan = <p className="zt-common__button__info">{info}</p>;
 			err = null;
 		}
 
@@ -192,7 +192,7 @@ class OldButton extends React.Component {
 		}
 
 		return (
-			<div className="cd-common__button__wrapper" style={wrapperStyle}>
+			<div className="zt-common__button__wrapper" style={wrapperStyle}>
 				<button
 					title={title}
 					type={buttonType || 'button'}
@@ -203,7 +203,7 @@ class OldButton extends React.Component {
 					style={buttonStyle}
 					onClick={this.onClick}
 				>
-					{confirm ? <span className="cd-common__button__confirm">Confirm: </span> : ''}
+					{confirm ? <span className="zt-common__button__confirm">Confirm: </span> : ''}
 					{textSpan}
 					{this.props.children}
 					{ic}

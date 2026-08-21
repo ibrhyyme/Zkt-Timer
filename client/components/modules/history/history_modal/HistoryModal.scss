@@ -31,7 +31,7 @@
 		}
 	}
 
-	.cd-history__list {
+	.zt-history__list {
 		max-height: 500px;
 	}
 
@@ -401,9 +401,9 @@
 }
 
 // Modal'ın dark-glass arka planını kaldır, bileşenin kendi stilini göster
-.cd-modal__center:has(> .cd-history-modal),
-.cd-modal__center:has(> .cd-history-modal--card),
-.cd-modal__center:has(> .cd-history-modal--mobile) {
+.zt-modal__center:has(> .zt-history-modal),
+.zt-modal__center:has(> .zt-history-modal--card),
+.zt-modal__center:has(> .zt-history-modal--mobile) {
 	padding: 0 !important;
 	background: transparent !important;
 	border: none !important;
@@ -414,8 +414,8 @@
 }
 
 // X butonunu gizle - bileşenin kendi "Bitti" butonunu kullanıyoruz
-.cd-modal__center:has(> .cd-history-modal) > button,
-.cd-modal__center:has(> .cd-history-modal--card) > button,
-.cd-modal__center:has(> .cd-history-modal--mobile) > button {
+.zt-modal__center:has(> .zt-history-modal) > button,
+.zt-modal__center:has(> .zt-history-modal--card) > button,
+.zt-modal__center:has(> .zt-history-modal--mobile) > button {
 	display: none !important;
 }

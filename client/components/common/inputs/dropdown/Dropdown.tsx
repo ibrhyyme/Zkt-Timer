@@ -51,7 +51,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		const raf = requestAnimationFrame(() => {
 			const body = bodyRef.current;
 			if (!body) return;
-			const selected = body.querySelector<HTMLElement>('.cd-dropdown-option--selected');
+			const selected = body.querySelector<HTMLElement>('.zt-dropdown-option--selected');
 			if (!selected) return;
 			const target = selected.offsetTop - (body.clientHeight / 2) + (selected.offsetHeight / 2);
 			body.scrollTop = Math.max(0, target);

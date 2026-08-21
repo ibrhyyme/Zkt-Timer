@@ -172,7 +172,7 @@ class Notifications extends React.Component {
 			open: true,
 		});
 
-		const notificationList = document.getElementById('cd-notifications__body');
+		const notificationList = document.getElementById('zt-notifications__body');
 		if (!notificationList) {
 			return;
 		}
@@ -187,7 +187,7 @@ class Notifications extends React.Component {
 			open: false,
 		});
 
-		const notificationList = document.getElementById('cd-notifications__body');
+		const notificationList = document.getElementById('zt-notifications__body');
 		if (!notificationList) {
 			return;
 		}
@@ -201,7 +201,7 @@ class Notifications extends React.Component {
 
 		let body = null;
 		let loadingBody = loading ? (
-			<div className="cd-notifications__loading">
+			<div className="zt-notifications__loading">
 				<Loading />
 			</div>
 		) : null;
@@ -211,7 +211,7 @@ class Notifications extends React.Component {
 
 			if (notifications.length) {
 				body = (
-					<div id="cd-notifications__body" className="cd-notifications__body">
+					<div id="zt-notifications__body" className="zt-notifications__body">
 						{notifications.map((notif, i) => (
 							<Notif
 								onRead={this.readNotification}
@@ -228,7 +228,7 @@ class Notifications extends React.Component {
 
 		if ((notifications && !notifications.length) || (!notifications && endOfList)) {
 			body = (
-				<div className="cd-notifications__body--empty">
+				<div className="zt-notifications__body--empty">
 					<Empty text="No notifications" />
 				</div>
 			);
@@ -236,7 +236,7 @@ class Notifications extends React.Component {
 
 		let unreadSpan = null;
 		if (unreadCount) {
-			unreadSpan = <span className="cd-notifications__unread">{unreadCount}</span>;
+			unreadSpan = <span className="zt-notifications__unread">{unreadCount}</span>;
 		}
 
 		const params = {};
@@ -247,7 +247,7 @@ class Notifications extends React.Component {
 		}
 
 		return (
-			<div className="cd-notifications">
+			<div className="zt-notifications">
 				{unreadSpan}
 				<OldDropdown
 					{...params}
@@ -255,7 +255,7 @@ class Notifications extends React.Component {
 					onClose={this.closeDropdown}
 					preventCloseOnInnerClick
 					rawHandle={
-						<div className="cd-notifications__handle">
+						<div className="zt-notifications__handle">
 							<Bell weight="bold" />
 						</div>
 					}

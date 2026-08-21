@@ -1,4 +1,4 @@
-.cd-admin {
+.zt-admin {
 	color: rgb(var(--text-color));
 
 	// Ensure inline SVG icons (phosphor-react, etc.) inherit the text color
@@ -137,10 +137,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		animation: cd-admin-dropdown-fade 0.12s ease-out;
+		animation: zt-admin-dropdown-fade 0.12s ease-out;
 	}
 
-	@keyframes cd-admin-dropdown-fade {
+	@keyframes zt-admin-dropdown-fade {
 		from { opacity: 0; transform: translateY(-4px); }
 		to { opacity: 1; transform: translateY(0); }
 	}
@@ -167,7 +167,7 @@
 			background-color: rgba(var(--primary-color), 0.18);
 			color: rgb(var(--primary-color));
 
-			.cd-admin__dropdown-item-caret {
+			.zt-admin__dropdown-item-caret {
 				color: rgb(var(--primary-color));
 			}
 		}

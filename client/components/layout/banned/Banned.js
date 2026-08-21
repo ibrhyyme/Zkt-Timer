@@ -36,12 +36,12 @@ class Banned extends React.Component {
 		}
 
 		return (
-			<div className="cd-banned">
-				<div className="cd-banned__body">
+			<div className="zt-banned">
+				<div className="zt-banned__body">
 					<Warning weight="bold" />
 					<h4>Hesap Yasaklandı</h4>
 					{bannedText}
-					<div className="cd-banned__body__reason">
+					<div className="zt-banned__body__reason">
 						<span>Sebep</span>
 						<p>{reason}</p>
 					</div>

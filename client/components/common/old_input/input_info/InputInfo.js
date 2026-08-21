@@ -5,6 +5,6 @@ export default class InputInfo extends React.Component {
         if (!this.props.children) {
             return null;
         }
-        return <span className="cd-common__input-info">{this.props.children}</span>;
+        return <span className="zt-common__input-info">{this.props.children}</span>;
     }
 }

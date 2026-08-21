@@ -781,7 +781,7 @@ export default function SmartCube() {
 	const dropdown = (
 		<Dropdown
 			openUp={!mobileMode}
-			dropdownButtonProps={{ transparent: true, className: 'cd-smart-cube__gear-btn', noMargin: true }}
+			dropdownButtonProps={{ transparent: true, className: 'zt-smart-cube__gear-btn', noMargin: true }}
 			icon={<Gear size={18} />}
 			options={[
 				{
@@ -812,7 +812,7 @@ export default function SmartCube() {
 	if (smartCubeScanning) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
 		actionButton = (
-			<div className="cd-timer__connect-trigger cd-timer__connect-trigger--disabled">
+			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
 				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.scanning_short')} />
 			</div>
 		);
@@ -820,7 +820,7 @@ export default function SmartCube() {
 	} else if (smartCubeConnecting) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
 		actionButton = (
-			<div className="cd-timer__connect-trigger cd-timer__connect-trigger--disabled">
+			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
 				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.connecting').replace('...', '')} />
 			</div>
 		);
@@ -835,7 +835,7 @@ export default function SmartCube() {
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
 		actionButton = (
-			<div className="cd-timer__connect-trigger" onClick={connectBluetooth} role="button">
+			<div className="zt-timer__connect-trigger" onClick={connectBluetooth} role="button">
 				<Emblem small red icon={<Bluetooth />} text={t('smart_cube.connect')} />
 			</div>
 		);
@@ -889,7 +889,7 @@ export default function SmartCube() {
 				{mobileMode && domReady && ReactDOM.createPortal(
 					<>
 						{actionButton && (
-							<div className="cd-timer__mobile-action">
+							<div className="zt-timer__mobile-action">
 								{actionButton}
 							</div>
 						)}

@@ -13,7 +13,7 @@ import block from '../../../styles/bem';
 // else (name, email, ZKT ID) came from the federation and is shown read-only so
 // they can see what is about to be copied into their new account.
 //
-// Renders inside the .cd-zkt-auth scope as a ZktAuthScene legacyChild, which is
+// Renders inside the .zt-zkt-auth scope as a ZktAuthScene legacyChild, which is
 // where the consent/banner styles below come from.
 const b = block('zkt-auth');
 

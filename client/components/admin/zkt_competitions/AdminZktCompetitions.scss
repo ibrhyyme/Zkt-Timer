@@ -7,7 +7,7 @@ $zkt-record-cr: #ffd600;
 $zkt-record-pr: #1976d2;
 $zkt-warn: #ffc107;
 
-.cd-zkt-admin-comp {
+.zt-zkt-admin-comp {
 	padding: 1rem;
 	color: rgb(var(--text-color));
 
@@ -2442,7 +2442,7 @@ $zkt-warn: #ffc107;
 		background: rgb(var(--module-color));
 		border-radius: 8px;
 
-		.cd-zkt-admin-comp__action-btn {
+		.zt-zkt-admin-comp__action-btn {
 			margin-left: auto;
 		}
 	}
@@ -2666,7 +2666,7 @@ $zkt-warn: #ffc107;
 }
 
 // ── Day-of operations: late add panel, bulk no-show, double-check ──
-.cd-zkt-admin-comp {
+.zt-zkt-admin-comp {
 	&__add-competitor-btn {
 		display: inline-flex;
 		align-items: center;
@@ -2831,7 +2831,7 @@ $zkt-warn: #ffc107;
 }
 
 // ── Schedule manager (Program tab)
-.cd-zkt-admin-comp {
+.zt-zkt-admin-comp {
 	&__schedule-manager {
 		display: flex;
 		flex-direction: column;

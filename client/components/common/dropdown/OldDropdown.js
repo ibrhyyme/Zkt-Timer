@@ -33,7 +33,7 @@ export default class OldDropdown extends React.Component {
 		if (this.props.preventCloseOnInnerClick) {
 			let target = e.target;
 			while (target) {
-				if (target && target.classList && target.classList.contains('cd-common__dropdown')) {
+				if (target && target.classList && target.classList.contains('zt-common__dropdown')) {
 					return;
 				}
 
@@ -77,12 +77,12 @@ export default class OldDropdown extends React.Component {
 		const {open} = this.state;
 		let body = null;
 
-		let className = 'cd-common__dropdown__body';
+		let className = 'zt-common__dropdown__body';
 		if (up) {
-			className += ' cd-common__dropdown__body--up';
+			className += ' zt-common__dropdown__body--up';
 		}
 		if (left) {
-			className += ' cd-common__dropdown__body--left';
+			className += ' zt-common__dropdown__body--left';
 		}
 
 		if (open) {
@@ -112,7 +112,7 @@ export default class OldDropdown extends React.Component {
 		}
 
 		return (
-			<div className="cd-common__dropdown">
+			<div className="zt-common__dropdown">
 				<InputLegend text={legendText} />
 				{handleWrapper}
 				{body}

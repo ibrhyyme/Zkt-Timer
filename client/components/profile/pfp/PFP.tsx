@@ -53,7 +53,7 @@ export default function PFP(props: Props) {
 	}
 
 	return (
-		<div className="cd-pfp">
+		<div className="zt-pfp">
 			{cover}
 			<AvatarImage image={imgLink} large user={profile?.user} profile={profile} />
 		</div>

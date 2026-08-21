@@ -1,4 +1,4 @@
-.cd-maintenance {
+.zt-maintenance {
 	position: fixed;
 	inset: 0;
 	display: flex;
@@ -33,7 +33,7 @@
 		align-items: center;
 		justify-content: center;
 
-		.cd-hero-cube {
+		.zt-hero-cube {
 			width: 100%;
 			height: 100%;
 		}
@@ -82,7 +82,7 @@
 		);
 		border-radius: 999px;
 		box-shadow: 0 0 12px rgba(74, 158, 255, 0.7);
-		animation: cd-maintenance-progress 1.6s ease-in-out infinite;
+		animation: zt-maintenance-progress 1.6s ease-in-out infinite;
 	}
 
 	&__footer {
@@ -92,7 +92,7 @@
 	}
 }
 
-@keyframes cd-maintenance-progress {
+@keyframes zt-maintenance-progress {
 	0% { left: -35%; }
 	100% { left: 100%; }
 }

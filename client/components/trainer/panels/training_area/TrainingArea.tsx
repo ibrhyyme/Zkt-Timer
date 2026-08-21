@@ -168,8 +168,8 @@ export default function TrainingArea() {
 		if (window.innerWidth > 768) return;
 		const target = e.target as HTMLElement;
 		// Nav butonlarina veya mobil alg header'a tiklandiginda timer tetikleme
-		if (target.closest(`.cd-trainer__timer`) || target.closest(`.cd-trainer__training-nav`) || target.closest(`.cd-trainer__mobile-alg-header`)) return;
-		const timerEl = document.querySelector('.cd-trainer__timer') as HTMLElement;
+		if (target.closest(`.zt-trainer__timer`) || target.closest(`.zt-trainer__training-nav`) || target.closest(`.zt-trainer__mobile-alg-header`)) return;
+		const timerEl = document.querySelector('.zt-trainer__timer') as HTMLElement;
 		timerEl?.click();
 	}, []);
 

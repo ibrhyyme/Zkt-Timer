@@ -238,7 +238,7 @@ export default function QiyiTimer() {
 
 	return (
 		<div
-			className={'cd-timer__connect-trigger' + (scanning ? ' cd-timer__connect-trigger--disabled' : '')}
+			className={'zt-timer__connect-trigger' + (scanning ? ' zt-timer__connect-trigger--disabled' : '')}
 			onClick={scanning ? undefined : handleConnectButton}
 			role="button"
 		>

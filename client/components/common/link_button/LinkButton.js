@@ -58,7 +58,7 @@ export default class LinkButton extends React.Component {
 			error,
 		} = this.props;
 
-		const baseClass = 'cd-common__button';
+		const baseClass = 'zt-common__button';
 		const classes = [baseClass];
 
 		if (className) {
@@ -120,7 +120,7 @@ export default class LinkButton extends React.Component {
 
 		let infoSpan = null;
 		if (info) {
-			infoSpan = <p className="cd-common__button__info">{info}</p>;
+			infoSpan = <p className="zt-common__button__info">{info}</p>;
 			err = null;
 		}
 
@@ -143,7 +143,7 @@ export default class LinkButton extends React.Component {
 		}
 
 		return (
-			<div className="cd-common__button__wrapper" style={{alignItems: alignLeft ? 'flex-start' : 'flex-end'}}>
+			<div className="zt-common__button__wrapper" style={{alignItems: alignLeft ? 'flex-start' : 'flex-end'}}>
 				{link}
 				{infoSpan}
 				{err}

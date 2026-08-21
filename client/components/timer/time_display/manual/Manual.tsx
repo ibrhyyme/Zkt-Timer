@@ -92,8 +92,8 @@ export default function Manual() {
 		if (!isAndroidNative() || !mobileMode) return;
 
 		const container =
-			(manualInput.current?.closest('.cd-timer__mobile-layout') as HTMLElement | null) ??
-			document.querySelector<HTMLElement>('.cd-timer__mobile-layout');
+			(manualInput.current?.closest('.zt-timer__mobile-layout') as HTMLElement | null) ??
+			document.querySelector<HTMLElement>('.zt-timer__mobile-layout');
 		if (!container) return;
 
 		const pinScroll = () => {
@@ -166,7 +166,7 @@ export default function Manual() {
 				const relatedTarget = e.relatedTarget as HTMLElement | null;
 				if (!disabled) {
 					// Submit butonuna tiklandiysa, submitTime refocus yapacak
-					if (relatedTarget?.closest('.cd-manual-time-entry__submit-btn')) return;
+					if (relatedTarget?.closest('.zt-manual-time-entry__submit-btn')) return;
 					// Baska bir elemente tiklandiysa, blur'a izin ver (klavye kapansin)
 					if (relatedTarget) return;
 					// Mobilde bos alana tiklaninca klavye kapansin

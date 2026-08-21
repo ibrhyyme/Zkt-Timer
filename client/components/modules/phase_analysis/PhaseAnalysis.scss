@@ -1,6 +1,6 @@
 @import '../../../styles/config';
 
-.cd-phase-analysis {
+.zt-phase-analysis {
 	width: 100%;
 	height: 100%;
 	display: flex;
@@ -104,14 +104,14 @@
 			font-weight: 700;
 			font-size: 0.83rem;
 
-			&.cd-phase-analysis__cell--index {
+			&.zt-phase-analysis__cell--index {
 				color: rgb(var(--text-color));
 				font-weight: 500;
 				opacity: 0.4;
 				font-size: 0.72rem;
 			}
 
-			&.cd-phase-analysis__cell--stat {
+			&.zt-phase-analysis__cell--stat {
 				color: rgba(var(--secondary-color), 0.8);
 			}
 		}
@@ -136,7 +136,7 @@
 			border-top: 1px solid rgba(var(--secondary-color), 0.2);
 			border-bottom: none;
 
-			.cd-phase-analysis__mobile-cell {
+			.zt-phase-analysis__mobile-cell {
 				font-weight: 700;
 				color: rgb(var(--secondary-color));
 				padding-top: 6px;

@@ -100,50 +100,50 @@ function ProUserRow({user, onUpdated}: {user: ProUserData; onUpdated: () => void
 	}
 
 	return (
-		<tr className="cd-admin-users__row" style={{cursor: 'pointer'}} onClick={handleManage}>
-			<td className="cd-admin-users__cell cd-admin-users__cell--user">
-				<div className="cd-admin-users__user-info">
-					<div className="cd-admin-users__avatar-wrapper">
+		<tr className="zt-admin-users__row" style={{cursor: 'pointer'}} onClick={handleManage}>
+			<td className="zt-admin-users__cell zt-admin-users__cell--user">
+				<div className="zt-admin-users__user-info">
+					<div className="zt-admin-users__avatar-wrapper">
 						<AvatarImage user={user} profile={user.profile} />
 					</div>
-					<div className="cd-admin-users__user-details">
-						<div className="cd-admin-users__username">{user.username}</div>
-						<div className="cd-admin-users__email">{user.email}</div>
+					<div className="zt-admin-users__user-details">
+						<div className="zt-admin-users__username">{user.username}</div>
+						<div className="zt-admin-users__email">{user.email}</div>
 					</div>
 				</div>
 			</td>
-			<td className="cd-admin-users__cell">
-				<span className="cd-admin-users__badge" style={{background: type.color + '22', color: type.color, border: `1px solid ${type.color}55`}}>
+			<td className="zt-admin-users__cell">
+				<span className="zt-admin-users__badge" style={{background: type.color + '22', color: type.color, border: `1px solid ${type.color}55`}}>
 					{type.label}
 				</span>
 			</td>
-			<td className="cd-admin-users__cell">
+			<td className="zt-admin-users__cell">
 				{user.iap_platform ? (
-					<span className="cd-admin-users__badge" style={{background: '#ffffff11', color: '#ccc', border: '1px solid #ffffff22'}}>
+					<span className="zt-admin-users__badge" style={{background: '#ffffff11', color: '#ccc', border: '1px solid #ffffff22'}}>
 						{user.iap_platform === 'ios' ? 'iOS' : 'Android'}
 					</span>
 				) : (
 					<span style={{color: '#666'}}>—</span>
 				)}
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--date">
-				<div className="cd-admin-users__date-main">{startLabel(user)}</div>
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
+				<div className="zt-admin-users__date-main">{startLabel(user)}</div>
 				{user.iap_latest_event_at && (
-					<div className="cd-admin-users__date-sub">{dayjs(user.iap_latest_event_at).fromNow()}</div>
+					<div className="zt-admin-users__date-sub">{dayjs(user.iap_latest_event_at).fromNow()}</div>
 				)}
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--date">
-				<div className="cd-admin-users__date-main">{expiryLabel(user)}</div>
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
+				<div className="zt-admin-users__date-main">{expiryLabel(user)}</div>
 				{user.pro_expires_at && (
-					<div className="cd-admin-users__date-sub">{dayjs(user.pro_expires_at).fromNow()}</div>
+					<div className="zt-admin-users__date-sub">{dayjs(user.pro_expires_at).fromNow()}</div>
 				)}
 			</td>
-			<td className="cd-admin-users__cell">
-				<span className="cd-admin-users__badge" style={{background: status.color + '22', color: status.color, border: `1px solid ${status.color}55`}}>
+			<td className="zt-admin-users__cell">
+				<span className="zt-admin-users__badge" style={{background: status.color + '22', color: status.color, border: `1px solid ${status.color}55`}}>
 					{status.label}
 				</span>
 			</td>
-			<td className="cd-admin-users__cell" onClick={(e) => e.stopPropagation()}>
+			<td className="zt-admin-users__cell" onClick={(e) => e.stopPropagation()}>
 				{user.revenuecat_user_id ? (
 					<button
 						style={{fontFamily: 'monospace', fontSize: '11px', background: 'transparent', border: '1px solid #444', borderRadius: '4px', color: '#aaa', cursor: 'pointer', padding: '2px 6px'}}
@@ -211,23 +211,23 @@ export default function AdminProUsers() {
 	const endIdx = page * PAGE_SIZE + users.length;
 
 	return (
-		<div className="cd-admin-users">
-			<div className="cd-admin-users__controls">
+		<div className="zt-admin-users">
+			<div className="zt-admin-users__controls">
 				<Input value={query} onChange={setQuery} placeholder="Search users..." />
-				<span className="cd-admin-users__total">{total} pro users</span>
+				<span className="zt-admin-users__total">{total} pro users</span>
 			</div>
 
-			<div className="cd-admin-users__table-wrapper">
-				<table className="cd-admin-users__table">
+			<div className="zt-admin-users__table-wrapper">
+				<table className="zt-admin-users__table">
 					<thead>
 						<tr>
-							<th className="cd-admin-users__th">User</th>
-							<th className="cd-admin-users__th">Subscription</th>
-							<th className="cd-admin-users__th">Platform</th>
-							<th className="cd-admin-users__th">Started</th>
-							<th className="cd-admin-users__th">Expires</th>
-							<th className="cd-admin-users__th">Status</th>
-							<th className="cd-admin-users__th">RevenueCat ID</th>
+							<th className="zt-admin-users__th">User</th>
+							<th className="zt-admin-users__th">Subscription</th>
+							<th className="zt-admin-users__th">Platform</th>
+							<th className="zt-admin-users__th">Started</th>
+							<th className="zt-admin-users__th">Expires</th>
+							<th className="zt-admin-users__th">Status</th>
+							<th className="zt-admin-users__th">RevenueCat ID</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -242,10 +242,10 @@ export default function AdminProUsers() {
 				</table>
 			</div>
 
-			<div className="cd-admin-users__pagination">
-				<button className="cd-admin-users__page-btn" onClick={prevPage} disabled={page === 0}>← Previous</button>
-				<span className="cd-admin-users__page-info">{startIdx}–{endIdx} / {total}</span>
-				<button className="cd-admin-users__page-btn" onClick={nextPage} disabled={!hasMore}>Next →</button>
+			<div className="zt-admin-users__pagination">
+				<button className="zt-admin-users__page-btn" onClick={prevPage} disabled={page === 0}>← Previous</button>
+				<span className="zt-admin-users__page-info">{startIdx}–{endIdx} / {total}</span>
+				<button className="zt-admin-users__page-btn" onClick={nextPage} disabled={!hasMore}>Next →</button>
 			</div>
 		</div>
 	);

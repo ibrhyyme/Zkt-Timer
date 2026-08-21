@@ -1,12 +1,12 @@
 /**
  * Efficiency Trainer styles.
- * Namespace: cd-trainer-efficiency (+ modern player: cd-eff-player)
+ * Namespace: zt-trainer-efficiency (+ modern player: zt-eff-player)
  * Convention (same as recognition): rgb(var(--x)) / rgba(var(--x), opacity),
  * card bg rgb(var(--button-color)), border rgba(var(--text-color), 0.08).
  */
 @import '../../../styles/config';
 
-.cd-trainer-efficiency {
+.zt-trainer-efficiency {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -16,7 +16,7 @@
 	color: rgb(var(--text-color));
 	background: rgb(var(--background-color));
 
-	// Mobile: ITSELF scroll container (parent cd-trainer overflow:hidden + fixed
+	// Mobile: ITSELF scroll container (parent zt-trainer overflow:hidden + fixed
 	// height; if height:auto content gets cut, no scroll). height:100%
 	// + overflow-y:auto → if content (cube+player+solution) overflows THIS element scrolls.
 	@media (max-width: 900px) {
@@ -376,7 +376,7 @@
 		background: radial-gradient(circle at 50% 40%, rgba(var(--primary-color), 0.06), transparent 70%);
 	}
 
-	// Left column player outer styling (inner styles in .cd-eff-player)
+	// Left column player outer styling (inner styles in .zt-eff-player)
 	&__player {
 		flex: 1;
 		min-height: 0;
@@ -536,7 +536,7 @@
 
 // ────────── Modern solution player (ReplayPlayer-inspired) ──────────
 // controlPanel:'none' — controls are ours: seek + play/pause + speed + counter
-.cd-eff-player {
+.zt-eff-player {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -707,10 +707,10 @@
 
 // Back / Next / Show Solution — Button primary theme looks faded in some states.
 // For bright blue matching segment active, use high specificity
-// (.cd-trainer-efficiency .cd-...) + !important to override Button !important;
+// (.zt-trainer-efficiency .zt-...) + !important to override Button !important;
 // clear shadow/opacity/filter layers.
-.cd-trainer-efficiency .cd-trainer-efficiency__scramble-nav,
-.cd-trainer-efficiency .cd-trainer-efficiency__reveal-btn {
+.zt-trainer-efficiency .zt-trainer-efficiency__scramble-nav,
+.zt-trainer-efficiency .zt-trainer-efficiency__reveal-btn {
 	background: rgb(var(--primary-color)) !important;
 	color: #fff !important;
 	border: none !important;
@@ -719,25 +719,25 @@
 	filter: none !important;
 	backdrop-filter: none !important;
 }
-.cd-trainer-efficiency .cd-trainer-efficiency__scramble-nav:hover,
-.cd-trainer-efficiency .cd-trainer-efficiency__reveal-btn:hover {
+.zt-trainer-efficiency .zt-trainer-efficiency__scramble-nav:hover,
+.zt-trainer-efficiency .zt-trainer-efficiency__reveal-btn:hover {
 	background: rgb(var(--primary-color)) !important;
 	filter: brightness(1.08) !important;
 }
 
 // Cross/XCross/EOCross segment'i header'in orta slotuna tasindi → kompakt (ayri
 // controls satiri kalkti, dikey alan kazanci). Header dar oldugu icin kucuk padding/font.
-.cd-trainer-header__center {
-	.cd-trainer-efficiency__segment {
+.zt-trainer-header__center {
+	.zt-trainer-efficiency__segment {
 		padding: 3px;
 	}
-	.cd-trainer-efficiency__segment-btn {
+	.zt-trainer-efficiency__segment-btn {
 		padding: 6px 14px;
 		font-size: 0.85rem;
 	}
 
 	@media (max-width: 600px) {
-		.cd-trainer-efficiency__segment-btn {
+		.zt-trainer-efficiency__segment-btn {
 			padding: 5px 10px;
 			font-size: 0.8rem;
 		}

@@ -40,7 +40,7 @@ export default function CrossColorPicker({value, onChange}: CrossColorPickerProp
 	function shakeIfLast(letter: string) {
 		const el = refs.current[letter];
 		if (el) {
-			const shakeClass = 'cd-trainer-recognition__cross-swatch--shake';
+			const shakeClass = 'zt-trainer-recognition__cross-swatch--shake';
 			el.classList.remove(shakeClass);
 			void el.offsetWidth;
 			el.classList.add(shakeClass);

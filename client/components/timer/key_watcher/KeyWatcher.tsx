@@ -132,17 +132,17 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			if (target.classList && (
-				target.classList.contains('cd-timer-controls__left') ||
-				target.classList.contains('cd-timer-controls__right') ||
-				target.classList.contains('cd-timer-header-control') ||
-				target.classList.contains('cd-timer-dashboard') ||
-				target.classList.contains('cd-stats-bar') ||
-				target.classList.contains('cd-mobile-timer-scramble__text') ||
-				target.classList.contains('cd-mobile-timer-scramble__smart-scramble') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-text') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-copy') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-close')
+				target.classList.contains('zt-timer-controls__left') ||
+				target.classList.contains('zt-timer-controls__right') ||
+				target.classList.contains('zt-timer-header-control') ||
+				target.classList.contains('zt-timer-dashboard') ||
+				target.classList.contains('zt-stats-bar') ||
+				target.classList.contains('zt-mobile-timer-scramble__text') ||
+				target.classList.contains('zt-mobile-timer-scramble__smart-scramble') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-text') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-copy') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-close')
 			)) {
 				return;
 			}
@@ -189,17 +189,17 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			if (target.classList && (
-				target.classList.contains('cd-timer-controls__left') ||
-				target.classList.contains('cd-timer-controls__right') ||
-				target.classList.contains('cd-timer-header-control') ||
-				target.classList.contains('cd-timer-dashboard') ||
-				target.classList.contains('cd-stats-bar') ||
-				target.classList.contains('cd-mobile-timer-scramble__text') ||
-				target.classList.contains('cd-mobile-timer-scramble__smart-scramble') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-text') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-copy') ||
-				target.classList.contains('cd-mobile-timer-scramble__expanded-close')
+				target.classList.contains('zt-timer-controls__left') ||
+				target.classList.contains('zt-timer-controls__right') ||
+				target.classList.contains('zt-timer-header-control') ||
+				target.classList.contains('zt-timer-dashboard') ||
+				target.classList.contains('zt-stats-bar') ||
+				target.classList.contains('zt-mobile-timer-scramble__text') ||
+				target.classList.contains('zt-mobile-timer-scramble__smart-scramble') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-text') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-copy') ||
+				target.classList.contains('zt-mobile-timer-scramble__expanded-close')
 			)) {
 				return;
 			}

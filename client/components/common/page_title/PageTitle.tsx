@@ -28,7 +28,7 @@ export default function PageTitle(props: Props) {
 				{pageName}
 				<div style={{ marginLeft: '12px', display: 'flex', alignItems: 'center' }}>
 					<MobileNav />
-					<div className="cd-page-title--account-dropdown-mobile">
+					<div className="zt-page-title--account-dropdown-mobile">
 						<AccountDropdown />
 					</div>
 				</div>

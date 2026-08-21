@@ -26,7 +26,7 @@
 			overflow: visible !important;
 
 			// Maç modunda tam yükseklik
-			&.cd-timer-footer__body--match {
+			&.zt-timer-footer__body--match {
 				height: 40vh !important;
 				max-height: unset !important;
 				grid-template-rows: 1fr;
@@ -106,18 +106,18 @@
 				}
 
 				// Scramble görselini bloğa sığdır
-				.cd-scramble-visual {
+				.zt-scramble-visual {
 					height: 90%;
 					width: auto;
 					max-width: 100%;
 					aspect-ratio: 4/3;
 
 					// Karelerin yuvarlak görünmemesi ve aralarının çok açık olmaması için
-					.cd-scramble-face {
+					.zt-scramble-face {
 						grid-gap: 1px !important;
 					}
 
-					.cd-scramble-face>span {
+					.zt-scramble-face>span {
 						border-radius: 0.5px !important;
 					}
 				}
@@ -130,7 +130,7 @@
 			grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 			height: 20rem;
 
-			&.cd-timer-footer__body--mobile {
+			&.zt-timer-footer__body--mobile {
 				grid-template-columns: 50% 50%;
 				grid-template-rows: 1.5fr 1fr;
 				height: auto;
@@ -169,7 +169,7 @@
 	}
 
 	// Maç modunda (parent wrapper) kendini genişletmeli
-	&.cd-timer-footer--match {
+	&.zt-timer-footer--match {
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -234,7 +234,7 @@
 
 // Clock küpü için özel stiller (Desktop TimerFooter)
 .clock-scramble {
-	.cd-scramble-visual {
+	.zt-scramble-visual {
 		max-width: 600px !important; // Clock için çok daha geniş alan
 		width: 100% !important;
 		max-height: none !important;

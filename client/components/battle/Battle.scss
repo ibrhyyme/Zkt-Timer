@@ -1,8 +1,8 @@
 @import '../../styles/config';
 
-$self: '.cd-battle';
+$self: '.zt-battle';
 
-.cd-battle {
+.zt-battle {
 	position: fixed;
 	inset: 0;
 	display: flex;
@@ -38,7 +38,7 @@ $self: '.cd-battle';
 			background: rgba(var(--secondary-color), 0.7) !important;
 			border-color: rgba(var(--secondary-color), 0.8) !important;
 
-			.cd-battle__time {
+			.zt-battle__time {
 				text-shadow: none;
 			}
 		}

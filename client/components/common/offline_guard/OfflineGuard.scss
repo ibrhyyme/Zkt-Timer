@@ -1,4 +1,4 @@
-.cd-offline-guard {
+.zt-offline-guard {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -11,7 +11,7 @@
 		align-items: center;
 		text-align: center;
 		max-width: 440px;
-		animation: cd-offline-enter 0.45s ease-out both;
+		animation: zt-offline-enter 0.45s ease-out both;
 	}
 
 	// Radar wrapper: expanding rings say "searching for a signal", so the state
@@ -31,7 +31,7 @@
 		inset: 0;
 		border-radius: 50%;
 		border: 2px solid rgba(var(--primary-color), 0.45);
-		animation: cd-offline-ring 2.4s ease-out infinite;
+		animation: zt-offline-ring 2.4s ease-out infinite;
 
 		&:nth-of-type(2) {
 			animation-delay: 0.8s;
@@ -55,7 +55,7 @@
 		);
 		border: 2px solid rgba(var(--primary-color), 0.4);
 		border-radius: 50%;
-		animation: cd-offline-breathe 3.2s ease-in-out infinite;
+		animation: zt-offline-breathe 3.2s ease-in-out infinite;
 	}
 
 	&__icon {
@@ -102,7 +102,7 @@
 		);
 		border-radius: 999px;
 		box-shadow: 0 0 12px rgba(var(--primary-color), 0.7);
-		animation: cd-offline-progress 1.6s ease-in-out infinite;
+		animation: zt-offline-progress 1.6s ease-in-out infinite;
 	}
 
 	&__back-btn {
@@ -131,7 +131,7 @@
 	}
 }
 
-@keyframes cd-offline-enter {
+@keyframes zt-offline-enter {
 	from {
 		opacity: 0;
 		transform: translateY(14px);
@@ -142,7 +142,7 @@
 	}
 }
 
-@keyframes cd-offline-ring {
+@keyframes zt-offline-ring {
 	0% {
 		transform: scale(0.62);
 		opacity: 0.9;
@@ -156,7 +156,7 @@
 	}
 }
 
-@keyframes cd-offline-breathe {
+@keyframes zt-offline-breathe {
 	0%,
 	100% {
 		box-shadow: 0 0 22px rgba(var(--primary-color), 0.22);
@@ -166,7 +166,7 @@
 	}
 }
 
-@keyframes cd-offline-progress {
+@keyframes zt-offline-progress {
 	0% {
 		left: -35%;
 	}
@@ -176,7 +176,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.cd-offline-guard {
+	.zt-offline-guard {
 		&__content,
 		&__ring,
 		&__icon-wrapper,

@@ -172,7 +172,7 @@ export default function PhaseAnalysis(props: Props) {
 
 	if (!smartSolves.length) {
 		return (
-			<div className="cd-phase-analysis">
+			<div className="zt-phase-analysis">
 				<Empty text={t('phase_analysis.no_smart_solves')} />
 			</div>
 		);
@@ -191,29 +191,29 @@ export default function PhaseAnalysis(props: Props) {
 		return (
 			<div
 				className={[
-					'cd-phase-analysis__row',
-					isEven ? 'cd-phase-analysis__row--even' : '',
-					!solve.is_smart_cube ? 'cd-phase-analysis__row--empty' : '',
-					'cd-phase-analysis__row--clickable',
+					'zt-phase-analysis__row',
+					isEven ? 'zt-phase-analysis__row--even' : '',
+					!solve.is_smart_cube ? 'zt-phase-analysis__row--empty' : '',
+					'zt-phase-analysis__row--clickable',
 				].filter(Boolean).join(' ')}
 				key={solve.id}
 				onClick={() => openSessionStats(solve.session_id)}
 			>
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--index">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index">
 					{(displayIndex + 1).toLocaleString()}.
 				</div>
 				{PHASES.map((phase) => {
 					const step = steps.find((s) => s.step_name === phase);
 					return (
-						<div key={phase} className="cd-phase-analysis__cell">
+						<div key={phase} className="zt-phase-analysis__cell">
 							{fmt(totalTime(step))}
 						</div>
 					);
 				})}
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--stat">
 					{solve.is_smart_cube ? (solveTurns(solve) ?? '–') : '–'}
 				</div>
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--stat">
 					{solve.is_smart_cube ? solveTps(solve) : '–'}
 				</div>
 			</div>
@@ -223,39 +223,39 @@ export default function PhaseAnalysis(props: Props) {
 	const turns = avgTurns(smartSolves);
 
 	return (
-		<div className="cd-phase-analysis h-full">
-			<div className="cd-phase-analysis__header">
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--index cd-phase-analysis__cell--head" />
+		<div className="zt-phase-analysis h-full">
+			<div className="zt-phase-analysis__header">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index zt-phase-analysis__cell--head" />
 				{LABELS.map((label) => (
-					<div key={label} className="cd-phase-analysis__cell cd-phase-analysis__cell--head">
+					<div key={label} className="zt-phase-analysis__cell zt-phase-analysis__cell--head">
 						{label}
 					</div>
 				))}
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--head cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--stat">
 					{t('phase_analysis.turns_label')}
 				</div>
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--head cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--stat">
 					TPS
 				</div>
 			</div>
 
-			<div ref={scrollRef} className="cd-phase-analysis__list overflow-y-auto">
+			<div ref={scrollRef} className="zt-phase-analysis__list overflow-y-auto">
 				<ReactList itemRenderer={renderRow} length={solves.length} type="uniform" />
 			</div>
 
-			<div className="cd-phase-analysis__avg-row">
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--index cd-phase-analysis__cell--avg">
+			<div className="zt-phase-analysis__avg-row">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index zt-phase-analysis__cell--avg">
 					{t('phase_analysis.avg_short')}
 				</div>
 				{PHASES.map((phase) => (
-					<div key={phase} className="cd-phase-analysis__cell cd-phase-analysis__cell--avg">
+					<div key={phase} className="zt-phase-analysis__cell zt-phase-analysis__cell--avg">
 						{fmt(phaseAvg(smartSolves, phase))}
 					</div>
 				))}
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--avg cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--stat">
 					{turns != null ? Math.round(turns) : '–'}
 				</div>
-				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--avg cd-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--stat">
 					{avgTps(smartSolves)}
 				</div>
 			</div>
@@ -276,7 +276,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 
 	if (!current) {
 		return (
-			<div className="cd-phase-analysis cd-phase-analysis--mobile">
+			<div className="zt-phase-analysis zt-phase-analysis--mobile">
 				<Empty text={t('phase_analysis.no_smart_solves')} />
 			</div>
 		);
@@ -311,22 +311,22 @@ function MobileView({ solves }: { solves: Solve[] }) {
 	const total = hasNullPhase ? null : rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
 
 	return (
-		<div className="cd-phase-analysis cd-phase-analysis--mobile">
-			<table className="cd-phase-analysis__mobile-table">
+		<div className="zt-phase-analysis zt-phase-analysis--mobile">
+			<table className="zt-phase-analysis__mobile-table">
 				<tbody>
 					{rows.map(({ label, val, comparison }) => (
-						<tr key={label} className="cd-phase-analysis__mobile-row">
-							<td className="cd-phase-analysis__mobile-cell cd-phase-analysis__mobile-cell--phase">{label}</td>
-							<td className={`cd-phase-analysis__mobile-cell${comparison ? ` cd-phase-analysis__mobile-cell--${comparison}` : ''}`}>
+						<tr key={label} className="zt-phase-analysis__mobile-row">
+							<td className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--phase">{label}</td>
+							<td className={`zt-phase-analysis__mobile-cell${comparison ? ` zt-phase-analysis__mobile-cell--${comparison}` : ''}`}>
 								{fmt(val)}
 							</td>
 						</tr>
 					))}
-					<tr className="cd-phase-analysis__mobile-row cd-phase-analysis__mobile-row--total">
-						<td className="cd-phase-analysis__mobile-cell cd-phase-analysis__mobile-cell--phase">
+					<tr className="zt-phase-analysis__mobile-row zt-phase-analysis__mobile-row--total">
+						<td className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--phase">
 							{t('phase_analysis.total_label')}
 						</td>
-						<td className="cd-phase-analysis__mobile-cell">{total == null ? '–' : fmt(total)}</td>
+						<td className="zt-phase-analysis__mobile-cell">{total == null ? '–' : fmt(total)}</td>
 					</tr>
 				</tbody>
 			</table>

@@ -124,15 +124,15 @@ interface CardProps {
 
 function StatCard({ icon, label, value, subValue, color, to, highlight, onClick, expanded, expandable }: CardProps) {
 	const content = (
-		<div className={`cd-admin-dashboard__card${highlight ? ' cd-admin-dashboard__card--highlight' : ''}${expandable ? ' cd-admin-dashboard__card--expandable' : ''}${expanded ? ' cd-admin-dashboard__card--expanded' : ''}`}>
-			<div className="cd-admin-dashboard__card-icon" style={color ? { color } : undefined}>{icon}</div>
-			<div className="cd-admin-dashboard__card-body">
-				<div className="cd-admin-dashboard__card-label">{label}</div>
-				<div className="cd-admin-dashboard__card-value">{value}</div>
-				{subValue && <div className="cd-admin-dashboard__card-sub">{subValue}</div>}
+		<div className={`zt-admin-dashboard__card${highlight ? ' zt-admin-dashboard__card--highlight' : ''}${expandable ? ' zt-admin-dashboard__card--expandable' : ''}${expanded ? ' zt-admin-dashboard__card--expanded' : ''}`}>
+			<div className="zt-admin-dashboard__card-icon" style={color ? { color } : undefined}>{icon}</div>
+			<div className="zt-admin-dashboard__card-body">
+				<div className="zt-admin-dashboard__card-label">{label}</div>
+				<div className="zt-admin-dashboard__card-value">{value}</div>
+				{subValue && <div className="zt-admin-dashboard__card-sub">{subValue}</div>}
 			</div>
 			{expandable && (
-				<div className="cd-admin-dashboard__card-caret">
+				<div className="zt-admin-dashboard__card-caret">
 					{expanded ? <CaretUp size={18} weight="bold" /> : <CaretDown size={18} weight="bold" />}
 				</div>
 			)}
@@ -140,10 +140,10 @@ function StatCard({ icon, label, value, subValue, color, to, highlight, onClick,
 	);
 
 	if (to) {
-		return <Link to={to} className="cd-admin-dashboard__card-link">{content}</Link>;
+		return <Link to={to} className="zt-admin-dashboard__card-link">{content}</Link>;
 	}
 	if (onClick) {
-		return <button type="button" onClick={onClick} className="cd-admin-dashboard__card-button">{content}</button>;
+		return <button type="button" onClick={onClick} className="zt-admin-dashboard__card-button">{content}</button>;
 	}
 	return content;
 }
@@ -240,15 +240,15 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 	}, [period, result?.available_months, currentMonth]);
 
 	return (
-		<div className="cd-admin-dashboard__expand-panel">
+		<div className="zt-admin-dashboard__expand-panel">
 			{period === 'month' && monthOptions.length > 0 && (
-				<div className="cd-admin-dashboard__month-controls">
-					<label className="cd-admin-dashboard__month-label" htmlFor="cd-admin-dashboard-month-select">
+				<div className="zt-admin-dashboard__month-controls">
+					<label className="zt-admin-dashboard__month-label" htmlFor="zt-admin-dashboard-month-select">
 						{t('admin_dashboard.select_month')}
 					</label>
 					<select
-						id="cd-admin-dashboard-month-select"
-						className="cd-admin-dashboard__month-select"
+						id="zt-admin-dashboard-month-select"
+						className="zt-admin-dashboard__month-select"
 						value={effectiveMonth ?? currentMonth}
 						onChange={(e) => {
 							const v = e.target.value;
@@ -265,7 +265,7 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 			)}
 
 			{!loading && result && result.rows.length > 0 && (
-				<div className="cd-admin-dashboard__panel-summary">
+				<div className="zt-admin-dashboard__panel-summary">
 					{t('admin_dashboard.month_summary', {
 						users: result.total_active_users,
 						duration: formatDuration(result.total_active_minutes, t),
@@ -273,15 +273,15 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 				</div>
 			)}
 
-			{loading && <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
+			{loading && <div className="zt-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
 
 			{!loading && (!result || result.rows.length === 0) && (
-				<div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>
+				<div className="zt-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>
 			)}
 
 			{!loading && result && result.rows.length > 0 && (
-				<div className="cd-admin-dashboard__table">
-					<div className="cd-admin-dashboard__table-header">
+				<div className="zt-admin-dashboard__table">
+					<div className="zt-admin-dashboard__table-header">
 						<span>{t('admin_dashboard.tbl_user')}</span>
 						<span>{t('admin_dashboard.tbl_active_time')}</span>
 						<span>{t('admin_dashboard.tbl_last_seen')}</span>
@@ -289,7 +289,7 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 					{result.rows.map((row) => (
 						<div
 							key={row.user.id}
-							className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
+							className="zt-admin-dashboard__table-row zt-admin-dashboard__table-row--clickable"
 							onClick={() => openManageUser(row.user.id)}
 							role="button"
 							tabIndex={0}
@@ -300,12 +300,12 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 								}
 							}}
 						>
-							<span className="cd-admin-dashboard__table-user">
+							<span className="zt-admin-dashboard__table-user">
 								<AvatarImage user={row.user as any} tiny />
-								<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
+								<span className="zt-admin-dashboard__table-username">{row.user.username}</span>
 							</span>
-							<span className="cd-admin-dashboard__table-time">{formatDuration(row.active_minutes, t)}</span>
-							<span className="cd-admin-dashboard__table-last">{formatRelative(row.last_seen_at, t)}</span>
+							<span className="zt-admin-dashboard__table-time">{formatDuration(row.active_minutes, t)}</span>
+							<span className="zt-admin-dashboard__table-last">{formatRelative(row.last_seen_at, t)}</span>
 						</div>
 					))}
 				</div>
@@ -364,23 +364,23 @@ function OnlineUsersPanel() {
 	}
 
 	return (
-		<div className="cd-admin-dashboard__expand-panel">
-			{loading && <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
+		<div className="zt-admin-dashboard__expand-panel">
+			{loading && <div className="zt-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
 
 			{!loading && (!rows || rows.length === 0) && (
-				<div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.online_empty')}</div>
+				<div className="zt-admin-dashboard__table-empty">{t('admin_dashboard.online_empty')}</div>
 			)}
 
 			{!loading && rows && rows.length > 0 && (
-				<div className="cd-admin-dashboard__table cd-admin-dashboard__table--online">
-					<div className="cd-admin-dashboard__table-header">
+				<div className="zt-admin-dashboard__table zt-admin-dashboard__table--online">
+					<div className="zt-admin-dashboard__table-header">
 						<span>{t('admin_dashboard.tbl_user')}</span>
 						<span>{t('admin_dashboard.tbl_tabs')}</span>
 					</div>
 					{rows.map((row) => (
 						<div
 							key={row.user.id}
-							className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
+							className="zt-admin-dashboard__table-row zt-admin-dashboard__table-row--clickable"
 							onClick={() => openManageUser(row.user.id)}
 							role="button"
 							tabIndex={0}
@@ -391,11 +391,11 @@ function OnlineUsersPanel() {
 								}
 							}}
 						>
-							<span className="cd-admin-dashboard__table-user">
+							<span className="zt-admin-dashboard__table-user">
 								<AvatarImage user={row.user as any} tiny />
-								<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
+								<span className="zt-admin-dashboard__table-username">{row.user.username}</span>
 							</span>
-							<span className="cd-admin-dashboard__table-time">{row.tabCount}</span>
+							<span className="zt-admin-dashboard__table-time">{row.tabCount}</span>
 						</div>
 					))}
 				</div>
@@ -442,17 +442,17 @@ export default function AdminDashboard() {
 	}
 
 	if (loading || !stats) {
-		return <div className="cd-admin-dashboard"><div className="cd-admin-dashboard__loading">{t('admin_dashboard.loading')}</div></div>;
+		return <div className="zt-admin-dashboard"><div className="zt-admin-dashboard__loading">{t('admin_dashboard.loading')}</div></div>;
 	}
 
 	return (
-		<div className="cd-admin-dashboard">
-			<div className="cd-admin-dashboard__container">
-				<h1 className="cd-admin-dashboard__title">{t('admin_dashboard.title')}</h1>
+		<div className="zt-admin-dashboard">
+			<div className="zt-admin-dashboard__container">
+				<h1 className="zt-admin-dashboard__title">{t('admin_dashboard.title')}</h1>
 
-				<div className="cd-admin-dashboard__section">
-					<h2 className="cd-admin-dashboard__section-title">{t('admin_dashboard.activity')}</h2>
-					<div className="cd-admin-dashboard__grid">
+				<div className="zt-admin-dashboard__section">
+					<h2 className="zt-admin-dashboard__section-title">{t('admin_dashboard.activity')}</h2>
+					<div className="zt-admin-dashboard__grid">
 						<StatCard
 							icon={<WifiHigh size={28} weight="bold" />}
 							label={t('admin_dashboard.online_now')}
@@ -498,9 +498,9 @@ export default function AdminDashboard() {
 					{expanded && expanded !== 'online' && <ActiveUsersPanel period={expanded} />}
 				</div>
 
-				<div className="cd-admin-dashboard__section">
-					<h2 className="cd-admin-dashboard__section-title">{t('admin_dashboard.users')}</h2>
-					<div className="cd-admin-dashboard__grid">
+				<div className="zt-admin-dashboard__section">
+					<h2 className="zt-admin-dashboard__section-title">{t('admin_dashboard.users')}</h2>
+					<div className="zt-admin-dashboard__grid">
 						<StatCard
 							icon={<Users size={28} weight="bold" />}
 							label={t('admin_dashboard.total_users')}
@@ -541,9 +541,9 @@ export default function AdminDashboard() {
 					</div>
 				</div>
 
-				<div className="cd-admin-dashboard__section">
-					<h2 className="cd-admin-dashboard__section-title">{t('admin_dashboard.solves_section')}</h2>
-					<div className="cd-admin-dashboard__grid">
+				<div className="zt-admin-dashboard__section">
+					<h2 className="zt-admin-dashboard__section-title">{t('admin_dashboard.solves_section')}</h2>
+					<div className="zt-admin-dashboard__grid">
 						<StatCard
 							icon={<Cube size={28} weight="bold" />}
 							label={t('admin_dashboard.solves_today')}
@@ -566,9 +566,9 @@ export default function AdminDashboard() {
 					</div>
 				</div>
 
-				<div className="cd-admin-dashboard__section">
-					<h2 className="cd-admin-dashboard__section-title">{t('admin_dashboard.action_required')}</h2>
-					<div className="cd-admin-dashboard__grid">
+				<div className="zt-admin-dashboard__section">
+					<h2 className="zt-admin-dashboard__section-title">{t('admin_dashboard.action_required')}</h2>
+					<div className="zt-admin-dashboard__grid">
 						<StatCard
 							icon={<Flag size={28} weight="bold" />}
 							label={t('admin_dashboard.pending_reports')}

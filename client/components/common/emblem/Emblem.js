@@ -6,13 +6,13 @@ export default class Emblem extends React.Component {
 	render() {
 		const {text, red, color, orange, backgroundColor, small, purple, green, className, icon} = this.props;
 
-		let classList = 'cd-common__emblem';
+		let classList = 'zt-common__emblem';
 		if (className) {
 			classList += ' ' + className;
 		}
 
 		if (small) {
-			classList += ' cd-common__emblem--small';
+			classList += ' zt-common__emblem--small';
 		}
 
 		const styles = {};
@@ -40,12 +40,12 @@ export default class Emblem extends React.Component {
 		if (text) {
 			span = <span>{text}</span>;
 		} else {
-			classList += ' cd-common__emblem__icon';
+			classList += ' zt-common__emblem__icon';
 		}
 
 		return (
 			<div className={classList} style={styles}>
-				<div className="cd-common__emblem__body" style={spanStyle}>
+				<div className="zt-common__emblem__body" style={spanStyle}>
 					{icon}
 					{span}
 				</div>

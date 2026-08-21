@@ -329,7 +329,7 @@ export default function InboxPanel() {
 	// sits near the right edge of the header. Nudge it back just far enough to stay
 	// on screen instead of flipping the whole panel back across the nav.
 	function clampToViewport() {
-		const panel = rootRef.current?.querySelector<HTMLElement>('.cd-common__dropdown__body');
+		const panel = rootRef.current?.querySelector<HTMLElement>('.zt-common__dropdown__body');
 		if (!panel) return;
 
 		panel.style.transform = '';

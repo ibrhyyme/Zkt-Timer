@@ -1,6 +1,6 @@
 /**
  * PLL Recognition Trainer styles.
- * Namespace: cd-trainer-recognition
+ * Namespace: zt-trainer-recognition
  *
  * Approach:
  * - CSS variables: rgb(var(--x)) and rgba(var(--x), opacity)
@@ -12,7 +12,7 @@
  */
 @import '../../../styles/config';
 
-.cd-trainer-recognition {
+.zt-trainer-recognition {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
@@ -127,7 +127,7 @@
 
 		&--highlight {
 			background: rgba(var(--warning-color), 0.18);
-			animation: cd-trainer-recognition-shake 0.6s;
+			animation: zt-trainer-recognition-shake 0.6s;
 		}
 	}
 	&__guide-case-text {
@@ -681,7 +681,7 @@
 	&__showcase-row {
 		display: flex;
 		gap: 10px;
-		animation-name: cd-trainer-recognition-scroll;
+		animation-name: zt-trainer-recognition-scroll;
 		animation-timing-function: linear;
 		animation-iteration-count: infinite;
 		flex-shrink: 0;
@@ -883,7 +883,7 @@
 		opacity: 0;
 		cursor: pointer;
 		padding: 2px;
-		.cd-trainer-recognition__preset-card:hover & { opacity: 0.85; }
+		.zt-trainer-recognition__preset-card:hover & { opacity: 0.85; }
 		&:hover { color: rgb(var(--error-color)); opacity: 1; }
 	}
 	&__preset-card-patterns {
@@ -1046,7 +1046,7 @@
 		&--current {
 			border-color: rgb(var(--primary-color));
 			box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.22);
-			animation: cd-trainer-recognition-pulse 1.5s ease-in-out infinite;
+			animation: zt-trainer-recognition-pulse 1.5s ease-in-out infinite;
 		}
 		&--combo {
 			border-width: 4px;
@@ -1152,7 +1152,7 @@
 			border-color: rgb(var(--primary-color));
 			transform: scale(1.08);
 		}
-		&--shake { animation: cd-trainer-recognition-shake 0.4s; }
+		&--shake { animation: zt-trainer-recognition-shake 0.4s; }
 
 		&:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); }
 		&--selected:hover { transform: scale(1.08) translateY(-2px); }
@@ -1891,7 +1891,7 @@
 		justify-content: center;
 		color: rgba(var(--text-color), 0.35);
 
-		.cd-trainer-recognition__preset-modal-cell--selected & {
+		.zt-trainer-recognition__preset-modal-cell--selected & {
 			color: rgb(var(--primary-color));
 		}
 	}
@@ -2122,7 +2122,7 @@
 	&__variations-cell { text-align: center; }
 
 	// ────────── Landing card icon variant (TrainerLanding 3rd card) ──────────
-	// To be compatible with .cd-trainer__landing-card-icon in Trainer.scss,
+	// To be compatible with .zt-trainer__landing-card-icon in Trainer.scss,
 	// we don't use a custom class — the added `orange` modifier is defined in existing SCSS.
 
 	@include lg {
@@ -2131,19 +2131,19 @@
 }
 
 // ────────── Animations ──────────
-@keyframes cd-trainer-recognition-shake {
+@keyframes zt-trainer-recognition-shake {
 	0%, 100% { transform: translateX(0); }
 	20%, 60% { transform: translateX(-3px); }
 	40%, 80% { transform: translateX(3px); }
 }
 
-@keyframes cd-trainer-recognition-scroll {
+@keyframes zt-trainer-recognition-scroll {
 	0% { transform: translateX(0); }
 	100% { transform: translateX(-50%); }
 }
 
 // Quest current step nabız efekti (referans .quest-dot-pulse karsiligi)
-@keyframes cd-trainer-recognition-pulse {
+@keyframes zt-trainer-recognition-pulse {
 	0%, 100% { box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.22); }
 	50% { box-shadow: 0 0 0 6px rgba(var(--primary-color), 0.08); }
 }

@@ -67,9 +67,9 @@ export default class Notif extends React.Component {
 		const {read} = this.state;
 		const {notif} = this.props;
 
-		let className = 'cd-notifications__notif';
+		let className = 'zt-notifications__notif';
 		if (notif.read_at || read) {
-			className += ' cd-notifications__notif--read';
+			className += ' zt-notifications__notif--read';
 		}
 
 		let iconBody = null;
@@ -82,7 +82,7 @@ export default class Notif extends React.Component {
 		}
 
 		let icon = (
-			<div className="cd-notifications__notif__icon">
+			<div className="zt-notifications__notif__icon">
 				<i className={notif.icon} />
 			</div>
 		);
@@ -99,13 +99,13 @@ export default class Notif extends React.Component {
 
 		return (
 			<div className={className}>
-				<div className="cd-notifications__notif__left">{icon}</div>
-				<div className="cd-notifications__notif__right">
+				<div className="zt-notifications__notif__left">{icon}</div>
+				<div className="zt-notifications__notif__right">
 					<h5>{notif.notification_category_name}</h5>
 					<p>{notif.in_app_message}</p>
 					<button onClick={this.openLink}>{notif.link_text}</button>
 				</div>
-				<div className="cd-notifications__notif__actions">
+				<div className="zt-notifications__notif__actions">
 					<button onClick={this.deleteNotification}>Delete</button>
 					{markAsRead}
 				</div>

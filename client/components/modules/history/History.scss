@@ -1,6 +1,6 @@
 @import '../../../styles/config';
 
-.cd-history {
+.zt-history {
 	width: 100%;
 	padding: 0 5px;
 	box-sizing: border-box;
@@ -30,7 +30,7 @@
 		// Height and overflow controlled by Tailwind classes in component
 
 		// Mobile versiyonda History modülünün yüksekliğini parent'a göre ayarla
-		.cd-timer-footer__mobile-history & {
+		.zt-timer-footer__mobile-history & {
 			height: 100%;
 			max-height: none;
 			overflow-y: auto;

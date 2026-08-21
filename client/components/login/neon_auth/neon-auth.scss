@@ -87,7 +87,7 @@
 	}
 
 	&[data-merge='true'] &__merge-cell[data-on='true'] {
-		animation: cd-neon-breath var(--neon-pulse-dur) ease-in-out infinite alternate;
+		animation: zt-neon-breath var(--neon-pulse-dur) ease-in-out infinite alternate;
 	}
 
 	/* box */
@@ -138,7 +138,7 @@
 		font-weight: 700;
 		font-size: 30px;
 		font-variant-numeric: tabular-nums;
-		animation: cd-neon-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+		animation: zt-neon-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
 	}
 
 	&[data-size='md'] &__glyph {
@@ -172,12 +172,12 @@
 	// active (caret box) — pulsing glow + spinning conic ring
 	&__box[data-state='active'] {
 		border-color: transparent;
-		animation: cd-neon-pulse var(--neon-pulse-dur) ease-in-out infinite alternate;
+		animation: zt-neon-pulse var(--neon-pulse-dur) ease-in-out infinite alternate;
 	}
 
 	&__box[data-state='active'] &__ring {
 		opacity: 1;
-		animation: cd-neon-ringspin var(--neon-spin-dur) linear infinite;
+		animation: zt-neon-ringspin var(--neon-spin-dur) linear infinite;
 	}
 
 	&__caret {
@@ -187,7 +187,7 @@
 		z-index: 1;
 		background: rgb(var(--neon-a));
 		box-shadow: 0 0 8px rgb(var(--neon-a)), 0 0 2px rgb(var(--neon-a));
-		animation: cd-neon-blink 1.05s steps(1) infinite;
+		animation: zt-neon-blink 1.05s steps(1) infinite;
 	}
 
 	// verifying — outlines fused & glowing via the merge layer
@@ -198,7 +198,7 @@
 
 	// error
 	&__row[data-status='error'] {
-		animation: cd-neon-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+		animation: zt-neon-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 	}
 
 	&__row[data-status='error'] &__box {
@@ -225,7 +225,7 @@
 	border-radius: 26px;
 	background: rgba(12, 13, 20, 0.55);
 	box-shadow: 0 0 48px -10px rgb(var(--neon-a));
-	animation: cd-neon-check-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+	animation: zt-neon-check-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
 
 	&__halo {
 		position: absolute;
@@ -234,7 +234,7 @@
 		background: radial-gradient(circle, transparent 32%, rgba(var(--neon-a), 0.85) 46%, transparent 70%);
 		opacity: 0.6;
 		filter: blur(7px);
-		animation: cd-neon-halo 2.4s ease-in-out infinite;
+		animation: zt-neon-halo 2.4s ease-in-out infinite;
 	}
 
 	&__ring {
@@ -247,13 +247,13 @@
 		mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
 		-webkit-mask-composite: xor;
 		mask-composite: exclude;
-		animation: cd-neon-ringspin 3.5s linear infinite;
+		animation: zt-neon-ringspin 3.5s linear infinite;
 	}
 
 	&__path {
 		stroke-dasharray: 100;
 		stroke-dashoffset: 0;
-		animation: cd-neon-draw 0.6s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+		animation: zt-neon-draw 0.6s cubic-bezier(0.6, 0, 0.3, 1) forwards;
 		filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
 	}
 }
@@ -379,13 +379,13 @@
 /* ───────────────────────────────────────────────────
    Keyframes (globally prefixed to avoid collisions)
    ─────────────────────────────────────────────────── */
-@keyframes cd-neon-ringspin {
+@keyframes zt-neon-ringspin {
 	to {
 		--neon-spin: 360deg;
 	}
 }
 
-@keyframes cd-neon-pop {
+@keyframes zt-neon-pop {
 	0% {
 		transform: scale(0.35);
 		opacity: 0;
@@ -399,7 +399,7 @@
 	}
 }
 
-@keyframes cd-neon-blink {
+@keyframes zt-neon-blink {
 	0%,
 	50% {
 		opacity: 1;
@@ -410,7 +410,7 @@
 	}
 }
 
-@keyframes cd-neon-pulse {
+@keyframes zt-neon-pulse {
 	from {
 		box-shadow: 0 0 11px -3px rgb(var(--neon-a)), 0 0 24px -9px rgb(var(--neon-b));
 	}
@@ -419,7 +419,7 @@
 	}
 }
 
-@keyframes cd-neon-breath {
+@keyframes zt-neon-breath {
 	from {
 		box-shadow: 0 0 12px -5px rgb(var(--neon-a));
 	}
@@ -428,7 +428,7 @@
 	}
 }
 
-@keyframes cd-neon-shake {
+@keyframes zt-neon-shake {
 	10%,
 	90% {
 		transform: translateX(-2px);
@@ -448,7 +448,7 @@
 	}
 }
 
-@keyframes cd-neon-check-pop {
+@keyframes zt-neon-check-pop {
 	0% {
 		transform: scale(0.4);
 		opacity: 0;
@@ -462,7 +462,7 @@
 	}
 }
 
-@keyframes cd-neon-halo {
+@keyframes zt-neon-halo {
 	0%,
 	100% {
 		opacity: 0.4;
@@ -474,7 +474,7 @@
 	}
 }
 
-@keyframes cd-neon-draw {
+@keyframes zt-neon-draw {
 	from {
 		stroke-dashoffset: 100;
 	}

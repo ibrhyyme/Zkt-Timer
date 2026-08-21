@@ -5,6 +5,6 @@ export default class Error extends React.Component {
 	render() {
 		const {text} = this.props;
 
-		return <div className="cd-common__error">{text}</div>;
+		return <div className="zt-common__error">{text}</div>;
 	}
 }

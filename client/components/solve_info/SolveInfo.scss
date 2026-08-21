@@ -48,12 +48,12 @@
 				color: rgb(var(--primary-color)) !important;
 			}
 
-			&.cd-common-button--theme-warning {
+			&.zt-common-button--theme-warning {
 				background-color: rgb(var(--warning-color)) !important;
 				color: white !important;
 			}
 
-			&.cd-common-button--theme-danger {
+			&.zt-common-button--theme-danger {
 				background-color: rgb(var(--error-color)) !important;
 				color: white !important;
 			}
@@ -100,7 +100,7 @@
 		border-bottom: 1px solid rgba(var(--text-color), 0.1);
 		padding-bottom: 25px;
 
-		.cd-common__emblem {
+		.zt-common__emblem {
 			margin-bottom: 0;
 		}
 
@@ -146,13 +146,13 @@
 			border: none !important;
 
 			// +2 aktif: turuncu arka plan
-			&.cd-common-button--theme-warning {
+			&.zt-common-button--theme-warning {
 				background-color: rgb(var(--warning-color)) !important;
 				color: white !important;
 			}
 
 			// DNF aktif: kırmızı arka plan
-			&.cd-common-button--theme-danger {
+			&.zt-common-button--theme-danger {
 				background-color: rgb(var(--error-color)) !important;
 				color: white !important;
 			}
@@ -321,8 +321,8 @@
 }
 
 // Modal'ın dark-glass arka planını kaldır, bileşenin kendi stilini göster
-.cd-modal__center:has(> .cd-solve-info),
-.cd-modal__center:has(> .cd-solve-info--mobile) {
+.zt-modal__center:has(> .zt-solve-info),
+.zt-modal__center:has(> .zt-solve-info--mobile) {
 	padding: 0 !important;
 	background: transparent !important;
 	border: none !important;
@@ -333,17 +333,17 @@
 }
 
 // X butonunu gizle - bileşenin kendi "Bitti" butonunu kullanıyoruz
-.cd-modal__center:has(> .cd-solve-info)>button,
-.cd-modal__center:has(> .cd-solve-info--mobile)>button {
+.zt-modal__center:has(> .zt-solve-info)>button,
+.zt-modal__center:has(> .zt-solve-info--mobile)>button {
 	display: none !important;
 }
 
 // Normal çözüm: dar modal
-.cd-modal__center:has(> .cd-solve-info--normal) {
+.zt-modal__center:has(> .zt-solve-info--normal) {
 	max-width: 600px !important;
 }
 
 // Smart cube çözüm: geniş modal
-.cd-modal__center:has(> .cd-solve-info--smart) {
+.zt-modal__center:has(> .zt-solve-info--smart) {
 	max-width: 1000px !important;
 }

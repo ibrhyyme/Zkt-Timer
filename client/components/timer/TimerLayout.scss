@@ -49,7 +49,7 @@
 
 			// Alt kısım (Footer/History): %35 yükseklik
 			.#{$namespace}-timer-footer,
-			.cd-timer-footer {
+			.zt-timer-footer {
 				height: 35vh;
 				flex: 0 0 auto;
 				width: 100% !important;
@@ -72,7 +72,7 @@
 			}
 
 			.#{$namespace}-timer-footer,
-			.cd-timer-footer {
+			.zt-timer-footer {
 				flex: 2;
 				min-height: 0;
 				overflow-y: auto;
@@ -99,7 +99,7 @@
 			}
 
 			.#{$namespace}-timer-footer,
-			.cd-timer-footer {
+			.zt-timer-footer {
 				flex: 0 0 22rem;
 				width: 22rem;
 				height: 100%;
@@ -120,7 +120,7 @@
 				}
 
 				.#{$namespace}-timer-footer,
-				.cd-timer-footer {
+				.zt-timer-footer {
 					order: 2 !important;
 					flex: none !important;
 					width: 100% !important;

@@ -1,4 +1,4 @@
-.cd-notifications__notif {
+.zt-notifications__notif {
 	color: rgb(var(--text-color));
 	width: 100%;
 	background-color: rgba(var(--module-color), 0.5);
@@ -96,7 +96,7 @@
 	}
 
 	&:hover {
-		.cd-notifications__notif__actions {
+		.zt-notifications__notif__actions {
 			opacity: 1;
 		}
 	}

@@ -1,6 +1,6 @@
 @import '../../styles/config';
 
-.cd-rankings {
+.zt-rankings {
 	width: 100%;
 
 	&__inner {
@@ -230,10 +230,10 @@
 		border: 2px solid rgba(var(--text-color), 0.08);
 		border-top-color: rgb(var(--primary-color));
 		border-radius: 50%;
-		animation: cd-rankings-spin 0.6s linear infinite;
+		animation: zt-rankings-spin 0.6s linear infinite;
 	}
 
-	@keyframes cd-rankings-spin {
+	@keyframes zt-rankings-spin {
 		to { transform: rotate(360deg); }
 	}
 
@@ -319,13 +319,13 @@
 				animation: pro-ring-spin 8s linear infinite;
 			}
 
-			.cd-rankings__avatar-img {
+			.zt-rankings__avatar-img {
 				position: relative;
 				z-index: 1;
 				border-radius: 50%;
 			}
 
-			.cd-rankings__avatar-fallback {
+			.zt-rankings__avatar-fallback {
 				position: relative;
 				z-index: 1;
 				border-radius: 50%;

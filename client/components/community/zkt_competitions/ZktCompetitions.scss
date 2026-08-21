@@ -17,7 +17,7 @@ $zkt-warn: #ffa500;
 $zkt-info-blue: #6ea8ff;
 $zkt-info-green: #45d97c;
 
-.cd-zkt-comp {
+.zt-zkt-comp {
 	padding: 1rem;
 	max-width: 1200px;
 	margin: 0 auto;
@@ -1340,7 +1340,7 @@ $zkt-info-green: #45d97c;
 		// Selection is carried by a bright outline and bright text over a barely
 		// tinted fill, rather than by a heavy block of colour: the filled version
 		// read as a dark blue slab and buried the label inside it.
-		&--schedule.cd-zkt-comp__person-mode-btn--active {
+		&--schedule.zt-zkt-comp__person-mode-btn--active {
 			background: rgba(var(--primary-color), 0.09);
 			border-color: rgb(var(--primary-color));
 			color: rgb(var(--primary-color));
@@ -1353,7 +1353,7 @@ $zkt-info-green: #45d97c;
 			}
 		}
 
-		&--results.cd-zkt-comp__person-mode-btn--active {
+		&--results.zt-zkt-comp__person-mode-btn--active {
 			background: rgba(var(--success-color), 0.09);
 			border-color: rgb(var(--success-color));
 			color: rgb(var(--success-color));
@@ -1935,7 +1935,7 @@ $zkt-info-green: #45d97c;
 			padding: 0.6rem 0.5rem;
 		}
 
-		.cd-zkt-comp__result-name {
+		.zt-zkt-comp__result-name {
 			max-width: 46vw;
 		}
 	}
@@ -2495,7 +2495,7 @@ $zkt-info-green: #45d97c;
 }
 
 // ── Projector mode (wca-live ResultsProjector parity) — fullscreen venue display
-.cd-zkt-comp {
+.zt-zkt-comp {
 	&__projector {
 		position: fixed;
 		inset: 0;
@@ -2634,7 +2634,7 @@ $zkt-info-green: #45d97c;
 }
 
 // ── "Happening now" live highlight (Competitor-groups parity)
-.cd-zkt-comp {
+.zt-zkt-comp {
 	&__live-now {
 		display: flex;
 		align-items: center;
@@ -2701,7 +2701,7 @@ $zkt-info-green: #45d97c;
 }
 
 // ── Schedule tab (day timeline) + projector forecast toggle
-.cd-zkt-comp {
+.zt-zkt-comp {
 	&__projector-btn--active {
 		background: rgba(var(--primary-color), 0.3);
 		color: rgb(var(--primary-color));
@@ -2859,7 +2859,7 @@ $zkt-info-green: #45d97c;
 
 // ── Programme grid: one column per day, an hour rail down the left.
 // Mirrors the federation site's own schedule so the two read the same.
-.cd-zkt-comp {
+.zt-zkt-comp {
 	&__timeline {
 		--zkt-hour-h: 116px;
 
@@ -2968,7 +2968,7 @@ $zkt-info-green: #45d97c;
 		@media (max-width: 768px) {
 			font-size: 10px;
 
-			&.cd-zkt-comp__timeline-rail-hour--half {
+			&.zt-zkt-comp__timeline-rail-hour--half {
 				font-size: 9px;
 			}
 		}
@@ -3040,12 +3040,12 @@ $zkt-info-green: #45d97c;
 			gap: 6px;
 			padding: 3px 8px;
 
-			.cd-zkt-comp__timeline-block-title {
+			.zt-zkt-comp__timeline-block-title {
 				-webkit-line-clamp: 1;
 				font-size: 12px;
 			}
 
-			.cd-zkt-comp__timeline-block-time {
+			.zt-zkt-comp__timeline-block-time {
 				font-size: 11px;
 			}
 		}
@@ -3118,19 +3118,19 @@ $zkt-info-green: #45d97c;
 }
 
 // DNF/DNS cells — full red so a bad result never gets missed in a busy table.
-.cd-zkt-comp__time-cell--bad,
-.cd-zkt-comp__result-attempt--bad,
-.cd-zkt-comp__projector-time--bad {
+.zt-zkt-comp__time-cell--bad,
+.zt-zkt-comp__result-attempt--bad,
+.zt-zkt-comp__projector-time--bad {
 	color: rgb(var(--error-color)) !important;
 	font-weight: 700;
 }
 
 // Projector title: keep long competition/event names on one line, ellipsize.
-.cd-zkt-comp__projector-title {
+.zt-zkt-comp__projector-title {
 	min-width: 0;
 	overflow: hidden;
 }
-.cd-zkt-comp__projector-comp {
+.zt-zkt-comp__projector-comp {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -3138,7 +3138,7 @@ $zkt-info-green: #45d97c;
 }
 
 // Live badge on the active round's info bar.
-.cd-zkt-comp__live-badge {
+.zt-zkt-comp__live-badge {
 	display: inline-flex;
 	align-items: center;
 	gap: 5px;
@@ -3151,7 +3151,7 @@ $zkt-info-green: #45d97c;
 	letter-spacing: 0.5px;
 	animation: zkt-pulse 1.4s ease-in-out infinite;
 }
-.cd-zkt-comp__live-badge::before {
+.zt-zkt-comp__live-badge::before {
 	content: 'CF';
 	font-size: 0.7em;
 }

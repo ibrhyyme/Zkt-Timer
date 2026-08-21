@@ -41,7 +41,7 @@ export default function OfflineAlert() {
 	if (!visible) return null;
 
 	return (
-		<div className="cd-offline">
+		<div className="zt-offline">
 			<p>Çevrimdışısınız. Çözümleriniz kaydediliyor, internet bağlandığında senkronize edilecek.</p>
 		</div>
 	);

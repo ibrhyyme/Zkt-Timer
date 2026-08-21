@@ -157,7 +157,7 @@ const RECORD_TAG_BG: Record<string, string> = {
 export function RecordTag({tag}: {tag: string | null | undefined}) {
 	if (!tag) return null;
 	return (
-		<sup className="cd-record-tag" style={{
+		<sup className="zt-record-tag" style={{
 			display: 'inline-block',
 			background: RECORD_TAG_BG[tag] || 'rgba(0,0,0,0.6)',
 			color: '#fff',

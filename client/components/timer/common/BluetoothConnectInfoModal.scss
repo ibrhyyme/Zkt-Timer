@@ -1,6 +1,6 @@
 // Split / Device Handshake layout. Rendered inside Modal with { noPadding, width: 648 }.
 // Accent (mor) panel uses the theme's --primary-color so it tracks the user's accent.
-.cd-ble-info {
+.zt-ble-info {
 	display: flex;
 	width: 100%;
 	border-radius: 18px;
@@ -526,8 +526,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.cd-ble-info,
-	.cd-ble-info__aside-ring {
+	.zt-ble-info,
+	.zt-ble-info__aside-ring {
 		animation: none !important;
 	}
 }

@@ -110,45 +110,45 @@ function UserTableRow({user, onUpdated}: {user: UserAccountData; onUpdated: () =
 	};
 
 	return (
-		<tr className="cd-admin-users__row" onClick={handleManage}>
-			<td className="cd-admin-users__cell cd-admin-users__cell--user">
-				<div className="cd-admin-users__user-info">
-					<div className="cd-admin-users__avatar-wrapper">
+		<tr className="zt-admin-users__row" onClick={handleManage}>
+			<td className="zt-admin-users__cell zt-admin-users__cell--user">
+				<div className="zt-admin-users__user-info">
+					<div className="zt-admin-users__avatar-wrapper">
 						<AvatarImage user={user} profile={user.profile} />
 					</div>
-					<div className="cd-admin-users__user-details">
-						<div className="cd-admin-users__username">{user.username}</div>
-						<div className="cd-admin-users__email">{user.email}</div>
+					<div className="zt-admin-users__user-details">
+						<div className="zt-admin-users__username">{user.username}</div>
+						<div className="zt-admin-users__email">{user.email}</div>
 					</div>
 				</div>
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--date">
-				<div className="cd-admin-users__date-main">{dayjs(user.created_at).format('DD MMM YYYY')}</div>
-				<div className="cd-admin-users__date-sub">{dayjs(user.created_at).fromNow()}</div>
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
+				<div className="zt-admin-users__date-main">{dayjs(user.created_at).format('DD MMM YYYY')}</div>
+				<div className="zt-admin-users__date-sub">{dayjs(user.created_at).fromNow()}</div>
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--date">
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
 				{user.last_seen_at ? (
 					<>
-						<div className="cd-admin-users__date-main">{dayjs(user.last_seen_at).format('DD MMM YYYY')}</div>
-						<div className="cd-admin-users__date-sub">{dayjs(user.last_seen_at).fromNow()}</div>
+						<div className="zt-admin-users__date-main">{dayjs(user.last_seen_at).format('DD MMM YYYY')}</div>
+						<div className="zt-admin-users__date-sub">{dayjs(user.last_seen_at).fromNow()}</div>
 					</>
 				) : (
-					<span className="cd-admin-users__no-data">{t('admin_users.never_seen')}</span>
+					<span className="zt-admin-users__no-data">{t('admin_users.never_seen')}</span>
 				)}
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--country">{user.join_country || '-'}</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--ip">{user.join_ip || '-'}</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--badges">
-				<div className="cd-admin-users__badges">
+			<td className="zt-admin-users__cell zt-admin-users__cell--country">{user.join_country || '-'}</td>
+			<td className="zt-admin-users__cell zt-admin-users__cell--ip">{user.join_ip || '-'}</td>
+			<td className="zt-admin-users__cell zt-admin-users__cell--badges">
+				<div className="zt-admin-users__badges">
 					{badges.map((badge) => (
-						<span key={badge.label} className={`cd-admin-users__badge cd-admin-users__badge--${badge.color}`}>
+						<span key={badge.label} className={`zt-admin-users__badge zt-admin-users__badge--${badge.color}`}>
 							{badge.label}
 						</span>
 					))}
 				</div>
 			</td>
-			<td className="cd-admin-users__cell cd-admin-users__cell--actions">
-				<button className="cd-admin-users__manage-btn" onClick={(e) => { e.stopPropagation(); handleManage(); }}>
+			<td className="zt-admin-users__cell zt-admin-users__cell--actions">
+				<button className="zt-admin-users__manage-btn" onClick={(e) => { e.stopPropagation(); handleManage(); }}>
 					{t('admin_users.manage')}
 				</button>
 			</td>
@@ -179,10 +179,10 @@ function SortableHeaderCell({
 	const Icon = !active ? ArrowsDownUp : sort?.direction === 'asc' ? ArrowUp : ArrowDown;
 
 	return (
-		<th className="cd-admin-users__header-cell">
+		<th className="zt-admin-users__header-cell">
 			<button
 				type="button"
-				className={`cd-admin-users__sort-btn${active ? ' cd-admin-users__sort-btn--active' : ''}`}
+				className={`zt-admin-users__sort-btn${active ? ' zt-admin-users__sort-btn--active' : ''}`}
 				onClick={() => onToggle(field)}
 			>
 				{label}
@@ -328,14 +328,14 @@ export default function AdminUsers() {
 	};
 
 	return (
-		<div className="cd-admin-users">
-			<div className="cd-admin-users__container">
-				<div className="cd-admin-users__header">
-						<h1 className="cd-admin-users__title">{t('admin_users.page_title')}</h1>
-					<div className="cd-admin-users__search">
+		<div className="zt-admin-users">
+			<div className="zt-admin-users__container">
+				<div className="zt-admin-users__header">
+						<h1 className="zt-admin-users__title">{t('admin_users.page_title')}</h1>
+					<div className="zt-admin-users__search">
 						<Input value={query} onChange={setQuery} placeholder={t('admin_users.search_placeholder')} />
 					</div>
-					<div className="cd-admin-users__stats">{t('admin_users.total_users', {count: total})}</div>
+					<div className="zt-admin-users__stats">{t('admin_users.total_users', {count: total})}</div>
 					<div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px', alignItems: 'center'}}>
 						{FILTERS.map((f) => {
 							const active = activeFilters.includes(f.key);
@@ -386,14 +386,14 @@ export default function AdminUsers() {
 				</div>
 
 				{loading ? (
-					<div className="cd-admin-users__loading">{t('admin_users.loading')}</div>
+					<div className="zt-admin-users__loading">{t('admin_users.loading')}</div>
 				) : (
 					<>
-						<div className="cd-admin-users__table-wrapper">
-							<table className="cd-admin-users__table">
+						<div className="zt-admin-users__table-wrapper">
+							<table className="zt-admin-users__table">
 								<thead>
-									<tr className="cd-admin-users__header-row">
-										<th className="cd-admin-users__header-cell">{t('admin_users.user')}</th>
+									<tr className="zt-admin-users__header-row">
+										<th className="zt-admin-users__header-cell">{t('admin_users.user')}</th>
 										<SortableHeaderCell
 											label={t('admin_users.register_date')}
 											field="created_at"
@@ -406,14 +406,14 @@ export default function AdminUsers() {
 											sort={sort}
 											onToggle={toggleSort}
 										/>
-										<th className="cd-admin-users__header-cell">{t('admin_users.country')}</th>
-										<th className="cd-admin-users__header-cell">IP</th>
-										<th className="cd-admin-users__header-cell">{t('admin_users.status')}</th>
-										<th className="cd-admin-users__header-cell" style={{textAlign: 'right'}}>
+										<th className="zt-admin-users__header-cell">{t('admin_users.country')}</th>
+										<th className="zt-admin-users__header-cell">IP</th>
+										<th className="zt-admin-users__header-cell">{t('admin_users.status')}</th>
+										<th className="zt-admin-users__header-cell" style={{textAlign: 'right'}}>
 										<div style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px'}}>
-											<button onClick={handlePrevPage} disabled={page === 0} className="cd-admin-users__pagination-btn">←</button>
+											<button onClick={handlePrevPage} disabled={page === 0} className="zt-admin-users__pagination-btn">←</button>
 											<span style={{fontSize: '0.8rem', opacity: 0.6}}>{page + 1}</span>
-											<button onClick={handleNextPage} disabled={!hasMore} className="cd-admin-users__pagination-btn">→</button>
+											<button onClick={handleNextPage} disabled={!hasMore} className="zt-admin-users__pagination-btn">→</button>
 										</div>
 									</th>
 									</tr>
@@ -427,7 +427,7 @@ export default function AdminUsers() {
 						</div>
 
 						{users.length === 0 && !loading && (
-							<div className="cd-admin-users__empty">{t('admin_users.no_users_found')}</div>
+							<div className="zt-admin-users__empty">{t('admin_users.no_users_found')}</div>
 						)}
 					</>
 				)}

@@ -8,7 +8,7 @@ import {UserAccount} from '../../../@types/generated/graphql';
 import {resourceUri} from '../../../util/storage';
 import block from '../../../styles/bem';
 
-// WcaSignup renders inside the .cd-zkt-auth scope (ZktAuthScene legacyChild),
+// WcaSignup renders inside the .zt-zkt-auth scope (ZktAuthScene legacyChild),
 // so it can reuse the shared zkt-auth consent style.
 const b = block('zkt-auth');
 

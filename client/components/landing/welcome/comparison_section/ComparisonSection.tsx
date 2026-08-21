@@ -35,20 +35,20 @@ const ROWS: Row[] = [
 function Cell({mark}: {mark: Mark}) {
 	if (mark === 'yes') {
 		return (
-			<span className="cd-welcome-comparison__mark cd-welcome-comparison__mark--yes">
+			<span className="zt-welcome-comparison__mark zt-welcome-comparison__mark--yes">
 				<CheckCircle size={20} weight="fill" />
 			</span>
 		);
 	}
 	if (mark === 'partial') {
 		return (
-			<span className="cd-welcome-comparison__mark cd-welcome-comparison__mark--partial">
+			<span className="zt-welcome-comparison__mark zt-welcome-comparison__mark--partial">
 				<MinusCircle size={20} weight="fill" />
 			</span>
 		);
 	}
 	return (
-		<span className="cd-welcome-comparison__mark cd-welcome-comparison__mark--no">
+		<span className="zt-welcome-comparison__mark zt-welcome-comparison__mark--no">
 			<XCircle size={20} weight="fill" />
 		</span>
 	);
