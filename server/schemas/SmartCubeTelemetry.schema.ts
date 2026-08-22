@@ -36,6 +36,10 @@ export class SmartCubeTelemetryInput {
 	@Field(() => Int, { nullable: true })
 	battery_level?: number;
 
+	/** Ms added because the final move packet was lost; zero on clean solves. */
+	@Field(() => Int, { nullable: true })
+	time_correction_ms?: number;
+
 	@Field({ nullable: true })
 	is_native?: boolean;
 
@@ -87,6 +91,9 @@ export class SmartCubeTelemetryRow {
 
 	@Field(() => Int, { nullable: true })
 	battery_level?: number;
+
+	@Field(() => Int, { nullable: true })
+	time_correction_ms?: number;
 
 	@Field()
 	is_native: boolean;
@@ -147,4 +154,11 @@ export class SmartCubeTelemetrySummary {
 
 	@Field(() => Int)
 	avg_battery_recovered: number;
+
+	/**
+	 * Median ms added by the dropped-packet correction, over the solves that needed it.
+	 * A model sitting near zero here is one whose move stream arrives intact.
+	 */
+	@Field(() => Int)
+	median_time_correction_ms: number;
 }

@@ -2850,6 +2850,7 @@ type SmartCubeTelemetryRow {
   time_ms: Int
   turn_count: Int
   battery_level: Int
+  time_correction_ms: Int
   is_native: Boolean
   app_version: String
   created_at: DateTime
@@ -2869,6 +2870,7 @@ type SmartCubeTelemetrySummary {
   p95_lag_ms: Int
   avg_battery_clean: Int
   avg_battery_recovered: Int
+  median_time_correction_ms: Int
 }
 
 type Notification {
@@ -3448,6 +3450,7 @@ input SmartCubeTelemetryInput {
   time_ms: Int
   turn_count: Int
   battery_level: Int
+  time_correction_ms: Int
   is_native: Boolean
   app_version: String
 }

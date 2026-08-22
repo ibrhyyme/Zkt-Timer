@@ -159,6 +159,8 @@ describe('SmartSolveEngine — solve detection', () => {
 		expect(done).toHaveLength(1);
 		expect(done[0].result.source).toBe('tracker');
 		expect(done[0].result.turnCount).toBe(3);
+		// F' U' R' has no repeated face, so HTM matches the raw count here.
+		expect(done[0].result.htmCount).toBe(3);
 		// End stamp comes from the final move, not from when detection happened.
 		expect(done[0].result.endedAt).toBe(start + 6000);
 		expect(done[0].result.timeMs).toBe(6000);
@@ -261,6 +263,112 @@ describe('SmartSolveEngine — solve detection', () => {
 		expect(engine.scrambleProgress).toEqual([]);
 		const progress = of('SCRAMBLE_PROGRESS');
 		expect(progress[progress.length - 1].matchStatus).toEqual([]);
+	});
+
+	// Field data (3151 solves over a week) showed recovery-path solves recorded 0.7-3.5s
+	// short: the final move's packet was the dropped one, so the last move we held predated
+	// the real finish and the time was stamped from it.
+	it('times a recovered solve from the facelets stamp, not the last move held', async () => {
+		// Timestamps are laid out in the past relative to wall clock, the way a real session
+		// looks by the time the engine sees them. maxLateDrops:0 keeps the late-scramble rule
+		// from swallowing those turns, since every one of them predates "now".
+		const { engine, of } = harness({ graceMs: 40, pollMs: 10_000, maxLateDrops: 0 });
+		const now = Date.now();
+		const solveStart = now - 8000;
+
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		const scr = [turn('R', now - 20000), turn('U', now - 19900), turn('F', now - 19800)];
+		engine.pushTurns(scr);
+
+		engine.pushTurns([...scr, turn("F'", solveStart)]);
+		engine.pushTurns([...scr, turn("F'", solveStart), turn("U'", solveStart + 3000)]);
+
+		// The final R' packet is lost; the cube only tells us it is solved, 5s after the last
+		// move we hold.
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		await wait(120);
+
+		const done = of('SOLVE_COMPLETE');
+		expect(done).toHaveLength(1);
+		const r = done[0].result;
+		expect(r.source).toBe('facelets-grace');
+
+		// Timing from the last held move would report ~3s. The real solve ran ~8s.
+		expect(r.endedAt).toBeGreaterThanOrEqual(now);
+		expect(r.timeMs).toBeGreaterThanOrEqual(7900);
+		expect(r.timeCorrectionMs).toBeGreaterThan(4000);
+	});
+
+	it('leaves the clean path untouched', () => {
+		const { engine, events, of } = harness();
+		const start = scrambleAndStart(engine, events);
+
+		engine.pushTurns([
+			turn('R', 1000), turn('U', 1100), turn('F', 1200),
+			turn("F'", start), turn("U'", start + 3000), turn("R'", start + 6000),
+		]);
+
+		const done = of('SOLVE_COMPLETE')[0].result;
+		// Same numbers as before the correction existed: no facelets stamp is involved.
+		expect(done.source).toBe('tracker');
+		expect(done.endedAt).toBe(start + 6000);
+		expect(done.timeMs).toBe(6000);
+		expect(done.timeCorrectionMs).toBe(0);
+	});
+
+	// A cube clock that runs ahead could put the last move after the facelets stamp.
+	// The end must never move backwards from the moves we actually hold.
+	it('never shortens a solve when the facelets stamp is older than the last move', async () => {
+		const { engine, events, of } = harness({ graceMs: 40, pollMs: 10_000 });
+		const start = scrambleAndStart(engine, events);
+
+		// Last move is stamped far in the future relative to wall clock.
+		const farFuture = Date.now() + 60_000;
+		engine.pushTurns([
+			turn('R', 1000), turn('U', 1100), turn('F', 1200),
+			turn("F'", start), turn("U'", farFuture),
+		]);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		await wait(120);
+
+		const done = of('SOLVE_COMPLETE')[0].result;
+		expect(done.endedAt).toBe(farFuture);
+		expect(done.timeMs).toBeGreaterThan(0);
+	});
+
+	// Both pages must report the same move count for the same solve. Rooms used to show the
+	// raw BLE event count while the timer showed HTM, so a solve looked faster in a room.
+	it('reports HTM, collapsing repeated moves on one face', () => {
+		const { engine, events, of } = harness();
+		const start = scrambleAndStart(engine, events);
+
+		// Solving R U F needs F' U' R'. The last face is turned three times (R' R R'), which
+		// nets out to R' on the cube but counts as one HTM move.
+		engine.pushTurns([
+			turn('R', 1000), turn('U', 1100), turn('F', 1200),
+			turn("F'", start), turn("U'", start + 1000),
+			turn("R'", start + 2000), turn('R', start + 2500), turn("R'", start + 6000),
+		]);
+
+		const done = of('SOLVE_COMPLETE')[0].result;
+		expect(done.turnCount).toBe(5);
+		expect(done.htmCount).toBeLessThan(done.turnCount);
+		// TPS follows HTM, which is the number shown to the user.
+		expect(done.tps).toBeCloseTo(Number((done.htmCount / (done.timeMs / 1000)).toFixed(2)), 2);
+	});
+
+	it('carries corrected moves so callers do not refit', () => {
+		const { engine, events, of } = harness();
+		const start = scrambleAndStart(engine, events);
+		engine.pushTurns([
+			turn('R', 1000), turn('U', 1100), turn('F', 1200),
+			turn("F'", start), turn("U'", start + 3000), turn("R'", start + 6000),
+		]);
+
+		const done = of('SOLVE_COMPLETE')[0].result;
+		expect(done.correctedMoves).toHaveLength(done.turnCount);
+		expect(done.correctedMoves.every((m: any) => typeof m.completedAt === 'number')).toBe(true);
 	});
 
 	it('flags out-of-sync once the cube stays in an unrecognisable state', async () => {

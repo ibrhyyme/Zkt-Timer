@@ -4617,6 +4617,7 @@
         "col_p95": "P95 gecikme",
         "download_all": "Tüm veriyi CSV indir",
         "exporting": "Hazırlanıyor...",
-        "col_battery": "Pil (temiz/kurtarma)"
+        "col_battery": "Pil (temiz/kurtarma)",
+        "col_correction": "Süre düzeltmesi"
     }
 }

@@ -689,7 +689,9 @@ function FriendlyRoomContent() {
                 // timeMs is already corrected for BLE lag and stamped from the cube's own
                 // clock, so a late detection no longer inflates the displayed time.
                 setSmartFinalTime(result.timeMs);
-                setSmartStats({ turns: result.turnCount, tps: result.tps });
+                // HTM, same metric the timer page shows. Raw turn count read higher here and
+                // made the same solve look faster in a room than on the timer.
+                setSmartStats({ turns: result.htmCount, tps: result.tps });
                 setSmartReviewing(true);
                 if (needsCubeReset) setNeedsCubeReset(false);
                 break;

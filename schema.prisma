@@ -520,6 +520,11 @@ model SmartCubeTelemetry {
   /// real or folklore. Null when the cube never reported a level.
   battery_level Int?
 
+  /// Milliseconds added to a solve because its final move packet was lost and the linear
+  /// fit therefore ended early. Zero on clean solves. Exists so the correction can be
+  /// verified against real solves rather than assumed to work.
+  time_correction_ms Int?
+
   is_native   Boolean @default(false)
   app_version String?
 

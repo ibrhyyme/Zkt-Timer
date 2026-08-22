@@ -30,6 +30,7 @@ interface TelemetryRow {
 	time_ms?: number;
 	turn_count?: number;
 	battery_level?: number;
+	time_correction_ms?: number;
 	is_native?: boolean;
 	app_version?: string;
 }
@@ -140,7 +141,10 @@ export function recordEngineEvent(event: SmartEngineEvent, surface: TelemetrySur
 				detection_source: event.result.source,
 				detection_lag_ms: Math.round(event.result.detectionLagMs),
 				time_ms: event.result.timeMs,
-				turn_count: event.result.turnCount,
+				// HTM, matching what the user sees and what the solve record stores. The raw
+				// BLE event count would make TPS look higher than the app ever reported.
+				turn_count: event.result.htmCount,
+				time_correction_ms: Math.round(event.result.timeCorrectionMs),
 			});
 			break;
 

@@ -4612,6 +4612,7 @@
         "col_p95": "P95 lag",
         "download_all": "Download all as CSV",
         "exporting": "Preparing...",
-        "col_battery": "Battery (clean/recovered)"
+        "col_battery": "Battery (clean/recovered)",
+        "col_correction": "Time correction"
     }
 }

@@ -41,7 +41,7 @@ import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
 import { onVisibilityChange } from '../../../util/app-visibility';
-import { SmartSolveEngine, SmartEngineEvent } from '../../../util/smart_cube';
+import { SmartSolveEngine, SmartEngineEvent, SolveResult } from '../../../util/smart_cube';
 import { recordEngineEvent } from '../../../util/smart_cube/telemetry';
 import SmartCubeView, { SmartCubeViewHandle } from './cube_view/SmartCubeView';
 
@@ -182,7 +182,7 @@ export default function SmartCube() {
 	smartTurnsRef.current = smartTurns;
 	const smartCurrentStateRef = useRef(smartCurrentState);
 	smartCurrentStateRef.current = smartCurrentState;
-	const resetMovesRef = useRef<(markSolved?: boolean, isScrambleFinish?: boolean, endTimestamp?: number) => void>(null);
+	const resetMovesRef = useRef<(markSolved?: boolean, isScrambleFinish?: boolean, solveResult?: SolveResult) => void>(null);
 
 	useEffect(() => {
 		initSmartSolver();   // Sync fallback init (requestIdleCallback)
@@ -304,11 +304,11 @@ export default function SmartCube() {
 				const { result } = event;
 				if (needsCubeResetRef.current) {
 					// Post-abort: the physical cube is solved again, so take a fresh scramble.
-					resetMoves(true, false, result.endedAt);
+					resetMoves(true, false, result);
 					setNeedsCubeReset(false);
 					resetScramble(context);
 				} else {
-					resetMoves(false, false, result.endedAt);
+					resetMoves(false, false, result);
 				}
 				break;
 			}
@@ -447,28 +447,28 @@ export default function SmartCube() {
 	// checkForStartAfterTurn / checkForStartAfterTurnBatch moved into the shared engine
 	// (SmartSolveEngine.evaluateScramble + tryStartTimer). Rooms run the exact same code.
 
-	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
-		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | endTimestamp: ${endTimestamp || 'not set'} | isSolveEnd: ${!!timeStartedAt}`);
+	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, solveResult?: SolveResult) {
+		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | fromEngine: ${!!solveResult} | isSolveEnd: ${!!timeStartedAt}`);
 
 		const isSolveEnd = !!timeStartedAt;
 
 		if (isSolveEnd) {
-			// Per-solve post-solve linear fit: same approach as cstimer tsLinearFix / gan-cube-sample cubeTimestampLinearFit
-			// Performs linear regression on solution move (cubeTimestamp, localTimestamp) pairs,
-			// recalculating each move's time — much more accurate than pre-solve estimate
-			const { correctedMoves, finalTimeMs } = cubeTimestampLinearFit(
-				smartTurns,
-				timeStartedAt.getTime()
-			);
+			// Time and corrected moves come from the engine, which already ran the per-solve
+			// linear fit and — on a recovery path — corrected the end stamp for a dropped
+			// final packet. Recomputing the fit here would silently undo that correction, and
+			// is how this page ended up disagreeing with the rooms page in the first place.
+			//
+			// Solve-end without an engine result should not happen; fall back to the fit so a
+			// solve is never lost, but expect the engine to be the source.
+			const fallback = solveResult
+				? null
+				: cubeTimestampLinearFit(smartTurns, timeStartedAt.getTime());
+			const correctedMoves = solveResult?.correctedMoves ?? fallback!.correctedMoves;
+			const finalTimeMilli: number | null = solveResult
+				? solveResult.timeMs
+				: Math.max(0, Math.round(fallback!.finalTimeMs));
 
-			let finalTimeMilli: number | null = Math.round(finalTimeMs);
-
-			// Fallback: if linear fit result is invalid, use raw difference
-			if (finalTimeMilli <= 0 && endTimestamp && timeStartedAt) {
-				finalTimeMilli = endTimestamp - timeStartedAt.getTime();
-			}
-
-			dbgTimer(`TIMER STOP (linear fit) | finalTimeMilli: ${finalTimeMilli} | moves: ${correctedMoves.length}`);
+			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | moves: ${correctedMoves.length} | source: ${solveResult?.source || 'fallback-fit'} | correction: ${solveResult?.timeCorrectionMs ?? 0}ms`);
 
 			// Pro user: save in compact format, server creates method_steps.
 			// Free user: smart_turns not written, method_steps not created, DB unchanged.
@@ -491,9 +491,11 @@ export default function SmartCube() {
 			}
 
 			// cstimer-grade HTM move count: consecutive parallel plane same face repeated
-			// moves count as 1 (R R = R2 = 1, R U R = 2). Using HTM instead of raw move length
-			// reflects consistent, correct values to DB, TPS calculation, and UI.
-			const htmCount = countHTM(correctedMoves.map((m: any) => m.turn));
+			// moves count as 1 (R R = R2 = 1, R U R = 2). Comes from the engine so the rooms
+			// page reports the same number for the same solve.
+			const htmCount = solveResult
+				? solveResult.htmCount
+				: countHTM(correctedMoves.map((m: any) => m.turn));
 
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,

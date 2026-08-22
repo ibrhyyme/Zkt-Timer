@@ -68,7 +68,7 @@ export default function SmartCubeTelemetryPanel() {
 
 		const headers = [
 			'created_at', 'username', 'device_name', 'cube_type', 'surface', 'event_type',
-			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'is_native', 'app_version',
+			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'time_correction_ms', 'is_native', 'app_version',
 		];
 
 		const escape = (v: any) => {
@@ -142,6 +142,7 @@ export default function SmartCubeTelemetryPanel() {
 								<th>{t('smart_telemetry.col_median')}</th>
 								<th>{t('smart_telemetry.col_p95')}</th>
 								<th>{t('smart_telemetry.col_battery')}</th>
+								<th>{t('smart_telemetry.col_correction')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -173,6 +174,11 @@ export default function SmartCubeTelemetryPanel() {
 											{s.avg_battery_recovered > 0
 												? `${s.avg_battery_clean}% / ${s.avg_battery_recovered}%`
 												: '-'}
+										</td>
+										{/* How much time the dropped-packet correction is adding. Zero here
+										    means this model's move stream arrives intact. */}
+										<td className={b('cell', {warn: s.median_time_correction_ms > 1500})}>
+											{s.median_time_correction_ms > 0 ? `${s.median_time_correction_ms} ms` : '-'}
 										</td>
 									</tr>
 								);

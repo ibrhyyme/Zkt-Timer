@@ -4505,5 +4505,8 @@
             "f2l_left": "F2L-L",
             "f2l_right": "F2L-R"
         }
+    },
+    "smart_telemetry": {
+        "col_correction": "Коррекция времени"
     }
 }

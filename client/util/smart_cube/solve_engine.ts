@@ -4,7 +4,8 @@ import {
 	matchScrambleWithCommutative,
 	invertMove,
 } from '../smart_scramble';
-import { cubeTimestampLinearFit, TimestampedMove } from '../smart_cube_timing';
+import { cubeTimestampLinearFit, TimestampedMove, CorrectedMove } from '../smart_cube_timing';
+import { countHTM } from '../../../shared/util/solve/move_counter';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
 import { CubeTracker } from './tracker';
 
@@ -59,13 +60,33 @@ export type SmartEngineEvent =
 export interface SolveResult {
 	/** Solve duration in ms, corrected by per-solve linear regression over cube timestamps. */
 	timeMs: number;
-	/** Timestamp of the final move, so callers do not stamp the solve with a late wall clock. */
+	/** When the solve ended. The final move's timestamp, or the facelets stamp on recovery paths. */
 	endedAt: number;
 	/** Turns that made up the solution (scramble turns excluded). */
 	solutionTurns: SmartTurn[];
+	/**
+	 * Solution turns with timestamps corrected by the linear fit. Callers that persist the
+	 * move list or run phase analysis use these rather than recomputing the fit — the timer
+	 * page used to run its own second copy and could disagree with this result.
+	 */
+	correctedMoves: CorrectedMove[];
+	/** Raw number of BLE move events in the solution. */
 	turnCount: number;
+	/**
+	 * cstimer-grade HTM count: consecutive parallel-plane moves on the same face count once
+	 * (R R = R2 = 1). This is the number shown to users and stored with the solve, so `tps`
+	 * is derived from it. The rooms page used to display the raw count instead, which made
+	 * the same solve read differently on the two pages.
+	 */
+	htmCount: number;
 	tps: number;
 	source: SolveCompleteSource;
+	/**
+	 * How many ms were added because the move stream ended early (a dropped final packet).
+	 * Zero on the clean path. Recorded by telemetry so the correction can be verified in the
+	 * field instead of assumed.
+	 */
+	timeCorrectionMs: number;
 	/**
 	 * How far behind the physical solve the detection was, in ms. This is the number
 	 * that shows up as a timer "jumping backwards" when the solve is committed.
@@ -134,6 +155,15 @@ export class SmartSolveEngine {
 	private facelets: string | null = null;
 	private physicallySolved = false;
 	private lastMoveTime = 0;
+	/**
+	 * When the cube first reported itself solved for the current attempt.
+	 *
+	 * On the recovery paths the last move we hold predates the real finish — its packet was
+	 * the one that got dropped — so its timestamp understates the solve. Measured over a
+	 * week of live data, those solves came out 0.7 to 3.5 seconds short. This stamp is the
+	 * closest evidence we have of when the solve actually ended.
+	 */
+	private solvedFaceletsAt: number | null = null;
 
 	private connected = false;
 	private scrambleCompletedAt: number | null = null;
@@ -152,7 +182,9 @@ export class SmartSolveEngine {
 		this.emit = (event) => {
 			// Stringified rather than passed as an object: DevTools only previews one level
 			// deep, which hid the solve result (timing, detection lag) behind "Object".
-			dbg(event.type, JSON.stringify(event, (k, v) => (k === 'solutionTurns' ? `[${v.length} turns]` : v)));
+			dbg(event.type, JSON.stringify(event, (k, v) =>
+				k === 'solutionTurns' || k === 'correctedMoves' ? `[${v.length} turns]` : v
+			));
 			emit(event);
 		};
 		this.opts = {
@@ -195,6 +227,8 @@ export class SmartSolveEngine {
 		this.clearTimers();
 		this.setUndo(null);
 		this.publishProgress([]);
+		// Belongs to the previous attempt; a stale stamp would land on the next solve.
+		this.solvedFaceletsAt = null;
 
 		// Anchor to whatever the cube last reported. Assuming "solved" is only right at the
 		// start of a session: on the correction path the cube sits in a mis-scrambled state,
@@ -285,8 +319,17 @@ export class SmartSolveEngine {
 		if (this.disposed) return;
 		if (!isValidFacelets(facelets)) return;
 
+		const wasSolved = this.physicallySolved;
 		this.facelets = facelets;
 		this.physicallySolved = facelets === this.opts.solvedState;
+
+		if (this.physicallySolved && !wasSolved) {
+			// First packet reporting the solved state. Later packets repeat it (the cube
+			// re-sends facelets roughly every second), so only the first one marks the finish.
+			this.solvedFaceletsAt = Date.now();
+		} else if (!this.physicallySolved) {
+			this.solvedFaceletsAt = null;
+		}
 
 		if (this.phase === 'timing') {
 			this.armGraceCommit();
@@ -517,28 +560,50 @@ export class SmartSolveEngine {
 		// interval late, and stamping the solve with Date.now() is exactly what makes a
 		// finished time appear seconds longer than the solve actually took.
 		const lastTurn = solutionTurns[solutionTurns.length - 1];
-		const endedAt = moveTime(lastTurn) || this.lastMoveTime || Date.now();
+		const lastMoveAt = moveTime(lastTurn) || this.lastMoveTime || 0;
 
-		const { finalTimeMs } = cubeTimestampLinearFit(
+		// On the recovery paths the final move never reached us, so the last move we hold is
+		// from before the solve ended and its timestamp cuts the solve short. The facelets
+		// stamp is late by however long the cube took to re-send its state (~1s at worst),
+		// but that is far closer than the alternative: field data showed these solves being
+		// recorded 0.7 to 3.5 seconds short. Never move the end backwards.
+		const recovered = source !== 'tracker';
+		const endedAt = recovered
+			? Math.max(lastMoveAt, this.solvedFaceletsAt || 0) || Date.now()
+			: lastMoveAt || Date.now();
+
+		const { correctedMoves, finalTimeMs } = cubeTimestampLinearFit(
 			solutionTurns as unknown as TimestampedMove[],
 			startedAt
 		);
 
-		let timeMs = Math.round(finalTimeMs);
+		const fittedMs = Math.round(finalTimeMs);
+		let timeMs = fittedMs;
+
+		// The fit only sees the moves that arrived, so on a recovery it ends at the wrong
+		// move. Span from the timer start to the real finish is the better answer there.
+		const spanMs = endedAt - startedAt;
+		if (recovered && spanMs > timeMs) {
+			timeMs = spanMs;
+		}
 		if (timeMs <= 0) {
 			// Linear fit needs two usable timestamp pairs. Older cubes report none, so fall
 			// back to the move clock and only then to wall clock.
-			timeMs = Math.max(0, endedAt - startedAt);
+			timeMs = Math.max(0, spanMs);
 		}
 
+		const htmCount = countHTM(correctedMoves.map((m) => m.turn));
 		const seconds = timeMs / 1000;
 		const result: SolveResult = {
 			timeMs,
 			endedAt,
 			solutionTurns,
+			correctedMoves,
 			turnCount: solutionTurns.length,
-			tps: seconds > 0 ? Number((solutionTurns.length / seconds).toFixed(2)) : 0,
+			htmCount,
+			tps: seconds > 0 ? Number((htmCount / seconds).toFixed(2)) : 0,
 			source,
+			timeCorrectionMs: Math.max(0, timeMs - Math.max(0, fittedMs)),
 			detectionLagMs: Math.max(0, Date.now() - endedAt),
 		};
 
@@ -547,6 +612,8 @@ export class SmartSolveEngine {
 		this.compressor.reset();
 		this.tracker.setSolved(this.turns.length);
 		this.publishProgress([]);
+		// Consumed: the next attempt must stamp its own finish.
+		this.solvedFaceletsAt = null;
 
 		this.emit({ type: 'SOLVE_COMPLETE', result });
 	}

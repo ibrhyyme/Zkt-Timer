@@ -4527,6 +4527,7 @@
         "col_p95": "Latencia P95",
         "download_all": "Descargar todo en CSV",
         "exporting": "Preparando...",
-        "col_battery": "Batería (limpio/recuperado)"
+        "col_battery": "Batería (limpio/recuperado)",
+        "col_correction": "Corrección de tiempo"
     }
 }
