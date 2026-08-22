@@ -1,3 +1,5 @@
+@import '../../styles/tokens';
+
 .room-timer-overlay {
     position: fixed;
     top: 0;
@@ -60,7 +62,7 @@
         max-width: 600px;
         height: 100%;
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             padding: 1rem;
         }
     }
@@ -90,11 +92,11 @@
             color: #66bb6a;
         }
 
-        @media (max-width: 768px) {
+        @include bp-down($bp-md) {
             font-size: 5rem;
         }
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             font-size: 4.5rem;
         }
 
@@ -102,11 +104,11 @@
             font-size: 5rem;
             white-space: nowrap;
 
-            @media (max-width: 768px) {
+            @include bp-down($bp-md) {
                 font-size: 2.5rem;
             }
 
-            @media (max-width: 480px) {
+            @include bp-down($bp-xs) {
                 font-size: 1.8rem;
             }
         }
@@ -119,7 +121,7 @@
         gap: 1rem;
         width: 100%;
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             height: 100%;
             justify-content: center;
             position: relative;
@@ -133,7 +135,7 @@
         gap: 0.75rem;
         width: 100%;
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             position: absolute;
             bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
             left: 0;
@@ -194,7 +196,7 @@
         justify-content: center;
         width: 100%;
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             gap: 0.5rem;
         }
     }
@@ -241,7 +243,7 @@
             box-shadow: 0 0 10px rgba(var(--primary-color), 0.5);
         }
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             &--save {
                 padding: 1rem;
                 font-size: 1rem;
@@ -329,7 +331,7 @@
         margin: 0.5rem 0 0 0;
         text-align: center;
 
-        @media (max-width: 480px) {
+        @include bp-down($bp-xs) {
             display: none;
         }
     }
@@ -380,7 +382,7 @@
             background: rgba(239, 83, 80, 0.08);
         }
 
-        @media (max-width: 768px) {
+        @include bp-down($bp-md) {
             font-size: 2rem;
             padding: 1rem;
         }

@@ -314,7 +314,7 @@
 		padding: 16px;
 		gap: 16px;
 
-		@media (max-width: 767px) {
+		@include bp-down($bp-md) {
 			padding: 8px;
 			gap: 10px;
 		}
@@ -420,7 +420,7 @@
 		padding: 10px 8px;
 		width: 100%;
 
-		@media (max-width: 767px) {
+		@include bp-down($bp-md) {
 			gap: 6px;
 			padding: 8px 4px;
 		}
@@ -476,7 +476,7 @@
 		}
 
 		// Mobile: slightly reduce min to fit screen (44px touch minimum compatible)
-		@media (max-width: 767px) {
+		@include bp-down($bp-md) {
 			min-width: 44px;
 			min-height: 52px;
 			padding: 10px 8px;
@@ -759,7 +759,7 @@
 		flex-direction: column;
 		gap: 18px;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) 320px;
 			gap: 28px;
@@ -774,7 +774,7 @@
 		flex-direction: column;
 		gap: 16px;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			position: sticky;
 			top: 12px;
 			padding: 18px;
@@ -793,7 +793,7 @@
 		scrollbar-width: none;
 		&::-webkit-scrollbar { display: none; }
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			overflow-x: visible;
 		}
 	}
@@ -802,7 +802,7 @@
 		gap: 12px;
 		padding: 6px 4px;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			display: grid;
 			grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
 			gap: 14px;
@@ -831,7 +831,7 @@
 		width: 200px;
 		flex-shrink: 0;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			width: 100%;
 		}
 
@@ -1271,7 +1271,7 @@
 		width: 100%;
 		align-items: center;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			display: grid;
 			grid-template-columns: minmax(0, 440px) minmax(0, 1fr);
 			gap: 28px;
@@ -1285,7 +1285,7 @@
 		width: 100%;
 		align-items: center;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			position: sticky;
 			top: 12px;
 			align-items: stretch;
@@ -1481,7 +1481,7 @@
 		flex-direction: column;
 		gap: 14px;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			display: grid;
 			grid-template-columns: 240px minmax(0, 1fr);
 			gap: 28px;
@@ -1493,7 +1493,7 @@
 		flex-direction: column;
 		gap: 14px;
 
-		@media (min-width: 1024px) {
+		@include bp-up($bp-lg) {
 			position: sticky;
 			top: 12px;
 			padding: 16px;
@@ -1618,7 +1618,7 @@
 		flex-direction: column;
 		gap: 22px;
 
-		@media (min-width: 768px) {
+		@include bp-up($bp-md) {
 			display: grid;
 			grid-template-columns: minmax(0, 1.2fr) minmax(220px, 280px);
 			gap: 36px;
@@ -1640,7 +1640,7 @@
 		border-radius: 12px;
 		background: rgba(var(--text-color), 0.04);
 
-		@media (min-width: 768px) {
+		@include bp-up($bp-md) {
 			position: sticky;
 			top: 80px;
 		}
@@ -1658,7 +1658,7 @@
 		flex-direction: column;
 		gap: 4px;
 
-		@media (min-width: 768px) {
+		@include bp-up($bp-md) {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 			gap: 4px 32px;
@@ -1847,7 +1847,7 @@
 		grid-template-columns: repeat(3, 1fr);
 		gap: 12px;
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: repeat(2, 1fr);
 			gap: 10px;
 		}
@@ -1976,7 +1976,7 @@
 		grid-template-columns: 1fr;
 		gap: 12px;
 
-		@media (min-width: 768px) {
+		@include bp-up($bp-md) {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}

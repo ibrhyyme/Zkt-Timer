@@ -74,7 +74,7 @@
 
 	// Old Dropdown overrides removed — now using FancyDropdown.
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		gap: 0.3rem;
 
 		&__chip {

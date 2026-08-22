@@ -6,7 +6,7 @@
 	overflow: hidden;
 	background: linear-gradient(180deg, transparent 0%, rgba(36, 107, 253, 0.04) 50%, transparent 100%);
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 5rem 1rem 4rem;
 	}
 
@@ -433,7 +433,7 @@
 			padding: 1.5rem 1rem;
 		}
 
-		@media (max-width: 400px) {
+		@include bp-down($bp-xxs) {
 			grid-template-columns: 1fr;
 		}
 	}

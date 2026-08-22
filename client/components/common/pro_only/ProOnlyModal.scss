@@ -118,7 +118,7 @@ $pro-violet-light: #a78bfa;
 	}
 
 	// ─── Mobile Overrides ───────────────────────────
-	@media (max-width: 480px) {
+	@include bp-down($bp-xs) {
 		padding: 20px 16px;
 
 		&__icon {

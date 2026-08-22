@@ -239,6 +239,11 @@ export default function TimeDisplay() {
 		}
 	}
 
+	// Hardware timers (StackMat / GAN / QiYi) put a connect control in bottomInfo.
+	// Smart cube puts an instruction sentence there instead, which must stay under
+	// the digits, so the two cases get different layouts.
+	const hardwareTimerConnect = stackMatOn || qiyiWiredOn || ganTimerOn || qiyiTimerOn;
+
 	if (stackMatOn || qiyiWiredOn) {
 		bottomInfo = <StackMat />;
 	} else if (ganTimerOn) {
@@ -310,6 +315,7 @@ export default function TimeDisplay() {
 		<div
 			className={b({
 				smart: smartCubeSelected(context),
+				hardwareConnect: hardwareTimerConnect,
 			})}
 		>
 			{body}

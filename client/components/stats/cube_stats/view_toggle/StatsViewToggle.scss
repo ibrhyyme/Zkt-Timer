@@ -183,7 +183,7 @@
 		transform: translateX(100%);
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__track {
 			padding: 4px;
 			border-radius: 12px;

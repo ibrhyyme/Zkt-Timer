@@ -488,7 +488,7 @@ $zkt-warn: #ffc107;
 		grid-template-columns: 1fr 1fr;
 		gap: 1rem;
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -1089,7 +1089,7 @@ $zkt-warn: #ffc107;
 			background: rgba(var(--text-color), 0.03);
 		}
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: 1fr;
 			gap: 0.5rem;
 		}
@@ -1684,7 +1684,7 @@ $zkt-warn: #ffc107;
 		background: rgb(var(--module-color));
 		border-radius: 10px;
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: 1fr;
 		}
 	}

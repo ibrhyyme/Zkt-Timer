@@ -46,7 +46,7 @@
 		color: rgb(var(--text-color));
 		line-height: 1.2;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 2rem;
 		}
 	}
@@ -57,7 +57,7 @@
 		margin-bottom: 1.5rem;
 		line-height: 1.7;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 1rem;
 		}
 	}
@@ -149,7 +149,7 @@
 		z-index: 5;
 		pointer-events: none;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			--cube-size: 28px;
 			top: -14px;
 			right: -14px;
@@ -222,7 +222,7 @@
 		gap: 3rem;
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		grid-template-columns: 1fr;
 		gap: 2rem;
 

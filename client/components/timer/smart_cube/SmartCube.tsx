@@ -812,7 +812,9 @@ export default function SmartCube() {
 	let battery = <Battery level={smartCubeBatteryLevel} />;
 	let emblem;
 	if (smartCubeScanning) {
-		emblem = <Emblem small orange icon={<Bluetooth />} />;
+		// The action button below carries the same bluetooth glyph, so repeating it
+		// in the status row only duplicates the icon and costs a row of height.
+		emblem = null;
 		actionButton = (
 			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
 				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.scanning_short')} />
@@ -820,7 +822,7 @@ export default function SmartCube() {
 		);
 		battery = null;
 	} else if (smartCubeConnecting) {
-		emblem = <Emblem small orange icon={<Bluetooth />} />;
+		emblem = null;
 		actionButton = (
 			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
 				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.connecting').replace('...', '')} />
@@ -835,7 +837,7 @@ export default function SmartCube() {
 		const batteryVisible = smartCubeShow && typeof smartCubeBatteryLevel === 'number';
 		emblem = batteryVisible ? null : <Emblem small green icon={<Bluetooth />} />;
 	} else {
-		emblem = <Emblem small red icon={<Bluetooth />} />;
+		emblem = null;
 		actionButton = (
 			<div className="zt-timer__connect-trigger" onClick={connectBluetooth} role="button">
 				<Emblem small red icon={<Bluetooth />} text={t('smart_cube.connect')} />
@@ -869,19 +871,20 @@ export default function SmartCube() {
 						}}
 					/>
 				</div>
-				{/* Status row directly under the cube: connection glyph (only shown as a
-				    fallback when the battery readout is unavailable), charge percentage,
-				    and the gear menu. Centered on both desktop and mobile so the menu is
-				    discoverable next to the battery. */}
-				<div className={b('status')}>
-					{emblem}
-					{smartCubeShow && battery && (
-						<div className={b('battery')}>
-							{battery}
-						</div>
-					)}
-					{dropdown}
-				</div>
+				{/* Mobile keeps the status row directly under the cube. On desktop and
+				    tablet it moves into the side cluster next to the cube (see below) so
+				    the whole block is one row tall instead of three. */}
+				{mobileMode && (
+					<div className={b('status')}>
+						{emblem}
+						{smartCubeShow && battery && (
+							<div className={b('battery')}>
+								{battery}
+							</div>
+						)}
+						{dropdown}
+					</div>
+				)}
 				{!mobileMode && (
 					<div className={b('stats-container')}>
 						<LiveAnalysisOverlay startState={startState || engineRef.current?.trackerState || null} />
@@ -904,7 +907,22 @@ export default function SmartCube() {
 					document.getElementById('mobile-smart-phases-container') || document.body
 				)}
 			</div>
-			{!mobileMode && actionButton}
+			{/* Side cluster: connect button on top, status row (charge % + gear menu)
+			    underneath, both sitting to the right of the cube. */}
+			{!mobileMode && (
+				<div className={b('side')}>
+					{actionButton}
+					<div className={b('status')}>
+						{emblem}
+						{smartCubeShow && battery && (
+							<div className={b('battery')}>
+								{battery}
+							</div>
+						)}
+						{dropdown}
+					</div>
+				</div>
+			)}
 			{domReady && ReactDOM.createPortal(
 				<AbortSolveOverlay
 					showAbortButton={!!smartAbortVisible && !!timeStartedAt}

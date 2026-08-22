@@ -28,7 +28,7 @@
 		margin-bottom: 1rem;
 		line-height: 1.2;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 2rem;
 		}
 	}
@@ -40,7 +40,7 @@
 		margin: 0 auto;
 		line-height: 1.7;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 1rem;
 		}
 	}
@@ -55,12 +55,12 @@
 		gap: 2rem;
 		justify-items: center;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			grid-template-columns: repeat(2, 1fr);
 			gap: 1.5rem;
 		}
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -151,13 +151,13 @@
 	// Responsive Adjustments
 	// ============================================
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__phone-frame {
 			max-width: 180px;
 		}
 	}
 
-	@media (max-width: 480px) {
+	@include bp-down($bp-xs) {
 		&__phone-frame {
 			max-width: 220px;
 		}

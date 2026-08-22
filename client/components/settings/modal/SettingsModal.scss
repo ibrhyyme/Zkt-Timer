@@ -1,3 +1,5 @@
+@import '../../../styles/tokens';
+
 // Scrollbar gizle utility
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -109,7 +111,7 @@
 }
 
 // Mobile responsive for Settings Modal
-@media (max-width: 768px) {
+@include bp-down($bp-md) {
   .settings-content {
     padding: 0;
     max-width: 100%;

@@ -1132,7 +1132,7 @@ $radius-sm:   10px;
 			background: linear-gradient(90deg, transparent, rgba(139, 120, 255, 0.7), transparent);
 		}
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			padding: 36px 24px;
 		}
 	}

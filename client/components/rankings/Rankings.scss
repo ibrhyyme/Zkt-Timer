@@ -19,7 +19,7 @@
 		background: linear-gradient(135deg, rgba(30, 60, 114, 0.4) 0%, rgba(42, 82, 152, 0.2) 100%);
 		border: 1px solid rgba(100, 150, 255, 0.12);
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			flex-direction: column;
 			text-align: center;
 		}
@@ -499,7 +499,7 @@
 	}
 
 	// Responsive
-	@media (max-width: 480px) {
+	@include bp-down($bp-xs) {
 		&__tab {
 			font-size: 0.68rem;
 			padding: 0.4rem 0.25rem;

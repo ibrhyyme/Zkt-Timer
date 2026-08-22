@@ -1,3 +1,5 @@
+@import '../../../styles/tokens';
+
 .zt-pfp {
 	background-color: rgba(#eee, 0.3);
 	$pfpSize: 110px;
@@ -12,7 +14,7 @@
 	align-items: center;
 	position: relative;
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		$pfpMobile: 80px;
 		width: $pfpMobile;
 		height: $pfpMobile;

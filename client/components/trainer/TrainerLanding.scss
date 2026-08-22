@@ -17,7 +17,7 @@
 		background: rgb(var(--background-color));
 		animation: landing-fadeIn 0.5s ease-out;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 24px 16px 32px;
 		}
 	}

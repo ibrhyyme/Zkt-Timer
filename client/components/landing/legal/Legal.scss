@@ -160,7 +160,7 @@
 		line-height: 1.35rem;
 	}
 
-	@media (max-width: 640px) {
+	@include bp-down($bp-sm) {
 		&__ref-item {
 			padding: 10px 12px;
 			gap: 12px;

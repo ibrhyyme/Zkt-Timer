@@ -15,7 +15,7 @@
 	padding-bottom: 1.1rem;
 	border-bottom: 1px solid rgba(var(--text-color), 0.12);
 
-	@media (max-width: 768px), (max-height: 500px) {
+	@include content-mobile {
 		top: 0;
 		margin-top: calc(-15px - var(--safe-area-inset-top, 0px));
 		padding-top: calc(15px + var(--safe-area-inset-top, 0px));
@@ -65,7 +65,7 @@
 		margin-left: 0.8rem;
 		display: none;
 
-		@media (max-width: 768px), (max-height: 500px) {
+		@include content-mobile {
 			display: block;
 		}
 
@@ -88,7 +88,7 @@
 	// so it doesn't accidentally trigger on landscape/short screens.
 	// NOTE: must come AFTER the &__title definition — at equal specificity, later
 	// source wins, otherwise display:flex overrides our display:none.
-	@media (min-width: 769px) and (min-height: 501px) {
+	@include content-desktop {
 		// When the title block disappears, no empty sticky bar/gap remains.
 		// margin-top:0 -> wrapper's natural --wrapper-padding top spacing returns.
 		// These sit before the nested rule so Sass does not warn about ordering.

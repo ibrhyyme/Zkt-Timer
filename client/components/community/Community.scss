@@ -1,9 +1,11 @@
+@import '../../styles/tokens';
+
 .zt-community {
 	position: relative;
 
 	&__nav {
 		// On mobile, bottom spacing is reduced since there's no tab bar
-		@media (max-width: 768px), (max-height: 500px) {
+		@include content-mobile {
 			.zt-page-title {
 				padding-bottom: 0.85rem !important;
 			}

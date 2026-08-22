@@ -115,7 +115,7 @@
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			padding: 2rem 1.5rem;
 		}
 
@@ -177,7 +177,7 @@
 		filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.3));
 		animation: fadeInUp 0.8s ease-out;
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			width: 80px;
 			height: 80px;
 		}
@@ -207,7 +207,7 @@
 			background-clip: text;
 		}
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			font-size: 1.75rem;
 		}
 

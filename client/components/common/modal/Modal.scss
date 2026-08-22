@@ -181,7 +181,7 @@
 			transform: translateY(0);
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			align-items: flex-end !important;
 
 			#{$self}__center {
@@ -201,7 +201,7 @@
 	}
 
 	// Mobile responsive
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 0;
 		align-items: flex-start;
 

@@ -178,7 +178,7 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		font-size: 1rem;
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__header-row {
 			grid-template-columns: $case-stats-grid-mobile;
 			gap: 8px;

@@ -1,3 +1,5 @@
+@import 'tokens';
+
 a,
 abbr,
 address,
@@ -109,7 +111,7 @@ html {
 
 // Küçük viewport'larda (17.3" laptop vb.) genel boyutu küçült
 // Sabit breakpoint — vw yok, zoom'da reflow yaratmaz
-@media screen and (max-width: 1500px) and (min-width: 769px) {
+@media screen and (max-width: 1500px) and (min-width: $bp-md) {
 	html {
 		font-size: 14px;
 	}

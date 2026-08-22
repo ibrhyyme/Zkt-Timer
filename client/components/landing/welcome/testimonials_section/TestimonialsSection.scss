@@ -5,7 +5,7 @@
 	padding: 6rem 1.5rem;
 	overflow: hidden;
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 4rem 1rem;
 	}
 

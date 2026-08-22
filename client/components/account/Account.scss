@@ -86,7 +86,7 @@
 	// ------------------------------------------------------------------
 	// Mobile: nav list and section content become two separate screens.
 	// ------------------------------------------------------------------
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		// Field labels borrow the timer's mono face. Every precise value in this app —
 	// solve times, scrambles, the Pro badge — is set in it, so settings labels reading
 	// the same way ties the page to the product instead of to a generic form kit.

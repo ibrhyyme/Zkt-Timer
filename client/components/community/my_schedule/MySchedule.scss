@@ -1,3 +1,5 @@
+@import '../../../styles/tokens';
+
 .zt-my-schedule {
 	width: 100%;
 	padding: 0.5rem;
@@ -284,7 +286,7 @@
 		padding: 0.7rem 0.9rem 0.7rem 0;
 	}
 
-	@media (max-width: 480px) {
+	@include bp-down($bp-xs) {
 		&__zkt-card-main {
 			padding: 0.75rem 0.8rem;
 		}
@@ -336,7 +338,7 @@
 			opacity: 0.2;
 		}
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			width: 64px;
 			height: 64px;
 			right: -0.5rem;
@@ -654,7 +656,7 @@
 		margin-bottom: 1.25rem;
 		gap: 2px;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
 			gap: 4px;
@@ -682,7 +684,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			flex: none;
 			padding: 10px 8px;
 			font-size: 0.8rem;
@@ -1987,7 +1989,7 @@
 			}
 		}
 
-		@media (max-width: 640px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: 1fr 1fr;
 			grid-template-rows: auto auto;
 			gap: 0.25rem 0.5rem;
@@ -3184,7 +3186,7 @@
 
 	// Mobile guarantee: under 768px regardless
 	// Hide attempt + country columns, set table-layout to fixed
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__wca-live-th-attempt,
 		&__wca-live-attempt,
 		&__wca-live-th-country,
@@ -3810,7 +3812,7 @@
 	// Bu sayfaya ozel tablo override'lari
 	&__competitor-results-event &__wca-live-results-table {
 		// Web: sutunlar sabit, attempt'ler sigsin
-		@media (min-width: 769px) {
+		@include bp-up($bp-md) {
 			table-layout: fixed;
 			width: 100%;
 
@@ -3853,7 +3855,7 @@
 	}
 
 	// Web: sutun genislikleri sabit ki uzun sureler hizayi bozmasin
-	@media (min-width: 769px) {
+	@include bp-up($bp-md) {
 		&__competitor-results-event &__wca-live-results-table {
 			.zt-my-schedule__wca-live-th-name {
 				width: 8rem;
@@ -3875,7 +3877,7 @@
 	}
 
 	// Mobil: ortalama kalin daha buyuk
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__competitor-results-event &__wca-live-results-table {
 			.zt-my-schedule__wca-live-time--strong {
 				font-weight: 800;

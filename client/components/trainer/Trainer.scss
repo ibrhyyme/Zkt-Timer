@@ -11,7 +11,7 @@
 	touch-action: pan-y;
 	overscroll-behavior: contain;
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		height: 100dvh;
 	}
 
@@ -1705,7 +1705,7 @@
 		}
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__toolbar {
 			padding: 0.35rem 0.5rem;
 		}
@@ -1966,7 +1966,7 @@
 		margin-bottom: 10px;
 		padding-bottom: 10px;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			margin-bottom: 0;
 			padding-bottom: 0.5rem;
 		}
@@ -2379,7 +2379,7 @@
 	}
 
 	// Mobile: settings modal compact — reduce section padding and font size
-	@media (max-width: 640px) {
+	@include bp-down($bp-sm) {
 		&__settings-modal {
 			gap: 1rem;
 		}

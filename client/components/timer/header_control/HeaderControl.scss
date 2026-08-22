@@ -13,13 +13,29 @@
 	z-index: 30;
 	position: absolute;
 
-	// The bar is an absolutely-positioned, full-width overlay (z-index 30) sitting in
-	// a stacking context ABOVE the timer content wrapper (z-index 10). At higher zoom
-	// its box grows / the vertically-centered scramble block rises into it, so its
-	// empty center spacer cell swallows clicks meant for the Önceki/Sonraki nav
-	// buttons beneath. Make the empty regions transparent to pointer events; only the
-	// real control clusters re-enable them below. Zoom-independent fix.
+	// On mobile the bar is an absolutely-positioned, full-width overlay (z-index 30)
+	// sitting in a stacking context ABOVE the timer content wrapper (z-index 10).
+	// Its empty center spacer cell would otherwise swallow clicks meant for the
+	// Önceki/Sonraki nav buttons beneath, so the empty regions are transparent to
+	// pointer events and only the real control clusters re-enable them below.
+	// Harmless once the bar joins the flow on wider screens, so it is not gated.
 	pointer-events: none;
+
+	// Desktop and tablet: the bar leaves the overlay and becomes the timer's first
+	// row, so content starts BELOW it and can never slide underneath. Previously the
+	// only layouts with header clearance were 'left'/'right', which faked it with a
+	// manual `padding-top: var(--nav-h)` on the timer column; the default 'bottom'
+	// layout had none at all, which is why a tall block (smart cube, or a scramble
+	// that wraps to three lines) pushed the vertically centered content up into the
+	// picker row. Mobile keeps the overlay on purpose: there the gradient scrim over
+	// the scramble is part of the design.
+	// `relative`, not `static`: the bar carries z-index 30 (and 10000 on
+	// focus-within, so open dropdowns clear the timer content). z-index is ignored
+	// on statically positioned elements, which would drop the picker menus behind
+	// the timer digits.
+	@include bp-up($bp-lg) {
+		position: relative;
+	}
 
 	&:focus-within {
 		z-index: 10000;
@@ -127,7 +143,7 @@
 }
 
 // Mobile-specific styles
-@media (max-width: 1023px) {
+@include bp-down($bp-lg) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
 		// minmax(0, 1fr) — without the 0 min, the grid item refuses to shrink below

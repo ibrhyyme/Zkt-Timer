@@ -68,7 +68,7 @@
 }
 
 // Mobil için pozisyon ayarı
-@media (max-width: 768px) {
+@include bp-down($bp-md) {
     .pending-sync-badge {
         top: 12px;
         right: 12px;

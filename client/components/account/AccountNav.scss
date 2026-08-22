@@ -164,7 +164,7 @@
 	// ------------------------------------------------------------------
 	// Mobile: one grouped list, separated by rules.
 	// ------------------------------------------------------------------
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		position: static;
 
 		&__identity {

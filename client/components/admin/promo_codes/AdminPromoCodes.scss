@@ -183,7 +183,7 @@ $pro-violet-light: #a78bfa;
 		}
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__table-header,
 		&__table-row {
 			grid-template-columns: 1.5fr 1fr 1fr 1fr;

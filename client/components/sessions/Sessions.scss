@@ -118,7 +118,7 @@
 			min-width: 0;
 		}
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			flex-direction: column;
 
 			> * {
@@ -148,7 +148,7 @@
 		gap: 1.333rem;
 		align-items: start;
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -174,7 +174,7 @@
 		flex-wrap: wrap;
 		margin-top: 0.533rem;
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			flex-direction: column;
 
 			>* {

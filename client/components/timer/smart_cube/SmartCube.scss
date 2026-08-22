@@ -86,4 +86,36 @@
 			margin-top: -6px;
 		}
 	}
+
+	// Desktop and tablet: cube and connect button sit side by side instead of
+	// stacking. The old column was three rows tall (cube / status / connect) and
+	// that height pushed the whole timer block up into the header bar. Mobile is
+	// untouched: there the action button is portaled into the left panel, so this
+	// element never holds it.
+	@include bp-up($bp-lg) {
+		&:not(#{&}--mobile) {
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			gap: 0.75rem;
+		}
+	}
+
+	// Connect button + status row stacked to the right of the cube. Sized to its
+	// own content so it never stretches to the cube's height, which would turn the
+	// button's rounded pill into a tall slab.
+	&__side {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		flex: 0 0 auto;
+
+		// The status row centers itself in the column; without this it inherits the
+		// cube-relative margin the mobile variant needs.
+		.#{$namespace}-smart-cube__status {
+			margin-top: 0;
+		}
+	}
 }

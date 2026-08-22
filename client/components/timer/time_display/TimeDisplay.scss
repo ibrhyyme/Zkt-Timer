@@ -30,7 +30,7 @@
 			font-size: clamp(2.5rem, 8vw, 5rem);
 		}
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			font-size: clamp(2rem, 10vw, 4rem);
 		}
 	}
@@ -108,4 +108,47 @@
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	margin-bottom: 4px;
+}
+// GAN Timer / QiYi Timer / StackMat connect controls render into this block.
+// It had no rule of its own anywhere in the codebase: the only place the class
+// was mentioned was Timer.scss's "hide while solving" list. With no layout of
+// its own the button simply landed wherever the flow left it, so it drifted
+// vertically as the digits changed size or as SolveDiff / MultiPhaseIndicator
+// appeared and disappeared above it. Give it one fixed gap under the digits.
+.#{$namespace}-timer-bottom-info {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin-top: 1rem;
+
+	// Tight vertical space: the smart timers already sit under a large readout,
+	// so the gap shrinks rather than pushing the button off screen.
+	@include bp-down($bp-md) {
+		margin-top: 0.5rem;
+	}
+
+	&:empty {
+		display: none;
+	}
+}
+
+// Hardware timers (StackMat / GAN / QiYi): the connect button moves next to the
+// digits instead of sitting under them, matching what the smart cube block does
+// with its own connect button. Keeps the timer area one row tall so a tall block
+// cannot push content up into the picker bar. Mobile keeps the stacked order:
+// there the digits already fill the width and a side-by-side pair would not fit.
+.#{$namespace}-time-display--hardwareConnect {
+	@include bp-up($bp-lg) {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+
+		> .#{$namespace}-timer-bottom-info {
+			width: auto;
+			flex: 0 0 auto;
+			margin-top: 0;
+		}
+	}
 }

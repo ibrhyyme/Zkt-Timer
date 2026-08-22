@@ -53,7 +53,7 @@
 		line-height: 1.1;
 	}
 
-	@media (max-width: 1023px) {
+	@include bp-down($bp-lg) {
 		gap: 4px;
 		margin-top: 8px;
 

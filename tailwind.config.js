@@ -3,6 +3,23 @@
 module.exports = {
 	content: ['./client/**/*.{ts,tsx,js,jsx,scss,css}'],
 	theme: {
+		// Mirrors $breakpoints in client/styles/tokens.scss. Keep the two in sync:
+		// the SCSS mixins and these utility prefixes must fire at the same width,
+		// or a component styled with `@include bp-down('md')` and a sibling using
+		// `md:hidden` will disagree about where the tablet band starts.
+		//
+		// `md` stays at Tailwind's default 768px because 92 existing class names
+		// depend on it. `2xl` is nudged from 1536px to 1600px to match the token
+		// scale; it has no call sites yet.
+		screens: {
+			xxs: '400px',
+			xs: '480px',
+			sm: '640px',
+			md: '768px',
+			lg: '1024px',
+			xl: '1280px',
+			'2xl': '1600px',
+		},
 		extend: {
 			colors: {
 				primary: 'rgba(var(--primary-color), <alpha-value>)',

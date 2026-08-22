@@ -343,7 +343,7 @@ $zkt-info-green: #45d97c;
 			display: none;
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
 			gap: 4px;
@@ -370,7 +370,7 @@ $zkt-info-green: #45d97c;
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			flex: none;
 			padding: 10px 8px;
 			font-size: 0.8rem;
@@ -2462,7 +2462,7 @@ $zkt-info-green: #45d97c;
 	}
 
 	// Mobile
-	@media (max-width: 640px) {
+	@include bp-down($bp-sm) {
 		&__info-grid {
 			grid-template-columns: 1fr;
 		}
@@ -2841,7 +2841,7 @@ $zkt-info-green: #45d97c;
 	&__schedule-view--timeline {
 		display: none;
 
-		@media (min-width: 769px) {
+		@include bp-up($bp-md) {
 			display: block;
 		}
 	}
@@ -2851,7 +2851,7 @@ $zkt-info-green: #45d97c;
 		flex-direction: column;
 		gap: 1.25rem;
 
-		@media (min-width: 769px) {
+		@include bp-up($bp-md) {
 			display: none;
 		}
 	}
@@ -2863,7 +2863,7 @@ $zkt-info-green: #45d97c;
 	&__timeline {
 		--zkt-hour-h: 116px;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			// A phone needs more room per hour or a 30-minute block has nowhere to
 			// put its title.
 			--zkt-hour-h: 128px;
@@ -2884,7 +2884,7 @@ $zkt-info-green: #45d97c;
 		border-radius: 12px;
 		padding: 0.75rem 0.9rem 1.1rem;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 0.6rem 0.5rem 0.9rem;
 		}
 	}
@@ -2900,7 +2900,7 @@ $zkt-info-green: #45d97c;
 		width: 58px;
 		flex-shrink: 0;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			width: 42px;
 		}
 	}
@@ -2916,7 +2916,7 @@ $zkt-info-green: #45d97c;
 		text-align: center;
 		white-space: nowrap;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 12.5px;
 		}
 	}
@@ -2931,7 +2931,7 @@ $zkt-info-green: #45d97c;
 		gap: 4px;
 		padding-left: 58px;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding-left: 42px;
 			gap: 3px;
 		}
@@ -2944,7 +2944,7 @@ $zkt-info-green: #45d97c;
 		width: 58px;
 		height: 100%;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			width: 42px;
 		}
 	}
@@ -2965,7 +2965,7 @@ $zkt-info-green: #45d97c;
 			opacity: 0.5;
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 10px;
 
 			&.zt-zkt-comp__timeline-rail-hour--half {
@@ -2982,7 +2982,7 @@ $zkt-info-green: #45d97c;
 		height: 100%;
 		pointer-events: none;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			left: 42px;
 		}
 	}
@@ -3004,7 +3004,7 @@ $zkt-info-green: #45d97c;
 		flex: 1 1 0;
 		min-width: 140px;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			// No floor on a phone: the whole programme has to fit the screen width,
 			// so the days share whatever there is instead of forcing a sideways
 			// scroll. Titles wrap and clamp rather than pushing the grid wider.
@@ -3024,7 +3024,7 @@ $zkt-info-green: #45d97c;
 		border-radius: 8px;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 4px 5px;
 		}
 
@@ -3069,7 +3069,7 @@ $zkt-info-green: #45d97c;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 11.5px;
 			-webkit-line-clamp: 3;
 		}
@@ -3082,7 +3082,7 @@ $zkt-info-green: #45d97c;
 		font-variant-numeric: tabular-nums;
 		opacity: 0.9;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 10.5px;
 		}
 	}
@@ -3097,7 +3097,7 @@ $zkt-info-green: #45d97c;
 		z-index: 2;
 		pointer-events: none;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			left: 42px;
 		}
 	}

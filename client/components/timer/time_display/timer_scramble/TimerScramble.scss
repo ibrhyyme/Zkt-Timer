@@ -81,7 +81,7 @@
 			font-size: 1rem;
 		}
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			font-size: 0.75rem;
 			padding: 3px 6px;
 			gap: 2px;
@@ -124,7 +124,7 @@
 			line-height: clamp(1.2rem, 2.5vw, 1.8rem);
 		}
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			font-size: clamp(0.9rem, 3.2vw, 1.05rem);
 			line-height: 1.4;
 			margin-top: 8px;
@@ -170,7 +170,7 @@
 		>span:not(:last-of-type) {
 			margin-right: 0.8rem;
 
-			@media (max-width: 1023px) {
+			@include bp-down($bp-lg) {
 				margin-right: 0.2rem;
 			}
 		}
@@ -190,7 +190,7 @@
 				text-align: center;
 			}
 
-			@media (max-width: 1023px) {
+			@include bp-down($bp-lg) {
 				font-size: 0.75rem !important;
 				line-height: 1.2 !important;
 			}
@@ -206,7 +206,7 @@
 		white-space: nowrap;
 		padding: 1px 0;
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			font-size: 0.7rem;
 			overflow-x: auto;
 			text-align: center;
@@ -223,7 +223,7 @@
 		text-shadow: 0 1px 7px rgba(black, 0.2);
 		margin-right: 0.8rem;
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			margin-right: 0.2rem;
 		}
 
@@ -297,7 +297,7 @@
 	&__mobile-extra-actions {
 		display: none; // Desktop'ta gizli
 
-		@media (max-width: 1023px) {
+		@include bp-down($bp-lg) {
 			display: flex;
 			flex-direction: row;
 			gap: clamp(6px, 2vw, 10px);

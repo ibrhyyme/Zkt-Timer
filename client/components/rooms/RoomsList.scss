@@ -95,7 +95,7 @@
 }
 
 // Media Queries
-@media (max-width: 768px) {
+@include bp-down($bp-md) {
     .rooms-list-page {
         height: auto;
         min-height: 100vh;

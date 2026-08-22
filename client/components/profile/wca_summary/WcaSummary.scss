@@ -36,7 +36,7 @@
 		gap: 0;
 		flex-wrap: wrap;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
 		}
@@ -52,7 +52,7 @@
 			border-right: 1px solid rgba(var(--text-color), 0.06);
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			&:nth-child(2) {
 				border-right: none;
 			}

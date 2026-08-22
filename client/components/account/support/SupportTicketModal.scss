@@ -357,7 +357,7 @@
 	// Breakpoint matches Modal's own mobile rule (768px): below it the modal centre
 	// becomes a full-screen sheet, so the conversation fills it instead of leaving a
 	// dead gap under the composer.
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		height: 100%;
 		max-height: none;
 

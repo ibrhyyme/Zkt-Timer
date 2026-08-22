@@ -47,7 +47,7 @@
 		margin: 0 auto;
 		padding: 8rem 1.5rem;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 6rem 1.5rem;
 		}
 	}
@@ -68,7 +68,7 @@
 		margin-bottom: 1rem;
 		line-height: 1.2;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 2rem;
 		}
 	}
@@ -78,7 +78,7 @@
 		color: rgba(var(--text-color), 0.7);
 		line-height: 1.7;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 1rem;
 		}
 	}
@@ -92,7 +92,7 @@
 		grid-template-columns: repeat(4, 1fr);
 		gap: 1.5rem;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			grid-template-columns: repeat(2, 1fr);
 			gap: 1rem;
 		}
@@ -122,7 +122,7 @@
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 2rem;
 		}
 	}

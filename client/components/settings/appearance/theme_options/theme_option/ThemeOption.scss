@@ -79,7 +79,7 @@
 		}
 	}
 
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 8px 12px;
 		border-width: 3px;
 		border-radius: 20px;

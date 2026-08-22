@@ -1,3 +1,5 @@
+@import 'tokens';
+
 $namespace: 'zt';
 
 $defaultFontFamily: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -45,8 +47,15 @@ $infoColorBackground: #a8d6f5;
 $infoColor: #42a5f5;
 $infoColorDark: #1565c0;
 
+// DEPRECATED - use bp-up() / bp-down() from tokens.scss instead.
+//
+// These names predate the token scale and DO NOT line up with it: `lg` here is
+// 1200px while `bp('lg')` is 1024px, and `xl` here is 1600px while `bp('xl')`
+// is 1280px. The values are kept exactly as they were so the 34 existing call
+// sites keep rendering identically; migrate them one file at a time, mapping
+// `@include lg` -> `@include bp-up('xl')` and `@include xl` -> `@include bp-up('2xl')`.
 @mixin md {
-	@media (min-width: 768px) {
+	@include bp-up($bp-md) {
 		@content;
 	}
 }

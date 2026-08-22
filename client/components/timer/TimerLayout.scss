@@ -5,6 +5,20 @@
 
 	justify-content: flex-end;
 
+	// The wrapper below asks for `flex: 1` so it can share the column with the
+	// in-flow header. `flex: 1` only shrinks a child when the CONTAINER has a
+	// definite height; with only `min-height` (set in Timer.scss) the container
+	// grows to fit its content instead, and the page ends up taller than the
+	// viewport by exactly the header's height. Pin the height on the same screens
+	// where the header is in flow.
+	@include bp-up($bp-lg) {
+		height: calc(100vh - var(--nav-h));
+
+		@supports (height: 100dvh) {
+			height: calc(100dvh - var(--nav-h));
+		}
+	}
+
 	// Timer + daily-goal bar move together as one column so the row layouts stay a
 	// clean 2-column flex (timer-side | footer) and the full-width daily-goal bar
 	// never wedges between the columns.
@@ -27,6 +41,14 @@
 		flex-direction: column;
 		gap: $gridGap;
 		z-index: 10;
+
+		// With the header in flow (see HeaderControl.scss), a full-viewport wrapper
+		// would push the page down by exactly the header's height and introduce a
+		// scrollbar. Let it take whatever is left instead.
+		@include bp-up($bp-lg) {
+			min-height: 0;
+			flex: 1;
+		}
 
 		// Mobil yeni layout için wrapper stillerini sıfırla
 		&--mobileNewLayout {
@@ -60,6 +82,10 @@
 		&--bottom:not(#{$self}__wrapper--mobileNewLayout) {
 			height: calc(100vh - var(--nav-h));
 
+			@include bp-up($bp-lg) {
+				height: auto;
+			}
+
 			#{$self}__timer-side {
 				flex: 3;
 				min-height: 0;
@@ -89,13 +115,24 @@
 			gap: $gridGap;
 			height: calc(100vh - var(--nav-h));
 
-			// Header clearance lives on the timer column so __main truly centers in the
-			// area below the absolute HeaderControl (instead of being pushed down).
+			@include bp-up($bp-lg) {
+				height: auto;
+			}
+
+			// Header clearance USED TO live here as a manual `padding-top: var(--nav-h)`,
+			// because the bar was an absolute overlay. Now that the bar is a real row on
+			// wide screens the padding would double up, so it only applies where the
+			// overlay still exists.
 			#{$self}__timer-side {
 				flex: 1;
 				height: 100%;
 				max-height: calc(100vh - var(--nav-h));
 				padding-top: var(--nav-h);
+
+				@include bp-up($bp-lg) {
+					max-height: none;
+					padding-top: 0;
+				}
 			}
 
 			.#{$namespace}-timer-footer,
@@ -104,6 +141,10 @@
 				width: 22rem;
 				height: 100%;
 				max-height: calc(100vh - var(--nav-h));
+
+				@include bp-up($bp-lg) {
+					max-height: none;
+				}
 			}
 
 			// Narrow desktop viewports → collapse to stacked layout (timer top, footer

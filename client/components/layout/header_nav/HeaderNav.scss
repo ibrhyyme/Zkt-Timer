@@ -241,7 +241,7 @@
 		}
 	}
 
-	@media (max-width: 1023px) {
+	@include bp-down($bp-lg) {
 		// Mobile mode is handled by React component logic
 		display: block;
 	}

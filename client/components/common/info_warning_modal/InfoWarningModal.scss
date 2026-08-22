@@ -150,7 +150,7 @@
 	}
 
 	// ─── Mobile ──────────────────────────────────────
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		gap: 14px;
 
 		&__steps {

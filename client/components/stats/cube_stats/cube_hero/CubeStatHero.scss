@@ -11,7 +11,7 @@
 	margin-bottom: 0;
 	padding-bottom: 2rem;
 
-	@media (max-width: 768px), (max-height: 500px) {
+	@include content-mobile {
 		top: 0;
 		margin-top: calc(-15px - var(--safe-area-inset-top, 0px));
 		padding-top: calc(15px + var(--safe-area-inset-top, 0px));
@@ -54,7 +54,7 @@
 			height: 60%;
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			width: 4.267rem;
 			height: 4.267rem;
 		}
@@ -97,7 +97,7 @@
 		margin-left: 0.6rem;
 		display: none;
 
-		@media (max-width: 768px), (max-height: 500px) {
+		@include content-mobile {
 			display: block;
 		}
 

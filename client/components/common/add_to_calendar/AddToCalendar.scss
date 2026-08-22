@@ -154,7 +154,7 @@
 		background: rgba(var(--primary-color), 0.1);
 	}
 
-	@media (max-width: 480px) {
+	@include bp-down($bp-xs) {
 		padding: 20px 16px 18px;
 
 		&__icon {

@@ -1,3 +1,5 @@
+@import '../../../styles/tokens';
+
 .zt-scramble-visual {
 	display: flex;
 	width: 100%;
@@ -139,7 +141,7 @@
 			max-width: 320px;
 			max-height: 240px;
 
-			@media (max-width: 768px) {
+			@include bp-down($bp-md) {
 				max-width: 100%;
 				max-height: 100%;
 			}

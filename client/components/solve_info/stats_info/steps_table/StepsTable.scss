@@ -118,7 +118,7 @@
 		}
 	}
 
-	@media (max-width: 400px) {
+	@include bp-down($bp-xxs) {
 		&__table {
 			th,
 			td {

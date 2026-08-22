@@ -76,7 +76,7 @@
 			opacity: 1;
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			width: 220px;
 		}
 	}

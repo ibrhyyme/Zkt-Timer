@@ -9,7 +9,7 @@
 		margin: 0 auto;
 		padding: 5rem 1.5rem 3rem;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 3rem 1.5rem 2rem;
 		}
 	}
@@ -46,11 +46,11 @@
 			z-index: 1;
 		}
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			padding: 3rem 2rem;
 		}
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			padding: 2rem 1.5rem;
 		}
 	}
@@ -62,7 +62,7 @@
 		margin-bottom: 1rem;
 		line-height: 1.2;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 2rem;
 		}
 	}
@@ -76,7 +76,7 @@
 		margin-right: auto;
 		line-height: 1.7;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			font-size: 1rem;
 			margin-bottom: 2rem;
 		}
@@ -93,7 +93,7 @@
 		max-width: 900px;
 		margin: 0 auto;
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			grid-template-columns: 1fr;
 			gap: 2rem;
 		}
@@ -190,7 +190,7 @@
 		margin-top: 2rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.05);
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			gap: 0.75rem 1.25rem;
 			padding: 1.5rem 0;
 		}
@@ -203,7 +203,7 @@
 		padding-top: 2rem;
 		border-top: 1px solid rgba(255, 255, 255, 0.05);
 
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			flex-direction: column;
 			gap: 1.5rem;
 			text-align: center;
@@ -219,7 +219,7 @@
 		display: flex;
 		gap: 2rem;
 
-		@media (max-width: 480px) {
+		@include bp-down($bp-xs) {
 			gap: 1rem;
 		}
 	}

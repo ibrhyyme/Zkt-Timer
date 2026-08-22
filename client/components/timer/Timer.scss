@@ -723,7 +723,7 @@ body.timer-immersive-bg {
 		}
 
 		// Mobile: kompakt boyut — kisa telefonlarda timer ekranina sigsin
-		@media (max-width: 768px) {
+		@include bp-down($bp-md) {
 			.zt-common__emblem {
 				padding: 0.3rem 0.7rem !important;
 				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);

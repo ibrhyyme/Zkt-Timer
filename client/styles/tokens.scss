@@ -1,0 +1,92 @@
+// Design tokens - single source of truth for responsive breakpoints.
+//
+// Why this file exists: the stylesheet carried 37 distinct media query values
+// across 356 rules. 768px appeared 112 times with 767px and 769px variants
+// sitting right next to it, 600px and 640px competed for the same job, and
+// 900px fired 37 times even though the app already switches to its mobile
+// shell at 1023px. Every component invented its own cut-off, which is how
+// tablets ended up falling through the gap between the mobile and the desktop
+// branch.
+//
+// The scale is deliberately aligned with Tailwind's default steps so the SCSS
+// mixins and the `md:` utility classes (92 of them across TSX) always fire at
+// the same width. Two extra steps sit below `sm` because phone layouts in this
+// app genuinely need them.
+//
+// Plain variables rather than a Sass map: map-get and map-has-key are
+// deprecated global built-ins, and config.scss is imported by 300+ component
+// stylesheets, so one map lookup would print a deprecation warning per call
+// site and bury the build log. A typo still fails loudly with "Undefined
+// variable", which is the same protection a map lookup would have given.
+
+$bp-xxs: 400px; // small phone (iPhone SE, Fold cover screen)
+$bp-xs: 480px; // phone
+$bp-sm: 640px; // large phone
+$bp-md: 768px; // tablet portrait - also the `useIsMobile()` cut-off
+$bp-lg: 1024px; // tablet landscape - where the nav shell switches to mobile
+$bp-xl: 1280px; // laptop
+$bp-2xl: 1600px; // wide desktop
+
+// Subtracting a hair keeps bp-down() and bp-up() from both matching on the
+// exact pixel. That overlap is why 767px / 768px / 769px variants were
+// hand-written all over the codebase.
+$bp-step: 0.02px;
+
+// Short viewports need the mobile treatment no matter how wide they are:
+// a phone in landscape is 800px wide but only ~380px tall.
+$bp-short-height: 500px;
+
+/// Below a breakpoint. bp-down($bp-md) -> max-width: 767.98px
+@mixin bp-down($width) {
+	@media (max-width: $width - $bp-step) {
+		@content;
+	}
+}
+
+/// At and above a breakpoint. bp-up($bp-md) -> min-width: 768px
+@mixin bp-up($width) {
+	@media (min-width: $width) {
+		@content;
+	}
+}
+
+/// Between two breakpoints. Lower bound inclusive, upper bound exclusive.
+/// bp-between($bp-md, $bp-lg) -> 768px .. 1023.98px, i.e. the tablet band.
+@mixin bp-between($from, $to) {
+	@media (min-width: $from) and (max-width: $to - $bp-step) {
+		@content;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Named shells
+//
+// The app has two different notions of "mobile" and they are NOT the same
+// width. Leaving them anonymous is what made the tablet band ambiguous, so
+// both get a name and a documented JS counterpart.
+// ---------------------------------------------------------------------------
+
+/// Navigation shell collapses. Matches `HeaderNav.tsx` and `Nav.tsx`
+/// (`innerWidth < 1024 || innerHeight <= 500`).
+@mixin nav-mobile {
+	@media (max-width: $bp-lg - $bp-step), (max-height: $bp-short-height) {
+		@content;
+	}
+}
+
+/// Page content drops to a single column. Matches `useIsMobile()`
+/// (`innerWidth <= 768`). Replaces the hand-written
+/// `@media (max-width: 768px), (max-height: 500px)` pair.
+@mixin content-mobile {
+	@media (max-width: $bp-md - $bp-step), (max-height: $bp-short-height) {
+		@content;
+	}
+}
+
+/// The exact complement of content-mobile. Use this instead of hand-writing
+/// `(min-width: 769px) and (min-height: 501px)`, which is off by one pixel.
+@mixin content-desktop {
+	@media (min-width: $bp-md) and (min-height: $bp-short-height + 1px) {
+		@content;
+	}
+}

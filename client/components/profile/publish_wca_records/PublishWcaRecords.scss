@@ -222,7 +222,7 @@
 	}
 
 	// ─── Mobile ─────────────────────────────────────
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		&__card {
 			flex-wrap: wrap;
 			gap: 12px;

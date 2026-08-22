@@ -31,7 +31,7 @@
 		white-space: nowrap;
 
 		&--mobile-hide {
-			@media (max-width: 1023px) {
+			@include bp-down($bp-lg) {
 				display: none;
 			}
 		}
@@ -266,7 +266,7 @@
 }
 
 // Mobile'da panel ve option'lar daha kompakt
-@media (max-width: 768px) {
+@include bp-down($bp-md) {
 	.#{$namespace}-nav-account-dropdown {
 		&__panel {
 			min-width: 150px;

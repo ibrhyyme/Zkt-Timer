@@ -311,7 +311,7 @@
 	}
 
 	// Mobile responsive
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 10px;
 
 		&__title {

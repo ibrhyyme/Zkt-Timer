@@ -358,7 +358,7 @@
 }
 
 // Mobile: trigger hidden (modal Timer tab used)
-@media (max-width: 1023px) {
+@include bp-down($bp-lg) {
 	.#{$namespace}-timer-type-picker {
 		&__trigger {
 			display: none;

@@ -120,7 +120,7 @@
 	}
 
 	// Mobil — tek satır, küçük boyutlar
-	@media (max-width: 768px) {
+	@include bp-down($bp-md) {
 		padding: 12px 10px;
 		gap: 8px;
 
