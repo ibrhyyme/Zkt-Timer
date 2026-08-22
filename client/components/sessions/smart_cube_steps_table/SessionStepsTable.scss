@@ -28,7 +28,7 @@
 	}
 
 	// Mobilde tablo min-width kaldir — sutunlar kuculup ekrana sigsin
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		.#{$namespace}-solve-info-steps-table {
 			&__table {
 				min-width: 0;

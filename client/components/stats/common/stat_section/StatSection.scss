@@ -8,11 +8,11 @@
 	grid-template-rows: minmax(32px, auto) minmax(0, auto);
 	min-width: 0;
 
-	@media only screen and (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		grid-column: 1 !important;
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		grid-template-rows: auto minmax(0, auto);
 	}
 
@@ -43,7 +43,7 @@
 			margin: 0;
 			overflow-wrap: anywhere;
 
-			@media (max-width: 600px) {
+			@include bp-down($bp-sm) {
 				font-size: 1.25rem !important;
 				line-height: 1.2;
 			}

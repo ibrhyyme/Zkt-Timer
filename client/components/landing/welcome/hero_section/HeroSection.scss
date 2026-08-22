@@ -24,7 +24,7 @@
 		right: 1rem;
 		z-index: 20;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			display: block;
 		}
 	}
@@ -81,7 +81,7 @@
 		align-items: center;
 		gap: 3rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			grid-template-columns: 1fr;
 			gap: 2rem;
 			text-align: center;
@@ -97,7 +97,7 @@
 		flex-direction: column;
 		align-items: flex-start;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			align-items: center;
 			order: 1;
 		}
@@ -150,7 +150,7 @@
 		max-width: 32rem;
 		margin-bottom: 2rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			max-width: 28rem;
 		}
 	}
@@ -164,7 +164,7 @@
 		flex-direction: column;
 		align-items: flex-start;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			display: none;
 		}
 	}
@@ -175,7 +175,7 @@
 		align-items: center;
 		width: 100%;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			display: flex;
 			order: 3;
 			margin-top: 1rem;
@@ -189,7 +189,7 @@
 		gap: 0.85rem;
 		margin-bottom: 1.5rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			align-items: center;
 		}
 	}
@@ -232,7 +232,7 @@
 		background-clip: text;
 		max-width: 32rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			text-align: center;
 		}
 	}
@@ -244,7 +244,7 @@
 		flex-wrap: wrap;
 		margin-top: 0.5rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			justify-content: center;
 		}
 
@@ -347,7 +347,7 @@
 		justify-content: center;
 		align-items: center;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			order: 2;
 		}
 	}
@@ -403,7 +403,7 @@
 		cursor: grabbing;
 	}
 
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		max-width: 300px;
 	}
 
@@ -430,7 +430,7 @@
 		user-select: none;
 		transition: color 0.3s ease, font-size 0.3s ease;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			bottom: -1.25rem;
 			font-size: 0.7rem;
 		}

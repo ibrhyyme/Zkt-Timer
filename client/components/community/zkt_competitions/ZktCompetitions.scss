@@ -1721,7 +1721,7 @@ $zkt-info-green: #45d97c;
 
 		// Narrow screens: tighter so format/cutoff/advancement chips wrap cleanly
 		// instead of cramming; refresh/projector buttons drop to their own row.
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			gap: 0.4rem 0.7rem;
 			padding: 0.55rem 0.7rem;
 			font-size: 12px;
@@ -1970,7 +1970,7 @@ $zkt-info-green: #45d97c;
 		align-items: flex-end;
 		justify-content: center;
 
-		@media (min-width: 600px) {
+		@include bp-up($bp-sm) {
 			align-items: center;
 		}
 	}
@@ -1985,7 +1985,7 @@ $zkt-info-green: #45d97c;
 		max-height: 85vh;
 		overflow-y: auto;
 
-		@media (min-width: 600px) {
+		@include bp-up($bp-sm) {
 			border-radius: 16px;
 		}
 	}

@@ -87,7 +87,7 @@
 		}
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&__table {
 			font-size: 0.7rem;
 

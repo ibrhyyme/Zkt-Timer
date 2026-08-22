@@ -16,7 +16,7 @@
 		position: relative;
 		overflow: hidden;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 1rem;
 			min-height: 100dvh;
 		}
@@ -119,7 +119,7 @@
 			padding: 2rem 1.5rem;
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 1.5rem 1.25rem;
 			border-radius: 20px;
 		}
@@ -165,7 +165,7 @@
 		justify-content: center;
 		margin-bottom: 2rem;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			margin-bottom: 1rem;
 		}
 	}
@@ -182,7 +182,7 @@
 			height: 80px;
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			width: 60px;
 			height: 60px;
 		}
@@ -211,7 +211,7 @@
 			font-size: 1.75rem;
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			font-size: 1.5rem;
 			margin-bottom: 1.25rem;
 		}
@@ -228,7 +228,7 @@
 		margin-bottom: 2.5rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			margin-bottom: 1.5rem;
 		}
 	}

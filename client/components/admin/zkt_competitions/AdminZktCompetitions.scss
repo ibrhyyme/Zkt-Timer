@@ -2059,7 +2059,7 @@ $zkt-warn: #ffc107;
 		grid-template-columns: minmax(280px, 1fr) 2.2fr;
 		gap: 1rem;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -2072,7 +2072,7 @@ $zkt-warn: #ffc107;
 		top: 8.5rem;
 		height: fit-content;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			position: static;
 		}
 	}

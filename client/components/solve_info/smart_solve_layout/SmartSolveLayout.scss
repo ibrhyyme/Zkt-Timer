@@ -109,7 +109,7 @@
 	}
 
 	// --- Mobile ---
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&__header {
 			flex-direction: column;
 			gap: 12px;

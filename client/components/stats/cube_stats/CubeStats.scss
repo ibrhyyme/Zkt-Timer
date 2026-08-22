@@ -90,7 +90,7 @@
 		}
 	}
 
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		&__view--all {
 			grid-template-columns: 1fr;
 			grid-template-areas:

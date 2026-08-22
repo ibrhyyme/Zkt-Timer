@@ -51,7 +51,7 @@
 		position: relative;
 		margin-top: auto;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			height: 9rem;
 		}
 	}

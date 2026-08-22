@@ -373,7 +373,7 @@
 	// Phones: a floating panel with air around it reads as a widget stuck on top of the
 	// app. Every messenger goes full screen here instead, so the conversation is the
 	// screen rather than a card hovering over one.
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&.#{$namespace}-chat-bubbles--right {
 			right: 12px;
 		}

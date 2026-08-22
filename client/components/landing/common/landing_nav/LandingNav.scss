@@ -16,7 +16,7 @@
 	border-bottom: 2px solid transparent;
 	color: #fff;
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		display: none;
 	}
 

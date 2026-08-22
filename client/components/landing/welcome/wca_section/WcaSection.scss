@@ -260,7 +260,7 @@
 		margin-bottom: 1.25rem;
 		flex-wrap: wrap;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			flex-direction: column;
 			gap: 0.3rem;
 		}

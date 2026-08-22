@@ -11,7 +11,7 @@
 	box-sizing: border-box;
 	align-items: start;
 
-	@media (max-width: 700px) {
+	@include bp-down($bp-md) {
 		grid-template-columns: 1fr;
 	}
 
@@ -33,7 +33,7 @@
 			border-right: 1px solid rgba(var(--text-color), 0.08);
 		}
 
-		@media (max-width: 700px) {
+		@include bp-down($bp-md) {
 			padding: 0;
 			border-right: none !important;
 
@@ -165,7 +165,7 @@
 		gap: 20px;
 		align-items: start;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			grid-template-columns: 1fr;
 		}
 	}

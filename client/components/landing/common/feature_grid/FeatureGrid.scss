@@ -79,7 +79,7 @@
 		}
 	}
 
-	@media (max-width: 700px) {
+	@include bp-down($bp-md) {
 		max-width: 600px;
 
 		&__item:not(:last-child) {

@@ -36,6 +36,25 @@ $bp-step: 0.02px;
 // a phone in landscape is 800px wide but only ~380px tall.
 $bp-short-height: 500px;
 
+// ---------------------------------------------------------------------------
+// Content thresholds
+//
+// These are NOT scale steps. They mark a width where a specific kind of content
+// stops fitting, and they exist because the content decides them, not the device.
+// ---------------------------------------------------------------------------
+
+// Multi-column content grids (stats cards, trainer panels, landing hero) drop to
+// one or two columns here. Measured in Chrome on 2026-08-23: at 950px the stats
+// page renders 3 and 4 column tracks with zero overflow and zero clipped text,
+// so raising this to $bp-lg would collapse a layout that still works and waste
+// the space; at 900px it drops to 1 and 2 columns cleanly. 37 rules used to
+// hard-code this number.
+//
+// The real fix is `repeat(auto-fit, minmax(Xpx, 1fr))`, which picks the column
+// count from the available width and needs no threshold at all. Until those
+// grids are converted, they at least share one source.
+$bp-grid-collapse: 900px;
+
 /// Below a breakpoint. bp-down($bp-md) -> max-width: 767.98px
 @mixin bp-down($width) {
 	@media (max-width: $width - $bp-step) {

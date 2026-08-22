@@ -177,7 +177,7 @@
 		backdrop-filter: blur(10px);
 		flex-shrink: 0;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 10px 8px;
 			gap: 6px;
 		}
@@ -189,7 +189,7 @@
 		color: rgba(var(--text-color), 0.92);
 		text-align: center;
 
-		@media (max-width: 600px) { display: none; }
+		@include bp-down($bp-sm) { display: none; }
 	}
 	&__toolbar-actions {
 		display: flex;
@@ -220,7 +220,7 @@
 			line-height: 1;
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 9px 12px;
 			font-size: 0.88rem;
 			span { display: none; }
@@ -252,7 +252,7 @@
 			color: rgb(var(--primary-color));
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			width: 40px;
 			height: 40px;
 			border-radius: 10px;
@@ -665,7 +665,7 @@
 		gap: 14px;
 
 		@media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
-		@media (max-width: 700px) { grid-template-columns: 1fr; }
+		@include bp-down($bp-md) { grid-template-columns: 1fr; }
 	}
 
 	// ────────── PllShowcase ──────────
@@ -1756,7 +1756,7 @@
 		flex-direction: column;
 		gap: 16px;
 
-		@media (min-width: 900px) {
+		@include bp-up($bp-grid-collapse) {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 			gap: 24px;
@@ -2018,7 +2018,7 @@
 		grid-template-columns: 1fr;
 		gap: 12px;
 
-		@media (min-width: 900px) {
+		@include bp-up($bp-grid-collapse) {
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}

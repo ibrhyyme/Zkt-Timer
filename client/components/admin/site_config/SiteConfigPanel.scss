@@ -1,3 +1,5 @@
+@import '../../../styles/tokens';
+
 .zt-site-config-panel {
 	max-width: 720px;
 	margin: 1rem auto;
@@ -384,7 +386,7 @@
 		grid-template-columns: repeat(4, 1fr);
 		gap: 8px;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			grid-template-columns: 1fr 1fr;
 		}
 	}

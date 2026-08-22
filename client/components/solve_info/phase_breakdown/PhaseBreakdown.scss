@@ -82,7 +82,7 @@
 		text-align: left;
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&__row {
 			grid-template-columns: minmax(60px, auto) 1fr auto 38px;
 			gap: 7px;

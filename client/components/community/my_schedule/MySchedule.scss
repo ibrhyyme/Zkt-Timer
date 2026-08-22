@@ -3350,7 +3350,7 @@
 			font-weight: 600;
 		}
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			background: rgba(59, 130, 246, 0.25) !important;
 
 			.zt-my-schedule__me-badge {

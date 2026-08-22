@@ -127,7 +127,7 @@
 		font-size: 0.9rem;
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		gap: 0.667rem;
 
 		&__header {

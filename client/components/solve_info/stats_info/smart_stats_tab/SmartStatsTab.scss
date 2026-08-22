@@ -22,7 +22,7 @@
 		align-items: center;
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&__charts {
 			grid-template-columns: 1fr;
 		}

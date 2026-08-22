@@ -7,7 +7,7 @@
 	box-sizing: border-box;
 	height: 100%;
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		padding-top: 0;
 	}
 }

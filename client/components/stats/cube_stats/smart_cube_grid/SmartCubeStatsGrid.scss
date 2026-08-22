@@ -50,7 +50,7 @@
 		border-bottom: 1px solid rgba(var(--primary-color), 0.25);
 	}
 
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		&__grid {
 			grid-template-columns: repeat(3, minmax(0, 1fr));
 
@@ -60,7 +60,7 @@
 		}
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		&__grid,
 		&__grid--detail {
 			grid-template-columns: repeat(2, minmax(0, 1fr));

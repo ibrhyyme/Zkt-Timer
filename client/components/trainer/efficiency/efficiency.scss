@@ -19,7 +19,7 @@
 	// Mobile: ITSELF scroll container (parent zt-trainer overflow:hidden + fixed
 	// height; if height:auto content gets cut, no scroll). height:100%
 	// + overflow-y:auto → if content (cube+player+solution) overflows THIS element scrolls.
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		height: 100%;
 		overflow-y: auto;
 	}
@@ -35,7 +35,7 @@
 		backdrop-filter: blur(10px);
 		flex-shrink: 0;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 10px 8px;
 			gap: 6px;
 		}
@@ -47,7 +47,7 @@
 		color: rgb(var(--text-color));
 		text-align: center;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			display: none;
 		}
 	}
@@ -80,7 +80,7 @@
 		span {
 			line-height: 1;
 		}
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			padding: 9px 12px;
 			font-size: 0.88rem;
 			span {
@@ -202,7 +202,7 @@
 		border-bottom: 1px solid rgba(var(--text-color), 0.06);
 
 		// Mobile: algorithm top row (full width), Back/Next bottom row centered
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			flex-wrap: wrap;
 			gap: 10px;
 		}
@@ -221,7 +221,7 @@
 		word-break: break-word;
 		max-width: 70%;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			order: -1;
 			flex-basis: 100%;
 			max-width: 100%;
@@ -239,7 +239,7 @@
 		overflow: hidden;
 
 		// Mobile: natural height (flex:none) — parent scrolls, no internal cut
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			flex: none;
 			overflow: visible;
 		}
@@ -262,7 +262,7 @@
 		}
 
 		// Mobile: not grid — natural vertical flow (flex:none, parent scrolls)
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			display: flex;
 			flex-direction: column;
 			flex: none;
@@ -284,7 +284,7 @@
 		grid-row: 1 / -1;
 
 		// Mobile: content-sized (no overflow/overlap in vertical flow)
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			flex: none;
 		}
 	}
@@ -308,7 +308,7 @@
 
 		// Mobile before reveal: BEFORE cube (order:-1) — "Show Solution" appears
 		// just below scramble, cube below.
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			order: -1;
 			align-self: stretch; // grid'deki align-self:start'i sıfırla (mobilde tam genişlik)
 			overflow: visible;
@@ -319,7 +319,7 @@
 		// Mobile after reveal: solution STAYS above cube (order:-1) → optimal hemen görünür,
 		// scroll gerekmez. Cube+player altta kalır (animasyonu izlemek isteyen aşağı kaydırır).
 		&--revealed {
-			@media (max-width: 900px) {
+			@include bp-down($bp-grid-collapse) {
 				order: -1;
 			}
 		}
@@ -333,7 +333,7 @@
 		overflow-y: auto;
 
 		// Mobile: no internal-scroll, natural height (solution list fully visible)
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			flex: none;
 			overflow: visible;
 		}
@@ -359,7 +359,7 @@
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 		overflow-y: auto;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			overflow: visible;
 			padding: 14px;
 		}
@@ -385,7 +385,7 @@
 		display: flex;
 
 		// Mobile: content-sized (cube + controls together, don't overlap panel)
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			flex: none;
 			margin: 0 auto;
 		}
@@ -547,7 +547,7 @@
 	min-height: 0;
 
 	// Mobile: natural height in vertical flow (parent not flex)
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		height: auto;
 	}
 
@@ -562,7 +562,7 @@
 		align-items: center;
 		justify-content: center;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			height: 26vh;
 			touch-action: pan-y; // dikey scroll küpü geçsin (drag mobilde kapalı)
 		}
@@ -572,7 +572,7 @@
 			height: 100%;
 			max-height: 38vh;
 
-			@media (max-width: 900px) {
+			@include bp-down($bp-grid-collapse) {
 				max-height: 26vh;
 				touch-action: pan-y;
 			}
@@ -736,7 +736,7 @@
 		font-size: 0.85rem;
 	}
 
-	@media (max-width: 600px) {
+	@include bp-down($bp-sm) {
 		.zt-trainer-efficiency__segment-btn {
 			padding: 5px 10px;
 			font-size: 0.8rem;

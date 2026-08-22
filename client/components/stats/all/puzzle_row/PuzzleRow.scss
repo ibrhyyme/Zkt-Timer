@@ -6,7 +6,7 @@
 	gap: 0.933rem;
 	width: 100%;
 
-	@media (max-width: 900px) {
+	@include bp-down($bp-grid-collapse) {
 		grid-template-columns: repeat(2, 1fr);
 	}
 

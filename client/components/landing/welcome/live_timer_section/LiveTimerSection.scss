@@ -124,7 +124,7 @@
 		gap: 3rem;
 		align-items: center;
 
-		@media (max-width: 900px) {
+		@include bp-down($bp-grid-collapse) {
 			grid-template-columns: 1fr;
 			gap: 2rem;
 		}

@@ -73,7 +73,7 @@
 		border-collapse: collapse;
 		font-size: 0.95rem;
 
-		@media (max-width: 600px) {
+		@include bp-down($bp-sm) {
 			font-size: 0.85rem;
 		}
 	}
@@ -111,7 +111,7 @@
 		}
 
 		&--hide-sm {
-			@media (max-width: 700px) {
+			@include bp-down($bp-md) {
 				display: none;
 			}
 		}
@@ -195,7 +195,7 @@
 		}
 
 		&--hide-sm {
-			@media (max-width: 700px) {
+			@include bp-down($bp-md) {
 				display: none;
 			}
 		}
