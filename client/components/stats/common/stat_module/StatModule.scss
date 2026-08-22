@@ -1,14 +1,25 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-stat-module {
-	background-color: rgb(var(--module-color));
-	border-radius: 20px;
-	padding: 20px;
+	// Not the CubeDesk card and not bare text either. CubeDesk's signature here is
+	// a 20px-radius filled panel with 20px of padding around a single number;
+	// stripping it outright left the page looking empty. So the block stays, but
+	// it is square instead of rounded, its fill is a fraction of the old one, and
+	// it carries the stat's own accent colour on its leading edge. That edge is
+	// what replaces the card: it groups and separates without a rounded box.
 	width: 100%;
 	box-sizing: border-box;
+	padding: 0.75rem 1rem;
+	background: rgba(var(--module-color), 0.55);
+	border-radius: 0;
+	border-left: 3px solid var(--nb-accent, rgba(var(--text-color), 0.25));
+	transition: background 0.15s ease;
+
+	&:hover {
+		background: rgba(var(--module-color), 0.85);
+	}
 
 	@include bp-down($bp-sm) {
-		padding: 12px;
-		border-radius: 14px;
+		padding: 0.6rem 0.75rem;
 	}
 }

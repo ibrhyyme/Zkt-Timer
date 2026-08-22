@@ -23,9 +23,11 @@
 	&__header {
 		display: flex;
 		flex-direction: row;
-		margin-bottom: 10px;
+		margin-bottom: 0;
 		align-items: center;
 		min-width: 0;
+		flex: 1 1 auto;
+		gap: 0.5rem;
 
 		p {
 			font-size: 1rem;
@@ -94,28 +96,58 @@
 		color: inherit;
 	}
 
+	// Narrow screens: label and value stop sharing a line. Side by side they only
+	// fit while there is room for both, and below ~640px the nowrap value pushed
+	// itself off the edge ("4:05." with the seconds cut off). Stacked, both are
+	// fully readable and the accent edge still groups the row.
+	@include bp-down($bp-sm) {
+		&__value {
+			flex-direction: column;
+			align-items: flex-start;
+			justify-content: flex-start;
+			gap: 0.1rem;
+		}
+
+		&__header {
+			flex: 0 0 auto;
+		}
+	}
+
 	&__icon {
-		width: 28px;
-		height: 28px;
-		border-radius: 5px;
+		// The 28px filled tile around every glyph was pure decoration and read as
+		// a badge next to a badge. The glyph carries its own colour now.
+		width: auto;
+		height: auto;
+		border-radius: 0;
+		background: none !important;
 		display: flex;
-		font-size: 1.2rem;
-		color: rgb(var(--theme-background-opposite));
+		font-size: 1.05rem;
 		justify-content: center;
 		align-items: center;
-
-		&--darkIcon {
-			color: rgb(var(--theme-background)) !important;
-		}
+		flex: 0 0 auto;
+		opacity: 1;
 	}
 
 	&__value {
 		color: inherit;
-		margin-left: 10px;
+		margin-left: 0;
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
 		min-width: 0;
+
+		// The number never wraps: "0 gün" breaking into two lines is worse than a
+		// slightly tighter label. The label absorbs the squeeze instead (its own
+		// word-break rule in __header already handles that).
+		> span,
+		> div {
+			white-space: nowrap;
+			flex: 0 0 auto;
+			text-align: right;
+		}
 
 		span {
 			color: inherit;
@@ -131,7 +163,7 @@
 
 		p {
 			font-weight: 500;
-			opacity: 0.9;
+			opacity: 1;
 			color: rgb(var(--text-color));
 			margin: 0 0 0 10px;
 			font-size: 1rem;

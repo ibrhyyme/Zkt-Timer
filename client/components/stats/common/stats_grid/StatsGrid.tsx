@@ -21,7 +21,10 @@ export default function StatsGrid(props: Props) {
 			className={b({}).mix(props.className || '')}
 			style={{
 				gridTemplateColumns: `repeat(${columns}, 1fr)`,
-				gridTemplateRows: `repeat(${rows}, 1fr)`,
+				// `1fr` rows stretched every block to an equal share of the container
+				// height, which is why a one-line stat sat in a 139px tall row once the
+				// card padding stopped filling it. Rows size to their content now.
+				gridTemplateRows: `repeat(${rows}, auto)`,
 				...props.style,
 			}}
 		>

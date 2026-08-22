@@ -32,10 +32,10 @@ export default function AllStats(props: Props) {
 
 	return (
 		<div className={b()}>
-			<StatSection colSpan={2} title={t('stats_page.overview')} headerAction={filters}>
+			<StatSection colSpan={3} title={t('stats_page.overview')} headerAction={filters}>
 				<AllStatsFeatured />
 			</StatSection>
-			<StatSection title={t('stats_page.more_stats')}>
+			<StatSection colSpan={3} title={t('stats_page.more_stats')}>
 				<SubStats />
 			</StatSection>
 			{hasSolves && (

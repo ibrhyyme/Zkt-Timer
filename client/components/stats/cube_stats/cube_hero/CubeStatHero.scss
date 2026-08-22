@@ -135,23 +135,7 @@
 		border: 1px solid rgba(var(--text-color), 0.06);
 	}
 
-	&__lines {
-		display: flex;
-		flex-direction: row;
-	}
 
-	&__line {
-		background-color: rgb(var(--primary-color));
-		height: 4px;
-		width: 3.333rem;
-		border-radius: 4px;
-		margin-right: 0.333rem;
-
-		&--secondary {
-			width: 2.333rem;
-			background-color: rgb(var(--secondary-color));
-		}
-	}
 
 	&__filters {
 		display: flex;

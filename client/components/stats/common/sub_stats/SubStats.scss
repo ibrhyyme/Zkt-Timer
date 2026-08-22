@@ -1,12 +1,18 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-sub-stats {
+	// One column. These rows put the label and the value on the same line, and at
+	// two columns each cell got ~290px in the right-hand panel, which clipped
+	// "Profil Görüntülenme 242" and "İlk Çözüm 08/15/26". A single column gives
+	// each row the full width, and because the card box is gone the rows are short
+	// enough that eight of them still take less height than the old four cards.
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-gap: 10px;
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+	grid-gap: 6px;
 
-	// 480px alti — kart icerigi tasiyor (uzun baslik + uzun deger). Tek sutun.
-	@include bp-down($bp-xs) {
-		grid-template-columns: 1fr;
-	}
+	// Deliberately NO wide-viewport two-column rule. This block lives in a side
+	// panel roughly 580px wide regardless of how wide the window is, so a viewport
+	// media query cannot tell whether the pair fits: at 1400px viewport the two
+	// columns still clipped "Profil Görüntülenme" and "İlk Çözüm 08/15/26". This
+	// is the case that wants a container query, not a breakpoint.
 }
