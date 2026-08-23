@@ -61,7 +61,12 @@ export default function SolvesList() {
 	const [maxTime, setMaxTime] = useState('');
 	const timeFilterRef = useRef<HTMLDivElement>(null);
 
-	const solveCountText = `${numberWithCommas(totalResults)} solve${totalResults === 1 ? '' : 's'}`;
+	// Was a hard-coded English string with an English plural rule, shown as-is in
+	// all five languages. i18next picks the plural form per locale.
+	const solveCountText = t('solves_page.solve_count', {
+		count: totalResults,
+		countText: numberWithCommas(totalResults),
+	});
 
 	useEffect(() => {
 		const list = fetchSolvesWithFilter();
@@ -507,7 +512,7 @@ export default function SolvesList() {
 					</div>
 				</PageTitle>
 
-			<div className="w-full px-2 mx-auto flex max-w-2xl flex-col gap-2">
+			<div className="w-full px-2 mx-auto flex max-w-2xl lg:max-w-6xl flex-col gap-2">
 				<div className={b('list')}>{body}</div>
 				<div className={b('pagination')}>
 					<Button

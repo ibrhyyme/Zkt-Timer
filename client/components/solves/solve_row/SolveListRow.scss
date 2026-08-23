@@ -1,19 +1,87 @@
 @import '../../../styles/config';
 
 .#{$namespace}-solve-list-row {
-	background-color: rgb(var(--module-color));
-	padding: 20px;
+	$self: &;
+
+	// Same move as the stats blocks: the rounded, fully filled card is what makes
+	// this list read as CubeDesk. Square edges, a fraction of the fill, and a
+	// leading edge that carries the solve's own state (neutral / +2 / DNF).
+	background-color: rgba(var(--module-color), 0.55);
+	padding: 0.9rem 1.1rem;
 	box-sizing: border-box;
-	border-radius: 5px;
+	border-radius: 0;
+	border-left: 3px solid rgba(var(--text-color), 0.22);
 	position: relative;
-	margin-bottom: 15px;
+	margin-bottom: 4px;
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr;
+	// Not three equal columns. The time is the hero and needs the least room;
+	// the scramble is the longest text and was being squeezed into a third.
+	grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.7fr) minmax(0, 1.5fr);
+
+	// Each row is now a grid cell, so it is narrow again: time and date stack, the
+	// method label and the cube picture sit beside them.
+	@include bp-up($bp-lg) {
+		margin-bottom: 0;
+		padding: 0.7rem 0.9rem;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0.6rem;
+
+		#{$self}__left {
+			min-width: 0;
+
+			h4 {
+				font-size: 1.35rem;
+			}
+
+			span {
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+		}
+
+		#{$self}__center {
+			grid-column: 1;
+			justify-content: flex-start;
+		}
+
+		#{$self}__scramble {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+			align-items: center;
+		}
+	}
+	align-items: center;
+	gap: 1rem;
 	cursor: pointer;
+	transition: background 0.15s ease;
+
+	&:hover {
+		background-color: rgba(var(--module-color), 0.9);
+	}
+
+	&--plusTwo {
+		border-left-color: rgb(var(--warning-color));
+	}
+
+	&--dnf {
+		border-left-color: rgb(var(--error-color));
+	}
 
 	&--selecting {
-		grid-template-columns: 40px 1fr 1fr 1fr;
+		grid-template-columns: 40px minmax(0, 0.8fr) minmax(0, 0.7fr) minmax(0, 1.5fr);
 		cursor: default;
+	}
+
+	// Date and the smart-cube tag sit on one line under the time instead of the
+	// tag taking a row of its own at the bottom of the cell.
+	&__meta {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-top: 0.15rem;
 	}
 
 	&__left {
@@ -25,8 +93,8 @@
 
 		span {
 			display: table;
-			opacity: 0.8;
-			font-size: 0.9rem;
+			opacity: 1;
+			font-size: 0.85rem;
 			color: rgb(var(--text-color));
 		}
 	}
@@ -44,7 +112,7 @@
 	&__center {
 		width: 100%;
 		display: flex;
-		margin-top: -10px;
+		margin-top: 0;
 		justify-content: center;
 		align-items: center;
 	}
@@ -56,15 +124,10 @@
 	}
 
 	&__badges {
-		position: absolute;
 		display: flex;
 		flex-direction: row;
-		bottom: 10px;
-		left: 50%;
-		transform: translate(-50%, 0);
-
-		>* {
-			margin-left: 5px;
-		}
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
 	}
 }

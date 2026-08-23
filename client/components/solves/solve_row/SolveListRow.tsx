@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import './SolveListRow.scss';
@@ -25,13 +26,14 @@ interface Props {
 }
 
 export default function SolveListRow(props: Props) {
+	const { t } = useTranslation();
 	const { solve, selectionMode, isSelected, onToggleSelect } = props;
 
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 
 	// Responsive scramble size: 100px mobile, 130px desktop
-	const scrambleSize = mobileMode ? '100px' : '130px';
+	const scrambleSize = mobileMode ? '100px' : '74px';
 	function openSolve() {
 		if (selectionMode) {
 			onToggleSelect && onToggleSelect();
@@ -64,11 +66,11 @@ export default function SolveListRow(props: Props) {
 	}
 
 	if (smart) {
-		smartEmblem = <Tag small text="Smart Cube" />;
+		smartEmblem = <Tag small text={t('solves_page.smart_cube_tag')} />;
 	}
 
 	return (
-		<div className={b({ selecting: selectionMode })} onClick={openSolve}>
+		<div className={b({ selecting: selectionMode, dnf, plusTwo })} onClick={openSolve}>
 			{selectionMode && (
 				<div
 					className={b('checkbox-area')}
@@ -87,7 +89,10 @@ export default function SolveListRow(props: Props) {
 			)}
 			<div className={b('left')}>
 				<h4 className={b('time', { dnf, plusTwo })}>{time}</h4>
-				<span>{createdAt}</span>
+				<div className={b('meta')}>
+					<span>{createdAt}</span>
+					{smartEmblem}
+				</div>
 			</div>
 			<div className={b('center')}>
 				<Emblem text={cubeType} />
@@ -100,7 +105,6 @@ export default function SolveListRow(props: Props) {
 			<div className={b('badges')}>
 				{dnfEmblem}
 				{plusTwoEmblem}
-				{smartEmblem}
 			</div>
 		</div>
 	);
