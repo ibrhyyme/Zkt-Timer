@@ -1591,7 +1591,11 @@
     "create_new_session_desc": "Las sesiones en Zkt Timer pueden tener múltiples tipos de cubo. Puedes dividir las sesiones como quieras: por tipo de cubo, por día, etc.",
     "new_session_placeholder": "Nueva sesión",
     "cube_type": "Tipo de cubo",
-    "cube_type_info": "No te preocupes :) Esto se puede cambiar después"
+    "cube_type_info": "No te preocupes :) Esto se puede cambiar después",
+    "solve_count_one": "{{count}} resolución",
+    "solve_count_other": "{{count}} resoluciones",
+    "best_short": "mejor",
+    "mean_short": "media"
   },
   "solves_list": {
     "page_title": "Resoluciones",

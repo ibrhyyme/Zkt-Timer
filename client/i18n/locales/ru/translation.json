@@ -1591,7 +1591,11 @@
     "create_new_session_desc": "Сессии в Zkt Timer могут содержать несколько типов кубов. Вы можете разделять сессии как угодно: по типу куба, по дню и т.д.",
     "new_session_placeholder": "Новая сессия",
     "cube_type": "Тип куба",
-    "cube_type_info": "Не волнуйтесь :) Это можно изменить позже"
+    "cube_type_info": "Не волнуйтесь :) Это можно изменить позже",
+    "solve_count_one": "{{count}} сборка",
+    "solve_count_other": "{{count}} сборок",
+    "best_short": "лучшее",
+    "mean_short": "сред."
   },
   "solves_list": {
     "page_title": "Сборки",

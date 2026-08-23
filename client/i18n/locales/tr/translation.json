@@ -1598,7 +1598,11 @@
     "create_new_session_desc": "Zkt Timer'da sezonlar birden fazla küp türüne sahip olabilir. Sezonları istediğiniz gibi bölebilirsiniz: küp türüne göre, güne göre, vb.",
     "new_session_placeholder": "Yeni Sezon",
     "cube_type": "Küp Türü",
-    "cube_type_info": "Korkma:) Bu daha sonra değiştirilebilir"
+    "cube_type_info": "Korkma:) Bu daha sonra değiştirilebilir",
+    "solve_count_one": "{{count}} çözüm",
+    "solve_count_other": "{{count}} çözüm",
+    "best_short": "en iyi",
+    "mean_short": "ort."
   },
   "solves_list": {
     "page_title": "Çözümler",

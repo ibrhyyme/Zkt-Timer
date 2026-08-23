@@ -1,22 +1,61 @@
 @import '../../../styles/config';
 
 .#{$namespace}-session-row {
+	// Same treatment as the stats blocks and the solve rows: the rounded filled
+	// card is CubeDesk's shape. Square edge, lighter fill, and a leading edge that
+	// marks the selected session instead of a 4px ring around the whole box.
 	display: flex;
-	padding: 13px;
-	border-radius: 10px;
+	padding: 0.65rem 0.9rem;
+	border-radius: 0;
 	cursor: pointer;
 	position: relative;
 	box-sizing: border-box;
-	background-color: rgb(var(--module-color));
+	background-color: rgba(var(--module-color), 0.55);
 	width: 100%;
-	border: 4px solid transparent;
-	margin-bottom: 10px;
+	border: none;
+	border-left: 3px solid transparent;
+	margin-bottom: 3px;
+	transition: background-color 0.15s ease, border-left-color 0.15s ease;
+
+	&:hover {
+		background-color: rgba(var(--module-color), 0.9);
+	}
 
 	h4 {
 		color: rgb(var(--text-color));
 		font-size: 1rem;
 		font-weight: 500;
 		text-align: left;
+	}
+
+	// Count, best and mean on one line under the name. Full contrast: these are
+	// the numbers the row exists for, not decoration.
+	&__summary {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.15rem 0.85rem;
+		margin-top: 0.3rem;
+	}
+
+	&__summary-item {
+		display: inline-flex !important;
+		align-items: baseline;
+		gap: 0.25rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color)) !important;
+		opacity: 1 !important;
+		margin-top: 0 !important;
+		white-space: nowrap;
+
+		em {
+			font-style: normal;
+			font-weight: 500;
+			font-size: 0.75rem;
+			opacity: 0.75;
+		}
 	}
 
 	&__info {
@@ -30,7 +69,7 @@
 			display: table;
 			margin-top: 3px;
 			font-size: 0.85rem !important;
-			opacity: 0.7;
+			opacity: 1;
 			color: rgb(var(--text-color)) !important;
 		}
 	}
@@ -42,13 +81,19 @@
 		font-weight: 500;
 	}
 
+	// Selection moves from a 4px ring around the card to the leading edge plus a
+	// tinted fill, so the row keeps its square silhouette.
 	&--selected {
-		border: 4px solid rgb(var(--primary-color)) !important;
+		border-left-color: rgb(var(--primary-color)) !important;
+		background-color: rgba(var(--primary-color), 0.14);
 	}
 
 	&--multi-selected {
-		border: 4px dashed rgb(var(--error-color)) !important;
-		opacity: 0.85;
+		border-left-color: rgb(var(--error-color)) !important;
+		background-color: rgba(var(--error-color), 0.12);
+		// Full contrast: the row is being acted on, dimming it hides what you are
+		// about to delete.
+		opacity: 1;
 	}
 
 	&--sortable-helper {

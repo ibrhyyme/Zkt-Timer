@@ -1591,7 +1591,11 @@
     "create_new_session_desc": "Zkt Timer 中的阶段可以包含多种魔方类型。您可以随意划分阶段：按魔方类型、按日期等。",
     "new_session_placeholder": "新阶段",
     "cube_type": "魔方类型",
-    "cube_type_info": "别担心 :) 之后可以更改"
+    "cube_type_info": "别担心 :) 之后可以更改",
+    "solve_count_one": "{{count}} 次还原",
+    "solve_count_other": "{{count}} 次还原",
+    "best_short": "最佳",
+    "mean_short": "平均"
   },
   "solves_list": {
     "page_title": "还原记录",

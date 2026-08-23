@@ -25,6 +25,8 @@ import PageTitle from '../common/page_title/PageTitle';
 import Button from '../common/button/Button';
 import Module from '../common/module/Module';
 import TimeDistro from '../modules/time_distro/TimeDistro';
+import QuickStats from '../modules/quick_stats/QuickStats';
+import SolvesPerDay from '../modules/solves_per_day/SolvesPerDay';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setCurrentSession } from '../../db/settings/update';
 import ConfirmModal from '../common/confirm_modal/ConfirmModal';
@@ -488,6 +490,9 @@ export default function Sessions() {
 				{/*	<SessionStats filterOptions={fetchFilter} />*/}
 				{/*</Module>*/}
 				<Module smallPadding>
+					<QuickStats filterOptions={fetchFilter} />
+				</Module>
+				<Module smallPadding>
 					<History filterOptions={fetchFilter} />
 				</Module>
 				<Module smallPadding>
@@ -495,6 +500,9 @@ export default function Sessions() {
 				</Module>
 				<Module smallPadding>
 					<TimeDistro filterOptions={fetchFilter} />
+				</Module>
+				<Module smallPadding>
+					<SolvesPerDay days={30} filterOptions={fetchFilter} />
 				</Module>
 			</div>
 		</div>

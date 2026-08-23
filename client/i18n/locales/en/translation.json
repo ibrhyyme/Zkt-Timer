@@ -1591,7 +1591,11 @@
     "create_new_session_desc": "Sessions in Zkt Timer can have multiple cube types. You can split sessions however you like: by cube type, by day, etc.",
     "new_session_placeholder": "New Session",
     "cube_type": "Cube Type",
-    "cube_type_info": "Don't worry :) This can be changed later"
+    "cube_type_info": "Don't worry :) This can be changed later",
+    "solve_count_one": "{{count}} solve",
+    "solve_count_other": "{{count}} solves",
+    "best_short": "best",
+    "mean_short": "mean"
   },
   "solves_list": {
     "page_title": "Solves",

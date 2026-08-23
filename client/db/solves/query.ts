@@ -73,6 +73,47 @@ export function fetchLastCubeTypeForSession(sessionId: string): string {
 	return null;
 }
 
+/**
+ * Per-session summary for the sessions list: how many solves it holds, its best
+ * time and its mean. Sessions previously showed only a name and a creation date,
+ * which is not what you ask when picking one.
+ *
+ * Counts every solve in the session including DNFs (so the number matches the
+ * session's real size), but excludes them from best/average since a DNF has no
+ * comparable time. `plus_two` is already baked into `time` by the writer.
+ */
+export function fetchSessionSummary(sessionId: string): {
+	count: number;
+	best: number | null;
+	average: number | null;
+} {
+	const solveDb = getSolveDb();
+
+	const solves = solveDb.chain().find({session_id: sessionId}).data();
+	if (!solves || !solves.length) {
+		return {count: 0, best: null, average: null};
+	}
+
+	let best: number | null = null;
+	let total = 0;
+	let counted = 0;
+
+	for (const solve of solves) {
+		if (solve.dnf) continue;
+		const time = solve.time;
+		if (typeof time !== 'number' || !isFinite(time)) continue;
+		if (best === null || time < best) best = time;
+		total += time;
+		counted++;
+	}
+
+	return {
+		count: solves.length,
+		best,
+		average: counted ? total / counted : null,
+	};
+}
+
 export function fetchLastBucketForSession(sessionId: string): { cube_type: string; scramble_subset: string | null } | null {
 	const solveDb = getSolveDb();
 
