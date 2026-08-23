@@ -206,6 +206,7 @@ export default function ExtrasTab({
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
+	const solveMethod = useSettings('smart_cube_method') || 'cfop';
 	const multiPhaseCount = useSettings('multi_phase_count');
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
@@ -291,7 +292,11 @@ export default function ExtrasTab({
 		{ label: 'CF+OP', value: 'cf_plus_op' }, // Multi-phase (4 steps: Cross, F2L, OLL, PLL)
 		{ label: 'CFFFFOP', value: 'cffffop' }, // F2L Split (Cross, F2L1, F2L2, F2L3, F2L4, OLL, PLL)
 		{ label: 'CFFFFOOPP', value: 'cffffoopp' }, // Detailed (Cross, F2L1...4, 2-look OLL/PLL?) - User requested name.
-	].filter((opt) => !(mobileMode && opt.value === 'cffffoopp')); // On mobile, 11 lines don't fit, cffffoopp hidden
+	]
+		.filter((opt) => !(mobileMode && opt.value === 'cffffoopp')) // On mobile, 11 lines don't fit, cffffoopp hidden
+		// Granularity only means something for CFOP; Roux and ZZ have a single
+		// ladder each, so those users just get on/off.
+		.filter((opt) => solveMethod === 'cfop' || opt.value === 'none' || opt.value === 'cffffop');
 
 	const multiPhaseOptions = [{ label: t('quick_controls.none'), value: '1' }];
 	for (let c = MULTI_PHASE_MIN_COUNT; c <= MULTI_PHASE_MAX_COUNT; c++) {

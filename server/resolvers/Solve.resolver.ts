@@ -222,7 +222,9 @@ export class SolveResolver {
 			if (userIsPro) {
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
-					const steps = getSolveSteps(turns, input.scramble);
+					// Break the solve down with the method the user is actually solving
+					// with. Unknown or missing values fall back to CFOP inside getMethod.
+					const steps = getSolveSteps(turns, input.scramble, input.analysis_method as any);
 					const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
 					(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
 						...s,

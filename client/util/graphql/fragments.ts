@@ -27,6 +27,8 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 			tps
 			oll_case_key
 			pll_case_key
+			case_key
+			case_set
 			skipped
 			parent_name
 			step_index

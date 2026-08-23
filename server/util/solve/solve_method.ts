@@ -1,33 +1,53 @@
 /**
  * Backend wrapper — converts shared phase engine output to DB steps shape expected by Solve.resolver.ts.
- * Old 558-line phase detection logic was moved to shared/util/solve/phase_engine.ts;
- * this file is a thin adapter.
+ * Phase detection itself lives in shared/util/solve/phase_engine.ts; this file is a thin adapter.
  *
  * Engine output (PhaseEngineResult) -> backend steps shape conversion:
- *   - transitions[] -> { cross, f2l, oll, pll, f2l_1..4 } object
+ *   - transitions[] -> an object keyed by step name
  *   - Each step: turn_count, turns string, total_time (seconds), tps, parent_name,
- *     recognition_time, oll_case_key, pll_case_key, step_index, step_name
+ *     recognition_time, case keys, step_index, step_name
  *
  * createSolveMethodSteps (server/models/solve_method_step.ts) takes this shape, writes to DB.
+ *
+ * Method-agnostic: CFOP keeps its aggregated `f2l` parent row (four sub-steps hang
+ * off it), every other method writes one flat row per step.
  */
 
 import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart_scramble';
 import { analyzePhases } from '../../../shared/util/solve/phase_engine';
-import { CFOPPhase, SolveTurn, PhaseTransition } from '../../../shared/util/solve/types';
+import { getMethod } from '../../../shared/util/solve/methods';
+import { detectSolveMethod } from '../../../shared/util/solve/detect_method';
+import { SolveTurn, PhaseTransition, SolveMethod, SolvePhase } from '../../../shared/util/solve/types';
 import { countHTM } from '../../../shared/util/solve/move_counter';
 import { getPrettyMoves, TimedMove } from '../../../shared/util/solve/pretty_moves';
 void cascadeQuartersForDisplay; // legacy import — migrated to getPrettyMoves
 
-export function getSolveSteps(turns: SmartTurn[], scramble?: string) {
+const F2L_SUB_STEPS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
+
+/**
+ * @param method  Method id, or 'auto' to infer it from the solve itself.
+ *                'auto' is the default for new clients: the user's setting can be
+ *                stale (left on Roux while solving CFOP), whereas the states the
+ *                cube passed through cannot lie.
+ */
+export function getSolveSteps(turns: SmartTurn[], scramble?: string, method: string = 'cfop') {
 	try {
-		return getSolveStepsInner(turns, scramble);
+		return getSolveStepsInner(turns, scramble, method);
 	} catch (e: any) {
 		console.warn('[getSolveSteps] engine failed:', e?.message);
-		return { cross: null, f2l: null, oll: null, pll: null };
+		return emptySteps('cfop');
 	}
 }
 
-function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
+/** Result shape carries a key per step so createSolveMethodSteps can iterate it. */
+function emptySteps(method: SolveMethod | string) {
+	const out: any = { __method: method };
+	for (const s of getMethod(method).steps) out[s] = null;
+	if (method === 'cfop' || method === 'cfop2') out.f2l = null;
+	return out;
+}
+
+function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: string = 'cfop') {
 	const engineTurns: SolveTurn[] = (turns || [])
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
@@ -40,43 +60,44 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 		}));
 
 	if (engineTurns.length === 0) {
-		return { cross: null, f2l: null, oll: null, pll: null };
+		return emptySteps('cfop');
 	}
 
 	// Start state calculation:
 	// IDEAL: apply scramble to solved cube -> actual starting state. For partial-solve subsets
 	// (333cfop>oll, >pll etc.) this is the CORRECT approach; engine already pre-populates
-	// solved phases and OLL/PLL identification works.
+	// solved phases and case identification works.
 	//
 	// FALLBACK (legacy): if scramble not provided (old admin scripts), calculate by reversing
-	// turns — works for full 333 solves, identification breaks for partial subsets.
+	// turns — works for full solves, identification breaks for partial subsets.
 	let startState = scramble ? computeStartStateFromScramble(scramble) : undefined;
 	if (!startState) {
 		startState = computeStartStateFromSolvedEnd(engineTurns);
 	}
 
-	const result = analyzePhases(engineTurns, startState, {
-		method: 'cfop',
-		identifyOLL: true,
-		identifyPLL: true,
-	});
+	// Resolve 'auto' against the solve itself; an explicit choice is respected.
+	const method: SolveMethod = requested === 'auto'
+		? detectSolveMethod(engineTurns, startState).method
+		: (requested as SolveMethod);
 
-	const transitionByPhase: Partial<Record<CFOPPhase, PhaseTransition>> = {};
+	const result = analyzePhases(engineTurns, startState, { method });
+	const def = getMethod(method);
+
+	const transitionByPhase: Partial<Record<SolvePhase, PhaseTransition>> = {};
 	for (const t of result.transitions) transitionByPhase[t.phase] = t;
 
-	const steps: any = {
-		cross: null,
-		f2l: null,
-		oll: null,
-		pll: null,
-	};
+	// Recognized case per phase, so a step row carries the case it was solving.
+	const caseByPhase: Record<string, { key: string; set: string }> = {};
+	for (const c of result.cases || []) caseByPhase[c.phase] = { key: c.key, set: c.set };
+
+	const steps: any = emptySteps(method);
+	steps.__method = method;
 
 	const buildStep = (
 		t: PhaseTransition | undefined,
-		stepName: string,
 		stepIndex: number,
 		parentName: string | null,
-		extra?: { ollCaseKey?: string; pllCaseKey?: string }
+		phaseId: string
 	) => {
 		if (!t) return null;
 		const totalSec = Math.max(0, (t.timestamp - t.recognitionStart) / 1000);
@@ -94,6 +115,7 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 			turn,
 			timestamp: t.moveTimestamps?.[i] ?? 0,
 		}));
+		const found = caseByPhase[phaseId];
 		return {
 			index: stepIndex,
 			parentName,
@@ -104,20 +126,31 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 			turnsString: getPrettyMoves(timed),
 			turnCount: moveCount,
 			time: totalSec,
-			...(extra || {}),
+			caseKey: found?.key,
+			caseSet: found?.set,
+			// Legacy columns, still written so existing readers keep working.
+			ollCaseKey: found?.set === 'oll' ? found.key : undefined,
+			pllCaseKey: found?.set === 'pll' ? found.key : undefined,
 		};
 	};
 
-	const ollExtra = result.ollIdentified ? { ollCaseKey: result.ollIdentified.key } : undefined;
-	const pllExtra = result.pllIdentified ? { pllCaseKey: result.pllIdentified.key } : undefined;
+	const isCfopFamily = method === 'cfop' || method === 'cfop2';
 
-	steps.cross = buildStep(transitionByPhase.cross, 'cross', 0, null);
+	if (!isCfopFamily) {
+		// Flat: one row per step, in the method's own order.
+		def.steps.forEach((id, idx) => {
+			steps[id] = buildStep(transitionByPhase[id], idx, null, id);
+		});
+		return steps;
+	}
 
-	// f2l parent + 4 sub-steps. Backend stores aggregated f2l "parent" step with 4 sub-steps.
-	// Engine gives us 4 separate f2l_1..4 transitions. f2l parent is computed from aggregate
-	// timing (f2l_4's timestamp for end, first slot's recognitionStart for start).
-	const f2lTransitions = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']
-		.map((p) => transitionByPhase[p as CFOPPhase])
+	// CFOP family keeps the aggregated f2l parent with four children hanging off it,
+	// because the stats layer and the solve detail table both rely on that shape.
+	let stepIndex = 0;
+	steps.cross = buildStep(transitionByPhase.cross, stepIndex++, null, 'cross');
+
+	const f2lTransitions = F2L_SUB_STEPS
+		.map((p) => transitionByPhase[p])
 		.filter(Boolean) as PhaseTransition[];
 
 	if (f2lTransitions.length > 0) {
@@ -138,7 +171,7 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 			: 0;
 
 		steps.f2l = {
-			index: 1,
+			index: stepIndex++,
 			parentName: null,
 			skipped: f2lHtm <= 2,
 			turns: f2lMovesAsObj,
@@ -150,14 +183,16 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 		};
 
 		// Sub-steps are written to DB with parent='f2l'.
-		f2lTransitions.forEach((t, idx) => {
-			const stepName = `f2l_${idx + 1}`;
-			(steps as any)[stepName] = buildStep(t, stepName, idx, 'f2l');
+		F2L_SUB_STEPS.forEach((id, idx) => {
+			steps[id] = buildStep(transitionByPhase[id], idx, 'f2l', id);
 		});
 	}
 
-	steps.oll = buildStep(transitionByPhase.oll, 'oll', 2, null, ollExtra);
-	steps.pll = buildStep(transitionByPhase.pll, 'pll', 3, null, pllExtra);
+	// Remaining last-layer steps, in the method's own order (cfop2 adds eo and cp).
+	for (const id of def.steps) {
+		if (id === 'cross' || F2L_SUB_STEPS.includes(id)) continue;
+		steps[id] = buildStep(transitionByPhase[id], stepIndex++, null, id);
+	}
 
 	return steps;
 }
@@ -186,7 +221,7 @@ function computeStartStateFromScramble(scramble: string): string | undefined {
 
 /**
  * LEGACY fallback: compute start state by reversing turns. Only works correctly
- * for full-solve (WCA 333) solves. Used when scramble is unavailable.
+ * for full-solve solves. Used when scramble is unavailable.
  */
 function computeStartStateFromSolvedEnd(turns: SolveTurn[]): string | undefined {
 	try {

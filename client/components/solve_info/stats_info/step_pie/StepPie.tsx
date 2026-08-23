@@ -14,7 +14,15 @@ import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('solve-info-step-pie');
 
-const STEP_ORDER = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
+// Canonical order per method, so slices are drawn in solve order rather than
+// whatever order the rows came back in. A solve analysed with a method not listed
+// here still renders — its steps fall through in stored order (see below).
+const STEP_ORDER_BY_METHOD: Record<string, string[]> = {
+	cfop: ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'],
+	cfop2: ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'eo', 'oll', 'cp', 'pll'],
+	roux: ['fb', 'sb', 'cmll', 'lse'],
+	zz: ['eoline', 'block_1', 'block_2', 'll'],
+};
 
 const STEP_COLORS = scaleOrdinal({
 	domain: ['Cross', 'F2L Slot 1', 'F2L Slot 2', 'F2L Slot 3', 'F2L Slot 4', 'OLL', 'PLL'],
@@ -48,8 +56,13 @@ export default function StepPie(props: Props) {
 	const steps = getSolveStepsWithoutParents(solve);
 	const stepMap = new Map(steps.map((s) => [s.step_name, s]));
 
+	// Rows record the method they were produced with; ordering follows that method.
+	// Unknown methods keep the stored order instead of dropping every slice.
+	const solveMethod = (steps[0] as any)?.method_name || 'cfop';
+	const stepOrder = STEP_ORDER_BY_METHOD[solveMethod] || steps.map((s) => s.step_name);
+
 	const data = [];
-	for (const stepName of STEP_ORDER) {
+	for (const stepName of stepOrder) {
 		const step = stepMap.get(stepName);
 		if (!step) continue;
 

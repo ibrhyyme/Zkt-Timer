@@ -165,7 +165,17 @@
         "f2l_3": "F2L 3",
         "f2l_4": "F2L 4",
         "oll": "OLL",
-        "pll": "PLL"
+        "pll": "PLL",
+        "fb": "Primer Bloque",
+        "sb": "Segundo Bloque",
+        "cmll": "CMLL",
+        "lse": "Últimas Seis Aristas",
+        "eoline": "EOLine",
+        "block_1": "Bloque 1",
+        "block_2": "Bloque 2",
+        "ll": "Última Capa",
+        "eo": "EO",
+        "cp": "CP"
       }
     }
   },
@@ -1312,7 +1322,11 @@
     "multi_phase_count_n": "{{n}} fases",
     "multi_phase_off": "Desactivado",
     "multi_phase_method": "Método",
-    "multi_phase_label_n": "Nombre de la fase {{n}}"
+    "multi_phase_label_n": "Nombre de la fase {{n}}",
+    "category_smart_method": "Método de Cubo Inteligente",
+    "smart_cube_method": "Método de Resolución",
+    "smart_cube_method_desc": "Determina en qué pasos se dividen tus resoluciones. En Automático el método se deduce de la propia resolución. Se guarda con cada una; cambiarlo después no altera las anteriores.",
+    "smart_cube_method_auto": "Automático"
   },
   "data_settings": {
     "force_reload": "Forzar recarga",

@@ -78,6 +78,7 @@ export interface AllSettings {
 	// Only read when the method is 'custom'. One entry per phase, empty means "Phase N".
 	multi_phase_custom_labels: string[];
 	smart_cube_analysis_mode: string;
+	smart_cube_method: string;
 	smart_cube_show_recognition: boolean;
 	smart_cube_show: boolean;
 
@@ -169,7 +170,13 @@ const defaultSettings: AllSettings = {
 	multi_phase_count: 1,
 	multi_phase_method: 'cfop',
 	multi_phase_custom_labels: [],
+	// How finely the breakdown is displayed. Purely a view preference — changing
+	// it never alters stored data, which is why it lives in quick settings.
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
+	// Which method the user solves with, written onto every solve as method_name.
+	// Defaults to 'auto': the method is inferred from the solve itself, because a
+	// setting can be stale while the states the cube passed through cannot lie.
+	smart_cube_method: 'auto', // 'auto' | 'cfop' | 'roux' | 'zz'
 	smart_cube_show_recognition: false,
 	smart_cube_show: true,
 	streamer_mode: false,

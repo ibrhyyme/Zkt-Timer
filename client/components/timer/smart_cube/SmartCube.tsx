@@ -24,7 +24,7 @@ import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
-import { analyzeCurrentState } from '../../../util/solve/live_analysis_core';
+import { analyzeCurrentState, resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
 import { endTimer, startTimer, startInspection } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
@@ -118,6 +118,7 @@ export default function SmartCube() {
 	// Post-solve phase analysis only feeds LiveAnalysisOverlay; when the overlay is
 	// off there is nothing to compute for.
 	const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
+	const solveMethod = useSettings('smart_cube_method');
 
 	// Limit cube size on mobile based on viewport (prevent timer/dashboard from being squeezed on small phones)
 	const [viewportH, setViewportH] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
@@ -503,6 +504,11 @@ export default function SmartCube() {
 				is_smart_cube: true,
 				smart_turn_count: htmCount,
 				smart_turns: smartTurnsToSave,
+				// Tell the server which ladder to break the solve down with, so the
+				// stored steps match what the user saw live.
+				// Raw setting, not the display method: 'auto' must reach the server so it
+				// can infer the method from the solve rather than assuming CFOP.
+				analysis_method: solveMethod || 'auto',
 			});
 
 			const tps = finalTimeMilli && finalTimeMilli > 0
@@ -525,7 +531,7 @@ export default function SmartCube() {
 				dbgCorr(`CORR_ANALYSIS scheduled | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${analysisStartState?.length === 54 ? analysisStartState.slice(0, 27) + '...' : `INVALID(len=${analysisStartState?.length})`}`);
 				setTimeout(() => {
 					try {
-						const correctedAnalysis = analyzeCurrentState(correctedTurns, analysisStartState);
+						const correctedAnalysis = analyzeCurrentState(correctedTurns, analysisStartState, resolveAnalysisMethod(solveMethod, analysisMode));
 						dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
 						setTimerParams({
 							lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
@@ -607,6 +613,9 @@ export default function SmartCube() {
 				smart_device_id: smartDeviceId,
 				smart_turn_count: smartTurns.length,
 				smart_turns: JSON.stringify(smartTurns),
+				// Raw setting, not the display method: 'auto' must reach the server so it
+				// can infer the method from the solve rather than assuming CFOP.
+				analysis_method: solveMethod || 'auto',
 			}
 		);
 

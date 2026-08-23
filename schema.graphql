@@ -636,6 +636,8 @@ type SolveMethodStep {
   recognition_time: Float
   oll_case_key: String
   pll_case_key: String
+  case_key: String
+  case_set: String
   skipped: Boolean
   parent_name: String
   method_name: String
@@ -2941,6 +2943,7 @@ input SolveInput {
   smart_device_id: String
   smart_turn_count: Int
   smart_turns: String
+  analysis_method: String
   smart_put_down_time: Float
   smart_pick_up_time: Float
   inspection_time: Float

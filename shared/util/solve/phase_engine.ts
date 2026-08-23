@@ -3,35 +3,33 @@
  *
  * cstimer recons.js calcRecons() port + Zkt-Timer adaptation:
  *   - Phase detection with progress-based monotonic level descent
- *   - 6-axis rotation (cstimer CFOP uses n_axis=6)
+ *   - Orientation scanning (method-defined: 6 for cross-based, 24 for block-based)
  *   - Burst handling: if consecutive phases are skipped in one turn, filled with skipped:true
  *   - 1-move phase merge: merges very short noisy phases into next phase
- *   - OLL/PLL case identification at phase boundaries
+ *   - Case identification at phase boundaries
  *   - Recognition vs execution time split (tsStart vs tsFirst)
+ *
+ * The engine is method-agnostic: everything method-specific (progress ladder,
+ * orientation count, step names, case lookups) lives in shared/util/solve/methods/.
  *
  * Engine SAF: turn sequence + start state -> transitions array. Wrappers convert this output
  * to frontend (LiveAnalysisResult) or backend (DB steps) shape.
  */
 
 import Cube from 'cubejs';
-import { SOLVED_FACELET } from './facelet_masks';
-import {
-	getCFOPProgress,
-	progressToPhaseName,
-	CROSS_AXIS_LABELS,
-	getAxisRotationMove,
-} from './cube_progress';
+import { scanAxes, CROSS_AXIS_LABELS } from './cube_progress';
 import { MoveCounter } from './move_counter';
 import {
 	SolveTurn,
 	PhaseTransition,
 	PhaseEngineResult,
 	AnalyzeOptions,
-	CFOPPhase,
+	SolvePhase,
 	MoveCounts,
+	IdentifiedCase,
 } from './types';
 import { buildPrettyRecon } from './pretty_recon';
-import { getMatchingOLLState, getMatchingPLLState } from './ll_identification';
+import { getMethod, MethodDefinition } from './methods';
 
 const ROTATION_MOVES = new Set(['x', 'y', 'z', "x'", "y'", "z'", 'x2', 'y2', 'z2']);
 
@@ -41,30 +39,35 @@ function isEffectiveMove(move: string): boolean {
 	return !ROTATION_MOVES.has(trimmed);
 }
 
-const PHASE_ORDER: CFOPPhase[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
+/** CFOP phase order, kept exported for callers that predate the method registry. */
+const PHASE_ORDER: SolvePhase[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 
 /**
- * Produces CFOP phase analysis from given turn sequence + start state.
+ * Produces phase analysis from given turn sequence + start state.
  *
  * @param turns        SolveTurn[] (turn + ms timestamp)
  * @param startState   54-char facelet (cube state when scramble ends)
- * @param options      method (CFOP only for now), OLL/PLL identification toggles
+ * @param options      method id, case identification toggles
  */
 export function analyzePhases(
 	turns: SolveTurn[],
 	startState?: string,
 	options: AnalyzeOptions = {}
 ): PhaseEngineResult {
-	const { identifyOLL = true, identifyPLL = true } = options;
+	const { identifyOLL = true, identifyPLL = true, identifyCases = true } = options;
+	const method = getMethod(options.method);
 
 	const cube = startState ? safeFromString(startState) : new Cube();
 
 	const transitions: PhaseTransition[] = [];
 	const totalCounter = new MoveCounter();
 
+	const progressOf = (facelet: string) =>
+		scanAxes(facelet, method.getProgress, method.axisCount);
+
 	// initial progress
 	const initialState = cube.asString();
-	const initial = getCFOPProgress(initialState);
+	const initial = progressOf(initialState);
 	let progress = initial.progress;
 	let crossAxisIndex: number | null = null;
 
@@ -77,32 +80,27 @@ export function analyzePhases(
 	let phaseStartMs = turns.length > 0 ? turns[0].timestamp : 0;
 	let firstMoveMs = Infinity;
 
-	// State snapshots for OLL/PLL identification: store states throughout phase
-	// "before-phase" state = previous phase's end = this phase's start
-	// For OLL identification: f2l_4 end state (= OLL phase start)
-	// For PLL: oll end state (= PLL start)
-	const phaseEndStates: Partial<Record<CFOPPhase, string>> = {};
-	const phaseEndAxis: Partial<Record<CFOPPhase, number>> = {};
+	// State snapshots for case identification: store states throughout phase.
+	// "before-phase" state = previous phase's end = this phase's start.
+	const phaseEndStates: Partial<Record<SolvePhase, string>> = {};
+	const phaseEndAxis: Partial<Record<SolvePhase, number>> = {};
 
 	// For partial-solve subsets (333cfop>oll, >pll, >ll etc.): scramble cube already
 	// brings some phases to solved state. Engine doesn't produce transitions for those phases
-	// (no curProg < progress descent). Identification chain (`beforeOLLState = phaseEndStates.f2l_4 || ...`)
-	// stays null in this case → OLL/PLL case key not found, stats broken.
+	// (no curProg < progress descent). The identification chain would stay empty in that case,
+	// so case keys would never be found and stats would break.
 	//
 	// Solution: infer from initial state "how many phases already solved", pre-populate
-	// those phases' phaseEndStates with initialState. If Cross/F2L/OLL skipped, identification chain
-	// stays filled, case key correctly found for user's final phases (e.g. PLL-only).
+	// those phases' phaseEndStates with initialState.
 	//
-	// progress 7 = full scramble (no phase solved)
-	// progress 6 = cross solved, solve from f2l_1 onwards
-	// progress 1 = cross+f2l+oll solved, only pll to solve
-	// progress 0 = cube already solved
-	//
-	// numCompleted = 7 - initial.progress  (clamped to PHASE_ORDER length).
-	const numCompleted = Math.max(0, Math.min(PHASE_ORDER.length, 7 - initial.progress));
+	// numCompleted = maxProgress - initial.progress (clamped to the method's step count).
+	const numCompleted = Math.max(
+		0,
+		Math.min(method.steps.length, method.maxProgress - initial.progress)
+	);
 	for (let i = 0; i < numCompleted; i++) {
-		phaseEndStates[PHASE_ORDER[i]] = initialState;
-		phaseEndAxis[PHASE_ORDER[i]] = initial.axisIndex;
+		phaseEndStates[method.steps[i]] = initialState;
+		phaseEndAxis[method.steps[i]] = initial.axisIndex;
 	}
 
 	for (let i = 0; i < turns.length; i++) {
@@ -124,7 +122,7 @@ export function analyzePhases(
 		phaseMoveTimestamps.push(t.timestamp);
 
 		const stateNow = cube.asString();
-		const cur = getCFOPProgress(stateNow);
+		const cur = progressOf(stateNow);
 		const curProg = cur.progress;
 
 		if (curProg < progress) {
@@ -134,7 +132,7 @@ export function analyzePhases(
 			}
 
 			// First descent: progress -> progress-1 phase completed
-			const completedPhase = progressToPhaseName(progress - 1);
+			const completedPhase = method.progressToPhase(progress - 1);
 			if (completedPhase) {
 				const curSnapshot = totalCounter.snapshot();
 				transitions.push({
@@ -156,7 +154,7 @@ export function analyzePhases(
 
 			// Burst: if progress still > curProg, fill intermediate phases with skipped:true
 			while (progress > curProg) {
-				const skipPhase = progressToPhaseName(progress - 1);
+				const skipPhase = method.progressToPhase(progress - 1);
 				if (skipPhase) {
 					transitions.push({
 						phase: skipPhase,
@@ -186,46 +184,71 @@ export function analyzePhases(
 	// 1-move phase merge pass: phases with HTM=1 are merged into next "real" phase
 	mergeOneMovePhases(transitions);
 
-	// OLL/PLL identification
-	let ollIdentified: PhaseEngineResult['ollIdentified'];
-	let pllIdentified: PhaseEngineResult['pllIdentified'];
-	if (identifyOLL && phaseEndStates.oll) {
-		// State at OLL phase end = OLL solved (top face solid). For identification we use
-		// state BEFORE OLL phase started (= f2l_4 end).
-		const beforeOLLState = phaseEndStates.f2l_4 || phaseEndStates.f2l_3 || phaseEndStates.f2l_2 || phaseEndStates.f2l_1 || phaseEndStates.cross;
-		const axisForOLL = phaseEndAxis.oll ?? phaseEndAxis.f2l_4 ?? crossAxisIndex ?? 0;
-		if (beforeOLLState) {
-			const m = getMatchingOLLState(beforeOLLState, CROSS_AXIS_LABELS[axisForOLL]);
-			if (m) ollIdentified = m;
-		}
-	}
-	if (identifyPLL && phaseEndStates.pll) {
-		const beforePLLState = phaseEndStates.oll;
-		const axisForPLL = phaseEndAxis.pll ?? phaseEndAxis.oll ?? crossAxisIndex ?? 0;
-		if (beforePLLState) {
-			const m = getMatchingPLLState(beforePLLState, CROSS_AXIS_LABELS[axisForPLL]);
-			if (m) pllIdentified = m;
-		}
-	}
+	const cases = identifyCases
+		? runCaseIdentification(method, phaseEndStates, transitions, { identifyOLL, identifyPLL })
+		: [];
 
 	const totalTimeMs = turns.length > 0 ? turns[turns.length - 1].timestamp - turns[0].timestamp : 0;
 	const finalProgressInfo = transitions.length > 0 ? progress : initial.progress;
 
 	const result: PhaseEngineResult = {
-		transitions: orderTransitions(transitions),
+		transitions: orderTransitions(transitions, method),
 		totalMoves: totalCounter.snapshot(),
 		totalTimeMs,
-		ollIdentified,
-		pllIdentified,
+		cases,
+		ollIdentified: cases.find((c) => c.set === 'oll'),
+		pllIdentified: cases.find((c) => c.set === 'pll'),
 		prettyRecon: '',
-		method: 'cfop',
+		method: method.id,
 		finalProgress: finalProgressInfo,
-		crossFace: crossAxisIndex !== null ? CROSS_AXIS_LABELS[crossAxisIndex] : null,
+		crossFace: crossAxisIndex !== null ? CROSS_AXIS_LABELS[crossAxisIndex % 6] : null,
 	};
 
 	result.prettyRecon = buildPrettyRecon(result);
 
 	return result;
+}
+
+/**
+ * Runs each of the method's case lookups against the state its phase started from.
+ * A phase that never happened, or a "before" state that was never reached, yields
+ * no case rather than a wrong one.
+ */
+function runCaseIdentification(
+	method: MethodDefinition,
+	phaseEndStates: Partial<Record<SolvePhase, string>>,
+	transitions: PhaseTransition[],
+	toggles: { identifyOLL: boolean; identifyPLL: boolean }
+): IdentifiedCase[] {
+	const out: IdentifiedCase[] = [];
+	// A phase counts as performed only if the solver actually executed it. Phases
+	// pre-populated because the scramble already had them solved, and phases marked
+	// skipped, carry no case — reading one from a solved cube would invent a result.
+	const performed = new Set(
+		transitions.filter((t) => !t.skipped && t.moves.length > 0).map((t) => t.phase)
+	);
+
+	for (const spec of method.caseSpecs) {
+		if (spec.set === 'oll' && !toggles.identifyOLL) continue;
+		if (spec.set === 'pll' && !toggles.identifyPLL) continue;
+		if (!performed.has(spec.phase)) continue;
+		if (!phaseEndStates[spec.phase]) continue;
+
+		let beforeState: string | undefined;
+		for (const from of spec.fromPhases) {
+			if (phaseEndStates[from]) {
+				beforeState = phaseEndStates[from];
+				break;
+			}
+		}
+		if (!beforeState) continue;
+
+		const match = spec.identify(beforeState);
+		if (match) {
+			out.push({ ...match, set: spec.set, phase: spec.phase });
+		}
+	}
+	return out;
 }
 
 function safeFromString(facelet: string): any {
@@ -238,20 +261,18 @@ function safeFromString(facelet: string): any {
 }
 
 /**
- * Orders transitions in CFOP sequence. Engine already adds them in order,
+ * Orders transitions in the method's step sequence. Engine already adds them in order,
  * this is just safety assurance.
  */
-function orderTransitions(transitions: PhaseTransition[]): PhaseTransition[] {
-	const order: Record<CFOPPhase, number> = {
-		cross: 0,
-		f2l_1: 1,
-		f2l_2: 2,
-		f2l_3: 3,
-		f2l_4: 4,
-		oll: 5,
-		pll: 6,
-	};
-	return transitions.slice().sort((a, b) => order[a.phase] - order[b.phase]);
+function orderTransitions(
+	transitions: PhaseTransition[],
+	method: MethodDefinition
+): PhaseTransition[] {
+	const order: Record<string, number> = {};
+	method.steps.forEach((s, i) => {
+		order[s] = i;
+	});
+	return transitions.slice().sort((a, b) => (order[a.phase] ?? 0) - (order[b.phase] ?? 0));
 }
 
 /**
@@ -311,7 +332,10 @@ function addCounts(a: MoveCounts, b: MoveCounts): MoveCounts {
 	};
 }
 
-export function findTransition(result: PhaseEngineResult, phase: CFOPPhase): PhaseTransition | undefined {
+export function findTransition(
+	result: PhaseEngineResult,
+	phase: SolvePhase
+): PhaseTransition | undefined {
 	return result.transitions.find((t) => t.phase === phase);
 }
 

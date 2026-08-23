@@ -551,6 +551,11 @@ model SolveMethodStep {
   skipped          Boolean  @default(false)
   oll_case_key     String?
   pll_case_key     String?
+  // Method-agnostic case columns. oll_case_key / pll_case_key above are kept so
+  // existing rows and readers stay valid; new writes fill these as well, with
+  // case_set naming the algorithm set ('oll' | 'pll' | 'coll' | 'cmll' | 'zbll').
+  case_key         String?
+  case_set         String?
   solve            Solve    @relation(fields: [solve_id], references: [id], onDelete: Cascade)
 
   @@index([solve_id])

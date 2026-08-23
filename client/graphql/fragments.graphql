@@ -98,6 +98,8 @@ fragment SolveFragment on Solve {
 		recognition_time
 		oll_case_key
 		pll_case_key
+		case_key
+		case_set
 		skipped
 		parent_name
 		method_name

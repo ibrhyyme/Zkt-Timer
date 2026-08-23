@@ -5,8 +5,14 @@
  * cstimer is licensed GPL v3 — direct port with credit.
  *
  * The engine analyzes a sequence of timestamped cube turns + a known starting state,
- * detecting CFOP phase transitions (cross, f2l_1..4, oll, pll) using progress-based
- * monotonic level detection across 6 cube orientations (cross face).
+ * detecting phase transitions using progress-based monotonic level detection across
+ * a method-specific number of cube orientations.
+ *
+ * Methods:
+ *   cfop  — cross, f2l_1..4, oll, pll                    (6 axes, cstimer cf4op)
+ *   cfop2 — cross, f2l_1..4, eo, co, cp, ep              (6 axes, cstimer cf4o2p2)
+ *   roux  — fb, sb, cmll, lse                            (24 axes, cstimer roux)
+ *   zz    — eoline, block_1, block_2, ll                 (6 axes, Zkt-Timer original)
  */
 
 export interface SolveTurn {
@@ -14,6 +20,19 @@ export interface SolveTurn {
 	timestamp: number;
 }
 
+export type SolveMethod = 'cfop' | 'cfop2' | 'roux' | 'zz';
+
+/**
+ * Phase id. Free-form because each method names its own steps; the method
+ * definition (shared/util/solve/methods/) is the source of truth for which
+ * ids exist and in what order.
+ */
+export type SolvePhase = string;
+
+/**
+ * Legacy CFOP-only union. Kept so existing call sites keep type-checking;
+ * new code should use SolvePhase.
+ */
 export type CFOPPhase =
 	| 'cross'
 	| 'f2l_1'
@@ -31,7 +50,7 @@ export interface MoveCounts {
 }
 
 export interface PhaseTransition {
-	phase: CFOPPhase;
+	phase: SolvePhase;
 	turnIndex: number;
 	timestamp: number;
 	recognitionStart: number;
@@ -42,22 +61,46 @@ export interface PhaseTransition {
 	skipped: boolean;
 }
 
+/**
+ * Which algorithm set a recognized case belongs to. Drives both the lookup
+ * table used for the case name and the `case_set` column written to the DB.
+ */
+export type CaseSet = 'oll' | 'pll' | 'coll' | 'cmll' | 'zbll';
+
+export interface CaseMatch {
+	case: string;
+	key: string;
+}
+
+/** A recognized case bound to the phase it was recognized for. */
+export interface IdentifiedCase extends CaseMatch {
+	set: CaseSet;
+	phase: SolvePhase;
+}
+
 export interface PhaseEngineResult {
 	transitions: PhaseTransition[];
 	totalMoves: MoveCounts;
 	totalTimeMs: number;
-	ollIdentified?: { case: string; key: string };
-	pllIdentified?: { case: string; key: string };
+	/** Every case the method recognized, in phase order. */
+	cases: IdentifiedCase[];
+	/** Convenience aliases for the CFOP consumers that predate `cases`. */
+	ollIdentified?: CaseMatch;
+	pllIdentified?: CaseMatch;
 	prettyRecon: string;
-	method: 'cfop';
+	method: SolveMethod;
 	finalProgress: number;
+	/**
+	 * Reference face the method locked onto: cross face for CFOP/ZZ, first-block
+	 * face for Roux. Null when no phase completed.
+	 */
 	crossFace: string | null;
 }
-
-export type SolveMethod = 'cfop';
 
 export interface AnalyzeOptions {
 	method?: SolveMethod;
 	identifyOLL?: boolean;
 	identifyPLL?: boolean;
+	/** Turns off every case lookup at once (used by the bulk stats worker). */
+	identifyCases?: boolean;
 }

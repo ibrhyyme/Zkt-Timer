@@ -12,7 +12,15 @@ export function deleteSolveMethodSteps(solve) {
 export async function createSolveMethodSteps(solve, steps) {
 	const data = [];
 
+	// getSolveSteps tags its output with the method it ran, so the rows record
+	// which ladder produced them instead of assuming CFOP.
+	const methodName = steps.__method || 'cfop';
+
 	for (const step of Object.keys(steps)) {
+		if (step === '__method') {
+			continue;
+		}
+
 		const method = steps[step];
 
 		if (!method) {
@@ -31,7 +39,9 @@ export async function createSolveMethodSteps(solve, steps) {
 			recognition_time: method.recognitionTime,
 			oll_case_key: method.ollCaseKey || null,
 			pll_case_key: method.pllCaseKey || null,
-			method_name: 'cfop', // TODO change this
+			case_key: method.caseKey || null,
+			case_set: method.caseSet || null,
+			method_name: methodName,
 			step_index: method.index,
 			step_name: step,
 		});

@@ -165,7 +165,17 @@
         "f2l_3": "F2L 3",
         "f2l_4": "F2L 4",
         "oll": "OLL",
-        "pll": "PLL"
+        "pll": "PLL",
+        "fb": "İlk Blok",
+        "sb": "İkinci Blok",
+        "cmll": "CMLL",
+        "lse": "Son Kenarlar",
+        "eoline": "EOLine",
+        "block_1": "1. Blok",
+        "block_2": "2. Blok",
+        "ll": "Son Katman",
+        "eo": "EO",
+        "cp": "CP"
       }
     }
   },
@@ -1319,7 +1329,11 @@
     "multi_phase_count_n": "{{n}} faz",
     "multi_phase_off": "Kapalı",
     "multi_phase_method": "Metot",
-    "multi_phase_label_n": "{{n}}. faz adı"
+    "multi_phase_label_n": "{{n}}. faz adı",
+    "category_smart_method": "Akıllı Küp Yöntemi",
+    "smart_cube_method": "Çözüm Yöntemi",
+    "smart_cube_method_desc": "Çözümünün hangi adımlara bölüneceğini belirler. Otomatik seçilirse yöntem çözümün kendisinden anlaşılır. Her çözüme kaydedilir, sonradan değiştirmek geçmişi değiştirmez.",
+    "smart_cube_method_auto": "Otomatik"
   },
   "data_settings": {
     "force_reload": "Zorla yeniden yükle",

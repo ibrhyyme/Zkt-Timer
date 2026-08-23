@@ -23,7 +23,7 @@ export default function RecognitionChart(props: Props) {
 
 		return (
 			<div key={step.step_name} className={b('bar', {gray})}>
-				<div className={b('left')}>{STEP_NAME_MAP[step.step_name]}</div>
+				<div className={b('left')}>{STEP_NAME_MAP[step.step_name] || step.step_name}</div>
 				<div className={b('right')}>
 					<span className={b('right-bar')} style={{width: `${percent}%`}} />
 					<p>

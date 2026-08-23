@@ -1,36 +1,53 @@
 /**
- * Frontend wrapper — adapts shared phase engine to LiveAnalysisOverlay/useLiveAnalysis API.
- * Old 460-line phase detection logic was moved to shared/util/solve/phase_engine.ts;
- * this file is a thin adapter.
+ * Frontend wrapper — adapts the shared phase engine to the LiveAnalysisOverlay /
+ * useLiveAnalysis API.
  *
  * Engine output (PhaseEngineResult) -> LiveAnalysisResult shape conversion:
- *   - transitions[] -> steps map (cross, f2l_1..4, oll, pll)
+ *   - transitions[] -> generic per-step map (steps, stepTimes, stepSplits)
+ *   - CFOP-shaped aliases (times.cross, times.f2l, f2l_pairs, ...) kept so the
+ *     existing CFOP overlay keeps working unchanged
  *   - timestamps -> seconds (relative to first turn)
- *   - ollIdentified/pllIdentified -> string names
- *   - currentPhase derivation: last completed phase + 1 next phase
- *   - recognition/execution split per phase (engine recognitionStart/firstMoveTimestamp from)
+ *   - currentPhase derivation: last completed step + 1 next step
+ *   - recognition/execution split per phase
  *   - prettyRecon: cstimer format annotated solve string (for clipboard)
  *
- * useLiveAnalysis hook (client/util/hooks/useLiveAnalysis.ts) calls this function;
- * shape preserved in old fields so LiveAnalysisOverlay doesn't change.
+ * Which method runs is decided by the caller; the two settings that describe
+ * it are combined by resolveAnalysisMethod().
  */
 
 import { SmartTurn } from '../smart_scramble';
 import { analyzePhases } from '../../../shared/util/solve/phase_engine';
-import { CFOPPhase, SolveTurn, PhaseTransition } from '../../../shared/util/solve/types';
+import { getMethod } from '../../../shared/util/solve/methods';
+import { SolveMethod, SolvePhase, PhaseTransition } from '../../../shared/util/solve/types';
 
-interface PhaseTimes {
-	cross?: number;
-	f2l_1?: number;
-	f2l_2?: number;
-	f2l_3?: number;
-	f2l_4?: number;
-	oll?: number;
-	pll?: number;
+type PhaseTimes = Record<string, number | undefined>;
+
+export interface LiveAnalysisStep {
+	id: SolvePhase;
+	index: number;
+	side?: string | null;
+	case?: string;
+	key?: string;
+	skipped: boolean;
+	recognitionMs: number;
+	executionMs: number;
+	moveCount: { htm: number; obtm: number; etm: number; stm: number };
 }
 
 export interface LiveAnalysisResult {
 	steps: any;
+	/** Method that produced this result. */
+	method: SolveMethod;
+	/** The method's step ids, in execution order. */
+	stepOrder: SolvePhase[];
+	/** Absolute seconds (from solve start) at which each step completed. */
+	stepTimes: PhaseTimes;
+	/** Duration in seconds of each step on its own. */
+	stepSplits: PhaseTimes;
+	/** Recognized case name per step id, when the method identifies one. */
+	stepCases: Record<string, string>;
+	/** Id of the step currently being worked on, or null when solved/not started. */
+	currentStep: SolvePhase | null;
 	currentPhase:
 		| 'Cross'
 		| 'F2L'
@@ -41,7 +58,8 @@ export interface LiveAnalysisResult {
 		| 'OLL'
 		| 'PLL'
 		| 'Solved'
-		| 'Scramble/Inspection';
+		| 'Scramble/Inspection'
+		| string;
 	crossSolved: boolean;
 	f2lCount: number;
 	ollIdentified?: string;
@@ -58,17 +76,20 @@ export interface LiveAnalysisResult {
 		pll?: number;
 		pll_cp?: number;
 		total?: number;
-		// New: recognition and execution times per phase in seconds.
-		// Computed from engine PhaseTransition.recognitionStart vs firstMoveTimestamp vs timestamp triple.
 		recognition?: PhaseTimes;
 		execution?: PhaseTimes;
 	};
-	// New: cstimer-format annotated solve string. For "Copy Detailed" button in SolutionInfo.
 	prettyRecon?: string;
 }
 
 const EMPTY_RESULT: LiveAnalysisResult = {
 	steps: {},
+	method: 'cfop',
+	stepOrder: [],
+	stepTimes: {},
+	stepSplits: {},
+	stepCases: {},
+	currentStep: null,
 	currentPhase: 'Scramble/Inspection',
 	crossSolved: false,
 	f2lCount: 0,
@@ -77,7 +98,57 @@ const EMPTY_RESULT: LiveAnalysisResult = {
 	times: {},
 };
 
-function toEngineTurns(turns: SmartTurn[]): SolveTurn[] {
+/**
+ * Resolves the engine method from the two settings that describe it.
+ *
+ *   smart_cube_method        — which method the user solves with (cfop|roux|zz).
+ *                              Written onto every solve, so it lives in main settings.
+ *   smart_cube_analysis_mode — how finely to display it. A view preference only.
+ *
+ * The two were a single setting before, mixing an identity with a display option.
+ * Legacy values are still accepted here so nobody loses their configuration:
+ * a stored mode of 'roux'/'zz' is read as that method.
+ *
+ * Only CFOP has display granularity; its two-look variant needs a different
+ * progress ladder, which is why 'cffffoopp' maps to the cfop2 engine method.
+ */
+export function resolveAnalysisMethod(
+	method?: string | null,
+	mode?: string | null
+): SolveMethod {
+	// Legacy single-setting values.
+	if (mode === 'roux' || mode === 'zz') return mode;
+
+	if (method === 'roux' || method === 'zz') return method;
+	// 'auto' is resolved from the solve itself when it is saved. While a solve is
+	// still in progress there is nothing to detect from, so the live overlay shows
+	// the CFOP ladder and the stored breakdown is corrected on save.
+	if (mode === 'cffffoopp') return 'cfop2';
+	return 'cfop';
+}
+
+/** Display labels per step id, shared by every method. */
+export const STEP_LABELS: Record<string, string> = {
+	cross: 'Cross',
+	f2l_1: 'F2L (1)',
+	f2l_2: 'F2L (2)',
+	f2l_3: 'F2L (3)',
+	f2l_4: 'F2L (4)',
+	oll: 'OLL',
+	pll: 'PLL',
+	eo: 'EO',
+	cp: 'CP',
+	fb: 'FB',
+	sb: 'SB',
+	cmll: 'CMLL',
+	lse: 'LSE',
+	eoline: 'EOLine',
+	block_1: 'Block 1',
+	block_2: 'Block 2',
+	ll: 'LL',
+};
+
+function toEngineTurns(turns: SmartTurn[]) {
 	return turns
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
@@ -96,18 +167,37 @@ function executionMs(t: PhaseTransition): number {
 	return Math.max(0, t.timestamp - first);
 }
 
-export function analyzeCurrentState(turns: SmartTurn[], startState?: string): LiveAnalysisResult {
+/**
+ * Development hook: exposes the analyser on `window.__zktAnalyze` so a solve can
+ * be replayed from the console without a physical cube attached. Read-only —
+ * it computes from the turns it is handed and touches no application state.
+ * Mirrors the existing `window.__SMART_DEBUG__` convention.
+ */
+if (typeof window !== 'undefined') {
+	(window as any).__zktAnalyze = (
+		turns: SmartTurn[],
+		startState?: string,
+		method: SolveMethod = 'cfop'
+	) => analyzeCurrentState(turns, startState, method);
+}
+
+export function analyzeCurrentState(
+	turns: SmartTurn[],
+	startState?: string,
+	method: SolveMethod = 'cfop'
+): LiveAnalysisResult {
 	if (!turns || turns.length === 0) {
-		return { ...EMPTY_RESULT };
+		return { ...EMPTY_RESULT, method, stepOrder: getMethod(method).steps };
 	}
 
 	const engineTurns = toEngineTurns(turns);
-	const result = analyzePhases(engineTurns, startState);
+	const result = analyzePhases(engineTurns, startState, { method });
+	const def = getMethod(method);
 
 	const startMs = engineTurns[0]?.timestamp ?? 0;
 	const lastMs = engineTurns[engineTurns.length - 1]?.timestamp ?? startMs;
 
-	const transitionByPhase: Partial<Record<CFOPPhase, PhaseTransition>> = {};
+	const transitionByPhase: Partial<Record<SolvePhase, PhaseTransition>> = {};
 	for (const t of result.transitions) {
 		transitionByPhase[t.phase] = t;
 	}
@@ -115,6 +205,55 @@ export function analyzeCurrentState(turns: SmartTurn[], startState?: string): Li
 	const seconds = (ms: number | undefined) =>
 		ms !== undefined && isFinite(ms) ? Math.max(0, (ms - startMs) / 1000) : undefined;
 
+	// ---- Generic per-step data (drives non-CFOP overlays) ----
+	const steps: any = {};
+	const stepTimes: PhaseTimes = {};
+	const stepSplits: PhaseTimes = {};
+	const stepCases: Record<string, string> = {};
+	const recognition: PhaseTimes = {};
+	const execution: PhaseTimes = {};
+
+	const caseByPhase: Record<string, string> = {};
+	for (const c of result.cases || []) caseByPhase[c.phase] = c.case;
+
+	let prevEndSec: number | undefined;
+	let lastCompleted: SolvePhase | null = null;
+
+	for (const id of def.steps) {
+		const t = transitionByPhase[id];
+		if (!t) continue;
+
+		const endSec = seconds(t.timestamp);
+		stepTimes[id] = endSec;
+		stepSplits[id] =
+			endSec !== undefined ? Math.max(0, endSec - (prevEndSec ?? 0)) : undefined;
+		prevEndSec = endSec ?? prevEndSec;
+		lastCompleted = id;
+
+		recognition[id] = recognitionMs(t) / 1000;
+		execution[id] = executionMs(t) / 1000;
+
+		if (caseByPhase[id]) stepCases[id] = caseByPhase[id];
+
+		steps[id] = {
+			index: t.turnIndex,
+			side: result.crossFace,
+			case: caseByPhase[id],
+			key: (result.cases || []).find((c) => c.phase === id)?.key,
+			skipped: t.skipped,
+			recognitionMs: recognitionMs(t),
+			executionMs: executionMs(t),
+			moveCount: t.moveCount,
+		};
+	}
+
+	const isSolved = lastCompleted === def.steps[def.steps.length - 1];
+	const nextIdx = lastCompleted ? def.steps.indexOf(lastCompleted) + 1 : 0;
+	const currentStep = isSolved ? null : def.steps[nextIdx] ?? def.steps[0];
+
+	// ---- CFOP-shaped aliases ----
+	// The CFOP overlay predates the generic map and reads these directly. They are
+	// only meaningful for the CFOP ladders; other methods leave them undefined.
 	const crossT = transitionByPhase.cross;
 	const f2l1T = transitionByPhase.f2l_1;
 	const f2l2T = transitionByPhase.f2l_2;
@@ -122,92 +261,63 @@ export function analyzeCurrentState(turns: SmartTurn[], startState?: string): Li
 	const f2l4T = transitionByPhase.f2l_4;
 	const ollT = transitionByPhase.oll;
 	const pllT = transitionByPhase.pll;
+	const eoT = transitionByPhase.eo;
+	const cpT = transitionByPhase.cp;
 
-	const f2lDoneT = f2l4T;
+	if (f2l4T) steps.f2l = steps.f2l_4;
+
 	const f2lPairs: (number | undefined)[] = [
 		seconds(f2l1T?.timestamp),
 		seconds(f2l2T?.timestamp),
 		seconds(f2l3T?.timestamp),
 		seconds(f2l4T?.timestamp),
 	];
-
 	const f2lCount = [f2l1T, f2l2T, f2l3T, f2l4T].filter(Boolean).length;
-
 	const totalSec = (lastMs - startMs) / 1000;
 
-	let currentPhase: LiveAnalysisResult['currentPhase'] = 'Scramble/Inspection';
-	if (pllT) currentPhase = 'Solved';
-	else if (ollT) currentPhase = 'PLL';
-	else if (f2l4T) currentPhase = 'OLL';
-	else if (f2l3T) currentPhase = 'F2L (4)';
-	else if (f2l2T) currentPhase = 'F2L (3)';
-	else if (f2l1T) currentPhase = 'F2L (2)';
-	else if (crossT) currentPhase = 'F2L (1)';
-	else currentPhase = turns.length > 0 ? 'Cross' : 'Scramble/Inspection';
-
-	// Wrapper steps shape: compatible with LiveAnalysisOverlay (case, key, side, index fields).
-	const steps: any = {};
-	const fillStep = (
-		key: string,
-		t?: PhaseTransition,
-		extra?: { case?: string; key?: string }
-	) => {
-		if (!t) return;
-		steps[key] = {
-			index: t.turnIndex,
-			side: result.crossFace,
-			case: extra?.case,
-			key: extra?.key,
-			skipped: t.skipped,
-			recognitionMs: recognitionMs(t),
-			executionMs: executionMs(t),
-			moveCount: t.moveCount,
-		};
-	};
-
-	fillStep('cross', crossT);
-	fillStep('f2l_1', f2l1T);
-	fillStep('f2l_2', f2l2T);
-	fillStep('f2l_3', f2l3T);
-	fillStep('f2l_4', f2l4T);
-	fillStep('f2l', f2lDoneT);
-	fillStep('oll', ollT, result.ollIdentified);
-	fillStep('pll', pllT, result.pllIdentified);
-
-	const recognition: PhaseTimes = {
-		cross: crossT ? recognitionMs(crossT) / 1000 : undefined,
-		f2l_1: f2l1T ? recognitionMs(f2l1T) / 1000 : undefined,
-		f2l_2: f2l2T ? recognitionMs(f2l2T) / 1000 : undefined,
-		f2l_3: f2l3T ? recognitionMs(f2l3T) / 1000 : undefined,
-		f2l_4: f2l4T ? recognitionMs(f2l4T) / 1000 : undefined,
-		oll: ollT ? recognitionMs(ollT) / 1000 : undefined,
-		pll: pllT ? recognitionMs(pllT) / 1000 : undefined,
-	};
-	const execution: PhaseTimes = {
-		cross: crossT ? executionMs(crossT) / 1000 : undefined,
-		f2l_1: f2l1T ? executionMs(f2l1T) / 1000 : undefined,
-		f2l_2: f2l2T ? executionMs(f2l2T) / 1000 : undefined,
-		f2l_3: f2l3T ? executionMs(f2l3T) / 1000 : undefined,
-		f2l_4: f2l4T ? executionMs(f2l4T) / 1000 : undefined,
-		oll: ollT ? executionMs(ollT) / 1000 : undefined,
-		pll: pllT ? executionMs(pllT) / 1000 : undefined,
-	};
+	let currentPhase: LiveAnalysisResult['currentPhase'];
+	if (method === 'cfop' || method === 'cfop2') {
+		if (pllT) currentPhase = 'Solved';
+		else if (ollT) currentPhase = 'PLL';
+		else if (f2l4T) currentPhase = 'OLL';
+		else if (f2l3T) currentPhase = 'F2L (4)';
+		else if (f2l2T) currentPhase = 'F2L (3)';
+		else if (f2l1T) currentPhase = 'F2L (2)';
+		else if (crossT) currentPhase = 'F2L (1)';
+		else currentPhase = turns.length > 0 ? 'Cross' : 'Scramble/Inspection';
+	} else {
+		currentPhase = isSolved
+			? 'Solved'
+			: currentStep
+				? STEP_LABELS[currentStep] || currentStep
+				: 'Scramble/Inspection';
+	}
 
 	return {
 		steps,
+		method,
+		stepOrder: def.steps,
+		stepTimes,
+		stepSplits,
+		stepCases,
+		currentStep,
 		currentPhase,
 		crossSolved: !!crossT,
 		f2lCount,
 		ollIdentified: result.ollIdentified?.case,
 		pllIdentified: result.pllIdentified?.case,
-		isSolved: !!pllT,
+		isSolved: method === 'cfop' || method === 'cfop2' ? !!pllT : isSolved,
 		scrambleError: false,
 		times: {
 			cross: seconds(crossT?.timestamp),
-			f2l: seconds(f2lDoneT?.timestamp),
+			f2l: seconds(f2l4T?.timestamp),
 			f2l_pairs: f2lPairs,
 			oll: seconds(ollT?.timestamp),
+			// Two-look ladder: these were declared but never populated before, which
+			// left the "full detail" overlay rendering empty EO/CP rows.
+			oll_eo: seconds(eoT?.timestamp),
 			pll: seconds(pllT?.timestamp),
+			pll_cp: seconds(cpT?.timestamp),
 			total: totalSec > 0 ? totalSec : undefined,
 			recognition,
 			execution,

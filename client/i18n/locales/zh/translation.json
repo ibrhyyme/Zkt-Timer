@@ -165,7 +165,17 @@
         "f2l_3": "F2L 3",
         "f2l_4": "F2L 4",
         "oll": "OLL",
-        "pll": "PLL"
+        "pll": "PLL",
+        "fb": "第一块",
+        "sb": "第二块",
+        "cmll": "CMLL",
+        "lse": "最后六棱",
+        "eoline": "EOLine",
+        "block_1": "第一块",
+        "block_2": "第二块",
+        "ll": "最后一层",
+        "eo": "EO",
+        "cp": "CP"
       }
     }
   },
@@ -1312,7 +1322,11 @@
     "multi_phase_count_n": "{{n}} 个阶段",
     "multi_phase_off": "关闭",
     "multi_phase_method": "方法",
-    "multi_phase_label_n": "阶段 {{n}} 名称"
+    "multi_phase_label_n": "阶段 {{n}} 名称",
+    "category_smart_method": "智能魔方方法",
+    "smart_cube_method": "解法",
+    "smart_cube_method_desc": "决定你的还原被分解为哪些步骤。选择自动时，解法由还原过程本身推断。随每次还原保存，之后修改不会影响已有记录。",
+    "smart_cube_method_auto": "自动"
   },
   "data_settings": {
     "force_reload": "强制重新加载",

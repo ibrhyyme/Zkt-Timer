@@ -67,6 +67,14 @@ export class SolveInput {
 	@Field()
 	smart_turns?: string;
 
+	/**
+	 * Which solving method to break this solve down with ('cfop' | 'cfop2' |
+	 * 'roux' | 'zz'). Sent by the client from the user's analysis setting; the
+	 * server falls back to CFOP when absent so older clients keep working.
+	 */
+	@Field({ nullable: true })
+	analysis_method?: string;
+
 	@Field(() => Float)
 	smart_put_down_time?: number;
 

@@ -165,7 +165,17 @@
         "f2l_3": "F2L 3",
         "f2l_4": "F2L 4",
         "oll": "OLL",
-        "pll": "PLL"
+        "pll": "PLL",
+        "fb": "Первый блок",
+        "sb": "Второй блок",
+        "cmll": "CMLL",
+        "lse": "Последние шесть рёбер",
+        "eoline": "EOLine",
+        "block_1": "Блок 1",
+        "block_2": "Блок 2",
+        "ll": "Последний слой",
+        "eo": "EO",
+        "cp": "CP"
       }
     }
   },
@@ -1312,7 +1322,11 @@
     "multi_phase_count_n": "{{n}} фаз",
     "multi_phase_off": "Выключено",
     "multi_phase_method": "Метод",
-    "multi_phase_label_n": "Название фазы {{n}}"
+    "multi_phase_label_n": "Название фазы {{n}}",
+    "category_smart_method": "Метод умного кубика",
+    "smart_cube_method": "Метод сборки",
+    "smart_cube_method_desc": "Определяет, на какие этапы делятся сборки. В режиме «Автоматически» метод определяется по самой сборке. Сохраняется с каждой; изменение не затрагивает прошлые.",
+    "smart_cube_method_auto": "Автоматически"
   },
   "data_settings": {
     "force_reload": "Принудительная перезагрузка",

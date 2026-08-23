@@ -7,12 +7,12 @@ import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../../lib/pro';
 import ProBlurOverlay from '../../../common/pro_blur_overlay/ProBlurOverlay';
-import {getAveragePhaseSplits, PhaseKey} from '../../../../db/solves/stats/phase_splits';
+import {getAveragePhaseSplits} from '../../../../db/solves/stats/phase_splits';
 import {getTimeString} from '../../../../util/time';
+import {useSettings} from '../../../../util/hooks/useSettings';
+import {resolveAnalysisMethod} from '../../../../util/solve/live_analysis_core';
 
 const b = block('phase-splits');
-
-const ORDER: PhaseKey[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 
 export default function PhaseSplits() {
 	const {t} = useTranslation();
@@ -22,9 +22,16 @@ export default function PhaseSplits() {
 
 	const showProOverlay = isProEnabled() && !isPro(me);
 
+	// Splits are read through the method the user currently analyses with, so a
+	// Roux solver sees FB/SB/CMLL/LSE rather than an empty CFOP ladder.
+	const analysisMethod = resolveAnalysisMethod(
+		useSettings('smart_cube_method'),
+		useSettings('smart_cube_analysis_mode')
+	);
+
 	const result = useMemo(
-		() => getAveragePhaseSplits(filterOptions, smartLastN),
-		[filterOptions, smartLastN, solveUpdate]
+		() => getAveragePhaseSplits(filterOptions, smartLastN, analysisMethod),
+		[filterOptions, smartLastN, solveUpdate, analysisMethod]
 	);
 
 	if (showProOverlay) {
@@ -58,8 +65,8 @@ export default function PhaseSplits() {
 				)}
 			</div>
 			<div className={b('list')}>
-				{ORDER.map((key) => {
-					const phase = result.phases.find((p) => p.key === key)!;
+				{result.phases.map((phase) => {
+					const key = phase.key;
 					const widthPct = (phase.avg / max) * 100;
 					const totalPct = total > 0 ? (phase.avg / total) * 100 : 0;
 					const isBottleneck = bottleneckKey === key;

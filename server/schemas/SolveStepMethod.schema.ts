@@ -30,6 +30,14 @@ export class SolveMethodStep {
 	@Field()
 	pll_case_key: string;
 
+	/** Method-agnostic case fields; oll/pll above stay for existing rows. */
+	@Field({ nullable: true })
+	case_key: string;
+
+	/** Algorithm set the case belongs to: oll | pll | coll | cmll | zbll. */
+	@Field({ nullable: true })
+	case_set: string;
+
 	@Field()
 	skipped: boolean;
 

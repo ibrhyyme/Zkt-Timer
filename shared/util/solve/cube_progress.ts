@@ -1,20 +1,22 @@
 /**
- * CFOP progress detection — ported from cstimer cubeutil.js.
+ * Cube orientation scanning + CFOP progress detection.
  *
- * Progress level (cstimer getCF4OPProgress):
- *   7 = nothing solved
- *   6 = cross solved
- *   5 = cross + 1 f2l slot
- *   4 = cross + 2 f2l slots
- *   3 = cross + 3 f2l slots
- *   2 = cross + 4 f2l slots (full F2L)
- *   1 = OLL solved (top face solid color)
- *   0 = solved (PLL included)
+ * Progress level convention (cstimer): a level counts DOWN as the solve advances,
+ * and every drop marks one completed phase. Each method defines its own ladder;
+ * this file owns the shared orientation machinery plus the CFOP ladders ported
+ * from cstimer cubeutil.js.
  *
- * Progress level monotonically decreases; level drops indicate phase transitions.
+ * CFOP (cstimer getCF4OPProgress):
+ *   7 = nothing, 6 = cross, 5..2 = nth F2L pair, 1 = OLL, 0 = solved
  *
- * 6-axis check: which face can cross be on? Uses mask equivalence-class,
- * rotation-invariant against y rotations. Only "which face is down" check needed.
+ * CFOP 2-look (cstimer getCF4O2P2Progress):
+ *   9 = nothing, 8 = cross, 7..4 = nth F2L pair, 3 = EO, 2 = full OLL, 1 = CP, 0 = solved
+ *
+ * Orientation scanning: a method is checked across N orientations and the one
+ * with the LOWEST progress wins (most-solved reading). CFOP and ZZ need 6 (only
+ * "which face is down" matters, y turns are irrelevant). Roux needs all 24
+ * because its blocks keep their integrity under whole-block rotation, so the
+ * y position matters too.
  */
 
 import Cube from 'cubejs';
@@ -26,6 +28,8 @@ import {
 	F2L4_MASK,
 	F2L_MASK,
 	OLL_MASK,
+	EOLL_MASK,
+	CPLL_MASK,
 	SOLVED_MASK,
 	EquivalenceClass,
 } from './facelet_masks';
@@ -71,8 +75,41 @@ export function getCF4OPProgressOneAxis(facelet: string): number {
 }
 
 /**
- * 6-axis rotation: which face can cross be on.
- * Index order fixed; axis with minimum progress = the axis cross face sits on.
+ * cstimer getCF4O2P2Progress port (cubeutil.js:125). Splits the last layer into
+ * EO -> CO -> CP -> EP so a two-look solver sees each look separately.
+ */
+export function getCF4O2P2ProgressOneAxis(facelet: string): number {
+	if (checkMask(facelet, CROSS_MASK)) {
+		return 9;
+	}
+	if (checkMask(facelet, F2L_MASK)) {
+		return (
+			4 +
+			checkMask(facelet, F2L1_MASK) +
+			checkMask(facelet, F2L2_MASK) +
+			checkMask(facelet, F2L3_MASK) +
+			checkMask(facelet, F2L4_MASK)
+		);
+	}
+	if (checkMask(facelet, EOLL_MASK)) {
+		return 4;
+	}
+	if (checkMask(facelet, OLL_MASK)) {
+		return 3;
+	}
+	if (checkMask(facelet, CPLL_MASK)) {
+		return 2;
+	}
+	if (checkMask(facelet, SOLVED_MASK)) {
+		return 1;
+	}
+	return 0;
+}
+
+/**
+ * Which face sits on the bottom for orientation index i (i % 6).
+ * Index order is fixed — the first six entries must keep this order because
+ * `crossFace` labels and the existing CFOP tests depend on it.
  */
 export const CROSS_AXIS_LABELS: Array<'D' | 'U' | 'F' | 'B' | 'R' | 'L'> = [
 	'D', // identity
@@ -83,7 +120,7 @@ export const CROSS_AXIS_LABELS: Array<'D' | 'U' | 'F' | 'B' | 'R' | 'L'> = [
 	'L', // z'
 ];
 
-const AXIS_ROTATIONS: Array<string | null> = [
+const FACE_ROTATIONS: Array<string | null> = [
 	null, // D: identity
 	'x2', // U->D
 	"x'", // F->D
@@ -92,30 +129,73 @@ const AXIS_ROTATIONS: Array<string | null> = [
 	"z'", // L->D
 ];
 
-function rotateFacelet(facelet: string, rotMove: string | null): string {
+const Y_ROTATIONS: Array<string | null> = [null, 'y', 'y2', "y'"];
+
+/**
+ * All 24 orientations. Index layout is deliberate: 0..5 are the y-free
+ * orientations in the historical order, so a 6-axis scan reads the same as it
+ * always did, and 6..23 add the y variants needed by Roux.
+ */
+const AXIS_ROTATIONS: Array<string | null> = (() => {
+	const out: Array<string | null> = [];
+	for (const y of Y_ROTATIONS) {
+		for (const face of FACE_ROTATIONS) {
+			const parts = [face, y].filter(Boolean) as string[];
+			out.push(parts.length ? parts.join(' ') : null);
+		}
+	}
+	return out;
+})();
+
+export const AXIS_COUNT_ALL = AXIS_ROTATIONS.length; // 24
+
+export function rotateFacelet(facelet: string, rotMove: string | null): string {
 	if (!rotMove) return facelet;
 	try {
 		const c = Cube.fromString(facelet);
-		c.move(rotMove);
+		for (const m of rotMove.split(' ')) c.move(m);
 		return c.asString();
 	} catch {
 		return facelet;
 	}
 }
 
-/**
- * 6 axis check. Returns minimum progress (most solved axis) and which axis it is.
- */
-export function getCFOPProgress(facelet: string): {
+/** Rotated cube object — used by methods that need piece-level data (ZZ edge orientation). */
+export function rotateCube(facelet: string, rotMove: string | null): any {
+	const c = Cube.fromString(facelet);
+	if (rotMove) {
+		for (const m of rotMove.split(' ')) c.move(m);
+	}
+	return c;
+}
+
+export interface AxisProgress {
 	progress: number;
 	axisIndex: number;
 	crossFace: 'D' | 'U' | 'F' | 'B' | 'R' | 'L';
-} {
-	let minProg = 99;
+}
+
+/**
+ * Scans `axisCount` orientations and returns the most-solved reading.
+ * `progressFn` receives the rotated facelet, and lazily the rotated cube object
+ * for methods that need piece-level state.
+ */
+export function scanAxes(
+	facelet: string,
+	progressFn: (rotated: string, getCube: () => any) => number,
+	axisCount: number
+): AxisProgress {
+	let minProg = Infinity;
 	let minAxis = 0;
-	for (let a = 0; a < AXIS_ROTATIONS.length; a++) {
-		const rotated = rotateFacelet(facelet, AXIS_ROTATIONS[a]);
-		const p = getCF4OPProgressOneAxis(rotated);
+	for (let a = 0; a < axisCount; a++) {
+		const rot = AXIS_ROTATIONS[a];
+		const rotated = rotateFacelet(facelet, rot);
+		let cached: any;
+		const getCube = () => {
+			if (!cached) cached = rotateCube(facelet, rot);
+			return cached;
+		};
+		const p = progressFn(rotated, getCube);
 		if (p < minProg) {
 			minProg = p;
 			minAxis = a;
@@ -125,8 +205,15 @@ export function getCFOPProgress(facelet: string): {
 	return {
 		progress: minProg,
 		axisIndex: minAxis,
-		crossFace: CROSS_AXIS_LABELS[minAxis],
+		crossFace: CROSS_AXIS_LABELS[minAxis % 6],
 	};
+}
+
+/**
+ * 6 axis CFOP check. Returns minimum progress (most solved axis) and which axis it is.
+ */
+export function getCFOPProgress(facelet: string): AxisProgress {
+	return scanAxes(facelet, getCF4OPProgressOneAxis, 6);
 }
 
 /**

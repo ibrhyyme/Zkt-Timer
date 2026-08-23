@@ -44,3 +44,25 @@ export const F2L4_MASK = toEqus('----U--------R--R-----F--F--D-DDDDD----LL-LL---
 export const F2L_MASK = toEqus('----U-------RRRRRR---FFFFFFDDDDDDDDD---LLLLLL---BBBBBB');
 export const OLL_MASK = toEqus('UUUUUUUUU---RRRRRR---FFFFFFDDDDDDDDD---LLLLLL---BBBBBB');
 export const SOLVED_MASK = toEqus(SOLVED_FACELET);
+
+/**
+ * Two-look last layer masks (cstimer cubeutil.js:31-32).
+ *
+ * EOLL: last layer edges oriented (U cross shape), corners still free.
+ * CPLL: corners permuted — lowercase classes mark "these stickers must match
+ * each other" without pinning which colour they are, i.e. corner permutation
+ * is correct while the layer may still need a U turn.
+ */
+export const EOLL_MASK = toEqus('-U-UUU-U----RRRRRR---FFFFFFDDDDDDDDD---LLLLLL---BBBBBB');
+export const CPLL_MASK = toEqus('UUUUUUUUUr-rRRRRRRf-fFFFFFFDDDDDDDDDl-lLLLLLLb-bBBBBBB');
+
+/**
+ * Roux masks (cstimer cubeutil.js:33-35).
+ *
+ * These check block INTEGRITY, not block position: an L turn rotates the first
+ * block as a whole without breaking it, which is why Roux progress is scanned
+ * over all 24 orientations rather than 6.
+ */
+export const ROUX_FB_MASK = toEqus('---------------------F--F--D--D--D-----LLLLLL-----B--B');
+export const ROUX_SB_MASK = toEqus('------------RRRRRR---F-FF-FD-DD-DD-D---LLLLLL---B-BB-B');
+export const ROUX_CMLL_MASK = toEqus('U-U---U-Ur-rRRRRRRf-fF-FF-FD-DD-DD-Dl-lLLLLLLb-bB-BB-B');

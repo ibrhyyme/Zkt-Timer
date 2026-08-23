@@ -44,6 +44,7 @@ export default function TimerSettings() {
 	// Multi-phase
 	const multiPhaseCount = useSettings('multi_phase_count');
 	const multiPhaseMethod = useSettings('multi_phase_method');
+	const smartCubeMethod = useSettings('smart_cube_method');
 	const multiPhaseCustomLabels = useSettings('multi_phase_custom_labels');
 	const multiPhaseOn = isMultiPhaseActive(multiPhaseCount);
 	const multiPhaseCustom = multiPhaseOn && multiPhaseMethod === 'custom';
@@ -145,6 +146,24 @@ export default function TimerSettings() {
 					isActive={inspectionExceptBld}
 					hidden={!inspection}
 					onClick={() => toggleSetting('inspection_except_bld')}
+				/>
+			</TimerSettingsGroup>
+
+			{/* Smart cube solving method — identity, not a view preference. It is stamped
+			    onto every smart solve as method_name, so it deliberately lives here rather
+			    than in quick settings where a stray tap could change it. */}
+			<TimerSettingsGroup id="timer-smart-method" label={t('timer_settings.category_smart_method')}>
+				<TimerSettingsSelect
+					label={t('timer_settings.smart_cube_method')}
+					description={t('timer_settings.smart_cube_method_desc')}
+					value={smartCubeMethod || 'auto'}
+					options={[
+						{ label: t('timer_settings.smart_cube_method_auto'), value: 'auto' },
+						{ label: 'CFOP', value: 'cfop' },
+						{ label: 'Roux', value: 'roux' },
+						{ label: 'ZZ', value: 'zz' },
+					]}
+					onChange={(v) => setSetting('smart_cube_method', v)}
 				/>
 			</TimerSettingsGroup>
 

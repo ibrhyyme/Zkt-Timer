@@ -1,7 +1,9 @@
 import {fetchSolves, FilterSolvesOptions} from '../query';
 import {Solve} from '../../../../server/schemas/Solve.schema';
+import {getMethod} from '../../../../shared/util/solve/methods';
+import {SolveMethod} from '../../../../shared/util/solve/types';
 
-export type PhaseKey = 'cross' | 'f2l_1' | 'f2l_2' | 'f2l_3' | 'f2l_4' | 'oll' | 'pll';
+export type PhaseKey = string;
 
 export interface PhaseAverage {
 	key: PhaseKey;
@@ -12,10 +14,22 @@ export interface PhaseAverage {
 export interface PhaseSplitsResult {
 	phases: PhaseAverage[];
 	bottleneck: PhaseKey | null;
+	/** Solves that were actually performed with this method. */
 	totalSampleCount: number;
+	/** Method whose ladder the phases belong to. */
+	method: SolveMethod;
 }
 
-const PHASE_ORDER: PhaseKey[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
+/**
+ * CFOP is reported at slot granularity (four F2L rows) rather than the
+ * aggregated `f2l` parent row, which is what the stats page has always shown.
+ */
+const CFOP_DISPLAY_STEPS = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
+
+function displaySteps(method: SolveMethod): string[] {
+	if (method === 'cfop') return CFOP_DISPLAY_STEPS;
+	return getMethod(method).steps;
+}
 
 function singleStepTime(steps: any[], stepName: string): number | null {
 	const s = steps.find((x) => x.step_name === stepName);
@@ -23,7 +37,11 @@ function singleStepTime(steps: any[], stepName: string): number | null {
 	return null;
 }
 
-export function getAveragePhaseSplits(filter: FilterSolvesOptions, lastN?: number | null): PhaseSplitsResult {
+export function getAveragePhaseSplits(
+	filter: FilterSolvesOptions,
+	lastN?: number | null,
+	method: SolveMethod = 'cfop'
+): PhaseSplitsResult {
 	const solves = fetchSolves({
 		...filter,
 		dnf: false,
@@ -31,27 +49,30 @@ export function getAveragePhaseSplits(filter: FilterSolvesOptions, lastN?: numbe
 		time: {$gt: 0},
 	}, lastN ? { limit: lastN } : undefined) as Solve[];
 
-	const buckets: Record<PhaseKey, number[]> = {
-		cross: [],
-		f2l_1: [],
-		f2l_2: [],
-		f2l_3: [],
-		f2l_4: [],
-		oll: [],
-		pll: [],
-	};
+	const order = displaySteps(method);
+	const buckets: Record<PhaseKey, number[]> = {};
+	for (const key of order) buckets[key] = [];
 
+	let matchedCount = 0;
 	for (const solve of solves) {
 		const steps = solve.solve_method_steps;
 		if (!steps || !steps.length) continue;
 
-		for (const phase of PHASE_ORDER) {
+		// A solve was performed with one method; that is a fact about the solve,
+		// not a viewing preference. Re-reading a CFOP solve through the Roux ladder
+		// would invent steps the solver never did, so only solves actually done
+		// with this method contribute to its averages.
+		const rowMethod = (steps[0] as any)?.method_name || 'cfop';
+		if (rowMethod !== method) continue;
+		matchedCount++;
+
+		for (const phase of order) {
 			const t = singleStepTime(steps, phase);
 			if (t != null) buckets[phase].push(t);
 		}
 	}
 
-	const phases: PhaseAverage[] = PHASE_ORDER.map((key) => {
+	const phases: PhaseAverage[] = order.map((key) => {
 		const arr = buckets[key];
 		const avg = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 		return {key, avg, sampleCount: arr.length};
@@ -65,6 +86,7 @@ export function getAveragePhaseSplits(filter: FilterSolvesOptions, lastN?: numbe
 	return {
 		phases,
 		bottleneck,
-		totalSampleCount: solves.length,
+		totalSampleCount: matchedCount,
+		method,
 	};
 }

@@ -11,7 +11,12 @@
 
 import { PhaseTransition, PhaseEngineResult } from './types';
 
+/**
+ * Display labels per step id, across every method. Ids are unique between
+ * methods, so one flat table covers all of them.
+ */
 const PHASE_LABEL: Record<string, string> = {
+	// CFOP
 	cross: 'cross',
 	f2l_1: 'F2L 1',
 	f2l_2: 'F2L 2',
@@ -19,6 +24,19 @@ const PHASE_LABEL: Record<string, string> = {
 	f2l_4: 'F2L 4',
 	oll: 'OLL',
 	pll: 'PLL',
+	// CFOP two-look
+	eo: 'EO',
+	cp: 'CP',
+	// Roux
+	fb: 'FB',
+	sb: 'SB',
+	cmll: 'CMLL',
+	lse: 'LSE',
+	// ZZ
+	eoline: 'EOLine',
+	block_1: 'Block 1',
+	block_2: 'Block 2',
+	ll: 'LL',
 };
 
 function formatLine(t: PhaseTransition, durMs: number): string {
@@ -45,11 +63,10 @@ export function buildPrettyRecon(result: PhaseEngineResult): string {
 	lines.push(
 		`// Total: ${totalSeconds}s, ${result.totalMoves.htm} HTM (${result.totalMoves.obtm} OBTM, ${result.totalMoves.etm} ETM, ${result.totalMoves.stm} STM)`
 	);
-	if (result.ollIdentified) {
-		lines.push(`// OLL: ${result.ollIdentified.case} (${result.ollIdentified.key})`);
-	}
-	if (result.pllIdentified) {
-		lines.push(`// PLL: ${result.pllIdentified.case} (${result.pllIdentified.key})`);
+	for (const c of result.cases || []) {
+		lines.push(`// ${c.set.toUpperCase()}: ${c.case} (${c.key})`);
 	}
 	return lines.join('\n');
 }
+
+export { PHASE_LABEL };

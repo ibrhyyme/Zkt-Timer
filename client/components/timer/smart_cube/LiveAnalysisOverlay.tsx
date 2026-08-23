@@ -7,6 +7,7 @@ import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { is3x3CubeType } from '../helpers/util';
 import { getTimeString } from '../../../util/time';
+import { resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
 
 const b = block('live-analysis');
 
@@ -20,15 +21,25 @@ function phaseIdToStepKey(id: string): string | null {
         case 'F2L_3': return 'f2l_3';
         case 'F2L_4': return 'f2l_4';
         case 'OLL':
-        case 'OLL_EO':
         case 'OLL_CO':
             return 'oll';
+        case 'OLL_EO': return 'eo';
         case 'PLL':
-        case 'PLL_CP':
         case 'PLL_EP':
             return 'pll';
+        case 'PLL_CP': return 'cp';
         case 'CF': return 'f2l';
         case 'OP': return 'pll';
+        // Roux and ZZ step ids are used verbatim as row ids.
+        case 'fb':
+        case 'sb':
+        case 'cmll':
+        case 'lse':
+        case 'eoline':
+        case 'block_1':
+        case 'block_2':
+        case 'll':
+            return id;
         default: return null;
     }
 }
@@ -39,6 +50,10 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
     // On mobile, cffffoopp wraps to 11 lines — not ideal. Fallback to cffffop (7 lines).
     const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;
+    // Method comes from main settings (an identity written onto each solve);
+    // analysisMode only controls how finely the ladder is drawn.
+    const solveMethod = useSettings('smart_cube_method');
+    const analysisMethod = resolveAnalysisMethod(solveMethod, analysisMode);
     const showRecognition = !!useSettings('smart_cube_show_recognition');
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
@@ -67,7 +82,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         time: t.completedAt ? new Date(t.completedAt).getTime() : 0
     })), [smartTurns]);
 
-    const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState);
+    const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState, analysisMethod);
 
     // ── DEBUG: Activated with window.__SMART_DEBUG__ = true ──
     // Dumps every analysis change during solve + correctedAnalysis when solve finishes
@@ -167,7 +182,24 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     let phases: any[] = [];
     const currentPhase = displayAnalysis.currentPhase;
 
-    if (analysisMode === 'cf_plus_op') {
+    if (analysisMethod === 'roux' || analysisMethod === 'zz') {
+        // Roux and ZZ render straight from the method definition: one row per step,
+        // in order, each showing its own duration. No hand-written ladder needed —
+        // the engine already reports these steps under their own ids.
+        const order = displayAnalysis.stepOrder || [];
+        const splits = displayAnalysis.stepSplits || {};
+        const absolute = displayAnalysis.stepTimes || {};
+        const cases = displayAnalysis.stepCases || {};
+        phases = order.map((id: string) => ({
+            id,
+            label: id,
+            done: absolute[id] != null,
+            active: displayAnalysis.currentStep === id,
+            info: cases[id],
+            time: splits[id],
+        }));
+
+    } else if (analysisMode === 'cf_plus_op') {
         // CF + OP (2 Steps)
         // CF = Cross + F2L
         const cfTime = t.f2l;

@@ -1,6 +1,13 @@
 import {fetchSolves, FilterSolvesOptions} from '../query';
 import {Solve} from '../../../../server/schemas/Solve.schema';
 
+/**
+ * Opening step of each method. Their recognition time is always 0 for the
+ * structural reason explained at the usage site, so it must not dilute the
+ * recognition average.
+ */
+const FIRST_STEP_NAMES = new Set(['cross', 'fb', 'eoline']);
+
 export interface SmartCubeAvgTimes {
 	avgInspection: number;
 	avgRecognition: number;
@@ -39,6 +46,16 @@ export function getSmartCubeAvgTimes(filter: FilterSolvesOptions, lastN?: number
 				if (step.step_name === 'f2l') continue;
 				const recogTime = step.recognition_time || 0;
 				const totalTime = step.total_time || 0;
+				// Ilk adimin taninma suresi YAPISAL olarak 0: sayac ilk hamlenin
+				// zaman damgasindan basliyor, cunku akilli kup ilk hamleden once
+				// veri gondermiyor. Scramble'a bakip plan yapma suresi
+				// `inspection_time` alaninda ayri tutuluyor. Bu sifiri ortalamaya
+				// katmak "ortalama taninma suresi"ni her cozumde asagi cekiyordu.
+				const isFirstStep = FIRST_STEP_NAMES.has(step.step_name);
+				if (isFirstStep && recogTime === 0) {
+					exec += totalTime;
+					continue;
+				}
 				recog += recogTime;
 				exec += Math.max(0, totalTime - recogTime);
 			}
