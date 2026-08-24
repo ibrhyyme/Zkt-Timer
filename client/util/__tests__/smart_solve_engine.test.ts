@@ -262,7 +262,8 @@ describe('SmartSolveEngine — solve detection', () => {
 
 		expect(engine.scrambleProgress).toEqual([]);
 		const progress = of('SCRAMBLE_PROGRESS');
-		expect(progress[progress.length - 1].matchStatus).toEqual([]);
+		// Back at the start of the scramble: nothing is marked done.
+		expect(progress[progress.length - 1].matchStatus.every((s) => s === 'pending')).toBe(true);
 	});
 
 	// Field data (3151 solves over a week) showed recovery-path solves recorded 0.7-3.5s
@@ -412,5 +413,142 @@ describe('SmartSolveEngine — solve detection', () => {
 		// Recovery is not delayed — the user should see the warning go at once.
 		engine.pushFacelets(DEFAULT_SOLVED_STATE);
 		expect(of('OUT_OF_SYNC').slice(-1)[0].out).toBe(false);
+	});
+});
+
+/**
+ * A dropped BLE packet used to cost the user their whole scramble. The tracker was
+ * re-anchored to the state the cube reported and the matcher was wiped along with it, so
+ * the display went blank part way through and the correction hint started fighting a user
+ * who had done nothing wrong. The cube's own state says how far they got; use it.
+ */
+describe('SmartSolveEngine — scramble progress across a re-anchor', () => {
+	const LONG = "R U F L' D2 B R' U2 F";
+	const MOVES = LONG.split(' ');
+
+	/** Scramble started, two moves delivered, the next two packets lost. */
+	function twoDeliveredFourDone(options?: ConstructorParameters<typeof SmartSolveEngine>[1]) {
+		const h = harness(options);
+		h.engine.setScramble(LONG);
+		h.engine.setConnected(true);
+		h.engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		h.engine.pushTurns([turn(MOVES[0], 1000), turn(MOVES[1], 1100)]);
+		return h;
+	}
+
+	it('keeps the moves the user already made when packets are dropped', () => {
+		const { engine, of } = twoDeliveredFourDone();
+		expect(engine.scrambleProgress).toEqual(MOVES.slice(0, 2));
+
+		// The cube reports where it really is: four moves in.
+		engine.pushFacelets(faceletsAfter(MOVES.slice(0, 4)));
+
+		const resync = of('TRACKER_RESYNCED');
+		expect(resync).toHaveLength(1);
+		expect(resync[0].realigned).toBe(true);
+		expect(engine.scrambleProgress).toEqual(MOVES.slice(0, 4));
+
+		const status = of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus;
+		expect(status.slice(0, 4)).toEqual(['perfect', 'perfect', 'perfect', 'perfect']);
+		expect(status.slice(4).every((s) => s === 'pending')).toBe(true);
+	});
+
+	it('completes the scramble from where the user actually is', () => {
+		const { engine, of } = twoDeliveredFourDone();
+		engine.pushFacelets(faceletsAfter(MOVES.slice(0, 4)));
+
+		// The user carries on with the remaining moves, unaware anything happened.
+		let stream = [turn(MOVES[0], 1000), turn(MOVES[1], 1100)];
+		MOVES.slice(4).forEach((move, i) => {
+			stream = [...stream, turn(move, 2000 + i * 100)];
+			engine.pushTurns(stream);
+		});
+
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
+	});
+
+	it('does not warn about a cube that is simply part way through the scramble', async () => {
+		const { engine, of } = twoDeliveredFourDone({ outOfSyncDelayMs: 20 });
+		engine.pushFacelets(faceletsAfter(MOVES.slice(0, 4)));
+
+		await wait(60);
+		expect(of('OUT_OF_SYNC')).toHaveLength(0);
+	});
+
+	it('still clears the matcher when the cube is off the scramble path', () => {
+		const { engine, of } = twoDeliveredFourDone();
+
+		// A state the scramble never passes through: a genuine mis-scramble, or a cube
+		// turned while disconnected. There is nothing trustworthy to keep.
+		engine.pushFacelets(faceletsAfter(['R', 'R', 'D', 'B2']));
+
+		const resync = of('TRACKER_RESYNCED');
+		expect(resync).toHaveLength(1);
+		expect(resync[0].realigned).toBe(false);
+		expect(engine.scrambleProgress).toEqual([]);
+	});
+
+	it('realigns on the correction path, where the cube does not start solved', () => {
+		// Timer correction: the displayed scramble is a short fix-up sequence and the cube
+		// sits in a mis-scrambled state, so a prefix table built from solved would be wrong.
+		const { engine, of } = harness();
+		const correction = "U' R'";
+		engine.setScramble(correction, LONG);
+		engine.setConnected(true);
+
+		const start = faceletsAfter([...MOVES, 'R', 'U']);
+		engine.pushFacelets(start);
+		expect(of('TRACKER_RESYNCED').slice(-1)[0].realigned).toBe(true);
+
+		// One move of the fix-up done, its packet lost.
+		engine.pushFacelets(faceletsAfter([...MOVES, 'R']));
+
+		const status = of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus;
+		expect(status).toEqual(['perfect', 'pending']);
+	});
+
+	// The half of the problem the prefix table missed. Around 40% of a WCA scramble is double
+	// moves, and the cube reports each one as two quarter turns. When the lost packet lands
+	// between those quarters the cube is sitting on a state no whole-move prefix describes,
+	// so the lookup fails and the progress is wiped exactly as it was before any of this.
+	it('keeps progress when the packet is lost mid-double-move', () => {
+		const DOUBLE = "R U R2 F L' D2";
+		const { engine, of } = harness();
+		engine.setScramble(DOUBLE);
+		engine.setConnected(true);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+
+		engine.pushTurns([turn('R', 1000), turn('U', 1100)]);
+		expect(engine.scrambleProgress).toEqual(['R', 'U']);
+
+		// The user has started the R2. Its first quarter turn happened on the cube, but the
+		// packet carrying it was lost, so the engine only hears about it from facelets.
+		engine.pushFacelets(faceletsAfter(['R', 'U', 'R']));
+
+		expect(of('TRACKER_RESYNCED').slice(-1)[0].realigned).toBe(true);
+		const status = of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus;
+		expect(status.slice(0, 2)).toEqual(['perfect', 'perfect']);
+		// Half of the double move is done, and saying so is what lets the user finish it.
+		expect(status[2]).toBe('half');
+	});
+
+	it('finishes a double move that was half done when the packet was lost', () => {
+		const DOUBLE = "R U R2 F L' D2";
+		const { engine, of } = harness();
+		engine.setScramble(DOUBLE);
+		engine.setConnected(true);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		engine.pushTurns([turn('R', 1000), turn('U', 1100)]);
+		engine.pushFacelets(faceletsAfter(['R', 'U', 'R']));
+
+		// Second quarter of the R2 arrives normally, then the rest of the scramble.
+		let stream = [turn('R', 1000), turn('U', 1100)];
+		for (const [i, move] of ['R', 'F', "L'", 'D2'].entries()) {
+			stream = [...stream, turn(move, 2000 + i * 100)];
+			engine.pushTurns(stream);
+		}
+
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
 	});
 });

@@ -4626,6 +4626,7 @@
     "col_poll": "Poll recovery",
     "col_desync": "Out of sync",
     "col_late": "Late move",
+    "col_resync": "Scramble resync (kept / lost)",
     "col_median": "Median lag",
     "col_p95": "P95 lag",
     "download_all": "Download all as CSV",

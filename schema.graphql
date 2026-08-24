@@ -2868,6 +2868,8 @@ type SmartCubeTelemetrySummary {
   via_poll: Int
   out_of_sync_events: Int
   late_scramble_events: Int
+  scramble_realign_events: Int
+  scramble_reset_events: Int
   median_lag_ms: Int
   p95_lag_ms: Int
   avg_battery_clean: Int

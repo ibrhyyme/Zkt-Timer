@@ -206,7 +206,7 @@ export default function ExtrasTab({
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
-	const solveMethod = useSettings('smart_cube_method') || 'cfop';
+	const solveMethod = useSettings('smart_cube_method') || 'auto';
 	const multiPhaseCount = useSettings('multi_phase_count');
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
@@ -294,9 +294,13 @@ export default function ExtrasTab({
 		{ label: 'CFFFFOOPP', value: 'cffffoopp' }, // Detailed (Cross, F2L1...4, 2-look OLL/PLL?) - User requested name.
 	]
 		.filter((opt) => !(mobileMode && opt.value === 'cffffoopp')) // On mobile, 11 lines don't fit, cffffoopp hidden
-		// Granularity only means something for CFOP; Roux and ZZ have a single
-		// ladder each, so those users just get on/off.
-		.filter((opt) => solveMethod === 'cfop' || opt.value === 'none' || opt.value === 'cffffop');
+		// Roux and ZZ have a single ladder each, so granularity is meaningless there
+		// and the list collapses to on/off. Everything else — CFOP, and Automatic,
+		// which resolves to CFOP for most solvers — keeps the full set of levels.
+		.filter((opt) => {
+			const singleLadder = solveMethod === 'roux' || solveMethod === 'zz';
+			return !singleLadder || opt.value === 'none' || opt.value === 'cffffop';
+		});
 
 	const multiPhaseOptions = [{ label: t('quick_controls.none'), value: '1' }];
 	for (let c = MULTI_PHASE_MIN_COUNT; c <= MULTI_PHASE_MAX_COUNT; c++) {

@@ -19,6 +19,9 @@ const ALLOWED_EVENTS = new Set([
 	'solve',
 	'out_of_sync',
 	'late_scramble_move',
+	// The tracker had to be re-anchored to the cube's own state mid-scramble.
+	// detection_source says whether the user's progress survived it.
+	'scramble_resync',
 	'scan_error',
 	'disconnect',
 ]);
@@ -150,6 +153,10 @@ export class SmartCubeTelemetryResolver {
 					COUNT(*) FILTER (WHERE detection_source = 'facelets-poll')                     AS via_poll,
 					COUNT(*) FILTER (WHERE event_type = 'out_of_sync')                             AS out_of_sync_events,
 					COUNT(*) FILTER (WHERE event_type = 'late_scramble_move')                      AS late_scramble_events,
+					COUNT(*) FILTER (WHERE event_type = 'scramble_resync'
+						AND detection_source = 'realigned')                                        AS scramble_realign_events,
+					COUNT(*) FILTER (WHERE event_type = 'scramble_resync'
+						AND detection_source = 'reset')                                            AS scramble_reset_events,
 					COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY detection_lag_ms), 0)     AS median_lag_ms,
 					COALESCE(PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY detection_lag_ms), 0)    AS p95_lag_ms,
 					COALESCE(AVG(battery_level) FILTER (WHERE detection_source = 'tracker'), 0)     AS avg_battery_clean,
@@ -174,6 +181,8 @@ export class SmartCubeTelemetryResolver {
 				via_poll: Number(r.via_poll || 0),
 				out_of_sync_events: Number(r.out_of_sync_events || 0),
 				late_scramble_events: Number(r.late_scramble_events || 0),
+				scramble_realign_events: Number(r.scramble_realign_events || 0),
+				scramble_reset_events: Number(r.scramble_reset_events || 0),
 				median_lag_ms: Math.round(Number(r.median_lag_ms || 0)),
 				p95_lag_ms: Math.round(Number(r.p95_lag_ms || 0)),
 				avg_battery_clean: Math.round(Number(r.avg_battery_clean || 0)),

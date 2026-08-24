@@ -1,5 +1,5 @@
 import Cube from 'cubejs';
-import { SmartTurn } from '../smart_scramble';
+import { SmartTurn, invertMove } from '../smart_scramble';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
 
 /**
@@ -115,5 +115,70 @@ export class CubeTracker {
 	 */
 	streamCleared(): void {
 		this.appliedTurns = 0;
+	}
+}
+
+/** A point the cube passes through on its way from untouched to fully scrambled. */
+export interface ScramblePrefix {
+	/** Facelet state the cube reports here. */
+	state: string;
+	/** How many whole scramble moves are finished at this point. */
+	done: number;
+	/**
+	 * True when the next move is only half turned: the first quarter of a double move is on
+	 * the cube but the second is not.
+	 */
+	partial: boolean;
+}
+
+/** `R2` reaches its state through two quarter turns; the cube reports each one separately. */
+function quarterTurns(move: string): string[] {
+	if (!move.endsWith('2')) return [move];
+	const face = move.slice(0, -1);
+	return [face, face];
+}
+
+/**
+ * Every facelet state the cube passes through while the scramble is performed.
+ *
+ * This is what lets a dropped BLE packet stop costing the user their progress: when the
+ * cube reports a state we did not expect, its own report is matched against this table
+ * and the answer is "the user is k moves in", not "start over".
+ *
+ * Quarter turns are listed as their own entries, not just whole moves. Roughly two in five
+ * scramble moves are doubles and the cube reports each half separately, so a packet lost
+ * between the two halves leaves the cube on a state no whole-move table describes. Before
+ * these entries existed the lookup failed there and the progress was wiped anyway, which is
+ * the half of this bug that survived the first fix.
+ *
+ * Built by walking backwards from the target rather than forwards from solved, because
+ * on the correction path the displayed scramble is a short fix-up sequence and the cube
+ * does not start from a solved state. Inverting the sequence off the target finds the
+ * real starting point in both cases.
+ */
+export function prefixStatesFrom(targetFacelets: string, moves: string[]): ScramblePrefix[] {
+	if (!moves.length || !isValidFacelets(targetFacelets)) return [];
+	try {
+		const cube = Cube.fromString(targetFacelets);
+		for (let i = moves.length - 1; i >= 0; i--) {
+			cube.move(invertMove(moves[i]));
+		}
+		const states: ScramblePrefix[] = [{ state: cube.asString(), done: 0, partial: false }];
+		moves.forEach((move, index) => {
+			const quarters = quarterTurns(move);
+			quarters.forEach((quarter, q) => {
+				cube.move(quarter);
+				const whole = q === quarters.length - 1;
+				states.push({
+					state: cube.asString(),
+					done: whole ? index + 1 : index,
+					partial: !whole,
+				});
+			});
+		});
+		return states;
+	} catch (e) {
+		console.warn('[smart-cube] prefix state table build failed:', e);
+		return [];
 	}
 }

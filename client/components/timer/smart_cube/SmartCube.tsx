@@ -230,6 +230,10 @@ export default function SmartCube() {
 	useEffect(() => {
 		dbgCorr(`SCRAMBLE RESET | scramble: ${scramble?.slice(0, 40)}... | offset: ${smartTurnOffset}`);
 		scrambleCompletedAtRef.current = null;
+		// `smartCanStart` was only ever cleared by a timer start, an out-of-sync warning or a
+		// disconnect, never by a new scramble. Left over from the previous attempt it makes
+		// SmartScramble render "ready" across the whole scramble the user has not begun yet.
+		setTimerParams({ smartCanStart: false });
 	}, [scramble, smartTurnOffset]);
 
 	// Inspection timeout → when dnfTime:true, clear scramble completion ref

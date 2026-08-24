@@ -4631,6 +4631,7 @@
     "col_poll": "Yoklama kurtarma",
     "col_desync": "Senkron kaybı",
     "col_late": "Geç hamle",
+    "col_resync": "Karıştırma senkronu (korundu / kayıp)",
     "col_median": "Ortanca gecikme",
     "col_p95": "P95 gecikme",
     "download_all": "Tüm veriyi CSV indir",

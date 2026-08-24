@@ -157,6 +157,19 @@ export function recordEngineEvent(event: SmartEngineEvent, surface: TelemetrySur
 			enqueue({ ...base, event_type: 'late_scramble_move' });
 			break;
 
+		case 'TRACKER_RESYNCED':
+			// The scramble-side counterpart of the solve rows. A re-anchor means the move
+			// stream and the cube disagreed; 'realigned' is one the user never noticed,
+			// 'reset' is one that cost them their place in the scramble. Until this was
+			// recorded the whole failure was invisible on the server: we measured how solves
+			// finished and nothing at all about how scrambling went.
+			enqueue({
+				...base,
+				event_type: 'scramble_resync',
+				detection_source: event.realigned ? 'realigned' : 'reset',
+			});
+			break;
+
 		default:
 			break;
 	}

@@ -75,6 +75,18 @@ const now =
 		? () => Math.floor(window.performance.now())
 		: () => Date.now();
 
+/**
+ * How long a gap in the move stream may stay open before the missing moves are written
+ * off. While a gap is open the cube's facelet state is held back (it already contains
+ * moves the app has not been handed), so this is also the longest the app can go without
+ * a state update. Recovery replies normally arrive well inside 100ms; this is the ceiling
+ * for the case where the cube never answers at all.
+ */
+const GAP_RECOVERY_TIMEOUT_MS = 1500;
+
+/** Fallback when the app has not told us what "solved" means for this cube yet. */
+const SOLVED_FACELETS = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+
 // ============================================================================
 // ENCRYPTERS (inline from gan-web-bluetooth since they are not exported)
 // ============================================================================
@@ -360,6 +372,47 @@ class GanGen3ProtocolDriver {
 		this.lastSerial = -1;
 		this.moveBuffer = [];
 		this.lastLocalTimestamp = null;
+		// When the current gap in the move stream opened, or null when there is none.
+		this._gapSince = null;
+	}
+
+	/**
+	 * Is the move stream waiting on a recovery request right now?
+	 *
+	 * While it is, the cube's own facelet state describes a cube that has already made
+	 * moves the app has not been handed. Publishing that state would tell the app the
+	 * user's scramble progress vanished, and the recovered moves would then be replayed on
+	 * top of a state that already contains them. Callers hold the state back until this
+	 * returns false.
+	 *
+	 * A gap that never closes must not silence the cube forever: past the timeout the
+	 * unfillable moves are written off and the stream re-anchors on the state in hand.
+	 */
+	hasPendingGap() {
+		// Serial counter difference, not buffer length: moves that never reached the buffer
+		// at all (the packet was lost outright, recovery is still in flight) are exactly the
+		// case that matters, and the buffer is empty for those. `serial === 0` is skipped to
+		// avoid the iCarry firmware quirk at the 255->0 wrap.
+		const undelivered =
+			this.lastSerial !== -1 && this.serial !== 0 && ((this.serial - this.lastSerial) & 0xFF) > 0;
+		if (!undelivered) {
+			this._gapSince = null;
+			return false;
+		}
+		if (this._gapSince == null) this._gapSince = now();
+		if (now() - this._gapSince > GAP_RECOVERY_TIMEOUT_MS) {
+			console.warn('[ZKT:MOVEBUF] Gen3 gap recovery timed out — writing off missing moves', {
+				bufferLen: this.moveBuffer.length,
+				missing: (this.serial - this.lastSerial) & 0xFF,
+			});
+			this.moveBuffer = [];
+			this._gapSince = null;
+			// The facelets event being handled right now carries this serial, so treat
+			// everything up to it as delivered instead of forcing a full re-sync.
+			this.lastSerial = this.serial;
+			return false;
+		}
+		return true;
 	}
 	createCommandMessage(command) {
 		let msg = new Uint8Array(16).fill(0);
@@ -418,10 +471,20 @@ class GanGen3ProtocolDriver {
 				this.lastSerial = bufferHead.serial;
 			}
 		}
-		if (conn && this.moveBuffer.length > 16) {
-			console.error('[ZKT:MOVEBUF] Gen3 buffer overflow! Disconnecting.', { bufferLen: this.moveBuffer.length });
-			conn.disconnect();
+		// Recovery instead of teardown, same as Gen4: an overflow is almost always an
+		// unfillable gap at the 255->0 serial wrap, and dropping the connection there is
+		// what made cubes disconnect mid-session. Flush and re-sync from a full FACELETS
+		// state instead.
+		if (this.moveBuffer.length > 16) {
+			console.warn('[ZKT:MOVEBUF] Gen3 buffer overflow — recovering via FACELETS resync', {
+				bufferLen: this.moveBuffer.length,
+			});
+			this.moveBuffer = [];
+			this.lastSerial = -1; // force a clean re-sync on the next FACELETS event
+			evictedEvents.push({ type: 'BUFFER_OVERFLOW' });
 		}
+		// Anything still buffered is waiting on a recovery reply; note when that wait began.
+		this._gapSince = this.moveBuffer.length > 0 ? this._gapSince || now() : null;
 		return evictedEvents;
 	}
 
@@ -547,6 +610,9 @@ class GanGen3ProtocolDriver {
 					timestamp: timestamp,
 					facelets: toKociembaFacelets(cp, co, ep, eo),
 					state: { CP: cp, CO: co, EP: ep, EO: eo },
+					// Set when moves are still buffered behind an unfilled gap: this state is
+					// ahead of what the app has been given, so the consumer must not adopt it.
+					pendingGap: this.hasPendingGap(),
 				});
 			} else if (eventType == 0x07) {
 				// HARDWARE
@@ -592,6 +658,39 @@ class GanGen4ProtocolDriver {
 		this.hwInfo = {};
 		this.moveBuffer = []; // FIFO buffer: holds moves until gaps are filled
 		this.lastLocalTimestamp = null;
+		// When the current gap in the move stream opened, or null when there is none.
+		this._gapSince = null;
+	}
+
+	/**
+	 * Is the move stream waiting on a recovery request right now? See the Gen3 driver for
+	 * why the facelet state has to be held back while it is.
+	 */
+	hasPendingGap() {
+		// Serial counter difference, not buffer length: moves that never reached the buffer
+		// at all (the packet was lost outright, recovery is still in flight) are exactly the
+		// case that matters, and the buffer is empty for those. `serial === 0` is skipped to
+		// avoid the iCarry firmware quirk at the 255->0 wrap.
+		const undelivered =
+			this.lastSerial !== -1 && this.serial !== 0 && ((this.serial - this.lastSerial) & 0xFF) > 0;
+		if (!undelivered) {
+			this._gapSince = null;
+			return false;
+		}
+		if (this._gapSince == null) this._gapSince = now();
+		if (now() - this._gapSince > GAP_RECOVERY_TIMEOUT_MS) {
+			console.warn('[ZKT:MOVEBUF] Gen4 gap recovery timed out — writing off missing moves', {
+				bufferLen: this.moveBuffer.length,
+				missing: (this.serial - this.lastSerial) & 0xFF,
+			});
+			this.moveBuffer = [];
+			this._gapSince = null;
+			// The facelets event being handled right now carries this serial, so treat
+			// everything up to it as delivered instead of forcing a full re-sync.
+			this.lastSerial = this.serial;
+			return false;
+		}
+		return true;
 	}
 	createCommandMessage(command) {
 		let msg = new Uint8Array(20).fill(0);
@@ -670,6 +769,8 @@ class GanGen4ProtocolDriver {
 			this.lastSerial = -1; // force a clean re-sync on the next FACELETS event
 			evictedEvents.push({ type: 'BUFFER_OVERFLOW' });
 		}
+		// Anything still buffered is waiting on a recovery reply; note when that wait began.
+		this._gapSince = this.moveBuffer.length > 0 ? this._gapSince || now() : null;
 		return evictedEvents;
 	}
 
@@ -817,6 +918,9 @@ class GanGen4ProtocolDriver {
 				timestamp: timestamp,
 				facelets: toKociembaFacelets(cp, co, ep, eo),
 				state: { CP: cp, CO: co, EP: ep, EO: eo },
+				// Set when moves are still buffered behind an unfilled gap: this state is
+				// ahead of what the app has been given, so the consumer must not adopt it.
+				pendingGap: this.hasPendingGap(),
 			});
 		} else if (eventType >= 0xfa && eventType <= 0xfe) {
 			// HARDWARE
@@ -1364,6 +1468,26 @@ export default class GAN extends SmartCube {
 		// Consumer receives only gap-free MOVE events.
 
 		} else if (event.type == 'FACELETS') {
+			// A valid FACELETS state confirms the connection (Gen4 may never send full
+			// HARDWARE). True even when the state itself is held back below.
+			this._confirmConnectionOnce();
+
+			// The driver is still waiting on a move-history reply, so this state already
+			// contains turns the app has not been handed yet. Adopting it would look like
+			// the user's scramble progress vanished, and the recovered moves would then be
+			// replayed on top of a state that already includes them — the tracker ends up a
+			// move or two ahead of the cube in the user's hands. Hold it back; the driver
+			// publishes again once the gap closes, or writes it off after a timeout.
+			//
+			// A solved cube is the one state never worth holding back: it is what stops the
+			// timer, and waiting out the recovery window would add that delay straight onto
+			// the recorded time. The matcher is what needs shielding from a half-delivered
+			// stream, and it is not running once a solve is under way.
+			const solvedState = getStore().getState().timer.smartSolvedState || SOLVED_FACELETS;
+			if (event.pendingGap && event.facelets !== solvedState) {
+				return;
+			}
+
 			// Publish any queued moves BEFORE this state. The state we are about to
 			// report already contains them, so letting it go first would make those
 			// moves look like they came afterwards — that is exactly how the last
@@ -1372,21 +1496,12 @@ export default class GAN extends SmartCube {
 				this.flushMoveQueue();
 			}
 
-			const trackerState = this._trackerCube.asString();
-			const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
-			const isSolved = event.facelets === SOLVED;
-
 			// Synchronize tracker with physical state
 			try {
 				this._trackerCube = Cube.fromString(event.facelets);
 			} catch (e) {
 				console.error('[ZKT:GAN] FACELETS parse error:', e?.message);
 			}
-
-			// NOTE: ganInitialFacelets removed — solved detection uses only smartSolvedState
-
-			// A valid FACELETS state confirms the connection (Gen4 may never send full HARDWARE).
-			this._confirmConnectionOnce();
 
 			// Report to Redux (safety net for SmartCube.tsx)
 			this.alertCubeState(event.facelets);

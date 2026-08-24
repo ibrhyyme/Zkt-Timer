@@ -7,7 +7,7 @@ import {
 import { cubeTimestampLinearFit, TimestampedMove, CorrectedMove } from '../smart_cube_timing';
 import { countHTM } from '../../../shared/util/solve/move_counter';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
-import { CubeTracker } from './tracker';
+import { CubeTracker, prefixStatesFrom, ScramblePrefix } from './tracker';
 
 /**
  * Framework-agnostic smart cube solve engine.
@@ -55,7 +55,17 @@ export type SmartEngineEvent =
 	 * The tracker was re-anchored to the cube's reported state, so anything mirroring it
 	 * (a 3D view driven by moves) is now showing a state that never happened.
 	 */
-	| { type: 'TRACKER_RESYNCED'; facelets: string };
+	| {
+			type: 'TRACKER_RESYNCED';
+			facelets: string;
+			/**
+			 * True when the user's scramble progress survived the re-anchor: the cube landed
+			 * on a state the scramble passes through, so the matcher was moved to that point
+			 * instead of being wiped. False means they lost their place and have to work from
+			 * the correction hint.
+			 */
+			realigned: boolean;
+	  };
 
 export interface SolveResult {
 	/** Solve duration in ms, corrected by per-solve linear regression over cube timestamps. */
@@ -135,6 +145,12 @@ function dbg(...args: any[]): void {
 
 type Phase = 'idle' | 'scrambling' | 'ready' | 'timing';
 
+/**
+ * What came of trying to place the cube's reported state on the scramble.
+ * `stale` exists so a late packet neither rewinds the user nor wipes them.
+ */
+type RealignOutcome = 'realigned' | 'stale' | 'unknown';
+
 export class SmartSolveEngine {
 	private readonly emit: (event: SmartEngineEvent) => void;
 	private readonly opts: Required<SmartSolveEngineOptions>;
@@ -144,7 +160,20 @@ export class SmartSolveEngine {
 
 	private phase: Phase = 'idle';
 	private scramble = '';
+	private scrambleMoves: string[] = [];
 	private targetFacelets: string | null = null;
+	/**
+	 * One facelet state per scramble prefix, rebuilt whenever the scramble changes.
+	 *
+	 * Only read when the tracker has to be re-anchored, which is rare, so the cost is one
+	 * table per scramble and nothing per move.
+	 */
+	private prefixStates: ScramblePrefix[] = [];
+	/**
+	 * Whole scramble moves the display currently shows as done. Read only by the rewind
+	 * guard, which needs to know whether an arriving state is behind the user.
+	 */
+	private lastProgressDone = 0;
 
 	private turns: SmartTurn[] = [];
 	/** Index into `turns` where the current scramble attempt begins. */
@@ -215,7 +244,11 @@ export class SmartSolveEngine {
 		if (scramble === this.scramble && nextTarget === this.targetFacelets && this.phase !== 'idle') return;
 
 		this.scramble = scramble || '';
+		this.scrambleMoves = this.scramble.split(' ').filter((m) => m.trim());
 		this.targetFacelets = nextTarget;
+		// Every state the cube will pass through on the way to the target. Built once here
+		// so a re-anchor mid-scramble can answer "how far did the user actually get".
+		this.prefixStates = nextTarget ? prefixStatesFrom(nextTarget, this.scrambleMoves) : [];
 		this.phase = this.scramble ? 'scrambling' : 'idle';
 
 		this.streamOffset = this.turns.length;
@@ -291,6 +324,16 @@ export class SmartSolveEngine {
 				this.tracker.setFromFacelets(this.facelets, turns.length);
 			} else {
 				this.tracker.setSolved(turns.length);
+			}
+
+			// The compressor was just emptied. Mid-scramble that leaves the display painted
+			// from moves the matcher no longer holds, and it collapses one turn later with no
+			// explanation. Put it back where the cube actually is, or clear it honestly.
+			if (this.phase === 'scrambling' && this.facelets) {
+				if (this.realignMatching(this.facelets, false) === 'unknown') {
+					this.setUndo(null);
+					this.publishProgress([]);
+				}
 			}
 			return;
 		}
@@ -419,7 +462,7 @@ export class SmartSolveEngine {
 
 		const relevant = this.turns.slice(this.streamOffset);
 		const userMoves = this.compressor.processNew(relevant);
-		const expected = this.scramble.split(' ').filter((m) => m.trim());
+		const expected = this.scrambleMoves;
 		const { matched, matchStatus } = matchScrambleWithCommutative(expected, userMoves);
 
 		dbg('match', {
@@ -635,15 +678,36 @@ export class SmartSolveEngine {
 			// solve, a packet replayed on reconnect). Those moves describe a cube state
 			// that no longer exists, and they surface as a scramble whose first move is
 			// already "half done" on a physically solved cube.
+			//
+			// The cube being solved here is trustworthy (the tracker saw every move that got
+			// it there), so a rewind is real rather than a late packet: no rewind guard.
 			if (this.phase !== 'ready' && this.physicallySolved && this.compressor.getOutput().length) {
-				this.resetMatching();
+				const outcome = this.realignMatching(this.facelets, false);
+				if (outcome === 'unknown') this.resetMatching();
+				// Emitted so this path is visible in telemetry too. Until now it cleared the
+				// user's progress without announcing it anywhere.
+				this.emit({ type: 'TRACKER_RESYNCED', facelets: this.facelets, realigned: outcome !== 'unknown' });
 			}
 			return;
 		}
 
 		this.tracker.setFromFacelets(this.facelets, this.turns.length);
-		this.resetMatching();
-		this.emit({ type: 'TRACKER_RESYNCED', facelets: this.facelets });
+
+		// A lost BLE packet is our problem, not the user's. Before throwing their scramble
+		// progress away, ask the cube where they actually are: if it reports a state the
+		// scramble passes through, the matcher is moved to that point and every move they
+		// already made stays on screen. Wiping it unconditionally is what users saw as
+		// "the scramble reset itself half way through".
+		const outcome = this.realignMatching(this.facelets, true);
+		if (outcome === 'unknown') this.resetMatching();
+		this.emit({ type: 'TRACKER_RESYNCED', facelets: this.facelets, realigned: outcome !== 'unknown' });
+
+		if (outcome !== 'unknown') {
+			// The cube stands on a state the scramble goes through, so nothing is wrong:
+			// the user is simply part way through scrambling.
+			this.setOutOfSync(false);
+			return;
+		}
 
 		if (this.physicallySolved) {
 			// Solved cube with a scramble pending: the user simply has not scrambled yet.
@@ -662,6 +726,64 @@ export class SmartSolveEngine {
 		// no correction sequence derived from the move stream would be trustworthy.
 		this.setUndo(null);
 		this.setOutOfSync(true);
+	}
+
+	/**
+	 * Put the scramble matcher back where the physical cube says the user is.
+	 *
+	 * The cube's facelet state is looked up in the scramble's prefix table. A hit means the
+	 * user has completed exactly that much of the scramble — the move stream lost a packet,
+	 * the user did nothing wrong — so the compressor is seeded to that point and the display
+	 * is repainted from the same match the engine will use for the next turn.
+	 *
+	 * `'unknown'` means the state is not on the scramble's path at all (a genuine
+	 * mis-scramble, a cube turned while disconnected); the caller clears the matcher, which
+	 * is what produces the correction hint. `'stale'` means the state is behind where the
+	 * user already got to, so the packet describes a cube they have since left: the matcher
+	 * is left untouched rather than rewound.
+	 */
+	private realignMatching(facelets: string, rewindGuard: boolean): RealignOutcome {
+		if (this.phase !== 'scrambling' || !this.prefixStates.length) return 'unknown';
+
+		// Last, not first: a scramble can in principle revisit a state, and the user is
+		// further along rather than back at the start.
+		let hit: ScramblePrefix | null = null;
+		for (let i = this.prefixStates.length - 1; i >= 0; i--) {
+			if (this.prefixStates[i].state === facelets) {
+				hit = this.prefixStates[i];
+				break;
+			}
+		}
+		if (!hit) return 'unknown';
+
+		// A facelets packet can arrive late enough to describe a state the user has already
+		// turned away from. Accepting it would rewind the display and throw away work they
+		// actually did. One move of slack covers the double move they may be in the middle
+		// of; beyond that, wait for a packet that has caught up.
+		if (rewindGuard && hit.done + 1 < this.lastProgressDone) {
+			dbg('ignoring stale facelets', { at: hit.done, alreadyDone: this.lastProgressDone });
+			return 'stale';
+		}
+
+		const seed = this.scrambleMoves.slice(0, hit.done);
+		if (hit.partial) {
+			// The first quarter of the next double move is already on the cube. Feeding that
+			// quarter is what makes the display show it as half done and lets the second
+			// quarter complete it; without it the user can never finish the move.
+			seed.push(this.scrambleMoves[hit.done].slice(0, -1));
+		}
+
+		this.compressor.reset();
+		this.compressor.seed(seed);
+		// Turns recorded so far are accounted for by the seed; anything after this point is
+		// genuinely new input.
+		this.streamOffset = this.turns.length;
+		this.setUndo(null);
+
+		const { matchStatus } = matchScrambleWithCommutative(this.scrambleMoves, this.compressor.getOutput());
+		this.publishProgress(matchStatus);
+		dbg('realigned to scramble prefix', { done: hit.done, partial: hit.partial, of: this.scrambleMoves.length });
+		return 'realigned';
 	}
 
 	// ── Emission helpers ──────────────────────────────────────────────────────
@@ -683,6 +805,7 @@ export class SmartSolveEngine {
 		const signature = matchStatus.join(',');
 		if (signature === this.lastProgressSignature) return;
 		this.lastProgressSignature = signature;
+		this.lastProgressDone = matchStatus.filter((s) => s === 'perfect').length;
 		this.emit({ type: 'SCRAMBLE_PROGRESS', matchStatus });
 	}
 

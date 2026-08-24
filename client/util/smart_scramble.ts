@@ -390,6 +390,17 @@ export class IncrementalCompressor {
 		return this.output;
 	}
 
+	/**
+	 * Start from a move list that is already known to have happened, instead of an empty
+	 * one. Used when the cube reports a state the scramble passes through: the physical
+	 * cube proves how far the user got, so the matcher carries on from there rather than
+	 * making them start the scramble over because a BLE packet went missing.
+	 */
+	seed(moves: string[]): void {
+		this.output = [...moves];
+		this.processedCount = 0;
+	}
+
 	getOutput(): string[] {
 		return this.output;
 	}

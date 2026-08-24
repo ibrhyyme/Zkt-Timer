@@ -945,6 +945,8 @@ query SmartCubeTelemetrySummary($days: Int) {
 		via_poll
 		out_of_sync_events
 		late_scramble_events
+		scramble_realign_events
+		scramble_reset_events
 		median_lag_ms
 		p95_lag_ms
 		avg_battery_clean

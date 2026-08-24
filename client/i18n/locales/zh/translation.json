@@ -4625,6 +4625,7 @@
     "col_poll": "轮询恢复",
     "col_desync": "失步",
     "col_late": "延迟移动",
+    "col_resync": "打乱重新同步（保留 / 丢失）",
     "col_median": "中位延迟",
     "col_p95": "P95 延迟",
     "download_all": "下载全部 CSV",

@@ -4525,6 +4525,7 @@
     }
   },
   "smart_telemetry": {
+    "col_resync": "Ресинхронизация скрамбла (сохранено / потеряно)",
     "col_correction": "Коррекция времени"
   },
   "solves_page": {

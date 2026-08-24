@@ -139,6 +139,7 @@ export default function SmartCubeTelemetryPanel() {
 								<th>{t('smart_telemetry.col_poll')}</th>
 								<th>{t('smart_telemetry.col_desync')}</th>
 								<th>{t('smart_telemetry.col_late')}</th>
+								<th>{t('smart_telemetry.col_resync')}</th>
 								<th>{t('smart_telemetry.col_median')}</th>
 								<th>{t('smart_telemetry.col_p95')}</th>
 								<th>{t('smart_telemetry.col_battery')}</th>
@@ -168,6 +169,13 @@ export default function SmartCubeTelemetryPanel() {
 										<td className={b('cell', {warn: s.via_poll > 0})}>{s.via_poll}</td>
 										<td className={b('cell', {warn: s.out_of_sync_events > 0})}>{s.out_of_sync_events}</td>
 										<td className={b('cell', {warn: s.late_scramble_events > 0})}>{s.late_scramble_events}</td>
+										{/* Kept / lost. The second number is the one users feel: a mid-scramble
+										    re-anchor the matcher could not place, so their progress was wiped. */}
+										<td className={b('cell', {warn: s.scramble_reset_events > 0})}>
+											{s.scramble_realign_events + s.scramble_reset_events > 0
+												? `${s.scramble_realign_events} / ${s.scramble_reset_events}`
+												: '-'}
+										</td>
 										<td>{s.median_lag_ms} ms</td>
 										<td className={b('cell', {warn: s.p95_lag_ms > 500})}>{s.p95_lag_ms} ms</td>
 										<td className={b('cell', {warn: batteryGap >= 10})}>

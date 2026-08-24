@@ -16,7 +16,7 @@ export class SmartCubeTelemetryInput {
 	@Field()
 	surface: string;
 
-	/** solve | out_of_sync | late_scramble_move | scan_error | disconnect */
+	/** solve | out_of_sync | late_scramble_move | scramble_resync | scan_error | disconnect */
 	@Field()
 	event_type: string;
 
@@ -137,6 +137,21 @@ export class SmartCubeTelemetrySummary {
 
 	@Field(() => Int)
 	late_scramble_events: number;
+
+	/**
+	 * Mid-scramble re-anchors where the cube's state was recognised as a point on the
+	 * scramble, so the user's progress was kept. These cost the user nothing.
+	 */
+	@Field(() => Int)
+	scramble_realign_events: number;
+
+	/**
+	 * Mid-scramble re-anchors where it was not, so the matcher had to start over and the
+	 * user lost their place. This is the number that should stay near zero: it is the
+	 * failure users described as "the scramble reset itself".
+	 */
+	@Field(() => Int)
+	scramble_reset_events: number;
 
 	@Field(() => Int)
 	median_lag_ms: number;
