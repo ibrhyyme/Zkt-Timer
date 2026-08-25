@@ -295,22 +295,54 @@ export function matchScrambleWithCommutative(
 			matchStatus.push(isHalf ? 'half' : 'perfect');
 
 			if (isHalf) {
-				// Half match: user did one turn of a double move (e.g. R instead of R2).
-				// Don't proceed to next expected move — the double move must be completed first.
-				// If there are extra unconsumed user moves after this, the user moved on
-				// without completing the double move → wrong.
-				// If no extra moves, user may still complete it → pending.
-				const hasExtraMoves = userMoves.some((_, idx) => idx > foundIdx && !userConsumed[idx]);
-				if (hasExtraMoves) {
+				// The user turned one quarter of a double move (R where R2 was asked). The
+				// move is owed, not wrong, so this position stays 'half' and the scramble
+				// cannot count as complete until the second quarter lands.
+				//
+				// Moves made after it only matter if they collide with it. Turning R and then
+				// L2 is not a mistake: L2 commutes with R, so the cube sits exactly where
+				// those two moves put it and only the R2 is unfinished. Treating that as
+				// wrong painted the next move red and offered to undo a move the user had
+				// done correctly, which is what made a half-finished double move look like
+				// an error instead of something still to do.
+				// The user may also have finished the double move later, after turning
+				// something that commutes with it: R, L2, R leaves the cube in exactly the
+				// state R2, L2 would. Look ahead for the completing quarter, and credit the
+				// whole move when everything in between commutes with it.
+				let completesIdx = -1;
+				for (let idx = foundIdx + 1; idx < userMoves.length; idx++) {
+					if (userConsumed[idx]) continue;
+					// Same quarter turn again finishes the double; the opposite one cancels it.
+					if (userMoves[idx] === userMoves[foundIdx]) {
+						completesIdx = idx;
+						break;
+					}
+					if (!areCommutative(expectedMove, userMoves[idx])) break;
+				}
+				if (completesIdx >= 0) {
+					userConsumed[completesIdx] = true;
+					matchStatus[matchStatus.length - 1] = 'perfect';
+					while (userSearchStart < userMoves.length && userConsumed[userSearchStart]) {
+						userSearchStart++;
+					}
+					continue;
+				}
+
+				const blocked = userMoves.some(
+					(m, idx) => idx > foundIdx && !userConsumed[idx] && !areCommutative(expectedMove, m)
+				);
+				if (blocked) {
 					for (let i = expIdx + 1; i < expectedMoves.length; i++) {
 						matchStatus.push('wrong');
 					}
 					return { matched: false, matchStatus };
 				}
-				for (let i = expIdx + 1; i < expectedMoves.length; i++) {
-					matchStatus.push('pending');
+				// Carry on matching: moves the user already made further along still get
+				// credited, and the half turn stays on screen as the one thing outstanding.
+				while (userSearchStart < userMoves.length && userConsumed[userSearchStart]) {
+					userSearchStart++;
 				}
-				return { matched: false, matchStatus };
+				continue;
 			}
 
 			// Advance search start past all consumed moves
@@ -318,7 +350,24 @@ export function matchScrambleWithCommutative(
 				userSearchStart++;
 			}
 		} else if (userSearchStart < userMoves.length) {
-			// User made a move but it doesn't match
+			// The user has turned something, just not this move. Before calling it wrong,
+			// check whether everything they still have outstanding commutes with this one:
+			// doing R2 before L2 leaves the cube in exactly the same place, so this position
+			// is simply not done yet. Calling it wrong turned the whole scramble red the
+			// moment a user reordered an opposite pair, and the correction hint then asked
+			// them to undo a move that was right.
+			const outstanding = userMoves.filter((_, idx) => idx >= userSearchStart && !userConsumed[idx]);
+			// Commuting with this move is not enough on its own — D2 commutes with U but is
+			// still a mistake when the scramble never asks for it. Every outstanding move has
+			// to be one the scramble still wants, otherwise a genuinely wrong turn would slip
+			// through as "not done yet" and the user would never get a correction hint.
+			const stillWanted = expectedMoves.slice(expIdx + 1);
+			const belongsLater = (m: string) =>
+				stillWanted.some((e) => e === m || (rawTurnIsSame(e, m) && (isTwo(e) || isTwo(m))));
+			if (outstanding.every((m) => areCommutative(expectedMove, m) && belongsLater(m))) {
+				matchStatus.push('pending');
+				continue;
+			}
 			matchStatus.push('wrong');
 			// Mark remaining as wrong
 			for (let i = expIdx + 1; i < expectedMoves.length; i++) {
