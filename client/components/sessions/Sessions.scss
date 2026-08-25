@@ -37,15 +37,8 @@
 		box-sizing: border-box;
 		width: 100%;
 		display: grid;
-		grid-gap: 0.9rem;
+		grid-gap: 1.333rem;
 		grid-template-columns: 19.333rem 1fr;
-
-		// The session column stays vertical on desktop: a list is what you scan when
-		// you have twenty of them. It is a little wider than before so the row can
-		// carry its solve count, best and mean.
-		@include bp-up($bp-lg) {
-			grid-template-columns: minmax(0, 21rem) 1fr;
-		}
 	}
 
 	&__info {
@@ -53,18 +46,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.333rem;
-
-		// The settings and stats panels were tall boxes holding three lines each,
-		// so most of the page below the session board was empty. Tighten them to
-		// their content and square the corners to match the rows above.
-		@include bp-up($bp-lg) {
-			gap: 0.8rem;
-
-			.#{$namespace}-module {
-				padding: 1rem 1.2rem;
-				border-radius: 0;
-			}
-		}
 	}
 
 	&__new {
@@ -77,26 +58,11 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-
-		@include bp-up($bp-lg) {
-			gap: 0.6rem;
-		}
 	}
 
 	&__list {
 		height: calc(100vh - 15.333rem);
 		overflow: auto;
-
-		// Vertical, scrollable, and tall enough to show a real list rather than a
-		// couple of entries.
-		@include bp-up($bp-lg) {
-			height: auto;
-			max-height: calc(100vh - 13rem);
-			display: flex;
-			flex-direction: column;
-			gap: 3px;
-			overflow-y: auto;
-		}
 	}
 
 	&__stats-header {
@@ -123,10 +89,9 @@
 
 	&__stats {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
-		margin-top: 0.8rem;
-		grid-auto-rows: 15rem;
-		grid-gap: 0.8rem;
+		grid-template-columns: repeat(auto-fit, minmax(18.667rem, 1fr));
+		grid-auto-rows: 20rem;
+		grid-gap: 1.333rem;
 		width: 100%;
 
 		>* {
@@ -134,54 +99,52 @@
 			min-width: 0;
 		}
 
-		// Modules are NOT equal. Giving every one the same narrow track is what
-		// crushed the charts: a line chart and a 30-day bar chart need horizontal
-		// room to be readable, a column of numbers does not. Four tracks, and the
-		// charts take two each, which also fills the second row instead of leaving
-		// the bottom half of the page empty.
-		//
-		// Ordered by render order in Sessions.tsx:
-		// 1 QuickStats, 2 History, 3 TimeChart, 4 TimeDistro, 5 SolvesPerDay
-		@include bp-up($bp-lg) {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			grid-auto-rows: 16.5rem;
-
-			> *:nth-child(1),
-			> *:nth-child(2) {
-				grid-column: span 1;
-			}
-
-			> *:nth-child(3),
-			> *:nth-child(4),
-			> *:nth-child(5) {
-				grid-column: span 2;
-			}
+		// Pinned rather than left to auto-fit: this row has to share its column
+		// edges with `__top-row`, and auto-fit would pick its own track count.
+		@include bp-up($bp-xl) {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 		}
 	}
 
+	// Settings panel in the left track, the two number modules beside it. The
+	// bucket picker and the charts follow in blocks of their own below.
+	// The spacing between the two rows comes from `__info`'s gap; the row carries
+	// no margin of its own or the gap lands twice.
 	&__top-row {
-		display: flex;
-		flex-direction: row;
+		display: grid;
+		grid-template-columns: 1fr;
 		gap: 1.333rem;
 		width: 100%;
 		align-items: stretch;
-		margin-bottom: 1.333rem;
 
-		> :first-child {
-			flex: 0 0 30%;
+		> * {
 			min-width: 0;
 		}
 
-		> :last-child {
-			flex: 1;
-			min-width: 0;
-		}
+		// Three tracks only from laptop width up. The session list already takes
+		// 19.333rem out of the page, so splitting the rest three ways below this
+		// leaves QuickStats' two-column body too narrow to read.
+		//
+		// The tracks are equal and match `__stats` exactly. An earlier 1.3fr first
+		// track made the settings column wider than the chart under it, so the
+		// column edges of the two rows did not line up.
+		@include bp-up($bp-xl) {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
 
-		@include bp-down($bp-lg) {
-			flex-direction: column;
+			// Floor, not a fixed height: a session that is not the current one adds
+			// "Make Current" and "Merge", the buttons wrap to a second line, and a
+			// hard 20rem row clipped whatever sat below them.
+			grid-auto-rows: minmax(20rem, auto);
 
 			> * {
-				flex: 1 1 100%;
+				min-height: 0;
+			}
+
+			// Only the settings panel may stretch the row. These two size to their
+			// content otherwise, and History's content is the entire solve list -
+			// that alone pushed the row to 870px and the charts off screen.
+			> :not(:first-child) {
+				height: 20rem;
 			}
 		}
 	}
@@ -190,20 +153,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.067rem;
-
-		// Desktop lays the whole settings panel on one line: title, the name field
-		// and the actions side by side. Stacked, it was three rows tall for a
-		// single editable value.
-		@include bp-up($bp-lg) {
-			flex-direction: row;
-			align-items: center;
-			gap: 1.5rem;
-			flex-wrap: wrap;
-
-			> * {
-				margin: 0;
-			}
-		}
 	}
 
 	&__info-title {
@@ -230,12 +179,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.533rem;
-
-		@include bp-up($bp-lg) {
-			flex: 1 1 auto;
-			min-width: 0;
-			gap: 0.15rem;
-		}
 	}
 
 	&__info-label {
@@ -270,18 +213,5 @@
 		min-height: 3rem;
 		display: flex;
 		align-items: center;
-	}
-
-	&__stats {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
-		margin-top: 3.333rem;
-		grid-auto-rows: 15rem;
-		grid-gap: 0.8rem;
-		width: 100%;
-
-		>* {
-			height: 100%;
-		}
 	}
 }

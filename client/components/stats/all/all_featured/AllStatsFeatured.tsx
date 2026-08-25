@@ -1,6 +1,6 @@
 import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Clock, Crown, Cube, SquaresFour} from 'phosphor-react';
+import {ArrowFatLinesUp, Hash, Timer} from 'phosphor-react';
 import {StatsContext} from '../../Stats';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {fetchAllCubeTypesSolved} from '../../../../db/solves/query';
@@ -34,11 +34,11 @@ export default function AllStatsFeatured() {
 	}, [context.filterOptions, solveUpdate]);
 
 	return (
-		<StatsGrid rows={1} columns={4}>
+		<StatsGrid rows={2} columns={2}>
 			<NumberBlock
 				center
 				colSpan={1}
-				icon={<Clock weight="bold" />}
+				icon={<Timer weight="bold" />}
 				title={t('stats_page.cubing_time')}
 				value={getTimeString(timeSpentCubing)}
 				animateSeconds={timeSpentCubing}
@@ -47,7 +47,7 @@ export default function AllStatsFeatured() {
 			<NumberBlock
 				center
 				colSpan={1}
-				icon={<Cube weight="bold" />}
+				icon={<Hash weight="bold" />}
 				title={t('stats_page.total_solves')}
 				value={totalSolves}
 				color="#54ACE4"
@@ -55,18 +55,18 @@ export default function AllStatsFeatured() {
 			<NumberBlock
 				center
 				colSpan={1}
-				icon={<SquaresFour weight="bold" />}
+				icon={<Hash weight="bold" />}
 				title={t('stats_page.event_count')}
 				value={cubeTypes.length}
-				color="rgb(var(--text-color))"
+				color="#6D7D90"
 			/>
 			<NumberBlock
 				center
 				colSpan={1}
-				icon={<Crown weight="bold" />}
+				icon={<ArrowFatLinesUp weight="bold" />}
 				title={t('stats_page.most_popular_event')}
 				value={topCubeLabel || '-'}
-				color="rgb(var(--text-color))"
+				color="#6D7D90"
 			/>
 		</StatsGrid>
 	);

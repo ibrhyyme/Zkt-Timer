@@ -29,6 +29,10 @@ export default function HeroBand(props: Props) {
 						</span>
 					</h1>
 					{subtitle ? <p className={b('subtitle')}>{subtitle}</p> : null}
+					<div className={b('lines')}>
+						<div className={b('line')} />
+						<div className={b('line', {secondary: true})} />
+					</div>
 				</div>
 				{children ? <div className={b('filters')}>{children}</div> : null}
 			</div>

@@ -105,10 +105,7 @@ export default function NumberBlock(props: Props) {
 	const hasAnimateSeconds = !isProGated && animateSeconds != null && animateSeconds > 0;
 
 	return (
-		<StatModule
-			className={b({ center, vertical, noPadding, large, small, button: !!onClick })}
-			style={{ ...style, ['--nb-accent' as any]: color || 'rgba(var(--text-color), 0.25)' }}
-		>
+		<StatModule className={b({ center, vertical, noPadding, large, small, button: !!onClick })} style={style}>
 			<div className={b('body')}>
 				<button className={b('value', { clickable: !!onClick })} onClick={onClick}>
 					<div className={b('header')}>

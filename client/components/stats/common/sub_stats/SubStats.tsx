@@ -2,14 +2,14 @@ import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import './SubStats.scss';
 import {
-	CalendarBlank,
-	ChartLineUp,
+	WarningOctagon,
+	Warning,
+	NumberSquareOne,
+	Calculator,
+	Hash,
+	CaretDoubleRight,
+	CaretDoubleUp,
 	Eye,
-	Fire,
-	PlusCircle,
-	Prohibit,
-	Trophy,
-	UserCircle,
 } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import {StatsContext} from '../../Stats';
@@ -21,9 +21,7 @@ import dayjs from 'dayjs';
 
 const b = block('sub-stats');
 
-// Theme text colour, full strength: follows dark/light instead of
-// sitting at a fixed slate grey that is unreadable in both.
-const NEUTRAL = 'rgb(var(--text-color))';
+const NEUTRAL = '#6D7D90';
 const MINT = '#23C586';
 const BLUE = '#54ACE4';
 const ROSE = '#EF4358';
@@ -63,7 +61,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<Fire weight="bold" />}
+				icon={<CaretDoubleRight weight="bold" />}
 				title={t('stats_page.solve_streak')}
 				value={`${streak.currentStreak} ${t('stats_page.days')}`}
 				color={streak.currentStreak > 0 ? MINT : NEUTRAL}
@@ -71,7 +69,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<Trophy weight="bold" />}
+				icon={<CaretDoubleUp weight="bold" />}
 				title={t('stats_page.highest_streak')}
 				value={`${streak.highestStreak} ${t('stats_page.days')}`}
 				color={BLUE}
@@ -79,7 +77,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<Prohibit weight="bold" />}
+				icon={<WarningOctagon weight="bold" />}
 				title={t('stats.sub_stats.dnfs')}
 				value={`${subStats.dnfCount} (${subStats.dnfPercent}%)`}
 				color={subStats.dnfCount > 0 ? ROSE : NEUTRAL}
@@ -87,7 +85,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<PlusCircle weight="bold" />}
+				icon={<Warning weight="bold" />}
 				title={t('stats.sub_stats.plus_twos')}
 				value={`${subStats.plusTwoCount} (${subStats.plusTwoPercent}%)`}
 				color={subStats.plusTwoCount > 0 ? AMBER : NEUTRAL}
@@ -95,7 +93,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<ChartLineUp weight="bold" />}
+				icon={<Calculator weight="bold" />}
 				title={t('stats_page.avg_solves_per_session')}
 				value={avgSolvesPerSession}
 				color={NEUTRAL}
@@ -103,7 +101,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<CalendarBlank weight="bold" />}
+				icon={<NumberSquareOne weight="bold" />}
 				title={t('stats_page.first_solve')}
 				value={firstSolveTime}
 				color={NEUTRAL}
@@ -111,7 +109,7 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				icon={<UserCircle weight="bold" />}
+				icon={<Eye weight="bold" />}
 				title={t('stats_page.solve_views')}
 				value={stats.solve_views || 0}
 				color={NEUTRAL}

@@ -463,9 +463,21 @@ export default function Sessions() {
 					</div>
 				</div>
 			</Module>
+
+			{/* Columns of numbers, not charts: these two stay readable in a narrow
+			    track, so they take the space next to the settings panel. */}
+			<Module smallPadding>
+				<QuickStats filterOptions={fetchFilter} />
+			</Module>
+			<Module smallPadding>
+				<History filterOptions={fetchFilter} />
+			</Module>
 			</div>
 
-			{/* Statistics bucket picker - at start of Stats section */}
+			{/* The bucket picker gets a block of its own. Stacked under the settings
+			    panel it dropped out of the fixed row height as soon as that panel grew
+			    (a session that is not the current one adds two more buttons), and the
+			    filter bar disappeared from the page. */}
 			<Module>
 				<div className={b('stats-header')}>
 					<div className={b('stats-picker')}>
@@ -485,16 +497,8 @@ export default function Sessions() {
 				</div>
 			</Module>
 
+			{/* The charts need horizontal room, so they get a row to themselves. */}
 			<div className={b('stats')}>
-				{/*<Module smallPadding>*/}
-				{/*	<SessionStats filterOptions={fetchFilter} />*/}
-				{/*</Module>*/}
-				<Module smallPadding>
-					<QuickStats filterOptions={fetchFilter} />
-				</Module>
-				<Module smallPadding>
-					<History filterOptions={fetchFilter} />
-				</Module>
 				<Module smallPadding>
 					<TimeChart filterOptions={fetchFilter} />
 				</Module>

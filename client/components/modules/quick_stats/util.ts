@@ -49,7 +49,12 @@ export function getStatsBlockValueFromFilter(
 ): SolveStat {
 	const solvesFilter = {...filterOptions};
 	if (statsOptions.session) {
-		solvesFilter.session_id = currentSessionId;
+		// A caller that already scoped its filter to a session wins. The Sessions
+		// page lets you inspect a session you are not timing in, and pinning the
+		// settings' current session here made every "session" block show the wrong
+		// session's numbers. The timer puts that same current session in this field,
+		// so nothing changes there.
+		solvesFilter.session_id = filterOptions.session_id ?? currentSessionId;
 	} else {
 		delete solvesFilter.session_id;
 	}
