@@ -2554,6 +2554,7 @@
     "other_goals": "Другие цели",
     "reminders": "Напоминания",
     "count_room_solves": "Считать сборки в комнатах",
+    "count_room_solves_desc": "Учитывается только в дневной цели и графике активности, в сессию не сохраняется.",
     "goal_confetti": "Конфетти при достижении цели",
     "solves_progress": "{{current}}/{{target}} сборок",
     "smart_analysis": "Анализ смарт-куба"

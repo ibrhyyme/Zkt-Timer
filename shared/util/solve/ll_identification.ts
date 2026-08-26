@@ -45,6 +45,12 @@ const CMLL_PATTERNS: number[][][] = (engine as any).cmllPatterns ?? [];
 const COLL_INDEX_TO_KEY: Array<string | null> = (engine as any).collIndexToKey ?? [];
 const COLL_CASE_NAMES: string[] = (engine as any).collCaseNames ?? [];
 
+// ZBLL — the full 493-case one-look last layer, for solvers who reach it with
+// edges already oriented (ZZ, or CFOP users drilling ZBLL). Generated from
+// cstimer's genZBLLMap via scripts/dump-cstimer-rotations.mjs.
+const ZBLL_PATTERNS: number[][][] = (engine as any).zbllPatterns ?? [];
+const ZBLL_CASE_NAMES: string[] = (engine as any).zbllCaseNames ?? [];
+
 /**
  * cstimer cubeutil.js solvedProgress (facelet variant) port:
  *   Rotates facelet by rotIdx and checks for each equivalence class in mask
@@ -138,6 +144,23 @@ export function getMatchingCMLLState(facelet54: string): CaseMatch | null {
 	const key = COLL_INDEX_TO_KEY[idx] || name;
 	if (!key) return null;
 	return { case: name || key, key };
+}
+
+/**
+ * ZBLL — port of cstimer identZBLL. Base mask is EOLL, matching cstimer: the
+ * search only considers orientations where the last-layer edges read as oriented,
+ * which is precisely the state a one-look ZBLL is performed from.
+ */
+export function getMatchingZBLLState(facelet54: string): CaseMatch | null {
+	if (!facelet54 || facelet54.length !== 54) return null;
+	if (!EOLL_MASK || ZBLL_PATTERNS.length === 0) return null;
+	const idx = searchCaseByPattern(facelet54, EOLL_MASK, ZBLL_PATTERNS);
+	if (idx < 0) return null;
+	const name = ZBLL_CASE_NAMES[idx];
+	if (!name) return null;
+	// We carry no local ZBLL algorithm library, so the standard case name doubles
+	// as the key — the same convention used for unmapped CMLL cases.
+	return { case: name, key: name };
 }
 
 // Backward compatibility with old API (initLLStates was called in old code, no-op).

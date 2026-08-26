@@ -2556,6 +2556,7 @@
     "other_goals": "Otras metas",
     "reminders": "Recordatorios",
     "count_room_solves": "Contar resoluciones en salas",
+    "count_room_solves_desc": "Solo cuenta para tu objetivo diario y el gráfico de actividad; no se guarda en tu sesión.",
     "goal_confetti": "Confeti de meta",
     "solves_progress": "{{current}}/{{target}} resoluciones",
     "smart_analysis": "Análisis de Cubo Inteligente"

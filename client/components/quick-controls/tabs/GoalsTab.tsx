@@ -101,19 +101,26 @@ export default function GoalsTab() {
 			{/* Count room solves toggle */}
 			<div className="mt-4">
 				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
-					<div className="flex items-center space-x-3">
+					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
 						<UsersThree
 							size={18}
 							weight={storage.count_room_solves ? 'fill' : 'regular'}
-							className={storage.count_room_solves ? 'text-primary' : 'text-text/30'}
+							className={`shrink-0 ${storage.count_room_solves ? 'text-primary' : 'text-text/30'}`}
 						/>
-						<span className="font-medium text-text/80 group-hover:text-text transition-colors">
-							{t('quick_controls.count_room_solves')}
-						</span>
+						<div className="flex flex-col min-w-0">
+							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+								{t('quick_controls.count_room_solves')}
+							</span>
+							{/* Spells out where these solves actually land. Without it the label reads as
+							    "count them everywhere" and people expect them in their session too. */}
+							<span className="text-xs text-text mt-0.5">
+								{t('quick_controls.count_room_solves_desc')}
+							</span>
+						</div>
 					</div>
 					<button
 						type="button"
-						className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 transform hover:scale-105 ${
 							storage.count_room_solves
 								? 'bg-primary border-primary shadow-lg shadow-primary/30'
 								: 'bg-button border-text/[0.1] hover:bg-button'
