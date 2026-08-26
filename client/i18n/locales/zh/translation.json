@@ -2008,6 +2008,7 @@
   },
   "admin_dashboard": {
     "title": "管理面板",
+    "version": "版本",
     "loading": "加载中...",
     "activity": "活动",
     "users": "用户",

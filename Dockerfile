@@ -25,6 +25,13 @@ ENV PRO_ENABLED=true
 ARG RELEASE_NAME=dev
 ENV RELEASE_NAME=$RELEASE_NAME
 
+# Insan-okunabilir urun surumu (CalVer "26.8.1") -- duyurularda kullanilir, admin
+# dashboard'da gosterilir. RELEASE_NAME ile ayni yerde durmasi kasitli: ikisi de
+# `yarn install`dan SONRA geldigi icin her deploy'da degismeleri bagimlilik
+# layer cache'ini bozmuyor.
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
+
 # Derleme işlemi (Typescript -> Javascript)
 # 1. build klasörünü oluştur
 # 2. Prisma ve GraphQL kodlarını üret

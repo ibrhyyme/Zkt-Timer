@@ -1400,6 +1400,8 @@ type AdminDashboardStats {
   online_users: Int
   wca_connected: Int
   zkt_connected: Int
+  app_version: String
+  build_sha: String
 }
 
 type BulkArchiveResult {

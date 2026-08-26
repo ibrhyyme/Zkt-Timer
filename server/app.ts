@@ -660,10 +660,16 @@ app.post('/api/iap/sync', iapSyncHandler);
 import { youtubeThumbnailHandler } from './api/youtube_thumbnail';
 app.get('/api/yt-thumb/:id', youtubeThumbnailHandler);
 
-// Cache-busting: Capacitor and web clients check for updated version
+// Two different things, deliberately separate:
+//   version — the human-readable product version announced to users (CalVer
+//             "26.8.1", computed per deploy in .github/workflows/deploy.yml)
+//   build   — the git SHA, which is what actually busts asset caches
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-	res.json({ version: process.env.RELEASE_NAME || '1.0' });
+	res.json({
+		version: process.env.APP_VERSION || 'dev',
+		build: process.env.RELEASE_NAME || 'dev',
+	});
 });
 
 // OTA update check (Faz 2 local bundle): the @capgo/capacitor-updater plugin POSTs

@@ -15,11 +15,56 @@
 		color: rgba(var(--text-color), 0.6);
 	}
 
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 16px;
+		// Owns the spacing that used to live on __title, so the badge stays on the
+		// title's baseline instead of being pushed down by it.
+		margin-bottom: 24px;
+	}
+
 	&__title {
 		font-size: 2rem;
 		font-weight: 600;
 		color: rgb(var(--text-color));
-		margin-bottom: 24px;
+		margin-bottom: 0;
+	}
+
+	&__version {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 10px;
+		padding: 7px 14px;
+		border-radius: 10px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+	}
+
+	// Hierarchy here comes from size and weight only — every one of these keeps a
+	// full-strength color.
+	&__version-label {
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgb(var(--text-color));
+	}
+
+	&__version-value {
+		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-size: 1.05rem;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__version-build {
+		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
 	}
 
 	&__section {
@@ -283,8 +328,22 @@
 	@media (max-width: 750px) {
 		padding: 12px;
 
+		&__header {
+			gap: 10px;
+			margin-bottom: 18px;
+		}
+
 		&__title {
 			font-size: 1.5rem;
+		}
+
+		&__version {
+			padding: 5px 10px;
+			gap: 8px;
+		}
+
+		&__version-value {
+			font-size: 0.95rem;
 		}
 
 		&__grid {

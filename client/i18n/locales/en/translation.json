@@ -2008,6 +2008,7 @@
   },
   "admin_dashboard": {
     "title": "Admin Dashboard",
+    "version": "Version",
     "loading": "Loading...",
     "activity": "Activity",
     "users": "Users",

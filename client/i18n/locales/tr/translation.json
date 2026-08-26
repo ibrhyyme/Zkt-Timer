@@ -2015,6 +2015,7 @@
   },
   "admin_dashboard": {
     "title": "Yönetim Panosu",
+    "version": "Sürüm",
     "loading": "Yükleniyor...",
     "activity": "Aktivite",
     "users": "Kullanıcılar",

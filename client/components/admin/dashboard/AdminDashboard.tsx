@@ -27,6 +27,10 @@ interface DashboardStats {
 	online_users: number;
 	wca_connected: number;
 	zkt_connected: number;
+	// Nullable in the schema, and an older cached bundle can query a server that
+	// predates these fields, so both are optional here.
+	app_version?: string;
+	build_sha?: string;
 }
 
 const STATS_QUERY = gql`
@@ -47,6 +51,8 @@ const STATS_QUERY = gql`
 			online_users
 			wca_connected
 			zkt_connected
+			app_version
+			build_sha
 		}
 	}
 `;
@@ -448,7 +454,16 @@ export default function AdminDashboard() {
 	return (
 		<div className="zt-admin-dashboard">
 			<div className="zt-admin-dashboard__container">
-				<h1 className="zt-admin-dashboard__title">{t('admin_dashboard.title')}</h1>
+				<div className="zt-admin-dashboard__header">
+					<h1 className="zt-admin-dashboard__title">{t('admin_dashboard.title')}</h1>
+					{/* The number to put in a release announcement. Build SHA sits next to
+					    it so a "is this really live?" check needs no second lookup. */}
+					<div className="zt-admin-dashboard__version">
+						<span className="zt-admin-dashboard__version-label">{t('admin_dashboard.version')}</span>
+						<span className="zt-admin-dashboard__version-value">{stats.app_version || 'dev'}</span>
+						<span className="zt-admin-dashboard__version-build">{stats.build_sha || 'dev'}</span>
+					</div>
+				</div>
 
 				<div className="zt-admin-dashboard__section">
 					<h2 className="zt-admin-dashboard__section-title">{t('admin_dashboard.activity')}</h2>

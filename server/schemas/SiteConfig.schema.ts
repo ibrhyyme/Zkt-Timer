@@ -294,6 +294,18 @@ export class AdminDashboardStats {
 	/** Members with a linked Zeka Kupu Turkiye account. */
 	@Field(() => Int)
 	zkt_connected: number;
+
+	/**
+	 * Product version currently live (CalVer "26.8.1"), computed per deploy and
+	 * injected as APP_VERSION. This is the number announced to users; 'dev' on
+	 * local runs.
+	 */
+	@Field(() => String, {nullable: true})
+	app_version?: string;
+
+	/** Git SHA of the running build — the value that busts asset caches. */
+	@Field(() => String, {nullable: true})
+	build_sha?: string;
 }
 
 @InputType()

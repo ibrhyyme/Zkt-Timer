@@ -467,6 +467,11 @@ export class AdminResolver {
 			online_users: online.uniqueUsers,
 			wca_connected,
 			zkt_connected,
+			// Injected by docker-compose from the deploy workflow. Rides along on
+			// this query rather than a separate endpoint so the dashboard still
+			// makes a single request.
+			app_version: process.env.APP_VERSION || 'dev',
+			build_sha: process.env.RELEASE_NAME || 'dev',
 		};
 	}
 

@@ -8,14 +8,53 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+
+    # Tag push icin gerekli (Compute release version -> Tag release)
+    permissions:
+      contents: write
+
+    # Two deploys racing would compute the same version number and the second
+    # tag push would be rejected. Queue them instead of cancelling: a cancelled
+    # deploy would leave the server half-built.
+    concurrency:
+      group: deploy-main
+      cancel-in-progress: false
+
     steps:
+    # Tag history is the version counter's source, so the full history is required
+    # (the default shallow clone fetches no tags).
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    # CalVer product version: YY.M.N — N counts releases within the current month
+    # and resets when the month rolls over. Istanbul time, not UTC: a late-night
+    # deploy on the last day of the month must not land in the previous month.
+    - name: Compute release version
+      id: version
+      run: |
+        YM=$(TZ=Europe/Istanbul date +%y.%-m)
+        # Last dotted field of every v<YM>.* tag = that month's counter. The digit
+        # filter lives inside awk on purpose: a `grep` here would exit 1 on the very
+        # first release (no tags yet) and kill the step under `pipefail`.
+        LAST=$(git tag --list "v${YM}.*" | awk -F. '$NF ~ /^[0-9]+$/ {print $NF}' | sort -n | tail -1)
+        NEXT=$(( ${LAST:-0} + 1 ))
+        echo "value=${YM}.${NEXT}" >> "$GITHUB_OUTPUT"
+        echo "Yayinlanacak surum: ${YM}.${NEXT}"
+
     - name: Deploy to Hetzner
       uses: appleboy/ssh-action@v1.2.5
+      env:
+        APP_VERSION: ${{ steps.version.outputs.value }}
       with:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         command_timeout: 40m
+        # Forwards the computed version into the remote shell so docker compose
+        # can read it as ${APP_VERSION}.
+        envs: APP_VERSION
         script: |
           set -e
 
@@ -36,6 +75,12 @@ jobs:
           export RELEASE_NAME=$(git rev-parse --short HEAD)
           echo "RELEASE_NAME=$RELEASE_NAME"
 
+          # 4b. Insan-okunabilir urun surumu (CalVer, runner'da hesaplandi).
+          # `envs:` ile geliyor; yine de acikca export ediyoruz ki `docker compose`
+          # ${APP_VERSION} olarak gorebilsin. Bos gelirse compose 'dev'e duser.
+          export APP_VERSION="${APP_VERSION:-dev}"
+          echo "APP_VERSION=$APP_VERSION"
+
           # 5. Build et ve başlat
           docker compose up -d --no-deps --build app-server
 
@@ -49,6 +94,17 @@ jobs:
           echo "Deployment tamamlandı!"
           docker compose ps
           
+    # Tagged only after the deploy succeeds, so a failed run does not burn a
+    # version number. Pushing a tag does not re-trigger this workflow (it listens
+    # on branch pushes only).
+    - name: Tag release
+      if: success()
+      run: |
+        VERSION="${{ steps.version.outputs.value }}"
+        git tag "v${VERSION}"
+        git push origin "v${VERSION}"
+        echo "Yayinlanan surum: **${VERSION}**" >> "$GITHUB_STEP_SUMMARY"
+
     - name: Purge Cloudflare cache
       run: |
         curl --fail -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \

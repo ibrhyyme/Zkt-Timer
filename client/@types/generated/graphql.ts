@@ -184,6 +184,8 @@ export type AdminActiveUsersResult = {
 
 export type AdminDashboardStats = {
   __typename?: 'AdminDashboardStats';
+  app_version?: Maybe<Scalars['String']>;
+  build_sha?: Maybe<Scalars['String']>;
   dau?: Maybe<Scalars['Int']>;
   mau?: Maybe<Scalars['Int']>;
   online_users?: Maybe<Scalars['Int']>;

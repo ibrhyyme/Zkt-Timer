@@ -2008,6 +2008,7 @@
   },
   "admin_dashboard": {
     "title": "Panel de administración",
+    "version": "Versión",
     "loading": "Cargando...",
     "activity": "Actividad",
     "users": "Usuarios",

@@ -4,6 +4,7 @@ services:
       context: .
       args:
         RELEASE_NAME: ${RELEASE_NAME:-dev}
+        APP_VERSION: ${APP_VERSION:-dev}
     container_name: zkt-timer-app-server-1
     env_file:
       - .env
@@ -20,6 +21,7 @@ services:
       - HOST=0.0.0.0
       - PORT=3000
       - RELEASE_NAME=${RELEASE_NAME:-dev}
+      - APP_VERSION=${APP_VERSION:-dev}
     depends_on:
       - postgres
       - redis
