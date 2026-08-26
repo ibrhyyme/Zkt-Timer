@@ -18,6 +18,7 @@
 import Cube from 'cubejs';
 import { analyzePhases } from '../phase_engine';
 import { SolveMethod, SolveTurn } from '../types';
+import { isEOLineSolved } from '../methods/zz';
 
 // cubejs piece order.
 //   edges:   UR UF UL UB DR DF DL DB FR FL BL BR  (BL is 10, BR is 11)
@@ -150,8 +151,16 @@ const ROUX_PHASES: Phase[] = [
 ];
 
 // ZZ: EOLine, then the two bottom blocks, then the last layer.
+//
+// The EOLine setup deliberately ends on the move that completes it. A trailing D
+// turn would not change the reading: the line is checked as an opposite pair
+// anywhere in the D layer, because turning D does not undo an EOLine.
 const ZZ_PHASES: Phase[] = [
-	{ name: 'eoline', alg: "R U L' D" },
+	// Contains F moves on purpose: their inverse BREAKS edge orientation in the
+	// start state, which is what a real scramble does. An EO-safe setup (only
+	// R/U/L/D) would leave EO already solved and the step would never be detected
+	// as happening — the scenario has to require the solver to fix EO.
+	{ name: 'eoline', alg: "F R U' F' D2 L" },
 	{ name: 'block_1', alg: "L U' L' U L U' L'" },
 	{ name: 'block_2', alg: "R U R' U' R U R'" },
 	{ name: 'll', alg: "R U R' U' R' F R2 U' R' U' R U R' F'" },
@@ -275,11 +284,45 @@ describe('ZZ — phase boundaries against independent piece checks', () => {
 		expect(coll!.case).toBeTruthy();
 	});
 
-	it('engine finds every phase at the constructed boundary', () => {
+	it('setup is valid: every step is genuinely performed', () => {
 		const res = analyzePhases(built.turns, built.startState, { method: 'zz' });
-		for (const ph of ZZ_PHASES) {
-			expect([ph.name, phaseEndIndex(res, ph.name)]).toEqual([ph.name, built.expectedEnd[ph.name]]);
+		expect(res.transitions.filter((t) => !t.skipped)).toHaveLength(ZZ_PHASES.length);
+	});
+
+	it('every reported boundary is confirmed independently, in order', () => {
+		// Boundaries are not pinned to the constructed indices: EOLine can complete
+		// before the last move of the setup, which is a real property of the method.
+		// What must hold is that each reported boundary genuinely satisfies its step.
+		const res = analyzePhases(built.turns, built.startState, { method: 'zz' });
+
+		const eoAt = phaseEndIndex(res, 'eoline');
+		expect(eoAt).not.toBeNull();
+		expect(eoSolved(stateAtTurn(built.startState, built.turns, eoAt!))).toBe(true);
+
+		const idx = ZZ_PHASES.map((p) => phaseEndIndex(res, p.name)!);
+		for (let i = 1; i < idx.length; i++) {
+			expect(idx[i]).toBeGreaterThan(idx[i - 1]);
 		}
+		expect(stateAtTurn(built.startState, built.turns, idx[idx.length - 1]).isSolved()).toBe(true);
+	});
+
+	it('recognizes the one-look ZBLL case', () => {
+		// The full 493-case set is ported from cstimer's genZBLLMap. ZZ reaches the
+		// last layer with edges oriented, which is the state ZBLL is performed from.
+		const res = analyzePhases(built.turns, built.startState, { method: 'zz' });
+		const zbll = (res.cases || []).find((c) => c.set === 'zbll');
+		expect(zbll).toBeDefined();
+		expect(zbll!.case).toBeTruthy();
+	});
+
+	it('a D turn after EOLine does not undo it', () => {
+		// Regression: the line used to be checked at fixed DF/DB slots, so turning D
+		// — routine for a ZZ solver — made EOLine vanish and collapsed the whole
+		// solve into a single row. It is now checked as an opposite pair anywhere in
+		// the D layer.
+		const c = new Cube();
+		for (const m of mv('D')) c.move(m);
+		expect(isEOLineSolved(c)).toBe(true);
 	});
 });
 

@@ -2556,6 +2556,7 @@
     "other_goals": "其他目标",
     "reminders": "提醒",
     "count_room_solves": "计入房间还原",
+    "count_room_solves_desc": "仅计入每日目标和活动图表，不会保存到你的阶段。",
     "goal_confetti": "目标庆祝动画",
     "solves_progress": "{{current}}/{{target}} 次还原",
     "smart_analysis": "智能魔方分析"

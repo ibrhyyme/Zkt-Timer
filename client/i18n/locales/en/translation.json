@@ -2556,6 +2556,7 @@
     "other_goals": "Other Goals",
     "reminders": "Reminders",
     "count_room_solves": "Count room solves",
+    "count_room_solves_desc": "Counts toward your daily goal and activity graph only, not saved to your session.",
     "goal_confetti": "Goal Confetti",
     "solves_progress": "{{current}}/{{target}} solves",
     "smart_analysis": "Smart Cube Analysis"

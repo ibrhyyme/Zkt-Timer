@@ -244,6 +244,46 @@ for (const [key, alg] of Object.entries(cmllAlgs)) {
 console.log('CMLL eslesen:', matched, '/', Object.keys(cmllAlgs).length);
 if (unmatched.length) console.log('eslesmeyen:', unmatched.join(', '));
 
+
+// ---- ZBLL (493 vaka) ----
+// cstimer'da zbll_map bir FONKSIYONLA uretiliyor (genZBLLMap), statik tablo degil.
+// Bu yuzden regex ile alinamaz; scramble_333_edit.js'i kendi VM baglaminda calistirip
+// disari acilan getZBLLImage'i cagiriyoruz. Kayit/UI API'leri (scrMgr, image, kernel)
+// zincirlenebilir Proxy ile karsilaniyor — goruntu uretimini etkilemiyorlar.
+const zbllData = (() => {
+	const chainable = () => {
+		const fn = function () { return fn; };
+		return new Proxy(fn, { get: (t, k) => (k === 'fixCase' ? (c) => c || 0 : chainable()), apply: () => fn });
+	};
+	const c3 = {
+		console, DEBUG: false, mathlib: undefined, scramble_333: undefined,
+		scrMgr: chainable(), image: chainable(), kernel: chainable(),
+		tools: { isCurTrainScramble: () => false },
+		$: { map: (a, f) => (a || []).map(f), each: () => {}, extend: Object.assign },
+	};
+	vm.createContext(c3);
+	vm.runInContext(isaacSrc, c3);
+	vm.runInContext(mathlibSrc, c3);
+	vm.runInContext(readFileSync('Referans/cstimer-master/src/js/lib/min2phase.js', 'utf8'), c3);
+	vm.runInContext(scrambleEditSrc, c3);
+	const s3 = c3.scramble_333;
+	if (!s3 || typeof s3.getZBLLImage !== 'function') {
+		console.error('ZBLL: getZBLLImage bulunamadi');
+		return { patterns: [], names: [] };
+	}
+	const patterns = [], names = [];
+	for (let i = 0; ; i++) {
+		let img;
+		try { img = s3.getZBLLImage(i); } catch { break; }
+		if (!img || !img[0]) break;
+		const param = String(img[0]).replace(/G/g, '-');
+		patterns.push(cu2.__toEqus(cu2.__LLPattern.replace(/[0-9a-z]/g, (v) => param[parseInt(v, 36)].toLowerCase())));
+		names.push(img[2] || String(i));
+	}
+	return { patterns, names };
+})();
+console.log('ZBLL desenleri:', zbllData.patterns.length);
+
 const output = {
 	_meta: {
 		generated_at: new Date().toISOString(),
@@ -262,6 +302,8 @@ const output = {
 	ollPatterns: cu2.__ollPatterns,
 	pllIndexToKey,
 	ollIndexToKey,
+	zbllPatterns: zbllData.patterns,
+	zbllCaseNames: zbllData.names,
 	cmllPatterns: cu2.__cmllPatterns,
 	collPatterns: cu2.__collPatterns,
 	collIndexToKey,

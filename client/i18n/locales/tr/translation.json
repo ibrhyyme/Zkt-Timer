@@ -2563,6 +2563,7 @@
     "other_goals": "Diğer Hedefler",
     "reminders": "Hatırlatmalar",
     "count_room_solves": "Odalardaki çözümleri say",
+    "count_room_solves_desc": "Sadece günlük hedefine ve aktivite grafiğine sayılır, sezonuna kaydedilmez.",
     "goal_confetti": "Hedefe Konfeti",
     "solves_progress": "{{current}}/{{target}} çözüm",
     "smart_analysis": "Akıllı Küp Analizi"

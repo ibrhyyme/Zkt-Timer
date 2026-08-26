@@ -14,7 +14,7 @@
 
 import { checkMask } from '../cube_progress';
 import { SOLVED_MASK } from '../facelet_masks';
-import { getMatchingPLLState, getMatchingCOLLState } from '../ll_identification';
+import { getMatchingPLLState, getMatchingCOLLState, getMatchingZBLLState } from '../ll_identification';
 import { MethodDefinition } from './types';
 
 // cubejs piece order.
@@ -37,16 +37,29 @@ function blockSolved(cube: any, block: { edges: number[]; corners: number[] }): 
 	return true;
 }
 
+/** D-layer slots, in the order a D turn cycles them: DR DF DL DB. */
+const D_LAYER_SLOTS = [4, 5, 6, 7];
+
 /**
- * EOLine: every edge oriented, plus DF and DB placed.
- * Verified against the definition — a cube touched only by R/U/L/D keeps EO,
- * a single F breaks exactly four edges, F2 breaks none.
+ * EOLine: every edge oriented, plus DF and DB forming a line in the D layer.
+ *
+ * The line is checked as an OPPOSITE PAIR anywhere in the D layer, not at fixed
+ * slots. A ZZ solver routinely turns D after orienting edges, and a D turn does
+ * not undo the EOLine — it carries the whole line round. Measured: DF/DB land on
+ * (5,7), (4,6), (7,5), (6,4) for the four D positions, i.e. the two pieces stay
+ * two slots apart. Requiring them at DF/DB exactly made the step vanish until the
+ * very end of the solve, collapsing EOLine, both blocks and the last layer into
+ * one row — which is exactly what users reported.
  */
 export function isEOLineSolved(cube: any): boolean {
 	for (let i = 0; i < 12; i++) {
 		if (cube.eo[i] !== 0) return false;
 	}
-	return cube.ep[DF] === DF && cube.ep[DB] === DB;
+	const posDF = cube.ep.indexOf(DF);
+	const posDB = cube.ep.indexOf(DB);
+	if (D_LAYER_SLOTS.indexOf(posDF) < 0 || D_LAYER_SLOTS.indexOf(posDB) < 0) return false;
+	// Opposite pair within the D layer.
+	return Math.abs(posDF - posDB) === 2;
 }
 
 /**
@@ -95,5 +108,9 @@ export const ZZ_METHOD: MethodDefinition = {
 		// finish with OCLL + PLL.
 		{ phase: 'll', set: 'coll', fromPhases: ['block_2', 'block_1'], identify: getMatchingCOLLState },
 		{ phase: 'll', set: 'pll', fromPhases: ['block_2', 'block_1'], identify: getMatchingPLLState },
+		// Listed last on purpose: the DB keeps one case per step and the last match
+		// wins, so the most specific reading (the full 493-case ZBLL) is the one
+		// stored, with COLL/PLL remaining as the coarser fallbacks.
+		{ phase: 'll', set: 'zbll', fromPhases: ['block_2', 'block_1'], identify: getMatchingZBLLState },
 	],
 };
