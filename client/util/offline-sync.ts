@@ -37,9 +37,17 @@ async function isReallyOnline(): Promise<boolean> {
 /**
  * GraphQL mutation sonucunu kontrol et - errors varsa hata fırlat
  */
-function assertNoGraphQLErrors(result: any): void {
-    if (result.errors && result.errors.length > 0) {
-        throw new Error(result.errors[0].message);
+/**
+ * `ignoreCodes` lets a mutation treat some server rejections as the outcome it wanted. A
+ * delete for a solve the server no longer has has already achieved its goal; now that the
+ * queue never drops anything, calling that a failure would retry it for ever.
+ */
+function assertNoGraphQLErrors(result: any, ignoreCodes: string[] = []): void {
+    const errors = result?.errors;
+    if (!errors || errors.length === 0) return;
+    const blocking = errors.filter((e: any) => !ignoreCodes.includes(e?.extensions?.code));
+    if (blocking.length > 0) {
+        throw new Error(blocking[0].message);
     }
 }
 
@@ -72,15 +80,19 @@ export async function processQueue(): Promise<void> {
             successCount++;
         } catch (error) {
             console.error(`Mutation ${mutation.id} başarısız:`, error);
+            await incrementRetryCount(mutation.id);
 
-            // Retry limit'e ulaştıysa, queue'dan sil
-            if (mutation.retryCount >= MAX_RETRIES) {
-                await removeFromQueue(mutation.id);
+            // The mutation is never dropped. Deleting it after three tries meant a solve
+            // that failed to reach the server — because the server was briefly down, a
+            // token had expired, a request timed out — lived on that one device for ever
+            // and no later sync would ever look at it again. It stays queued instead, and
+            // every future sync tries it again.
+            //
+            // The warning is shown once, on the attempt that crosses the threshold, so a
+            // permanently unsendable record cannot nag on every single sync.
+            if (mutation.retryCount === MAX_RETRIES) {
                 failCount++;
-                toastError(`Bir çözüm ${MAX_RETRIES} denemeden sonra senkronize edilemedi.`);
-            } else {
-                // Retry count artır
-                await incrementRetryCount(mutation.id);
+                toastError('Bir çözüm senkronize edilemedi. Daha sonra tekrar denenecek.');
             }
         }
     }
@@ -95,7 +107,7 @@ export async function processQueue(): Promise<void> {
     }
 
     if (failCount > 0) {
-        toastError(`${failCount} çözüm senkronize edilemedi.`);
+        toastError(`${failCount} çözüm senkronize edilemedi, kuyrukta bekliyor.`);
     }
 }
 
@@ -159,7 +171,7 @@ async function executeDeleteSolve(variables: any): Promise<void> {
 	`;
 
     const result = await gqlMutate(query, variables);
-    assertNoGraphQLErrors(result);
+    assertNoGraphQLErrors(result, ['NOT_FOUND']);
 }
 
 async function executeDeleteSolves(variables: any): Promise<void> {
@@ -170,7 +182,7 @@ async function executeDeleteSolves(variables: any): Promise<void> {
 	`;
 
     const result = await gqlMutate(query, variables);
-    assertNoGraphQLErrors(result);
+    assertNoGraphQLErrors(result, ['NOT_FOUND']);
 }
 
 /**

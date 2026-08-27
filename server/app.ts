@@ -454,6 +454,15 @@ if (!isDev) {
 			if (code === 'INTERNAL_SERVER_ERROR' || !code) {
 				let traceId = '';
 				try { traceId = Sentry.captureException(err) || ''; } catch { /* ignore */ }
+				// Also write it where `docker logs` can see it. Sentry alone leaves nothing
+				// on the box, so a user who cannot send a screenshot leaves no trail at all
+				// and the fault has to be guessed at.
+				logger.error('GraphQL error', {
+					message: err?.message,
+					path: err?.path,
+					code,
+					traceId,
+				});
 				// The message reaches a screen, so it is Turkish and carries a code the
 				// organizer can read out. Details stay hidden; the trace id is what
 				// connects their screenshot to the server log.
@@ -469,6 +478,10 @@ if (!isDev) {
 			// client can render the message in the user's language instead of the raw
 			// server string; everything else in extensions stays server-side.
 			const i18nKey = err?.extensions?.i18nKey;
+			// Expected errors are logged too, at warn: a solve that keeps failing to sync
+			// usually fails on one of these, and without a line here the only evidence is
+			// on the user's screen.
+			logger.warn('GraphQL rejected request', { message: err?.message, path: err?.path, code });
 			return {
 				message: err.message,
 				extensions: i18nKey ? { code, i18nKey } : { code },

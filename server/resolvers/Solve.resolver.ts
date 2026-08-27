@@ -214,7 +214,22 @@ export class SolveResolver {
 		if (input.cube_type === 'wca' && !input.scramble_subset) {
 			input.scramble_subset = '333';
 		}
-		const createdSolve = await createSolve(user, input);
+		let createdSolve;
+		try {
+			createdSolve = await createSolve(user, input);
+		} catch (e: any) {
+			// A queued solve that already landed on an earlier attempt comes back as a unique
+			// violation. The row is there, so this is a success and not a failure. Reporting
+			// it as an error is what made the client retry it and eventually throw away a
+			// solve that had in fact been saved all along.
+			if (e?.code === 'P2002' && input.id) {
+				const existing = await context.prisma.solve.findFirst({
+					where: { id: input.id, user_id: user.id },
+				});
+				if (existing) return existing;
+			}
+			throw e;
+		}
 
 		if (input.is_smart_cube && input.smart_turns) {
 			// Pro gating: free user sends null smart_turns (client side).
