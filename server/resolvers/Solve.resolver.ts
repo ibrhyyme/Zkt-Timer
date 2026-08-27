@@ -4,7 +4,8 @@ import { Role } from '../middlewares/auth';
 import { Solve, SolveInput } from '../schemas/Solve.schema';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
 import { getSolveSteps } from '../util/solve/solve_method';
-import { createSolveMethodSteps } from '../models/solve_method_step';
+import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
+import { generateUUID } from '../../shared/code';
 import { logger } from '../services/logger';
 import { updateUserAccountWithParams } from '../models/user_account';
 import { GraphQLVoid } from 'graphql-scalars';
@@ -320,8 +321,40 @@ export class SolveResolver {
 
 		solves.forEach(assertValidSolveTimes);
 
+		// Ids are assigned here rather than inside the model so the smart cube pass below
+		// knows which rows it is writing steps for.
+		solves.forEach((s) => {
+			if (!s.id) s.id = generateUUID();
+		});
+
 		// Use existing model function
 		await bulkCreateSolves(user, solves);
+
+		// Smart cube solves arrive through this path too, not just manual imports: the app
+		// migrates locally held solves to the server in chunks. Until this ran, those solves
+		// kept their moves but never got an analysis, so cross time, turn count and the phase
+		// breakdown came out empty on every device — and nothing in the logs said so, because
+		// an empty step list is not an error anywhere in the chain.
+		const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
+		if (userIsPro) {
+			for (const input of solves) {
+				if (!input.is_smart_cube || !input.smart_turns) continue;
+				try {
+					const turns = parseSmartTurns(input.smart_turns);
+					if (!turns.length) continue;
+					const steps = getSolveSteps(turns, input.scramble, (input as any).analysis_method);
+					// Idempotent: re-importing the same solve must not stack duplicate steps.
+					await deleteSolveMethodSteps({ id: input.id });
+					await createSolveMethodSteps({ id: input.id }, steps);
+				} catch (e) {
+					// One unreadable solve must not cost the caller the whole chunk.
+					logger.warn('Failed to create solve method steps during bulk import', {
+						solveId: input.id,
+						error: e,
+					});
+				}
+			}
+		}
 
 		// Update user's last solve timestamp
 		await updateUserAccountWithParams(user.id, {

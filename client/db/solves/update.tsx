@@ -22,14 +22,38 @@ import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { addSolveTombstones } from '../../util/solve-tombstones';
 
 let offlineToastShown = false;
+let queuedToastShown = false;
 if (typeof window !== 'undefined') {
-	window.addEventListener('online', () => { offlineToastShown = false; });
+	window.addEventListener('online', () => {
+		offlineToastShown = false;
+		queuedToastShown = false;
+	});
 }
 
 function showOfflineToastOnce() {
 	if (!offlineToastShown) {
 		toastInfo('Çözüm offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
 		offlineToastShown = true;
+	}
+}
+
+/**
+ * A failed save is not proof of a lost connection. A server error, a rejected payload or a
+ * request that times out all land in the same catch, and reporting every one of them as
+ * "offline" sent users looking at their wifi while the real fault sat on the server and was
+ * never logged anywhere. The solve is queued either way; only the wording and the console
+ * record differ.
+ */
+function reportSaveFailure(error: unknown) {
+	const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+	if (offline) {
+		showOfflineToastOnce();
+		return;
+	}
+	console.error('[solve] save failed while online — queued for retry:', error);
+	if (!queuedToastShown) {
+		toastInfo('Çözüm kaydedilemedi, kuyruğa alındı. Otomatik olarak tekrar denenecek.');
+		queuedToastShown = true;
 	}
 }
 
@@ -89,7 +113,7 @@ export async function createSolveDb(solveInput: Solve) {
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('createSolve', { input: solve });
-			showOfflineToastOnce();
+			reportSaveFailure(e);
 		}
 	}
 }
@@ -158,7 +182,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('deleteSolve', { id: solve.id });
-			showOfflineToastOnce();
+			reportSaveFailure(e);
 		}
 	}
 }
@@ -196,7 +220,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('updateSolve', { id: solve.id, input: { ...input, time: solve.time } });
-			showOfflineToastOnce();
+			reportSaveFailure(e);
 		}
 	}
 }
@@ -367,7 +391,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 			// Offline queue'ya ekle
 			await addToQueue('deleteSolves', { ids: solves.map(s => s.id) });
-			showOfflineToastOnce();
+			reportSaveFailure(e);
 		}
 	}
 }
