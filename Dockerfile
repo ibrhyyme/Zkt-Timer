@@ -65,7 +65,12 @@ RUN apt-get update && \
 
 # Sadece production bağımlılıklarını yüklemek için package.json
 COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile --network-timeout 600000 --network-concurrency 4 && yarn cache clean
+# --ignore-engines: Yarn 1.x'in engine uyumluluk taraması, --production filtrelemesinden
+# ÖNCE (Fetching packages aşamasında) yarn.lock'taki TÜM girdileri (devDependencies dahil)
+# kontrol ediyor. @capacitor/cli (devDependency, Node >=22 istiyor) bu yüzden burada
+# hâlâ hata veriyordu, halbuki bu paket runtime image'da hiç kullanılmıyor (sadece
+# capacitor.config.ts'teki type-only import için var, o dosya bu image'a kopyalanmıyor).
+RUN yarn install --production --frozen-lockfile --ignore-engines --network-timeout 600000 --network-concurrency 4 && yarn cache clean
 
 # Builder aşamasından derlenmiş dosyaları al
 # 1. Server kodu (Compiled JS)
