@@ -55,13 +55,16 @@ export async function hapticNotification(type: 'success' | 'warning' | 'error' =
 	}
 }
 
-// Status Bar — dark theme + background color
+// Status Bar — dark theme (icon/text color only)
 export async function initStatusBar(): Promise<void> {
 	if (!isNative()) return;
 	try {
 		const { StatusBar, Style } = await import('@capacitor/status-bar');
 		await StatusBar.setStyle({ style: Style.Dark });
-		await StatusBar.setBackgroundColor({ color: '#12141C' });
+		// setBackgroundColor intentionally dropped: Capacitor 8 renders transparent
+		// system bars over content (see initSafeArea below), so this call was already
+		// a no-op — it only survived as a deprecated android.view.Window.setStatusBarColor
+		// call that Google Play's compliance scan flags.
 	} catch (e) {
 		console.warn('[Native] StatusBar init failed:', e);
 	}
