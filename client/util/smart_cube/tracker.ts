@@ -118,6 +118,22 @@ export class CubeTracker {
 	}
 }
 
+const OPPOSITE_FACES: Record<string, string> = {
+	U: 'D', D: 'U',
+	L: 'R', R: 'L',
+	F: 'B', B: 'F',
+};
+
+function faceOf(move: string): string {
+	return move.replace(/('|2)/g, '');
+}
+
+/** Opposite-face moves (U/D, L/R, F/B) turn independent layers and never affect each
+ *  other — doing the scramble's next move before this one changes nothing physically. */
+function areOppositeFaces(a: string, b: string): boolean {
+	return OPPOSITE_FACES[faceOf(a)] === faceOf(b);
+}
+
 /** A point the cube passes through on its way from untouched to fully scrambled. */
 export interface ScramblePrefix {
 	/** Facelet state the cube reports here. */
@@ -129,13 +145,6 @@ export interface ScramblePrefix {
 	 * the cube but the second is not.
 	 */
 	partial: boolean;
-}
-
-/** `R2` reaches its state through two quarter turns; the cube reports each one separately. */
-function quarterTurns(move: string): string[] {
-	if (!move.endsWith('2')) return [move];
-	const face = move.slice(0, -1);
-	return [face, face];
 }
 
 /**
@@ -165,16 +174,43 @@ export function prefixStatesFrom(targetFacelets: string, moves: string[]): Scram
 		}
 		const states: ScramblePrefix[] = [{ state: cube.asString(), done: 0, partial: false }];
 		moves.forEach((move, index) => {
-			const quarters = quarterTurns(move);
-			quarters.forEach((quarter, q) => {
-				cube.move(quarter);
-				const whole = q === quarters.length - 1;
-				states.push({
-					state: cube.asString(),
-					done: whole ? index + 1 : index,
-					partial: !whole,
-				});
-			});
+			// Opposite-face reordering: if the scramble's next move commutes with this one,
+			// a user free to pick either physical move first may do that next one early —
+			// R then L is the identical cube to L then R. Record that "one done early out of
+			// order" state too, so the lookup still finds them. Once the move at `index`
+			// itself lands, the state matches the normal in-order entry below regardless of
+			// which of the pair came first, so nothing else is needed to pick the walk back up.
+			const next = moves[index + 1];
+			if (next && areOppositeFaces(move, next)) {
+				const early = Cube.fromString(cube.asString());
+				early.move(next);
+				states.push({ state: early.asString(), done: index, partial: false });
+			}
+
+			if (move.endsWith('2')) {
+				const face = move.slice(0, -1);
+				// A half-turned double is on the cube regardless of which direction the user
+				// started it from: a 180° turn is its own inverse, so face (clockwise) and
+				// face' (counter-clockwise) both leave the cube one quarter into the exact
+				// same double move, and the second quarter finishes it identically either
+				// way. Record both as valid "half done" states — the lookup only knowing the
+				// clockwise one meant a user who instinctively started a double turn
+				// counter-clockwise got told they had made a mistake for a move that was
+				// entirely correct.
+				const cw = Cube.fromString(cube.asString());
+				cw.move(face);
+				states.push({ state: cw.asString(), done: index, partial: true });
+
+				const ccw = Cube.fromString(cube.asString());
+				ccw.move(invertMove(face));
+				states.push({ state: ccw.asString(), done: index, partial: true });
+
+				cube.move(move);
+				states.push({ state: cube.asString(), done: index + 1, partial: false });
+			} else {
+				cube.move(move);
+				states.push({ state: cube.asString(), done: index + 1, partial: false });
+			}
 		});
 		return states;
 	} catch (e) {

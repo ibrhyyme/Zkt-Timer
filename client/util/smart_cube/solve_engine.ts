@@ -1,7 +1,6 @@
 import {
 	SmartTurn,
 	IncrementalCompressor,
-	matchScrambleWithCommutative,
 	invertMove,
 } from '../smart_scramble';
 import { cubeTimestampLinearFit, TimestampedMove, CorrectedMove } from '../smart_cube_timing';
@@ -201,6 +200,11 @@ export class SmartSolveEngine {
 	private outOfSync = false;
 	private lastUndoSignature = '';
 	private lastProgressSignature = '';
+	/** Most recent point where the tracker's state matched a point on the scramble's path. */
+	private lastGoodHit: ScramblePrefix | null = null;
+	/** `turns.length` at the moment `lastGoodHit` was last set — the undo hint reverses
+	 *  everything physically done since, not the whole scramble attempt. */
+	private lastGoodHitStreamIndex = 0;
 
 	private graceTimer: ReturnType<typeof setTimeout> | null = null;
 	private outOfSyncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -271,6 +275,9 @@ export class SmartSolveEngine {
 		} else {
 			this.tracker.setSolved(this.turns.length);
 		}
+		// After the tracker, not before: resetDeviationTracking anchors to tracker.applied,
+		// which the calls above just brought in sync with this.turns.
+		this.resetDeviationTracking();
 		this.setOutOfSync(false);
 	}
 
@@ -288,6 +295,7 @@ export class SmartSolveEngine {
 		// Fresh connection: nothing known about the cube yet. The first facelets packet
 		// re-anchors everything, which is why the tracker is not guessed here.
 		this.compressor.reset();
+		this.resetDeviationTracking();
 		this.streamOffset = this.turns.length;
 		this.solutionOffset = this.turns.length;
 		this.scrambleCompletedAt = null;
@@ -325,6 +333,9 @@ export class SmartSolveEngine {
 			} else {
 				this.tracker.setSolved(turns.length);
 			}
+			// After the tracker, not before: anchors to tracker.applied. realignMatching just
+			// below overwrites it with a more specific point if it finds one.
+			this.resetDeviationTracking();
 
 			// The compressor was just emptied. Mid-scramble that leaves the display painted
 			// from moves the matcher no longer holds, and it collapses one turn later with no
@@ -340,18 +351,25 @@ export class SmartSolveEngine {
 
 		if (turns.length === previous.length) return;
 
-		const fresh = this.tracker.applyNew(turns);
-		if (!fresh.length) return;
+		// Apply and evaluate one turn at a time. More than one new turn in a single call is
+		// rare (the caller's own state updates can coalesce two BLE events before a render)
+		// but evaluateScramble must not see only the state AFTER the whole batch — that would
+		// skip straight past an intermediate deviation a single wrong turn put the cube in,
+		// crediting or blaming the wrong move for it.
+		while (this.tracker.applied < turns.length) {
+			const fresh = this.tracker.applyNew(turns.slice(0, this.tracker.applied + 1));
+			if (!fresh.length) break;
 
-		const last = fresh[fresh.length - 1];
-		this.lastMoveTime = moveTime(last) || this.lastMoveTime;
+			const last = fresh[fresh.length - 1];
+			this.lastMoveTime = moveTime(last) || this.lastMoveTime;
 
-		if (this.phase === 'timing') {
-			this.checkSolveFromTracker();
-			return;
+			if (this.phase === 'timing') {
+				this.checkSolveFromTracker();
+				continue;
+			}
+
+			this.evaluateScramble(fresh);
 		}
-
-		this.evaluateScramble(fresh);
 	}
 
 	/**
@@ -397,6 +415,7 @@ export class SmartSolveEngine {
 		this.physicallySolved = true;
 		this.tracker.setSolved(this.turns.length);
 		this.compressor.reset();
+		this.resetDeviationTracking();
 		this.streamOffset = this.turns.length;
 		this.solutionOffset = this.turns.length;
 		this.setOutOfSync(false);
@@ -411,6 +430,7 @@ export class SmartSolveEngine {
 		this.timerStartedAt = null;
 		this.lateDrops = 0;
 		this.compressor.reset();
+		this.resetDeviationTracking();
 		this.streamOffset = this.turns.length;
 		this.solutionOffset = this.turns.length;
 		this.setUndo(null);
@@ -453,52 +473,111 @@ export class SmartSolveEngine {
 		}
 		if (this.phase !== 'scrambling' || !this.scramble) return;
 
-		// Facelets first: it is independent of the move matcher and immune to double
+		// Facelets first: it is independent of state matching and immune to double
 		// moves arriving as two quarter turns.
 		if (this.targetFacelets && this.facelets === this.targetFacelets) {
 			this.completeScramble('facelets');
 			return;
 		}
 
-		const relevant = this.turns.slice(this.streamOffset);
-		const userMoves = this.compressor.processNew(relevant);
-		const expected = this.scrambleMoves;
-		const { matched, matchStatus } = matchScrambleWithCommutative(expected, userMoves);
+		// The tracker mirrors every move as it lands, so its state is authoritative without
+		// waiting for a facelets packet. Comparing it against the target — and, failing
+		// that, against every point the scramble passes through — is what CSTimer's
+		// checkScramble/checkInSeq do: settle "how far along is the user" from where the
+		// cube actually IS, not by replaying a move list against what was expected. Move
+		// order, half turns and commuting reorderings all fall out of this for free, since
+		// they land on the identical facelet state regardless of how they were arrived at.
+		this.compressor.processNew(this.turns.slice(this.streamOffset)); // keeps scrambleProgress (display text) current
 
-		dbg('match', {
-			userMoves: userMoves.join(' '),
-			expected: expected.join(' '),
-			matched,
-			status: matchStatus.join(','),
-			trackerOnTarget: this.tracker.matches(this.targetFacelets),
-		});
-
-		this.publishProgress(matchStatus);
-
-		if (matched) {
-			// The matcher says the sequence was right, but a lost BLE packet would make it
-			// say that about a cube sitting in a different state. The tracker settles it.
-			if (this.connected && this.targetFacelets && !this.tracker.matches(this.targetFacelets)) {
-				dbg('matched but tracker off target — waiting for facelets');
-				return;
-			}
+		if (this.targetFacelets && this.tracker.matches(this.targetFacelets)) {
 			this.completeScramble('matcher');
 			return;
 		}
 
-		if (matchStatus.includes('wrong')) {
-			const firstWrong = matchStatus.indexOf('wrong');
-			const wrongMoves = userMoves.slice(firstWrong);
-			if (wrongMoves.length > 7) {
-				this.setUndo(['TOO_MANY']);
-			} else {
-				this.setUndo(wrongMoves.slice().reverse().map(invertMove));
-			}
+		const hit = this.findPrefixHit(this.tracker.state, false);
+		dbg('scramble state', { state: this.tracker.state, hit: hit ? { done: hit.done, partial: hit.partial } : null });
+
+		if (hit) {
+			this.lastGoodHit = hit;
+			// tracker.applied, not turns.length: pushTurns can hand evaluateScramble several
+			// new turns processed one at a time (see the loop in pushTurns) while `this.turns`
+			// already holds the whole incoming batch — using its length here would point past
+			// moves that have not been evaluated yet.
+			this.lastGoodHitStreamIndex = this.tracker.applied;
+			this.publishProgress(this.matchStatusFromHit(hit));
+			this.setUndo(null);
 			return;
 		}
 
-		// 'half' is conveyed by the display's own colouring; nothing to undo yet.
-		this.setUndo(null);
+		// The tracker's state is not on the scramble's path: a genuine deviation. Keep
+		// showing progress up to the last verified point, and hint at undoing exactly what
+		// was physically done since then.
+		this.publishProgress(this.matchStatusFromHit(this.lastGoodHit));
+		this.setUndoForDeviation();
+	}
+
+	/**
+	 * Where the tracker's current state sits on the scramble's path, searching from the end
+	 * so a state the scramble happens to revisit resolves to how far the user actually got.
+	 *
+	 * `rewindGuard` rejects a hit that is behind where the display already showed the user
+	 * (beyond one move of slack for a double move in progress) — used on the facelets/
+	 * reconciliation path where a late packet can describe a state already left behind.
+	 * The tracker itself never goes backwards, so the live per-move path does not need it.
+	 */
+	private findPrefixHit(state: string, rewindGuard: boolean): ScramblePrefix | null {
+		if (!this.prefixStates.length) return null;
+		let hit: ScramblePrefix | null = null;
+		for (let i = this.prefixStates.length - 1; i >= 0; i--) {
+			if (this.prefixStates[i].state === state) {
+				hit = this.prefixStates[i];
+				break;
+			}
+		}
+		if (!hit) return null;
+		if (rewindGuard && hit.done + 1 < this.lastProgressDone) return null;
+		return hit;
+	}
+
+	/** Turns a prefix-table hit into the per-position display status. */
+	private matchStatusFromHit(hit: ScramblePrefix | null): MatchStatus[] {
+		const total = this.scrambleMoves.length;
+		const status: MatchStatus[] = [];
+		const done = hit ? hit.done : 0;
+		for (let i = 0; i < done; i++) status.push('perfect');
+		if (hit?.partial && status.length < total) status.push('half');
+		while (status.length < total) status.push('pending');
+		return status;
+	}
+
+	/**
+	 * The physical moves made since the last verified point on the scramble's path, inverted
+	 * and reversed — applying them undoes exactly what the user did, landing back on the
+	 * last state that was on the scramble's path (then the scramble simply continues from
+	 * there, since the tracker is back on its prefix table).
+	 *
+	 * Algebraically exact, not a heuristic: reversing a sequence of moves in inverted order
+	 * always returns to the starting state, regardless of move order, half-finished doubles
+	 * or commuting reorderings in what the user did — there is nothing to interpret. And
+	 * always short, bounded by how many moves the user actually made since the deviation,
+	 * not by how far a general "current state to target" solve would have to search — that
+	 * routinely runs 15-20+ moves even for a single wrong turn (verified empirically), which
+	 * would make the hint useless.
+	 */
+	private setUndoForDeviation(): void {
+		const since = this.turns.slice(this.lastGoodHitStreamIndex).map((t) => t.turn);
+		if (!since.length) {
+			this.setUndo(null);
+			return;
+		}
+		// Compress first (R R -> R2, R R' -> cancelled) — a fresh compressor, not
+		// `this.compressor` (that one tracks the whole scramble attempt for the
+		// display text and must not be disturbed here). Without this, two plain
+		// turns of the same face showed as two separate undo moves ("F' F'") instead
+		// of the one double move a solver would actually make ("F2'").
+		const compressed = new IncrementalCompressor().processNew(since);
+		const undo = compressed.slice().reverse().map(invertMove);
+		this.setUndo(undo.length > 7 ? ['TOO_MANY'] : undo);
 	}
 
 	private completeScramble(source: ScrambleCompleteSource): void {
@@ -653,6 +732,7 @@ export class SmartSolveEngine {
 		this.solutionOffset = this.turns.length;
 		this.streamOffset = this.turns.length;
 		this.compressor.reset();
+		this.resetDeviationTracking();
 		this.tracker.setSolved(this.turns.length);
 		this.publishProgress([]);
 		// Consumed: the next attempt must stamp its own finish.
@@ -745,24 +825,16 @@ export class SmartSolveEngine {
 	private realignMatching(facelets: string, rewindGuard: boolean): RealignOutcome {
 		if (this.phase !== 'scrambling' || !this.prefixStates.length) return 'unknown';
 
-		// Last, not first: a scramble can in principle revisit a state, and the user is
-		// further along rather than back at the start.
-		let hit: ScramblePrefix | null = null;
-		for (let i = this.prefixStates.length - 1; i >= 0; i--) {
-			if (this.prefixStates[i].state === facelets) {
-				hit = this.prefixStates[i];
-				break;
+		const hit = this.findPrefixHit(facelets, rewindGuard);
+		if (!hit) {
+			// Distinguish "not on the path at all" from "behind where we already are" only
+			// for the caller's logging/branching — findPrefixHit collapses both to null, so
+			// re-check without the guard to tell them apart.
+			if (rewindGuard && this.findPrefixHit(facelets, false)) {
+				dbg('ignoring stale facelets', { alreadyDone: this.lastProgressDone });
+				return 'stale';
 			}
-		}
-		if (!hit) return 'unknown';
-
-		// A facelets packet can arrive late enough to describe a state the user has already
-		// turned away from. Accepting it would rewind the display and throw away work they
-		// actually did. One move of slack covers the double move they may be in the middle
-		// of; beyond that, wait for a packet that has caught up.
-		if (rewindGuard && hit.done + 1 < this.lastProgressDone) {
-			dbg('ignoring stale facelets', { at: hit.done, alreadyDone: this.lastProgressDone });
-			return 'stale';
+			return 'unknown';
 		}
 
 		const seed = this.scrambleMoves.slice(0, hit.done);
@@ -780,8 +852,9 @@ export class SmartSolveEngine {
 		this.streamOffset = this.turns.length;
 		this.setUndo(null);
 
-		const { matchStatus } = matchScrambleWithCommutative(this.scrambleMoves, this.compressor.getOutput());
-		this.publishProgress(matchStatus);
+		this.lastGoodHit = hit;
+		this.lastGoodHitStreamIndex = this.tracker.applied;
+		this.publishProgress(this.matchStatusFromHit(hit));
 		dbg('realigned to scramble prefix', { done: hit.done, partial: hit.partial, of: this.scrambleMoves.length });
 		return 'realigned';
 	}
@@ -795,9 +868,22 @@ export class SmartSolveEngine {
 	 */
 	private resetMatching(): void {
 		this.compressor.reset();
+		this.resetDeviationTracking();
 		this.streamOffset = this.turns.length;
 		this.setUndo(null);
 		this.publishProgress([]);
+	}
+
+	/**
+	 * Clears the last-verified-point bookkeeping. Called everywhere the compressor itself
+	 * is reset, so the two never fall out of sync — always AFTER the tracker has been
+	 * (re)anchored at the call site, since this pins to `tracker.applied` rather than
+	 * `turns.length`: the two can differ while pushTurns is mid-way through evaluating a
+	 * multi-turn batch one turn at a time (see the loop there).
+	 */
+	private resetDeviationTracking(): void {
+		this.lastGoodHit = null;
+		this.lastGoodHitStreamIndex = this.tracker.applied;
 	}
 
 	/** Same de-duplication as setUndo: an unchanged status must not churn the UI. */

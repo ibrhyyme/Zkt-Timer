@@ -43,7 +43,14 @@ function scoreMethod(turns: SolveTurn[], startState: string | undefined, method:
 		const total = getMethod(method).steps.length;
 		if (!total) return 0;
 		// Skipped phases did not happen; counting them would reward every ladder equally.
-		const done = result.transitions.filter((t) => !t.skipped).length;
+		// A `merged` phase is the one exception: it DID happen (real moves, a real progress
+		// descent), it was only cosmetically folded into the next phase because it was too
+		// short to show on its own. Counting it as not-done systematically punished ladders
+		// with more, finer-grained steps (CFOP's 7 vs Roux/ZZ's 4) — an efficient CFOP solve
+		// racks up more 1-move merges simply by having more phase boundaries where one can
+		// occur, understating its score against coarser ladders that rarely land on exactly
+		// one move per step.
+		const done = result.transitions.filter((t) => !t.skipped || t.merged).length;
 		return done / total;
 	} catch {
 		return 0;

@@ -59,6 +59,16 @@ export interface PhaseTransition {
 	moves: string[];
 	moveTimestamps?: number[]; // cstimer getPrettyMoves 100ms burst detection
 	skipped: boolean;
+	/**
+	 * Set only by mergeOneMovePhases: this phase genuinely happened (real moves, a real
+	 * progress descent) but was cosmetically folded into the next phase for display
+	 * because it was too short (1 HTM) to show on its own. Distinct from a `skipped`
+	 * phase whose progress level was jumped past with zero moves of its own — that one
+	 * truly didn't happen as a step; this one did, it's just not shown separately.
+	 * Method-detection scoring reads this to avoid penalizing a method's ladder for
+	 * something that actually completed.
+	 */
+	merged?: boolean;
 }
 
 /**

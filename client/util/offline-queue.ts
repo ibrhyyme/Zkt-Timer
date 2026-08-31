@@ -154,6 +154,20 @@ export async function getPendingCount(): Promise<number> {
 }
 
 /**
+ * Bu solve için kuyrukta bekleyen (henüz sunucuya hiç ulaşmamış) bir create/update
+ * mutation'ı var mı? Sunucudan gelen NOT_FOUND, bu durumda "silinmiş" değil "henüz hiç
+ * gönderilmedi" anlamına gelir — çağıran taraf ikisini karıştırmamalı.
+ */
+export async function isSolvePendingSync(solveId: string): Promise<boolean> {
+    const queued = await getAllQueued();
+    return queued.some((m) => {
+        if (m.mutationName === 'createSolve') return m.variables?.input?.id === solveId;
+        if (m.mutationName === 'updateSolve') return m.variables?.id === solveId;
+        return false;
+    });
+}
+
+/**
  * Mutation retry count artır
  */
 export async function incrementRetryCount(id: string): Promise<void> {
@@ -167,14 +181,10 @@ export async function incrementRetryCount(id: string): Promise<void> {
             const mutation = request.result;
             if (mutation) {
                 mutation.retryCount++;
-
-                // 5 denemeden fazla başarısız olduysa sil (Sonsuz döngüyü engelle)
-                if (mutation.retryCount > 5) {
-                    store.delete(id);
-                    console.warn(`Mutation ${id} 5 kez denendi ve başarısız oldu, kuyruktan siliniyor.`);
-                } else {
-                    store.put(mutation);
-                }
+                // offline-sync.ts's processQueue never drops a mutation on failure —
+                // dropping here after N attempts silently contradicted that and made
+                // solves disappear with nothing but a console.warn. Keep it queued.
+                store.put(mutation);
             }
         };
 

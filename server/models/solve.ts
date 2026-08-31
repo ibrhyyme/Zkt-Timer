@@ -106,7 +106,9 @@ export function getSolveByShareCode(shareCode) {
 			top_average_5: true,
 			solve_views: true,
 			smart_device: true,
-			solve_method_steps: true,
+			// step_index is a single counter across the whole solve — without an
+			// explicit order the DB returns this relation in no guaranteed order.
+			solve_method_steps: { orderBy: { step_index: 'asc' } },
 		},
 	});
 }
@@ -134,7 +136,9 @@ export function getSolve(id) {
 			top_average_5: true,
 			smart_device: true,
 			solve_views: true,
-			solve_method_steps: true,
+			// step_index is a single counter across the whole solve — without an
+			// explicit order the DB returns this relation in no guaranteed order.
+			solve_method_steps: { orderBy: { step_index: 'asc' } },
 		},
 	});
 }

@@ -53,10 +53,36 @@ const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBB
 
 // Scramble-complete beep. On iOS, route through the native AVAudioPlayer
 // (.ambient + .mixWithOthers) so background music keeps playing; fall back to
-// web Audio when the native plugin is unavailable (Android/web).
+// web Audio when the native plugin is unavailable (Android — NativeAudio is
+// iOS-only — and browser).
+//
+// The web path is preloaded once (see preloadScrambleCompleteSoundWeb below)
+// instead of built fresh here: `new Audio(src)` + immediate `play()` makes the
+// element fetch/decode the file on that first call, which is exactly the
+// "beep comes late" users on Android hit (no native preload to fall back on
+// there). Reusing one already-loaded element removes that wait.
+let scrambleSoundEl: HTMLAudioElement | null = null;
+
+function preloadScrambleCompleteSoundWeb(): void {
+	if (typeof Audio === 'undefined' || scrambleSoundEl) return;
+	try {
+		scrambleSoundEl = new Audio(resourceUri('audio/success.mp3'));
+		scrambleSoundEl.volume = 1.0;
+		scrambleSoundEl.load();
+	} catch (err) {
+		// Audio error — not critical
+	}
+}
+
 function playScrambleCompleteSound() {
 	if (playNativeSound('success')) return;
 	try {
+		if (scrambleSoundEl) {
+			scrambleSoundEl.currentTime = 0;
+			scrambleSoundEl.play().catch(e => console.warn('Audio play failed:', e));
+			return;
+		}
+		// Preload effect hasn't run yet (or failed) — same fallback as before.
 		const audio = new Audio(resourceUri('audio/success.mp3'));
 		audio.volume = 1.0;
 		audio.play().catch(e => console.warn('Audio play failed:', e));
@@ -188,6 +214,7 @@ export default function SmartCube() {
 	useEffect(() => {
 		initSmartSolver();   // Sync fallback init (requestIdleCallback)
 		initSolverWorker();  // Worker init (background thread — no UI block)
+		preloadScrambleCompleteSoundWeb();
 	}, []);
 
 	// Preservation ref to keep scrambled state when smartTurns is cleared

@@ -59,6 +59,9 @@ export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	delete solve.solve_method_steps;
 	delete solve.solve_views;
 	delete solve.smart_device;
+	// GraphQL-only: tells the resolver which method to break the solve down with
+	// (server/resolvers/Solve.resolver.ts), never a column on the Solve table itself.
+	delete (solve as any).analysis_method;
 
 	let startedAt: number | bigint = solve.started_at;
 	let endedAt: number | bigint = solve.ended_at;

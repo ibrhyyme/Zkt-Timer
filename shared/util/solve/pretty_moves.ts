@@ -52,10 +52,17 @@ function isCollapsibleFaceMove(turn: string): boolean {
  * In this case, non-collapsible moves appear in canonical output, consecutive collapsible
  * groups operate with current center state but are split by pass-through moves.
  *
- * @param moves Array of moves with per-move timestamps.
+ * @param moves       Array of moves with per-move timestamps.
+ * @param mergeSlices Collapse a fast opposite-power pair on a parallel axis (R + L' -> M)
+ *                     into slice notation. cstimer assumes that pairing means the user
+ *                     physically turned a middle slice — true for its manual/webcam entry,
+ *                     but never true for a smart cube: the device only ever reports outer
+ *                     face turns, so a fast R then L' there is two real face turns, not
+ *                     one slice the user can't physically make. Default true keeps every
+ *                     existing (non-smart-cube) caller's output unchanged.
  * @returns cstimer notation string (e.g., "R U' R'", "M U' M'", "R U R' L").
  */
-export function getPrettyMoves(moves: TimedMove[]): string {
+export function getPrettyMoves(moves: TimedMove[], mergeSlices = true): string {
 	if (!moves || moves.length === 0) return '';
 
 	let center = [0, 1, 2, 3, 4, 5];
@@ -66,7 +73,7 @@ export function getPrettyMoves(moves: TimedMove[]): string {
 		if (buffer.length === 0) return;
 		const ret = processFaceMoves(buffer, center, (newCenter) => {
 			center = newCenter;
-		});
+		}, mergeSlices);
 		const formatted = formatRet(ret);
 		if (formatted) outputs.push(formatted);
 		buffer = [];
@@ -92,7 +99,8 @@ export function getPrettyMoves(moves: TimedMove[]): string {
 function processFaceMoves(
 	moveSeq: TimedMove[],
 	center: number[],
-	updateCenter: (newCenter: number[]) => void
+	updateCenter: (newCenter: number[]) => void,
+	mergeSlices: boolean
 ): number[] {
 	const ret: number[] = [];
 
@@ -128,7 +136,7 @@ function processFaceMoves(
 		const powChar2 = next.turn.length > 1 ? next.turn[1] : ' ';
 		const pow2 = POW_CHARS.indexOf(powChar2) % 3;
 
-		if (axis !== axis2 && axis % 3 === axis2 % 3 && pow + pow2 === 2) {
+		if (mergeSlices && axis !== axis2 && axis % 3 === axis2 % 3 && pow + pow2 === 2) {
 			const axisM = axis % 3;
 			const powM = (pow - 1) * POWER_SIGN[axis] + 1;
 			pushSol(axisM + 6, powM);

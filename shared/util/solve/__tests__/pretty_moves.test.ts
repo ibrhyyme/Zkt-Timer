@@ -138,6 +138,26 @@ describe('getPrettyMoves — pass-through (non-URFDLB inputs)', () => {
 	});
 });
 
+describe('getPrettyMoves — mergeSlices=false (smart cube: no physical slice move exists)', () => {
+	it("F + B' within burst window stays two face turns, not S'", () => {
+		expect(getPrettyMoves(timed(['F', "B'"]), false)).toBe("F B'");
+	});
+
+	it("R + L' stays two face turns, not M", () => {
+		expect(getPrettyMoves(timed(['R', "L'"]), false)).toBe("R L'");
+	});
+
+	it('same-axis collapse still applies (R + R = R2) — only slice merge is disabled', () => {
+		expect(getPrettyMoves(timed(['R', 'R']), false)).toBe('R2');
+	});
+
+	it("R U R' L' F R F R F' R' B F' U F U' B' — no slice appears anywhere", () => {
+		const moves = ["R", "U", "R'", "L'", "F", "R", "F", "R", "F'", "R'", "B", "F'", "U", "F", "U'", "B'"];
+		const result = getPrettyMoves(timed(moves), false);
+		expect(result).not.toMatch(/[MES]/);
+	});
+});
+
 describe('getPrettyMovesFromStrings — backward-compat (no timestamps)', () => {
 	it("R R = R2 (timestamps default to 0, all in same burst)", () => {
 		expect(getPrettyMovesFromStrings(['R', 'R'])).toBe('R2');

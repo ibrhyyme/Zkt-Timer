@@ -18,7 +18,7 @@
 import { SmartTurn } from '../smart_scramble';
 import { analyzePhases } from '../../../shared/util/solve/phase_engine';
 import { getMethod } from '../../../shared/util/solve/methods';
-import { SolveMethod, SolvePhase, PhaseTransition } from '../../../shared/util/solve/types';
+import { SolveMethod, SolvePhase, PhaseTransition, PhaseEngineResult as EngineResult } from '../../../shared/util/solve/types';
 
 type PhaseTimes = Record<string, number | undefined>;
 
@@ -148,7 +148,7 @@ export const STEP_LABELS: Record<string, string> = {
 	ll: 'LL',
 };
 
-function toEngineTurns(turns: SmartTurn[]) {
+export function toEngineTurns(turns: SmartTurn[]) {
 	return turns
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
@@ -192,6 +192,20 @@ export function analyzeCurrentState(
 
 	const engineTurns = toEngineTurns(turns);
 	const result = analyzePhases(engineTurns, startState, { method });
+	return buildLiveAnalysisResult(result, method, turns);
+}
+
+/**
+ * PhaseEngineResult -> LiveAnalysisResult shape conversion, split out from
+ * analyzeCurrentState so an incremental caller (useLiveAnalysis) can hand in a
+ * result it derived without re-running analyzePhases from scratch.
+ */
+export function buildLiveAnalysisResult(
+	result: EngineResult,
+	method: SolveMethod,
+	turns: SmartTurn[]
+): LiveAnalysisResult {
+	const engineTurns = toEngineTurns(turns);
 	const def = getMethod(method);
 
 	const startMs = engineTurns[0]?.timestamp ?? 0;

@@ -123,7 +123,11 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: st
 			turns: turnsAsObjects,
 			recognitionTime: recognitionSec,
 			tps,
-			turnsString: getPrettyMoves(timed),
+			// mergeSlices=false: a smart cube can't physically turn a middle slice, so
+			// a fast R then L' is two real face turns, not an M the user made (see
+			// pretty_moves.ts). A collapsed "S" the user never turned then desyncs the
+			// 3D replay from the moves that follow it.
+			turnsString: getPrettyMoves(timed, false),
 			turnCount: moveCount,
 			time: totalSec,
 			caseKey: found?.key,
@@ -177,14 +181,21 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: st
 			turns: f2lMovesAsObj,
 			recognitionTime: 0,
 			tps: f2lTps,
-			turnsString: getPrettyMoves(f2lTimed),
+			// mergeSlices=false — see comment above, same reasoning applies to F2L.
+			turnsString: getPrettyMoves(f2lTimed, false),
 			turnCount: f2lHtm,
 			time: f2lTotalSec,
 		};
 
-		// Sub-steps are written to DB with parent='f2l'.
-		F2L_SUB_STEPS.forEach((id, idx) => {
-			steps[id] = buildStep(transitionByPhase[id], idx, 'f2l', id);
+		// Sub-steps are written to DB with parent='f2l'. Advancing the same global
+		// counter used for cross/f2l/oll/pll (not each sub-step's own 0-3 position)
+		// is what makes step_index a real, collision-free ordering across the whole
+		// solve — with the local index instead, f2l_1..4 landed on 0-3 while cross/
+		// oll/pll separately also used 0-3, so two unrelated steps could share a
+		// step_index (e.g. cross=0 and f2l_1=0) and any query sorting by it put
+		// F2L's sub-steps in the wrong place relative to OLL/PLL.
+		F2L_SUB_STEPS.forEach((id) => {
+			steps[id] = buildStep(transitionByPhase[id], stepIndex++, 'f2l', id);
 		});
 	}
 

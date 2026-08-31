@@ -24,6 +24,7 @@ import { toastError } from '../../util/toast';
 import { useTranslation } from 'react-i18next';
 import { canReadSync } from '../../lib/sync-gate';
 import { isNetworkError } from '../../util/network-error';
+import { isSolvePendingSync } from '../../util/offline-queue';
 
 const b = block('solve-info');
 
@@ -114,7 +115,7 @@ export default function SolveInfo(props: Props) {
 			setDbSolve(fetchSolve(id));
 			setSolve(res.data.solve);
 			setLoading(false);
-		}).catch((err) => {
+		}).catch(async (err) => {
 			// Delete ONLY on an authoritative server verdict: the request reached the
 			// GraphQL layer and the server explicitly said NOT_FOUND. Every ambiguous
 			// failure (offline, 5xx, auth hiccup, engine-specific fetch errors) must
@@ -136,6 +137,21 @@ export default function SolveInfo(props: Props) {
 				// Nothing local to show either: close quietly, never delete on ambiguity
 				setLoading(false);
 				onComplete ? onComplete() : dispatch(closeModal());
+				return;
+			}
+
+			// NOT_FOUND also fires for a solve that never reached the server yet — it's
+			// still sitting in the offline queue waiting for its first sync. Without this
+			// check, opening a queued smart-cube solve's detail view deleted the only copy
+			// of it the instant the modal loaded, before the queue ever got a chance to
+			// send it.
+			if (await isSolvePendingSync(id)) {
+				const localSolve = fetchSolve(id);
+				if (localSolve) {
+					setDbSolve(localSolve);
+					setSolve(localSolve);
+				}
+				setLoading(false);
 				return;
 			}
 

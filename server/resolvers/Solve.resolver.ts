@@ -69,7 +69,10 @@ export class SolveResolver {
 				started_at: true,
 				ended_at: true,
 				phase_splits: true,
-				solve_method_steps: true,
+				// step_index is a single counter across the whole solve (cross, f2l parent,
+				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
+				// no guaranteed order, and the client showed OLL/PLL before F2L.
+				solve_method_steps: { orderBy: { step_index: 'asc' } },
 			},
 			// Deterministic tie-break: created_at alone is not unique (a bulk import
 			// writes thousands of rows within the same instant), so paging by it
@@ -119,7 +122,10 @@ export class SolveResolver {
 				started_at: true,
 				ended_at: true,
 				phase_splits: true,
-				solve_method_steps: true,
+				// step_index is a single counter across the whole solve (cross, f2l parent,
+				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
+				// no guaranteed order, and the client showed OLL/PLL before F2L.
+				solve_method_steps: { orderBy: { step_index: 'asc' } },
 			},
 			// Deterministic tie-break: created_at alone is not unique (a bulk import
 			// writes thousands of rows within the same instant), so paging by it
@@ -164,7 +170,10 @@ export class SolveResolver {
 				started_at: true,
 				ended_at: true,
 				phase_splits: true,
-				solve_method_steps: true,
+				// step_index is a single counter across the whole solve (cross, f2l parent,
+				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
+				// no guaranteed order, and the client showed OLL/PLL before F2L.
+				solve_method_steps: { orderBy: { step_index: 'asc' } },
 			},
 		});
 	}

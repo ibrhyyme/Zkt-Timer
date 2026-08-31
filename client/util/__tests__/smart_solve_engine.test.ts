@@ -552,3 +552,133 @@ describe('SmartSolveEngine — scramble progress across a re-anchor', () => {
 		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
 	});
 });
+
+// Bugs found in a live physical-cube session (2026-08-31) with the old move-list matcher
+// (matchScrambleWithCommutative, since removed): a half-turn tolerated a commuting move
+// while waiting for its second quarter, and that tolerated move — never credited to
+// anything symbolically, just not yet ruled out — later collided with an unrelated future
+// scramble position that happened to share its face letter (or, worse, let the matcher
+// declare the scramble "matched" while the physical cube was not actually on target). Two
+// variations of this were found and patched one at a time before the whole move-list
+// approach was replaced with the state-based one below, which cannot have this class of
+// bug: there is no move list to misalign, only "is the cube's current state somewhere on
+// the scramble's path" — the physical cube is always the source of truth.
+describe('SmartSolveEngine — state-based matching cannot misfire on a shared face letter', () => {
+	it('a move turned early — not the one the scramble actually asks for next — is correctly flagged as a deviation, not symbolically excused', () => {
+		// D2 belongs at position 17, not here. The old matcher's `vettedAgainst` bug treated
+		// an early, out-of-turn D2 as automatically forgiven because it commutes with U2 and
+		// D2 appears somewhere later in the scramble — without checking that the cube's
+		// actual state matched what the scramble expected at this point. It doesn't: turning
+		// D2 now leaves a real D2 sitting on the cube that the scramble does not ask for
+		// until position 17, so completing U2 here must NOT read as "perfect" — the state
+		// genuinely differs from "U2 alone done". A physical D2 cannot be un-turned by an
+		// unrelated matcher forgetting about it.
+		const SCR = "D' B' D2 B' U2 L' U R' D F2 U2 R F2 L U2 R2 D2 B2 R U2 R";
+		const { engine, of } = harness();
+		engine.setScramble(SCR);
+		engine.setConnected(true);
+
+		// D' B' D2 B' correct, then U2 attempted as U + D2 (out of turn) + U.
+		engine.pushTurns([
+			turn("D'", 1000), turn("B'", 1100), turn('D2', 1200), turn("B'", 1300),
+			turn('U', 1400), turn('D2', 1500), turn('U', 1600),
+		]);
+
+		const status = of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus;
+		expect(status.slice(0, 4)).toEqual(['perfect', 'perfect', 'perfect', 'perfect']);
+		// Not 'perfect': the cube carries an extra D2 the scramble did not ask for yet, so
+		// the state genuinely is not "U2 alone, cleanly done".
+		expect(status[4]).not.toBe('perfect');
+		// And SCRAMBLE_COMPLETE must never fire while the physical cube sits off target —
+		// this is the guard that would have caught the old bug even without a status check.
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(0);
+	});
+
+	it('a half-turn broken by a real mistake gives a short, exact undo that preserves the still-valid first quarter — not a match against a distant unrelated move', () => {
+		// R2 half-done as R, then a genuine mistake (F, not part of the scramble at all). F
+		// does not commute with R2, so this must be flagged immediately as a deviation, not
+		// searched for among later positions sharing a face letter (this scramble has L/L'
+		// moves later that an old face-letter-based mixup could have latched onto).
+		const SCR = "R2 U F D B L' U2 R D2 F' L2 B2 R' U D'";
+		const { engine, of } = harness();
+		engine.setScramble(SCR);
+		engine.setConnected(true);
+
+		engine.pushTurns([turn('R', 1000), turn('F', 1100)]);
+
+		const hints = of('UNDO_MOVES');
+		const lastHint = hints[hints.length - 1].moves!;
+		expect(lastHint).not.toEqual(['TOO_MANY']);
+
+		// The first quarter (R) is a genuine, still-valid start of R2 — undoing only what
+		// came after it (F) is the short, correct fix, not re-doing the whole R2 from
+		// scratch. Applying the hint to the physical cube must land exactly back on "R
+		// alone", ready for the second quarter to complete R2.
+		const physical = new Cube();
+		physical.move('R');
+		physical.move('F');
+		for (const m of lastHint) physical.move(m);
+		const expected = new Cube();
+		expected.move('R');
+		expect(physical.asString()).toBe(expected.asString());
+		expect(lastHint).toEqual(["F'"]);
+	});
+
+	// Live-session bug (2026-08-31): a double move started counter-clockwise (U' before a
+	// second U' to make U2 — physically identical to U then U, since a 180° turn is its own
+	// inverse) was flagged as a mistake. The prefix table only recorded the clockwise
+	// starting direction.
+	it('a double move started counter-clockwise is recognised as half done, not a mistake', () => {
+		const { engine, of } = harness();
+		engine.setScramble('U2 R F');
+		engine.setConnected(true);
+
+		engine.pushTurns([turn("U'", 1000)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus[0]).toBe('half');
+		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
+
+		engine.pushTurns([turn("U'", 1000), turn("U'", 1100)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus[0]).toBe('perfect');
+	});
+
+	// Live-session bug (2026-08-31): two plain turns of the same face in a row (a genuine
+	// deviation, not part of the scramble) showed as two separate undo moves ("F' F'")
+	// instead of the one double move a solver would actually make ("F2").
+	it('two same-face turns in a row compress to one undo move, not two', () => {
+		const { engine, of } = harness();
+		engine.setScramble('R U L');
+		engine.setConnected(true);
+
+		engine.pushTurns([turn('F', 1000)]);
+		engine.pushTurns([turn('F', 1000), turn('F', 1100)]);
+
+		const undo = of('UNDO_MOVES').slice(-1)[0].moves;
+		expect(undo).toEqual(['F2']);
+	});
+
+	// Live-session bug (2026-08-31): the old move-list matcher let the second of two
+	// opposite-face moves (independent layers, physically free to reorder — R then L is
+	// the same cube as L then R) be done first without penalty. The state-based rewrite
+	// dropped this: the reordered state was never on the prefix table, so doing the
+	// scramble's next move a beat early was flagged as a mistake. Restored by recording
+	// the "one done early, out of order" state too (tracker.ts prefixStatesFrom).
+	it('the second of an opposite-face pair can be turned first without being flagged wrong', () => {
+		const { engine, of } = harness();
+		// Scramble asks for R then L (opposite faces, independent layers).
+		engine.setScramble('R L U2');
+		engine.setConnected(true);
+
+		// User does L first.
+		engine.pushTurns([turn('L', 1000)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus[0]).toBe('pending');
+		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
+
+		// Then R, completing the pair in the opposite order to the scramble text.
+		engine.pushTurns([turn('L', 1000), turn('R', 1100)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus.slice(0, 2)).toEqual(['perfect', 'perfect']);
+
+		// The rest of the scramble is unaffected.
+		engine.pushTurns([turn('L', 1000), turn('R', 1100), turn('U2', 1200)]);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+	});
+});
