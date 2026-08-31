@@ -1731,6 +1731,18 @@
       "close": "关闭",
       "view": "查看打乱"
     },
+    "edit_solve": {
+      "title": "修正成绩",
+      "time_label": "时间",
+      "invalid_time": "请输入有效时间（例如 12.34 或 1:23.45）",
+      "done": "完成",
+      "delete": "删除",
+      "delete_confirm": "该成绩将被删除。轮次不会回退，你在该轮的成绩会保持为空。是否继续？",
+      "edit_hint": "修正你的最后一次成绩",
+      "edit_last": "修正最后一次成绩",
+      "notification_edited": "{{username}} 修正了自己的成绩",
+      "notification_deleted": "{{username}} 删除了自己的成绩"
+    },
     "compete": "比赛",
     "disconnect": "断开连接",
     "connect_timer": "连接计时器",

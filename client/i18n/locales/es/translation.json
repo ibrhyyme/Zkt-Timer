@@ -1731,6 +1731,18 @@
       "close": "Cerrar",
       "view": "Ver mezcla"
     },
+    "edit_solve": {
+      "title": "Corregir resolución",
+      "time_label": "Tiempo",
+      "invalid_time": "Introduce un tiempo válido (ej. 12.34 o 1:23.45)",
+      "done": "Listo",
+      "delete": "Eliminar",
+      "delete_confirm": "Se eliminará esta resolución. La ronda no se revierte, así que tu resultado quedará vacío. ¿Continuar?",
+      "edit_hint": "Corrige tu última resolución",
+      "edit_last": "Corregir última resolución",
+      "notification_edited": "{{username}} corrigió su resolución",
+      "notification_deleted": "{{username}} eliminó su resolución"
+    },
     "compete": "Competir",
     "disconnect": "Desconectar",
     "connect_timer": "Conectar Timer",

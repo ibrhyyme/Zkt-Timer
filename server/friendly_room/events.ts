@@ -9,6 +9,7 @@ import {
     CreateFriendlyRoomInput,
     JoinFriendlyRoomInput,
     FriendlyRoomSolveData,
+    EditFriendlyRoomSolveInput,
     FriendlyRoomConst,
 } from '../../shared/friendly_room';
 import {
@@ -19,6 +20,8 @@ import {
     removeParticipant,
     toggleParticipantReady,
     submitSolve,
+    editRoomSolve,
+    deleteRoomSolve,
     nextScramble,
     startRoom,
     getRoomForClient,
@@ -547,6 +550,58 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             }
         } catch (error) {
             logger.error('Error submitting solve', { error });
+        }
+    });
+
+    // Correct your own most recent solve (time and/or penalties). Deliberately does NOT
+    // call checkAllSolvedAndNextScramble: an edit is not a new completion.
+    client.on(FriendlyRoomClientEvent.EDIT_SOLVE, async (roomId: string, input: EditFriendlyRoomSolveInput) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (!input || typeof input !== 'object') return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'edit_solve', 20, 60, user.id))) return;
+
+            const solve = await editRoomSolve(roomId, user.id, input);
+            if (solve) {
+                const socketRoom = getFriendlyRoomSocketRoom(roomId);
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.SOLVE_UPDATED, {
+                    room_id: roomId,
+                    user_id: user.id,
+                    solve,
+                });
+            }
+        } catch (error) {
+            logger.error('Error editing room solve', { error });
+        }
+    });
+
+    // Delete your own most recent solve. The round index is not rolled back.
+    client.on(FriendlyRoomClientEvent.DELETE_SOLVE, async (roomId: string, solveId: string) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (typeof solveId !== 'string' || !solveId) return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'edit_solve', 20, 60, user.id))) return;
+
+            const deleted = await deleteRoomSolve(roomId, user.id, solveId);
+            if (deleted) {
+                const socketRoom = getFriendlyRoomSocketRoom(roomId);
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.SOLVE_DELETED, {
+                    room_id: roomId,
+                    user_id: user.id,
+                    solve_id: deleted.solve_id,
+                    scramble_index: deleted.scramble_index,
+                });
+            }
+        } catch (error) {
+            logger.error('Error deleting room solve', { error });
         }
     });
 

@@ -1738,6 +1738,18 @@
       "close": "Kapat",
       "view": "Karıştırmayı gör"
     },
+    "edit_solve": {
+      "title": "Çözümü düzelt",
+      "time_label": "Süre",
+      "invalid_time": "Geçerli bir süre gir (örnek: 12.34 veya 1:23.45)",
+      "done": "Bitti",
+      "delete": "Sil",
+      "delete_confirm": "Bu çözüm silinecek. Tur geri alınmaz, bu turdaki sonucun boş kalır. Devam edilsin mi?",
+      "edit_hint": "Son çözümünü düzelt",
+      "edit_last": "Son çözümü düzelt",
+      "notification_edited": "{{username}} çözümünü düzeltti",
+      "notification_deleted": "{{username}} çözümünü sildi"
+    },
     "compete": "Mücadele",
     "disconnect": "Bağlantıyı Kes",
     "connect_timer": "Timer Bağla",

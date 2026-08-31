@@ -1,8 +1,8 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FriendlyRoomParticipantData, FriendlyRoomScrambleHistoryEntry } from '../../../shared/friendly_room';
+import { FriendlyRoomParticipantData, FriendlyRoomScrambleHistoryEntry, FriendlyRoomSolveData } from '../../../shared/friendly_room';
 import { getTimeString } from '../../util/time';
-import { WifiSlash } from 'phosphor-react';
+import { WifiSlash, PencilSimple } from 'phosphor-react';
 import ScrambleViewModal from './ScrambleViewModal';
 
 interface RoomTableProps {
@@ -14,6 +14,10 @@ interface RoomTableProps {
     // Owner id — used to suppress the MOD badge on the owner, who can carry a stale
     // is_moderator flag after ownership moved to them.
     hostId?: string;
+    // The viewer's own most recent solve — the only cell that opens the edit modal
+    // instead of the scramble modal. Absent in read-only views (e.g. admin stats).
+    myLastSolveId?: string;
+    onEditSolve?: (solve: FriendlyRoomSolveData) => void;
 }
 
 // Timer component for dynamic countdown
@@ -32,7 +36,7 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [], hostId }: RoomTableProps) {
+function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [], hostId, myLastSolveId, onEditSolve }: RoomTableProps) {
     const { t } = useTranslation();
     const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
@@ -342,24 +346,39 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                             const solveTime = solve.plus_two ? solve.time + 2 : solve.time;
 
                                             cellContent = (
-                                                <span className={`font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
+                                                <span className={`inline-flex items-center gap-1 font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
                                                     isBest ? 'text-emerald-400 font-bold' :
                                                         'text-text'
                                                     }`}>
                                                     {solve.dnf ? 'DNF' : getTimeString(solveTime) + (solve.plus_two ? '+' : '')}
+                                                    {solve.edited && (
+                                                        <PencilSimple size={11} weight="bold" className="shrink-0 opacity-60" />
+                                                    )}
                                                 </span>
                                             );
                                         }
 
+                                        // The viewer's own most recent solve opens the edit modal (which shows the
+                                        // round's scramble too); every other filled cell opens the scramble modal.
+                                        const isEditable = !!solve && !!onEditSolve && !!myLastSolveId && solve.id === myLastSolveId;
                                         const isClickable = !!solve;
                                         return (
                                             <div
                                                 key={p.id}
-                                                onClick={isClickable ? () => setSelectedRound(round) : undefined}
-                                                title={isClickable ? t('rooms.scrambleModal.view') : undefined}
-                                                className={`flex-1 min-w-[100px] flex items-center justify-center py-1.5 border-r border-text/[0.1] last:border-0 ${isClickable ? 'cursor-pointer hover:bg-text/[0.05] transition-colors' : ''}`}
+                                                onClick={
+                                                    isEditable
+                                                        ? () => onEditSolve!(solve!)
+                                                        : isClickable
+                                                            ? () => setSelectedRound(round)
+                                                            : undefined
+                                                }
+                                                title={isEditable ? t('rooms.edit_solve.edit_hint') : isClickable ? t('rooms.scrambleModal.view') : undefined}
+                                                className={`flex-1 min-w-[100px] flex items-center justify-center gap-1 py-1.5 border-r border-text/[0.1] last:border-0 ${isClickable ? 'cursor-pointer hover:bg-text/[0.05] transition-colors' : ''} ${isEditable ? 'bg-text/[0.04]' : ''}`}
                                             >
                                                 {cellContent}
+                                                {isEditable && (
+                                                    <PencilSimple size={13} weight="bold" className="shrink-0 text-primary" />
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -383,12 +402,14 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
 
 // participants array'inin reference'i her room state update'inde degisir, ancak icerik
 // cogunlukla ayni kalir. Custom shallow comparator ile sadece anlamli alanlar degistiginde
-// re-render yapilir (solve eklendi, spectator toggle, isim/yapi degisikligi).
+// re-render yapilir (solve eklendi/duzenlendi/silindi, spectator toggle, isim/yapi degisikligi).
 function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
     if (prev.scrambleIndex !== next.scrambleIndex) return false;
     if (prev.currentUserId !== next.currentUserId) return false;
     if (prev.hostId !== next.hostId) return false;
     if (prev.userStatuses !== next.userStatuses) return false;
+    if (prev.myLastSolveId !== next.myLastSolveId) return false;
+    if (prev.onEditSolve !== next.onEditSolve) return false;
     if ((prev.scrambleHistory?.length ?? 0) !== (next.scrambleHistory?.length ?? 0)) return false;
 
     const a = prev.participants;
@@ -406,6 +427,22 @@ function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
             pa.is_moderator !== pb.is_moderator ||
             pa.solves.length !== pb.solves.length
         ) return false;
+
+        // Length alone misses an in-place correction: a solve can change its time or
+        // penalties without the array growing, and the table would silently keep the
+        // old value.
+        for (let j = 0; j < pa.solves.length; j++) {
+            const sa = pa.solves[j];
+            const sb = pb.solves[j];
+            if (
+                sa.id !== sb.id ||
+                sa.time !== sb.time ||
+                sa.dnf !== sb.dnf ||
+                sa.plus_two !== sb.plus_two ||
+                sa.edited !== sb.edited ||
+                sa.scramble_index !== sb.scramble_index
+            ) return false;
+        }
     }
     return true;
 }

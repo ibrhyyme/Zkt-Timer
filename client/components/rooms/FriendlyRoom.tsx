@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
@@ -12,6 +12,7 @@ import {
     JoinFriendlyRoomInput,
     SessionTakeoverPayload,
     AlreadyInOtherRoomPayload,
+    EditFriendlyRoomSolveInput,
     FriendlyRoomConst,
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
@@ -31,6 +32,7 @@ import ScrambleVisual from '../modules/scramble/ScrambleVisual';
 import RoomTimerOverlay from './RoomTimerOverlay';
 import LeftSettingsDrawer from '../layout/nav/left_settings_drawer/LeftSettingsDrawer';
 import EditRoomModal from './EditRoomModal';
+import EditSolveModal from './EditSolveModal';
 import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
 import { FriendlyRoomRole, getFriendlyRoomRole, canManageRoom } from '../../../shared/friendly_room/roles';
@@ -115,6 +117,9 @@ function FriendlyRoomContent() {
     const roomId = resolved && (roomKey === resolved.id || roomKey === resolved.slug) ? resolved.id : '';
 
     const [room, setRoom] = useState<FriendlyRoomData | null>(null);
+    // Mirror of `room` for socket handlers: the listener effect only re-binds on
+    // [roomId, history, me], so reading `room` from its closure would give stale data.
+    const roomRef = useRef<FriendlyRoomData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [needsPassword, setNeedsPassword] = useState(false);
@@ -127,6 +132,9 @@ function FriendlyRoomContent() {
     const [userStatuses, setUserStatuses] = useState<{ [userId: string]: string }>({});
     const [mobileTab, setMobileTab] = useState<'timer' | 'chat'>('timer');
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    // Solve the user is currently correcting (their own most recent one)
+    const [editingSolve, setEditingSolve] = useState<FriendlyRoomSolveData | null>(null);
 
     // Music player state
     const [musicPlayerOpen, setMusicPlayerOpen] = useState(false);
@@ -885,6 +893,28 @@ function FriendlyRoomContent() {
     // Reconnect flag: socket reconnect should do full ROOM_DATA hydration
     const isReconnectingRef = useRef(false);
 
+    useEffect(() => {
+        roomRef.current = room;
+    }, [room]);
+
+    // Solve edits are announced client-side (with t()) instead of via the server's
+    // NOTIFICATION event, whose messages are hard-coded Turkish.
+    function getParticipantUsername(userId: string): string {
+        return roomRef.current?.participants.find((p) => p.user_id === userId)?.username ?? '';
+    }
+
+    function addRoomNotification(type: string, message: string) {
+        setNotifications((prev) => [
+            ...prev,
+            {
+                id: Math.random().toString(36).substr(2, 9),
+                type,
+                message,
+                timestamp: Date.now(),
+            },
+        ]);
+    }
+
     // Fetch room data
     useEffect(() => {
         // Slug URL: wait for resolution — the server rejects an empty room id anyway,
@@ -1049,6 +1079,59 @@ function FriendlyRoomContent() {
             }
         });
 
+        socket.on(FriendlyRoomServerEvent.SOLVE_UPDATED, (data: { room_id: string; user_id: string; solve: any }) => {
+            if (data.room_id !== roomId) return;
+
+            setRoom((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    participants: prev.participants.map((p) => {
+                        if (p.user_id !== data.user_id) return p;
+                        return {
+                            ...p,
+                            solves: p.solves.map((s) => (s.id === data.solve.id ? { ...s, ...data.solve } : s)),
+                        };
+                    }),
+                };
+            });
+
+            addRoomNotification('INFO', t('rooms.edit_solve.notification_edited', {
+                username: getParticipantUsername(data.user_id),
+            }));
+
+            // A corrected DNF changes what counts toward daily goals + the activity heatmap.
+            if (data.user_id === me?.id && getDailyGoalStorage().count_room_solves) {
+                fetchRoomSolveCounts();
+            }
+        });
+
+        socket.on(FriendlyRoomServerEvent.SOLVE_DELETED, (data: { room_id: string; user_id: string; solve_id: string }) => {
+            if (data.room_id !== roomId) return;
+
+            setRoom((prev) => {
+                if (!prev) return prev;
+                return {
+                    ...prev,
+                    participants: prev.participants.map((p) => {
+                        if (p.user_id !== data.user_id) return p;
+                        return {
+                            ...p,
+                            solves: p.solves.filter((s) => s.id !== data.solve_id),
+                        };
+                    }),
+                };
+            });
+
+            addRoomNotification('INFO', t('rooms.edit_solve.notification_deleted', {
+                username: getParticipantUsername(data.user_id),
+            }));
+
+            if (data.user_id === me?.id && getDailyGoalStorage().count_room_solves) {
+                fetchRoomSolveCounts();
+            }
+        });
+
         socket.on(FriendlyRoomServerEvent.ROOM_STARTED, (data: { room_id: string; scramble: string; scramble_index: number }) => {
             if (data.room_id === roomId) {
                 setRoom((prev) => {
@@ -1152,6 +1235,8 @@ function FriendlyRoomContent() {
             socket.off(FriendlyRoomServerEvent.PLAYER_LEFT);
             socket.off(FriendlyRoomServerEvent.SCRAMBLE_UPDATED);
             socket.off(FriendlyRoomServerEvent.SOLVE_SUBMITTED);
+            socket.off(FriendlyRoomServerEvent.SOLVE_UPDATED);
+            socket.off(FriendlyRoomServerEvent.SOLVE_DELETED);
             socket.off(FriendlyRoomServerEvent.ROOM_STARTED);
             socket.off(FriendlyRoomServerEvent.ROOM_DELETED);
             socket.off(FriendlyRoomServerEvent.ADMIN_CHANGED);
@@ -1277,6 +1362,24 @@ function FriendlyRoomContent() {
         getSocket().emit(FriendlyRoomClientEvent.SUBMIT_SOLVE, roomId, solveData);
     }
 
+    function handleEditSolve(solveId: string, time: number, plusTwo: boolean, dnf: boolean) {
+        if (!roomId) return;
+
+        const input: EditFriendlyRoomSolveInput = {
+            solve_id: solveId,
+            time,
+            dnf,
+            plus_two: plusTwo,
+        };
+
+        getSocket().emit(FriendlyRoomClientEvent.EDIT_SOLVE, roomId, input);
+    }
+
+    function handleDeleteSolve(solveId: string) {
+        if (!roomId) return;
+        getSocket().emit(FriendlyRoomClientEvent.DELETE_SOLVE, roomId, solveId);
+    }
+
     function handleSolveRedo() {
         // User wants to redo - do nothing, timer overlay handles the reset
     }
@@ -1362,6 +1465,18 @@ function FriendlyRoomContent() {
         if (!myParticipant) return null;
         return myParticipant.solves.find((s) => s.scramble_index === room.scramble_index);
     })();
+
+    // The one solve the user is allowed to correct. The round auto-advances as soon as
+    // everyone has solved, so this is the highest scramble_index they own — not
+    // necessarily the room's current round.
+    const myLastSolve = useMemo<FriendlyRoomSolveData | null>(() => {
+        if (!room || !me) return null;
+        const myParticipant = room.participants.find((p) => p.user_id === me.id);
+        if (!myParticipant || myParticipant.solves.length === 0) return null;
+        return myParticipant.solves.reduce((prev, current) =>
+            prev.scramble_index > current.scramble_index ? prev : current
+        );
+    }, [room, me]);
 
     // Smart cube: isSpectator check for various logic
     const isSpectator = room?.participants.find((p) => p.user_id === me?.id)?.is_spectator;
@@ -1977,6 +2092,18 @@ function FriendlyRoomContent() {
                                                 </label>
                                             </div>
                                         )}
+
+                                        {/* Saved this round: offer a correction instead of a dead end */}
+                                        {alreadySolvedThisRound && myLastSolve && !isSpectator && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingSolve(myLastSolve)}
+                                                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-module border border-text/[0.2] text-text font-bold text-sm hover:border-text/[0.4] transition-colors"
+                                            >
+                                                <PencilSimple size={16} weight="bold" />
+                                                <span>{t('rooms.edit_solve.edit_last')}</span>
+                                            </button>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -2017,6 +2144,8 @@ function FriendlyRoomContent() {
                                     currentUserId={me?.id}
                                     scrambleHistory={room.scramble_history}
                                     hostId={room.created_by.id}
+                                    myLastSolveId={myLastSolve?.id}
+                                    onEditSolve={setEditingSolve}
                                 />
                             </div>
 
@@ -2026,18 +2155,12 @@ function FriendlyRoomContent() {
                                      style={{ WebkitTouchCallout: 'none' }}>
                                     <span className="text-6xl font-mono font-medium text-text tracking-tight">
                                         {(() => {
-                                            const myParticipant = room.participants.find(p => p.user_id === me?.id);
                                             const dpVal = timerDecimalPoints ?? 2;
-                                            if (!myParticipant || myParticipant.solves.length === 0) return (0).toFixed(dpVal);
-
-                                            // Find last solve (highest scramble index)
-                                            const lastSolve = myParticipant.solves.reduce((prev, current) =>
-                                                (prev.scramble_index > current.scramble_index) ? prev : current
-                                            );
+                                            if (!myLastSolve) return (0).toFixed(dpVal);
 
                                             // Format time
-                                            if (lastSolve.dnf) return 'DNF';
-                                            const time = lastSolve.plus_two ? lastSolve.time + 2 : lastSolve.time;
+                                            if (myLastSolve.dnf) return 'DNF';
+                                            const time = myLastSolve.plus_two ? myLastSolve.time + 2 : myLastSolve.time;
                                             return time.toFixed(dpVal);
                                         })()}
                                     </span>
@@ -2357,6 +2480,14 @@ function FriendlyRoomContent() {
             <RoomMusicPlayer
                 isOpen={musicPlayerOpen}
                 onClose={() => setMusicPlayerOpen(false)}
+            />
+            <EditSolveModal
+                isOpen={editingSolve !== null}
+                solve={editingSolve}
+                scrambleHistory={room.scramble_history}
+                onClose={() => setEditingSolve(null)}
+                onSave={handleEditSolve}
+                onDelete={handleDeleteSolve}
             />
         </div>
     );

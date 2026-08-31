@@ -4,6 +4,7 @@ import {
     FriendlyRoomParticipantData,
     FriendlyRoomSolveData,
     CreateFriendlyRoomInput,
+    EditFriendlyRoomSolveInput,
 } from '../../shared/friendly_room';
 import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../shared/friendly_room/consts';
 import {
@@ -486,6 +487,79 @@ export async function submitSolve(roomId: string, userId: string, solveData: Fri
     }
 }
 
+// Locate the one solve a user is allowed to correct: their own most recent one in the
+// room. The round auto-advances the moment everyone has solved (see
+// checkAllSolvedAndNextScramble), so "most recent" is the highest scramble_index the user
+// owns, not the room's current scramble_index. Membership is looked up from the room, so
+// the caller's user id (resolved from the socket, never sent by the client) is the only
+// trusted input.
+async function findEditableSolve(roomId: string, userId: string) {
+    const participant = await prisma().friendlyRoomParticipant.findFirst({
+        where: { room_id: roomId, user_id: userId },
+    });
+    if (!participant) return null;
+
+    const solve = await prisma().friendlyRoomSolve.findFirst({
+        where: { participant_id: participant.id, room_id: roomId },
+        orderBy: { scramble_index: 'desc' },
+    });
+    if (!solve) return null;
+
+    return { participant, solve };
+}
+
+// Correct your own most recent solve after it was saved. Any older solve is immutable:
+// past rounds are already settled for everyone else in the room.
+export async function editRoomSolve(roomId: string, userId: string, input: EditFriendlyRoomSolveInput) {
+    // Payload shape validation - same bounds as submitSolve
+    if (
+        !input ||
+        typeof input.solve_id !== 'string' ||
+        !input.solve_id ||
+        typeof input.time !== 'number' ||
+        !Number.isFinite(input.time) ||
+        input.time < 0 ||
+        input.time > 600
+    ) {
+        return null;
+    }
+
+    const editable = await findEditableSolve(roomId, userId);
+    if (!editable) return null;
+
+    // The client may only target the solve the server also considers most recent.
+    if (editable.solve.id !== input.solve_id) return null;
+
+    // A DNF keeps its raw time so unchecking DNF restores the original result.
+    return await prisma().friendlyRoomSolve.update({
+        where: { id: editable.solve.id },
+        data: {
+            time: input.time,
+            dnf: input.dnf === true,
+            plus_two: input.plus_two === true,
+            edited: true,
+        },
+    });
+}
+
+// Delete your own most recent solve. The round index is deliberately NOT rolled back: if
+// the deleted solve belongs to the current round the user can simply solve it again, and
+// if the round already advanced the cell just goes back to empty.
+export async function deleteRoomSolve(roomId: string, userId: string, solveId: string) {
+    if (typeof solveId !== 'string' || !solveId) return null;
+
+    const editable = await findEditableSolve(roomId, userId);
+    if (!editable) return null;
+    if (editable.solve.id !== solveId) return null;
+
+    await prisma().friendlyRoomSolve.delete({ where: { id: editable.solve.id } });
+
+    return {
+        solve_id: editable.solve.id,
+        scramble_index: editable.solve.scramble_index,
+    };
+}
+
 // Generate next scramble (only room creator can do this)
 export async function nextScramble(roomId: string, userId: string): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
@@ -846,6 +920,7 @@ function mapRoomToData(room: any): FriendlyRoomData {
                 plus_two: s.plus_two,
                 scramble_index: s.scramble_index,
                 created_at: s.created_at.toISOString(),
+                edited: s.edited || false,
             })) || [],
         })),
         scramble_history: room.scramble_history?.map((s: any) => ({

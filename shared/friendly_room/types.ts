@@ -48,6 +48,18 @@ export interface FriendlyRoomSolveData {
     plus_two: boolean;
     scramble_index: number;
     created_at?: string;
+    // True once the owner has corrected this solve after saving it. Shown as a pencil
+    // marker in the room table so a corrected result never looks like an original one.
+    edited?: boolean;
+}
+
+// Payload for EDIT_SOLVE. `time` is always the raw time in seconds: the +2 is applied at
+// display time, and a DNF keeps its time so unchecking DNF restores the original result.
+export interface EditFriendlyRoomSolveInput {
+    solve_id: string;
+    time: number;
+    dnf: boolean;
+    plus_two: boolean;
 }
 
 export interface FriendlyRoomChatMessage {

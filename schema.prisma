@@ -1043,6 +1043,7 @@ model FriendlyRoomSolve {
   time           Float
   dnf            Boolean                 @default(false)
   plus_two       Boolean                 @default(false)
+  edited         Boolean                 @default(false)
   created_at     DateTime                @default(now())
 
   room           FriendlyRoom            @relation(fields: [room_id], references: [id], onDelete: Cascade)

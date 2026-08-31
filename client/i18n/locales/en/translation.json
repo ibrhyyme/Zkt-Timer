@@ -1731,6 +1731,18 @@
       "close": "Close",
       "view": "View scramble"
     },
+    "edit_solve": {
+      "title": "Fix solve",
+      "time_label": "Time",
+      "invalid_time": "Enter a valid time (e.g. 12.34 or 1:23.45)",
+      "done": "Done",
+      "delete": "Delete",
+      "delete_confirm": "This solve will be deleted. The round is not rolled back, so your result for it stays empty. Continue?",
+      "edit_hint": "Fix your last solve",
+      "edit_last": "Fix last solve",
+      "notification_edited": "{{username}} fixed their solve",
+      "notification_deleted": "{{username}} deleted their solve"
+    },
     "compete": "Compete",
     "disconnect": "Disconnect",
     "connect_timer": "Connect Timer",

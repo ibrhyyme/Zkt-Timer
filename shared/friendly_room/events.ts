@@ -10,6 +10,8 @@ export enum FriendlyRoomClientEvent {
     RESOLVE_ROOM_KEY = 'friendlyRoomResolveKey', // slug-or-id URL segment -> room id
     TOGGLE_READY = 'friendlyRoomToggleReady',
     SUBMIT_SOLVE = 'friendlyRoomSubmitSolve',
+    EDIT_SOLVE = 'friendlyRoomEditSolve', // Fix your own most recent solve (time / penalties)
+    DELETE_SOLVE = 'friendlyRoomDeleteSolve', // Remove your own most recent solve
     SEND_CHAT = 'friendlyRoomSendChat',
     NEXT_SCRAMBLE = 'friendlyRoomNextScramble',
     START_ROOM = 'friendlyRoomStart',
@@ -43,6 +45,8 @@ export enum FriendlyRoomServerEvent {
     SPECTATOR_CHANGED = 'friendlyRoomSpectatorChanged',
     SCRAMBLE_UPDATED = 'friendlyRoomScrambleUpdated',
     SOLVE_SUBMITTED = 'friendlyRoomSolveSubmitted',
+    SOLVE_UPDATED = 'friendlyRoomSolveUpdated',
+    SOLVE_DELETED = 'friendlyRoomSolveDeleted',
     CHAT_MESSAGE = 'friendlyRoomChatMessage',
     ROOM_STARTED = 'friendlyRoomStarted',
     ADMIN_CHANGED = 'friendlyRoomAdminChanged',
