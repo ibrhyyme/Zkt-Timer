@@ -1,5 +1,9 @@
 # --- Stage 1: Builder ---
-FROM node:20.19-slim AS builder
+# Node 22 here only — @capacitor/cli 8.x (devDependency, needed for its type-only
+# import in capacitor.config.ts, never actually run) requires it. This node_modules
+# never reaches the runtime image below: only build/*, dist/, and public/ are
+# copied out, and the runtime stage installs its own node_modules from scratch.
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
