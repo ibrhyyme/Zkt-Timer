@@ -82,16 +82,16 @@ export async function lockTextZoom(): Promise<void> {
 export async function initSafeArea(): Promise<void> {
 	if (!isNative()) return;
 	try {
-		const { SafeArea } = await import('@capacitor-community/safe-area');
-		await SafeArea.enable({
-			config: {
-				customColorsForSystemBars: true,
-				statusBarColor: '#12141C',
-				statusBarContent: 'light',
-				navigationBarColor: '#12141C',
-				navigationBarContent: 'light',
-			},
-		});
+		// v8: the plugin auto-enables and reads bar styles from
+		// capacitor.config.ts (plugins.SafeArea). enable() and custom colors are
+		// gone — v8 renders transparent system bars over content, so the dark
+		// #12141C look now comes from the app drawing behind them. CSS
+		// env(safe-area-inset-*) (client/styles/config.scss) still supplies the
+		// insets. Reinforce the Dark style (light icons) at runtime for safety.
+		// NOTE: setSystemBarsStyle takes {style, type?} — NOT the config-shaped
+		// {statusBarStyle, navigationBarStyle}. Omitting `type` applies to both bars.
+		const { SafeArea, SystemBarsStyle } = await import('@capacitor-community/safe-area');
+		await SafeArea.setSystemBarsStyle({ style: SystemBarsStyle.Dark });
 	} catch (e) {
 		console.warn('[Native] SafeArea init failed:', e);
 	}

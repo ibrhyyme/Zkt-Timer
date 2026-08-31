@@ -133,7 +133,7 @@ export async function getOfferings(): Promise<OfferingsSnapshot> {
 
 /**
  * Purchase a package. Apple/Google opens their own sheet.
- * On Android, if there's an active subscription, pass googleProductChangeInfo for upgrade/downgrade.
+ * On Android, if there's an active subscription, pass storeProductChangeInfo for upgrade/downgrade.
  */
 export async function purchasePackage(
 	pkg: PurchasesPackage,
@@ -150,8 +150,8 @@ export async function purchasePackage(
 
 	// Android-specific: old product and replacement mode for upgrade/downgrade
 	if (isAndroidNative() && oldProductId) {
-		const REPLACEMENT_MODE = mod.GOOGLE_PRODUCT_CHANGE_REPLACEMENT_MODE || {};
-		params.googleProductChangeInfo = {
+		const REPLACEMENT_MODE = mod.STORE_REPLACEMENT_MODE || {};
+		params.storeProductChangeInfo = {
 			oldProductIdentifier: oldProductId,
 			replacementMode: isUpgrade
 				? REPLACEMENT_MODE.CHARGE_PRORATED_PRICE || 'CHARGE_PRORATED_PRICE'

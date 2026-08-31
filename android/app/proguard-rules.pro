@@ -65,3 +65,10 @@
 # Capacitor RevenueCat plugin (reflection-based)
 -keep class com.revenuecat.purchases.capacitor.** { *; }
 
+# Capgo OTA updater (@capgo/capacitor-updater) — R8 full-mode would otherwise
+# prune its WorkManager reflection / brotli / versioncompare internals, silently
+# breaking OTA (which cannot be hotfixed via OTA). The plugin's own consumer keeps
+# are not shipped to the app, so declare them here.
+-keep class ee.forgr.capacitor_updater.** { *; }
+-dontwarn org.brotli.**
+

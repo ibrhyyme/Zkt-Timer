@@ -7,9 +7,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.2'
-        classpath 'com.google.gms:google-services:4.4.0'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.google.gms:google-services:4.4.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -24,24 +24,27 @@ allprojects {
         mavenCentral()
     }
 
-    // safe-area plugin JVM 21 hedefliyor ama proje JDK 17 — tum Kotlin'i 17'ye zorla
+    // Capacitor 8 + JDK 21: unify every module's Kotlin target to 21 so a plugin
+    // that hardcodes a different target can't trigger AGP's "Inconsistent JVM
+    // target" error. (kotlinOptions is deprecated in Kotlin 2.x but still valid.)
     afterEvaluate {
         tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
             kotlinOptions {
-                jvmTarget = "17"
+                jvmTarget = "21"
             }
         }
     }
 }
 
-// RevenueCat plugin android.compileOptions'i 1.8'e hardcode ediyor, Kotlin 17 ile tutarsiz.
-// Tum Android subproject'lerinin compileOptions'ini 17'ye override et.
+// Some plugins (e.g. RevenueCat) hardcode Java 1.8/17 in their own compileOptions,
+// which clashes with Capacitor 8's Java 21 modules. Force every Android subproject
+// to Java 21 for a single consistent toolchain.
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android.compileOptions {
-                sourceCompatibility JavaVersion.VERSION_17
-                targetCompatibility JavaVersion.VERSION_17
+                sourceCompatibility JavaVersion.VERSION_21
+                targetCompatibility JavaVersion.VERSION_21
             }
         }
     }
