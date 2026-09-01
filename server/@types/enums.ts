@@ -13,9 +13,6 @@ export enum NotificationType {
 	WCA_FOLLOW_RESULT_ENTERED = 'wca_follow_result_entered',
 	WCA_FOLLOW_ROUND_FINISHED = 'wca_follow_round_finished',
 	WCA_FOLLOW_COUNTDOWN = 'wca_follow_countdown',
-	ZKT_REGISTRATION_STATUS = 'zkt_registration_status',
-	ZKT_ROUND_FINISHED = 'zkt_round_finished',
-	ZKT_FOLLOW_ROUND_FINISHED = 'zkt_follow_round_finished',
 }
 
 export enum MetricLogType {

@@ -206,13 +206,10 @@ function getDefaultSiteMapUrls() {
 		'/account',
 		'/oauth',
 		'/admin',
-		// Private conversations + the competition organizer console
+		// Private conversations
 		'/messages',
-		'/organizer',
 		// ZKT competitions are private — never expose to Google in any form
 		'/zkt-competitions',
-		'/zkt-records',
-		'/zkt-rankings',
 	];
 
 	for (let i = 0; i < routes.length; i += 1) {

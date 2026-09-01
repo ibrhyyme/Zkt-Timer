@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 
 // Color key for the live results tables: explains what the green / orange / plain
 // rows mean, so on-site competitors understand "why am I green" at a glance.
-// Matches the row colors in ZktCompetitions.scss / AdminZktCompetitions.scss:
+// Matches the row colors in ZktCompetitions.scss:
 //   green  = clinched (guaranteed to advance)
 //   orange = questionable (currently advancing, not yet guaranteed)
 //   plain  = currently out.

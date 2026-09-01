@@ -186,20 +186,12 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
-		// Only admin/mod can access admin pages; others see 404.
-		// Mod (but not admin) can only access ZKT competition pages.
+		// Admin-only pages; everyone else sees 404. The mod role used to reach the
+		// competition console here, but that console is gone, so mod grants nothing.
 		if (route.admin) {
-			if (!me || (!me.admin && !me.mod)) {
+			if (!me || !me.admin) {
 				res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
 				return;
-			}
-			if (me.mod && !me.admin) {
-				// Mods may only access the standalone competition management pages.
-				const isCompetitionsRoute = routePath.startsWith('/organizer');
-				if (!isCompetitionsRoute) {
-					res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
-					return;
-				}
 			}
 		}
 

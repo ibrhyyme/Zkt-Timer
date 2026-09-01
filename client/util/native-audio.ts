@@ -59,13 +59,44 @@ function getAudioContext(): AudioContext | null {
 	// one that pays for unlocking it.
 	if (audioContext.state === 'suspended' && typeof document !== 'undefined') {
 		const unlock = () => {
-			audioContext?.resume().catch(() => {});
+			audioContext
+				?.resume()
+				.then(warmUp)
+				.catch(() => {});
 		};
 		document.addEventListener('pointerdown', unlock, {once: true});
 		document.addEventListener('keydown', unlock, {once: true});
+	} else {
+		warmUp();
 	}
 
 	return audioContext;
+}
+
+/**
+ * Plays one silent frame so the audio pipeline is fully spun up before a real sound
+ * needs it.
+ *
+ * Resuming the context is not the whole cost: on Android the first buffer sent to the
+ * output device also has to open the hardware stream, which is tens of milliseconds
+ * that land on whichever sound plays first. Spending them on silence, at the moment
+ * the user touches the screen, keeps them off the inspection calls.
+ */
+function warmUp(): void {
+	const ctx = audioContext;
+	if (!ctx) return;
+
+	try {
+		const source = ctx.createBufferSource();
+		source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+		const gain = ctx.createGain();
+		gain.gain.value = 0;
+		source.connect(gain);
+		gain.connect(ctx.destination);
+		source.start(0);
+	} catch (e) {
+		// Warm-up is an optimisation; a failure here changes nothing else.
+	}
 }
 
 async function preloadWebAudio(): Promise<void> {

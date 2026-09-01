@@ -56,15 +56,9 @@ import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
 import SmartCubeTelemetryPanel from '../admin/smart_cube_telemetry/SmartCubeTelemetryPanel';
 import AdminMedia from '../admin/media/AdminMedia';
-import AdminZktCompetitions from '../admin/zkt_competitions/AdminZktCompetitions';
-import CompetitionDashboard from '../admin/zkt_competitions/CompetitionDashboard';
-import CreateZktCompetitionPage from '../admin/zkt_competitions/CreateZktCompetitionPage';
 import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
-import ZktProjector from '../community/zkt_competitions/ZktProjector';
 import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
 import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
-import ZktRecordsPage from '../community/zkt_competitions/ZktRecordsPage';
-import ZktRankingsPage from '../community/zkt_competitions/ZktRankingsPage';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -259,13 +253,10 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
 	route('/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
 	// Projector — fullscreen venue display (standalone, no nav)
-	route('/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', null, App, ZktProjector, false, true, false, true),
 	route('/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
 	route('/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
 	route('/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),
 	route('/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail, false),
-	route('/zkt-records', App, Community, ZktRecordsPage, false),
-	route('/zkt-rankings', App, Community, ZktRankingsPage, false),
 
 	// Rankings
 	route('/ranks', null, App, Rankings, false),
@@ -289,13 +280,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
 	route('/admin/media', App, Admin, AdminMedia, true, false, true),
 	route('/admin/smart-telemetry', App, Admin, SmartCubeTelemetryPanel, true, false, true),
-
-	// ZKT competition management — standalone (out of the Admin layout). Admin-only
-	// link in the avatar dropdown for now; mods keep URL access (see server/router.tsx).
-	route('/organizer/new', null, App, CreateZktCompetitionPage, true, false, true),
-	route('/organizer/:competitionId/edit', null, App, CreateZktCompetitionPage, true, false, true),
-	route('/organizer/:competitionId', null, App, CompetitionDashboard, true, false, true),
-	route('/organizer', null, App, AdminZktCompetitions, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
@@ -326,15 +310,11 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Legacy /community/zkt-* links -> new /zkt-* (param-preserving 301 via SSR).
 	routeRedirect('/community/zkt-competitions/:competitionId/competitors/:userId', '/zkt-competitions/:competitionId/competitors/:userId'),
 	routeRedirect('/community/zkt-competitions/:competitionId/activities/:groupId', '/zkt-competitions/:competitionId/activities/:groupId'),
-	routeRedirect('/community/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', '/zkt-competitions/:competitionId/projector/:eventId/:roundNumber'),
 	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', '/zkt-competitions/:competitionId/live/:eventId/:roundNumber'),
 	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId', '/zkt-competitions/:competitionId/live/:eventId'),
 	routeRedirect('/community/zkt-competitions/:competitionId/live', '/zkt-competitions/:competitionId/live'),
 	routeRedirect('/community/zkt-competitions/:competitionId', '/zkt-competitions/:competitionId'),
-	routeRedirect('/community/zkt-records', '/zkt-records'),
-	routeRedirect('/community/zkt-rankings', '/zkt-rankings'),
 	routeRedirect('/community/friends', '/competitions'),
 	routeRedirect('/community', '/competitions'),
 	routeRedirect('/admin', '/admin/dashboard'),
-	routeRedirect('/admin/competitions', '/organizer'),
 ];

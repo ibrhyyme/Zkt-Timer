@@ -50,8 +50,6 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath.startsWith('/competitions/zkt-')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath.startsWith('/competitions')) return t('seo.wca_competitions_keywords', fallback);
 	if (currentPath.startsWith('/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
-	if (currentPath === '/zkt-records') return t('seo.zkt_records_keywords', fallback);
-	if (currentPath === '/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
 	if (
 		currentPath === '/login' ||
 		currentPath === '/signup' ||
@@ -388,12 +386,6 @@ export default function Header(props: Props) {
 		} else if (currentPath.startsWith('/zkt-competitions/')) {
 			pageTitle = t('seo.zkt_competition_detail_title');
 			pageDesc = t('seo.zkt_competition_detail_description');
-		} else if (currentPath === '/zkt-records') {
-			pageTitle = t('seo.zkt_records_title');
-			pageDesc = t('seo.zkt_records_description');
-		} else if (currentPath === '/zkt-rankings') {
-			pageTitle = t('seo.zkt_rankings_title');
-			pageDesc = t('seo.zkt_rankings_description');
 		} else if (currentPath === '/pro' || currentPath === '/account/pro') {
 			pageTitle = t('seo.pro_title');
 			pageDesc = t('seo.pro_description');
@@ -423,9 +415,9 @@ export default function Header(props: Props) {
 	const noIndexPaths = [
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
 		'/verify-email', '/wca-signup', '/zkt-signup',
-		// Private conversations and the organizer console — never a search result.
-		'/messages', '/organizer',
-		'/zkt-competitions', '/zkt-records', '/zkt-rankings',
+		// Private conversations — never a search result.
+		'/messages',
+		'/zkt-competitions',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 	// Main competition page (`/competitions/:id`) and list remain indexable.

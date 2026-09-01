@@ -2,7 +2,6 @@ import { Server } from 'socket.io';
 import { getRedisPubClient, getRedisSubClient } from './redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { listenForFriendlyRoomEvents } from '../friendly_room';
-import { listenForZktCompEvents } from '../zkt_competition';
 import { getUserFromClient, broadcastOnlineUsersChanged, ADMIN_ONLINE_WATCHERS_ROOM, getOnlineUsers, userRoom } from './socket_util';
 import { subscribeRound, unsubscribeRound, unsubscribeAllRounds, setPollerIOGetter } from './WcaLivePoller';
 import { handleSocketTransition } from './dm_presence';
@@ -69,9 +68,6 @@ export function initSocket(server: any) {
 
 		// Friendly Room events
 		listenForFriendlyRoomEvents(client);
-
-		// ZKT Unofficial Competition events
-		listenForZktCompEvents(client);
 
 		// WCA Live round subscription
 		client.on('wca-live:subscribe', ({competitionId, liveRoundId}: {competitionId: string; liveRoundId: string}) => {
