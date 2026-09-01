@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {saveFile} from '../save-file';
 import {ensureRobotoFont} from './pdf_font';
 
 // Pre-formatted result row. The caller formats times/ranks (via shared helpers)
@@ -117,7 +118,11 @@ export async function generateResultsPdf(opts: ResultsPdfOptions): Promise<void>
 	}
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(`${safe(opts.competitionName)}-${safe(opts.eventName)}-R${opts.roundNumber}-results.pdf`);
+	await saveFile(
+		pdf.output('blob'),
+		`${safe(opts.competitionName)}-${safe(opts.eventName)}-R${opts.roundNumber}-results.pdf`,
+		'application/pdf'
+	);
 }
 
 // Trim a string with an ellipsis so it fits within maxWidth (mm) at the current font.

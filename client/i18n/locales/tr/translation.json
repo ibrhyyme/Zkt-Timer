@@ -4657,5 +4657,9 @@
     "solve_count_one": "{{countText}} çözüm",
     "solve_count_other": "{{countText}} çözüm",
     "smart_cube_tag": "Akıllı Küp"
+  },
+  "app_update": {
+    "available_ios": "App Store'da yeni bir sürüm var.",
+    "installing": "Güncelleme hazır, uygulama yeniden başlatılıyor."
   }
 }

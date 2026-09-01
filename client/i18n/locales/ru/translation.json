@@ -4546,5 +4546,9 @@
     "solve_count_one": "{{countText}} сборка",
     "solve_count_other": "{{countText}} сборок",
     "smart_cube_tag": "Смарт-куб"
+  },
+  "app_update": {
+    "available_ios": "В App Store доступна новая версия.",
+    "installing": "Обновление готово, приложение перезапускается."
   }
 }

@@ -20,13 +20,14 @@ const RELOAD_WAIT_TIMEOUT_MS = 60 * 1000;
 const RELOAD_POLL_MS = 1000;
 
 /**
- * Holds the reload until the timer is idle.
+ * Holds a reload or restart until the timer is idle.
  *
  * The bundle swap reloads the WebView, and doing that under someone mid-solve destroys
  * the one thing this app exists to measure. Everything else about the reload stays as
- * it was: this only moves it by a few seconds, never cancels it.
+ * it was: this only moves it by a few seconds, never cancels it. Shared with the store
+ * update flow (util/app-update.ts), whose install restarts the whole app.
  */
-async function waitUntilNotSolving(): Promise<void> {
+export async function waitUntilNotSolving(): Promise<void> {
 	const deadline = Date.now() + RELOAD_WAIT_TIMEOUT_MS;
 
 	while (Date.now() < deadline) {
@@ -131,6 +132,12 @@ export function initNativeShellBoot(): void {
 				await CapacitorUpdater.notifyAppReady();
 				await armLatestBundle(CapacitorUpdater);
 			})
+			.catch(() => {})
+			// Store update check runs after the OTA one, never alongside it: an OTA that
+			// is about to reload the WebView should not be racing a Play dialog. If the
+			// OTA reloaded, this never runs — the fresh boot checks again.
+			.then(() => import('./app-update'))
+			.then(({checkAppUpdate}) => checkAppUpdate())
 			.catch(() => {});
 	}
 

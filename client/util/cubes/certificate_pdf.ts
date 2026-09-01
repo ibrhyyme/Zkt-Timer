@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {saveFile} from '../save-file';
 
 /**
  * Competition certificates — WCA-style layout, ZKT-branded (no WCA references).
@@ -401,7 +402,7 @@ export async function generatePodiumCertificates(opts: CertCommon, certs: Podium
 	});
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(`${safe(opts.competitionName)}-podyum-sertifikalari.pdf`);
+	await saveFile(pdf.output('blob'), `${safe(opts.competitionName)}-podyum-sertifikalari.pdf`, 'application/pdf');
 }
 
 export async function generateParticipationCertificates(
@@ -422,5 +423,5 @@ export async function generateParticipationCertificates(
 	});
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(`${safe(opts.competitionName)}-katilim-sertifikalari.pdf`);
+	await saveFile(pdf.output('blob'), `${safe(opts.competitionName)}-katilim-sertifikalari.pdf`, 'application/pdf');
 }

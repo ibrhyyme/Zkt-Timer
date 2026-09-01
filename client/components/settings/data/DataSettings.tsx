@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import ImportData, { ImportDataType, IMPORT_TYPE_NAMES } from './import_data/ImportData';
-import fileDownload from 'js-file-download';
+import { saveFile } from '../../../util/save-file';
 import { gql } from '@apollo/client/core';
 import { gqlMutate, removeTypename } from '../../api';
 import { openModal } from '../../../actions/general';
@@ -76,7 +76,7 @@ export default function DataSettings() {
 
 		const filename = `zkttimer_data_${new Date().toLocaleString().replace(/,\s|\s|\/|:|_/g, '_')}.txt`;
 
-		fileDownload(data, filename);
+		await saveFile(data, filename, 'text/plain');
 
 		setExportingData(false);
 		toastSuccess(t('data_settings.export_success'));

@@ -619,6 +619,10 @@ model SupportTicket {
   created_at    DateTime               @default(now())
   subject       String
   message       String
+  // Serialised DeviceInfoSnapshot (client/util/device-info.ts) captured when the
+  // ticket was opened: device, OS, WebView and OTA bundle version. Null on tickets
+  // created before this field existed, and whenever collection fails.
+  device_info   String?
   resolved_at   DateTime?
   // Last time each side opened the conversation — drives the unread badges.
   user_read_at  DateTime?

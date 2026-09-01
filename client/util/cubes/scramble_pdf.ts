@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {saveFile} from '../save-file';
 import {ensureRobotoFont} from './pdf_font';
 import {applyScramble, DEFAULT_FACE_COLORS, FACE_NAMES, CubeState} from './cube_state';
 
@@ -251,7 +252,7 @@ export async function generateScramblePdf(opts: ScramblePdfOptions): Promise<voi
 		/\s+/g,
 		'_'
 	);
-	pdf.save(filename);
+	await saveFile(pdf.output('blob'), filename, 'application/pdf');
 }
 
 // Re-export for convenience.

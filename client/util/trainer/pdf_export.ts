@@ -4,6 +4,8 @@
  * Uses jsPDF for client-side PDF generation.
  */
 import type {CubeFace} from '../../components/trainer/types';
+import {isNative} from '../platform';
+import {saveFile} from '../save-file';
 import {getLLPattern, loadLLPatterns} from './ll_patterns';
 import {getIsometricPattern, loadIsometricPatterns} from './isometric_patterns';
 import {getPuzzlePattern, loadPuzzlePatterns} from './puzzle_patterns';
@@ -952,10 +954,12 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 
 	// Only mobile gets the share sheet. Desktop Chrome/Edge also implements
 	// canShare({files}), which would pop the OS share dialog instead of downloading.
+	// The native app skips it entirely: the WebView does not implement navigator.share
+	// for files, and saveFile opens the PDF in the system viewer anyway.
 	const isMobile = typeof navigator !== 'undefined' &&
 		/iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
 
-	if (isMobile) {
+	if (isMobile && !isNative()) {
 		const blob = doc.output('blob');
 		const file = new File([blob], fileName, {type: 'application/pdf'});
 
@@ -969,5 +973,5 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 		}
 	}
 
-	doc.save(fileName);
+	await saveFile(doc.output('blob'), fileName, 'application/pdf');
 }

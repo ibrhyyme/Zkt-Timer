@@ -12,13 +12,11 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Line numbers in release stack traces. Without these two, Crashlytics reports
+# arrive with the mapping file applied but no line information, which is most of
+# the value gone.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
 # Capacitor ProGuard Rules
 -keep public class com.getcapacitor.BridgeActivity { *; }

@@ -25,6 +25,10 @@ const ATTACHMENT_RATE_WINDOW_SECONDS = 60 * 60;
 const ATTACHMENT_RATE_MAX = 10;
 const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 5000;
+// The client sends a serialised DeviceInfoSnapshot (~300 chars). The cap is a bound on
+// a client-controlled string, not a real limit: anything longer is dropped rather than
+// truncated, since half a JSON blob is worth less than an absent one.
+const MAX_DEVICE_INFO_LENGTH = 1000;
 
 /**
  * User facing errors carry an `i18nKey` so the client renders them in the viewer's
@@ -105,10 +109,13 @@ export class SupportTicketResolver {
 			);
 		}
 
+		const deviceInfo = (input.device_info || '').trim();
+
 		const ticket = await prisma.supportTicket.create({
 			data: {
 				subject,
 				message,
+				device_info: deviceInfo && deviceInfo.length <= MAX_DEVICE_INFO_LENGTH ? deviceInfo : null,
 				created_by_id: user.id,
 				// The author has by definition seen their own opening message.
 				user_read_at: new Date(),

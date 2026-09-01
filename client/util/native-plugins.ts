@@ -70,6 +70,62 @@ export async function initStatusBar(): Promise<void> {
 	}
 }
 
+// Crashlytics — native crash reporting.
+//
+// Sentry (client/components/App.tsx) covers JavaScript only; a native crash kills the
+// process before any JS handler runs, which is exactly the class of bug that has hurt
+// most here (R8 stripping a reflection-heavy SDK, a plugin faulting at boot). The two
+// are complementary, not duplicates.
+export async function initCrashlytics(): Promise<void> {
+	if (!isNative()) return;
+	try {
+		const [{ FirebaseCrashlytics }, { getDeviceInfo }] = await Promise.all([
+			import('@capacitor-firebase/crashlytics'),
+			import('./device-info'),
+		]);
+
+		const info = await getDeviceInfo();
+
+		// Crashlytics records the device and the native app version by itself. These
+		// two it cannot know: which JS bundle was on screen (an OTA update changes the
+		// app without changing the store version), and which WebView rendered it.
+		if (info.otaBundle) {
+			await FirebaseCrashlytics.setCustomKey({ key: 'ota_bundle', value: info.otaBundle, type: 'string' });
+		}
+		if (info.webViewVersion) {
+			await FirebaseCrashlytics.setCustomKey({
+				key: 'webview_version',
+				value: info.webViewVersion,
+				type: 'string',
+			});
+		}
+
+		// The only way to prove the whole chain works (SDK -> upload -> deobfuscated
+		// stack trace in the console) is to actually crash a release build. Exposed
+		// behind the same debug flag that turns on the in-app console, so it is
+		// unreachable for a normal user: localStorage.setItem('zkt_debug', '1').
+		try {
+			if (localStorage.getItem('zkt_debug') === '1') {
+				(window as any).zktTestCrash = () => FirebaseCrashlytics.crash({ message: 'Crashlytics test crash' });
+			}
+		} catch (e) {}
+	} catch (e) {
+		console.warn('[Native] Crashlytics init failed:', e);
+	}
+}
+
+/** Attaches the signed-in identity to crash reports. Safe to call on every auth change. */
+export async function setCrashlyticsUser(userId?: string, isPro?: boolean): Promise<void> {
+	if (!isNative() || !userId) return;
+	try {
+		const { FirebaseCrashlytics } = await import('@capacitor-firebase/crashlytics');
+		await FirebaseCrashlytics.setUserId({ userId });
+		await FirebaseCrashlytics.setCustomKey({ key: 'is_pro', value: Boolean(isPro), type: 'boolean' });
+	} catch (e) {
+		console.warn('[Native] Crashlytics user id failed:', e);
+	}
+}
+
 // Text Zoom — iOS text size locking
 export async function lockTextZoom(): Promise<void> {
 	if (!isNative()) return;

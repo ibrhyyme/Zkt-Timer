@@ -9,6 +9,9 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
         classpath 'com.google.gms:google-services:4.4.2'
+        // Crashlytics: uploads the R8 mapping file so release stack traces are readable.
+        // Depends on the google-services plugin being applied in app/build.gradle.
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.8'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20'
 
         // NOTE: Do not place your application dependencies here; they belong

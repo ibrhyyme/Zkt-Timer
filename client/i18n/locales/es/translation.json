@@ -4567,5 +4567,9 @@
     "solve_count_one": "{{countText}} resolución",
     "solve_count_other": "{{countText}} resoluciones",
     "smart_cube_tag": "Cubo inteligente"
+  },
+  "app_update": {
+    "available_ios": "Hay una nueva versión disponible en la App Store.",
+    "installing": "Actualización lista, reiniciando la aplicación."
   }
 }

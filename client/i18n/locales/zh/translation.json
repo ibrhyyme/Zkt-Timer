@@ -4651,5 +4651,9 @@
     "solve_count_one": "{{countText}} 次还原",
     "solve_count_other": "{{countText}} 次还原",
     "smart_cube_tag": "智能魔方"
+  },
+  "app_update": {
+    "available_ios": "App Store 中有新版本。",
+    "installing": "更新已就绪，正在重启应用。"
   }
 }

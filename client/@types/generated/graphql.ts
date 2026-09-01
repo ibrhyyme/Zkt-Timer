@@ -3557,6 +3557,7 @@ export type SupportTicket = {
   created_at?: Maybe<Scalars['DateTime']>;
   created_by?: Maybe<PublicUserAccount>;
   created_by_id?: Maybe<Scalars['String']>;
+  device_info?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   messages?: Maybe<Array<SupportTicketMessage>>;
@@ -3578,6 +3579,7 @@ export type SupportTicketAttachment = {
 };
 
 export type SupportTicketInput = {
+  device_info?: InputMaybe<Scalars['String']>;
   message?: InputMaybe<Scalars['String']>;
   subject?: InputMaybe<Scalars['String']>;
 };

@@ -4652,5 +4652,9 @@
     "solve_count_one": "{{countText}} solve",
     "solve_count_other": "{{countText}} solves",
     "smart_cube_tag": "Smart Cube"
+  },
+  "app_update": {
+    "available_ios": "A new version is available on the App Store.",
+    "installing": "Update ready, restarting the app."
   }
 }

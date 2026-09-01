@@ -9,6 +9,7 @@ import SettingsCard from '../common/settings_card/SettingsCard';
 import Tag from '../../common/tag/Tag';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {getGqlErrorMessage} from '../../../util/gql-error';
+import {collectDeviceInfo} from '../../../util/device-info';
 import {getDateFromNow} from '../../../util/dates';
 import {SupportTicket} from '../../../@types/generated/graphql';
 import {openModal} from '../../../actions/general';
@@ -71,9 +72,13 @@ export default function Support() {
 		const trimmedMessage = message.trim();
 		if (!trimmedSubject || !trimmedMessage) return;
 
+		// Device, OS, WebView and bundle version, so a report never has to start with
+		// "which phone are you on". Never blocks the ticket: on failure it goes without.
+		const deviceInfo = await collectDeviceInfo();
+
 		try {
 			await createTicket({
-				variables: {input: {subject: trimmedSubject, message: trimmedMessage}},
+				variables: {input: {subject: trimmedSubject, message: trimmedMessage, device_info: deviceInfo}},
 			});
 			toastSuccess(t('support.success'));
 			setSubject('');

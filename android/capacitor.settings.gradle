@@ -11,11 +11,23 @@ project(':capacitor-community-in-app-review').projectDir = new File('../node_mod
 include ':capacitor-community-keep-awake'
 project(':capacitor-community-keep-awake').projectDir = new File('../node_modules/@capacitor-community/keep-awake/android')
 
+include ':capacitor-firebase-crashlytics'
+project(':capacitor-firebase-crashlytics').projectDir = new File('../node_modules/@capacitor-firebase/crashlytics/android')
+
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
 
 include ':capacitor-browser'
 project(':capacitor-browser').projectDir = new File('../node_modules/@capacitor/browser/android')
+
+include ':capacitor-device'
+project(':capacitor-device').projectDir = new File('../node_modules/@capacitor/device/android')
+
+include ':capacitor-file-viewer'
+project(':capacitor-file-viewer').projectDir = new File('../node_modules/@capacitor/file-viewer/android')
+
+include ':capacitor-filesystem'
+project(':capacitor-filesystem').projectDir = new File('../node_modules/@capacitor/filesystem/android')
 
 include ':capacitor-haptics'
 project(':capacitor-haptics').projectDir = new File('../node_modules/@capacitor/haptics/android')
@@ -49,6 +61,9 @@ project(':capacitor-text-zoom').projectDir = new File('../node_modules/@capacito
 
 include ':capacitor-toast'
 project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/toast/android')
+
+include ':capawesome-capacitor-app-update'
+project(':capawesome-capacitor-app-update').projectDir = new File('../node_modules/@capawesome/capacitor-app-update/android')
 
 include ':capgo-capacitor-updater'
 project(':capgo-capacitor-updater').projectDir = new File('../node_modules/@capgo/capacitor-updater/android')

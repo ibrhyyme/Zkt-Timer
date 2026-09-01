@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {saveFile} from '../save-file';
 
 export interface SchedulePdfRow {
 	time: string; // pre-formatted "10:00 – 11:00" or ''
@@ -112,5 +113,5 @@ export async function generateSchedulePdf(opts: SchedulePdfOptions): Promise<voi
 	}
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(`${safe(opts.competitionName)}-schedule.pdf`);
+	await saveFile(pdf.output('blob'), `${safe(opts.competitionName)}-schedule.pdf`, 'application/pdf');
 }

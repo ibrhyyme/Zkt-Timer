@@ -28,7 +28,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
-import { initStatusBar, lockTextZoom } from '../../util/native-plugins';
+import { initStatusBar, lockTextZoom, initCrashlytics, setCrashlyticsUser } from '../../util/native-plugins';
 import { setBackButtonHandle, releaseNativeBackButton } from '../../util/native-back';
 import { openInAppBrowser } from '../../util/external-link';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
@@ -99,18 +99,28 @@ export default function App(props: Props = {}) {
 		}
 	}, [me]);
 
+	// Name the crashing user, so a report can be tied back to the ticket they open.
+	useEffect(() => {
+		if (!me?.id) return;
+		setCrashlyticsUser(me.id, Boolean(me.is_pro));
+	}, [me?.id, me?.is_pro]);
+
 	function appInitiated() {
 		setBrowserSessionId(dispatch);
 		initPageTitleBlink();
 		updateThemeColors();
 		initOfflineSyncListener(); // Start offline sync listener
 		dispatch(setGeneral('app_loaded', true));
+		// Decode the inspection calls up front. Not native-only: the same first-play
+		// delay this removes on Android exists in any browser.
+		preloadTimerSounds();
 
 		// On native: hide splash screen and initialize native plugins
 		if (Capacitor.isNativePlatform()) {
 			SplashScreen.hide();
 			initStatusBar();
 			lockTextZoom();
+			initCrashlytics(); // Native crash reporting (Sentry only sees JS)
 			initRevenueCat(); // Prepare RevenueCat IAP SDK
 			initDeepLinkHandler(); // zkttimer:// OAuth relay + migrate bridge (local shell)
 			initNativeShellBoot(); // Capgo notifyAppReady + one-time migration checks
@@ -119,7 +129,6 @@ export default function App(props: Props = {}) {
 			if (Capacitor.getPlatform() === 'ios') {
 				document.addEventListener('gesturestart', (e) => e.preventDefault());
 				document.addEventListener('gesturechange', (e) => e.preventDefault());
-				preloadTimerSounds();
 			}
 
 			let lastBackPress = 0;

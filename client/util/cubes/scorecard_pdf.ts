@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {saveFile} from '../save-file';
 import {ensureRobotoFont} from './pdf_font';
 
 /**
@@ -275,7 +276,11 @@ export async function generateScorecardsPdf(opts: ScorecardPdfOptions): Promise<
 	});
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(`${safe(opts.competitionName)}-${safe(opts.eventId)}-R${opts.roundNumber}-scorecards.pdf`);
+	await saveFile(
+		pdf.output('blob'),
+		`${safe(opts.competitionName)}-${safe(opts.eventId)}-R${opts.roundNumber}-scorecards.pdf`,
+		'application/pdf'
+	);
 }
 
 /**

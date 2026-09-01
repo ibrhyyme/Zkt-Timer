@@ -40,6 +40,7 @@ const SUPPORT_TICKET_DETAIL = gql`
 			created_at
 			subject
 			message
+			device_info
 			resolved_at
 			user_read_at
 			admin_read_at
@@ -311,6 +312,32 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 		});
 	}, [ticket, isAdminView, t]);
 
+	// One technical line for whoever answers the ticket. Deliberately unlocalised: it is
+	// admin-only and every token in it is a version string or a model name.
+	const deviceSummary = useMemo(() => {
+		if (!isAdminView || !ticket?.device_info) return '';
+
+		let info: Record<string, any>;
+		try {
+			info = JSON.parse(ticket.device_info);
+		} catch (e) {
+			// Older or hand-edited rows: show the raw value rather than nothing.
+			return ticket.device_info;
+		}
+
+		const parts = [
+			[info.operatingSystem, info.osVersion].filter(Boolean).join(' '),
+			[info.manufacturer, info.model].filter(Boolean).join(' '),
+			info.webViewVersion && `WebView ${info.webViewVersion}`,
+			info.appVersion && `app ${info.appVersion}${info.appBuild ? ` (${info.appBuild})` : ''}`,
+			info.otaBundle && `OTA ${info.otaBundle}`,
+			info.isVirtual && 'emulator',
+			info.language,
+		];
+
+		return parts.filter(Boolean).join(' · ');
+	}, [isAdminView, ticket?.device_info]);
+
 	function handleTimelineScroll() {
 		const el = timelineRef.current;
 		if (!el) return;
@@ -482,6 +509,8 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 					text={isResolved ? t('support.status_resolved') : t('support.status_open')}
 				/>
 			</div>
+
+			{isAdminView && deviceSummary && <div className={b('device')}>{deviceSummary}</div>}
 
 			<div className={b('timeline')} ref={timelineRef} onScroll={handleTimelineScroll} role="log" aria-live="polite">
 				{timeline.map((item) => {

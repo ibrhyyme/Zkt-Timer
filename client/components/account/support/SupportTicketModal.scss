@@ -37,6 +37,22 @@
 		white-space: nowrap;
 	}
 
+	// Admin-only device line under the subject. Monospace because every token in it is
+	// a version string that gets compared against another one.
+	&__device {
+		margin-top: 6px;
+		padding: 6px 10px;
+		border-radius: 6px;
+		background-color: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		color: rgb(var(--text-color));
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.72rem;
+		font-weight: 600;
+		line-height: 1.5;
+		word-break: break-word;
+	}
+
 	&__timeline {
 		flex: 1 1 auto;
 		min-height: 0;

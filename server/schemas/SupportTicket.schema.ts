@@ -33,6 +33,9 @@ export class SupportTicket {
 
 	@Field(() => [SupportTicketMessage], {nullable: true})
 	messages?: SupportTicketMessage[];
+
+	@Field({nullable: true})
+	device_info?: string;
 }
 
 @InputType()
@@ -42,4 +45,7 @@ export class SupportTicketInput {
 
 	@Field()
 	message: string;
+
+	@Field({nullable: true})
+	device_info?: string;
 }

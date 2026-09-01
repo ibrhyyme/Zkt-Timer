@@ -1271,6 +1271,7 @@ type SupportTicket {
   created_by_id: String
   created_by: PublicUserAccount
   messages: [SupportTicketMessage!]
+  device_info: String
 }
 
 type MediaAsset {
@@ -3019,6 +3020,7 @@ input SessionInput {
 input SupportTicketInput {
   subject: String
   message: String
+  device_info: String
 }
 
 input FeatureOverrideUserInput {
