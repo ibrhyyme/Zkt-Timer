@@ -1,6 +1,5 @@
 import { CapacitorConfig } from '@capacitor/cli';
 import { KeyboardResize } from '@capacitor/keyboard';
-import { SystemBarsStyle } from '@capacitor-community/safe-area';
 
 const config: CapacitorConfig = {
     appId: 'com.zktimer.app',
@@ -38,13 +37,16 @@ const config: CapacitorConfig = {
         Keyboard: {
             resize: KeyboardResize.None,
         },
-        SafeArea: {
-            // v8: transparent system bars drawn over content; DARK = light icons
-            // to match the dark app theme (#12141C). Custom bar colors are gone
-            // in v8 — the insets flow to CSS env(safe-area-inset-*). Runtime
-            // reinforcement lives in native-plugins.ts initSafeArea().
-            statusBarStyle: SystemBarsStyle.Dark,
-            navigationBarStyle: SystemBarsStyle.Dark,
+        SystemBars: {
+            // Capacitor 8 core owns system bars and window insets. DARK = light
+            // icons over the dark app theme (#12141C). insetsHandling stays at its
+            // default 'css', which injects --safe-area-inset-* into the WebView.
+            //
+            // @capacitor-community/safe-area used to do this job and was removed:
+            // both ran their own OnApplyWindowInsetsListener and each padded for
+            // the IME, so an open keyboard cost the WebView two keyboard heights
+            // and left a black band the size of the keyboard on screen.
+            style: 'DARK',
         },
         // PushNotifications presentationOptions yok — foreground'da gosterimi
         // client/util/push-notifications.ts icindeki LocalNotifications fallback'i hallediyor.

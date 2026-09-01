@@ -12,7 +12,6 @@ dependencies {
     implementation project(':capacitor-community-bluetooth-le')
     implementation project(':capacitor-community-in-app-review')
     implementation project(':capacitor-community-keep-awake')
-    implementation project(':capacitor-community-safe-area')
     implementation project(':capacitor-app')
     implementation project(':capacitor-browser')
     implementation project(':capacitor-haptics')

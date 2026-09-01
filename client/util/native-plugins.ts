@@ -62,9 +62,9 @@ export async function initStatusBar(): Promise<void> {
 		const { StatusBar, Style } = await import('@capacitor/status-bar');
 		await StatusBar.setStyle({ style: Style.Dark });
 		// setBackgroundColor intentionally dropped: Capacitor 8 renders transparent
-		// system bars over content (see initSafeArea below), so this call was already
-		// a no-op — it only survived as a deprecated android.view.Window.setStatusBarColor
-		// call that Google Play's compliance scan flags.
+		// system bars over content, so this call was already a no-op — it only
+		// survived as a deprecated android.view.Window.setStatusBarColor call that
+		// Google Play's compliance scan flags.
 	} catch (e) {
 		console.warn('[Native] StatusBar init failed:', e);
 	}
@@ -81,24 +81,9 @@ export async function lockTextZoom(): Promise<void> {
 	}
 }
 
-// Safe Area — applies native safe area insets to CSS env() variables
-export async function initSafeArea(): Promise<void> {
-	if (!isNative()) return;
-	try {
-		// v8: the plugin auto-enables and reads bar styles from
-		// capacitor.config.ts (plugins.SafeArea). enable() and custom colors are
-		// gone — v8 renders transparent system bars over content, so the dark
-		// #12141C look now comes from the app drawing behind them. CSS
-		// env(safe-area-inset-*) (client/styles/config.scss) still supplies the
-		// insets. Reinforce the Dark style (light icons) at runtime for safety.
-		// NOTE: setSystemBarsStyle takes {style, type?} — NOT the config-shaped
-		// {statusBarStyle, navigationBarStyle}. Omitting `type` applies to both bars.
-		const { SafeArea, SystemBarsStyle } = await import('@capacitor-community/safe-area');
-		await SafeArea.setSystemBarsStyle({ style: SystemBarsStyle.Dark });
-	} catch (e) {
-		console.warn('[Native] SafeArea init failed:', e);
-	}
-}
+// Safe area insets need no runtime call: Capacitor 8's built-in SystemBars plugin
+// applies the bar style from capacitor.config.ts (plugins.SystemBars) and injects
+// --safe-area-inset-* into the WebView on its own.
 
 // Network — connection status monitoring
 export async function initNetworkListener(

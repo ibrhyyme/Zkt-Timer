@@ -28,7 +28,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
-import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plugins';
+import { initStatusBar, lockTextZoom } from '../../util/native-plugins';
 import { setBackButtonHandle, releaseNativeBackButton } from '../../util/native-back';
 import { openInAppBrowser } from '../../util/external-link';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
@@ -111,7 +111,6 @@ export default function App(props: Props = {}) {
 			SplashScreen.hide();
 			initStatusBar();
 			lockTextZoom();
-			initSafeArea();
 			initRevenueCat(); // Prepare RevenueCat IAP SDK
 			initDeepLinkHandler(); // zkttimer:// OAuth relay + migrate bridge (local shell)
 			initNativeShellBoot(); // Capgo notifyAppReady + one-time migration checks

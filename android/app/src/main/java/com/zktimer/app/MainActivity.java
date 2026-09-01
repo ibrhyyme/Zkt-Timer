@@ -11,10 +11,15 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 
 public class MainActivity extends BridgeActivity {
+    /** App background (#12141C) — what shows through wherever the WebView does not paint. */
+    private static final int WINDOW_BACKGROUND = 0xFF12141C;
+
     @Override
     public void onConfigurationChanged(android.content.res.Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         updateOrientationLock();
+        // The core SystemBars plugin re-applies its own decor background here; ours goes last.
+        applyWindowBackground();
     }
 
     private void updateOrientationLock() {
@@ -66,6 +71,18 @@ public class MainActivity extends BridgeActivity {
         CookieManager.getInstance().setAcceptCookie(true);
 
         disableSystemBarContrast();
+        applyWindowBackground();
+    }
+
+    /**
+     * Capacitor's SystemBars plugin paints the decor view with the theme's
+     * android:windowBackground. The active theme (AppTheme.NoActionBarLaunch, a
+     * Theme.SplashScreen child) declares that as a drawable, so the plugin's
+     * TypedValue.data is a resource id read as a color — a junk value. Pin the real
+     * app background instead, so any sliver the WebView does not cover matches it.
+     */
+    private void applyWindowBackground() {
+        getWindow().getDecorView().setBackgroundColor(WINDOW_BACKGROUND);
     }
 
     /**
@@ -86,6 +103,7 @@ public class MainActivity extends BridgeActivity {
         super.onResume();
         // Re-assert in case the system or a plugin reset the window flags.
         disableSystemBarContrast();
+        applyWindowBackground();
     }
 
     /**
