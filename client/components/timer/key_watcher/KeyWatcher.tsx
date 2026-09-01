@@ -27,8 +27,14 @@ import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
+import { classifyTouchTarget } from '../helpers/touch_target';
 
 const timerClass = block('timer');
+
+// How far the finger may travel while priming before the press is treated as a scroll,
+// a drag or a swipe instead of a start. Jitter during a hold stays well under this; a
+// scroll or a 3D cube drag passes it immediately.
+const MOVE_CANCEL_PX = 30;
 
 interface Props {
 	children: ReactNode;
@@ -55,6 +61,10 @@ export default function KeyWatcher(props: Props) {
 	};
 
 	const modals = useGeneral('modals');
+	const mobileMode = useGeneral('mobile_mode');
+	// Mirrors the branch Timer uses to pick its body, so the touch rules always match
+	// the DOM that is actually on screen.
+	const mobileLayout = (context.forceMobileLayout ?? mobileMode) && !inModal;
 	const timerType = useSettings('timer_type');
 	// stackmat + qiyiwired share common audio path (vendor/stackmat.js), keyboard interaction same
 	const stackMatOn = timerType === 'stackmat' || timerType === 'qiyiwired';
@@ -84,6 +94,10 @@ export default function KeyWatcher(props: Props) {
 	const touchStartX = React.useRef<number | null>(null);
 	const touchStartY = React.useRef<number | null>(null);
 
+	// Set when a hold is dropped mid-gesture (moved too far, or the OS cancelled it), so
+	// the release that follows can't still start a solve.
+	const touchPrimingCancelledRef = React.useRef(false);
+
 	// True from the moment a key press stops the timer until every key is released again.
 	// Without it, the same physical press that stopped the timer keeps producing keydown
 	// events (OS auto-repeat, or a second key still held down), which re-primes the timer
@@ -108,6 +122,7 @@ export default function KeyWatcher(props: Props) {
 
 	useWindowListener('contextmenu', handleContextMenu);
 	useWindowListener('touchmove', touchMove, [], { passive: false });
+	useWindowListener('touchcancel', touchCancel);
 
 	function touchStart(e) {
 		// Right edge dead zone — sag notch area, timer should not trigger
@@ -123,44 +138,41 @@ export default function KeyWatcher(props: Props) {
 		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
 
-		let target = e.target;
-		let insideTimer = false;
-
-		while (target && target !== document) {
-			if (target.nodeName === 'BUTTON' || target.nodeName === 'TEXTAREA' || target.nodeName === 'INPUT') {
-				return;
-			}
-
-			if (target.classList && (
-				target.classList.contains('zt-timer-controls__left') ||
-				target.classList.contains('zt-timer-controls__right') ||
-				target.classList.contains('zt-timer-header-control') ||
-				target.classList.contains('zt-timer-dashboard') ||
-				target.classList.contains('zt-stats-bar') ||
-				target.classList.contains('zt-mobile-timer-scramble__text') ||
-				target.classList.contains('zt-mobile-timer-scramble__smart-scramble') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-text') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-copy') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-close')
-			)) {
-				return;
-			}
-
-			if (target.classList && target.classList.contains(timerClass())) {
-				insideTimer = true;
-			}
-
-			target = target.parentNode;
+		if (!touchDrivesTimer(e.target)) {
+			return;
 		}
 
-		if (insideTimer) {
-			if (e.touches && e.touches[0]) {
-				touchStartX.current = e.touches[0].clientX;
-				touchStartY.current = e.touches[0].clientY;
-			}
-			keydownSpace(e, true, eventTs);
+		touchPrimingCancelledRef.current = false;
+
+		if (e.touches && e.touches[0]) {
+			touchStartX.current = e.touches[0].clientX;
+			touchStartY.current = e.touches[0].clientY;
 		}
+		keydownSpace(e, true, eventTs);
+	}
+
+	/**
+	 * Whether a touch on this element may drive the timer.
+	 *
+	 * Stopping stays permissive: while a solve runs, any touch inside the timer ends it.
+	 * Starting one is restricted to the timer's own surface on the desktop layout, where
+	 * the footer modules, the scramble and the 3D cube live in the same subtree — that
+	 * shared subtree is what made tablets start solves on a stats tap. Gesture islands
+	 * (scramble, 3D cube) never prime in either layout: dragging a cube around is never
+	 * an intent to start a solve.
+	 */
+	function touchDrivesTimer(target: any): boolean {
+		const { blocked, insideTimer, onStartSurface, inNonStartIsland } = classifyTouchTarget(target);
+
+		if (blocked || !insideTimer) {
+			return false;
+		}
+
+		if (!timeStartedAt && (inNonStartIsland || (!mobileLayout && !onStartSurface))) {
+			return false;
+		}
+
+		return true;
 	}
 
 	function touchEnd(e) {
@@ -180,66 +192,76 @@ export default function KeyWatcher(props: Props) {
 
 		touchStartX.current = null;
 		touchStartY.current = null;
-		let target = e.target;
-		let insideTimer = false;
 
-		while (target && target !== document) {
-			if (target.nodeName === 'BUTTON' || target.nodeName === 'TEXTAREA' || target.nodeName === 'INPUT') {
-				return;
-			}
-
-			if (target.classList && (
-				target.classList.contains('zt-timer-controls__left') ||
-				target.classList.contains('zt-timer-controls__right') ||
-				target.classList.contains('zt-timer-header-control') ||
-				target.classList.contains('zt-timer-dashboard') ||
-				target.classList.contains('zt-stats-bar') ||
-				target.classList.contains('zt-mobile-timer-scramble__text') ||
-				target.classList.contains('zt-mobile-timer-scramble__smart-scramble') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-text') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-copy') ||
-				target.classList.contains('zt-mobile-timer-scramble__expanded-close')
-			)) {
-				return;
-			}
-
-			if (target.classList && target.classList.contains(timerClass())) {
-				insideTimer = true;
-			}
-
-			target = target.parentNode;
+		// The hold was already dropped mid-gesture — this release is not a start
+		const primingCancelled = touchPrimingCancelledRef.current;
+		touchPrimingCancelledRef.current = false;
+		if (primingCancelled) {
+			return;
 		}
 
-		if (insideTimer) {
-			keyupSpace(e, true, eventTs);
+		if (!touchDrivesTimer(e.target)) {
+			return;
 		}
+
+		keyupSpace(e, true, eventTs);
 	}
 
 	function touchMove(e) {
 		if (touchStartX.current === null || touchStartY.current === null) return;
-		if (!spaceTimerStarted && !inInspection) return;
+		if (!getTimerStore('spaceTimerStarted') && !inInspection) return;
 
-		const y = e.touches[0].clientY;
-		// const diffX = Math.abs(e.touches[0].clientX - touchStartX.current); // No longer needed for logic
+		const touch = e.touches[0];
+		if (!touch) return;
 
-		// Only cancel if swiping UP significantly (e.g. > 100px)
-		// This allows user to jitter their finger or move side-to-side without cancelling
-		if (touchStartY.current - y > 100) {
-			// Cancel the timer start hold
-			if (spaceTimerStarted) {
-				setTimerParams({
-					spaceTimerStarted: 0,
-					canStart: false,
-				});
-				if (getTimer(START_TIMEOUT)) {
-					stopTimer(START_TIMEOUT);
-				}
-			}
+		const diffX = touch.clientX - touchStartX.current;
+		const diffY = touch.clientY - touchStartY.current;
+
+		// A press that travels this far is a scroll, a swipe or a drag, not a start.
+		// Direction no longer matters: the old rule only caught upward swipes, which let
+		// a sideways 3D cube drag or a downward scroll keep the timer primed.
+		if (Math.sqrt(diffX * diffX + diffY * diffY) > MOVE_CANCEL_PX) {
+			cancelPriming();
 
 			touchStartX.current = null;
 			touchStartY.current = null;
 		}
+	}
+
+	/**
+	 * Drops a hold that was priming the timer. The press itself is over as far as the
+	 * timer is concerned, so the release that follows starts nothing.
+	 */
+	function cancelPriming() {
+		// The release lands in the same gesture, possibly before a re-render delivered
+		// the cleared state, so the ref is what keyupSpace's caller trusts.
+		touchPrimingCancelledRef.current = true;
+
+		// Read Redux rather than the captured closure for the same reason.
+		if (!getTimerStore('spaceTimerStarted')) {
+			return;
+		}
+
+		setTimerParams({
+			spaceTimerStarted: 0,
+			canStart: false,
+		});
+
+		if (getTimer(START_TIMEOUT)) {
+			stopTimer(START_TIMEOUT);
+		}
+	}
+
+	/**
+	 * The OS can swallow a touch mid-hold (system gesture, incoming call, palm
+	 * rejection). Without this the priming state would stay armed with no finger on
+	 * screen, leaving the timer green until some unrelated release started a solve.
+	 */
+	function touchCancel() {
+		cancelPriming();
+
+		touchStartX.current = null;
+		touchStartY.current = null;
 	}
 
 	/**
