@@ -3354,7 +3354,8 @@
     "edges_444": "4x4x4 Kenarlar",
     "edges_555": "5x5x5 Kenarlar",
     "edges_666": "6x6x6 Kenarlar",
-    "edges_777": "7x7x7 Kenarlar"
+    "edges_777": "7x7x7 Kenarlar",
+    "top_color": "Üst renk"
   },
   "landing_footer": {
     "support": "Destek (E-posta)",

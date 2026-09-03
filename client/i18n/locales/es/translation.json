@@ -3347,7 +3347,8 @@
     "edges_444": "Aristas 4x4x4",
     "edges_555": "Aristas 5x5x5",
     "edges_666": "Aristas 6x6x6",
-    "edges_777": "Aristas 7x7x7"
+    "edges_777": "Aristas 7x7x7",
+    "top_color": "Color superior"
   },
   "landing_footer": {
     "support": "Soporte (Correo)",

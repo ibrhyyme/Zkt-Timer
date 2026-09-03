@@ -22,13 +22,23 @@
 		z-index: 1000;
 	}
 
+	// The cap is computed, not written here. It used to be a flat 93.333rem (1400px),
+	// which held the row at that width however wide the screen was and left the centre
+	// ~763px for ~962px of labelled links: the last tab ("Sıralama") fell into the
+	// overflow and was never seen. Removing it fixed that but let the three blocks
+	// drift to three separate corners on a large monitor.
+	//
+	// HeaderNav.tsx measures what the row actually needs and writes it here, so the
+	// width follows the language, the signed-in state and the zoom level instead of a
+	// number picked once. The fallback is the pre-cap behaviour: full width, which is
+	// also what server-rendered HTML gets until the first measurement lands.
 	&__container {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		padding: 0 var(--wrapper-padding);
 		height: var(--nav-h);
-		max-width: 93.333rem;
+		max-width: var(--zt-header-max-w, none);
 		margin: 0 auto;
 		width: 100%;
 		box-sizing: border-box;
@@ -54,10 +64,12 @@
 
 	&__logo {
 		// Sizing lives here rather than inline on the element: the inner .zt-logo
-		// defaults to 27px, and the header wants it larger.
+		// defaults to 27px, and the header wants it larger. Half of --nav-h rather
+		// than the 5rem it used to be, which stood 75px tall inside an 80px bar and
+		// spent that width on nothing.
 		display: inline-flex;
-		width: 5rem;
-		height: 5rem;
+		width: 2.667rem;
+		height: 2.667rem;
 		flex-shrink: 0;
 		animation: cubeRotate 10s linear infinite;
 
@@ -100,6 +112,16 @@
 		a {
 			flex-shrink: 0;
 			white-space: nowrap;
+		}
+
+		// Icon-only mode. The labels stay in the DOM and are hidden here rather than
+		// dropped in React, so HeaderNav.tsx can flip this attribute off for the
+		// length of one synchronous scrollWidth read and get the labelled width under
+		// the CURRENT viewport. It has to be measured live: `rem` is 14px below
+		// 1500px and 15px above it (reset.scss), and this gap is `vw`-based, so a
+		// width measured at one size does not describe the strip at another.
+		&[data-compact='true'] a > span:last-child {
+			display: none;
 		}
 	}
 
@@ -254,24 +276,22 @@
 		}
 	}
 
-	// Space is given back in order of least value: the username first, then the
-	// tab labels. Thresholds come from the measured content width (1424px) rather
-	// than from round numbers.
-	@media (max-width: 1560px) {
+	// The username is the first thing given back when the row tightens. The threshold
+	// dropped from 1560px to 1400px when the container's max-width was removed: with
+	// the full screen available there is no reason to hide it at 1560px any more.
+	//
+	// The tab labels are NOT dropped here. That used to be a second media query at
+	// 1460px, a number calibrated against Turkish; Spanish runs ~20% longer
+	// ("Clasificación", "Competiciones") and overflowed well above it. HeaderNav.tsx
+	// measures the real strip instead, so the switch follows whatever language and
+	// signed-in state actually render.
+	@media (max-width: 1400px) {
 		.#{$namespace}-nav-account-dropdown__username {
 			display: none;
 		}
-	}
 
-	@media (max-width: 1460px) {
 		#{$self}__nav {
 			gap: 0.267rem;
-
-			a {
-				span:last-child {
-					display: none;
-				}
-			}
 		}
 	}
 

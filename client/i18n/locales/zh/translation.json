@@ -3347,7 +3347,8 @@
     "edges_444": "4x4x4 棱块",
     "edges_555": "5x5x5 棱块",
     "edges_666": "6x6x6 棱块",
-    "edges_777": "7x7x7 棱块"
+    "edges_777": "7x7x7 棱块",
+    "top_color": "顶层颜色"
   },
   "landing_footer": {
     "support": "支持 (邮箱)",

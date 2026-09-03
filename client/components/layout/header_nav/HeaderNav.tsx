@@ -26,18 +26,21 @@ import StreamerModeToggle from './StreamerModeToggle';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
 import { isMobileViewport } from '../../../util/is-mobile-viewport';
+import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 
 const b = block('header-nav');
 
 interface HeaderNavLinkProps extends NavLinkProps {
 	selected?: boolean;
 	hovered?: boolean;
+	// Icon only, no label. Set by HeaderNav when the labelled strip cannot fit.
+	compact?: boolean;
 	onHoverStart?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 	onHoverEnd?: () => void;
 }
 
 function HeaderNavLink(props: HeaderNavLinkProps) {
-	const { name, icon, newTag, loginRequired, selected, hovered, onHoverStart, onHoverEnd } = props;
+	const { name, icon, newTag, loginRequired, selected, hovered, compact, onHoverStart, onHoverEnd } = props;
 	let link = props.link;
 	const { t } = useTranslation();
 	const me = useMe();
@@ -75,16 +78,24 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		);
 	}
 
+	const label = t(name);
+
 	return (
 		<Link
 			to={link}
 			className={linkClasses.join(' ')}
 			data-active={selected || undefined}
+			// The label element is always rendered and hidden in CSS instead (see
+			// HeaderNav.scss), which is what lets the strip be measured at its
+			// labelled width without a second React pass. `display: none` does take
+			// it away from screen readers, so name the link itself while compact.
+			title={compact ? label : undefined}
+			aria-label={compact ? label : undefined}
 			onMouseEnter={onHoverStart}
 			onMouseLeave={onHoverEnd}
 		>
 			<span className="text-lg">{icon}</span>
-			<span>{t(name)}</span>
+			<span>{label}</span>
 		</Link>
 	);
 }
@@ -98,7 +109,7 @@ interface Props {
 
 export default function HeaderNav(props: Props = {}) {
 	const {hideThemeToggle} = props;
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const dispatch = useDispatch();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -109,6 +120,14 @@ export default function HeaderNav(props: Props = {}) {
 	// Pill nav state
 	const navRef = useRef<HTMLElement>(null);
 	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false });
+
+	// Label/icon switch. See measureFit below for why this is measured rather than
+	// hung off a breakpoint.
+	const centerRef = useRef<HTMLDivElement>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const leftRef = useRef<HTMLDivElement>(null);
+	const rightRef = useRef<HTMLDivElement>(null);
+	const [compact, setCompact] = useState(false);
 
 	useWindowListener('resize', windowResize, [mobileMode]);
 
@@ -173,6 +192,107 @@ export default function HeaderNav(props: Props = {}) {
 		return () => window.removeEventListener('resize', measureActive);
 	}, [pathname, measureActive]);
 
+	// Decide whether the labelled strip still fits.
+	//
+	// This was a media query once, at 1460px. That number was measured against
+	// Turkish, and Spanish labels run ~20% longer, so the last tab fell into the
+	// overflow again well above the breakpoint. Signing in moves the line too, by
+	// swapping the auth buttons for the avatar, inbox and streamer toggle.
+	//
+	// The labelled width is re-measured on every pass rather than cached, because it
+	// is not a constant: `rem` is 14px below 1500px and 15px above it (reset.scss),
+	// and the strip's gap is `vw`-based, so the same labels occupy different widths
+	// at different sizes. A width captured at one size and reused at another read a
+	// few px small and let the strip overflow right at the switch.
+	//
+	// Reading it means un-hiding the labels, which is why they are hidden in CSS via
+	// data-compact: the attribute goes off, scrollWidth is read, and it goes back on,
+	// all synchronously inside one layout effect, so nothing is ever painted in the
+	// wrong state.
+	//
+	// The comparison is against the CENTRE's width, never the nav's own. The nav
+	// shrinks when it goes compact, so measuring that would report "fits now", flip
+	// back, overflow, and oscillate. The centre is `flex: 1 1 auto` between two
+	// `flex-shrink: 0` blocks, so its width does not depend on what the nav is
+	// currently rendering.
+	const measureFit = useCallback(() => {
+		const nav = navRef.current;
+		const center = centerRef.current;
+		if (!nav || !center) return;
+
+		const wasCompact = nav.getAttribute('data-compact');
+		if (wasCompact === 'true') nav.setAttribute('data-compact', 'false');
+		const labelledWidth = nav.scrollWidth;
+		if (wasCompact === 'true') nav.setAttribute('data-compact', 'true');
+
+		// Both figures are integers rounded from subpixel layout, so a strip that is
+		// really 1007.6 wide inside a 1007.4 slot reads as 1008 vs 1007 or the other
+		// way about. Keeping a couple of pixels in hand costs nothing and stops the
+		// switch landing on a tie.
+		setCompact(center.clientWidth < labelledWidth + 2);
+
+		// Cap the row at what it actually needs, so a wide screen does not push the
+		// three blocks into three separate corners. Without this the 32" monitor left
+		// 325px of dead space on each side of the tabs while the 17.3" one fit exactly.
+		//
+		// Derived from the labelled width even while compact, so the container does
+		// not jump when the mode flips. The breathing room is in `rem`, which makes it
+		// track both browser zoom and the 14/15px root switch, and it is what keeps
+		// this from feeding back into the decision above: the centre ends up
+		// `labelledWidth + breathing` wide, never close to the `+ 2` tie-break.
+		const container = containerRef.current;
+		const left = leftRef.current;
+		const right = rightRef.current;
+		if (container && left && right) {
+			const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 15;
+			const centerStyle = getComputedStyle(center);
+			const containerStyle = getComputedStyle(container);
+			const needed =
+				left.offsetWidth +
+				right.offsetWidth +
+				labelledWidth +
+				parseFloat(centerStyle.marginLeft) +
+				parseFloat(centerStyle.marginRight) +
+				parseFloat(containerStyle.paddingLeft) +
+				parseFloat(containerStyle.paddingRight) +
+				rem * 5;
+
+			container.style.setProperty('--zt-header-max-w', `${Math.ceil(needed)}px`);
+		}
+	}, []);
+
+	// Pre-paint so a wide screen never flashes the compact strip on hydration.
+	//
+	// Measured twice per resize on purpose. A resize event can be handled before the
+	// layout around it has settled: `rem` is 14px below 1500px and 15px above it
+	// (reset.scss), and crossing that line rescales every padding and gap in the row.
+	// The first read can therefore describe the old scale, decide the labels fit, and
+	// never be revisited, because a decision that does not change the mode does not
+	// re-run this effect. The ResizeObserver is the reliable half: it fires after
+	// layout, including for the reflow the rem switch causes without a second resize
+	// event. It cannot feed itself, because going compact resizes the nav, not the
+	// centre being observed.
+	useIsomorphicLayoutEffect(() => {
+		measureFit();
+
+		const remeasure = () => {
+			measureFit();
+			requestAnimationFrame(measureFit);
+		};
+		window.addEventListener('resize', remeasure);
+
+		let observer: ResizeObserver | null = null;
+		if (typeof ResizeObserver !== 'undefined' && centerRef.current) {
+			observer = new ResizeObserver(() => measureFit());
+			observer.observe(centerRef.current);
+		}
+
+		return () => {
+			window.removeEventListener('resize', remeasure);
+			if (observer) observer.disconnect();
+		};
+	}, [measureFit, compact, mobileMode, !!me, i18n.language]);
+
 	let notifications = <InboxPanel />;
 	if (!me) {
 		notifications = null;
@@ -184,6 +304,7 @@ export default function HeaderNav(props: Props = {}) {
 			key={link.name}
 			selected={link.match.test(pathname)}
 			hovered={hoveredLink === link.link}
+			compact={compact}
 			onHoverStart={handleHoverStart}
 			onHoverEnd={handleHoverEnd}
 		/>
@@ -221,9 +342,9 @@ export default function HeaderNav(props: Props = {}) {
 	return (
 		<div className={b()}>
 			<div className={b('bar')}>
-			<div className={b('container')}>
+			<div ref={containerRef} className={b('container')}>
 				{/* Left side - Brand Link with Animated Cube */}
-				<div className={b('left')}>
+				<div ref={leftRef} className={b('left')}>
 					<Link
 						to="/"
 						className="text-text hover:text-text font-bold tracking-tight select-none text-2xl flex items-center gap-2"
@@ -240,8 +361,8 @@ export default function HeaderNav(props: Props = {}) {
 				</div>
 
 				{/* Center - Navigation Links */}
-				<div className={b('center')}>
-					<nav ref={navRef} className={b('nav')}>
+				<div ref={centerRef} className={b('center')}>
+					<nav ref={navRef} className={b('nav')} data-compact={compact ? 'true' : 'false'}>
 						{/* Sliding pill indicator */}
 						<motion.div
 							className={b('pill')}
@@ -265,7 +386,7 @@ export default function HeaderNav(props: Props = {}) {
 				</div>
 
 				{/* Right side - Pro button, notifications, account */}
-				<div className={b('right')}>
+				<div ref={rightRef} className={b('right')}>
 					{getPro}
 					{notifications}
 					<AccountDropdown />

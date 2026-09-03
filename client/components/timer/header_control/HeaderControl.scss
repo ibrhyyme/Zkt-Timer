@@ -184,6 +184,38 @@
 			.subset-picker-trigger {
 				max-width: clamp(56px, 22vw, 120px);
 			}
+
+			// Let the row shrink instead of pinning widths. The base rule keeps the cube
+			// group at `flex: 0 0 auto` on the assumption that it is "intrinsically
+			// narrow", which held while the labels read "3x3" (61px). "3x3 CFOP" is
+			// 103px — and it is exactly the cube type whose subsets add controls — so on
+			// a narrow phone the row had nothing left to give and `overflow: hidden`
+			// clipped it. Shrink order: the season name gives way first, then the cube
+			// name; the subset is short and stays whole.
+			//
+			// A fixed cap was the other option and was worse: any single number is right
+			// at one width and wrong at the next, truncating "3x3 CFOP" at 390px where it
+			// fits perfectly well. Shrinking only bites when the space really is gone.
+			.#{$namespace}-timer-header-control__cube-group {
+				flex: 0 1 auto;
+			}
+
+			// max-width: none overrides the inline triggerMaxWidth={160} CubePicker hands
+			// to FancyDropdown — a flat number that cannot know the phone's width. The
+			// natural label width takes over, and flex does the rest.
+			.#{$namespace}-timer-header-control__cube-group > .#{$namespace}-fancy-dropdown__trigger:first-child {
+				flex: 1 1 auto;
+				min-width: 0;
+				max-width: none !important;
+			}
+
+			.subset-picker-trigger {
+				flex: 0 0 auto;
+			}
+
+			.#{$namespace}-session-picker {
+				flex: 2 1 auto;
+			}
 		}
 
 		&__right-controls {

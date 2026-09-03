@@ -23,7 +23,6 @@ import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
-import CrossColorPicker from './CrossColorPicker';
 import TimerTypePicker from './TimerTypePicker';
 import SettingsDropdown from '../../quick-controls/SettingsDropdown';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
@@ -163,6 +162,11 @@ export default function HeaderControl() {
 		? scrambleTopColorSetting
 		: null;
 
+	// The top-colour picker used to sit here as a fourth control. It only appears for
+	// 3x3 CFOP's PLL/OLL/f2l subsets, which meant it showed up precisely when this row
+	// was already tight and pushed the pill past the edge on a narrow phone. It now
+	// lives inside the subset menu, where it belongs anyway — it is a property of the
+	// selected subset, not a peer of it.
 	const cubePicker = !headerOptions.hideCubeType && (
 		<div className={`${b('cube-group')} flex items-center gap-2`}>
 			<CubePicker
@@ -176,14 +180,9 @@ export default function HeaderControl() {
 				onChange={handleSubsetChange}
 				mobile={mobileMode}
 				cubeTypeId={cubeType}
+				topColor={showCrossColorPicker ? currentTopColor : undefined}
+				onTopColorChange={showCrossColorPicker ? handleColorChange : undefined}
 			/>
-			{showCrossColorPicker && (
-				<CrossColorPicker
-					value={currentTopColor}
-					onChange={handleColorChange}
-					mobile={mobileMode}
-				/>
-			)}
 		</div>
 	);
 

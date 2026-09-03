@@ -3347,7 +3347,8 @@
     "edges_444": "4x4x4 Edges",
     "edges_555": "5x5x5 Edges",
     "edges_666": "6x6x6 Edges",
-    "edges_777": "7x7x7 Edges"
+    "edges_777": "7x7x7 Edges",
+    "top_color": "Top colour"
   },
   "landing_footer": {
     "support": "Support (Email)",

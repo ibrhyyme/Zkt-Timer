@@ -3344,7 +3344,8 @@
     "edges_444": "Ребра 4x4x4",
     "edges_555": "Ребра 5x5x5",
     "edges_666": "Ребра 6x6x6",
-    "edges_777": "Ребра 7x7x7"
+    "edges_777": "Ребра 7x7x7",
+    "top_color": "Верхний цвет"
   },
   "landing_footer": {
     "support": "Поддержка (Email)",
