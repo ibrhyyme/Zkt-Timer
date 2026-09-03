@@ -1,0 +1,28 @@
+#!/bin/sh
+# Strip AI/tool attribution from commit messages.
+#
+# Why this exists: GitHub builds the repository Contributors list from commit
+# trailers. A single stray "Co-Authored-By: Claude <noreply@anthropic.com>"
+# registers an unwanted account as a contributor, and once GitHub has cached
+# it, only GitHub Support can remove it. Rewriting history is not enough.
+#
+# Only the repository owner's identity belongs in this repo's commit metadata.
+
+msg_file="$1"
+[ -n "$msg_file" ] && [ -f "$msg_file" ] || exit 0
+
+tmp="${msg_file}.noattr"
+
+sed -E \
+  -e '/^[[:space:]]*co-authored-by:/Id' \
+  -e '/^[[:space:]]*(🤖[[:space:]]*)?generated with \[?(claude|cursor|copilot|codex)/Id' \
+  -e '/^[[:space:]]*(🤖[[:space:]]*)?co-?authored[[:space:]]+with[[:space:]]+(claude|cursor|copilot|codex)/Id' \
+  "$msg_file" > "$tmp" || exit 0
+
+# Collapse the blank lines the deletions leave behind at the end of the message.
+while [ -s "$tmp" ] && [ -z "$(tail -n 1 "$tmp")" ]; do
+  sed -i '$d' "$tmp"
+done
+
+mv "$tmp" "$msg_file"
+exit 0

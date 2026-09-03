@@ -1,0 +1,65 @@
+name: No AI attribution
+
+# Last line of defence for the repository Contributors list.
+#
+# The local hooks in .githooks/ cover this machine only. This job also catches
+# commits made from another machine, from the GitHub web editor, or with
+# --no-verify. It runs after the push, so it is a detector rather than a
+# preventer, but it reports within a minute instead of days later.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  scan:
+    name: Scan commits for AI attribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit trailers and author identities
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          ZERO=0000000000000000000000000000000000000000
+          TRAILER='co-authored-by:.*(claude|anthropic|copilot|cursor|codex|chatgpt|gpt-)'
+          IDENT='(anthropic|copilot|openai|<claude|claude@)'
+
+          if [ -n "${PR_BASE:-}" ]; then
+            shas=$(git rev-list "$PR_BASE..$PR_HEAD")
+          elif [ -n "${BEFORE:-}" ] && [ "$BEFORE" != "$ZERO" ]; then
+            shas=$(git rev-list "$BEFORE..$AFTER")
+          else
+            shas=$(git rev-list -n 50 "$AFTER")
+          fi
+
+          fail=0
+          for sha in $shas; do
+            label=$(git log -1 --format='%h %s' "$sha")
+
+            if git log -1 --format='%B' "$sha" | grep -qiE "$TRAILER"; then
+              echo "::error::$label carries an AI co-author trailer"
+              fail=1
+            fi
+
+            if git log -1 --format='%an <%ae> %cn <%ce>' "$sha" | grep -qiE "$IDENT"; then
+              echo "::error::$label has an AI author/committer identity"
+              fail=1
+            fi
+          done
+
+          if [ "$fail" -ne 0 ]; then
+            echo ""
+            echo "GitHub builds the Contributors list from this metadata."
+            echo "Rewrite the offending commits and force-push before it is cached."
+            exit 1
+          fi
+
+          echo "No AI attribution found in the scanned commits."

@@ -1,0 +1,57 @@
+#!/bin/sh
+# Block a push that would publish AI/tool attribution to GitHub.
+#
+# commit-msg only guards commits created through the normal commit path on this
+# machine. Merges, rebases, cherry-picks, amends from another tool and commits
+# made with --no-verify all reach the remote without passing through it. This
+# hook inspects every commit actually about to be published.
+
+ZERO=0000000000000000000000000000000000000000
+TRAILER_PATTERN='co-authored-by:.*(claude|anthropic|copilot|cursor|codex|chatgpt|gpt-)'
+IDENT_PATTERN='(anthropic|copilot|openai|<claude|claude@)'
+
+bad_list=""
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # Branch deletion: nothing to inspect.
+  [ "$local_sha" = "$ZERO" ] && continue
+
+  if [ "$remote_sha" = "$ZERO" ]; then
+    # New branch: check everything that is not already published somewhere.
+    shas=$(git rev-list "$local_sha" --not --remotes 2>/dev/null)
+  else
+    shas=$(git rev-list "$remote_sha..$local_sha" 2>/dev/null)
+  fi
+
+  for sha in $shas; do
+    label=$(git log -1 --format='%h %s' "$sha")
+
+    if git log -1 --format='%B' "$sha" | grep -qiE "$TRAILER_PATTERN"; then
+      bad_list="${bad_list}  ${label}  [AI co-author trailer]
+"
+      continue
+    fi
+
+    if git log -1 --format='%an <%ae> %cn <%ce>' "$sha" | grep -qiE "$IDENT_PATTERN"; then
+      bad_list="${bad_list}  ${label}  [AI author/committer identity]
+"
+    fi
+  done
+done
+
+if [ -n "$bad_list" ]; then
+  printf '\n'
+  printf 'Push blocked: AI attribution found in commits about to be published.\n\n'
+  printf '%s' "$bad_list"
+  printf '\nGitHub would add the referenced account to this repository'"'"'s\n'
+  printf 'Contributors list, and removing it afterwards requires a support ticket.\n\n'
+  printf 'Fix the newest commit:\n'
+  printf '  git commit --amend\n\n'
+  printf 'Fix several commits (drop the trailer lines in the editor):\n'
+  printf '  git rebase -i <sha-before-the-first-bad-commit>\n\n'
+  printf 'Strip the trailer from a whole range non-interactively:\n'
+  printf '  git filter-branch -f --msg-filter "sed -E \x27/co-authored-by:/Id\x27" <range>\n\n'
+  exit 1
+fi
+
+exit 0
