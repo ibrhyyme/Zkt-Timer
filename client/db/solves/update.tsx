@@ -19,6 +19,7 @@ import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
+import { syncAnonSolveCount } from '../../util/anon-mode';
 import { addSolveTombstones } from '../../util/solve-tombstones';
 
 let offlineToastShown = false;
@@ -225,6 +226,23 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 	}
 }
 
+/**
+ * Write the solve collection back to disk after a change.
+ *
+ * Pro users also bump the server-side offline hash; everyone else just saves
+ * locally. Anonymous visitors additionally refresh their solve counter, which is
+ * what tells a later signed-in boot that there is data here worth transferring.
+ */
+function persistSolveChange() {
+	if (canReadSync()) {
+		updateOfflineHash();
+	} else {
+		saveLokiDb();
+	}
+
+	syncAnonSolveCount();
+}
+
 function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 	clearSolveStatCache({
 		solve: {
@@ -238,11 +256,7 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 	checkForPB(solve, isNew);
 	checkForWorst(solve, isNew);
 
-	if (canReadSync()) {
-		updateOfflineHash();
-	} else {
-		saveLokiDb();
-	}
+	persistSolveChange();
 
 	emitEvent('solveDbUpdatedEvent', solve);
 }
@@ -304,11 +318,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		}
 	}
 
-	if (canReadSync()) {
-		updateOfflineHash();
-	} else {
-		saveLokiDb();
-	}
+	persistSolveChange();
 }
 
 export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean = false) {

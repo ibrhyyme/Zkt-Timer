@@ -12,7 +12,7 @@ import { GraphQLVoid } from 'graphql-scalars';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
-import { solveFingerprint } from '../../shared/solve';
+import { invalidSolveTimeFields, solveFingerprint } from '../../shared/solve';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -24,14 +24,13 @@ function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	});
 }
 
-// Reject impossible solve times (negative / non-finite) before they reach the DB and
-// corrupt stats aggregation. Only validates fields that are actually provided.
+// Reject solve times that cannot be stored (non-finite, or negative other than the DNF
+// sentinel) before they reach the DB and corrupt stats aggregation. The rule itself lives
+// in shared/solve.ts so the client filters on exactly what the server rejects on.
 function assertValidSolveTimes(input: Partial<SolveInput>) {
-	for (const field of ['time', 'raw_time'] as const) {
-		const value = input[field];
-		if (value != null && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${field}`);
-		}
+	const invalid = invalidSolveTimeFields(input);
+	if (invalid.length) {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${invalid[0]}`);
 	}
 }
 
@@ -343,16 +342,43 @@ export class SolveResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cannot import more than 500 solves per request');
 		}
 
-		solves.forEach(assertValidSolveTimes);
+		// One unstorable row must not cost the caller the other 499. This path carries whole
+		// backups and the app's own launch-time backfill, so rejecting the batch stranded
+		// every good solve travelling with a bad one, and the client, which re-derives what
+		// is missing on every launch, retried the same doomed batch forever.
+		const accepted: SolveInput[] = [];
+		const rejected: { id?: string; fields: string[] }[] = [];
+		for (const solve of solves) {
+			const invalid = invalidSolveTimeFields(solve);
+			if (invalid.length) {
+				rejected.push({ id: solve.id, fields: invalid });
+			} else {
+				accepted.push(solve);
+			}
+		}
+
+		if (rejected.length) {
+			logger.warn('Rejected unstorable solves during bulk import', {
+				userId: user.id,
+				rejectedCount: rejected.length,
+				acceptedCount: accepted.length,
+				rejected: rejected.slice(0, 20),
+			});
+		}
+
+		// Nothing storable at all is a genuine bad request, not a partial success.
+		if (!accepted.length) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${rejected[0].fields[0]}`);
+		}
 
 		// Ids are assigned here rather than inside the model so the smart cube pass below
 		// knows which rows it is writing steps for.
-		solves.forEach((s) => {
+		accepted.forEach((s) => {
 			if (!s.id) s.id = generateUUID();
 		});
 
 		// Use existing model function
-		await bulkCreateSolves(user, solves);
+		await bulkCreateSolves(user, accepted);
 
 		// Smart cube solves arrive through this path too, not just manual imports: the app
 		// migrates locally held solves to the server in chunks. Until this ran, those solves
@@ -361,7 +387,8 @@ export class SolveResolver {
 		// an empty step list is not an error anywhere in the chain.
 		const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
 		if (userIsPro) {
-			for (const input of solves) {
+			// `accepted`, not `solves`: a rejected row has no solve to hang steps off.
+			for (const input of accepted) {
 				if (!input.is_smart_cube || !input.smart_turns) continue;
 				try {
 					const turns = parseSmartTurns(input.smart_turns);

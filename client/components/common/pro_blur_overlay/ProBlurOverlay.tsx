@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {Crown, ArrowRight} from 'phosphor-react';
@@ -14,15 +14,32 @@ interface Props {
 	description?: string;
 	onBeforeNavigate?: () => void;
 	minHeight?: number;
+	// The same treatment gates two different things: Pro features (the default) and
+	// pages that simply need an account. Only the icon, the eyebrow, the button label
+	// and the destination differ, so they share one component rather than two that
+	// drift apart.
+	icon?: ReactNode;
+	eyebrow?: string;
+	ctaLabel?: string;
+	ctaTo?: string;
 }
 
-export default function ProBlurOverlay({title, description, onBeforeNavigate, minHeight}: Props) {
+export default function ProBlurOverlay({
+	title,
+	description,
+	onBeforeNavigate,
+	minHeight,
+	icon,
+	eyebrow,
+	ctaLabel,
+	ctaTo,
+}: Props) {
 	const {t} = useTranslation();
 	const history = useHistory();
 
 	function handleClick() {
 		if (onBeforeNavigate) onBeforeNavigate();
-		history.push('/pro');
+		history.push(ctaTo || '/pro');
 	}
 
 	const style = minHeight ? {minHeight: `${minHeight}px`} : undefined;
@@ -36,14 +53,12 @@ export default function ProBlurOverlay({title, description, onBeforeNavigate, mi
 			</div>
 
 			<div className={b('card')}>
-				<div className={b('icon')}>
-					<Crown weight="fill" />
-				</div>
-				<div className={b('eyebrow')}>{t('pro.feature_title')}</div>
+				<div className={b('icon')}>{icon || <Crown weight="fill" />}</div>
+				<div className={b('eyebrow')}>{eyebrow || t('pro.feature_title')}</div>
 				<h3 className={b('title')}>{title}</h3>
 				{description && <p className={b('description')}>{description}</p>}
 				<button type="button" className={b('cta')} onClick={handleClick}>
-					<span>{t('pro.upgrade_button')}</span>
+					<span>{ctaLabel || t('pro.upgrade_button')}</span>
 					<ArrowRight weight="bold" />
 				</button>
 			</div>

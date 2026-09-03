@@ -41,7 +41,8 @@
     "competition_management": "Competition Management",
     "logout": "Log Out",
     "pro_subscription": "Pro Subscription",
-    "pro_subscription_cta": "✦ Upgrade to Pro"
+    "pro_subscription_cta": "✦ Upgrade to Pro",
+    "help": "Help"
   },
   "login": {
     "email": "Email",
@@ -55,7 +56,9 @@
     "wca_login": "Login with WCA",
     "wca_connecting": "Connecting to WCA...",
     "wca_divider": "or",
-    "wca_note": "If you already have an account, log in first and link your WCA account from Account > Linked Accounts."
+    "wca_note": "If you already have an account, log in first and link your WCA account from Account > Linked Accounts.",
+    "try_without_account": "Try without an account",
+    "help": "Help"
   },
   "signup": {
     "consent_label": "I have read and agree to the <priv>Privacy Policy</priv> and <terms>Terms of Service</terms>.",
@@ -2405,112 +2408,169 @@
     "zkt_activity_description": "Group activity details: event, round, judge and competitor assignments.",
     "faq": [
       {
+        "id": "what-is",
         "q": "What is Zkt Timer?",
         "a": "Zkt Timer is one of the most advanced online Rubik's cube timer platforms. It measures your speedcubing solve times with millisecond precision, provides official WCA scramble algorithms, detailed statistics and performance analysis. Features include live race rooms, global leaderboards, smart cube support, and an algorithm trainer."
       },
       {
+        "id": "how-works",
         "q": "How does Zkt Timer work?",
         "a": "Sign up and start right away. Core features like the timer, statistics, online races, trainer, and leaderboards are available. Upgrade to Pro membership for additional premium features."
       },
       {
+        "id": "cube-types",
         "q": "Which cube types are supported?",
         "a": "Zkt Timer supports all official WCA categories: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 One-Handed, 3x3 Blindfolded and more. Official WCA scramble algorithms are used for each category."
       },
       {
+        "id": "offline",
         "q": "Can I use it offline?",
         "a": "Yes! Zkt Timer works offline thanks to PWA technology. After installing the app via your browser's 'Add to Home Screen' option, you can use the timer without internet. Your data automatically syncs when you reconnect."
       },
       {
+        "id": "wca-official",
         "q": "Is it an official WCA timer?",
         "a": "Zkt Timer uses official WCA scramble algorithms and is built for training purposes. Physical Stackmat Timers are required for official WCA competitions. Zkt Timer is ideal for practice, training, and statistics tracking."
       },
       {
+        "id": "devices",
         "q": "Which devices are supported?",
         "a": "Zkt Timer works on all modern browsers. Windows, macOS, Linux, Android and iOS are supported. It can be installed as a PWA on your phone. It's also compatible with Smart Cubes (GAN, MoYu) and Stackmat Timer."
       },
       {
+        "id": "data-safety",
         "q": "Is my data safe?",
         "a": "Yes, all solve records and account information are stored securely. Your data is kept both on the server and in your browser's local database. You can delete your account and all data at any time."
       },
       {
+        "id": "online-comps",
         "q": "How can I join online races?",
         "a": "Create an account, then join open race rooms or create private rooms with friends from the 'Rooms' section. Real-time races are held and you can climb the rankings."
       },
       {
+        "id": "wca-follow",
         "q": "How can I track WCA competitions?",
         "a": "Browse all WCA Rubik's cube competitions worldwide from the 'Competitions' section. Each competition's detail page shows schedule, competitor list, events and live results. Connect your WCA account to see your personal schedule for competitions you're registered for."
       },
       {
+        "id": "smart-cube",
         "q": "How do I connect a smart cube?",
         "a": "Zkt Timer supports GAN, Giiker, and Particula smart cubes via Bluetooth. On mobile, enable Bluetooth and use the Capacitor BLE plugin; on web browsers, use Chrome or Edge which support Web Bluetooth. Open the Smart Cube menu from the timer, press Scan, and pair with your device. Once connected, the timer auto-starts and stops based on the cube state."
       },
       {
+        "id": "stackmat",
         "q": "Does Zkt Timer support Stackmat Timer?",
         "a": "Yes. Connect your Stackmat Timer via the audio input (3.5mm jack). In the timer settings, select StackMat as the input type, then choose the correct audio input device. The timer will detect your Stackmat signals automatically."
       },
       {
+        "id": "trainer",
         "q": "What is the algorithm trainer?",
         "a": "The algorithm trainer helps you drill OLL, PLL, F2L, ZBLL, and other cube algorithms with spaced repetition. It shows a 3D cube or 2D pattern for each algorithm, tracks your solve time per algorithm, and queues the ones you need most practice on. It supports smart cubes for pattern matching."
       },
       {
+        "id": "oll-pll",
         "q": "What are OLL and PLL?",
         "a": "OLL (Orientation of the Last Layer) and PLL (Permutation of the Last Layer) are the final two steps of the CFOP speedsolving method. OLL has 57 algorithms that orient the last layer; PLL has 21 algorithms that permute the pieces. Mastering these is essential for sub-20 solves."
       },
       {
+        "id": "pro",
         "q": "What does Pro membership give me?",
         "a": "Zkt Timer Pro unlocks advanced statistics, unlimited sessions, PDF export of your algorithms and stats, access to all algorithm trainers, premium themes, and priority support. It's a one-time or recurring purchase depending on the plan."
       },
       {
+        "id": "import",
         "q": "Can I import data from csTimer or Twisty Timer?",
         "a": "Yes. Zkt Timer supports data import from csTimer, Twisty Timer, and its own previous export formats. Go to Settings > Data > Import, select the source format, and upload your export file. All solves, sessions, and metadata are preserved."
       },
       {
+        "id": "backup",
         "q": "How do I back up my data?",
         "a": "Go to Settings > Data > Export. Zkt Timer generates a JSON file containing all your solves, sessions, and settings. Store this file safely — you can re-import it on any device. Signed-in users also get automatic cloud sync."
       },
       {
+        "id": "scramble-algo",
         "q": "Which scramble algorithm does Zkt Timer use?",
         "a": "Zkt Timer uses the same scramble engine as cstimer, the de facto standard in speedcubing. This includes WCA-compliant random-state scramblers for 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock, and more. All scrambles meet WCA regulations."
       },
       {
+        "id": "battle",
         "q": "What is Battle mode?",
         "a": "Battle mode is a 1v1 competitive mode on a shared mobile screen. Two cubers race side-by-side with independent start timing, penalty tracking (+2, DNF), round-by-round scoring, and a review modal to examine each round. Perfect for quick duels with a friend."
       },
       {
+        "id": "leaderboard",
         "q": "How do I get on the leaderboards?",
         "a": "Global leaderboards show top single solves and top averages. To appear, you need a Zkt Timer account, verified solves (from the timer, not manual entry), and the solve must not be flagged. Top times are auto-published; you can also manage which solves are public."
       },
       {
+        "id": "delete-account",
         "q": "Can I delete my account?",
         "a": "Yes, completely. Go to Settings > Account > Danger Zone > Delete Account. This permanently removes all your solves, sessions, profile data, and WCA link. The action is irreversible. Export your data first if you want to keep a backup."
       },
       {
+        "id": "pricing",
         "q": "Do I need to pay to use Zkt Timer?",
         "a": "You can sign up and use the core experience at no cost: the timer, WCA scrambles, statistics, online race rooms, leaderboards, and the algorithm trainer. Pro membership unlocks advanced statistics, unlimited sessions, PDF export, smart-cube trainer modes, premium themes, and priority support. There are no ads."
       },
       {
+        "id": "mobile-apps",
         "q": "Is there an iOS or Android app?",
         "a": "Yes. Zkt Timer is available natively on the iOS App Store and Google Play Store. The apps include smart cube Bluetooth support, offline mode, push notifications, and native performance. You can also install the web app as a PWA."
       },
       {
+        "id": "inspection",
         "q": "What is inspection mode?",
         "a": "Inspection mode is the 15-second countdown before each solve, matching WCA regulations. During inspection, you examine the scramble without touching the cube. An audible 8-second and 12-second warning plays, and starting after 15 seconds incurs a +2 penalty (17+ seconds is DNF)."
       },
       {
+        "id": "per-cube-stats",
         "q": "Are stats tracked separately for different cube types?",
         "a": "Yes. Zkt Timer buckets stats by (cube type, scramble subset). Your 3x3 averages, 2x2 personal bests, and Pyraminx times are all tracked independently. The Stats page lets you filter by cube type and time range."
       },
       {
+        "id": "offline-how",
         "q": "How does Zkt Timer work without internet?",
         "a": "As a PWA, Zkt Timer caches all app files after the first visit. You can time solves, generate scrambles, and view cached stats fully offline. When you reconnect, pending solves are automatically synced to the server via Background Sync API."
       },
       {
+        "id": "recognition-trainer",
         "q": "What is the PLL recognition trainer?",
         "a": "The PLL recognition trainer drills your ability to identify the correct PLL case by sight and type its letter name from the keyboard — no solving required. It includes a guided multi-step quest, a two-sided recognition guide covering every angle, an adaptive queue that focuses on your weak cases, and a glossary. It runs as a separate, keyboard-based mode."
       },
       {
+        "id": "cross-trainer",
         "q": "What is the cross efficiency trainer?",
         "a": "The efficiency trainer helps you build more efficient Cross, XCross and EOCross solutions. It analyzes your moves, shows optimal or near-optimal solutions and helps you cut move count for faster, smoother solves. With a smart cube connected it can follow your real solution live."
+      },
+      {
+        "id": "keyboard-shortcuts",
+        "q": "What are the keyboard shortcuts?",
+        "a": "Space starts and stops the timer. Escape resets the inspection countdown while it is running. For the last solve: 1 clears the penalty, 2 adds a plus two, 3 marks it DNF, Alt+Z deletes it. Alt+I toggles inspection. Change the puzzle with Alt and a number: Alt+2 through Alt+7 for 2x2 up to 7x7, Alt+P for Pyraminx, Alt+M for Megaminx, Alt+C for Clock, Alt+S for Skewb. On a Mac, Command works instead of Ctrl."
+      },
+      {
+        "id": "desktop-usage",
+        "q": "How do I use Zkt Timer on a desktop?",
+        "a": "The menus at the top select your session, puzzle and timer type, with the scramble right below them. Hold space and release to start, press again to stop. The lower part of the page shows your recent solves, your averages and the solve analysis. Click any time to open its detail window, where you can add a penalty, write a note or delete the solve."
+      },
+      {
+        "id": "mobile-usage",
+        "q": "How do I reach the menus on mobile?",
+        "a": "There is a thin notch on the left and right edge of the screen. Tap the right notch or swipe left from it to open navigation: timer, stats, trainer, rooms and the rest live there. The left notch opens quick settings. Press and hold a notch to move it up or down. Both notches hide while a solve is running."
+      },
+      {
+        "id": "where-settings",
+        "q": "Where are the settings?",
+        "a": "Tap your profile picture in the top right and choose General settings. Timer layout, inspection, sounds, theme, smart cube and data settings are all there. On mobile, the notch on the left edge also opens quick settings for the ones you change often."
+      },
+      {
+        "id": "sessions",
+        "q": "How do sessions work?",
+        "a": "A session is a separate list of solves. Use the session menu above the timer to create one, switch between them, rename one or merge two together. Averages are calculated per session."
+      },
+      {
+        "id": "edit-solve",
+        "q": "How do I add a penalty or delete a solve?",
+        "a": "Tap the time in your solve list and use the plus two, DNF and delete options in the window that opens. The +2 and DNF buttons under the timer always apply to your last solve. On desktop, 2, 3 and Alt+Z do the same for the last solve."
       }
     ],
     "nav_timer_name": "Timer",
@@ -2868,7 +2928,8 @@
   },
   "landing_nav": {
     "login": "Log In",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "open_app": "Open the app"
   },
   "features": {
     "timer_title": "Flawless Timer",
@@ -3545,7 +3606,8 @@
     "store_tagline": "Zkt Timer is now on the app stores",
     "or_continue_web": "or continue on the web",
     "app_store_alt": "Download on the App Store",
-    "google_play_alt": "Get it on Google Play"
+    "google_play_alt": "Get it on Google Play",
+    "cta_try": "Try it now"
   },
   "hero_cube": {
     "hint": "Try to solve it by dragging",
@@ -3575,7 +3637,8 @@
     "copyright": "© {{year}} Zkt Timer. Created and Designed by",
     "privacy": "Privacy",
     "terms": "Terms",
-    "credits": "Credits"
+    "credits": "Credits",
+    "help": "Help"
   },
   "pro": {
     "feature_title": "Pro Feature",
@@ -4283,5 +4346,292 @@
   },
   "save_file": {
     "open_failed": "The file was saved but no app on this device could open it."
+  },
+  "help": {
+    "title": "Help",
+    "meta_title": "Help | Zkt Timer",
+    "meta_description": "How to use Zkt Timer: connecting a smart cube, importing from csTimer, the trainer, competitions and more.",
+    "diagram": {
+      "session": "Session",
+      "cube_type": "Puzzle",
+      "timer_type": "Timer type",
+      "scramble": "Scramble",
+      "timer_area": "Time",
+      "solve_list": "Solves",
+      "modules": "Statistics",
+      "left_notch": "Quick settings",
+      "right_notch": "Navigation",
+      "desktop_alt": "Schematic of the desktop timer screen regions",
+      "desktop_caption": "How the timer page is laid out on desktop",
+      "mobile_alt": "Schematic of the edge notches on a phone screen",
+      "mobile_caption": "On mobile the menus live in the edge notches"
+    },
+    "shortcuts": {
+      "space": "Starts and stops the timer",
+      "escape": "Resets the inspection countdown",
+      "ok": "Clears the penalty on the last solve",
+      "plus_two": "Adds a plus two to the last solve",
+      "dnf": "Marks the last solve DNF",
+      "delete_last": "Deletes the last solve",
+      "delete_session": "Deletes every solve in the session",
+      "inspection": "Turns inspection on and off",
+      "cube_nxn": "Switches the puzzle between 2x2 and 7x7",
+      "cube_other": "Pyraminx, Megaminx, Clock, Skewb"
+    },
+    "timer_types": {
+      "keyboard": "The default. Space bar on desktop, a tap on the screen on mobile.",
+      "stackmat": "The competition timer. Plugs into the headphone jack and the time is read from the device.",
+      "smart": "A Bluetooth cube. The timer starts when you turn it and stops when the cube is solved.",
+      "gantimer": "GAN's timer, connected over Bluetooth.",
+      "qiyitimer": "QiYi's timer, connected over Bluetooth.",
+      "qiyiwired": "QiYi's wired timer. Connects through the headphone jack like a StackMat."
+    },
+    "sections": {
+      "getting-started": {
+        "title": "Getting started",
+        "body": [
+          "You can use Zkt Timer in a browser or through the iOS and Android apps. With an account, your solves are backed up to the server and you see the same data on every device you sign in on.",
+          "You can also try it without an account. Signed out, the timer, your solves and the trainer all work; the times stay on that device only. If you sign up later, the app offers to move those solves into your account.",
+          "On desktop there are three menus across the top: session, cube type and timer type. The scramble sits below them, the time in the middle, and your solve list and stat modules underneath.",
+          "Settings are split into seven sections: Timer, Scramble, Hardware, Appearance, Stats, Data and Language. If you are not sure which section holds the setting you want, use the search box inside settings."
+        ]
+      },
+      "timer": {
+        "title": "Timer",
+        "body": [
+          "Hold the space bar, let go when the timer turns green, and the time starts. Press any key to stop. On mobile you press and release the middle of the screen.",
+          "With inspection on, a 15-second countdown runs before the time starts. Following the WCA rule, going past 15 seconds is a plus two and going past 17 is a DNF. Escape cancels the countdown.",
+          "A scramble is generated after every solve. Tap the scramble to copy it, and use the arrows beside it to move between the previous and next scrambles.",
+          "You pick the timer type from the menu at the top. These are the supported inputs:"
+        ],
+        "notes": [
+          "Manual entry sits in the same menu and works differently: no stopwatch runs, you type the time in yourself.",
+          "Smart cube, GAN Timer and QiYi Timer require Pro inside rooms. On the timer page all three are open to everyone."
+        ]
+      },
+      "solves": {
+        "title": "Solves and sessions",
+        "body": [
+          "The list under the timer shows the solves in that session. Tapping a time opens the detail window: you can add a penalty, write a note, look at the scramble and the solve breakdown, or delete the solve.",
+          "The plus two and DNF buttons right below the timer always apply to your last solve.",
+          "The solves page gathers every solve into one list. You can filter by time range, by penalty, by whether the solve was done with a smart cube and by whether it was imported, and sort by time or by date.",
+          "The same page has multi-select: tick several solves and delete them in one go.",
+          "A session is a list you keep your solves apart in: warm-up, 3x3 practice, one-handed and so on. You switch between them from the session menu at the top. On the sessions page you create a session, rename it, drag to reorder, merge two of them, or select several and delete them. Averages are worked out per session."
+        ]
+      },
+      "stats": {
+        "title": "Statistics",
+        "body": [
+          "The stats page offers two views. The overview shows where you stand across every cube type, your activity heat map and how many solves you do per day.",
+          "Picking a cube type opens the view for that cube: your best single and averages, a timeline, consistency by hour of day, a solve calendar and the phase breakdown of solves done with a smart cube.",
+          "The filters at the top choose the session, the cube type, the subset (3x3 One-Handed, for instance) and how many recent solves to look at. Your choices are written into the address bar, so you can share a link to a particular view."
+        ],
+        "notes": [
+          "Two sections built on smart cube data come with Pro: average phase times and case-by-case statistics."
+        ]
+      },
+      "trainer": {
+        "title": "Trainer",
+        "body": [
+          "The trainer is for drilling algorithms and has five modes. Time and success rate are kept per algorithm, so the cases you are weak on stand out."
+        ],
+        "steps": [
+          "Standard: you drill the algorithms you picked from sets like OLL, PLL, F2L and ZBLL, one after another.",
+          "Smart cube: connect the cube and it reads your turns and sees whether you executed the algorithm correctly.",
+          "PLL recognition: you type the case's letter on the keyboard, no solving needed. It measures how fast you recognise.",
+          "Cross efficiency: compares how many moves you used for the cross against the shortest solution.",
+          "OLLCP: you practise recognising corner permutation during OLL as well."
+        ],
+        "notes": [
+          "The PLL recognition mode has its own history, settings and glossary; the history page lets you compare earlier rounds.",
+          "Drilling algorithms with a smart cube, and downloading algorithms with their alternatives as a PDF, both require Pro."
+        ]
+      },
+      "smart-cube": {
+        "title": "Smart cube",
+        "body": [
+          "Zkt Timer recognises smart cubes from these brands:",
+          "Once connected, the cube's state appears on screen in 3D. The timer starts when you turn the cube and stops on its own when the cube is solved."
+        ],
+        "steps": [
+          "Turn the cube on and keep it near your device.",
+          "On the timer page, pick Smart Cube from the timer type menu.",
+          "Press Scan and choose your cube from the list.",
+          "On the first connection, set the cube to solved and sync it."
+        ],
+        "notes": [
+          "In a browser this needs Web Bluetooth: use Chrome or Edge, Safari does not support it. The iOS and Android apps have no such limit.",
+          "If the cube on screen drifts from the real one, set the cube to solved and sync again. If the connection drops, power-cycle the cube and scan again.",
+          "Step-by-step analysis after a solve comes with Pro: Cross, F2L, OLL and PLL times, move count, turns per second and a replay of the solve."
+        ]
+      },
+      "mobile": {
+        "title": "Using it on mobile",
+        "body": [
+          "On mobile the menus live in thin notches at the edges of the screen. Tap the right-hand notch or swipe left from it: the timer, stats, trainer, rooms and the other pages are there. The left notch opens the quick settings.",
+          "Press and hold a notch to move it up or down. Notches hide while the timer is running, so they cannot be opened by accident."
+        ],
+        "notes": [
+          "To go back from a page, swipe right from the left edge of the screen. It is switched off on the timer page, where the left edge belongs to the quick settings notch. In the Android app the system's own back button does this instead."
+        ]
+      },
+      "rooms": {
+        "title": "Rooms",
+        "body": [
+          "Rooms are for solving the same scramble as your friends. Everyone gets the same scramble and the times show up on everyone's screen.",
+          "A room holds 8 people by default and the owner can raise that to 16. You can make a room private and put a password on it. Everything from 2x2 to 7x7 is supported, plus Clock, Megaminx, Pyraminx, Skewb, Square-1 and FTO.",
+          "The owner chooses which timer types are allowed. Smart cube, GAN Timer and QiYi Timer require Pro inside rooms; keyboard, StackMat, QYtoys and manual entry are open to everyone.",
+          "If you would rather watch than solve, you can switch to spectator mode. Spectators do not hold up the round."
+        ],
+        "steps": [
+          "Open a new room from the rooms page, or join an existing one with its link.",
+          "The owner picks the cube type and starts the round.",
+          "Your time is shared automatically when you finish. Once everyone in the room has solved, the next scramble arrives on its own.",
+          "If a wrong time gets recorded, you can correct or delete your most recent solve only. A corrected time shows a pencil mark in the table."
+        ],
+        "notes": [
+          "There are three ranks: owner, moderator and participant. A moderator can kick and ban participants but cannot touch another moderator or the owner. Only the owner can appoint moderators and hand over the room.",
+          "Tap the round number, or any time in the table, to see that round's scramble again.",
+          "A chat message can be at most 500 characters.",
+          "Playing music in a room requires Pro."
+        ]
+      },
+      "battle": {
+        "title": "Battle",
+        "body": [
+          "Battle is a two-player duel on a single phone. The screen splits in half, the far player's side is turned upside down, and two people sit facing each other and solve the same scramble. Mobile only.",
+          "A round does not begin until both players hold the screen and go ready. Once both are ready, each player lifts their finger whenever they like and their own timer starts at that moment.",
+          "When a round ends the times stay on screen. The next round opens with a fresh scramble as soon as both players hold again."
+        ],
+        "steps": [
+          "Open the Battle page and pick a cube type from the toolbar in the middle.",
+          "Both players hold their side of the screen; lift your fingers once both are ready.",
+          "Tap the screen to stop. Add a +2 or DNF penalty if you need to, and the score corrects itself.",
+          "Use the history button to review rounds, scrambles and who won."
+        ],
+        "notes": [
+          "The menu lets you switch sides, get a new scramble, delete the last round or start a fresh battle.",
+          "The time, scramble, names, statistics, score and win streak displays can each be turned off on their own.",
+          "Battle rounds stay on the device and are not saved to your solve history."
+        ]
+      },
+      "messages": {
+        "title": "Messages",
+        "body": [
+          "Messages is where you talk one to one with other Zkt Timer users. To start a conversation, search for a username and pick the person.",
+          "Someone writing to you for the first time does not land straight in your inbox; they wait in the Requests tab. Accept and the thread moves to your inbox. If you would rather not, you can delete it or block the person.",
+          "You can attach one of your solves to a conversation. The other person sees the time and can open the solve's detail.",
+          "Message settings live under Social in the account section: who is allowed to write to you, whether you appear in message search, read receipts, the typing indicator and the online dot. Your blocked list is kept there too."
+        ],
+        "steps": [
+          "Press New message and start typing a username; search runs from two letters onward.",
+          "Write your message. Use the attach button if you want to share a solve.",
+          "You can edit a message you sent, or unsend it. Unsending removes it for the other person as well.",
+          "Report a conversation that bothers you, or block the person."
+        ],
+        "notes": [
+          "Deleting a chat removes it from your side only; the other person keeps their copy.",
+          "When you report, a copy of the last five messages is sent for review. None of your other messages are read.",
+          "You can mute a conversation, filter the inbox down to unread, and search your history from the search box."
+        ]
+      },
+      "competitions": {
+        "title": "Competitions and rankings",
+        "body": [
+          "The competitions page carries both WCA and Zeka Küpü Türkiye competitions. Upcoming competitions, ZKT competitions and the search box are all on the same page. If you linked your WCA account, your own registrations are listed separately under My Competitions.",
+          "Opening a competition gives you these tabs: Groups (the competitor list and assignments), live results, Events (rounds, formats and cutoffs), Rankings, Schedule (the whole programme) and Info.",
+          "ZKT competitions use the same page; only the live tab is named ZKT Live instead of WCA Live.",
+          "Tapping a competitor opens their schedule, groups and duties, with judging, running and scrambling shown separately. Their personal bests page is reachable from there too."
+        ],
+        "notes": [
+          "The rankings page is separate and is built on WCA results: Kinch Ranks plus Sum of Ranks for single and average. You need a linked WCA account to appear in those lists.",
+          "The records section shows recently broken records. Getting record alerts, and following up to five competitors in a competition, requires Pro."
+        ]
+      },
+      "profile": {
+        "title": "Profile",
+        "body": [
+          "Your profile is your public face on Zkt Timer. It lives at /user/yourusername and opens for anyone, signed in or not, so the link is all you need to share.",
+          "A cover photo and profile picture sit at the top, with the About section below: biography, YouTube, Twitch and X links, your 3x3 method, your goal, your main cube and your favourite event.",
+          "Records are split across tabs. Personal Records come from the solves you did in Zkt Timer. WCA Official Records and ZKT Records come from the accounts you linked. The WCA Results tab lists your competition history round by round.",
+          "Your times do not appear on the profile on their own. You pick which ones show, one by one, from the publish screen."
+        ],
+        "steps": [
+          "Upload your profile picture and cover photo.",
+          "Open Edit Profile and fill in your biography, social links and cube details.",
+          "To publish personal records, set a username first, then choose the times you want to show.",
+          "If you linked a WCA or ZKT account, use Manage Data to choose what appears: competition count, medals, records, world ranking and competition history."
+        ],
+        "notes": [
+          "Publishing your personal records on your profile requires Pro. Showing your WCA and ZKT records does not.",
+          "Create Cuber Card produces a shareable image that gathers your competition count, medals and records into one frame.",
+          "On someone else's profile you can send a message, copy the profile link and report them."
+        ]
+      },
+      "account": {
+        "title": "Account settings",
+        "body": [
+          "The account page has seven sections: Personal Info, Notifications, Social, Linked Accounts, Announcements, Support and Danger Zone.",
+          "Personal Info is where you change your name, username and email, and set your password. An email change is confirmed with a six-digit code sent to the new address. If your account was created through WCA, this is also where you set a password so you can sign in with email as well.",
+          "Linked Accounts is where you connect your ZKT and WCA accounts. Once linked, that account's competitions, results and records become visible inside Zkt Timer. The link to join the WhatsApp community is here too.",
+          "Support is where you report a bug, ask a question or send a suggestion. A ticket works like a conversation: you can reply, attach a screenshot or video, close it once it is solved and reopen it later."
+        ],
+        "steps": [
+          "For a support ticket, go to Support in the account section and write a subject and message.",
+          "After sending the ticket you can attach a screenshot or video to the conversation.",
+          "Turn on the email option under Notifications if you want to hear about replies by email.",
+          "Close the ticket once your issue is solved; you can reopen it later if you need to."
+        ],
+        "notes": [
+          "One file per message, up to 25 MB. Images can be PNG, JPEG, GIF or WebP; videos can be MP4, WebM or MOV.",
+          "The Danger Zone holds two actions. Resetting settings leaves your solves and sessions alone and does not touch your custom cube types; it only returns your settings to their defaults. Deleting your account erases all of your data permanently.",
+          "To unlink a connected account you need a password set first, otherwise you would be left with no way to sign in."
+        ]
+      },
+      "data": {
+        "title": "Data and backups",
+        "body": [
+          "You can bring data in from these sources:",
+          "Go to Settings > Data > Import, pick the source and upload your file.",
+          "Export sits in the same place and writes all your solves, sessions and settings into one file.",
+          "While you are signed in, your solves are backed up to the server. The app keeps working without internet, and pending solves are sent once the connection comes back.",
+          "You can delete your account and all of your data permanently from the Danger Zone in the account section."
+        ]
+      },
+      "shortcuts": {
+        "title": "Keyboard shortcuts",
+        "body": [
+          "Shortcuts work on desktop while the timer is stopped. On a Mac you can use Command in place of Ctrl."
+        ]
+      },
+      "faq": {
+        "title": "Frequently asked questions",
+        "body": []
+      }
+    },
+    "search_placeholder": "Search help",
+    "search_no_results": "Nothing matches \"{{query}}\". Try another word."
+  },
+  "anon": {
+    "banner_text": "Your solves are saved on this device. Create an account to reach them anywhere.",
+    "banner_text_with_count": "You have {{count}} solves on this device. Create an account so you do not lose them.",
+    "banner_cta": "Create account",
+    "banner_dismiss": "Dismiss",
+    "transfer_title": "Move your solves to your account",
+    "transfer_body": "There are {{count}} solves on this device that are not linked to your account. Move them over?",
+    "transfer_confirm": "Move them",
+    "transfer_cancel": "Not now",
+    "transfer_working": "Moving",
+    "transfer_partial": "Some of them could not be moved. Your solves are still on this device, so you can try again later.",
+    "transfer_close": "OK"
+  },
+  "account_required": {
+    "eyebrow": "Account",
+    "title": "This section needs an account",
+    "cta": "Create account",
+    "stats": "Statistics tie your solve history to your account: averages, records, an activity map and per-puzzle analysis. With an account, everything here fills up with your own data.",
+    "rooms": "Rooms are for solving the same scramble as your friends. Times show up on everyone else's screen, which is why this one needs an identity.",
+    "trainer": "The trainer keeps separate times and success rates for every algorithm, so the cases you are weak on rise to the top. That progress needs an account to live in.",
+    "competition_detail": "A competition page shows the schedule, groups, assignments and live results. With your WCA account linked, your own groups and tasks appear here too."
   }
 }

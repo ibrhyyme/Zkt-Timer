@@ -41,7 +41,8 @@
     "competition_management": "Yarışma Yönetimi",
     "logout": "Çıkış Yap",
     "pro_subscription": "Pro Abonelik",
-    "pro_subscription_cta": "✦ Pro'ya Geç"
+    "pro_subscription_cta": "✦ Pro'ya Geç",
+    "help": "Yardım"
   },
   "login": {
     "email": "E-posta",
@@ -55,7 +56,9 @@
     "wca_login": "WCA ile Giriş Yap",
     "wca_connecting": "WCA'ya bağlanılıyor...",
     "wca_divider": "veya",
-    "wca_note": "Zaten bir hesabınız varsa önce giriş yapıp Hesap > Bağlı Hesaplar bölümünden WCA hesabınızı bağlayın."
+    "wca_note": "Zaten bir hesabınız varsa önce giriş yapıp Hesap > Bağlı Hesaplar bölümünden WCA hesabınızı bağlayın.",
+    "try_without_account": "Hesap açmadan dene",
+    "help": "Yardım"
   },
   "signup": {
     "consent_label": "<priv>Gizlilik Politikası</priv> ve <terms>Kullanım Koşulları</terms>'nı okudum, kabul ediyorum.",
@@ -2412,112 +2415,169 @@
     "zkt_activity_description": "Grup etkinliği detayları: etkinlik, tur, hakem ve yarışmacı atamaları.",
     "faq": [
       {
+        "id": "what-is",
         "q": "Zkt Timer nedir ve ne işe yarar?",
         "a": "Zkt Timer, dünyanın en gelişmiş zeka küpü (Rubik Küp) timer platformlarından biridir. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, global sıralama, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir."
       },
       {
+        "id": "how-works",
         "q": "Zkt Timer nasıl çalışır?",
         "a": "Zkt Timer'a kayıt olarak hemen başlayabilirsiniz. Timer, istatistikler, online yarışmalar, trainer ve sıralamalar gibi temel özellikler mevcuttur. Pro üyelik ile ek premium özelliklerden de yararlanabilirsiniz."
       },
       {
+        "id": "cube-types",
         "q": "Hangi zeka küpü türlerini destekler?",
         "a": "Zkt Timer tüm WCA resmi kategorilerini destekler: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 Tek El, 3x3 Gözü Kapalı ve daha fazlası. Her kategori için WCA resmi scramble algoritmaları kullanılır."
       },
       {
+        "id": "offline",
         "q": "İnternet bağlantısı olmadan kullanabilir miyim?",
         "a": "Evet! Zkt Timer PWA teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda 'Ana ekrana ekle' seçeneği ile uygulamayı yükledikten sonra internet olmadan timer'ı kullanabilirsiniz. Verileriniz internet bağlantısı kurulduğunda otomatik senkronize edilir."
       },
       {
+        "id": "wca-official",
         "q": "WCA resmi bir timer mı?",
         "a": "Zkt Timer, WCA resmi scramble algoritmalarını kullanan bir antrenman platformudur. Resmi WCA yarışmalarında fiziksel Stackmat Timer zorunludur. Zkt Timer antrenman, pratik ve istatistik takibi için idealdir."
       },
       {
+        "id": "devices",
         "q": "Hangi cihazlarda çalışır?",
         "a": "Zkt Timer tüm modern tarayıcılarda çalışır. Windows, macOS, Linux, Android ve iOS desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur."
       },
       {
+        "id": "data-safety",
         "q": "Verilerim güvende mi?",
         "a": "Evet, tüm solve kayıtları ve hesap bilgileri güvenli şekilde saklanır. Verileriniz hem sunucuda hem de tarayıcınızın yerel veritabanında tutulur. İstediğiniz zaman hesabınızı ve verilerinizi silebilirsiniz."
       },
       {
+        "id": "online-comps",
         "q": "Online yarışmalara nasıl katılabilirim?",
         "a": "Hesap oluşturun, 'Odalar' bölümünden açık yarış odalarına katılabilir veya arkadaşlarınızla özel oda oluşturabilirsiniz. Gerçek zamanlı yarışmalar düzenlenir ve sıralamada yerinizi alırsınız."
       },
       {
+        "id": "wca-follow",
         "q": "WCA yarışmalarını nasıl takip ederim?",
         "a": "'Yarışmalar' bölümünden dünya genelindeki tüm WCA zeka küpü yarışmalarına göz atabilirsiniz. Her yarışmanın detay sayfasında program, katılımcı listesi, etkinlikler ve canlı sonuçlar bulunur. WCA hesabınızı bağlayarak kayıtlı olduğunuz yarışmaların kişisel programınızı da görebilirsiniz."
       },
       {
+        "id": "smart-cube",
         "q": "Akıllı küpü nasıl bağlarım?",
         "a": "Zkt Timer GAN, Giiker ve Particula akıllı küplerini Bluetooth ile destekler. Mobilde Bluetooth'u açıp Capacitor BLE plugin'ini kullanın; web tarayıcısında Web Bluetooth destekleyen Chrome veya Edge kullanın. Timer'dan Smart Cube menüsünü açın, Tara'ya basın ve cihazınızla eşleştirin. Bağlandıktan sonra timer küpün durumuna göre otomatik başlar ve durur."
       },
       {
+        "id": "stackmat",
         "q": "Zkt Timer Stackmat Timer destekliyor mu?",
         "a": "Evet. Stackmat Timer'ınızı ses girişi (3.5mm jack) ile bağlayın. Timer ayarlarından StackMat'ı giriş tipi olarak seçin, sonra doğru ses giriş cihazını belirleyin. Timer, Stackmat sinyallerini otomatik algılar."
       },
       {
+        "id": "trainer",
         "q": "Algoritma antrenörü nedir?",
         "a": "Algoritma antrenörü OLL, PLL, F2L, ZBLL ve diğer küp algoritmalarını aralıklı tekrar ile çalışmana yardım eder. Her algoritma için 3D küp veya 2D desen gösterir, algoritma başına çözüm süreni takip eder ve en çok pratik gereken algoritmaları sıraya koyar. Akıllı küplerle desen eşleştirmeyi destekler."
       },
       {
+        "id": "oll-pll",
         "q": "OLL ve PLL nedir?",
         "a": "OLL (Orientation of the Last Layer) ve PLL (Permutation of the Last Layer), CFOP speedsolving yönteminin son iki adımıdır. OLL'de son katmanı yönlendiren 57 algoritma vardır; PLL'de parçaları yer değiştiren 21 algoritma vardır. Bunları öğrenmek sub-20 çözümler için şarttır."
       },
       {
+        "id": "pro",
         "q": "Pro üyelik ne kazandırır?",
         "a": "Zkt Timer Pro; gelişmiş istatistikler, sınırsız oturum, algoritma ve istatistiklerinin PDF dışa aktarımı, tüm algoritma antrenörlerine erişim, premium temalar ve öncelikli destek sağlar. Plana göre tek seferlik veya tekrar eden bir satın alımdır."
       },
       {
+        "id": "import",
         "q": "csTimer veya Twisty Timer'dan veri aktarabilir miyim?",
         "a": "Evet. Zkt Timer csTimer, Twisty Timer ve kendi önceki dışa aktarma formatlarından veri içe aktarımı destekler. Ayarlar > Veri > İçe Aktar'a git, kaynak formatı seç ve dışa aktarma dosyanı yükle. Tüm çözümler, oturumlar ve üst veriler korunur."
       },
       {
+        "id": "backup",
         "q": "Verilerimi nasıl yedekleyebilirim?",
-        "a": "Ayarlar > Veri > Dışa Aktar'a gidin. Zkt Timer tüm çözümlerinizi, oturumlarınızı ve ayarlarınızı içeren bir JSON dosyası üretir. Bu dosyayı güvenli bir yerde saklayın — herhangi bir cihazda yeniden içe aktarabilirsiniz. Giriş yapmış kullanıcılar ayrıca otomatik bulut senkronizasyonu alır."
+        "a": "Ayarlar > Veri > Dışa Aktar'a gidin. Zkt Timer tüm çözümlerinizi, oturumlarınızı ve ayarlarınızı içeren bir JSON dosyası üretir. Bu dosyayı güvenli bir yerde saklayın, herhangi bir cihazda yeniden içe aktarabilirsiniz. Giriş yapmış kullanıcılar ayrıca otomatik bulut senkronizasyonu alır."
       },
       {
+        "id": "scramble-algo",
         "q": "Zkt Timer hangi scramble algoritmasını kullanıyor?",
         "a": "Zkt Timer, speedcubing'de standart olan cstimer ile aynı scramble motorunu kullanır. Bu 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock ve daha fazlası için WCA uyumlu random-state scramble üreticileri içerir. Tüm scramble'lar WCA kurallarına uygundur."
       },
       {
+        "id": "battle",
         "q": "Battle modu nedir?",
         "a": "Battle modu paylaşımlı mobil ekranda 1v1 rekabet modudur. İki cuber bağımsız başlama süresi, ceza takibi (+2, DNF), round bazlı puanlama ve her round'u inceleyen detay modali ile yan yana yarışır. Arkadaşlarla hızlı düellolar için mükemmel."
       },
       {
+        "id": "leaderboard",
         "q": "Liderlik tablolarına nasıl girerim?",
         "a": "Global liderlik tabloları en iyi tekil çözümleri ve en iyi ortalamaları gösterir. Görünmek için Zkt Timer hesabına, doğrulanmış çözümlere (timerdan, manuel girişten değil) ihtiyacınız var ve çözüm işaretlenmemiş olmalı. En iyi süreler otomatik yayınlanır; hangi çözümlerin herkese açık olduğunu siz de yönetebilirsiniz."
       },
       {
+        "id": "delete-account",
         "q": "Hesabımı silebilir miyim?",
         "a": "Evet, tamamen. Ayarlar > Hesap > Tehlike Bölgesi > Hesabı Sil'e gidin. Bu işlem tüm çözümlerinizi, oturumlarınızı, profil verilerinizi ve WCA bağlantınızı kalıcı olarak siler. İşlem geri alınamaz. Yedek istiyorsanız önce verilerinizi dışa aktarın."
       },
       {
+        "id": "pricing",
         "q": "Zkt Timer'ı kullanmak için ödeme yapmam gerekiyor mu?",
         "a": "Kayıt olup temel deneyimi kullanmaya hemen başlayabilirsiniz: timer, WCA scramble'ları, istatistikler, online yarış odaları, liderlik tabloları ve algoritma antrenörü. Pro üyelik; gelişmiş istatistikler, sınırsız oturum, PDF dışa aktarma, akıllı küp antrenör modları, premium temalar ve öncelikli destek açar. Reklam yoktur."
       },
       {
+        "id": "mobile-apps",
         "q": "iOS veya Android uygulaması var mı?",
         "a": "Evet. Zkt Timer, iOS App Store ve Google Play Store'da native olarak mevcuttur. Uygulamalar akıllı küp Bluetooth desteği, offline mod, push bildirimleri ve native performans içerir. Web uygulamasını PWA olarak da yükleyebilirsiniz."
       },
       {
+        "id": "inspection",
         "q": "Inspection modu nedir?",
         "a": "Inspection modu, WCA kurallarıyla eşleşen her çözüm öncesi 15 saniyelik geri sayımdır. Inspection sırasında küpe dokunmadan scramble'ı incelersiniz. 8 ve 12 saniyede sesli uyarı çalar, 15 saniyeden sonra başlamak +2 cezası alır (17+ saniye DNF'dir)."
       },
       {
+        "id": "per-cube-stats",
         "q": "Farklı küp tipleri için istatistikler ayrı mı tutuluyor?",
         "a": "Evet. Zkt Timer istatistikleri (küp tipi, scramble alt kümesi) ile gruplar. 3x3 ortalamalarınız, 2x2 kişisel rekorlarınız ve Pyraminx süreleriniz bağımsız olarak takip edilir. İstatistikler sayfası küp tipi ve zaman aralığına göre filtreleme yapmanıza olanak tanır."
       },
       {
+        "id": "offline-how",
         "q": "Zkt Timer internet olmadan nasıl çalışır?",
         "a": "PWA olarak Zkt Timer ilk ziyaretten sonra tüm uygulama dosyalarını önbelleğe alır. Tamamen offline olarak çözüm zamanlayabilir, scramble üretebilir ve önbelleğe alınmış istatistikleri görüntüleyebilirsiniz. Yeniden bağlandığınızda bekleyen çözümler Background Sync API ile otomatik senkronize edilir."
       },
       {
+        "id": "recognition-trainer",
         "q": "PLL tanıma antrenörü nedir?",
-        "a": "PLL tanıma antrenörü, doğru PLL vakasını bakışta tanıyıp harf adını klavyeden yazma becerinizi çalıştırır — çözmeye gerek yok. Rehberli çok adımlı bir görev, her açıyı kapsayan iki taraflı bir tanıma rehberi, zayıf vakalarınıza odaklanan uyarlanabilir bir kuyruk ve bir sözlük içerir. Klavye tabanlı, ayrı bir mod olarak çalışır."
+        "a": "PLL tanıma antrenörü, doğru PLL vakasını bakışta tanıyıp harf adını klavyeden yazma becerinizi çalıştırır, çözmeye gerek yok. Rehberli çok adımlı bir görev, her açıyı kapsayan iki taraflı bir tanıma rehberi, zayıf vakalarınıza odaklanan uyarlanabilir bir kuyruk ve bir sözlük içerir. Klavye tabanlı, ayrı bir mod olarak çalışır."
       },
       {
+        "id": "cross-trainer",
         "q": "Cross verimlilik antrenörü nedir?",
         "a": "Verimlilik antrenörü daha verimli Cross, XCross ve EOCross çözümleri kurmana yardım eder. Hamlelerini analiz eder, optimal veya optimale yakın çözümleri gösterir ve daha hızlı, akıcı çözümler için hamle sayını düşürmene yardımcı olur. Akıllı küp bağlıyken gerçek çözümünü canlı takip edebilir."
+      },
+      {
+        "id": "keyboard-shortcuts",
+        "q": "Klavye kısayolları nelerdir?",
+        "a": "Timer'ı boşluk tuşuyla başlatıp durdurursunuz. Inspection açıkken Escape geri sayımı sıfırlar. Son çözüm için 1 cezayı kaldırır, 2 artı iki ekler, 3 DNF yapar, Alt+Z siler. Alt+I inspection'ı açar kapatır. Küp tipini Alt ile değiştirirsiniz: Alt+2'den Alt+7'ye kadar 2x2'den 7x7'ye, Alt+P Pyraminx, Alt+M Megaminx, Alt+C Clock, Alt+S Skewb. Mac'te Ctrl yerine Command da çalışır."
+      },
+      {
+        "id": "desktop-usage",
+        "q": "Masaüstünde nasıl kullanılır?",
+        "a": "Üstteki menülerden oturumu, küp tipini ve timer tipini seçersiniz, karıştırma hemen altında görünür. Boşluk tuşunu basılı tutup bıraktığınızda süre başlar, tekrar bastığınızda durur. Sayfanın altında son çözümleriniz, ortalamalarınız ve çözüm analizi yer alır. Bir süreye tıkladığınızda detay penceresi açılır; ceza ekleyebilir, not yazabilir veya çözümü silebilirsiniz."
+      },
+      {
+        "id": "mobile-usage",
+        "q": "Mobilde menülere nasıl ulaşırım?",
+        "a": "Ekranın sağ ve sol kenarında ince birer çentik vardır. Sağdaki çentiğe dokunun ya da sola kaydırın, gezinme menüsü açılır: timer, istatistikler, antrenör, odalar ve diğer sayfalar oradadır. Soldaki çentik hızlı ayarları açar. Çentiği yukarı aşağı taşımak için üzerine basılı tutun. Süre işlerken çentikler gizlenir."
+      },
+      {
+        "id": "where-settings",
+        "q": "Ayarlara nereden ulaşırım?",
+        "a": "Sağ üstteki profil resminize dokunup Genel ayarlar'ı seçin. Timer görünümü, inspection, sesler, tema, akıllı küp ve veri ayarlarının tamamı buradadır. Mobilde sık değiştirdiğiniz ayarlar için ekranın sol kenarındaki çentikten hızlı ayarları da açabilirsiniz."
+      },
+      {
+        "id": "sessions",
+        "q": "Oturumları nasıl yönetirim?",
+        "a": "Oturum, çözümlerinizi ayırdığınız listedir. Timer'ın üstündeki oturum menüsünden yeni oturum açabilir, aralarında geçiş yapabilir, adını değiştirebilir veya iki oturumu birleştirebilirsiniz. Her oturumun ortalamaları ayrı hesaplanır."
+      },
+      {
+        "id": "edit-solve",
+        "q": "Bir çözüme nasıl ceza eklerim veya silerim?",
+        "a": "Çözüm listesinden ilgili süreye dokunun, açılan pencerede artı iki, DNF ve silme seçenekleri vardır. Timer'ın altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır. Masaüstünde son çözüm için klavyeden 2, 3 ve Alt+Z de kullanılabilir."
       }
     ],
     "nav_timer_name": "Zamanlayıcı",
@@ -2875,7 +2935,8 @@
   },
   "landing_nav": {
     "login": "Giriş Yap",
-    "signup": "Kayıt Ol"
+    "signup": "Kayıt Ol",
+    "open_app": "Uygulamaya dön"
   },
   "features": {
     "timer_title": "Kusursuz Zamanlayıcı",
@@ -3550,7 +3611,8 @@
     "store_tagline": "Zkt Timer artık dijital mağazalarda",
     "or_continue_web": "veya web'de devam et",
     "app_store_alt": "App Store'dan indir",
-    "google_play_alt": "Google Play'den al"
+    "google_play_alt": "Google Play'den al",
+    "cta_try": "Hemen Dene"
   },
   "hero_cube": {
     "hint": "Küpü sürükleyerek çözmeye çalışın",
@@ -3580,7 +3642,8 @@
     "copyright": "© {{year}} Zkt Timer. Created and Designed by",
     "privacy": "Gizlilik",
     "terms": "Sözleşme",
-    "credits": "Teşekkürler"
+    "credits": "Teşekkürler",
+    "help": "Yardım"
   },
   "pro": {
     "feature_title": "Pro Özellik",
@@ -4288,5 +4351,292 @@
   },
   "save_file": {
     "open_failed": "Dosya kaydedildi ama telefonda açacak bir uygulama bulunamadı."
+  },
+  "help": {
+    "title": "Yardım",
+    "meta_title": "Yardım | Zkt Timer",
+    "meta_description": "Zkt Timer nasıl kullanılır: akıllı küp bağlama, csTimer'dan veri aktarma, antrenör, yarışmalar ve daha fazlası.",
+    "diagram": {
+      "session": "Oturum",
+      "cube_type": "Küp tipi",
+      "timer_type": "Timer tipi",
+      "scramble": "Karıştırma",
+      "timer_area": "Süre",
+      "solve_list": "Çözümler",
+      "modules": "İstatistikler",
+      "left_notch": "Hızlı ayarlar",
+      "right_notch": "Gezinme",
+      "desktop_alt": "Masaüstü timer ekranının bölge şeması",
+      "desktop_caption": "Masaüstünde timer sayfasının yerleşimi",
+      "mobile_alt": "Mobil ekranın kenar çentikleri şeması",
+      "mobile_caption": "Mobilde menüler kenar çentiklerinde toplanır"
+    },
+    "shortcuts": {
+      "space": "Süreyi başlatır ve durdurur",
+      "escape": "Inspection geri sayımını sıfırlar",
+      "ok": "Son çözümün cezasını kaldırır",
+      "plus_two": "Son çözüme artı iki ekler",
+      "dnf": "Son çözümü DNF yapar",
+      "delete_last": "Son çözümü siler",
+      "delete_session": "Oturumdaki bütün çözümleri siler",
+      "inspection": "Inspection'ı açar ve kapatır",
+      "cube_nxn": "Küp tipini 2x2 ile 7x7 arasında değiştirir",
+      "cube_other": "Pyraminx, Megaminx, Clock, Skewb"
+    },
+    "timer_types": {
+      "keyboard": "Varsayılan yöntem. Masaüstünde boşluk tuşu, mobilde ekrana dokunma.",
+      "stackmat": "Yarışmalarda kullanılan timer. Kulaklık girişine takılır, süre cihazdan okunur.",
+      "smart": "Bluetooth küp. Küpü çevirmeye başlayınca süre başlar, küp çözülünce durur.",
+      "gantimer": "GAN'ın Bluetooth ile bağlanan timer'ı.",
+      "qiyitimer": "QiYi'nin Bluetooth ile bağlanan timer'ı.",
+      "qiyiwired": "QiYi'nin kablolu timer'ı. StackMat gibi kulaklık girişinden bağlanır."
+    },
+    "sections": {
+      "getting-started": {
+        "title": "Başlarken",
+        "body": [
+          "Zkt Timer'ı tarayıcıdan, iOS veya Android uygulamasından kullanabilirsiniz. Hesap açtığınızda çözümleriniz sunucuya yedeklenir ve girdiğiniz her cihazda aynı verileri görürsünüz.",
+          "Hesap açmadan da deneyebilirsiniz. Kayıtsızken timer, çözümleriniz ve antrenör çalışır; süreler yalnızca o cihazda durur. Sonradan hesap açarsanız uygulama bu çözümleri hesabınıza taşımayı önerir.",
+          "Masaüstünde ekranın üstünde üç menü bulunur: oturum, küp tipi ve timer tipi. Hemen altında karıştırma, ortada süre, aşağıda ise çözüm listeniz ve istatistik modülleri yer alır.",
+          "Ayarlar yedi bölüme ayrılır: Timer, Karıştırma, Donanım, Görünüm, İstatistik, Veri ve Dil. Aradığınız ayarın hangi bölümde olduğunu bilmiyorsanız ayarların içindeki arama kutusunu kullanın."
+        ]
+      },
+      "timer": {
+        "title": "Timer",
+        "body": [
+          "Boşluk tuşunu basılı tutun, timer yeşile döndüğünde bırakın; süre başlar. Durdurmak için herhangi bir tuşa basın. Mobilde ekranın orta bölgesine dokunup bırakırsınız.",
+          "Inspection açıksa süre başlamadan önce 15 saniyelik geri sayım çalışır. WCA kuralına göre 15 saniyeyi geçerseniz artı iki, 17 saniyeyi geçerseniz DNF uygulanır. Escape geri sayımı iptal eder.",
+          "Karıştırma her çözümden sonra kendiliğinden üretilir. Karıştırmaya dokunarak kopyalayabilir, yanındaki oklarla önceki ve sonraki karıştırmalar arasında gezinebilirsiniz.",
+          "Timer tipini üstteki menüden seçersiniz. Desteklenen giriş yöntemleri şunlardır:"
+        ],
+        "notes": [
+          "Manuel giriş aynı menüdedir ve ayrı çalışır: kronometre başlamaz, süreyi kendiniz yazarsınız.",
+          "Akıllı küp, GAN Timer ve QiYi Timer odalarda Pro üyelik ister. Timer sayfasında üçü de herkese açıktır."
+        ]
+      },
+      "solves": {
+        "title": "Çözümler ve oturumlar",
+        "body": [
+          "Timer'ın altındaki liste o oturumdaki çözümleri gösterir. Bir süreye dokunduğunuzda detay penceresi açılır: ceza ekleyebilir, not yazabilir, karıştırmayı ve çözüm analizini görebilir veya çözümü silebilirsiniz.",
+          "Timer'ın hemen altındaki artı iki ve DNF düğmeleri her zaman son çözüme uygulanır.",
+          "Çözümler sayfası bütün çözümlerinizi tek listede toplar. Süre aralığına, cezaya, akıllı küple yapılıp yapılmadığına ve dışarıdan aktarılıp aktarılmadığına göre süzebilir, süreye veya tarihe göre sıralayabilirsiniz.",
+          "Aynı sayfada çoklu seçim vardır: birden fazla çözümü işaretleyip tek seferde silebilirsiniz.",
+          "Oturum, çözümlerinizi ayırdığınız listedir: ısınma, 3x3 antrenman, tek el gibi. Üstteki oturum menüsünden aralarında geçiş yaparsınız. Oturumlar sayfasında yeni oturum açar, ad değiştirir, sırayı sürükleyerek düzenler, iki oturumu birleştirir veya birkaçını seçip silersiniz. Ortalamalar her oturum için ayrı hesaplanır."
+        ]
+      },
+      "stats": {
+        "title": "İstatistikler",
+        "body": [
+          "İstatistikler sayfası iki görünüm sunar. Genel görünümde bütün küp tiplerindeki durumunuz, aktivite ısı haritanız ve günlük çözüm sayınız yer alır.",
+          "Bir küp tipi seçtiğinizde o küpe özel görünüm açılır: en iyi tekliniz ve ortalamalarınız, zaman çizelgesi, saat bazlı tutarlılık, çözüm takvimi ve akıllı küple yapılan çözümlerin faz dökümü.",
+          "Üstteki filtrelerle oturumu, küp tipini, alt kümeyi (örneğin 3x3 Tek El) ve son kaç çözüme bakacağınızı seçersiniz. Seçimleriniz adres çubuğuna yazılır, yani bir görünümün bağlantısını paylaşabilirsiniz."
+        ],
+        "notes": [
+          "Akıllı küp verisine dayanan iki bölüm Pro üyelikle açılır: ortalama faz süreleri ve vaka bazlı istatistikler."
+        ]
+      },
+      "trainer": {
+        "title": "Antrenör",
+        "body": [
+          "Antrenör algoritma çalışmak içindir ve beş modu vardır. Her algoritmanın süresi ve başarı oranı ayrı tutulur, böylece zayıf olduğunuz vakalar öne çıkar."
+        ],
+        "steps": [
+          "Standart: OLL, PLL, F2L, ZBLL gibi setlerden seçtiğiniz algoritmaları sırayla çalışırsınız.",
+          "Akıllı küp: küpü bağladığınızda hamlelerinizi okur ve algoritmayı doğru uygulayıp uygulamadığınızı görür.",
+          "PLL tanıma: vakanın harfini klavyeden yazarsınız, çözmeye gerek yoktur. Tanıma hızınızı ölçer.",
+          "Cross verimliliği: karıştırmada cross'u kaç hamlede çözdüğünüzü en kısa çözümle karşılaştırır.",
+          "OLLCP: OLL sırasında köşe permütasyonunu da tanımayı çalışırsınız."
+        ],
+        "notes": [
+          "PLL tanıma modunun kendi geçmişi, ayarları ve terim sözlüğü vardır; geçmiş sayfasından eski turlarınızı karşılaştırabilirsiniz.",
+          "Akıllı küple algoritma çalışmak ve algoritmaları alternatifleriyle birlikte PDF olarak indirmek Pro üyelik gerektirir."
+        ]
+      },
+      "smart-cube": {
+        "title": "Akıllı küp",
+        "body": [
+          "Zkt Timer şu markaların akıllı küplerini tanır:",
+          "Bağlandığında küpün durumu ekranda üç boyutlu görünür. Timer küpü çevirmenizle başlar ve küp çözülünce kendiliğinden durur."
+        ],
+        "steps": [
+          "Küpü açın ve cihazınıza yakın tutun.",
+          "Timer sayfasında timer tipi menüsünden Akıllı Küp'ü seçin.",
+          "Tara'ya basın ve listeden küpünüzü seçin.",
+          "İlk bağlantıda küpü çözülmüş konuma getirip senkronlayın."
+        ],
+        "notes": [
+          "Tarayıcıda Web Bluetooth gerekir: Chrome veya Edge kullanın, Safari desteklemez. iOS ve Android uygulamasında bu kısıt yoktur.",
+          "Ekrandaki küp gerçek küple ayrışırsa küpü çözülmüş konuma getirip yeniden senkronlayın. Bağlantı koparsa küpü kapatıp açın ve yeniden tarayın.",
+          "Çözüm sonrası adım adım analiz Pro üyelikle açılır: Cross, F2L, OLL ve PLL sürelerini, hareket sayısını, saniyedeki hareketi ve çözümün animasyonunu gösterir."
+        ]
+      },
+      "mobile": {
+        "title": "Mobilde kullanım",
+        "body": [
+          "Mobilde menüler ekranın kenarlarındaki ince çentiklerde toplanır. Sağdaki çentiğe dokunun veya ondan sola kaydırın: timer, istatistikler, antrenör, odalar ve diğer sayfalar oradadır. Soldaki çentik hızlı ayarları açar.",
+          "Çentiği yukarı aşağı taşımak için üzerine basılı tutun. Süre işlerken çentikler gizlenir, yanlışlıkla açılmazlar."
+        ],
+        "notes": [
+          "Bir sayfadan geri dönmek için ekranın sol kenarından sağa kaydırabilirsiniz. Timer sayfasında bu kapalıdır, çünkü orada sol kenar hızlı ayarlar çentiğine aittir. Android uygulamasında sistemin kendi geri düğmesi kullanılır."
+        ]
+      },
+      "rooms": {
+        "title": "Odalar",
+        "body": [
+          "Odalar arkadaşlarınızla aynı karıştırmayı çözmek içindir. Herkes aynı karıştırmayı alır ve süreler herkesin ekranında görünür.",
+          "Bir oda varsayılan olarak 8 kişiliktir, sahibi bunu 16'ya kadar çıkarabilir. Odayı gizli yapıp şifre koyabilirsiniz. 2x2'den 7x7'ye kadar, ayrıca Clock, Megaminx, Pyraminx, Skewb, Square-1 ve FTO desteklenir.",
+          "Oda sahibi hangi timer tiplerine izin verileceğini seçer. Akıllı küp, GAN Timer ve QiYi Timer odalarda Pro üyelik ister; klavye, StackMat, QYtoys ve manuel giriş herkese açıktır.",
+          "Çözmeden izlemek isterseniz izleyici moduna geçebilirsiniz. İzleyiciler turun ilerlemesini bekletmez."
+        ],
+        "steps": [
+          "Odalar sayfasından yeni bir oda açın veya bağlantısıyla var olan bir odaya katılın.",
+          "Oda sahibi küp tipini seçer ve turu başlatır.",
+          "Süreniz bittiğinde otomatik paylaşılır. Odadaki herkes çözünce sıradaki karıştırma kendiliğinden gelir.",
+          "Yanlış bir süre kaydedilirse yalnızca en son çözümünüzü düzeltebilir veya silebilirsiniz. Düzelttiğiniz süre tabloda kalem işaretiyle görünür."
+        ],
+        "notes": [
+          "Yetkiler üç kademelidir: sahip, moderatör ve katılımcı. Moderatör katılımcıları atabilir ve engelleyebilir ama bir başka moderatöre ya da oda sahibine dokunamaz. Moderatör atamak ve odayı devretmek yalnızca oda sahibinin elindedir.",
+          "Tur numarasına veya tablodaki bir süreye dokunarak o turun karıştırmasını yeniden görebilirsiniz.",
+          "Sohbet panelinde bir mesaj en fazla 500 karakter olabilir.",
+          "Odada müzik çalmak Pro üyelik gerektirir."
+        ]
+      },
+      "battle": {
+        "title": "Mücadele",
+        "body": [
+          "Mücadele tek telefonda iki kişilik bir düellodur. Ekran ikiye bölünür, karşıdaki oyuncunun tarafı ters çevrilir ve iki kişi karşılıklı oturup aynı karıştırmayı çözer. Yalnızca mobilde çalışır.",
+          "İki oyuncu da ekrana basılı tutup hazır duruma geçmeden tur başlamaz. Hazır olduktan sonra herkes parmağını kendi istediği anda kaldırır ve kendi süresi o anda başlar.",
+          "Tur bitince süreler ekranda kalır. İki oyuncu da yeniden basılı tuttuğunda bir sonraki tur yeni karıştırmayla açılır."
+        ],
+        "steps": [
+          "Mücadele sayfasını açın ve ortadaki araç çubuğundan küp tipini seçin.",
+          "İki oyuncu da ekranına basılı tutsun; ikisi de hazır olduğunda parmaklarını kaldırın.",
+          "Durdurmak için ekrana dokunun. Gerekirse süreye +2 veya DNF cezası verin, skor kendiliğinden düzeltilir.",
+          "Geçmiş düğmesinden turları, karıştırmaları ve kazananı inceleyin."
+        ],
+        "notes": [
+          "Menüden taraf değiştirebilir, karıştırmayı yenileyebilir, son turu silebilir veya yeni bir mücadele başlatabilirsiniz.",
+          "Süre, karıştırma, isimler, istatistikler, skor ve galibiyet serisi göstergelerinin her biri ayrı ayrı kapatılabilir.",
+          "Mücadele turları cihazda kalır, çözüm geçmişinize kaydedilmez."
+        ]
+      },
+      "messages": {
+        "title": "Mesajlar",
+        "body": [
+          "Mesajlar bölümünde Zkt Timer kullanıcılarıyla birebir yazışırsınız. Yeni mesaj açarken kullanıcı adını aratıp kişiyi seçersiniz.",
+          "Size ilk kez yazan biri doğrudan gelen kutunuza düşmez, İstekler sekmesinde bekler. Kabul ederseniz sohbet gelen kutusuna taşınır; istemezseniz silebilir veya kişiyi engelleyebilirsiniz.",
+          "Bir çözümünüzü sohbete ekleyebilirsiniz. Karşı taraf süreyi görür ve çözümün ayrıntısını açabilir.",
+          "Mesaj ayarları Hesap bölümündeki Sosyal sayfasındadır: size kimlerin yazabileceği, mesaj aramasında görünüp görünmeyeceğiniz, okundu bilgisi, yazıyor göstergesi ve çevrimiçi noktası. Engellediğiniz kişiler de bu listede tutulur."
+        ],
+        "steps": [
+          "Yeni mesaj düğmesine basın ve kullanıcı adını yazmaya başlayın; arama en az iki harften sonra çalışır.",
+          "Mesajınızı yazın. Bir çözüm paylaşmak isterseniz çözüm ekleme düğmesini kullanın.",
+          "Gönderdiğiniz bir mesajı sonradan düzenleyebilir veya geri alabilirsiniz. Geri aldığınızda mesaj karşı taraftan da silinir.",
+          "Rahatsız edici bir sohbeti şikayet edin veya kişiyi engelleyin."
+        ],
+        "notes": [
+          "Sohbeti silmek yalnızca sizin tarafınızdan siler, karşı tarafta durmaya devam eder.",
+          "Şikayet ettiğinizde son beş mesajın kopyası incelemeye gönderilir. Bunun dışındaki mesajlarınız okunmaz.",
+          "Bir sohbeti sessize alabilir, gelen kutusunu okunmamışlara göre süzebilir ve arama kutusundan geçmişte arayabilirsiniz."
+        ]
+      },
+      "competitions": {
+        "title": "Yarışmalar ve sıralamalar",
+        "body": [
+          "Yarışmalar sayfasında hem WCA hem Zeka Küpü Türkiye yarışmaları bulunur. Yaklaşan yarışmalar, ZKT yarışmaları ve arama kutusu aynı sayfadadır. WCA hesabınızı bağladıysanız kendi kayıtlarınız Yarışmalarım bölümünde ayrıca listelenir.",
+          "Bir yarışmayı açtığınızda sekmeler şunlardır: Gruplar (yarışmacı listesi ve atamalar), canlı sonuçlar, Etkinlikler (turlar, formatlar ve kesme süreleri), Sıralama, Program (bütün etkinlik takvimi) ve Bilgi.",
+          "ZKT yarışmaları aynı sayfayı kullanır; yalnızca canlı sekmesi WCA Live yerine ZKT Live adını alır.",
+          "Bir yarışmacıya dokunduğunuzda o kişinin programı, grupları ve görevleri açılır: hakemlik, koşuculuk ve karıştırıcılık ayrı ayrı görünür. Kişisel rekor sayfasına da oradan geçersiniz."
+        ],
+        "notes": [
+          "Sıralama sayfası ayrıdır ve WCA sonuçlarına dayanır: Kinch Ranks ile tekil ve ortalama Sum of Ranks. Bu listelerde yer almak için WCA hesabınızı bağlamanız gerekir.",
+          "Rekorlar bölümü son kırılan rekorları gösterir. Rekor bildirimi almak ve bir yarışmada en fazla beş yarışmacıyı takibe almak Pro üyelik gerektirir."
+        ]
+      },
+      "profile": {
+        "title": "Profil",
+        "body": [
+          "Profil sayfanız Zkt Timer'daki görünen yüzünüzdür. Adresi /user/kullaniciadiniz biçimindedir ve giriş yapmamış biri de açabilir, bağlantıyı paylaşmanız yeterli.",
+          "Üstte kapak fotoğrafı ile profil resmi, altında Hakkımda bölümü yer alır: biyografi, YouTube, Twitch ve X bağlantıları, 3x3 yönteminiz, hedefiniz, ana küpünüz ve favori etkinliğiniz.",
+          "Dereceler sekmelere ayrılır. Kişisel Rekorlar sekmesi Zkt Timer'da yaptığınız çözümlerden gelir. WCA Resmi Rekorları ve ZKT Rekorları bağladığınız hesaplardan gelir. WCA Sonuçları sekmesi yarışma geçmişinizi tur tur listeler.",
+          "Süreleriniz profilde kendiliğinden görünmez. Hangi derecelerin görüneceğini yayınlama ekranından tek tek seçersiniz."
+        ],
+        "steps": [
+          "Profil resminizi ve kapak fotoğrafınızı yükleyin.",
+          "Profili Düzenle'den biyografinizi, sosyal medya bağlantılarınızı ve küp bilgilerinizi girin.",
+          "Kişisel rekorlarınızı yayınlamak için önce kullanıcı adı belirleyin, sonra göstermek istediğiniz dereceleri seçin.",
+          "WCA veya ZKT hesabınızı bağladıysanız Verileri Yönet'ten yarışma sayısı, madalyalar, rekorlar, dünya sıralaması ve yarışma geçmişinden hangilerinin görüneceğini ayarlayın."
+        ],
+        "notes": [
+          "Kişisel rekorlarınızı profilinizde yayınlamak Pro üyelik gerektirir. WCA ve ZKT rekorlarınızı göstermek için Pro gerekmez.",
+          "Cuber Card Oluştur düğmesi yarışma sayınızı, madalyalarınızı ve rekorlarınızı tek karede toplayan paylaşılabilir bir görsel üretir.",
+          "Başka birinin profilinde mesaj gönderme, profil bağlantısını kopyalama ve şikayet etme seçenekleri bulunur."
+        ]
+      },
+      "account": {
+        "title": "Hesap ayarları",
+        "body": [
+          "Hesap sayfası yedi bölüme ayrılır: Kişisel Bilgiler, Bildirimler, Sosyal, Bağlı Hesaplar, Duyurular, Destek ve Riskli Alan.",
+          "Kişisel Bilgiler'de adınızı, kullanıcı adınızı ve e-posta adresinizi değiştirir, şifrenizi belirlersiniz. E-posta değişikliği yeni adrese gönderilen altı haneli kodla onaylanır. Hesabınızı WCA ile açtıysanız buradan şifre belirleyip e-posta ile de giriş yapabilir hale gelirsiniz.",
+          "Bağlı Hesaplar'da ZKT ve WCA hesaplarınızı bağlarsınız. Bağladığınız hesabın yarışmaları, sonuçları ve rekorları Zkt Timer içinde görünür hale gelir. WhatsApp topluluğuna katılma bağlantısı da buradadır.",
+          "Destek bölümünden hata bildirir, soru sorar veya öneri gönderirsiniz. Açtığınız talep bir sohbet gibi ilerler: yanıtlayabilir, ekran görüntüsü veya video ekleyebilir, çözülünce kapatabilir ya da yeniden açabilirsiniz."
+        ],
+        "steps": [
+          "Destek talebi için Hesap bölümündeki Destek sayfasına gidin, konuyu ve mesajınızı yazın.",
+          "Talebi gönderdikten sonra sohbete ekran görüntüsü veya video ekleyebilirsiniz.",
+          "Yanıt geldiğinde e-posta almak isterseniz Bildirimler bölümünden bu seçeneği açın.",
+          "Sorununuz çözüldüğünde talebi kapatın; gerekirse sonradan yeniden açabilirsiniz."
+        ],
+        "notes": [
+          "Bir mesaja tek dosya eklenir ve dosya sınırı 25 MB'dir. Görsellerde PNG, JPEG, GIF ve WebP, videolarda MP4, WebM ve MOV desteklenir.",
+          "Riskli Alan'da iki işlem vardır. Ayarları sıfırlamak çözümlerinize ve oturumlarınıza dokunmaz, özel küp tipleriniz de etkilenmez; yalnızca ayarlarınızı varsayılana döndürür. Hesabı silmek ise bütün verilerinizi kalıcı olarak siler.",
+          "Bağlı bir hesabın bağlantısını kesebilmek için önce şifre belirlemiş olmanız gerekir, yoksa giriş yapacak yönteminiz kalmaz."
+        ]
+      },
+      "data": {
+        "title": "Veriler ve yedekleme",
+        "body": [
+          "Şu kaynaklardan veri aktarabilirsiniz:",
+          "Ayarlar > Veri > İçe Aktar'a gidin, kaynağı seçin ve dosyanızı yükleyin.",
+          "Dışa aktarma aynı yerdedir; bütün çözümlerinizi, oturumlarınızı ve ayarlarınızı tek dosyaya yazar.",
+          "Giriş yaptığınızda çözümleriniz sunucuya yedeklenir. İnternet olmadığında uygulama çalışmaya devam eder, bağlantı gelince bekleyen çözümler gönderilir.",
+          "Hesabınızı ve bütün verilerinizi Hesap bölümündeki Riskli Alan'dan kalıcı olarak silebilirsiniz."
+        ]
+      },
+      "shortcuts": {
+        "title": "Klavye kısayolları",
+        "body": [
+          "Kısayollar masaüstünde, timer duruyorken çalışır. Mac'te Ctrl yerine Command kullanabilirsiniz."
+        ]
+      },
+      "faq": {
+        "title": "Sık sorulan sorular",
+        "body": []
+      }
+    },
+    "search_placeholder": "Yardımda ara",
+    "search_no_results": "\"{{query}}\" için sonuç yok. Başka bir kelime deneyin."
+  },
+  "anon": {
+    "banner_text": "Çözümlerin bu cihazda saklanıyor. Hesap açarsan her cihazdan erişirsin.",
+    "banner_text_with_count": "Bu cihazda {{count}} çözümün var. Hesap aç, kaybetme.",
+    "banner_cta": "Hesap aç",
+    "banner_dismiss": "Kapat",
+    "transfer_title": "Çözümlerini hesabına aktar",
+    "transfer_body": "Bu cihazda hesabına bağlı olmayan {{count}} çözüm var. Hesabına aktarılsın mı?",
+    "transfer_confirm": "Aktar",
+    "transfer_cancel": "Şimdilik kalsın",
+    "transfer_working": "Aktarılıyor",
+    "transfer_partial": "Bir kısmı aktarılamadı. Çözümlerin cihazında duruyor, daha sonra tekrar deneyebilirsin.",
+    "transfer_close": "Tamam"
+  },
+  "account_required": {
+    "eyebrow": "Üyelik",
+    "title": "Bu bölüm için hesap gerekiyor",
+    "cta": "Hesap aç",
+    "stats": "İstatistikler çözüm geçmişini hesabına bağlar: ortalamalar, rekorlar, aktivite haritası ve küp bazlı analiz. Hesap açtığında buradaki her şey senin verinle dolar.",
+    "rooms": "Odalar arkadaşlarınla aynı karıştırmayı çözmek içindir. Süreler herkesin ekranında görünür, bu yüzden bir kimliğe ihtiyaç var.",
+    "trainer": "Antrenör her algoritma için ayrı süre ve başarı oranı tutar, zayıf kaldığın vakaları öne çıkarır. Bu ilerlemenin bir yere kaydedilmesi için hesap gerekiyor.",
+    "competition_detail": "Yarışma detayında program, gruplar, atamalar ve canlı sonuçlar yer alır. WCA hesabını bağladığında kendi gruplarını ve görevlerini de burada görürsün."
   }
 }

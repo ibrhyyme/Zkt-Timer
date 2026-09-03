@@ -15,7 +15,11 @@ const UPDATE_LOCALE = gql`
 `;
 
 interface Props {
-	openLeft?: boolean;
+	// Which edge of the panel lines up with the trigger. 'end' (default) opens
+	// leftward, which is right for a switcher sitting at the right of a bar. A
+	// switcher on the LEFT must pass 'start', or the panel runs off the screen —
+	// on a phone that means it is simply not reachable.
+	align?: 'start' | 'end';
 }
 
 // i18n language code → ISO country code (for flag). en → us (global preference), zh → cn.
@@ -51,7 +55,8 @@ function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: number })
 	);
 }
 
-export default function LanguageSwitcher(_props: Props = {}) {
+export default function LanguageSwitcher(props: Props = {}) {
+	const {align = 'end'} = props;
 	const { i18n } = useTranslation();
 	const me = useSelector((state: any) => state.account.me);
 	const [updateLocale] = useMutation(UPDATE_LOCALE);
@@ -79,7 +84,7 @@ export default function LanguageSwitcher(_props: Props = {}) {
 			options={options}
 			triggerIcon={<FlagIcon code={currentLang.flag} />}
 			ariaLabel="Language"
-			align="end"
+			align={align}
 			triggerMinWidth={56}
 		/>
 	);

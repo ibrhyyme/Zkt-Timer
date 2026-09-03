@@ -1,0 +1,56 @@
+@import '../../../styles/config';
+
+.#{$namespace}-anon-transfer {
+	position: fixed;
+	inset: 0;
+	z-index: 100002;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: rgba(0, 0, 0, 0.55);
+	backdrop-filter: blur(4px);
+
+	&__card {
+		width: 100%;
+		max-width: 420px;
+		padding: 24px;
+		border-radius: 16px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+	}
+
+	&__title {
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin-bottom: 10px;
+	}
+
+	&__body {
+		line-height: 1.5rem;
+		color: rgb(var(--text-color));
+		margin-bottom: 18px;
+	}
+
+	&__progress {
+		height: 6px;
+		border-radius: 3px;
+		background: rgba(var(--text-color), 0.1);
+		overflow: hidden;
+		margin-bottom: 18px;
+	}
+
+	&__progress-bar {
+		height: 100%;
+		background: rgb(var(--primary-color));
+		transition: width 0.2s ease;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 10px;
+		align-items: center;
+	}
+}

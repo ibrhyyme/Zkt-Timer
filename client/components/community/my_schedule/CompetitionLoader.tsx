@@ -6,6 +6,7 @@ import {
 } from '../../../@types/generated/graphql';
 import {b} from './shared';
 import {resourceUri} from '../../../util/storage';
+import AccountRequired from '../../common/account_required/AccountRequired';
 import {Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {prefetchWcaLiveOverview} from './useLiveResults';
@@ -178,11 +179,20 @@ export default function CompetitionLoader({competitionId, children}: Competition
 			})
 			.catch((e: any) => {
 				if (cancelled) return;
-				const message =
-					e?.graphQLErrors?.[0]?.message ||
-					e?.networkError?.result?.errors?.[0]?.message ||
-					e?.message ||
-					'';
+				const gqlError = e?.graphQLErrors?.[0] || e?.networkError?.result?.errors?.[0];
+				const code = gqlError?.extensions?.code;
+
+				// A signed-out visitor is not a failure. The server refuses this query
+				// with FORBIDDEN, and reporting that as "could not load, try again" was
+				// both wrong and unactionable — it also leaked the raw server sentence
+				// (in Turkish, on an English page) into a monospace box.
+				if (code === 'FORBIDDEN' || code === 'UNAUTHENTICATED') {
+					setError('auth_required');
+					setErrorDetail(null);
+					return;
+				}
+
+				const message = gqlError?.message || e?.message || '';
 				setError('fetch_error');
 				setErrorDetail(message || null);
 			})
@@ -224,12 +234,8 @@ export default function CompetitionLoader({competitionId, children}: Competition
 			<div className={b('wca-loading')}>
 				<img
 					src={resourceUri(
-					loadingIsZkt
-						? loaderIsDark
-							? '/images/zkt-logo.png'
-							: '/images/zkt-logo-white.png'
-						: '/images/logos/wca_logo.svg'
-				)}
+						loadingIsZkt ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg'
+					)}
 					alt={loadingIsZkt ? 'ZKT' : 'WCA'}
 					className={b('wca-loading-logo')}
 				/>
@@ -239,6 +245,10 @@ export default function CompetitionLoader({competitionId, children}: Competition
 				<span className={b('wca-loading-text')}>{t('my_schedule.loading')}</span>
 			</div>
 		);
+	}
+
+	if (error === 'auth_required') {
+		return <AccountRequired descriptionKey="account_required.competition_detail" />;
 	}
 
 	if (error) {

@@ -41,7 +41,8 @@
     "competition_management": "Gestión de competiciones",
     "logout": "Cerrar sesión",
     "pro_subscription": "Suscripción Pro",
-    "pro_subscription_cta": "✦ Mejorar a Pro"
+    "pro_subscription_cta": "✦ Mejorar a Pro",
+    "help": "Ayuda"
   },
   "login": {
     "email": "Correo electrónico",
@@ -55,7 +56,9 @@
     "wca_login": "Iniciar sesion con WCA",
     "wca_connecting": "Conectando con WCA...",
     "wca_divider": "o",
-    "wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas."
+    "wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas.",
+    "try_without_account": "Probar sin cuenta",
+    "help": "Ayuda"
   },
   "signup": {
     "consent_label": "He leído y acepto la <priv>Política de Privacidad</priv> y los <terms>Términos de Servicio</terms>.",
@@ -2405,112 +2408,169 @@
     "zkt_activity_description": "Detalles de actividad del grupo: evento, ronda, juez y asignaciones de competidores.",
     "faq": [
       {
+        "id": "what-is",
         "q": "¿Qué es Zkt Timer?",
         "a": "Zkt Timer es una de las plataformas de cronómetro de cubo Rubik más avanzadas. Mide tus tiempos de speedcubing con precisión de milisegundos, proporciona algoritmos de mezcla WCA oficiales, estadísticas detalladas y análisis de rendimiento. Incluye salas de carreras en vivo, clasificaciones globales, soporte para cubos inteligentes y entrenador de algoritmos."
       },
       {
+        "id": "how-works",
         "q": "¿Cómo funciona Zkt Timer?",
         "a": "Regístrate y comienza de inmediato. Las funciones principales como el cronómetro, estadísticas, carreras online, entrenador y clasificaciones están disponibles. Actualiza a la membresía Pro para funciones premium adicionales."
       },
       {
+        "id": "cube-types",
         "q": "¿Qué tipos de cubos soporta?",
         "a": "Zkt Timer soporta todas las categorías oficiales de la WCA: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 una mano, 3x3 con los ojos vendados y más. Se utilizan algoritmos de mezcla oficiales de la WCA."
       },
       {
+        "id": "offline",
         "q": "¿Puedo usarlo sin conexión a internet?",
         "a": "¡Sí! Zkt Timer funciona sin conexión gracias a la tecnología PWA. Después de instalar la app desde la opción 'Agregar a pantalla de inicio', puedes usar el cronómetro sin internet. Tus datos se sincronizan automáticamente al reconectarte."
       },
       {
+        "id": "wca-official",
         "q": "¿Es un cronómetro oficial de la WCA?",
         "a": "Zkt Timer utiliza algoritmos de mezcla oficiales de la WCA y está diseñado para entrenamiento. Los Stackmat Timer físicos son obligatorios en competencias oficiales de la WCA. Zkt Timer es ideal para práctica, entrenamiento y seguimiento de estadísticas."
       },
       {
+        "id": "devices",
         "q": "¿En qué dispositivos funciona?",
         "a": "Zkt Timer funciona en todos los navegadores modernos. Compatible con Windows, macOS, Linux, Android e iOS. Se puede instalar como PWA en tu teléfono. También es compatible con Smart Cubes (GAN, MoYu) y Stackmat Timer."
       },
       {
+        "id": "data-safety",
         "q": "¿Están seguros mis datos?",
         "a": "Sí, todos los registros de resoluciones e información de cuenta se almacenan de forma segura. Tus datos se mantienen tanto en el servidor como en la base de datos local de tu navegador. Puedes eliminar tu cuenta y todos tus datos en cualquier momento."
       },
       {
+        "id": "online-comps",
         "q": "¿Cómo puedo unirme a carreras online?",
         "a": "Crea una cuenta, luego únete a salas de carreras abiertas o crea salas privadas con amigos desde la sección 'Salas'. Se realizan carreras en tiempo real y puedes subir en las clasificaciones."
       },
       {
+        "id": "wca-follow",
         "q": "¿Cómo puedo seguir las competiciones WCA?",
         "a": "Explora todas las competiciones WCA de cubo Rubik del mundo desde la sección 'Competiciones'. La página de detalle de cada competición muestra el horario, lista de competidores, eventos y resultados en vivo. Conecta tu cuenta WCA para ver tu horario personal de las competiciones en las que estás registrado."
       },
       {
+        "id": "smart-cube",
         "q": "¿Cómo conecto un smart cube?",
         "a": "Zkt Timer soporta smart cubes GAN, Giiker y Particula vía Bluetooth. En móvil, activa el Bluetooth y usa el plugin Capacitor BLE; en navegadores web, usa Chrome o Edge que soportan Web Bluetooth. Abre el menú Smart Cube desde el timer, pulsa Escanear y empareja con tu dispositivo. Una vez conectado, el timer inicia y para automáticamente según el estado del cubo."
       },
       {
+        "id": "stackmat",
         "q": "¿Zkt Timer soporta Stackmat Timer?",
         "a": "Sí. Conecta tu Stackmat Timer a través de la entrada de audio (jack 3.5mm). En los ajustes del timer, selecciona StackMat como tipo de entrada y elige el dispositivo de audio correcto. El timer detectará las señales del Stackmat automáticamente."
       },
       {
+        "id": "trainer",
         "q": "¿Qué es el entrenador de algoritmos?",
         "a": "El entrenador de algoritmos te ayuda a practicar OLL, PLL, F2L, ZBLL y otros algoritmos de cubo con repetición espaciada. Muestra un cubo 3D o patrón 2D para cada algoritmo, rastrea tu tiempo por algoritmo y pone en cola los que necesitan más práctica. Soporta smart cubes para coincidencia de patrones."
       },
       {
+        "id": "oll-pll",
         "q": "¿Qué son OLL y PLL?",
         "a": "OLL (Orientation of the Last Layer) y PLL (Permutation of the Last Layer) son los últimos dos pasos del método de speedsolving CFOP. OLL tiene 57 algoritmos que orientan la última capa; PLL tiene 21 algoritmos que permutan las piezas. Dominarlos es esencial para solves sub-20."
       },
       {
+        "id": "pro",
         "q": "¿Qué me da la membresía Pro?",
         "a": "Zkt Timer Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación PDF de tus algoritmos y estadísticas, acceso a todos los entrenadores de algoritmos, temas premium y soporte prioritario. Es una compra única o recurrente según el plan."
       },
       {
+        "id": "import",
         "q": "¿Puedo importar datos de csTimer o Twisty Timer?",
         "a": "Sí. Zkt Timer soporta importación de datos desde csTimer, Twisty Timer y sus propios formatos de exportación anteriores. Ve a Ajustes > Datos > Importar, selecciona el formato fuente y sube tu archivo de exportación. Todos los solves, sesiones y metadatos se preservan."
       },
       {
+        "id": "backup",
         "q": "¿Cómo hago respaldo de mis datos?",
         "a": "Ve a Ajustes > Datos > Exportar. Zkt Timer genera un archivo JSON con todos tus solves, sesiones y ajustes. Guárdalo en un lugar seguro — puedes reimportarlo en cualquier dispositivo. Los usuarios conectados también obtienen sincronización automática en la nube."
       },
       {
+        "id": "scramble-algo",
         "q": "¿Qué algoritmo de scramble usa Zkt Timer?",
         "a": "Zkt Timer usa el mismo motor de scramble que cstimer, el estándar de facto en speedcubing. Esto incluye scramblers random-state compatibles con WCA para 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock y más. Todos los scrambles cumplen con las regulaciones WCA."
       },
       {
+        "id": "battle",
         "q": "¿Qué es el modo Battle?",
         "a": "El modo Battle es un modo competitivo 1v1 en una pantalla móvil compartida. Dos cuberos compiten lado a lado con inicio independiente, seguimiento de penalizaciones (+2, DNF), puntuación por ronda y un modal de revisión para examinar cada ronda. Perfecto para duelos rápidos con un amigo."
       },
       {
+        "id": "leaderboard",
         "q": "¿Cómo entro en las clasificaciones?",
         "a": "Las clasificaciones globales muestran los mejores solves individuales y los mejores promedios. Para aparecer, necesitas una cuenta Zkt Timer, solves verificados (del timer, no manual) y el solve no debe estar marcado. Los mejores tiempos se publican automáticamente; también puedes gestionar cuáles son públicos."
       },
       {
+        "id": "delete-account",
         "q": "¿Puedo eliminar mi cuenta?",
         "a": "Sí, completamente. Ve a Ajustes > Cuenta > Zona de Peligro > Eliminar Cuenta. Esto elimina permanentemente todos tus solves, sesiones, datos de perfil y enlace WCA. La acción es irreversible. Exporta tus datos primero si quieres un respaldo."
       },
       {
+        "id": "pricing",
         "q": "¿Necesito pagar para usar Zkt Timer?",
         "a": "Puedes registrarte y empezar a usar la experiencia básica de inmediato: el cronómetro, los scrambles WCA, las estadísticas, las salas de carreras en línea, las clasificaciones y el entrenador de algoritmos. La membresía Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación a PDF, los modos de entrenador con cubo inteligente, temas premium y soporte prioritario. No hay anuncios."
       },
       {
+        "id": "mobile-apps",
         "q": "¿Hay aplicación iOS o Android?",
         "a": "Sí. Zkt Timer está disponible nativamente en la App Store de iOS y Google Play Store. Las apps incluyen soporte Bluetooth de smart cube, modo offline, notificaciones push y rendimiento nativo. También puedes instalar la app web como PWA."
       },
       {
+        "id": "inspection",
         "q": "¿Qué es el modo inspección?",
         "a": "El modo inspección es la cuenta regresiva de 15 segundos antes de cada solve, acorde a las regulaciones WCA. Durante la inspección, examinas el scramble sin tocar el cubo. Se escucha un aviso a los 8 y 12 segundos, empezar después de 15 segundos incurre en penalización +2 (17+ segundos es DNF)."
       },
       {
+        "id": "per-cube-stats",
         "q": "¿Se rastrean las estadísticas por separado para diferentes tipos de cubo?",
         "a": "Sí. Zkt Timer agrupa estadísticas por (tipo de cubo, subconjunto de scramble). Tus promedios de 3x3, récords personales de 2x2 y tiempos de Pyraminx se rastrean independientemente. La página de Estadísticas permite filtrar por tipo de cubo y rango de tiempo."
       },
       {
+        "id": "offline-how",
         "q": "¿Cómo funciona Zkt Timer sin internet?",
         "a": "Como PWA, Zkt Timer almacena todos los archivos de la app después de la primera visita. Puedes cronometrar solves, generar scrambles y ver estadísticas cacheadas totalmente offline. Al reconectar, los solves pendientes se sincronizan automáticamente vía Background Sync API."
       },
       {
+        "id": "recognition-trainer",
         "q": "¿Qué es el entrenador de reconocimiento PLL?",
         "a": "El entrenador de reconocimiento PLL ejercita tu capacidad de identificar el caso PLL correcto a simple vista y escribir su nombre de letra desde el teclado, sin necesidad de resolver. Incluye una misión guiada de varios pasos, una guía de reconocimiento de dos lados que cubre cada ángulo, una cola adaptativa que se centra en tus casos débiles y un glosario. Funciona como un modo independiente basado en teclado."
       },
       {
+        "id": "cross-trainer",
         "q": "¿Qué es el entrenador de eficiencia de cross?",
         "a": "El entrenador de eficiencia te ayuda a construir soluciones de Cross, XCross y EOCross más eficientes. Analiza tus movimientos, muestra soluciones óptimas o casi óptimas y te ayuda a reducir el número de movimientos para resoluciones más rápidas y fluidas. Con un cubo inteligente conectado puede seguir tu solución real en vivo."
+      },
+      {
+        "id": "keyboard-shortcuts",
+        "q": "¿Cuáles son los atajos de teclado?",
+        "a": "La barra espaciadora inicia y detiene el cronómetro. Escape reinicia la cuenta atrás de inspección mientras está activa. Para el último solve: 1 quita la penalización, 2 añade un más dos, 3 lo marca como DNF, Alt+Z lo borra. Alt+I activa y desactiva la inspección. Cambia de puzzle con Alt y un número: de Alt+2 a Alt+7 para 2x2 hasta 7x7, Alt+P para Pyraminx, Alt+M para Megaminx, Alt+C para Clock, Alt+S para Skewb. En Mac, Command funciona en lugar de Ctrl."
+      },
+      {
+        "id": "desktop-usage",
+        "q": "¿Cómo se usa Zkt Timer en el ordenador?",
+        "a": "Los menús de arriba seleccionan la sesión, el puzzle y el tipo de cronómetro, y la mezcla aparece justo debajo. Mantén pulsada la barra espaciadora y suéltala para empezar, pulsa de nuevo para parar. La parte inferior muestra tus solves recientes, tus medias y el análisis del solve. Haz clic en cualquier tiempo para abrir su ventana de detalle, donde puedes añadir una penalización, escribir una nota o borrar el solve."
+      },
+      {
+        "id": "mobile-usage",
+        "q": "¿Cómo llego a los menús en el móvil?",
+        "a": "Hay una muesca fina en el borde izquierdo y derecho de la pantalla. Toca la muesca derecha o desliza hacia la izquierda para abrir la navegación: cronómetro, estadísticas, entrenador, salas y el resto están ahí. La muesca izquierda abre los ajustes rápidos. Mantén pulsada una muesca para moverla arriba o abajo. Ambas se ocultan mientras corre un solve."
+      },
+      {
+        "id": "where-settings",
+        "q": "¿Dónde están los ajustes?",
+        "a": "Toca tu foto de perfil arriba a la derecha y elige Ajustes generales. Ahí están el diseño del cronómetro, la inspección, los sonidos, el tema, el cubo inteligente y los ajustes de datos. En el móvil, la muesca del borde izquierdo también abre los ajustes rápidos para los que cambias a menudo."
+      },
+      {
+        "id": "sessions",
+        "q": "¿Cómo funcionan las sesiones?",
+        "a": "Una sesión es una lista separada de solves. Usa el menú de sesión encima del cronómetro para crear una, cambiar entre ellas, renombrar una o fusionar dos. Las medias se calculan por sesión."
+      },
+      {
+        "id": "edit-solve",
+        "q": "¿Cómo añado una penalización o borro un solve?",
+        "a": "Toca el tiempo en tu lista de solves y usa las opciones de más dos, DNF y borrar en la ventana que se abre. Los botones +2 y DNF bajo el cronómetro se aplican siempre al último solve. En el ordenador, 2, 3 y Alt+Z hacen lo mismo con el último solve."
       }
     ],
     "nav_timer_name": "Temporizador",
@@ -2868,7 +2928,8 @@
   },
   "landing_nav": {
     "login": "Iniciar sesión",
-    "signup": "Registrarse"
+    "signup": "Registrarse",
+    "open_app": "Abrir la aplicación"
   },
   "features": {
     "timer_title": "Timer impecable",
@@ -3545,7 +3606,8 @@
     "store_tagline": "Zkt Timer ya está en las tiendas de aplicaciones",
     "or_continue_web": "o continúa en la web",
     "app_store_alt": "Descargar en App Store",
-    "google_play_alt": "Disponible en Google Play"
+    "google_play_alt": "Disponible en Google Play",
+    "cta_try": "Pruébalo ahora"
   },
   "hero_cube": {
     "hint": "Intenta resolverlo arrastrando",
@@ -3575,7 +3637,8 @@
     "copyright": "© {{year}} Zkt Timer. Created and Designed by",
     "privacy": "Privacidad",
     "terms": "Términos",
-    "credits": "Créditos"
+    "credits": "Créditos",
+    "help": "Ayuda"
   },
   "pro": {
     "feature_title": "Función Pro",
@@ -4237,5 +4300,292 @@
   },
   "save_file": {
     "open_failed": "El archivo se guardó pero ninguna aplicación del dispositivo pudo abrirlo."
+  },
+  "help": {
+    "title": "Ayuda",
+    "meta_title": "Ayuda | Zkt Timer",
+    "meta_description": "Cómo usar Zkt Timer: conectar un cubo inteligente, importar desde csTimer, el entrenador, competiciones y más.",
+    "diagram": {
+      "session": "Sesión",
+      "cube_type": "Puzzle",
+      "timer_type": "Tipo de cronómetro",
+      "scramble": "Mezcla",
+      "timer_area": "Tiempo",
+      "solve_list": "Solves",
+      "modules": "Estadísticas",
+      "left_notch": "Ajustes rápidos",
+      "right_notch": "Navegación",
+      "desktop_alt": "Esquema de las zonas de la pantalla del cronómetro en el ordenador",
+      "desktop_caption": "Cómo se distribuye la página del cronómetro en el ordenador",
+      "mobile_alt": "Esquema de las muescas laterales en la pantalla del móvil",
+      "mobile_caption": "En el móvil los menús están en las muescas de los bordes"
+    },
+    "shortcuts": {
+      "space": "Inicia y detiene el cronómetro",
+      "escape": "Reinicia la cuenta atrás de inspección",
+      "ok": "Quita la penalización del último solve",
+      "plus_two": "Añade un más dos al último solve",
+      "dnf": "Marca el último solve como DNF",
+      "delete_last": "Borra el último solve",
+      "delete_session": "Borra todos los solves de la sesión",
+      "inspection": "Activa y desactiva la inspección",
+      "cube_nxn": "Cambia el puzzle entre 2x2 y 7x7",
+      "cube_other": "Pyraminx, Megaminx, Clock, Skewb"
+    },
+    "timer_types": {
+      "keyboard": "El método por defecto. Barra espaciadora en el ordenador, un toque en la pantalla en el móvil.",
+      "stackmat": "El cronómetro de competición. Se conecta al jack de auriculares y el tiempo se lee del aparato.",
+      "smart": "Un cubo Bluetooth. El cronómetro arranca al girarlo y para cuando el cubo queda resuelto.",
+      "gantimer": "El cronómetro de GAN, conectado por Bluetooth.",
+      "qiyitimer": "El cronómetro de QiYi, conectado por Bluetooth.",
+      "qiyiwired": "El cronómetro con cable de QiYi. Se conecta por el jack de auriculares, como un StackMat."
+    },
+    "sections": {
+      "getting-started": {
+        "title": "Primeros pasos",
+        "body": [
+          "Puedes usar Zkt Timer desde el navegador o con las apps de iOS y Android. Con una cuenta, tus resuelves se respaldan en el servidor y ves los mismos datos en cada dispositivo donde inicies sesión.",
+          "También puedes probarlo sin cuenta. Sin sesión iniciada funcionan el cronómetro, tus resuelves y el entrenador; los tiempos se quedan solo en ese dispositivo. Si te registras más tarde, la aplicación te ofrece pasar esos resuelves a tu cuenta.",
+          "En el ordenador hay tres menús en la parte de arriba: sesión, tipo de cubo y tipo de cronómetro. Debajo está el scramble, en el centro el tiempo, y más abajo tu lista de resuelves y los módulos de estadísticas.",
+          "Los ajustes se reparten en siete secciones: Cronómetro, Scramble, Hardware, Apariencia, Estadísticas, Datos e Idioma. Si no sabes en qué sección está el ajuste que buscas, usa el buscador dentro de los ajustes."
+        ]
+      },
+      "timer": {
+        "title": "Cronómetro",
+        "body": [
+          "Mantén pulsada la barra espaciadora, suéltala cuando el cronómetro se ponga verde y el tiempo empieza. Pulsa cualquier tecla para parar. En el móvil pulsas y sueltas en la zona central de la pantalla.",
+          "Con la inspección activada, corre una cuenta atrás de 15 segundos antes de empezar. Siguiendo la regla de la WCA, pasar de 15 segundos es un más dos y pasar de 17 es DNF. Escape cancela la cuenta atrás.",
+          "El scramble se genera solo después de cada resuelve. Toca el scramble para copiarlo y usa las flechas de al lado para moverte entre el anterior y el siguiente.",
+          "El tipo de cronómetro se elige en el menú de arriba. Estas son las entradas admitidas:"
+        ],
+        "notes": [
+          "La entrada manual está en el mismo menú y funciona aparte: no corre ningún cronómetro, escribes el tiempo tú.",
+          "El cubo inteligente, el GAN Timer y el QiYi Timer piden Pro dentro de las salas. En la página del cronómetro los tres están abiertos a todo el mundo."
+        ]
+      },
+      "solves": {
+        "title": "Solves y sesiones",
+        "body": [
+          "La lista debajo del cronómetro muestra los resuelves de esa sesión. Al tocar un tiempo se abre la ventana de detalle: puedes añadir una penalización, escribir una nota, ver el scramble y el desglose del resuelve, o borrarlo.",
+          "Los botones de más dos y DNF que están justo debajo del cronómetro se aplican siempre a tu último resuelve.",
+          "La página de resuelves reúne todos tus resuelves en una sola lista. Puedes filtrar por rango de tiempo, por penalización, por si se hizo con cubo inteligente y por si viene importado, y ordenar por tiempo o por fecha.",
+          "En esa misma página hay selección múltiple: marcas varios resuelves y los borras de una vez.",
+          "Una sesión es una lista donde separas tus resuelves: calentamiento, práctica de 3x3, a una mano y demás. Cambias entre ellas desde el menú de sesión de arriba. En la página de sesiones creas una sesión, la renombras, reordenas arrastrando, fusionas dos o seleccionas varias y las borras. Las medias se calculan por sesión."
+        ]
+      },
+      "stats": {
+        "title": "Estadísticas",
+        "body": [
+          "La página de estadísticas ofrece dos vistas. La general muestra cómo estás en todos los tipos de cubo, tu mapa de calor de actividad y cuántos resuelves haces al día.",
+          "Al elegir un tipo de cubo se abre la vista de ese cubo: tu mejor single y tus medias, una línea temporal, la consistencia por hora del día, un calendario de resuelves y el desglose por fases de los resuelves hechos con cubo inteligente.",
+          "Los filtros de arriba eligen la sesión, el tipo de cubo, el subconjunto (3x3 a una mano, por ejemplo) y cuántos resuelves recientes mirar. Tus elecciones se escriben en la barra de direcciones, así que puedes compartir el enlace de una vista concreta."
+        ],
+        "notes": [
+          "Dos secciones basadas en datos del cubo inteligente vienen con Pro: los tiempos medios por fase y las estadísticas por caso."
+        ]
+      },
+      "trainer": {
+        "title": "Entrenador",
+        "body": [
+          "El entrenador sirve para practicar algoritmos y tiene cinco modos. El tiempo y el acierto se guardan por algoritmo, así que los casos en los que flojeas destacan solos."
+        ],
+        "steps": [
+          "Estándar: practicas uno tras otro los algoritmos que elegiste de conjuntos como OLL, PLL, F2L y ZBLL.",
+          "Cubo inteligente: conecta el cubo y lee tus movimientos para ver si ejecutaste bien el algoritmo.",
+          "Reconocimiento de PLL: escribes la letra del caso con el teclado, sin resolver. Mide lo rápido que reconoces.",
+          "Eficiencia de cross: compara cuántos movimientos usaste para la cruz con la solución más corta.",
+          "OLLCP: practicas además reconocer la permutación de esquinas durante el OLL."
+        ],
+        "notes": [
+          "El modo de reconocimiento de PLL tiene su propio historial, sus ajustes y un glosario; en la página de historial puedes comparar rondas anteriores.",
+          "Practicar algoritmos con cubo inteligente y descargar los algoritmos con sus alternativas en PDF requieren Pro."
+        ]
+      },
+      "smart-cube": {
+        "title": "Cubo inteligente",
+        "body": [
+          "Zkt Timer reconoce cubos inteligentes de estas marcas:",
+          "Una vez conectado, el estado del cubo aparece en pantalla en 3D. El cronómetro arranca al girar el cubo y para solo cuando el cubo queda resuelto."
+        ],
+        "steps": [
+          "Enciende el cubo y mantenlo cerca del dispositivo.",
+          "En la página del cronómetro, elige Cubo inteligente en el menú de tipo de cronómetro.",
+          "Pulsa Buscar y elige tu cubo en la lista.",
+          "En la primera conexión, deja el cubo resuelto y sincronízalo."
+        ],
+        "notes": [
+          "En el navegador hace falta Web Bluetooth: usa Chrome o Edge, Safari no lo admite. Las apps de iOS y Android no tienen esa limitación.",
+          "Si el cubo de la pantalla se desvía del real, deja el cubo resuelto y vuelve a sincronizar. Si se corta la conexión, apaga y enciende el cubo y busca otra vez.",
+          "El análisis paso a paso después de un resuelve viene con Pro: tiempos de Cross, F2L, OLL y PLL, número de movimientos, movimientos por segundo y una repetición del resuelve."
+        ]
+      },
+      "mobile": {
+        "title": "Uso en el móvil",
+        "body": [
+          "En el móvil los menús están en unas muescas finas en los bordes de la pantalla. Toca la muesca derecha o desliza hacia la izquierda desde ella: ahí están el cronómetro, las estadísticas, el entrenador, las salas y las demás páginas. La muesca izquierda abre los ajustes rápidos.",
+          "Mantén pulsada una muesca para subirla o bajarla. Las muescas se ocultan mientras el cronómetro corre, así no se abren sin querer."
+        ],
+        "notes": [
+          "Para volver atrás desde una página, desliza hacia la derecha desde el borde izquierdo. En la página del cronómetro está desactivado, porque allí el borde izquierdo es de la muesca de ajustes rápidos. En la app de Android lo hace el botón atrás del propio sistema."
+        ]
+      },
+      "rooms": {
+        "title": "Salas",
+        "body": [
+          "Las salas sirven para resolver el mismo scramble que tus amigos. Todos reciben el mismo scramble y los tiempos aparecen en la pantalla de todos.",
+          "Una sala admite 8 personas por defecto y el propietario puede subirlo hasta 16. Puedes hacerla privada y ponerle contraseña. Está todo desde 2x2 hasta 7x7, además de Clock, Megaminx, Pyraminx, Skewb, Square-1 y FTO.",
+          "El propietario elige qué tipos de cronómetro se permiten. El cubo inteligente, el GAN Timer y el QiYi Timer piden Pro dentro de las salas; el teclado, el StackMat, QYtoys y la entrada manual están abiertos a todos.",
+          "Si prefieres mirar en vez de resolver, puedes pasar a modo espectador. Los espectadores no retrasan la ronda."
+        ],
+        "steps": [
+          "Abre una sala nueva desde la página de salas, o entra en una que ya exista con su enlace.",
+          "El propietario elige el tipo de cubo y empieza la ronda.",
+          "Tu tiempo se comparte solo al terminar. Cuando todos los de la sala han resuelto, el siguiente scramble llega por su cuenta.",
+          "Si se registra un tiempo equivocado, solo puedes corregir o borrar tu resuelve más reciente. Un tiempo corregido lleva una marca de lápiz en la tabla."
+        ],
+        "notes": [
+          "Hay tres rangos: propietario, moderador y participante. Un moderador puede expulsar y bloquear participantes, pero no puede tocar a otro moderador ni al propietario. Solo el propietario nombra moderadores y cede la sala.",
+          "Toca el número de ronda, o cualquier tiempo de la tabla, para volver a ver el scramble de esa ronda.",
+          "Un mensaje del chat puede tener como mucho 500 caracteres.",
+          "Poner música en una sala requiere Pro."
+        ]
+      },
+      "battle": {
+        "title": "Duelo",
+        "body": [
+          "Duelo es un enfrentamiento de dos jugadores en un solo teléfono. La pantalla se parte por la mitad, el lado del jugador de enfrente se pone del revés, y dos personas se sientan cara a cara y resuelven el mismo scramble. Solo en móvil.",
+          "La ronda no empieza hasta que los dos jugadores mantienen pulsada la pantalla y se ponen listos. Cuando los dos están listos, cada uno levanta el dedo cuando quiere y su propio cronómetro arranca en ese momento.",
+          "Al terminar la ronda los tiempos se quedan en pantalla. La siguiente ronda se abre con un scramble nuevo en cuanto los dos vuelven a mantener pulsado."
+        ],
+        "steps": [
+          "Abre la página de Duelo y elige el tipo de cubo en la barra del centro.",
+          "Que los dos jugadores mantengan pulsado su lado; levantad los dedos cuando ambos estéis listos.",
+          "Toca la pantalla para parar. Añade una penalización de +2 o DNF si hace falta, y el marcador se corrige solo.",
+          "Usa el botón de historial para repasar las rondas, los scrambles y quién ganó."
+        ],
+        "notes": [
+          "El menú permite cambiar de lado, sacar un scramble nuevo, borrar la última ronda o empezar un duelo desde cero.",
+          "El tiempo, el scramble, los nombres, las estadísticas, el marcador y la racha de victorias se pueden apagar por separado.",
+          "Las rondas de duelo se quedan en el dispositivo y no se guardan en tu historial de resuelves."
+        ]
+      },
+      "messages": {
+        "title": "Mensajes",
+        "body": [
+          "En Mensajes hablas uno a uno con otros usuarios de Zkt Timer. Para empezar una conversación, busca un nombre de usuario y elige a la persona.",
+          "Quien te escribe por primera vez no entra directamente en tu bandeja; espera en la pestaña Solicitudes. Si aceptas, la conversación pasa a tu bandeja. Si prefieres que no, puedes borrarla o bloquear a esa persona.",
+          "Puedes adjuntar uno de tus resuelves a una conversación. La otra persona ve el tiempo y puede abrir el detalle del resuelve.",
+          "Los ajustes de mensajes están en Social, dentro de la sección de cuenta: quién puede escribirte, si apareces en la búsqueda de mensajes, las confirmaciones de lectura, el indicador de escritura y el punto de conexión. Tu lista de bloqueados también está ahí."
+        ],
+        "steps": [
+          "Pulsa Nuevo mensaje y empieza a escribir un nombre de usuario; la búsqueda funciona a partir de dos letras.",
+          "Escribe tu mensaje. Usa el botón de adjuntar si quieres compartir un resuelve.",
+          "Puedes editar un mensaje que enviaste, o retirarlo. Al retirarlo también desaparece para la otra persona.",
+          "Denuncia una conversación que te moleste, o bloquea a la persona."
+        ],
+        "notes": [
+          "Borrar un chat lo quita solo de tu lado; la otra persona conserva su copia.",
+          "Cuando denuncias, se envía a revisión una copia de los últimos cinco mensajes. Ningún otro mensaje tuyo se lee.",
+          "Puedes silenciar una conversación, filtrar la bandeja por no leídos y buscar en tu historial desde el cuadro de búsqueda."
+        ]
+      },
+      "competitions": {
+        "title": "Competiciones y clasificaciones",
+        "body": [
+          "La página de competiciones incluye tanto las de la WCA como las de Zeka Küpü Türkiye. Las próximas competiciones, las competiciones ZKT y el buscador están todos en la misma página. Si vinculaste tu cuenta WCA, tus propias inscripciones aparecen aparte en Mis competiciones.",
+          "Al abrir una competición tienes estas pestañas: Grupos (la lista de competidores y las asignaciones), resultados en directo, Eventos (rondas, formatos y cortes), Rankings, Horario (el programa completo) e Información.",
+          "Las competiciones ZKT usan la misma página; solo la pestaña en directo se llama ZKT Live en vez de WCA Live.",
+          "Al tocar a un competidor se abren su horario, sus grupos y sus tareas, con el arbitraje, el running y el scrambling por separado. Desde ahí también se llega a su página de mejores marcas."
+        ],
+        "notes": [
+          "La página de rankings es aparte y se basa en resultados WCA: Kinch Ranks y Sum of Ranks de single y de media. Para salir en esas listas necesitas una cuenta WCA vinculada.",
+          "La sección de récords muestra los récords rotos recientemente. Recibir avisos de récord, y seguir hasta cinco competidores en una competición, requiere Pro."
+        ]
+      },
+      "profile": {
+        "title": "Perfil",
+        "body": [
+          "Tu perfil es tu cara pública en Zkt Timer. Está en /user/tunombredeusuario y lo puede abrir cualquiera, con sesión iniciada o sin ella, así que basta con compartir el enlace.",
+          "Arriba están la foto de portada y la foto de perfil, y debajo la sección Sobre mí: biografía, enlaces de YouTube, Twitch y X, tu método de 3x3, tu objetivo, tu cubo principal y tu evento favorito.",
+          "Los récords se reparten en pestañas. Récords Personales vienen de los resuelves que hiciste en Zkt Timer. Récords Oficiales WCA y Récords ZKT vienen de las cuentas que vinculaste. La pestaña Resultados WCA lista tu historial de competiciones ronda por ronda.",
+          "Tus tiempos no aparecen solos en el perfil. Eliges uno por uno cuáles se muestran desde la pantalla de publicación."
+        ],
+        "steps": [
+          "Sube tu foto de perfil y tu foto de portada.",
+          "Abre Editar perfil y rellena tu biografía, tus enlaces sociales y los datos de tu cubo.",
+          "Para publicar récords personales, elige primero un nombre de usuario y después los tiempos que quieras mostrar.",
+          "Si vinculaste una cuenta WCA o ZKT, usa Gestionar datos para elegir qué aparece: número de competiciones, medallas, récords, ranking mundial e historial de competiciones."
+        ],
+        "notes": [
+          "Publicar tus récords personales en el perfil requiere Pro. Mostrar tus récords WCA y ZKT no lo necesita.",
+          "Crear Cuber Card genera una imagen para compartir que reúne tu número de competiciones, tus medallas y tus récords en un solo marco.",
+          "En el perfil de otra persona puedes enviarle un mensaje, copiar el enlace del perfil y denunciarla."
+        ]
+      },
+      "account": {
+        "title": "Ajustes de la cuenta",
+        "body": [
+          "La página de cuenta tiene siete secciones: Información personal, Notificaciones, Social, Cuentas vinculadas, Anuncios, Soporte y Zona de riesgo.",
+          "En Información personal cambias tu nombre, tu nombre de usuario y tu correo, y estableces tu contraseña. El cambio de correo se confirma con un código de seis dígitos enviado a la nueva dirección. Si creaste la cuenta con WCA, aquí también puedes poner una contraseña para entrar además con correo.",
+          "En Cuentas vinculadas conectas tus cuentas de ZKT y WCA. Una vez vinculada, las competiciones, los resultados y los récords de esa cuenta se ven dentro de Zkt Timer. El enlace para unirte a la comunidad de WhatsApp también está aquí.",
+          "Desde Soporte informas de un error, haces una pregunta o envías una sugerencia. El ticket funciona como una conversación: puedes responder, adjuntar una captura o un vídeo, cerrarlo cuando se resuelva y reabrirlo más tarde."
+        ],
+        "steps": [
+          "Para abrir un ticket, entra en Soporte dentro de la sección de cuenta y escribe un asunto y un mensaje.",
+          "Después de enviar el ticket puedes adjuntar una captura o un vídeo a la conversación.",
+          "Activa la opción de correo en Notificaciones si quieres enterarte de las respuestas por correo.",
+          "Cierra el ticket cuando tu problema esté resuelto; puedes reabrirlo más adelante si hace falta."
+        ],
+        "notes": [
+          "Un archivo por mensaje, hasta 25 MB. Las imágenes pueden ser PNG, JPEG, GIF o WebP; los vídeos MP4, WebM o MOV.",
+          "La Zona de riesgo tiene dos acciones. Restablecer los ajustes no toca tus resuelves ni tus sesiones, y tampoco tus tipos de cubo personalizados; solo devuelve los ajustes a sus valores por defecto. Eliminar la cuenta borra todos tus datos de forma permanente.",
+          "Para desvincular una cuenta conectada necesitas tener una contraseña puesta, si no te quedarías sin forma de entrar."
+        ]
+      },
+      "data": {
+        "title": "Datos y copias de seguridad",
+        "body": [
+          "Puedes traer datos desde estas fuentes:",
+          "Entra en Ajustes > Datos > Importar, elige la fuente y sube tu archivo.",
+          "La exportación está en el mismo sitio y escribe todos tus resuelves, sesiones y ajustes en un solo archivo.",
+          "Mientras tienes la sesión iniciada, tus resuelves se respaldan en el servidor. La aplicación sigue funcionando sin internet, y los resuelves pendientes se envían en cuanto vuelve la conexión.",
+          "Puedes borrar tu cuenta y todos tus datos de forma permanente desde la Zona de riesgo, en la sección de cuenta."
+        ]
+      },
+      "shortcuts": {
+        "title": "Atajos de teclado",
+        "body": [
+          "Los atajos funcionan en el ordenador con el cronómetro parado. En Mac puedes usar Command en lugar de Ctrl."
+        ]
+      },
+      "faq": {
+        "title": "Preguntas frecuentes",
+        "body": []
+      }
+    },
+    "search_placeholder": "Buscar en la ayuda",
+    "search_no_results": "Nada coincide con \"{{query}}\". Prueba otra palabra."
+  },
+  "anon": {
+    "banner_text": "Tus solves se guardan en este dispositivo. Crea una cuenta para acceder desde cualquier sitio.",
+    "banner_text_with_count": "Tienes {{count}} solves en este dispositivo. Crea una cuenta para no perderlos.",
+    "banner_cta": "Crear cuenta",
+    "banner_dismiss": "Cerrar",
+    "transfer_title": "Pasa tus solves a tu cuenta",
+    "transfer_body": "Hay {{count}} solves en este dispositivo que no están vinculados a tu cuenta. ¿Los pasamos?",
+    "transfer_confirm": "Pasarlos",
+    "transfer_cancel": "Ahora no",
+    "transfer_working": "Pasando",
+    "transfer_partial": "Algunos no se pudieron pasar. Tus solves siguen en este dispositivo, puedes intentarlo más tarde.",
+    "transfer_close": "Vale"
+  },
+  "account_required": {
+    "eyebrow": "Cuenta",
+    "title": "Esta sección necesita una cuenta",
+    "cta": "Crear cuenta",
+    "stats": "Las estadísticas vinculan tu historial a tu cuenta: medias, récords, mapa de actividad y análisis por puzzle. Con una cuenta, todo esto se llena con tus propios datos.",
+    "rooms": "Las salas sirven para resolver la misma mezcla que tus amigos. Los tiempos aparecen en la pantalla de los demás, por eso hace falta una identidad.",
+    "trainer": "El entrenador guarda tiempos y aciertos por cada algoritmo, para que los casos flojos salgan a la superficie. Ese progreso necesita una cuenta donde vivir.",
+    "competition_detail": "La página de una competición muestra el horario, los grupos, las asignaciones y los resultados en directo. Con tu cuenta WCA vinculada, también verás tus propios grupos y tareas."
   }
 }

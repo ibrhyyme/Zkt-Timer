@@ -1,0 +1,62 @@
+@import '../../../styles/config';
+
+.#{$namespace}-landing-help-diagram {
+	margin: 18px 0 6px;
+
+	svg {
+		display: block;
+		width: 100%;
+		max-width: 460px;
+		height: auto;
+	}
+
+	&__frame {
+		fill: none;
+		stroke: rgba(var(--text-color), 0.2);
+		stroke-width: 1.5;
+	}
+
+	&__region {
+		rect {
+			fill: rgba(var(--text-color), 0.07);
+			stroke: rgba(var(--text-color), 0.14);
+			stroke-width: 1;
+		}
+
+		text {
+			fill: rgba(var(--text-color), 0.9);
+			font-size: 9px;
+			font-weight: 600;
+		}
+
+		// Supporting areas sit back so the eye lands on the primary ones first.
+		&--dim rect {
+			fill: rgba(var(--text-color), 0.035);
+		}
+
+		&--dim text {
+			fill: rgba(var(--text-color), 0.62);
+		}
+	}
+
+	&__notch {
+		fill: rgb(var(--primary-color));
+	}
+
+	&__leader {
+		stroke: rgba(var(--text-color), 0.35);
+		stroke-width: 1;
+	}
+
+	&__callout {
+		fill: rgba(var(--text-color), 0.9);
+		font-size: 9px;
+		font-weight: 600;
+	}
+
+	figcaption {
+		margin-top: 8px;
+		font-size: 0.82rem;
+		color: rgba(var(--text-color), 0.7);
+	}
+}

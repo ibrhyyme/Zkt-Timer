@@ -18,6 +18,7 @@ import {deleteAllTopAverages, deleteAllTopSolves, deleteTopAverage, deleteTopSol
 import {deleteSolveMethodSteps} from '../models/solve_method_step';
 import {generateRandomString} from '../../shared/code';
 import {createSolveView, deleteSolveViewsBySolveId} from '../models/solve_view';
+import {invalidSolveTimeFields} from '../../shared/solve';
 import {ErrorCode} from '../constants/errors';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
@@ -222,6 +223,15 @@ export const mutateActions = {
 		const solve = await getBasicSolve(id);
 		if (!solve || solve.user_id !== user.id) {
 			throw new GraphQLError(ErrorCode.NOT_FOUND);
+		}
+
+		// Same rule the type-graphql layer enforces on create. Solve mutations are split
+		// across two resolver layers, and validation that lands on only one of them is how
+		// this pair drifted apart before: create refused the DNF sentinel while update let
+		// it through, so which write path a solve took decided whether it was storable.
+		const invalidTimes = invalidSolveTimeFields(input);
+		if (invalidTimes.length) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${invalidTimes[0]}`);
 		}
 
 		// These two fields can't be updated by the user

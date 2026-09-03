@@ -19,9 +19,24 @@ import { useMe } from '../../util/hooks/useMe';
 import PageTitle from '../common/page_title/PageTitle';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
+import AccountRequired from '../common/account_required/AccountRequired';
 import './RoomsList.scss';
 
 export default function RoomsList() {
+    const { t } = useTranslation();
+    const me = useMe();
+
+    // Gate here, not inside RoomsListContent: that component opens a socket and
+    // starts polling on mount, and a signed-out visitor has no business doing either.
+    if (!me) {
+        return (
+            <div className="rooms-list-page">
+                <PageTitle pageName={t('rooms.page_title')} />
+                <AccountRequired descriptionKey="account_required.rooms" />
+            </div>
+        );
+    }
+
     return (
         <OfflineGuard>
             <RoomsListContent />

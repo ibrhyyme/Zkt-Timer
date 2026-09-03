@@ -276,9 +276,11 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		]
 	} : null;
 
-	// FAQPage schema - shown on homepage
+	// FAQPage schema — emitted on /help, the only page that actually renders these
+	// answers. It used to sit on the homepage, where the copy was never displayed;
+	// Google requires FAQ markup to match content visible to the reader.
 	const faqItems = t('seo.faq', { returnObjects: true });
-	const faqSchema = (currentPath === '/' || currentPath === '') && Array.isArray(faqItems) && faqItems.length > 0 ? {
+	const faqSchema = currentPath === '/help' && Array.isArray(faqItems) && faqItems.length > 0 ? {
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
 		'mainEntity': faqItems.map((item: { q: string; a: string }) => ({

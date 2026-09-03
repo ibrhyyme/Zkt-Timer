@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client';
 import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
 import { gqlMutate, gqlQuery } from '../../../../api';
+import { invalidSolveTimeFields } from '../../../../../../shared/solve';
 
 /**
  * Content fingerprints of everything already stored server-side, so the importer
@@ -43,11 +44,20 @@ export interface ChunkError {
 	chunkIndex: number;
 	itemRange: string;
 	error: string;
+	// The rows this chunk actually tried to upload. A retry needs the rows themselves:
+	// reconstructing them as `list.slice(chunkIndex * CHUNK_SIZE, ...)` only holds while
+	// the retry list is identical to the uploaded one, and it silently retries the wrong
+	// slice as soon as anything is filtered out before chunking.
+	items?: SolveInput[];
 }
 
 export interface ChunkedImportResult {
 	successCount: number;
 	failureCount: number;
+	// Rows dropped before any request was made because the server could not store them.
+	// Counted apart from failures: a failure is a round trip that went wrong and is worth
+	// retrying, a skip is a row that will be refused every time it is offered.
+	skippedCount: number;
 	errors: ChunkError[];
 }
 
@@ -75,6 +85,7 @@ export async function importSessionsInChunks(
 	const result: ChunkedImportResult = {
 		successCount: 0,
 		failureCount: 0,
+		skippedCount: 0,
 		errors: [],
 	};
 
@@ -125,14 +136,35 @@ export async function importSolvesInChunks(
 	solves: SolveInput[],
 	onProgress: ProgressCallback
 ): Promise<ChunkedImportResult> {
-	const chunks = chunkArray(solves, CHUNK_SIZE);
+	// Drop rows the server cannot store before spending a request on them. Same rule the
+	// server rejects on (shared/solve.ts), so this can never filter out something that
+	// would have been accepted. Without it a single unstorable row rides along in a chunk
+	// and, on a server that refuses the whole batch, takes 99 good solves down with it.
+	const storable: SolveInput[] = [];
+	const unstorable: SolveInput[] = [];
+	for (const solve of solves) {
+		if (invalidSolveTimeFields(solve).length) {
+			unstorable.push(solve);
+		} else {
+			storable.push(solve);
+		}
+	}
+
+	const chunks = chunkArray(storable, CHUNK_SIZE);
 	const totalChunks = chunks.length;
 
 	const result: ChunkedImportResult = {
 		successCount: 0,
 		failureCount: 0,
+		skippedCount: unstorable.length,
 		errors: [],
 	};
+
+	// Deliberately not pushed into `errors`: those drive the retry button, and offering to
+	// retry a row the server will refuse every time is a loop, not a recovery.
+	if (unstorable.length) {
+		console.warn(`[Solves] Skipping ${unstorable.length} unstorable solve(s)`, unstorable.slice(0, 20));
+	}
 
 	const query = gql`
 		mutation Mutate($solves: [SolveInput]) {
@@ -152,14 +184,15 @@ export async function importSolvesInChunks(
 			console.log(`[Solves] Chunk ${i + 1} response:`, response);
 			result.successCount++;
 
-			// Report progress
+			// Progress is measured against what is actually being uploaded, not the caller's
+			// list. Otherwise a run with skipped rows stops short of 100%.
 			onProgress({
 				type: 'solves',
 				currentChunk: i + 1,
 				totalChunks,
 				itemsProcessed: endIdx,
-				totalItems: solves.length,
-				percentComplete: Math.round((endIdx / solves.length) * 100),
+				totalItems: storable.length,
+				percentComplete: Math.round((endIdx / storable.length) * 100),
 			});
 		} catch (error) {
 			console.error(`[Solves] Chunk ${i + 1} failed:`, error);
@@ -169,6 +202,7 @@ export async function importSolvesInChunks(
 				chunkIndex: i,
 				itemRange: `${startIdx + 1}-${endIdx}`,
 				error: error.message || String(error),
+				items: chunk,
 			});
 		}
 	}

@@ -89,7 +89,15 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 	);
 }
 
-export default function HeaderNav() {
+interface Props {
+	// The theme switch writes through the settings database. Pages that render this
+	// nav outside the App shell (help) have no settings database loaded, so the
+	// button would look live and do nothing — those pass this instead.
+	hideThemeToggle?: boolean;
+}
+
+export default function HeaderNav(props: Props = {}) {
+	const {hideThemeToggle} = props;
 	const dispatch = useDispatch();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -241,7 +249,7 @@ export default function HeaderNav() {
 					{notifications}
 					<AccountDropdown />
 					<LanguageSwitcher />
-					<ThemeToggle />
+					{hideThemeToggle ? null : <ThemeToggle />}
 					<StreamerModeToggle />
 					{me && <LoginNav collapsed={false} />}
 				</div>

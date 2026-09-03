@@ -5,6 +5,7 @@ import Giiker from './giiker';
 import MoYu from './moyu';
 import MoYu32 from './moyu32';
 import QiYi from './qiyi';
+import { SMART_CUBE_NAME_PREFIXES } from './supported_cubes';
 import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
 import { setTimerParams } from '../../helpers/params';
@@ -54,18 +55,10 @@ export default class Connect extends SmartCube {
 	_cancelled = false;
 
 	_deviceOptions = {
-		nameFilters: [
-			// Giiker / Xiaomi
-			'Gi', 'Mi Smart Magic Cube', 'Hi-',
-			// GAN family (GAN cube + Monster Go AI + AiCube)
-			'GAN', 'Gan', 'gan', 'MG', 'AiCube',
-			// Particula (GoCube + Rubik's Connected)
-			'GoCube', 'Rubiks',
-			// MoYu MHC + MoYu WeiLong AI 2024
-			'MHC', 'WCU_MY3',
-			// QiYi Smart Cube + Tornado V4 i
-			'QY-QYSC', 'XMD-TornadoV4-i',
-		],
+		// Derived, never typed out again: see supported_cubes.ts. Both adapters treat this
+		// as an unordered set (Web Bluetooth ORs the filters, the Capacitor one calls
+		// `.some`), so flattening loses nothing.
+		nameFilters: SMART_CUBE_NAME_PREFIXES,
 		serviceFilters: [],
 		optionalServices: [
 			'0000180a-0000-1000-8000-00805f9b34fb', // device_information

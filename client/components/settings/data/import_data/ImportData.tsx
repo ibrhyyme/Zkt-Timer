@@ -14,23 +14,13 @@ import { parseCubeTimeData } from './parse_data/cubetime';
 import TwistyTimerInstructions from './instructions/TwistyTimerInstructions';
 import CubeTimeInstructions from './instructions/CubeTimeInstructions';
 import { ImportProgress, ChunkedImportResult } from './review_import/chunked_import';
+import { ImportDataType, IMPORT_TYPE_NAMES } from './import_sources';
 
 const b = block('import-data');
 
-export enum ImportDataType {
-	CS_TIMER,
-	ZKT_TIMER,
-	TWISTY_TIMER,
-	CUBE_TIME,
-}
-
-// DataSettings.tsx openModal title'inda kullaniyor — kaynak app ismi.
-export const IMPORT_TYPE_NAMES: Record<ImportDataType, string> = {
-	[ImportDataType.CS_TIMER]: 'csTimer',
-	[ImportDataType.ZKT_TIMER]: 'Zkt Timer',
-	[ImportDataType.TWISTY_TIMER]: 'Twisty Timer',
-	[ImportDataType.CUBE_TIME]: 'CubeTime',
-};
+// Moved to import_sources.ts so the help page can list the sources without importing the
+// parsers; re-exported here because everything else already imports them from this file.
+export { ImportDataType, IMPORT_TYPE_NAMES };
 
 export interface ImportableData {
 	solves: SolveInput[];

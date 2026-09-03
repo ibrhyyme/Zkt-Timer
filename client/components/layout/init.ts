@@ -11,7 +11,7 @@ import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, saveLokiDb, setDbLoadDegraded, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, isMobileViewport, AllSettings, isGlobalSetting, isLocalOnlySetting } from '../../db/settings/query';
-import { getLokiDb, initLokiDb } from '../../db/lokijs';
+import { ANON_DB_NAME, getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScrambleAsync } from '../timer/helpers/scramble';
 import { Solve } from '../../../server/schemas/Solve.schema';
@@ -31,7 +31,12 @@ import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
 import { onVisibilityChange } from '../../util/app-visibility';
 import { isPro, isProEnabled } from '../../lib/pro';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
-import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
+import {
+	CHUNK_SIZE,
+	ChunkedImportResult,
+	importSessionsInChunks,
+	importSolvesInChunks,
+} from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
 import { getSolveTombstones } from '../../util/solve-tombstones';
 import * as Sentry from '@sentry/browser';
@@ -91,31 +96,77 @@ function reportBootTimeout(label: string, ms: number) {
 	} catch (e) {}
 }
 
+// A slow disk should not hold the timer hostage; boot with what we have and let the
+// read finish (or not) in the background. Same reasoning as initOfflineData's guard,
+// with a shorter budget because an anonymous database is small by construction.
+const ANON_DB_LOAD_TIMEOUT_MS = 5000;
+
+/**
+ * Boot for a visitor with no account.
+ *
+ * Their solves persist to IndexedDB like anyone else's — the write path already
+ * exists, since `postProcessDbUpdate` calls `saveLokiDb()` whenever `canReadSync()`
+ * is false. What it does NOT do is reach the server: `canWriteSync()` is `!!me`, so
+ * no mutation ever leaves the device.
+ *
+ * The data lives in its own database (ANON_DB_NAME). See the note in db/lokijs.ts:
+ * sharing one with signed-in data would leak solves between accounts.
+ */
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
 		return;
 	}
 
-	initLokiDb({
-		autoload: false,
-		autosave: false,
-		autosaveInterval: undefined,
-		adapter: undefined,
-		disableAdapter: true, // Don't persist data for anonymous users
+	initLokiDb(
+		{
+			autoload: false,
+			autosave: false,
+			autosaveInterval: undefined,
+		},
+		ANON_DB_NAME
+	);
+
+	let finished = false;
+	function finish() {
+		if (finished) return;
+		finished = true;
+
+		const localSettings = getAllLocalSettings('_anon');
+		const settingValues = Object.keys(localSettings).map((key) => ({
+			id: key,
+			local: true,
+			value: localSettings[key],
+		}));
+		initSettingsDb(settingValues);
+		initSessionCollection();
+		// No forceRefresh: that drops the `solves` collection, which would throw away
+		// everything loadDatabase just restored.
+		initSolvesCollection();
+		ensureLocalDefaultSession();
+
+		callback();
+	}
+
+	const db = getLokiDb();
+	if (!db?.persistenceAdapter) {
+		// No IndexedDB (private mode, old WebView): the session still works, it just
+		// will not survive a reload.
+		finish();
+		return;
+	}
+
+	const timeout = setTimeout(() => {
+		reportBootTimeout('anon_db_load', ANON_DB_LOAD_TIMEOUT_MS);
+		finish();
+	}, ANON_DB_LOAD_TIMEOUT_MS);
+
+	db.loadDatabase(undefined, (err) => {
+		clearTimeout(timeout);
+		if (err) {
+			console.error('[Anon] loadDatabase error:', err);
+		}
+		finish();
 	});
-
-	const localSettings = getAllLocalSettings('_anon');
-	const settingValues = Object.keys(localSettings).map((key) => ({
-		id: key,
-		local: true,
-		value: localSettings[key],
-	}));
-	initSettingsDb(settingValues);
-	initSessionCollection();
-	initSolvesCollection(true);
-	ensureLocalDefaultSession();
-
-	callback();
 }
 
 export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, callback): Promise<any> {
@@ -1232,6 +1283,7 @@ async function backfillLocalDataToServer(): Promise<void> {
 	// this check a solve deleted on another device gets re-uploaded here forever.
 	const tombstoned = getSolveTombstones();
 	const missingSolves = localSolves.filter((s) => !serverSolveIds.has(s.id) && !tombstoned.has(s.id));
+	let solveResult: ChunkedImportResult | null = null;
 	if (missingSolves.length > 0) {
 		const solveInputs = missingSolves.map((s) => ({
 			id: s.id,
@@ -1258,13 +1310,29 @@ async function backfillLocalDataToServer(): Promise<void> {
 			smart_pick_up_time: s.smart_pick_up_time,
 			inspection_time: s.inspection_time,
 		}));
-		const result = await importSolvesInChunks(solveInputs, () => {});
-		if (result.failureCount > 0) {
-			console.error('[Backfill] Solve chunks failed', result.errors);
+		solveResult = await importSolvesInChunks(solveInputs, () => {});
+		if (solveResult.failureCount > 0) {
+			console.error('[Backfill] Solve chunks failed', solveResult.errors);
 		}
 	}
 
 	if (missingSessions.length > 0 || missingSolves.length > 0) {
-		console.log(`[Backfill] Uploaded ${missingSessions.length} sessions, ${missingSolves.length} solves`);
+		// What actually landed, not what was attempted. The previous line reported the size
+		// of the batch, so a run where every chunk was rejected still printed "Uploaded 6
+		// solves", which is what made a two-month sync outage look like a healthy backfill.
+		const uploadedSolves = missingSolves.length - failedSolveCount(solveResult) - (solveResult?.skippedCount ?? 0);
+		console.log(
+			`[Backfill] Uploaded ${missingSessions.length} sessions, ${uploadedSolves}/${missingSolves.length} solves` +
+				(solveResult?.skippedCount ? ` (${solveResult.skippedCount} unstorable, skipped)` : '')
+		);
 	}
+}
+
+// A failed chunk takes every solve in it down, so the loss is chunk count times chunk size,
+// bounded by what was actually sent.
+function failedSolveCount(result: ChunkedImportResult | null): number {
+	if (!result) return 0;
+	return result.errors
+		.filter((e) => e.type === 'solves')
+		.reduce((total, e) => total + (e.items?.length ?? CHUNK_SIZE), 0);
 }

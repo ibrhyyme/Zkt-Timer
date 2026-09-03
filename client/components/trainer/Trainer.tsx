@@ -12,6 +12,8 @@ import TrainingArea from './panels/training_area/TrainingArea';
 import StatsPanel from './panels/stats_panel/StatsPanel';
 import TrainerToolbar from './toolbar/TrainerToolbar';
 import TrainerLanding from './TrainerLanding';
+import AccountRequired from '../common/account_required/AccountRequired';
+import {useMe} from '../../util/hooks/useMe';
 import RecognitionRoot from './recognition/RecognitionRoot';
 import EfficiencyRoot from './efficiency/EfficiencyRoot';
 import OllcpRoot from './ollcp/OllcpRoot';
@@ -26,6 +28,7 @@ const b = block('trainer');
 
 function TrainerContent() {
 	const {state} = useTrainerContext();
+	const me = useMe();
 
 	// URL ↔ reducer synchronization (mode + standard/smart view). Replaces old manual pushState/popstate
 	// hack; back/forward, deep-link, refresh and mobile swipe-back now work correctly.
@@ -33,6 +36,12 @@ function TrainerContent() {
 
 	if (state.view === 'landing') {
 		return <TrainerLanding />;
+	}
+
+	// The landing stays open to everyone (it is an SEO surface), but a training
+	// session records attempts against an account, so this is where the line is.
+	if (!me) {
+		return <AccountRequired descriptionKey="account_required.trainer" />;
 	}
 
 	// Recognition mode manages all its own views

@@ -280,6 +280,27 @@
 		white-space: nowrap;
 	}
 
+	// Its own row between the store badges and the account actions.
+	&__try-cta {
+		width: 100%;
+		max-width: 22rem;
+		margin: 0 auto 1rem;
+
+		// The desktop hero column is left-aligned (logo, headline, store badges all
+		// start at the same edge), so the button follows that edge instead of
+		// centring itself against it.
+		.#{$namespace}-welcome-hero__actions-desktop & {
+			margin-left: 0;
+			margin-top: 1.25rem;
+			margin-bottom: 0;
+		}
+
+		.zt-common-button__wrapper,
+		.zt-common-button {
+			width: 100%;
+		}
+	}
+
 	&__auth-buttons {
 		display: flex;
 		flex-direction: row;

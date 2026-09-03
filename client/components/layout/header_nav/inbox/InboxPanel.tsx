@@ -179,7 +179,20 @@ export default function InboxPanel() {
 	const [results, setResults] = useState<Recipient[]>([]);
 	const [searching, setSearching] = useState(false);
 
+	// `load` is fired from seven places (mount, socket events, manual refresh) and issues
+	// four parallel requests, so the panel is routinely closed while they are still in
+	// flight. A ref rather than a per-effect cancelled flag: the guard has to cover every
+	// caller, not only the one that runs on mount.
+	const mountedRef = useRef(true);
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
+
 	const load = useCallback(async () => {
+		if (!mountedRef.current) return;
 		setLoading(true);
 		try {
 			const [convRes, notifRes, annRes, countRes] = await Promise.all([
@@ -218,6 +231,8 @@ export default function InboxPanel() {
 				})),
 			].sort((x, y) => y.date - x.date);
 
+			if (!mountedRef.current) return;
+
 			setRows(merged);
 			// Notifications and announcements are not tracked by useInbox, so their
 			// unread counts are folded into the badge here.
@@ -225,7 +240,9 @@ export default function InboxPanel() {
 			setExtraUnread(notifUnread + announcements.filter((a) => !a.hasViewed && !hidden.has(a.id)).length);
 			setLoaded(true);
 		} finally {
-			setLoading(false);
+			if (mountedRef.current) {
+				setLoading(false);
+			}
 		}
 	}, []);
 

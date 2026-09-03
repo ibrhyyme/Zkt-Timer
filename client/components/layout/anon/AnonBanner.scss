@@ -1,0 +1,66 @@
+@import '../../../styles/config';
+
+.#{$namespace}-anon-banner {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 14px;
+	margin-bottom: 14px;
+	border-radius: 10px;
+	border: 1px solid rgba(var(--primary-color), 0.35);
+	background: rgba(var(--primary-color), 0.1);
+	color: rgb(var(--text-color));
+	font-size: 0.9rem;
+
+	&__text {
+		flex: 1;
+		min-width: 0;
+		line-height: 1.35rem;
+	}
+
+	&__cta {
+		flex-shrink: 0;
+		padding: 5px 12px;
+		border-radius: 8px;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+
+		&:hover {
+			opacity: 0.9;
+		}
+	}
+
+	&__dismiss {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		padding: 0;
+		border: none;
+		border-radius: 6px;
+		background: transparent;
+		color: rgba(var(--text-color), 0.6);
+		cursor: pointer;
+
+		&:hover {
+			color: rgb(var(--text-color));
+			background: rgba(var(--text-color), 0.08);
+		}
+	}
+
+	@include bp-down($bp-md) {
+		flex-wrap: wrap;
+		gap: 8px;
+
+		&__text {
+			// Keeps the button and the close control on one row beneath the sentence
+			// instead of squeezing all three into a phone width.
+			flex-basis: 100%;
+		}
+	}
+}

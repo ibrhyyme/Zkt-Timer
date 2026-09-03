@@ -95,6 +95,11 @@
 			// Both tooltips can be visible at once on first launch. Keep each one
 			// inside the viewport instead of letting nowrap push it off-screen.
 			max-width: calc(100vw - 90px);
+			// Without this the shrink-to-fit width is derived from the notch (8px of
+			// content), so every tooltip collapsed to its longest word and rendered as
+			// a ~78px wide, 200px tall vertical strip. max-content sizes to the text;
+			// max-width above still keeps it on screen.
+			width: max-content;
 			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 			display: flex;
 			flex-direction: column;
@@ -168,6 +173,12 @@
 
 		&--no-transition {
 			transition: none !important;
+		}
+
+		// The first-run peek is a hint, not an interaction. The sliver that pokes
+		// out must not swallow taps aimed at the page behind it.
+		&--peeking .#{$namespace}-edge-drawer__grid {
+			pointer-events: none;
 		}
 	}
 

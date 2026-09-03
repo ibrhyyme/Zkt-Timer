@@ -164,6 +164,9 @@ export default function WelcomeFooter() {
 						</a>
 					</div>
 					<div className={b('nav')}>
+						<a onClick={() => history.push('/help')} className={b('nav-link')}>
+							{t('welcome_footer.help')}
+						</a>
 						<a onClick={() => history.push('/privacy')} className={b('nav-link')}>
 							{t('welcome_footer.privacy')}
 						</a>

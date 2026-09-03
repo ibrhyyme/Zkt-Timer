@@ -42,7 +42,9 @@ export default function Welcome() {
 	const ogImage = `${SITE_URL}/public/welcome/web/timer.jpeg`;
 
 	const lang = i18n.language || 'en';
-	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, faqSchema } = getStructuredData('/', title, desc, t, lang);
+	// No faqSchema here: the FAQ answers are rendered on /help, and that is where
+	// the FAQPage markup now lives.
+	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema } = getStructuredData('/', title, desc, t, lang);
 
 	return (
 		<>
@@ -77,7 +79,6 @@ export default function Welcome() {
 				<script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
 				<script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
 				<script type="application/ld+json">{JSON.stringify(navigationSchema)}</script>
-				{faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
 			</Helmet>
 
 			<div className="zt-welcome min-h-screen bg-[#050505] text-white">

@@ -5,6 +5,7 @@ import block from '../../../../styles/bem';
 import {useWindowListener} from '../../../../util/hooks/useListener';
 import {ColorName} from '../../../../../shared/colors';
 import LanguageSwitcher from '../../../common/language_switcher/LanguageSwitcher';
+import {useMe} from '../../../../util/hooks/useMe';
 
 const b = block('landing-nav');
 
@@ -25,20 +26,33 @@ interface NavLinkProps {
 export default function LandingNav(props: Props) {
 	const {showBorder} = props;
 	const {t} = useTranslation();
+	const me = useMe();
 
-	const NAV_REST_LINKS: NavLinkProps[] = [
-		{
-			label: t('landing_nav.login'),
-			link: '/login',
-			permanent: true,
-		},
-		{
-			label: t('landing_nav.signup'),
-			link: '/signup',
-			color: 'primary',
-			permanent: true,
-		},
-	];
+	// Signed-in readers reach these pages too (help, credits, terms) and used to be
+	// shown "Log in / Sign up", which reads as having been signed out. They get a way
+	// back into the app instead.
+	const NAV_REST_LINKS: NavLinkProps[] = me
+		? [
+				{
+					label: t('landing_nav.open_app'),
+					link: '/timer',
+					color: 'primary',
+					permanent: true,
+				},
+		  ]
+		: [
+				{
+					label: t('landing_nav.login'),
+					link: '/login',
+					permanent: true,
+				},
+				{
+					label: t('landing_nav.signup'),
+					link: '/signup',
+					color: 'primary',
+					permanent: true,
+				},
+		  ];
 
 	const [navSmall, setNavSmall] = useState(false);
 	const [scrolled, setScrolled] = useState(showBorder);
@@ -96,7 +110,8 @@ export default function LandingNav(props: Props) {
 		<div className={b({scrolled})}>
 			<div className={b('body')}>
 				<div className={b('links')}>
-					<LanguageSwitcher openLeft />
+					{/* Sits at the left of the bar, so the panel has to grow rightward. */}
+					<LanguageSwitcher align="start" />
 					{showNavLinks}
 				</div>
 			</div>

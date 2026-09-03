@@ -1,0 +1,388 @@
+@import '../../styles/config';
+
+// This page is its own shell: it renders HeaderNav itself rather than sitting inside
+// the App shell (which server-renders nothing) or the landing shell (which always
+// offers "log in / sign up" and paints a fixed dark ground). Because it is no longer
+// on that fixed ground, every colour here comes from the theme tokens and the page
+// follows light and dark like the rest of the product.
+$help-radius: 12px;
+
+.#{$namespace}-landing-help {
+	min-height: 100vh;
+	background: rgb(var(--background-color));
+	color: rgba(var(--text-color), 0.92);
+
+	// The content column. A wrapper rather than a `> *` rule: that version also hit
+	// the search box and overrode its own max-width, stretching it across the page.
+	&__shell {
+		width: 100%;
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 32px 20px 80px;
+	}
+
+	// Desktop only. On mobile PageTitle draws the heading (together with the avatar
+	// and the drawer notch), so showing this one as well would repeat it.
+	&__title {
+		font-weight: bold;
+		font-size: 2rem;
+		color: rgb(var(--text-color));
+		margin-bottom: 24px;
+
+		@include content-mobile {
+			display: none;
+		}
+	}
+
+	// Same shape as the settings modal's search field, in this page's palette.
+	&__search {
+		position: relative;
+		max-width: 420px;
+		margin-bottom: 28px;
+	}
+
+	&__search-icon {
+		position: absolute;
+		left: 12px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 16px;
+		height: 16px;
+		color: rgba(var(--text-color), 0.5);
+		pointer-events: none;
+	}
+
+	&__search-input {
+		width: 100%;
+		padding: 10px 14px 10px 36px;
+		border-radius: 12px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.95rem;
+
+		&::placeholder {
+			color: rgba(var(--text-color), 0.45);
+		}
+
+		&:focus {
+			outline: none;
+			border-color: rgba(var(--primary-color), 0.6);
+		}
+	}
+
+	&__empty {
+		padding: 32px 4px;
+		line-height: 1.6rem;
+		color: rgba(var(--text-color), 0.75);
+	}
+
+	&__layout {
+		display: grid;
+		grid-template-columns: 220px minmax(0, 1fr);
+		gap: 40px;
+		align-items: start;
+
+		// While searching the nav is not rendered, so the results take the full
+		// width instead of being squeezed into the second grid track.
+		&--searching {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	&__nav-column {
+		position: sticky;
+		// Clears the landing shell's fixed nav (66px); at a smaller offset the first
+		// item sits behind it and looks clipped.
+		top: 90px;
+	}
+
+	&__content {
+		min-width: 0;
+	}
+
+	// --- Section -------------------------------------------------------------
+
+	// One flat surface per section, matching SettingsCard's measurements. Deliberately
+	// no gradient, blur or glow: that page tried them and pulled them back out, because
+	// stacked they read as a template. Separation comes from the surface and the gap.
+	&__section {
+		scroll-margin-top: 96px;
+		padding: 26px;
+		margin-bottom: 14px;
+		border: 1px solid rgba(var(--text-color), 0.09);
+		border-radius: 14px;
+		background: rgba(var(--text-color), 0.035);
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__section-header {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin-bottom: 18px;
+	}
+
+	// Bare icon in the section's colour. It labels the card; it is not its decoration.
+	&__section-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-top: 2px;
+		color: rgb(var(--section-tone));
+
+		svg {
+			width: 21px;
+			height: 21px;
+		}
+	}
+
+	// Archivo is the app's display face, the same one page titles use.
+	&__section-title {
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 1.5rem;
+		font-weight: 500;
+		letter-spacing: -0.01em;
+		line-height: 1.15;
+		margin: 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__paragraph {
+		line-height: 1.6rem;
+		margin-bottom: 12px;
+	}
+
+	&__note {
+		line-height: 1.55rem;
+		margin-top: 12px;
+		padding: 12px 14px;
+		border-radius: $help-radius;
+		border: 1px solid rgba(var(--section-tone), 0.35);
+		background: rgba(var(--section-tone), 0.08);
+	}
+
+	// A numbered row rather than a bullet list: these are ordered procedures, and the
+	// index carries that better than a marker glyph.
+	&__steps {
+		list-style: none;
+		padding: 0;
+		margin: 16px 0 4px;
+	}
+
+	&__step {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		padding: 10px 0;
+
+		& + & {
+			border-top: 1px solid rgba(var(--text-color), 0.06);
+		}
+	}
+
+	&__step-index {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 22px;
+		height: 22px;
+		margin-top: 1px;
+		border-radius: 50%;
+		border: 1px solid rgba(var(--section-tone), 0.5);
+		background: rgba(var(--section-tone), 0.12);
+		color: rgb(var(--text-color));
+		font-size: 0.75rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__step-text {
+		line-height: 1.6rem;
+	}
+
+	// --- Shortcut table ------------------------------------------------------
+
+	// Wide rows scroll inside their own box rather than pushing the page sideways.
+	&__table-wrap {
+		overflow-x: auto;
+		margin-top: 8px;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+
+		td {
+			padding: 10px 12px;
+			border-top: 1px solid rgba(var(--text-color), 0.08);
+			vertical-align: middle;
+		}
+
+		tr:first-child td {
+			border-top: none;
+		}
+	}
+
+	&__table-keys {
+		white-space: nowrap;
+		width: 1%;
+	}
+
+	&__table-desc {
+		line-height: 1.5rem;
+
+		&--danger {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&__key {
+		display: inline-block;
+		padding: 3px 8px;
+		border-radius: 6px;
+		border: 1px solid rgba(var(--text-color), 0.22);
+		border-bottom-width: 2px;
+		background: rgba(var(--text-color), 0.07);
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__key-plus {
+		margin: 0 5px;
+		opacity: 0.55;
+	}
+
+	// Left column of the timer-type table. Names are short and must not wrap mid-word,
+	// but unlike the key column they are words, so they get weight rather than a keycap.
+	&__table-name {
+		width: 1%;
+		white-space: nowrap;
+		font-weight: 600;
+	}
+
+	// --- Inventory chips (supported cubes, import sources) ---------------------
+
+	// Names read out of the code that owns them. A plain wrapping row: these are labels
+	// to recognise at a glance, not rows to read top to bottom.
+	&__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 14px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__chip {
+		padding: 6px 12px;
+		border-radius: 999px;
+		border: 1px solid rgba(var(--section-tone), 0.32);
+		background: rgba(var(--section-tone), 0.1);
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	// --- FAQ -----------------------------------------------------------------
+
+	&__faq-item {
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: $help-radius;
+		margin-bottom: 8px;
+		background: rgba(var(--text-color), 0.03);
+
+		&[open] {
+			background: rgba(var(--text-color), 0.06);
+		}
+	}
+
+	&__faq-question {
+		list-style: none;
+		cursor: pointer;
+		padding: 14px 44px 14px 16px;
+		font-size: 1rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		position: relative;
+
+		// Safari draws its own disclosure triangle without this.
+		&::-webkit-details-marker {
+			display: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			right: 18px;
+			top: 50%;
+			width: 8px;
+			height: 8px;
+			border-right: 2px solid rgba(var(--text-color), 0.55);
+			border-bottom: 2px solid rgba(var(--text-color), 0.55);
+			transform: translateY(-75%) rotate(45deg);
+			transition: transform 0.15s ease;
+		}
+	}
+
+	&__faq-item[open] &__faq-question::after {
+		transform: translateY(-25%) rotate(225deg);
+	}
+
+	// Hierarchy comes from weight and size, not from fading the answer out.
+	&__faq-answer {
+		padding: 0 16px 16px;
+		line-height: 1.55rem;
+		color: rgba(var(--text-color), 0.92);
+	}
+
+	// --- Mobile --------------------------------------------------------------
+
+	@include bp-down($bp-lg) {
+		&__shell {
+			padding: 20px 16px 56px;
+		}
+
+		&__section {
+			padding: 20px;
+		}
+
+		&__layout {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 24px;
+		}
+
+		// Not sticky on purpose: a pinned strip ate a band of a short screen and the
+		// row of section names read as clutter above every heading. As a plain table
+		// of contents it is passed once and the rest of the screen stays content.
+		&__nav-column {
+			position: static;
+			top: auto;
+		}
+
+		&__section {
+			scroll-margin-top: 16px;
+		}
+
+		// PageTitle is built for the App shell: it paints --background-color and sits
+		// inside that shell's wrapper padding. Here the ground is the landing shell's
+		// flat #050505 and the page supplies its own padding, so the bar is bled back
+		// out to the screen edges and given the ground it actually sits on.
+		// PageTitle is built for the App shell, whose wrapper supplies the padding it
+		// cancels out with a negative margin. Here the page provides that padding
+		// itself, so the pull-back is removed and the bar keeps the page's ground.
+		.#{$namespace}-page-title {
+			margin-top: 0;
+			padding-top: 12px;
+			background-color: rgb(var(--background-color));
+		}
+	}
+}

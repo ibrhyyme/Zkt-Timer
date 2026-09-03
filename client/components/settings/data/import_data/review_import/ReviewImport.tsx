@@ -6,7 +6,7 @@ import { X } from 'phosphor-react';
 import { ImportDataContext } from '../ImportData';
 import Button from '../../../../common/button/Button';
 import { toastError, toastSuccess, toastWarning } from '../../../../../util/toast';
-import { CHUNK_SIZE, importSessionsInChunks, importSolvesInChunks } from './chunked_import';
+import { CHUNK_SIZE, ChunkedImportResult, importSessionsInChunks, importSolvesInChunks } from './chunked_import';
 import ImportProgressDisplay from './progress_display/ImportProgressDisplay';
 import ImportErrorSummary from './error_summary/ImportErrorSummary';
 import ImportSection from '../import_section/ImportSection';
@@ -140,6 +140,7 @@ export default function ReviewImport() {
 			const combinedResults = {
 				successCount: sessionResult.successCount + solveResult.successCount,
 				failureCount: sessionResult.failureCount + solveResult.failureCount,
+				skippedCount: sessionResult.skippedCount + solveResult.skippedCount,
 				errors: [...sessionResult.errors, ...solveResult.errors],
 			};
 
@@ -183,9 +184,10 @@ export default function ReviewImport() {
 			// uploaded, not to the raw parsed file.
 			const retrySolves = importedSolvesRef.current || data.solves;
 
-			let retryResult = {
+			let retryResult: ChunkedImportResult = {
 				successCount: results.successCount,
 				failureCount: 0,
+				skippedCount: results.skippedCount ?? 0,
 				errors: [],
 			};
 
@@ -219,10 +221,18 @@ export default function ReviewImport() {
 
 				retryResult.successCount += solveResult.successCount;
 				retryResult.failureCount += solveResult.failureCount;
+				retryResult.skippedCount += solveResult.skippedCount;
 				retryResult.errors.push(...solveResult.errors);
 			} else if (solveErrors.length > 0) {
 				const failedSolves = [];
 				for (const err of solveErrors) {
+					// The rows the failed chunk carried, when the run recorded them. Slicing by
+					// chunk index is the fallback for results produced before that existed, and
+					// only holds while the retry list matches the one that was uploaded.
+					if (err.items?.length) {
+						failedSolves.push(...err.items);
+						continue;
+					}
 					const start = err.chunkIndex * CHUNK_SIZE;
 					const end = start + CHUNK_SIZE;
 					failedSolves.push(...retrySolves.slice(start, end));
@@ -234,6 +244,7 @@ export default function ReviewImport() {
 
 				retryResult.successCount += solveResult.successCount;
 				retryResult.failureCount += solveResult.failureCount;
+				retryResult.skippedCount += solveResult.skippedCount;
 				retryResult.errors.push(...solveResult.errors);
 			}
 

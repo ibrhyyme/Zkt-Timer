@@ -21,6 +21,7 @@ import SocialSettings from '../account/social/SocialSettings';
 import Privacy from '../landing/legal/Privacy';
 import Terms from '../landing/legal/Terms';
 import Credits from '../landing/legal/Credits';
+import Help from '../help/Help';
 import Landing from '../landing/Landing';
 
 import Appearance from '../settings/appearance/Appearance';
@@ -153,7 +154,9 @@ function routeRedirect(path: string, redirect: string): RedirectPath {
  * does NOT remount the tree and wipe TrainerProvider state. The shared groupKey gives the
  * <Switch>-rendered <Route> a stable React key across these paths.
  */
-function trainerRoute(path: string, restricted = true): PageContext {
+// Open by default: the trainer works entirely on local data, and a visitor who
+// cannot try it has no way to judge it.
+function trainerRoute(path: string, restricted = false): PageContext {
 	const r = route(path, null, App, Trainer, restricted);
 	r.groupKey = 'trainer-shell';
 	return r;
@@ -163,16 +166,22 @@ function trainerRoute(path: string, restricted = true): PageContext {
 export const routes: (PageContext | RedirectPath)[] = [
 	// Main tabs
 	route('/', null, RootRedirect, null, false, true),
-	route('/timer', null, App, DefaultTimer, true, false, false, false, true),
+	// Open to visitors without an account. Their solves stay on the device: the server
+	// write path is gated on `canWriteSync()` (= !!me), so nothing leaves the browser
+	// until they sign up and accept the transfer.
+	route('/timer', null, App, DefaultTimer, false, false, false, false, true),
 	route('/signup', null, App, LoginWrapper, false, true, false, true),
 	route('/login', null, App, LoginWrapper, false, true, false, true),
 	route('/forgot', null, App, LoginWrapper, false, true, false, true),
 	route('/verify-email', null, App, LoginWrapper, false, true, false, true),
 	route('/wca-signup', null, App, LoginWrapper, false, true, false, true),
 	route('/zkt-signup', null, App, LoginWrapper, false, true, false, true),
-	route('/sessions', null, App, Sessions),
+	route('/sessions', null, App, Sessions, false),
 	route('/solves', null, App, Solves, false),
-	route('/stats', null, App, Stats),
+	// Reachable without an account on purpose: the page itself renders the
+	// account-required panel. Bouncing to /login instead told the visitor nothing
+	// about what they were reaching for.
+	route('/stats', null, App, Stats, false),
 	route('/messages', null, App, Messages),
 	route('/messages/:conversationId', null, App, Messages),
 	route('/force-log-out', null, App, ForceSignOut, false, true, false, true),
@@ -189,6 +198,13 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/terms', null, Landing, Terms, false, true),
 	route('/privacy', null, Landing, Privacy, false, true),
 	route('/credits', null, Landing, Credits, false, true),
+	// Its own shell (page as parent, like RootRedirect). Not the App shell: that one
+	// paints a LoadingCover on the server and fills in on the client, which would hand
+	// Google an empty page — and this is an organic-search entry point. Not the landing
+	// shell either: that one always says "log in / sign up" and paints a fixed dark
+	// ground, so a signed-in reader felt thrown out of the product. Help renders the
+	// real app nav itself instead.
+	route('/help', null, Help, null, false, true),
 	route('/welcome', null, Landing, Welcome, false, true),
 
 	// Public
@@ -198,7 +214,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// Pro — standalone page (not nested under Account). noPadding: ProPage manages its own
 	// safe-area in &__mobile-header; Wrapper padding would double-count the notch inset.
-	route('/pro', null, App, ProPage, true, false, false, false, true),
+	route('/pro', null, App, ProPage, false, false, false, false, true),
 
 	// Trainer — deep-linkable (her derinlik explicit, exact match; hepsi child=Trainer).
 	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.
@@ -265,7 +281,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/battle', null, App, Battle, false, false, false, false, true),
 
 	// Friendly Rooms
-	route('/rooms', null, App, RoomsList),
+	// Same as /stats: the page opens and explains, RoomsList gates its own content.
+	route('/rooms', null, App, RoomsList, false),
 	route('/rooms/:roomId', null, App, FriendlyRoom),
 
 	// Admin

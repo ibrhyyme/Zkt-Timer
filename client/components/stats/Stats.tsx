@@ -18,6 +18,8 @@ import {gql, useQuery} from '@apollo/client';
 import {Stats as StatsSchema} from '../../@types/generated/graphql';
 import {STATS_FRAGMENT} from '../../util/graphql/fragments';
 import {useMe} from '../../util/hooks/useMe';
+import PageTitle from '../common/page_title/PageTitle';
+import AccountRequired from '../common/account_required/AccountRequired';
 import {useGeneral} from '../../util/hooks/useGeneral';
 import {useTranslation} from 'react-i18next';
 import {StatsView} from './cube_stats/view_toggle/StatsViewToggle';
@@ -322,6 +324,17 @@ export default function Stats() {
 	// "All" view: on desktop hide HeroBand (title repeated), move filters to "Overview" title.
 	// On mobile, HeroBand is preserved (location icon + embedded nav/avatar).
 	// Cube view (CubeStatHero) carries info, so it never changes.
+	// Statistics are an account feature: they summarise a history that lives on the
+	// server. Rather than bouncing to /login, the page opens and says so.
+	if (!me) {
+		return (
+			<div className={b()}>
+				<PageTitle pageName={t('stats.hero.title')} />
+				<AccountRequired descriptionKey="account_required.stats" />
+			</div>
+		);
+	}
+
 	return (
 		<StatsContext.Provider value={context}>
 			<div className={b()}>

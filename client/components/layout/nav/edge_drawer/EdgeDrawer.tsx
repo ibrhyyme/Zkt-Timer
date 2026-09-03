@@ -19,6 +19,26 @@ import './EdgeDrawer.scss';
 
 const b = block('edge-drawer');
 
+// First-run peek. The notch tooltip already says what the drawer is, but a
+// static hint does not make anyone look — motion does. The panel slides out a
+// sliver once so the edge reads as "there is a menu here", then retracts.
+const PEEK_DISTANCE_PX = 44;
+// Right plays first and announces when it is done; left waits for that signal so the
+// two panels never move at the same time (two-way motion is just noise). Sequencing on
+// wall-clock delays alone does not hold: a stalled thread lets both timers come due and
+// they then fire back to back — measured 49ms apart where 1500ms was intended.
+const PEEK_START_EVENT = 'edgeDrawerPeekStart';
+const PEEK_DONE_EVENT = 'edgeDrawerPeekDone';
+const RIGHT_PEEK_DELAY_MS = 600;
+const LEFT_PEEK_GAP_MS = 400;
+// Left cannot wait forever: right stays silent when it has already been used, when its
+// play count is spent, or when it is not mounted at all. Falls back to its own timer.
+const LEFT_PEEK_FALLBACK_MS = 2100;
+const PEEK_HOLD_MS = 800;
+// Give up after a few sessions even if the drawer was never opened; an
+// animation that replays forever stops being a hint and becomes an annoyance.
+const PEEK_MAX_PLAYS = 3;
+
 type Side = 'left' | 'right';
 
 interface Props {
@@ -57,9 +77,20 @@ export default function EdgeDrawer(props: Props) {
 	const [swipeOffset, setSwipeOffset] = useState<number | null>(null);
 	const [notchY, setNotchY] = useState(() => loadNotchY(storageKeyY));
 	const [repositioning, setRepositioning] = useState(false);
+	// The tooltip used to persist forever for anyone who never opened the drawer, and
+	// it floats over the page — on a long reading page (help) it covered the content.
+	// It now retires on the same counter as the peek: shown for a few sessions, then
+	// the notch is left to speak for itself.
 	const [showHint, setShowHint] = useState(() => {
-		try { return !localStorage.getItem(storageKeyUsed); } catch { return true; }
+		try {
+			if (localStorage.getItem(storageKeyUsed)) return false;
+			const played = parseInt(localStorage.getItem(`${storageKeyUsed}_peeks`) || '0', 10) || 0;
+			return played < PEEK_MAX_PLAYS;
+		} catch {
+			return true;
+		}
 	});
+	const [peeking, setPeeking] = useState(false);
 
 	// Drawer acikken dikey pozisyonu (spacer yuksekligi) sabitlenir. Boylece
 	// icerik degisince (ornek: Hizli Ayarlar'da toggle on/off → ExtrasTab yuksekligi
@@ -74,6 +105,7 @@ export default function EdgeDrawer(props: Props) {
 	}
 
 	const mobileMode = useGeneral('mobile_mode');
+	const appLoaded = useGeneral('app_loaded');
 
 	// Timer calisirken (sure baslamis) notch'lari gizle — solve sirasinda dikkat
 	// dagitmasin / yanlislikla tutulmasin. Inspection dahil DEGIL (sadece solving).
@@ -86,6 +118,7 @@ export default function EdgeDrawer(props: Props) {
 	const locked = useRef(false);
 	const horizontal = useRef(false);
 	const longPressTimer = useRef<any>(null);
+	const peekEndTimer = useRef<any>(null);
 	const openedBySwipe = useRef(false);
 	// edgeDrawerClosed event'i sadece gercek open->close gecisinde firlasin
 	// (mount'ta open=false oldugu icin yanlis erken dispatch'i onler)
@@ -177,6 +210,103 @@ export default function EdgeDrawer(props: Props) {
 			window.dispatchEvent(new CustomEvent('edgeDrawerClosed', {detail: {side}}));
 		}
 	}, [open, side]);
+
+	// --- First-run peek ---
+	// Gated on the same `storageKeyUsed` flag as the tooltip: opening the drawer even
+	// once kills both for good. The extra `_peeks` counter only caps how many times the
+	// animation replays for a user who keeps ignoring it.
+	//
+	// Waits for `app_loaded` on purpose. Boot blocks the main thread for seconds, and
+	// timers armed during it queue up and fire back to back once it clears — measured:
+	// the retract landed 16ms after the extend, so the panel flashed for a single frame
+	// instead of holding. The delays below only mean anything on an idle thread.
+	useEffect(() => {
+		if (!appLoaded || !showHint || solving) return;
+		if (!isNative() && !mobileMode) return;
+		if (typeof window === 'undefined') return;
+
+		const peekCountKey = `${storageKeyUsed}_peeks`;
+		let played = 0;
+		try {
+			played = parseInt(localStorage.getItem(peekCountKey) || '0', 10) || 0;
+		} catch {}
+		if (played >= PEEK_MAX_PLAYS) return;
+
+		// Reduced motion skips the animation but still spends a session: the tooltip
+		// retires on this same counter, and it must not outlive its welcome merely
+		// because the reader turned animation off.
+		if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+			try { localStorage.setItem(peekCountKey, String(played + 1)); } catch {}
+			return;
+		}
+
+		let startTimer: any = null;
+		let fallbackTimer: any = null;
+		let armed = false;
+
+		function armPeek(delay: number) {
+			if (armed) return;
+			armed = true;
+			if (fallbackTimer) {
+				clearTimeout(fallbackTimer);
+				fallbackTimer = null;
+			}
+			startTimer = setTimeout(() => {
+				setPeeking(true);
+				try { localStorage.setItem(peekCountKey, String(played + 1)); } catch {}
+				if (!isLeft) {
+					// Fires synchronously, and right's timer always comes due before
+					// left's fallback, so left drops its fallback before it can run.
+					window.dispatchEvent(new CustomEvent(PEEK_START_EVENT));
+				}
+				// Chained off the extend rather than armed alongside it, so a stalled
+				// thread can delay the whole peek but never collapse its duration.
+				peekEndTimer.current = setTimeout(() => {
+					setPeeking(false);
+					if (!isLeft) {
+						window.dispatchEvent(new CustomEvent(PEEK_DONE_EVENT));
+					}
+				}, PEEK_HOLD_MS);
+			}, delay);
+		}
+
+		const onRightDone = () => armPeek(LEFT_PEEK_GAP_MS);
+		// Right is playing: drop the fallback and wait for its done signal instead.
+		const onRightStart = () => {
+			if (fallbackTimer) {
+				clearTimeout(fallbackTimer);
+				fallbackTimer = null;
+			}
+		};
+
+		if (isLeft) {
+			window.addEventListener(PEEK_START_EVENT, onRightStart);
+			window.addEventListener(PEEK_DONE_EVENT, onRightDone);
+			fallbackTimer = setTimeout(() => armPeek(0), LEFT_PEEK_FALLBACK_MS);
+		} else {
+			armPeek(RIGHT_PEEK_DELAY_MS);
+		}
+
+		return () => {
+			window.removeEventListener(PEEK_START_EVENT, onRightStart);
+			window.removeEventListener(PEEK_DONE_EVENT, onRightDone);
+			if (startTimer) clearTimeout(startTimer);
+			if (fallbackTimer) clearTimeout(fallbackTimer);
+			if (peekEndTimer.current) {
+				clearTimeout(peekEndTimer.current);
+				peekEndTimer.current = null;
+			}
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [appLoaded, mobileMode, showHint]);
+
+	// Any real interaction outranks the hint: opening the drawer (tap or swipe) or
+	// starting a solve retracts the peek immediately instead of letting it play out.
+	useEffect(() => {
+		if (peeking && (open || solving)) {
+			setPeeking(false);
+		}
+	}, [peeking, open, solving]);
 
 	// --- Android gesture exclusion: centik bolgesini geri hareketinden muaf tut ---
 	useEffect(() => {
@@ -411,6 +541,11 @@ export default function EdgeDrawer(props: Props) {
 		}
 	} else if (open) {
 		transform = 'translateX(0)';
+	} else if (peeking) {
+		// Sliver only — enough edge to read as a panel, not enough to cover content.
+		transform = isLeft
+			? `translateX(calc(-100% + ${PEEK_DISTANCE_PX}px))`
+			: `translateX(calc(100% - ${PEEK_DISTANCE_PX}px))`;
 	} else {
 		transform = isLeft ? 'translateX(-100%)' : 'translateX(100%)';
 	}
@@ -456,8 +591,8 @@ export default function EdgeDrawer(props: Props) {
 
 					<div
 						ref={drawerRef}
-						className={b('drawer', {open: open && !swiping, 'no-transition': noTransition, [sideMod]: true})}
-						style={swiping ? {transform} : undefined}
+						className={b('drawer', {open: open && !swiping, peeking, 'no-transition': noTransition, [sideMod]: true})}
+						style={swiping || peeking ? {transform} : undefined}
 					>
 						{/* No height transition — the drawer must open directly at its final
 					    position. A transition makes content/view changes (e.g. switching to

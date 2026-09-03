@@ -62,6 +62,24 @@ export default function HeroSection() {
 		</div>
 	);
 
+	// Sits directly under the store badges, above the fold. Someone who has just
+	// landed should not have to scroll past a wall of marketing to find the one
+	// button that shows them the product.
+	const tryCta = (
+		<div className={b('try-cta')}>
+			<motion.div whileHover={hoverScale} whileTap={tapScale}>
+				<Button
+					primary
+					large
+					glow
+					onClick={() => (window.location.href = '/timer')}
+				>
+					{t('welcome_hero.cta_try')}
+				</Button>
+			</motion.div>
+		</div>
+	);
+
 	const authButtons = (
 		<>
 			{!native && (
@@ -86,9 +104,7 @@ export default function HeroSection() {
 				<div ref={magneticLogin}>
 					<motion.div whileHover={hoverScale} whileTap={tapScale}>
 						<Button
-							primary
 							large
-							glow
 							onClick={() => (window.location.href = '/login')}
 						>
 							{t('welcome_hero.cta_login')}
@@ -164,10 +180,14 @@ export default function HeroSection() {
 						</span>
 					</motion.h1>
 
-					{/* Desktop CTA — Store badges (native'da gizli, zaten uygulama ici) */}
+					{/* Desktop CTA — Store badges (native'da gizli, zaten uygulama ici).
+					    The try button belongs here too: on desktop this column is the
+					    whole above-the-fold hero, and log in / sign up live in the top
+					    nav, so without it a visitor sees no way into the product. */}
 					{!native && (
 						<motion.div className={b('actions-desktop')} variants={fadeInUp}>
 							{storeCta}
+							{tryCta}
 						</motion.div>
 					)}
 				</motion.div>
@@ -190,6 +210,7 @@ export default function HeroSection() {
 					animate="visible"
 				>
 					{!native && storeCta}
+					{tryCta}
 					{authButtons}
 				</motion.div>
 			</div>

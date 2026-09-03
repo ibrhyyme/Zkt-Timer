@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { resourceUri } from '../../../util/storage';
 import block from '../../../styles/bem';
 
@@ -61,6 +62,18 @@ export default function AuthCard({ mode, setMode, children }: Props) {
 					{children}
 				</div>
 			</div>
+
+			{/* Only on the two entry modes, never mid-flow (a WCA callback or a
+			    conflict pane is a step the visitor has to finish). The timer does not
+			    require an account, so someone who landed here by accident is offered
+			    the way out rather than a dead end. */}
+			{showTabs && (
+				<div className={b('escape-links')}>
+					<Link to="/timer">{t('login.try_without_account')}</Link>
+					<span aria-hidden="true">·</span>
+					<Link to="/help">{t('login.help')}</Link>
+				</div>
+			)}
 		</div>
 	);
 }

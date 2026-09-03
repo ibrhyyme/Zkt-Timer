@@ -18,16 +18,12 @@ import {
 	TimerSettingsAction,
 	TimerSettingsSlider,
 } from '../timer/TimerSettingsRow';
+import { TIMER_INPUT_TYPE_KEYS } from './timer_input_types';
 
-// Shared by HeaderControl to render the active timer type name.
-export const TIMER_INPUT_TYPE_KEYS = {
-	keyboard: 'timer_settings.input_keyboard',
-	stackmat: 'timer_settings.input_stackmat',
-	smart: 'timer_settings.input_smart',
-	gantimer: 'timer_settings.input_gantimer',
-	qiyitimer: 'timer_settings.input_qiyitimer',
-	qiyiwired: 'timer_settings.input_qytoys',
-};
+// Shared by HeaderControl to render the active timer type name, and by the help page to
+// list the inputs. Moved to timer_input_types.ts so the help page does not have to import
+// this whole settings screen; re-exported here for the callers that already had it.
+export { TIMER_INPUT_TYPE_KEYS };
 
 export default function HardwareSettings() {
 	const { t } = useTranslation();

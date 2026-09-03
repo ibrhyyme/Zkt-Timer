@@ -8,6 +8,8 @@ import {useSettings} from '../../../util/hooks/useSettings';
 import {updateThemeColors} from '../themes';
 import ScrollReset from '../scroll_reset/ScrollReset';
 import ChatBubbles from '../../messages/chat_bubbles/ChatBubbles';
+import AnonBanner from '../anon/AnonBanner';
+import AnonTransferPrompt from '../anon/AnonTransferPrompt';
 
 const b = block('body');
 
@@ -45,6 +47,7 @@ export default function Wrapper(props: Props) {
 	return (
 		<div className={blockNamespace}>
 			<ToastContainer />
+			<AnonTransferPrompt />
 			<ScrollReset />
 			{headerNav}
 			<div
@@ -54,6 +57,10 @@ export default function Wrapper(props: Props) {
 				})}
 			>
 				<div className={b('content')}>
+					{/* Both no-op unless they apply: the banner only for signed-out
+					    visitors, the transfer prompt only when a signed-in session finds
+					    solves left behind in the anonymous database. */}
+					<AnonBanner />
 					{props.children}
 				</div>
 			</div>

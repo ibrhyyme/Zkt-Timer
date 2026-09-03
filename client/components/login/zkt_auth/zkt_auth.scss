@@ -1239,3 +1239,25 @@
 	from { opacity: 0; }
 	to { opacity: 1; }
 }
+
+// Escape hatches under the auth card: the product is usable without an account,
+// so this screen should not read as a wall.
+.#{$namespace}-zkt-auth__escape-links {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 18px;
+	font-size: 0.85rem;
+	color: rgba(var(--auth-text-mute), 1);
+
+	a {
+		color: rgba(var(--auth-text-soft), 1);
+		text-decoration: none;
+
+		&:hover {
+			color: rgb(var(--text-color));
+			text-decoration: underline;
+		}
+	}
+}

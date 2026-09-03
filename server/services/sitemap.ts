@@ -181,6 +181,9 @@ function getPriorityForPath(path: string): number | null {
 		'/battle': 0.7,
 		'/solves': 0.6,
 		'/stats': 0.6,
+		// Ranks above the legal pages: it is a real search entry point ("how to
+		// connect gan cube", "csTimer import"), not boilerplate.
+		'/help': 0.7,
 		'/terms': 0.3,
 		'/privacy': 0.3,
 		'/credits': 0.3,

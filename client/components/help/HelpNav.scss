@@ -1,0 +1,92 @@
+@import '../../styles/config';
+
+.#{$namespace}-landing-help-nav {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+
+	&__item {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 9px 12px;
+		border: none;
+		border-radius: 10px;
+		background: transparent;
+		color: rgba(var(--text-color), 0.72);
+		font-size: 0.92rem;
+		font-weight: 600;
+		text-align: left;
+		cursor: pointer;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+
+		&--active {
+			color: rgb(var(--text-color));
+		}
+	}
+
+	// Sits behind the label; framer-motion moves this single element between rows.
+	&__item-highlight {
+		position: absolute;
+		inset: 0;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.08);
+		z-index: 0;
+	}
+
+	&__item-sticker {
+		position: relative;
+		z-index: 1;
+		width: 8px;
+		height: 8px;
+		border-radius: 2px;
+		background: rgb(var(--item-tone));
+		flex-shrink: 0;
+	}
+
+	&__item-label {
+		position: relative;
+		z-index: 1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	// --- Mobile: a table of contents, not a nav bar --------------------------
+	//
+	// The list stays vertical and scrolls away with the page. It is read once at the
+	// top, so it gets a card of its own rather than pretending to be a toolbar.
+	@include bp-down($bp-lg) {
+		gap: 0;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgba(var(--text-color), 0.03);
+
+		&__item {
+			border-radius: 0;
+			padding: 12px 14px;
+
+			& + & {
+				border-top: 1px solid rgba(var(--text-color), 0.08);
+			}
+		}
+
+		// The highlight is a desktop affordance for "where the page is scrolled to".
+		// In a table of contents nothing is current yet, and a travelling pill on a
+		// list you are about to leave is just noise.
+		&__item-highlight {
+			display: none;
+		}
+
+		&__item-label {
+			white-space: normal;
+		}
+	}
+}

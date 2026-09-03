@@ -45,6 +45,58 @@ export function getBucketEventKey(
 	return n.cube_type ?? '';
 }
 
+/**
+ * The value `time` carries when a solve is a DNF.
+ *
+ * Every producer writes exactly this: the timer save path (client/components/timer/
+ * helpers/save.ts), the penalty toggle (updateSolveTime in client/db/solves/update.tsx),
+ * manual entry (client/util/time.ts) and the csTimer importer. Readers are looser and
+ * test for `time < 0`, but -1 is the only value actually written, so validation checks
+ * for it exactly. A genuinely corrupt -37 must still be caught.
+ */
+export const DNF_TIME = -1;
+
+/**
+ * Whether a solve time field may be stored.
+ *
+ * Lives in shared/ deliberately: the server rejects on this rule and the client filters
+ * on it before uploading. Written twice, the two drift and one side starts sending what
+ * the other refuses. That is exactly how DNF solves stopped syncing for two months: a
+ * guard added to Solve.resolver.ts read -1 as corrupt data rather than as the DNF
+ * sentinel the app has always written, so every solve that was DNF the moment it was
+ * created (inspection timeout, manual "DNF" entry, imports) was refused by the server
+ * while the client went on believing it had saved them.
+ *
+ * `time` accepts the sentinel; `raw_time` never does, because no producer writes a
+ * negative raw time (save.ts clamps it with Math.max(time, 0)).
+ */
+export function isValidSolveTime(field: 'time' | 'raw_time', value: unknown): boolean {
+	if (value == null) {
+		return true;
+	}
+	if (typeof value !== 'number' || !Number.isFinite(value)) {
+		return false;
+	}
+	if (field === 'time' && value === DNF_TIME) {
+		return true;
+	}
+	return value >= 0;
+}
+
+/**
+ * Names the time fields that fail validation, empty when the solve is storable.
+ * Callers that reject use the first name; callers that log report all of them.
+ */
+export function invalidSolveTimeFields(solve: {time?: unknown; raw_time?: unknown}): string[] {
+	const fields: string[] = [];
+	for (const field of ['time', 'raw_time'] as const) {
+		if (!isValidSolveTime(field, solve[field])) {
+			fields.push(field);
+		}
+	}
+	return fields;
+}
+
 export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	const solve = { ...s };
 

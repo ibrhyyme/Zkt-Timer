@@ -489,11 +489,7 @@ export default function CompetitionList() {
 				    Decorative, so hidden from screen readers. */}
 				<img
 					src={resourceUri(
-						isZkt
-							? isDarkTheme
-								? '/images/zkt-logo.png'
-								: '/images/zkt-logo-white.png'
-							: '/images/logos/wca_logo.svg'
+						isZkt ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg'
 					)}
 					alt=""
 					aria-hidden="true"
@@ -575,11 +571,10 @@ export default function CompetitionList() {
 	 */
 	function renderConnectBanner(service: 'zkt' | 'wca') {
 		const isZktService = service === 'zkt';
-		const logo = isZktService
-			? isDarkTheme
-				? '/images/zkt-logo.png'
-				: '/images/zkt-logo-white.png'
-			: '/images/logos/wca_logo.svg';
+		// The federation's own badge, not the product logo: these competitions are run
+		// by Zeka Küpü Türkiye, and `zkt-logo.png` is the Zkt Timer mark. Like the WCA
+		// crest it is a coloured badge, so one file serves both themes.
+		const logo = isZktService ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg';
 		const label = !me
 			? t(isZktService ? 'my_schedule.zkt_login' : 'my_schedule.wca_login')
 			: t(isZktService ? 'my_schedule.connect_zkt_btn' : 'my_schedule.connect_wca_btn');

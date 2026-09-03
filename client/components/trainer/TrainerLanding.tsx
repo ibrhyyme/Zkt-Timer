@@ -30,12 +30,9 @@ export default function TrainerLanding() {
 	const modes = me?.admin ? [OLLCP_MODE, ...TRAINER_MODES] : TRAINER_MODES;
 
 	const selectMode = (mode: TrainerMode, locked: boolean) => {
-		// Landing is public for SEO, but actually training requires an account.
-		// Anonymous visitors get sent to login instead of dropping into the training UI.
-		if (!me) {
-			history.push('/login?redirect=' + encodeURIComponent('/trainer'));
-			return;
-		}
+		// Signed-out visitors are no longer bounced to /login here. The mode opens and
+		// states what it needs (see TrainerContent), which tells them what they are
+		// missing instead of dropping them on a form.
 		if (locked) {
 			history.push('/pro');
 			return;
@@ -109,11 +106,6 @@ export default function TrainerLanding() {
 								type="button"
 								className={b('landing-card-cta', {pro})}
 								onClick={(e) => {
-									if (!me) {
-										e.stopPropagation();
-										history.push('/login?redirect=' + encodeURIComponent('/trainer'));
-										return;
-									}
 									if (locked) {
 										e.stopPropagation();
 										history.push('/pro');
