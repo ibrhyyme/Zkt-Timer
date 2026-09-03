@@ -2545,7 +2545,7 @@
       {
         "id": "keyboard-shortcuts",
         "q": "¿Cuáles son los atajos de teclado?",
-        "a": "La barra espaciadora inicia y detiene el cronómetro. Escape reinicia la cuenta atrás de inspección mientras está activa. Para el último solve: 1 quita la penalización, 2 añade un más dos, 3 lo marca como DNF, Alt+Z lo borra. Alt+I activa y desactiva la inspección. Cambia de puzzle con Alt y un número: de Alt+2 a Alt+7 para 2x2 hasta 7x7, Alt+P para Pyraminx, Alt+M para Megaminx, Alt+C para Clock, Alt+S para Skewb. En Mac, Command funciona en lugar de Ctrl."
+        "a": "La barra espaciadora inicia y detiene el cronómetro. Escape reinicia la cuenta atrás de inspección mientras está activa. Para el último solve: 1 quita la penalización, 2 añade un +2, 3 lo marca como DNF, Alt+Z lo borra. Alt+I activa y desactiva la inspección. Cambia de puzzle con Alt y un número: de Alt+2 a Alt+7 para 2x2 hasta 7x7, Alt+P para Pyraminx, Alt+M para Megaminx, Alt+C para Clock, Alt+S para Skewb. En Mac, Command funciona en lugar de Ctrl."
       },
       {
         "id": "desktop-usage",
@@ -2570,7 +2570,7 @@
       {
         "id": "edit-solve",
         "q": "¿Cómo añado una penalización o borro un solve?",
-        "a": "Toca el tiempo en tu lista de solves y usa las opciones de más dos, DNF y borrar en la ventana que se abre. Los botones +2 y DNF bajo el cronómetro se aplican siempre al último solve. En el ordenador, 2, 3 y Alt+Z hacen lo mismo con el último solve."
+        "a": "Toca el tiempo en tu lista de solves y usa las opciones de +2, DNF y borrar en la ventana que se abre. Los botones +2 y DNF bajo el cronómetro se aplican siempre al último solve. En el ordenador, 2, 3 y Alt+Z hacen lo mismo con el último solve."
       }
     ],
     "nav_timer_name": "Temporizador",
@@ -4324,7 +4324,7 @@
       "space": "Inicia y detiene el cronómetro",
       "escape": "Reinicia la cuenta atrás de inspección",
       "ok": "Quita la penalización del último solve",
-      "plus_two": "Añade un más dos al último solve",
+      "plus_two": "Añade un +2 al último solve",
       "dnf": "Marca el último solve como DNF",
       "delete_last": "Borra el último solve",
       "delete_session": "Borra todos los solves de la sesión",
@@ -4344,7 +4344,7 @@
       "getting-started": {
         "title": "Primeros pasos",
         "body": [
-          "Puedes usar Zkt Timer desde el navegador o con las apps de iOS y Android. Con una cuenta, tus resuelves se respaldan en el servidor y ves los mismos datos en cada dispositivo donde inicies sesión.",
+          "Puedes usar Zkt Timer desde el navegador o con las apps de iOS y Android. Con una cuenta tus resuelves se respaldan en el servidor, así que tus datos sobreviven a la pérdida del dispositivo. Ver ese historial en cada dispositivo donde inicies sesión viene con Pro; sin Pro, tus resuelves se quedan en el dispositivo que los hizo.",
           "También puedes probarlo sin cuenta. Sin sesión iniciada funcionan el cronómetro, tus resuelves y el entrenador; los tiempos se quedan solo en ese dispositivo. Si te registras más tarde, la aplicación te ofrece pasar esos resuelves a tu cuenta.",
           "En el ordenador hay tres menús en la parte de arriba: sesión, tipo de cubo y tipo de cronómetro. Debajo está el scramble, en el centro el tiempo, y más abajo tu lista de resuelves y los módulos de estadísticas.",
           "Los ajustes se reparten en siete secciones: Cronómetro, Scramble, Hardware, Apariencia, Estadísticas, Datos e Idioma. Si no sabes en qué sección está el ajuste que buscas, usa el buscador dentro de los ajustes."
@@ -4354,7 +4354,7 @@
         "title": "Cronómetro",
         "body": [
           "Mantén pulsada la barra espaciadora, suéltala cuando el cronómetro se ponga verde y el tiempo empieza. Pulsa cualquier tecla para parar. En el móvil pulsas y sueltas en la zona central de la pantalla.",
-          "Con la inspección activada, corre una cuenta atrás de 15 segundos antes de empezar. Siguiendo la regla de la WCA, pasar de 15 segundos es un más dos y pasar de 17 es DNF. Escape cancela la cuenta atrás.",
+          "Con la inspección activada, corre una cuenta atrás de 15 segundos antes de empezar. Siguiendo la regla de la WCA, pasar de 15 segundos es un +2 y pasar de 17 es DNF. Escape cancela la cuenta atrás.",
           "El scramble se genera solo después de cada resuelve. Toca el scramble para copiarlo y usa las flechas de al lado para moverte entre el anterior y el siguiente.",
           "El tipo de cronómetro se elige en el menú de arriba. Estas son las entradas admitidas:"
         ],
@@ -4367,7 +4367,7 @@
         "title": "Solves y sesiones",
         "body": [
           "La lista debajo del cronómetro muestra los resuelves de esa sesión. Al tocar un tiempo se abre la ventana de detalle: puedes añadir una penalización, escribir una nota, ver el scramble y el desglose del resuelve, o borrarlo.",
-          "Los botones de más dos y DNF que están justo debajo del cronómetro se aplican siempre a tu último resuelve.",
+          "Los botones de +2 y DNF que están justo debajo del cronómetro se aplican siempre a tu último resuelve.",
           "La página de resuelves reúne todos tus resuelves en una sola lista. Puedes filtrar por rango de tiempo, por penalización, por si se hizo con cubo inteligente y por si viene importado, y ordenar por tiempo o por fecha.",
           "En esa misma página hay selección múltiple: marcas varios resuelves y los borras de una vez.",
           "Una sesión es una lista donde separas tus resuelves: calentamiento, práctica de 3x3, a una mano y demás. Cambias entre ellas desde el menú de sesión de arriba. En la página de sesiones creas una sesión, la renombras, reordenas arrastrando, fusionas dos o seleccionas varias y las borras. Las medias se calculan por sesión."
@@ -4387,14 +4387,13 @@
       "trainer": {
         "title": "Entrenador",
         "body": [
-          "El entrenador sirve para practicar algoritmos y tiene cinco modos. El tiempo y el acierto se guardan por algoritmo, así que los casos en los que flojeas destacan solos."
+          "El entrenador sirve para practicar algoritmos y tiene cuatro modos. El tiempo y el acierto se guardan por algoritmo, así que los casos en los que flojeas destacan solos."
         ],
         "steps": [
           "Estándar: practicas uno tras otro los algoritmos que elegiste de conjuntos como OLL, PLL, F2L y ZBLL.",
           "Cubo inteligente: conecta el cubo y lee tus movimientos para ver si ejecutaste bien el algoritmo.",
-          "Reconocimiento de PLL: escribes la letra del caso con el teclado, sin resolver. Mide lo rápido que reconoces.",
           "Eficiencia de cross: compara cuántos movimientos usaste para la cruz con la solución más corta.",
-          "OLLCP: practicas además reconocer la permutación de esquinas durante el OLL."
+          "Reconocimiento de PLL: escribes la letra del caso con el teclado, sin resolver. Mide lo rápido que reconoces."
         ],
         "notes": [
           "El modo de reconocimiento de PLL tiene su propio historial, sus ajustes y un glosario; en la página de historial puedes comparar rondas anteriores.",

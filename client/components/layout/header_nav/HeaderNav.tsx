@@ -200,9 +200,18 @@ export default function HeaderNav(props: Props = {}) {
 		return null;
 	}
 
-	// Desktop header
+	// Desktop header.
+	//
+	// Two elements on purpose. The outer one stays in flow and does nothing but hold
+	// open the header's height; the bar itself is fixed. It used to be one `sticky`
+	// element, but Radix measures a dropdown's trigger at its position in FLOW and
+	// never sees the sticky offset, so every menu in here (language, account,
+	// notifications) opened a full scroll-height above the viewport once the page was
+	// scrolled — invisible, and on the first open after a load the browser dragged the
+	// whole document to the top to reveal it. A fixed bar has no such offset to miss.
 	return (
 		<div className={b()}>
+			<div className={b('bar')}>
 			<div className={b('container')}>
 				{/* Left side - Brand Link with Animated Cube */}
 				<div className={b('left')}>
@@ -253,6 +262,7 @@ export default function HeaderNav(props: Props = {}) {
 					<StreamerModeToggle />
 					{me && <LoginNav collapsed={false} />}
 				</div>
+			</div>
 			</div>
 		</div>
 	);

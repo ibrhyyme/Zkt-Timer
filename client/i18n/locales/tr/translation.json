@@ -2552,7 +2552,7 @@
       {
         "id": "keyboard-shortcuts",
         "q": "Klavye kısayolları nelerdir?",
-        "a": "Timer'ı boşluk tuşuyla başlatıp durdurursunuz. Inspection açıkken Escape geri sayımı sıfırlar. Son çözüm için 1 cezayı kaldırır, 2 artı iki ekler, 3 DNF yapar, Alt+Z siler. Alt+I inspection'ı açar kapatır. Küp tipini Alt ile değiştirirsiniz: Alt+2'den Alt+7'ye kadar 2x2'den 7x7'ye, Alt+P Pyraminx, Alt+M Megaminx, Alt+C Clock, Alt+S Skewb. Mac'te Ctrl yerine Command da çalışır."
+        "a": "Timer'ı boşluk tuşuyla başlatıp durdurursunuz. Inspection açıkken Escape geri sayımı sıfırlar. Son çözüm için 1 cezayı kaldırır, 2 tuşu +2 verir, 3 DNF yapar, Alt+Z siler. Alt+I inspection'ı açar kapatır. Küp tipini Alt ile değiştirirsiniz: Alt+2'den Alt+7'ye kadar 2x2'den 7x7'ye, Alt+P Pyraminx, Alt+M Megaminx, Alt+C Clock, Alt+S Skewb. Mac'te Ctrl yerine Command da çalışır."
       },
       {
         "id": "desktop-usage",
@@ -2577,7 +2577,7 @@
       {
         "id": "edit-solve",
         "q": "Bir çözüme nasıl ceza eklerim veya silerim?",
-        "a": "Çözüm listesinden ilgili süreye dokunun, açılan pencerede artı iki, DNF ve silme seçenekleri vardır. Timer'ın altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır. Masaüstünde son çözüm için klavyeden 2, 3 ve Alt+Z de kullanılabilir."
+        "a": "Çözüm listesinden ilgili süreye dokunun, açılan pencerede +2, DNF ve silme seçenekleri vardır. Timer'ın altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır. Masaüstünde son çözüm için klavyeden 2, 3 ve Alt+Z de kullanılabilir."
       }
     ],
     "nav_timer_name": "Zamanlayıcı",
@@ -4375,7 +4375,7 @@
       "space": "Süreyi başlatır ve durdurur",
       "escape": "Inspection geri sayımını sıfırlar",
       "ok": "Son çözümün cezasını kaldırır",
-      "plus_two": "Son çözüme artı iki ekler",
+      "plus_two": "Son çözüme +2 ekler",
       "dnf": "Son çözümü DNF yapar",
       "delete_last": "Son çözümü siler",
       "delete_session": "Oturumdaki bütün çözümleri siler",
@@ -4395,7 +4395,7 @@
       "getting-started": {
         "title": "Başlarken",
         "body": [
-          "Zkt Timer'ı tarayıcıdan, iOS veya Android uygulamasından kullanabilirsiniz. Hesap açtığınızda çözümleriniz sunucuya yedeklenir ve girdiğiniz her cihazda aynı verileri görürsünüz.",
+          "Zkt Timer'ı tarayıcıdan, iOS veya Android uygulamasından kullanabilirsiniz. Hesap açtığınızda çözümleriniz sunucuya yedeklenir, yani cihazınız kaybolsa da veriniz durur. Geçmişinizi girdiğiniz her cihazda görmek Pro üyelikle gelir; Pro olmadan çözümleriniz onları yaptığınız cihazda kalır.",
           "Hesap açmadan da deneyebilirsiniz. Kayıtsızken timer, çözümleriniz ve antrenör çalışır; süreler yalnızca o cihazda durur. Sonradan hesap açarsanız uygulama bu çözümleri hesabınıza taşımayı önerir.",
           "Masaüstünde ekranın üstünde üç menü bulunur: oturum, küp tipi ve timer tipi. Hemen altında karıştırma, ortada süre, aşağıda ise çözüm listeniz ve istatistik modülleri yer alır.",
           "Ayarlar yedi bölüme ayrılır: Timer, Karıştırma, Donanım, Görünüm, İstatistik, Veri ve Dil. Aradığınız ayarın hangi bölümde olduğunu bilmiyorsanız ayarların içindeki arama kutusunu kullanın."
@@ -4405,7 +4405,7 @@
         "title": "Timer",
         "body": [
           "Boşluk tuşunu basılı tutun, timer yeşile döndüğünde bırakın; süre başlar. Durdurmak için herhangi bir tuşa basın. Mobilde ekranın orta bölgesine dokunup bırakırsınız.",
-          "Inspection açıksa süre başlamadan önce 15 saniyelik geri sayım çalışır. WCA kuralına göre 15 saniyeyi geçerseniz artı iki, 17 saniyeyi geçerseniz DNF uygulanır. Escape geri sayımı iptal eder.",
+          "Inspection açıksa süre başlamadan önce 15 saniyelik geri sayım çalışır. WCA kuralına göre 15 saniyeyi geçerseniz +2, 17 saniyeyi geçerseniz DNF uygulanır. Escape geri sayımı iptal eder.",
           "Karıştırma her çözümden sonra kendiliğinden üretilir. Karıştırmaya dokunarak kopyalayabilir, yanındaki oklarla önceki ve sonraki karıştırmalar arasında gezinebilirsiniz.",
           "Timer tipini üstteki menüden seçersiniz. Desteklenen giriş yöntemleri şunlardır:"
         ],
@@ -4418,7 +4418,7 @@
         "title": "Çözümler ve oturumlar",
         "body": [
           "Timer'ın altındaki liste o oturumdaki çözümleri gösterir. Bir süreye dokunduğunuzda detay penceresi açılır: ceza ekleyebilir, not yazabilir, karıştırmayı ve çözüm analizini görebilir veya çözümü silebilirsiniz.",
-          "Timer'ın hemen altındaki artı iki ve DNF düğmeleri her zaman son çözüme uygulanır.",
+          "Timer'ın hemen altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır.",
           "Çözümler sayfası bütün çözümlerinizi tek listede toplar. Süre aralığına, cezaya, akıllı küple yapılıp yapılmadığına ve dışarıdan aktarılıp aktarılmadığına göre süzebilir, süreye veya tarihe göre sıralayabilirsiniz.",
           "Aynı sayfada çoklu seçim vardır: birden fazla çözümü işaretleyip tek seferde silebilirsiniz.",
           "Oturum, çözümlerinizi ayırdığınız listedir: ısınma, 3x3 antrenman, tek el gibi. Üstteki oturum menüsünden aralarında geçiş yaparsınız. Oturumlar sayfasında yeni oturum açar, ad değiştirir, sırayı sürükleyerek düzenler, iki oturumu birleştirir veya birkaçını seçip silersiniz. Ortalamalar her oturum için ayrı hesaplanır."
@@ -4438,14 +4438,13 @@
       "trainer": {
         "title": "Antrenör",
         "body": [
-          "Antrenör algoritma çalışmak içindir ve beş modu vardır. Her algoritmanın süresi ve başarı oranı ayrı tutulur, böylece zayıf olduğunuz vakalar öne çıkar."
+          "Antrenör algoritma çalışmak içindir ve dört modu vardır. Her algoritmanın süresi ve başarı oranı ayrı tutulur, böylece zayıf olduğunuz vakalar öne çıkar."
         ],
         "steps": [
           "Standart: OLL, PLL, F2L, ZBLL gibi setlerden seçtiğiniz algoritmaları sırayla çalışırsınız.",
           "Akıllı küp: küpü bağladığınızda hamlelerinizi okur ve algoritmayı doğru uygulayıp uygulamadığınızı görür.",
-          "PLL tanıma: vakanın harfini klavyeden yazarsınız, çözmeye gerek yoktur. Tanıma hızınızı ölçer.",
           "Cross verimliliği: karıştırmada cross'u kaç hamlede çözdüğünüzü en kısa çözümle karşılaştırır.",
-          "OLLCP: OLL sırasında köşe permütasyonunu da tanımayı çalışırsınız."
+          "PLL tanıma: vakanın harfini klavyeden yazarsınız, çözmeye gerek yoktur. Tanıma hızınızı ölçer."
         ],
         "notes": [
           "PLL tanıma modunun kendi geçmişi, ayarları ve terim sözlüğü vardır; geçmiş sayfasından eski turlarınızı karşılaştırabilirsiniz.",

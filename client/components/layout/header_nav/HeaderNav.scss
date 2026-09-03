@@ -3,12 +3,24 @@
 .#{$namespace}-header-nav {
 	$self: &;
 
-	background-color: rgb(var(--background-color));
-	position: sticky;
-	top: 0;
-	left: 0;
+	// Spacer only: holds open exactly the height the bar used to occupy in flow, so
+	// nothing else in the app had to change. `.zt-body`'s `min-height: calc(100vh -
+	// var(--nav-h))` and the stats band's `top: var(--nav-h)` stay correct as written.
 	width: 100%;
-	z-index: 1000;
+	height: var(--nav-h);
+
+	// The bar itself. Fixed rather than sticky because Radix reads a dropdown trigger's
+	// FLOW position: under `sticky` it placed every header menu one scroll-height above
+	// the viewport (see HeaderNav.tsx). Fixed elements have no flow/painted split, so
+	// the measurement is simply correct.
+	&__bar {
+		background-color: rgb(var(--background-color));
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+	}
 
 	&__container {
 		display: flex;
@@ -251,7 +263,7 @@
 // top-to-bottom scrim so the timer background image (bled up behind it via Timer.scss)
 // shows through, while the nav text/icons stay legible over bright images. Toggled by
 // Timer via body.timer-immersive-bg (desktop only, and only when a bg image exists).
-body.timer-immersive-bg .#{$namespace}-header-nav {
+body.timer-immersive-bg .#{$namespace}-header-nav__bar {
 	background-color: transparent;
 	background-image: linear-gradient(
 		to bottom,

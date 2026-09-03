@@ -2545,7 +2545,7 @@
       {
         "id": "keyboard-shortcuts",
         "q": "What are the keyboard shortcuts?",
-        "a": "Space starts and stops the timer. Escape resets the inspection countdown while it is running. For the last solve: 1 clears the penalty, 2 adds a plus two, 3 marks it DNF, Alt+Z deletes it. Alt+I toggles inspection. Change the puzzle with Alt and a number: Alt+2 through Alt+7 for 2x2 up to 7x7, Alt+P for Pyraminx, Alt+M for Megaminx, Alt+C for Clock, Alt+S for Skewb. On a Mac, Command works instead of Ctrl."
+        "a": "Space starts and stops the timer. Escape resets the inspection countdown while it is running. For the last solve: 1 clears the penalty, 2 adds a +2, 3 marks it DNF, Alt+Z deletes it. Alt+I toggles inspection. Change the puzzle with Alt and a number: Alt+2 through Alt+7 for 2x2 up to 7x7, Alt+P for Pyraminx, Alt+M for Megaminx, Alt+C for Clock, Alt+S for Skewb. On a Mac, Command works instead of Ctrl."
       },
       {
         "id": "desktop-usage",
@@ -2570,7 +2570,7 @@
       {
         "id": "edit-solve",
         "q": "How do I add a penalty or delete a solve?",
-        "a": "Tap the time in your solve list and use the plus two, DNF and delete options in the window that opens. The +2 and DNF buttons under the timer always apply to your last solve. On desktop, 2, 3 and Alt+Z do the same for the last solve."
+        "a": "Tap the time in your solve list and use the +2, DNF and delete options in the window that opens. The +2 and DNF buttons under the timer always apply to your last solve. On desktop, 2, 3 and Alt+Z do the same for the last solve."
       }
     ],
     "nav_timer_name": "Timer",
@@ -4370,7 +4370,7 @@
       "space": "Starts and stops the timer",
       "escape": "Resets the inspection countdown",
       "ok": "Clears the penalty on the last solve",
-      "plus_two": "Adds a plus two to the last solve",
+      "plus_two": "Adds a +2 to the last solve",
       "dnf": "Marks the last solve DNF",
       "delete_last": "Deletes the last solve",
       "delete_session": "Deletes every solve in the session",
@@ -4390,7 +4390,7 @@
       "getting-started": {
         "title": "Getting started",
         "body": [
-          "You can use Zkt Timer in a browser or through the iOS and Android apps. With an account, your solves are backed up to the server and you see the same data on every device you sign in on.",
+          "You can use Zkt Timer in a browser or through the iOS and Android apps. With an account your solves are backed up to the server, so your data survives losing the device. Seeing that history on every device you sign in on comes with Pro; without it, your solves stay on the device that made them.",
           "You can also try it without an account. Signed out, the timer, your solves and the trainer all work; the times stay on that device only. If you sign up later, the app offers to move those solves into your account.",
           "On desktop there are three menus across the top: session, cube type and timer type. The scramble sits below them, the time in the middle, and your solve list and stat modules underneath.",
           "Settings are split into seven sections: Timer, Scramble, Hardware, Appearance, Stats, Data and Language. If you are not sure which section holds the setting you want, use the search box inside settings."
@@ -4400,7 +4400,7 @@
         "title": "Timer",
         "body": [
           "Hold the space bar, let go when the timer turns green, and the time starts. Press any key to stop. On mobile you press and release the middle of the screen.",
-          "With inspection on, a 15-second countdown runs before the time starts. Following the WCA rule, going past 15 seconds is a plus two and going past 17 is a DNF. Escape cancels the countdown.",
+          "With inspection on, a 15-second countdown runs before the time starts. Following the WCA rule, going past 15 seconds is a +2 and going past 17 is a DNF. Escape cancels the countdown.",
           "A scramble is generated after every solve. Tap the scramble to copy it, and use the arrows beside it to move between the previous and next scrambles.",
           "You pick the timer type from the menu at the top. These are the supported inputs:"
         ],
@@ -4413,7 +4413,7 @@
         "title": "Solves and sessions",
         "body": [
           "The list under the timer shows the solves in that session. Tapping a time opens the detail window: you can add a penalty, write a note, look at the scramble and the solve breakdown, or delete the solve.",
-          "The plus two and DNF buttons right below the timer always apply to your last solve.",
+          "The +2 and DNF buttons right below the timer always apply to your last solve.",
           "The solves page gathers every solve into one list. You can filter by time range, by penalty, by whether the solve was done with a smart cube and by whether it was imported, and sort by time or by date.",
           "The same page has multi-select: tick several solves and delete them in one go.",
           "A session is a list you keep your solves apart in: warm-up, 3x3 practice, one-handed and so on. You switch between them from the session menu at the top. On the sessions page you create a session, rename it, drag to reorder, merge two of them, or select several and delete them. Averages are worked out per session."
@@ -4433,14 +4433,13 @@
       "trainer": {
         "title": "Trainer",
         "body": [
-          "The trainer is for drilling algorithms and has five modes. Time and success rate are kept per algorithm, so the cases you are weak on stand out."
+          "The trainer is for drilling algorithms and has four modes. Time and success rate are kept per algorithm, so the cases you are weak on stand out."
         ],
         "steps": [
           "Standard: you drill the algorithms you picked from sets like OLL, PLL, F2L and ZBLL, one after another.",
           "Smart cube: connect the cube and it reads your turns and sees whether you executed the algorithm correctly.",
-          "PLL recognition: you type the case's letter on the keyboard, no solving needed. It measures how fast you recognise.",
           "Cross efficiency: compares how many moves you used for the cross against the shortest solution.",
-          "OLLCP: you practise recognising corner permutation during OLL as well."
+          "PLL recognition: you type the case's letter on the keyboard, no solving needed. It measures how fast you recognise."
         ],
         "notes": [
           "The PLL recognition mode has its own history, settings and glossary; the history page lets you compare earlier rounds.",

@@ -53,13 +53,21 @@ export default function AnonTransferPrompt() {
 		}
 
 		// Sessions first: a solve whose session does not exist yet would land nowhere.
-		const sessionResult = await importSessionsInChunks(snapshot.sessions as any, () => {});
-		const solveResult = await importSolvesInChunks(snapshot.solves as any, (p) => {
+		const sessionResult = await importSessionsInChunks(snapshot.sessions, () => {});
+
+		// Stop here rather than pushing solves at sessions that were never created, the
+		// same call ReviewImport makes. Sending them anyway would scatter orphans across
+		// the account and still report a failure.
+		if (sessionResult.failureCount > 0) {
+			setPhase('partial');
+			return;
+		}
+
+		const solveResult = await importSolvesInChunks(snapshot.solves, (p) => {
 			setProgress(p.percentComplete);
 		});
 
-		const failed = sessionResult.failureCount > 0 || solveResult.failureCount > 0;
-		if (failed) {
+		if (solveResult.failureCount > 0) {
 			// The local copy is the only copy. Keep it and let them retry later.
 			setPhase('partial');
 			return;
@@ -71,10 +79,15 @@ export default function AnonTransferPrompt() {
 			const sessionDb = getSessionDb();
 			const solveDb = getSolveDb();
 			for (const session of snapshot.sessions) {
-				if (sessionDb && !sessionDb.findOne({id: session.id})) sessionDb.insert(session);
+				// The snapshot is trimmed to what the mutation accepts, so `created_at` has
+				// to be put back here or the sessions list renders an invalid date until the
+				// next reload pulls the row from the server.
+				if (sessionDb && !sessionDb.findOne({id: session.id})) {
+					sessionDb.insert({...session, created_at: new Date(), user_id: me.id} as any);
+				}
 			}
 			for (const solve of snapshot.solves) {
-				if (solveDb && !solveDb.findOne({id: solve.id})) solveDb.insert(solve);
+				if (solveDb && !solveDb.findOne({id: solve.id})) solveDb.insert(solve as any);
 			}
 			emitEvent('solveDbUpdatedEvent');
 			emitEvent('sessionsDbUpdatedEvent');
