@@ -53,7 +53,18 @@
 	}
 
 	&__logo {
+		// Sizing lives here rather than inline on the element: the inner .zt-logo
+		// defaults to 27px, and the header wants it larger.
+		display: inline-flex;
+		width: 5rem;
+		height: 5rem;
+		flex-shrink: 0;
 		animation: cubeRotate 10s linear infinite;
+
+		.#{$namespace}-logo {
+			width: 100%;
+			height: 100%;
+		}
 
 		@media (prefers-reduced-motion: reduce) {
 			animation: none;
@@ -108,6 +119,17 @@
 		align-items: center;
 		gap: clamp(0.3rem, 0.75vw, 0.8rem);
 		flex-shrink: 0;
+	}
+
+	// Log in / Sign up, shown only to signed-out visitors. Sits at the end of the same
+	// row as the language and theme controls, so it needs the row's rhythm rather than
+	// the sidebar's stacked, full-width one.
+	&__auth {
+		display: flex;
+		align-items: center;
+		gap: 0.533rem;
+		margin-left: 0.267rem;
+		white-space: nowrap;
 	}
 
 	// Mobile styles

@@ -39,7 +39,9 @@ export default function Welcome() {
 	const title = t('seo.home_title');
 	const desc = t('seo.home_description');
 	const keywords = getPageKeywords('/', t);
-	const ogImage = `${SITE_URL}/public/welcome/web/timer.jpeg`;
+	// 1200x630 exactly, matching the og:image:width/height declared below. The old
+	// timer.jpeg was 1661x1036, so the ratio it advertised was never the one it had.
+	const ogImage = `${SITE_URL}/public/welcome/web/og-card.jpeg`;
 
 	const lang = i18n.language || 'en';
 	// No faqSchema here: the FAQ answers are rendered on /help, and that is where

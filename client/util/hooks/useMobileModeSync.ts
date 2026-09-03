@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {useDispatch} from 'react-redux';
 import {setGeneral} from '../../actions/general';
 import {useGeneral} from './useGeneral';
+import {isMobileViewport} from '../is-mobile-viewport';
 
 /**
  * Keeps the global `mobile_mode` flag in step with the viewport.
@@ -22,9 +23,7 @@ export function useMobileModeSync() {
 		if (typeof window === 'undefined') return;
 
 		function sync() {
-			// < 1024: mobile (an unfolded foldable counts). innerHeight <= 500 catches
-			// a phone held in landscape in a desktop-width browser window.
-			const shouldBeMobile = window.innerWidth < 1024 || window.innerHeight <= 500;
+			const shouldBeMobile = isMobileViewport();
 			if (shouldBeMobile !== mobileMode) {
 				dispatch(setGeneral('mobile_mode', shouldBeMobile));
 			}

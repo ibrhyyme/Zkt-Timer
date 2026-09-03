@@ -20,7 +20,12 @@ export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing time
 // resourceUri's base already ends in /public — repeating it here produced
 // /public/public/images/zkt-logo.png, so every page without its own featuredImage
 // was serving a 404 as its Open Graph preview.
-export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/zkt-logo.png');
+//
+// A purpose-made 1200x630 card, not the logo. The logo is a 384x384 square, and it
+// was being published under `og:image:width 1200` / `height 630` below, so every
+// page but the landing handed Reddit, X and Facebook dimensions that did not match
+// the file they described.
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/welcome/web/og-card.jpeg');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 

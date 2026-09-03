@@ -10,7 +10,7 @@ import React from 'react';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import EdgeDrawer from '../edge_drawer/EdgeDrawer';
-import {NAV_LINKS} from '../Nav';
+import {NAV_LINKS} from '../nav_links';
 import {useInbox} from '../../../../util/hooks/useInbox';
 import block from '../../../../styles/bem';
 

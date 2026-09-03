@@ -31,7 +31,7 @@ export default (payload: HtmlPagePayload) => {
 				<script>try{var _t=JSON.parse(localStorage.getItem('zkt_theme'));if(_t){var _h=document.documentElement,_s=_h.style;if(_t.bg)_s.setProperty('--background-color',_t.bg);if(_t.mod)_s.setProperty('--module-color',_t.mod);if(_t.btn)_s.setProperty('--button-color',_t.btn);if(_t.txt)_s.setProperty('--text-color',_t.txt);if(_t.pri)_s.setProperty('--primary-color',_t.pri);if(_t.sec)_s.setProperty('--secondary-color',_t.sec);_h.classList.add(_t.light?'theme-light':'theme-dark');}}catch(e){}</script>
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="/public/cubing-icons/cubing-icons.css">
-				<link rel="icon" type="image/png" href="${resourceBase}/images/zkt-logo.png">
+				<link rel="icon" type="image/png" href="${resourceBase}/images/zkt-logo.png?v=${version}">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
@@ -53,12 +53,12 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="google-play-app" content="app-id=com.zktimer.app">
 				<link rel="alternate" href="android-app://com.zktimer.app/https/zktimer.app/">
 				<!-- iOS Home Screen Icon (Must be PNG, SVG not supported) -->
-				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png">
-				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png">
-				<link rel="apple-touch-icon" sizes="180x180" href="${resourceBase}/images/apple-touch-icon.png">
-				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png">
+				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
+				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
+				<link rel="apple-touch-icon" sizes="180x180" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
+				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
 				<!-- iOS Launch Screen (Splash screen-like effect) -->
-				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png">
+				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
 				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zktimer.app" src="https://plausible.io/js/plausible.js"></script>` : ""}
 				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
 				<script>

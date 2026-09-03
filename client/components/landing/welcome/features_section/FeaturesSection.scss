@@ -5,6 +5,17 @@
 	padding: 4rem 0;
 	background: transparent;
 
+	// Each feature block slides in from the side, starting at translateX(±60px)
+	// (FeatureItem.tsx). Until its ScrollTrigger fires, a right-hand block sits 60px
+	// past the viewport and widens the page: on a 896px screen the document measured
+	// 935px, and the reader could drag it sideways by that much.
+	//
+	// `clip` rather than `hidden` on purpose. `hidden` would make this a scroll
+	// container, and a scroll container between a sticky element and a popup breaks
+	// the popup's positioning maths, which is a bug we have already paid for once in
+	// the header. `clip` hides the overflow without creating one.
+	overflow-x: clip;
+
 	&__container {
 		max-width: 85.333rem;
 		margin: 0 auto;

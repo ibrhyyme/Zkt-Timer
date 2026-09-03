@@ -419,6 +419,9 @@ if (!isDev) {
 		uploads: false,
 		schema: mergedSchema,
 		playground: isDev,
+		// Apollo 2 infers this from NODE_ENV. Stated outright so a container that ships
+		// without NODE_ENV set cannot start attaching stack traces to error responses.
+		debug: isDev,
 		introspection: isDev, // Block API schema discovery in production
 		validationRules: [depthLimit(MAX_QUERY_DEPTH)],
 		plugins: [

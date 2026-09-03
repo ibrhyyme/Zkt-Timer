@@ -18,14 +18,14 @@ import { useWindowListener } from '../../../util/hooks/useListener';
 import block from '../../../styles/bem';
 import AccountDropdown from '../nav/account_dropdown/AccountDropdown';
 import { useMe } from '../../../util/hooks/useMe';
-import { NAV_LINKS, NavLinkProps } from '../nav/Nav';
+import { NAV_LINKS, NavLinkProps } from '../nav/nav_links';
 import Button from '../../common/button/Button';
-import LoginNav from '../nav/LoginNav';
 import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import StreamerModeToggle from './StreamerModeToggle';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
+import { isMobileViewport } from '../../../util/is-mobile-viewport';
 
 const b = block('header-nav');
 
@@ -98,6 +98,7 @@ interface Props {
 
 export default function HeaderNav(props: Props = {}) {
 	const {hideThemeToggle} = props;
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
@@ -116,11 +117,7 @@ export default function HeaderNav(props: Props = {}) {
 	}, []);
 
 	function windowResize() {
-		// Ekran boyutuna göre mobil/desktop tespiti
-		// < 1024: mobil (katlanan telefonlarin acik ekrani dahil)
-		// >= 1024: desktop/tablet
-		// innerHeight <= 500: web browser'da landscape telefon tespiti
-		const shouldBeMobile = window.innerWidth < 1024 || window.innerHeight <= 500;
+		const shouldBeMobile = isMobileViewport();
 
 		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));
@@ -195,6 +192,18 @@ export default function HeaderNav(props: Props = {}) {
 	// Pro features are now available to everyone
 	let getPro = null;
 
+	// Someone arriving signed out — from a shared link, or a search result — used to
+	// find no way into an account from here at all: the old line rendered LoginNav only
+	// when `me` was set, and LoginNav returns null in exactly that case, so the pair of
+	// buttons never drew under any condition. Written inline rather than reusing
+	// LoginNav because that component is laid out for the vertical sidebar.
+	const authButtons = me ? null : (
+		<div className={b('auth')}>
+			<Button text={t('nav.login')} to="/login" gray />
+			<Button text={t('nav.signup')} to="/signup" primary />
+		</div>
+	);
+
 	// Mobile: No header nav needed, Timer has its own HeaderControl
 	if (mobileMode) {
 		return null;
@@ -219,9 +228,12 @@ export default function HeaderNav(props: Props = {}) {
 						to="/"
 						className="text-text hover:text-text font-bold tracking-tight select-none text-2xl flex items-center gap-2"
 					>
-						<span className={b('logo') + ' zt-logo'} aria-label="Zeka Küpü Türkiye" style={{width: '5rem', height: '5rem'}}>
-							<img className="zt-logo__img zt-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
-							<img className="zt-logo__img zt-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
+						{/* The Logo component, not a hand-copied pair of <img> tags. The copy
+						    relied on Logo.scss reaching the bundle through some other importer;
+						    when the unused Nav sidebar was deleted that stopped happening and both
+						    the light and dark images rendered, stacked. */}
+						<span className={b('logo')} aria-label="Zeka Küpü Türkiye">
+							<Logo />
 						</span>
 						Zkt Timer
 					</Link>
@@ -260,7 +272,7 @@ export default function HeaderNav(props: Props = {}) {
 					<LanguageSwitcher />
 					{hideThemeToggle ? null : <ThemeToggle />}
 					<StreamerModeToggle />
-					{me && <LoginNav collapsed={false} />}
+					{authButtons}
 				</div>
 			</div>
 			</div>

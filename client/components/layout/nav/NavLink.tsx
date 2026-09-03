@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Tag from '../../common/tag/Tag';
 import { Lock } from 'phosphor-react';
 import { useMe } from '../../../util/hooks/useMe';
-import { NavLinkProps } from './Nav';
+import { NavLinkProps } from './nav_links';
 
 interface Props extends NavLinkProps {
 	collapsed?: boolean;
