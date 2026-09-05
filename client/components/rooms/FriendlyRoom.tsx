@@ -186,6 +186,7 @@ function FriendlyRoomContent() {
 
     // Settings
     const manualEntry = useSettings('manual_entry');
+    const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
     const timerType = useSettings('timer_type');
     const inspection = useSettings('inspection');
     const inspectionDelay = useSettings('inspection_delay');
@@ -634,9 +635,15 @@ function FriendlyRoomContent() {
     if (!engineRef.current) {
         engineRef.current = new SmartSolveEngine(
             (event) => engineEventRef.current(event),
-            { solvedState: reduxSmartSolvedState }
+            { solvedState: reduxSmartSolvedState, moveOrderFix: smartCubeMoveOrderFix }
         );
     }
+
+    // The timer page does the same. Kept in sync rather than baked in at construction so
+    // toggling the setting takes effect without rebuilding the engine mid-session.
+    useEffect(() => {
+        engineRef.current?.setMoveOrderFix(smartCubeMoveOrderFix);
+    }, [smartCubeMoveOrderFix]);
 
     // Assigned every render so the engine, which is created once, always reaches the
     // current closure instead of the one from first mount.

@@ -47,6 +47,7 @@ export default function HardwareSettings() {
 	const smartCubeShow = useSettings('smart_cube_show');
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
+	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
 	function updateSetting(name: keyof AllSettings, value: any) {
@@ -244,6 +245,12 @@ export default function HardwareSettings() {
 						onChange={(v) => updateSetting('smart_cube_size', v)}
 					/>
 				)}
+				<TimerSettingsToggle
+					label={t('timer_settings.smart_cube_move_order_fix')}
+					description={t('timer_settings.smart_cube_move_order_fix_desc')}
+					isActive={smartCubeMoveOrderFix}
+					onClick={() => updateSetting('smart_cube_move_order_fix', !smartCubeMoveOrderFix)}
+				/>
 			</TimerSettingsGroup>
 		</div>
 	);

@@ -1287,6 +1287,8 @@
     "dont_show_again": "No mostrar de nuevo",
     "understood": "Entendido",
     "use_space_with_smart_cube": "Usar barra espaciadora con cubos inteligentes",
+    "smart_cube_move_order_fix": "Corrección del orden de movimientos",
+    "smart_cube_move_order_fix_desc": "Cuando giras dos capas a la vez, un cubo inteligente a veces informa los movimientos en el orden equivocado, y el cronómetro sigue corriendo aunque el cubo ya esté resuelto. Con esto activado, la aplicación lo detecta y termina el tiempo. Puede fallar en algún caso, por eso viene desactivado.",
     "use_space_with_smart_cube_desc": "Usa la barra espaciadora como con cubos normales en lugar de detectar cuándo una resolución comienza/termina mediante movimientos del cubo inteligente.",
     "hide_time_when_solving": "Ocultar tiempo mientras resuelves",
     "zero_out_time_after_solve": "Reiniciar tiempo después de resolver",

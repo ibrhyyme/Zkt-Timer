@@ -1,7 +1,5 @@
 import SmartCube from './smart_cube';
 import { isEqual } from 'lodash';
-import LZString from './lz_string';
-import aes128 from './ae128';
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
@@ -12,6 +10,7 @@ import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 import { readCachedMac, readAnyMac, writeCachedMac, clearCachedMac, cubeStorageId } from './mac_cache';
 import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
+import GanGen1ProtocolDriver, { isSupportedGen1Version } from './gan_v1_driver';
 
 // Simple linear regression: y = slope * x + intercept
 // Returns [slope, intercept]
@@ -51,6 +50,26 @@ const GAN_GEN3_STATE_CHARACTERISTIC = '8653000b-43e6-47b7-9cb0-5fc21d4ae340';
 const GAN_GEN4_SERVICE = '00000010-0000-fff7-fff6-fff5fff4fff0';
 const GAN_GEN4_COMMAND_CHARACTERISTIC = '0000fff5-0000-1000-8000-00805f9b34fb';
 const GAN_GEN4_STATE_CHARACTERISTIC = '0000fff6-0000-1000-8000-00805f9b34fb';
+
+/**
+ * Gen1 (GAN 356i and the other first-generation cubes).
+ *
+ * Note the characteristic UUIDs: fff5 and fff6 are the SAME 16-bit UUIDs Gen4 uses for
+ * its command and state characteristics. Only the service tells the two apart, which is
+ * why the generation is resolved by a fixed priority order (Gen2 -> Gen3 -> Gen4 -> Gen1)
+ * rather than by whichever service the adapter happens to list first.
+ */
+const GAN_GEN1_DATA_SERVICE = '0000fff0-0000-1000-8000-00805f9b34fb';
+const GAN_GEN1_META_SERVICE = '0000180a-0000-1000-8000-00805f9b34fb';
+const GAN_GEN1_VERSION_CHARACTERISTIC = '00002a28-0000-1000-8000-00805f9b34fb';
+const GAN_GEN1_HARDWARE_CHARACTERISTIC = '00002a23-0000-1000-8000-00805f9b34fb';
+/** Cube state, (54 - 6) facelets, 3 bits per facelet. */
+const GAN_GEN1_STATE_CHARACTERISTIC = '0000fff2-0000-1000-8000-00805f9b34fb';
+/** Move counter plus the last 6 moves. */
+const GAN_GEN1_MOVES_CHARACTERISTIC = '0000fff5-0000-1000-8000-00805f9b34fb';
+/** Time offsets between the moves reported by the moves characteristic. */
+const GAN_GEN1_TIMES_CHARACTERISTIC = '0000fff6-0000-1000-8000-00805f9b34fb';
+const GAN_GEN1_BATTERY_CHARACTERISTIC = '0000fff7-0000-1000-8000-00805f9b34fb';
 
 // List of Company Identifier Codes for GAN cubes
 const GAN_CIC_LIST = Array(256)
@@ -1068,6 +1087,259 @@ class GanCubeClassicConnection {
 	}
 }
 
+/**
+ * Gen1 connection — the polling counterpart of GanCubeClassicConnection.
+ *
+ * First-generation cubes push nothing: the move counter, the time offsets and the cube
+ * state are all read on demand. cstimer polls them in a tight loop (`loopRead`, a read
+ * chain that restarts the moment it finishes) and this keeps the same cadence, so the
+ * traffic on the wire matches the reference implementation.
+ *
+ * It exposes the same surface as the classic connection (`events$`, `sendCubeCommand`,
+ * `disconnect`, `deviceName`, `deviceMAC`), which is what lets `GAN.handleCubeEvent`,
+ * the silence detector and the teardown path stay untouched.
+ */
+class GanCubeV1PollingConnection {
+	constructor(adapter, device, driver) {
+		this.adapter = adapter;
+		this.device = device;
+		this.driver = driver;
+		this.events$ = new Subject();
+		this._disconnected = false;
+		/** Set by disconnect(); every await in the loop checks it before continuing. */
+		this._stopped = false;
+		/** Guards start() so the poll loop can never be launched twice. */
+		this._started = false;
+		/** Raised by REQUEST_FACELETS, which must work even when no move has happened. */
+		this._forceStateRead = false;
+		/** Firmware version string, filled by _initDecoder and reported in HARDWARE. */
+		this._version = '';
+		/**
+		 * Serialises GATT reads. BLE stacks reject a second operation while one is still in
+		 * flight ("GATT operation already in progress"), and here the poll loop and the
+		 * init-time battery request read at the same time. The notifying generations never
+		 * had this problem: they write commands and receive pushes.
+		 */
+		this._readLock = Promise.resolve();
+
+		this.onDisconnect = async () => {
+			if (this._disconnected) return;
+			this._disconnected = true;
+			this._stopped = true;
+			this.events$.next({ timestamp: now(), type: 'DISCONNECT' });
+			this.events$.unsubscribe();
+		};
+	}
+
+	static async create(adapter, device, driver) {
+		const conn = new GanCubeV1PollingConnection(adapter, device, driver);
+		await conn._initDecoder();
+		return conn;
+	}
+
+	/**
+	 * Begins polling. Separate from create() on purpose: `events$` is a hot Subject, so
+	 * anything emitted before the caller subscribes is dropped on the floor. The notifying
+	 * generations get away with starting inside create() because a cube sends nothing until
+	 * it is asked; a poll loop starts talking immediately, and the events it would lose are
+	 * the ones that confirm the connection — losing them means the handshake watchdog tears
+	 * a perfectly healthy cube down after 7 seconds.
+	 */
+	start() {
+		if (this._started || this._stopped) return;
+		this._started = true;
+		// Gen1 carries no hardware-info payload. The event is still emitted because the UI
+		// otherwise waits for orientation data this cube will never send; `hardwareName` is
+		// deliberately absent so the cube keeps its advertised name.
+		this._emit({
+			type: 'HARDWARE',
+			timestamp: now(),
+			hardwareVersion: this._version,
+			softwareVersion: this._version,
+			gyroSupported: false,
+		});
+		// Not awaited: this is the poll loop, it runs for the life of the connection.
+		this._loopRead();
+	}
+
+	/**
+	 * cstimer `v1init()` — reads the firmware version, rejects the versions the key
+	 * derivation does not cover, then salts the key with the hardware characteristic.
+	 */
+	async _initDecoder() {
+		const versionValue = await this._read(GAN_GEN1_META_SERVICE, GAN_GEN1_VERSION_CHARACTERISTIC);
+		const version =
+			(versionValue.getUint8(0) << 16) | (versionValue.getUint8(1) << 8) | versionValue.getUint8(2);
+		this._version = version.toString(16);
+		console.log('[ZKT:GAN-V1] firmware version', this._version);
+
+		if (!isSupportedGen1Version(version)) {
+			throw new Error("Can't find target BLE services - unsupported GAN v1 firmware " + this._version);
+		}
+
+		const hardwareValue = await this._read(GAN_GEN1_META_SERVICE, GAN_GEN1_HARDWARE_CHARACTERISTIC);
+		if (!this.driver.initDecoder(version, hardwareValue)) {
+			throw new Error("Can't find target BLE services - unsupported GAN v1 key version " + this._version);
+		}
+		console.log('[ZKT:GAN-V1] decoder ready');
+	}
+
+	/**
+	 * Publish an event unless the connection is already gone. A read can complete after
+	 * teardown has begun, and `events$` is unsubscribed by then — pushing into it would
+	 * throw ObjectUnsubscribedError out of the poll loop.
+	 */
+	_emit(event) {
+		if (this._stopped || this._disconnected) return;
+		this.events$.next(event);
+	}
+
+	/** Every GATT read goes through here, one at a time. See `_readLock`. */
+	async _read(serviceUuid, characteristicUuid) {
+		const previous = this._readLock;
+		let release;
+		this._readLock = new Promise((resolve) => {
+			release = resolve;
+		});
+		// A failed read belongs to whoever issued it; it must not poison the queue.
+		await previous.catch(() => {});
+		try {
+			return await this.adapter.readCharacteristic(this.device, serviceUuid, characteristicUuid);
+		} finally {
+			release();
+		}
+	}
+
+	get deviceName() {
+		return this.device.name || 'GAN-XXXX';
+	}
+
+	get deviceMAC() {
+		// Gen1 derives its key from the hardware characteristic, so no MAC is ever resolved.
+		// Returning null (rather than the classic connection's 00:00:00:00:00:00 placeholder)
+		// matters: the caller falls back to the platform device id, and without that every
+		// Gen1 cube would be stored under one and the same identity.
+		return this.device.mac || null;
+	}
+
+	async _loopRead() {
+		while (!this._stopped) {
+			try {
+				await this._readOnce();
+			} catch (e) {
+				if (this._stopped) return;
+				// A transient read failure on a live link is worth retrying; a cube that is
+				// really gone keeps failing, and the adapter's own disconnect callback is
+				// what tears the connection down. Backing off keeps that case from spinning.
+				console.warn('[ZKT:GAN-V1] poll read failed:', e?.message);
+				await new Promise((r) => setTimeout(r, 200));
+			}
+		}
+	}
+
+	/** One iteration of cstimer's `loopRead()`. */
+	async _readOnce() {
+		const movesValue = await this._read(GAN_GEN1_DATA_SERVICE, GAN_GEN1_MOVES_CHARACTERISTIC);
+		if (this._stopped) return;
+
+		const locTime = now();
+		const advanced = this.driver.parseMoves(this.driver.decode(movesValue));
+
+		// REQUEST_FACELETS must be honoured even when the counter has not moved — the
+		// silence detector asks precisely when nothing is happening. It must NOT be served
+		// before the move characteristic has been read at least once, though: the driver
+		// would take -1 as its baseline counter and the cube's last six moves would then be
+		// replayed as if the user had just made them. Reading moves first rules that out.
+		const forced = this._forceStateRead;
+		this._forceStateRead = false;
+
+		if (!advanced) {
+			if (forced) await this._readState();
+			return;
+		}
+
+		const timesValue = await this._read(GAN_GEN1_DATA_SERVICE, GAN_GEN1_TIMES_CHARACTERISTIC);
+		if (this._stopped) return;
+		const timeBytes = this.driver.decode(timesValue);
+
+		if (this.driver.needsStateCheck || forced) {
+			const isInitial = await this._readState();
+			if (this._stopped) return;
+			if (!isInitial) {
+				// cstimer behaviour: a mid-session state read replaces this round's move
+				// processing. `prevMoveCnt` was not advanced, so the very next iteration
+				// picks the same moves up and delivers them normally.
+				return;
+			}
+		}
+
+		this.driver.parseTimeOffsets(timeBytes);
+		const events = this.driver.updateMoveTimes(locTime);
+		for (const event of events) {
+			this._emit(event);
+		}
+	}
+
+	/** Reads the cube's own state and publishes it. Returns true on the initial sync. */
+	async _readState() {
+		const value = await this._read(GAN_GEN1_DATA_SERVICE, GAN_GEN1_STATE_CHARACTERISTIC);
+		const facelets = this.driver.parseFacelets(this.driver.decode(value));
+		const isInitial = this.driver.applyStateRead();
+		this._emit({
+			type: 'FACELETS',
+			timestamp: now(),
+			serial: this.driver.moveCnt,
+			facelets: facelets,
+		});
+		return isInitial;
+	}
+
+	async _readBattery() {
+		const value = await this._read(GAN_GEN1_DATA_SERVICE, GAN_GEN1_BATTERY_CHARACTERISTIC);
+		// cstimer reads the level out of byte 7 of the decoded battery characteristic.
+		const batteryLevel = this.driver.decode(value)[7];
+		this._emit({
+			type: 'BATTERY',
+			timestamp: now(),
+			batteryLevel: Math.min(batteryLevel, 100),
+		});
+	}
+
+	/**
+	 * Gen1 has no command channel: every "request" is a read. REQUEST_RESET has no Gen1
+	 * equivalent at all, so it is ignored and `resetCubeState()` reports failure, leaving
+	 * the app-side markSolved path to do the work.
+	 */
+	async sendCubeCommand(command) {
+		if (this._stopped) return;
+		switch (command?.type) {
+			case 'REQUEST_FACELETS':
+				this._forceStateRead = true;
+				return;
+			case 'REQUEST_BATTERY':
+				return this._readBattery().catch((e) => {
+					console.warn('[ZKT:GAN-V1] battery read failed:', e?.message);
+				});
+			case 'REQUEST_RESET':
+				// Throwing rather than quietly succeeding: resetCubeState() reports true when
+				// this resolves, and a caller told the cube was reset when it was not would
+				// leave the app and the cube disagreeing about what "solved" means. The
+				// rejection sends it down the app-side markSolved path instead.
+				throw new Error('GAN v1 has no cube state reset command');
+			default:
+				return;
+		}
+	}
+
+	async disconnect() {
+		this._stopped = true;
+		await this.onDisconnect();
+		try {
+			await this.adapter.disconnect(this.device);
+		} catch (e) { }
+	}
+}
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -1224,12 +1496,45 @@ export default class GAN extends SmartCube {
 	 * Connect to GAN cube using the already-selected BleDevice
 	 */
 	connectWithExistingDevice = async (device, macAddressProvider) => {
-		// Retrieve cube MAC address needed for key salting
+		// Only the silent MAC sources are consulted here. The prompt (the `true` fallback
+		// call) is deliberately held back until the generation is known: a Gen1 cube needs
+		// no MAC at all — it derives its key from its own hardware characteristic — and the
+		// generation cannot be read before the link is up. Asking first would put a MAC
+		// dialog in front of every first-generation user for nothing.
 		let mac =
 			(macAddressProvider && (await macAddressProvider(device, false))) ||
-			(await autoRetrieveMacAddress(this.adapter, device)) ||
-			(macAddressProvider && (await macAddressProvider(device, true)));
+			(await autoRetrieveMacAddress(this.adapter, device));
 
+		// Connect via adapter and get device primary services
+		await this.adapter.connect(device, () => {
+			// onDisconnect callback
+			if (this.conn) {
+				this.conn.onDisconnect();
+			}
+		});
+		const services = await this.adapter.getServices(device);
+		const hasService = (uuid) => services.some((s) => s.toLowerCase() === uuid);
+
+		// Logged because the generation is now resolved by priority rather than by whichever
+		// service the adapter listed first. If a cube turns out to expose both its own
+		// generation's service and Gen1's fff0, this line is where that shows up.
+		console.log('[BLE-GAN] services advertised by', device.name, ':', services);
+
+		// Fixed priority, not "first service the adapter happens to list". Gen4's command and
+		// state characteristics are the plain 16-bit fff5/fff6, the same UUIDs Gen1 uses, so
+		// only the service tells them apart — and a Gen4 cube that also exposes fff0 would be
+		// mistaken for a Gen1 under an order-dependent scan. Gen1 is therefore tested last,
+		// and only when both of its services are present (cstimer applies the same rule).
+		if (hasService(GAN_GEN1_DATA_SERVICE) && hasService(GAN_GEN1_META_SERVICE)
+			&& !hasService(GAN_GEN2_SERVICE) && !hasService(GAN_GEN3_SERVICE) && !hasService(GAN_GEN4_SERVICE)) {
+			console.log('[ZKT:GAN-V1] first-generation cube detected, no MAC needed');
+			return GanCubeV1PollingConnection.create(this.adapter, device, new GanGen1ProtocolDriver());
+		}
+
+		// Every other generation salts its key with the MAC, so it is worth asking for now.
+		if (!mac && macAddressProvider) {
+			mac = await macAddressProvider(device, true);
+		}
 		if (!mac) {
 			throw new Error('Unable to determine cube MAC address, connection is not possible!');
 		}
@@ -1243,46 +1548,30 @@ export default class GAN extends SmartCube {
 				.reverse()
 		);
 
-		// Connect via adapter and get device primary services
-		await this.adapter.connect(device, () => {
-			// onDisconnect callback
-			if (this.conn) {
-				this.conn.onDisconnect();
-			}
-		});
-		const services = await this.adapter.getServices(device);
-
-		let conn = null;
-
 		// Resolve type of connected cube device and setup appropriate encryption / protocol driver
-		for (const serviceUUID of services) {
-			const svcLower = serviceUUID.toLowerCase();
-			if (svcLower === GAN_GEN2_SERVICE) {
-				const key = device.name?.startsWith('AiCube') ? GAN_ENCRYPTION_KEYS[1] : GAN_ENCRYPTION_KEYS[0];
-				const encrypter = new GanGen2CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
-				const driver = new GanGen2ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN2_COMMAND_CHARACTERISTIC, GAN_GEN2_STATE_CHARACTERISTIC, encrypter, driver);
-				break;
-			} else if (svcLower === GAN_GEN3_SERVICE) {
-				const key = GAN_ENCRYPTION_KEYS[0];
-				const encrypter = new GanGen3CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
-				const driver = new GanGen3ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver);
-				break;
-			} else if (svcLower === GAN_GEN4_SERVICE) {
-				const key = GAN_ENCRYPTION_KEYS[0];
-				const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
-				const driver = new GanGen4ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, encrypter, driver);
-				break;
-			}
+		if (hasService(GAN_GEN2_SERVICE)) {
+			const key = device.name?.startsWith('AiCube') ? GAN_ENCRYPTION_KEYS[1] : GAN_ENCRYPTION_KEYS[0];
+			const encrypter = new GanGen2CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
+			const driver = new GanGen2ProtocolDriver();
+			console.log('[BLE-GAN] generation resolved: Gen2');
+			return GanCubeClassicConnection.create(this.adapter, device, GAN_GEN2_SERVICE, GAN_GEN2_COMMAND_CHARACTERISTIC, GAN_GEN2_STATE_CHARACTERISTIC, encrypter, driver);
+		}
+		if (hasService(GAN_GEN3_SERVICE)) {
+			const key = GAN_ENCRYPTION_KEYS[0];
+			const encrypter = new GanGen3CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
+			const driver = new GanGen3ProtocolDriver();
+			console.log('[BLE-GAN] generation resolved: Gen3');
+			return GanCubeClassicConnection.create(this.adapter, device, GAN_GEN3_SERVICE, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver);
+		}
+		if (hasService(GAN_GEN4_SERVICE)) {
+			const key = GAN_ENCRYPTION_KEYS[0];
+			const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
+			const driver = new GanGen4ProtocolDriver();
+			console.log('[BLE-GAN] generation resolved: Gen4');
+			return GanCubeClassicConnection.create(this.adapter, device, GAN_GEN4_SERVICE, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, encrypter, driver);
 		}
 
-		if (!conn) {
-			throw new Error("Can't find target BLE services - wrong or unsupported cube device model");
-		}
-
-		return conn;
+		throw new Error("Can't find target BLE services - wrong or unsupported cube device model");
 	};
 
 	init = async () => {
@@ -1298,6 +1587,13 @@ export default class GAN extends SmartCube {
 		setTimerParams({ smartCubeConnectStep: 'paired' });
 
 		this.conn.events$.subscribe(this.handleCubeEvent);
+
+		// Gen1 polls rather than being notified, so its loop only starts once the subscriber
+		// above exists (see GanCubeV1PollingConnection.start). No-op for every other
+		// generation, which has nothing to start.
+		if (typeof this.conn.start === 'function') {
+			this.conn.start();
+		}
 
 		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 

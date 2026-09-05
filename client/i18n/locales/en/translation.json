@@ -1287,6 +1287,8 @@
     "dont_show_again": "Don't show again",
     "understood": "I understand",
     "use_space_with_smart_cube": "Use spacebar with smart cubes",
+    "smart_cube_move_order_fix": "Move order correction",
+    "smart_cube_move_order_fix_desc": "When you turn two layers at once, a smart cube sometimes reports the moves in the wrong order, which leaves the timer running on an already solved cube. With this on, the app detects that and finishes the solve. It can occasionally be wrong, so it is off by default.",
     "use_space_with_smart_cube_desc": "Use the spacebar like normal cubes instead of detecting when a solve starts/ends by smart cube moves.",
     "hide_time_when_solving": "Hide time while solving",
     "zero_out_time_after_solve": "Reset time after solve",

@@ -7,6 +7,7 @@ import { cubeTimestampLinearFit, TimestampedMove, CorrectedMove } from '../smart
 import { countHTM } from '../../../shared/util/solve/move_counter';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
 import { CubeTracker, prefixStatesFrom, ScramblePrefix } from './tracker';
+import { shouldRecoverFromMoveOrder } from './move_order_fix';
 
 /**
  * Framework-agnostic smart cube solve engine.
@@ -25,7 +26,7 @@ import { CubeTracker, prefixStatesFrom, ScramblePrefix } from './tracker';
  */
 
 export type ScrambleCompleteSource = 'facelets' | 'matcher';
-export type SolveCompleteSource = 'tracker' | 'facelets-grace' | 'facelets-poll';
+export type SolveCompleteSource = 'tracker' | 'facelets-grace' | 'facelets-poll' | 'move-order-fix';
 export type MatchStatus = 'perfect' | 'half' | 'wrong' | 'pending';
 
 export type SmartEngineEvent =
@@ -123,6 +124,15 @@ export interface SmartSolveEngineOptions {
 	 */
 	outOfSyncDelayMs?: number;
 	solvedState?: string;
+	/**
+	 * Act on moves the cube reported in the wrong order (see `move_order_fix.ts`).
+	 *
+	 * Off unless the user turns it on, which is how cstimer ships the same heuristic: it
+	 * ends a solve on inference rather than on a state the cube confirmed, and a wrong call
+	 * costs a real attempt. With this false nothing in that path runs at all — not even the
+	 * timer that would trigger it.
+	 */
+	moveOrderFix?: boolean;
 }
 
 const DEFAULTS = {
@@ -131,7 +141,15 @@ const DEFAULTS = {
 	lateMoveWindowMs: 50,
 	maxLateDrops: 3,
 	outOfSyncDelayMs: 1200,
+	moveOrderFix: false,
 };
+
+/**
+ * How long the move stream must be quiet before a misread is considered. cstimer waits the
+ * same second: mid-turn the cube is legitimately in a state no swap explains, so acting
+ * while the user is still turning would fire on half-finished moves.
+ */
+const MOVE_ORDER_FIX_DELAY_MS = 1000;
 
 /**
  * Shares the timer page's runtime flag: set `window.__SMART_DEBUG__ = true` in the console
@@ -209,6 +227,7 @@ export class SmartSolveEngine {
 	private graceTimer: ReturnType<typeof setTimeout> | null = null;
 	private outOfSyncTimer: ReturnType<typeof setTimeout> | null = null;
 	private pollTimer: ReturnType<typeof setInterval> | null = null;
+	private moveOrderTimer: ReturnType<typeof setTimeout> | null = null;
 	private disposed = false;
 
 	constructor(emit: (event: SmartEngineEvent) => void, options: SmartSolveEngineOptions = {}) {
@@ -227,6 +246,7 @@ export class SmartSolveEngine {
 			maxLateDrops: options.maxLateDrops ?? DEFAULTS.maxLateDrops,
 			outOfSyncDelayMs: options.outOfSyncDelayMs ?? DEFAULTS.outOfSyncDelayMs,
 			solvedState: options.solvedState ?? DEFAULT_SOLVED_STATE,
+			moveOrderFix: options.moveOrderFix ?? DEFAULTS.moveOrderFix,
 		};
 	}
 
@@ -279,6 +299,22 @@ export class SmartSolveEngine {
 		// which the calls above just brought in sync with this.turns.
 		this.resetDeviationTracking();
 		this.setOutOfSync(false);
+	}
+
+	/**
+	 * Turn the move-order recovery on or off while the engine is running.
+	 *
+	 * A settings toggle must not rebuild the engine: doing so mid-session would drop the
+	 * tracker, the scramble matcher and any solve in progress. Flipping the flag in place
+	 * costs nothing, and switching off also cancels a wait that is already armed.
+	 */
+	setMoveOrderFix(enabled: boolean): void {
+		if (this.disposed) return;
+		this.opts.moveOrderFix = enabled;
+		if (!enabled && this.moveOrderTimer) {
+			clearTimeout(this.moveOrderTimer);
+			this.moveOrderTimer = null;
+		}
 	}
 
 	setConnected(connected: boolean): void {
@@ -640,8 +676,45 @@ export class SmartSolveEngine {
 
 	private checkSolveFromTracker(): void {
 		if (this.phase !== 'timing') return;
-		if (!this.tracker.isSolved(this.opts.solvedState) && !this.physicallySolved) return;
+		if (!this.tracker.isSolved(this.opts.solvedState) && !this.physicallySolved) {
+			// Not solved as far as we can tell. If the cube misreported the order of two
+			// turns that is exactly what this looks like, so give that a chance once the
+			// user stops turning.
+			this.armMoveOrderFix();
+			return;
+		}
 		this.commitSolve('tracker');
+	}
+
+	/**
+	 * Arm the move-order recovery, restarting its wait on every new move.
+	 *
+	 * The check itself is not cheap (a bounded tree search plus a solver call), so it runs
+	 * once the stream has been quiet for a second rather than on every turn — and only
+	 * while a solve is actually being timed.
+	 */
+	private armMoveOrderFix(): void {
+		if (!this.opts.moveOrderFix || this.phase !== 'timing') return;
+		if (this.moveOrderTimer) clearTimeout(this.moveOrderTimer);
+		this.moveOrderTimer = setTimeout(() => {
+			this.moveOrderTimer = null;
+			this.runMoveOrderFix();
+		}, MOVE_ORDER_FIX_DELAY_MS);
+	}
+
+	/**
+	 * Did the cube report two turns in the wrong order, leaving a solved cube looking
+	 * unsolved? See `move_order_fix.ts` for the search and the guards around it.
+	 */
+	private runMoveOrderFix(): void {
+		if (this.phase !== 'timing' || !this.opts.moveOrderFix) return;
+		// Same window cstimer inspects: everything since the cube was last known solved,
+		// scramble turns included.
+		const moves = this.turns.slice(this.streamOffset).map((t) => t.turn);
+		const facelets = this.tracker.state;
+		if (!shouldRecoverFromMoveOrder(moves, facelets)) return;
+		dbg('move order fix: recovering solve', { moves: moves.length });
+		this.commitSolve('move-order-fix');
 	}
 
 	/**
@@ -938,6 +1011,10 @@ export class SmartSolveEngine {
 		if (this.outOfSyncTimer) {
 			clearTimeout(this.outOfSyncTimer);
 			this.outOfSyncTimer = null;
+		}
+		if (this.moveOrderTimer) {
+			clearTimeout(this.moveOrderTimer);
+			this.moveOrderTimer = null;
 		}
 		this.stopPoll();
 	}

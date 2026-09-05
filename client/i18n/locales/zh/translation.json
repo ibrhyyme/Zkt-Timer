@@ -1287,6 +1287,8 @@
     "dont_show_again": "不再显示",
     "understood": "我明白了",
     "use_space_with_smart_cube": "智能魔方使用空格键",
+    "smart_cube_move_order_fix": "还原顺序修正",
+    "smart_cube_move_order_fix_desc": "同时转动两层时，智能魔方有时会按错误的顺序上报转动，导致魔方已经复原而计时器仍在运行。开启后，应用会识别这种情况并结束计时。偶尔可能误判，因此默认关闭。",
     "use_space_with_smart_cube_desc": "像普通魔方一样使用空格键，而不是通过智能魔方移动来检测何时开始/结束还原。",
     "hide_time_when_solving": "还原时隐藏时间",
     "zero_out_time_after_solve": "还原后清零时间",

@@ -22,9 +22,20 @@ export default class Giiker extends SmartCube {
 	init = async () => {
 		const giiker = new GiikerUtil(this.device, this.adapter);
 		await giiker.connect();
-		giiker.on('move', (a) => {
-			if (this.connected) {
-				this.alertTurnCube(a);
+		// Batch dispatch, not alertTurnCube: the move and the state it produced have to reach
+		// the app in one update. The single-move path publishes them separately, which lets a
+		// listener see the new state before the move that caused it — the same ordering bug
+		// the GAN and QiYi drivers already avoid this way.
+		giiker.on('move', ({move, facelets}) => {
+			if (!this.connected) {
+				return;
+			}
+			if (move) {
+				this.alertTurnCubeBatch([{turn: move, completedAt: Date.now()}], facelets);
+			} else {
+				// A packet the move decoder could not read still carries a usable state, and
+				// pushing an empty turn into the stream would corrupt the tracker.
+				this.alertCubeState(facelets);
 			}
 		});
 

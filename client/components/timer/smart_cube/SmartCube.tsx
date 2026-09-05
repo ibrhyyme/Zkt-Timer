@@ -133,6 +133,7 @@ export default function SmartCube() {
 	const INACTIVITY_TIMEOUT_MS = 5000; // 5 seconds
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
+	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
 	const inspectionEnabled = useSettings('inspection');
 	const timerType = useSettings('timer_type');
 	const mobileMode = useGeneral('mobile_mode');
@@ -245,7 +246,9 @@ export default function SmartCube() {
 	const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
 
 	if (!engineRef.current) {
-		engineRef.current = new SmartSolveEngine((event) => engineEventRef.current(event));
+		engineRef.current = new SmartSolveEngine((event) => engineEventRef.current(event), {
+			moveOrderFix: smartCubeMoveOrderFix,
+		});
 	}
 
 
@@ -381,6 +384,10 @@ export default function SmartCube() {
 	useEffect(() => {
 		engineRef.current?.setConnected(smartCubeConnected);
 	}, [smartCubeConnected]);
+
+	useEffect(() => {
+		engineRef.current?.setMoveOrderFix(smartCubeMoveOrderFix);
+	}, [smartCubeMoveOrderFix]);
 
 	useEffect(() => {
 		if (useSpaceWithSmartCube) return;

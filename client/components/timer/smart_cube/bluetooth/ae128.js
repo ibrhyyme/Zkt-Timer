@@ -120,7 +120,16 @@ const aes128 = (function () {
 		return block;
 	};
 
-	return AES128;
+	// cstimer exposes AES128 through a factory (`$.aes128 = function(key) { return new
+	// AES128(key); }` in lib/sha256.js), and every call site here was ported against that
+	// shape: `aes128(key)`, no `new`. Returning the bare constructor instead meant those
+	// calls ran without `new` — the call returns undefined, and the caller ends up with no
+	// decoder at all. Restoring the factory is what makes `aes128(key)` mean what the qiyi,
+	// moyu32 and gan v1 drivers assume it means. `new aes128(key)` keeps working too: a
+	// constructor call whose function returns an object yields that object.
+	return function (key) {
+		return new AES128(key);
+	};
 })();
 
 export default aes128;

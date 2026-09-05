@@ -29,6 +29,8 @@
 			"\\.(css|less|scss|sass)$": "identity-obj-proxy"
 		},
 		"transform": {
+			"^.+\\.tsx?$": "ts-jest",
+			"^.+\\.jsx?$": "babel-jest",
 			"node_modules/variables/.+\\.(j|t)sx?$": "ts-jest"
 		},
 		"transformIgnorePatterns": [

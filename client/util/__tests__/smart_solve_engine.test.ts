@@ -35,6 +35,77 @@ function harness(options?: ConstructorParameters<typeof SmartSolveEngine>[1]) {
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+describe('SmartSolveEngine — move order recovery', () => {
+	// Long enough that a misread leaves the cube far from solved: the recovery refuses to
+	// act on a cube a short solution would fix, so a three-move scramble proves nothing.
+	const LONG_SCRAMBLE = 'R U F L D B R U';
+	const SOLUTION = ["U'", "R'", "B'", "D'", "L'", "F'", "U'", "R'"];
+	/** The cube reports two of the turns the wrong way round — every move arrives, in the wrong order. */
+	const MISREAD = ["R'", "U'", "B'", "D'", "L'", "F'", "U'", "R'"];
+
+	function driveSolve(engine: SmartSolveEngine, solution: string[]) {
+		const turns: SmartTurn[] = [];
+		let at = 1000;
+		engine.setScramble(LONG_SCRAMBLE);
+		engine.setConnected(true);
+		for (const move of LONG_SCRAMBLE.split(' ')) {
+			turns.push(turn(move, (at += 100)));
+		}
+		engine.pushTurns(turns.slice());
+		for (const move of solution) {
+			turns.push(turn(move, (at += 100)));
+			engine.pushTurns(turns.slice());
+		}
+	}
+
+	it('does nothing at all while the setting is off', async () => {
+		const { engine, of } = harness();
+		driveSolve(engine, MISREAD);
+
+		await wait(1200);
+
+		// This is the regression guard for every existing user: with the feature off the
+		// engine must behave exactly as it did before it existed.
+		expect(of('SOLVE_COMPLETE')).toHaveLength(0);
+	});
+
+	it('finishes a solve the cube reported out of order once enabled', async () => {
+		const { engine, of } = harness({ moveOrderFix: true });
+		driveSolve(engine, MISREAD);
+
+		// Nothing fires while the user might still be turning.
+		expect(of('SOLVE_COMPLETE')).toHaveLength(0);
+
+		await wait(1200);
+
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('move-order-fix');
+	});
+
+	it('still finishes a clean solve through the tracker, not the recovery', async () => {
+		const { engine, of } = harness({ moveOrderFix: true });
+		driveSolve(engine, SOLUTION);
+
+		// The cube reached the solved state for real, so the ordinary path claims it
+		// immediately and the recovery never runs.
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('tracker');
+
+		await wait(1200);
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+	});
+
+	it('leaves a genuinely unfinished solve running', async () => {
+		const { engine, of } = harness({ moveOrderFix: true });
+		// Half a solution: the user is mid-solve, nothing was misread.
+		driveSolve(engine, SOLUTION.slice(0, 4));
+
+		await wait(1200);
+
+		expect(of('SOLVE_COMPLETE')).toHaveLength(0);
+	});
+});
+
 describe('SmartSolveEngine — scramble phase', () => {
 	it('completes the scramble once the moves match and the tracker agrees', () => {
 		const { engine, of } = harness();

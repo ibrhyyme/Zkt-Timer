@@ -81,6 +81,13 @@ export interface AllSettings {
 	smart_cube_method: string;
 	smart_cube_show_recognition: boolean;
 	smart_cube_show: boolean;
+	/**
+	 * Finish a solve when the cube reported two turns in the wrong order (see
+	 * client/util/smart_cube/move_order_fix.ts). Off by default: it ends the solve on
+	 * inference rather than on a state the cube confirmed, so a wrong call costs a real
+	 * attempt. cstimer ships the same heuristic the same way.
+	 */
+	smart_cube_move_order_fix: boolean;
 
 	// Streamer Mode: mirror only the time display (scaleX(-1)) so a streamer's
 	// front camera flips it back to readable. Gated to admin + one streamer in UI.
@@ -179,6 +186,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_method: 'auto', // 'auto' | 'cfop' | 'roux' | 'zz'
 	smart_cube_show_recognition: false,
 	smart_cube_show: true,
+	smart_cube_move_order_fix: false,
 	streamer_mode: false,
 
 	timer_scramble_size_user_default: null,

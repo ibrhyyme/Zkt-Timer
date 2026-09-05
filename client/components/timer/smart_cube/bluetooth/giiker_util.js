@@ -297,12 +297,23 @@ export default class GiikerUtil extends EventEmitter {
 		return faces.join('');
 	}
 
+	/**
+	 * Every Giiker packet carries the cube's complete state, not just the turn that caused
+	 * it. That state used to be stored and thrown away, leaving the app to track the cube
+	 * from the move stream alone — so a single dropped packet put the two permanently out
+	 * of step, with nothing to correct it. Publishing the state alongside the move is what
+	 * makes a Giiker self-healing, the way cstimer has always treated it.
+	 *
+	 * Both travel in one event on purpose: the timer applies them in a single update, and a
+	 * state that arrives before the move that produced it makes the last scramble turn look
+	 * like the first turn of the solve.
+	 */
 	_onCharacteristicValueChanged = async (value) => {
 		const {state, move} = await this._parseCubeValue(value);
 
 		this._state = state;
 
-		this.emit('move', move);
+		this.emit('move', {move, facelets: this.stateString});
 	};
 
 	probablyEncrypted(data) {
@@ -384,20 +395,21 @@ export default class GiikerUtil extends EventEmitter {
 		return this.decryptState(data);
 	};
 
+	/**
+	 * cstimer `giikercube.js` move decoding — 1:1 port.
+	 *
+	 * The previous version collapsed the amount to a sign, so a half turn came through as a
+	 * quarter turn: amount 2 read as "B" instead of "B2", and amount 9 as "B'" instead of
+	 * "B2". Every double turn on a Giiker was therefore recorded as half of itself, which
+	 * put the tracker one turn away from the cube for the rest of the solve.
+	 */
 	giikerMoveToAlgMove = (face, amount) => {
-		switch (amount) {
-			case 3:
-				amount = -1;
-				break;
-			case 9:
-				amount = -2;
-				break;
+		const family = 'BDLURF'.charAt(face - 1);
+		if (!family) {
+			return '';
 		}
-
-		const family = ['?', 'B', 'D', 'L', 'U', 'R', 'F'][face];
-		const move = family + (amount > 0 ? '' : "'");
-
-		return move;
+		const suffix = " 2'".charAt((amount - 1) % 7);
+		return (family + suffix).trim();
 	};
 
 	_mapCornerColors(colors, orientation, position) {

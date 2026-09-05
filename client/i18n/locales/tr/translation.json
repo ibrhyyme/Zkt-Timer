@@ -1294,6 +1294,8 @@
     "dont_show_again": "Bir daha gösterme",
     "understood": "Anladım",
     "use_space_with_smart_cube": "Akıllı küplerle boşluk tuşu kullan",
+    "smart_cube_move_order_fix": "Hamle sırası düzeltmesi",
+    "smart_cube_move_order_fix_desc": "Akıllı küpler iki katmanı aynı anda çevirdiğinizde hamleleri bazen ters sırayla bildirir. Bu durumda küp çözülmüş olmasına rağmen kronometre durmaz. Bu ayar açıkken uygulama böyle bir karışıklığı tespit edip çözümü tamamlar. Nadiren yanlış tespit edebileceği için varsayılan olarak kapalıdır.",
     "use_space_with_smart_cube_desc": "Akıllı küp hareketleriyle çözümün ne zaman başladığını/bittiğini algılamak yerine, normal küpler gibi boşluk tuşunu kullanın.",
     "hide_time_when_solving": "Çözerken süreyi gizle",
     "zero_out_time_after_solve": "Çözümden sonra süreyi sıfırla",
