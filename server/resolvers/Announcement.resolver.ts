@@ -230,6 +230,7 @@ export class AnnouncementResolver {
 					priority: input.priority,
 					imageUrl: input.imageUrl,
 					isDraft: input.isDraft,
+					showInApp: input.showInApp,
 					publishedAt: input.isDraft ? null : new Date(),
 					targetUrl: input.targetUrl || null,
 					translations: input.translations ? JSON.parse(input.translations) : undefined

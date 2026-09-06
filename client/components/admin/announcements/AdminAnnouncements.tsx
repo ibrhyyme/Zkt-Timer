@@ -233,6 +233,7 @@ export default function AdminAnnouncements() {
 						translations: (editingAnnouncement as any).translations,
 						isDraft: editingAnnouncement.isDraft,
 						isActive: editingAnnouncement.isActive,
+						showInApp: editingAnnouncement.showInApp ?? undefined,
 					}}
 					onClose={() => {
 						setEditingAnnouncement(null);

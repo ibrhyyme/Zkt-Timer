@@ -2766,6 +2766,7 @@ type Announcement {
   createdAt: DateTime
   publishedAt: DateTime
   isActive: Boolean
+  showInApp: Boolean
   viewCount: Int
   hasViewed: Boolean
   targetUrl: String
@@ -2813,7 +2814,8 @@ input CreateAnnouncementInput {
   priority: Int = 0
   imageUrl: String
   isDraft: Boolean = false
-  sendNotification: Boolean = false
+  sendNotification: Boolean = true
+  showInApp: Boolean = true
   notificationPlatforms: [String!]
   targetUrl: String
   translations: String
@@ -2827,6 +2829,7 @@ input UpdateAnnouncementInput {
   imageUrl: String
   isDraft: Boolean
   isActive: Boolean
+  showInApp: Boolean
   targetUrl: String
   translations: String
 }

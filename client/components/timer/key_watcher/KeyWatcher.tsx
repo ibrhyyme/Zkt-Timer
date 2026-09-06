@@ -28,13 +28,18 @@ import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/up
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { classifyTouchTarget } from '../helpers/touch_target';
+import { isCancelSwipe } from '../helpers/touch_gesture';
 
 const timerClass = block('timer');
 
-// How far the finger may travel while priming before the press is treated as a scroll,
-// a drag or a swipe instead of a start. Jitter during a hold stays well under this; a
-// scroll or a 3D cube drag passes it immediately.
-const MOVE_CANCEL_PX = 30;
+// Hoisted so the identity is stable. useElementListener keys its registration effect on
+// the options object, so a fresh literal per render detaches and re-attaches all three
+// touch listeners on every render — and inspection re-renders ten times a second.
+const PASSIVE_FALSE: AddEventListenerOptions = { passive: false };
+
+// Width of the left/right notch strips the EdgeDrawer owns. A press that lands here is
+// reaching for the menu, not the timer — but only where starting is concerned.
+const EDGE_DEAD_ZONE_PX = 20;
 
 interface Props {
 	children: ReactNode;
@@ -83,8 +88,8 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('keydown', handleGlobalShortcuts);
 	useDocumentListener('keyup', escapePressed);
 	// Touch start/move/end needs passive: false to allow e.preventDefault()
-	useWindowListener('touchstart', touchStart, [], { passive: false });
-	useWindowListener('touchend', touchEnd, [], { passive: false });
+	useWindowListener('touchstart', touchStart, [], PASSIVE_FALSE);
+	useWindowListener('touchend', touchEnd, [], PASSIVE_FALSE);
 
 	useEffect(() => {
 		configureHotkeys();
@@ -121,16 +126,20 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	useWindowListener('contextmenu', handleContextMenu);
-	useWindowListener('touchmove', touchMove, [], { passive: false });
+	useWindowListener('touchmove', touchMove, [], PASSIVE_FALSE);
 	useWindowListener('touchcancel', touchCancel);
 
+	/** Within a notch strip reserved for the left/right EdgeDrawer swipe. */
+	function inEdgeDeadZone(touch: { clientX: number } | undefined): boolean {
+		if (!touch) return false;
+		return touch.clientX < EDGE_DEAD_ZONE_PX || window.innerWidth - touch.clientX < EDGE_DEAD_ZONE_PX;
+	}
+
 	function touchStart(e) {
-		// Right edge dead zone — sag notch area, timer should not trigger
-		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 20) {
-			return;
-		}
-		// Left edge dead zone — sol notch area (LeftSettingsDrawer)
-		if (e.touches?.[0] && e.touches[0].clientX < 20) {
+		// The edge dead zones reserve the EdgeDrawer notches so a swipe for the menu can
+		// never start a solve. They must not apply to a running solve: stopping is
+		// permissive by design, and a stop the timer refuses to take costs a real time.
+		if (!getTimerStore('timeStartedAt') && inEdgeDeadZone(e.touches?.[0])) {
 			return;
 		}
 
@@ -168,7 +177,9 @@ export default function KeyWatcher(props: Props) {
 			return false;
 		}
 
-		if (!timeStartedAt && (inNonStartIsland || (!mobileLayout && !onStartSurface))) {
+		// Redux, not the render closure: a release can land before React delivered the
+		// state the press produced, and a stale `timeStartedAt` would misclassify it.
+		if (!getTimerStore('timeStartedAt') && (inNonStartIsland || (!mobileLayout && !onStartSurface))) {
 			return false;
 		}
 
@@ -176,15 +187,16 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function touchEnd(e) {
+		// A finger is still down — this is the first thumb of a two-thumb start lifting,
+		// so the hold stays armed and the LAST release is the one that counts. The bails
+		// below are the opposite case: no finger left, so they must disarm. Leaving them
+		// armed used to strand the timer green with nothing on screen, unable to start
+		// until the user pressed a second time.
 		if (e.touches && e.touches.length > 0) return;
 
-		// Right edge dead zone — sag notch area
-		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 20) {
-			return;
-		}
-		// Left edge dead zone — sol notch area
-		if (e.changedTouches?.[0] && e.changedTouches[0].clientX < 20) {
-			return;
+		// Same rule as touchStart: the notch zones only guard against starting.
+		if (!getTimerStore('timeStartedAt') && inEdgeDeadZone(e.changedTouches?.[0])) {
+			return abandonTouch();
 		}
 
 		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
@@ -201,15 +213,27 @@ export default function KeyWatcher(props: Props) {
 		}
 
 		if (!touchDrivesTimer(e.target)) {
-			return;
+			return abandonTouch();
 		}
 
 		keyupSpace(e, true, eventTs);
 	}
 
+	/**
+	 * Gives up on a touch without starting anything, leaving no armed state behind.
+	 * Used by every `touchEnd` bail: the finger is gone, so a hold that was priming the
+	 * timer must not survive it.
+	 */
+	function abandonTouch() {
+		touchStartX.current = null;
+		touchStartY.current = null;
+		touchPrimingCancelledRef.current = false;
+		disarmPriming();
+	}
+
 	function touchMove(e) {
 		if (touchStartX.current === null || touchStartY.current === null) return;
-		if (!getTimerStore('spaceTimerStarted') && !inInspection) return;
+		if (!getTimerStore('spaceTimerStarted') && !getTimerStore('inInspection')) return;
 
 		const touch = e.touches[0];
 		if (!touch) return;
@@ -217,10 +241,12 @@ export default function KeyWatcher(props: Props) {
 		const diffX = touch.clientX - touchStartX.current;
 		const diffY = touch.clientY - touchStartY.current;
 
-		// A press that travels this far is a scroll, a swipe or a drag, not a start.
-		// Direction no longer matters: the old rule only caught upward swipes, which let
-		// a sideways 3D cube drag or a downward scroll keep the timer primed.
-		if (Math.sqrt(diffX * diffX + diffY * diffY) > MOVE_CANCEL_PX) {
+		// Sliding the finger UP is how a cuber says "not this one after all". Movement in
+		// any other direction is just the hand settling or lifting, and must never cost
+		// the solve. Surfaces that own their gestures (scramble, 3D cube, dashboard) are
+		// kept out of priming by classifyTouchTarget, so distance alone is not needed as
+		// a second line of defence here.
+		if (isCancelSwipe(diffX, diffY)) {
 			cancelPriming();
 
 			touchStartX.current = null;
@@ -233,13 +259,25 @@ export default function KeyWatcher(props: Props) {
 	 * timer is concerned, so the release that follows starts nothing.
 	 */
 	function cancelPriming() {
+		// Only swallow the coming release if there was actually a hold to drop, otherwise
+		// an idle drag across the screen would eat the next legitimate start.
+		if (!disarmPriming()) {
+			return;
+		}
+
 		// The release lands in the same gesture, possibly before a re-render delivered
 		// the cleared state, so the ref is what keyupSpace's caller trusts.
 		touchPrimingCancelledRef.current = true;
+	}
 
-		// Read Redux rather than the captured closure for the same reason.
+	/**
+	 * Clears the primed state and its pending green light. Returns whether anything was
+	 * actually armed. Reads Redux rather than the captured closure, because a press and
+	 * its release can share a frame.
+	 */
+	function disarmPriming(): boolean {
 		if (!getTimerStore('spaceTimerStarted')) {
-			return;
+			return false;
 		}
 
 		setTimerParams({
@@ -250,6 +288,8 @@ export default function KeyWatcher(props: Props) {
 		if (getTimer(START_TIMEOUT)) {
 			stopTimer(START_TIMEOUT);
 		}
+
+		return true;
 	}
 
 	/**
@@ -269,6 +309,9 @@ export default function KeyWatcher(props: Props) {
 	 * split, meaning the timer must keep running.
 	 */
 	function recordPhaseSplit(eventTimestamp?: number): boolean {
+		// Store, not context — keydownSpace decided a solve was running from the store,
+		// so this has to agree with it or a split press falls through and stops the solve.
+		const timeStartedAt = getTimerStore('timeStartedAt');
 		if (!isMultiPhaseActive(multiPhaseCount) || !timeStartedAt) {
 			return false;
 		}
@@ -306,6 +349,16 @@ export default function KeyWatcher(props: Props) {
 
 	function keydownSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
+
+		// Timer state comes from the store, not the render closure. A press and its
+		// release can both land before React has re-rendered KeyWatcher and swapped the
+		// listener's saved handler (useListener does that in a passive effect), which is
+		// why the values destructured at the top of this component can be a gesture
+		// behind. That is invisible while freeze_time forces a long hold, and constant
+		// with freeze_time at 0 where the whole press lasts a few milliseconds.
+		const timeStartedAt = getTimerStore('timeStartedAt');
+		const spaceTimerStarted = getTimerStore('spaceTimerStarted');
+		const inInspection = getTimerStore('inInspection');
 
 		if (e.key === 'Escape') return;
 
@@ -410,16 +463,34 @@ export default function KeyWatcher(props: Props) {
 	function keyupSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
 
+		// Read through the store for the same reason keydownSpace does — this is the
+		// half that actually starts the solve, so a stale `spaceTimerStarted` here means
+		// a press that primed the timer, turned it green, and then started nothing.
+		const spaceTimerStarted = getTimerStore('spaceTimerStarted');
+		const inInspection = getTimerStore('inInspection');
+
 		// Any key release ends the "stopped the timer with this press" block
 		stopKeyHeldRef.current = false;
 
 		// Don't trigger if user is typing in an input
 		const target = e.target as HTMLElement;
 		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+			// The release is gone but the hold is not: disarm, or the timer sits green
+			// with nothing pressed and refuses to start on the next press.
+			disarmPriming();
 			return;
 		}
 
-		if (ganTimerOn || stackMatOn || (e.keyCode !== 32 && !touch) || !spaceTimerStarted || manualEntry) return;
+		// Modes where this handler can never start a solve: a hold left over from before
+		// the mode changed has to be cleared, not left glowing.
+		if (ganTimerOn || stackMatOn || manualEntry) {
+			disarmPriming();
+			return;
+		}
+
+		// Releasing some other key while space is held is not the end of the hold, so this
+		// one must stay a plain bail.
+		if ((e.keyCode !== 32 && !touch) || !spaceTimerStarted) return;
 
 		if (getTimer(START_TIMEOUT)) {
 			stopTimer(START_TIMEOUT);
@@ -444,7 +515,7 @@ export default function KeyWatcher(props: Props) {
 		if (now.getTime() - spaceTimerStarted < freezeTime * 1000) return;
 
 		if (inInspection || !inspection) {
-			if (inInspection && context.dnfTime) {
+			if (inInspection && getTimerStore('dnfTime')) {
 				return;
 			}
 			startTimer(undefined, eventTimestamp);

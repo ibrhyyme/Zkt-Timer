@@ -183,6 +183,16 @@
 		color: rgb(var(--text-color));
 	}
 
+	// Sits under the totals as a second line. Size and weight carry the
+	// hierarchy, so it stays at full contrast.
+	&__panel-summary-note {
+		display: block;
+		margin-top: 4px;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
 	&__table {
 		display: flex;
 		flex-direction: column;

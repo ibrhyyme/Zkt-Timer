@@ -32,6 +32,9 @@ export class Announcement {
 	@Field()
 	isActive: boolean;
 
+	@Field()
+	showInApp: boolean;  // False = notification only, no full-screen popup
+
 	@Field(() => Int, { nullable: true })
 	viewCount?: number;  // Computed field - total views
 
@@ -80,8 +83,12 @@ export class CreateAnnouncementInput {
 	@Field({ defaultValue: false })
 	isDraft: boolean;
 
-	@Field({ defaultValue: false })
+	@Field({ defaultValue: true })
 	sendNotification: boolean;
+
+	// Defaults on so a client that predates this field keeps producing popups.
+	@Field({ defaultValue: true })
+	showInApp: boolean;
 
 	@Field(() => [String], { nullable: true })
 	notificationPlatforms?: string[]; // WEB, ANDROID, IOS
@@ -115,6 +122,9 @@ export class UpdateAnnouncementInput {
 
 	@Field({ nullable: true })
 	isActive?: boolean;
+
+	@Field({ nullable: true })
+	showInApp?: boolean;
 
 	@Field({ nullable: true })
 	targetUrl?: string;

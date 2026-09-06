@@ -7,6 +7,12 @@
 	color: rgb(var(--text-color));
 	padding: 24px;
 	border-radius: 24px;
+	// The modal shell does not scroll — every modal caps its own height. Without this
+	// a card taller than the window simply runs off the bottom with no way to reach it,
+	// which is what a multi-phase solve does once the phase breakdown is added.
+	max-height: 90vh;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 
 	&__web-done {
 		position: absolute;
@@ -243,9 +249,6 @@
 	// SMART CUBE: Kompakt header, scrollable
 	// -------------------------------------------------------------
 	&--smart {
-		max-height: 90vh;
-		overflow-y: auto;
-
 		.#{$namespace}-solve-info__sub-actions {
 			margin-top: 10px;
 			padding: 8px 12px;
@@ -273,12 +276,20 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
+		// 100vh is the viewport with the browser's URL bar hidden, so a fixed box that
+		// tall hangs below the screen while the bar is showing and its last stretch can
+		// never be scrolled to. dvh is the height actually on screen right now.
+		height: 100dvh;
+		max-height: none; // Fullscreen, not the desktop card's 90vh.
 		z-index: 9999;
 		background-color: rgb(var(--background-color));
 		color: rgb(var(--text-color));
 		overflow-y: auto;
 		padding: 0 20px;
 		padding-top: env(safe-area-inset-top, 20px);
+		// Clears the home indicator / gesture bar, so the last row is reachable rather
+		// than sitting underneath it.
+		padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
 		border-radius: 0;
 
 		.#{$namespace}-solve-info__top-actions {

@@ -1099,6 +1099,11 @@ model Announcement {
   createdAt   DateTime              @default(now()) @map("created_at")
   publishedAt DateTime?             @map("published_at")  // Yayınlanma tarihi
   isActive    Boolean               @default(true) @map("is_active")
+  // Whether the announcement opens as a full-screen popup on next app load.
+  // Off means notification-only: the push still goes out and the item stays in
+  // the inbox, but nothing interrupts the user. Defaults on so every existing
+  // announcement keeps the behaviour it was created with.
+  showInApp   Boolean               @default(true) @map("show_in_app")
   targetUrl   String?               @map("target_url")  // Bildirime tiklayinca yonlendirilecek sayfa: "/pro" veya "https://..."
   translations Json?                               // {"en": {"title":"...","content":"..."}, "es": {...}, "ru": {...}, "zh": {...}}
 

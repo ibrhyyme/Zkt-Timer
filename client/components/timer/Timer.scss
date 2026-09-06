@@ -141,6 +141,9 @@ body.timer-immersive-bg {
 		background: transparent;
 		-webkit-tap-highlight-color: transparent;
 		pointer-events: none; // When inactive, block touches
+		// Without this, Android's compositor may claim a hold as the start of a scroll
+		// and send touchcancel instead of touchend — the solve silently never starts.
+		touch-action: none;
 
 		&--active {
 			pointer-events: auto; // When active (Timer/Inspection), capture touches
@@ -155,6 +158,7 @@ body.timer-immersive-bg {
 		width: 100%;
 		flex: 1;
 		user-select: none;
+		touch-action: none; // Same reason as __touch-overlay: this is a start surface.
 
 		&-center {
 			width: 100%;

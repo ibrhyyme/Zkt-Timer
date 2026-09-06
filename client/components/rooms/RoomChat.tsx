@@ -10,24 +10,41 @@ import { useMe } from '../../util/hooks/useMe';
 
 interface RoomChatProps {
     roomId: string;
+    /**
+     * Called for every message that arrives while this component is mounted. The room
+     * uses it to count unread messages for the mobile tab badge — the chat pane is only
+     * hidden with CSS there, never unmounted, so listening once here is enough and the
+     * room does not need a competing socket listener of its own.
+     */
+    onMessage?: (message: FriendlyRoomChatMessage) => void;
 }
 
-export default function RoomChat({ roomId }: RoomChatProps) {
+export default function RoomChat({ roomId, onMessage }: RoomChatProps) {
     const { t } = useTranslation();
     const [messages, setMessages] = useState<FriendlyRoomChatMessage[]>([]);
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const me = useMe();
 
+    // Kept in a ref so the socket listener below can stay mounted once, without going
+    // stale on a parent that re-renders with a new callback identity.
+    const onMessageRef = useRef(onMessage);
+    onMessageRef.current = onMessage;
+
     useEffect(() => {
         const socket = socketClient() as any;
 
-        socket.on(FriendlyRoomServerEvent.CHAT_MESSAGE, (message: FriendlyRoomChatMessage) => {
+        const handleChatMessage = (message: FriendlyRoomChatMessage) => {
             setMessages((prev) => [...prev, message]);
-        });
+            onMessageRef.current?.(message);
+        };
+
+        socket.on(FriendlyRoomServerEvent.CHAT_MESSAGE, handleChatMessage);
 
         return () => {
-            socket.off(FriendlyRoomServerEvent.CHAT_MESSAGE);
+            // Pass the handler: the bare `off(event)` form removes EVERY listener for
+            // this event, including any other component's.
+            socket.off(FriendlyRoomServerEvent.CHAT_MESSAGE, handleChatMessage);
         };
     }, []);
 

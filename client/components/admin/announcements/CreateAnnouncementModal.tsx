@@ -65,6 +65,7 @@ interface AnnouncementForEdit {
 	translations?: string | null; // JSON string
 	isDraft: boolean;
 	isActive?: boolean;
+	showInApp?: boolean;
 }
 
 interface CreateAnnouncementModalProps {
@@ -107,7 +108,11 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		targetUrl: announcement?.targetUrl || '',
 		isDraft: announcement?.isDraft || false,
 		isActive: announcement?.isActive ?? true,
-		sendNotification: false,
+		// A new announcement is a notification by default. The full-screen popup
+		// interrupts everyone who opens the app, so it is opted into, not out of.
+		// An existing one keeps whatever it was saved with.
+		sendNotification: true,
+		showInApp: announcement?.showInApp ?? false,
 		notificationPlatforms: ['WEB', 'ANDROID', 'IOS'] as string[],
 	});
 	const [translations, setTranslations] = useState<Record<string, LangContent>>(
@@ -193,6 +198,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 						targetUrl: formData.targetUrl.trim() || '',
 						isDraft: formData.isDraft,
 						isActive: formData.isActive,
+						showInApp: formData.showInApp,
 						translations: buildTranslationsInput(),
 					},
 				});
@@ -206,6 +212,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 						imageUrl: formData.imageUrl,
 						targetUrl: formData.targetUrl.trim() || undefined,
 						isDraft: formData.isDraft,
+						showInApp: formData.showInApp,
 						sendNotification: formData.sendNotification,
 						notificationPlatforms: formData.sendNotification ? formData.notificationPlatforms : [],
 						translations: buildTranslationsInput(),
@@ -463,6 +470,18 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									)}
 								</>
 							)}
+
+							{/* Off by default: the popup interrupts every user who opens the
+							    app, so it is a deliberate choice rather than the norm. */}
+							<Checkbox
+								text={t('create_announcement.show_in_app')}
+								checked={formData.showInApp}
+								onChange={(e) => setFormData({ ...formData, showInApp: e.target.checked })}
+								noMargin
+							/>
+							<span className="text-xs text-zinc-400 block ml-6">
+								{t('create_announcement.show_in_app_hint')}
+							</span>
 						</div>
 					)}
 

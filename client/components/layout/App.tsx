@@ -376,7 +376,12 @@ export default function App(props: Props = {}) {
 				});
 
 				if (mounted) {
-					const announcements = res.data?.getActiveAnnouncements || [];
+					// Notification-only announcements (showInApp off) still reach the
+					// inbox, which runs the same query - they just never take over the
+					// screen. Older rows have the field unset, so treat that as on.
+					const announcements = (res.data?.getActiveAnnouncements || []).filter(
+						(a) => a?.showInApp !== false
+					);
 					if (announcements.length > 0) {
 						setUnseenAnnouncements(announcements);
 					}

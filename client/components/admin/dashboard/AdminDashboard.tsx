@@ -276,6 +276,13 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 						users: result.total_active_users,
 						duration: formatDuration(result.total_active_minutes, t),
 					})}
+					{/* The totals count the whole window; the table stops at the server's
+					    row limit. Say so rather than letting the two numbers disagree. */}
+					{result.rows.length < result.total_active_users && (
+						<span className="zt-admin-dashboard__panel-summary-note">
+							{t('admin_dashboard.rows_truncated', { count: result.rows.length })}
+						</span>
+					)}
 				</div>
 			)}
 

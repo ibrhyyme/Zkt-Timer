@@ -253,6 +253,7 @@ query getActiveAnnouncements {
 		targetUrl
 		createdAt
 		hasViewed
+		showInApp
 	}
 }
 
@@ -274,6 +275,7 @@ query getAllAnnouncements($filter: AnnouncementFilterInput) {
 		translations
 		isDraft
 		isActive
+		showInApp
 		createdAt
 		publishedAt
 		viewCount

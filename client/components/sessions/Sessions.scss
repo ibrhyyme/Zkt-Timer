@@ -147,6 +147,21 @@
 				height: 20rem;
 			}
 		}
+
+		// Below laptop width the modules stack and History loses that row height,
+		// so it grew to the full solve list - a session with thousands of solves
+		// turned the page into an endless scroll. Cap it at twelve of
+		// HistorySolveRow's fixed 40px rows (less on short screens) and let it
+		// scroll inside itself; react-list only virtualises once its scroll
+		// container has a real height.
+		@include bp-down($bp-xl) {
+			.#{$namespace}-history__list {
+				max-height: min(480px, 55vh);
+				overflow-y: auto;
+				-webkit-overflow-scrolling: touch;
+				touch-action: pan-y;
+			}
+		}
 	}
 
 	&__info-container {

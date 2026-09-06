@@ -22,6 +22,11 @@ import {
 
 const MINUTE_MS = 60 * 1000;
 
+// How many users the active-users table lists. The totals beside it are counted
+// over the whole window, so a busier month says so instead of silently stopping
+// at this number.
+const ROW_LIMIT = 500;
+
 function currentMinuteBucket(): bigint {
 	return BigInt(Math.floor(Date.now() / MINUTE_MS));
 }
@@ -127,18 +132,33 @@ export class ActivityResolver {
 
 		const prisma = getPrisma();
 
-		const grouped = await prisma.userActivityHeartbeat.groupBy({
-			by: ['user_id'],
-			where: {minute_bucket: {gte: sinceBucket, lt: untilBucket}},
-			_count: {minute_bucket: true},
-			orderBy: {_count: {minute_bucket: 'desc'}},
-			take: 200,
-		});
+		// The totals come from their own aggregate rather than from `grouped`, which
+		// is capped at ROW_LIMIT. Counting the capped page reported exactly the cap
+		// for every window that reached it - every month read "200 active users".
+		// One row per (user_id, minute_bucket) is guaranteed by the unique index, so
+		// COUNT(*) is the minute total.
+		const [grouped, totals] = await Promise.all([
+			prisma.userActivityHeartbeat.groupBy({
+				by: ['user_id'],
+				where: {minute_bucket: {gte: sinceBucket, lt: untilBucket}},
+				_count: {minute_bucket: true},
+				orderBy: {_count: {minute_bucket: 'desc'}},
+				take: ROW_LIMIT,
+			}),
+			prisma.$queryRaw<Array<{users: bigint; minutes: bigint}>>`
+				SELECT COUNT(DISTINCT user_id) AS users, COUNT(*) AS minutes
+				FROM user_activity_heartbeat
+				WHERE minute_bucket >= ${sinceBucket} AND minute_bucket < ${untilBucket}
+			`,
+		]);
+
+		const total_active_users = Number(totals[0]?.users ?? 0);
+		const total_active_minutes = Number(totals[0]?.minutes ?? 0);
 
 		const available_months = period === 'month' ? await listAvailableMonths() : [];
 
 		if (grouped.length === 0) {
-			return {rows: [], total_active_users: 0, total_active_minutes: 0, available_months};
+			return {rows: [], total_active_users, total_active_minutes, available_months};
 		}
 
 		const userIds = grouped.map((g) => g.user_id);
@@ -176,9 +196,6 @@ export class ActivityResolver {
 				};
 			})
 			.filter((r): r is ActiveUserRow => r !== null);
-
-		const total_active_users = grouped.length;
-		const total_active_minutes = grouped.reduce((sum, g) => sum + g._count.minute_bucket, 0);
 
 		return {rows, total_active_users, total_active_minutes, available_months};
 	}

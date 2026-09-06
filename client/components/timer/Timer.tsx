@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useEffect, useState, useMemo } from 'react';
+import React, { createContext, ReactNode, useEffect, useState, useMemo, useRef } from 'react';
 import { RootStateOrAny, useDispatch, useSelector, shallowEqual } from 'react-redux';
 import './Timer.scss';
 import HeaderControl from './header_control/HeaderControl';
@@ -14,9 +14,8 @@ import { useMe } from '../../util/hooks/useMe';
 import { canUseStreamerMode } from '../../lib/streamer-mode';
 import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
-import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
-import { is3x3CubeType, smartCubeSelected } from './helpers/util';
+import { is3x3CubeType } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
@@ -27,6 +26,7 @@ import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
+import { isCancelSwipe } from './helpers/touch_gesture';
 import StreamerOverlay from './streamer/StreamerOverlay';
 
 const b = block('timer');
@@ -47,13 +47,17 @@ export default function Timer(props: TimerProps) {
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
-	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
 	const scrambleTopColor = useSettings('scramble_top_color');
 	const streamerMode = useSettings('streamer_mode');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
+
+	// Where the finger landed on the full-screen overlay, for the swipe-up that cancels
+	// inspection. Kept in a ref rather than stamped onto the DOM node, so a value left
+	// over from an earlier gesture can never be read as this one's starting point.
+	const overlayTouchStart = useRef<{ x: number; y: number } | null>(null);
 
 	// Streamer Mode strips the page down to scramble + giant timer + corner
 	// mini-history. Gate the live flag once so the root class, the body class
@@ -261,30 +265,35 @@ export default function Timer(props: TimerProps) {
 					<KeyWatcher>
 						<HeaderControl />
 						{isStreamer && <StreamerOverlay />}
-						{/* On mobile, while timer running, tap entire screen to stop or cancel Inspection */}
+						{/* Mobile: catches touches across the whole screen while the timer runs or
+							inspection counts down, so KeyWatcher sees them wherever they land. Its
+							own handler does one thing: the swipe that abandons inspection. */}
 						{mobileMode && (
 							<div
 								className={b('touch-overlay', { active: !!context.timeStartedAt || !!context.inInspection })}
 								onTouchStart={(e) => {
 									if (context.inInspection) {
 										// Store start point for swipe
-										// @ts-ignore
-										e.target.touchStartY = e.touches[0].clientY;
+										overlayTouchStart.current = {
+											x: e.touches[0].clientX,
+											y: e.touches[0].clientY,
+										};
 									}
 								}}
 								onTouchEnd={(e) => {
-									if (context.timeStartedAt) {
-										// Don't stop timer on touch when smart cube auto-detect is active
-										const isSmartAutoDetect = smartCubeSelected(context) && !useSpaceWithSmartCube;
-										if (!isSmartAutoDetect) {
-											endTimer(context);
-										}
-									} else if (context.inInspection) {
-										// Detect swipe up
-										// @ts-ignore
-										const startY = e.target.touchStartY;
-										const endY = e.changedTouches[0].clientY;
-										if (startY - endY > 50) { // 50px upward swipe
+									const start = overlayTouchStart.current;
+									overlayTouchStart.current = null;
+
+									// Stopping is NOT handled here. KeyWatcher already ends the solve
+									// on touchstart, and it is the only place that knows about phase
+									// splits: this handler used to end the solve on the release of the
+									// very press KeyWatcher had just consumed as a split, so on mobile
+									// the first phase press finished the whole solve.
+									if (context.inInspection && start) {
+										// Swipe up to abandon the inspection, at the same distance that
+										// drops a primed hold (see helpers/touch_gesture).
+										const end = e.changedTouches[0];
+										if (isCancelSwipe(end.clientX - start.x, end.clientY - start.y)) {
 											clearInspectionTimers(true, true);
 										}
 									}

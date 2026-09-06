@@ -14,6 +14,7 @@ import {
     AlreadyInOtherRoomPayload,
     EditFriendlyRoomSolveInput,
     FriendlyRoomConst,
+    FriendlyRoomChatMessage,
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
@@ -151,6 +152,20 @@ function FriendlyRoomContent() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Unread chat messages, shown as a count on the mobile Chat tab. The tab bar only
+    // exists on mobile in an ACTIVE room; everywhere else the chat is on screen already,
+    // so nothing can be unread. Assigned during render further down, once `isActive` is
+    // known — the socket handler outlives any single render and has to read current
+    // visibility, not whatever was captured when it was created.
+    const [unreadChat, setUnreadChat] = useState(0);
+    const chatVisibleRef = useRef(true);
+
+    function handleChatMessage(message: FriendlyRoomChatMessage) {
+        // Your own message is echoed back to you by the server — never unread.
+        if (chatVisibleRef.current || message.user_id === me?.id) return;
+        setUnreadChat((count) => count + 1);
+    }
 
     // When component unmounts (leaving room), disconnect smart cube
     useEffect(() => {
@@ -1564,6 +1579,19 @@ function FriendlyRoomContent() {
     const canManage = canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
 
+    // The chat pane is out of sight only on the mobile Timer tab of a running room. The
+    // waiting room shows it inline on every width and has no tab bar to badge.
+    const chatHidden = isActive && isMobile && mobileTab !== 'chat';
+    chatVisibleRef.current = !chatHidden;
+
+    // Reaching the chat clears the badge, and so does anything that puts the chat back on
+    // screen for good — starting to shrink/grow past the breakpoint, or the room ending.
+    useEffect(() => {
+        if (!chatHidden) {
+            setUnreadChat(0);
+        }
+    }, [chatHidden]);
+
     // Calculate current user's stats for bottom panel
     const mySolves = myParticipant?.solves || [];
 
@@ -1861,7 +1889,19 @@ function FriendlyRoomContent() {
                                 }`}
                             onClick={() => setMobileTab('chat')}
                         >
-                            {t('rooms.chat_tab')}
+                            {/* Anchored to the label, not the full-width button, so the
+                                badge sits beside the word instead of the tab's corner. */}
+                            <span className="relative inline-block">
+                                {t('rooms.chat_tab')}
+                                {unreadChat > 0 && (
+                                    <span
+                                        className="absolute -top-1.5 -right-2.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-blue-500 px-1 text-[0.62rem] font-bold tabular-nums text-white"
+                                        aria-label={t('rooms.unread_messages', { count: unreadChat })}
+                                    >
+                                        {unreadChat > 99 ? '99+' : unreadChat}
+                                    </span>
+                                )}
+                            </span>
                             {mobileTab === 'chat' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                             )}
@@ -2185,7 +2225,7 @@ function FriendlyRoomContent() {
                             }
                             transition-opacity duration-200
                         `}>
-                            <RoomChat roomId={roomId} />
+                            <RoomChat roomId={roomId} onMessage={handleChatMessage} />
                         </div>
 
                         {/* Notification Log - Right (10% on desktop) - Hidden on mobile */}
@@ -2262,7 +2302,7 @@ function FriendlyRoomContent() {
 
                             {/* Right: Chat */}
                             <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-background rounded-2xl border border-text/[0.1] overflow-hidden flex flex-col shadow-2xl relative group">
-                                <RoomChat roomId={roomId} />
+                                <RoomChat roomId={roomId} onMessage={handleChatMessage} />
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500/20 rounded-2xl pointer-events-none transition-colors" />
                             </div>
 
