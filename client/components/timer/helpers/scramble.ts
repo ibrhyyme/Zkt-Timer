@@ -288,6 +288,29 @@ export function consumePreGeneratedScramble(cubeType: string, subset?: string, t
 	return null;
 }
 
+/**
+ * Commit a new scramble and drop whatever the smart cube had recorded against
+ * the old one.
+ *
+ * Every route to a different scramble goes through here — refresh, previous,
+ * next — because they all have the same consequence: the turns counted so far
+ * describe a scramble that is no longer on screen. Leaving them behind used to
+ * show a half-matched move list against a fresh scramble, and left the
+ * navigation buttons disabled by a turn count nothing could clear.
+ *
+ * Harmless outside smart mode: the fields are already empty there.
+ */
+export function commitScramble(scramble: string) {
+	setTimerParams({
+		scramble,
+		originalScramble: scramble,
+		smartTurnOffset: 0,
+		smartTurns: [],
+		smartPickUpTime: 0,
+		lastSmartMoveTime: 0,
+	});
+}
+
 export function resetScramble(context: ITimerContext) {
 	const { cubeType, scrambleLocked, customScrambleFunc, scrambleSubset, scrambleTopColor } = context;
 	const ct = getCubeTypeInfoById(cubeType);
@@ -295,7 +318,7 @@ export function resetScramble(context: ITimerContext) {
 
 	if (customScrambleFunc) {
 		const newScramble = customScrambleFunc(context);
-		setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+		commitScramble(newScramble);
 		return;
 	}
 
@@ -310,6 +333,6 @@ export function resetScramble(context: ITimerContext) {
 
 	getNewScrambleAsync(ct.scramble, scrambleSubset).then(async (rawScramble) => {
 		const newScramble = await applyScrambleColor(rawScramble, ct.scramble, effectiveTopColor);
-		setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+		commitScramble(newScramble);
 	}).catch((e) => { console.error('[scramble] resetScramble failed:', e); });
 }

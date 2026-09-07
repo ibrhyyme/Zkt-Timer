@@ -8,8 +8,8 @@ import { useSettings } from '../../util/hooks/useSettings';
 import { useLatestSolve } from '../../util/hooks/useLatestSolve';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
-import { setTimerParam, setTimerParams } from './helpers/params';
-import { getNewScrambleAsync, resetScramble } from './helpers/scramble';
+import { setTimerParam } from './helpers/params';
+import { commitScramble, getNewScrambleAsync, resetScramble } from './helpers/scramble';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { smartCubeSelected } from './helpers/util';
 import { setSetting } from '../../db/settings/update';
@@ -29,9 +29,14 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartTurns } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartTurns, smartCubeConnected } = context;
     const isSmart = smartCubeSelected(context);
-    const isSmartScrambling = isSmart && smartTurns && smartTurns.length > 0 && !timeStartedAt;
+    // Locking scramble navigation only makes sense once moves have actually been
+    // applied to a connected cube — changing the scramble then would leave the
+    // physical cube and the screen describing different states. With no cube on
+    // the other end there is nothing to contradict, and a stale turn list left
+    // over from an earlier connection must not keep the buttons dead.
+    const isSmartScrambling = isSmart && !!smartCubeConnected && smartTurns && smartTurns.length > 0 && !timeStartedAt;
 
     // Scramble history state
     const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);
@@ -123,8 +128,7 @@ export default function TimerControls() {
             isNavigatingRef.current = true;
             const newIndex = currentIndex - 1;
             setCurrentIndex(newIndex);
-            const previousScramble = scrambleHistory[newIndex];
-            setTimerParams({ scramble: previousScramble, originalScramble: previousScramble, smartTurnOffset: 0 });
+            commitScramble(scrambleHistory[newIndex]);
         }
     }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
 
@@ -137,16 +141,15 @@ export default function TimerControls() {
             isNavigatingRef.current = true;
             const newIndex = currentIndex + 1;
             setCurrentIndex(newIndex);
-            const nextScramble = scrambleHistory[newIndex];
-            setTimerParams({ scramble: nextScramble, originalScramble: nextScramble, smartTurnOffset: 0 });
+            commitScramble(scrambleHistory[newIndex]);
         } else {
             const ct = getCubeTypeInfoById(cubeType);
             if (!ct) return;
             const callId = ++nextScrambleRef.current;
-            setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+            commitScramble('');
             getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
                 if (callId === nextScrambleRef.current && newScramble) {
-                    setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+                    commitScramble(newScramble);
                 }
             }).catch((e) => { console.error('[scramble] next failed:', e); });
         }

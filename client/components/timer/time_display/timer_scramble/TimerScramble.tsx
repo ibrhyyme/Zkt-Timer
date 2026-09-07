@@ -9,7 +9,7 @@ import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
 import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
-import { getNewScrambleAsync, resetScramble } from '../../helpers/scramble';
+import { commitScramble, getNewScrambleAsync, resetScramble } from '../../helpers/scramble';
 import SmartScramble from './smart_scramble/SmartScramble';
 import { setTimerParam, setTimerParams } from '../../helpers/params';
 import { smartCubeSelected } from '../../helpers/util';
@@ -46,7 +46,11 @@ export default function TimerScramble() {
 	const scrambleAlignment = useSettings('scramble_alignment');
 	const scrambleClickAction = useSettings('scramble_click_action');
 	const isSmart = smartCubeSelected(context);
-	const isSmartScrambling = isSmart && context.smartTurns && context.smartTurns.length > 0 && !timeStartedAt;
+	// See TimerControls: the lock is about contradicting a connected cube, so it
+	// must not fire when no cube is attached (or when a stale turn list survived
+	// an earlier connection).
+	const isSmartScrambling =
+		isSmart && !!context.smartCubeConnected && context.smartTurns && context.smartTurns.length > 0 && !timeStartedAt;
 
 	// +2 and DNF for latest solve
 	const latestSolve = useLatestSolve();
@@ -144,8 +148,7 @@ export default function TimerScramble() {
 			isNavigatingRef.current = true;
 			const newIndex = currentIndex - 1;
 			setCurrentIndex(newIndex);
-			const previousScramble = scrambleHistory[newIndex];
-			setTimerParams({ scramble: previousScramble, originalScramble: previousScramble, smartTurnOffset: 0 });
+			commitScramble(scrambleHistory[newIndex]);
 		}
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
 
@@ -158,16 +161,15 @@ export default function TimerScramble() {
 			isNavigatingRef.current = true;
 			const newIndex = currentIndex + 1;
 			setCurrentIndex(newIndex);
-			const nextScramble = scrambleHistory[newIndex];
-			setTimerParams({ scramble: nextScramble, originalScramble: nextScramble, smartTurnOffset: 0 });
+			commitScramble(scrambleHistory[newIndex]);
 		} else {
 			const ct = getCubeTypeInfoById(cubeType);
 			if (!ct) return;
 			const callId = ++nextScrambleRef.current;
-			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+			commitScramble('');
 			getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
 				if (callId === nextScrambleRef.current && newScramble) {
-					setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+					commitScramble(newScramble);
 				}
 			}).catch((e) => { console.error('[scramble] next failed:', e); });
 		}
