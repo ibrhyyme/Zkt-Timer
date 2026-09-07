@@ -20,6 +20,15 @@
         overflow-y: auto; // Extreme edge case: even the floor font size doesn't fit — scroll instead of clipping data
     }
 
+    // Smart cube: the moves wrap as a flex row and everything below (cube, live
+    // analysis, timer) is competing for the same column, so this box gets squeezed
+    // onto its floor. 60px is a one-line floor; a scramble that wraps needs room
+    // for two rows plus the gap between them, or the fit is forced down to a size
+    // nobody can read across the room.
+    &--smart {
+        min-height: 96px;
+    }
+
     display: flex;
     flex-direction: column;
     justify-content: flex-start; // Text starts at top (right below header)

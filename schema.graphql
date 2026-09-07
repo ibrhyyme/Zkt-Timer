@@ -434,6 +434,7 @@ type Mutation {
   adminSendPushToUser(body: String, title: String, userId: String): AdminSendPushResult
   testWcaNotification(wcaId: String): Boolean
   backfillWcaIds: BackfillResult
+  backfillZktIds: ZktBackfillResult
   reindexSmartCubeMethodSteps: MethodStepsBackfillResult
   bulkArchiveWcaCompetitions(skipExisting: Boolean = true, rateLimitMs: Int = 1500, endDate: String, startDate: String): BulkArchiveResult
   reindexArchivedCompsToES: ReindexESResult
@@ -1246,6 +1247,7 @@ type SiteConfig {
   presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
+  zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
@@ -1262,6 +1264,14 @@ type BackfillResult {
   recordsTotal: Int
   recordsFilled: Int
   recordsError: Int
+}
+
+type ZktBackfillResult {
+  total: Int
+  filled: Int
+  stillNull: Int
+  conflict: Int
+  error: Int
 }
 
 type MethodStepsBackfillResult {
@@ -2596,6 +2606,7 @@ input UpdateSiteConfigInput {
   presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
+  zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
 }

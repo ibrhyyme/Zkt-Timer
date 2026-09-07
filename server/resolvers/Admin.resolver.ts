@@ -31,7 +31,7 @@ import { PaginationArgsInput, AdminUserFiltersInput, AdminUserSortInput, AdminUs
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
@@ -44,6 +44,7 @@ import { getPrisma } from '../database';
 import { WcaApiService } from '../services/WcaApiService';
 import axios from 'axios';
 import { runWcaBackfill } from '../services/WcaBackfillService';
+import { runZktBackfill } from '../services/ZktBackfillService';
 import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
 import { BulkArchiveResult, ReindexESResult, ReindexLLResult } from '../schemas/ArchiveAdmin.schema';
@@ -672,6 +673,15 @@ export class AdminResolver {
 		// Admin mutation kept for manual triggering — so even if "site_config wca_backfill_enabled=false"
 		// is set, admin can still run it once.
 		return await runWcaBackfill();
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => ZktBackfillResult)
+	async backfillZktIds(): Promise<ZktBackfillResult> {
+		// Same arrangement as backfillWcaIds: cron and this mutation call one
+		// function, so an admin can run it now even with the site config switch off
+		// (right after a competition is published, rather than waiting for 03:15).
+		return await runZktBackfill();
 	}
 
 	/**

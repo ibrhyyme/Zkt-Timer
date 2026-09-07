@@ -295,6 +295,11 @@ model SiteConfig {
   presence_enabled     Boolean  @default(true)
   pro_enabled          Boolean  @default(false)
   wca_backfill_enabled Boolean  @default(true)
+  /// Nightly pull that asks the federation for ZKT IDs minted since the last run.
+  /// Separate from the WCA switch because the two talk to different parties: this one
+  /// only ever calls zekakuputurkiye, so a WCA rate-limit emergency should not silence
+  /// it, and a federation outage should not silence WCA.
+  zkt_backfill_enabled Boolean  @default(true)
   /// Field study of smart cube behaviour across models. Off by default and meant to be
   /// switched on for a few days at a time: it records one row per solve, so leaving it on
   /// indefinitely grows a table nobody reads.

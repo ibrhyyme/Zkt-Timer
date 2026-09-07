@@ -66,6 +66,13 @@ server/**/__test__/
 # Uploads (Docker volume)
 public/uploads/
 
+# Database dumps — these carry real user rows (names, e-mails, solves).
+# A local pg_dump lands in the project root by default, so keep it out of git
+# rather than relying on remembering to delete it.
+*.sql
+!prisma/**/*.sql
+!scripts/migrations/*.sql
+
 # Windows artifacts
 nul
 

@@ -81,7 +81,10 @@ export default function MobileTimerScramble() {
         minFontSize: 8,
         lineHeightRatio: 1.4,
         enabled: !!scramble,
-        deps: [cubeType, isSmart],
+        // scrambleMonospace switches the typeface, and the fit is measured against
+        // whichever one is live — without it here, changing the setting leaves the
+        // size that was computed for the other font.
+        deps: [cubeType, isSmart, scrambleMonospace],
     });
 
     // Copy scramble (long press)
@@ -181,13 +184,17 @@ export default function MobileTimerScramble() {
     // If smart cube, show SmartScramble
     if (isSmart && scramble) {
         return (
-            <div className={b({ overflow: overflowing })} ref={containerRef}>
+            <div className={b({ smart: true, overflow: overflowing })} ref={containerRef}>
                 <div
                     className={b('smart-scramble')}
                     ref={textRef}
                     style={{
                         fontSize: fontSize + 'px',
                         lineHeight: fontSize * 1.4 + 'px',
+                        // Without this the moves inherit the body font while the plain
+                        // scramble below honours the setting, so the same scramble looked
+                        // smaller the moment a smart cube was selected.
+                        fontFamily: scrambleMonospace ? "'Roboto Mono', monospace" : 'inherit',
                     }}
                 >
                     <SmartScramble />

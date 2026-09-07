@@ -99,6 +99,9 @@ export class SiteConfig {
 	@Field()
 	wca_backfill_enabled: boolean;
 
+	@Field({nullable: true})
+	zkt_backfill_enabled: boolean;
+
 	@Field()
 	smart_telemetry_enabled: boolean;
 
@@ -140,6 +143,31 @@ export class BackfillResult {
 
 	@Field(() => Int)
 	recordsError: number;
+}
+
+/**
+ * Deliberately not reusing BackfillResult: that shape is WCA's story (token
+ * refresh, revoke, rate limit, per-user record fetch), none of which happens
+ * against our own federation. One bulk call either answers or it does not.
+ */
+@ObjectType()
+export class ZktBackfillResult {
+	@Field(() => Int)
+	total: number;
+
+	@Field(() => Int)
+	filled: number;
+
+	/** Asked for, but the federation has not minted an ID for them yet. */
+	@Field(() => Int)
+	stillNull: number;
+
+	/** The returned ZKT ID already belongs to another local account. */
+	@Field(() => Int)
+	conflict: number;
+
+	@Field(() => Int)
+	error: number;
 }
 
 @ObjectType()
@@ -339,6 +367,9 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	wca_backfill_enabled?: boolean;
+
+	@Field({nullable: true})
+	zkt_backfill_enabled?: boolean;
 
 	@Field({nullable: true})
 	smart_telemetry_enabled?: boolean;

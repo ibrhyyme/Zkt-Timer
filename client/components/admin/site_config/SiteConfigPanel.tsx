@@ -23,13 +23,14 @@ import './SiteConfigPanel.scss';
 const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
+const BACKFILL_ZKT_IDS = gql`mutation { backfillZktIds { total filled stillNull conflict error } }`;
 const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error } }`;
 const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
 const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending zktConnected zktWithId zktWithoutId zktRevoked bothConnected } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'smart_telemetry_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'zkt_backfill_enabled' | 'smart_telemetry_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algorithm trainer page'},
@@ -50,6 +51,8 @@ export default function SiteConfigPanel() {
 	const [error, setError] = useState<string | null>(null);
 	const [backfillLoading, setBackfillLoading] = useState(false);
 	const [backfillResult, setBackfillResult] = useState<string | null>(null);
+	const [zktBackfillLoading, setZktBackfillLoading] = useState(false);
+	const [zktBackfillResult, setZktBackfillResult] = useState<string | null>(null);
 
 	const [reindexLoading, setReindexLoading] = useState(false);
 	const [reindexResult, setReindexResult] = useState<string | null>(null);
@@ -354,11 +357,11 @@ export default function SiteConfigPanel() {
 				</div>
 			</div>
 
-			{/* WCA Data Repair */}
+			{/* Data Repair */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>WCA Data Repair</h3>
+					<h3>Data Repair</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
@@ -372,6 +375,25 @@ export default function SiteConfigPanel() {
 						className={b('toggle', {on: (config as any).wca_backfill_enabled !== false})}
 						onClick={() => handleToggle('wca_backfill_enabled', (config as any).wca_backfill_enabled !== false)}
 						disabled={saving === 'wca_backfill_enabled'}
+					>
+						<span className={b('toggle-track')}>
+							<span className={b('toggle-thumb')} />
+						</span>
+					</button>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>ZKT ID Backfill Cron</div>
+						<div className={b('row-desc')}>
+							Every night at LA 03:15 (TR 13:15) asks the federation, in one bulk request, for the
+							ZKT IDs minted since the last run. A newcomer gets their ZKT ID after their first
+							competition is published without having to sign in with ZKT again.
+						</div>
+					</div>
+					<button
+						className={b('toggle', {on: (config as any).zkt_backfill_enabled !== false})}
+						onClick={() => handleToggle('zkt_backfill_enabled', (config as any).zkt_backfill_enabled !== false)}
+						disabled={saving === 'zkt_backfill_enabled'}
 					>
 						<span className={b('toggle-track')}>
 							<span className={b('toggle-thumb')} />
@@ -443,6 +465,51 @@ export default function SiteConfigPanel() {
 					<div className={b('row')}>
 						<div className={b('row-text')}>
 							<div className={b('row-desc')}>{backfillResult}</div>
+						</div>
+					</div>
+				)}
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Manual ZKT ID Backfill</div>
+						<div className={b('row-desc')}>
+							Asks the federation for the ZKT IDs of every linked account still missing one.
+							Run right after a competition is published instead of waiting for the 03:15 cron.
+						</div>
+					</div>
+					<button
+						className={b('action-btn')}
+						disabled={zktBackfillLoading}
+						onClick={async () => {
+							setZktBackfillLoading(true);
+							setZktBackfillResult(null);
+							try {
+								const res = await gqlMutate(BACKFILL_ZKT_IDS);
+								const r = res?.data?.backfillZktIds;
+								if (r) {
+									const parts = [`${r.total} eksik kayit tarandi`];
+									if (r.filled > 0) parts.push(`${r.filled} ZKT ID dolduruldu`);
+									if (r.stillNull > 0) parts.push(`${r.stillNull} hala ID'siz (henuz yarismamis)`);
+									if (r.conflict > 0) parts.push(`${r.conflict} cakisma (ID baska hesapta)`);
+									if (r.error > 0) parts.push(`${r.error} hata`);
+									setZktBackfillResult(parts.join(' | '));
+								} else {
+									setZktBackfillResult('Sonuc alinamadi');
+								}
+								refetchWcaStats();
+							} catch (err) {
+								setZktBackfillResult('Hata: ' + (err as any)?.message);
+							} finally {
+								setZktBackfillLoading(false);
+							}
+						}}
+					>
+						{zktBackfillLoading ? 'Calisiyor...' : 'Calistir'}
+					</button>
+				</div>
+				{zktBackfillResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{zktBackfillResult}</div>
 						</div>
 					</div>
 				)}

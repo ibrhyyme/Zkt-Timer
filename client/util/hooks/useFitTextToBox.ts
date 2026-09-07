@@ -1,6 +1,6 @@
 import { DependencyList, RefObject, useCallback, useRef, useState } from 'react';
 import useIsomorphicLayoutEffect from './useIsomorphicLayoutEffect';
-import { findFitFontSize } from '../text-fit';
+import { findFitFontSize, FitTextSpacing } from '../text-fit';
 
 interface UseFitTextToBoxOptions {
 	text: string;
@@ -64,6 +64,22 @@ export function useFitTextToBox(options: UseFitTextToBoxOptions): UseFitTextToBo
 		if (availableWidth <= 0 || availableHeight <= 0) return;
 
 		const computed = getComputedStyle(textEl);
+
+		// The text element is not always a plain text node. The smart-cube scramble
+		// renders one element per move inside a wrapping flex container, which puts
+		// a real gap between rows and between items. Measuring that as running text
+		// under-counts the rows and the last one ends up clipped, so read the actual
+		// spacing off the element instead of assuming there is none.
+		const spacing: FitTextSpacing = {};
+		if (computed.display === 'flex' || computed.display === 'inline-flex') {
+			const firstItem = textEl.firstElementChild;
+			const itemMargin = firstItem
+				? parseFloat(getComputedStyle(firstItem).marginRight) || 0
+				: 0;
+			spacing.rowGap = parseFloat(computed.rowGap) || 0;
+			spacing.itemGap = (parseFloat(computed.columnGap) || 0) + itemMargin;
+		}
+
 		const result = findFitFontSize(
 			text,
 			computed.fontFamily,
@@ -73,6 +89,7 @@ export function useFitTextToBox(options: UseFitTextToBoxOptions): UseFitTextToBo
 			lineHeightRatio,
 			availableWidth,
 			availableHeight,
+			spacing,
 		);
 
 		setFontSize(result.fontSize);

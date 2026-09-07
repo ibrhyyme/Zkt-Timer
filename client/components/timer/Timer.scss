@@ -646,7 +646,7 @@ body.timer-immersive-bg {
 		width: 100%;
 		max-width: 100%;
 		flex: 0 0 auto;
-		max-height: 36vh; // Don't crush dashboard (38→36 gives dashboard more space)
+		max-height: 32vh; // Don't crush dashboard, and leave the scramble above room to wrap (36→32)
 		overflow: visible;
 		padding: 0 0.5rem;
 		box-sizing: border-box;
@@ -662,7 +662,7 @@ body.timer-immersive-bg {
 		align-self: stretch; // Override grid's align-items: start — for cell height
 		gap: 0.5rem;
 		min-width: 0;
-		max-height: 36vh;
+		max-height: 32vh; // Matches the grid's own cap above
 		overflow: hidden;
 		padding: 0.5rem;
 
