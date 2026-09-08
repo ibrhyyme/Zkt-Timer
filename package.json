@@ -42,7 +42,14 @@
 		"testPathIgnorePatterns": [
 			"/node_modules/",
 			"/Referans/"
-		]
+		],
+		"maxWorkers": 4,
+		"workerIdleMemoryLimit": "1GB",
+		"globals": {
+			"ts-jest": {
+				"isolatedModules": true
+			}
+		}
 	},
 	"resolutions": {
 		"@types/react": "17.0.80",

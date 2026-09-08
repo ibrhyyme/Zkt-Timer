@@ -199,6 +199,13 @@
 		}
 		.#{$namespace}-edge-drawer__drawer--left & {
 			box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+
+			// Content-sized, as it always was: the panel is as wide as its widest
+			// card needs. A ceiling rather than a fixed width, so a label that grows
+			// past what the layout can take is capped instead of stretching the whole
+			// drawer, which is what happened when one input was renamed.
+			max-width: 248px;
+			box-sizing: border-box;
 		}
 	}
 
@@ -278,6 +285,11 @@
 	&__item-label {
 		font-size: 0.78rem;
 		font-weight: 500;
+		// Two-word labels wrap rather than stretch the card. The grid is fixed width
+		// now, so without this a long label would overflow instead.
+		text-align: center;
+		line-height: 1.15;
+		overflow-wrap: anywhere;
 
 		.#{$namespace}-edge-drawer__item--active & {
 			color: #fff;

@@ -1327,7 +1327,7 @@
     "vrc_mp_cf4op": "CFOP (4 пары F2L отдельно)",
     "vrc_mp_cf4o2p2": "CFOP (4 пары, два взгляда)",
     "vrc_mp_roux": "Roux",
-    "input_wired": "StackMat / QYtoys",
+    "input_wired": "Проводной таймер",
     "smart_cube_show": "Показывать умный куб",
     "smart_cube_show_desc": "Показать или скрыть 3D-модель умного куба на экране таймера.",
     "smart_cube_size": "Размер умного куба",
@@ -2630,7 +2630,7 @@
     "smart_analysis": "Анализ смарт-куба",
     "virtual_cube": "Виртуальный кубик",
     "virtual_cube_short": "Виртуальный",
-    "wired_timer": "StackMat / QYtoys",
+    "wired_timer": "Проводной таймер",
     "virtual_phase_tracking": "Автоматическое отслеживание фаз"
   },
   "room_timer": {

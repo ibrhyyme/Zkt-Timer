@@ -44,9 +44,13 @@ export function computeVirtualCubeSize(
 		);
 	}
 
+	// Idle. On mobile the cube is the thing that tells you which input you are on,
+	// so it carries the screen and the clock shrinks to match (see TimeDisplay).
+	// Driven off viewport HEIGHT first: short phones were the ones overflowing, and
+	// a height-relative cap makes them self-limit instead of needing a special case.
 	return Math.floor(
 		mobile
-			? Math.min(size * 0.5, viewportH * 0.22, viewportW * 0.4)
+			? Math.min(size * 0.85, viewportH * 0.26, viewportW * 0.62)
 			: Math.min(size * 0.5, viewportH * 0.3, viewportW * 0.18)
 	);
 }

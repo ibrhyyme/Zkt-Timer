@@ -7,6 +7,7 @@ import { preflightChecks } from '../smart_cube/preflight';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../db/settings/update';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
+import { virtualCubeSelected } from '../helpers/virtual_cube';
 import { getSmartSolveEndTime, getTimerEndFinalTime } from '../helpers/events';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
@@ -220,7 +221,13 @@ export default function TimeDisplay() {
 	// Mobilde karakter sayisina gore font boyutunu dinamik ayarla
 	if (mobileMode) {
 		const charCount = timeStr.length;
-		if (smartCubeSelected(context)) {
+		// Virtual cube, before the attempt starts: the cube is what the user is
+		// looking at, and a full-size clock reading 0.00 just pushes it off a short
+		// phone. Once armed the chrome is gone and the digits get their size back.
+		const virtualIdle =
+			virtualCubeSelected(context) && !timeStartedAt && !context.virtualArmed;
+
+		if (smartCubeSelected(context) || virtualIdle) {
 			// Smart cube: container %45 genislik, daha agresif kucultme
 			const maxSize = 50;
 			if (charCount > 4) {

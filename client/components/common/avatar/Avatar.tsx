@@ -95,16 +95,30 @@ export default function Avatar(props: Props) {
 
 	const link = user?.username ? `/user/${user.username}` : null;
 
+	const inner = (
+		<>
+			<AvatarImage large={large} tiny={tiny} small={small} user={user} profile={profile} />
+			<div className={b('info')}>
+				{nameSpan}
+				{emailSpan}
+			</div>
+		</>
+	);
+
+	// No username means no profile to point at: a placeholder avatar while the user
+	// loads, or an account without one. Link requires a destination, so render plain.
+	const body = link ? (
+		<Link target={target || '_self'} className={b({ vertical })} onClick={onClick} to={link}>
+			{inner}
+		</Link>
+	) : (
+		<div className={b({ vertical })}>{inner}</div>
+	);
+
 	return (
 		<div className={b('wrapper')}>
 			<div className={b('body')}>
-				<Link target={target || '_self'} className={b({ vertical })} onClick={onClick} to={link}>
-					<AvatarImage large={large} tiny={tiny} small={small} user={user} profile={profile} />
-					<div className={b('info')}>
-						{nameSpan}
-						{emailSpan}
-					</div>
-				</Link>
+				{body}
 				{options}
 			</div>
 			{emblems}

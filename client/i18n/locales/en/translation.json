@@ -1327,7 +1327,7 @@
     "vrc_mp_cf4op": "CFOP (4 F2L pairs split)",
     "vrc_mp_cf4o2p2": "CFOP (4 pairs, two-look)",
     "vrc_mp_roux": "Roux",
-    "input_wired": "StackMat / QYtoys",
+    "input_wired": "Wired Timer",
     "smart_cube_show": "Show Smart Cube",
     "smart_cube_show_desc": "Show or hide the 3D smart cube visual on the timer screen.",
     "smart_cube_size": "Smart Cube Size",
@@ -2632,7 +2632,7 @@
     "smart_analysis": "Smart Cube Analysis",
     "virtual_cube": "Virtual cube",
     "virtual_cube_short": "Virtual",
-    "wired_timer": "StackMat / QYtoys",
+    "wired_timer": "Wired Timer",
     "virtual_phase_tracking": "Automatic phase tracking"
   },
   "room_timer": {

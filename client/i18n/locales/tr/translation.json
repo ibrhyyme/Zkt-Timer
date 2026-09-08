@@ -1334,7 +1334,7 @@
     "vrc_mp_cf4op": "CFOP (4 F2L çifti ayrı)",
     "vrc_mp_cf4o2p2": "CFOP (4 çift, iki bakış)",
     "vrc_mp_roux": "Roux",
-    "input_wired": "StackMat / QYtoys",
+    "input_wired": "Kablolu Timer",
     "smart_cube_show": "Akıllı Küpü Göster",
     "smart_cube_show_desc": "Timer ekranındaki 3D akıllı küp görselini açar veya kapatır.",
     "smart_cube_size": "Akıllı Küp Boyutu",
@@ -2639,7 +2639,7 @@
     "smart_analysis": "Akıllı Küp Analizi",
     "virtual_cube": "Sanal Küp",
     "virtual_cube_short": "Sanal",
-    "wired_timer": "StackMat / QYtoys",
+    "wired_timer": "Kablolu Timer",
     "virtual_phase_tracking": "Otomatik faz takibi"
   },
   "room_timer": {

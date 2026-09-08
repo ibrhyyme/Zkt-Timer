@@ -1327,7 +1327,7 @@
     "vrc_mp_cf4op": "CFOP（4 组 F2L 分开）",
     "vrc_mp_cf4o2p2": "CFOP（4 组，两步法）",
     "vrc_mp_roux": "Roux",
-    "input_wired": "StackMat / QYtoys",
+    "input_wired": "有线计时器",
     "smart_cube_show": "显示智能魔方",
     "smart_cube_show_desc": "在计时器界面显示或隐藏 3D 智能魔方。",
     "smart_cube_size": "智能魔方尺寸",
@@ -2632,7 +2632,7 @@
     "smart_analysis": "智能魔方分析",
     "virtual_cube": "虚拟魔方",
     "virtual_cube_short": "虚拟",
-    "wired_timer": "StackMat / QYtoys",
+    "wired_timer": "有线计时器",
     "virtual_phase_tracking": "自动阶段跟踪"
   },
   "room_timer": {

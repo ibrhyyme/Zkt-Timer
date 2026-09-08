@@ -1327,7 +1327,7 @@
     "vrc_mp_cf4op": "CFOP (4 pares de F2L)",
     "vrc_mp_cf4o2p2": "CFOP (4 pares, dos miradas)",
     "vrc_mp_roux": "Roux",
-    "input_wired": "StackMat / QYtoys",
+    "input_wired": "Temporizador",
     "smart_cube_show": "Mostrar cubo inteligente",
     "smart_cube_show_desc": "Muestra u oculta el cubo inteligente 3D en la pantalla del temporizador.",
     "smart_cube_size": "Tamaño del cubo inteligente",
@@ -2632,7 +2632,7 @@
     "smart_analysis": "Análisis de Cubo Inteligente",
     "virtual_cube": "Cubo virtual",
     "virtual_cube_short": "Virtual",
-    "wired_timer": "StackMat / QYtoys",
+    "wired_timer": "Temporizador",
     "virtual_phase_tracking": "Seguimiento automático de fases"
   },
   "room_timer": {

@@ -55,6 +55,15 @@ interface Props {
 	restricted?: boolean;
 }
 
+/**
+ * Which account already had its push token registered in this tab.
+ *
+ * Module scope, not a ref: App remounts (route-level unmount, dev hot reload) and a
+ * ref resets with it, so the init ran again on every remount. Keyed by user id so a
+ * different account logging in on the same tab still registers its own token.
+ */
+let pushInitUserId: string | null = null;
+
 export default function App(props: Props = {}) {
 	const { path, standalone, children, hideTopNav, restricted } = props;
 
@@ -309,10 +318,9 @@ export default function App(props: Props = {}) {
 	}, [me]);
 
 	// Push notifications - separate from main init so it works even after login
-	const pushInitRef = useRef(false);
 	useEffect(() => {
-		if (!me || pushInitRef.current) return;
-		pushInitRef.current = true;
+		if (!me?.id || pushInitUserId === me.id) return;
+		pushInitUserId = me.id;
 		initPushNotifications();
 	}, [me]);
 
