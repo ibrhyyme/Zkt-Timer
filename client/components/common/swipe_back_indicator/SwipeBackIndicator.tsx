@@ -14,11 +14,10 @@ export default function SwipeBackIndicator() {
 	const location = useLocation();
 	const mobileMode = useGeneral('mobile_mode');
 	const modals = useGeneral('modals');
-	const settingsModalOpen = useGeneral('settings_modal_open');
 	const indicatorRef = useRef<HTMLDivElement>(null);
 
 	const isTimerPage = location.pathname === '/timer';
-	const hasOpenModal = modals.length > 0 || settingsModalOpen;
+	const hasOpenModal = modals.length > 0;
 	const isRootPage = location.pathname === '/' || location.pathname === '/timer';
 
 	const disabled = !mobileMode || isTimerPage || hasOpenModal || isRootPage || isAndroidNative();

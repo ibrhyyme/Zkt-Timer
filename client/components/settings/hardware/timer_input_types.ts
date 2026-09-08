@@ -3,7 +3,6 @@
  *
  * Its own module, with no imports, so the help page can list the inputs without pulling
  * the settings UI and the local settings database into a server-rendered page.
- * `HardwareSettings` re-exports it, so its existing importers did not have to change.
  *
  * Manual entry is deliberately absent: it is a mode you toggle, not a `timer_type`.
  */

@@ -2814,7 +2814,6 @@ input BanUserInput {
   reason: String
   minutes: Int
   delete_published_solves: Boolean
-  cheating_in_1v1: Boolean
 }
 
 type AdminSendPushResult {

@@ -26,11 +26,6 @@
 			}
 		}
 
-		&--blurred {
-			opacity: 0.1;
-			filter: blur(8px);
-			pointer-events: none;
-		}
 	}
 
 	&--loading {

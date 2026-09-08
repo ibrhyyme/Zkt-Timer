@@ -14,7 +14,6 @@ export interface GeneralAllParams {
 	browser_session_id: string;
 	force_nav_collapsed: boolean;
 	app_loaded: boolean;
-	settings_modal_open: boolean;
 }
 
 export function useGeneral<T extends keyof GeneralAllParams>(key: T): GeneralAllParams[T] {

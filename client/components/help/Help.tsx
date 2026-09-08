@@ -313,6 +313,7 @@ export default function Help() {
 			SECTIONS.map((s) => ({
 				id: s.id,
 				tone: s.tone,
+				icon: s.icon,
 				label: t(`help.sections.${s.id}.title`),
 			})),
 		[t]

@@ -1,3 +1,7 @@
+// How a solve is timed: which input drives the timer, and the options belonging to
+// each device. Split out of the old combined "Hardware" screen, whose other half —
+// everything about the smart cube — now lives in SmartCubeSettings.
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -5,7 +9,7 @@ import MicAccess from '../mic_access/MicAccess';
 import StackMatPicker, { getAudioPickerModalProps } from '../stackmat_picker/StackMatPicker';
 import CubeTypes from '../cube_types/CubeTypes';
 import { openModal } from '../../../actions/general';
-import { setSetting, toggleSetting } from '../../../db/settings/update';
+import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
@@ -21,7 +25,7 @@ import {
 import { VIRTUAL_PROGRESS_METHODS } from '../../../../shared/util/solve/virtual_progress';
 import { timerTypeSupportsBucket } from '../../timer/helpers/timer_type_support';
 import { KEYBOARD_LAYOUTS } from '../../../util/virtual_cube/key_mapping';
-import { TIMER_INPUT_TYPE_KEYS, TIMER_INPUT_TYPES } from './timer_input_types';
+import { TIMER_INPUT_TYPE_KEYS, TIMER_INPUT_TYPES } from '../hardware/timer_input_types';
 
 /**
  * cstimer's `vrcSpeed` options. The stored value is the duration of one move in
@@ -40,12 +44,7 @@ const VIRTUAL_CUBE_SPEEDS: { value: number; label: string }[] = [
 	{ value: 1000, label: '1' },
 ];
 
-// Shared by HeaderControl to render the active timer type name, and by the help page to
-// list the inputs. Moved to timer_input_types.ts so the help page does not have to import
-// this whole settings screen; re-exported here for the callers that already had it.
-export { TIMER_INPUT_TYPE_KEYS };
-
-export default function HardwareSettings() {
+export default function InputSettings() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
@@ -54,7 +53,6 @@ export default function HardwareSettings() {
 	const timerType = useSettings('timer_type');
 	const cubeType = useSettings('cube_type');
 	const scrambleSubset = useSettings('scramble_subset');
-	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 
 	// StackMat
 	const stackMatId = useSettings('stackmat_id');
@@ -73,17 +71,6 @@ export default function HardwareSettings() {
 	const virtualCubeKeyboardLayout = useSettings('virtual_cube_keyboard_layout');
 	const virtualCubeSize = useSettings('virtual_cube_size');
 	const isVirtual = timerType === 'virtual';
-
-	// Smart Cube
-	const smartCubeShow = useSettings('smart_cube_show');
-	const smartCubeSize = useSettings('smart_cube_size');
-	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
-	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
-	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
-
-	function updateSetting(name: keyof AllSettings, value: any) {
-		setSetting(name, value);
-	}
 
 	function showStackmatWarning() {
 		dispatch(
@@ -175,7 +162,7 @@ export default function HardwareSettings() {
 	return (
 		<div className="space-y-2">
 			{/* Input */}
-			<TimerSettingsGroup id="hardware-input" label={t('timer_settings.category_input')}>
+			<TimerSettingsGroup id="input-general" label={t('timer_settings.category_input')}>
 				<TimerSettingsSelect
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
@@ -203,17 +190,11 @@ export default function HardwareSettings() {
 						{t('timer_settings.manage_cube_types')}
 					</button>
 				</TimerSettingsAction>
-				<TimerSettingsToggle
-					label={t('timer_settings.use_space_with_smart_cube')}
-					description={t('timer_settings.use_space_with_smart_cube_desc')}
-					isActive={useSpaceWithSmartCube}
-					onClick={() => toggleSetting('use_space_with_smart_cube')}
-				/>
 			</TimerSettingsGroup>
 
 			{/* Virtual cube */}
 			<TimerSettingsGroup
-				id="hardware-virtual-cube"
+				id="input-virtual-cube"
 				label={t('timer_settings.category_virtual_cube')}
 			>
 				<TimerSettingsSelect
@@ -274,7 +255,7 @@ export default function HardwareSettings() {
 			</TimerSettingsGroup>
 
 			{/* StackMat */}
-			<TimerSettingsGroup id="hardware-stackmat" label={t('timer_settings.category_stackmat')}>
+			<TimerSettingsGroup id="input-stackmat" label={t('timer_settings.category_stackmat')}>
 				<TimerSettingsAction label={t('timer_settings.mic_access')}>
 					<MicAccess />
 				</TimerSettingsAction>
@@ -310,43 +291,12 @@ export default function HardwareSettings() {
 			</TimerSettingsGroup>
 
 			{/* QiYi Timer */}
-			<TimerSettingsGroup id="hardware-qiyi" label={t('timer_settings.category_qiyi')}>
+			<TimerSettingsGroup id="input-qiyi" label={t('timer_settings.category_qiyi')}>
 				<TimerSettingsToggle
 					label={t('timer_settings.qiyi_auto_inspection')}
 					description={t('timer_settings.qiyi_auto_inspection_desc')}
 					isActive={qiyiAutoInspection}
 					onClick={handleQiyiAutoInspectionToggle}
-				/>
-			</TimerSettingsGroup>
-
-			{/* Smart Cube */}
-			<TimerSettingsGroup id="hardware-smartcube" label={t('appearance.category_smart_cube')}>
-				<TimerSettingsToggle
-					label={t('appearance.smart_cube_show')}
-					description={t('appearance.smart_cube_show_desc')}
-					isActive={smartCubeShow}
-					onClick={() => updateSetting('smart_cube_show', !smartCubeShow)}
-				/>
-				{smartCubeShow && (
-					<TimerSettingsSlider
-						label={t('appearance.smart_cube_size')}
-						description={t('appearance.smart_cube_size_desc')}
-						value={smartCubeSize}
-						min={100}
-						max={600}
-						showReset={smartCubeSize !== cubeSizeDefault}
-						resetLabel={t('appearance.reset')}
-						onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
-						restoreDefaultLabel={t('appearance.save_as_default')}
-						onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
-						onChange={(v) => updateSetting('smart_cube_size', v)}
-					/>
-				)}
-				<TimerSettingsToggle
-					label={t('timer_settings.smart_cube_move_order_fix')}
-					description={t('timer_settings.smart_cube_move_order_fix_desc')}
-					isActive={smartCubeMoveOrderFix}
-					onClick={() => updateSetting('smart_cube_move_order_fix', !smartCubeMoveOrderFix)}
 				/>
 			</TimerSettingsGroup>
 		</div>

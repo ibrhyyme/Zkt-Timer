@@ -331,7 +331,7 @@ export default function Header(props: Props) {
 		} else if (currentPath.startsWith('/rooms')) {
 			pageTitle = t('seo.rooms_title');
 			pageDesc = t('seo.rooms_description');
-		} else if (currentPath === '/settings') {
+		} else if (currentPath.startsWith('/settings')) {
 			pageTitle = t('seo.settings_title');
 			pageDesc = t('seo.settings_description');
 		} else if (currentPath.startsWith('/user/')) {

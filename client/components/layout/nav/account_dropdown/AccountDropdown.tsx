@@ -5,14 +5,12 @@
 import React, { useEffect } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useHistory } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Gear, Crown, User, IdentificationCard, ShieldStar, SignOut, Question } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import AvatarImage from '../../../common/avatar/avatar_image/AvatarImage';
 import { logOut } from '../../../../util/auth/logout';
 import { useMe } from '../../../../util/hooks/useMe';
-import { setGeneral } from '../../../../actions/general';
 import { isPro } from '../../../../lib/pro';
 import useExclusiveDropdown from '../../../../util/hooks/useExclusiveDropdown';
 import './AccountDropdown.scss';
@@ -31,7 +29,6 @@ interface Item {
 export default function AccountDropdown() {
 	const me = useMe();
 	const history = useHistory();
-	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	// useExclusiveDropdown: opening this closes any other header dropdown.
 	const [open, setOpen] = useExclusiveDropdown();
@@ -46,10 +43,6 @@ export default function AccountDropdown() {
 
 	if (!me) {
 		return null;
-	}
-
-	function openSettings() {
-		dispatch(setGeneral('settings_modal_open', true));
 	}
 
 	const userIsPro = isPro(me);
@@ -83,7 +76,8 @@ export default function AccountDropdown() {
 		key: 'settings',
 		label: t('account_dropdown.general_settings'),
 		icon: <Gear weight="bold" />,
-		onClick: openSettings,
+		// /settings is the section index, same shape as /account above.
+		link: '/settings',
 	});
 	// The only in-app entry point to /help; the landing footer is the other one, and
 	// a signed-in user never sees that footer.

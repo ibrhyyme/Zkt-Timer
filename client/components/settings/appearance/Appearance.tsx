@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../../util/time';
 import LayoutSelector from './layout_selector/LayoutSelector';
 import TimerBackground from './timer_background/TimerBackground';
-import { setSetting } from '../../../db/settings/update';
+import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import ThemeOptions from './theme_options/ThemeOptions';
+import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
+import { canUseStreamerMode } from '../../../lib/streamer-mode';
+import { useMe } from '../../../util/hooks/useMe';
 import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import {
@@ -13,9 +16,14 @@ import {
 	TimerSettingsSelect,
 	TimerSettingsAction,
 	TimerSettingsSlider,
+	TimerSettingsToggle,
 } from '../timer/TimerSettingsRow';
 
 const DEFAULT_FONT_FAMILY = 'Roboto Mono';
+
+// Preset names are not translated, so searching "tokyo" or "cyberpunk" has to reach
+// the theme block through the group's own searchable text.
+const THEME_SEARCH_TEXT = Object.values(APP_THEME_PRESETS).map((preset) => preset.name);
 
 const FONT_FAMILIES = [
 	DEFAULT_FONT_FAMILY,
@@ -37,7 +45,10 @@ export default function Appearance() {
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
+	const highlightPbs = useSettings('highlight_pbs');
+	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
+	const me = useMe();
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
@@ -49,7 +60,14 @@ export default function Appearance() {
 	return (
 		<div className="space-y-2">
 			{/* Tema */}
-			<TimerSettingsGroup id="appearance-theme" label={t('appearance.category_theme')}>
+			<TimerSettingsGroup
+				id="appearance-theme"
+				label={t('appearance.category_theme')}
+				// ThemeOptions draws its own rows, so the group filter has no label or
+				// description to read off a child. Without this the whole theme block was
+				// unreachable from the search box.
+				searchText={THEME_SEARCH_TEXT}
+			>
 				<ThemeOptions />
 			</TimerSettingsGroup>
 
@@ -120,6 +138,30 @@ export default function Appearance() {
 						</span>
 					</div>
 				</TimerSettingsSlider>
+			</TimerSettingsGroup>
+
+			{/* Listeler */}
+			<TimerSettingsGroup id="appearance-lists" label={t('appearance.category_lists')}>
+				<TimerSettingsSelect
+					label={t('appearance.highlight_pbs')}
+					description={t('appearance.highlight_pbs_desc')}
+					value={highlightPbs}
+					options={[
+						{ label: t('appearance.highlight_off'), value: 'off' },
+						{ label: t('appearance.highlight_color'), value: 'color' },
+						{ label: t('appearance.highlight_bold'), value: 'bold' },
+					]}
+					onChange={(v) => updateSetting('highlight_pbs', v)}
+				/>
+				<TimerSettingsToggle
+					label={t('appearance.streamer_mode')}
+					description={t('appearance.streamer_mode_desc')}
+					isActive={!!streamerMode}
+					// Permission-gated: the mode hides identifying data for people who
+					// stream, and is not offered to accounts without that permission.
+					hidden={!canUseStreamerMode(me)}
+					onClick={() => toggleSetting('streamer_mode')}
+				/>
 			</TimerSettingsGroup>
 		</div>
 	);

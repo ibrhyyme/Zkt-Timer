@@ -20,7 +20,7 @@ import {
 	Microphone,
 	PencilSimple,
 } from 'phosphor-react';
-import { setSetting, toggleSetting } from '../../../db/settings/update';
+import { setSetting, setSettings } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useMe } from '../../../util/hooks/useMe';
@@ -99,9 +99,11 @@ export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, require
 		return () => cancelAnimationFrame(raf);
 	}, [open]);
 
+	// One write: both keys live in the same platform prefs blob, which the server
+	// overwrites rather than merges, so two calls race and the loser's value comes
+	// back on the next sync.
 	function selectTimerType(newTimerType: AllSettings['timer_type']) {
-		setSetting('manual_entry', false);
-		setSetting('timer_type', newTimerType);
+		setSettings({manual_entry: false, timer_type: newTimerType});
 	}
 
 	function openStackMatPicker() {
@@ -119,10 +121,13 @@ export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, require
 	}
 
 	function toggleManualEntry() {
+		// Turning manual entry on also forces the keyboard input; both go out together
+		// for the same reason as selectTimerType above.
 		if (!manualEntry) {
-			setSetting('timer_type', 'keyboard');
+			setSettings({timer_type: 'keyboard', manual_entry: true});
+		} else {
+			setSetting('manual_entry', false);
 		}
-		toggleSetting('manual_entry');
 	}
 
 	// Radix Select onValueChange handler — value is our TypeKey

@@ -1,7 +1,9 @@
 import {createContext, useContext} from 'react';
 
-// Shared search state for the settings modal. Provided by SettingsModal,
+// Shared search state for the settings page. Provided by SettingsSearchResults,
 // consumed by TimerSettingsGroup to filter rows/groups by the current query.
+// Outside the search view no provider is mounted, so the default empty query keeps
+// every group visible.
 interface SettingsSearchValue {
 	query: string;
 }

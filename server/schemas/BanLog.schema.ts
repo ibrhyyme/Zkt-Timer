@@ -51,7 +51,4 @@ export class BanUserInput {
 
 	@Field()
 	delete_published_solves: boolean;
-
-	@Field()
-	cheating_in_1v1: boolean;
 }

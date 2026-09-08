@@ -18,7 +18,6 @@ import { getMe } from '../../actions/account';
 import { getMe as getMeFromStore, getStore } from '../store';
 import { updateThemeColors } from './themes';
 import { initSocketIO } from '../../util/socket/socketio';
-import SettingsModal from '../settings/modal/SettingsModal';
 import AnnouncementCarousel from '../announcements/AnnouncementCarousel';
 import { GetActiveAnnouncementsDocument, Announcement } from '../../@types/generated/graphql';
 import { gqlQueryTyped } from '../api';
@@ -64,7 +63,6 @@ export default function App(props: Props = {}) {
 	const location = useLocation();
 	const modals = useGeneral('modals');
 	const appLoaded = useGeneral('app_loaded');
-	const settingsModalOpen = useGeneral('settings_modal_open');
 	const me = useMe();
 	const siteConfig = useSiteConfig();
 
@@ -139,12 +137,9 @@ export default function App(props: Props = {}) {
 
 				const state = getStore().getState();
 				const modals = state?.general?.modals || [];
-				const settingsOpen = state?.general?.settings_modal_open;
 
 				if (modals.length > 0) {
 					dispatch(closeModal() as any);
-				} else if (settingsOpen) {
-					dispatch(setGeneral('settings_modal_open', false));
 				} else if (window.history.length > 1) {
 					window.history.back();
 				} else {
@@ -472,12 +467,6 @@ export default function App(props: Props = {}) {
 			<Header path={location.pathname} />
 			<LoadingCover fadeOut={appLoaded} />
 			{modalOutput}
-			{settingsModalOpen && (
-				<SettingsModal
-					isOpen={settingsModalOpen}
-					onClose={() => dispatch(setGeneral('settings_modal_open', false))}
-				/>
-			)}
 			{unseenAnnouncements.length > 0 && !loadingAnnouncements && (
 				<AnnouncementCarousel
 					announcements={unseenAnnouncements}

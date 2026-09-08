@@ -10,6 +10,7 @@ import {
 	List,
 	X,
 	Cube,
+	Gear,
 } from 'phosphor-react';
 import InboxPanel from './inbox/InboxPanel';
 import Logo from '../../common/logo/Logo';
@@ -325,6 +326,15 @@ export default function HeaderNav(props: Props = {}) {
 		</div>
 	);
 
+	// The settings link normally lives in the account dropdown, which renders nothing
+	// while signed out. The timer works signed out and so do its settings, so a signed
+	// out visitor still needs a way in.
+	const settingsLink = me ? null : (
+		<Link to="/settings" className={b('settings-link')} aria-label={t('settings.page_title')}>
+			<Gear weight="bold" />
+		</Link>
+	);
+
 	// Mobile: No header nav needed, Timer has its own HeaderControl
 	if (mobileMode) {
 		return null;
@@ -390,6 +400,7 @@ export default function HeaderNav(props: Props = {}) {
 					{getPro}
 					{notifications}
 					<AccountDropdown />
+					{settingsLink}
 					<LanguageSwitcher />
 					{hideThemeToggle ? null : <ThemeToggle />}
 					<StreamerModeToggle />

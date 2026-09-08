@@ -34,7 +34,6 @@ export default function BanUser(props: Props) {
 	const { user } = props;
 	const { t } = useTranslation();
 
-	const [cheatingIn1v1, toggleCheatingIn1v1] = useToggle(false);
 	const [deletePublishedSolves, toggleDeletePublishedSolves] = useToggle(true);
 	const [durationCount, setDurationCount] = useInput(1);
 	const [durationUnit, setDurationUnit] = useInput('day');
@@ -104,7 +103,6 @@ export default function BanUser(props: Props) {
 					user_id: user.id,
 					minutes,
 					reason,
-					cheating_in_1v1: cheatingIn1v1,
 					delete_published_solves: deletePublishedSolves,
 				},
 			},
@@ -161,11 +159,6 @@ export default function BanUser(props: Props) {
 					checked={deletePublishedSolves}
 				/>
 				<Checkbox text={t('admin_users.ban_permanently')} onChange={() => toggleForever()} checked={forever} />
-				<Checkbox
-					text={t('admin_users.cheater_elo_refund')}
-					onChange={() => toggleCheatingIn1v1()}
-					checked={cheatingIn1v1}
-				/>
 			</div>
 			<Button
 				text={t('admin_users.ban_button')}

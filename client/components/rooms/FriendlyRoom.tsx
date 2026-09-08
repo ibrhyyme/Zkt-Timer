@@ -21,7 +21,7 @@ import { useMe } from '../../util/hooks/useMe';
 import { getDailyGoalStorage } from '../daily-goal/helpers/storage';
 import { fetchRoomSolveCounts } from '../daily-goal/helpers/room-solves';
 import { useSettings } from '../../util/hooks/useSettings';
-import { setSetting } from '../../db/settings/update';
+import { setSetting, setSettings } from '../../db/settings/update';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import RoomParticipants from './RoomParticipants';
 import RoomChat from './RoomChat';
@@ -238,11 +238,12 @@ function FriendlyRoomContent() {
             // rather than fighting the Pro guard.
             if (!targetType) return;
 
+            // One write: both keys share the platform prefs blob, which the server
+            // overwrites rather than merges, so two calls race.
             if (targetType === 'manual') {
                 setSetting('manual_entry', true);
             } else {
-                setSetting('manual_entry', false);
-                setSetting('timer_type', targetType as any);
+                setSettings({manual_entry: false, timer_type: targetType as any});
             }
             // Notify user once
             // toastError(`Timer türü bu oda için "${targetType}" olarak değiştirildi.`);
@@ -266,8 +267,7 @@ function FriendlyRoomContent() {
         } else if (timerType === 'qiyitimer') {
             disconnectQiyiTimer();
         }
-        setSetting('manual_entry', false);
-        setSetting('timer_type', 'keyboard');
+        setSettings({manual_entry: false, timer_type: 'keyboard'});
     }, [userIsPro, timerType]);
 
     // When the room's puzzle changes, reset an input it cannot support. Shared with

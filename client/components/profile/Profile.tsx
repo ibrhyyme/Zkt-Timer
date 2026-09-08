@@ -204,7 +204,6 @@ function ProfileContent() {
 
 	const me = useMe();
 	const mobileMode = useGeneral('mobile_mode');
-	const settingsModalOpen = useGeneral('settings_modal_open');
 	const [ssrProfile, setSsrProfile] = useSsr<IProfileData>(matchUsername);
 	const [loading, setLoading] = useState(!ssrProfile);
 	const [profileData, setProfileData] = useState<IProfileData>(ssrProfile);
@@ -675,7 +674,7 @@ function ProfileContent() {
 	}
 
 	return (
-		<div className={b('wrapper', { standalone: !me, mobile: mobileMode, blurred: settingsModalOpen })}>
+		<div className={b('wrapper', { standalone: !me, mobile: mobileMode })}>
 			<Header
 				path={`/user/${username}`}
 				title={user.username + ' Profile | Zkt Timer'}

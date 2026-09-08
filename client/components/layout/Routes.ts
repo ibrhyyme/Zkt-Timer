@@ -2,7 +2,6 @@ import React from 'react';
 import App from './App';
 import Sessions from '../sessions/Sessions';
 import Stats from '../stats/Stats';
-import Settings from '../settings/Settings';
 import LoginWrapper from '../login/LoginWrapper';
 import Trainer from '../trainer/Trainer';
 import Account from '../account/Account';
@@ -24,10 +23,14 @@ import Credits from '../landing/legal/Credits';
 import Help from '../help/Help';
 import Landing from '../landing/Landing';
 
-import Appearance from '../settings/appearance/Appearance';
+import SettingsPage from '../settings/page/SettingsPage';
 import TimerSettings from '../settings/timer/TimerSettings';
+import InputSettings from '../settings/input/InputSettings';
+import SmartCubeSettings from '../settings/smart_cube/SmartCubeSettings';
+import ScrambleSettings from '../settings/scramble/ScrambleSettings';
+import Appearance from '../settings/appearance/Appearance';
 import DataSettings from '../settings/data/DataSettings';
-import SettingsRedirect from '../settings/redirect/SettingsRedirect';
+import LanguageSettings from '../settings/language/LanguageSettings';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
 import WcaLoginCallback from '../oauth/WcaLoginCallback';
@@ -186,11 +189,18 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/messages/:conversationId', null, App, Messages),
 	route('/force-log-out', null, App, ForceSignOut, false, true, false, true),
 
-	// Settings - Redirect to modal
-	route('/settings/timer', null, App, SettingsRedirect, false),
-	route('/settings/appearance', null, App, SettingsRedirect, false),
-	route('/settings/data', null, App, SettingsRedirect, false),
-	route('/settings', null, App, SettingsRedirect, false),
+	// Settings. `/settings` is the section index: on mobile the layout shows only the
+	// nav list, on desktop it mounts the same child as /settings/timer rather than
+	// redirecting. Open to visitors without an account — the timer works signed out,
+	// so its settings have to as well. The Data section gates itself.
+	route('/settings', App, SettingsPage, TimerSettings, false),
+	route('/settings/timer', App, SettingsPage, TimerSettings, false),
+	route('/settings/input', App, SettingsPage, InputSettings, false),
+	route('/settings/smart-cube', App, SettingsPage, SmartCubeSettings, false),
+	route('/settings/scramble', App, SettingsPage, ScrambleSettings, false),
+	route('/settings/appearance', App, SettingsPage, Appearance, false),
+	route('/settings/data', App, SettingsPage, DataSettings, false),
+	route('/settings/language', App, SettingsPage, LanguageSettings, false),
 
 	// Landing Pages
 	// route('/how-to-solve', null, Landing, HTSLanding, false, false, false, false, true),
@@ -311,7 +321,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/native-migrate', null, NativeMigrate, null, false, true, false, true),
 
 	// Redirects
-	routeRedirect('/settings', '/settings/timer'),
 	routeRedirect('/account/pro', '/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
 	// Legacy /community/competitions/* (WCA) -> /competitions/* (param-preserving 301).

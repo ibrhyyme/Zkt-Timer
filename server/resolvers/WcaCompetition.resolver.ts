@@ -11,6 +11,25 @@ import {ErrorCode} from '../constants/errors';
 
 const CACHE_TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
+/**
+ * Drop competitions whose last day is behind us.
+ *
+ * The upstream feed starts at the first of the current month so a competition
+ * already under way is never missed, which means that early in a month it also
+ * carries ones that are over. Every screen fed by this query — the discovery
+ * list, the landing section, My Schedule — is about what is still ahead, so
+ * the past is filtered out here rather than in each of them. Past competitions
+ * are still reachable through `wcaSearchCompetitions`, which is the one place
+ * someone is deliberately asking for them.
+ *
+ * A competition stays in the list all through its final day: results are being
+ * entered that evening and that is exactly when people open it.
+ */
+function dropFinished<T extends {end_date?: string}>(comps: T[]): T[] {
+	const today = new Date().toISOString().split('T')[0];
+	return comps.filter((c) => !c.end_date || c.end_date >= today);
+}
+
 @Resolver()
 export class WcaCompetitionResolver {
 	@Query(() => [WcaCompetition])
@@ -25,7 +44,10 @@ export class WcaCompetitionResolver {
 		if (cached) {
 			const parsed = JSON.parse(cached);
 			if (Array.isArray(parsed) && parsed.length > 0) {
-				return parsed;
+				// Filtered on read, not on write: the cache lives for two hours and
+				// spans midnight, so a competition that ended yesterday would keep
+				// coming back out of a still-valid entry.
+				return dropFinished(parsed);
 			}
 			// Empty array cached (old deploy bug) — ignore, fetch fresh
 		}
@@ -55,7 +77,7 @@ export class WcaCompetitionResolver {
 			console.warn('[wcaCompetitions] WCA API returned empty list — cache skipped');
 		}
 
-		return mapped;
+		return dropFinished(mapped);
 	}
 
 	@Query(() => [WcaCompetition])
@@ -109,10 +131,8 @@ export class WcaCompetitionResolver {
 			return [];
 		}
 		const raw = await WcaApiService.fetchMyCompetitions(authToken);
-		const today = new Date().toISOString().split('T')[0];
-		return raw
-			.filter((c: any) => c.end_date >= today)
-			.map((c) => ({
+		return dropFinished(
+			raw.map((c) => ({
 				id: c.id,
 				name: c.name,
 				city: c.city,
@@ -126,6 +146,7 @@ export class WcaCompetitionResolver {
 				longitude_degrees: c.longitude_degrees || 0,
 				url: c.url || '',
 				competitor_limit: c.competitor_limit || null,
-			}));
+			}))
+		);
 	}
 }

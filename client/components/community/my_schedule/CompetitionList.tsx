@@ -11,6 +11,7 @@ import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {oauthRedirectUri, openOAuthAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
+import {isPastCompetition, localTodayStr} from './competition-past';
 import CompEventFilter from './CompEventFilter';
 import {getEventFilter, setEventFilter} from './eventFilterStorage';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
@@ -158,6 +159,8 @@ export default function CompetitionList() {
 		setEventFilter([]);
 	}
 
+	const todayStr = useMemo(() => localTodayStr(), []);
+
 	const filteredCompetitions = useMemo(() => {
 		if (!competitions) return [];
 		let list = competitions;
@@ -170,25 +173,32 @@ export default function CompetitionList() {
 		if (eventFilter.length > 0) {
 			list = list.filter(matchesEventFilter);
 		}
+		// The WCA feed starts at the first of the current month, so early in a
+		// month it carries competitions that are already over. This section is
+		// headed "upcoming", so they have no place in it.
+		list = list.filter((c: any) => !isPastCompetition(c, todayStr));
 		// Display ongoing competitions first, then others
-		const now = new Date();
-		const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-		const ongoing = list.filter((c: any) => c.start_date <= today && c.end_date >= today);
-		const rest = list.filter((c: any) => !(c.start_date <= today && c.end_date >= today));
+		const ongoing = list.filter((c: any) => c.start_date <= todayStr && c.end_date >= todayStr);
+		const rest = list.filter((c: any) => !(c.start_date <= todayStr && c.end_date >= todayStr));
 		return [...ongoing, ...rest];
-	}, [competitions, compSearch, eventFilter]);
+	}, [competitions, compSearch, eventFilter, todayStr]);
 
 	// "My competitions" is one list across both federations: a WCA registration
 	// and a ZKT registration are the same thing to the person reading it. Sorted
 	// by start date so the next competition is on top regardless of who runs it.
 	// Declared here because the prefetch effect below depends on it.
+	//
+	// Finished competitions drop out on both sides. The WCA query already filters
+	// server-side, but the federation returns a member's whole history, so a comp
+	// from months ago sat at the top of this list — sorted first precisely because
+	// it was the oldest. Past competitions stay reachable through search.
 	const myAllComps = useMemo(() => {
 		const zkt = (myZktComps || []).map(normalizeZktComp);
-		if (zkt.length === 0) return myComps;
-		return [...(myComps || []), ...zkt].sort((a: any, b: any) =>
-			(a.start_date || '').localeCompare(b.start_date || '')
-		);
-	}, [myComps, myZktComps]);
+		if (!myComps && zkt.length === 0) return null;
+		return [...(myComps || []), ...zkt]
+			.filter((c: any) => !isPastCompetition(c, todayStr))
+			.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''));
+	}, [myComps, myZktComps, todayStr]);
 
 	const mountedRef = useRef(true);
 	useEffect(() => () => {
@@ -371,11 +381,6 @@ export default function CompetitionList() {
 		? (eventFilter.length > 0 ? searchResults.filter(matchesEventFilter) : searchResults)
 		: filteredCompetitions;
 
-	const todayStr = useMemo(() => {
-		const n = new Date();
-		return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
-	}, []);
-
 	// ZKT competitions live in their OWN section below — they're not WCA comps,
 	// so keep them separate to avoid confusion. Reuse the WCA card shape so the
 	// page stays visually consistent. Normalize to the WCA card fields here.
@@ -395,7 +400,7 @@ export default function CompetitionList() {
 				// stays until the day after it ends, so results are still one tap away
 				// on the last day. Past ZKT competitions remain reachable by search
 				// and from the federation site.
-				.filter((c: any) => !c.end_date || c.end_date >= todayStr)
+				.filter((c: any) => !isPastCompetition(c, todayStr))
 				// Soonest first — the next competition is the one people look for.
 				.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''))
 		);
@@ -405,8 +410,10 @@ export default function CompetitionList() {
 	// dozens of competitions have to stay scannable. Cards the viewer has a stake
 	// in use renderShowcaseCard below instead.
 	function renderCompCard(comp: any) {
-		const isFinished = comp.end_date < todayStr;
-		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
+		// Only search results reach this in a finished state — the lists above are
+		// filtered — but the card still has to show it as over when they do.
+		const isFinished = isPastCompetition(comp, todayStr);
+		const isOngoing = !isFinished && comp.start_date <= todayStr && comp.end_date >= todayStr;
 		return (
 			<div
 				key={comp.id}
@@ -444,8 +451,8 @@ export default function CompetitionList() {
 	// sections on one component is what stops the two designs drifting apart.
 	function renderShowcaseCard(comp: any, opts: {mine?: boolean} = {}) {
 		const isZkt = !!comp.__zkt;
-		const isFinished = !!comp.end_date && comp.end_date < todayStr;
-		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
+		const isFinished = isPastCompetition(comp, todayStr);
+		const isOngoing = !isFinished && comp.start_date <= todayStr && comp.end_date >= todayStr;
 		// WCA competitions carry no lifecycle status, and on a "mine" card the
 		// registered pill already owns that slot.
 		const statusKey = isZkt && !opts.mine ? (comp.status || '').toLowerCase() : '';
@@ -638,8 +645,10 @@ export default function CompetitionList() {
 
 			{/* My Competitions — needs a linked federation account to hold anything.
 			     WCA link is the usual gate, but a viewer with ZKT registrations must
-			     see the section too, whichever way that match was made. */}
-			{!compSearch.trim() && (hasWcaLink || (myZktComps?.length ?? 0) > 0) && (
+			     see the section too, whichever way that match was made. Counted on
+			     the filtered list: a competitor whose only ZKT registration is in the
+			     past has nothing upcoming, so the section would just say "none". */}
+			{!compSearch.trim() && (hasWcaLink || (myAllComps?.length ?? 0) > 0) && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					{!myAllComps ? (

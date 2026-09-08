@@ -10,7 +10,16 @@ import './AccountNav.scss';
 import {useTranslation} from 'react-i18next';
 import {Link, useLocation} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import {CaretRight} from 'phosphor-react';
+import {
+	CaretRight,
+	UserCircle,
+	BellRinging,
+	ChatCircleText,
+	LinkSimple,
+	Megaphone,
+	Lifebuoy,
+	Warning,
+} from 'phosphor-react';
 import AvatarImage from '../common/avatar/avatar_image/AvatarImage';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../util/pro';
@@ -22,10 +31,11 @@ export interface AccountTab {
 	id: string;
 	link: string;
 	label: string;
-	// Each section carries a cube-face colour, shown as a sticker tile. It is not
-	// decoration: after a couple of visits the colour is what you aim for, and it makes
-	// the list scannable without reading every label.
+	// Each section carries a cube-face colour, worn by its own icon. It is not
+	// decoration: after a couple of visits the shape and colour together are what you
+	// aim for, and they make the list scannable without reading every label.
 	tone: string;
+	icon: React.ReactNode;
 	danger?: boolean;
 }
 
@@ -50,42 +60,49 @@ export function useAccountTabs(): AccountTab[] {
 			link: '/account/personal-info',
 			label: t('account_nav.personal_info'),
 			tone: TONE.blue,
+			icon: <UserCircle weight="fill" />,
 		},
 		{
 			id: 'notifications',
 			link: '/account/notifications',
 			label: t('account_nav.notifications'),
 			tone: TONE.yellow,
+			icon: <BellRinging weight="fill" />,
 		},
 		{
 			id: 'social',
 			link: '/account/social',
 			label: t('account_nav.social'),
 			tone: TONE.green,
+			icon: <ChatCircleText weight="fill" />,
 		},
 		{
 			id: 'linked-accounts',
 			link: '/account/linked-accounts',
 			label: t('account_nav.linked_accounts'),
 			tone: TONE.orange,
+			icon: <LinkSimple weight="bold" />,
 		},
 		{
 			id: 'announcements',
 			link: '/account/announcements',
 			label: t('account_nav.announcements'),
 			tone: TONE.violet,
+			icon: <Megaphone weight="fill" />,
 		},
 		{
 			id: 'support',
 			link: '/account/support',
 			label: t('account_nav.support'),
 			tone: TONE.cyan,
+			icon: <Lifebuoy weight="fill" />,
 		},
 		{
 			id: 'danger-zone',
 			link: '/account/danger-zone',
 			label: t('account_nav.danger_zone'),
 			tone: TONE.red,
+			icon: <Warning weight="fill" />,
 			danger: true,
 		},
 	];
@@ -134,7 +151,7 @@ export default function AccountNav() {
 									transition={{type: 'spring', stiffness: 460, damping: 38}}
 								/>
 							) : null}
-							<span className={b('item-sticker')} />
+							<span className={b('item-icon')}>{tab.icon}</span>
 							<span className={b('item-label')}>{tab.label}</span>
 							<span className={b('item-chevron')}>
 								<CaretRight weight="bold" />

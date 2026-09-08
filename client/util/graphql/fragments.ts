@@ -217,22 +217,14 @@ export const PUBLIC_USER_FRAGMENT = gql`
 	}
 `;
 
-export const PUBLIC_USER_WITH_ELO_FRAGMENT = gql`
-	${PUBLIC_USER_FRAGMENT}
-
-	fragment PublicUserWithEloFragment on IPublicUserAccount {
-		...PublicUserFragment
-	}
-`;
-
 export const SOLVE_WITH_USER_FRAGMENT = gql`
 	${SOLVE_FRAGMENT}
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 
 	fragment SolveWithUserFragment on Solve {
 		...SolveFragment
 		user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 	}
 `;
@@ -245,7 +237,7 @@ export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 `;
 
 export const NOTIFICATION_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 
 	fragment NotificationFragment on Notification {
 		id
@@ -262,14 +254,14 @@ export const NOTIFICATION_FRAGMENT = gql`
 		subject
 		created_at
 		triggering_user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 	}
 `;
 
 export const TOP_SOLVE_FRAGMENT = gql`
 	${SOLVE_FRAGMENT}
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 
 	fragment TopSolveFragment on TopSolve {
 		id
@@ -281,14 +273,14 @@ export const TOP_SOLVE_FRAGMENT = gql`
 			...SolveFragment
 		}
 		user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 	}
 `;
 
 export const TOP_AVERAGE_FRAGMENT = gql`
 	${SOLVE_FRAGMENT}
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 
 	fragment TopAverageFragment on TopAverage {
 		id
@@ -312,13 +304,13 @@ export const TOP_AVERAGE_FRAGMENT = gql`
 			...SolveFragment
 		}
 		user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 	}
 `;
 
 export const PROFILE_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 	${TOP_SOLVE_FRAGMENT}
 	${TOP_AVERAGE_FRAGMENT}
 	${IMAGE_FRAGMENT}
@@ -336,7 +328,7 @@ export const PROFILE_FRAGMENT = gql`
 		reddit_link
 		twitch_link
 		user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 		top_solves {
 			...TopSolveFragment
@@ -354,7 +346,7 @@ export const PROFILE_FRAGMENT = gql`
 `;
 
 export const REPORT_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 
 	fragment ReportFragment on Report {
 		id
@@ -364,10 +356,10 @@ export const REPORT_FRAGMENT = gql`
 		resolved_at
 		created_at
 		created_by {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 		reported_user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 	}
 `;
@@ -392,7 +384,7 @@ export const TIMER_BACKGROUND_FRAGMENT = gql`
 `;
 
 export const USER_FOR_ME_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 	${TIMER_BACKGROUND_FRAGMENT}
 
 	fragment UserForMeFragment on UserAccount {
@@ -407,7 +399,7 @@ export const USER_FOR_ME_FRAGMENT = gql`
 			...TimerBackgroundFragment
 		}
 
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 `;
 
@@ -440,13 +432,13 @@ export const USER_ACCOUNT_SUMMARY_FRAGMENT = gql`
 
 export const USER_FOR_ADMIN_FRAGMENT = gql`
 	${NOTIFICATION_PREFERENCE_FRAGMENT}
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 	${REPORT_FRAGMENT}
 	${SETTING_FRAGMENT}
 	${USER_ACCOUNT_SUMMARY_FRAGMENT}
 
 	fragment UserForAdminFragment on UserAccountForAdmin {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 
 		email
 		join_country
@@ -467,7 +459,7 @@ export const USER_FOR_ADMIN_FRAGMENT = gql`
 `;
 
 export const REPORT_SUMMARY_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
+	${PUBLIC_USER_FRAGMENT}
 	${REPORT_FRAGMENT}
 
 	fragment ReportSummaryFragment on ReportSummary {
@@ -475,7 +467,7 @@ export const REPORT_SUMMARY_FRAGMENT = gql`
 		first_report
 		count
 		user {
-			...PublicUserWithEloFragment
+			...PublicUserFragment
 		}
 		reports {
 			...ReportFragment

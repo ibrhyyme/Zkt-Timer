@@ -2,7 +2,6 @@ import React from 'react';
 import './ThemeOption.scss';
 import block from '../../../../../styles/bem';
 import jsonStr from 'json-stable-stringify';
-import {useDispatch} from 'react-redux';
 import {setSettings} from '../../../../../db/settings/update';
 import {useMe} from '../../../../../util/hooks/useMe';
 import Tag from '../../../../common/tag/Tag';
@@ -11,7 +10,6 @@ import {getSetting} from '../../../../../db/settings/query';
 import {APP_THEME_PRESETS, PresetThemeValues} from '../../../../../util/themes/theme_consts';
 import {isNotPro, isProEnabled} from '../../../../../util/pro';
 import {useHistory} from 'react-router-dom';
-import {setGeneral} from '../../../../../actions/general';
 
 const b = block('theme-option');
 
@@ -20,7 +18,6 @@ interface Props {
 }
 
 export default function ThemeOption(props: Props) {
-	const dispatch = useDispatch();
 	const me = useMe();
 	const history = useHistory();
 
@@ -39,7 +36,6 @@ export default function ThemeOption(props: Props) {
 
 	function selectTheme() {
 		if (locked) {
-			dispatch(setGeneral('settings_modal_open', false));
 			history.push('/pro');
 			return;
 		}

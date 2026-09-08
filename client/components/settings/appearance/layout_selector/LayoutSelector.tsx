@@ -1,5 +1,6 @@
 import React from 'react';
 import './LayoutSelector.scss';
+import {useTranslation} from 'react-i18next';
 import {AlignRightSimple, AlignBottomSimple, AlignLeftSimple} from 'phosphor-react';
 import {setSetting} from '../../../../db/settings/update';
 import {useSettings} from '../../../../util/hooks/useSettings';
@@ -10,6 +11,7 @@ import {TimerLayoutPosition} from '../../../../db/settings/query';
 const b = block('settings-layout-selector');
 
 export default function LayoutSelector() {
+	const {t} = useTranslation();
 	const timerLayout = useSettings('timer_layout');
 
 	function selectLayout(timerLayout: TimerLayoutPosition) {
@@ -26,7 +28,7 @@ export default function LayoutSelector() {
 				glow={timerLayout === 'left'}
 				primary={timerLayout === 'left'}
 				gray
-				text="Sola Hizala"
+				text={t('appearance.timer_layout_left')}
 				icon={<AlignLeftSimple weight="bold" />}
 			/>
 			<Button
@@ -37,7 +39,7 @@ export default function LayoutSelector() {
 				glow={timerLayout === 'bottom'}
 				primary={timerLayout === 'bottom'}
 				gray
-				text="Ortaya Hizala"
+				text={t('appearance.timer_layout_bottom')}
 				icon={<AlignBottomSimple weight="bold" />}
 			/>
 			<Button
@@ -48,7 +50,7 @@ export default function LayoutSelector() {
 				primary={timerLayout === 'right'}
 				glow={timerLayout === 'right'}
 				gray
-				text="Sağa Hizala"
+				text={t('appearance.timer_layout_right')}
 				icon={<AlignRightSimple weight="bold" />}
 			/>
 		</div>

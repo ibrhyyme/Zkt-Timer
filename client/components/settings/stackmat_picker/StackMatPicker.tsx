@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Microphone, Warning } from 'phosphor-react';
-import { setSetting } from '../../../db/settings/update';
+import { setSettings } from '../../../db/settings/update';
 import { getSetting } from '../../../db/settings/query';
 import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
@@ -96,9 +96,11 @@ export default function StackMatPicker(props: StackMatPickerProps) {
 	}, []);
 
 	function saveSelectedAudio() {
-		// stackmat_id'yi ONCE set et: timer_type degisince StackMat component id hazirken mount olup init etsin.
-		setSetting('stackmat_id', selectedStackMatId);
-		setSetting('timer_type', 'stackmat');
+		// One write, for two reasons. Both keys share the platform prefs blob, which the
+		// server overwrites rather than merges, so two calls race. And locally this
+		// commits the device id and the input type before a single update event fires,
+		// so StackMat can never mount on the new type with no id to initialise from.
+		setSettings({stackmat_id: selectedStackMatId, timer_type: 'stackmat'});
 		onComplete();
 	}
 

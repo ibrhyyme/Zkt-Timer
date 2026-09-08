@@ -40,14 +40,19 @@
 		z-index: 0;
 	}
 
-	&__item-sticker {
+	&__item-icon {
 		position: relative;
 		z-index: 1;
-		width: 8px;
-		height: 8px;
-		border-radius: 2px;
-		background: rgb(var(--item-tone));
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
+		color: rgb(var(--item-tone));
+
+		svg {
+			width: 17px;
+			height: 17px;
+		}
 	}
 
 	&__item-label {

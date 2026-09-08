@@ -178,10 +178,6 @@ fragment PublicUserFragment on IPublicUserAccount {
 	}
 }
 
-fragment PublicUserWithEloFragment on IPublicUserAccount {
-	...PublicUserFragment
-}
-
 fragment UserAccountFragment on IUserAccount {
 	...PublicUserFragment
 	email
@@ -193,7 +189,7 @@ fragment UserAccountFragment on IUserAccount {
 fragment SolveWithUserFragment on Solve {
 	...SolveFragment
 	user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 }
 
@@ -217,7 +213,7 @@ fragment NotificationFragment on Notification {
 	subject
 	created_at
 	triggering_user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 }
 
@@ -231,7 +227,7 @@ fragment TopSolveFragment on TopSolve {
 		...SolveFragment
 	}
 	user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 }
 
@@ -257,7 +253,7 @@ fragment TopAverageFragment on TopAverage {
 		...SolveFragment
 	}
 	user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 }
 
@@ -274,7 +270,7 @@ fragment ProfileFragment on Profile {
 	reddit_link
 	twitch_link
 	user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 	top_solves {
 		...TopSolveFragment
@@ -298,10 +294,10 @@ fragment ReportFragment on Report {
 	resolved_at
 	created_at
 	created_by {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 	reported_user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 }
 
@@ -369,7 +365,7 @@ fragment UserForMeFragment on IUserAccount {
 		...TimerBackgroundFragment
 	}
 
-	...PublicUserWithEloFragment
+	...PublicUserFragment
 }
 
 fragment UserAccountSolvesSummaryFragment on UserAccountSolvesSummary {
@@ -394,7 +390,7 @@ fragment UserAccountSummaryFragment on UserAccountSummary {
 }
 
 fragment UserForAdminFragment on UserAccountForAdmin {
-	...PublicUserWithEloFragment
+	...PublicUserFragment
 
 	email
 	join_country
@@ -418,7 +414,7 @@ fragment ReportSummaryFragment on ReportSummary {
 	first_report
 	count
 	user {
-		...PublicUserWithEloFragment
+		...PublicUserFragment
 	}
 	reports {
 		...ReportFragment

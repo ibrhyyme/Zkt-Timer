@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {useDispatch} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {gql} from '@apollo/client';
 import './TimerBackground.scss';
 import {gqlMutate} from '../../../api';
@@ -16,6 +17,7 @@ import {Crown} from 'phosphor-react';
 const b = block('timer-background');
 
 export default function TimerBackground() {
+	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
 	const userIsPro = isPro(me);
@@ -86,7 +88,14 @@ export default function TimerBackground() {
 				<UploadCover upload={uploadTimerBackground} />
 				{image ? <img src={image} alt="Timer background" /> : null}
 			</div>
-			{image ? <Button flat text="Reset background" danger onClick={resetBackgroundImage} /> : null}
+			{image ? (
+				<Button
+					flat
+					text={t('appearance.timer_background_reset')}
+					danger
+					onClick={resetBackgroundImage}
+				/>
+			) : null}
 		</div>
 	);
 }

@@ -27,6 +27,8 @@ const LANGUAGES: LanguageOption[] = [
 	{ code: 'zh', nativeName: '中文' },
 ];
 
+const LANGUAGE_SEARCH_TEXT = LANGUAGES.map((lang) => lang.nativeName);
+
 export default function LanguageSettings() {
 	const { t, i18n } = useTranslation();
 	const me = useSelector((state: any) => state.account.me);
@@ -44,7 +46,13 @@ export default function LanguageSettings() {
 
 	return (
 		<div className="space-y-2">
-			<TimerSettingsGroup id="language-language" label={t('language.category_language')}>
+			<TimerSettingsGroup
+				id="language-language"
+				label={t('language.category_language')}
+				// The list below is plain buttons, not settings rows, so the group filter
+				// finds no label to match. Searching "english" has to reach it.
+				searchText={LANGUAGE_SEARCH_TEXT}
+			>
 				<div className="space-y-2">
 					{LANGUAGES.map((lang) => {
 						const isActive = currentLang === lang.code;

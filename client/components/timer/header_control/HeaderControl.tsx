@@ -16,10 +16,9 @@ import { useDispatch } from 'react-redux';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
 import block from '../../../styles/bem';
-import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
-import { TIMER_INPUT_TYPE_KEYS } from '../../settings/hardware/HardwareSettings';
+import { TIMER_INPUT_TYPE_KEYS } from '../../settings/hardware/timer_input_types';
 import { useSettings } from '../../../util/hooks/useSettings';
-import { AllSettings, getSetting } from '../../../db/settings/query';
+import { getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
@@ -46,7 +45,6 @@ export default function HeaderControl() {
 
 
 	const mobileMode = useGeneral('mobile_mode');
-	const manualEntry = useSettings('manual_entry');
 	const inspection = useSettings('inspection');
 	const timerType = useSettings('timer_type');
 
@@ -122,15 +120,6 @@ export default function HeaderControl() {
 			const topColor = isTopColorAvailable(cubeType, curSubset) ? color : null;
 			generateAndSet(ct.scramble, curSubset, topColor);
 		}
-	}
-
-	function selectTimerType(timerType: AllSettings['timer_type']) {
-		setSetting('timer_type', timerType);
-	}
-
-	function openStackMat() {
-		const { title, description } = getAudioPickerModalProps(t);
-		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
 	}
 
 	const handlers = {

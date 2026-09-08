@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import './NewCubeType.scss';
 import block from '../../../../styles/bem';
 import {useInput} from '../../../../util/hooks/useInput';
@@ -15,6 +16,7 @@ import ModalHeader from '../../../common/modal/modal_header/ModalHeader';
 const b = block('new-cube-type');
 
 export default function NewCubeType(props: IModalProps) {
+	const {t} = useTranslation();
 	const [name, setName] = useInput('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -56,8 +58,8 @@ export default function NewCubeType(props: IModalProps) {
 
 	return (
 		<div className={b()}>
-			<ModalHeader title="Add cube type" />
-			<Input legend="Cube Type Name" value={name} onChange={setName} />
+			<ModalHeader title={t('timer_settings.cube_type_new_title')} />
+			<Input legend={t('timer_settings.cube_type_name')} value={name} onChange={setName} />
 			<ScramblePicker value={scrambleType} onChange={onChangeScrambleType} />
 			<Button
 				large
@@ -65,7 +67,7 @@ export default function NewCubeType(props: IModalProps) {
 				glow
 				loading={loading}
 				error={error}
-				text="Create Cube Type"
+				text={t('timer_settings.cube_type_create')}
 				disabled={disabled}
 				onClick={createCubeType}
 			/>

@@ -7,15 +7,23 @@ import { useSettingsSearch, matchesSearch } from '../SettingsSearchContext';
 interface TimerSettingsGroupProps {
 	label: string;
 	id?: string;
+	/**
+	 * Extra text the group answers to in search. The filter below reads `label` and
+	 * `description` off its direct children, so a group whose content is a custom
+	 * component (the theme picker, the language list) has nothing to match on and
+	 * used to be unreachable from the search box entirely. Such a group declares the
+	 * words its content contains here instead.
+	 */
+	searchText?: string[];
 	children: React.ReactNode;
 }
 
-export function TimerSettingsGroup({ label, id, children }: TimerSettingsGroupProps) {
+export function TimerSettingsGroup({ label, id, searchText, children }: TimerSettingsGroupProps) {
 	const { query } = useSettingsSearch();
 	const trimmed = query.trim();
 
 	let visibleChildren: React.ReactNode = children;
-	if (trimmed && !matchesSearch(trimmed, label)) {
+	if (trimmed && !matchesSearch(trimmed, label, ...(searchText || []))) {
 		// Group label itself doesn't match -> keep only rows whose label/description match.
 		const filtered = React.Children.toArray(children).filter((child) => {
 			if (!React.isValidElement(child)) return false;
@@ -59,7 +67,7 @@ export function TimerSettingsToggle({ label, description, isActive, disabled = f
 	if (hidden) return null;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
 				<span className="font-medium transition-colors text-text">
 					{label}
@@ -117,7 +125,7 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 	const displayValue = formatValue ? formatValue(value) : (step < 1 ? value.toFixed(1) : String(value));
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
 				<span className="font-medium text-text transition-colors">
 					{label}
@@ -191,7 +199,7 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 	const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
 				<span className="font-medium text-text transition-colors">
 					{label}
@@ -253,7 +261,7 @@ export function TimerSettingsAction({ label, description, hidden, children }: Ti
 	if (hidden) return null;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
 				<span className="font-medium text-text transition-colors">
 					{label}
@@ -265,45 +273,6 @@ export function TimerSettingsAction({ label, description, hidden, children }: Ti
 			<div className="shrink-0">
 				{children}
 			</div>
-		</div>
-	);
-}
-
-// --- Panel (vertical card: label top, full-width children below) ---
-
-interface TimerSettingsPanelProps {
-	label: string;
-	description?: string;
-	hidden?: boolean;
-	onReset?: () => void;
-	resetLabel?: string;
-	showReset?: boolean;
-	children: React.ReactNode;
-}
-
-export function TimerSettingsPanel({ label, description, hidden, onReset, resetLabel, showReset, children }: TimerSettingsPanelProps) {
-	if (hidden) return null;
-
-	return (
-		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
-			<div className="flex items-center justify-between mb-3">
-				<div className="flex flex-col">
-					<span className="font-medium text-text">{label}</span>
-					{description && (
-						<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
-					)}
-				</div>
-				{showReset && onReset && (
-					<button
-						type="button"
-						onClick={onReset}
-						className="text-xs text-orange-400 hover:text-orange-300 transition-colors cursor-pointer shrink-0 ml-4"
-					>
-						{resetLabel || 'Reset'}
-					</button>
-				)}
-			</div>
-			<div>{children}</div>
 		</div>
 	);
 }
@@ -341,7 +310,7 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 	}
 
 	return (
-		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center justify-between mb-3">
 				<div className="flex flex-col">
 					<span className="font-medium text-text">{label}</span>
@@ -415,7 +384,7 @@ export function TimerSettingsText({ label, description, value, placeholder, maxL
 	};
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
 				<span className="font-medium transition-colors text-text">{label}</span>
 				{description && <span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>}

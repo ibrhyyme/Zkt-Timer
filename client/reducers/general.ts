@@ -6,7 +6,6 @@ const initialState: GeneralAllParams = {
 	mobile_mode: false,
 	force_nav_collapsed: false,
 	modals: [],
-	settings_modal_open: false,
 };
 
 export default (state = initialState, action) => {

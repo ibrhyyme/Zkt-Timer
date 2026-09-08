@@ -115,15 +115,20 @@
 		}
 	}
 
-	// A cube sticker: the puzzle tells its faces apart by colour, so the settings do
-	// too. Full strength on every theme — fading it turned the tiles pastel on the
-	// light background, which is the one thing a cube sticker never looks like.
-	&__item-sticker {
+	// The section's own icon, in the section's colour: shape and colour together
+	// identify the row faster than either alone. Full strength on every theme —
+	// fading it turned the icons pastel on the light background.
+	&__item-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		flex-shrink: 0;
-		width: 13px;
-		height: 13px;
-		border-radius: 3px;
-		background: rgb(var(--tab-tone));
+		color: rgb(var(--tab-tone));
+
+		svg {
+			width: 19px;
+			height: 19px;
+		}
 	}
 
 	// Motion-driven active background, slid between rows by framer-motion.
@@ -136,7 +141,7 @@
 		pointer-events: none;
 	}
 
-	&__item-sticker,
+	&__item-icon,
 	&__item-label,
 	&__item-chevron {
 		position: relative;
@@ -206,9 +211,9 @@
 			}
 		}
 
-		&__item-sticker {
-			width: 15px;
-			height: 15px;
+		&__item-icon svg {
+			width: 21px;
+			height: 21px;
 		}
 
 		&__item-chevron {

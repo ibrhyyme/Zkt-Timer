@@ -1,0 +1,150 @@
+@import '../../../styles/config';
+
+.#{$namespace}-settings-page {
+	width: 100%;
+	position: relative;
+
+	// The section's cube-face colour becomes the accent for everything the page draws
+	// — group markers, active toggles, the selected option, slider fills — so moving
+	// between sections changes the room you're standing in rather than just the text.
+	// Rebinding the accent variable itself is what reaches the Tailwind-styled rows
+	// (`bg-primary`, `text-primary`) without touching each one.
+	--primary-color: var(--active-tone, 36, 107, 253);
+
+	// Same shape as the help page's search field. Shares the layout's centred track
+	// below so the field lines up with the nav column rather than floating off the
+	// page's left edge on a wide monitor.
+	&__search {
+		position: relative;
+		width: 100%;
+		max-width: 1180px;
+		margin: 0 auto 24px;
+	}
+
+	&__search-icon {
+		position: absolute;
+		left: 12px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 16px;
+		height: 16px;
+		color: rgba(var(--text-color), 0.5);
+		pointer-events: none;
+	}
+
+	&__search-input {
+		width: 100%;
+		max-width: 420px;
+		padding: 10px 14px 10px 36px;
+		border-radius: 12px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.95rem;
+
+		&::placeholder {
+			color: rgba(var(--text-color), 0.45);
+		}
+
+		&:focus {
+			outline: none;
+			border-color: rgba(var(--primary-color), 0.6);
+		}
+	}
+
+	&__layout {
+		display: grid;
+		grid-template-columns: 244px minmax(0, 1fr);
+		gap: 2.5rem;
+		align-items: start;
+		width: 100%;
+		// Without a ceiling the sidebar hugs the left edge of a wide monitor and leaves
+		// a dead column on the right; centring the pair keeps the page balanced.
+		max-width: 1180px;
+		margin: 0 auto;
+
+		// While searching the nav is not rendered, so the results take the full width
+		// instead of being squeezed into the second grid track.
+		&--searching {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	&__content {
+		min-width: 0;
+	}
+
+	// Drill-down header: back arrow plus the section name on one line. The page title
+	// above already says "Ayarlar", so repeating it in the back button would be noise.
+	&__section-header {
+		display: none;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 1.1rem;
+	}
+
+	&__section-title {
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 1.7rem;
+		font-weight: 500;
+		line-height: 1.2;
+		margin: 0;
+		min-width: 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__back {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 38px;
+		height: 38px;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+
+		svg {
+			width: 17px;
+			height: 17px;
+		}
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Mobile: nav list and section content become two separate screens.
+	// ------------------------------------------------------------------
+	@include bp-down($bp-md) {
+		&__layout {
+			display: block;
+		}
+
+		&__section-header {
+			display: flex;
+		}
+
+		// The title block owns a lot of bottom padding for pages that need breathing
+		// room; here the search field follows immediately, so tighten it.
+		.#{$namespace}-page-title {
+			padding-bottom: 1rem;
+		}
+
+		// Index route: only the list.
+		&--index {
+			.#{$namespace}-settings-page__content {
+				display: none;
+			}
+		}
+
+		// Section route: only the content.
+		&:not(.#{$namespace}-settings-page--index) {
+			.#{$namespace}-settings-nav {
+				display: none;
+			}
+		}
+	}
+}

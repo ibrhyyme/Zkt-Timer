@@ -207,7 +207,6 @@ export class AdminResolver {
 			minutes,
 			reason,
 			delete_published_solves: deletePublishedSolves,
-			cheating_in_1v1: cheatingIn1v1,
 		} = banInput;
 
 		const targetUser = await getUserByIdOrThrow404(targetUserId);

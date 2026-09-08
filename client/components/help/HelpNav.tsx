@@ -15,6 +15,9 @@ export interface HelpNavItem {
 	id: string;
 	label: string;
 	tone: string;
+	// The section's own icon, in the section's colour: shape and colour together
+	// identify the row faster than a bare colour chip did.
+	icon: React.ReactNode;
 }
 
 interface Props {
@@ -62,7 +65,7 @@ export default function HelpNav(props: Props) {
 								transition={{type: 'spring', stiffness: 460, damping: 38}}
 							/>
 						) : null}
-						<span className={b('item-sticker')} />
+						<span className={b('item-icon')}>{item.icon}</span>
 						<span className={b('item-label')}>{item.label}</span>
 					</button>
 				);
