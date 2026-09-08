@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TimerContext } from '../../Timer';
 import { useSettings } from '../../../../util/hooks/useSettings';
 import { smartCubeSelected } from '../../helpers/util';
+import { virtualCubeSelected } from '../../helpers/virtual_cube';
 import { isMultiPhaseActive } from '../../../../../shared/util/solve/multiphase';
 import { getPhaseLabels } from '../../../../util/solve/multiphase_labels';
 import { getTimeString } from '../../../../util/time';
@@ -25,7 +26,18 @@ export default function MultiPhaseIndicator() {
 	const customLabels = useSettings('multi_phase_custom_labels');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 
-	if (!isMultiPhaseActive(count) || !solving || !timeStartedAt || smartCubeSelected(context)) {
+	// Inputs that never produce manual splits are excluded, or the strip renders and
+	// then sits frozen on phase 1 for the whole solve. The smart cube was already
+	// handled; the virtual cube is the same case — KeyWatcher's space handler stands
+	// down for it, so `recordPhaseSplit` is unreachable and no split ever arrives.
+	// The virtual cube has its own automatic phase detection (virtual_cube_multi_phase).
+	if (
+		!isMultiPhaseActive(count) ||
+		!solving ||
+		!timeStartedAt ||
+		smartCubeSelected(context) ||
+		virtualCubeSelected(context)
+	) {
 		return null;
 	}
 

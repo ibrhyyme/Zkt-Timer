@@ -248,7 +248,10 @@ export interface CompetitionDetail {
 	schedule: ScheduleDay[];
 	allPersonalBests: RankingRow[];
 	wcaLiveCompId: string | null;
-	wcaLiveCompetitors: {wcaId: string | null; liveId: string; name: string}[];
+	// `wcaId` is absent for federation members who have no WCA id. Two producers
+	// spell that differently — the WCIF path uses null, the ZKT adapter omits the
+	// key — so both are accepted rather than forcing one to convert.
+	wcaLiveCompetitors: {wcaId?: string | null; liveId: string; name: string}[];
 	wcaLiveRoundMap: {activityCode: string; liveRoundId: string}[];
 	info: any;
 }

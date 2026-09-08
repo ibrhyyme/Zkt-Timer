@@ -71,6 +71,14 @@ export class PaginatedCustomTrainers extends PaginatedResponse(CustomTrainer) {}
 
 @InputType()
 export class CustomTrainerCreateInput {
+	/**
+	 * Required by the `custom_trainer.key` column, which has no default. The input
+	 * used to omit it, so every create failed Prisma validation before it reached
+	 * the database.
+	 */
+	@Field({nullable: false})
+	key: string;
+
 	@Field({nullable: false})
 	solution: string;
 

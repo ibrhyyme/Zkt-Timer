@@ -142,6 +142,10 @@ export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 		solve.is_smart_cube = false;
 	}
 
+	if (!solve.is_virtual_cube) {
+		solve.is_virtual_cube = false;
+	}
+
 	if (!solve.smart_put_down_time) {
 		solve.smart_put_down_time = 0;
 	}

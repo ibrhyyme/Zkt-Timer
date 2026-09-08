@@ -9,9 +9,16 @@
  */
 export const TIMER_INPUT_TYPE_KEYS = {
 	keyboard: 'timer_settings.input_keyboard',
-	stackmat: 'timer_settings.input_stackmat',
+	virtual: 'timer_settings.input_virtual',
+	// StackMat and QYtoys are one input: same 1200 Hz protocol on the same audio
+	// jack, same stored device id. They were two values that differed only by label.
+	stackmat: 'timer_settings.input_wired',
 	smart: 'timer_settings.input_smart',
 	gantimer: 'timer_settings.input_gantimer',
 	qiyitimer: 'timer_settings.input_qiyitimer',
-	qiyiwired: 'timer_settings.input_qytoys',
 };
+
+/** Every `timer_type` value, in the order the pickers should offer them. */
+export const TIMER_INPUT_TYPES = Object.keys(TIMER_INPUT_TYPE_KEYS) as Array<
+	keyof typeof TIMER_INPUT_TYPE_KEYS
+>;

@@ -50,6 +50,7 @@ const defaultTimerState = {
 	stackMatInit: false,
 	canStart: false,
 	phaseSplits: [],
+	virtualArmed: false,
 
 	disabled: false,
 	scramble: ''

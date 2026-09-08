@@ -130,6 +130,7 @@ export const SOLVE_INPUT_FIELDS: (keyof SolveInput)[] = [
 	'from_timer',
 	'trainer_name',
 	'is_smart_cube',
+	'is_virtual_cube',
 	'training_session_id',
 	'smart_device_id',
 	'smart_turn_count',

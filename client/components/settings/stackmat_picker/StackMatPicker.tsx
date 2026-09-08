@@ -12,18 +12,13 @@ import './StackMatPicker.scss';
 
 const b = block('stackmat-picker');
 
-type AudioTimerTarget = 'stackmat' | 'qiyiwired';
-
-// Modal title/description for the audio-jack device picker, derived from which audio timer
-// it was opened for. Single source of truth so every opener (grid, header, settings, room)
-// shows the right name — StackMat vs QYtoys — instead of always saying "StackMat".
-export function getAudioPickerModalProps(target: AudioTimerTarget, t: (key: string) => string) {
-	if (target === 'qiyiwired') {
-		return {
-			title: t('stackmat.select_input_qytoys'),
-			description: t('stackmat.description_qytoys'),
-		};
-	}
+// Modal title/description for the audio-jack device picker.
+//
+// StackMat and QYtoys used to be two timer types with two sets of strings. They
+// are one input now: the same 1200 Hz protocol on the same audio jack, saved to
+// the same device id. The copy names both brands so a QYtoys owner still
+// recognises their device.
+export function getAudioPickerModalProps(t: (key: string) => string) {
 	return {
 		title: t('stackmat.select_input'),
 		description: t('stackmat.description'),
@@ -31,14 +26,11 @@ export function getAudioPickerModalProps(target: AudioTimerTarget, t: (key: stri
 }
 
 interface StackMatPickerProps extends IModalProps {
-	// Which audio timer this picker is configuring. Drives the save target + labels.
-	// Verilmezse legacy davranis: mevcut qiyiwired korunur, degilse stackmat'a duser.
-	targetTimerType?: AudioTimerTarget;
 }
 
 export default function StackMatPicker(props: StackMatPickerProps) {
 	const { t } = useTranslation();
-	const { onComplete, targetTimerType } = props;
+	const { onComplete } = props;
 
 	const stackMatId = useSettings('stackmat_id');
 	const [selectedStackMatId, setSelectedStackMatId] = useState(stackMatId);
@@ -106,19 +98,11 @@ export default function StackMatPicker(props: StackMatPickerProps) {
 	function saveSelectedAudio() {
 		// stackmat_id'yi ONCE set et: timer_type degisince StackMat component id hazirken mount olup init etsin.
 		setSetting('stackmat_id', selectedStackMatId);
-		if (targetTimerType) {
-			setSetting('timer_type', targetTimerType);
-		} else {
-			// Legacy: prop'suz acan cagiranlar icin mevcut qiyiwired secimini koru, degilse stackmat'a dus.
-			if (getSetting('timer_type') !== 'qiyiwired') {
-				setSetting('timer_type', 'stackmat');
-			}
-		}
+		setSetting('timer_type', 'stackmat');
 		onComplete();
 	}
 
-	// Target-aware "select X" label so loading/fallback text matches the chosen timer (StackMat vs QYtoys).
-	const selectLabel = targetTimerType === 'qiyiwired' ? t('stackmat.select_qytoys') : t('stackmat.select_stackmat');
+	const selectLabel = t('stackmat.select_stackmat');
 
 	function deviceLabel(device: MediaDeviceInfo, index: number) {
 		return device.label || `${selectLabel} ${index + 1}`;

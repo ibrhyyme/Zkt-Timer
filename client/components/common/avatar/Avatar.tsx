@@ -40,12 +40,11 @@ interface Props {
 	hideBadges?: boolean;
 	vertical?: boolean;
 	target?: string;
-	showEloType?: '222' | '333' | '444' | 'overall';
 }
 
 export default function Avatar(props: Props) {
 	const user = props.user as UserAccountForAdmin;
-	const { small, large, vertical, showOptions, showEloType, tiny, showEmail, hideBadges, target, noLink } = props;
+	const { small, large, vertical, showOptions, tiny, showEmail, hideBadges, target, noLink } = props;
 
 	function onClick(e) {
 		if (noLink) {
@@ -64,12 +63,6 @@ export default function Avatar(props: Props) {
 		);
 	}
 
-	let eloSpan = null;
-	if (showEloType && (user as GqlPublicUserAccount)?.elo_rating) {
-		const elo = (user as GqlPublicUserAccount).elo_rating[`elo_${showEloType}_rating`];
-		eloSpan = <span className={b('elo')}>{elo}</span>;
-	}
-
 	let nameSpan = null;
 	if (user?.username) {
 		nameSpan = (
@@ -77,7 +70,6 @@ export default function Avatar(props: Props) {
 				<span className={b('username')}>
 					{user.username} {verifiedSymbol}
 				</span>
-				{eloSpan}
 			</span>
 		);
 	}

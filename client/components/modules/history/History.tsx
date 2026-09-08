@@ -74,9 +74,10 @@ export default function History(props: Props) {
 		if (highlightPbs === 'off') return ids;
 
 		// Use the unbounded history when we own the query; fall back to provided solves.
-		const source = filterOptions
-			? fetchSolves({ ...filterOptions, limit: undefined })
-			: (parentSolves || solves);
+		// No fetchOptions argument, so no limit is applied — that is what makes this
+		// unbounded. `limit` was previously passed inside the FILTER object, where
+		// fetchSolves never reads it and cleanFilterOptions dropped it anyway.
+		const source = filterOptions ? fetchSolves(filterOptions) : (parentSolves || solves);
 
 		const bestByBucket = new Map<string, { time: number; id: string }>();
 		for (const s of source) {

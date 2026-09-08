@@ -16,6 +16,7 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 		plus_two
 		scramble
 		is_smart_cube
+		is_virtual_cube
 		created_at
 		started_at
 		ended_at
@@ -52,6 +53,7 @@ export const MINI_SOLVE_FRAGMENT = gql`
 		dnf
 		plus_two
 		is_smart_cube
+		is_virtual_cube
 		created_at
 		started_at
 		ended_at
@@ -102,6 +104,7 @@ export const SOLVE_FRAGMENT = gql`
 		notes
 		created_at
 		is_smart_cube
+		is_virtual_cube
 		smart_turn_count
 		share_code
 		smart_turns

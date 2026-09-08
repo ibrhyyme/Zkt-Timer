@@ -120,4 +120,10 @@ export interface TimerStore {
 	// Cube reports a state that is neither solved nor the current scramble target
 	// (typically after reconnecting to a cube that was turned with Bluetooth off).
 	smartOutOfSync?: boolean;
+	/**
+	 * Virtual cube: the scramble has been applied and the cube is waiting for the
+	 * first move. While this is true the virtual cube owns the keyboard, so every
+	 * other global key handler stands down — see helpers/virtual_cube.ts.
+	 */
+	virtualArmed?: boolean;
 }

@@ -69,6 +69,7 @@ export default function SignUp() {
 			email: string;
 			password: string;
 			language: string;
+			turnstileToken: string;
 		}
 	>(CREATE_USER_ACCOUNT_MUTATION);
 

@@ -22,6 +22,17 @@ interface CaseMatch {
 }
 
 const CUBE_ROTS: number[][] = (engine as any).cubeRots;
+
+/**
+ * cstimer's 24 whole-cube rotations as facelet index permutations.
+ * Index 0 is the identity, so a 1-axis scan means "no rotation".
+ *
+ * Re-exported because the virtual cube's progress detection needs the same table
+ * and permuting 54 indices is roughly two orders of magnitude cheaper than
+ * rebuilding a cubejs cube per orientation, which matters when it runs on every
+ * move of a live solve.
+ */
+export { CUBE_ROTS };
 const OLL_MASK: number[][] = (engine as any).masks.ollMask;
 const F2L_MASK: number[][] = (engine as any).masks.f2lMask;
 const PLL_PATTERNS: number[][][] = (engine as any).pllPatterns;

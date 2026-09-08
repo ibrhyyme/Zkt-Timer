@@ -158,6 +158,8 @@ app.use(helmet({
 				"https://www.google-analytics.com",
 				"https://googleads.g.doubleclick.net",   // Google Ads conversion tracking
 				"https://www.google.com",                 // Google Ads remarketing
+				"https://www.youtube.com",                // Room music player: IFrame API loader
+				"https://s.ytimg.com",                    // ...which then pulls www-widgetapi.js from here
 			],
 			// Inline event handlers (onclick, onload) — present in legacy code patterns.
 			// Long-term: refactor to addEventListener. For now, allow via 'unsafe-inline'.
@@ -187,6 +189,7 @@ app.use(helmet({
 				"https://challenges.cloudflare.com",
 				"https://googleads.g.doubleclick.net",   // Google Ads iframe
 				"https://www.openstreetmap.org",          // ZKT competition venue map embed
+				"https://www.youtube.com",                // Room music player: the YT.Player iframe itself
 			],
 			mediaSrc: ["'self'", "blob:"],
 			objectSrc: ["'none'"],

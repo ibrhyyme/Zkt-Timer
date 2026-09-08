@@ -56,7 +56,6 @@ export default function TimeDisplay() {
 	const ganTimerOn = timerType === 'gantimer';
 	const qiyiTimerOn = timerType === 'qiyitimer';
 	// QiYi wired (QYtoys) uses the standard StackMat audio protocol (mode '')
-	const qiyiWiredOn = timerType === 'qiyiwired';
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 
 	const mobileMode = useGeneral('mobile_mode');
@@ -242,9 +241,9 @@ export default function TimeDisplay() {
 	// Hardware timers (StackMat / GAN / QiYi) put a connect control in bottomInfo.
 	// Smart cube puts an instruction sentence there instead, which must stay under
 	// the digits, so the two cases get different layouts.
-	const hardwareTimerConnect = stackMatOn || qiyiWiredOn || ganTimerOn || qiyiTimerOn;
+	const hardwareTimerConnect = stackMatOn || ganTimerOn || qiyiTimerOn;
 
-	if (stackMatOn || qiyiWiredOn) {
+	if (stackMatOn) {
 		bottomInfo = <StackMat />;
 	} else if (ganTimerOn) {
 		bottomInfo = <GanTimer />;

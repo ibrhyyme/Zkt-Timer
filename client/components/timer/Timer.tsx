@@ -16,6 +16,10 @@ import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { useSettings } from '../../util/hooks/useSettings';
 import { is3x3CubeType } from './helpers/util';
+import { useNormalizeTimerType } from './helpers/timer_type_support';
+import { virtualCubeSupports } from '../../util/virtual_cube/size';
+import { useVirtualCubeSize } from '../../util/virtual_cube/useVirtualCubeSize';
+import VirtualCube from './virtual_cube/VirtualCube';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
@@ -78,6 +82,11 @@ export default function Timer(props: TimerProps) {
 	// Event listeners for single and AVG PBs
 	listenForPbEvents(context);
 
+	// Switching to a puzzle the selected input cannot handle resets the input to the
+	// keyboard, so the pickers always show something real as selected. SmartCube
+	// disconnects in its own unmount cleanup once the setting flips.
+	useNormalizeTimerType(cubeType, scrambleSubset);
+
 	// Initiating timer stuff
 	useEffect(() => {
 		toggleHtmlOverflow('hidden');
@@ -130,10 +139,22 @@ export default function Timer(props: TimerProps) {
 	}, [hasBackgroundImage, mobileMode]);
 
 	const smartActive = timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset) && !manualEntry;
+	// The virtual cube only implements NxN, so a non-cube bucket falls back to the
+	// plain timer exactly as an unsupported smart cube bucket already does.
+	const virtualActive =
+		timerType === 'virtual' && virtualCubeSupports(cubeType, scrambleSubset) && !manualEntry;
 
 	let smartCubeVisual: ReactNode = null;
 	if (smartActive) {
 		smartCubeVisual = <SmartCube />;
+	}
+
+	const virtualFocus = virtualActive && (!!context.virtualArmed || !!context.timeStartedAt);
+	const virtualCubeSize = useVirtualCubeSize(mobileMode, virtualFocus);
+
+	let virtualCubeVisual: ReactNode = null;
+	if (virtualActive) {
+		virtualCubeVisual = <VirtualCube />;
 	}
 
 	if (loading) {
@@ -148,10 +169,20 @@ export default function Timer(props: TimerProps) {
 				<div
 					className={b('main-time', {
 						smart: smartActive,
+						virtual: virtualActive,
 					})}
+					// The layout places the digits against the cube's left edge, so it
+					// needs the cube's actual size. Same number the cube renders at,
+					// from the same helper, so the two can never drift apart.
+					style={
+						virtualActive
+							? ({ '--zt-vc-size': `${virtualCubeSize}px` } as React.CSSProperties)
+							: undefined
+					}
 				>
 					<TimeDisplay />
 					{smartCubeVisual}
+					{virtualCubeVisual}
 				</div>
 			</div>
 		</div>
@@ -186,6 +217,18 @@ export default function Timer(props: TimerProps) {
 								<TimeDisplay />
 							</div>
 						</div>
+					</div>
+				) : virtualActive ? (
+					/* Virtual cube uses the SAME wrapper the desktop layout does, and
+					   carries the same size variable. One set of rules then covers both
+					   platforms — mounting it somewhere else meant none of the virtual
+					   cube's layout rules matched on mobile at all. */
+					<div
+						className={`${b('main-time', { virtual: true })} ${b('main', { mobile: true })}`}
+						style={{ '--zt-vc-size': `${virtualCubeSize}px` } as React.CSSProperties}
+					>
+						<TimeDisplay />
+						{virtualCubeVisual}
 					</div>
 				) : (
 					/* Normal mode - timer full width */
@@ -254,7 +297,11 @@ export default function Timer(props: TimerProps) {
 			<h1 className="sr-only">Rubik's Cube Timer - Zkt Timer</h1>
 			<div
 				className={b({
-					started: !!context.timeStartedAt,
+					// Arming the virtual cube counts as started. Once Space applies the
+					// scramble the attempt has effectively begun, and the solver should
+					// be looking at the cube and nothing else — same chrome-free screen
+					// the running timer already produces.
+					started: !!context.timeStartedAt || (virtualActive && !!context.virtualArmed),
 					mobile: mobileMode && !props.inModal,
 					streamerMode: isStreamer,
 					// 'left' layout mirrors the header selectors to the right (above the timer column)
@@ -270,7 +317,16 @@ export default function Timer(props: TimerProps) {
 							own handler does one thing: the swipe that abandons inspection. */}
 						{mobileMode && (
 							<div
-								className={b('touch-overlay', { active: !!context.timeStartedAt || !!context.inInspection })}
+								// Never active for the virtual cube. This overlay is a full-screen
+								// pointer-events trap at z-index 9999, and for a cube you turn with
+								// your finger it is wrong in both states it covers: during the solve
+								// it swallows every move, and during inspection it blocks the very
+								// rotations inspection exists for. Its own handler only implements
+								// the swipe that abandons inspection, and stopping is KeyWatcher's
+								// job — which already stands down for this input.
+								className={b('touch-overlay', {
+									active: (!!context.timeStartedAt || !!context.inInspection) && !virtualActive,
+								})}
 								onTouchStart={(e) => {
 									if (context.inInspection) {
 										// Store start point for swipe

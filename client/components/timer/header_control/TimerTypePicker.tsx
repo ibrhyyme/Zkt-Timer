@@ -28,7 +28,11 @@ import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
 import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
-import { is3x3CubeType } from '../helpers/util';
+import {
+	normalizeAllowedTimerTypes,
+	timerTypeSupportsBucket,
+	timerTypeUnsupportedReason,
+} from '../helpers/timer_type_support';
 import { PRO_GATED_TIMER_TYPES } from '../helpers/pro_timer_types';
 import { isPro } from '../../../lib/pro';
 import block from '../../../styles/bem';
@@ -36,7 +40,7 @@ import './TimerTypePicker.scss';
 
 const b = block('timer-type-picker');
 
-type TypeKey = 'keyboard' | 'stackmat' | 'smart' | 'gantimer' | 'qiyitimer' | 'qiyiwired' | 'manual';
+type TypeKey = AllSettings['timer_type'] | 'manual';
 
 type TimerOption = {
 	typeKey: TypeKey;
@@ -50,6 +54,8 @@ type TimerOption = {
 	proGated: boolean;
 	notAllowed: boolean;
 	smartUnsupported: boolean;
+	/** i18n key explaining why the puzzle rules this input out, null when it does not. */
+	unsupportedReason: string | null;
 };
 
 interface Props {
@@ -57,7 +63,9 @@ interface Props {
 	requireProForSmart?: boolean;
 }
 
-export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart }: Props) {
+export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, requireProForSmart }: Props) {
+	// Rooms created before StackMat and QYtoys merged still store 'qiyiwired'.
+	const allowedTimerTypes = normalizeAllowedTimerTypes(rawAllowed);
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -69,7 +77,9 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 	const mobileMode = useGeneral('mobile_mode');
 
 	const isProGated = !!requireProForSmart && !isPro(me);
-	const smartSupported = is3x3CubeType(cubeType, scrambleSubset);
+	// Which inputs the current puzzle supports. One table, in timer_type_support.ts.
+	const smartSupported = timerTypeSupportsBucket('smart', cubeType, scrambleSubset);
+	const virtualSupported = timerTypeSupportsBucket('virtual', cubeType, scrambleSubset);
 
 	// Open control — scroll selected item to center of panel.
 	// useExclusiveDropdown: opening this closes any other header dropdown.
@@ -94,10 +104,10 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 		setSetting('timer_type', newTimerType);
 	}
 
-	function openStackMatPicker(targetTimerType: 'stackmat' | 'qiyiwired' = 'stackmat') {
-		const { title, description } = getAudioPickerModalProps(targetTimerType, t);
+	function openStackMatPicker() {
+		const { title, description } = getAudioPickerModalProps(t);
 		dispatch(openModal(
-			<StackMatPicker targetTimerType={targetTimerType} />,
+			<StackMatPicker />,
 			{
 				width: 400,
 				compact: true,
@@ -122,12 +132,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 
 		switch (opt.typeKey) {
 			case 'stackmat':
-				openStackMatPicker('stackmat');
-				break;
-			case 'qiyiwired':
-				// QYtoys (QiYi kablolu) ses-jack picker'i gerektirir (cihaz secimi + mic izni); stackmat gibi ac.
-				// timer_type'i picker save'i set eder (id'den sonra) — onceden set ETME.
-				openStackMatPicker('qiyiwired');
+				openStackMatPicker();
 				break;
 			case 'manual':
 				toggleManualEntry();
@@ -137,7 +142,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 		}
 	}
 
-	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'notAllowed' | 'smartUnsupported'>[] = [
+	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'notAllowed' | 'smartUnsupported' | 'unsupportedReason'>[] = [
 		{
 			typeKey: 'keyboard',
 			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
@@ -146,8 +151,15 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 			isActive: timerType === 'keyboard' && !manualEntry,
 		},
 		{
+			typeKey: 'virtual',
+			label: t('quick_controls.virtual_cube'),
+			shortLabel: t('quick_controls.virtual_cube_short'),
+			icon: <Cube weight="bold" size={16} />,
+			isActive: timerType === 'virtual' && !manualEntry && virtualSupported,
+		},
+		{
 			typeKey: 'stackmat',
-			label: t('quick_controls.stackmat'),
+			label: t('quick_controls.wired_timer'),
 			shortLabel: 'StackMat',
 			icon: <Microphone weight="bold" size={16} />,
 			isActive: timerType === 'stackmat' && !manualEntry,
@@ -174,13 +186,6 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 			isActive: timerType === 'qiyitimer' && !manualEntry,
 		},
 		{
-			typeKey: 'qiyiwired',
-			label: t('quick_controls.qytoys'),
-			shortLabel: 'QYtoys',
-			icon: <Microphone weight="bold" size={16} />,
-			isActive: timerType === 'qiyiwired' && !manualEntry,
-		},
-		{
 			typeKey: 'manual',
 			label: t('quick_controls.manual_entry'),
 			shortLabel: t('quick_controls.manual_entry'),
@@ -192,9 +197,14 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 	const options: TimerOption[] = baseOptions.map((opt) => {
 		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
 		const notAllowed = !!allowedTimerTypes && !allowedTimerTypes.includes(opt.typeKey);
-		const smartUnsupported = opt.typeKey === 'smart' && !smartSupported;
+		// 'manual' is a mode, not a timer_type, so it is never puzzle-restricted.
+		const unsupportedReason =
+			opt.typeKey === 'manual'
+				? null
+				: timerTypeUnsupportedReason(opt.typeKey, cubeType, scrambleSubset);
+		const smartUnsupported = !!unsupportedReason;
 		const disabled = proGated || notAllowed || smartUnsupported;
-		return { ...opt, disabled, proGated, notAllowed, smartUnsupported };
+		return { ...opt, disabled, proGated, notAllowed, smartUnsupported, unsupportedReason };
 	});
 
 	const currentOption = options.find((opt) => opt.isActive) ?? options[0];
@@ -243,6 +253,15 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 										<span className={b('badge', { locked: true })}>
 											<Lock size={10} weight="fill" />
 											{t('room_settings.not_allowed')}
+										</span>
+									)}
+									{/* Says WHY the input is unavailable. Previously computed and
+									    then never rendered, so the row was simply greyed out with
+									    no explanation. */}
+									{opt.unsupportedReason && (
+										<span className={b('badge', { locked: true })}>
+											<Lock size={10} weight="fill" />
+											{t(opt.unsupportedReason)}
 										</span>
 									)}
 									<Select.ItemIndicator className={b('check')}>

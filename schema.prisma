@@ -412,6 +412,10 @@ model Solve {
   bulk                 Boolean           @default(false)
   inspection_time      Float?            @default(0.0)
   is_smart_cube        Boolean           @default(false)
+  // Solved on the on-screen keyboard cube rather than a physical one. Kept
+  // separate from is_smart_cube because the reconstruction rules differ:
+  // virtual solves record their moves for everyone, smart cube solves do not.
+  is_virtual_cube      Boolean           @default(false)
   smart_put_down_time  Float?            @default(0.0)
   smart_pick_up_time   Float?            @default(0.0)
   smart_turns          String?

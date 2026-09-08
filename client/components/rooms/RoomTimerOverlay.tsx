@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { timerTypeSupportsBucket } from '../timer/helpers/timer_type_support';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +28,15 @@ const STATUS = {
     SUBMITTING: 'SUBMITTING',
     MANUAL_INPUT: 'MANUAL_INPUT', // New status for manual entry
 };
+
+// Inputs backed by a physical device that reports its own times. The keyboard
+// stands down for these; 'keyboard' and 'virtual' are driven by the keyboard itself.
+const DEVICE_TIMER_TYPES = new Set<string>([
+    'stackmat',
+    'gantimer',
+    'qiyitimer',
+    'smart',
+]);
 
 interface RoomTimerOverlayProps {
     isActive: boolean;
@@ -139,6 +149,21 @@ export default function RoomTimerOverlay({
 
     // Settings
     const timerType = useSettings('timer_type');
+
+    // Whether a hardware device currently owns the input, so the keyboard must not
+    // also drive the timer.
+    //
+    // Support-aware on purpose. These used to be five unconditional early returns,
+    // so a room whose puzzle the selected device cannot handle (smart cube on 4x4)
+    // blocked the keyboard while the device itself never engaged — the room had no
+    // working timer at all. `cubeType` and `scrambleSubset` were already props here
+    // and were simply never read.
+    //
+    // 'virtual' is deliberately absent: rooms do not render the virtual cube, so it
+    // falls back to the keyboard rather than locking it out.
+    const deviceOwnsInput =
+        DEVICE_TIMER_TYPES.has(timerType) &&
+        timerTypeSupportsBucket(timerType, cubeType, scrambleSubset);
     const inspection = useSettings('inspection');
     const manualEntry = useSettings('manual_entry');
     const stackmatId = useSettings('stackmat_id');
@@ -511,7 +536,7 @@ export default function RoomTimerOverlay({
     }, [onRedo]);
 
     const connectStackmat = useCallback(async () => {
-        if (timerType !== 'stackmat' && timerType !== 'qiyiwired') return;
+        if (timerType !== 'stackmat') return;
         if (!isActive) return;
 
         // Ensure stackmat instance exists
@@ -551,7 +576,7 @@ export default function RoomTimerOverlay({
 
     // Auto-connect attempts logic
     useEffect(() => {
-        const isStackmatLike = timerType === 'stackmat' || timerType === 'qiyiwired';
+        const isStackmatLike = timerType === 'stackmat';
         if (isStackmatLike && isActive && !stackmatConnected && stackmatId) {
             const timeout = setTimeout(() => {
                 connectStackmat().catch(err => console.error("Auto connect failed", err));
@@ -572,13 +597,9 @@ export default function RoomTimerOverlay({
     const simulateSpaceDown = useCallback((stopTs?: number) => {
         if (alreadySolvedThisRound) return;
 
-        // STRICT timer type enforcement: Only keyboard mode allows keyboard/touch input
-        // Other modes should ONLY work with their respective devices
-        if (timerType === 'stackmat') return; // Stackmat mode: only stackmat works
-        if (timerType === 'qiyiwired') return; // QYtoys mode: only QiYi wired (audio jack) works
-        if (timerType === 'gantimer') return; // GAN Timer mode: only GAN timer works
-        if (timerType === 'qiyitimer') return; // QiYi Timer mode: only QiYi timer works
-        if (timerType === 'smart') return; // Smart cube mode: only smart cube works
+        // A device mode owns the input and the keyboard stands down — but only while
+        // that device can actually run on this puzzle.
+        if (deviceOwnsInput) return;
 
         if (keyIsDown.current) return;
 
@@ -639,12 +660,7 @@ export default function RoomTimerOverlay({
     const simulateSpaceUp = useCallback((startTs?: number) => {
         if (alreadySolvedThisRound) return;
 
-        // STRICT timer type enforcement
-        if (timerType === 'stackmat') return;
-        if (timerType === 'qiyiwired') return;
-        if (timerType === 'gantimer') return;
-        if (timerType === 'qiyitimer') return;
-        if (timerType === 'smart') return;
+        if (deviceOwnsInput) return;
 
         keyIsDown.current = false;
 
@@ -763,8 +779,8 @@ export default function RoomTimerOverlay({
             // Anasayfa hizalamasi: TIMING'de Space disinda herhangi bir tus timer'i durdurur
             // (Space zaten asagidaki keydown bloku ile simulateSpaceDown'a gidiyor — SUBMITTING_DOWN ara durumu uzerinden)
             if (currentStatus === STATUS.TIMING && e.keyCode !== 32) {
-                // Cihaz bazli modlarda (stackmat / qiyiwired / gantimer / qiyitimer / smart) klavye ile durdurma yok
-                if (timerType === 'stackmat' || timerType === 'qiyiwired' || timerType === 'gantimer' || timerType === 'qiyitimer' || timerType === 'smart') {
+                // Cihaz bazli modlarda klavye ile durdurma yok
+                if (deviceOwnsInput) {
                     return;
                 }
                 e.preventDefault();

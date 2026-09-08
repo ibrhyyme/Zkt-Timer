@@ -7,6 +7,71 @@
 	}
 }
 
+// Virtual cube, armed or solving: the cube leaves the document flow and pins
+// itself to the viewport.
+//
+// It has to. In flow it lives inside `__main`, which is one column of the wrapper
+// (the side layouts put a fixed 22rem footer next to it) and carries
+// `overflow: hidden` on the bottom layout. So a cube centred in that cell is not
+// centred on the screen, and one large enough to matter gets clipped by the cell.
+// Both were reported, and both come from the same containment.
+//
+// Fixed positioning is viewport-relative here because no ancestor sets a
+// transform, filter or perspective — those would make it a containing block and
+// silently put the cube back inside the cell.
+.zt-timer--started {
+	.zt-timer__main-time--virtual {
+		> .zt-virtual-cube {
+			position: fixed;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			// Above the timer chrome fading out behind it.
+			z-index: 60;
+		}
+
+		// The digits ride alongside the cube rather than sharing a track with it,
+		// so the cube keeps the exact centre whatever the time reads.
+		> .zt-time-display {
+			position: fixed;
+			top: 50%;
+			right: calc(50% + (var(--zt-vc-size, 400px) / 2) + 3rem);
+			transform: translateY(-50%);
+			width: max-content;
+			max-width: calc(50% - (var(--zt-vc-size, 400px) / 2) - 4rem);
+			text-align: right;
+			z-index: 60;
+		}
+	}
+}
+
+// Mobile, idle: portrait has no room for the digits beside the cube, so the pair
+// stacks instead of sitting in a row.
+.zt-timer--mobile {
+	.zt-timer__main-time--virtual {
+		flex-direction: column;
+		width: 100%;
+		gap: 0.75rem;
+	}
+}
+
+// Mobile has no room for the digits beside the cube, so they stack: cube centred,
+// time below it.
+.zt-timer--mobile.zt-timer--started {
+	.zt-timer__main-time--virtual {
+		> .zt-time-display {
+			position: fixed;
+			top: auto;
+			right: auto;
+			left: 50%;
+			bottom: 12vh;
+			transform: translateX(-50%);
+			max-width: 92vw;
+			text-align: center;
+		}
+	}
+}
+
 .zt-timer--mobile.zt-timer--started {
 	.zt-timer__time__scramble {
 		display: none;
@@ -192,6 +257,36 @@ body.timer-immersive-bg {
 
 				// Cube paints above the timer (defensive) and keeps its own slot.
 				> .zt-smart-cube {
+					flex: 0 0 auto;
+					position: relative;
+					z-index: 2;
+				}
+			}
+
+			// Virtual cube, idle. Plain centred row, the same shape the smart cube
+			// uses: the digits and the cube sit side by side and the pair is centred.
+			// Nothing is taken out of flow here, so the scramble above and the stats
+			// below keep their normal positions. The cube is deliberately small at
+			// this size (see useVirtualCubeSize) so it reads as a companion to the
+			// timer rather than competing with the rest of the screen.
+			//
+			// The armed/solving layout is completely different and lives at the top of
+			// this file, under `.zt-timer--started`.
+			&--virtual {
+				width: 95%;
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+				align-items: center;
+				gap: 2rem;
+
+				> .zt-time-display {
+					flex: 0 0 auto;
+					width: auto;
+					min-width: 0;
+				}
+
+				> .zt-virtual-cube {
 					flex: 0 0 auto;
 					position: relative;
 					z-index: 2;

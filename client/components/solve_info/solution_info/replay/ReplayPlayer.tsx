@@ -26,7 +26,11 @@ interface Props {
 export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, onMoveIdxChange }: Props) {
 	const { t } = useTranslation();
 	const me = useMe();
-	const userIsPro = isPro(me) || !isProEnabled(); // If Pro feature disabled, open to everyone
+	// Virtual cube solves are replayable for everyone. Their moves are recorded for
+	// free (cstimer never charged for reconstruction, and this is a 1:1 port of it),
+	// so gating the viewer would store data nobody could look at. Smart cube replay
+	// stays behind Pro.
+	const userIsPro = isPro(me) || !isProEnabled() || !!(solve as any)?.is_virtual_cube;
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const twistyRef = useRef<any>(null);

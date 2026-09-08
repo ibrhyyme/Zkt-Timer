@@ -154,7 +154,8 @@ export default function StackMat() {
 		});
 	}
 
-	const deviceLabel = timerType === 'qiyiwired' ? 'QYtoys' : 'StackMat';
+	// One wired input covers both brands, so the sentence names the generic device.
+	const deviceLabel = 'StackMat';
 
 	return (
 		<StartInstructions>

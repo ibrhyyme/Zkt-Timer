@@ -18,7 +18,27 @@ import {
 	TimerSettingsAction,
 	TimerSettingsSlider,
 } from '../timer/TimerSettingsRow';
-import { TIMER_INPUT_TYPE_KEYS } from './timer_input_types';
+import { VIRTUAL_PROGRESS_METHODS } from '../../../../shared/util/solve/virtual_progress';
+import { timerTypeSupportsBucket } from '../../timer/helpers/timer_type_support';
+import { KEYBOARD_LAYOUTS } from '../../../util/virtual_cube/key_mapping';
+import { TIMER_INPUT_TYPE_KEYS, TIMER_INPUT_TYPES } from './timer_input_types';
+
+/**
+ * cstimer's `vrcSpeed` options. The stored value is the duration of one move in
+ * milliseconds; the label is the rate, which is what cstimer puts on screen.
+ *
+ * The labels are kept identical to cstimer's on purpose: a user comparing the two
+ * side by side has to be able to set the same number in both, and a raw "100 ms"
+ * cannot be matched against cstimer's "10" without doing arithmetic.
+ */
+const VIRTUAL_CUBE_SPEEDS: { value: number; label: string }[] = [
+	{ value: 0, label: '' }, // labelled "instant" from i18n below
+	{ value: 50, label: '20' },
+	{ value: 100, label: '10' },
+	{ value: 200, label: '5' },
+	{ value: 500, label: '2' },
+	{ value: 1000, label: '1' },
+];
 
 // Shared by HeaderControl to render the active timer type name, and by the help page to
 // list the inputs. Moved to timer_input_types.ts so the help page does not have to import
@@ -32,6 +52,8 @@ export default function HardwareSettings() {
 
 	// Input
 	const timerType = useSettings('timer_type');
+	const cubeType = useSettings('cube_type');
+	const scrambleSubset = useSettings('scramble_subset');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 
 	// StackMat
@@ -42,6 +64,15 @@ export default function HardwareSettings() {
 	// QiYi Timer
 	const qiyiAutoInspection = useSettings('qiyi_auto_inspection');
 	const qiyiAutoInspectionWarningShown = useSettings('qiyi_auto_inspection_warning_shown');
+
+	// Virtual cube. Its rows only appear while it is the selected input, since the
+	// options are meaningless for any other one.
+	const virtualCubeSpeed = useSettings('virtual_cube_speed');
+	const virtualCubeOrientation = useSettings('virtual_cube_orientation');
+	const virtualCubeMultiPhase = useSettings('virtual_cube_multi_phase');
+	const virtualCubeKeyboardLayout = useSettings('virtual_cube_keyboard_layout');
+	const virtualCubeSize = useSettings('virtual_cube_size');
+	const isVirtual = timerType === 'virtual';
 
 	// Smart Cube
 	const smartCubeShow = useSettings('smart_cube_show');
@@ -130,9 +161,8 @@ export default function HardwareSettings() {
 	}
 
 	function openStackMatPickerModal() {
-		const target = timerType === 'qiyiwired' ? 'qiyiwired' : 'stackmat';
-		const { title, description } = getAudioPickerModalProps(target, t);
-		dispatch(openModal(<StackMatPicker targetTimerType={target} />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
+		const { title, description } = getAudioPickerModalProps(t);
+		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
 	}
 
 	function getTimerTypeName(tt: string) {
@@ -150,11 +180,16 @@ export default function HardwareSettings() {
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
 					value={timerType}
-					options={['keyboard', 'stackmat', 'qiyiwired', 'smart', 'gantimer', 'qiyitimer'].map((c) => ({
+					// Inputs the current puzzle cannot drive are not offered. Without this
+					// the settings screen was the one place that could still set an
+					// unsupported input, which the timer would then immediately reset.
+					options={TIMER_INPUT_TYPES.filter((c) =>
+						timerTypeSupportsBucket(c, cubeType, scrambleSubset)
+					).map((c) => ({
 						label: getTimerTypeName(c),
 						value: c,
 					}))}
-					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'qiyiwired')}
+					onChange={(v) => setSetting('timer_type', v as AllSettings['timer_type'])}
 				/>
 				<TimerSettingsAction
 					label={t('timer_settings.cube_types')}
@@ -173,6 +208,68 @@ export default function HardwareSettings() {
 					description={t('timer_settings.use_space_with_smart_cube_desc')}
 					isActive={useSpaceWithSmartCube}
 					onClick={() => toggleSetting('use_space_with_smart_cube')}
+				/>
+			</TimerSettingsGroup>
+
+			{/* Virtual cube */}
+			<TimerSettingsGroup
+				id="hardware-virtual-cube"
+				label={t('timer_settings.category_virtual_cube')}
+			>
+				<TimerSettingsSelect
+					label={t('timer_settings.virtual_cube_speed')}
+					description={t('timer_settings.virtual_cube_speed_desc')}
+					value={String(virtualCubeSpeed)}
+					options={VIRTUAL_CUBE_SPEEDS.map((s) => ({
+						label: s.value === 0 ? t('timer_settings.virtual_cube_speed_instant') : s.label,
+						value: String(s.value),
+					}))}
+					hidden={!isVirtual}
+					onChange={(v) => setSetting('virtual_cube_speed', parseInt(v, 10))}
+				/>
+				<TimerSettingsSelect
+					label={t('timer_settings.virtual_cube_orientation')}
+					description={t('timer_settings.virtual_cube_orientation_desc')}
+					value={virtualCubeOrientation}
+					options={[
+						{label: 'UF', value: '6,12'},
+						{label: 'URF', value: '10,11'},
+					]}
+					hidden={!isVirtual}
+					onChange={(v) => setSetting('virtual_cube_orientation', v)}
+				/>
+				<TimerSettingsSelect
+					label={t('timer_settings.virtual_cube_multi_phase')}
+					description={t('timer_settings.virtual_cube_multi_phase_desc')}
+					value={virtualCubeMultiPhase}
+					options={VIRTUAL_PROGRESS_METHODS.map((m) => ({
+						label: t(`timer_settings.vrc_mp_${m}`),
+						value: m,
+					}))}
+					hidden={!isVirtual}
+					onChange={(v) => setSetting('virtual_cube_multi_phase', v)}
+				/>
+				<TimerSettingsSelect
+					label={t('timer_settings.virtual_cube_keyboard_layout')}
+					description={t('timer_settings.virtual_cube_keyboard_layout_desc')}
+					value={virtualCubeKeyboardLayout}
+					options={Object.keys(KEYBOARD_LAYOUTS).map((l) => ({label: l, value: l}))}
+					hidden={!isVirtual}
+					onChange={(v) => setSetting('virtual_cube_keyboard_layout', v)}
+				/>
+				<TimerSettingsSlider
+					label={t('timer_settings.virtual_cube_size')}
+					description={t('timer_settings.virtual_cube_size_desc')}
+					value={virtualCubeSize}
+					min={120}
+					max={700}
+					hidden={!isVirtual}
+					showReset={virtualCubeSize !== getDefaultSetting('virtual_cube_size')}
+					resetLabel={t('appearance.reset')}
+					onReset={() =>
+						setSetting('virtual_cube_size', getDefaultSetting('virtual_cube_size') as number)
+					}
+					onChange={(v) => setSetting('virtual_cube_size', v)}
 				/>
 			</TimerSettingsGroup>
 

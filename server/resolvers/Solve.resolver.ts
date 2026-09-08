@@ -64,6 +64,7 @@ export class SolveResolver {
 				plus_two: true,
 				scramble: true,
 				is_smart_cube: true,
+				is_virtual_cube: true,
 				created_at: true,
 				started_at: true,
 				ended_at: true,
@@ -117,6 +118,7 @@ export class SolveResolver {
 				plus_two: true,
 				scramble: true,
 				is_smart_cube: true,
+				is_virtual_cube: true,
 				created_at: true,
 				started_at: true,
 				ended_at: true,
@@ -165,6 +167,7 @@ export class SolveResolver {
 				plus_two: true,
 				scramble: true,
 				is_smart_cube: true,
+				is_virtual_cube: true,
 				created_at: true,
 				started_at: true,
 				ended_at: true,
@@ -239,11 +242,21 @@ export class SolveResolver {
 			throw e;
 		}
 
-		if (input.is_smart_cube && input.smart_turns) {
+		if (input.smart_turns) {
 			// Pro gating: free user sends null smart_turns (client side).
 			// Defensively check server too — prevent malicious bypass.
 			const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
-			if (userIsPro) {
+
+			// The virtual cube records its moves for everyone, matching cstimer, where
+			// reconstruction has never been a paid feature. Smart cube reconstruction
+			// stays behind Pro.
+			//
+			// Note the outer condition used to also require is_smart_cube, which meant
+			// smart_turns arriving with neither flag set was written to the database
+			// with no check at all. Keying on the turns themselves closes that.
+			const allowed = input.is_virtual_cube || (input.is_smart_cube && userIsPro);
+
+			if (allowed) {
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
 					// Break the solve down with the method the user is actually solving
@@ -266,7 +279,8 @@ export class SolveResolver {
 					(createdSolve as any).solve_method_steps = [];
 				}
 			} else {
-				// Free user accidentally sent smart_turns — don't write to DB, clear it
+				// Turns arrived without an origin that is allowed to keep them: a free
+				// user's smart cube solve, or a solve claiming neither origin. Clear.
 				await updateSolve(createdSolve.id, { smart_turns: null });
 				(createdSolve as any).smart_turns = null;
 			}
@@ -386,10 +400,16 @@ export class SolveResolver {
 		// breakdown came out empty on every device — and nothing in the logs said so, because
 		// an empty step list is not an error anywhere in the chain.
 		const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
-		if (userIsPro) {
+		{
 			// `accepted`, not `solves`: a rejected row has no solve to hang steps off.
 			for (const input of accepted) {
-				if (!input.is_smart_cube || !input.smart_turns) continue;
+				if (!input.smart_turns) continue;
+				// Same rule as the single-solve path: virtual cube solves are analysed
+				// for everyone, smart cube solves only for Pro. Without the virtual
+				// clause a free user's migrated virtual solves would keep their moves
+				// but never get a breakdown, which is the exact silent gap this loop
+				// was added to close for smart cubes.
+				if (!((input as any).is_virtual_cube || (input.is_smart_cube && userIsPro))) continue;
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
 					if (!turns.length) continue;

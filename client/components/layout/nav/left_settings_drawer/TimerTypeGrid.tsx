@@ -29,7 +29,11 @@ import {useMe} from '../../../../util/hooks/useMe';
 import {openModal} from '../../../../actions/general';
 import StackMatPicker, { getAudioPickerModalProps } from '../../../settings/stackmat_picker/StackMatPicker';
 import {AllSettings} from '../../../../db/settings/query';
-import {is3x3CubeType} from '../../../timer/helpers/util';
+import {
+	normalizeAllowedTimerTypes,
+	timerTypeSupportsBucket,
+	timerTypeUnsupportedReason,
+} from '../../../timer/helpers/timer_type_support';
 import {PRO_GATED_TIMER_TYPES} from '../../../timer/helpers/pro_timer_types';
 import {isPro} from '../../../../lib/pro';
 import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
@@ -42,7 +46,7 @@ import './TimerTypeGrid.scss';
 const itemBlock = block('edge-drawer');
 const b = block('timer-type-grid');
 
-type TypeKey = 'keyboard' | 'stackmat' | 'smart' | 'gantimer' | 'qiyitimer' | 'qiyiwired' | 'manual';
+type TypeKey = AllSettings['timer_type'] | 'manual';
 
 interface TimerOption {
 	typeKey: TypeKey;
@@ -53,6 +57,8 @@ interface TimerOption {
 	proGated: boolean;
 	smartUnsupported: boolean;
 	notAllowed: boolean;
+	/** Bulmacanin bu girdiyi neden desteklemedigini anlatan i18n anahtari. */
+	unsupportedReason: string | null;
 }
 
 const ICON_SIZE = 24;
@@ -75,7 +81,7 @@ interface TimerOptionExt extends TimerOption {
 }
 
 export default function TimerTypeGrid({
-	allowedTimerTypes,
+	allowedTimerTypes: rawAllowed,
 	requireProForSmart,
 	hideSmartCubeFeatures,
 	hideMobileModules,
@@ -84,6 +90,9 @@ export default function TimerTypeGrid({
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
+
+	// StackMat ve QYtoys birlesmeden once acilmis odalar hala 'qiyiwired' saklıyor.
+	const allowedTimerTypes = normalizeAllowedTimerTypes(rawAllowed);
 
 	// Drawer ic-icine gecisli sayfa: 'grid' = 8-kart, 'extras' = ExtrasTab/GoalsTab paneli
 	const [view, setView] = useState<'grid' | 'extras'>('grid');
@@ -114,10 +123,12 @@ export default function TimerTypeGrid({
 	const scrambleSubset = useSettings('scramble_subset');
 	const mobileMode = useGeneral('mobile_mode');
 
-	const smartSupported = is3x3CubeType(cubeType, scrambleSubset);
+	// Hangi girdiyi hangi bulmaca destekliyor: tek tablo, timer_type_support.ts.
+	const smartSupported = timerTypeSupportsBucket('smart', cubeType, scrambleSubset);
+	const virtualSupported = timerTypeSupportsBucket('virtual', cubeType, scrambleSubset);
 	const userIsPro = isPro(me);
 
-	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'smartUnsupported' | 'notAllowed'>[] = [
+	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'smartUnsupported' | 'notAllowed' | 'unsupportedReason'>[] = [
 		{
 			typeKey: 'keyboard',
 			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
@@ -129,6 +140,12 @@ export default function TimerTypeGrid({
 			label: t('quick_controls.manual_entry'),
 			icon: <PencilSimple weight="bold" size={ICON_SIZE} />,
 			isActive: manualEntry,
+		},
+		{
+			typeKey: 'virtual',
+			label: t('quick_controls.virtual_cube'),
+			icon: <Cube weight="bold" size={ICON_SIZE} />,
+			isActive: timerType === 'virtual' && !manualEntry && virtualSupported,
 		},
 		{
 			typeKey: 'smart',
@@ -150,14 +167,8 @@ export default function TimerTypeGrid({
 			isActive: timerType === 'qiyitimer' && !manualEntry,
 		},
 		{
-			typeKey: 'qiyiwired',
-			label: t('quick_controls.qytoys'),
-			icon: <Microphone weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'qiyiwired' && !manualEntry,
-		},
-		{
 			typeKey: 'stackmat',
-			label: t('quick_controls.stackmat'),
+			label: t('quick_controls.wired_timer'),
 			icon: <Microphone weight="bold" size={ICON_SIZE} />,
 			isActive: timerType === 'stackmat' && !manualEntry,
 		},
@@ -170,12 +181,18 @@ export default function TimerTypeGrid({
 
 	const options: TimerOption[] = baseOptions.map((opt) => {
 		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
-		const smartUnsupported = opt.typeKey === 'smart' && !smartSupported;
+		// 'manual' bir mod, timer_type degil — bulmaca kisitina tabi degil.
+		const unsupportedReason =
+			opt.typeKey === 'manual'
+				? null
+				: timerTypeUnsupportedReason(opt.typeKey, cubeType, scrambleSubset);
+		const smartUnsupported = !!unsupportedReason;
 		// Oda host'unun izin verdigi timer turleri disindaki kartlar disable + kirmizi Lock badge.
 		// `allowedTimerTypes` undefined/null veya bos array ise filter atlanir (tum kartlar acik).
-		const notAllowed = !!allowedTimerTypes && allowedTimerTypes.length > 0 && !allowedTimerTypes.includes(opt.typeKey);
+		const notAllowed =
+			!!allowedTimerTypes && allowedTimerTypes.length > 0 && !allowedTimerTypes.includes(opt.typeKey);
 		const disabled = proGated || smartUnsupported || notAllowed;
-		return {...opt, disabled, proGated, smartUnsupported, notAllowed};
+		return {...opt, disabled, proGated, smartUnsupported, notAllowed, unsupportedReason};
 	});
 
 	function selectTimerType(newTimerType: AllSettings['timer_type']) {
@@ -183,10 +200,10 @@ export default function TimerTypeGrid({
 		setSetting('timer_type', newTimerType);
 	}
 
-	function openStackMatPicker(targetTimerType: 'stackmat' | 'qiyiwired' = 'stackmat') {
-		const { title, description } = getAudioPickerModalProps(targetTimerType, t);
+	function openStackMatPicker() {
+		const { title, description } = getAudioPickerModalProps(t);
 		dispatch(openModal(
-			<StackMatPicker targetTimerType={targetTimerType} />,
+			<StackMatPicker />,
 			{
 				width: 400,
 				compact: true,
@@ -209,12 +226,7 @@ export default function TimerTypeGrid({
 
 		switch (opt.typeKey) {
 			case 'stackmat':
-				openStackMatPicker('stackmat');
-				break;
-			case 'qiyiwired':
-				// QYtoys (QiYi kablolu) ses-jack picker'i gerektirir (cihaz secimi + mic izni); stackmat gibi ac.
-				// timer_type'i picker save'i set eder (id'den sonra) — onceden set ETME.
-				openStackMatPicker('qiyiwired');
+				openStackMatPicker();
 				break;
 			case 'manual':
 				toggleManualEntry();
@@ -297,8 +309,20 @@ export default function TimerTypeGrid({
 							<Crown weight="fill" size={10} />
 						</span>
 					)}
-					{opt.smartUnsupported && (
-						<span className={b('badge', {locked: true})} aria-label="Not supported">
+					{opt.notAllowed && (
+						<span
+							className={b('badge', {locked: true})}
+							aria-label={t('room_settings.not_allowed')}
+						>
+							<Lock weight="fill" size={10} />
+						</span>
+					)}
+					{opt.unsupportedReason && (
+						<span
+							className={b('badge', {locked: true})}
+							aria-label={t(opt.unsupportedReason)}
+							title={t(opt.unsupportedReason)}
+						>
 							<Lock weight="fill" size={10} />
 						</span>
 					)}

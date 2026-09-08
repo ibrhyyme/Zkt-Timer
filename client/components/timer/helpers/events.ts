@@ -213,7 +213,17 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 		// Multi-phase splits recorded during the solve. Stored as one string on the solve
 		// rather than as method steps — see shared/util/solve/multiphase.ts.
-		if (phaseSplits.length && isMultiPhaseActive(getSetting('multi_phase_count'))) {
+		//
+		// Skipped when the caller already supplied splits. The virtual cube detects its
+		// phases automatically and passes them in `overrides`, and this block runs after
+		// the spread — without the guard it would overwrite them with the manual
+		// system's labels. Unreachable today only because the manual producer is gated
+		// off for that input, which is a thin thing to rely on.
+		if (
+			!overridesCombined.phase_splits &&
+			phaseSplits.length &&
+			isMultiPhaseActive(getSetting('multi_phase_count'))
+		) {
 			// Custom labels are written into the solve, not looked up from settings later:
 			// otherwise editing them would relabel every solve already recorded.
 			const serialized = serializePhaseSplits(
@@ -291,8 +301,8 @@ export function startInspection(context: ITimerContext) {
 		timer_type: timerType
 	} = getSettings();
 
-	// stackmat + qiyiwired shared audio path (vendor/stackmat.js); auto-inspection behaves same
-	const stackMatOn = timerType === 'stackmat' || timerType === 'qiyiwired';
+	// StackMat and QYtoys are one input now (shared audio path, vendor/stackmat.js).
+	const stackMatOn = timerType === 'stackmat';
 	// Hardware timers (GAN Timer + QiYi Timer) disable inspection auto-start
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 

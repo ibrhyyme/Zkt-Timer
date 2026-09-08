@@ -56,6 +56,9 @@ export class SolveInput {
 	is_smart_cube?: boolean;
 
 	@Field()
+	is_virtual_cube?: boolean;
+
+	@Field()
 	training_session_id?: string;
 
 	@Field()
@@ -147,6 +150,9 @@ export class Solve {
 
 	@Field()
 	is_smart_cube: boolean;
+
+	@Field()
+	is_virtual_cube: boolean;
 
 	@Field()
 	smart_device_id: string;

@@ -13,6 +13,7 @@ import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { configureHotkeys } from '../helpers/hotkeys';
 import { TimerContext } from '../Timer';
 import { smartCubeSelected } from '../helpers/util';
+import { virtualCubeOwnsKeyboard, virtualCubeSelected } from '../helpers/virtual_cube';
 import { setTimerParam, setTimerParams } from '../helpers/params';
 import block from '../../../styles/bem';
 import { endTimer, resetTimerParams, startTimer, startInspection } from '../helpers/events';
@@ -71,8 +72,8 @@ export default function KeyWatcher(props: Props) {
 	// the DOM that is actually on screen.
 	const mobileLayout = (context.forceMobileLayout ?? mobileMode) && !inModal;
 	const timerType = useSettings('timer_type');
-	// stackmat + qiyiwired share common audio path (vendor/stackmat.js), keyboard interaction same
-	const stackMatOn = timerType === 'stackmat' || timerType === 'qiyiwired';
+	// StackMat and QYtoys are one input now (shared audio path, vendor/stackmat.js).
+	const stackMatOn = timerType === 'stackmat';
 	// Hardware timers (GAN Timer + QiYi Timer) disable keyboard
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 	const inspection = useSettings('inspection');
@@ -171,6 +172,12 @@ export default function KeyWatcher(props: Props) {
 	 * an intent to start a solve.
 	 */
 	function touchDrivesTimer(target: any): boolean {
+		// The virtual cube is turned by gestures on its own canvas and armed by a tap
+		// outside it, so the generic touch-to-start path must not also fire.
+		if (virtualCubeSelected(context)) {
+			return false;
+		}
+
 		const { blocked, insideTimer, onStartSurface, inNonStartIsland } = classifyTouchTarget(target);
 
 		if (blocked || !insideTimer) {
@@ -368,7 +375,10 @@ export default function KeyWatcher(props: Props) {
 		const solveOpen = modals.length > 1 || (!inModal && modals.length);
 
 		// Checking for various conditions where we don't want to start the timer
-		if (ganTimerOn || stackMatOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
+		// The virtual cube handles Space itself, in both the idle and the armed case:
+		// there it applies the scramble and arms rather than priming a hold, and it
+		// never stops the timer. So this handler must never see it.
+		if (ganTimerOn || stackMatOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || virtualCubeSelected(context) || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
 			return;
 		}
 
@@ -483,7 +493,7 @@ export default function KeyWatcher(props: Props) {
 
 		// Modes where this handler can never start a solve: a hold left over from before
 		// the mode changed has to be cleared, not left glowing.
-		if (ganTimerOn || stackMatOn || manualEntry) {
+		if (ganTimerOn || stackMatOn || manualEntry || virtualCubeSelected(context)) {
 			disarmPriming();
 			return;
 		}
@@ -535,6 +545,12 @@ export default function KeyWatcher(props: Props) {
 		if (e.code !== 'Escape' && e.keyCode !== 27) {
 			return;
 		}
+
+		// The virtual cube's Escape has to record a DNF with the elapsed time, which
+		// this handler would silently discard by resetting the timer instead.
+		if (virtualCubeSelected(context)) {
+			return;
+		}
 		// If hardware timer (GAN/QiYi) running doesn't respond to device reset button,
 		// user can cancel Zkt-Timer with Escape. Subsequently, STOPPED/record_time event
 		// from device will be ignored by endTimer's `!timeStartedAt` check.
@@ -569,6 +585,11 @@ export default function KeyWatcher(props: Props) {
 
 	function handleGlobalShortcuts(e) {
 		if (modals.length > 0) return;
+
+		// While the virtual cube is armed these are moves, not shortcuts: `d` is L,
+		// `2` is E, and Backspace would delete the previous solve. They all fire on
+		// `timeStartedAt === null`, which is the whole armed window.
+		if (virtualCubeOwnsKeyboard()) return;
 
 		const target = e.target;
 		if (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA' || target.isContentEditable) return;

@@ -9,7 +9,12 @@ export interface FriendlyRoomData {
     cube_type: string;
     max_players: number;
     is_private: boolean;
-    allowed_timer_types: string[]; // JSON array of allowed types: 'keyboard', 'stackmat', 'smart', 'gantimer', 'qiyitimer', 'qiyiwired', 'manual'
+    // JSON array of allowed types: 'keyboard', 'stackmat', 'smart', 'gantimer',
+    // 'qiyitimer', 'virtual', 'manual'.
+    // Rooms created before StackMat and QYtoys merged may still contain the retired
+    // 'qiyiwired'; normalizeAllowedTimerTypes maps it on read rather than migrating
+    // the stored rows.
+    allowed_timer_types: string[];
     current_scramble: string | null;
     scramble_index: number;
     status: FriendlyRoomStatus;

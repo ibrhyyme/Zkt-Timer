@@ -41,7 +41,6 @@ import { looksLikeRoomId, roomPath } from '../../../shared/friendly_room/slug';
 import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
-import { is3x3CubeType } from '../timer/helpers/util';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
@@ -54,6 +53,7 @@ import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanning
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
+import { useNormalizeTimerType } from '../timer/helpers/timer_type_support';
 import { setTimerParams } from '../timer/helpers/params';
 import { SmartTurn } from '../../util/smart_scramble';
 import { SmartSolveEngine, SmartEngineEvent } from '../../util/smart_cube';
@@ -155,9 +155,9 @@ function FriendlyRoomContent() {
 
     // Unread chat messages, shown as a count on the mobile Chat tab. The tab bar only
     // exists on mobile in an ACTIVE room; everywhere else the chat is on screen already,
-    // so nothing can be unread. Assigned during render further down, once `isActive` is
-    // known — the socket handler outlives any single render and has to read current
-    // visibility, not whatever was captured when it was created.
+    // so nothing can be unread. `chatVisibleRef` is kept in sync by the `chatHidden`
+    // effect further down — the socket handler outlives any single render and has to read
+    // current visibility, not whatever was captured when it was created.
     const [unreadChat, setUnreadChat] = useState(0);
     const chatVisibleRef = useRef(true);
 
@@ -228,8 +228,8 @@ function FriendlyRoomContent() {
         // Check if allowed
         if (room.allowed_timer_types.length > 0 && !room.allowed_timer_types.includes(currentTypeKey)) {
             // Find first allowed valid type to switch to
-            // Priority: keyboard -> manual -> stackmat -> qiyiwired -> smart -> gantimer -> qiyitimer
-            const allTypes = ['keyboard', 'manual', 'stackmat', 'qiyiwired', 'smart', 'gantimer', 'qiyitimer'];
+            // Priority: keyboard -> manual -> stackmat -> smart -> gantimer -> qiyitimer
+            const allTypes = ['keyboard', 'manual', 'stackmat', 'smart', 'gantimer', 'qiyitimer'];
             // Never auto-select a Pro-gated type for a free user: the Pro effect below
             // would immediately push it back to keyboard, and the two would ping-pong.
             const selectable = userIsPro ? allTypes : allTypes.filter(t => !PRO_GATED_TIMER_TYPES.has(t));
@@ -270,20 +270,13 @@ function FriendlyRoomContent() {
         setSetting('timer_type', 'keyboard');
     }, [userIsPro, timerType]);
 
-    // When room cube type changes, check smart cube compatibility
-    useEffect(() => {
-        if (!room?.cube_type) return;
-
-        const roomSubset = (room as any).scramble_subset ?? null;
-        const smartSupported = is3x3CubeType(room.cube_type, roomSubset);
-
-        if (timerType === 'smart' && !smartSupported) {
-            // Disconnect smart cube
-            disconnectSmartCube();
-            // Switch timer to keyboard
-            setSetting('timer_type', 'keyboard');
-        }
-    }, [room?.cube_type, timerType]);
+    // When the room's puzzle changes, reset an input it cannot support. Shared with
+    // the timer page so the two cannot drift; this used to be the only place in the
+    // app that did it, and it only covered the smart cube — the virtual cube was
+    // never handled here at all.
+    useNormalizeTimerType(room?.cube_type, (room as any)?.scramble_subset ?? null, () =>
+        disconnectSmartCube()
+    );
 
     // When timer type changes from smart cube to another type, disconnect Bluetooth
     useEffect(() => {
@@ -1512,6 +1505,23 @@ function FriendlyRoomContent() {
         smartCubeSolveSubmittedRef.current = false;
     }, [room?.current_scramble, room?.scramble_index]);
 
+    // The chat pane is out of sight only on the mobile Timer tab of a running room. The
+    // waiting room shows it inline on every width and has no tab bar to badge.
+    // `room?.status` is read directly instead of the `isActive` local further down: this
+    // hook has to run on every render, including the early returns right below, or the
+    // hook count changes between renders and React tears the room down.
+    const chatHidden = room?.status === 'ACTIVE' && isMobile && mobileTab !== 'chat';
+
+    // Reaching the chat clears the badge, and so does anything that puts the chat back on
+    // screen for good: crossing the breakpoint, or the room ending. The ref feeds the
+    // socket handler, which outlives any single render and needs current visibility.
+    useEffect(() => {
+        chatVisibleRef.current = !chatHidden;
+        if (!chatHidden) {
+            setUnreadChat(0);
+        }
+    }, [chatHidden]);
+
     if (loading) {
         return (
             <div className="flex h-[100dvh] w-full items-center justify-center bg-background text-text">
@@ -1578,19 +1588,6 @@ function FriendlyRoomContent() {
     // users). Deleting the room and assigning roles stay owner-only.
     const canManage = canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
-
-    // The chat pane is out of sight only on the mobile Timer tab of a running room. The
-    // waiting room shows it inline on every width and has no tab bar to badge.
-    const chatHidden = isActive && isMobile && mobileTab !== 'chat';
-    chatVisibleRef.current = !chatHidden;
-
-    // Reaching the chat clears the badge, and so does anything that puts the chat back on
-    // screen for good — starting to shrink/grow past the breakpoint, or the room ending.
-    useEffect(() => {
-        if (!chatHidden) {
-            setUnreadChat(0);
-        }
-    }, [chatHidden]);
 
     // Calculate current user's stats for bottom panel
     const mySolves = myParticipant?.solves || [];

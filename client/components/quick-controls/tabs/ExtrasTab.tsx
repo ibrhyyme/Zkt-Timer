@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
+import { VIRTUAL_PROGRESS_METHODS } from '../../../../shared/util/solve/virtual_progress';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useMe } from '../../../util/hooks/useMe';
@@ -208,6 +209,7 @@ export default function ExtrasTab({
 	const analysisMode = useSettings('smart_cube_analysis_mode');
 	const solveMethod = useSettings('smart_cube_method') || 'auto';
 	const multiPhaseCount = useSettings('multi_phase_count');
+	const virtualCubeMultiPhase = useSettings('virtual_cube_multi_phase');
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
 	const streamerMode = useSettings('streamer_mode');
@@ -307,6 +309,13 @@ export default function ExtrasTab({
 		multiPhaseOptions.push({ label: t('timer_settings.multi_phase_count_n', { n: c }), value: String(c) });
 	}
 
+	// The virtual cube splits phases by watching the cube state, not by split
+	// presses, so it has its own setting and its own option list.
+	const virtualPhaseOptions = VIRTUAL_PROGRESS_METHODS.map((m) => ({
+		label: t(`timer_settings.vrc_mp_${m}`),
+		value: m,
+	}));
+
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center space-x-1.5 mb-1">
@@ -378,6 +387,19 @@ export default function ExtrasTab({
 				hidden={timerType !== 'keyboard' || manualEntry}
 				openUp
 				onChange={(val) => setSetting('multi_phase_count', parseInt(val))}
+			/>
+
+			{/* The virtual cube's own phase tracking. Separate setting, separate
+			    mechanism: it reads the cube state rather than split presses. Without
+			    this row it was reachable only from the settings screen, so on mobile
+			    there was no way to reach it at all. */}
+			<ExtrasSelect
+				label={t('quick_controls.virtual_phase_tracking')}
+				value={virtualCubeMultiPhase || 'n'}
+				options={virtualPhaseOptions}
+				hidden={timerType !== 'virtual' || manualEntry}
+				openUp
+				onChange={(val) => setSetting('virtual_cube_multi_phase', val)}
 			/>
 
 			<ExtrasSelect

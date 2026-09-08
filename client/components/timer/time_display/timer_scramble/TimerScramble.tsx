@@ -8,6 +8,7 @@ import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
 import { TimerContext } from '../../Timer';
+import {virtualCubeOwnsKeyboard} from '../../helpers/virtual_cube';
 import block from '../../../../styles/bem';
 import { commitScramble, getNewScrambleAsync, resetScramble } from '../../helpers/scramble';
 import SmartScramble from './smart_scramble/SmartScramble';
@@ -195,6 +196,9 @@ export default function TimerScramble() {
 			if (target.closest('input, textarea')) return;
 			// Don't work while timer is running
 			if (timeStartedAt) return;
+			// Arrows orbit the virtual cube's camera while it is armed, so changing
+			// the scramble underneath the solver would be the wrong reading of them.
+			if (virtualCubeOwnsKeyboard()) return;
 
 			if (e.key === 'ArrowLeft') {
 				e.preventDefault();

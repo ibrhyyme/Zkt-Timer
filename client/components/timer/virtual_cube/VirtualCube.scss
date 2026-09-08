@@ -1,0 +1,109 @@
+@import '../../../styles/config';
+
+.#{$namespace}-virtual-cube {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	// The cube is square by construction and its size is set inline from JS. Pin
+	// flex here rather than relying on the parent: a flex parent that stretches its
+	// items would pull the container off square, and the touch grid overlaying it
+	// would then read a different area than the cube it sits on.
+	flex: 0 0 auto;
+	align-self: center;
+	touch-action: none;
+	user-select: none;
+
+	// Kept mounted so the scene never loses cube state; collapsed when the user
+	// switches to another input method. Same reasoning as the smart cube view.
+	&--hidden {
+		display: none;
+	}
+
+	// Mobile abandon button. Fixed to the viewport rather than placed near the
+	// cube: the cube moves and resizes between the idle and focus states, and a
+	// control for abandoning an attempt has to sit still.
+	//
+	// Above the cube's own z-index so a stray finger on the cube's corner cannot
+	// cover it, and inside the safe area so it clears a notch.
+	&__cancel {
+		position: fixed;
+		top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+		right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+		z-index: 70;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		// Comfortably past the 44px minimum tap target: it is pressed mid-solve,
+		// in a hurry, by someone not looking at it.
+		width: 48px;
+		height: 48px;
+		padding: 0;
+
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 50%;
+		background: rgba(var(--module-color), 0.85);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
+
+		&:active {
+			background: rgba(var(--module-color), 1);
+		}
+	}
+
+	&__canvas {
+		display: block;
+		// The painter clears to full transparency, matching the reference, so the
+		// page background shows through the gaps between the stickers.
+		background: transparent;
+	}
+}
+
+// Mobile move input. Invisible until touched, then it explains itself: the origin
+// cell turns red, every legal destination is labelled and the one under the finger
+// turns green. Colours and timings follow the reference (style.css:984-1018).
+.#{$namespace}-virtual-cube-touch {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(3, 1fr);
+	// The cube is drawn underneath; this layer exists only to read gestures.
+	background: transparent;
+	color: transparent;
+	user-select: none;
+	// Claims the gesture outright, so a swipe here never reaches the page's own
+	// edge-swipe back navigation or the timer's start surface.
+	touch-action: none;
+
+	&__cell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		// Size is inherited from the grid root, which scales it with the cube.
+		font-weight: 700;
+		line-height: 1;
+		border: 0 solid transparent;
+	}
+
+	&--active {
+		background-color: rgba(102, 102, 102, 0.4);
+		color: rgba(255, 255, 255, 0.67);
+	}
+
+	&--board &__cell {
+		border-width: 0.15rem;
+		border-color: rgba(102, 102, 102, 0.4);
+	}
+
+	&--active &__cell--from {
+		background-color: rgba(255, 0, 0, 0.67);
+	}
+
+	&--active &__cell--to {
+		background-color: rgba(0, 255, 0, 0.67);
+	}
+}

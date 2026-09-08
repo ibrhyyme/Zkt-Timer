@@ -13,6 +13,7 @@ import { commitScramble, getNewScrambleAsync, resetScramble } from './helpers/sc
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { smartCubeSelected } from './helpers/util';
 import { setSetting } from '../../db/settings/update';
+import {virtualCubeOwnsKeyboard} from './helpers/virtual_cube';
 import block from '../../styles/bem';
 import { hapticNotification } from '../../util/native-plugins';
 import './TimerControls.scss';
@@ -161,6 +162,9 @@ export default function TimerControls() {
             const target = e.target as HTMLElement;
             if (target.closest('input, textarea')) return;
             if (timeStartedAt) return;
+            // Arrows orbit the virtual cube's camera while it is armed, so changing
+            // the scramble underneath the solver would be the wrong reading of them.
+            if (virtualCubeOwnsKeyboard()) return;
 
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();

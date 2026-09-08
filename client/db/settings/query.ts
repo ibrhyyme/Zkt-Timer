@@ -38,7 +38,22 @@ export interface AllSettings {
 
 	// Local
 	haptic_feedback: boolean;
-	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'qiyiwired';
+	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual';
+
+	// Virtual cube (cstimer's vrc* options). All platform settings, so they live
+	// in the desktop_prefs / mobile_prefs blob and need no schema change.
+	/** Animation duration per move in ms. 0 means no animation at all. */
+	virtual_cube_speed: number;
+	/** Starting camera orientation, cstimer's vrcOri: '6,12' is UF, '10,11' is URF. */
+	virtual_cube_orientation: string;
+	/** Which method the solve is split into for phase timing, cstimer's vrcMP. */
+	virtual_cube_multi_phase: string;
+	/** Two bits (colours, borders) for greying a huge cube's interior, cstimer's vrcAH. */
+	virtual_cube_big_visibility: string;
+	/** Keyboard layout the move keys are mapped through, cstimer's vrcKBL. */
+	virtual_cube_keyboard_layout: string;
+	/** Rendered side length in CSS pixels. */
+	virtual_cube_size: number;
 	timer_layout: TimerLayoutPosition;
 	timer_module_count: number;
 	stackmat_id: string;
@@ -162,6 +177,16 @@ const defaultSettings: AllSettings = {
 	timer_avg_6: 'ao50',
 
 	smart_cube_size: 400,
+
+	// Virtual cube. Defaults mirror cstimer's own (vrcSpeed 100 = "10", UF view,
+	// no phase splitting, everything visible on huge cubes).
+	virtual_cube_speed: 100,
+	virtual_cube_orientation: '6,12',
+	virtual_cube_multi_phase: 'n',
+	virtual_cube_big_visibility: '11',
+	virtual_cube_keyboard_layout: 'qwerty',
+	virtual_cube_size: 400,
+
 	stackmat_auto_inspection: 0, // 0 = off, default 2 seconds when active
 	stackmat_auto_inspection_warning_shown: false,
 	qiyi_auto_inspection: true, // default on (device restart one-click reset + inspection combined)
@@ -199,6 +224,7 @@ const mobileDefaultOverrides: Partial<AllSettings> = {
 	timer_time_size: 60,
 	timer_scramble_size: 17,
 	smart_cube_size: 185,
+	virtual_cube_size: 185,
 };
 
 function isMobileViewport(): boolean {
@@ -240,9 +266,17 @@ export function getSettings(): AllSettings {
 		settings[setting.id] = setting.value;
 	});
 
-	// Migration: 'moyutimer' timer type removed (replaced by 'qiyiwired' / QYtoys) — coerce legacy value.
+	// Migration: 'moyutimer' timer type removed — coerce legacy value.
 	if (settings.timer_type === ('moyutimer' as AllSettings['timer_type'])) {
 		settings.timer_type = 'keyboard';
+	}
+
+	// Migration: 'qiyiwired' merged into 'stackmat'. QYtoys speaks the same 1200 Hz
+	// protocol on the same audio input and shares the same stackmat_id, so the two
+	// values never carried any runtime difference — only a label. Coerced on read so
+	// a stored QYtoys selection keeps working rather than falling back to keyboard.
+	if (settings.timer_type === ('qiyiwired' as AllSettings['timer_type'])) {
+		settings.timer_type = 'stackmat';
 	}
 
 	return settings as AllSettings;
@@ -268,10 +302,15 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 		return defaultValue;
 	}
 
-	// Migration: the 'moyutimer' timer type was removed (replaced by 'qiyiwired' / QYtoys).
+	// Migration: the 'moyutimer' timer type was removed.
 	// Coerce any legacy stored value to 'keyboard' on read so old users aren't stuck on a dead type.
 	if (key === 'timer_type' && result.value === 'moyutimer') {
 		return 'keyboard' as AllSettings[T];
+	}
+
+	// Migration: 'qiyiwired' merged into 'stackmat' (same protocol, same device id).
+	if (key === 'timer_type' && result.value === 'qiyiwired') {
+		return 'stackmat' as AllSettings[T];
 	}
 
 	return result?.value;
