@@ -1501,6 +1501,7 @@ export type MutationSendMessageArgs = {
 
 export type MutationSendTestRecordNotificationArgs = {
   locale?: InputMaybe<Scalars['String']>;
+  source?: InputMaybe<Scalars['String']>;
 };
 
 

@@ -479,7 +479,7 @@ type Mutation {
   unfollowCompetitor(id: String): Boolean
   saveRecordWatch(input: SaveRecordWatchInput): RecordWatch
   setRecordWatchEnabled(enabled: Boolean, id: String): RecordWatch
-  sendTestRecordNotification(locale: String): Boolean
+  sendTestRecordNotification(source: String, locale: String): Boolean
   deleteRecordWatch(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
   sendMessage(replyToId: String, solveId: String, conversationId: String, recipientId: String, body: String): Message

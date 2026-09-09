@@ -47,9 +47,25 @@ export default function RecentRecordsFeed() {
 	}, []);
 
 	function openRecord(rec: RecentRecordEntry) {
-		if (rec.competitionId && rec.eventId && rec.roundNumber) {
+		if (!rec.competitionId) return;
+
+		// A ZKT competition arrives as `zkt-<slug>` and belongs in the federation's
+		// own view, not the WCA-adapted one. That route passes its :competitionId
+		// straight to the federation, which keys on the bare slug, so the prefix
+		// comes off. Record notifications deep-link to the same place.
+		if (rec.competitionId.startsWith('zkt-')) {
+			const slug = rec.competitionId.slice('zkt-'.length);
+			history.push(
+				rec.eventId && rec.roundNumber
+					? `/zkt-competitions/${slug}/live/${rec.eventId}/${rec.roundNumber}`
+					: `/zkt-competitions/${slug}`
+			);
+			return;
+		}
+
+		if (rec.eventId && rec.roundNumber) {
 			history.push(`/competitions/${rec.competitionId}/wca-live/${rec.eventId}/${rec.roundNumber}`);
-		} else if (rec.competitionId) {
+		} else {
 			history.push(`/competitions/${rec.competitionId}`);
 		}
 	}

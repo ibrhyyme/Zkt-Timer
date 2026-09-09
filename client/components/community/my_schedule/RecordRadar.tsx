@@ -132,9 +132,9 @@ export default function RecordRadar() {
 		}
 	}
 
-	async function handleSendTest() {
+	async function handleSendTest(source: 'WCA' | 'ZKT') {
 		try {
-			await sendTestRecordNotification(i18n.language);
+			await sendTestRecordNotification(i18n.language, source);
 			toastSuccess(t('my_schedule.radar_test_sent'));
 		} catch (err: any) {
 			toastError(err?.message || t('my_schedule.radar_save_error'));
@@ -209,10 +209,18 @@ export default function RecordRadar() {
 				</div>
 
 				{me?.admin && (
-					<button className={b('radar-test-btn')} onClick={handleSendTest}>
-						<Bell size={14} weight="fill" />
-						{t('my_schedule.radar_test_send')}
-					</button>
+					<>
+						{/* One button per authority: the wording and the deep link differ,
+						    so previewing one says nothing about the other. */}
+						<button className={b('radar-test-btn')} onClick={() => handleSendTest('WCA')}>
+							<Bell size={14} weight="fill" />
+							{t('my_schedule.radar_test_send')} (WCA)
+						</button>
+						<button className={b('radar-test-btn')} onClick={() => handleSendTest('ZKT')}>
+							<Bell size={14} weight="fill" />
+							{t('my_schedule.radar_test_send')} (ZKT)
+						</button>
+					</>
 				)}
 
 				{tab === 'recent' && <RecentRecordsFeed />}

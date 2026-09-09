@@ -1,7 +1,7 @@
 import {fetchDataFromCache, createRedisKey, RedisNamespace} from './redis';
 import {logger} from './logger';
 import {ZktFederationService} from './ZktFederationService';
-import {isZktCompetitionId, zktSlugOf, zktRoundToWcaLiveResults} from './ZktWcaAdapter';
+import {isZktCompetitionId, zktSlugOf, zktRoundToWcaLiveResults, zktRecordsToRecordEntries} from './ZktWcaAdapter';
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 const WCA_LIVE_CACHE_TTL = 60 * 60; // 1 saat
@@ -143,15 +143,32 @@ export interface WcaLiveRecordEntry {
 	personName: string;
 	personCountryIso2?: string;
 	roundNumber?: number;
+	/** Only the ZKT source sets this; it ships its own event names, including formats the WCA map has no entry for. */
+	eventName?: string;
 }
 
 /**
- * Lightweight records-only fetch for the record radar cron. Takes the WCA Live
- * numeric competition id (from `getWcaLiveData().compId`) and returns only the
- * WR/CR/NR records set within that competition. PR records are dropped since the
+ * Lightweight records-only fetch for the record radar cron. Returns only the
+ * WR/CR/NR records set within one competition. PR records are dropped since the
  * radar never notifies on them.
+ *
+ * Takes the WCA Live numeric competition id (from `getWcaLiveData().compId`) or
+ * a `zkt-<slug>` id. Resolving the source here rather than at each call site is
+ * what the two functions above already do, and it is what lets the record radar
+ * treat both authorities identically.
+ *
+ * The ZKT federation only ever produces NR, and only for rounds that have been
+ * FINISHED — a national record is written when the round is finalized, not when
+ * the time is typed. So these notifications intentionally lag the NR badge shown
+ * on the live results screen. That badge sits on still-editable data; this does
+ * not.
  */
 export async function fetchCompetitionRecords(liveCompId: string): Promise<WcaLiveRecordEntry[]> {
+	if (isZktCompetitionId(liveCompId)) {
+		const raw = await ZktFederationService.fetchCompetitionRecords(zktSlugOf(liveCompId));
+		return zktRecordsToRecordEntries((raw as any)?.items || []) as WcaLiveRecordEntry[];
+	}
+
 	const axios = (await import('axios')).default;
 
 	const res = await axios.post(WCA_LIVE_ENDPOINT, {

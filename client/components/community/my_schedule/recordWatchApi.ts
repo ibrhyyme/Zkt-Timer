@@ -119,13 +119,15 @@ export async function deleteRecordWatch(id: string): Promise<void> {
 }
 
 // Admin-only: send yourself a sample record notification to preview how it looks.
-export async function sendTestRecordNotification(locale: string): Promise<void> {
+// `source` picks the authority, since the two are worded differently and the ZKT
+// one deep-links somewhere else entirely.
+export async function sendTestRecordNotification(locale: string, source: 'WCA' | 'ZKT' = 'WCA'): Promise<void> {
 	await gqlMutate(
 		gql`
-			mutation SendTestRecordNotification($locale: String) {
-				sendTestRecordNotification(locale: $locale)
+			mutation SendTestRecordNotification($locale: String, $source: String) {
+				sendTestRecordNotification(locale: $locale, source: $source)
 			}
 		`,
-		{locale}
+		{locale, source}
 	);
 }

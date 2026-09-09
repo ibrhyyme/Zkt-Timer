@@ -10,7 +10,9 @@ import {WCA_EVENT_IDS, WCA_CONTINENTS, COUNTRY_TO_CONTINENT} from '../../shared/
 import {sendPushToUser} from '../services/push';
 import {fetchRecentRecords, formatRecordResult} from '../services/WcaLiveService';
 import {WcaApiService} from '../services/WcaApiService';
-import WcaRecordBrokenNotification from '../resources/notification_types/wca_record_broken';
+import RecordBrokenNotification, {RecordSource} from '../resources/notification_types/record_broken';
+import {ZktFederationService} from '../services/ZktFederationService';
+import {ZKT_PREFIX, zktRecordsToRecordEntries} from '../services/ZktWcaAdapter';
 
 const EVENT_SET = new Set(WCA_EVENT_IDS);
 const CONTINENT_SET = new Set(WCA_CONTINENTS.map((c) => c.id));
@@ -109,50 +111,27 @@ export class RecordWatchResolver {
 	@Mutation(() => Boolean)
 	async sendTestRecordNotification(
 		@Ctx() context: GraphQLContext,
-		@Arg('locale', {nullable: true}) locale?: string
+		@Arg('locale', {nullable: true}) locale?: string,
+		@Arg('source', {nullable: true}) source?: string
 	): Promise<boolean> {
 		const {user} = context;
 		const loc = locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(locale) ? locale : 'en';
+		const src: RecordSource = String(source).toUpperCase() === 'ZKT' ? 'ZKT' : 'WCA';
 
 		let meta: any = null;
 		try {
-			const recents = await fetchRecentRecords();
-			const r = recents.find((x) => x.competitionId && x.eventId && x.roundNumber) || recents[0];
-			if (r) {
-				meta = {
-					competitionId: r.competitionId || '',
-					competitionName: r.competitionName,
-					eventId: r.eventId,
-					eventName: WcaApiService.getShortEventName(r.eventId),
-					recordTag: r.tag,
-					resultText: formatRecordResult(r.attemptResult, r.eventId, r.type === 'average'),
-					personName: r.personName,
-					roundNumber: r.roundNumber || 1,
-					locale: loc,
-				};
-			}
+			meta = src === 'ZKT' ? await zktSampleMeta(loc) : await wcaSampleMeta(loc);
 		} catch {
-			// fall through to fixed sample
+			// fall through to the fixed sample
 		}
 
-		if (!meta) {
-			meta = {
-				competitionId: '',
-				competitionName: 'Test Competition',
-				eventId: '333',
-				eventName: '3x3',
-				recordTag: 'WR',
-				resultText: '3.13',
-				personName: 'Max Park',
-				roundNumber: 1,
-				locale: loc,
-			};
-		}
+		if (!meta) meta = fixedSampleMeta(src, loc);
 
-		const notif = new WcaRecordBrokenNotification({user, triggeringUser: user, sendEmail: false}, meta);
+		const notif = new RecordBrokenNotification({user, triggeringUser: user, sendEmail: false}, {...meta, source: src});
 		await notif.send();
 		await sendPushToUser(user.id, notif.subject(), notif.inAppMessage(), {
-			type: 'wca_record_broken',
+			type: notif.notificationType(),
+			link: notif.relativeLink(),
 			competitionId: meta.competitionId,
 			eventId: meta.eventId,
 			roundNumber: String(meta.roundNumber),
@@ -177,4 +156,81 @@ export class RecordWatchResolver {
 		await getPrisma().recordWatch.delete({where: {id}});
 		return true;
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Sample payloads for the admin "send test notification" button. Real data is
+// preferred so the wording can be checked against something an actual member
+// would receive; the fixed sample only covers the case where the source is
+// unreachable.
+// ---------------------------------------------------------------------------
+
+async function wcaSampleMeta(locale: string): Promise<any | null> {
+	const recents = await fetchRecentRecords();
+	const r = recents.find((x) => x.competitionId && x.eventId && x.roundNumber) || recents[0];
+	if (!r) return null;
+	return {
+		competitionId: r.competitionId || '',
+		competitionName: r.competitionName,
+		eventId: r.eventId,
+		eventName: WcaApiService.getShortEventName(r.eventId),
+		recordTag: r.tag,
+		resultText: formatRecordResult(r.attemptResult, r.eventId, r.type === 'average'),
+		personName: r.personName,
+		roundNumber: r.roundNumber || 1,
+		locale,
+	};
+}
+
+async function zktSampleMeta(locale: string): Promise<any | null> {
+	const payload = await ZktFederationService.fetchRecentRecords(10);
+	const items = (payload as any)?.items || [];
+	const entries = zktRecordsToRecordEntries(items);
+	if (entries.length === 0) return null;
+
+	const idx = entries.findIndex((e: any) => e.roundNumber);
+	const entry = entries[idx >= 0 ? idx : 0];
+	// The recent-records feed carries the competition slug per row, and the entry
+	// mapper drops it (it maps to the records shape, which has no slug column), so
+	// read it back off the matching raw item.
+	const raw = items[idx >= 0 ? idx : 0] || {};
+
+	return {
+		competitionId: `${ZKT_PREFIX}${raw.competitionSlug || raw.competitionId || ''}`,
+		competitionName: raw.competitionName || '',
+		eventId: entry.eventId,
+		eventName: entry.eventName || WcaApiService.getShortEventName(entry.eventId),
+		recordTag: entry.tag,
+		resultText: formatRecordResult(entry.attemptResult, entry.eventId, entry.type === 'average'),
+		personName: entry.personName,
+		roundNumber: entry.roundNumber || 1,
+		locale,
+	};
+}
+
+function fixedSampleMeta(source: RecordSource, locale: string): any {
+	if (source === 'ZKT') {
+		return {
+			competitionId: `${ZKT_PREFIX}ornek-yarisma`,
+			competitionName: 'Örnek Yarışma',
+			eventId: '333',
+			eventName: '3x3',
+			recordTag: 'NR',
+			resultText: '6.42',
+			personName: 'Örnek Yarışmacı',
+			roundNumber: 1,
+			locale,
+		};
+	}
+	return {
+		competitionId: '',
+		competitionName: 'Test Competition',
+		eventId: '333',
+		eventName: '3x3',
+		recordTag: 'WR',
+		resultText: '3.13',
+		personName: 'Max Park',
+		roundNumber: 1,
+		locale,
+	};
 }

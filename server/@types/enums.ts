@@ -10,6 +10,7 @@ export enum NotificationType {
 	WCA_ROUND_FINISHED = 'wca_round_finished',
 	WCA_COMPETITION_COUNTDOWN = 'wca_competition_countdown',
 	WCA_RECORD_BROKEN = 'wca_record_broken',
+	ZKT_RECORD_BROKEN = 'zkt_record_broken',
 	WCA_FOLLOW_RESULT_ENTERED = 'wca_follow_result_entered',
 	WCA_FOLLOW_ROUND_FINISHED = 'wca_follow_round_finished',
 	WCA_FOLLOW_COUNTDOWN = 'wca_follow_countdown',

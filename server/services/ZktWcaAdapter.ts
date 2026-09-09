@@ -100,6 +100,33 @@ export function zktRecordsToRecentFeed(items: any[]): any[] {
 	}));
 }
 
+/**
+ * federation PublicRecordEntry[] → WcaLiveRecordEntry[] (the record radar cron).
+ *
+ * Kept separate from `zktRecordsToWcaLive` even though the shapes nearly match,
+ * because of one line: the country default. The federation's `User.countryIso2`
+ * is nullable, and `zktRecordsToWcaLive` passes a missing one through as
+ * undefined — fine for a flag icon, fatal here. The radar's NR rule is
+ * `!!rec.personCountryIso2 && rec.personCountryIso2 === watch.region`, so a
+ * Turkish national record set by a member with no country on file would match
+ * no watch at all and be silently dropped. Every ZKT record is by definition
+ * Turkish, so default it, exactly as `zktRecordsToRecentFeed` already does.
+ */
+export function zktRecordsToRecordEntries(items: any[]): any[] {
+	return (items || [])
+		.filter((r: any) => !!r?.eventId)
+		.map((r: any) => ({
+			type: r.type || 'single',
+			tag: r.tag || 'NR', // ZKT has no WR/CR concept — national records only
+			eventId: r.eventId,
+			eventName: r.eventName || WcaApiService.getEventName(r.eventId),
+			attemptResult: r.attemptResult ?? 0,
+			personName: r.personName || '',
+			personCountryIso2: r.personCountryIso2 || 'TR',
+			roundNumber: r.roundNumber ?? undefined,
+		}));
+}
+
 /** federation PublicCompetitionDetail → WcaLiveCompetitionOverview */
 export function zktDetailToLiveOverview(d: any, compId: string): any {
 	const events = (d.events || []).map((ev: any) => ({
