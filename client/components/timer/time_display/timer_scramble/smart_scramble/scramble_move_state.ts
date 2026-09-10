@@ -33,6 +33,31 @@ export function currentMoveIndex(matchStatus: MatchStatus[], total: number): num
 	return done >= total ? -1 : done;
 }
 
+/**
+ * Build a status array for any move sequence the user is working through, from
+ * just "how many are done" plus an optional verdict on the move they are on.
+ *
+ * The scramble gets its array straight from the solve engine. Other sequences (an
+ * algorithm being drilled in the trainer) only know a done count, so this lets them
+ * feed the same move list and get the same display without a second implementation.
+ *
+ * `currentTone` marks the move in progress: 'half' when it is partly done (turned R
+ * on an R2), 'wrong' when the user has gone off the sequence at that point.
+ */
+export function sequenceMatchStatus(
+	total: number,
+	done: number,
+	currentTone?: 'half' | 'wrong'
+): MatchStatus[] {
+	const status: MatchStatus[] = [];
+	for (let i = 0; i < total; i++) {
+		if (i < done) status.push('perfect');
+		else if (i === done && currentTone) status.push(currentTone);
+		else status.push('pending');
+	}
+	return status;
+}
+
 export type MoveDisplayState = 'past' | 'current' | 'upcoming';
 
 /**

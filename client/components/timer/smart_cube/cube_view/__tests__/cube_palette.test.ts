@@ -91,12 +91,34 @@ describe('remapColorBuffer', () => {
 });
 
 describe('recolorPuzzle', () => {
-	function fakeScene(colors: Uint8Array, pos: number) {
+	const STOCK_HEX = Object.values(STOCK).map(([r, g, b]) => (r << 16) | (g << 8) | b);
+	const hexOf = (rgb: readonly number[]) => (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+
+	// One PG3D sticker, with the renderer's own dim rule reduced to its shape: half
+	// brightness for every colour, except pure white, which gets a light grey.
+	function fakeStickerDef(origColor: number) {
+		return {
+			origColor,
+			maskColor: origColor,
+			setStickeringMask(_filler: unknown, faceletMask: string) {
+				if (faceletMask !== 'dim') this.maskColor = this.origColor;
+				else this.maskColor = this.origColor === 0xffffff ? 0xdddddd : (this.origColor >> 1) & 0x7f7f7f;
+			},
+		};
+	}
+
+	// Shaped like cubing.js's PG3D: stickers[orbit][orientation][piece], each with the
+	// stock colour it was built from, plus the two-halves colour buffer.
+	function fakeScene(colors: Uint8Array, pos: number, opts: {mask?: object} = {}) {
 		const drawn = {array: colors.subarray(0, pos), needsUpdate: false};
 		const unrelated = {array: new Uint8Array(18), needsUpdate: false};
-		const puzzle = {
-			stickers: {},
+		const defs = STOCK_HEX.map(fakeStickerDef);
+		const setStickeringMask = jest.fn();
+		const puzzle: any = {
+			stickers: {CORNERS: [defs.slice(0, 3)], EDGES: [defs.slice(3)]},
 			filler: {colors, pos},
+			params: opts.mask ? {stickeringMask: opts.mask} : {},
+			setStickeringMask,
 			traverse(cb: (o: any) => void) {
 				cb(this);
 				cb({geometry: {attributes: {color: drawn}}});
@@ -104,7 +126,7 @@ describe('recolorPuzzle', () => {
 			},
 		};
 		const root = {traverse: (cb: (o: any) => void) => puzzle.traverse(cb)};
-		return {root, puzzle, drawn, unrelated};
+		return {root, puzzle, defs, drawn, unrelated, setStickeringMask};
 	}
 
 	it('recolours once, then reports it is already done', () => {
@@ -114,6 +136,19 @@ describe('recolorPuzzle', () => {
 
 		expect(recolorPuzzle(root, done)).toBe('applied');
 		expect(recolorPuzzle(root, done)).toBe('already-applied');
+	});
+
+	// Every repaint and every stickering mask is derived from origColor, so it has to
+	// carry the new palette too, not just the bytes on screen.
+	it("rewrites each sticker's source colour to the palette", () => {
+		const buf = stockBuffer();
+		const {root, defs} = fakeScene(buf, buf.length / 2);
+
+		recolorPuzzle(root, new WeakSet());
+
+		const red = defs[Object.keys(STOCK).indexOf('red')];
+		expect(red.origColor).toBe(hexOf(STICKER_PALETTE.red));
+		expect(defs.every((d) => !STOCK_HEX.includes(d.origColor))).toBe(true);
 	});
 
 	it('flags only the GPU attributes that share the colour storage', () => {
@@ -126,6 +161,82 @@ describe('recolorPuzzle', () => {
 		expect(unrelated.needsUpdate).toBe(false);
 	});
 
+	// The trainer greys out irrelevant stickers with a mask. PG3D recomputes masked
+	// colours from origColor, so the fix is to patch origColor FIRST and then re-apply
+	// the same mask — the renderer then regenerates everything from the new palette.
+	it('re-applies an active stickering mask after patching the source colours', () => {
+		const buf = stockBuffer();
+		const mask = {orbits: {}};
+		const {root, defs, setStickeringMask} = fakeScene(buf, buf.length / 2, {mask});
+
+		let coloursAtCall: number[] = [];
+		setStickeringMask.mockImplementation(() => {
+			coloursAtCall = defs.map((d) => d.origColor);
+		});
+
+		expect(recolorPuzzle(root, new WeakSet())).toBe('applied');
+		expect(setStickeringMask).toHaveBeenCalledWith(mask);
+		// Patched before the mask was re-applied, or it would regenerate neon.
+		expect(coloursAtCall.every((c) => !STOCK_HEX.includes(c))).toBe(true);
+	});
+
+	// PLL with white on top (the trainer's default) dims the whole top face. The
+	// renderer's light grey for dimmed white only fires for pure white; without help the
+	// off-white palette would turn that face a flat mid-grey.
+	describe('dimmed white', () => {
+		const WHITE = Object.keys(STOCK).indexOf('white');
+		const RED = Object.keys(STOCK).indexOf('red');
+
+		function maskedScene(faceletMask: string) {
+			const buf = stockBuffer();
+			const scene = fakeScene(buf, buf.length / 2, {mask: {orbits: {}}});
+			// What PG3D.setStickeringMask does: every sticker recomputes its colour.
+			scene.setStickeringMask.mockImplementation(() => {
+				for (const d of scene.defs) d.setStickeringMask(null, faceletMask);
+			});
+			return scene;
+		}
+
+		it("keeps the renderer's light grey instead of going mid-grey", () => {
+			const {root, defs} = maskedScene('dim');
+			recolorPuzzle(root, new WeakSet());
+
+			expect(defs[WHITE].maskColor).toBe(0xdddddd);
+			// Only borrowed for the calculation: the sticker is still the palette white.
+			expect(defs[WHITE].origColor).toBe(hexOf(STICKER_PALETTE.white));
+		});
+
+		it('still holds when the trainer later switches to another case', () => {
+			const {root, defs, setStickeringMask} = maskedScene('dim');
+			recolorPuzzle(root, new WeakSet());
+			defs[WHITE].maskColor = 0;
+
+			setStickeringMask({orbits: {}});
+
+			expect(defs[WHITE].maskColor).toBe(0xdddddd);
+		});
+
+		it('leaves other colours and undimmed white to the palette', () => {
+			const dimmed = maskedScene('dim');
+			recolorPuzzle(dimmed.root, new WeakSet());
+			expect(dimmed.defs[RED].maskColor).toBe((hexOf(STICKER_PALETTE.red) >> 1) & 0x7f7f7f);
+
+			const regular = maskedScene('regular');
+			recolorPuzzle(regular.root, new WeakSet());
+			expect(regular.defs[WHITE].maskColor).toBe(hexOf(STICKER_PALETTE.white));
+		});
+	});
+
+	it('does not touch the buffer directly when a mask will regenerate it', () => {
+		const buf = stockBuffer();
+		const before = Uint8Array.from(buf);
+		const {root} = fakeScene(buf, buf.length / 2, {mask: {orbits: {}}});
+
+		recolorPuzzle(root, new WeakSet());
+
+		expect(buf).toEqual(before);
+	});
+
 	it('keeps trying while the puzzle has not been built yet', () => {
 		const empty = {traverse: (cb: (o: any) => void) => cb({})};
 		expect(recolorPuzzle(empty, new WeakSet())).toBe('not-found');
@@ -136,9 +247,21 @@ describe('recolorPuzzle', () => {
 	it('fails closed when the buffer layout is not the expected two halves', () => {
 		const buf = stockBuffer();
 		const before = Uint8Array.from(buf);
-		const {root} = fakeScene(buf, buf.length / 3); // wrong split
+		const {root, defs} = fakeScene(buf, buf.length / 3); // wrong split
 
 		expect(recolorPuzzle(root, new WeakSet())).toBe('unrecognised');
 		expect(buf).toEqual(before);
+		expect(defs.map((d) => d.origColor)).toEqual(STOCK_HEX);
+	});
+
+	// Sticker source colours that are not a stock six-colour set (e.g. a puzzle that was
+	// already recoloured by another path) must be left exactly as they are.
+	it('leaves an unrecognised colour set untouched', () => {
+		const buf = stockBuffer();
+		const {root, defs} = fakeScene(buf, buf.length / 2);
+		for (const d of defs) d.origColor = hexOf(STICKER_PALETTE.red);
+
+		expect(recolorPuzzle(root, new WeakSet())).toBe('unrecognised');
+		expect(defs.every((d) => d.origColor === hexOf(STICKER_PALETTE.red))).toBe(true);
 	});
 });

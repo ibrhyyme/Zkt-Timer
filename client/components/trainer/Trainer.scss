@@ -2067,32 +2067,19 @@
 		max-width: 500px;
 	}
 
-	&__smart-move {
+	// The move list is the timer's shared scramble component (same confirm-and-recede
+	// behaviour, see ScrambleMoveList). Its turn class carries the scramble's own
+	// spacing; inside the trainer, keep the trainer's rhythm instead, which comes from
+	// the container gap above plus this padding.
+	&__smart-moves .#{$namespace}-timer-scramble__turn {
+		margin-right: 0;
 		padding: 2px 4px;
-		border-radius: 3px;
-		transition: color 0.15s;
-		color: rgba(var(--text-color), 0.85);
+	}
 
-		&--green {
-			color: $successColor;
-		}
-
-		&--red {
-			color: $primaryRed;
-			text-decoration: line-through;
-		}
-
-		&--orange {
-			color: $primaryOrange;
-		}
-
-		&--current {
-			color: rgb(var(--text-color));
-		}
-
-		&--dim {
-			color: rgba(var(--text-color), 0.85);
-		}
+	// Struck through, not just red: in the trainer a wrong move means "you left the
+	// algorithm here", and the strike reads as that even for a red-green colour-blind user.
+	&__smart-moves .#{$namespace}-timer-scramble__turn--red {
+		text-decoration: line-through;
 	}
 
 	&__smart-correction {

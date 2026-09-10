@@ -1954,17 +1954,17 @@ function FriendlyRoomContent() {
                                         );
                                     }
 
+                                    // No "Correction:" heading: it added a second line and changed the
+                                    // row's height the moment a correction appeared, jolting everything
+                                    // below it. The red moves in the scramble's own slot say it on their own.
                                     if (smartUndoMoves?.length) {
                                         return (
-                                            <div className="flex flex-col items-center gap-1">
-                                                <span className="text-text text-xs uppercase tracking-wider">{t('rooms.correction')}:</span>
-                                                <div>
-                                                    {smartUndoMoves.map((move, i) => (
-                                                        <span key={"fix-" + move + "-" + i} className="text-red-400 font-bold">
-                                                            {move}{' '}
-                                                        </span>
-                                                    ))}
-                                                </div>
+                                            <div>
+                                                {smartUndoMoves.map((move, i) => (
+                                                    <span key={"fix-" + move + "-" + i} className="text-red-400 font-bold">
+                                                        {move}{' '}
+                                                    </span>
+                                                ))}
                                             </div>
                                         );
                                     }

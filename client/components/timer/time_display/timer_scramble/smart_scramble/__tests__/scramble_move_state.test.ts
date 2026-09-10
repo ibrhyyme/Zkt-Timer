@@ -2,6 +2,7 @@ import {
 	doneCount,
 	currentMoveIndex,
 	moveDisplayState,
+	sequenceMatchStatus,
 } from '../scramble_move_state';
 import type {MatchStatus} from '../../../../../../util/smart_cube/solve_engine';
 
@@ -68,5 +69,37 @@ describe('moveDisplayState', () => {
 
 	it('marks the very first move current before anything is turned', () => {
 		expect(moveDisplayState(0, 0)).toBe('current');
+	});
+});
+
+describe('sequenceMatchStatus', () => {
+	// The trainer used to paint moves itself: done up to matchedMoveCount, then the
+	// move in progress red on a wrong turn or orange on a partial one. These pin the
+	// conversion so the shared list shows exactly what the trainer showed before.
+	it('marks the done moves and leaves the rest pending', () => {
+		expect(sequenceMatchStatus(4, 2)).toEqual(['perfect', 'perfect', 'pending', 'pending']);
+	});
+
+	it('puts a wrong verdict on the move in progress only', () => {
+		expect(sequenceMatchStatus(4, 1, 'wrong')).toEqual(['perfect', 'wrong', 'pending', 'pending']);
+	});
+
+	it('puts a partial verdict on the move in progress only', () => {
+		expect(sequenceMatchStatus(3, 0, 'half')).toEqual(['half', 'pending', 'pending']);
+	});
+
+	it('makes the move in progress the current one, even when it is wrong', () => {
+		const status = sequenceMatchStatus(5, 2, 'wrong');
+		expect(currentMoveIndex(status, 5)).toBe(2);
+	});
+
+	it('treats a fully drilled algorithm as complete', () => {
+		const status = sequenceMatchStatus(3, 3);
+		expect(status).toEqual(['perfect', 'perfect', 'perfect']);
+		expect(currentMoveIndex(status, 3)).toBe(-1);
+	});
+
+	it('ignores a verdict once there is no move left to judge', () => {
+		expect(sequenceMatchStatus(2, 2, 'wrong')).toEqual(['perfect', 'perfect']);
 	});
 });

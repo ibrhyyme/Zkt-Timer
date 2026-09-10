@@ -34,6 +34,11 @@ import type {KPattern} from 'cubing/kpuzzle';
 import type {SmartTurn} from '../../types';
 import * as THREE from 'three';
 import {calculateNetRotationQuat} from '../../../../util/cube_rotation_quat';
+import {useSettings} from '../../../../util/hooks/useSettings';
+import ScrambleMoveList, {isGreenBaseColor} from '../../../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
+import {sequenceMatchStatus} from '../../../timer/time_display/timer_scramble/smart_scramble/scramble_move_state';
+import {HOME_TILT_DEG, HOME_TURN_DEG} from '../../../timer/smart_cube/cube_view/view_defaults';
+import {recolorPuzzle} from '../../../timer/smart_cube/cube_view/cube_palette';
 
 const b = block('trainer');
 
@@ -59,11 +64,15 @@ export default function TrainerSmartCube() {
 	const twistySceneRef = useRef<THREE.Scene | null>(null);
 	const twistyVantageRef = useRef<any>(null);
 	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
+	// Shared with the timer's cube view so both show the cube from the same angle.
 	const HOME_ORIENTATION = useRef(
-		new THREE.Quaternion().setFromEuler(new THREE.Euler(15 * Math.PI / 180, -20 * Math.PI / 180, 0))
+		new THREE.Quaternion().setFromEuler(new THREE.Euler(HOME_TILT_DEG * Math.PI / 180, -HOME_TURN_DEG * Math.PI / 180, 0))
 	);
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
 	const animFrameRef = useRef<number | null>(null);
+	// Same sticker palette as the timer's cube view; see cube_palette.ts.
+	const paletteDoneRef = useRef(new WeakSet<object>());
+	const recolorPendingRef = useRef(true);
 	const unsubGyroRef = useRef<(() => void) | null>(null);
 	// Net rotation-aware gyro reset: uses previous algorithm's net rotation
 	// in new basis calculation to correct drift while preserving orientation
@@ -481,12 +490,19 @@ export default function TrainerSmartCube() {
 						const vantageList = await (player as any).experimentalCurrentVantages();
 						twistyVantageRef.current = [...vantageList][0];
 						twistySceneRef.current = await twistyVantageRef.current.scene.scene();
+						recolorPendingRef.current = true;
 					} catch {
 						// Scene not yet ready
 					}
 				}
 
 				if (twistySceneRef.current && twistyVantageRef.current) {
+					// Once per puzzle. It stays applied through stickering and algorithm
+					// changes, which the trainer makes on every case.
+					if (recolorPendingRef.current) {
+						const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current);
+						if (result !== 'not-found') recolorPendingRef.current = false;
+					}
 					twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
 					twistyVantageRef.current.render();
 				}
@@ -666,6 +682,19 @@ export default function TrainerSmartCube() {
 		? simplifyAlg(state.badAlg.map(m => getInverseMove(m)).reverse().join(' '))
 		: '';
 
+	// -- Algorithm move list --
+	// Drawn by the same component as the timer's smart scramble, so a move being
+	// drilled confirms and recedes exactly the way a scramble move does. Only the
+	// input differs: the trainer knows a done count and a verdict on the move in
+	// progress, not an engine status array, so it is converted here.
+	const algMatchStatus = sequenceMatchStatus(
+		state.userAlg.length,
+		state.matchedMoveCount,
+		state.badAlg.length > 0 ? (isHalfMatch ? 'half' : 'wrong') : undefined
+	);
+	// Green-based themes: confirm in blue so it stands out from green move text.
+	const useBlueMatch = isGreenBaseColor(useSettings('text_color'));
+
 	// -- Issue 4a: Menu handlers --
 	const handleResetState = useCallback(async () => {
 		const kpuzzle = getKPuzzle();
@@ -727,8 +756,10 @@ export default function TrainerSmartCube() {
 		const rect = padRef.current.getBoundingClientRect();
 		const nx = (e.clientX - rect.left) / rect.width - 0.5;
 		const ny = (e.clientY - rect.top) / rect.height - 0.5;
-		const yaw = (-20 + nx * 120) * Math.PI / 180;
-		const pitch = (15 - ny * 90) * Math.PI / 180;
+		// Centred on the home angle, so touching the middle of the pad leaves the view
+		// where it is instead of snapping it to a different default.
+		const yaw = (-HOME_TURN_DEG + nx * 120) * Math.PI / 180;
+		const pitch = (HOME_TILT_DEG - ny * 90) * Math.PI / 180;
 		HOME_ORIENTATION.current.setFromEuler(new THREE.Euler(pitch, yaw, 0));
 	}, [isDragging]);
 
@@ -761,21 +792,7 @@ export default function TrainerSmartCube() {
 			{/* Solution moves */}
 			{state.userAlg.length > 0 && !state.isMoveMasked && (
 				<div className={b('smart-moves')}>
-					{state.userAlg.map((move, i) => {
-						let mod = 'dim';
-						if (i <= matchedIdx) {
-							mod = 'green';
-						} else if (state.badAlg.length > 0 && i === matchedIdx + 1) {
-							mod = isHalfMatch ? 'orange' : 'red';
-						} else if (i === matchedIdx + 1) {
-							mod = 'current';
-						}
-						return (
-							<span key={i} className={b('smart-move', {[mod]: true})}>
-								{move}
-							</span>
-						);
-					})}
+					<ScrambleMoveList moves={state.userAlg} matchStatus={algMatchStatus} useBlueMatch={useBlueMatch} />
 				</div>
 			)}
 

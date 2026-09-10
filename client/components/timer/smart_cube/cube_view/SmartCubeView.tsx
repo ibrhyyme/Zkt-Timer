@@ -10,11 +10,7 @@ import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
 import type { SmartTurn } from '../../../../util/smart_scramble';
 import { setTimerParams } from '../../helpers/params';
 import { recolorPuzzle } from './cube_palette';
-
-// Home viewing angle, in degrees. Tilt looks down onto the top face; turn swings the
-// right-hand face into view. See HOME_ORIENTATION below for how they are applied.
-const HOME_TILT_DEG = 30;
-const HOME_TURN_DEG = 35;
+import { HOME_TILT_DEG, HOME_TURN_DEG } from './view_defaults';
 
 /**
  * The 3D cube that mirrors a connected smart cube: turns animate as they arrive and the
@@ -62,15 +58,8 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	const twistySceneRef = useRef<THREE.Scene | null>(null);
 	const twistyVantageRef = useRef<any>(null);
 	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
-	// The viewing angle. It is applied to the puzzle, not the camera (the camera stays
-	// at latitude/longitude 0), and it is premultiplied last onto the gyro reading, so it
-	// behaves as a fixed viewpoint the gyro's motion happens inside of. Change it here
-	// and the idle cube, the gyro view and "reset gyro" all move together.
-	//
-	// 15° / 20° showed the front face almost head-on, with the top and the side reduced
-	// to slivers, which read as a flat square rather than a cube. A steeper look from
-	// above and to the side keeps three faces in view, and matches how a solver actually
-	// looks down at the cube in their hands.
+	// The viewing angle (see view_defaults.ts). The idle cube, the gyro view and "reset
+	// gyro" all derive from this one quaternion, so they move together.
 	const HOME_ORIENTATION = useRef(
 		new THREE.Quaternion().setFromEuler(
 			new THREE.Euler((HOME_TILT_DEG * Math.PI) / 180, (-HOME_TURN_DEG * Math.PI) / 180, 0)

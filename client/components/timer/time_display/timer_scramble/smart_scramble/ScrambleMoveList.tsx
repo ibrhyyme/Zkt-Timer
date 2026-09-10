@@ -89,6 +89,9 @@ export default function ScrambleMoveList({moves, matchStatus, useBlueMatch}: Pro
 						key={`${turn}-${i}`}
 						className={b('turn', {
 							orange: matchStatus[i] === 'half',
+							// Off the sequence at this move. The solve engine never reports it
+							// for the scramble, but the trainer does, so the list can say so.
+							red: matchStatus[i] === 'wrong',
 							current: display === 'current',
 							done: isDone && !settled,
 							'done-blue': isDone && !settled && useBlueMatch,

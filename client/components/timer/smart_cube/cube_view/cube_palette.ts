@@ -82,6 +82,23 @@ export function buildPaletteMap(colors: Uint8Array): Map<number, RGB> | null {
 		if (r === 0 && g === 0 && b === 0) continue; // the black cube body is left alone
 		distinct.set(key(r, g, b), [r, g, b]);
 	}
+	return mapDistinctColors(distinct);
+}
+
+/**
+ * Same mapping, built from packed 0xRRGGBB values instead of a byte buffer — the form
+ * each sticker keeps its source colour in (`origColor`).
+ */
+export function buildPaletteMapFromHexes(hexes: Iterable<number>): Map<number, RGB> | null {
+	const distinct = new Map<number, RGB>();
+	for (const h of hexes) {
+		if (!h) continue;
+		distinct.set(h, [(h >> 16) & 255, (h >> 8) & 255, h & 255]);
+	}
+	return mapDistinctColors(distinct);
+}
+
+function mapDistinctColors(distinct: Map<number, RGB>): Map<number, RGB> | null {
 	if (distinct.size !== FACES.length) return null;
 
 	const map = new Map<number, RGB>();
@@ -117,10 +134,19 @@ export function remapColorBuffer(colors: Uint8Array): number {
 	return changed;
 }
 
+/** One sticker as PG3D keeps it: `origColor` is the source every repaint and mask derives from. */
+interface StickerDefLike {
+	origColor: number;
+	/** Computes this sticker's colour for one stickering state ('regular', 'dim', ...). */
+	setStickeringMask?: (filler: unknown, faceletMask: string) => void;
+}
+
 /** The cubing.js puzzle object, found by shape because its class name is not exported. */
 interface PG3DLike {
-	stickers: unknown;
+	stickers: Record<string, StickerDefLike[][]>;
 	filler: {colors: Uint8Array; pos: number};
+	params?: {stickeringMask?: unknown};
+	setStickeringMask?: (mask: unknown) => void;
 	traverse: (cb: (o: any) => void) => void;
 }
 
@@ -136,14 +162,68 @@ function findPuzzle(root: {traverse: (cb: (o: any) => void) => void}): PG3DLike 
 	return found;
 }
 
+function stickerDefsOf(puzzle: PG3DLike): StickerDefLike[] {
+	const out: StickerDefLike[] = [];
+	for (const orbit of Object.values(puzzle.stickers)) {
+		for (const byOri of orbit || []) {
+			for (const sd of byOri || []) if (sd && typeof sd.origColor === 'number') out.push(sd);
+		}
+	}
+	return out;
+}
+
+const toHex = ([r, g, b]: RGB) => (r << 16) | (g << 8) | b;
+
+const PURE_WHITE = 0xffffff;
+
+/**
+ * PG3D dims a sticker by halving its brightness, with one exception: pure white is
+ * lifted to a light grey instead, because half-bright white turns a flat mid-grey and
+ * stops reading as white. The exception is keyed on the exact value 0xFFFFFF, so the
+ * palette's off-white would lose it, and every dimmed white face would go mid-grey.
+ * That is visible on the trainer's default screen: white on top, and PLL dims the whole
+ * top face.
+ *
+ * So for the dim calculation only, a white sticker presents itself as pure white and
+ * the renderer applies its own light grey. Nothing is copied from its colour maths; if a
+ * cubing.js upgrade drops the exception, dimmed white simply comes out mid-grey.
+ */
+function keepDimmedWhiteLight(def: StickerDefLike) {
+	const own = def.setStickeringMask;
+	if (typeof own !== 'function') return;
+	def.setStickeringMask = function (this: StickerDefLike, filler: unknown, faceletMask: string) {
+		if (faceletMask !== 'dim') return own.call(this, filler, faceletMask);
+		const color = this.origColor;
+		this.origColor = PURE_WHITE;
+		try {
+			own.call(this, filler, faceletMask);
+		} finally {
+			this.origColor = color;
+		}
+	};
+}
+
 export type RecolorResult = 'applied' | 'already-applied' | 'not-found' | 'unrecognised';
 
 /**
  * Recolour the puzzle inside a TwistyPlayer scene, once per puzzle instance.
  *
- * `done` remembers puzzles already recoloured. The puzzle is normally built once and
- * kept across resets, but if cubing.js ever rebuilds it the new instance is recoloured
- * too instead of silently reverting to neon.
+ * Two layers have to change, not one:
+ *
+ *  1. Each sticker's `origColor`. PG3D derives everything from it: the reference
+ *     half of the colour buffer, and — crucially — every stickering mask. The trainer
+ *     greys out irrelevant stickers for OLL/PLL cases, and applying a mask recomputes
+ *     the colours from `origColor`. Recolouring only the buffer would be wiped out the
+ *     moment the trainer loaded an algorithm.
+ *  2. The bytes already in the buffer, so the cube looks right immediately. With a mask
+ *     active, re-applying that same mask regenerates them from the new `origColor`.
+ *     Without one, the stock bytes are rewritten directly (both halves).
+ *
+ * White stickers also keep the renderer's light grey when dimmed; see
+ * keepDimmedWhiteLight.
+ *
+ * `done` remembers puzzles already recoloured, so a rebuilt puzzle instance is
+ * recoloured too instead of silently reverting to neon.
  */
 export function recolorPuzzle(
 	root: {traverse: (cb: (o: any) => void) => void},
@@ -152,17 +232,34 @@ export function recolorPuzzle(
 	const puzzle = findPuzzle(root);
 	if (!puzzle) return 'not-found';
 	if (done.has(puzzle)) return 'already-applied';
+	done.add(puzzle);
 
 	const {colors, pos} = puzzle.filler;
 	// The two-halves layout is the whole reason this works. Anything else: hands off.
-	if (colors.length !== pos * 2 || colors.length % 3 !== 0) {
-		done.add(puzzle);
-		return 'unrecognised';
+	if (colors.length !== pos * 2 || colors.length % 3 !== 0) return 'unrecognised';
+
+	// Built from `origColor`, which holds the pure stock colours whatever mask is
+	// active, rather than from the buffer, which a mask fills with dimmed variants.
+	const defs = stickerDefsOf(puzzle);
+	const map = buildPaletteMapFromHexes(defs.map((d) => d.origColor));
+	if (!map) return 'unrecognised';
+
+	for (const d of defs) {
+		const next = map.get(d.origColor);
+		if (!next) continue;
+		d.origColor = toHex(next);
+		// Before the mask below is re-applied, so white already dims the right way.
+		if (next === STICKER_PALETTE.white) keepDimmedWhiteLight(d);
 	}
 
-	const changed = remapColorBuffer(colors);
-	done.add(puzzle);
-	if (changed === 0) return 'unrecognised';
+	const mask = puzzle.params?.stickeringMask;
+	if (mask && typeof puzzle.setStickeringMask === 'function') {
+		// Regenerates the reference half from the new `origColor` and repaints.
+		puzzle.setStickeringMask(mask);
+		return 'applied';
+	}
+
+	if (remapColorBuffer(colors) === 0) return 'unrecognised';
 
 	// The GPU copy only refreshes when told to. Only attributes that are views onto the
 	// same storage need it; the renderer's other small meshes are unrelated.
