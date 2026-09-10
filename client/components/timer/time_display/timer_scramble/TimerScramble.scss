@@ -1,5 +1,58 @@
 @import '../../../../styles/config';
 
+// Scramble move states. Two independent channels, on purpose:
+//
+//   SIZE  is a plain transition. The current move grows; when the position moves
+//         on it shrinks back. Nothing needs to remember anything.
+//   COLOUR is a one-shot animation, because the confirmation is a JOURNEY the
+//         move never rests in: green, HELD, then dissolving to almost nothing.
+//
+// Earlier attempts folded both into one keyframe and started the fade
+// immediately. The green was technically present and practically invisible —
+// it needs to sit still first or the eye never catches it.
+$scrambleTurnEasing: cubic-bezier(0.4, 0, 0.2, 1);
+$scrambleTurnDuration: 0.3s;
+$scrambleDoneDuration: 0.7s;
+$scrambleCurrentScale: 1.25;
+// Done moves settle to a faint wash of the text colour. Faint is the point: the
+// line has to answer "have I done this one" without the finished half competing
+// for attention with the half still to come.
+$scrambleDoneColor: rgba(var(--text-color), 0.13);
+
+$scrambleTurnTransition: color $scrambleTurnDuration $scrambleTurnEasing,
+transform $scrambleTurnDuration $scrambleTurnEasing;
+
+// `-webkit-text-fill-color` is animated alongside `color` because the base rule
+// pins it, and a colour change alone would never show through it.
+@mixin scrambleTurnDoneFrames($accent) {
+	0% {
+		color: $accent;
+		-webkit-text-fill-color: $accent;
+	}
+
+	// Hold. Without this the green starts dying on the first frame and reads as a
+	// muddy flicker rather than a confirmation. Short, though: the fade itself
+	// stays green for a while yet, so a long hold makes the colour outstay its
+	// welcome on every single move.
+	15% {
+		color: $accent;
+		-webkit-text-fill-color: $accent;
+	}
+
+	100% {
+		color: $scrambleDoneColor;
+		-webkit-text-fill-color: $scrambleDoneColor;
+	}
+}
+
+@keyframes scrambleTurnDone {
+	@include scrambleTurnDoneFrames($primaryGreen);
+}
+
+@keyframes scrambleTurnDoneBlue {
+	@include scrambleTurnDoneFrames($primaryBlue);
+}
+
 .#{$namespace}-timer-scramble {
 	display: flex;
 	flex-direction: column;
@@ -223,8 +276,23 @@
 		text-shadow: 0 1px 7px rgba(black, 0.2);
 		margin-right: 0.8rem;
 
+		// Transforms do not apply to non-replaced inline boxes. On the timer this is
+		// already moot (both hosts make the turns flex items, which blockifies them),
+		// but friendly rooms renders them in plain text flow, and there the scale
+		// would silently do nothing without this.
+		display: inline-block;
+		// Keep "U2" / "R'" from ever splitting across the line break.
+		white-space: nowrap;
+
 		@include bp-down($bp-lg) {
 			margin-right: 0.2rem;
+		}
+
+		// A trailing margin on the last move pushes a centred line off centre.
+		// `__body > span:not(:last-of-type)` above already tries to avoid this, but
+		// the unconditional margin here defeated it.
+		&:last-child {
+			margin-right: 0;
 		}
 
 		&--green {
@@ -247,6 +315,67 @@
 		&--orange {
 			color: $primaryOrange !important;
 			-webkit-text-fill-color: $primaryOrange !important;
+		}
+	}
+
+	// The move you are on. Doubled class so it carries two classes (0,2,0): the
+	// sibling `.zt-timer-scramble__body > span` rule is (0,1,1) and would otherwise
+	// win, dragging its `transition: all 0.1s` over this one.
+	//
+	// Only paint properties are touched. Anything that resizes the layout box
+	// (font-size, font-weight, padding, margin) reflows the wrapping flex line, so
+	// a move can jump to the next row mid-scramble, and on mobile it also
+	// desynchronises the canvas-measured fit in `useFitTextToBox`.
+	&__turn#{&}__turn--current {
+		transform: scale($scrambleCurrentScale);
+		transition: $scrambleTurnTransition;
+	}
+
+	// Done. The animation carries the colour from green to almost nothing; the
+	// shrink back from `--current` is the plain transition above, running at its
+	// own shorter duration. Letting the two channels run at different speeds is
+	// what makes the whole thing read as flowing rather than mechanical.
+	//
+	// The class is never removed, so the animation fires exactly once, when the
+	// move first becomes done. `both` holds the final frame afterwards.
+	&__turn#{&}__turn--done {
+		animation: scrambleTurnDone $scrambleDoneDuration $scrambleTurnEasing both;
+		transition: $scrambleTurnTransition;
+	}
+
+	// Green-based themes render the scramble text green already, so confirm in blue.
+	&__turn#{&}__turn--done-blue {
+		animation-name: scrambleTurnDoneBlue;
+	}
+
+	// Already finished before this list appeared: the end state, without the
+	// confirmation. Correcting a wrong turn tears the list down and rebuilds it,
+	// and replaying every earlier move's green at that moment reads as a burst of
+	// congratulations for work the user finished long ago.
+	&__turn#{&}__turn--settled {
+		color: $scrambleDoneColor !important;
+		-webkit-text-fill-color: $scrambleDoneColor !important;
+		transition: $scrambleTurnTransition;
+	}
+
+	// Reduced motion means no MOVEMENT. It does not mean no feedback.
+	//
+	// This block used to kill the animation outright and jump straight to the
+	// faded colour, which threw away the entire confirmation: no green, and the
+	// move snapped instead of settling. That is a large share of users — the
+	// Windows "show animations" toggle and several battery savers set this — being
+	// served a feature that looks broken rather than calm.
+	//
+	// So: the size difference stays (it is a state, and it is the only thing
+	// marking which move you are on), but it arrives instantly instead of gliding.
+	// The colour animation stays too, because a colour change is not motion and it
+	// is what actually says "that one counted".
+	@media (prefers-reduced-motion: reduce) {
+
+		&__turn#{&}__turn--current,
+		&__turn#{&}__turn--done,
+		&__turn#{&}__turn--settled {
+			transition: none;
 		}
 	}
 

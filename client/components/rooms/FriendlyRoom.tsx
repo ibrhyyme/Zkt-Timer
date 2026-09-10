@@ -64,6 +64,7 @@ import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay
 import ReactDOM from 'react-dom';
 import { isPro } from '../../lib/pro';
 import { PRO_GATED_TIMER_TYPES } from '../timer/helpers/pro_timer_types';
+import ScrambleMoveList, { isGreenBaseColor } from '../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -207,6 +208,9 @@ function FriendlyRoomContent() {
     const inspectionDelay = useSettings('inspection_delay');
     const timerDecimalPoints = useSettings('timer_decimal_points');
     const isManualMode = manualEntry && timerType !== 'smart';
+    // Green-based themes: flash matched scramble moves in blue so they stay
+    // distinguishable from the green scramble text.
+    const useBlueMatch = isGreenBaseColor(useSettings('text_color'));
 
     // GAN Timer connection state
     const [ganTimerConnected, setGanTimerConnected] = useState(false);
@@ -1965,19 +1969,17 @@ function FriendlyRoomContent() {
                                         );
                                     }
 
-                                    return scrambleParts.map((turn, i) => {
-                                        const status = smartMatchStatus[i];
-                                        const colorClass =
-                                            status === 'perfect' ? 'text-green-400'
-                                                : status === 'half' ? 'text-orange-400'
-                                                    : 'text-text';
-
-                                        return (
-                                            <span key={turn + "-" + i} className={colorClass}>
-                                                {turn}{' '}
-                                            </span>
-                                        );
-                                    });
+                                    // Shared with the timer so the two screens behave identically —
+                                    // and so rooms picks up the green-theme guard it never had:
+                                    // on a green-based theme a green "done" move was being painted
+                                    // over green scramble text, losing the progress signal entirely.
+                                    return (
+                                        <ScrambleMoveList
+                                            moves={scrambleParts}
+                                            matchStatus={smartMatchStatus}
+                                            useBlueMatch={useBlueMatch}
+                                        />
+                                    );
                                 })()
                             ) : (
                                 // Normal: show plain scramble

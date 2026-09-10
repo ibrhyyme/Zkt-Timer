@@ -43,9 +43,14 @@
         line-height: 1.6;
     }
 
-    // SmartScramble spans with wrapping
-    .zt-timer-scramble__turn {
-        display: inline;
+    // The current move is scaled up, and this box clips (`overflow: hidden` above)
+    // around text the fit hook deliberately grows to fill it. A transform overflows
+    // its own layout box, so the scale eats into the padding; at the largest font
+    // the fit can choose, the desktop 1.25 leaves only a couple of pixels of that
+    // padding spare. Pull it in a little here rather than risk shaving the tops off
+    // the moves on a short screen.
+    .zt-timer-scramble__turn.zt-timer-scramble__turn--current {
+        transform: scale(1.18);
     }
 
     &__text {
