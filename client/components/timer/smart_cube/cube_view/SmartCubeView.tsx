@@ -9,6 +9,12 @@ import { onVisibilityChange } from '../../../../util/app-visibility';
 import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
 import type { SmartTurn } from '../../../../util/smart_scramble';
 import { setTimerParams } from '../../helpers/params';
+import { recolorPuzzle } from './cube_palette';
+
+// Home viewing angle, in degrees. Tilt looks down onto the top face; turn swings the
+// right-hand face into view. See HOME_ORIENTATION below for how they are applied.
+const HOME_TILT_DEG = 30;
+const HOME_TURN_DEG = 35;
 
 /**
  * The 3D cube that mirrors a connected smart cube: turns animate as they arrive and the
@@ -56,11 +62,26 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	const twistySceneRef = useRef<THREE.Scene | null>(null);
 	const twistyVantageRef = useRef<any>(null);
 	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
+	// The viewing angle. It is applied to the puzzle, not the camera (the camera stays
+	// at latitude/longitude 0), and it is premultiplied last onto the gyro reading, so it
+	// behaves as a fixed viewpoint the gyro's motion happens inside of. Change it here
+	// and the idle cube, the gyro view and "reset gyro" all move together.
+	//
+	// 15° / 20° showed the front face almost head-on, with the top and the side reduced
+	// to slivers, which read as a flat square rather than a cube. A steeper look from
+	// above and to the side keeps three faces in view, and matches how a solver actually
+	// looks down at the cube in their hands.
 	const HOME_ORIENTATION = useRef(
-		new THREE.Quaternion().setFromEuler(new THREE.Euler((15 * Math.PI) / 180, (-20 * Math.PI) / 180, 0))
+		new THREE.Quaternion().setFromEuler(
+			new THREE.Euler((HOME_TILT_DEG * Math.PI) / 180, (-HOME_TURN_DEG * Math.PI) / 180, 0)
+		)
 	);
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
 	const animFrameRef = useRef<number | null>(null);
+	// Sticker palette: which puzzle instances are already repainted, and whether the
+	// current scene still needs checking. See cube_palette.ts for why this is needed.
+	const paletteDoneRef = useRef(new WeakSet<object>());
+	const recolorPendingRef = useRef(true);
 	const appliedTurnsRef = useRef(0);
 
 	const smartTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
@@ -122,12 +143,20 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 							const vantageList = await (twisty as any).experimentalCurrentVantages();
 							twistyVantageRef.current = [...vantageList][0];
 							twistySceneRef.current = await twistyVantageRef.current.scene.scene();
+							// A (re)acquired scene may hold a puzzle that has not been repainted.
+							recolorPendingRef.current = true;
 						} catch (e) {
 							// Scene not ready yet
 						}
 					}
 
 					if (twistySceneRef.current && twistyVantageRef.current) {
+						// The puzzle object appears a little after the scene does, so keep
+						// looking until it is there; once found this costs nothing more.
+						if (recolorPendingRef.current) {
+							const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current);
+							if (result !== 'not-found') recolorPendingRef.current = false;
+						}
 						twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
 						twistyVantageRef.current.render();
 					}
