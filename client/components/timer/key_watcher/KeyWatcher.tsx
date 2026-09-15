@@ -22,7 +22,7 @@ import { hapticImpact } from '../../../util/native-plugins';
 import { isMultiPhaseActive } from '../../../../shared/util/solve/multiphase';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
-import { getSettings } from '../../../db/settings/query';
+import { getSetting, getSettings } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
@@ -30,6 +30,14 @@ import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/opera
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { classifyTouchTarget } from '../helpers/touch_target';
 import { isCancelSwipe } from '../helpers/touch_gesture';
+import {
+	cancelPendingRelease,
+	deferRelease,
+	deferredReleaseStart,
+	releaseEndsStopBlock,
+	shouldDeferKeyRelease,
+	SPACE_KEY_CODE,
+} from '../helpers/key_release';
 
 const timerClass = block('timer');
 
@@ -109,10 +117,28 @@ export default function KeyWatcher(props: Props) {
 	// events (OS auto-repeat, or a second key still held down), which re-primes the timer
 	// and restarts it on release.
 	const stopKeyHeldRef = React.useRef(false);
+	// keyCode of the press that set stopKeyHeldRef. Only its release (or Space's) lifts
+	// the block, see releaseEndsStopBlock.
+	const stopKeyCodeRef = React.useRef<number | null>(null);
 
-	// Window blur (alt-tab) swallows the keyup, so clear the flag defensively
+	// The touch counterpart of stopKeyHeldRef: true from the touch that stops the timer
+	// until every finger is off the screen. endTimer clears timeStartedAt synchronously,
+	// so a second finger landing right after the stopping one would otherwise take the
+	// priming path, and lifting both would start a new solve. With freeze time at 0 that
+	// happened on every two-finger stop.
+	const touchStopGuardRef = React.useRef(false);
+
+	// Window blur (alt-tab) swallows the keyup, so clear the flags defensively
 	useWindowListener('blur', () => {
 		stopKeyHeldRef.current = false;
+		touchStopGuardRef.current = false;
+
+		// A Space release waiting out the remote-input grace window. Once the window is
+		// gone, whatever the remote tool sends next says nothing about the key, so drop
+		// the release and the hold with it rather than start a solve nobody is watching.
+		if (cancelPendingRelease()) {
+			disarmPriming();
+		}
 	});
 
 	function handleContextMenu(e) {
@@ -200,6 +226,11 @@ export default function KeyWatcher(props: Props) {
 		// armed used to strand the timer green with nothing on screen, unable to start
 		// until the user pressed a second time.
 		if (e.touches && e.touches.length > 0) return;
+
+		// Every finger is off the screen, so a gesture that stopped the solve is over and
+		// the next press may prime again. Cleared before the bails below, which would
+		// otherwise leave it set and swallow the next start.
+		touchStopGuardRef.current = false;
 
 		// Same rule as touchStart: the notch zones only guard against starting.
 		if (!getTimerStore('timeStartedAt') && inEdgeDeadZone(e.changedTouches?.[0])) {
@@ -307,6 +338,10 @@ export default function KeyWatcher(props: Props) {
 	function touchCancel() {
 		cancelPriming();
 
+		// Nothing says a finger of the stopping gesture is still down after the OS took
+		// the gesture away, and a guard left set would swallow the next real start.
+		touchStopGuardRef.current = false;
+
 		touchStartX.current = null;
 		touchStartY.current = null;
 	}
@@ -369,6 +404,16 @@ export default function KeyWatcher(props: Props) {
 
 		if (e.key === 'Escape') return;
 
+		// Remote-input compatibility: a Space press inside the grace window after a release
+		// is the remote tool's auto-repeat pair, not a new press. The key never came up, so
+		// the release is dropped and the hold carries on untouched (spaceTimerStarted was
+		// never cleared). A release is only ever held back while the setting is on. Checked
+		// before `repeat`, which a tool may or may not set on the pair's keydown.
+		if (!touch && e.keyCode === SPACE_KEY_CODE && cancelPendingRelease()) {
+			e.preventDefault();
+			return;
+		}
+
 		// OS auto-repeat while a key stays held down — never a new user intent
 		if (e.repeat) return;
 
@@ -399,12 +444,20 @@ export default function KeyWatcher(props: Props) {
 			// Block re-priming until the key that stopped the timer is released
 			if (!touch) {
 				stopKeyHeldRef.current = true;
+				stopKeyCodeRef.current = e.keyCode;
 			}
 
 			// Multi-phase: the first count-1 presses close a phase and leave the timer
 			// running. Only the last press falls through and stops the solve.
 			if (recordPhaseSplit(eventTimestamp)) {
 				return;
+			}
+
+			// Hold touch priming off until every finger of this gesture has lifted. Set
+			// only for a real stop: a split leaves the solve running, so there is nothing
+			// a second finger could restart.
+			if (touch) {
+				touchStopGuardRef.current = true;
 			}
 
 			endTimer(context, undefined, undefined, eventTimestamp);
@@ -431,6 +484,11 @@ export default function KeyWatcher(props: Props) {
 		if (!touch && stopKeyHeldRef.current) return;
 
 		e.preventDefault();
+
+		// Same for a finger: one from the gesture that stopped the solve, or a second one
+		// landing while that gesture is still down. After preventDefault on purpose, so the
+		// swallowed touch still gets no synthetic click or zoom, as a priming touch would not.
+		if (touch && touchStopGuardRef.current) return;
 
 		if (!spaceTimerStarted) {
 			const now = new Date();
@@ -471,6 +529,33 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function keyupSpace(e, touch = false, eventTimestamp?: number) {
+		// Remote-input compatibility (off by default): a keyboard Space release waits out
+		// a short grace window before it counts, and a Space press inside the window
+		// cancels it (keydownSpace). The deferred run gets the instant the key came up, so
+		// neither the freeze-time check nor the recorded time includes the wait.
+		if (shouldDeferKeyRelease({
+			enabled: !!getSetting('remote_input_compat'),
+			touch,
+			keyCode: e.keyCode,
+			primed: !!getTimerStore('spaceTimerStarted'),
+			stopKeyHeld: stopKeyHeldRef.current,
+		})) {
+			deferRelease({ releasedAtMs: Date.now(), eventTimestamp }, (pending) => {
+				handleRelease(e, touch, deferredReleaseStart(pending), pending.releasedAtMs);
+			});
+			return;
+		}
+
+		handleRelease(e, touch, eventTimestamp);
+	}
+
+	/**
+	 * Everything a key or finger release does. `releasedAtMs` is passed only by a release
+	 * that waited out the remote-input grace window: the instant the key really came up,
+	 * which the freeze-time check uses instead of now. Without it this is the release as
+	 * it has always run.
+	 */
+	function handleRelease(e, touch: boolean, eventTimestamp?: number, releasedAtMs?: number) {
 		const freezeTime = getSettings().freeze_time;
 
 		// Read through the store for the same reason keydownSpace does — this is the
@@ -479,8 +564,12 @@ export default function KeyWatcher(props: Props) {
 		const spaceTimerStarted = getTimerStore('spaceTimerStarted');
 		const inInspection = getTimerStore('inInspection');
 
-		// Any key release ends the "stopped the timer with this press" block
-		stopKeyHeldRef.current = false;
+		// Releasing the key that stopped the timer (or Space, or a finger) ends the
+		// "stopped the timer with this press" block. An unrelated key coming up while the
+		// stopping key is still held does not.
+		if (releaseEndsStopBlock(touch, e.keyCode, stopKeyCodeRef.current)) {
+			stopKeyHeldRef.current = false;
+		}
 
 		// Don't trigger if user is typing in an input
 		const target = e.target as HTMLElement;
@@ -502,6 +591,15 @@ export default function KeyWatcher(props: Props) {
 		// one must stay a plain bail.
 		if ((e.keyCode !== 32 && !touch) || !spaceTimerStarted) return;
 
+		// A release that waited out the grace window can find the solve already started
+		// under it: inspection ran out and auto-started it inside the window. The hold is
+		// spent then, and carrying on would open a fresh inspection on top of the running
+		// solve. Scoped to the deferred path so the immediate one stays exactly as it was.
+		if (releasedAtMs !== undefined && getTimerStore('timeStartedAt')) {
+			disarmPriming();
+			return;
+		}
+
 		if (getTimer(START_TIMEOUT)) {
 			stopTimer(START_TIMEOUT);
 		}
@@ -521,8 +619,10 @@ export default function KeyWatcher(props: Props) {
 			canStart: false,
 		});
 
-		// Ignore events where space was held for less than .5s
-		if (now.getTime() - spaceTimerStarted < freezeTime * 1000) return;
+		// Ignore events where space was held for less than .5s. A deferred release is
+		// measured to when the key came up, so the grace window never tips a short press
+		// over the freeze time.
+		if ((releasedAtMs ?? now.getTime()) - spaceTimerStarted < freezeTime * 1000) return;
 
 		if (inInspection || !inspection) {
 			if (inInspection && getTimerStore('dnfTime')) {

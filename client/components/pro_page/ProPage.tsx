@@ -4,7 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {
 	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
 	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
-	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, Brain, BookOpen, Crosshair,
+	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, BookOpen, Crosshair,
 	ArrowRight, BellRinging, Trophy,
 } from 'phosphor-react';
 import CountUp from '../stats/common/count_up/CountUp';
@@ -23,6 +23,7 @@ import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
 import {getApiBase} from '../../util/api-base';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
+import {computeYearlyPricing} from './pricing';
 import {openInAppBrowser} from '../../util/external-link';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
 import {useGeneral} from '../../util/hooks/useGeneral';
@@ -93,7 +94,6 @@ const PRO_FEATURES = [
 	'stats_customization',
 	'solve_sharing',
 	'early_access',
-	'ai_analysis',
 	'pll_trainer',
 	'cross_trainer',
 ] as const;
@@ -113,7 +113,6 @@ const FEATURE_ICONS: Record<string, React.ElementType> = {
 	stats_customization: Sliders,
 	solve_sharing: ShareNetwork,
 	early_access: Rocket,
-	ai_analysis: Brain,
 	pll_trainer: BookOpen,
 	cross_trainer: Crosshair,
 };
@@ -222,6 +221,34 @@ function ProPageContent() {
 
 	const selectedPackage = offerings[selectedPlan];
 	const dynamicPrice = selectedPackage?.product?.priceString;
+
+	// Live per-month price + savings % for the yearly plan, from RevenueCat's actual
+	// product data (native only; offerings stays empty on web). Null when unavailable,
+	// so the static i18n copy below is used instead.
+	const computedYearly = React.useMemo(
+		() => computeYearlyPricing(offerings.monthly?.product, offerings.yearly?.product),
+		[offerings]
+	);
+
+	function planSublabel(plan: Plan): string {
+		if (plan.id === 'yearly' && computedYearly) {
+			return t('pro_page.plan.yearly_sublabel_dynamic', {savings: computedYearly.savingsPercent});
+		}
+		return t(plan.sublabelKey);
+	}
+
+	function planDetail(): string {
+		if (activePlan.id === 'monthly') {
+			const price = offerings.monthly?.product?.priceString;
+			if (price) return t('pro_page.plan.monthly_detail_dynamic', {price});
+		} else if (activePlan.id === 'yearly' && computedYearly) {
+			return t('pro_page.plan.yearly_detail_dynamic', {
+				perMonth: computedYearly.perMonthString,
+				savings: computedYearly.savingsPercent,
+			});
+		}
+		return t(activePlan.detailKey);
+	}
 
 	async function handleRedeem() {
 		if (!promoCode.trim() || redeeming) return;
@@ -498,7 +525,7 @@ function ProPageContent() {
 											<span className={b('seg-badge', {bestValue: true})}>{t('pro_page.plan.best_value')}</span>
 										)}
 										<span className={b('seg-label')}>{t(`pro_page.plan.${plan.id}_label`)}</span>
-										<span className={b('seg-sublabel')}>{t(plan.sublabelKey)}</span>
+										<span className={b('seg-sublabel')}>{planSublabel(plan)}</span>
 									</button>
 								))}
 							</div>
@@ -517,12 +544,14 @@ function ProPageContent() {
 										const decMatch = numToken.match(/[.,](\d{1,2})$/);
 										const decStr = decMatch?.[1] || '';
 										const decimalSep = decMatch?.[0]?.[0] || '';
-										const intPart = decMatch
-											? numToken.slice(0, -decMatch[0].length).replace(/[.,]/g, '')
-											: numToken.replace(/[.,]/g, '');
+										const rawIntPart = decMatch ? numToken.slice(0, -decMatch[0].length) : numToken;
+										const intPart = rawIntPart.replace(/[.,]/g, '');
 										const intNum = parseInt(intPart || '0', 10);
-										// Grouping separator decimal'in tersi (TR: "," → "."; US: "." → ",")
-										const groupSep = decimalSep === ',' ? '.' : ',';
+										// Grouping separator: tam kisimda hala bir ayrac varsa onu kullan (orn. "1.800"),
+										// yoksa ondalik ayracinin tersini varsay (TR: "," -> "."; US: "." -> ",")
+										const groupSep = /[.,]/.test(rawIntPart)
+											? rawIntPart.match(/[.,]/)![0]
+											: (decimalSep === ',' ? '.' : ',');
 										return (
 											<span className={b('price-main')}>
 												{pricePrefix}
@@ -543,7 +572,7 @@ function ProPageContent() {
 										<span className={b('price-cycle')}>{t(activePlan.cycleLabelKey)}</span>
 									)}
 								</div>
-								<div className={b('price-detail')}>{t(activePlan.detailKey)}</div>
+								<div className={b('price-detail')}>{planDetail()}</div>
 								{activePlan.hasTrial && (
 									<span className={b('trial-pill')}>
 										<Sparkle weight="fill" />

@@ -21,6 +21,7 @@ import { toastInfo } from '../../util/toast';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { syncAnonSolveCount } from '../../util/anon-mode';
 import { addSolveTombstones } from '../../util/solve-tombstones';
+import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
 
 let offlineToastShown = false;
 let queuedToastShown = false;
@@ -145,10 +146,16 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 
 	const solveDb = getSolveDb();
 
+	// Looked up before the removal so only a solve that was really there is tallied: a
+	// repeated delete of the same solve (a double tap) must not count it twice.
+	const stored = solveDb.findOne({ id: solve.id });
 	solveDb.remove(solve);
 	// Record the intent before the network call: another device still holding this
 	// solve locally would otherwise re-upload it through its backfill pass.
 	addSolveTombstones([solve.id]);
+	// Before postProcessDbUpdate, whose solveDbUpdatedEvent makes the goal progress
+	// recount: the tally has to be in place by then.
+	if (stored) recordDeletedSolves([stored]);
 	postProcessDbUpdate(solve, false);
 
 	// Silme sonrası timer'daki son süreyi güncelle — yalnizca silinen çözümün ait
@@ -300,6 +307,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 
 	solveDb.removeWhere({ session_id: sessionId });
 	addSolveTombstones(solvesToRemove.map((s) => s.id));
+	recordDeletedSolves(solvesToRemove);
 
 	clearSolveStatCacheForSession(sessionId);
 	emitEvent('solveDbUpdatedEvent', null);
@@ -347,10 +355,13 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 	const solveDb = getSolveDb();
 	const ids = solves.map(s => s.id);
+	// The stored copies, not the caller's: only what is really removed gets tallied
+	const removed = solveDb.find({ id: { $in: ids } });
 
 	// Remove from local DB
 	solveDb.removeWhere(s => ids.includes(s.id));
 	addSolveTombstones(ids);
+	recordDeletedSolves(removed);
 
 	if (solves.length > 0) {
 		// Group deleted solves by bucket (session + cube_type + subset) and refresh

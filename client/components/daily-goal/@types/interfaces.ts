@@ -11,6 +11,10 @@ export interface DailyGoalStorage {
 	last_reminder_time: number | null;
 	// When true, Friendly Room solves count toward daily goals + activity heatmap.
 	count_room_solves: boolean;
+	// When true, solves made and then deleted keep counting toward daily goals + activity
+	// heatmap (helpers/deleted-solves.ts). Device-local: there is no server column for it.
+	// Storage written before it existed lacks it, which reads as off.
+	count_deleted_solves: boolean;
 }
 
 export interface GoalProgress {

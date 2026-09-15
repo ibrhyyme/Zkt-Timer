@@ -2,6 +2,7 @@
 import tinycolor from 'tinycolor2';
 import {AllSettings, getSetting} from '../../db/settings/query';
 import {getAnyColorStringAsRawRgbString, getAnyColorStringAsRgbString} from '../../util/themes/theme_util';
+import {normalizeSolveListColor, SOLVE_LIST_COLOR_KEYS, SOLVE_LIST_COLOR_VARS} from '../../util/themes/solve_list_colors';
 
 const userDefinedColorsVar: Partial<Record<string, string>> = {
 	primary_color: '--primary-color',
@@ -102,7 +103,26 @@ export function updateThemeColors() {
 		}
 	}
 
+	applySolveListColors();
+
 	saveThemeSnapshot(isLight);
+}
+
+// The solve list colours are optional overrides (see util/themes/solve_list_colors.ts).
+// Unlike the theme colours above, an unset one has to REMOVE its variable: the list's
+// stylesheet falls back to the theme colour only while the variable is absent. They
+// stay out of the head snapshot, since the list only renders once the app has loaded.
+function applySolveListColors() {
+	const html = getHtmlTag();
+	for (const key of SOLVE_LIST_COLOR_KEYS) {
+		const cssVar = SOLVE_LIST_COLOR_VARS[key];
+		const rgb = normalizeSolveListColor(getSetting(key));
+		if (rgb) {
+			html.style.setProperty(cssVar, rgb);
+		} else {
+			html.style.removeProperty(cssVar);
+		}
+	}
 }
 
 function getThemeBackgroundColor(color: tinycolorInstance, opposite: boolean = false): string {

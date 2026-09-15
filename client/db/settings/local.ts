@@ -4,12 +4,18 @@ import {getMe} from '../../components/store';
 
 export function getAllLocalSettings(userId: string): AllSettings {
 	const settingsVal = getLocalStorage('settings');
-	let output: AllSettings = getDefaultSettings();
+	// A copy: on a desktop viewport getDefaultSettings() hands back the module's own
+	// defaults object, which nothing may write through.
+	let output: AllSettings = {...getDefaultSettings()};
 
 	if (settingsVal && typeof settingsVal === 'object') {
 		const userSettings = settingsVal[userId];
 		if (userSettings && Object.keys(userSettings).length) {
-			output = userSettings;
+			// The stored entry only holds the keys that existed when it was first written.
+			// Layered over the current defaults, a setting added since still has a value,
+			// and so a row in the settings collection: the anonymous boot builds its rows
+			// from this object alone, and setSettings cannot update a row that is missing.
+			output = {...output, ...userSettings};
 		} else {
 			settingsVal[userId] = getDefaultSettings();
 			setLocalStorageObject('settings', settingsVal);
@@ -37,11 +43,17 @@ export function setLocalSettingValue<T extends keyof AllSettings>(key: T, value:
 	const me = getMe();
 	const userId = me?.id || '_anon';
 
-	const allSettingsVal = getLocalStorage('settings');
-	const localSettings = getAllLocalSettings(userId);
-	localSettings[key] = value;
+	// Seeds the user's entry on a first visit, so there is always one to write into.
+	getAllLocalSettings(userId);
 
-	allSettingsVal[userId] = localSettings;
+	// Written into the stored entry itself rather than into getAllLocalSettings' result.
+	// That one is layered over the current defaults, and saving it would freeze every
+	// default into storage, so a default changed in a later release would never reach
+	// this user.
+	const allSettingsVal = getLocalStorage('settings') || {};
+	const stored = allSettingsVal[userId] && typeof allSettingsVal[userId] === 'object' ? allSettingsVal[userId] : {};
+	stored[key] = value;
+	allSettingsVal[userId] = stored;
 
 	setLocalStorageObject('settings', allSettingsVal);
 }

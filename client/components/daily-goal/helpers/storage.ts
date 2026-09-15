@@ -12,7 +12,15 @@ const DEFAULT_STORAGE: DailyGoalStorage = {
 	reminder_enabled: false,
 	last_reminder_time: null,
 	count_room_solves: false,
+	count_deleted_solves: false,
 };
+
+// A fresh object every time. Callers mutate what they get and write it back, and with
+// the shared constant handed out a toggle or a pushed goal leaked into the defaults of
+// every later read in the same page session (another account on the same device included).
+function defaultStorage(): DailyGoalStorage {
+	return {...DEFAULT_STORAGE, goals: []};
+}
 
 function getStorageKey(): string {
 	const me = getMe();
@@ -21,14 +29,15 @@ function getStorageKey(): string {
 }
 
 export function getDailyGoalStorage(): DailyGoalStorage {
-	if (typeof window === 'undefined') return DEFAULT_STORAGE;
+	if (typeof window === 'undefined') return defaultStorage();
 
 	try {
 		const raw = localStorage.getItem(getStorageKey());
-		if (!raw) return DEFAULT_STORAGE;
-		return JSON.parse(raw);
+		if (!raw) return defaultStorage();
+		// Over the defaults, so a field added after the entry was written has a value
+		return {...defaultStorage(), ...JSON.parse(raw)};
 	} catch {
-		return DEFAULT_STORAGE;
+		return defaultStorage();
 	}
 }
 
@@ -97,6 +106,19 @@ export function setCountRoomSolves(enabled: boolean): void {
 	if (enabled) {
 		fetchRoomSolveCounts();
 	}
+}
+
+/**
+ * The sibling of setCountRoomSolves for deleted solves. Local only: the room toggle
+ * has a UserAccount column to sync to, this one would need a schema change. The tally
+ * it reads is recorded on every deletion either way (helpers/deleted-solves.ts), so
+ * there is nothing to warm up here.
+ */
+export function setCountDeletedSolves(enabled: boolean): void {
+	const storage = getDailyGoalStorage();
+	storage.count_deleted_solves = enabled;
+	setDailyGoalStorage(storage);
+	emitEvent('dailyGoalUpdatedEvent');
 }
 
 // --- Server sync (fire-and-forget) ---

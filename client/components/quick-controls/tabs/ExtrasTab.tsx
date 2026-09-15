@@ -40,7 +40,7 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 	};
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 				{label}
 			</span>
@@ -85,7 +85,7 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 	}
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<span className={`font-medium transition-colors ${disabled ? 'text-text/30' : 'text-text/80 group-hover:text-text'}`}>
 				{label}
 			</span>
@@ -138,7 +138,7 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 	const selectedLabel = options.find(o => o.value === value)?.label || value;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] transition-all duration-200 hover:border-text/[0.15]">
+		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] transition-all duration-200 hover:border-text/[0.15]">
 			<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 				{label}
 			</span>
@@ -339,7 +339,7 @@ export default function ExtrasTab({
 				<button
 					type="button"
 					onClick={() => openProOnlyModal(dispatch, t, 'slam_to_stop')}
-					className="w-full group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
+					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
 				>
 					<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 						{t('quick_controls.slam_to_stop')}

@@ -9,9 +9,23 @@ import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {useEventListener} from '../../../../util/event_handler';
 import {getDailyGoalStorage} from '../../../daily-goal/helpers/storage';
 import {getRoomDailyCounts} from '../../../daily-goal/helpers/room-solves';
+import {getDeletedDailyCounts} from '../../../daily-goal/helpers/deleted-solves';
 import {StatsContext} from '../../Stats';
 
 const b = block('activity-heatmap');
+
+function mergeDailyCounts(...maps: (Map<string, number> | undefined)[]): Map<string, number> | undefined {
+	const present = maps.filter(Boolean);
+	if (present.length <= 1) return present[0];
+
+	const merged = new Map<string, number>();
+	for (const map of present) {
+		for (const [key, count] of map) {
+			merged.set(key, (merged.get(key) || 0) + count);
+		}
+	}
+	return merged;
+}
 
 const DAYS = 365;
 const WEEKS = 53;
@@ -29,17 +43,36 @@ export default function ActivityHeatmap() {
 	const solveUpdate = useSolveDb();
 	const [goalVersion, setGoalVersion] = useState(0);
 
-	// Room-solve cache refreshes (fetch / toggle) emit dailyGoalUpdatedEvent.
+	// Room-solve cache refreshes and both counting toggles emit dailyGoalUpdatedEvent.
+	// A deletion itself arrives through solveUpdate.
 	useEventListener('dailyGoalUpdatedEvent', () => setGoalVersion((v) => v + 1), []);
 
-	// Friendly Room per-day counts to fold into the heatmap + streak, when opted in.
-	// Room solves have no session, so skip them when a session filter is active.
-	const roomExtra = useMemo(() => {
-		if (!getDailyGoalStorage().count_room_solves) return undefined;
+	// Per-day counts folded into the heatmap + streak on top of the solve DB, each when
+	// opted in: Friendly Room solves, and solves deleted since. Neither belongs to a
+	// session any more (room solves never did), so both sit out a session filter.
+	const extraDailyCounts = useMemo(() => {
 		if (filterOptions.session_id) return undefined;
+		const storage = getDailyGoalStorage();
 		const cubeType = typeof filterOptions.cube_type === 'string' ? filterOptions.cube_type : undefined;
-		const subset = typeof filterOptions.scramble_subset === 'string' ? filterOptions.scramble_subset : null;
-		return getRoomDailyCounts(cubeType, subset);
+
+		let room: Map<string, number> | undefined;
+		if (storage.count_room_solves) {
+			const subset = typeof filterOptions.scramble_subset === 'string' ? filterOptions.scramble_subset : null;
+			room = getRoomDailyCounts(cubeType, subset);
+		}
+
+		let deleted: Map<string, number> | undefined;
+		if (storage.count_deleted_solves) {
+			// Matched as the solve DB query matches the solves themselves: a subset string or
+			// null narrows to exactly that subset, no subset in the filter means any.
+			const rawSubset = filterOptions.scramble_subset;
+			let subset: string | null | undefined;
+			if (typeof rawSubset === 'string') subset = rawSubset;
+			else if (rawSubset === null) subset = null;
+			deleted = getDeletedDailyCounts(cubeType, subset);
+		}
+
+		return mergeDailyCounts(room, deleted);
 	}, [filterOptions, solveUpdate, goalVersion]);
 
 	const {grid, activeDays, monthMarkers, max} = useMemo(() => {
@@ -53,7 +86,7 @@ export default function ActivityHeatmap() {
 			...filterOptions,
 			started_at: start.getTime(),
 			ended_at: end.getTime(),
-		}, roomExtra);
+		}, extraDailyCounts);
 
 		const dataMap = new Map<string, number>();
 		data.forEach((d) => dataMap.set(d.x, d.y));
@@ -115,9 +148,9 @@ export default function ActivityHeatmap() {
 		const active = data.filter((d) => d.y > 0).length;
 
 		return {grid: cells, activeDays: active, monthMarkers: markers, max: maxCount};
-	}, [filterOptions, solveUpdate, roomExtra]);
+	}, [filterOptions, solveUpdate, extraDailyCounts]);
 
-	const streak = useMemo(() => getSolveStreak(filterOptions, roomExtra), [filterOptions, solveUpdate, roomExtra]);
+	const streak = useMemo(() => getSolveStreak(filterOptions, extraDailyCounts), [filterOptions, solveUpdate, extraDailyCounts]);
 
 	return (
 		<div className={b()}>

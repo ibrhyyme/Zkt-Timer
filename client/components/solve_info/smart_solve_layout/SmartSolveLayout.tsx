@@ -40,7 +40,6 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 
 	const rawTime = solve.raw_time;
 	const smartTurnCount = solve.smart_turn_count;
-	const smartInspectionTime = solve.inspection_time;
 	const tps = (smartTurnCount / rawTime).toFixed(2);
 
 	const scramble = solve.scramble;
@@ -165,11 +164,15 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 			</div>
 
 			<div className={bs('summary-cards')}>
+				{/* A screenshot of just this row now already contains the time. It used to
+				    be inspection time here, which duplicated the big <h2> above for little
+				    reason. Reuses the same `time` string the header already shows, so it
+				    respects +2/DNF exactly the same way. */}
 				<div className={bs('card')}>
-					<h4>{smartInspectionTime ? smartInspectionTime + 's' : '-'}</h4>
+					<h4>{time}</h4>
 					<div className={bs('card-label')}>
 						<Timer />
-						<span>{t('solve_info.inspection')}</span>
+						<span>{t('solve_info.time_label')}</span>
 					</div>
 				</div>
 				<div className={bs('card')}>

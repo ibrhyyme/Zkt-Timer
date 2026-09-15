@@ -165,6 +165,95 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 	);
 }
 
+// --- Decimal ---
+
+interface TimerSettingsDecimalProps {
+	label: string;
+	description?: string;
+	value: number;
+	step: number;
+	min: number;
+	max: number;
+	decimals: number;
+	hidden?: boolean;
+	/** Turns whatever was typed (or nudged) into a valid value; only its result is committed. */
+	normalize: (raw: unknown) => number;
+	onChange: (val: number) => void;
+}
+
+/**
+ * A number the user can type, for values too fine to reach with +/- alone: a 0.01 step
+ * over several seconds is hundreds of taps. The buttons stay for nudging. Like
+ * TimerSettingsText, typing is held locally and committed on blur or Enter, since every
+ * commit rewrites the whole platform prefs blob.
+ */
+export function TimerSettingsDecimal({ label, description, value, step, min, max, decimals, hidden, normalize, onChange }: TimerSettingsDecimalProps) {
+	const [draft, setDraft] = useState('');
+	const [focused, setFocused] = useState(false);
+
+	if (hidden) return null;
+
+	const current = normalize(value);
+	const shown = focused ? draft : current.toFixed(decimals);
+	const scale = Math.pow(10, decimals);
+
+	const commit = () => {
+		setFocused(false);
+		// An emptied field keeps the old value rather than silently becoming 0
+		if (!draft.trim()) return;
+		const next = normalize(draft);
+		if (next !== current) onChange(next);
+	};
+
+	const nudge = (direction: 1 | -1) => {
+		const next = normalize(Math.round((current + direction * step) * scale) / scale);
+		if (next !== current) onChange(next);
+	};
+
+	const buttonClass = (disabled: boolean) =>
+		`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${disabled
+			? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
+			: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
+		}`;
+
+	return (
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
+			<div className="flex flex-col mr-4">
+				<span className="font-medium text-text transition-colors">
+					{label}
+				</span>
+				{description && (
+					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
+				)}
+			</div>
+			<div className="flex items-center space-x-2 shrink-0">
+				<button type="button" onClick={() => nudge(-1)} disabled={current <= min} className={buttonClass(current <= min)}>
+					<Minus weight="bold" size={12} />
+				</button>
+				<input
+					type="text"
+					inputMode="decimal"
+					value={shown}
+					aria-label={label}
+					onFocus={() => {
+						setDraft(current.toFixed(decimals));
+						setFocused(true);
+					}}
+					onChange={(e) => setDraft(e.target.value)}
+					onBlur={commit}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+					}}
+					className="w-16 px-2 py-1 rounded-lg bg-button border border-text/[0.1] text-sm font-medium text-primary text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
+				/>
+				<button type="button" onClick={() => nudge(1)} disabled={current >= max} className={buttonClass(current >= max)}>
+					<Plus weight="bold" size={12} />
+				</button>
+			</div>
+		</div>
+	);
+}
+
 // --- Select ---
 
 interface TimerSettingsSelectProps {

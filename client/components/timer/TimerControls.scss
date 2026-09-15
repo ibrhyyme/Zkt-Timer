@@ -26,4 +26,15 @@
     &__right {
         flex-shrink: 0;
     }
+
+    // Prev/Next are icon-only "transparent" buttons on mobile (Button.scss's base
+    // height is 38px, under the ~44px touch-target guideline) sitting right below
+    // the smart cube grid, which can crowd them (see .mobile-smart-grid). Padding
+    // grows the tappable box; the icon itself stays the same visual size, and since
+    // the "transparent" theme has no visible fill, the bigger box does not look any
+    // bigger on screen.
+    &--mobile &__right .zt-common-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }

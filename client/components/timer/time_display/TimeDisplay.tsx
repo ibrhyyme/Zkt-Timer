@@ -9,6 +9,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
 import { virtualCubeSelected } from '../helpers/virtual_cube';
 import { getSmartSolveEndTime, getTimerEndFinalTime } from '../helpers/events';
+import { applySmartCubeTimeOffset, getSmartCubeTimeOffset } from '../helpers/smart_time_offset';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -24,6 +25,16 @@ import OfflineModeIndicator from './OfflineModeIndicator';
 
 const b = block('time-display');
 const bi = block('timer-bottom-info');
+
+/**
+ * The BLE layer's early freeze (setSmartSolveEndTime), with the smart cube time offset
+ * added the same way endTimer adds it. Only the smart cube sets that freeze, so the
+ * offset always applies here. Without it the digits would show the bare time at the
+ * stop and then jump when the saved, offset one arrived.
+ */
+function smartFrozenSeconds(measuredSeconds: number): number {
+	return applySmartCubeTimeOffset(measuredSeconds * 1000, getSmartCubeTimeOffset()) / 1000;
+}
 
 /**
  * The smart cube line under the digits: scramble the cube, or turn it to start.
@@ -103,7 +114,7 @@ export default function TimeDisplay() {
 			if (solveEnd !== null && solveEnd > 0 && timeStartedAt) {
 				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
 				if (frozenTime > 0) {
-					setTime(frozenTime);
+					setTime(smartFrozenSeconds(frozenTime));
 					// Interval'ı durdur — artık ticking gereksiz
 					if (timerCounter.current) {
 						clearInterval(timerCounter.current);
@@ -196,7 +207,7 @@ export default function TimeDisplay() {
 			if (solveEnd !== null && solveEnd > 0) {
 				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
 				if (frozenTime > 0) {
-					setTime(frozenTime);
+					setTime(smartFrozenSeconds(frozenTime));
 					return;
 				}
 			}

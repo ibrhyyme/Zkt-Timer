@@ -15,6 +15,7 @@ import { useInput } from '../../../util/hooks/useInput';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
 import { shareContent } from '../../../util/native-plugins';
+import { generateSolvesStatsText } from '../../../util/average_text';
 import { getApiBase } from '../../../util/api-base';
 import { canReadSync } from '../../../lib/sync-gate';
 import { useMe } from '../../../util/hooks/useMe';
@@ -44,9 +45,15 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 
 	function handleShare() {
 		const solveUrl = getApiBase() + '/solve/' + solve.share_code;
+		// "Linki Paylas" already covers the link-only case, so Gonder shares the same
+		// stats text "Stats olarak goruntule" shows below (generateSolvesStatsText),
+		// otherwise the two buttons did the exact same thing. url travels alongside
+		// text: shareContent forwards it as its own field to the native Share plugin,
+		// and the Web Share API fallback accepts both together too.
+		const statsText = generateSolvesStatsText(t, t('solve_info.single_solve'), solve.time, [solve], true);
 		shareContent({
 			title: `${cubeTypeInfo.name} - ${time} | Zkt Timer`,
-			text: `⚡ ${time} on ${cubeTypeInfo.name} — solved on Zkt Timer`,
+			text: statsText,
 			url: solveUrl,
 		});
 	}

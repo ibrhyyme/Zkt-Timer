@@ -39,6 +39,14 @@ export interface AllSettings {
 	// Local
 	haptic_feedback: boolean;
 	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual';
+	/**
+	 * Hold a keyboard Space release back for a moment, so a remote desktop or streaming
+	 * tool that forwards a held key's auto-repeat as keyup + keydown pairs cannot start
+	 * and stop the timer by itself. Off by default because it delays every start. A
+	 * platform setting (prefs blob), so no schema change. See
+	 * components/timer/helpers/key_release.ts.
+	 */
+	remote_input_compat: boolean;
 
 	// Virtual cube (cstimer's vrc* options). All platform settings, so they live
 	// in the desktop_prefs / mobile_prefs blob and need no schema change.
@@ -85,6 +93,14 @@ export interface AllSettings {
 	scramble_click_action: 'none' | 'copy' | 'next';
 	scramble_color_neutral: 'none' | 'dual' | 'six';
 	highlight_pbs: 'off' | 'color' | 'bold';
+	/**
+	 * Solve list colours (Appearance > Lists), RGB triplets like the theme colours. Null
+	 * follows the theme: the list keeps the secondary colour for a time and the primary
+	 * colour for a PB, which is what it always used. Platform settings (prefs blob), so
+	 * no schema change. Applied as CSS variables by components/layout/themes.ts.
+	 */
+	solve_time_color: string | null;
+	solve_pb_color: string | null;
 	inspection_except_bld: boolean;
 	// Manual phase splitting on the keyboard/touch timer. 1 = off, 2-6 = number of
 	// phases the solve is split into. See shared/util/solve/multiphase.ts.
@@ -103,6 +119,13 @@ export interface AllSettings {
 	 * attempt. cstimer ships the same heuristic the same way.
 	 */
 	smart_cube_move_order_fix: boolean;
+	/**
+	 * Seconds added to every smart cube solve ("İlave süre", 0 to 5 in hundredths), for
+	 * users who do not trust the cube's own stop. Not a penalty and not stored anywhere
+	 * else: the recorded time simply includes it. A platform setting, so no schema
+	 * change. See components/timer/helpers/smart_time_offset.ts.
+	 */
+	smart_cube_time_offset: number;
 
 	// Streamer Mode: mirror only the time display (scaleX(-1)) so a streamer's
 	// front camera flips it back to readable. Gated to admin + one streamer in UI.
@@ -141,6 +164,7 @@ const defaultSettings: AllSettings = {
 
 	haptic_feedback: true,
 	timer_type: 'keyboard',
+	remote_input_compat: false,
 	timer_module_count: 3,
 	timer_layout: 'bottom',
 	stackmat_id: '',
@@ -198,6 +222,8 @@ const defaultSettings: AllSettings = {
 	scramble_click_action: 'none',
 	scramble_color_neutral: 'none',
 	highlight_pbs: 'color',
+	solve_time_color: null,
+	solve_pb_color: null,
 	inspection_except_bld: false,
 	multi_phase_count: 1,
 	multi_phase_method: 'cfop',
@@ -212,6 +238,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_show_recognition: false,
 	smart_cube_show: true,
 	smart_cube_move_order_fix: false,
+	smart_cube_time_offset: 0,
 	streamer_mode: false,
 
 	timer_scramble_size_user_default: null,

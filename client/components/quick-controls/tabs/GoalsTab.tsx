@@ -10,10 +10,12 @@ import {
 	toggleGoalEnabled,
 	setReminderEnabled,
 	setCountRoomSolves,
+	setCountDeletedSolves,
 } from '../../daily-goal/helpers/storage';
 import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
 import {initPushNotifications} from '../../../util/push-notifications';
-import {Trash, Bell, BellSlash, Target, UsersThree} from 'phosphor-react';
+import {useEventListener} from '../../../util/event_handler';
+import {Trash, Bell, BellSlash, Target, UsersThree, ClockCounterClockwise} from 'phosphor-react';
 
 function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
 	return `${g.cube_type}::${g.scramble_subset ?? ''}`;
@@ -27,6 +29,10 @@ export default function GoalsTab() {
 	// Progress counts today's solves straight from the solve DB during render. A smart
 	// cube solve can finish while this panel is open.
 	useSolveDb();
+	// Goals, the counting toggles and the room-solve cache live outside React and
+	// announce changes with this event: a room cache fetch finishing while the panel is
+	// open, or a goal changed from another component, would otherwise leave it stale.
+	useEventListener('dailyGoalUpdatedEvent', () => refresh());
 
 	const storage = getDailyGoalStorage();
 	const currentKey = `${cubeType}::${scrambleSubset ?? ''}`;
@@ -137,6 +143,46 @@ export default function GoalsTab() {
 						<div
 							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
 								storage.count_room_solves ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+							}`}
+						/>
+					</button>
+				</div>
+			</div>
+
+			{/* Count deleted solves toggle. Same shape as the rooms toggle above, and the same
+			    reach: the daily goal and the activity graph only, never the session or stats. */}
+			<div className="mt-4">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
+						<ClockCounterClockwise
+							size={18}
+							weight={storage.count_deleted_solves ? 'fill' : 'regular'}
+							className={`shrink-0 ${storage.count_deleted_solves ? 'text-primary' : 'text-text/30'}`}
+						/>
+						<div className="flex flex-col min-w-0">
+							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+								{t('quick_controls.count_deleted_solves')}
+							</span>
+							<span className="text-xs text-text mt-0.5">
+								{t('quick_controls.count_deleted_solves_desc')}
+							</span>
+						</div>
+					</div>
+					<button
+						type="button"
+						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+							storage.count_deleted_solves
+								? 'bg-primary border-primary shadow-lg shadow-primary/30'
+								: 'bg-button border-text/[0.1] hover:bg-button'
+						} cursor-pointer`}
+						onClick={() => {
+							setCountDeletedSolves(!storage.count_deleted_solves);
+							refresh();
+						}}
+					>
+						<div
+							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
+								storage.count_deleted_solves ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
 							}`}
 						/>
 					</button>

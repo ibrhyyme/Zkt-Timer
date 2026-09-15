@@ -5,8 +5,8 @@ import block from '../../../styles/bem';
 import { Download } from 'phosphor-react';
 import Button, { CommonType } from '../../common/button/Button';
 import CopyText from '../../common/copy_text/CopyText';
-import dayjs from 'dayjs';
 import { getTimeString } from '../../../util/time';
+import { generateSolvesStatsText } from '../../../util/average_text';
 import Checkbox from '../../common/checkbox/Checkbox';
 import fileDownload from 'js-file-download';
 import { getCubeTypeName } from '../../../util/cubes/util';
@@ -33,7 +33,9 @@ export default function SolvesText(props: Props) {
 	const [includeCubeType, setIncludeCubeType] = useState(false);
 	const [includeNotes, setIncludeNotes] = useState(false);
 
-	function getSolveRows(csv?: boolean) {
+	// CSV export only. The plain-text list below comes from generateSolvesStatsText,
+	// shared with the solve detail card's native share (see NormalSolveLayout.tsx).
+	function getCsvRows() {
 		const lines = [];
 		for (let i = 0; i < solves.length; i += 1) {
 			let index = i;
@@ -50,30 +52,14 @@ export default function SolvesText(props: Props) {
 				time += '+';
 			}
 
-			const parts = [];
-			if (csv) {
-				parts.push(displayIndex);
-			} else {
-				parts.push(displayIndex + '.');
-			}
+			const parts = [displayIndex, time];
 
-			parts.push(time);
+			if (includeScramble) parts.push(solve.scramble);
+			if (includeCubeType) parts.push(cubeType);
+			if (includeDate) parts.push(new Date(solve.ended_at).toLocaleString());
+			if (includeNotes) parts.push(solve.notes);
 
-			const add = [];
-			if (includeScramble) add.push(solve.scramble);
-			if (includeCubeType) add.push(cubeType);
-			if (includeDate) add.push(new Date(solve.ended_at).toLocaleString());
-			if (includeNotes) add.push(solve.notes);
-
-			for (const a of add) {
-				if (!csv) {
-					parts.push('  ');
-				}
-				parts.push(a);
-			}
-
-			const dec = csv ? ',' : ' ';
-			lines.push(parts.join(dec));
+			lines.push(parts.join(','));
 		}
 
 		return lines;
@@ -91,7 +77,7 @@ export default function SolvesText(props: Props) {
 		fileName = fileName.replace(/\s/g, '-');
 		fileName = fileName.toLowerCase();
 
-		const lines = [keys.join(','), ...getSolveRows(true)];
+		const lines = [keys.join(','), ...getCsvRows()];
 
 		const encodedUri = lines.join('\r\n');
 		const filename = `zkttimer_${fileName}.csv`;
@@ -99,25 +85,12 @@ export default function SolvesText(props: Props) {
 		fileDownload(encodedUri, filename);
 	}
 
-	function getSolvesText() {
-		const lines = [];
-		const dateStr = isSingle ? dayjs(solves[0].started_at).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
-		lines.push(t('solve_info.generated_by', { date: dateStr }));
-
-		let desc = description;
-		if (time && getTimeString(time)) {
-			desc += `: ${getTimeString(time)}`;
-		}
-
-		lines.push(desc);
-		lines.push('');
-		lines.push(t('solve_info.solves_colon'));
-		lines.push(...getSolveRows());
-
-		return lines.join('\n');
-	}
-
-	const solvesText = getSolvesText();
+	const solvesText = generateSolvesStatsText(t, description, time, solves, reverseOrder, {
+		includeScramble,
+		includeCubeType,
+		includeDate,
+		includeNotes,
+	});
 
 	return (
 		<div className={b()}>

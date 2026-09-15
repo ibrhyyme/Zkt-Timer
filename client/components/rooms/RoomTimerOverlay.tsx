@@ -138,6 +138,12 @@ export default function RoomTimerOverlay({
     const touchDelayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const inspectionSoundsPlayedRef = useRef<Set<number>>(new Set());
     const isTouchScrollingRef = useRef(false);
+    // True from the touch that stops the timer until every finger is off the screen.
+    // Another finger landing in between must not start priming: after the stop the
+    // submit screen is what normally keeps it from starting a solve, but a new round
+    // resets the overlay to RESTING while fingers can still be down. Same guard as the
+    // main timer's KeyWatcher.
+    const touchStopGuardRef = useRef(false);
 
     // Keep statusRef in sync and broadcast status changes
     useEffect(() => {
@@ -963,9 +969,14 @@ export default function RoomTimerOverlay({
             // If timer is running, stop immediately (no delay needed)
             if (currentStatus === STATUS.TIMING) {
                 if (e.cancelable) e.preventDefault();
+                touchStopGuardRef.current = true;
                 simulateSpaceDown(eventTs);
                 return;
             }
+
+            // A finger from the gesture that stopped the solve is still down, so this
+            // touch belongs to that gesture and must not prime the next one.
+            if (touchStopGuardRef.current) return;
 
             // For starting timer: Add 300ms delay to allow scrolling
             // This prevents accidental timer starts when user wants to scroll
@@ -1025,6 +1036,10 @@ export default function RoomTimerOverlay({
         };
 
         const handleTouchEnd = (e: TouchEvent) => {
+            // Last finger up: the stopping gesture is over. Cleared ahead of the bails
+            // below, or a release over a button would leave it set and eat the next start.
+            if (e.touches.length === 0) touchStopGuardRef.current = false;
+
             const target = e.target as HTMLElement;
             if (target.closest('button, input, label, textarea, a')) return;
 
@@ -1051,6 +1066,9 @@ export default function RoomTimerOverlay({
         };
 
         const handleTouchCancel = (e: TouchEvent) => {
+            // The OS took the gesture away; nothing says a finger of the stop is still down
+            touchStopGuardRef.current = false;
+
             // Clear delay timeout
             if (touchDelayTimeoutRef.current) {
                 clearTimeout(touchDelayTimeoutRef.current);

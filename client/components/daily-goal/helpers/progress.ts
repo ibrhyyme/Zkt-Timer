@@ -2,6 +2,7 @@ import {fetchSolveCount} from '../../../db/solves/query';
 import {GoalProgress} from '../@types/interfaces';
 import {getGoalForCubeType, getDailyGoalStorage} from './storage';
 import {getRoomCountForBucketToday} from './room-solves';
+import {getDeletedCountForBucketToday} from './deleted-solves';
 
 export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | null): number {
 	const today = new Date();
@@ -14,12 +15,21 @@ export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | 
 		started_at: {$gte: today.getTime()},
 	});
 
+	const storage = getDailyGoalStorage();
+	let count = timerCount;
+
 	// Add Friendly Room solves (DNF excluded server-side) when the user opted in.
-	if (getDailyGoalStorage().count_room_solves) {
-		return timerCount + getRoomCountForBucketToday(cubeType, scrambleSubset);
+	if (storage.count_room_solves) {
+		count += getRoomCountForBucketToday(cubeType, scrambleSubset);
 	}
 
-	return timerCount;
+	// And today's solves that were deleted since, when the user opted in to those. The
+	// query above no longer finds them, so the two never count the same solve.
+	if (storage.count_deleted_solves) {
+		count += getDeletedCountForBucketToday(cubeType, scrambleSubset);
+	}
+
+	return count;
 }
 
 export function getDailyGoalProgress(cubeType: string, scrambleSubset?: string | null): GoalProgress | null {

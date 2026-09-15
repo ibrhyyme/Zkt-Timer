@@ -8,6 +8,12 @@
     text-align: center;
     font-family: monospace; // Hizalama için
     display: block; // Garanti olsun
+    // Purely informational, never interactive. On the mobile smart cube layout this
+    // sits right above the Prev/Next scramble buttons in a tight grid that can spill
+    // past its own box on short screens (see .zt-timer__mobile-smart-grid's z-index
+    // comment). Without this, the overflowing text intercepts taps meant for the
+    // buttons underneath it.
+    pointer-events: none;
 
     &--better {
         color: RGB(var(--success-color)); // Yeşil

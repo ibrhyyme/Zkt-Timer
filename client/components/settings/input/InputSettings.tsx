@@ -26,6 +26,7 @@ import { VIRTUAL_PROGRESS_METHODS } from '../../../../shared/util/solve/virtual_
 import { timerTypeSupportsBucket } from '../../timer/helpers/timer_type_support';
 import { KEYBOARD_LAYOUTS } from '../../../util/virtual_cube/key_mapping';
 import { TIMER_INPUT_TYPE_KEYS, TIMER_INPUT_TYPES } from '../hardware/timer_input_types';
+import { isNative } from '../../../util/platform';
 
 /**
  * cstimer's `vrcSpeed` options. The stored value is the duration of one move in
@@ -53,6 +54,7 @@ export default function InputSettings() {
 	const timerType = useSettings('timer_type');
 	const cubeType = useSettings('cube_type');
 	const scrambleSubset = useSettings('scramble_subset');
+	const remoteInputCompat = useSettings('remote_input_compat');
 
 	// StackMat
 	const stackMatId = useSettings('stackmat_id');
@@ -177,6 +179,15 @@ export default function InputSettings() {
 						value: c,
 					}))}
 					onChange={(v) => setSetting('timer_type', v as AllSettings['timer_type'])}
+				/>
+				<TimerSettingsToggle
+					label={t('timer_settings.remote_input_compat')}
+					description={t('timer_settings.remote_input_compat_desc')}
+					isActive={remoteInputCompat}
+					// Keyboard only, for remote desktop and streaming tools on a computer. The
+					// app has no such tool in front of it, so the row would do nothing there.
+					hidden={isNative()}
+					onClick={() => setSetting('remote_input_compat', !remoteInputCompat)}
 				/>
 				<TimerSettingsAction
 					label={t('timer_settings.cube_types')}

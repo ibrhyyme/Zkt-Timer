@@ -24,6 +24,7 @@ import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
+import { applySmartCubeTimeOffset } from './smart_time_offset';
 
 let endLocked = false;
 
@@ -123,13 +124,25 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
 	hapticImpact('medium');
 
-	const { scramble, timeStartedAt } = context;
-
-	if (endLocked || !timeStartedAt) {
+	if (endLocked || !context.timeStartedAt) {
 		return;
 	}
 
 	endLocked = true;
+
+	// Once the save is scheduled it releases the lock itself (see the finally below).
+	// Until then nothing else would, so a throw on the way there has to.
+	try {
+		stopLockedSolve(context, finalTimeMilli, overrides, endTimestamp);
+	} catch (e) {
+		endLocked = false;
+		throw e;
+	}
+}
+
+function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
+	const { scramble, timeStartedAt } = context;
+
 	let finalTime = finalTimeMilli;
 
 	// Read before the reset below clears it — saveSolve runs on a later tick.
@@ -147,13 +160,22 @@ function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: 
 		finalTime = now - timeStartedAt.getTime();
 	}
 
+	// Smart cube: the user's "İlave süre" goes onto the time before anything shows or
+	// saves it, so the frozen display, the saved solve and every list read the same
+	// number. The measured time is kept for TPS below.
+	const smartSolve = smartCubeSelected(context);
+	const measuredTime = finalTime;
+	if (smartSolve) {
+		finalTime = applySmartCubeTimeOffset(finalTime, getSetting('smart_cube_time_offset'));
+	}
+
 	// Freeze display IMMEDIATELY — don't wait for Redux dispatch and React re-render
 	_timerEndFinalTime = finalTime;
 	window.dispatchEvent(new CustomEvent('timerEndFreeze'));
 
 	// Calculate smart cube stats (before dispatch)
 	let smartStats: { turns: number; tps: number } | null = null;
-	if (smartCubeSelected(context)) {
+	if (smartSolve) {
 		let turnCount = 0;
 
 		// If overrides provided (e.g. from SmartCube auto-finish), use them
@@ -169,7 +191,10 @@ function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: 
 			turnCount = countHTM(solutionTurns.map((t: any) => t.turn));
 		}
 
-		const timeInSeconds = finalTime / 1000;
+		// Over the measured time, not the offset one: TPS is a turning speed, and the
+		// offset is time in which no turn happened. The phase breakdown, built from turn
+		// timestamps, leaves it out for the same reason.
+		const timeInSeconds = measuredTime / 1000;
 		const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
 		smartStats = { turns: turnCount, tps };
 	}
@@ -194,10 +219,8 @@ function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: 
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
 	});
 
-	// Batched for the same reason as endTimer: the scramble swap, the local save and the
-	// session counter would otherwise render one after another. saveSolve still runs in
-	// this tick; only the renders it causes are merged.
-	setTimeout(() => unstable_batchedUpdates(() => {
+	// What the stop still owes once the display is frozen: the next scramble and the save.
+	const finishStop = () => {
 		// If pre-generated scramble exists, swap immediately; otherwise generate synchronously
 		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
 		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
@@ -272,9 +295,21 @@ function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: 
 		}
 
 		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now, false, false, overridesCombined);
+	};
 
-
-		endLocked = false;
+	// Batched for the same reason as endTimer: the scramble swap, the local save and the
+	// session counter would otherwise render one after another. saveSolve still runs in
+	// this tick; only the renders it causes are merged.
+	//
+	// The lock comes off in a finally. If the work above throws (a save that fails, a
+	// scramble that cannot be generated) the error still surfaces, but a lock left set
+	// would refuse every later stop until the page was reloaded.
+	setTimeout(() => unstable_batchedUpdates(() => {
+		try {
+			finishStop();
+		} finally {
+			endLocked = false;
+		}
 	}), 10);
 }
 

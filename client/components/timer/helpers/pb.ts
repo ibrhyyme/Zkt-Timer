@@ -11,21 +11,29 @@ import { hapticNotification, requestInAppReview } from '../../../util/native-plu
 
 let lastConfetti: Date = null;
 
+// Called on every Timer render, so it is a hook in all but name: the listeners below
+// must be registered on every call, which is why `ignorePbEvents` is checked inside
+// them instead of returning early before them.
 export function listenForPbEvents(context: ITimerContext) {
-	if (context.ignorePbEvents) {
-		return;
-	}
+	const ignore = !!context.ignorePbEvents;
 
 	// In case the user doesn't have Quick Stats selected, we need to fetch the single and average PB so that it can be
 	// find in the cache
-	const pbFilter: FilterSolvesOptions = {
-		cube_type: context.cubeType,
-		scramble_subset: context.scrambleSubset ?? null,
-		from_timer: true,
-	};
+	//
+	// Deliberately on every render rather than memoized: checkForPB only compares against
+	// cached entries, and saving a solve drops the avg_pb entry (and the single_pb one on
+	// a new PB), so the warm-up has to run again after each save. When the entry is
+	// still cached these two calls are cache lookups.
+	if (!ignore) {
+		const pbFilter: FilterSolvesOptions = {
+			cube_type: context.cubeType,
+			scramble_subset: context.scrambleSubset ?? null,
+			from_timer: true,
+		};
 
-	getSinglePB(pbFilter);
-	getAveragePB(pbFilter, 5);
+		getSinglePB(pbFilter);
+		getAveragePB(pbFilter, 5);
+	}
 
 	function getPbDisplayName(cubeType: string, scrambleSubset: string | null): string {
 		const displayId = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
@@ -46,6 +54,7 @@ export function listenForPbEvents(context: ITimerContext) {
 	useEventListener(
 		'singlePbEvent',
 		({ cubeType: ct, scrambleSubset }) => {
+			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
 			pbEventCallback(`Yeni ${name} Single PB!`, name);
 		},
@@ -55,6 +64,7 @@ export function listenForPbEvents(context: ITimerContext) {
 	useEventListener(
 		'avgPbEvent',
 		({ cubeType: ct, scrambleSubset }) => {
+			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
 			pbEventCallback(`Yeni ${name} Average of 5 PB!`, name);
 		},
@@ -64,6 +74,7 @@ export function listenForPbEvents(context: ITimerContext) {
 	useEventListener(
 		'singleAndAvgPbEvent',
 		({ cubeType: ct, scrambleSubset }) => {
+			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
 			pbEventCallback(`Yeni ${name} Single ve Average of 5 PB!`, name);
 		},

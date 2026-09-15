@@ -16,6 +16,7 @@ import { fetchSessionById, fetchSessions } from './query';
 import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { generateId } from '../../../shared/code';
+import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
@@ -54,10 +55,13 @@ export async function deleteSessionDb(session: Session) {
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
 
+	// Deleting a session deletes its solves, so they are tallied like any other deletion
+	const removedSolves = solveDb.find({session_id: session.id});
 	sessionDb.remove(session);
 	solveDb.removeWhere({
 		session_id: session.id,
 	});
+	recordDeletedSolves(removedSolves);
 
 	postProcessDbUpdate(session);
 	updateLocalDbOrderValueForAllSessions();
@@ -75,8 +79,10 @@ export async function bulkDeleteSessionsDb(ids: string[]) {
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
 
+	const removedSolves = solveDb.find({session_id: {$in: ids}});
 	sessionDb.removeWhere((s) => ids.includes(s.id));
 	solveDb.removeWhere((s) => ids.includes(s.session_id));
+	recordDeletedSolves(removedSolves);
 
 	const remainingIds = fetchSessions().map((s) => s.id);
 	for (let i = 0; i < remainingIds.length; i += 1) {

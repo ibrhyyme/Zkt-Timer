@@ -116,7 +116,9 @@ export async function setSettings(payload: Partial<AllSettings>) {
 		const value = payload[key];
 
 		const setVal = settingsDb.findOne({id: key});
-		const newVal = {...setVal};
+		// A key with no row yet (a setting added after this device's settings were first
+		// stored) gets a fresh one, which setSettingLocal inserts instead of updating.
+		const newVal: SettingValue = setVal ? {...setVal} : {id: key, local: true, value};
 		newVal.value = value;
 		localSettingUpdates.push(newVal);
 
@@ -149,7 +151,12 @@ function setSettingLocal(setVals: SettingValue[]) {
 	const settingsDb = getSettingsDb();
 
 	for (const setVal of setVals) {
-		settingsDb.update(setVal);
+		// update() throws on a document LokiJS never stored, which is what a new row is
+		if ((setVal as SettingValue & {$loki?: number}).$loki === undefined) {
+			settingsDb.insert(setVal);
+		} else {
+			settingsDb.update(setVal);
+		}
 		setLocalSettingValue(setVal.id as any, setVal.value);
 	}
 }

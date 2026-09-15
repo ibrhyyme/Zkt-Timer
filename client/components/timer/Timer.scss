@@ -762,6 +762,13 @@ body.timer-immersive-bg {
 		box-sizing: border-box;
 		position: relative;
 		z-index: 50;
+		// Cube + digits + SolveDiff can exceed the 32vh cap on a short phone; since
+		// overflow is visible, that overflow renders below this box's own edge,
+		// right where TimerControls' Prev/Next buttons sit next (0.5rem flex gap
+		// away). This adds clearance on top of that gap so the overflow has room to
+		// end before reaching the buttons, without touching the 32vh cap itself
+		// (raising that would crush the dashboard below, per the comment above).
+		margin-bottom: 0.5rem;
 	}
 
 	&__mobile-smart-grid-left {

@@ -32,6 +32,13 @@
 	}
 
 	&--mobile {
+		// Rows sit flush against each other, and react-list's "uniform" virtualization
+		// (see History.tsx) relies on every row reporting the same height, so this has
+		// to be a real height change, not a margin/gap that would desync its scroll
+		// math. 40px left the delete button's touch target only a handful of px from
+		// the row above/below; taller rows give the enlarged target below room to sit
+		// inside its own row without reaching into the next one.
+		height: 48px;
 		font-size: clamp(0.85rem, 2.5vw, 0.95rem);
 
 		>div {
@@ -102,8 +109,22 @@
 		}
 	}
 
+	// Mobile only shows this one delete button (no +2/DNF, see HistorySolveRow.tsx),
+	// and it is the button users mis-tap into the neighbouring row. The base 26px
+	// tall / icon-width-only box is a precise-pointer size; this grows it toward a
+	// real touch target while staying under the 48px mobile row height above, so it
+	// never reaches into the row above or below.
+	&--mobile &__action--remove {
+		min-width: 44px !important;
+		min-height: 40px !important;
+		padding: 0 12px !important;
+	}
+
 	&__time {
-		color: rgb(var(--secondary-color)) !important;
+		// Appearance > Lists can override both list colours. The variables exist only
+		// while an override is set (themes.ts), so unset they fall back to the theme's
+		// secondary / primary colour, as before.
+		color: rgb(var(--solve-time-color, var(--secondary-color))) !important;
 		font-weight: 600;
 		display: flex;
 		flex-direction: row;
@@ -133,7 +154,7 @@
 		}
 
 		&--pbColor {
-			color: rgb(var(--primary-color)) !important;
+			color: rgb(var(--solve-pb-color, var(--primary-color))) !important;
 		}
 
 		&--pbBold {

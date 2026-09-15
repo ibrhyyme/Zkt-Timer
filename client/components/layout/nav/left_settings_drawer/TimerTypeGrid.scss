@@ -142,9 +142,18 @@
 	// Extras/Hedefler ortak kapsayici — SABIT en + boy: sekme degisince panel
 	// boyutu birebir ayni kalir (kullanici sarti) ve EdgeDrawer'in icerik-boyut
 	// degisimine bagli reposition (ResizeObserver) mantigi tetiklenmez.
+	//
+	// width WAS a literal 248px, copied from __grid's own max-width instead of its
+	// content-box. __grid is box-sizing:border-box with 12px padding + 1px border
+	// per side, so its content-box is ~26px narrower than 248px. This child then
+	// rendered 26px wider than the space it had, and every row inside it poked
+	// past the panel's rounded edge. 100% fills whatever content-box __grid
+	// actually resolves to (still a single fixed value per render, so the
+	// "size does not change between tabs" contract above still holds).
 	&__extras-content {
 		grid-column: 1 / -1;
-		width: 248px;
+		width: 100%;
+		box-sizing: border-box;
 		height: min(440px, calc(100vh - 200px));
 		display: flex;
 		flex-direction: column;

@@ -367,10 +367,9 @@ export default function Sessions() {
 		);
 	}, [pendingBulkDelete]);
 
-	if (!session || !allSessions || !allSessions.length) {
-		return null;
-	}
-
+	// Above the early return: hooks have to run on every render, and a render that finds
+	// no session (an empty session list) used to skip these. getCubeBucketsFromSession
+	// returns [] for a missing session.
 	const sessionBuckets = useMemo(() => getCubeBucketsFromSession(session), [session]);
 	const defaultBucket = cubeType ? null : (session ? fetchLastBucketForSession(session.id) : null);
 	const currentCube = String(cubeType || defaultBucket?.cube_type || '333');
@@ -380,6 +379,10 @@ export default function Sessions() {
 		() => getSubsetsForBuckets(currentCube, sessionBuckets),
 		[currentCube, sessionBuckets]
 	);
+
+	if (!session || !allSessions || !allSessions.length) {
+		return null;
+	}
 
 	const fetchFilter: Record<string, any> = {
 		session_id: selectedSessionId,

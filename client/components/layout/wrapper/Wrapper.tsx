@@ -30,6 +30,8 @@ export default function Wrapper(props: Props) {
 	const moduleColor = useSettings('module_color');
 	const buttonColor = useSettings('button_color');
 	const textColor = useSettings('text_color');
+	const solveTimeColor = useSettings('solve_time_color');
+	const solvePbColor = useSettings('solve_pb_color');
 
 	useEffect(() => {
 		if (!appLoaded || typeof document === 'undefined') {
@@ -37,7 +39,7 @@ export default function Wrapper(props: Props) {
 		}
 
 		updateThemeColors();
-	}, [appLoaded, buttonColor, primaryColor, secondaryColor, backgroundColor, moduleColor, textColor]);
+	}, [appLoaded, buttonColor, primaryColor, secondaryColor, backgroundColor, moduleColor, textColor, solveTimeColor, solvePbColor]);
 
 	let headerNav = <HeaderNav />;
 	if (hideTopNav) {

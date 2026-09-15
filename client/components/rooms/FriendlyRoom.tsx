@@ -55,6 +55,7 @@ import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { useNormalizeTimerType } from '../timer/helpers/timer_type_support';
 import { setTimerParams } from '../timer/helpers/params';
+import { applySmartCubeTimeOffset, getSmartCubeTimeOffset } from '../timer/helpers/smart_time_offset';
 import { SmartTurn } from '../../util/smart_scramble';
 import { SmartSolveEngine, SmartEngineEvent } from '../../util/smart_cube';
 import { recordEngineEvent } from '../../util/smart_cube/telemetry';
@@ -715,9 +716,13 @@ function FriendlyRoomContent() {
                 }
                 // timeMs is already corrected for BLE lag and stamped from the cube's own
                 // clock, so a late detection no longer inflates the displayed time.
-                setSmartFinalTime(result.timeMs);
+                // The user's smart cube time offset goes on here, as on the timer page:
+                // the review screen shows this value and the submit sends it, so the time
+                // shown is the time recorded.
+                setSmartFinalTime(applySmartCubeTimeOffset(result.timeMs, getSmartCubeTimeOffset()));
                 // HTM, same metric the timer page shows. Raw turn count read higher here and
                 // made the same solve look faster in a room than on the timer.
+                // TPS stays the engine's, over the measured time, as on the timer page.
                 setSmartStats({ turns: result.htmCount, tps: result.tps });
                 setSmartReviewing(true);
                 if (needsCubeReset) setNeedsCubeReset(false);

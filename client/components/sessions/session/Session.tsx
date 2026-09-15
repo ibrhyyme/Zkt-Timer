@@ -7,6 +7,7 @@ import block from '../../../styles/bem';
 import { reactState } from '../../../@types/react';
 import { fetchSessionSummary } from '../../../db/solves/query';
 import { getTimeString } from '../../../util/time';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
 
 const b = block('session-row');
 
@@ -28,16 +29,16 @@ export default function Session(props: Props) {
 	// A session row used to show only its name and creation date. What you
 	// actually need when choosing one is how much is in it and how it is going,
 	// so the row now carries count, best and mean.
-	const [summary, setSummary] = React.useState(() => fetchSessionSummary(session.id));
-
-	React.useEffect(() => {
-		const refresh = () => setSummary(fetchSessionSummary(session.id));
-		refresh();
-		// The local solve DB is event-driven; without this the numbers would go
-		// stale the moment a solve is added or deleted.
-		window.addEventListener('solveDbUpdatedEvent', refresh);
-		return () => window.removeEventListener('solveDbUpdatedEvent', refresh);
-	}, [session.id]);
+	//
+	// Recomputed whenever the local solve DB changes, or the numbers go stale the moment
+	// a solve is added or deleted. solveDbUpdatedEvent goes through the app's own emitter
+	// (util/event_handler), never `window`, so the counter DataProvider derives from it
+	// is the subscription; a window listener here never fired.
+	const solveDbChange = useSolveDb();
+	const summary = React.useMemo(
+		() => fetchSessionSummary(session.id),
+		[session.id, solveDbChange]
+	);
 
 	return (
 		<div

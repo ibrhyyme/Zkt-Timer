@@ -7,12 +7,15 @@ const timers = {
 	inspectionInterval: null,
 	startTimeout: null,
 	inspectionGracePeriod: null,
+	releaseGrace: null,
 	timer: null,
 };
 
 export const NOTIFICATION_TIMEOUT = 'notificationTimeout';
 export const START_TIMEOUT = 'startTimeout';
 export const INSPECTION_GRACE_PERIOD_TIMEOUT = 'inspectionGracePeriod';
+// A Space release held back by the remote-input compatibility setting, see key_release.ts
+export const RELEASE_GRACE_TIMEOUT = 'releaseGrace';
 export const INSPECTION_TIMEOUT = 'inspectionTimeout';
 export const INSPECTION_INTERVAL = 'inspectionInterval';
 

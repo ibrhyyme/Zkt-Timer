@@ -16,7 +16,15 @@ import {
 	TimerSettingsToggle,
 	TimerSettingsSelect,
 	TimerSettingsSlider,
+	TimerSettingsDecimal,
 } from '../timer/TimerSettingsRow';
+import {
+	normalizeSmartCubeTimeOffset,
+	SMART_CUBE_TIME_OFFSET_DECIMALS,
+	SMART_CUBE_TIME_OFFSET_MAX,
+	SMART_CUBE_TIME_OFFSET_MIN,
+	SMART_CUBE_TIME_OFFSET_STEP,
+} from '../../timer/helpers/smart_time_offset';
 
 export default function SmartCubeSettings() {
 	const { t } = useTranslation();
@@ -31,6 +39,7 @@ export default function SmartCubeSettings() {
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
+	const smartCubeTimeOffset = useSettings('smart_cube_time_offset');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
 	const solveMethod = smartCubeMethod || 'auto';
@@ -139,6 +148,17 @@ export default function SmartCubeSettings() {
 					description={t('timer_settings.smart_cube_move_order_fix_desc')}
 					isActive={smartCubeMoveOrderFix}
 					onClick={() => updateSetting('smart_cube_move_order_fix', !smartCubeMoveOrderFix)}
+				/>
+				<TimerSettingsDecimal
+					label={t('timer_settings.smart_cube_time_offset')}
+					description={t('timer_settings.smart_cube_time_offset_desc')}
+					value={smartCubeTimeOffset}
+					step={SMART_CUBE_TIME_OFFSET_STEP}
+					min={SMART_CUBE_TIME_OFFSET_MIN}
+					max={SMART_CUBE_TIME_OFFSET_MAX}
+					decimals={SMART_CUBE_TIME_OFFSET_DECIMALS}
+					normalize={normalizeSmartCubeTimeOffset}
+					onChange={(v) => updateSetting('smart_cube_time_offset', v)}
 				/>
 			</TimerSettingsGroup>
 		</div>

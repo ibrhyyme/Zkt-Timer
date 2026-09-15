@@ -6,6 +6,7 @@ import TimerBackground from './timer_background/TimerBackground';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import ThemeOptions from './theme_options/ThemeOptions';
+import SolveListColors from './solve_list_colors/SolveListColors';
 import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { useMe } from '../../../util/hooks/useMe';
@@ -152,6 +153,11 @@ export default function Appearance() {
 						{ label: t('appearance.highlight_bold'), value: 'bold' },
 					]}
 					onChange={(v) => updateSetting('highlight_pbs', v)}
+				/>
+				<SolveListColors
+					label={t('appearance.solve_colors')}
+					description={t('appearance.solve_colors_desc')}
+					showPb={highlightPbs === 'color'}
 				/>
 				<TimerSettingsToggle
 					label={t('appearance.streamer_mode')}
