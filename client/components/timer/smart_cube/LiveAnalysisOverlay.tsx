@@ -5,6 +5,7 @@ import { useLiveAnalysis } from '../../../util/hooks/useLiveAnalysis';
 import './LiveAnalysisOverlay.scss';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import { is3x3CubeType } from '../helpers/util';
 import { getTimeString } from '../../../util/time';
 import { resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
@@ -46,7 +47,9 @@ function phaseIdToStepKey(id: string): string | null {
 
 export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
     const { t: tr } = useTranslation();
-    const { smartTurns, timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
+    const { timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
+    // Per-move, so not in TimerContext (see FAST_TIMER_FIELDS).
+    const smartTurns = useTimerStore('smartTurns');
     const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
     // On mobile, cffffoopp wraps to 11 lines — not ideal. Fallback to cffffop (7 lines).
     const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;

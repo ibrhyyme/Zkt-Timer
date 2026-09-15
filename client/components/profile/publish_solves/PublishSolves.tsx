@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import {useMe} from '../../../util/hooks/useMe';
+import {useSolveDb} from '../../../util/hooks/useSolveDb';
 import {getSinglePB} from '../../../db/solves/stats/solves/single/single_pb';
 import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
 import {IModalProps} from '../../common/modal/Modal';
@@ -21,6 +22,9 @@ const b = block('publish-solves');
 export default function PublishSolves(props: IModalProps) {
 	const { t } = useTranslation();
 	const {onComplete} = props;
+
+	// The rows below are read from the solve DB during render.
+	useSolveDb();
 
 	// For cube_type='wca' bucket, subset is required (cube-subset-bucket rule).
 	// Records with subset=null from the old system should not appear in the publish list.

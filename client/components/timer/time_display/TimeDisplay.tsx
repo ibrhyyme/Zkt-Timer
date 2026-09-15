@@ -12,6 +12,7 @@ import { getSmartSolveEndTime, getTimerEndFinalTime } from '../helpers/events';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import { onVisibilityChange } from '../../../util/app-visibility';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
@@ -24,6 +25,26 @@ import OfflineModeIndicator from './OfflineModeIndicator';
 const b = block('time-display');
 const bi = block('timer-bottom-info');
 
+/**
+ * The smart cube line under the digits: scramble the cube, or turn it to start.
+ *
+ * A component of its own because it is the only part of the display that depends on
+ * every move; reading the turn list in TimeDisplay would re-render the whole display on
+ * each turn.
+ */
+function SmartStartHint({ scramble }: { scramble: string }) {
+	const {t} = useTranslation();
+	const smartTurns = useTimerStore('smartTurns');
+
+	return (
+		<StartInstructions>
+			{preflightChecks(smartTurns, scramble)
+				? t('time_display.turn_smart_cube_to_start')
+				: t('time_display.scramble_smart_cube_to_start')}
+		</StartInstructions>
+	);
+}
+
 export default function TimeDisplay() {
 	const {t} = useTranslation();
 	const context = useContext(TimerContext);
@@ -35,7 +56,6 @@ export default function TimeDisplay() {
 		disabled,
 		hideTime,
 		canStart,
-		smartTurns,
 		scramble,
 		dnfTime,
 		subTimerActions,
@@ -44,9 +64,11 @@ export default function TimeDisplay() {
 		timeStartedAt,
 		spaceTimerStarted,
 		inInspection,
-		inspectionTimer,
 		matchMode,
 	} = context;
+	// Ticks every 100 ms during inspection, so it is not in TimerContext (see
+	// FAST_TIMER_FIELDS). Only this display shows it.
+	const inspectionTimer = useTimerStore('inspectionTimer');
 
 	const inspectionOn = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
@@ -263,18 +285,8 @@ export default function TimeDisplay() {
 					{t('smart_cube.solve_cube_to_start')}
 				</StartInstructions>
 			);
-		} else if (preflightChecks(smartTurns, scramble)) {
-			bottomInfo = (
-				<StartInstructions>
-					{t('time_display.turn_smart_cube_to_start')}
-				</StartInstructions>
-			);
 		} else {
-			bottomInfo = (
-				<StartInstructions>
-					{t('time_display.scramble_smart_cube_to_start')}
-				</StartInstructions>
-			);
+			bottomInfo = <SmartStartHint scramble={scramble} />;
 		}
 	}
 

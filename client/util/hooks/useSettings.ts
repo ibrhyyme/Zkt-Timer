@@ -1,8 +1,8 @@
 import {AllSettings, getSetting} from '../../db/settings/query';
-import {useDataContext} from '../../providers/DataProvider';
+import {useSettingsChangeCounter} from '../../providers/DataProvider';
 
 export function useSettings<T extends keyof AllSettings>(key: T): AllSettings[T] {
-	const { settingsChangeCounter } = useDataContext();
+	const settingsChangeCounter = useSettingsChangeCounter();
 	const value = getSetting(key);
 	
 	// Re-render when settings change (via global context)

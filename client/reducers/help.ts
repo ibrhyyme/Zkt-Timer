@@ -1,3 +1,5 @@
+import {withDefaults} from './with_defaults';
+
 const initialState = {
 	openCategory: null,
 	selectedHelpPage: null,
@@ -25,10 +27,7 @@ export default (state = initialState, action) => {
 		}
 
 		default: {
-			return {
-				...initialState,
-				...state,
-			};
+			return withDefaults(state, initialState);
 		}
 	}
 };

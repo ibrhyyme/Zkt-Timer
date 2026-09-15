@@ -6,6 +6,7 @@ import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useLatestSolve } from '../../util/hooks/useLatestSolve';
+import { useHasSmartTurns } from '../../util/hooks/useTimerStore';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
 import { setTimerParam } from './helpers/params';
@@ -30,14 +31,17 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartTurns, smartCubeConnected } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartCubeConnected } = context;
     const isSmart = smartCubeSelected(context);
+    // The turn list is not in TimerContext (see FAST_TIMER_FIELDS); only whether it is
+    // empty matters here, and that does not change on every move.
+    const hasSmartTurns = useHasSmartTurns();
     // Locking scramble navigation only makes sense once moves have actually been
     // applied to a connected cube — changing the scramble then would leave the
     // physical cube and the screen describing different states. With no cube on
     // the other end there is nothing to contradict, and a stale turn list left
     // over from an earlier connection must not keep the buttons dead.
-    const isSmartScrambling = isSmart && !!smartCubeConnected && smartTurns && smartTurns.length > 0 && !timeStartedAt;
+    const isSmartScrambling = isSmart && !!smartCubeConnected && hasSmartTurns && !timeStartedAt;
 
     // Scramble history state
     const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);

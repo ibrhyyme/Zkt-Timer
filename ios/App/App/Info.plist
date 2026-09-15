@@ -66,5 +66,9 @@
 	<string>Zkt Timer needs Bluetooth to communicate with smart cubes.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Zkt Timer adds competitions you choose to your calendar. It never reads your existing events.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Zkt Timer uses the camera only when you choose to take a photo or video to attach to a support request.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Zkt Timer uses the microphone to read a StackMat timer and to record sound in videos you attach to a support request.</string>
 </dict>
 </plist>

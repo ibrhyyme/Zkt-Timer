@@ -145,6 +145,13 @@ export interface ScramblePrefix {
 	 * the cube but the second is not.
 	 */
 	partial: boolean;
+	/**
+	 * Set when the move AFTER the one at `done` is already on the cube, turned first because
+	 * the two sit on opposite faces (R and L, U and D, F and B) and either order gives the
+	 * same cube. 'full' when it is finished, 'half' when only the first quarter of a double
+	 * is on. The move at `done` is still the one the user is on.
+	 */
+	early?: 'full' | 'half';
 }
 
 /**
@@ -184,7 +191,19 @@ export function prefixStatesFrom(targetFacelets: string, moves: string[]): Scram
 			if (next && areOppositeFaces(move, next)) {
 				const early = Cube.fromString(cube.asString());
 				early.move(next);
-				states.push({ state: early.asString(), done: index, partial: false });
+				states.push({ state: early.asString(), done: index, partial: false, early: 'full' });
+
+				// The same early move when it is a double and only its first quarter is on,
+				// started from either direction. Without these, the quarter read as a mistake
+				// until the second one landed.
+				if (next.endsWith('2')) {
+					const face = next.slice(0, -1);
+					for (const quarter of [face, invertMove(face)]) {
+						const half = Cube.fromString(cube.asString());
+						half.move(quarter);
+						states.push({ state: half.asString(), done: index, partial: false, early: 'half' });
+					}
+				}
 			}
 
 			if (move.endsWith('2')) {

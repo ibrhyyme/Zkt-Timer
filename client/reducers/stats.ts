@@ -1,4 +1,5 @@
 import {StatsModule, StatsModuleBlock} from '../../server/schemas/StatsModule.schema';
+import {withDefaults} from './with_defaults';
 
 function statsModuleBlock(
 	statType: StatsModuleBlock['statType'],
@@ -86,10 +87,7 @@ export default (state = initialState, action) => {
 		}
 
 		default: {
-			return {
-				...initialState,
-				...state,
-			};
+			return withDefaults(state, initialState);
 		}
 	}
 };

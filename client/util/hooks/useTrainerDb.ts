@@ -1,7 +1,7 @@
-import {useDataContext} from '../../providers/DataProvider';
+import {useTrainerDbChangeCounter} from '../../providers/DataProvider';
 
 export function useTrainerDb() {
-	const { trainerDbChangeCounter } = useDataContext();
+	const trainerDbChangeCounter = useTrainerDbChangeCounter();
 
 	return trainerDbChangeCounter;
 }

@@ -3,22 +3,27 @@ import { useSelector } from 'react-redux';
 import { useEventListener } from '../util/event_handler';
 import { startActivityHeartbeat, stopActivityHeartbeat } from '../util/activity-heartbeat';
 
-interface DataContextType {
-	settingsChangeCounter: number;
-	solveDbChangeCounter: number;
-	sessionDbChangeCounter: number;
-	trainerDbChangeCounter: number;
+// One context per counter, each holding a bare number. When all four shared one
+// context object, saving a solve re-rendered every component that reads a setting.
+const SettingsChangeContext = createContext(0);
+const SolveDbChangeContext = createContext(0);
+const SessionDbChangeContext = createContext(0);
+const TrainerDbChangeContext = createContext(0);
+
+export function useSettingsChangeCounter(): number {
+	return useContext(SettingsChangeContext);
 }
 
-const DataContext = createContext<DataContextType>({
-	settingsChangeCounter: 0,
-	solveDbChangeCounter: 0,
-	sessionDbChangeCounter: 0,
-	trainerDbChangeCounter: 0,
-});
+export function useSolveDbChangeCounter(): number {
+	return useContext(SolveDbChangeContext);
+}
 
-export function useDataContext() {
-	return useContext(DataContext);
+export function useSessionDbChangeCounter(): number {
+	return useContext(SessionDbChangeContext);
+}
+
+export function useTrainerDbChangeCounter(): number {
+	return useContext(TrainerDbChangeContext);
 }
 
 interface DataProviderProps {
@@ -60,16 +65,15 @@ export function DataProvider({ children }: DataProviderProps) {
 		return () => stopActivityHeartbeat();
 	}, [meId]);
 
-	const value: DataContextType = {
-		settingsChangeCounter,
-		solveDbChangeCounter,
-		sessionDbChangeCounter,
-		trainerDbChangeCounter,
-	};
-
 	return (
-		<DataContext.Provider value={value}>
-			{children}
-		</DataContext.Provider>
+		<SettingsChangeContext.Provider value={settingsChangeCounter}>
+			<SolveDbChangeContext.Provider value={solveDbChangeCounter}>
+				<SessionDbChangeContext.Provider value={sessionDbChangeCounter}>
+					<TrainerDbChangeContext.Provider value={trainerDbChangeCounter}>
+						{children}
+					</TrainerDbChangeContext.Provider>
+				</SessionDbChangeContext.Provider>
+			</SolveDbChangeContext.Provider>
+		</SettingsChangeContext.Provider>
 	);
 }

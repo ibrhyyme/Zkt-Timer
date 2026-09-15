@@ -1,3 +1,4 @@
+import { unstable_batchedUpdates } from 'react-dom';
 import { setTimerParams } from './params';
 import {
 	setTimer,
@@ -106,7 +107,20 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 	}
 }
 
+/**
+ * Stops the running solve, with everything it changes landing in a single render.
+ *
+ * React 17 batches state updates only inside its own event handlers, and the callers
+ * here sit outside them: window key/touch listeners, hardware timer and BLE callbacks,
+ * timers. Unbatched, the display freeze, the inspection reset and the timer reset each
+ * re-rendered the app on their own. Batching merges them without postponing any: the
+ * render still happens before this function returns.
+ */
 export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
+	unstable_batchedUpdates(() => stopSolve(context, finalTimeMilli, overrides, endTimestamp));
+}
+
+function stopSolve(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
 	hapticImpact('medium');
 
 	const { scramble, timeStartedAt } = context;
@@ -120,6 +134,11 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 	// Read before the reset below clears it — saveSolve runs on a later tick.
 	const phaseSplits: number[] = getTimerStore('phaseSplits') || [];
+	// Same for the per-move smart cube fields, which the context does not carry at all
+	// (see FAST_TIMER_FIELDS).
+	const smartTurns: any[] = getTimerStore('smartTurns') || [];
+	const smartPickUpTime = getTimerStore('smartPickUpTime');
+	const lastSmartMoveTime = getTimerStore('lastSmartMoveTime');
 
 	const currentTime = Date.now();
 	const now = (endTimestamp && (currentTime - endTimestamp) < 2000) ? endTimestamp : currentTime;
@@ -142,10 +161,10 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		if (overrides && overrides.smart_turn_count !== undefined) {
 			turnCount = overrides.smart_turn_count;
 		} else {
-			// Otherwise calculate from context with leniency for the first move
+			// Otherwise calculate from the recorded turns with leniency for the first move
 			const startTime = timeStartedAt.getTime();
 			// Allow moves up to 500ms before timer start (to catch the starting move)
-			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime - 500);
+			const solutionTurns = smartTurns.filter((t: any) => t.completedAt >= startTime - 500);
 			// cstimer-grade HTM: repeated moves on same face in consecutive parallel planes count as 1
 			turnCount = countHTM(solutionTurns.map((t: any) => t.turn));
 		}
@@ -175,7 +194,10 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
 	});
 
-	setTimeout(() => {
+	// Batched for the same reason as endTimer: the scramble swap, the local save and the
+	// session counter would otherwise render one after another. saveSolve still runs in
+	// this tick; only the renders it causes are merged.
+	setTimeout(() => unstable_batchedUpdates(() => {
 		// If pre-generated scramble exists, swap immediately; otherwise generate synchronously
 		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
 		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
@@ -192,7 +214,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
 			const startTime = timeStartedAt.getTime();
-			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime);
+			const solutionTurns = smartTurns.filter((t: any) => t.completedAt >= startTime);
 
 			overridesCombined.is_smart_cube = true;
 			overridesCombined.smart_device_id = context.smartDeviceId;
@@ -238,12 +260,12 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 		const useSpaceWithSmart = getSetting('use_space_with_smart_cube');
 		if (useSpaceWithSmart) {
-			if (context.smartPickUpTime) {
-				overridesCombined.smart_pick_up_time = context.smartPickUpTime;
+			if (smartPickUpTime) {
+				overridesCombined.smart_pick_up_time = smartPickUpTime;
 			}
 
-			if (context.lastSmartMoveTime) {
-				let pd = (now - context.lastSmartMoveTime) / 1000;
+			if (lastSmartMoveTime) {
+				let pd = (now - lastSmartMoveTime) / 1000;
 				if (pd < 0) pd = 0;
 				overridesCombined.smart_put_down_time = pd;
 			}
@@ -253,7 +275,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 
 		endLocked = false;
-	}, 10);
+	}), 10);
 }
 
 export function resetTimerParams(context: ITimerContext, skipScramble?: boolean) {

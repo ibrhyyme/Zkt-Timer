@@ -21,6 +21,7 @@ import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb, bul
 import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
 import { useSessionDb } from '../../util/hooks/useSessionDb';
+import { useSolveDb } from '../../util/hooks/useSolveDb';
 import PageTitle from '../common/page_title/PageTitle';
 import Button from '../common/button/Button';
 import Module from '../common/module/Module';
@@ -83,7 +84,9 @@ export default function Sessions() {
 	const { t } = useTranslation();
 
 	useSessionDb();
-
+	// The default stats bucket (fetchLastBucketForSession below) is read from the solve
+	// DB during render, so deleting solves on this page has to re-render it.
+	useSolveDb();
 
 	const mobileMode = useGeneral('mobile_mode');
 	const currentSessionId = useSettings('session_id');

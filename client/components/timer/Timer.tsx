@@ -1,12 +1,13 @@
 import React, { createContext, ReactNode, useEffect, useState, useMemo, useRef } from 'react';
-import { RootStateOrAny, useDispatch, useSelector, shallowEqual } from 'react-redux';
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import './Timer.scss';
 import HeaderControl from './header_control/HeaderControl';
 import TimerFooter from './footer/TimerFooter';
 import TimeDisplay from './time_display/TimeDisplay';
 import TimerScramble from './time_display/timer_scramble/TimerScramble';
 import KeyWatcher from './key_watcher/KeyWatcher';
-import { TimerProps, TimerStore } from './@types/interfaces';
+import { TimerProps } from './@types/interfaces';
+import { selectStableTimerStore, StableTimerStore } from './helpers/fast_timer_fields';
 import { getStorageURL } from '../../util/storage';
 import block from '../../styles/bem';
 import { useGeneral } from '../../util/hooks/useGeneral';
@@ -35,7 +36,9 @@ import StreamerOverlay from './streamer/StreamerOverlay';
 
 const b = block('timer');
 
-export interface ITimerContext extends TimerProps, TimerStore { }
+// Everything except the fields that change on every smart cube move or inspection tick
+// (see FAST_TIMER_FIELDS). Those are read with useTimerStore / getTimerStore instead.
+export interface ITimerContext extends TimerProps, StableTimerStore { }
 
 export const TimerContext = createContext<ITimerContext>(null);
 
@@ -46,7 +49,9 @@ export default function Timer(props: TimerProps) {
 	const mobileMode = props.forceMobileLayout ?? _mobileMode;
 
 	const [loading, setLoading] = useState(true);
-	const timerStore = useSelector((state: RootStateOrAny) => state.timer, shallowEqual) as TimerStore;
+	// Not the whole slice: a move would then re-render this component and, through the
+	// context, the entire timer page.
+	const timerStore = useSelector(selectStableTimerStore, shallowEqual);
 	const cubeType = useSettings('cube_type');
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');

@@ -2,7 +2,7 @@ import React, {useRef} from 'react';
 import block from '../../../../../styles/bem';
 import type {MatchStatus} from '../../../../../util/smart_cube/solve_engine';
 import {getAnyColorStringAsRgb} from '../../../../../util/themes/theme_util';
-import {currentMoveIndex, doneCount, moveDisplayState} from './scramble_move_state';
+import {currentMoveIndex, isMoveDone, moveDisplayState} from './scramble_move_state';
 
 const b = block('timer-scramble');
 
@@ -67,22 +67,23 @@ export default function ScrambleMoveList({moves, matchStatus, useBlueMatch}: Pro
 	// "first" time and the whole line lights up green at once — a burst of
 	// confirmations for moves the user made a while ago. The baseline is captured
 	// per mount (a remount re-reads it, which is exactly right) and re-taken when
-	// the scramble itself changes.
+	// the scramble itself changes. Kept per move rather than as a count, because a
+	// move turned early out of order can be finished while the one before it is not.
 	const movesKey = moves.join(' ');
-	const baselineRef = useRef<{key: string; done: number} | null>(null);
+	const baselineRef = useRef<{key: string; done: boolean[]} | null>(null);
 	if (!baselineRef.current || baselineRef.current.key !== movesKey) {
-		baselineRef.current = {key: movesKey, done: doneCount(matchStatus)};
+		baselineRef.current = {key: movesKey, done: moves.map((_, i) => isMoveDone(i, current, matchStatus))};
 	}
-	const alreadyDoneOnArrival = baselineRef.current.done;
+	const doneOnArrival = baselineRef.current.done;
 
 	return (
 		<>
 			{moves.map((turn, i) => {
 				const display = moveDisplayState(i, current);
-				const isDone = display === 'past';
+				const isDone = isMoveDone(i, current, matchStatus);
 				// Finished, but not by an action the user just took — show the end
 				// state without the journey to it.
-				const settled = isDone && i < alreadyDoneOnArrival;
+				const settled = isDone && doneOnArrival[i];
 
 				return (
 					<span

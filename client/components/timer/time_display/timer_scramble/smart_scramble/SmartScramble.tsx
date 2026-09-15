@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import block from '../../../../../styles/bem';
 import { TimerContext } from '../../../Timer';
 import { useSettings } from '../../../../../util/hooks/useSettings';
+import { useTimerStore } from '../../../../../util/hooks/useTimerStore';
 import ScrambleMoveList, { isGreenBaseColor } from './ScrambleMoveList';
 
 const b = block('timer-scramble');
@@ -11,7 +12,11 @@ export default function SmartScramble() {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 
-	const { scramble, smartCanStart, smartUndoMoves, smartNeedsCubeReset, smartOutOfSync, smartMatchStatus } = context;
+	const { scramble, smartCanStart, smartNeedsCubeReset, smartOutOfSync } = context;
+	// Both change as the user scrambles, so they are not in TimerContext (see
+	// FAST_TIMER_FIELDS). Subscribing here re-renders only the scramble on a move.
+	const smartUndoMoves = useTimerStore('smartUndoMoves');
+	const smartMatchStatus = useTimerStore('smartMatchStatus');
 
 	const expectedMoves = scramble.split(' ').filter(m => m.trim());
 

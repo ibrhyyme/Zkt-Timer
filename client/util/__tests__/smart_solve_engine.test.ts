@@ -739,9 +739,10 @@ describe('SmartSolveEngine — state-based matching cannot misfire on a shared f
 		engine.setScramble('R L U2');
 		engine.setConnected(true);
 
-		// User does L first.
+		// User does L first. R is still the move they are on, but L is reported done so
+		// the display can confirm it now rather than only once R lands.
 		engine.pushTurns([turn('L', 1000)]);
-		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus[0]).toBe('pending');
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus).toEqual(['pending', 'perfect', 'pending']);
 		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
 
 		// Then R, completing the pair in the opposite order to the scramble text.
@@ -751,5 +752,29 @@ describe('SmartSolveEngine — state-based matching cannot misfire on a shared f
 		// The rest of the scramble is unaffected.
 		engine.pushTurns([turn('L', 1000), turn('R', 1100), turn('U2', 1200)]);
 		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+	});
+
+	// The early move can be a double. Smart cubes report it one quarter at a time, and the
+	// first quarter used to read as a mistake (undo hint and all) until the second landed.
+	it('an early double on the opposite face is shown half done, then done, never wrong', () => {
+		const { engine, of } = harness();
+		engine.setScramble('R L2 U');
+		engine.setConnected(true);
+
+		// First quarter of L2, turned counter-clockwise, before R.
+		engine.pushTurns([turn("L'", 1000)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus).toEqual(['pending', 'half', 'pending']);
+		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
+
+		// Second quarter: L2 is finished, R is still the move they are on.
+		engine.pushTurns([turn("L'", 1000), turn("L'", 1100)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus).toEqual(['pending', 'perfect', 'pending']);
+
+		// R, then U, and the scramble completes normally.
+		engine.pushTurns([turn("L'", 1000), turn("L'", 1100), turn('R', 1200)]);
+		expect(of('SCRAMBLE_PROGRESS').slice(-1)[0].matchStatus).toEqual(['perfect', 'perfect', 'pending']);
+		engine.pushTurns([turn("L'", 1000), turn("L'", 1100), turn('R', 1200), turn('U', 1300)]);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
 	});
 });

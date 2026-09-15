@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useSettings} from '../../../util/hooks/useSettings';
+import {useSolveDb} from '../../../util/hooks/useSolveDb';
 import {getCubeTypeBucketLabel, getCubeTypeInfoById} from '../../../util/cubes/util';
 import {
 	getDailyGoalStorage,
@@ -23,6 +24,9 @@ export default function GoalsTab() {
 	const cubeType = useSettings('cube_type');
 	const scrambleSubset = useSettings('scramble_subset');
 	const [, forceUpdate] = useState(0);
+	// Progress counts today's solves straight from the solve DB during render. A smart
+	// cube solve can finish while this panel is open.
+	useSolveDb();
 
 	const storage = getDailyGoalStorage();
 	const currentKey = `${cubeType}::${scrambleSubset ?? ''}`;

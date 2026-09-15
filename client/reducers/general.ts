@@ -1,4 +1,5 @@
 import { GeneralAllParams } from '../util/hooks/useGeneral';
+import { withDefaults } from './with_defaults';
 
 const initialState: GeneralAllParams = {
 	app_loaded: false,
@@ -18,30 +19,29 @@ export default (state = initialState, action) => {
 				[key]: value,
 			};
 		}
+		// Both build a new array. App renders the list through useGeneral('modals'), which
+		// only re-renders when the reference changes; pushing into the old array left the
+		// selector nothing to notice, and modals showed up only because unrelated
+		// re-renders happened to follow.
 		case 'OPEN_MODAL': {
-			const modals = state.modals;
-			modals.push(action.payload);
-
 			return {
 				...state,
-				modals,
+				modals: [...state.modals, action.payload],
 			};
 		}
 		case 'CLOSE_MODAL': {
-			const modals = state.modals;
-			modals.pop();
+			if (!state.modals.length) {
+				return state;
+			}
 
 			return {
 				...state,
-				modals,
+				modals: state.modals.slice(0, -1),
 			};
 		}
 
 		default: {
-			return {
-				...initialState,
-				...state,
-			};
+			return withDefaults(state, initialState);
 		}
 	}
 };

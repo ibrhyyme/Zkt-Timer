@@ -1,6 +1,7 @@
 import {
 	doneCount,
 	currentMoveIndex,
+	isMoveDone,
 	moveDisplayState,
 	sequenceMatchStatus,
 } from '../scramble_move_state';
@@ -69,6 +70,33 @@ describe('moveDisplayState', () => {
 
 	it('marks the very first move current before anything is turned', () => {
 		expect(moveDisplayState(0, 0)).toBe('current');
+	});
+});
+
+describe('isMoveDone', () => {
+	it('counts everything behind the current move as done', () => {
+		const s = status(2, 5);
+		expect([0, 1, 2, 3, 4].map((i) => isMoveDone(i, 2, s))).toEqual([true, true, false, false, false]);
+	});
+
+	// Scramble "R L ...": the user turned L before R. R stays the current move, but L
+	// is finished and has to be confirmed now, not when R catches up.
+	it('confirms the next move when it was turned first, out of order', () => {
+		const s: MatchStatus[] = ['perfect', 'pending', 'perfect', 'pending'];
+		const current = currentMoveIndex(s, 4);
+		expect(current).toBe(1);
+		expect(isMoveDone(1, current, s)).toBe(false);
+		expect(isMoveDone(2, current, s)).toBe(true);
+		expect(isMoveDone(3, current, s)).toBe(false);
+	});
+
+	it('does not count a half-turned early double as done', () => {
+		const s: MatchStatus[] = ['pending', 'half', 'pending'];
+		expect(isMoveDone(1, currentMoveIndex(s, 3), s)).toBe(false);
+	});
+
+	it('counts every move once the scramble is complete', () => {
+		expect(isMoveDone(4, -1, status(5, 5))).toBe(true);
 	});
 });
 

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import './SmartCube.scss';
@@ -17,6 +17,7 @@ import { initSmartSolver } from '../../../util/smart_scramble';
 import { initSolverWorker } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
@@ -165,7 +166,6 @@ export default function SmartCube() {
 
 	const {
 		scramble,
-		smartTurns,
 		smartDeviceId,
 		smartCubeScanning,
 		smartCubeScanError,
@@ -177,14 +177,16 @@ export default function SmartCube() {
 		smartGyroSupported,
 		originalScramble,
 		smartTurnOffset,
-		lastSmartMoveTime,
-		smartCurrentState,
 		smartAbortVisible,
-		smartStateSeq,
-		smartPhysicallySolved,
 		smartOutOfSync,
 		dnfTime,
 	} = context;
+
+	// Per-move fields are not in TimerContext (see FAST_TIMER_FIELDS). The engine is fed
+	// from here, so this component subscribes to them itself.
+	const smartTurns = useTimerStore('smartTurns');
+	const smartCurrentState = useTimerStore('smartCurrentState');
+	const smartStateSeq = useTimerStore('smartStateSeq');
 
 	// Surface wrong-MAC handshake failures on web (native shows the BleScanningModal
 	// error state instead). Without this the cube would silently fail after the watchdog.
@@ -202,10 +204,6 @@ export default function SmartCube() {
 	// Polling safety refs (avoid stale closures in setInterval and effect handlers)
 	const needsCubeResetRef = useRef(needsCubeReset);
 	needsCubeResetRef.current = needsCubeReset;
-	const smartPhysicallySolvedRef = useRef(smartPhysicallySolved);
-	smartPhysicallySolvedRef.current = smartPhysicallySolved;
-	const lastSmartMoveTimeRef = useRef(lastSmartMoveTime);
-	lastSmartMoveTimeRef.current = lastSmartMoveTime;
 	const smartTurnsRef = useRef(smartTurns);
 	smartTurnsRef.current = smartTurns;
 	const smartCurrentStateRef = useRef(smartCurrentState);
@@ -246,7 +244,11 @@ export default function SmartCube() {
 	const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
 
 	if (!engineRef.current) {
-		engineRef.current = new SmartSolveEngine((event) => engineEventRef.current(event), {
+		// Batched so each engine event renders once. Events raised while React flushes the
+		// effects below are batched already, but the engine also fires from its own timers
+		// (grace window, poll, move-order fix), where every update in the handler, a solve
+		// end included, would otherwise commit separately.
+		engineRef.current = new SmartSolveEngine((event) => ReactDOM.unstable_batchedUpdates(() => engineEventRef.current(event)), {
 			moveOrderFix: smartCubeMoveOrderFix,
 		});
 	}
@@ -827,7 +829,15 @@ export default function SmartCube() {
 	}
 
 	let actionButton = null;
-	const dropdown = (
+
+	// The gear menu shows nothing that changes per move, yet this component re-renders on
+	// every move to feed the engine. Building the element only when what it shows changes
+	// lets React skip the menu on moves. The handlers go through a ref, so a click still
+	// runs the latest render's closures.
+	const menuActionsRef = useRef({ markCubeAsSolved, resetGyro, disconnectBluetooth, toggleManageSmartCubes });
+	menuActionsRef.current = { markCubeAsSolved, resetGyro, disconnectBluetooth, toggleManageSmartCubes };
+	const solveRunning = !!timeStartedAt;
+	const dropdown = useMemo(() => (
 		<Dropdown
 			openUp={!mobileMode}
 			dropdownButtonProps={{ transparent: true, className: 'zt-smart-cube__gear-btn', noMargin: true }}
@@ -836,25 +846,25 @@ export default function SmartCube() {
 				{
 					text: t('smart_cube.mark_as_solved'),
 					hidden: !smartCubeConnected,
-					disabled: !!timeStartedAt,
-					onClick: markCubeAsSolved,
+					disabled: solveRunning,
+					onClick: () => menuActionsRef.current.markCubeAsSolved(),
 				},
 				{
 					text: t('smart_cube.reset_gyro'),
 					hidden: !smartCubeConnected || !smartGyroSupported,
-					disabled: !!timeStartedAt,
-					onClick: resetGyro,
+					disabled: solveRunning,
+					onClick: () => menuActionsRef.current.resetGyro(),
 				},
 				{
 					text: t('smart_cube.disconnect'),
 					hidden: !smartCubeConnected,
-					disabled: !!timeStartedAt,
-					onClick: disconnectBluetooth,
+					disabled: solveRunning,
+					onClick: () => menuActionsRef.current.disconnectBluetooth(),
 				},
-				{ text: t('smart_cube.manage_smart_cubes'), disabled: !!timeStartedAt, onClick: toggleManageSmartCubes },
+				{ text: t('smart_cube.manage_smart_cubes'), disabled: solveRunning, onClick: () => menuActionsRef.current.toggleManageSmartCubes() },
 			]}
 		/>
-	);
+	), [t, mobileMode, smartCubeConnected, smartGyroSupported, solveRunning]);
 
 	let battery = <Battery level={smartCubeBatteryLevel} />;
 	let emblem;

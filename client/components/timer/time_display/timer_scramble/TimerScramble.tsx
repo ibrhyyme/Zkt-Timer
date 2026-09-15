@@ -15,6 +15,7 @@ import SmartScramble from './smart_scramble/SmartScramble';
 import { setTimerParam, setTimerParams } from '../../helpers/params';
 import { smartCubeSelected } from '../../helpers/util';
 import { useSettings } from '../../../../util/hooks/useSettings';
+import { useHasSmartTurns } from '../../../../util/hooks/useTimerStore';
 import { setSetting } from '../../../../db/settings/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
 import { useLatestSolve } from '../../../../util/hooks/useLatestSolve';
@@ -47,11 +48,14 @@ export default function TimerScramble() {
 	const scrambleAlignment = useSettings('scramble_alignment');
 	const scrambleClickAction = useSettings('scramble_click_action');
 	const isSmart = smartCubeSelected(context);
+	// The turn list is not in TimerContext (see FAST_TIMER_FIELDS); only whether it is
+	// empty matters here, and that does not change on every move.
+	const hasSmartTurns = useHasSmartTurns();
 	// See TimerControls: the lock is about contradicting a connected cube, so it
 	// must not fire when no cube is attached (or when a stale turn list survived
 	// an earlier connection).
 	const isSmartScrambling =
-		isSmart && !!context.smartCubeConnected && context.smartTurns && context.smartTurns.length > 0 && !timeStartedAt;
+		isSmart && !!context.smartCubeConnected && hasSmartTurns && !timeStartedAt;
 
 	// +2 and DNF for latest solve
 	const latestSolve = useLatestSolve();

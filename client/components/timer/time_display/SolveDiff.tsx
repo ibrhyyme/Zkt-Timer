@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { RootStateOrAny, useSelector } from 'react-redux';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { fetchSolves } from '../../../db/solves/query';
@@ -10,14 +11,17 @@ const b = block('solve-diff');
 
 function SolveDiff() {
     const context = useContext(TimerContext);
-    const { timeStartedAt, solving, inspectionTimer } = context;
+    const { timeStartedAt, solving } = context;
+    // The countdown itself ticks every 100 ms and is not in TimerContext (see
+    // FAST_TIMER_FIELDS); only whether any of it is left matters here.
+    const inspectionLeft = useSelector((state: RootStateOrAny) => state.timer.inspectionTimer > 0);
     const sessionId = useSettings('session_id');
 
     // Subscribe to DB updates
     useSolveDb();
 
     // Timer çalışıyorken veya inceleme esnasındayken gizle ama yer kapla (timer kaymasin)
-    if (timeStartedAt || solving || (context.inInspection && inspectionTimer > 0)) {
+    if (timeStartedAt || solving || (context.inInspection && inspectionLeft)) {
         return <div className={b()} style={{ visibility: 'hidden' }}>&nbsp;</div>;
     }
 

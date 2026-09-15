@@ -67,6 +67,13 @@
     <!-- Mikrofon (StackMat Timer) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Camera for support ticket photo/video attachments. Declared so Capacitor's file
+         chooser asks for the runtime permission before capturing; with it undeclared, a
+         capture-enabled input would open the camera without ever asking. Not required,
+         so devices without a camera still see the app on Play. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Push Notifications (API 33+ / Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

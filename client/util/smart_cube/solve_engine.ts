@@ -531,7 +531,7 @@ export class SmartSolveEngine {
 		}
 
 		const hit = this.findPrefixHit(this.tracker.state, false);
-		dbg('scramble state', { state: this.tracker.state, hit: hit ? { done: hit.done, partial: hit.partial } : null });
+		dbg('scramble state', { state: this.tracker.state, hit: hit ? { done: hit.done, partial: hit.partial, early: hit.early } : null });
 
 		if (hit) {
 			this.lastGoodHit = hit;
@@ -583,6 +583,10 @@ export class SmartSolveEngine {
 		for (let i = 0; i < done; i++) status.push('perfect');
 		if (hit?.partial && status.length < total) status.push('half');
 		while (status.length < total) status.push('pending');
+		// The next move was turned first, out of order (opposite faces). Report it so the
+		// display confirms it as it happens rather than only once the user catches up; the
+		// move at `done` stays the one they are on.
+		if (hit?.early && done + 1 < total) status[done + 1] = hit.early === 'full' ? 'perfect' : 'half';
 		return status;
 	}
 
@@ -916,6 +920,12 @@ export class SmartSolveEngine {
 			// quarter is what makes the display show it as half done and lets the second
 			// quarter complete it; without it the user can never finish the move.
 			seed.push(this.scrambleMoves[hit.done].slice(0, -1));
+		}
+		if (hit.early) {
+			// The next move is already on the cube, turned first. Seed it too, so the record
+			// of what was physically done matches the cube.
+			const next = this.scrambleMoves[hit.done + 1];
+			seed.push(hit.early === 'full' ? next : next.slice(0, -1));
 		}
 
 		this.compressor.reset();

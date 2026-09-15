@@ -1,4 +1,5 @@
 import { TimerStore } from '../components/timer/@types/interfaces';
+import { withDefaults } from './with_defaults';
 
 const smartState = {
 	smartCubeConnected: false,
@@ -182,10 +183,7 @@ export default (state = initialState, action) => {
 		}
 
 		default: {
-			return {
-				...initialState,
-				...state,
-			};
+			return withDefaults(state, initialState);
 		}
 	}
 };

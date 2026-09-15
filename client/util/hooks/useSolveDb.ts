@@ -1,7 +1,7 @@
-import {useDataContext} from '../../providers/DataProvider';
+import {useSolveDbChangeCounter} from '../../providers/DataProvider';
 
 export function useSolveDb() {
-	const { solveDbChangeCounter } = useDataContext();
+	const solveDbChangeCounter = useSolveDbChangeCounter();
 
 	return solveDbChangeCounter;
 }

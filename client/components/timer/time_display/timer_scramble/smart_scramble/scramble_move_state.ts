@@ -70,3 +70,14 @@ export function moveDisplayState(index: number, current: number): MoveDisplaySta
 	if (index === current) return 'current';
 	return 'upcoming';
 }
+
+/**
+ * Whether a move is finished. Usually that means it is behind the current move, but the
+ * move after the current one can be finished first when the two are on opposite faces (R
+ * and L, U and D, F and B turn independent layers, so either order gives the same cube).
+ * The engine then reports it 'perfect' while the current move is still pending, and it is
+ * confirmed as it happens instead of only once the user catches up.
+ */
+export function isMoveDone(index: number, current: number, matchStatus: MatchStatus[]): boolean {
+	return moveDisplayState(index, current) === 'past' || matchStatus[index] === 'perfect';
+}

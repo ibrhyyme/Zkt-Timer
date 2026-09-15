@@ -1,7 +1,7 @@
-import {useDataContext} from '../../providers/DataProvider';
+import {useSessionDbChangeCounter} from '../../providers/DataProvider';
 
 export function useSessionDb() {
-	const { sessionDbChangeCounter } = useDataContext();
+	const sessionDbChangeCounter = useSessionDbChangeCounter();
 	
 	return sessionDbChangeCounter;
 }

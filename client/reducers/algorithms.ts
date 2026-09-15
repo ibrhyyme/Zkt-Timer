@@ -1,3 +1,5 @@
+import {withDefaults} from './with_defaults';
+
 const initialState = {
 	custom: {},
 	favorites: {},
@@ -25,7 +27,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'CREATE_CUSTOM_TRAINER': {
-			const custom = state.custom;
+			const custom = {...state.custom};
 			custom[action.payload.id] = action.payload;
 
 			return {
@@ -35,7 +37,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'UPDATE_CUSTOM_TRAINER': {
-			const custom = state.custom;
+			const custom = {...state.custom};
 
 			custom[action.payload.id] = action.payload;
 
@@ -46,12 +48,11 @@ export default (state = initialState, action) => {
 		}
 
 		case 'DELETE_CUSTOM_TRAINER': {
-			const custom = state.custom;
-
-			if (!custom[action.payload.id]) {
+			if (!state.custom[action.payload.id]) {
 				return state;
 			}
 
+			const custom = {...state.custom};
 			delete custom[action.payload.id];
 			return {
 				...state,
@@ -71,10 +72,7 @@ export default (state = initialState, action) => {
 		}
 
 		default: {
-			return {
-				...initialState,
-				...state,
-			};
+			return withDefaults(state, initialState);
 		}
 	}
 };
