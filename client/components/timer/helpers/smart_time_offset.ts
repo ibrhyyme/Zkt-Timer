@@ -63,3 +63,12 @@ export function applySmartCubeTimeOffset(timeMs: number, offsetSeconds: unknown)
 export function getSmartCubeTimeOffset(): number {
 	return normalizeSmartCubeTimeOffset(getSetting('smart_cube_time_offset'));
 }
+
+/**
+ * Whether the timer page adds the offset at all. Not with "use spacebar with smart cubes":
+ * there the keyboard starts and stops the timer, so the cube's own stop, which is what the
+ * offset makes up for, plays no part. Friendly rooms have no such mode and do not ask.
+ */
+export function timerPageAppliesSmartOffset(): boolean {
+	return !getSetting('use_space_with_smart_cube');
+}

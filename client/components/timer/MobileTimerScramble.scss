@@ -41,6 +41,9 @@
         align-items: center;
         gap: 0.3rem 0.5rem;
         line-height: 1.6;
+        // Keyed by the scramble string in MobileTimerScramble.tsx, so this only
+        // remounts (and fades in) on a real scramble replacement, never per move.
+        animation: mobileScrambleTextFadeIn $motion-instant ease-in;
     }
 
     // The current move is scaled up, and this box clips (`overflow: hidden` above)
@@ -63,6 +66,9 @@
         transition: color 0.15s ease;
         position: relative;
         display: inline-block;
+        // Same as __smart-scramble above: keyed by the scramble string, so this only
+        // plays on a real replacement (new solve, prev/next nav).
+        animation: mobileScrambleTextFadeIn $motion-instant ease-in;
 
         &:hover {
             color: rgb(var(--text-color));
@@ -225,5 +231,26 @@
 
     &__expanded-save {
         background: rgb(var(--success-color, 34, 197, 94));
+    }
+}
+
+// New scramble fades in; the old one vanishes instantly (no fade-out — see
+// __text / __smart-scramble above, both keyed by the scramble string).
+@keyframes mobileScrambleTextFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@include reduced-motion {
+    .zt-mobile-timer-scramble {
+        &__text,
+        &__smart-scramble {
+            animation: none;
+        }
     }
 }

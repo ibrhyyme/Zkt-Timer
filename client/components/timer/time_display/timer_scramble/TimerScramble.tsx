@@ -303,6 +303,13 @@ export default function TimerScramble() {
 				</div>
 			)}
 			<div
+				// Keyed by the scramble so a genuine replacement (new solve, prev/next
+				// nav) remounts this element and plays the CSS fade-in on insertion.
+				// While editing the key is pinned to a constant instead of the live
+				// value — the textarea updates `scramble` on every keystroke, and
+				// keying by that would remount (and drop focus/cursor from) the
+				// textarea on every character typed.
+				key={editScramble ? 'edit' : scramble}
 				className={b('body', {
 					smart: isSmart,
 					megaminx: isMegaminx,

@@ -11,6 +11,7 @@ import { CaretDown, Check } from 'phosphor-react';
 import block from '../../../styles/bem';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
+import { timerOwnsSpaceKey } from '../helpers/space_target';
 import './FancyDropdown.scss';
 
 const b = block('fancy-dropdown');
@@ -157,6 +158,12 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 					align={align}
 					collisionPadding={12}
 					style={{ maxHeight: `min(${maxHeight}px, var(--radix-select-content-available-height))` }}
+					// On the timer page Space is the timer's key. Handing focus back to the
+					// trigger made the next Space reopen the picker instead of starting a solve.
+					// Everywhere else the trigger gets focus back, as keyboard users expect.
+					onCloseAutoFocus={(e) => {
+						if (timerOwnsSpaceKey()) e.preventDefault();
+					}}
 				>
 					<Select.Viewport className={b('viewport')} ref={viewportRef}>
 						{groups

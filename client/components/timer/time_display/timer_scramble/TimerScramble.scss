@@ -10,7 +10,9 @@
 // Earlier attempts folded both into one keyframe and started the fade
 // immediately. The green was technically present and practically invisible —
 // it needs to sit still first or the eye never catches it.
-$scrambleTurnEasing: cubic-bezier(0.4, 0, 0.2, 1);
+// Same curve as $ease-standard in styles/tokens.scss — named locally here too since
+// every rule below already refers to it as $scrambleTurnEasing.
+$scrambleTurnEasing: $ease-standard;
 $scrambleTurnDuration: 0.3s;
 $scrambleDoneDuration: 0.7s;
 $scrambleCurrentScale: 1.25;
@@ -51,6 +53,21 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 
 @keyframes scrambleTurnDoneBlue {
 	@include scrambleTurnDoneFrames($primaryBlue);
+}
+
+// A fresh scramble fades in; the old one vanishes instantly (no fade-out — nothing
+// waits on a removal animation). __body is keyed by the scramble string in
+// TimerScramble.tsx, so a real scramble change remounts this element and the
+// browser plays the animation on insertion; a smart-cube move does not touch the
+// key (only the match status does), so this never fires per-move.
+@keyframes scrambleBodyFadeIn {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
 }
 
 .#{$namespace}-timer-scramble {
@@ -159,6 +176,10 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		color: rgb(var(--text-color)) !important;
 		font-family: 'Roboto Mono', monospace;
 		line-height: clamp(1.5rem, 2vw, 2rem);
+		// TimerScramble.tsx keys this element by the scramble string (a stable key
+		// while editing, so typing never remounts it), so this only plays when the
+		// scramble itself is replaced.
+		animation: scrambleBodyFadeIn $motion-instant ease-in;
 
 		// Wrapping must be available at every width, not only under 1200px: a
 		// Megaminx or 7x7 scramble overruns the line long before that.
@@ -370,12 +391,18 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 	// marking which move you are on), but it arrives instantly instead of gliding.
 	// The colour animation stays too, because a colour change is not motion and it
 	// is what actually says "that one counted".
-	@media (prefers-reduced-motion: reduce) {
+	@include reduced-motion {
 
 		&__turn#{&}__turn--current,
 		&__turn#{&}__turn--done,
 		&__turn#{&}__turn--settled {
 			transition: none;
+		}
+
+		// The scramble fade-in is motion too, unlike the colour confirmation above —
+		// the new text should just be there, not glide into view.
+		&__body {
+			animation: none;
 		}
 	}
 

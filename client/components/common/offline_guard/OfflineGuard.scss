@@ -1,3 +1,5 @@
+@import '../../../styles/config';
+
 .zt-offline-guard {
 	display: flex;
 	align-items: center;
@@ -175,7 +177,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include reduced-motion {
 	.zt-offline-guard {
 		&__content,
 		&__ring,

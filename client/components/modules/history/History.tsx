@@ -14,6 +14,7 @@ import { Solve } from '../../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
+import { detectNewestArrival, NewestArrivalState } from './newest_arrival';
 
 interface Props {
 	solves?: Solve[];
@@ -96,6 +97,21 @@ export default function History(props: Props) {
 		return ids;
 	}, [solves, parentSolves, filterOptions, highlightPbs]);
 
+	// Newest-row entrance: only the solve that just landed on top gets the fade +
+	// slide-up, and only once (not on filter changes, scroll recycling, or the
+	// initial load — see newest_arrival.ts). Mutated during render, same "detect on
+	// this pass" shape as ScrambleMoveList's baselineRef, so the row that mounts
+	// because of the new solve already has the flag on its very first paint.
+	const arrivalStateRef = useRef<NewestArrivalState | null>(null);
+	const currentTopId = solves[0]?.id ?? null;
+	const filterKey = JSON.stringify(filterOptions || {});
+	const { arrivalId: newestArrivalId, next: nextArrivalState } = detectNewestArrival(
+		arrivalStateRef.current,
+		currentTopId,
+		filterKey
+	);
+	arrivalStateRef.current = nextArrivalState;
+
 	function renderSolveRow(index: number) {
 		let solveIndex = index;
 		if (reverseOrder) {
@@ -108,7 +124,17 @@ export default function History(props: Props) {
 		}
 
 		const solve = solves[solveIndex];
-		return <HistorySolveRow disabled={disabled} key={solve.id} index={displayIndex} solve={solve} isPb={pbSolveIds.has(solve.id)} highlightMode={highlightPbs} />;
+		return (
+			<HistorySolveRow
+				disabled={disabled}
+				key={solve.id}
+				index={displayIndex}
+				solve={solve}
+				isPb={pbSolveIds.has(solve.id)}
+				highlightMode={highlightPbs}
+				isNewestArrival={solve.id === newestArrivalId}
+			/>
+		);
 	}
 
 	function getLastSolve() {

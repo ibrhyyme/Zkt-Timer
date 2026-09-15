@@ -109,3 +109,43 @@ $bp-grid-collapse: 900px;
 		@content;
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Motion
+//
+// A small, deliberately narrow set of durations/easings for the handful of UI
+// transitions that get a transform/opacity treatment (timer digits, scramble text,
+// list rows). One source so every consumer picks the same values instead of a new
+// hand-rolled duration next to each component, the way the breakpoints above do
+// for widths.
+// ---------------------------------------------------------------------------
+
+$motion-instant: 100ms; // scramble text fade-in
+$motion-fast: 150ms; // newest history row entrance
+$motion-shrink: 220ms; // timer digits: leaving running
+$motion-grow: 300ms; // timer digits: entering running
+
+// The curve TimerScramble.scss already used for its move transform/colour
+// transitions, named here so other components share it instead of redefining the
+// bezier inline.
+$ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+// Snappy deceleration, no overshoot. Timer STOP (CubeTime: .spring(response:0.3,
+// dampingFraction:0.72), ~265ms with no visible bounce).
+$ease-out-snap: cubic-bezier(0.16, 1, 0.3, 1);
+// Bouncy overshoot then settle. Timer START (CubeTime: .spring(response:0.42,
+// dampingFraction:0.66), ~6% overshoot settling around 400ms) — see
+// Referans/CubeTime-main HelperUI.swift / TimerView.swift.
+$ease-out-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// How much the timer digits grow while a solve is running. Kept as one variable
+// because it is tuned by feel, not by formula — never inline this number elsewhere.
+$timer-running-scale: 1.06;
+
+/// Wraps `@media (prefers-reduced-motion: reduce)` so every motion consumer writes
+/// the same guard instead of a hand-written media query (and, in a couple of
+/// places, forgetting one).
+@mixin reduced-motion {
+	@media (prefers-reduced-motion: reduce) {
+		@content;
+	}
+}

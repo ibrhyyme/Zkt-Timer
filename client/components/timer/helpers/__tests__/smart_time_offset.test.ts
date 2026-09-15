@@ -202,15 +202,17 @@ describe('endTimer with a smart cube time offset', () => {
 		}));
 	});
 
-	it('adds it to a smart cube solve stopped from the keyboard as well', () => {
+	// Owner's decision: with "use spacebar with smart cubes" the keyboard starts and stops the
+	// timer, so the cube's own stop, which the offset makes up for, plays no part.
+	it('leaves a smart cube solve timed with the spacebar alone', () => {
 		mockSettings.use_space_with_smart_cube = true;
 
 		stop(timerContext());
 
-		// Keyboard stop measures Date.now() - start = 10 s
-		expect(getTimerEndFinalTime()).toBe(10_350);
+		// Keyboard stop measures Date.now() - start = 10 s, and nothing is added
+		expect(getTimerEndFinalTime()).toBe(10_000);
 		runDeferredSave();
-		expect((saveSolve as jest.Mock).mock.calls[0][1]).toBe(10_350);
+		expect((saveSolve as jest.Mock).mock.calls[0][1]).toBe(10_000);
 	});
 
 	it('leaves every other timer alone', () => {

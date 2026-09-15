@@ -1,5 +1,23 @@
 @import '../../../../styles/config';
 
+// The newest solve's row fades and slides up into place; opacity/transform only,
+// so react-list's "uniform" virtualization (History.tsx) never sees a height
+// change. Applied via HistorySolveRow.tsx's `new` modifier, which History.tsx sets
+// true for exactly the render(s) where this is the solve that just arrived — see
+// newest_arrival.ts for how that is told apart from a filter change, scroll
+// recycling, or the initial load.
+@keyframes historySolveRowEnter {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
 .#{$namespace}-history-solve-row {
 	width: 100%;
 	display: flex;
@@ -9,6 +27,10 @@
 	box-sizing: border-box;
 	justify-content: space-between;
 	align-items: center;
+
+	&--new {
+		animation: historySolveRowEnter $motion-fast $ease-standard;
+	}
 
 	>div {
 		color: rgb(var(--text-color));
@@ -167,6 +189,14 @@
 			margin-left: 8px;
 			position: relative;
 			top: 1px;
+		}
+	}
+}
+
+@include reduced-motion {
+	.#{$namespace}-history-solve-row {
+		&--new {
+			animation: none;
 		}
 	}
 }

@@ -20,10 +20,14 @@ interface Props {
 	solve: Solve;
 	isPb?: boolean;
 	highlightMode?: string;
+	/** True for exactly the render(s) where this row is the solve that just landed
+	 * on top of the list — see History.tsx / newest_arrival.ts. Drives a one-shot
+	 * CSS entrance animation, never a re-trigger on later re-renders of the same row. */
+	isNewestArrival?: boolean;
 }
 
 function HistorySolveRow(props: Props) {
-	const { index, solve, disabled, isPb, highlightMode } = props;
+	const { index, solve, disabled, isPb, highlightMode, isNewestArrival } = props;
 	const mobileMode = useGeneral('mobile_mode');
 
 	const dispatch = useDispatch();
@@ -108,7 +112,7 @@ function HistorySolveRow(props: Props) {
 	}
 
 	return (
-		<div className={b({ mobile: mobileMode })} key={id}>
+		<div className={b({ mobile: mobileMode, new: isNewestArrival })} key={id}>
 			<div className={b('index')}>{(index + 1).toLocaleString()}.</div>
 			<div>
 				<button className={b('time', { plusTwo, dnf, pbColor: isPb && highlightMode === 'color', pbBold: isPb && highlightMode === 'bold' })} onClick={openSolve}>

@@ -186,6 +186,11 @@ export default function MobileTimerScramble() {
         return (
             <div className={b({ smart: true, overflow: overflowing })} ref={containerRef}>
                 <div
+                    // Keyed by the scramble string: a real replacement remounts this
+                    // (and plays the CSS fade-in on insertion); a cube move does not
+                    // touch `scramble` at all (only match/turn state does), so the
+                    // per-move animations inside ScrambleMoveList are untouched.
+                    key={scramble}
                     className={b('smart-scramble')}
                     ref={textRef}
                     style={{
@@ -274,6 +279,11 @@ export default function MobileTimerScramble() {
     return (
         <div className={b({ overflow: overflowing })} ref={containerRef}>
             <div
+                // Same reasoning as the smart-cube branch above: keyed by the scramble
+                // string so only a real replacement remounts and fades this in.
+                // expandedOverlay sits outside this element (sibling below), so opening
+                // the fullscreen modal or saving an edit there never retriggers it.
+                key={scramble}
                 className={b('text', { megaminx: isMegaminx, copied })}
                 ref={textRef}
                 style={{

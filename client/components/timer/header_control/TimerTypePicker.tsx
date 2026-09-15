@@ -7,6 +7,7 @@
 import React, { useRef } from 'react';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
+import { timerOwnsSpaceKey } from '../helpers/space_target';
 import { useTranslation } from 'react-i18next';
 import * as Select from '@radix-ui/react-select';
 import {
@@ -231,6 +232,11 @@ export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, require
 					sideOffset={6}
 					align="start"
 					collisionPadding={12}
+					// Same as FancyDropdown: on the timer page the next Space must start the
+					// solve, not reopen this picker from a trigger that kept focus.
+					onCloseAutoFocus={(e) => {
+						if (timerOwnsSpaceKey()) e.preventDefault();
+					}}
 				>
 					<Select.Viewport ref={viewportRef}>
 						{options.map((opt) => (

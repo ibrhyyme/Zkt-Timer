@@ -9,7 +9,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
 import { virtualCubeSelected } from '../helpers/virtual_cube';
 import { getSmartSolveEndTime, getTimerEndFinalTime } from '../helpers/events';
-import { applySmartCubeTimeOffset, getSmartCubeTimeOffset } from '../helpers/smart_time_offset';
+import { applySmartCubeTimeOffset, getSmartCubeTimeOffset, timerPageAppliesSmartOffset } from '../helpers/smart_time_offset';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -28,11 +28,12 @@ const bi = block('timer-bottom-info');
 
 /**
  * The BLE layer's early freeze (setSmartSolveEndTime), with the smart cube time offset
- * added the same way endTimer adds it. Only the smart cube sets that freeze, so the
- * offset always applies here. Without it the digits would show the bare time at the
- * stop and then jump when the saved, offset one arrived.
+ * added the same way endTimer adds it, under the same rule (timerPageAppliesSmartOffset).
+ * Without it the digits would show the bare time at the stop and then jump when the
+ * saved, offset one arrived; applied where endTimer does not, they would never agree.
  */
 function smartFrozenSeconds(measuredSeconds: number): number {
+	if (!timerPageAppliesSmartOffset()) return measuredSeconds;
 	return applySmartCubeTimeOffset(measuredSeconds * 1000, getSmartCubeTimeOffset()) / 1000;
 }
 
@@ -317,6 +318,13 @@ export default function TimeDisplay() {
 						green: canStart,
 						orange: !!spaceTimerStarted,
 						disabled,
+						// Digits grow/shrink only on this edge (armed/inspecting stay at
+						// scale 1 — colour classes above already cover those states).
+						// Keying off `solving` alone works for every input method
+						// (keyboard, touch, StackMat, GAN/QiYi, smart cube, virtual cube)
+						// since they all funnel through startTimer()/endTimer() in
+						// helpers/events.ts, which is what flips this flag.
+						running: solving,
 					})}
 				>
 					{timeStr}

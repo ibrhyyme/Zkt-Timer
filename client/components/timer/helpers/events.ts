@@ -24,7 +24,7 @@ import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
-import { applySmartCubeTimeOffset } from './smart_time_offset';
+import { applySmartCubeTimeOffset, timerPageAppliesSmartOffset } from './smart_time_offset';
 
 let endLocked = false;
 
@@ -165,7 +165,7 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 	// number. The measured time is kept for TPS below.
 	const smartSolve = smartCubeSelected(context);
 	const measuredTime = finalTime;
-	if (smartSolve) {
+	if (smartSolve && timerPageAppliesSmartOffset()) {
 		finalTime = applySmartCubeTimeOffset(finalTime, getSetting('smart_cube_time_offset'));
 	}
 

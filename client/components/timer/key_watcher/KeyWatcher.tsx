@@ -38,6 +38,7 @@ import {
 	shouldDeferKeyRelease,
 	SPACE_KEY_CODE,
 } from '../helpers/key_release';
+import { claimSpaceForTimer, releaseFocusedButton, spaceOwnedByControl } from '../helpers/space_target';
 
 const timerClass = block('timer');
 
@@ -91,6 +92,10 @@ export default function KeyWatcher(props: Props) {
 
 	// Slam-to-stop: native-only extra stop trigger for the touch timer
 	useSlamToStop(context);
+
+	// While the timer is on screen, header pickers closing do not hand focus back to their
+	// trigger, so the next Space starts a solve instead of reopening the picker.
+	useEffect(() => claimSpaceForTimer(), []);
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);
@@ -445,6 +450,8 @@ export default function KeyWatcher(props: Props) {
 			if (!touch) {
 				stopKeyHeldRef.current = true;
 				stopKeyCodeRef.current = e.keyCode;
+				// A button still focused from before the solve must not fire on the keyup.
+				releaseFocusedButton(e);
 			}
 
 			// Multi-phase: the first count-1 presses close a phase and leave the timer
@@ -483,7 +490,15 @@ export default function KeyWatcher(props: Props) {
 		// A key from the press that just stopped the timer is still down — ignore it
 		if (!touch && stopKeyHeldRef.current) return;
 
+		// An open picker or menu, or a focused control that already acted on this Space,
+		// owns the press. Priming as well made one press choose "Klavye" in the timer type
+		// picker and start a solve.
+		if (!touch && spaceOwnedByControl(e)) return;
+
 		e.preventDefault();
+		// The press is the timer's: a button left focused by a mouse click (+2, DNF) must
+		// not be activated by it when the key comes up.
+		if (!touch) releaseFocusedButton(e);
 
 		// Same for a finger: one from the gesture that stopped the solve, or a second one
 		// landing while that gesture is still down. After preventDefault on purpose, so the

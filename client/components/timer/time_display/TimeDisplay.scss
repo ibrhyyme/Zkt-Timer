@@ -23,7 +23,13 @@
 		color: rgb(var(--text-color));
 		font-weight: 500;
 		margin: 0 0 10px;
-		transition: font-size 0.15s ease;
+		// font-size transition is the existing mobile auto-fit behaviour, untouched.
+		// transform is the new running-state grow/shrink below — separate property,
+		// separate (asymmetric) duration/easing, so it gets its own transition entry
+		// rather than a shared "all".
+		transition: font-size 0.15s ease, transform $motion-shrink $ease-out-snap;
+		transform: scale(1);
+		transform-origin: center;
 
 		// Küçük ekranlarda daha uygun boyut
 		@media (max-width: 1200px) {
@@ -32,6 +38,35 @@
 
 		@include bp-down($bp-lg) {
 			font-size: clamp(2rem, 10vw, 4rem);
+		}
+	}
+
+	// Timer running (see TimeDisplay.tsx: `running: solving`). Only this one state
+	// edge grows the digits — armed/inspecting/holding stay at scale 1, colour
+	// classes above already cover those. Doubled class for specificity: `h1` alone
+	// is (0,1,1) same as the plain `h1` rule above, and without matching that here
+	// the base rule's `transform: scale(1)` would keep winning regardless of source
+	// order (same pattern as TimerScramble.scss's `&__turn#{&}__turn--current`).
+	h1#{&}--running {
+		transform: scale($timer-running-scale);
+		transition: transform $motion-grow $ease-out-spring;
+		// Scoped to the transitioning state only, not left on permanently.
+		will-change: transform;
+	}
+
+	@include reduced-motion {
+		h1 {
+			// Keep the font-size transition, drop the transform one — there is no
+			// transform to animate anyway once --running is neutralised below, but
+			// stating intent here matches the explicit "transition: none" style used
+			// elsewhere for reduced motion.
+			transition: font-size 0.15s ease;
+		}
+
+		h1#{&}--running {
+			transform: scale(1);
+			transition: none;
+			will-change: auto;
 		}
 	}
 
