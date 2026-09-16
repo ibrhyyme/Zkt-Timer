@@ -1631,6 +1631,10 @@
     "best_short": "mejor",
     "mean_short": "media"
   },
+  "solve_undo": {
+    "deleted": "Resolución eliminada",
+    "undo": "Deshacer"
+  },
   "solves_list": {
     "page_title": "Resoluciones",
     "filter": "Filtrar",
@@ -3209,10 +3213,6 @@
         "title": "6 temas exclusivos",
         "desc": "El brillo neón de Cyberpunk, las calles nocturnas de Tokyo, el minimalismo de Norman, los tonos cálidos de Save the Bees, la oscuridad de Night Owl y el aire académico de The PhD Student — dale a tu temporizador una personalidad completamente nueva. Cada tema transforma colores, fondos y toda la atmósfera."
       },
-      "advanced_stats": {
-        "title": "Estadísticas avanzadas",
-        "desc": "Ve más allá de lo básico. Todos los bloques de estadísticas se desbloquean — ao5, ao12, ao50, ao100, promedios de sesión y más. Sigue tu mejora a lo largo del tiempo con gráficos detallados, detecta tendencias e identifica tus puntos débiles. Personaliza los módulos de estadísticas exactamente como quieras."
-      },
       "leaderboard_publish": {
         "title": "Destaca en la tabla de líderes",
         "desc": "Publica tu mejor single o ao5 en la tabla de líderes y muestra tus PBs con orgullo en tu perfil. Deja que otros speedcubers vean tus resoluciones y se inspiren. Resolver cubos no es solo para ti — muestra al mundo lo rápido que realmente eres."
@@ -3228,10 +3228,6 @@
       "pro_badge": {
         "title": "Insignia Pro",
         "desc": "Un anillo Pro brillante alrededor de tu foto de perfil. En las salas, en la tabla de líderes, en tu perfil — todos pueden ver que eres Pro dondequiera que vayas. No es solo una insignia, es tu estatus en la comunidad."
-      },
-      "data_import": {
-        "title": "Importación de datos",
-        "desc": "¿Usabas CSTimer, ZKTTimer o TwistyTimer? No pierdas años de esfuerzo — importa todas tus resoluciones pasadas, tiempos y estadísticas a Zkt Timer en un solo clic. En vez de empezar desde cero, continúa justo donde lo dejaste."
       },
       "stats_customization": {
         "title": "Personalización de estadísticas",
@@ -3253,17 +3249,9 @@
         "title": "Alertas de récords",
         "desc": "Recibe una notificación en el momento en que se rompa un récord mundial, continental o nacional en los eventos que elijas, en cualquier competencia en vivo."
       },
-      "pll_trainer": {
-        "title": "Trainer avanzado de reconocimiento PLL",
-        "desc": "Aprende todos los casos PLL con reconocimiento visual. Generación aleatoria de casos, seguimiento de tiempo y modo de entrenamiento inteligente enfocado en tus puntos débiles."
-      },
-      "cross_trainer": {
-        "title": "Trainer avanzado Cross / X-Cross",
-        "desc": "Herramienta de entrenamiento avanzada para aprender soluciones de cross y extended cross paso a paso. Descubre los caminos más eficientes y aumenta tu velocidad."
-      },
-      "early_access": {
-        "title": "Acceso anticipado a nuevas funciones",
-        "desc": "Los miembros Pro nunca pagan extra por nuevas funciones y obtienen acceso antes que todos."
+      "slam_to_stop": {
+        "title": "Soltar para detener",
+        "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa: el cronómetro se detiene solo. No hace falta volver a la pantalla y consigues la sensación de un StackMat sin comprar hardware. Funciona en la app móvil y ajustas la sensibilidad a tu mesa."
       }
     },
     "promo": {
@@ -3683,7 +3671,7 @@
       }
     },
     "modal": {
-      "competition_watch": {
+      "record_alerts": {
         "title": "Alertas de récords",
         "desc": "Sigue los récords de los eventos que te importan. Recibe un aviso en el momento en que se rompa un WR, CR o NR en cualquier competencia en vivo de la WCA."
       },
@@ -3694,10 +3682,6 @@
       "leaderboard": {
         "title": "Destaca en la Tabla de Líderes",
         "desc": "Publica tus mejores resoluciones e inspira a otros speedcubers."
-      },
-      "data_import": {
-        "title": "Importación de Datos",
-        "desc": "Trae tu historial de resoluciones a Zkt Timer en un clic."
       },
       "smart_cube": {
         "title": "Análisis Profundo de Cubo Inteligente",
@@ -3734,16 +3718,12 @@
       "watch_push": "Notificaciones push en tiempo real",
       "sync": "Sincronización automática en todos tus dispositivos",
       "themes": "6 temas exclusivos para personalización total",
-      "advanced_stats": "Gráficos detallados y análisis de tendencias",
       "music_youtube": "Música ilimitada y sin anuncios de YouTube",
       "music_friends": "Escucha tu propia música mientras resuelves",
       "music_unlimited": "Búsqueda y reproducción ilimitada",
       "leaderboard_publish": "Publica tu mejor single o ao5",
       "leaderboard_profile": "Muestra tus PBs en tu perfil",
       "leaderboard_compete": "Compite con otros speedcubers",
-      "import_history": "Importa todas tus resoluciones pasadas",
-      "import_sources": "Soporte para CSTimer, ZKTTimer, TwistyTimer",
-      "import_one_click": "Transferencia de datos en un clic",
       "smart_analysis": "Ve el tiempo y TPS de cada paso",
       "smart_steps": "Cross, F2L, OLL, PLL analizados por separado",
       "smart_animation": "Animación de resolución para revisión detallada",

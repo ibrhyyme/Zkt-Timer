@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react';
+import {useTranslation} from 'react-i18next';
 import {ColorPicker as ColorPalette, toColor, useColor} from 'react-color-palette';
 import './ColorPicker.scss';
 import block from '../../../styles/bem';
@@ -7,7 +8,7 @@ import {useToggle} from '../../../util/hooks/useToggle';
 import {useWindowClickAwayListener} from '../../../util/hooks/useListener';
 import Button from '../button/Button';
 import {useTheme} from '../../../util/hooks/useTheme';
-import {getAnyColorStringAsRawRgbString, getAnyColorStringAsRgb} from '../../../util/themes/theme_util';
+import {colorStringsEqual, getAnyColorStringAsRawRgbString, getAnyColorStringAsRgb} from '../../../util/themes/theme_util';
 
 const b = block('common-color-picker');
 
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function ColorPicker(props: Props) {
+	const {t} = useTranslation();
 	const {name, hideReset, onChange, openUp, openLeft, resetToRgb, isOpen, onToggle} = props;
 	const selectedColorHex = props.selectedColorHex || '#000000';
 
@@ -63,8 +65,8 @@ export default function ColorPicker(props: Props) {
 	if (resetToRgb && !hideReset) {
 		resetButton = (
 			<Button
-				hidden={resetToRgb.replace(/\s/g, '') === getAnyColorStringAsRawRgbString(color)}
-				text="Reset"
+				hidden={colorStringsEqual(resetToRgb, color)}
+				text={t('common.reset')}
 				warning
 				flat
 				onClick={() => {
@@ -101,7 +103,7 @@ export default function ColorPicker(props: Props) {
 				<div style={{padding: '8px', textAlign: 'center'}}>
 					<Button
 						small
-						text="Kapat"
+						text={t('common.close')}
 						onClick={handleToggle}
 					/>
 				</div>

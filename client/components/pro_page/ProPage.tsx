@@ -3,9 +3,7 @@ import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
 import {
 	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
-	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
-	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, BookOpen, Crosshair,
-	ArrowRight, BellRinging, Trophy,
+	ArrowRight,
 } from 'phosphor-react';
 import CountUp from '../stats/common/count_up/CountUp';
 import {useDispatch} from 'react-redux';
@@ -18,6 +16,7 @@ import {toastError, toastSuccess} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
+import {PRO_FEATURES, ProFeature} from '../../lib/pro_features';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
@@ -79,43 +78,10 @@ const PLANS: Plan[] = [
 	},
 ];
 
-const PRO_FEATURES = [
-	'sync',
-	'smart_cube_analysis',
-	'trainer_smart_cube',
-	'trainer_pdf',
-	'themes',
-	'timer_background',
-	'room_music',
-	'room_smart_cube',
-	'competition_follow',
-	'record_alerts',
-	'pro_badge',
-	'stats_customization',
-	'solve_sharing',
-	'early_access',
-	'pll_trainer',
-	'cross_trainer',
-] as const;
-
-const FEATURE_ICONS: Record<string, React.ElementType> = {
-	sync: CloudArrowUp,
-	smart_cube_analysis: ChartBar,
-	trainer_smart_cube: Lightning,
-	trainer_pdf: FilePdf,
-	themes: PaintBrush,
-	timer_background: FrameCorners,
-	room_music: MusicNote,
-	room_smart_cube: Users,
-	competition_follow: BellRinging,
-	record_alerts: Trophy,
-	pro_badge: Medal,
-	stats_customization: Sliders,
-	solve_sharing: ShareNetwork,
-	early_access: Rocket,
-	pll_trainer: BookOpen,
-	cross_trainer: Crosshair,
-};
+// The feature list itself lives in client/lib/pro_features.ts so this page and
+// PlanCompareModal cannot drift apart. Everything below follows its length, including
+// the advertised count and the two-column split.
+const FEATURE_COLUMN_SPLIT = Math.ceil(PRO_FEATURES.length / 2);
 
 const TESTIMONIALS = [
 	{initials: 'EA', name: 'Efe A.', colorA: '#ff7ab6', colorB: '#8b78ff', quoteKey: 'pro_page.testimonials.t1'},
@@ -127,10 +93,10 @@ const TESTIMONIALS = [
 ];
 
 
-function FeatureRow({featureKey}: {featureKey: string}) {
+function FeatureRow({feature}: {feature: ProFeature}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
-	const Icon = FEATURE_ICONS[featureKey];
+	const Icon = feature.icon;
 
 	return (
 		<li className={b('feature', {open})}>
@@ -142,13 +108,13 @@ function FeatureRow({featureKey}: {featureKey: string}) {
 					}
 				</span>
 				<span className={b('feature-label')}>
-					{t(`pro_page.features.${featureKey}.title`)}
+					{t(feature.titleKey)}
 				</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
 			{open && (
 				<div className={b('feature-detail')}>
-					<p>{t(`pro_page.features.${featureKey}.desc`)}</p>
+					<p>{t(feature.descKey)}</p>
 				</div>
 			)}
 		</li>
@@ -708,13 +674,13 @@ function ProPageContent() {
 
 							<div className={b('features-list')}>
 								<ul className={b('features-col')}>
-									{PRO_FEATURES.slice(0, 8).map((key) => (
-										<FeatureRow key={key} featureKey={key} />
+									{PRO_FEATURES.slice(0, FEATURE_COLUMN_SPLIT).map((feature) => (
+										<FeatureRow key={feature.key} feature={feature} />
 									))}
 								</ul>
 								<ul className={b('features-col')}>
-									{PRO_FEATURES.slice(8).map((key) => (
-										<FeatureRow key={key} featureKey={key} />
+									{PRO_FEATURES.slice(FEATURE_COLUMN_SPLIT).map((feature) => (
+										<FeatureRow key={feature.key} feature={feature} />
 									))}
 								</ul>
 							</div>

@@ -86,7 +86,7 @@ export default function Sessions() {
 	useSessionDb();
 	// The default stats bucket (fetchLastBucketForSession below) is read from the solve
 	// DB during render, so deleting solves on this page has to re-render it.
-	useSolveDb();
+	const solveUpdate = useSolveDb();
 
 	const mobileMode = useGeneral('mobile_mode');
 	const currentSessionId = useSettings('session_id');
@@ -370,7 +370,10 @@ export default function Sessions() {
 	// Above the early return: hooks have to run on every render, and a render that finds
 	// no session (an empty session list) used to skip these. getCubeBucketsFromSession
 	// returns [] for a missing session.
-	const sessionBuckets = useMemo(() => getCubeBucketsFromSession(session), [session]);
+	// Keyed on the solve DB counter as well: the buckets are derived from the session's
+	// solves, so deleting the last solve of a cube type on this page has to drop that
+	// bucket from the picker. The session object itself never changes when a solve goes.
+	const sessionBuckets = useMemo(() => getCubeBucketsFromSession(session), [session, solveUpdate]);
 	const defaultBucket = cubeType ? null : (session ? fetchLastBucketForSession(session.id) : null);
 	const currentCube = String(cubeType || defaultBucket?.cube_type || '333');
 	const effectiveSubset = scrambleSubset ?? defaultBucket?.scramble_subset ?? null;

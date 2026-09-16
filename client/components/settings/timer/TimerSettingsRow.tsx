@@ -18,6 +18,19 @@ interface TimerSettingsGroupProps {
 	children: React.ReactNode;
 }
 
+/**
+ * True when at least one of `children` would actually render: not a React element with
+ * `hidden` truthy, and not stripped out by React.Children.toArray in the first place
+ * (null/false/undefined, e.g. a `{cond && <Row/>}` whose cond is false). Exported (pure,
+ * no rendering needed) so the group-collapsing rule below is unit-testable on its own.
+ */
+export function hasVisibleSettingsRow(children: React.ReactNode): boolean {
+	return React.Children.toArray(children).some((child) => {
+		if (!React.isValidElement(child)) return true;
+		return !(child.props as { hidden?: boolean }).hidden;
+	});
+}
+
 export function TimerSettingsGroup({ label, id, searchText, children }: TimerSettingsGroupProps) {
 	const { query } = useSettingsSearch();
 	const trimmed = query.trim();
@@ -36,6 +49,13 @@ export function TimerSettingsGroup({ label, id, searchText, children }: TimerSet
 		if (filtered.length === 0) return null;
 		visibleChildren = filtered;
 	}
+
+	// A row can hide itself independent of search (e.g. Input settings' Virtual Cube rows,
+	// all gated on `hidden={!isVirtual}`). Every row component already returns null for its
+	// own `hidden`, but the group wrapper used to render its header regardless, leaving a
+	// section title with nothing underneath. Hide the whole group instead when nothing in
+	// it would actually render.
+	if (!hasVisibleSettingsRow(visibleChildren)) return null;
 
 	return (
 		<div id={id} data-settings-group className="mt-6 first:mt-0">

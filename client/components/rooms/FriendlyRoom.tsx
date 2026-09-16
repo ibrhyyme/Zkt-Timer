@@ -18,6 +18,7 @@ import {
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
+import { useGeneral } from '../../util/hooks/useGeneral';
 import { getDailyGoalStorage } from '../daily-goal/helpers/storage';
 import { fetchRoomSolveCounts } from '../daily-goal/helpers/room-solves';
 import { useSettings } from '../../util/hooks/useSettings';
@@ -148,6 +149,14 @@ function FriendlyRoomContent() {
 
     // Responsive state
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // md breakpoint
+    // Gear (SettingsDropdown) vs left drawer (LeftSettingsDrawer) split has to agree with
+    // the SAME threshold SettingsDropdown's CSS hides its trigger at ($bp-lg / 1024, see
+    // SettingsDropdown.scss) and EdgeDrawer's own visibility check (global mobile_mode).
+    // Using the 768px `isMobile` above for this decision left a 768-1024px tablet band
+    // where SettingsDropdown was chosen but its trigger was CSS-hidden, and the drawer
+    // was never mounted, so quick settings were unreachable. mobile_mode is kept in sync
+    // at 1024 by HeaderNav (see util/is-mobile-viewport.ts), so this stays consistent.
+    const mobileMode = useGeneral('mobile_mode');
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1831,8 +1840,9 @@ function FriendlyRoomContent() {
                             </button>
                         )}
                         {/* Mobile: gear button kaldirildi — sol drawer ile degistirildi (asagida mount).
-                            Desktop: SettingsDropdown inline ayni kalir. */}
-                        {!isMobile && (
+                            Desktop: SettingsDropdown inline ayni kalir. Gated on mobileMode
+                            (1024), not the 768px isMobile flag (see its definition above). */}
+                        {!mobileMode && (
                             <SettingsDropdown
                                 hideMobileModules
                                 hideSmartCubeFeatures
@@ -2479,8 +2489,9 @@ function FriendlyRoomContent() {
                 qiyiTimerConnected={qiyiTimerConnected}
             />
 
-            {/* Mobile sol drawer — oda parametreleriyle. Desktop'ta SettingsDropdown inline. */}
-            {isMobile && (
+            {/* Mobile sol drawer — oda parametreleriyle. Desktop'ta SettingsDropdown inline.
+                Gated on mobileMode (1024), matching the gear button's condition above. */}
+            {mobileMode && (
                 <LeftSettingsDrawer
                     allowedTimerTypes={room.allowed_timer_types}
                     requireProForSmart

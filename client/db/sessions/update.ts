@@ -17,6 +17,7 @@ import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { generateId } from '../../../shared/code';
 import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
+import { flushPendingSolveDeletes } from '../solves/pending-delete';
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
@@ -52,6 +53,11 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 }
 
 export async function deleteSessionDb(session: Session) {
+	// A single solve delete still inside its undo window belongs to a session that may be
+	// about to disappear. Settle it first, so an undo can never put a solve back into a
+	// session that no longer exists.
+	flushPendingSolveDeletes();
+
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
 
@@ -75,6 +81,9 @@ export async function deleteSessionDb(session: Session) {
 
 export async function bulkDeleteSessionsDb(ids: string[]) {
 	if (!ids.length) return;
+
+	// Same reason as deleteSessionDb: no undo may outlive the sessions it belongs to.
+	flushPendingSolveDeletes();
 
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
@@ -166,6 +175,11 @@ export async function updateSessionDb(session: Session, input: Partial<Session>)
 }
 
 export async function mergeSessionsDb(oldSessionId: string, newSessionId: string) {
+	// The merge rewrites every solve's session, and a solve waiting out its undo window is
+	// not in the DB to be rewritten. Settle it first so it cannot come back with a session
+	// id the merge has already retired.
+	flushPendingSolveDeletes();
+
 	const solvesDb = getSolveDb();
 	const sessionsDb = getSessionDb();
 

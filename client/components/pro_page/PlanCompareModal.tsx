@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {useDispatch} from 'react-redux';
 import {closeModal} from '../../actions/general';
 import block from '../../styles/bem';
+import {PRO_FEATURES} from '../../lib/pro_features';
 
 const b = block('plan-compare-modal');
 
@@ -21,21 +22,10 @@ const BASIC_FEATURES = [
 	'two_themes',
 ] as const;
 
-const PRO_FEATURES = [
-	'sync',
-	'smart_cube_analysis',
-	'trainer_smart_cube',
-	'trainer_pdf',
-	'themes',
-	'advanced_stats',
-	'leaderboard_publish',
-	'timer_background',
-	'room_music',
-	'pro_badge',
-	'data_import',
-	'stats_customization',
-	'solve_sharing',
-] as const;
+// Pro side comes from the shared registry (client/lib/pro_features.ts). This column
+// used to carry its own copy of the list and had drifted from the Pro page's: it
+// still advertised data import and "advanced stats", neither of which is gated.
+// Basic stays local: it describes what a free account gets, not a set of gates.
 
 export default function PlanCompareModal() {
 	const {t} = useTranslation();
@@ -86,12 +76,12 @@ export default function PlanCompareModal() {
 								<span className={b('feature-name', {pro: true})}>{t('pro_page.all_basic_included')}</span>
 							</div>
 						</li>
-						{PRO_FEATURES.map((key) => (
-							<li key={key} className={b('feature', {pro: true})}>
+						{PRO_FEATURES.map((feature) => (
+							<li key={feature.key} className={b('feature', {pro: true})}>
 								<Check weight="bold" className={b('check', {pro: true})} />
 								<div className={b('feature-text')}>
-									<span className={b('feature-name', {pro: true})}>{t(`pro_page.features.${key}.title`)}</span>
-									<span className={b('feature-desc', {pro: true})}>{t(`pro_page.features.${key}.desc`)}</span>
+									<span className={b('feature-name', {pro: true})}>{t(feature.titleKey)}</span>
+									<span className={b('feature-desc', {pro: true})}>{t(feature.descKey)}</span>
 								</div>
 							</li>
 						))}

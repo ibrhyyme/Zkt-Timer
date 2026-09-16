@@ -4,8 +4,13 @@ import { clearOfflineData } from '../../components/layout/offline';
 import { clearCachedMe } from './cached-me';
 import { clearSessionToken } from './session-token';
 import { clearAllSolveTombstones } from '../solve-tombstones';
+import { flushPendingSolveDeletes } from '../../db/solves/pending-delete';
 
 export async function logOut() {
+	// A delete still waiting out its undo window has to go out while this session can
+	// still authenticate it, and before the tombstones that would repeat it are cleared.
+	flushPendingSolveDeletes();
+
 	const query = gql`
 		mutation Mutate {
 			logOut {

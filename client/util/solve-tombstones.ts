@@ -88,6 +88,30 @@ export function addSolveTombstones(ids: string[]) {
 	writeMap(prune(map));
 }
 
+/**
+ * Withdraws tombstones. Only an undone deletion does this: the solve is back in the local
+ * DB and was never deleted server-side, so the marker that says "this device deleted it"
+ * would make the next sync delete it for real.
+ */
+export function removeSolveTombstones(ids: string[]) {
+	if (typeof window === 'undefined' || !ids?.length) {
+		return;
+	}
+
+	const map = readMap();
+	let changed = false;
+	for (const id of ids) {
+		if (id && id in map) {
+			delete map[id];
+			changed = true;
+		}
+	}
+
+	if (changed) {
+		writeMap(map);
+	}
+}
+
 export function getSolveTombstones(): Set<string> {
 	const map = readMap();
 	const cutoff = Date.now() - TTL_MS;

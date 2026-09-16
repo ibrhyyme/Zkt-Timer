@@ -59,7 +59,11 @@ export default function Timer(props: TimerProps) {
 	const scrambleSubset = useSettings('scramble_subset');
 	const scrambleTopColor = useSettings('scramble_top_color');
 	const streamerMode = useSettings('streamer_mode');
-	let timerLayout = props.timerLayout || useSettings('timer_layout');
+	// Read unconditionally, then pick: `props.timerLayout || useSettings(...)` skipped the
+	// hook whenever the prop was set, so mounting the timer with and without the prop ran a
+	// different number of hooks.
+	const settingsTimerLayout = useSettings('timer_layout');
+	const timerLayout = props.timerLayout || settingsTimerLayout;
 
 	const me = useMe();
 

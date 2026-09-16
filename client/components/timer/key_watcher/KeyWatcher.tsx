@@ -35,6 +35,7 @@ import {
 	deferRelease,
 	deferredReleaseStart,
 	releaseEndsStopBlock,
+	releaseOutlivedByStart,
 	shouldDeferKeyRelease,
 	SPACE_KEY_CODE,
 } from '../helpers/key_release';
@@ -606,11 +607,12 @@ export default function KeyWatcher(props: Props) {
 		// one must stay a plain bail.
 		if ((e.keyCode !== 32 && !touch) || !spaceTimerStarted) return;
 
-		// A release that waited out the grace window can find the solve already started
-		// under it: inspection ran out and auto-started it inside the window. The hold is
-		// spent then, and carrying on would open a fresh inspection on top of the running
-		// solve. Scoped to the deferred path so the immediate one stays exactly as it was.
-		if (releasedAtMs !== undefined && getTimerStore('timeStartedAt')) {
+		// The solve is already running under this hold: inspection ran out and auto-started
+		// it while the key or finger was still down. The hold is spent, and carrying on
+		// would open a fresh inspection on top of the running solve (or, with inspection
+		// off, restart it from the release). Nothing else can reach here with a solve
+		// running: a press during one stops it instead of priming.
+		if (releaseOutlivedByStart({ primed: !!spaceTimerStarted, solveRunning: !!getTimerStore('timeStartedAt') })) {
 			disarmPriming();
 			return;
 		}

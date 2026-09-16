@@ -91,13 +91,8 @@ export function isTalliedDeletion(solve: DeletedSolveLike | null | undefined): b
 	);
 }
 
-/** A new tally with the solves added under their own day, and expired days dropped. */
-export function addDeletedSolvesToTally(
-	tally: DeletedSolveTally,
-	solves: DeletedSolveLike[],
-	nowMs: number
-): DeletedSolveTally {
-	const cutoff = retentionCutoffMs(nowMs);
+/** A copy of the tally with expired days dropped. */
+function pruneTally(tally: DeletedSolveTally, cutoff: number): DeletedSolveTally {
 	const next: DeletedSolveTally = {};
 
 	for (const [day, buckets] of Object.entries(tally || {})) {
@@ -106,12 +101,58 @@ export function addDeletedSolvesToTally(
 		next[day] = {...buckets};
 	}
 
+	return next;
+}
+
+/** A new tally with the solves added under their own day, and expired days dropped. */
+export function addDeletedSolvesToTally(
+	tally: DeletedSolveTally,
+	solves: DeletedSolveLike[],
+	nowMs: number
+): DeletedSolveTally {
+	const cutoff = retentionCutoffMs(nowMs);
+	const next = pruneTally(tally, cutoff);
+
 	for (const solve of solves || []) {
 		if (!isTalliedDeletion(solve) || solve.started_at < cutoff) continue;
 		const day = deletedTallyDayKey(solve.started_at);
 		const bucket = deletedTallyBucketKey(solve.cube_type, solve.scramble_subset);
 		const counts = next[day] || (next[day] = {});
 		counts[bucket] = (counts[bucket] || 0) + 1;
+	}
+
+	return next;
+}
+
+/**
+ * A new tally with these solves taken back out: their deletion was undone, so it must not
+ * keep counting. Never goes below zero, and a bucket or a day that empties is dropped, so
+ * an undo cannot leave a stale zero behind.
+ */
+export function removeDeletedSolvesFromTally(
+	tally: DeletedSolveTally,
+	solves: DeletedSolveLike[],
+	nowMs: number
+): DeletedSolveTally {
+	const next = pruneTally(tally, retentionCutoffMs(nowMs));
+
+	for (const solve of solves || []) {
+		if (!isTalliedDeletion(solve)) continue;
+		const day = deletedTallyDayKey(solve.started_at);
+		const counts = next[day];
+		if (!counts) continue;
+
+		const bucket = deletedTallyBucketKey(solve.cube_type, solve.scramble_subset);
+		const left = (counts[bucket] || 0) - 1;
+		if (left > 0) {
+			counts[bucket] = left;
+		} else {
+			delete counts[bucket];
+		}
+
+		if (!Object.keys(counts).length) {
+			delete next[day];
+		}
 	}
 
 	return next;
@@ -199,6 +240,18 @@ export function recordDeletedSolves(solves: DeletedSolveLike[]): void {
 		return;
 	}
 	writeDeletedSolveTally(addDeletedSolvesToTally(readDeletedSolveTally(), solves, Date.now()));
+}
+
+/**
+ * Called when a deletion is undone (see the solve DB's undo window). Takes the solves
+ * back out of the tally, so an undone deletion stops counting toward today's goal and the
+ * heatmap the moment the solve itself is back.
+ */
+export function unrecordDeletedSolves(solves: DeletedSolveLike[]): void {
+	if (typeof window === 'undefined' || !solves?.length || !solves.some(isTalliedDeletion)) {
+		return;
+	}
+	writeDeletedSolveTally(removeDeletedSolvesFromTally(readDeletedSolveTally(), solves, Date.now()));
 }
 
 /** Today's deleted solves of a goal bucket. */

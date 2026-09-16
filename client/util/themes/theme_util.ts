@@ -47,3 +47,13 @@ export function getAnyColorStringAsRgbString(input: string): string {
 	const rgb = getAnyColorStringAsRgb(input);
 	return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 }
+
+// Compares two colour values regardless of which format either one happens to be in
+// (hex, "r,g,b", "r, g, b", or a react-color-palette Color object). A plain string
+// compare breaks the moment one side has different whitespace than the other: a
+// default pulled from settings ("255, 255, 255") against a stripped copy of the same
+// value ("255,255,255") never matches, so both sides are normalised through the same
+// raw-RGB conversion before comparing.
+export function colorStringsEqual(a: string | Color, b: string | Color): boolean {
+	return getAnyColorStringAsRawRgbString(a) === getAnyColorStringAsRawRgbString(b);
+}

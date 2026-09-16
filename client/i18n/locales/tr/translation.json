@@ -1638,6 +1638,10 @@
     "best_short": "en iyi",
     "mean_short": "ort."
   },
+  "solve_undo": {
+    "deleted": "Çözüm silindi",
+    "undo": "Geri al"
+  },
   "solves_list": {
     "page_title": "Çözümler",
     "filter": "Filtre",
@@ -3216,10 +3220,6 @@
         "title": "6 özel tema",
         "desc": "Cyberpunk'ın neon ışıkları, Tokyo'nun gece sokakları, Norman'ın minimalizmi, Save the Bees'in sıcak tonları, Night Owl'ın karanlığı ve The PhD Student'ın akademik havası — zamanlayıcına tam anlamıyla karakter kat. Her tema renkleri, arka planı ve genel havayı baştan değiştirir."
       },
-      "advanced_stats": {
-        "title": "Gelişmiş istatistikler",
-        "desc": "Temel istatistiklerin ötesine geç. Tüm istatistik blokları açılır — ao5, ao12, ao50, ao100, session ortalamaları ve daha fazlası. Detaylı grafiklerle zaman içindeki gelişimini izle, trendleri yakala ve zayıf noktalarını tespit et. İstatistik modüllerini istediğin gibi özelleştir."
-      },
       "leaderboard_publish": {
         "title": "Liderlik tablosunda boy göster",
         "desc": "En iyi tekini veya ao5 ortalamanı liderlik tablosuna yayınla ve profilinde PB'lerini sergile. Diğer speedcuber'lar senin çözümlerini görsün, ilham alsın. Küp çözme sadece kendin için değil — dünyaya da göster ne kadar hızlısın."
@@ -3235,10 +3235,6 @@
       "pro_badge": {
         "title": "Pro rozeti",
         "desc": "Profil fotoğrafının etrafında parlayan özel Pro halkası. Odalarda, liderlik tablosunda, profil sayfanda — her yerde Pro olduğun belli olur. Sadece bir rozet değil, topluluktaki statünün simgesi."
-      },
-      "data_import": {
-        "title": "Veri aktarımı",
-        "desc": "Daha önce CSTimer, ZKTTimer veya TwistyTimer kullanıyordun? Yılların emeğini kaybetme — tüm geçmiş çözümlerini, sürelerini ve istatistiklerini tek tıkla Zkt Timer'a aktar. Sıfırdan başlamak yerine kaldığın yerden devam et."
       },
       "stats_customization": {
         "title": "İstatistik özelleştirme",
@@ -3260,17 +3256,9 @@
         "title": "Rekor bildirimleri",
         "desc": "Seçtiğin etkinliklerde dünya, kıta veya ulusal rekor herhangi bir canlı yarışmada kırıldığı an anında bildirim al."
       },
-      "pll_trainer": {
-        "title": "Gelişmiş PLL tanıma Trainer",
-        "desc": "Tüm PLL vakalarını görsel tanıma ile öğren. Rastgele vaka üretimi, süre takibi ve zayıf noktalarına odaklanan akıllı antrenman modu."
-      },
-      "cross_trainer": {
-        "title": "Gelişmiş Cross / X-Cross Trainer",
-        "desc": "Cross ve extended cross çözümlerini adım adım öğrenmek için gelişmiş antrenman aracı. En verimli çözüm yollarını keşfet, hızını artır."
-      },
-      "early_access": {
-        "title": "Yeni özelliklere erken erişim",
-        "desc": "Pro üyelerin yeni özellikler için ek ücret ödemez ve herkesten önce erişim hakkı kazanır."
+      "slam_to_stop": {
+        "title": "Bırakınca durdur",
+        "desc": "Çözümü bitirince küpü ya da ellerini masaya bırak, zamanlayıcı kendiliğinden dursun. Ekrana dokunmana gerek kalmaz, StackMat hissini ek donanım almadan yaşarsın. Mobil uygulamada çalışır, hassasiyeti kendi masana göre ayarlarsın."
       }
     },
     "promo": {
@@ -3688,7 +3676,7 @@
       }
     },
     "modal": {
-      "competition_watch": {
+      "record_alerts": {
         "title": "Rekor Bildirimleri",
         "desc": "Önemsediğin etkinliklerdeki rekorları takip et. Herhangi bir canlı WCA yarışmasında WR, CR veya NR kırıldığı an bildirim al."
       },
@@ -3699,10 +3687,6 @@
       "leaderboard": {
         "title": "Liderlik Tablosunda Boy Göster",
         "desc": "En iyi çözümlerini yayınla ve diğer speedcuber'lara ilham ver."
-      },
-      "data_import": {
-        "title": "Veri Aktarımı",
-        "desc": "Geçmiş çözümlerini tek tıkla Zkt Timer'a taşı."
       },
       "smart_cube": {
         "title": "Akıllı Küp Detaylı Analiz",
@@ -3739,16 +3723,12 @@
       "watch_push": "Anlık push bildirimleri",
       "sync": "Tüm cihazlarda otomatik senkronizasyon",
       "themes": "6 özel tema ile tam kişiselleştirme",
-      "advanced_stats": "Detaylı grafikler ve trend analizi",
       "music_youtube": "YouTube'dan sınırsız, reklamsız müzik",
       "music_friends": "Küp çözerken kendi müziğini dinle",
       "music_unlimited": "Sınırsız şarkı arama ve çalma",
       "leaderboard_publish": "En iyi tekini veya ao5'ini yayınla",
       "leaderboard_profile": "PB'lerini profilinde sergile",
       "leaderboard_compete": "Diğer speedcuber'larla yarış",
-      "import_history": "Tüm geçmiş çözümlerini aktar",
-      "import_sources": "CSTimer, ZKTTimer, TwistyTimer desteği",
-      "import_one_click": "Tek tıkla veri aktarımı",
       "smart_analysis": "Her adımın süresini ve TPS'ini gör",
       "smart_steps": "Cross, F2L, OLL, PLL ayrı ayrı analiz",
       "smart_animation": "Çözüm animasyonu ile detaylı inceleme",

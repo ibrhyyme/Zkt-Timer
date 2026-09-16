@@ -731,10 +731,27 @@ export default function RoomTimerOverlay({
         }
     }, [alreadySolvedThisRound, timerType, effectiveInspection, isManualMode, stackmatConnected, ganTimerConnected, freezeTime]);
 
-    // Keyboard handlers
-    useEffect(() => {
-        if (!isActive) return;
+    // Keyboard/touch handlers.
+    //
+    // Rebuilt on every render (they read state, props and the callbacks above) and stored
+    // in a ref, while the window/document listeners that call them are attached once per
+    // isActive (the effect after this one). They used to be the effect's own closures with
+    // `submitTime` in its dependency list, and `submitTime` changes with `time`, which
+    // ticks every 33 ms while solving and every 30 ms while inspecting. Every listener was
+    // torn down and re-added about thirty times a second, and the cleanup also cleared the
+    // pending priming timeout, so an unrelated re-render during the hold could stop the
+    // timer from ever going green.
+    const handlersRef = useRef<{
+        handleKeyDown: (e: KeyboardEvent) => void;
+        handleKeyUp: (e: KeyboardEvent) => void;
+        handleTouchStart: (e: TouchEvent) => void;
+        handleTouchMove: (e: TouchEvent) => void;
+        handleTouchEnd: (e: TouchEvent) => void;
+        handleTouchCancel: (e: TouchEvent) => void;
+        handleContextMenu: (e: Event) => void;
+    } | null>(null);
 
+    useEffect(() => {
         const isTyping = () => {
             const activeEl = document.activeElement;
             return activeEl && (
@@ -1094,34 +1111,60 @@ export default function RoomTimerOverlay({
             touchStartY.current = null;
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-
-        // Use non-passive listeners for touch to allow preventDefault (prevents scrolling/scalling)
-        document.addEventListener('touchstart', handleTouchStart, { passive: false });
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.addEventListener('touchend', handleTouchEnd, { passive: false });
-        document.addEventListener('touchcancel', handleTouchCancel, { passive: false });
-
         const handleContextMenu = (e: Event) => {
             e.preventDefault();
             return false;
         };
-        document.addEventListener('contextmenu', handleContextMenu);
+
+        // No dependency list on purpose: every render publishes its handlers here, so the
+        // stable listeners below always call the current ones.
+        handlersRef.current = {
+            handleKeyDown,
+            handleKeyUp,
+            handleTouchStart,
+            handleTouchMove,
+            handleTouchEnd,
+            handleTouchCancel,
+            handleContextMenu,
+        };
+    });
+
+    // The listeners themselves: attached once while the overlay is active, never in
+    // response to a tick. Each one reads the handler out of the ref at event time.
+    useEffect(() => {
+        if (!isActive) return;
+
+        const onKeyDown = (e: KeyboardEvent) => handlersRef.current?.handleKeyDown(e);
+        const onKeyUp = (e: KeyboardEvent) => handlersRef.current?.handleKeyUp(e);
+        const onTouchStart = (e: TouchEvent) => handlersRef.current?.handleTouchStart(e);
+        const onTouchMove = (e: TouchEvent) => handlersRef.current?.handleTouchMove(e);
+        const onTouchEnd = (e: TouchEvent) => handlersRef.current?.handleTouchEnd(e);
+        const onTouchCancel = (e: TouchEvent) => handlersRef.current?.handleTouchCancel(e);
+        const onContextMenu = (e: Event) => handlersRef.current?.handleContextMenu(e);
+
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+
+        // Use non-passive listeners for touch to allow preventDefault (prevents scrolling/scalling)
+        document.addEventListener('touchstart', onTouchStart, { passive: false });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd, { passive: false });
+        document.addEventListener('touchcancel', onTouchCancel, { passive: false });
+        document.addEventListener('contextmenu', onContextMenu);
 
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-            document.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
-            document.removeEventListener('touchcancel', handleTouchCancel);
-            document.removeEventListener('contextmenu', handleContextMenu);
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keyup', onKeyUp);
+            document.removeEventListener('touchstart', onTouchStart);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+            document.removeEventListener('touchcancel', onTouchCancel);
+            document.removeEventListener('contextmenu', onContextMenu);
             if (primingTimeoutRef.current) {
                 clearTimeout(primingTimeoutRef.current);
             }
         };
-    }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode, isMobile, focusedButtonIndex, penalties]);
+    }, [isActive]);
 
     // Format time for display
     const dp = timerDecimalPoints ?? 2;

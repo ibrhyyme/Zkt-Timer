@@ -97,7 +97,7 @@ export default function RecordRadar() {
 		}
 		// Free user → Pro upsell
 		if (!isPro(me)) {
-			openProOnlyModal(dispatch, t, 'competition_watch');
+			openProOnlyModal(dispatch, t, 'record_alerts');
 			return;
 		}
 		if (events.size === 0) {
@@ -230,7 +230,7 @@ export default function RecordRadar() {
 				<p className={b('radar-desc')}>{t('my_schedule.radar_desc')}</p>
 
 				{notPro && (
-					<div className={b('radar-pro-banner')} onClick={() => openProOnlyModal(dispatch, t, 'competition_watch')}>
+					<div className={b('radar-pro-banner')} onClick={() => openProOnlyModal(dispatch, t, 'record_alerts')}>
 						{t('my_schedule.radar_pro_hint')}
 					</div>
 				)}

@@ -13,6 +13,7 @@ import {
 	collectPlatformPrefs,
 } from './query';
 import {getSettingsDb, SettingValue} from './init';
+import {getMe} from '../../components/store';
 import {updateOfflineHash} from '../../components/layout/offline';
 import {emitEvent} from '../../util/event_handler';
 import {setLocalSettingValue} from './local';
@@ -142,7 +143,11 @@ export async function setSettings(payload: Partial<AllSettings>) {
 		globalPayload[getPlatformPrefsKey()] = JSON.stringify(collectPlatformPrefs());
 	}
 
-	if (Object.keys(globalPayload).length) {
+	// Anonymous visitors have nothing to write to: the mutation is [LOGGED_IN] gated and
+	// the offline hash it schedules belongs to an account too. Their settings live in
+	// localStorage (setSettingLocal above), which the anonymous boot rebuilds its rows
+	// from, so skipping the server round trip costs them nothing.
+	if (Object.keys(globalPayload).length && getMe()) {
 		setSettingApi(globalPayload);
 	}
 }

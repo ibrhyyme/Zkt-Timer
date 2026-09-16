@@ -1631,6 +1631,10 @@
     "best_short": "最佳",
     "mean_short": "平均"
   },
+  "solve_undo": {
+    "deleted": "已删除还原",
+    "undo": "撤销"
+  },
   "solves_list": {
     "page_title": "还原记录",
     "filter": "筛选",
@@ -3209,10 +3213,6 @@
         "title": "6 种专属主题",
         "desc": "赛博朋克的霓虹闪烁、东京的夜街、诺曼的极简干净、蜜蜂守护的温暖色调、夜猫头的深邃黑暗，以及博士生的学术氛围 — 为您的计时器赋予全新的个性。每种主题都会改变颜色、背景和整体氛围。"
       },
-      "advanced_stats": {
-        "title": "高级统计",
-        "desc": "超越基础。所有统计模块均已解锁 — ao5、ao12、ao50、ao100、阶段平均值等。通过详细图表追踪您的长期进步，发现趋势，找出薄弱环节。完全按照您想要的方式自定义统计模块。"
-      },
       "leaderboard_publish": {
         "title": "在排行榜上大放异彩",
         "desc": "将您的最佳单次或 ao5 发布到排行榜，并在您的个人资料上自豪地展示您的 PB。让其他速拧玩家看到您的还原记录并获得启发。魔方不仅仅是为了自己 — 向世界展示您有多快。"
@@ -3228,10 +3228,6 @@
       "pro_badge": {
         "title": "Pro 徽章",
         "desc": "您的个人资料照片周围环绕着闪耀的 Pro 光环。在房间、排行榜、个人资料页面 — 无论您走到哪里，每个人都能看到您是 Pro。这不仅仅是一个徽章，更是您在社区中的身份象征。"
-      },
-      "data_import": {
-        "title": "数据导入",
-        "desc": "您是否使用过 CSTimer、ZKTTimer 或 TwistyTimer？不要丢失多年的心血 — 一键将您过去的所有还原记录、时间和统计数据导入到 Zkt Timer。无需从零开始，直接接续之前的进度。"
       },
       "stats_customization": {
         "title": "统计自定义",
@@ -3253,17 +3249,9 @@
         "title": "破纪录提醒",
         "desc": "当你选择的项目在任何直播比赛中打破世界、洲际或国家纪录时，第一时间收到推送通知。"
       },
-      "pll_trainer": {
-        "title": "高级 PLL 识别训练器",
-        "desc": "通过视觉识别学习所有 PLL 情况。随机案例生成、时间追踪和专注于您薄弱环节的智能训练模式。"
-      },
-      "cross_trainer": {
-        "title": "高级 Cross / X-Cross 训练器",
-        "desc": "用于逐步学习 Cross 和扩展 Cross 解法的先进训练器。发现最高效的路径并提升您的速度。"
-      },
-      "early_access": {
-        "title": "新功能抢先体验",
-        "desc": "Pro 会员无需为新功能额外付费，并能比其他人更早体验。"
+      "slam_to_stop": {
+        "title": "放下停止",
+        "desc": "完成还原后，把魔方或双手放到桌上，计时器会自动停止。无需伸手触碰屏幕，不用额外硬件也能获得 StackMat 的手感。在手机应用中可用，灵敏度可按你的桌面调整。"
       }
     },
     "promo": {
@@ -3683,7 +3671,7 @@
       }
     },
     "modal": {
-      "competition_watch": {
+      "record_alerts": {
         "title": "破纪录提醒",
         "desc": "关注你在意的项目的记录。任何 WCA 直播比赛中一旦打破 WR、CR 或 NR，立即收到推送。"
       },
@@ -3694,10 +3682,6 @@
       "leaderboard": {
         "title": "在排行榜上大放异彩",
         "desc": "发布您的最佳还原记录，激励其他速拧玩家。"
-      },
-      "data_import": {
-        "title": "数据导入",
-        "desc": "一键将您的还原历史导入Zkt Timer。"
       },
       "smart_cube": {
         "title": "智能魔方深度分析",
@@ -3734,16 +3718,12 @@
       "watch_push": "实时推送通知",
       "sync": "跨所有设备自动同步",
       "themes": "6款专属主题，完全自定义",
-      "advanced_stats": "详细图表和趋势分析",
       "music_youtube": "来自YouTube的无限量无广告音乐",
       "music_friends": "玩魔方时听您自己的音乐",
       "music_unlimited": "无限歌曲搜索和播放",
       "leaderboard_publish": "发布您的最佳单次或ao5",
       "leaderboard_profile": "在您的个人资料中展示您的PB",
       "leaderboard_compete": "与其他速拧玩家竞争",
-      "import_history": "导入您所有的历史还原记录",
-      "import_sources": "支持CSTimer, ZKTTimer, TwistyTimer",
-      "import_one_click": "一键数据传输",
       "smart_analysis": "查看每一步的时间和TPS",
       "smart_steps": "单独分析Cross, F2L, OLL, PLL",
       "smart_animation": "还原动画用于详细回顾",

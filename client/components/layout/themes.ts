@@ -34,6 +34,34 @@ function setDocProp(key: string, value: string) {
 	getHtmlTag().style.setProperty(key, value);
 }
 
+// Theme colour keys also drive a derived "on this colour" pair (see getThemeBackgroundColor
+// below) used where text sits on top of the colour itself (e.g. the active quick-settings
+// tab). Shared by the persisted apply loop and the drag-preview path so both stay in sync.
+const THEME_DERIVED_KEYS: (keyof AllSettings)[] = [
+	'background_color',
+	'module_color',
+	'button_color',
+	'text_color',
+	'primary_color',
+	'secondary_color',
+];
+
+function applyColorCssVar(key: keyof AllSettings, color: string) {
+	const cssVar = userDefinedColorsVar[key];
+	if (!cssVar) return;
+
+	setDocProp(cssVar, getAnyColorStringAsRawRgbString(color));
+
+	if (THEME_DERIVED_KEYS.includes(key)) {
+		const tc = tinycolor(getAnyColorStringAsRgbString(color));
+		const themeColor = getThemeBackgroundColor(tc);
+		const themeColorOpposite = getThemeBackgroundColor(tc, true);
+		const themeKey = key.replace('_color', '');
+		setDocProp(`--theme-${themeKey}`, themeColor);
+		setDocProp(`--theme-${themeKey}-opposite`, themeColorOpposite);
+	}
+}
+
 function saveThemeSnapshot(isLight: boolean) {
 	try {
 		const html = getHtmlTag();
@@ -80,32 +108,23 @@ export function updateThemeColors() {
 		const currentPc = getHtmlTag().style.getPropertyValue(cssVar);
 
 		if (color !== currentPc) {
-			setDocProp(cssVar, getAnyColorStringAsRawRgbString(color));
-
-			const themeKeys = [
-				'background_color',
-				'module_color',
-				'button_color',
-				'text_color',
-				'primary_color',
-				'secondary_color',
-			];
-			if (themeKeys.includes(key)) {
-				const tc = tinycolor(getAnyColorStringAsRgbString(color));
-
-				const themeColor = getThemeBackgroundColor(tc);
-				const themeColorOpposite = getThemeBackgroundColor(tc, true);
-				const themeKey = key.replace('_color', '');
-
-				setDocProp(`--theme-${themeKey}`, themeColor);
-				setDocProp(`--theme-${themeKey}-opposite`, themeColorOpposite);
-			}
+			applyColorCssVar(key, color);
 		}
 	}
 
 	applySolveListColors();
 
 	saveThemeSnapshot(isLight);
+}
+
+// Live-preview a single theme colour while a picker is being dragged, WITHOUT touching the
+// settings store: no local-db write, no server sync, no localStorage theme snapshot. Used
+// by ThemeOptions so dragging a colour slider repaints the app instantly but only persists
+// (via setSetting -> updateThemeColors, which reapplies the same variable) once the picker
+// closes. Writing to the store on every drag step used to fire a server mutation per pixel.
+export function previewThemeColor(key: keyof AllSettings, colorRgb: string) {
+	if (!colorRgb) return;
+	applyColorCssVar(key, colorRgb);
 }
 
 // The solve list colours are optional overrides (see util/themes/solve_list_colors.ts).

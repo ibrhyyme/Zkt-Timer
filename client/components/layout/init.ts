@@ -39,6 +39,7 @@ import {
 } from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
 import { getSolveTombstones } from '../../util/solve-tombstones';
+import { getPendingSolveDeleteIds } from '../../db/solves/pending-delete';
 import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
@@ -587,6 +588,13 @@ async function getPendingSolveMutationIds(): Promise<{pendingCreateIds: Set<stri
 	const pendingCreateIds = new Set<string>();
 	const pendingDeleteIds = new Set<string>();
 
+	// Deletes waiting out their undo window: already gone locally, not sent yet. They are
+	// exactly the "still on the server on purpose" case, so reconciliation must leave them
+	// alone in both directions until the window closes.
+	for (const id of getPendingSolveDeleteIds()) {
+		pendingDeleteIds.add(id);
+	}
+
 	try {
 		const pendingMutations = await getAllQueued();
 		for (const m of pendingMutations) {
@@ -662,7 +670,12 @@ async function syncNewSolves(reconcile = false) {
 			appendSolvesToDb(incoming);
 		}
 
-		const resurrected = serverSolves.filter((s) => tombstoned.has(s.id)).map((s) => s.id);
+		// A tombstoned id whose delete is still inside its undo window is not a resurrection:
+		// this device has simply not sent the delete yet, and re-issuing it here would settle
+		// it behind the user's back while the undo is still on screen.
+		const resurrected = serverSolves
+			.filter((s) => tombstoned.has(s.id) && !pendingDeleteIds.has(s.id))
+			.map((s) => s.id);
 		if (resurrected.length) {
 			void redeleteResurrectedSolves(resurrected);
 		}

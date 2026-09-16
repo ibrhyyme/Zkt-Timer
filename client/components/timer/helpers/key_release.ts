@@ -20,6 +20,23 @@ export function releaseEndsStopBlock(touch: boolean, keyCode: number | undefined
 }
 
 /**
+ * Whether a release belongs to a hold the running solve has already outrun.
+ *
+ * A press can only prime the timer while nothing is running (a press during a solve stops
+ * it), so a release that finds a solve running was primed before that solve started. The
+ * one way that happens is inspection auto-start: the countdown ran out and started the
+ * solve while the key or finger was still down. `startTimer` leaves `spaceTimerStarted`
+ * alone, so the release still looked armed and went on to open a fresh inspection on top
+ * of the running solve. Such a release starts nothing; it only disarms the hold.
+ *
+ * It used to be checked on the deferred (remote-input) path only, where the grace window
+ * made the overlap easy to hit, but the ordinary path has the same hole.
+ */
+export function releaseOutlivedByStart(input: {primed: boolean; solveRunning: boolean}): boolean {
+	return input.primed && input.solveRunning;
+}
+
+/**
  * Remote-input compatibility (the `remote_input_compat` setting): how long a keyboard
  * Space release is held back before it counts.
  *

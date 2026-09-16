@@ -20,6 +20,8 @@ import {
 	isTalliedDeletion,
 	readDeletedSolveTally,
 	recordDeletedSolves,
+	removeDeletedSolvesFromTally,
+	unrecordDeletedSolves,
 } from '../deleted-solves';
 
 const NOW = new Date(2026, 8, 15, 14, 0, 0).getTime();
@@ -117,6 +119,50 @@ describe('addDeletedSolvesToTally', () => {
 	});
 });
 
+describe('removeDeletedSolvesFromTally', () => {
+	// An undone deletion (the delete's undo window) must stop counting: the solve itself
+	// is back in the solve DB, so leaving it tallied would count it twice.
+	it('takes one deletion back out of its own day and bucket', () => {
+		const tally = addDeletedSolvesToTally({}, [solve(), solve()], NOW);
+		const next = removeDeletedSolvesFromTally(tally, [solve()], NOW);
+
+		expect(countDeletedForBucketDay(next, TODAY, '333', null)).toBe(1);
+		// Without changing the tally it was given
+		expect(countDeletedForBucketDay(tally, TODAY, '333', null)).toBe(2);
+	});
+
+	it('drops the day once its last deletion is undone', () => {
+		const tally = addDeletedSolvesToTally({}, [solve()], NOW);
+		const next = removeDeletedSolvesFromTally(tally, [solve()], NOW);
+
+		expect(next[TODAY]).toBeUndefined();
+		expect(deletedDailyCountsFromTally(next).size).toBe(0);
+	});
+
+	it('never goes below zero, whatever it is asked to remove', () => {
+		const tally = addDeletedSolvesToTally({}, [solve()], NOW);
+		const next = removeDeletedSolvesFromTally(tally, [solve(), solve(), solve({cube_type: '222'})], NOW);
+
+		expect(countDeletedForBucketDay(next, TODAY, '333', null)).toBe(0);
+		expect(countDeletedForBucketDay(next, TODAY, '222', null)).toBe(0);
+	});
+
+	it('only touches the bucket and day it was given', () => {
+		const yesterday = daysAgo(1);
+		const tally = addDeletedSolvesToTally(
+			{},
+			[solve(), solve({cube_type: '222'}), solve({started_at: yesterday})],
+			NOW
+		);
+
+		const next = removeDeletedSolvesFromTally(tally, [solve()], NOW);
+
+		expect(countDeletedForBucketDay(next, TODAY, '333', null)).toBe(0);
+		expect(countDeletedForBucketDay(next, TODAY, '222', null)).toBe(1);
+		expect(countDeletedForBucketDay(next, deletedTallyDayKey(yesterday), '333', null)).toBe(1);
+	});
+});
+
 describe('deletedDailyCountsFromTally', () => {
 	const yesterday = daysAgo(1);
 	const tally = addDeletedSolvesToTally(
@@ -199,5 +245,21 @@ describe('recording in localStorage', () => {
 
 		recordDeletedSolves([solve()]);
 		expect(getDeletedCountForBucketToday('333', null)).toBe(1);
+	});
+
+	it('stops counting a deletion the user undid', () => {
+		const deleted = solve();
+		recordDeletedSolves([deleted, solve({cube_type: '222'})]);
+		expect(getDeletedCountForBucketToday('333', null)).toBe(1);
+
+		unrecordDeletedSolves([deleted]);
+
+		expect(getDeletedCountForBucketToday('333', null)).toBe(0);
+		expect(getDeletedCountForBucketToday('222', null)).toBe(1);
+	});
+
+	it('writes nothing when the undone deletion was never tallied', () => {
+		unrecordDeletedSolves([solve({from_timer: false})]);
+		expect(store).toEqual({});
 	});
 });

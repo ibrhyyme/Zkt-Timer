@@ -13,6 +13,7 @@ import {
 	PendingRelease,
 	RELEASE_GRACE_MS,
 	releaseEndsStopBlock,
+	releaseOutlivedByStart,
 	shouldDeferKeyRelease,
 	SPACE_KEY_CODE,
 } from '../key_release';
@@ -42,6 +43,24 @@ describe('releaseEndsStopBlock', () => {
 
 	it('ends on a finger release, as every touch release always did', () => {
 		expect(releaseEndsStopBlock(true, undefined, SPACE_KEY_CODE)).toBe(true);
+	});
+});
+
+describe('releaseOutlivedByStart', () => {
+	it('spends the hold when the solve is already running under it', () => {
+		// Inspection auto-start: the countdown ran out while Space (or the finger) was
+		// still down. The release must start nothing, or it opens a fresh inspection on
+		// top of the running solve.
+		expect(releaseOutlivedByStart({primed: true, solveRunning: true})).toBe(true);
+	});
+
+	it('leaves an ordinary release alone', () => {
+		expect(releaseOutlivedByStart({primed: true, solveRunning: false})).toBe(false);
+	});
+
+	it('says nothing about a release with no hold behind it', () => {
+		expect(releaseOutlivedByStart({primed: false, solveRunning: true})).toBe(false);
+		expect(releaseOutlivedByStart({primed: false, solveRunning: false})).toBe(false);
 	});
 });
 

@@ -9,19 +9,25 @@ import './ProOnlyModal.scss';
 
 const b = block('pro-only-modal');
 
-const DEFAULT_HIGHLIGHTS = ['sync', 'themes', 'advanced_stats'] as const;
+// `advanced_stats` used to sit here, but nothing gates it: the stats blocks are open
+// to everyone and only the module customization editor is Pro. Sell that instead.
+const DEFAULT_HIGHLIGHTS = ['sync', 'themes', 'stats_customize'] as const;
 
+// Keyed by the `featureKey` callers pass. Where a key matches a registry entry in
+// client/lib/pro_features.ts, the two must stay spelled the same: `record_alerts` was
+// called `competition_watch` here while the Pro page called it `record_alerts`, and
+// nothing connected them. The data-import entry is gone with the feature, which turned
+// out not to be gated on either side.
 const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	room_music: ['music_youtube', 'music_friends', 'music_unlimited'],
 	leaderboard: ['leaderboard_publish', 'leaderboard_profile', 'leaderboard_compete'],
-	data_import: ['import_history', 'import_sources', 'import_one_click'],
 	smart_cube: ['smart_analysis', 'smart_steps', 'smart_animation'],
 	themes: ['themes_six', 'themes_colors', 'themes_atmosphere'],
 	stats: ['stats_blocks', 'stats_charts', 'stats_customize'],
 	trainer: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
 	trainer_pdf: ['pdf_professional', 'pdf_alternatives', 'pdf_stats'],
 	competition_follow: ['follow_realtime', 'follow_limit'],
-	competition_watch: ['watch_records', 'watch_scope', 'watch_push'],
+	record_alerts: ['watch_records', 'watch_scope', 'watch_push'],
 	slam_to_stop: ['slam_drop', 'slam_calibrate', 'slam_stackmat'],
 };
 

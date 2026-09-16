@@ -7,25 +7,10 @@ import {getSolveCountByDateData} from '../../../../db/solves/stats/consistency';
 import {getSolveStreak} from '../../../../db/solves/stats/streak';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {useEventListener} from '../../../../util/event_handler';
-import {getDailyGoalStorage} from '../../../daily-goal/helpers/storage';
-import {getRoomDailyCounts} from '../../../daily-goal/helpers/room-solves';
-import {getDeletedDailyCounts} from '../../../daily-goal/helpers/deleted-solves';
+import {getExtraDailyCounts} from '../../../daily-goal/helpers/extra-daily-counts';
 import {StatsContext} from '../../Stats';
 
 const b = block('activity-heatmap');
-
-function mergeDailyCounts(...maps: (Map<string, number> | undefined)[]): Map<string, number> | undefined {
-	const present = maps.filter(Boolean);
-	if (present.length <= 1) return present[0];
-
-	const merged = new Map<string, number>();
-	for (const map of present) {
-		for (const [key, count] of map) {
-			merged.set(key, (merged.get(key) || 0) + count);
-		}
-	}
-	return merged;
-}
 
 const DAYS = 365;
 const WEEKS = 53;
@@ -52,27 +37,7 @@ export default function ActivityHeatmap() {
 	// session any more (room solves never did), so both sit out a session filter.
 	const extraDailyCounts = useMemo(() => {
 		if (filterOptions.session_id) return undefined;
-		const storage = getDailyGoalStorage();
-		const cubeType = typeof filterOptions.cube_type === 'string' ? filterOptions.cube_type : undefined;
-
-		let room: Map<string, number> | undefined;
-		if (storage.count_room_solves) {
-			const subset = typeof filterOptions.scramble_subset === 'string' ? filterOptions.scramble_subset : null;
-			room = getRoomDailyCounts(cubeType, subset);
-		}
-
-		let deleted: Map<string, number> | undefined;
-		if (storage.count_deleted_solves) {
-			// Matched as the solve DB query matches the solves themselves: a subset string or
-			// null narrows to exactly that subset, no subset in the filter means any.
-			const rawSubset = filterOptions.scramble_subset;
-			let subset: string | null | undefined;
-			if (typeof rawSubset === 'string') subset = rawSubset;
-			else if (rawSubset === null) subset = null;
-			deleted = getDeletedDailyCounts(cubeType, subset);
-		}
-
-		return mergeDailyCounts(room, deleted);
+		return getExtraDailyCounts(filterOptions);
 	}, [filterOptions, solveUpdate, goalVersion]);
 
 	const {grid, activeDays, monthMarkers, max} = useMemo(() => {
