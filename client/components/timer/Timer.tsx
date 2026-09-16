@@ -92,8 +92,9 @@ export default function Timer(props: TimerProps) {
 	listenForPbEvents(context);
 
 	// Switching to a puzzle the selected input cannot handle resets the input to the
-	// keyboard, so the pickers always show something real as selected. SmartCube
-	// disconnects in its own unmount cleanup once the setting flips.
+	// keyboard, so the pickers always show something real as selected. The smart cube is
+	// released by the connection manager, which watches the timer_type write itself: this
+	// page's SmartCube no longer disconnects on unmount, because navigation unmounts it too.
 	useNormalizeTimerType(cubeType, scrambleSubset);
 
 	// Initiating timer stuff

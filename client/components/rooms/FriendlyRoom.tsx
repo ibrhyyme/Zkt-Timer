@@ -53,7 +53,7 @@ import { openModal, closeModal } from '../../actions/general';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import { isNative } from '../../util/platform';
-import Connect from '../timer/smart_cube/bluetooth/connect';
+import {getSmartCubeManager} from '../../util/smart_cube/connection_manager';
 import { useNormalizeTimerType } from '../timer/helpers/timer_type_support';
 import { setTimerParams } from '../timer/helpers/params';
 import { applySmartCubeTimeOffset, getSmartCubeTimeOffset } from '../timer/helpers/smart_time_offset';
@@ -178,10 +178,11 @@ function FriendlyRoomContent() {
         setUnreadChat((count) => count + 1);
     }
 
-    // When component unmounts (leaving room), disconnect smart cube
+    // Leaving the room does NOT disconnect the smart cube: the link belongs to the app, not
+    // to this page, and a user stepping out of a room to check something should not have to
+    // pair again. The QiYi timer is still page-owned and still released here.
     useEffect(() => {
         return () => {
-            disconnectSmartCube();
             disconnectQiyiTimer();
         };
     }, []);
@@ -415,26 +416,28 @@ function FriendlyRoomContent() {
 
     // Smart Cube connection state - read from Redux store
     const reduxSmartTurns = useSelector((state: any) => state.timer?.smartTurns || []);
-    const reduxSmartCubeConnected = useSelector((state: any) => state.timer?.smartCubeConnected || false);
+    const reduxSmartCubeConnected = useSelector((state: any) => state.smartCube?.smartCubeConnected || false);
     const reduxSmartCanStart = useSelector((state: any) => state.timer?.smartCanStart || false);
     const reduxTimeStartedAt = useSelector((state: any) => state.timer?.timeStartedAt || null);
     const reduxInInspection = useSelector((state: any) => state.timer?.inInspection || false);
     const reduxSolving = useSelector((state: any) => state.timer?.solving || false);
     const reduxFinalTime = useSelector((state: any) => state.timer?.finalTime || 0);
-    const reduxSmartSolvedState = useSelector((state: any) => state.timer?.smartSolvedState || 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB');
-    const reduxSmartPhysicallySolved = useSelector((state: any) => state.timer?.smartPhysicallySolved || false);
+    const reduxSmartSolvedState = useSelector((state: any) => state.smartCube?.smartSolvedState || 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB');
+    const reduxSmartPhysicallySolved = useSelector((state: any) => state.smartCube?.smartPhysicallySolved || false);
     const reduxLastSmartMoveTime = useSelector((state: any) => state.timer?.lastSmartMoveTime || 0);
-    const reduxSmartStateSeq = useSelector((state: any) => state.timer?.smartStateSeq || 0);
+    const reduxSmartStateSeq = useSelector((state: any) => state.smartCube?.smartStateSeq || 0);
     const reduxSmartCubeScanError = useSelector((state: any) => state.timer?.smartCubeScanError || null);
     // The cube's own report of its physical state. Rooms ignored this for years and
     // trusted the move stream alone, which is why a single dropped BLE packet left the
     // timer running forever.
-    const reduxSmartCurrentState = useSelector((state: any) => state.timer?.smartCurrentState || null);
-    const reduxSmartBatteryLevel = useSelector((state: any) => state.timer?.smartCubeBatteryLevel);
-    const reduxSmartGyroSupported = useSelector((state: any) => state.timer?.smartGyroSupported || false);
+    const reduxSmartCurrentState = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
+    const reduxSmartBatteryLevel = useSelector((state: any) => state.smartCube?.smartCubeBatteryLevel);
+    const reduxSmartGyroSupported = useSelector((state: any) => state.smartCube?.smartGyroSupported || false);
 
     const [smartCubeConnecting, setSmartCubeConnecting] = useState(false);
-    const smartConnectRef = useRef<Connect | null>(null);
+    // The Bluetooth link is app-wide: a cube paired on the timer page is already live here,
+    // and leaving the room leaves it connected. See util/smart_cube/connection_manager.ts.
+    const smartManager = getSmartCubeManager();
     const smartCubeSolveSubmittedRef = useRef(false);
     // Native BLE has no OS-level device chooser: adapter.requestDevice() stays pending until
     // BleScanningModal calls selectScannedDevice. Without the picker a room scan just hangs
@@ -467,7 +470,7 @@ function FriendlyRoomContent() {
     };
 
     const cancelSmartScan = () => {
-        smartConnectRef.current?.cancelScan?.();
+        smartManager.cancelScan();
         closeSmartScanModal();
         clearSmartBleParams();
         setSmartCubeConnecting(false);
@@ -475,16 +478,12 @@ function FriendlyRoomContent() {
 
     const retrySmartScan = () => {
         // alertScanning resets the picker's phase; failures come back through alertScanError.
-        smartConnectRef.current?.connect()?.catch(() => { /* surfaced via alertScanError */ });
+        void smartManager.connect();
     };
 
     const handleConnectSmartCube = async () => {
         if (smartCubeConnecting || smartCubeConnected) return;
         setSmartCubeConnecting(true);
-
-        // Assign before connecting: leaving the room mid-scan must be able to cancel it.
-        const conn = new Connect();
-        smartConnectRef.current = conn;
 
         if (isNative()) {
             // Wipe leftovers from an earlier session so the picker never opens on a stale error.
@@ -505,7 +504,6 @@ function FriendlyRoomContent() {
         } else {
             const available = !!navigator.bluetooth && (await navigator.bluetooth.getAvailability());
             if (!available) {
-                smartConnectRef.current = null;
                 setSmartCubeConnecting(false);
                 dispatch(openModal(<BluetoothErrorMessage />));
                 return;
@@ -513,41 +511,21 @@ function FriendlyRoomContent() {
         }
 
         // connect() swallows its own failures and reports them through the alert* callbacks
-        // (which feed the picker), so this never rejects — the catch is only a safety net.
-        try {
-            await conn.connect();
-        } catch (err) {
-            console.error('Smart Cube connection failed:', err);
+        // (which feed the picker); the result only distinguishes the one case the caller has
+        // to explain, which is a different cube already holding the link.
+        const result = await smartManager.connect();
+        if (!result.ok && result.reason === 'already_connected') {
+            toastError(t('smart_cube.already_connected', {name: result.deviceName || ''}));
         }
         setSmartCubeConnecting(false);
     };
 
+    // Explicit disconnect only: the timer type moving off "smart", a room whose puzzle the
+    // cube cannot track, the gear menu's Disconnect, and a session takeover. Never on unmount.
     const disconnectSmartCube = () => {
-        // Cancel first: a scan may still be pending if the user never picked a cube.
-        smartConnectRef.current?.cancelScan?.();
         closeSmartScanModal();
-
-        if (smartConnectRef.current) {
-            smartConnectRef.current.disconnect();
-            smartConnectRef.current = null;
-        }
-
-        // Mirrors SmartCube.tsx disconnectBluetooth — without this the shared timer slice keeps
-        // reporting a connected cube and the room's bluetooth button stays green.
-        setTimerParams({
-            smartCanStart: false,
-            smartCubeConnected: false,
-            smartCubeConnecting: false,
-            smartCubeScanning: false,
-            smartCubeScanError: null,
-            smartCubeConnectStep: null,
-            smartScanDevices: [],
-            smartTurns: [],
-            smartDeviceId: '',
-            smartCurrentState: null,
-            smartGyroSupported: false,
-            smartOutOfSync: false,
-        });
+        void smartManager.disconnect();
+        setSmartOutOfSync(false);
         setSmartCubeConnecting(false);
     };
 
@@ -794,6 +772,13 @@ function FriendlyRoomContent() {
     }, [reduxSmartStateSeq, timerType]);
 
     useEffect(() => () => engineRef.current?.dispose(), []);
+
+    // Attach while the room is on screen. Attaching is not connecting: it only tells the
+    // manager a page is drawing the cube, which is what keeps the battery poll and the Redux
+    // turn mirror at full rate. Detaching on unmount leaves the link up.
+    useEffect(() => {
+        return smartManager.attach({turnStream: true});
+    }, [smartManager]);
 
     // Review warning: the cube has to be solved before the next scramble can be tracked.
     useEffect(() => {
@@ -2366,7 +2351,6 @@ function FriendlyRoomContent() {
                                 <>
                                     <SmartCubeView
                                         ref={roomCubeViewRef}
-                                        connect={smartConnectRef.current}
                                         connected={smartCubeConnected}
                                         size={isMobile ? 68 : 88}
                                     />

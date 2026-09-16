@@ -7,6 +7,7 @@ import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useLatestSolve } from '../../util/hooks/useLatestSolve';
 import { useHasSmartTurns } from '../../util/hooks/useTimerStore';
+import { useSmartCubeStore } from '../../util/hooks/useSmartCubeStore';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
 import { setTimerParam } from './helpers/params';
@@ -31,7 +32,10 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartCubeConnected } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset } = context;
+    // Connection state lives in its own slice now (reducers/smart_cube.ts), so it is not
+    // part of the timer context.
+    const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
     const isSmart = smartCubeSelected(context);
     // The turn list is not in TimerContext (see FAST_TIMER_FIELDS); only whether it is
     // empty matters here, and that does not change on every move.

@@ -39,11 +39,12 @@ import ScrambleMoveList, {isGreenBaseColor} from '../../../timer/time_display/ti
 import {sequenceMatchStatus} from '../../../timer/time_display/timer_scramble/smart_scramble/scramble_move_state';
 import {HOME_TILT_DEG, HOME_TURN_DEG} from '../../../timer/smart_cube/cube_view/view_defaults';
 import {recolorPuzzle} from '../../../timer/smart_cube/cube_view/cube_palette';
+import {getSmartCubeManager} from '../../../../util/smart_cube/connection_manager';
 
 const b = block('trainer');
 
 export default function TrainerSmartCube() {
-	const {state, dispatch, connectRef} = useTrainerContext();
+	const {state, dispatch} = useTrainerContext();
 	const {currentAlgorithm, options} = state;
 
 	// Wake lock — screen should not turn off when smart cube is connected
@@ -338,10 +339,13 @@ export default function TrainerSmartCube() {
 		patternStatesRef.current = pStates;
 	}, []);
 
-	// -- Gyro subscription helper (Issue 3) --
-	const subscribeToGyro = useCallback((cube: any) => {
-		if (!cube?.subscribeGyro || unsubGyroRef.current) return;
-		unsubGyroRef.current = cube.subscribeGyro((event: any) => {
+	// -- Gyro subscription helper --
+	// Through the manager rather than straight off the cube instance: the cube can be
+	// replaced under us by an auto-reconnect, and the manager also stops processing gyro
+	// packets entirely when no page is subscribed.
+	const subscribeToGyro = useCallback(() => {
+		if (unsubGyroRef.current) return;
+		unsubGyroRef.current = getSmartCubeManager().subscribeGyro((event: any) => {
 			if (event.quaternion) {
 				const {x: qx, y: qy, z: qz, w: qw} = event.quaternion;
 				const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
@@ -370,28 +374,17 @@ export default function TrainerSmartCube() {
 	const handleSolveCompleteRef = useRef(handleSolveComplete);
 	handleSolveCompleteRef.current = handleSolveComplete;
 
-	// -- BLE callback setup (move/gyro/facelets) --
+	// -- BLE subscriptions (move/gyro/facelets) --
+	// `turnStream: false` on the attachment: the trainer processes moves here and never reads
+	// `timer.smartTurns`, so mirroring them into Redux would only grow an array nobody empties.
 	useEffect(() => {
-		const conn = connectRef.current;
-		if (!conn) return;
+		const manager = getSmartCubeManager();
+		const detach = manager.attach({turnStream: false});
 
-		// Move callbacks — process directly (Redux bypass)
-		conn.alertTurnCube = (move: string) => processMove({
-			turn: move.replace(/\s/g, ''),
-			completedAt: Date.now(),
-			cubeTimestamp: null,
-			localTimestamp: null,
+		// Move stream, processed directly with no Redux round trip.
+		const unsubMoves = manager.subscribeMoves(({moves}) => {
+			moves.forEach((move) => processMove(move as SmartTurn));
 		});
-		conn.alertTurnCubeBatch = (moves: any[]) => {
-			if (!moves || moves.length === 0) return;
-			const formatted: SmartTurn[] = moves.map((m: any) => ({
-				turn: (m.move || m.turn || '').replace(/\s/g, ''),
-				completedAt: m.timestamp || m.completedAt || Date.now(),
-				cubeTimestamp: m.cubeTimestamp ?? null,
-				localTimestamp: m.localTimestamp ?? null,
-			}));
-			formatted.forEach(processMove);
-		};
 
 		// FACELETS callback: engine state synchronization
 		// - During solving: does NOT overwrite (breaks per-move kpattern matching)
@@ -400,7 +393,7 @@ export default function TrainerSmartCube() {
 		//   user is setting up. This way, mask mode + own method solving in mid-solve categories
 		//   like F2L is also caught.
 		// - During solving: if physical cube is SOLVED, handleSolveComplete is triggered (safety net).
-		conn.alertCubeState = (faceletStr: string) => {
+		const unsubFacelets = manager.subscribeFacelets((faceletStr: string) => {
 			if (smartPhaseRef.current === 'solving') {
 				// No overwrite during solving — only solved detection safety net
 				if (faceletStr === SOLVED_FACELETS) {
@@ -428,21 +421,21 @@ export default function TrainerSmartCube() {
 			if (smartPhaseRef.current === 'ready' && algMovesRef.current.length > 0) {
 				rebuildPatternStates();
 			}
-		};
+		});
 
-		// Issue 3: Check for existing cube on mount (may have been connected in selection view)
-		if (conn.activeCube) {
-			subscribeToGyro(conn.activeCube);
-		}
-
-		// Callback for new cube connection
-		conn._onCubeCreated = (cube: any) => subscribeToGyro(cube);
+		// The cube may already be connected (paired in the selection view, or on another page
+		// entirely). The manager's subscription survives a reconnect swapping the cube out, so
+		// this is a single call rather than a per-cube hook.
+		subscribeToGyro();
 
 		return () => {
+			unsubMoves();
+			unsubFacelets();
+			detach();
 			unsubGyroRef.current?.();
 			unsubGyroRef.current = null;
 		};
-	}, [connectRef, processMove, subscribeToGyro, rebuildPatternStates]);
+	}, [processMove, subscribeToGyro, rebuildPatternStates]);
 
 	// -- TwistyPlayer + Gyro animation loop --
 	useEffect(() => {
@@ -706,7 +699,7 @@ export default function TrainerSmartCube() {
 			(twistyPlayerRef.current as any).alg = '';
 		}
 		// Tracker cube reset (GAN)
-		const cube = connectRef.current?.activeCube;
+		const cube = getSmartCubeManager().activeCube;
 		if (cube?._trackerCube) {
 			const CubeJS = (await import('cubejs')).default;
 			cube._trackerCube = new CubeJS();
@@ -724,7 +717,7 @@ export default function TrainerSmartCube() {
 		dispatch({type: 'SET_TIMER_STATE', payload: 'IDLE'});
 		dispatch({type: 'SET_TIMER_VALUE', payload: 0});
 		dispatch({type: 'SMART_SET_PHASE', payload: 'ready'});
-	}, [connectRef, dispatch, stopTimerInterval]);
+	}, [dispatch, stopTimerInterval]);
 
 	const handleResetGyro = useCallback(() => {
 		gyroBasisRef.current = null;

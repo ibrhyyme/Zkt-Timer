@@ -82,22 +82,16 @@ export interface TimerStore {
 	// Multi-phase: elapsed milliseconds at each mid-solve split press, ascending.
 	// Holds count-1 entries by the time the solve ends.
 	phaseSplits?: number[];
-	smartCubeConnected?: boolean;
 	smartCubeConnecting?: boolean;
 	smartCubeScanning?: boolean;
 	smartCubeScanError?: string | null;
 	// Devices found during a native scan, for the user-facing picker (strongest signal first).
 	smartScanDevices?: { deviceId: string; name: string; rssi: number | null }[];
 	smartCubeConnectStep?: 'found' | 'paired' | 'reading_service' | 'done' | null;
-	smartCubeBatteryLevel?: number;
 	smartCanStart?: boolean;
 	smartTurns?: any; // TODO fix
-	smartDeviceId?: string;
-	smartCurrentState?: string;
-	smartSolvedState?: string;
 	smartGyroQuaternion?: { x: number; y: number; z: number; w: number } | null;
 	smartGyroVelocity?: { x: number; y: number; z: number } | null;
-	smartGyroSupported?: boolean;
 	scramble?: string;
 	scrambleSubset?: string;
 	scrambleTopColor?: string | null;
@@ -114,8 +108,6 @@ export interface TimerStore {
 		correctedAnalysis?: LiveAnalysisResult;
 	} | null;
 	smartAbortVisible?: boolean;
-	smartStateSeq?: number;
-	smartPhysicallySolved?: boolean;
 	smartNeedsCubeReset?: boolean;
 	// Cube reports a state that is neither solved nor the current scramble target
 	// (typically after reconnecting to a cube that was turned with Bluetooth off).
@@ -126,4 +118,34 @@ export interface TimerStore {
 	 * other global key handler stands down — see helpers/virtual_cube.ts.
 	 */
 	virtualArmed?: boolean;
+}
+
+/**
+ * Everything the smart cube CONNECTION owns, in its own slice.
+ *
+ * These used to sit in TimerStore. Leaving the timer page dispatches RESET_TIMER_PARAMS,
+ * which restored the whole slice to its defaults, so a cube that was still physically
+ * connected read back as disconnected the moment the user opened another page, and the
+ * page then tore the link down to match. The connection outlives any page, so its state
+ * has to live somewhere a page unmount cannot reach.
+ *
+ * Single writer: client/util/smart_cube/connection_manager.ts. Nothing else dispatches
+ * SET_SMART_CUBE_PARAM, so "who changed this" has exactly one answer.
+ */
+export interface SmartCubeStore {
+	smartCubeConnected?: boolean;
+	/** True while an unexpected drop is being retried (cube powered off, out of range). */
+	smartReconnecting?: boolean;
+	/** SmartDevice row id, written onto saved solves. Falls back to the BLE id offline. */
+	smartDeviceId?: string;
+	/** Advertised name of the connected cube, for "already connected as X" messages. */
+	smartDeviceName?: string | null;
+	smartCubeBatteryLevel?: number | null;
+	smartGyroSupported?: boolean;
+	/** 54-char facelets the cube last reported. */
+	smartCurrentState?: string | null;
+	/** Bumped on every accepted facelets update, so listeners can react to a repeat state. */
+	smartStateSeq?: number;
+	smartPhysicallySolved?: boolean;
+	smartSolvedState?: string;
 }

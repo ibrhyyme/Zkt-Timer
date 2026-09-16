@@ -1709,7 +1709,7 @@ export default class GAN extends SmartCube {
 				this._trackerCube.move(event.move);
 
 				// Synchronous solved check: freeze timer display without waiting for React render
-				const solvedState = getStore().getState().timer.smartSolvedState;
+				const solvedState = getStore().getState().smartCube?.smartSolvedState;
 				if (solvedState && this._trackerCube.asString() === solvedState) {
 					// Clock skew corrected freeze: display = record = GAN reference
 					// This prevents "jump forward then back" effect
@@ -1779,7 +1779,7 @@ export default class GAN extends SmartCube {
 			// timer, and waiting out the recovery window would add that delay straight onto
 			// the recorded time. The matcher is what needs shielding from a half-delivered
 			// stream, and it is not running once a solve is under way.
-			const solvedState = getStore().getState().timer.smartSolvedState || SOLVED_FACELETS;
+			const solvedState = getStore().getState().smartCube?.smartSolvedState || SOLVED_FACELETS;
 			if (event.pendingGap && event.facelets !== solvedState) {
 				return;
 			}

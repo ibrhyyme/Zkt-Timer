@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useReducer, useRef, useEffect, ReactNode} from 'react';
+import React, {createContext, useContext, useReducer, useEffect, ReactNode} from 'react';
 import {useLocation} from 'react-router-dom';
 import type {
 	TrainerSessionState,
@@ -13,8 +13,7 @@ import type {
 import {algToId} from '../../util/trainer/algorithm_engine';
 import {parseTrainerPath} from '../../util/trainer/url/trainer_url';
 import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
-import Connect, {createCubeForDevice} from '../timer/smart_cube/bluetooth/connect';
-import {setTimerParams} from '../timer/helpers/params';
+import {getSmartCubeManager} from '../../util/smart_cube/connection_manager';
 
 const DEFAULT_OPTIONS: TrainerOptions = {
 	randomOrder: true,
@@ -408,12 +407,9 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 	}
 }
 
-const defaultConnectRef = {current: null as any};
-
 const TrainerContext = createContext<TrainerContextType>({
 	state: initialState,
 	dispatch: () => {},
-	connectRef: defaultConnectRef,
 });
 
 export function useTrainerContext() {
@@ -430,123 +426,58 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 	// never server-renders — not an SSR/hydration concern).
 	const location = useLocation();
 	const [state, dispatch] = useReducer(trainerReducer, location.pathname, makeInitialState);
-	const connectRef = useRef(new Connect());
 
-	// Set up base BLE callbacks at Provider level
+	// The trainer no longer owns a Connect instance. Every surface shares the app-level
+	// manager, so a cube paired on the timer is already live when the trainer opens, and
+	// leaving the trainer no longer strands an open link nobody can reach (the old code
+	// abandoned its instance on unmount instead of disconnecting).
+	//
+	// This mirrors the manager's connection state into the trainer's own reducer, which the
+	// trainer UI reads. The manager's Redux slice is the source; this is a view of it.
 	useEffect(() => {
-		const conn = connectRef.current;
+		const manager = getSmartCubeManager();
 
-		// Connect instance callbacks (scanning/connecting/error — called from Connect).
-		// State is dispatched to the trainer reducer AND mirrored into the timer Redux slice:
-		// on native the device picker (BleScanningModal) is rendered at the App root, outside
-		// this provider, and reads its phase from that slice. Without the mirror the picker would
-		// sit on "searching" through a failed scan.
-		conn.alertScanning = () => {
-			dispatch({type: 'SMART_CONNECTION', payload: {scanning: true, connecting: false, scanError: null}});
-			setTimerParams({
-				smartCubeScanning: true,
-				smartCubeConnecting: false,
-				smartCubeScanError: null,
-				smartCubeConnectStep: null,
-				smartScanDevices: [],
-			});
-		};
-		conn.alertConnecting = () => {
-			dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: true}});
-			setTimerParams({
-				smartCubeScanning: false,
-				smartCubeConnecting: true,
-				smartCubeScanError: null,
-				smartScanDevices: [],
-			});
-		};
-		conn.alertScanError = (msg: string) => {
-			dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false, scanError: msg}});
-			setTimerParams({
-				smartCubeScanning: false,
-				smartCubeConnecting: false,
-				smartCubeScanError: msg,
-				smartCubeConnectStep: null,
-			});
-		};
-		conn.alertDisconnected = () => {
-			dispatch({type: 'SMART_DISCONNECT'});
-			setTimerParams({
-				smartCubeScanning: false,
-				smartCubeConnecting: false,
-				smartCubeScanError: null,
-				smartCubeConnectStep: null,
-				smartScanDevices: [],
-			});
-		};
+		let wasConnected = manager.getSnapshot().connected;
 
-		// _initCube override: cube class (GAN/Giiker/Particula) inherits from SmartCube base class
-		// with its own callbacks. These callbacks go to Redux/setTimerParams.
-		// For Trainer, we need to redirect these callbacks to TrainerContext dispatch.
-		// Set callbacks BEFORE cube.init() because init() adds event listeners
-		// and alertConnected/alertCubeState may be called immediately.
-		conn._initCube = async (device: any) => {
-			// Shared routing table — do not inline a copy here, it drifts (see createCubeForDevice).
-			const {cube} = createCubeForDevice(device, conn.adapter);
-
-			if (!cube) {
-				conn.alertScanError?.('notfound');
+		const apply = (snapshot: ReturnType<typeof manager.getSnapshot>) => {
+			if (wasConnected && !snapshot.connected) {
+				// SMART_DISCONNECT resets the whole smart block (phase, match counters, camera
+				// pad), so it fires only on the actual transition. Sending it for every
+				// not-connected snapshot would wipe a live session the moment a scan started.
+				wasConnected = false;
+				dispatch({type: 'SMART_DISCONNECT'});
 				return;
 			}
+			wasConnected = snapshot.connected;
+			dispatch({
+				type: 'SMART_CONNECTION',
+				payload: {
+					scanning: snapshot.scanning,
+					connecting: snapshot.connecting,
+					connected: snapshot.connected,
+					scanError: snapshot.scanError,
+					// Seeds the readout for a cube connected before the trainer opened; later
+					// readings arrive through subscribeBattery below.
+					battery: snapshot.batteryLevel,
+				},
+			});
+		};
 
-			conn.activeCube = cube;
+		// Seed from the current state first: the cube may already be connected from another page.
+		apply(manager.getSnapshot());
+		const unsubConnection = manager.subscribeConnection(apply);
+		const unsubBattery = manager.subscribeBattery((level) =>
+			dispatch({type: 'SMART_CONNECTION', payload: {battery: level}})
+		);
 
-			// Set callbacks BEFORE init()
-			cube.alertConnected = async (server: any) => {
-				try {
-					const exists = await conn.smartCubeInDb(server);
-					if (!exists) await conn.addSmartCubeToDb(server.device.name, server.device.id);
-				} catch {
-					// DB registration is best-effort — the cube is usable offline either way.
-				}
-				dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false, connected: true, scanError: null}});
-				setTimerParams({
-					smartCubeScanning: false,
-					smartCubeConnecting: false,
-					smartCubeScanError: null,
-					smartCubeConnectStep: 'done',
-					smartScanDevices: [],
-				});
-			};
-			cube.alertDisconnected = () => {
-				dispatch({type: 'SMART_DISCONNECT'});
-				setTimerParams({
-					smartCubeScanning: false,
-					smartCubeConnecting: false,
-					smartCubeScanError: null,
-					smartCubeConnectStep: null,
-					smartScanDevices: [],
-				});
-			};
-			// Handshake failures (e.g. GAN wrong-MAC watchdog) are raised by the cube class itself.
-			// Without this forward they would only reach the timer slice and the trainer would stay
-			// stuck on "connecting" with its BLE button disabled.
-			cube.alertScanError = (msg: string) => conn.alertScanError?.(msg);
-			cube.alertBatteryLevel = (level: number) => dispatch({type: 'SMART_CONNECTION', payload: {battery: level}});
-			cube.alertTurnCube = (move: string) => {
-				conn.alertTurnCube?.(move);
-			};
-			cube.alertTurnCubeBatch = (moves: any[]) => {
-				conn.alertTurnCubeBatch?.(moves);
-			};
-			cube.alertCubeState = (facelets: string) => {
-				conn.alertCubeState?.(facelets);
-			};
-
-			// _onCubeCreated callback (for gyro subscription)
-			if ((conn as any)._onCubeCreated) (conn as any)._onCubeCreated(cube);
-
-			await cube.init();
+		return () => {
+			unsubConnection();
+			unsubBattery();
 		};
 	}, [dispatch]);
 
 	return (
-		<TrainerContext.Provider value={{state, dispatch, connectRef}}>
+		<TrainerContext.Provider value={{state, dispatch}}>
 			{children}
 		</TrainerContext.Provider>
 	);

@@ -7,6 +7,8 @@ import {useTranslation} from 'react-i18next';
 import {openModal, closeModal} from '../../../actions/general';
 import {isNative} from '../../../util/platform';
 import {setTimerParams} from '../../timer/helpers/params';
+import {getSmartCubeManager} from '../../../util/smart_cube/connection_manager';
+import {toastError} from '../../../util/toast';
 import BleScanningModal from '../../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import TrainerSettingsModal from '../options/TrainerSettingsModal';
 import TrainerModeHeader from '../common/TrainerModeHeader';
@@ -27,7 +29,10 @@ const bh = block('trainer-header');
 export default function TrainerToolbar() {
 	const {t} = useTranslation();
 	const reduxDispatch = useDispatch();
-	const {state, dispatch, connectRef} = useTrainerContext();
+	const {state, dispatch} = useTrainerContext();
+	// The link is app-wide now, so a cube connected on the timer is already live here and
+	// leaving the trainer leaves it alone.
+	const manager = getSmartCubeManager();
 
 	const toggleMask = useCallback(() => {
 		dispatch({type: 'SET_MOVE_MASKED', payload: !state.isMoveMasked});
@@ -59,44 +64,42 @@ export default function TrainerToolbar() {
 	}, [reduxDispatch]);
 
 	const handleCancelScan = useCallback(() => {
-		connectRef.current?.cancelScan?.();
+		manager.cancelScan();
 		closeScanModal();
 		dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false, scanError: null}});
 		clearBleParams();
-	}, [connectRef, closeScanModal, dispatch, clearBleParams]);
+	}, [manager, closeScanModal, dispatch, clearBleParams]);
 
 	const handleRetryScan = useCallback(() => {
-		const conn = connectRef.current;
-		if (!conn) return;
 		// alertScanning resets both the trainer state and the picker's mirrored params.
-		conn.connect(state.options.showAllBleDevices).catch(() => {
-			// Errors surface through alertScanError
-		});
-	}, [connectRef, state.options.showAllBleDevices]);
+		void manager.connect(state.options.showAllBleDevices);
+	}, [manager, state.options.showAllBleDevices]);
 
-	// Connection established — the picker has done its job.
+	// Connection established. The manager already closed the picker when the handshake
+	// finished (as it does for every surface), so only the handle is dropped here; a second
+	// closeModal would pop whatever modal the user opened next.
 	useEffect(() => {
 		if (state.smartConnected) {
-			closeScanModal();
+			scanModalOpenRef.current = false;
 		}
-	}, [state.smartConnected, closeScanModal]);
+	}, [state.smartConnected]);
 
 	// Leaving the trainer mid-scan must not leave a pending scan (and a stale picker) behind.
+	// A scan is not a connection: cancelling one is not a disconnect, and a cube that is
+	// already connected is deliberately left alone here.
 	useEffect(() => {
 		return () => {
 			if (scanModalOpenRef.current) {
-				connectRef.current?.cancelScan?.();
+				manager.cancelScan();
 				scanModalOpenRef.current = false;
 			}
 		};
-	}, [connectRef]);
+	}, [manager]);
 
 	const handleBleToggle = useCallback(async () => {
-		const conn = connectRef.current;
-		if (!conn) return;
-
 		if (state.smartConnected) {
-			conn.disconnect?.();
+			// Explicit user action: the one path that is allowed to drop the link.
+			void manager.disconnect();
 			dispatch({type: 'SMART_DISCONNECT'});
 			clearBleParams();
 		} else {
@@ -118,10 +121,10 @@ export default function TrainerToolbar() {
 				));
 			}
 
-			try {
-				await conn.connect(state.options.showAllBleDevices);
-			} catch (e) {
-				// Connect errors are handled in alertScanError callback
+			const result = await manager.connect(state.options.showAllBleDevices);
+			if (!result.ok && result.reason === 'already_connected') {
+				// Another cube already holds the link, connected from another page.
+				toastError(t('smart_cube.already_connected', {name: result.deviceName || ''}));
 			}
 			// On BLE_SCAN_ABORTED, connect.js calls setTimerParams directly,
 			// doesn't reset trainer state. Always reset scanning/connecting in any case.
@@ -130,7 +133,8 @@ export default function TrainerToolbar() {
 			}
 		}
 	}, [
-		connectRef,
+		manager,
+		t,
 		state.smartConnected,
 		state.options.showAllBleDevices,
 		dispatch,

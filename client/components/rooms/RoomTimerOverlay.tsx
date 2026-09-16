@@ -186,7 +186,7 @@ export default function RoomTimerOverlay({
     const smartCubeSolving = useSelector((state: any) => state.timer?.solving || false);
     const smartCubeInInspection = useSelector((state: any) => state.timer?.inInspection || false);
     const smartCubeInspectionTimer = useSelector((state: any) => state.timer?.inspectionTimer ?? 17);
-    const smartCubeConnected = useSelector((state: any) => state.timer?.smartCubeConnected || false);
+    const smartCubeConnected = useSelector((state: any) => state.smartCube?.smartCubeConnected || false);
 
     // FIX: Removed forced inspection for smart cube - let user decide
     // Previously: timerType === 'smart' ? true : inspection

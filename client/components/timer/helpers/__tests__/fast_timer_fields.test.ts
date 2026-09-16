@@ -1,6 +1,13 @@
 import { shallowEqual } from 'react-redux';
 import timer from '../../../../reducers/timer';
-import { setTimerParamsAction, turnSmartCube, turnSmartCubeBatch } from '../../../../actions/timer';
+import smartCube from '../../../../reducers/smart_cube';
+import {
+	setSmartCubeParamsAction,
+	setTimerParamsAction,
+	smartCubeFaceletsAction,
+	turnSmartCube,
+	turnSmartCubeBatch,
+} from '../../../../actions/timer';
 import { FAST_TIMER_FIELDS, selectStableTimerStore } from '../fast_timer_fields';
 
 /**
@@ -16,6 +23,7 @@ const SCRAMBLED = 'DUUUUUUUURRRRRRRRRFFFFFFFFFUDDDDDDDDLLLLLLLLLBBBBBBBBB';
 const FAST: readonly string[] = FAST_TIMER_FIELDS;
 
 const initial = () => timer(undefined, { type: '@@INIT' });
+const initialSmart = () => smartCube(undefined, { type: '@@INIT' });
 const running = () => timer(initial(), setTimerParamsAction({ timeStartedAt: new Date(1000), solving: true }));
 
 /** Mirrors Timer: useSelector(selectStableTimerStore, shallowEqual). */
@@ -58,9 +66,15 @@ describe('a smart cube move does not re-render Timer', () => {
 
 		// The action did change the slice, so Timer comparing equal is not a no-op.
 		expect(next.smartTurns).toHaveLength(2);
-		expect(next.smartStateSeq).toBe(prev.smartStateSeq + 1);
 		expect(stableFieldsChanged(prev, next)).toEqual([]);
 		expect(rerendersTimer(prev, next)).toBe(false);
+
+		// The facelets half of the same action lands in the connection slice, which Timer
+		// never reads at all.
+		const smartPrev = initialSmart();
+		const smartNext = smartCube(smartPrev, turnSmartCubeBatch(moves(['R', 'U'], 1000), SCRAMBLED));
+		expect(smartNext.smartCurrentState).toBe(SCRAMBLED);
+		expect(smartNext.smartStateSeq).toBe(smartPrev.smartStateSeq + 1);
 	});
 
 	it('during a solve, where it also stamps the pick-up and last-move times', () => {
@@ -77,7 +91,8 @@ describe('a smart cube move does not re-render Timer', () => {
 		const prev = timer(running(), turnSmartCubeBatch(moves(['R'], 1500), SCRAMBLED));
 		const next = timer(prev, turnSmartCubeBatch(moves(["R'"], 2500), SOLVED));
 
-		expect(next.smartPhysicallySolved).toBe(true);
+		const smartSolved = smartCube(initialSmart(), turnSmartCubeBatch(moves(["R'"], 2500), SOLVED));
+		expect(smartSolved.smartPhysicallySolved).toBe(true);
 		expect(stableFieldsChanged(prev, next)).toEqual([]);
 		expect(rerendersTimer(prev, next)).toBe(false);
 	});
@@ -96,7 +111,7 @@ describe('what the solve engine and inspection write per move or tick', () => {
 	it.each([
 		['scramble progress', { smartMatchStatus: ['perfect', 'pending'] }],
 		['an undo hint', { smartUndoMoves: ["R'"] }],
-		['a facelets report', { smartCurrentState: SCRAMBLED, smartStateSeq: 5, smartPhysicallySolved: false }],
+		['the abort button hiding again', { smartAbortVisible: false }],
 		// The tick re-sends addTwoToSolve every time; it only matters once it flips (below).
 		['an inspection tick', { inspectionTimer: 14.9, addTwoToSolve: false }],
 	])('%s does not re-render Timer', (_, params) => {
@@ -108,6 +123,31 @@ describe('what the solve engine and inspection write per move or tick', () => {
 	});
 });
 
+describe('connection state is out of reach of Timer entirely', () => {
+	it.each([
+		['a facelets report', smartCubeFaceletsAction(SCRAMBLED)],
+		['the cube connecting', setSmartCubeParamsAction({ smartCubeConnected: true, smartDeviceId: 'x' })],
+	])('%s changes the smart cube slice and leaves the timer slice untouched', (_, action) => {
+		const prevTimer = initial();
+		const prevSmart = initialSmart();
+
+		// Same dispatch, both reducers: combineReducers runs them together.
+		expect(smartCube(prevSmart, action as any)).not.toBe(prevSmart);
+		expect(timer(prevTimer, action as any)).toBe(prevTimer);
+	});
+
+	it('survives RESET_TIMER_PARAMS, which is the whole reason it moved', () => {
+		const connected = smartCube(
+			initialSmart(),
+			setSmartCubeParamsAction({ smartCubeConnected: true, smartDeviceId: 'cube-1' })
+		);
+		const afterReset = smartCube(connected, { type: 'RESET_TIMER_PARAMS' });
+
+		expect(afterReset.smartCubeConnected).toBe(true);
+		expect(afterReset.smartDeviceId).toBe('cube-1');
+	});
+});
+
 describe('every other change still re-renders Timer', () => {
 	it.each([
 		['the timer starting', { timeStartedAt: new Date(1000), solving: true }],
@@ -116,7 +156,7 @@ describe('every other change still re-renders Timer', () => {
 		['the scramble being done', { smartCanStart: true }],
 		['a new scramble', { scramble: 'R U F' }],
 		['the abort button appearing', { smartAbortVisible: true }],
-		['the cube connecting', { smartCubeConnected: true }],
+		['the cube needing a reset', { smartNeedsCubeReset: true }],
 		['the cube going out of sync', { smartOutOfSync: true }],
 		['a finished solve reporting its stats', { lastSmartSolveStats: { turns: 40, tps: 4 } }],
 	])('%s', (_, params) => {

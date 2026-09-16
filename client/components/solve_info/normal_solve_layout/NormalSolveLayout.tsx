@@ -11,7 +11,6 @@ import Button from '../../common/button/Button';
 import Tag from '../../common/tag/Tag';
 import CopyText from '../../common/copy_text/CopyText';
 import block from '../../../styles/bem';
-import { useInput } from '../../../util/hooks/useInput';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
 import { shareContent } from '../../../util/native-plugins';
@@ -36,7 +35,6 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
-	const [notes, setNotes] = useInput(effSolve.notes);
 	const [sendOpen, setSendOpen] = useState(false);
 
 	const scramble = solve.scramble;
@@ -187,23 +185,6 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 					phaseSplits={effSolve.phase_splits}
 					rawTime={effSolve.raw_time}
 				/>
-
-				<div className={b('inline-notes')}>
-					<legend>{t('solve_info.notes_label')}</legend>
-					{editMode ? (
-						<TextArea
-							value={notes || ''}
-							autoSize
-							name="notes"
-							onChange={(e) => {
-								setNotes(e);
-								handleChange(e);
-							}}
-						/>
-					) : (
-						notes ? <p>{notes}</p> : <i>{t('solve_info.no_notes')}</i>
-					)}
-				</div>
 			</div>
 		</div>
 	);

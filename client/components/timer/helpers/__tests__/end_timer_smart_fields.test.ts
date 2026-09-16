@@ -6,6 +6,7 @@
  */
 
 const mockStore: Record<string, any> = {};
+const mockSmartCubeStore: Record<string, any> = {smartDeviceId: 'cube-1'};
 const mockSettings: Record<string, any> = {};
 let mockMe: any = null;
 
@@ -36,6 +37,11 @@ jest.mock('../../../../db/settings/query', () => ({
 jest.mock('../../../../util/store/getTimer', () => ({
 	getTimerStore: (key: string) => mockStore[key],
 }));
+// The connected device id moved to its own slice (reducers/smart_cube.ts), so endTimer
+// reads it from there rather than from TimerContext.
+jest.mock('../../../../util/hooks/useSmartCubeStore', () => ({
+	getSmartCubeStore: (key: string) => mockSmartCubeStore[key],
+}));
 jest.mock('../../../../util/storage', () => ({ resourceUri: (path: string) => path }));
 jest.mock('../../../../util/native-audio', () => ({ playNativeSound: () => false }));
 jest.mock('../../../../util/native-plugins', () => ({ hapticImpact: jest.fn() }));
@@ -58,7 +64,6 @@ function timerContext(): any {
 		scrambleSubset: null,
 		scramble: "R U R' U'",
 		timeStartedAt: new Date(STARTED_AT),
-		smartDeviceId: 'cube-1',
 		solvesFilter: {},
 	};
 }

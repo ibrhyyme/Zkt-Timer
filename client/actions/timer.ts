@@ -1,4 +1,4 @@
-import {TimerStore} from '../components/timer/@types/interfaces';
+import {SmartCubeStore, TimerStore} from '../components/timer/@types/interfaces';
 
 export function turnSmartCube(turn, completedAt, cubeTimestamp?: number | null, localTimestamp?: number | null) {
 	return {
@@ -32,6 +32,29 @@ export function turnSmartCubeBatch(
 export function setTimerParamsAction(params: Partial<TimerStore>) {
 	return {
 		type: 'SET_TIMER_PARAM',
+		payload: {
+			params,
+		},
+	};
+}
+
+/**
+ * Cube state reported without any moves attached (periodic FACELETS packet, a resync, a
+ * manual "mark as solved"). The sequence number is bumped by the reducer, so it is the one
+ * authority on it whichever path the state arrived by.
+ */
+export function smartCubeFaceletsAction(facelets: string) {
+	return {
+		type: 'SMART_CUBE_FACELETS',
+		payload: {
+			facelets,
+		},
+	};
+}
+
+export function setSmartCubeParamsAction(params: Partial<SmartCubeStore>) {
+	return {
+		type: 'SET_SMART_CUBE_PARAM',
 		payload: {
 			params,
 		},

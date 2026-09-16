@@ -5,7 +5,6 @@ import './SmartCube.scss';
 import SmartStats from './stats/SmartStats';
 import Emblem from '../../common/emblem/Emblem';
 import Battery from './battery/Battery';
-import Connect from './bluetooth/connect';
 import { setTimerParams } from '../helpers/params';
 import { Bluetooth, Gear } from 'phosphor-react';
 
@@ -41,9 +40,10 @@ import {showBleConnectInfo} from '../common/showBleConnectInfo';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
-import { onVisibilityChange } from '../../../util/app-visibility';
 import { SmartSolveEngine, SmartEngineEvent, SolveResult } from '../../../util/smart_cube';
 import { recordEngineEvent } from '../../../util/smart_cube/telemetry';
+import { getSmartCubeManager } from '../../../util/smart_cube/connection_manager';
+import { useSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import SmartCubeView, { SmartCubeViewHandle } from './cube_view/SmartCubeView';
 
 const b = block('smart-cube');
@@ -110,7 +110,10 @@ export default function SmartCube() {
 	const dispatch = useDispatch();
 	const context = useContext(TimerContext);
 
-	const connect = useRef(new Connect());
+	// The link itself belongs to the app, not to this component: leaving /timer used to
+	// disconnect the cube because the instance died with the page. See
+	// client/util/smart_cube/connection_manager.ts.
+	const manager = getSmartCubeManager();
 
 	const scrambleCompletedAtRef = useRef<Date | null>(null);
 	// Counts turns swallowed as "late scramble moves" since the current scramble was
@@ -136,7 +139,6 @@ export default function SmartCube() {
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
 	const inspectionEnabled = useSettings('inspection');
-	const timerType = useSettings('timer_type');
 	const mobileMode = useGeneral('mobile_mode');
 	const me = useMe();
 	const userIsPro = isPro(me);
@@ -166,15 +168,10 @@ export default function SmartCube() {
 
 	const {
 		scramble,
-		smartDeviceId,
 		smartCubeScanning,
 		smartCubeScanError,
 		smartCubeConnecting,
-		smartCubeBatteryLevel,
-		smartSolvedState,
-		smartCubeConnected,
 		timeStartedAt,
-		smartGyroSupported,
 		originalScramble,
 		smartTurnOffset,
 		smartAbortVisible,
@@ -185,8 +182,15 @@ export default function SmartCube() {
 	// Per-move fields are not in TimerContext (see FAST_TIMER_FIELDS). The engine is fed
 	// from here, so this component subscribes to them itself.
 	const smartTurns = useTimerStore('smartTurns');
-	const smartCurrentState = useTimerStore('smartCurrentState');
-	const smartStateSeq = useTimerStore('smartStateSeq');
+
+	// Connection-owned fields live in their own slice so RESET_TIMER_PARAMS on unmount
+	// cannot wipe them (see reducers/smart_cube.ts).
+	const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
+	const smartDeviceId = useSmartCubeStore('smartDeviceId');
+	const smartCubeBatteryLevel = useSmartCubeStore('smartCubeBatteryLevel');
+	const smartGyroSupported = useSmartCubeStore('smartGyroSupported');
+	const smartCurrentState = useSmartCubeStore('smartCurrentState');
+	const smartStateSeq = useSmartCubeStore('smartStateSeq');
 
 	// Surface wrong-MAC handshake failures on web (native shows the BleScanningModal
 	// error state instead). Without this the cube would silently fail after the watchdog.
@@ -411,39 +415,25 @@ export default function SmartCube() {
 	// engine (reconcileTracker). It runs on every facelets packet rather than once per
 	// connection, so a cube that drifts mid-session recovers too.
 
+	// Attach, never connect or disconnect. Detaching on unmount tells the manager nothing on
+	// screen needs the cube right now (it slows the battery poll and stops gyro processing);
+	// the Bluetooth link itself stays up, which is the whole point. The turn stream is
+	// mirrored into Redux for the engine, the 3D view and the scramble display.
+	//
+	// Background battery pausing moved into the manager too: it has to keep working while
+	// the user is on a page that never mounts this component.
 	useEffect(() => {
+		const detach = manager.attach({ turnStream: true });
 		return () => {
-			connect.current.disconnect();
+			detach();
 			if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 		};
 	}, []);
 
-	// Stop BLE battery polling in background, restart in foreground
-	useEffect(() => {
-		const unsub = onVisibilityChange((visible) => {
-			const cube = connect.current?.activeCube as any;
-			if (!cube) return;
-			if (!visible && cube.batteryInterval) {
-				clearInterval(cube.batteryInterval);
-				cube.batteryInterval = null;
-			} else if (visible && !cube.batteryInterval && smartCubeConnected) {
-				const pollFn = cube.updateBattery || cube.getBatteryLevel;
-				if (pollFn) {
-					cube.batteryInterval = setInterval(() => pollFn.call(cube), 10000);
-				}
-			}
-		});
-		return unsub;
-	}, [smartCubeConnected]);
-
-	// Bluetooth disconnect on timer change
-	const prevTimerTypeRef = useRef<string | null>(null);
-	useEffect(() => {
-		if (prevTimerTypeRef.current === 'smart' && timerType !== 'smart') {
-			disconnectBluetooth();
-		}
-		prevTimerTypeRef.current = timerType;
-	}, [timerType]);
+	// Disconnecting when the timer type leaves "smart" moved into the connection manager,
+	// which watches the setting write. It had to leave: this component unmounts in the same
+	// commit as the setting change, so an effect here never sees the new value, and the type
+	// can also be changed from pages that never mount this component.
 
 	// Inactivity detection: show abort button after 10s of no moves during solve.
 	// Uses setTimeout + smartTurns.length dependency. Each new move resets the timer.
@@ -609,7 +599,8 @@ export default function SmartCube() {
 		}
 
 		setTimerParams({
-			smartSolvedState: markSolved ? DEFAULT_SOLVED_STATE : smartSolvedState,
+			// smartSolvedState is not written here any more: it belongs to the connection slice
+			// and has only ever held the one solved-cube constant, so the old write was a no-op.
 			smartTurnOffset: 0,
 			smartUndoMoves: null,
 			// If isSolveEnd, smartTurns/smartPickUpTime/lastSmartMoveTime already reset in endTimer
@@ -733,7 +724,12 @@ export default function SmartCube() {
 						}
 					));
 				}
-				connect.current.connect();
+				const result = await manager.connect();
+				if (!result.ok && result.reason === 'already_connected') {
+					// A cube is already on the link, connected from another page. Say which one
+					// rather than silently adopting it or failing with a generic scan error.
+					toastError(t('smart_cube.already_connected', { name: result.deviceName || '' }));
+				}
 			} else {
 				dispatch(openModal(<BluetoothErrorMessage />));
 			}
@@ -744,15 +740,8 @@ export default function SmartCube() {
 	}
 
 	function cancelBleScan() {
-		connect.current.cancelScan();
+		manager.cancelScan();
 		dispatch(closeModal());
-		setTimerParams({
-			smartCubeScanning: false,
-			smartCubeConnecting: false,
-			smartCubeScanError: null,
-			smartCubeConnectStep: null,
-			smartScanDevices: [],
-		});
 	}
 
 	function retryBleScan() {
@@ -761,21 +750,13 @@ export default function SmartCube() {
 			smartCubeScanError: null,
 			smartCubeConnectStep: null,
 		});
-		connect.current.connect();
+		void manager.connect();
 	}
 
 	function disconnectBluetooth() {
-		connect.current.disconnect();
-		setTimerParams({
-			smartCanStart: false,
-			smartCubeConnected: false,
-			smartCubeConnecting: false,
-			smartTurns: [],
-			smartDeviceId: '',
-			smartCurrentState: null,
-			smartGyroSupported: false,
-			smartOutOfSync: false,
-		});
+		// Explicit user action. The manager marks it intentional so the drop it causes is not
+		// mistaken for a cube going out of range and retried.
+		void manager.disconnect();
 	}
 
 	function toggleManageSmartCubes() {
@@ -786,21 +767,16 @@ export default function SmartCube() {
 		// The cube keeps its own state in firmware. Without telling it to reset, it
 		// keeps reporting the stale (scrambled) facelets and overwrites everything we
 		// set here on its very next FACELETS packet — which is why marking a solved
-		// cube as solved appeared to do nothing after a reconnect.
-		const activeCube = (connect.current as any)?.activeCube;
-		if (activeCube?.resetCubeState) {
-			const done = await activeCube.resetCubeState();
-			if (!done) {
-				console.warn('[SmartCube] hardware state reset failed — cube may keep reporting the old state');
-			}
+		// cube as solved appeared to do nothing after a reconnect. The manager owns both
+		// the hardware command and the state it publishes.
+		const done = await manager.resetCubeState();
+		if (!done) {
+			console.warn('[SmartCube] hardware state reset failed — cube may keep reporting the old state');
 		}
 
 		resetMoves(true);
 
-		// Force state to solved
 		setTimerParams({
-			smartCurrentState: DEFAULT_SOLVED_STATE,
-			smartPhysicallySolved: true,
 			smartOutOfSync: false,
 		});
 
@@ -818,7 +794,8 @@ export default function SmartCube() {
 			originalScrambleRef.current = scramble;
 		}
 
-		// Also reset _trackerCube to solved
+		// Also reset the driver's own tracker to solved
+		const activeCube = manager.activeCube;
 		if (activeCube && activeCube._trackerCube) {
 			activeCube._trackerCube = new Cube();
 		}
@@ -915,7 +892,6 @@ export default function SmartCube() {
 				<div className={b('cube', { hidden: !smartCubeShow })}>
 					<SmartCubeView
 						ref={cubeViewRef}
-						connect={connect.current}
 						connected={smartCubeConnected}
 						size={effectiveCubeSize}
 						keepVisualOnClear={!!preservedScrambleRef.current}

@@ -6,7 +6,6 @@ import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import SolutionInfo from '../solution_info/SolutionInfo';
 import SmartOverviewTab from '../stats_info/smart_overview_tab/SmartOverviewTab';
 import StepsTable from '../stats_info/steps_table/StepsTable';
-import NotesInfo from '../notes_info/NotesInfo';
 import Avatar from '../../common/avatar/Avatar';
 import Button from '../../common/button/Button';
 import SendSolveModal from '../send_solve/SendSolveModal';
@@ -94,14 +93,12 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 		overview: <SmartOverviewTab solve={solve} />,
 		stats: <StepsTable solve={solve} />,
 		solution: <SolutionInfo {...childBody} />,
-		notes: <NotesInfo {...childBody} />,
 	};
 
 	const pages = [
 		{ id: 'overview', value: t('solve_info.overview_tab') },
 		{ id: 'stats', value: t('solve_info.stats_tab') },
 		{ id: 'solution', value: t('solve_info.solve_tab') },
-		{ id: 'notes', value: t('solve_info.notes_tab') },
 	];
 
 	return (

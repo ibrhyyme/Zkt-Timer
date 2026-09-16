@@ -31,24 +31,4 @@
 		}
 	}
 
-	&__inline-notes {
-		width: 100%;
-		padding: 20px 0;
-
-		legend {
-			margin-bottom: 8px;
-		}
-
-		p {
-			text-align: left;
-			opacity: 0.9;
-		}
-
-		i {
-			display: block;
-			text-align: center;
-			color: rgba(var(--text-color), 0.5);
-			font-style: italic;
-		}
-	}
 }

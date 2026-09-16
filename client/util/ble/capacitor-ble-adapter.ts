@@ -1,4 +1,4 @@
-import { BleClient } from '@capacitor-community/bluetooth-le';
+import { BleClient, ConnectionPriority } from '@capacitor-community/bluetooth-le';
 import { BleAdapter, BleDevice, BleRequestDeviceOptions, BleScannedDevice } from './ble-adapter';
 
 interface ScannedEntry {
@@ -205,6 +205,25 @@ export class CapacitorBleAdapter implements BleAdapter {
 		});
 	}
 
+	/**
+	 * Ask Android for the short connection interval.
+	 *
+	 * A smart cube reports one notification per turn, and the default "balanced" interval
+	 * holds each one for up to about 50 ms before it reaches us. Fast turning is exactly
+	 * the "transfer quickly" case Android documents this for, and a cube session is short
+	 * enough that the extra power draw does not matter.
+	 *
+	 * iOS has no such control and the plugin answers "unavailable" there, so a failure is
+	 * logged and ignored: it must never cost the user a connection that already succeeded.
+	 */
+	private async requestFastConnection(deviceId: string): Promise<void> {
+		try {
+			await BleClient.requestConnectionPriority(deviceId, ConnectionPriority.CONNECTION_PRIORITY_HIGH);
+		} catch (e) {
+			console.debug('[BLE] requestConnectionPriority unavailable:', e);
+		}
+	}
+
 	async connect(device: BleDevice, onDisconnect?: () => void): Promise<void> {
 		await this.ensureInitialized();
 
@@ -229,6 +248,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 					}
 				});
 				console.log('[BLE] BleClient.connect SUCCESSFUL:', device.name);
+				await this.requestFastConnection(device.deviceId);
 				return;
 			} catch (e) {
 				console.error(`[BLE] BleClient.connect ERROR (attempt ${attempt + 1}):`, e);

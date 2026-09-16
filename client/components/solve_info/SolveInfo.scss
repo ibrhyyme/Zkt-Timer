@@ -176,30 +176,6 @@
 		}
 	}
 
-	&__notes {
-		width: 100%;
-		display: flex;
-		justify-content: center;
-
-		legend {
-			text-align: left !important;
-		}
-
-		p {
-			text-align: left;
-			width: 100%;
-			padding: 0;
-			opacity: 0.9;
-			color: rgb(var(--text-color));
-		}
-
-		i {
-			width: 100%;
-			opacity: 0.7;
-			text-align: center;
-			color: rgba(var(--text-color), 0.5);
-		}
-	}
 
 	textarea {
 		margin-bottom: 5px;
@@ -301,6 +277,45 @@
 			gap: 8px;
 			padding-top: 0;
 			margin-bottom: 10px;
+		}
+
+		// The tabs share one line on a phone. The shared nav lets its large buttons wrap,
+		// which pushed the last tab onto a row of its own. Scoped here because the same
+		// nav serves six other pages where wrapping is fine.
+		.#{$namespace}-solve-info__nav .#{$namespace}-common-horizontal-nav {
+			width: 100%;
+		}
+
+		.#{$namespace}-solve-info__nav .#{$namespace}-common-horizontal-nav__body {
+			flex-wrap: nowrap;
+			width: 100%;
+			gap: 8px;
+
+			> * {
+				flex: 1 1 0;
+				min-width: 0;
+				margin-right: 0;
+				margin-bottom: 0;
+			}
+
+			// The large button's 22px side padding is what overflowed the third-width slot,
+			// so the button itself fills the slot and gives up most of that padding.
+			.#{$namespace}-common-button {
+				width: 100%;
+				min-width: 0;
+				padding: 0 8px;
+				white-space: nowrap;
+			}
+
+			// A Fold cover screen leaves under 85px per tab, and the longest labels
+			// (Genel Bakış, Estadísticas) need about that much.
+			@include bp-down($bp-xxs) {
+				gap: 6px;
+
+				.#{$namespace}-common-button {
+					padding: 0 4px;
+				}
+			}
 		}
 	}
 

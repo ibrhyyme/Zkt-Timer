@@ -15,6 +15,7 @@ import { ITimerContext } from '../Timer';
 import { SolveInput } from '../../../../server/schemas/Solve.schema';
 import { getSettings, getSetting } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
+import { getSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
 import { smartCubeSelected } from './util';
@@ -240,7 +241,8 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 			const solutionTurns = smartTurns.filter((t: any) => t.completedAt >= startTime);
 
 			overridesCombined.is_smart_cube = true;
-			overridesCombined.smart_device_id = context.smartDeviceId;
+			// Connection-owned, so it comes from the smart cube slice rather than the context.
+			overridesCombined.smart_device_id = getSmartCubeStore('smartDeviceId');
 			overridesCombined.smart_turn_count = solutionTurns.length;
 
 			// Pro user: moves serialized to compact format + server creates method_steps.

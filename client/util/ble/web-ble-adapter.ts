@@ -58,12 +58,38 @@ export class WebBleAdapter implements BleAdapter {
 
 	async connect(device: BleDevice, onDisconnect?: () => void): Promise<void> {
 		const state = this.getState(device.deviceId);
+
+		// A GATT reconnect invalidates every characteristic handle from the previous session.
+		// Reusing the cached ones throws "GATT operation failed" on the first read, which is
+		// what an auto-reconnect onto a retained device would hit. Dropping the cache (and the
+		// listeners bound to those dead handles) makes the reconnect look like a first connect.
+		this.clearDeviceCaches(device.deviceId);
+		state.characteristics.clear();
+
 		state.server = await state.device.gatt!.connect();
 
 		if (onDisconnect) {
-			state.device.addEventListener('gattserverdisconnected', () => {
+			// Self-removing: connect() runs again against the same BluetoothDevice on a retry or
+			// an auto-reconnect, and without this every past listener would fire on each drop.
+			const handler = () => {
+				state.device.removeEventListener('gattserverdisconnected', handler);
 				onDisconnect();
-			});
+			};
+			state.device.addEventListener('gattserverdisconnected', handler);
+		}
+	}
+
+	/** Forget notification listeners bound to handles from a previous connection. */
+	private clearDeviceCaches(deviceId: string): void {
+		const prefix = `${deviceId}|`;
+		for (const [key, entry] of [...this.listeners.entries()]) {
+			if (!key.startsWith(prefix)) continue;
+			try {
+				entry.char.removeEventListener('characteristicvaluechanged', entry.listener);
+			} catch (e) {
+				// Handle already dead; the listener goes with it.
+			}
+			this.listeners.delete(key);
 		}
 	}
 

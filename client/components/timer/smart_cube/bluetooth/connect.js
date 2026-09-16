@@ -116,6 +116,10 @@ export default class Connect extends SmartCube {
 			console.log(`[BLE-CONNECT] cube.init() COMPLETED (${cubeType})`);
 		} else {
 			console.warn('[BLE-CONNECT] _initCube: Device not recognized, cube not created:', device.name);
+			// Without this the caller sits on "connecting" forever for a device whose name
+			// matches no protocol. The trainer had this in its own _initCube override; it
+			// belongs here, where every surface gets it.
+			this.alertScanError('notfound');
 		}
 	};
 

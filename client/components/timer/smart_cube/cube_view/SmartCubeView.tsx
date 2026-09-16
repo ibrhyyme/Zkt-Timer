@@ -8,7 +8,7 @@ import { getReverseTurns } from '../../../../util/solve/turns';
 import { onVisibilityChange } from '../../../../util/app-visibility';
 import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
 import type { SmartTurn } from '../../../../util/smart_scramble';
-import { setTimerParams } from '../../helpers/params';
+import { getSmartCubeManager } from '../../../../util/smart_cube/connection_manager';
 import { recolorPuzzle } from './cube_palette';
 import { HOME_TILT_DEG, HOME_TURN_DEG } from './view_defaults';
 
@@ -32,8 +32,6 @@ export interface SmartCubeViewHandle {
 }
 
 interface Props {
-	/** Connect instance owning the active cube; used to subscribe to gyro events. */
-	connect: any;
 	/** Re-subscribes the gyro when this flips, since a new connection means a new cube. */
 	connected: boolean;
 	size: number;
@@ -49,7 +47,7 @@ interface Props {
 }
 
 const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeView(
-	{ connect, connected, size, hidden, keepVisualOnClear, onStreamCleared },
+	{ connected, size, hidden, keepVisualOnClear, onStreamCleared },
 	ref
 ) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -74,7 +72,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	const appliedTurnsRef = useRef(0);
 
 	const smartTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
-	const smartCurrentState: string | null = useSelector((state: any) => state.timer?.smartCurrentState || null);
+	const smartCurrentState: string | null = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
 	const smartCurrentStateRef = useRef(smartCurrentState);
 	smartCurrentStateRef.current = smartCurrentState;
 
@@ -200,22 +198,13 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	}, [smartTurns]);
 
 	// ── Gyro ──
+	// The manager owns the cube and reports whether it has a gyroscope (the driver raises it
+	// from the HARDWARE packet), so this component only asks for the stream. Subscribing is
+	// also what tells the manager a page is drawing gyro data: with nobody subscribed it
+	// stops processing those packets entirely.
 	useEffect(() => {
-		const activeCube = connect?.activeCube as any;
-		if (!activeCube || typeof activeCube.subscribeGyro !== 'function') {
-			// Stated rather than left alone: a Bluetooth drop does not run the disconnect
-			// handler, so without this a cube with a gyroscope followed by one without would
-			// leave the reset action showing for a cube that cannot use it.
-			setTimerParams({ smartGyroSupported: false });
-			return;
-		}
-
-		// Announced here rather than when the first packet arrives: a stationary cube sends
-		// nothing, and waiting for data would hide the reset action until the user happened
-		// to move the cube.
-		setTimerParams({ smartGyroSupported: true });
-
-		const unsubscribe = activeCube.subscribeGyro((event: any) => {
+		if (!connected) return;
+		const unsubscribe = getSmartCubeManager().subscribeGyro((event: any) => {
 			if (event.type !== 'GYRO' || !event.quaternion) return;
 			const { x: qx, y: qy, z: qz, w: qw } = event.quaternion;
 			const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
@@ -231,7 +220,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 		});
 
 		return () => unsubscribe();
-	}, [connected, connect]);
+	}, [connected]);
 
 	function resetVisualToSolved() {
 		if (!twistyPlayerRef.current) return;

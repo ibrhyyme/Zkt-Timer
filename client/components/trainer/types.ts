@@ -107,7 +107,8 @@ export interface TrainerSessionState {
 export interface TrainerContextType {
 	state: TrainerSessionState;
 	dispatch: React.Dispatch<TrainerAction>;
-	connectRef: React.MutableRefObject<any>;
+	// No connectRef any more: the Bluetooth link belongs to the app-level manager
+	// (client/util/smart_cube/connection_manager.ts), not to the trainer provider.
 }
 
 export type TrainerAction =

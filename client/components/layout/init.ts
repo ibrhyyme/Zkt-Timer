@@ -770,6 +770,12 @@ async function fetchSolvesByIds(ids: string[]): Promise<void> {
  * may exist in LokiJS without solve_method_steps. This function detects and backfills them.
  */
 async function backfillMissingMethodSteps(): Promise<void> {
+	// The steps come from `solvesByIds`, which is Pro-gated, and the analysis they feed is
+	// a Pro feature. A Basic account has smart cube solves with no steps by design (the
+	// server never writes them, and recovery leaves them out), so without this the boot
+	// asked for them on every start and collected a rejection per batch.
+	if (!canReadSync()) return;
+
 	const db = getSolveDb();
 	if (!db) return;
 

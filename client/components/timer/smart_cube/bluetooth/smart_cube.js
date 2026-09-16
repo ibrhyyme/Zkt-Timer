@@ -1,51 +1,44 @@
 import { setTimerParams } from '../../helpers/params';
-import { getStore } from '../../../store';
-import { turnSmartCube, turnSmartCubeBatch } from '../../../../actions/timer';
-import { toastError } from '../../../../util/toast';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../../api';
-import { closeModal } from '../../../../actions/general';
-import { setTelemetryBattery } from '../../../../util/smart_cube/telemetry';
+import { getSmartCubeDriverSink } from '../../../../util/smart_cube/driver_sink';
+
+/**
+ * Base class for every cube protocol driver (and for Connect itself).
+ *
+ * The alert* methods are the drivers' only way out. They used to write Redux directly,
+ * which is why each page had to build its own Connect and re-point them at itself. They
+ * now hand everything to the app-level connection manager, so a driver behaves the same
+ * whichever page happens to be on screen, or when none is.
+ *
+ * The manager is reached through util/smart_cube/driver_sink, not imported: the manager
+ * imports connect.js, which extends this class, and a direct import back would make a module
+ * cycle in which a driver can load before this class exists.
+ */
+/** The connection manager, registered when it was created. Only it creates Connect. */
+function sink() {
+	const target = getSmartCubeDriverSink();
+	if (!target) {
+		throw new Error('[smart-cube] driver callback with no connection manager registered');
+	}
+	return target;
+}
 
 export default class SmartCube {
 	alertScanning = () => {
-		setTimerParams({
-			smartCubeScanning: true,
-			smartCubeScanError: null,
-			smartCubeConnectStep: null,
-			smartScanDevices: [],
-		});
+		sink().handleScanning();
 	};
 
 	alertScanError = (errorMessage) => {
-		setTimerParams({
-			smartCubeScanning: false,
-			smartCubeScanError: errorMessage,
-			smartCubeConnectStep: null,
-		});
+		sink().handleScanError(errorMessage);
 	};
 
 	alertConnecting = () => {
-		setTimerParams({
-			smartCubeScanning: false,
-			smartCubeConnecting: true,
-			smartCubeScanError: null,
-			smartScanDevices: [],
-		});
+		sink().handleConnecting();
 	};
 
 	alertDisconnected = () => {
-		toastError('Smart cube connection lost');
-
-		setTimerParams({
-			smartCubeScanning: false,
-			smartCubeConnecting: false,
-			smartCubeConnected: false,
-			smartCubeScanError: null,
-			smartCurrentState: null,
-			smartCubeConnectStep: null,
-			smartOutOfSync: false,
-		});
+		sink().handleLinkLost();
 	};
 
 	smartCubeInDb = async (server) => {
@@ -91,117 +84,40 @@ export default class SmartCube {
 	};
 
 	alertConnected = async (server) => {
-		let dev;
-		try {
-			const exists = await this.smartCubeInDb(server);
-			if (!exists) {
-				dev = await this.addSmartCubeToDb(server.device.name, server.device.id);
-			} else {
-				dev = exists;
-			}
-		} catch (error) {
-			console.error('Smart Cube DB Error (continuing offline):', error);
-			// Fallback device object if DB fails
-			dev = {
-				id: server.device.id, // Use MAC/ID as makeshift DB ID
-				name: server.device.name,
-				device_id: server.device.id
-			};
-		}
-
-		const store = getStore();
-
-		// Close scanning modal if open
-		if (store.getState().general.modals.length > 0) {
-			store.dispatch(closeModal());
-		}
-
-		// SolveCheck modal removed — connect directly
-		// Broken cube state handled automatically in SmartCube.tsx (initial sync)
-		this.confirmConnected(dev);
-	};
-
-	confirmConnected = (dev) => {
-		setTimerParams({
-			smartCubeConnecting: false,
-			smartCubeConnected: true,
-			smartDeviceId: dev.id,
-			smartCubeConnectStep: 'done',
-		});
+		// `this` is the driver instance, which owns the DB helpers above.
+		await sink().handleConnected(this, server);
 	};
 
 	alertBatteryLevel = (level) => {
-		setTimerParams({
-			smartCubeBatteryLevel: level,
-		});
-		// Mirrored into telemetry so every recorded event carries the battery level the cube
-		// had at the time, which is what lets the study test the "low battery drops packets"
-		// theory instead of guessing at it.
-		setTelemetryBattery(level);
+		sink().handleBattery(level);
 	};
 
 	alertTurnCube = (move) => {
-		const store = getStore();
-		// if (store.getState().timer.smartCubeConnecting) {
-		// 	return;
-		// }
-
-		const cleanMove = move.replace(/\s/g, '');
-		store.dispatch(turnSmartCube(cleanMove, new Date()));
+		sink().handleMove(move);
 	};
 
 	// `facelets` is the cube state after these moves. Drivers that track state pass
-	// it so Redux applies moves and state together; without it the state update is a
-	// separate dispatch and can overtake the moves it belongs to.
+	// it so the state and the moves that produced it travel together; without it the
+	// state update is a separate dispatch and can overtake the moves it belongs to.
 	alertTurnCubeBatch = (moves, facelets = null) => {
-		const store = getStore();
-		if (!moves || moves.length === 0) return;
-
-		// Format moves for Redux - IMPORTANT: property name is "turn" not "move"
-		const formattedMoves = moves.map(m => ({
-			turn: (m.move || m.turn || '').replace(/\s/g, ''),
-			completedAt: m.timestamp || m.completedAt || Date.now(),
-			cubeTimestamp: m.cubeTimestamp ?? null,
-			localTimestamp: m.localTimestamp ?? null,
-			// Pulled back from the cube's move history after a dropped packet, so its
-			// timestamp is the moment of recovery, not the moment of the turn.
-			recovered: m.recovered === true,
-		}));
-
-		store.dispatch(turnSmartCubeBatch(formattedMoves, facelets));
+		sink().handleMoveBatch(moves, facelets);
 	};
 
 	alertCubeState = (state) => {
-		const store = getStore();
-
-		// DEDUP: Skip Redux update if same state received again
-		// Cube sends FACELETS periodically (~1s) — avoid unnecessary render if state unchanged
-		const currentState = store.getState().timer.smartCurrentState;
-		if (state === currentState) {
-			return;
-		}
-
-		const seq = (store.getState().timer.smartStateSeq || 0) + 1;
-		const smartSolvedState = store.getState().timer.smartSolvedState;
-		const isPhysicallySolved = state === smartSolvedState;
-
-		setTimerParams({
-			smartCurrentState: state,
-			smartStateSeq: seq,
-			smartPhysicallySolved: isPhysicallySolved,
-		});
+		sink().handleFacelets(state);
 	};
 
+	alertGyroSupported = (supported) => {
+		sink().handleGyroSupported(supported);
+	};
+
+	// Dead paths kept for the drivers that still reference them: gan.js has its GYRO
+	// dispatch commented out in favour of subscribeGyro, and nothing reads the two Redux
+	// fields below. Left in place rather than removed because they are protocol surface.
 	alertGyroData = (quaternion, velocity) => {
 		setTimerParams({
 			smartGyroQuaternion: quaternion,
 			smartGyroVelocity: velocity || null,
-		});
-	};
-
-	alertGyroSupported = (supported) => {
-		setTimerParams({
-			smartGyroSupported: supported,
 		});
 	};
 

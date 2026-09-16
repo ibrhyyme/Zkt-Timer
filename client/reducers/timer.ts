@@ -1,8 +1,11 @@
 import { TimerStore } from '../components/timer/@types/interfaces';
 import { withDefaults } from './with_defaults';
 
+// Solve- and session-scoped smart cube state only. Everything the CONNECTION owns
+// (connected, device, battery, gyro support, reported facelets, solved state) lives in
+// reducers/smart_cube.ts, because RESET_TIMER_PARAMS below wipes this object on every
+// timer unmount and that used to take a live Bluetooth cube down with it.
 const smartState = {
-	smartCubeConnected: false,
 	smartCubeConnecting: false,
 	smartCubeScanning: false,
 	smartCubeScanError: null,
@@ -10,12 +13,8 @@ const smartState = {
 	smartCubeConnectStep: null,
 	smartCanStart: false,
 	smartTurns: [],
-	smartDeviceId: '',
-	smartCurrentState: null,
-	smartSolvedState: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB',
 	smartGyroQuaternion: null,
 	smartGyroVelocity: null,
-	smartGyroSupported: false,
 	smartPickUpTime: 0,
 	lastSmartMoveTime: 0,
 	lastSmartSolveStats: null,
@@ -26,8 +25,6 @@ const smartState = {
 	// instead of re-deriving it, so UI and engine can never disagree.
 	smartMatchStatus: [],
 	smartAbortVisible: false,
-	smartStateSeq: 0,
-	smartPhysicallySolved: false,
 	smartNeedsCubeReset: false,
 	smartOutOfSync: false,
 };
@@ -116,14 +113,13 @@ export default (state = initialState, action) => {
 		}
 
 		case 'TURN_SMART_CUBE_BATCH': {
-			const { moves, facelets } = action.payload;
+			const { moves } = action.payload;
 			if (!moves || moves.length === 0) return state;
 
-			// Fiziksel küp çözüldüyse ve timer çalışıyorsa, yeni hamle kabul etme
-			// (sessizlik penceresi sırasında gelen ekstra hamleleri engeller)
-			if (state.smartPhysicallySolved && state.timeStartedAt) {
-				return state;
-			}
+			// The "cube already solved while the timer runs" guard that used to sit here moved
+			// into the connection manager: the two halves of the question now live in two
+			// slices, and a reducer can only see its own. The manager drops the batch before
+			// it is dispatched, so this branch never sees those moves at all.
 
 			// Single immutable copy for batch
 			const smartTurns = [...state.smartTurns, ...moves];
@@ -146,21 +142,14 @@ export default (state = initialState, action) => {
 				? (lastMove?.completedAt || Date.now())
 				: state.lastSmartMoveTime;
 
-			// Cube state that belongs to these moves, applied in the same update so no
-			// listener can observe the new state without the moves that caused it.
-			const statePatch: Partial<TimerStore> = {};
-			if (facelets && facelets !== state.smartCurrentState) {
-				statePatch.smartCurrentState = facelets;
-				statePatch.smartStateSeq = (state.smartStateSeq || 0) + 1;
-				statePatch.smartPhysicallySolved = facelets === state.smartSolvedState;
-			}
+			// The cube state that belongs to these moves is applied by reducers/smart_cube.ts
+			// from this same action, so one dispatch still updates moves and state together.
 
 			return {
 				...state,
 				smartTurns,
 				smartPickUpTime: newPickUpTime,
 				lastSmartMoveTime,
-				...statePatch,
 			};
 		}
 

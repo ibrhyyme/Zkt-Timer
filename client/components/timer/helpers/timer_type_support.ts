@@ -64,9 +64,10 @@ export function timerTypeUnsupportedReason(
  * all write cube_type or scramble_subset, and the settings screen can also write an
  * unsupported timer_type directly.
  *
- * @param onBeforeReset runs before the setting is written. Rooms pass their own
- *   smart-cube disconnect here; the timer page needs nothing, because SmartCube
- *   unmounts as soon as the setting changes and disconnects in its own cleanup.
+ * @param onBeforeReset runs before the setting is written. Rooms
+ *   pass their smart-cube disconnect here. The timer page passes nothing: resetting
+ *   timer_type away from smart is itself what the smart cube connection manager watches
+ *   for (SmartCube no longer disconnects on unmount, since navigation unmounts it too).
  */
 export function useNormalizeTimerType(
 	cubeType: string | null | undefined,

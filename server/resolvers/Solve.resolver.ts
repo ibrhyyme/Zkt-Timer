@@ -13,6 +13,7 @@ import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { invalidSolveTimeFields, solveFingerprint } from '../../shared/solve';
+import { isPro, isProEnabled } from '../lib/pro';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -99,6 +100,14 @@ export class SolveResolver {
 	) {
 		const { prisma } = context;
 
+		// The step breakdown IS the smart cube analysis, which is sold as Pro. This door is
+		// open to every logged-in user, so without this a Basic account (one whose Pro
+		// lapsed, since Basic solves never get steps written in the first place) would be
+		// handed that analysis back through the recovery path. Same rule as Role.PRO in the
+		// auth middleware: with Pro switched off globally, everyone gets everything.
+		// Leaving the steps out also shrinks by far the largest response the app asks for.
+		const includeMethodSteps = !isProEnabled() || isPro(context.user);
+
 		return prisma.solve.findMany({
 			where: {
 				user_id: context.user.id,
@@ -126,7 +135,9 @@ export class SolveResolver {
 				// step_index is a single counter across the whole solve (cross, f2l parent,
 				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
 				// no guaranteed order, and the client showed OLL/PLL before F2L.
-				solve_method_steps: { orderBy: { step_index: 'asc' } },
+				...(includeMethodSteps
+					? { solve_method_steps: { orderBy: { step_index: 'asc' as const } } }
+					: {}),
 			},
 			// Deterministic tie-break: created_at alone is not unique (a bulk import
 			// writes thousands of rows within the same instant), so paging by it

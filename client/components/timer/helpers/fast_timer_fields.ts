@@ -12,12 +12,13 @@ import type { TimerStore } from '../@types/interfaces';
  *
  * A field belongs here only if it changes that often. Moving one in means every reader of
  * it through the context has to switch; ITimerContext omits these keys, so tsc lists them.
+ *
+ * The cube's reported facelets used to be on this list. They live in their own slice now
+ * (reducers/smart_cube.ts), which the timer context never carried in the first place, so
+ * they cannot reach it and do not need excluding here.
  */
 export const FAST_TIMER_FIELDS = [
 	'smartTurns',
-	'smartCurrentState',
-	'smartStateSeq',
-	'smartPhysicallySolved',
 	'lastSmartMoveTime',
 	'smartPickUpTime',
 	'smartMatchStatus',
