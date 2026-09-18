@@ -1641,10 +1641,6 @@
     "best_short": "best",
     "mean_short": "mean"
   },
-  "solve_undo": {
-    "deleted": "Solve deleted",
-    "undo": "Undo"
-  },
   "solves_list": {
     "page_title": "Solves",
     "filter": "Filter",

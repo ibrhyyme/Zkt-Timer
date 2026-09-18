@@ -39,7 +39,6 @@ import {
 } from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
 import { getSolveTombstones } from '../../util/solve-tombstones';
-import { getPendingSolveDeleteIds } from '../../db/solves/pending-delete';
 import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
@@ -587,13 +586,6 @@ function initVisibilitySyncListener() {
 async function getPendingSolveMutationIds(): Promise<{pendingCreateIds: Set<string>; pendingDeleteIds: Set<string>}> {
 	const pendingCreateIds = new Set<string>();
 	const pendingDeleteIds = new Set<string>();
-
-	// Deletes waiting out their undo window: already gone locally, not sent yet. They are
-	// exactly the "still on the server on purpose" case, so reconciliation must leave them
-	// alone in both directions until the window closes.
-	for (const id of getPendingSolveDeleteIds()) {
-		pendingDeleteIds.add(id);
-	}
 
 	try {
 		const pendingMutations = await getAllQueued();

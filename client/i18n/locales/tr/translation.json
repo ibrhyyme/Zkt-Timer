@@ -1648,10 +1648,6 @@
     "best_short": "en iyi",
     "mean_short": "ort."
   },
-  "solve_undo": {
-    "deleted": "Çözüm silindi",
-    "undo": "Geri al"
-  },
   "solves_list": {
     "page_title": "Çözümler",
     "filter": "Filtre",

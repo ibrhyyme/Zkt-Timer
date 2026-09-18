@@ -20,16 +20,9 @@ import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { syncAnonSolveCount } from '../../util/anon-mode';
-import { addSolveTombstones, removeSolveTombstones } from '../../util/solve-tombstones';
-import { recordDeletedSolves, unrecordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
+import { addSolveTombstones } from '../../util/solve-tombstones';
+import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
 import { stripLokiJsMetadata } from '../lokijs';
-import {
-	flushPendingSolveDeletes,
-	schedulePendingSolveDelete,
-	SOLVE_DELETE_UNDO_MS,
-	undoPendingSolveDelete,
-} from './pending-delete';
-import { showUndoToast } from '../../components/common/undo_toast/UndoToast';
 
 let offlineToastShown = false;
 let queuedToastShown = false;
@@ -163,15 +156,14 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		return;
 	}
 
-	// Taken before the removal, which strips LokiJS' own fields off the document. This is
-	// what an undo puts back, and what the deleted-solve tally is told about.
+	// Taken before the removal, which strips LokiJS' own fields off the document. It is
+	// what the deleted-solve tally is told about.
 	const snapshot = stripLokiJsMetadata(stored) as Solve;
 
 	solveDb.remove(stored);
-	// Record the intent before the network call: another device still holding this
-	// solve locally would otherwise re-upload it through its backfill pass. It is also
-	// what saves the delete if the browser dies inside the undo window below, since the
-	// server has not been told yet.
+	// Record the intent before the network call: another device still holding this solve
+	// locally would otherwise re-upload it through its backfill pass, and the tombstone
+	// also covers the case where the request never lands.
 	addSolveTombstones([solve.id]);
 	// Before postProcessDbUpdate, whose solveDbUpdatedEvent makes the goal progress
 	// recount: the tally has to be in place by then.
@@ -180,9 +172,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 
 	refreshBucketLastSolve(solve);
 
-	// Everything above is local and reversible, so the server delete waits out a short
-	// undo window instead of going out now. See db/solves/pending-delete.ts.
-	offerSolveDeleteUndo(snapshot);
+	void sendSolveDeleteToServer(solve.id);
 }
 
 /**
@@ -223,62 +213,6 @@ async function sendSolveDeleteToServer(id: string) {
 		await addToQueue('deleteSolve', { id });
 		reportSaveFailure(e);
 	}
-}
-
-/**
- * Holds the server delete back for a few seconds and offers the user a way out of it.
- * Undo is local-only work, which is exactly why the server half waits: see
- * db/solves/pending-delete.ts for why re-creating a deleted solve is not an option.
- */
-function offerSolveDeleteUndo(solve: Solve) {
-	let dismissToast: () => void = () => undefined;
-
-	schedulePendingSolveDelete({
-		solve,
-		commit: () => {
-			dismissToast();
-			void sendSolveDeleteToServer(solve.id);
-		},
-	});
-
-	dismissToast = showUndoToast({
-		message: 'solve_undo.deleted',
-		actionLabel: 'solve_undo.undo',
-		durationMs: SOLVE_DELETE_UNDO_MS,
-		onAction: () => {
-			const pending = undoPendingSolveDelete(solve.id);
-			// Null once the window has closed: the delete is already on its way to the
-			// server and there is nothing left to take back.
-			if (pending) {
-				restoreDeletedSolveDb(pending);
-			}
-		},
-	});
-}
-
-/**
- * Puts back a solve whose delete was undone inside its window.
- *
- * Only the local side has to be undone, because the server was never told: the row goes
- * back into LokiJS under its own id, the tombstone and the deleted-solve tally are
- * withdrawn, and the stat caches are cleared the way an insert clears them. What it does
- * not do is announce a PB: the solve was already there before the delete, so nothing
- * about it is new.
- */
-function restoreDeletedSolveDb(solve: Solve) {
-	const solveDb = getSolveDb();
-	if (solveDb.findOne({ id: solve.id })) {
-		return;
-	}
-
-	solveDb.insert(stripLokiJsMetadata(solve));
-	// Withdrawn before the event below, which is what makes the goal progress and the
-	// heatmap recount: by then the solve must be counted once, as itself.
-	removeSolveTombstones([solve.id]);
-	unrecordDeletedSolves([solve]);
-
-	postProcessDbUpdate(solve, true, true);
-	refreshBucketLastSolve(solve);
 }
 
 export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, updateLocalDb = true) {
@@ -397,7 +331,6 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 	// A single delete still waiting out its undo window has to be settled first: the
 	// session-wide delete about to go out does not know about it, and an undo afterwards
 	// would put a solve back into a session the server has already emptied.
-	flushPendingSolveDeletes();
 
 	const solveDb = getSolveDb();
 	const solvesToRemove = solveDb.find({ session_id: sessionId });
@@ -452,7 +385,6 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 	// Settle any single delete still inside its undo window before a bulk one runs: the
 	// two would otherwise race over the same server state.
-	flushPendingSolveDeletes();
 
 	const solveDb = getSolveDb();
 	const ids = solves.map(s => s.id);

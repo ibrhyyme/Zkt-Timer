@@ -1641,10 +1641,6 @@
     "best_short": "mejor",
     "mean_short": "media"
   },
-  "solve_undo": {
-    "deleted": "Resolución eliminada",
-    "undo": "Deshacer"
-  },
   "solves_list": {
     "page_title": "Resoluciones",
     "filter": "Filtrar",

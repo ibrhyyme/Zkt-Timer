@@ -1641,10 +1641,6 @@
     "best_short": "лучшее",
     "mean_short": "сред."
   },
-  "solve_undo": {
-    "deleted": "Сборка удалена",
-    "undo": "Отменить"
-  },
   "solves_list": {
     "page_title": "Сборки",
     "filter": "Фильтр",

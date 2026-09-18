@@ -1641,10 +1641,6 @@
     "best_short": "最佳",
     "mean_short": "平均"
   },
-  "solve_undo": {
-    "deleted": "已删除还原",
-    "undo": "撤销"
-  },
   "solves_list": {
     "page_title": "还原记录",
     "filter": "筛选",
