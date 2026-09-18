@@ -11,6 +11,13 @@ export enum TimerModuleType {
 	CHAT = 'chat',
 	CROSS_SOLVER = 'cross_solver',
 	PHASE_ANALYSIS = 'phase_analysis',
+	/**
+	 * The smart cube's live phase ladder. A module that holds a place for it rather than
+	 * drawing it: SmartCube owns the analysis state and renders into this slot, because
+	 * that state (the cube's start state, the move stream) has no business being lifted
+	 * out of the component that produces it.
+	 */
+	LIVE_ANALYSIS = 'live_analysis',
 	NONE = 'none',
 }
 

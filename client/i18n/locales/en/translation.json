@@ -1436,6 +1436,18 @@
   "language": {
     "category_language": "Language"
   },
+  "timer_tiles": {
+    "add_module": "Add module",
+    "remove_module": "Remove module",
+    "change_module": "Change module",
+    "zone_left": "Left column",
+    "zone_right": "Right column",
+    "zone_bottom": "Bottom bar",
+    "reset_layout": "Reset layout",
+    "reset_layout_desc": "Puts every module back where it started.",
+    "live_analysis_hint": "Phase times run here live while you solve with a smart cube.",
+    "layout_hint": "Drag a module by its title. Drop it on a column or the bottom bar, or anywhere else to leave it floating."
+  },
   "timer_modules": {
     "history": "Solves",
     "stats": "Stats",
@@ -1446,6 +1458,7 @@
     "time_distro": "Time Distribution",
     "cross_solver": "Solvers",
     "phase_analysis": "Phase Analysis",
+    "live_analysis": "Live Phases",
     "none": "None",
     "customize_stats": "Customize Stats",
     "customize_stats_desc": "Customize here and see immediately",

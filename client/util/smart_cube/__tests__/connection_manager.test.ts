@@ -25,6 +25,17 @@ class FakeCube {
 		getSmartCubeManager().handleMoveBatch(moves, facelets);
 	alertCubeState = (facelets: string) => getSmartCubeManager().handleFacelets(facelets);
 	alertBatteryLevel = (level: number) => getSmartCubeManager().handleBattery(level);
+	alertGyroSupported = (supported: boolean) => getSmartCubeManager().handleGyroSupported(supported);
+	/** The driver hands its gyro stream out directly, exactly as gan.js does. */
+	gyroListeners: ((event: any) => void)[] = [];
+	subscribeGyro = (cb: (event: any) => void) => {
+		this.gyroListeners.push(cb);
+		return () => {
+			const i = this.gyroListeners.indexOf(cb);
+			if (i >= 0) this.gyroListeners.splice(i, 1);
+		};
+	};
+	emitGyro = (event: any) => { for (const cb of [...this.gyroListeners]) cb(event); };
 	smartCubeInDb = jest.fn(async () => ({ id: 'row-1', device_id: deviceOne.deviceId }));
 	addSmartCubeToDb = jest.fn(async () => ({ id: 'row-1' }));
 	_trackerCube: any = null;
@@ -593,6 +604,52 @@ describe('subscriptions', () => {
 		await manager.disconnect();
 
 		expect([moves.length, battery.length, connection.length]).toEqual(counts);
+	});
+
+	/**
+	 * The hardware packet's answer is not trustworthy: GAN Gen2 says "no gyroscope" for every
+	 * cube it speaks for and Gen3 admits to one only on the GAN 12 ui Maglev, while the cubes
+	 * go on sending gyro data the 3D view draws. The flag drives the gear menu's "Reset gyro",
+	 * so believing the packet hid that action on a cube the user could see following their hands.
+	 */
+	it('trusts gyro data over a hardware packet that denies a gyroscope', async () => {
+		const manager = getSmartCubeManager();
+		const seen: any[] = [];
+		manager.subscribeGyro((event) => seen.push(event));
+		const detach = manager.attach();
+
+		await manager.connect();
+		currentCube().alertGyroSupported(false);
+		expect(manager.getSnapshot().gyroSupported).toBe(false);
+
+		currentCube().emitGyro({ type: 'GYRO', quaternion: { x: 0, y: 0, z: 0, w: 1 } });
+
+		expect(manager.getSnapshot().gyroSupported).toBe(true);
+		expect(seen).toHaveLength(1);
+
+		// A hardware packet arriving later must not take the answer away again.
+		currentCube().alertGyroSupported(false);
+		expect(manager.getSnapshot().gyroSupported).toBe(true);
+
+		detach();
+	});
+
+	it('starts the next cube from its own answer', async () => {
+		const manager = getSmartCubeManager();
+		manager.subscribeGyro(() => { /* a page is drawing the cube */ });
+		const detach = manager.attach();
+
+		await manager.connect();
+		currentCube().emitGyro({ type: 'GYRO', quaternion: { x: 0, y: 0, z: 0, w: 1 } });
+		expect(manager.getSnapshot().gyroSupported).toBe(true);
+
+		await manager.disconnect();
+		await flushPromises();
+		await manager.connect();
+
+		// A cube that has sent nothing yet must not inherit the previous one's gyroscope.
+		expect(manager.getSnapshot().gyroSupported).toBe(false);
+		detach();
 	});
 
 	it('does not let one broken listener stop the others', async () => {

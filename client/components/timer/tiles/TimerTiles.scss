@@ -1,0 +1,318 @@
+@import '../../../styles/config';
+@import 'TimerTile';
+
+// Module zones for the desktop timer.
+//
+// Every length in this file is a pixel, and the two that the user controls come in as
+// CSS variables written by TimerTiles (--zt-tile-rail-w, --zt-tile-dock-h). No rem, no
+// vh, no auto-fit: those are what made a zoom step change how many modules were on
+// screen and how tall they were. Zoom scales pixels on its own.
+
+.#{$namespace}-timer-tiles {
+	$self: &;
+
+	&__center {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+		min-height: 0;
+		gap: 10px;
+	}
+
+	// Column wrapper. Holds the width and everything that must stay reachable while the
+	// column itself scrolls: the add button and the resize edge.
+	&__rail-wrap {
+		position: relative;
+		display: flex;
+		flex: 0 0 auto;
+		width: var(--zt-tile-rail-w, 340px);
+		min-width: 0;
+		height: 100%;
+		min-height: 0;
+		box-sizing: border-box;
+	}
+
+	&__rail {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		gap: 10px;
+		width: 100%;
+		min-width: 0;
+		min-height: 0;
+		box-sizing: border-box;
+
+		// Modules share the rail evenly, down to a floor. Below that the rail scrolls
+		// instead of squeezing them further: a module that has been compressed to a
+		// 60px strip is not a smaller module, it is an unreadable one. This is also the
+		// half of "fixed scale" the sizes alone do not give you.
+		overflow-y: auto;
+		overflow-x: hidden;
+
+		> .#{$namespace}-timer-tile {
+			flex: 1 1 0;
+			min-height: 180px;
+		}
+	}
+
+	// Bar wrapper, same idea as the column's: the parts that must not scroll away live
+	// here, the scrolling row lives inside.
+	&__bar-wrap {
+		position: relative;
+		display: flex;
+		// Shrinkable, unlike its stored height suggests. The height is what the user
+		// dragged, but on a short window (or with the signed-out strip taking a slice off
+		// the top) something has to give, and a bar that keeps its height regardless just
+		// falls off the bottom of the screen. It gives way down to a floor, and the timer
+		// column has a floor of its own.
+		flex: 0 1 auto;
+		height: var(--zt-tile-dock-h, 300px);
+		min-height: 140px;
+		box-sizing: border-box;
+	}
+
+	&__bar {
+		display: flex;
+		flex-direction: row;
+		flex: 1 1 auto;
+		gap: 10px;
+		width: 100%;
+		min-width: 0;
+		min-height: 0;
+		box-sizing: border-box;
+
+		// Same rule sideways: the bar scrolls rather than shaving every module thinner.
+		overflow-x: auto;
+		overflow-y: hidden;
+
+		> .#{$namespace}-timer-tile {
+			flex: 1 1 0;
+			min-width: 240px;
+		}
+	}
+
+	// Nothing placed at all: a strip with the add control, so the modules can be brought
+	// back from the timer itself.
+	&__bar-wrap--empty {
+		height: auto;
+		min-height: 0;
+	}
+
+	&__bar--empty,
+	#{$self}__bar-wrap--empty &__bar {
+		height: auto;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 8px;
+		border: 1px dashed rgba(var(--text-color), 0.18);
+		border-radius: 12px;
+	}
+
+	&__empty-label {
+		font-size: 12px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	// Resize handles. Wide enough to hit (8px) but drawn as a hairline, and they only
+	// show themselves under the pointer.
+	&__rail-handle,
+	&__bar-handle {
+		position: absolute;
+		z-index: 5;
+		background: transparent;
+		transition: background 0.12s ease;
+
+		&:hover,
+		&:active {
+			background: rgba(var(--primary-color), 0.55);
+		}
+	}
+
+	&__rail-handle {
+		top: 0;
+		bottom: 0;
+		width: 8px;
+		cursor: col-resize;
+
+		// Flush with the edge rather than hanging outside it: the rail is a scroll
+		// container now, and anything past its border box gets clipped away.
+		&--left {
+			right: 0;
+		}
+
+		&--right {
+			left: 0;
+		}
+	}
+
+	&__bar-handle {
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 8px;
+		cursor: row-resize;
+	}
+
+	// "Add module". Sits in the zone's corner rather than in the flow, so adding a
+	// module never changes the size of the ones already there.
+	&__add {
+		position: absolute;
+		right: 6px;
+		bottom: 6px;
+		z-index: 6;
+		opacity: 0;
+		transition: opacity 0.12s ease;
+
+		#{$self}__rail-wrap:hover &,
+		#{$self}__bar-wrap:hover & {
+			opacity: 1;
+		}
+
+		// In the empty strip it is the only thing there, so it sits in the flow and is
+		// always visible rather than waiting for a hover over a zone that is barely there.
+		#{$self}__bar-wrap--empty & {
+			position: static;
+			opacity: 1;
+		}
+	}
+
+	// The gap that opens where the dragged module would land.
+	&__slot {
+		flex: 0 0 auto;
+		border: 2px dashed rgba(var(--primary-color), 0.85);
+		border-radius: 12px;
+		background: rgba(var(--primary-color), 0.12);
+		// Grows out of nothing, so the neighbouring modules are visibly pushed aside
+		// rather than the slot simply being there. A mounting element cannot transition,
+		// hence a keyframe. With reduced motion it lands at full size immediately, which
+		// is the same end state.
+		animation: zt-tile-slot-open 0.14s ease-out;
+
+		&--left,
+		&--right {
+			height: 92px;
+			width: 100%;
+		}
+
+		&--bottom {
+			width: 150px;
+			align-self: stretch;
+		}
+	}
+
+	&__add-handle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		border-radius: 8px;
+		background: rgba(var(--primary-color), 0.9);
+		// Sits on the primary colour, so the text has to be the theme's opposite, never a
+		// hard-coded white.
+		color: rgb(var(--theme-text-opposite));
+		font-size: 14px;
+	}
+
+	// Free layer. Fixed, and with no transform or filter of its own: either would make
+	// this element the containing block for the fixed tiles inside it, and the
+	// coordinates stored per tile are viewport coordinates.
+	&__float-layer {
+		position: fixed;
+		inset: 0;
+		z-index: 30;
+		pointer-events: none;
+
+		> * {
+			pointer-events: auto;
+		}
+	}
+
+	// Drag chrome: snap outlines and the ghost that follows the pointer.
+	&__overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 95;
+		pointer-events: none;
+	}
+
+	&__zone {
+		position: absolute;
+		box-sizing: border-box;
+		border: 2px dashed rgba(var(--primary-color), 0.45);
+		border-radius: 14px;
+		background: rgba(var(--primary-color), 0.06);
+		transition: background 0.12s ease, border-color 0.12s ease;
+
+		&--active {
+			border-style: solid;
+			border-color: rgba(var(--primary-color), 0.95);
+			background: rgba(var(--primary-color), 0.16);
+		}
+	}
+
+	// A pill, not bare text. The zone outline lies over the modules that are already
+	// there, and an unbacked label landed exactly on the first module's own title.
+	&__zone-label {
+		position: absolute;
+		top: 8px;
+		left: 8px;
+		padding: 3px 9px;
+		border-radius: 999px;
+		background: rgba(var(--primary-color), 0.95);
+		color: rgb(var(--theme-text-opposite));
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	&__ghost {
+		position: absolute;
+		left: 0;
+		top: 0;
+		display: flex;
+		// Top, not centre. The ghost is the size of the module it stands for, and the
+		// centre of a full-height list sits well below the cursor, which is where the
+		// user is looking.
+		align-items: flex-start;
+		justify-content: flex-start;
+		padding: 7px 12px;
+		box-sizing: border-box;
+		box-sizing: border-box;
+		border-radius: 14px;
+		border: 1px solid rgba(var(--primary-color), 0.8);
+		background: rgba(var(--module-color), 0.96);
+		box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
+		// The pointer position is written straight onto this element every move, so a
+		// transition here would always be a frame or two behind the cursor.
+		transition: none;
+		will-change: transform;
+	}
+
+	&__ghost-label {
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		color: rgb(var(--text-color));
+	}
+}
+
+// While a tile is in flight, the modules stop animating. Re-running a list's row entry
+// animation for the length of a drag is both distracting and expensive.
+body.zt-tiles-moving {
+	.#{$namespace}-timer-tile * {
+		animation: none !important;
+	}
+}
+
+@keyframes zt-tile-slot-open {
+	from {
+		height: 0;
+		width: 0;
+		opacity: 0;
+	}
+}

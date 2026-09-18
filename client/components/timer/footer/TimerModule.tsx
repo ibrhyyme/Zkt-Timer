@@ -2,23 +2,13 @@ import React, { ReactNode, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CaretDown } from 'phosphor-react';
 import { TimerModuleDropdownOptions, TimerModuleType } from '../@types/enums';
-import { FooterModuleData, TimerCustomModuleOptions } from '../@types/interfaces';
-import History from '../../modules/history/History';
-import LastSolve from '../../modules/last_solve/LastSolve';
-import Scramble from '../../modules/scramble/ScrambleVisual';
-import TimeChart from '../../modules/time_chart/TimeChart';
-import TimeDistro from '../../modules/time_distro/TimeDistro';
-import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
+import { TimerCustomModuleOptions } from '../@types/interfaces';
 import { snakeCase } from 'change-case';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import ProOnly from '../../common/pro_only/ProOnly';
 import { TimerContext } from '../Timer';
+import ModuleBody from '../module_registry';
 import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
-import { useMe } from '../../../util/hooks/useMe';
-import QuickStats from '../../modules/quick_stats/QuickStats';
-import CrossSolverModule from '../../modules/cross_solver/CrossSolverModule';
-import PhaseAnalysis from '../../modules/phase_analysis/PhaseAnalysis';
 
 interface Props {
 	index: number;
@@ -30,10 +20,10 @@ export default function TimerModule(props: Props) {
 	const { index, moduleType, customOptions } = props;
 
 	const { t } = useTranslation();
-	const me = useMe();
 	const context = useContext(TimerContext);
-	const { scramble, originalScramble, cubeType, scrambleSubset, solvesFilter } = context;
-	const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
+	// Only the clock special case below needs anything from the context now; the module
+	// bodies read what they need themselves (see module_registry).
+	const { cubeType } = context;
 
 	const timerModules = useSettings('timer_modules');
 
@@ -51,50 +41,6 @@ export default function TimerModule(props: Props) {
 		setSetting('timer_modules', newTimerModules);
 	}
 
-	const moduleMap: Record<TimerModuleType, FooterModuleData> = {
-		[TimerModuleType.HISTORY]: {
-			module: <History filterOptions={solvesFilter} hotKeysEnabled />,
-			proOnly: false,
-		},
-		[TimerModuleType.LAST_SOLVE]: {
-			module: <LastSolve filterOptions={solvesFilter} />,
-			proOnly: false,
-		},
-		[TimerModuleType.STATS]: {
-			module: <QuickStats filterOptions={solvesFilter} />,
-			proOnly: false,
-		},
-		[TimerModuleType.SCRAMBLE]: {
-			module: <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} subset={scrambleSubset || undefined} />,
-			proOnly: false,
-		},
-		[TimerModuleType.SOLVE_GRAPH]: {
-			module: <TimeChart filterOptions={solvesFilter} />,
-			proOnly: false,
-		},
-		[TimerModuleType.TIME_DISTRO]: {
-			module: <TimeDistro filterOptions={solvesFilter} />,
-			proOnly: false,
-		},
-		[TimerModuleType.CONSISTENCY]: {
-			module: <SolvesPerDay filterOptions={solvesFilter} days={14} />,
-			proOnly: false,
-		},
-		[TimerModuleType.CROSS_SOLVER]: {
-			module: <CrossSolverModule />,
-			proOnly: false,
-		},
-		[TimerModuleType.PHASE_ANALYSIS]: {
-			module: <PhaseAnalysis filterOptions={solvesFilter} />,
-			proOnly: false,
-		},
-		[TimerModuleType.NONE]: {
-			module: null,
-			proOnly: false,
-		},
-		...customOptions?.additionalDropdownTypes,
-	};
-
 	const moduleDropdownOptions: TimerModuleDropdownOptions[] = customOptions?.dropdownOptions || [
 		{ label: t('timer_modules.history'), value: TimerModuleType.HISTORY },
 		{ label: t('timer_modules.cross_solver'), value: TimerModuleType.CROSS_SOLVER },
@@ -110,12 +56,15 @@ export default function TimerModule(props: Props) {
 
 	const currentModuleName = moduleDropdownOptions.find((option) => option.value === moduleType)?.label;
 
-	let visual: FooterModuleData;
+	// What this module draws. Custom bodies (rooms, battle) win, then any extra type the
+	// caller registered, then the shared module registry that the desktop tiles use too.
+	let visual: ReactNode;
 	if (customOptions?.customBody) {
-		visual = customOptions.customBody(context);
+		visual = customOptions.customBody(context)?.module;
 	} else {
-		const visualType = customOptions?.moduleType || snakeCase(moduleType);
-		visual = moduleMap[visualType];
+		const visualType = (customOptions?.moduleType || snakeCase(moduleType)) as TimerModuleType;
+		const additional = customOptions?.additionalDropdownTypes?.[visualType];
+		visual = additional ? additional.module : <ModuleBody moduleType={visualType} />;
 	}
 
 	let dropdown: ReactNode = (
@@ -159,7 +108,7 @@ export default function TimerModule(props: Props) {
 		<div className={wrapperClass.join(' ')}>
 			{dropdown}
 			<div className="h-full w-full overflow-hidden">
-				{visual.module}
+				{visual}
 			</div>
 		</div>
 	);

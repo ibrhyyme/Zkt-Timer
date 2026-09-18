@@ -45,7 +45,17 @@ function phaseIdToStepKey(id: string): string | null {
     }
 }
 
-export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
+export default function LiveAnalysisOverlay({
+    startState,
+    mobile,
+    compact,
+}: {
+    startState?: string;
+    /** Phone layout: portaled under the cube, narrow. */
+    mobile?: boolean;
+    /** Inside the live analysis module, where the card decides the width. */
+    compact?: boolean;
+}) {
     const { t: tr } = useTranslation();
     const { timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
     // Per-move, so not in TimerContext (see FAST_TIMER_FIELDS).
@@ -393,8 +403,10 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                     const cumStr = getTimeString(cumulative, 2);
                     const [cSec, cDec] = cumStr.split('.');
 
-                    // Recognition/execution split string — desktop only, if toggle is on.
-                    // On mobile there's no space (1.4rem font + narrow grid), so we hide it.
+                    // Recognition/execution split string, when the toggle is on. Hidden on
+                    // mobile only: 1.4rem rows in a narrow grid leave no room for it. The
+                    // module shows it, because turning that setting on and not seeing it is
+                    // the setting quietly lying.
                     const showSplit = showRecognition && !mobile && !p.skipped &&
                         p.recognitionTime != null && p.executionTime != null;
                     const splitStr = showSplit
@@ -405,16 +417,21 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'baseline',
-                        gap: mobile ? '10px' : '16px',
-                        marginBottom: mobile ? '4px' : '12px',
+                        gap: mobile || compact ? '10px' : '16px',
+                        marginBottom: mobile || compact ? '4px' : '12px',
                         whiteSpace: 'nowrap',
-                        fontSize: mobile ? '1.4rem' : '2.5rem',
+                        // The heads-up display is read from across the desk. In the module
+                        // the size comes from the stylesheet instead, scaled to the width
+                        // of the card the user sized (see LiveAnalysisSlot.scss): a fixed
+                        // size looks lost in a wide column and overflows a narrow one.
+                        fontSize: compact ? undefined : mobile ? '1.4rem' : '2.5rem',
                         lineHeight: '1.1',
                         fontWeight: '700',
                     };
 
                     const splitRowStyle: React.CSSProperties = {
-                        fontSize: '0.95rem',
+                        // Relative to the row, so it follows the module's scale.
+                        fontSize: compact ? '0.42em' : '0.95rem',
                         opacity: 0.65,
                         fontWeight: 500,
                         lineHeight: '1',

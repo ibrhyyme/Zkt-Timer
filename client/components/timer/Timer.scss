@@ -189,10 +189,13 @@ body.timer-immersive-bg {
 	$gridGap: 1rem;
 
 	position: relative;
-	min-height: calc(100vh - var(--nav-h));
+	// Same subtraction as the height in TimerLayout: a min-height that ignores the
+	// signed-out strip wins over the height that accounts for it, and the page grows
+	// past the viewport again. `--anon-banner-h` is 0px for signed-in users.
+	min-height: calc(100vh - var(--nav-h) - var(--anon-banner-h, 0px));
 
 	@supports(height: 100dvh) {
-		min-height: calc(100dvh - var(--nav-h));
+		min-height: calc(100dvh - var(--nav-h) - var(--anon-banner-h, 0px));
 	}
 
 	background-color: rgb(var(--background-color));
@@ -555,7 +558,18 @@ body.timer-immersive-bg {
 
 		#{$self}-bottom-info,
 		#{$self}-scramble,
-		#{$self}-footer {
+		#{$self}-footer,
+		// Same treatment for the modules: during a solve the screen is the timer and
+		// nothing else, and a floating module sitting over the digits would be the worst
+		// offender of the lot. Hidden one module at a time rather than by hiding the
+		// columns, so the columns keep their width and nothing reflows when a solve
+		// starts. The live phase module goes too: its content moves to the corner
+		// display for the length of the solve (see SmartCube), so what would be left
+		// behind here is an empty card.
+		#{$self}-tile,
+		#{$self}-tiles__add,
+		#{$self}-tiles__rail-handle,
+		#{$self}-tiles__bar-handle {
 			pointer-events: none;
 			opacity: 0;
 			transition: opacity 0.1s ease;

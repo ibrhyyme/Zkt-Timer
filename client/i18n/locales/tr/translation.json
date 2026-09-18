@@ -1443,6 +1443,18 @@
   "language": {
     "category_language": "Dil Seçimi"
   },
+  "timer_tiles": {
+    "add_module": "Modül ekle",
+    "remove_module": "Modülü kaldır",
+    "change_module": "Modülü değiştir",
+    "zone_left": "Sol sütun",
+    "zone_right": "Sağ sütun",
+    "zone_bottom": "Alt şerit",
+    "reset_layout": "Düzeni sıfırla",
+    "reset_layout_desc": "Modülleri başladıkları yere geri koyar.",
+    "live_analysis_hint": "Akıllı küple çözerken evre süreleri burada canlı akar.",
+    "layout_hint": "Modülü başlığından tutup sürükleyin. Bir sütuna veya alt şeride bırakın, boş bir yere bırakırsanız orada kalır."
+  },
   "timer_modules": {
     "history": "Çözümler",
     "stats": "İstatistikler",
@@ -1453,6 +1465,7 @@
     "time_distro": "Süre Dağılımı",
     "cross_solver": "Çözücüler",
     "phase_analysis": "Evre Analiz",
+    "live_analysis": "Canlı Evre",
     "none": "Hiçbiri",
     "customize_stats": "İstatistikleri Özelleştir",
     "customize_stats_desc": "Buradan özelleştirin ve anında görün",

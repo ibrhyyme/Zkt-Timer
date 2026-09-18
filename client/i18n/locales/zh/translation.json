@@ -1436,6 +1436,18 @@
   "language": {
     "category_language": "语言"
   },
+  "timer_tiles": {
+    "add_module": "添加模块",
+    "remove_module": "移除模块",
+    "change_module": "更换模块",
+    "zone_left": "左栏",
+    "zone_right": "右栏",
+    "zone_bottom": "底栏",
+    "reset_layout": "重置布局",
+    "reset_layout_desc": "把所有模块放回初始位置。",
+    "live_analysis_hint": "使用智能魔方还原时，分段用时会在这里实时显示。",
+    "layout_hint": "拖动模块标题即可移动。放到左右栏或底栏会吸附，放在别处则悬浮。"
+  },
   "timer_modules": {
     "history": "还原记录",
     "stats": "统计",
@@ -1446,6 +1458,7 @@
     "time_distro": "时间分布",
     "cross_solver": "公式求解器",
     "phase_analysis": "阶段分析",
+    "live_analysis": "实时分段",
     "none": "无",
     "customize_stats": "自定义统计",
     "customize_stats_desc": "在此自定义并即时查看",

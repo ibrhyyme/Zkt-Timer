@@ -3,6 +3,8 @@ import { CustomCubeType } from '../../@types/generated/graphql';
 import { TimerModuleType } from '../../components/timer/@types/enums';
 import { APP_THEME_PRESETS } from '../../util/themes/theme_consts';
 import { MultiPhaseMethod } from '../../../shared/util/solve/multiphase';
+import { TILE_LIMITS } from '../../components/timer/tiles/layout';
+import type { TileMap } from '../../components/timer/tiles/layout';
 
 export type TimerLayoutPosition = 'bottom' | 'left' | 'right';
 
@@ -64,6 +66,19 @@ export interface AllSettings {
 	virtual_cube_size: number;
 	timer_layout: TimerLayoutPosition;
 	timer_module_count: number;
+	/**
+	 * Desktop module placement, one entry per module: which zone it sits in (left rail,
+	 * right rail, bottom bar, or floating) and, when floating, its box in CSS pixels.
+	 *
+	 * Null means "nothing has been dragged yet" and the layout is derived from the older
+	 * `timer_layout` + `timer_modules` + `timer_module_count` instead, so shipping this
+	 * never rearranges a timer somebody already arranged. See components/timer/tiles.
+	 */
+	timer_tiles: TileMap | null;
+	/** Width of the side rails in CSS pixels. Dragged from the rail's inner edge. */
+	timer_rail_width: number;
+	/** Height of the bottom module bar in CSS pixels. Dragged from its top edge. */
+	timer_dock_height: number;
 	stackmat_id: string;
 	timer_time_size: number;
 	timer_scramble_size: number;
@@ -167,6 +182,9 @@ const defaultSettings: AllSettings = {
 	remote_input_compat: false,
 	timer_module_count: 3,
 	timer_layout: 'bottom',
+	timer_tiles: null,
+	timer_rail_width: TILE_LIMITS.railDefault,
+	timer_dock_height: TILE_LIMITS.dockDefault,
 	stackmat_id: '',
 	timer_time_size: 90,
 	timer_scramble_size: 19,

@@ -11,11 +11,15 @@
 	// grows to fit its content instead, and the page ends up taller than the
 	// viewport by exactly the header's height. Pin the height on the same screens
 	// where the header is in flow.
+	// `--anon-banner-h` is published by the signed-out strip above the page (see
+	// layout/anon/AnonBanner). Without subtracting it, the strip pushed this
+	// full-height layout down by its own height and the module bar at the bottom ended
+	// up below the fold. It resolves to 0px for everyone who is signed in.
 	@include bp-up($bp-lg) {
-		height: calc(100vh - var(--nav-h));
+		height: calc(100vh - var(--nav-h) - var(--anon-banner-h, 0px));
 
 		@supports (height: 100dvh) {
-			height: calc(100dvh - var(--nav-h));
+			height: calc(100dvh - var(--nav-h) - var(--anon-banner-h, 0px));
 		}
 	}
 
@@ -35,7 +39,7 @@
 		$gridGap: 1rem;
 
 		box-sizing: border-box;
-		min-height: calc(100vh - var(--nav-h));
+		min-height: calc(100vh - var(--nav-h) - var(--anon-banner-h, 0px));
 		width: 100%;
 		display: flex;
 		flex-direction: column;
@@ -79,7 +83,7 @@
 		}
 
 		// Desktop bottom layout: Viewport'a sığdır, timer/footer oransal
-		&--bottom:not(#{$self}__wrapper--mobileNewLayout) {
+		&--bottom:not(#{$self}__wrapper--mobileNewLayout):not(#{$self}__wrapper--tiles) {
 			height: calc(100vh - var(--nav-h));
 
 			@include bp-up($bp-lg) {
@@ -108,8 +112,8 @@
 		// Desktop side layouts (left/right): 2-column flex. Column SIZES come from
 		// explicit class targeting (timer-side = flex:1, footer = fixed 22rem); the
 		// SIDE (which column is left/right) comes from JSX render order in Timer.tsx.
-		&--right,
-		&--left {
+		&--right:not(#{$self}__wrapper--tiles),
+		&--left:not(#{$self}__wrapper--tiles) {
 			padding: 0 0.667rem 0.667rem !important;
 			flex-direction: row;
 			gap: $gridGap;
@@ -172,8 +176,52 @@
 		}
 
 		// Left layout: footer hugs the left edge, timer the right.
-		&--left {
+		&--left:not(#{$self}__wrapper--tiles) {
 			padding: 0 0 0.667rem 0.667rem !important;
+		}
+
+		// Tile layout (desktop). One row: left rail, the timer column with its bar under
+		// it, right rail. Which rails exist is decided by the modules, not by a layout
+		// setting, so there is no left/right/bottom variant of this block.
+		//
+		// Pixels, not rem: this is the layer that used to resize itself when the root font
+		// size stepped down at 1500px, which a browser zoom step crosses.
+		&--tiles {
+			flex-direction: row;
+			gap: 12px;
+			padding: 0 10px 10px;
+			height: calc(100vh - var(--nav-h) - var(--anon-banner-h, 0px));
+
+			@supports (height: 100dvh) {
+				height: calc(100dvh - var(--nav-h) - var(--anon-banner-h, 0px));
+			}
+
+			@include bp-up($bp-lg) {
+				height: auto;
+				min-height: 0;
+				flex: 1;
+			}
+
+			#{$self}__timer-side {
+				flex: 1 1 auto;
+				min-width: 0;
+				min-height: 220px;
+				// The header is an overlay below this width and a row in flow above it.
+				padding-top: var(--nav-h);
+
+				@include bp-up($bp-lg) {
+					padding-top: 0;
+				}
+			}
+
+			// The timer area gives way to the bar rather than overflowing past it. Without
+			// this the column keeps its content height, and the daily-goal bar underneath
+			// the timer ends up painted behind the first module.
+			#{$self}__main {
+				flex: 1;
+				min-height: 0;
+				overflow: hidden;
+			}
 		}
 	}
 }

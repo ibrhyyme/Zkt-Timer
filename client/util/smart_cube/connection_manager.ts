@@ -123,6 +123,8 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	private deviceName: string | null = null;
 	private batteryLevel: number | null = null;
 	private gyroSupported = false;
+	/** Whether this cube has actually delivered a gyro reading; see noteGyroSeen. */
+	private gyroSeen = false;
 	private solvedState = DEFAULT_SOLVED_STATE;
 
 	/**
@@ -439,6 +441,9 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 			smartDeviceName: this.deviceName,
 		});
 
+		// Whatever the cube that just left had sent belongs to that cube, not this one.
+		this.gyroSeen = false;
+
 		if (typeof cube.subscribeGyro !== 'function') {
 			// A cube with no gyroscope must not inherit the previous cube's flag, or the
 			// "reset gyro" action shows for a cube that cannot use it.
@@ -500,7 +505,8 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	}
 
 	handleGyroSupported(supported: boolean): void {
-		this.gyroSupported = !!supported;
+		// Never downgrades a cube that has already sent gyro data; see noteGyroSeen.
+		this.gyroSupported = !!supported || this.gyroSeen;
 		setSmartCubeParams({ smartGyroSupported: this.gyroSupported });
 		this.applyPowerState();
 		this.publishConnection();
@@ -642,6 +648,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		this.deviceName = null;
 		this.batteryLevel = null;
 		this.gyroSupported = false;
+		this.gyroSeen = false;
 		this.reportedSolved = false;
 		this.tracker.setSolved(0);
 
@@ -879,7 +886,28 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		if (this.cubeGyroUnsub) return;
 		const cube = this.activeCubeRef;
 		if (!cube || typeof cube.subscribeGyro !== 'function') return;
-		this.cubeGyroUnsub = cube.subscribeGyro((event: any) => emit(this.gyroListeners, event));
+		this.cubeGyroUnsub = cube.subscribeGyro((event: any) => {
+			this.noteGyroSeen();
+			emit(this.gyroListeners, event);
+		});
+	}
+
+	/**
+	 * A cube that sends gyro data HAS a gyroscope, whatever its hardware packet claimed.
+	 *
+	 * The claim is the only thing `smartGyroSupported` used to rest on, and it is wrong for
+	 * most GAN generations: Gen2 reports "no gyroscope" unconditionally and Gen3 only admits
+	 * to one on the GAN 12 ui Maglev. Meanwhile the 3D view subscribes to the stream without
+	 * consulting the flag, so on a GAN i4 the cube followed the user's hands on screen while
+	 * the gear menu hid "Reset gyro", the one action that fixes the drift they were watching.
+	 */
+	private noteGyroSeen(): void {
+		if (this.gyroSeen) return;
+		this.gyroSeen = true;
+		if (this.gyroSupported) return;
+		this.gyroSupported = true;
+		setSmartCubeParams({ smartGyroSupported: true });
+		this.publishConnection();
 	}
 
 	private detachCubeGyro(): void {

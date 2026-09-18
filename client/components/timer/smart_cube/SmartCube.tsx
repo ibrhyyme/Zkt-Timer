@@ -18,6 +18,7 @@ import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
+import { LIVE_ANALYSIS_SLOT_ID } from './LiveAnalysisSlot';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
@@ -120,6 +121,13 @@ export default function SmartCube() {
 	// completed; reset whenever a scramble completes.
 	const lateScrambleDropsRef = useRef(0);
 	const [domReady, setDomReady] = useState(false);
+
+	// Where the live phase ladder goes on desktop: into the "live analysis" module when
+	// the user has placed one, otherwise into its own corner of the screen. Re-looked-up
+	// whenever the layout changes, because moving the module to another column gives it a
+	// brand new DOM node.
+	const timerTiles = useSettings('timer_tiles');
+	const [liveSlot, setLiveSlot] = useState<HTMLElement | null>(null);
 	useEffect(() => setDomReady(true), []);
 
 	const [startState, setStartState] = useState<string>(null);
@@ -140,6 +148,17 @@ export default function SmartCube() {
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
 	const inspectionEnabled = useSettings('inspection');
 	const mobileMode = useGeneral('mobile_mode');
+
+	useEffect(() => {
+		if (typeof document === 'undefined') return undefined;
+
+		const find = () => setLiveSlot(document.getElementById(LIVE_ANALYSIS_SLOT_ID));
+		find();
+		// The module can mount in the same commit as this effect runs, so the first look
+		// can miss it by one frame.
+		const raf = requestAnimationFrame(find);
+		return () => cancelAnimationFrame(raf);
+	}, [domReady, mobileMode, timerTiles]);
 	const me = useMe();
 	const userIsPro = isPro(me);
 
@@ -918,7 +937,26 @@ export default function SmartCube() {
 						{dropdown}
 					</div>
 				)}
-				{!mobileMode && (
+				{/* Desktop. While a solve RUNS the ladder is a heads-up display in the corner
+				    of the screen at full size: that is the moment it is read at a glance, and
+				    the modules are faded out anyway. The moment the timer stops it belongs in
+				    the live phase module, and if there is no module it goes away rather than
+				    sitting over the page, which is what made it look broken after a solve.
+				    The finished numbers are not lost: the phase analysis module and the solve
+				    card both carry them. Rooms never come through here; they render the 3D
+				    cube on its own. */}
+				{!mobileMode && !timeStartedAt && liveSlot && domReady &&
+					ReactDOM.createPortal(
+						<>
+							<LiveAnalysisOverlay
+								startState={startState || engineRef.current?.trackerState || null}
+								compact
+							/>
+							<SmartStats />
+						</>,
+						liveSlot
+					)}
+				{!mobileMode && !!timeStartedAt && (
 					<div className={b('stats-container')}>
 						<LiveAnalysisOverlay startState={startState || engineRef.current?.trackerState || null} />
 						<SmartStats />

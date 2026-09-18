@@ -1,0 +1,98 @@
+@import '../../../styles/config';
+
+.#{$namespace}-live-analysis-slot {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+	// Vertical only. A card too short for the whole ladder at a readable size scrolls;
+	// sideways it never overflows, because the fit keeps the numbers inside the width.
+	overflow-y: auto;
+	overflow-x: hidden;
+	// Makes the card a query container, so the two-column arrangement below can ask the
+	// CARD how wide it is rather than asking the window.
+	container-type: inline-size;
+	container-name: live-analysis;
+
+	&__target {
+		display: flex;
+		// The ladder is tall and narrow, so the move count and TPS go beside it rather
+		// than under it: stacked, they ate the height the ladder needed to grow into and
+		// left the right half of the card empty.
+		flex-direction: row;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 10px;
+		min-height: 0;
+
+		// Sized by the measured scale in LiveAnalysisSlot, not by a fixed value.
+		.live-analysis {
+			flex: 1 1 auto;
+			min-width: 0;
+			margin-bottom: 0;
+		}
+
+		.live-analysis__row {
+			font-size: calc(20px * var(--zt-live-scale, 1));
+		}
+
+		.#{$namespace}-smart-stats {
+			flex: 0 0 auto;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 2px;
+			margin: 0;
+
+			&__text {
+				font-size: calc(13px * var(--zt-live-scale, 1));
+				white-space: nowrap;
+			}
+		}
+	}
+
+	// The recognition split moves onto its own line when that leaves more room for the
+	// numbers. The rows are flex, so a full-width basis is what pushes it to its own line.
+	&--split-stacked &__target {
+		.live-analysis__split-inline {
+			flex: 0 0 100%;
+			margin-right: 0;
+		}
+
+		.live-analysis__row {
+			flex-wrap: wrap;
+		}
+	}
+
+	// Width measurement only: what the numbers need without the split in front of them.
+	&--measuring &__target .live-analysis__split-inline {
+		display: none;
+	}
+
+	// A narrow card has no room for two columns, so they stack again.
+	@container (max-width: 260px) {
+		&__target {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		&__target .#{$namespace}-smart-stats {
+			flex-direction: row;
+			justify-content: flex-start;
+			gap: 10px;
+		}
+	}
+
+	// Gone the moment anything is rendered into the target above it.
+	&__target:not(:empty) ~ &__hint {
+		display: none;
+	}
+
+	&__hint {
+		font-size: 12px;
+		line-height: 1.4;
+		color: rgb(var(--text-color));
+		opacity: 0.75;
+	}
+}

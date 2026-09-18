@@ -1,0 +1,151 @@
+@import '../../../styles/config';
+
+// One module card.
+//
+// The card is the unit now: its own surface, its own header with the module's name, and
+// the header doubles as the drag handle. The previous footer boxed every module into one
+// shared panel and hid the type picker behind a hover overlay on top of the content,
+// which is why nobody found it.
+
+.#{$namespace}-timer-tile {
+	$self: &;
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	min-width: 0;
+	min-height: 0;
+	border-radius: 14px;
+	border: 1px solid rgba(var(--text-color), 0.08);
+	background-color: rgba(var(--module-color), 0.85);
+	overflow: hidden;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex: 0 0 auto;
+		height: 30px;
+		padding: 0 6px 0 10px;
+		box-sizing: border-box;
+		border-bottom: 1px solid rgba(var(--text-color), 0.07);
+		// The grip is the whole header, so the pointer must not turn into a text caret
+		// halfway across it.
+		user-select: none;
+		touch-action: none;
+	}
+
+	&--draggable &__head {
+		cursor: grab;
+	}
+
+	&__title {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-left: -6px;
+		padding: 3px 6px;
+		border-radius: 7px;
+		font-size: 12px;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		// Full contrast on purpose. A dimmed title reads as disabled, and the hierarchy
+		// here comes from size and weight, not from fading the text out.
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+		transition: background 0.12s ease;
+	}
+
+	&__title-caret {
+		font-size: 11px;
+		opacity: 0.55;
+		transition: opacity 0.12s ease;
+	}
+
+	&__grip {
+		display: flex;
+		align-items: center;
+		margin-left: auto;
+		font-size: 15px;
+		color: rgb(var(--text-color));
+		opacity: 0.45;
+		transition: opacity 0.12s ease;
+	}
+
+	&__remove {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		border-radius: 6px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		opacity: 0;
+		transition: opacity 0.12s ease, background 0.12s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.12);
+		}
+	}
+
+	&:hover {
+		#{$self}__grip {
+			opacity: 0.85;
+		}
+
+		#{$self}__remove {
+			opacity: 0.7;
+		}
+
+		#{$self}__title {
+			background: rgba(var(--text-color), 0.09);
+		}
+
+		#{$self}__title-caret {
+			opacity: 0.9;
+		}
+	}
+
+	&__body {
+		flex: 1 1 auto;
+		min-height: 0;
+		min-width: 0;
+		padding: 8px 10px 10px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	// The tile left behind while its ghost is being dragged.
+	&[data-tile-dragging='true'] {
+		opacity: 0.35;
+		border-style: dashed;
+		border-color: rgba(var(--primary-color), 0.6);
+	}
+
+	&--float {
+		position: fixed;
+		z-index: 31;
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+	}
+
+	&__resize {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: 16px;
+		height: 16px;
+		cursor: nwse-resize;
+		// Two short strokes in the corner, the usual grip mark, drawn without an extra
+		// element or an image request.
+		background: linear-gradient(
+			135deg,
+			transparent 0 45%,
+			rgba(var(--text-color), 0.45) 45% 55%,
+			transparent 55% 70%,
+			rgba(var(--text-color), 0.45) 70% 80%,
+			transparent 80%
+		);
+	}
+}

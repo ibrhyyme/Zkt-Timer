@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../../util/time';
-import LayoutSelector from './layout_selector/LayoutSelector';
+import Button from '../../common/button/Button';
+import { useTiles } from '../../timer/tiles/useTiles';
 import TimerBackground from './timer_background/TimerBackground';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -45,7 +46,7 @@ export default function Appearance() {
 	const timerTimeSizeUserDefault = useSettings('timer_time_size_user_default');
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerFontFamily = useSettings('timer_font_family');
-	const timerModuleCount = useSettings('timer_module_count');
+	const { resetLayout } = useTiles();
 	const highlightPbs = useSettings('highlight_pbs');
 	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
@@ -74,23 +75,18 @@ export default function Appearance() {
 
 			{/* Düzen */}
 			<TimerSettingsGroup id="appearance-layout" label={t('appearance.category_layout')}>
-				<TimerSettingsSelect
-					label={t('appearance.timer_modules')}
-					description={t('appearance.timer_modules_desc')}
-					hidden={!!mobileMode}
-					value={String(timerModuleCount)}
-					options={[1, 2, 3, 4, 5, 6].map((c) => ({
-						label: c === 3 ? `${c} ${t('appearance.default_suffix')}` : String(c),
-						value: String(c),
-					}))}
-					onChange={(v) => updateSetting('timer_module_count', parseInt(v))}
-				/>
+				{/* How many modules are on screen is no longer a number here: each module is
+				    placed (or removed) on the timer itself. These two rows are what is left,
+				    a bulk "put everything in one column" and the way back out. */}
+				{/* No left/centre/right control any more. A module carries its own place, so
+				    a single global alignment would only fight what the user arranged. What
+				    is left is the way back to the starting arrangement. */}
 				<TimerSettingsAction
-					label={t('appearance.timer_layout')}
-					description={t('appearance.timer_layout_desc')}
+					label={t('timer_tiles.reset_layout')}
+					description={`${t('timer_tiles.layout_hint')} ${t('timer_tiles.reset_layout_desc')}`}
 					hidden={!!mobileMode}
 				>
-					<LayoutSelector />
+					<Button gray text={t('timer_tiles.reset_layout')} onClick={resetLayout} />
 				</TimerSettingsAction>
 				<TimerSettingsAction
 					label={t('appearance.timer_background')}

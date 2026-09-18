@@ -1436,6 +1436,18 @@
   "language": {
     "category_language": "Idioma"
   },
+  "timer_tiles": {
+    "add_module": "Añadir módulo",
+    "remove_module": "Quitar módulo",
+    "change_module": "Cambiar módulo",
+    "zone_left": "Columna izquierda",
+    "zone_right": "Columna derecha",
+    "zone_bottom": "Barra inferior",
+    "reset_layout": "Restablecer diseño",
+    "reset_layout_desc": "Devuelve cada módulo a su lugar inicial.",
+    "live_analysis_hint": "Los tiempos por fase aparecen aquí en vivo mientras resuelves con un cubo inteligente.",
+    "layout_hint": "Arrastra un módulo por su título. Suéltalo en una columna o en la barra inferior, o en cualquier otro sitio para dejarlo flotando."
+  },
   "timer_modules": {
     "history": "Resoluciones",
     "stats": "Estadísticas",
@@ -1446,6 +1458,7 @@
     "time_distro": "Distribución de tiempos",
     "cross_solver": "Solucionadores",
     "phase_analysis": "Análisis de Fases",
+    "live_analysis": "Fases en vivo",
     "none": "Ninguno",
     "customize_stats": "Personalizar estadísticas",
     "customize_stats_desc": "Personaliza aquí y ve los cambios al instante",

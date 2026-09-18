@@ -3,6 +3,7 @@ import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import './Timer.scss';
 import HeaderControl from './header_control/HeaderControl';
 import TimerFooter from './footer/TimerFooter';
+import TimerTiles from './tiles/TimerTiles';
 import TimeDisplay from './time_display/TimeDisplay';
 import TimerScramble from './time_display/timer_scramble/TimerScramble';
 import KeyWatcher from './key_watcher/KeyWatcher';
@@ -71,6 +72,10 @@ export default function Timer(props: TimerProps) {
 	// inspection. Kept in a ref rather than stamped onto the DOM node, so a value left
 	// over from an earlier gesture can never be read as this one's starting point.
 	const overlayTouchStart = useRef<{ x: number; y: number } | null>(null);
+
+	// The element the module zones are measured against. Everything the drag layer needs
+	// to know about the page comes from this one rect plus the two stored sizes.
+	const wrapperRef = useRef<HTMLDivElement>(null);
 
 	// Streamer Mode strips the page down to scramble + giant timer + corner
 	// mini-history. Gate the live flag once so the root class, the body class
@@ -282,7 +287,14 @@ export default function Timer(props: TimerProps) {
 	const renderFirst = (mobileMode || timerLayout !== 'left') ? timerSide : <TimerFooter />;
 	const renderSecond = (mobileMode || timerLayout !== 'left') ? <TimerFooter /> : timerSide;
 
-	let body = (
+	// Desktop places its modules itself: a rail on either side of the timer, a bar under
+	// it, and a free layer above. Mobile and the in-modal timer keep the single footer
+	// column, which is a different layout problem with no room to drag anything.
+	const useTiles = !mobileMode && !props.inModal;
+
+	let body = useTiles ? (
+		<TimerTiles stageRef={wrapperRef}>{timerSide}</TimerTiles>
+	) : (
 		<>
 			{renderFirst}
 			{renderSecond}
@@ -367,8 +379,10 @@ export default function Timer(props: TimerProps) {
 							/>
 						)}
 						<div
+							ref={wrapperRef}
 							className={b('wrapper', {
 								[timerLayout || 'bottom']: true,
+								tiles: useTiles,
 								mobileFooterHidden: hideMobileTimerFooter && mobileMode,
 								mobileNewLayout: mobileMode,
 							})}
