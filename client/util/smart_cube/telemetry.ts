@@ -175,18 +175,28 @@ export function recordEngineEvent(event: SmartEngineEvent, surface: TelemetrySur
 	}
 }
 
-/** Connection-level observations, which the engine never sees. */
+/**
+ * Connection-level observations, which the engine never sees.
+ *
+ * A scan that never reached a device is the case most worth recording: a user whose cube
+ * never appears in the picker produces no engine event at all, so without a row here the
+ * only evidence of that failure is the user writing in. `reason` rides in
+ * `detection_source` (free text on the server, capped at 32 chars) rather than needing a
+ * new column, and `deviceName` carries the advertised name of a cube we could not route,
+ * which is how an unknown model's BLE name reaches us.
+ */
 export function recordConnectionEvent(
 	eventType: 'scan_error' | 'disconnect',
 	surface: TelemetrySurface,
-	device?: { name: string; type: string }
+	device?: { name: string; type: string },
+	reason?: string
 ): void {
-	const target = device || currentDevice;
-	if (!target) return;
+	const target = device || currentDevice || { name: 'none', type: 'none' };
 	enqueue({
 		device_name: target.name,
 		cube_type: target.type,
 		surface,
 		event_type: eventType,
+		detection_source: reason,
 	});
 }

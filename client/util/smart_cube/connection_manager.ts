@@ -4,6 +4,7 @@ import { getStore } from '../../components/store';
 import { closeModal } from '../../actions/general';
 import { smartCubeFaceletsAction, turnSmartCube, turnSmartCubeBatch } from '../../actions/timer';
 import { setTelemetryBattery } from './telemetry';
+import type { TelemetrySurface } from './telemetry';
 import { CubeTracker } from './tracker';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
 import { isAppVisible, onVisibilityChange } from '../app-visibility';
@@ -257,7 +258,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	 * with a scan error: the user picked a second cube on purpose and has to be told which
 	 * one is holding the connection.
 	 */
-	async connect(acceptAll = false): Promise<SmartCubeConnectResult> {
+	async connect(acceptAll = false, surface: TelemetrySurface = 'timer'): Promise<SmartCubeConnectResult> {
 		if (this.connected) {
 			return { ok: false, reason: 'already_connected', deviceName: this.deviceName };
 		}
@@ -267,7 +268,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 
 		const conn = this.ensureConnect();
 		try {
-			await conn.connect(acceptAll);
+			await conn.connect(acceptAll, surface);
 		} catch (e) {
 			// connect() reports its own failures through alertScanError; this is a safety net.
 			console.error('[smart-cube] connect failed:', e);

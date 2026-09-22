@@ -1,6 +1,11 @@
 import {checkLoggedIn} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
-import {deleteTimerBackground, getTimerBackground, uploadTimerBackgroundWithFile} from '../models/timer_background';
+import {
+	deleteTimerBackground,
+	getTimerBackground,
+	uploadTimerBackgroundWithFile,
+	MAX_BACKGROUND_VIDEO_MB,
+} from '../models/timer_background';
 import {ErrorCode} from '../constants/errors';
 import {logger} from '../services/logger';
 import {isProEnabled, isPro} from '../lib/pro';
@@ -50,6 +55,14 @@ export const mutateActions = {
 			logger.warn('Failed to upload timer background', {
 				error: e,
 			});
+			// A video over the cap is the user's problem to fix, not a server fault, and the
+			// size has to reach them in their own language.
+			if (e.message === 'FILE_TOO_LARGE') {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, `File is larger than ${MAX_BACKGROUND_VIDEO_MB} MB`, {
+					i18nKey: 'upload.file_too_large',
+					i18nValues: {size: MAX_BACKGROUND_VIDEO_MB},
+				});
+			}
 			throw new GraphQLError(ErrorCode.SERVER, e.message);
 		}
 

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import * as THREE from 'three';
 import Cube from 'cubejs';
@@ -9,7 +9,8 @@ import { onVisibilityChange } from '../../../../util/app-visibility';
 import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
 import type { SmartTurn } from '../../../../util/smart_scramble';
 import { getSmartCubeManager } from '../../../../util/smart_cube/connection_manager';
-import { recolorPuzzle } from './cube_palette';
+import { recolorPuzzle, stickerPaletteFromFaceColors } from './cube_palette';
+import { useCubePalette } from '../../../../util/cube_colors/useCubePalette';
 import { HOME_TILT_DEG, HOME_TURN_DEG } from './view_defaults';
 
 /**
@@ -68,6 +69,16 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	// Sticker palette: which puzzle instances are already repainted, and whether the
 	// current scene still needs checking. See cube_palette.ts for why this is needed.
 	const paletteDoneRef = useRef(new WeakSet<object>());
+
+	// The user's own sticker colours. `paletteKey` is what the player's effect depends on:
+	// recolouring is one-shot per puzzle instance (it matches on the renderer's stock colours,
+	// which are gone after the first pass), so a changed palette has to rebuild the player
+	// rather than repaint it.
+	const cubeColors = useCubePalette();
+	const paletteKey = cubeColors.nxn.join(',');
+	const stickerPalette = useMemo(() => stickerPaletteFromFaceColors(cubeColors.nxn), [paletteKey]);
+	const stickerPaletteRef = useRef(stickerPalette);
+	stickerPaletteRef.current = stickerPalette;
 	const recolorPendingRef = useRef(true);
 	const appliedTurnsRef = useRef(0);
 
@@ -141,7 +152,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 						// The puzzle object appears a little after the scene does, so keep
 						// looking until it is there; once found this costs nothing more.
 						if (recolorPendingRef.current) {
-							const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current);
+							const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current, stickerPaletteRef.current);
 							if (result !== 'not-found') recolorPendingRef.current = false;
 						}
 						twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
@@ -178,7 +189,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 			if (containerRef.current) containerRef.current.innerHTML = '';
 		};
-	}, []);
+	}, [paletteKey]);
 
 	// ── Move mirror ──
 	useEffect(() => {

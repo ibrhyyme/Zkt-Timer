@@ -729,24 +729,29 @@ export default function SmartCube() {
 			if (!(await showBleConnectInfo())) return;
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			if (bluetoothAvailable) {
-				if (isNative()) {
-					dispatch(openModal(
-						<BleScanningModal
-							mode="smartcube"
-							onCancel={cancelBleScan}
-							onRetry={retryBleScan}
-						/>,
-						{
-							position: 'bottom',
-							hideCloseButton: true,
-							disableBackdropClick: true,
-						}
-					));
-				}
-				const result = await manager.connect();
+				// Opened on web too. The scan itself runs in Chrome's own picker there, so this
+				// sits behind it and is invisible until the picker closes — which is the moment
+				// a user whose cube never appeared needs somewhere to go. The connection manager
+				// closes it on success.
+				dispatch(openModal(
+					<BleScanningModal
+						mode="smartcube"
+						onCancel={cancelBleScan}
+						onRetry={retryBleScan}
+						onShowAllDevices={showAllBleDevices}
+					/>,
+					{
+						position: 'bottom',
+						hideCloseButton: true,
+						disableBackdropClick: true,
+					}
+				));
+				const result = await manager.connect(false, 'timer');
 				if (!result.ok && result.reason === 'already_connected') {
 					// A cube is already on the link, connected from another page. Say which one
 					// rather than silently adopting it or failing with a generic scan error.
+					// The scan never started, so nothing else will take the modal down.
+					dispatch(closeModal());
 					toastError(t('smart_cube.already_connected', { name: result.deviceName || '' }));
 				}
 			} else {
@@ -769,7 +774,24 @@ export default function SmartCube() {
 			smartCubeScanError: null,
 			smartCubeConnectStep: null,
 		});
-		void manager.connect();
+		void manager.connect(false, 'timer');
+	}
+
+	/**
+	 * Rescan with the name filters off, from the failure screen.
+	 *
+	 * The filtered scan can only ever show a cube whose advertised name is already in
+	 * `supported_cubes.ts`, so a model we have no prefix for looks identical to a cube that
+	 * is switched off. This is the way out for the user, and the only way the unknown name
+	 * reaches our telemetry so the prefix can be added.
+	 */
+	function showAllBleDevices() {
+		setTimerParams({
+			smartCubeScanning: true,
+			smartCubeScanError: null,
+			smartCubeConnectStep: null,
+		});
+		void manager.connect(true, 'timer');
 	}
 
 	function disconnectBluetooth() {

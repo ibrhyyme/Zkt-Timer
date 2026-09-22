@@ -7,6 +7,8 @@
  */
 
 import React, { useEffect, useRef } from 'react';
+import { useCubePalette } from '../../../util/cube_colors/useCubePalette';
+import { SQ1_FACES } from '../../../util/cube_colors/palette';
 
 // ==================== SquareOneState (cstimer sq1.SqCubie port) ====================
 
@@ -151,7 +153,8 @@ function drawPoly(
 	ctx: CanvasRenderingContext2D,
 	color: string,
 	poly: number[][],
-	trans: [number, number, number] // [scale, offsetX, offsetY]
+	trans: [number, number, number], // [scale, offsetX, offsetY]
+	outline: string
 ): void {
 	const [scale, ox, oy] = trans;
 	ctx.beginPath();
@@ -162,21 +165,14 @@ function drawPoly(
 	ctx.closePath();
 	ctx.fillStyle = color;
 	ctx.fill();
-	ctx.strokeStyle = '#000';
+	ctx.strokeStyle = outline;
 	ctx.lineWidth = 0.03 * scale;
 	ctx.stroke();
 }
 
 // ==================== Color tables (from cstimer image.js) ====================
-
-const COLORS: Record<string, string> = {
-	U: '#ffff00',
-	R: '#ff8000',
-	F: '#00c000',
-	D: '#ffffff',
-	L: '#ff0000',
-	B: '#0000ff',
-};
+// The values themselves now live in util/cube_colors/palette.ts, where the settings screen
+// can reach them; this file only indexes into whatever the user chose.
 
 const UDCOL = 'UD';
 // Edge colors (pieces 0, 2, 4, 6 and 8, 10, 12, 14 side color)
@@ -189,7 +185,9 @@ const CCOL = 'RBBLLFFRRFFLLBBR';
 function drawState(
 	ctx: CanvasRenderingContext2D,
 	sc: SquareOneState,
-	width: number
+	width: number,
+	COLORS: Record<string, string>,
+	outline: string
 ): void {
 	// All slices (top 12 + bottom 12)
 	for (let i = 0; i < 24; i++) {
@@ -203,14 +201,14 @@ function drawState(
 
 		if (val % 2 === 1) {
 			// Corner — covers 2 slices
-			drawPoly(ctx, COLORS[CCOL[val - 1]], rotatePoly(CPR, cRot), trans);
-			drawPoly(ctx, COLORS[CCOL[val]], rotatePoly(CPL, cRot), trans);
-			drawPoly(ctx, colorUD, rotatePoly(CPS, cRot), trans);
+			drawPoly(ctx, COLORS[CCOL[val - 1]], rotatePoly(CPR, cRot), trans, outline);
+			drawPoly(ctx, COLORS[CCOL[val]], rotatePoly(CPL, cRot), trans, outline);
+			drawPoly(ctx, colorUD, rotatePoly(CPS, cRot), trans, outline);
 			i++; // corner covers 2 slices, skip next
 		} else {
 			// Edge — 1 slice
-			drawPoly(ctx, COLORS[ECOL[val]], rotatePoly(EP, eRot), trans);
-			drawPoly(ctx, colorUD, rotatePoly(EPS, eRot), trans);
+			drawPoly(ctx, COLORS[ECOL[val]], rotatePoly(EP, eRot), trans, outline);
+			drawPoly(ctx, colorUD, rotatePoly(EPS, eRot), trans, outline);
 		}
 	}
 
@@ -220,12 +218,12 @@ function drawState(
 			? [width, SQB, SQB + SQA]
 			: [width, SQB * 3, SQB - SQA - 0.7];
 		// Left half (always L)
-		drawPoly(ctx, COLORS['L'], [[-SQA, -SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans);
+		drawPoly(ctx, COLORS['L'], [[-SQA, -SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans, outline);
 		// Right half — if ml=0 then L (straight), if ml=1 then R (crossed)
 		if (sc.ml === 0) {
-			drawPoly(ctx, COLORS['L'], [[SQA, SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans);
+			drawPoly(ctx, COLORS['L'], [[SQA, SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans, outline);
 		} else {
-			drawPoly(ctx, COLORS['R'], [[HSQ3, HSQ3, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans);
+			drawPoly(ctx, COLORS['R'], [[HSQ3, HSQ3, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans, outline);
 		}
 	}
 }
@@ -240,6 +238,7 @@ interface Props {
 
 const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidthProp }) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const palette = useCubePalette();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -275,8 +274,11 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidt
 			// Parse error — solved state will be drawn
 		}
 
-		drawState(ctx, sc, baseWidth);
-	}, [scramble, baseWidthProp]);
+		const colors: Record<string, string> = {};
+		SQ1_FACES.forEach((face, i) => { colors[face] = palette.sq1[i]; });
+
+		drawState(ctx, sc, baseWidth, colors, palette.outline);
+	}, [scramble, baseWidthProp, palette]);
 
 	return (
 		<canvas

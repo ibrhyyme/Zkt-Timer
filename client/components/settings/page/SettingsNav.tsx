@@ -14,6 +14,7 @@ import {
 	Cube,
 	Shuffle,
 	PaintBrush,
+	Palette,
 	Database,
 	Translate,
 } from 'phosphor-react';
@@ -40,6 +41,7 @@ const TONE = {
 	orange: '238, 106, 38',
 	cyan: '0, 176, 209',
 	red: '226, 51, 67',
+	pink: '226, 87, 166',
 };
 
 // The first entry is also what `/settings` renders on desktop.
@@ -81,6 +83,13 @@ export function useSettingsTabs(): SettingsTab[] {
 			label: t('settings.tab_appearance'),
 			tone: TONE.orange,
 			icon: <PaintBrush weight="fill" />,
+		},
+		{
+			id: 'colors',
+			link: '/settings/colors',
+			label: t('settings.tab_colors'),
+			tone: TONE.pink,
+			icon: <Palette weight="fill" />,
 		},
 		{
 			id: 'data',

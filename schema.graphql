@@ -349,7 +349,7 @@ type Query {
   socialPreference: SocialPreference
   dmPresence(userIds: [String]): [String]
   messageReports(page: Int, status: ReportStatus): MessageReportList
-  smartCubeTelemetryRows(offset: Int, cubeType: String, limit: Int): [SmartCubeTelemetryRow]
+  smartCubeTelemetryRows(newestFirst: Boolean, eventType: String, username: String, offset: Int, cubeType: String, limit: Int): [SmartCubeTelemetryRow]
   smartCubeTelemetrySummary(days: Int): [SmartCubeTelemetrySummary]
 }
 
@@ -762,6 +762,7 @@ type TimerBackground {
   storage_path: String
   user_id: String
   hex: String
+  media_type: String
   created_at: DateTime
   user: PublicUserAccount
 }

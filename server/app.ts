@@ -513,7 +513,11 @@ if (!isDev) {
 	const path = '/graphql';
 
 	// Support ticket attachments: 30MB / 4 files. Profile picture + other uploads also count toward this limit.
-	app.use(graphqlUploadExpress({ maxFileSize: 30 * 1024 * 1024, maxFiles: 4 }));
+	// 42 MB, not 40: the video background cap is 40 MB and multipart framing adds to it, so a
+	// file exactly at the cap must still get through to the model's own check, which is the one
+	// that reports a usable error. Raising this alone is not enough in production — nginx's
+	// client_max_body_size sits in front of it and rejects the body first.
+	app.use(graphqlUploadExpress({ maxFileSize: 42 * 1024 * 1024, maxFiles: 4 }));
 	// cors: false is load-bearing. Apollo v2 otherwise mounts its OWN cors on /graphql
 	// and overwrites our global middleware's header with Allow-Origin: * — which,
 	// combined with credentialed requests from the native shell (capacitor://localhost),

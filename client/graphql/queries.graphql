@@ -823,8 +823,8 @@ query SmartCubeTelemetrySummary($days: Int) {
 	}
 }
 
-query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int) {
-	smartCubeTelemetryRows(limit: $limit, cubeType: $cubeType, offset: $offset) {
+query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int, $username: String, $eventType: String, $newestFirst: Boolean) {
+	smartCubeTelemetryRows(limit: $limit, cubeType: $cubeType, offset: $offset, username: $username, eventType: $eventType, newestFirst: $newestFirst) {
 		id
 		username
 		device_name

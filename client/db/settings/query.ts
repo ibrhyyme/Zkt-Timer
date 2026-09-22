@@ -5,6 +5,13 @@ import { APP_THEME_PRESETS } from '../../util/themes/theme_consts';
 import { MultiPhaseMethod } from '../../../shared/util/solve/multiphase';
 import { TILE_LIMITS } from '../../components/timer/tiles/layout';
 import type { TileMap } from '../../components/timer/tiles/layout';
+import {
+	DEFAULT_NXN_COLORS,
+	DEFAULT_SQ1_COLORS,
+	DEFAULT_CLOCK_COLORS,
+	DEFAULT_FTO_COLORS,
+	DEFAULT_OUTLINE_COLOR,
+} from '../../util/cube_colors/palette';
 
 export type TimerLayoutPosition = 'bottom' | 'left' | 'right';
 
@@ -82,7 +89,26 @@ export interface AllSettings {
 	stackmat_id: string;
 	timer_time_size: number;
 	timer_scramble_size: number;
+	/**
+	 * Show the Pro timer background (image or live wallpaper) on this platform.
+	 *
+	 * A platform setting on purpose, not a global one: the whole point is that a live
+	 * wallpaper can be on at a desk and off on a phone, where it costs battery, and the
+	 * desktop_prefs / mobile_prefs split already gives that for free.
+	 */
+	timer_background_enabled: boolean;
+	/**
+	 * Sticker colours, one array per puzzle family, in the face order documented in
+	 * `util/cube_colors/palette.ts`. Every drawing surface reads these; the settings screen
+	 * under Colours is the only thing that writes them.
+	 */
 	cube_face_colors: string[];
+	sq1_face_colors: string[];
+	clock_colors: string[];
+	fto_face_colors: string[];
+	/** Outline every net and dial is drawn with. Settable because a dark sticker on a black
+	 * outline loses its borders, which is what happens the moment a user picks black. */
+	cube_outline_color: string;
 	timer_font_family: string;
 	primary_color: string;
 	secondary_color: string;
@@ -203,8 +229,14 @@ const defaultSettings: AllSettings = {
 		TimerModuleType.SCRAMBLE,
 	],
 
-	// U R F D L B
-	cube_face_colors: ['#43FF43', '#FF9826', '#FFFFFF', '#246BFD', '#FF4343', '#FFFF49'],
+	// Face orders are documented in util/cube_colors/palette.ts. Sourced from there rather
+	// than retyped, so a default only ever changes in one place.
+	timer_background_enabled: true,
+	cube_face_colors: DEFAULT_NXN_COLORS,
+	sq1_face_colors: DEFAULT_SQ1_COLORS,
+	clock_colors: DEFAULT_CLOCK_COLORS,
+	fto_face_colors: DEFAULT_FTO_COLORS,
+	cube_outline_color: DEFAULT_OUTLINE_COLOR,
 
 	// User-defined values
 	...APP_THEME_PRESETS.dark.values,

@@ -17,6 +17,7 @@ import { canUseStreamerMode } from '../../lib/streamer-mode';
 import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { useSettings } from '../../util/hooks/useSettings';
+import TimerVideoBackground from './timer_background/TimerVideoBackground';
 import { is3x3CubeType } from './helpers/util';
 import { useNormalizeTimerType } from './helpers/timer_type_support';
 import { virtualCubeSupports } from '../../util/virtual_cube/size';
@@ -144,7 +145,11 @@ export default function Timer(props: TimerProps) {
 	// subtree, so only a body-level class can reach it) — makes the whole screen feel
 	// covered instead of the image starting below the nav bar. Mobile is handled
 	// separately by the timer's own in-subtree header, so scope this to desktop.
-	const hasBackgroundImage = !!me?.timer_background?.storage_path;
+	// Per-platform switch: settings live in the desktop_prefs / mobile_prefs blob, so one
+	// setting already means "on here, off there" without a second key. That is what lets a
+	// user keep a live wallpaper on the desktop and off on the phone.
+	const backgroundEnabled = useSettings('timer_background_enabled');
+	const hasBackgroundImage = !!me?.timer_background?.storage_path && backgroundEnabled;
 	useEffect(() => {
 		const immersive = hasBackgroundImage && !mobileMode;
 		document.body.classList.toggle('timer-immersive-bg', immersive);
@@ -307,11 +312,20 @@ export default function Timer(props: TimerProps) {
 	}
 
 	let background: ReactNode = null;
-	const backgroundPath = me?.timer_background?.storage_path;
+	const backgroundPath = backgroundEnabled ? me?.timer_background?.storage_path : null;
 
 	if (backgroundPath) {
 		const backgroundUrl = getStorageURL(backgroundPath);
-		background = <img alt="Timer background" src={backgroundUrl} className={b('background')} />;
+		// Null media_type is an image: rows written before video backgrounds existed.
+		background = me?.timer_background?.media_type === 'video' ? (
+			<TimerVideoBackground
+				src={backgroundUrl}
+				paused={!!context.timeStartedAt}
+				className={b('background')}
+			/>
+		) : (
+			<img alt="Timer background" src={backgroundUrl} className={b('background')} />
+		);
 	}
 
 	return (

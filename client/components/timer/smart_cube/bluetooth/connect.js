@@ -9,7 +9,7 @@ import { SMART_CUBE_NAME_PREFIXES } from './supported_cubes';
 import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
 import { setTimerParams } from '../../helpers/params';
-import { setTelemetryDevice } from '../../../../util/smart_cube/telemetry';
+import { setTelemetryDevice, recordConnectionEvent } from '../../../../util/smart_cube/telemetry';
 
 /**
  * Maps an advertised device name to its cube protocol class.
@@ -53,6 +53,9 @@ export default class Connect extends SmartCube {
 	device = null;
 	adapter = null;
 	_cancelled = false;
+	// Which screen asked for this connection. Only telemetry reads it, and the server
+	// rejects any value outside timer/room/trainer, so it defaults to the common case.
+	_surface = 'timer';
 
 	_deviceOptions = {
 		// Derived, never typed out again: see supported_cubes.ts. Both adapters treat this
@@ -116,6 +119,15 @@ export default class Connect extends SmartCube {
 			console.log(`[BLE-CONNECT] cube.init() COMPLETED (${cubeType})`);
 		} else {
 			console.warn('[BLE-CONNECT] _initCube: Device not recognized, cube not created:', device.name);
+			// The one place an unsupported cube's advertised name can be collected. A model we
+			// have no prefix for is invisible to the filtered scan, so this row only ever comes
+			// from the show-all path — and it is exactly what a new prefix has to be written from.
+			recordConnectionEvent(
+				'scan_error',
+				this._surface,
+				{ name: device.name || 'unnamed', type: 'unknown' },
+				'unrecognized'
+			);
 			// Without this the caller sits on "connecting" forever for a device whose name
 			// matches no protocol. The trainer had this in its own _initCube override; it
 			// belongs here, where every surface gets it.
@@ -123,10 +135,14 @@ export default class Connect extends SmartCube {
 		}
 	};
 
-	connect = async (acceptAll = false) => {
+	connect = async (acceptAll = false, surface = 'timer') => {
 		const MAX_RETRIES = 3;
 		const excludeDeviceIds = [];
 		this._cancelled = false;
+		this._surface = surface;
+		// Clear the previous cube's identity before scanning. Without this a scan that fails
+		// outright would be filed under whatever cube was connected last.
+		setTelemetryDevice(null, null);
 
 		console.log('[BLE-CONNECT] connect() started | isNative:', isNative(), '| acceptAll:', acceptAll);
 
@@ -188,23 +204,40 @@ export default class Connect extends SmartCube {
 
 			if (error.message === 'BLE_SCAN_ABORTED') {
 				console.log('[BLE-CONNECT] User cancelled');
-				setTimerParams({
-					smartCubeScanning: false,
-					smartCubeConnecting: false,
-					smartCubeScanError: null,
-					smartCubeConnectStep: null,
-				});
+				// On web the scan runs inside Chrome's own picker, which we cannot read. A user
+				// who dismissed it because their cube was never listed and a user who changed
+				// their mind produce the identical abort, so the guidance screen opens for both
+				// rather than leaving the first one with nothing at all. The show-all scan is
+				// exempt: having already seen every device in range, a dismissal there is a
+				// decision, not a dead end.
+				if (!isNative() && !acceptAll) {
+					recordConnectionEvent('scan_error', this._surface, undefined, 'picker_dismissed');
+					this.alertScanError('not_listed');
+				} else {
+					setTimerParams({
+						smartCubeScanning: false,
+						smartCubeConnecting: false,
+						smartCubeScanError: null,
+						smartCubeConnectStep: null,
+					});
+				}
 			} else if (error.message === 'BLE_SCAN_TIMEOUT') {
 				console.warn('[BLE-CONNECT] 15s scan timeout — device not found');
+				recordConnectionEvent('scan_error', this._surface, undefined, 'timeout');
 				this.alertScanError('timeout');
 			} else if (error.message === 'BLE_PERMISSION_DENIED') {
 				console.warn('[BLE-CONNECT] BLE permission denied');
+				recordConnectionEvent('scan_error', this._surface, undefined, 'permission');
 				this.alertScanError('permission');
 			} else if (error.message === 'BLE_DISABLED') {
 				console.warn('[BLE-CONNECT] Bluetooth disabled');
+				recordConnectionEvent('scan_error', this._surface, undefined, 'disabled');
 				this.alertScanError('disabled');
 			} else {
 				console.error('[BLE-CONNECT] Unexpected error:', error);
+				// The handshake reached a real cube and then failed. Its name is already set,
+				// so this row names the model that could not complete a connection.
+				recordConnectionEvent('scan_error', this._surface, undefined, 'handshake_failed');
 				this.alertDisconnected();
 			}
 		}

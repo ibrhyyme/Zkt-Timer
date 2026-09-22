@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Bluetooth, CircleNotch, WarningCircle, X, ArrowClockwise, CaretRight } from 'phosphor-react';
+import { Bluetooth, CircleNotch, WarningCircle, X, ArrowClockwise, CaretRight, MagnifyingGlass } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import { getBleAdapter } from '../../../../util/ble';
 import './BleScanningModal.scss';
@@ -39,7 +39,7 @@ function SignalBars({ rssi }: { rssi: number | null }) {
 }
 
 type Phase = 'scanning' | 'connecting' | 'error';
-type ErrorKind = 'permission' | 'disabled' | 'notfound' | 'wrong_mac';
+type ErrorKind = 'permission' | 'disabled' | 'notfound' | 'wrong_mac' | 'not_listed';
 type Step = 'found' | 'paired' | 'reading_service' | 'done';
 type StepStatus = 'pending' | 'active' | 'done';
 
@@ -48,6 +48,13 @@ interface BleScanningModalProps {
 	onCancel: () => void;
 	onRetry?: () => void;
 	onClose?: () => void;
+	/**
+	 * Rescan with the name filters off. The filtered scan only shows cubes whose advertised
+	 * name we already know, so a model with an unexpected name is invisible and the user has
+	 * no way to tell that apart from a cube that is switched off. Passed by the surfaces that
+	 * can offer it; without it the button is not rendered.
+	 */
+	onShowAllDevices?: () => void;
 }
 
 const STEP_ORDER: Step[] = ['found', 'paired', 'reading_service', 'done'];
@@ -78,7 +85,7 @@ function CubeGlyph({ size = 14 }: { size?: number }) {
 	);
 }
 
-export default function BleScanningModal({ mode, onCancel, onRetry }: BleScanningModalProps) {
+export default function BleScanningModal({ mode, onCancel, onRetry, onShowAllDevices }: BleScanningModalProps) {
 	const { t } = useTranslation();
 
 	const smartCubeScanning = useSelector((state: any) => state.timer.smartCubeScanning);
@@ -135,7 +142,9 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 				? 'disabled'
 				: smartCubeScanError === 'wrong_mac'
 					? 'wrong_mac'
-					: 'notfound';
+					: smartCubeScanError === 'not_listed'
+						? 'not_listed'
+						: 'notfound';
 
 	const effectiveStep: Step = smartCubeConnectStep ?? 'found';
 
@@ -155,7 +164,9 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 				? 'smart_cube.bluetooth_disabled'
 				: errorKind === 'wrong_mac'
 					? 'smart_cube.wrong_mac'
-					: 'smart_cube.scan_failed';
+					: errorKind === 'not_listed'
+						? 'smart_cube.not_listed'
+						: 'smart_cube.scan_failed';
 
 	const errorDescKey =
 		errorKind === 'permission'
@@ -164,7 +175,9 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 				? 'smart_cube.bluetooth_disabled_desc'
 				: errorKind === 'wrong_mac'
 					? 'smart_cube.wrong_mac_desc'
-					: 'smart_cube.scan_failed_desc';
+					: errorKind === 'not_listed'
+						? 'smart_cube.not_listed_desc'
+						: 'smart_cube.scan_failed_desc';
 
 	const errorTipPrefix =
 		errorKind === 'permission'
@@ -173,7 +186,9 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 				? 'smart_cube.bluetooth_disabled_tip_'
 				: errorKind === 'wrong_mac'
 					? 'smart_cube.wrong_mac_tip_'
-					: 'smart_cube.scan_failed_tip_';
+					: errorKind === 'not_listed'
+						? 'smart_cube.not_listed_tip_'
+						: 'smart_cube.scan_failed_tip_';
 
 	// Once devices show up, the screen becomes a picker ("choose yours") instead of a spinner.
 	const hasDevices = phase === 'scanning' && devices.length > 0;
@@ -300,9 +315,19 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 			</div>
 
 			<div className={b('actions')}>
-				{phase === 'error' && onRetry && (
+				{phase === 'error' && onShowAllDevices && (
 					<button
 						className={b('btn', { primary: true })}
+						type="button"
+						onClick={onShowAllDevices}
+					>
+						<MagnifyingGlass size={18} weight="bold" />
+						{t('smart_cube.show_all_devices')}
+					</button>
+				)}
+				{phase === 'error' && onRetry && (
+					<button
+						className={b('btn', { primary: !onShowAllDevices, ghost: !!onShowAllDevices })}
 						type="button"
 						onClick={handleRetry}
 					>

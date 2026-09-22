@@ -15,6 +15,9 @@ const Sq1Renderer = React.lazy(() => import('./Sq1Renderer'));
 const ClockRenderer = React.lazy(() => import('./ClockRenderer'));
 // Custom 2D canvas net renderer for FTO / Diamond (cubing.js doesn't support FTO)
 const FtoRenderer = React.lazy(() => import('./FtoRenderer'));
+// Custom 2D canvas net renderer for NxN. Used in place of cubing.js's own 2D view, which
+// offers no way to set sticker colours (see NxnRenderer's header).
+const NxnRenderer = React.lazy(() => import('./NxnRenderer'));
 
 const b = block('scramble-visual');
 
@@ -81,11 +84,17 @@ function ScrambleVisual(props: Props) {
 		: scramble;
 
 	const isClock = puzzleId === 'clock';
+
+	// '3x3x3' -> 3. Only NxN ids reach here, and only they have a net renderer; everything
+	// else keeps cubing.js for its 2D view.
+	const nxnSize = NXN_PUZZLE_IDS.has(puzzleId) ? parseInt(puzzleId[0], 10) : 0;
 	const visualizationVal = ALWAYS_2D_PUZZLES.has(puzzleId)
 		? '2D'
 		: TOGGLE_PUZZLES.has(puzzleId)
 			? (use2dScramble ? '2D' : '3D')
 			: '3D';
+
+	const useNxnNet = nxnSize > 0 && visualizationVal === '2D';
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -134,6 +143,8 @@ function ScrambleVisual(props: Props) {
 							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer-expanded')} />
 						) : puzzleId === 'clock' ? (
 							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer-expanded')} />
+						) : useNxnNet ? (
+							<NxnRenderer size={nxnSize} scramble={viewerAlg} className={b('nxn-renderer-expanded')} />
 						) : (
 							<TwistyPlayerWrapper
 								puzzle={puzzleId}
@@ -228,6 +239,8 @@ function ScrambleVisual(props: Props) {
 							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer')} baseWidth={compact ? 14 : undefined} />
 						) : isClockCustom ? (
 							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer')} />
+						) : useNxnNet ? (
+							<NxnRenderer size={nxnSize} scramble={viewerAlg} className={b('nxn-renderer')} />
 						) : (
 							<TwistyPlayerWrapper
 								puzzle={puzzleId}

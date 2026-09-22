@@ -9,17 +9,22 @@ import LoadingIcon from '../LoadingIcon';
 
 const b = block('common-upload-cover');
 
-// Must stay in sync with graphqlUploadExpress maxFileSize in server/app.ts
+// Must stay under graphqlUploadExpress maxFileSize in server/app.ts, and under nginx's
+// client_max_body_size in production, which rejects a body before Node ever sees it.
 const MAX_FILE_SIZE_MB = 30;
-const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 interface Props {
 	allowGif?: boolean;
+	/** Accept MP4 as well. Only the timer background does, and it has its own size cap. */
+	allowVideo?: boolean;
+	/** Overrides the image cap. Video files are allowed to be larger. */
+	maxFileSizeMb?: number;
 	upload: (variables: {file: any}) => Promise<{storagePath: string}>;
 }
 
 export default function UploadCover(props: Props) {
-	const {allowGif, upload} = props;
+	const {allowGif, allowVideo, upload} = props;
+	const maxFileSizeMb = props.maxFileSizeMb ?? MAX_FILE_SIZE_MB;
 	const {t} = useTranslation();
 	const [loading, setLoading] = useState(false);
 
@@ -37,8 +42,8 @@ export default function UploadCover(props: Props) {
 
 		// Pre-check size so oversized files fail fast with a clear message instead of
 		// being rejected mid-stream by the server (which surfaces as a silent failure)
-		if (file.size > MAX_FILE_SIZE_BYTES) {
-			toastError(t('upload.file_too_large', {size: MAX_FILE_SIZE_MB}));
+		if (file.size > maxFileSizeMb * 1024 * 1024) {
+			toastError(t('upload.file_too_large', {size: maxFileSizeMb}));
 			return;
 		}
 
@@ -64,7 +69,13 @@ export default function UploadCover(props: Props) {
 
 	return (
 		<div className={b({loading})}>
-			<Dropzone maxFiles={1} accept={['.png', '.jpeg', '.jpg'].concat(allowGif ? ['.gif'] : [])} onDrop={onDrop}>
+			<Dropzone
+				maxFiles={1}
+				accept={['.png', '.jpeg', '.jpg']
+					.concat(allowGif ? ['.gif'] : [])
+					.concat(allowVideo ? ['.mp4'] : [])}
+				onDrop={onDrop}
+			>
 				{({getRootProps, getInputProps}) => (
 					<div {...getRootProps()} className={b('body')}>
 						<input {...getInputProps()} />

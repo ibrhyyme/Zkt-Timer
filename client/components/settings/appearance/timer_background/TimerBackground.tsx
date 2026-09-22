@@ -14,6 +14,9 @@ import {TimerBackground as TimerBackgroundSchema} from '../../../../@types/gener
 import {isPro} from '../../../../lib/pro';
 import {Crown} from 'phosphor-react';
 
+// Kept in step with the server's own cap in server/models/timer_background.ts.
+const MAX_BACKGROUND_VIDEO_MB = 40;
+
 const b = block('timer-background');
 
 export default function TimerBackground() {
@@ -24,6 +27,8 @@ export default function TimerBackground() {
 
 	const [loading, setLoading] = useState(false);
 	const [image, setImage] = useState<string>(getStorageURL(me?.timer_background?.storage_path) || '');
+	// Null on rows written before video backgrounds existed; those are all images.
+	const [isVideo, setIsVideo] = useState<boolean>(me?.timer_background?.media_type === 'video');
 
 	async function uploadTimerBackground(variables) {
 		const query = gql`
@@ -31,6 +36,7 @@ export default function TimerBackground() {
 				uploadTimerBackground(file: $file) {
 					id
 					storage_path
+					media_type
 				}
 			}
 		`;
@@ -40,6 +46,7 @@ export default function TimerBackground() {
 		const url = getStorageURL(storagePath);
 
 		setImage(url);
+		setIsVideo(res.data.uploadTimerBackground.media_type === 'video');
 		dispatch(getMe());
 
 		return {
@@ -65,6 +72,7 @@ export default function TimerBackground() {
 		await gqlMutate(query);
 
 		setImage('');
+		setIsVideo(false);
 		setLoading(false);
 		dispatch(getMe());
 	}
@@ -85,9 +93,18 @@ export default function TimerBackground() {
 	return (
 		<div className={b()}>
 			<div className={b('image')}>
-				<UploadCover upload={uploadTimerBackground} />
-				{image ? <img src={image} alt="Timer background" /> : null}
+				<UploadCover upload={uploadTimerBackground} allowVideo maxFileSizeMb={MAX_BACKGROUND_VIDEO_MB} />
+				{image ? (
+					isVideo ? (
+						// Muted and inline: a preview that asked for sound would be blocked from
+						// autoplaying by every browser, and would leave an empty black box here.
+						<video src={image} autoPlay loop muted playsInline />
+					) : (
+						<img src={image} alt="Timer background" />
+					)
+				) : null}
 			</div>
+			<p className={b('hint')}>{t('appearance.timer_background_hint', {size: MAX_BACKGROUND_VIDEO_MB})}</p>
 			{image ? (
 				<Button
 					flat

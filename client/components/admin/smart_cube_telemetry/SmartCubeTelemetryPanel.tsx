@@ -14,6 +14,23 @@ const b = block('smart-telemetry');
 const WINDOWS = [1, 3, 7, 30];
 
 /**
+ * Event types the server accepts (see ALLOWED_EVENTS in the resolver). Listed here rather
+ * than derived from the data so a type with no rows yet can still be filtered for, which is
+ * exactly the case when chasing a failure that has not happened again.
+ */
+const EVENT_TYPES = [
+	'solve',
+	'scan_error',
+	'disconnect',
+	'out_of_sync',
+	'late_scramble_move',
+	'scramble_resync',
+];
+
+/** How many rows the on-screen table holds. Past this, the CSV export is the tool. */
+const ROW_LIMIT = 200;
+
+/**
  * Field study readout: which cube models finish solves straight from the move stream and
  * which ones fall back to the facelets safety nets. The fallback columns are the point —
  * a model with a high `via_poll` is a model whose users used to see the timer hang.
@@ -31,6 +48,30 @@ export default function SmartCubeTelemetryPanel() {
 	const summary = data?.smartCubeTelemetrySummary || [];
 	const [exporting, setExporting] = useState(false);
 
+	// Typed vs applied: the query runs when the admin says so, not on every keystroke.
+	const [usernameInput, setUsernameInput] = useState('');
+	const [filters, setFilters] = useState<{username: string; eventType: string}>({
+		username: '',
+		eventType: '',
+	});
+
+	const rowsQuery = useQuery(SmartCubeTelemetryRowsDocument, {
+		variables: {
+			limit: ROW_LIMIT,
+			// Empty string would filter for an empty username; the server wants it absent.
+			username: filters.username || null,
+			eventType: filters.eventType || null,
+			newestFirst: true,
+		},
+		fetchPolicy: 'cache-and-network',
+	});
+
+	const rows = rowsQuery.data?.smartCubeTelemetryRows || [];
+
+	function applyFilters(eventType = filters.eventType) {
+		setFilters({username: usernameInput.trim(), eventType});
+	}
+
 	/**
 	 * Pages through the whole table rather than taking a single capped slice. A week of a
 	 * live study is well past any single-query limit, and a truncated export would quietly
@@ -42,7 +83,14 @@ export default function SmartCubeTelemetryPanel() {
 		for (let offset = 0; ; offset += PAGE) {
 			const res = await client.query({
 				query: SmartCubeTelemetryRowsDocument,
-				variables: {limit: PAGE, offset},
+				// Same filters as the table: an export taken while looking at one user's rows
+				// should contain that user's rows, not the whole study.
+				variables: {
+					limit: PAGE,
+					offset,
+					username: filters.username || null,
+					eventType: filters.eventType || null,
+				},
 				fetchPolicy: 'network-only',
 			});
 			const page = res.data?.smartCubeTelemetryRows || [];
@@ -93,6 +141,7 @@ export default function SmartCubeTelemetryPanel() {
 
 	function reload() {
 		void refetch({days});
+		void rowsQuery.refetch();
 	}
 
 	return (
@@ -195,6 +244,83 @@ export default function SmartCubeTelemetryPanel() {
 					</table>
 				</div>
 			)}
+
+			{/* Raw rows. The summary above answers "which model misbehaves"; this answers
+			    "what happened to this one person", which is what a support ticket needs. */}
+			<div className={b('rows-section')}>
+				<h3 className={b('subtitle')}>{t('smart_telemetry.rows_title')}</h3>
+
+				<div className={b('filters')}>
+					<input
+						type="search"
+						className={b('filter-input')}
+						value={usernameInput}
+						onChange={(e) => setUsernameInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') applyFilters();
+						}}
+						placeholder={t('smart_telemetry.filter_username')}
+						aria-label={t('smart_telemetry.filter_username')}
+					/>
+					<select
+						className={b('filter-select')}
+						value={filters.eventType}
+						onChange={(e) => applyFilters(e.target.value)}
+						aria-label={t('smart_telemetry.filter_event')}
+					>
+						<option value="">{t('smart_telemetry.filter_all_events')}</option>
+						{EVENT_TYPES.map((type) => (
+							<option key={type} value={type}>{type}</option>
+						))}
+					</select>
+					<Button gray onClick={() => applyFilters()}>{t('smart_telemetry.search')}</Button>
+				</div>
+
+				{rowsQuery.loading && !rows.length ? (
+					<div className={b('empty')}>{t('smart_telemetry.loading')}</div>
+				) : !rows.length ? (
+					<div className={b('empty')}>{t('smart_telemetry.rows_empty')}</div>
+				) : (
+					<div className={b('table-wrap')}>
+						<table className={b('table')}>
+							<thead>
+								<tr>
+									<th>{t('smart_telemetry.col_time')}</th>
+									<th>{t('smart_telemetry.col_user')}</th>
+									<th>{t('smart_telemetry.col_device')}</th>
+									<th>{t('smart_telemetry.col_protocol')}</th>
+									<th>{t('smart_telemetry.col_surface')}</th>
+									<th>{t('smart_telemetry.col_event')}</th>
+									<th>{t('smart_telemetry.col_detail')}</th>
+									<th>{t('smart_telemetry.col_platform')}</th>
+									<th>{t('smart_telemetry.col_version')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{rows.map((r: any) => (
+									<tr key={r.id} className={b('row', {warn: r.event_type === 'scan_error'})}>
+										<td>{new Date(r.created_at).toLocaleString()}</td>
+										<td>{r.username || '-'}</td>
+										<td className={b('device')}>{r.device_name}</td>
+										<td>{r.cube_type}</td>
+										<td>{r.surface}</td>
+										<td>{r.event_type}</td>
+										{/* Carries the scan failure's reason on a scan_error row, and the
+										    detection path on a solve row. */}
+										<td>{r.detection_source || '-'}</td>
+										<td>
+											{r.is_native
+												? t('smart_telemetry.platform_native')
+												: t('smart_telemetry.platform_web')}
+										</td>
+										<td>{r.app_version || '-'}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

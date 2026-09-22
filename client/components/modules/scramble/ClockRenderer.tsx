@@ -8,6 +8,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
+import { useCubePalette } from '../../../util/cube_colors/useCubePalette';
 import { moveArr } from '../../../util/cubes/scramble_clock';
 
 // ==================== Scramble parser + simulator ====================
@@ -83,14 +84,19 @@ function simulateScramble(scramble: string): ClockState {
 const CLOCK_POLY_X = [1, 1, 0, -1, -1, -1, 1, 0];
 const CLOCK_POLY_Y = [0, -1, -8, -1, 0, 1, 1, 0];
 
-// Renk paleti (cstimer default)
-const COLORS = {
-	frame: '#f00',       // dial stroke (kirmizi cerceve)
-	faceFront: '#37b',   // on yuz dial arka plani
-	faceBack: '#5cf',    // arka yuz dial arka plani
-	hand: '#ff0',        // ibre rengi (sari)
-	pinUp: '#850',       // pin up (koyu sari)
-};
+/**
+ * Colours the user picked, in the order palette.ts documents (frame, front face, back face,
+ * hand, raised pin). The cstimer defaults now live there so the settings screen can offer
+ * them; nothing here has a colour of its own.
+ */
+interface ClockColors {
+	frame: string;
+	faceFront: string;
+	faceBack: string;
+	hand: string;
+	pinUp: string;
+	outline: string;
+}
 
 function rotatePoly(xs: number[], ys: number[], angle: number): [number[], number[]] {
 	const c = Math.cos(angle);
@@ -110,14 +116,15 @@ function drawClock(
 	scale: number,
 	cx: number,
 	cy: number,
-	time: number
+	time: number,
+	COLORS: ClockColors
 ): void {
 	// Arka plan daire
 	ctx.beginPath();
 	ctx.arc(cx, cy, 9 * scale, 0, Math.PI * 2);
 	ctx.fillStyle = faceColor;
 	ctx.fill();
-	ctx.strokeStyle = '#000';
+	ctx.strokeStyle = COLORS.outline;
 	ctx.lineWidth = 0.2 * scale;
 	ctx.stroke();
 
@@ -150,13 +157,14 @@ function drawButton(
 	color: string,
 	scale: number,
 	cx: number,
-	cy: number
+	cy: number,
+	outline: string
 ): void {
 	ctx.beginPath();
 	ctx.arc(cx, cy, 3 * scale, 0, Math.PI * 2);
 	ctx.fillStyle = color;
 	ctx.fill();
-	ctx.strokeStyle = '#000';
+	ctx.strokeStyle = outline;
 	ctx.lineWidth = 0.3 * scale;
 	ctx.stroke();
 }
@@ -164,7 +172,8 @@ function drawButton(
 function drawClockState(
 	ctx: CanvasRenderingContext2D,
 	state: ClockState,
-	scale: number
+	scale: number,
+	COLORS: ClockColors
 ): void {
 	// 18 dial — on yuz (0-8): x=[10,30,50], y=[10,30,50], arka yuz (9-17): x=[75,95,115]
 	const dialY = [10, 30, 50];
@@ -176,7 +185,7 @@ function drawClockState(
 		const faceColor = isBack ? COLORS.faceBack : COLORS.faceFront;
 		const cx = dialX[~~(i / 3)] * scale;
 		const cy = dialY[i % 3] * scale;
-		drawClock(ctx, faceColor, scale, cx, cy, state.clks[ii]);
+		drawClock(ctx, faceColor, scale, cx, cy, state.clks[ii], COLORS);
 	}
 
 	// 8 pin — her yuzde 4 (2x2 grid, dial'lar arasinda)
@@ -186,7 +195,7 @@ function drawClockState(
 		const color = state.buttons[i] === 1 ? COLORS.hand : COLORS.pinUp;
 		const cx = pinX[~~(i / 2)] * scale;
 		const cy = pinY[i % 2] * scale;
-		drawButton(ctx, color, scale, cx, cy);
+		drawButton(ctx, color, scale, cx, cy, COLORS.outline);
 	}
 }
 
@@ -199,6 +208,7 @@ interface Props {
 
 const ClockRenderer: React.FC<Props> = ({ scramble, className }) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const palette = useCubePalette();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -226,8 +236,11 @@ const ClockRenderer: React.FC<Props> = ({ scramble, className }) => {
 			state = { clks: new Array(18).fill(0), buttons: new Array(8).fill(0) };
 		}
 
-		drawClockState(ctx, state, scale);
-	}, [scramble]);
+		const [frame, faceFront, faceBack, hand, pinUp] = palette.clock;
+		drawClockState(ctx, state, scale, {
+			frame, faceFront, faceBack, hand, pinUp, outline: palette.outline,
+		});
+	}, [scramble, palette]);
 
 	return (
 		<canvas

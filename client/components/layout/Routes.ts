@@ -29,6 +29,7 @@ import InputSettings from '../settings/input/InputSettings';
 import SmartCubeSettings from '../settings/smart_cube/SmartCubeSettings';
 import ScrambleSettings from '../settings/scramble/ScrambleSettings';
 import Appearance from '../settings/appearance/Appearance';
+import CubeColors from '../settings/colors/CubeColors';
 import DataSettings from '../settings/data/DataSettings';
 import LanguageSettings from '../settings/language/LanguageSettings';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
@@ -199,6 +200,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/settings/smart-cube', App, SettingsPage, SmartCubeSettings, false),
 	route('/settings/scramble', App, SettingsPage, ScrambleSettings, false),
 	route('/settings/appearance', App, SettingsPage, Appearance, false),
+	route('/settings/colors', App, SettingsPage, CubeColors, false),
 	route('/settings/data', App, SettingsPage, DataSettings, false),
 	route('/settings/language', App, SettingsPage, LanguageSettings, false),
 

@@ -591,6 +591,9 @@ model TimerBackground {
   storage_path String?
   user_id      String      @unique
   hex          String?
+  /// "image" or "video". Null on rows written before video backgrounds existed, which are
+  /// all images; readers treat null as "image" rather than backfilling.
+  media_type   String?
   created_at   DateTime    @default(now())
   user         UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

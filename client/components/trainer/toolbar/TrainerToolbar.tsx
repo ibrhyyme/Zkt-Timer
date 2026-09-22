@@ -72,8 +72,16 @@ export default function TrainerToolbar() {
 
 	const handleRetryScan = useCallback(() => {
 		// alertScanning resets both the trainer state and the picker's mirrored params.
-		void manager.connect(state.options.showAllBleDevices);
+		void manager.connect(state.options.showAllBleDevices, 'trainer');
 	}, [manager, state.options.showAllBleDevices]);
+
+	/**
+	 * Rescan with the name filters off, from the failure screen. The trainer already has this
+	 * as a setting, but a user who cannot see their cube is not going to look for a setting.
+	 */
+	const handleShowAllDevices = useCallback(() => {
+		void manager.connect(true, 'trainer');
+	}, [manager]);
 
 	// Connection established. The manager already closed the picker when the handshake
 	// finished (as it does for every surface), so only the handle is dropped here; a second
@@ -103,27 +111,31 @@ export default function TrainerToolbar() {
 			dispatch({type: 'SMART_DISCONNECT'});
 			clearBleParams();
 		} else {
-			if (isNative()) {
-				// Wipe any leftovers from an earlier session so the picker never opens on a stale error.
-				clearBleParams();
-				scanModalOpenRef.current = true;
-				reduxDispatch(openModal(
-					<BleScanningModal
-						mode="smartcube"
-						onCancel={handleCancelScan}
-						onRetry={handleRetryScan}
-					/>,
-					{
-						position: 'bottom',
-						hideCloseButton: true,
-						disableBackdropClick: true,
-					}
-				));
-			}
+			// Opened on every platform. On web the scan runs inside Chrome's own picker and this
+			// sits behind it, unseen until the picker closes — which is when a user whose cube
+			// was never listed needs somewhere to go.
+			// Wipe any leftovers from an earlier session so the picker never opens on a stale error.
+			clearBleParams();
+			scanModalOpenRef.current = true;
+			reduxDispatch(openModal(
+				<BleScanningModal
+					mode="smartcube"
+					onCancel={handleCancelScan}
+					onRetry={handleRetryScan}
+					onShowAllDevices={handleShowAllDevices}
+				/>,
+				{
+					position: 'bottom',
+					hideCloseButton: true,
+					disableBackdropClick: true,
+				}
+			));
 
-			const result = await manager.connect(state.options.showAllBleDevices);
+			const result = await manager.connect(state.options.showAllBleDevices, 'trainer');
 			if (!result.ok && result.reason === 'already_connected') {
-				// Another cube already holds the link, connected from another page.
+				// Another cube already holds the link, connected from another page. The scan
+				// never started, so nothing else will take the picker down.
+				closeScanModal();
 				toastError(t('smart_cube.already_connected', {name: result.deviceName || ''}));
 			}
 			// On BLE_SCAN_ABORTED, connect.js calls setTimerParams directly,
@@ -140,8 +152,10 @@ export default function TrainerToolbar() {
 		dispatch,
 		reduxDispatch,
 		clearBleParams,
+		closeScanModal,
 		handleCancelScan,
 		handleRetryScan,
+		handleShowAllDevices,
 	]);
 
 	const handleOpenSettings = useCallback(() => {

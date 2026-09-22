@@ -349,6 +349,7 @@ fragment TimerBackgroundFragment on TimerBackground {
 	created_at
 	hex
 	storage_path
+	media_type
 	id
 	url
 }

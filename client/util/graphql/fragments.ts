@@ -378,6 +378,7 @@ export const TIMER_BACKGROUND_FRAGMENT = gql`
 		created_at
 		hex
 		storage_path
+		media_type
 		id
 		url
 	}

@@ -9,6 +9,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
+import { useCubePalette } from '../../../util/cube_colors/useCubePalette';
 import {
 	getFamousPuzzle, makePuzzle, makePuzzleParser, renderNet, PolyhedronPuzzle
 } from '../../../../shared/scramble/lib/poly3dlib';
@@ -27,7 +28,7 @@ interface RenderData {
 	colors: string[];
 }
 
-function buildRenderData(renderType: 'fto' | 'dmd', scramble: string): RenderData | null {
+function buildRenderData(renderType: 'fto' | 'dmd', scramble: string, faceColors: string[]): RenderData | null {
 	const params = getFamousPuzzle(renderType);
 	if (!params) {
 		return null;
@@ -70,7 +71,9 @@ function buildRenderData(renderType: 'fto' | 'dmd', scramble: string): RenderDat
 		posit = posit2;
 	}
 
-	const colors = params.colors.map((c) => '#' + c.toString(16).padStart(6, '0'));
+	// The geometry's own colours are the cstimer defaults and are ignored: palette.ts holds
+	// the same values, and only the user's array decides what gets drawn.
+	const colors = params.colors.map((c, i) => faceColors[i] || '#' + c.toString(16).padStart(6, '0'));
 
 	return { sizes, polys, faces, posit, colors };
 }
@@ -79,7 +82,8 @@ function drawPolygon(
 	ctx: CanvasRenderingContext2D,
 	color: string,
 	poly: any,
-	scale: number
+	scale: number,
+	outline: string
 ): void {
 	const xs = poly[0], ys = poly[1];
 	if (!xs || xs.length === 0) {
@@ -93,7 +97,7 @@ function drawPolygon(
 	ctx.closePath();
 	ctx.fillStyle = color;
 	ctx.fill();
-	ctx.strokeStyle = '#000';
+	ctx.strokeStyle = outline;
 	ctx.lineWidth = Math.max(0.5, 0.012 * scale);
 	ctx.lineJoin = 'round';
 	ctx.stroke();
@@ -107,6 +111,7 @@ interface Props {
 
 const FtoRenderer: React.FC<Props> = ({ scramble, renderType = 'fto', className }) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	const palette = useCubePalette();
 
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -120,7 +125,7 @@ const FtoRenderer: React.FC<Props> = ({ scramble, renderType = 'fto', className 
 
 		let data: RenderData | null = null;
 		try {
-			data = buildRenderData(renderType, scramble);
+			data = buildRenderData(renderType, scramble, palette.fto);
 		} catch {
 			data = null;
 		}
@@ -146,7 +151,7 @@ const FtoRenderer: React.FC<Props> = ({ scramble, renderType = 'fto', className 
 
 		for (let i = 0; i < posit.length; i++) {
 			if (polys[i]) {
-				drawPolygon(ctx, colors[posit[i]], polys[i], scale);
+				drawPolygon(ctx, colors[posit[i]], polys[i], scale, palette.outline);
 			}
 		}
 
@@ -167,7 +172,7 @@ const FtoRenderer: React.FC<Props> = ({ scramble, renderType = 'fto', className 
 			ctx.fillStyle = '#fff';
 			ctx.fillText(String(face[2]).toUpperCase(), x, y);
 		}
-	}, [scramble, renderType]);
+	}, [scramble, renderType, palette]);
 
 	return (
 		<canvas

@@ -478,30 +478,24 @@ function FriendlyRoomContent() {
 
     const retrySmartScan = () => {
         // alertScanning resets the picker's phase; failures come back through alertScanError.
-        void smartManager.connect();
+        void smartManager.connect(false, 'room');
+    };
+
+    /**
+     * Rescan with the name filters off, offered from the failure screen. The filtered scan
+     * can only show cubes whose advertised name is already known, so an unlisted model is
+     * indistinguishable from one that is switched off.
+     */
+    const showAllSmartDevices = () => {
+        clearSmartBleParams();
+        void smartManager.connect(true, 'room');
     };
 
     const handleConnectSmartCube = async () => {
         if (smartCubeConnecting || smartCubeConnected) return;
         setSmartCubeConnecting(true);
 
-        if (isNative()) {
-            // Wipe leftovers from an earlier session so the picker never opens on a stale error.
-            clearSmartBleParams();
-            smartScanModalOpenRef.current = true;
-            dispatch(openModal(
-                <BleScanningModal
-                    mode="smartcube"
-                    onCancel={cancelSmartScan}
-                    onRetry={retrySmartScan}
-                />,
-                {
-                    position: 'bottom',
-                    hideCloseButton: true,
-                    disableBackdropClick: true,
-                }
-            ));
-        } else {
+        if (!isNative()) {
             const available = !!navigator.bluetooth && (await navigator.bluetooth.getAvailability());
             if (!available) {
                 setSmartCubeConnecting(false);
@@ -510,11 +504,33 @@ function FriendlyRoomContent() {
             }
         }
 
+        // Opened on every platform. On web the scan runs inside Chrome's own picker and this
+        // sits behind it, unseen until the picker closes — which is when a user whose cube was
+        // never listed needs somewhere to go.
+        // Wipe leftovers from an earlier session so the picker never opens on a stale error.
+        clearSmartBleParams();
+        smartScanModalOpenRef.current = true;
+        dispatch(openModal(
+            <BleScanningModal
+                mode="smartcube"
+                onCancel={cancelSmartScan}
+                onRetry={retrySmartScan}
+                onShowAllDevices={showAllSmartDevices}
+            />,
+            {
+                position: 'bottom',
+                hideCloseButton: true,
+                disableBackdropClick: true,
+            }
+        ));
+
         // connect() swallows its own failures and reports them through the alert* callbacks
         // (which feed the picker); the result only distinguishes the one case the caller has
         // to explain, which is a different cube already holding the link.
-        const result = await smartManager.connect();
+        const result = await smartManager.connect(false, 'room');
         if (!result.ok && result.reason === 'already_connected') {
+            // The scan never started, so nothing else will take the picker down.
+            closeSmartScanModal();
             toastError(t('smart_cube.already_connected', {name: result.deviceName || ''}));
         }
         setSmartCubeConnecting(false);

@@ -22,9 +22,10 @@
 
 export type FaceColor = 'white' | 'yellow' | 'green' | 'blue' | 'red' | 'orange';
 type RGB = readonly [number, number, number];
+export type StickerPalette = Record<FaceColor, RGB>;
 
 /** What the stickers are painted. Warm off-white rather than pure white, and no neon. */
-export const STICKER_PALETTE: Record<FaceColor, RGB> = {
+export const STICKER_PALETTE: StickerPalette = {
 	white: [236, 232, 226],
 	yellow: [255, 230, 42],
 	green: [26, 190, 87],
@@ -46,6 +47,30 @@ const CANONICAL: Record<FaceColor, RGB> = {
 };
 
 const FACES = Object.keys(CANONICAL) as FaceColor[];
+
+/**
+ * Turn the user's NxN face colours into the shape this file works in.
+ *
+ * The mapping is fixed, not guessed: cubing.js builds every NxN with the WCA scheme, so its
+ * white sticker is always the U face, its red always R, and so on. That is what lets a user
+ * who paints "U" black end up with a black top face rather than a black-ish everything.
+ *
+ * Input order is palette.ts's NXN_FACES: U R F D L B.
+ */
+export function stickerPaletteFromFaceColors(hexes: string[]): StickerPalette {
+	const rgb = (hex: string, fallback: RGB): RGB => {
+		const n = /^#[0-9a-fA-F]{6}$/.test(hex || '') ? parseInt(hex.slice(1), 16) : -1;
+		return n < 0 ? fallback : [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+	};
+	return {
+		white: rgb(hexes[0], STICKER_PALETTE.white),
+		red: rgb(hexes[1], STICKER_PALETTE.red),
+		green: rgb(hexes[2], STICKER_PALETTE.green),
+		yellow: rgb(hexes[3], STICKER_PALETTE.yellow),
+		orange: rgb(hexes[4], STICKER_PALETTE.orange),
+		blue: rgb(hexes[5], STICKER_PALETTE.blue),
+	};
+}
 
 const key = (r: number, g: number, b: number) => (r << 16) | (g << 8) | b;
 
@@ -73,7 +98,7 @@ function nearestFace(r: number, g: number, b: number): FaceColor {
  * red, so a second pass would turn every red sticker orange. Keying on the stock values
  * means an already-recoloured buffer finds nothing to rewrite.
  */
-export function buildPaletteMap(colors: Uint8Array): Map<number, RGB> | null {
+export function buildPaletteMap(colors: Uint8Array, palette: StickerPalette = STICKER_PALETTE): Map<number, RGB> | null {
 	const distinct = new Map<number, RGB>();
 	for (let i = 0; i + 2 < colors.length; i += 3) {
 		const r = colors[i];
@@ -82,23 +107,23 @@ export function buildPaletteMap(colors: Uint8Array): Map<number, RGB> | null {
 		if (r === 0 && g === 0 && b === 0) continue; // the black cube body is left alone
 		distinct.set(key(r, g, b), [r, g, b]);
 	}
-	return mapDistinctColors(distinct);
+	return mapDistinctColors(distinct, palette);
 }
 
 /**
  * Same mapping, built from packed 0xRRGGBB values instead of a byte buffer — the form
  * each sticker keeps its source colour in (`origColor`).
  */
-export function buildPaletteMapFromHexes(hexes: Iterable<number>): Map<number, RGB> | null {
+export function buildPaletteMapFromHexes(hexes: Iterable<number>, palette: StickerPalette = STICKER_PALETTE): Map<number, RGB> | null {
 	const distinct = new Map<number, RGB>();
 	for (const h of hexes) {
 		if (!h) continue;
 		distinct.set(h, [(h >> 16) & 255, (h >> 8) & 255, h & 255]);
 	}
-	return mapDistinctColors(distinct);
+	return mapDistinctColors(distinct, palette);
 }
 
-function mapDistinctColors(distinct: Map<number, RGB>): Map<number, RGB> | null {
+function mapDistinctColors(distinct: Map<number, RGB>, palette: StickerPalette): Map<number, RGB> | null {
 	if (distinct.size !== FACES.length) return null;
 
 	const map = new Map<number, RGB>();
@@ -109,7 +134,7 @@ function mapDistinctColors(distinct: Map<number, RGB>): Map<number, RGB> | null 
 		// think it is (or it was already recoloured). Refuse rather than guess.
 		if (claimed.has(face)) return null;
 		claimed.add(face);
-		map.set(k, STICKER_PALETTE[face]);
+		map.set(k, palette[face]);
 	}
 	return map;
 }
@@ -118,8 +143,8 @@ function mapDistinctColors(distinct: Map<number, RGB>): Map<number, RGB> | null 
  * Rewrite the stock colours in a PG3D colour buffer, both halves. Returns how many
  * RGB triplets changed; 0 means the buffer was left exactly as it was.
  */
-export function remapColorBuffer(colors: Uint8Array): number {
-	const map = buildPaletteMap(colors);
+export function remapColorBuffer(colors: Uint8Array, palette: StickerPalette = STICKER_PALETTE): number {
+	const map = buildPaletteMap(colors, palette);
 	if (!map) return 0;
 
 	let changed = 0;
@@ -227,7 +252,8 @@ export type RecolorResult = 'applied' | 'already-applied' | 'not-found' | 'unrec
  */
 export function recolorPuzzle(
 	root: {traverse: (cb: (o: any) => void) => void},
-	done: WeakSet<object>
+	done: WeakSet<object>,
+	palette: StickerPalette = STICKER_PALETTE
 ): RecolorResult {
 	const puzzle = findPuzzle(root);
 	if (!puzzle) return 'not-found';
@@ -241,7 +267,7 @@ export function recolorPuzzle(
 	// Built from `origColor`, which holds the pure stock colours whatever mask is
 	// active, rather than from the buffer, which a mask fills with dimmed variants.
 	const defs = stickerDefsOf(puzzle);
-	const map = buildPaletteMapFromHexes(defs.map((d) => d.origColor));
+	const map = buildPaletteMapFromHexes(defs.map((d) => d.origColor), palette);
 	if (!map) return 'unrecognised';
 
 	for (const d of defs) {
@@ -249,7 +275,7 @@ export function recolorPuzzle(
 		if (!next) continue;
 		d.origColor = toHex(next);
 		// Before the mask below is re-applied, so white already dims the right way.
-		if (next === STICKER_PALETTE.white) keepDimmedWhiteLight(d);
+		if (next === palette.white) keepDimmedWhiteLight(d);
 	}
 
 	const mask = puzzle.params?.stickeringMask;
@@ -259,7 +285,7 @@ export function recolorPuzzle(
 		return 'applied';
 	}
 
-	if (remapColorBuffer(colors) === 0) return 'unrecognised';
+	if (remapColorBuffer(colors, palette) === 0) return 'unrecognised';
 
 	// The GPU copy only refreshes when told to. Only attributes that are views onto the
 	// same storage need it; the renderer's other small meshes are unrelated.

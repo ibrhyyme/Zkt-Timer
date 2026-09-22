@@ -13,6 +13,7 @@ import InputSettings from '../input/InputSettings';
 import SmartCubeSettings from '../smart_cube/SmartCubeSettings';
 import ScrambleSettings from '../scramble/ScrambleSettings';
 import Appearance from '../appearance/Appearance';
+import CubeColors from '../colors/CubeColors';
 import DataSettings from '../data/DataSettings';
 import LanguageSettings from '../language/LanguageSettings';
 
@@ -46,6 +47,7 @@ export default function SettingsSearchResults(props: Props) {
 				<SmartCubeSettings />
 				<ScrambleSettings />
 				<Appearance />
+				<CubeColors />
 				<DataSettings />
 				<LanguageSettings />
 			</div>

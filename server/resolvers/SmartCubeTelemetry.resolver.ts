@@ -92,14 +92,33 @@ export class SmartCubeTelemetryResolver {
 		@Arg('limit', () => Int, { nullable: true }) limit: number,
 		@Arg('cubeType', { nullable: true }) cubeType: string,
 		@Arg('offset', () => Int, { nullable: true }) offset: number,
+		@Arg('username', { nullable: true }) username: string,
+		@Arg('eventType', { nullable: true }) eventType: string,
+		@Arg('newestFirst', () => Boolean, { nullable: true }) newestFirst: boolean,
 		@Ctx() context: GraphQLContext
 	): Promise<SmartCubeTelemetryRow[]> {
 		try {
+			// Filters exist for the support case this table is actually read for: one user
+			// wrote in, and their rows have to be found among everyone else's. Without them
+			// the only way through was exporting the whole study to a spreadsheet.
+			const where: any = {};
+			if (cubeType) where.cube_type = cubeType;
+			if (eventType) where.event_type = eventType;
+			if (username) {
+				// Case-insensitive at the database, not in JS: a Turkish locale lowercases
+				// "I" to a dotless i and would stop matching an ASCII username.
+				where.user = { username: { contains: username, mode: 'insensitive' } };
+			}
+
 			const rows = await context.prisma.smartCubeTelemetry.findMany({
-				where: cubeType ? { cube_type: cubeType } : undefined,
-				// Oldest first with a stable order: the CSV export pages through this, and a
-				// newest-first order would reshuffle pages as new solves land mid-export.
-				orderBy: [{ created_at: 'asc' }, { id: 'asc' }],
+				where: Object.keys(where).length ? where : undefined,
+				// Oldest first with a stable order by default: the CSV export pages through
+				// this, and a newest-first order would reshuffle pages as new solves land
+				// mid-export. The on-screen table asks for the reverse, where the most recent
+				// attempt is the one being looked for and paging is not in play.
+				orderBy: newestFirst
+					? [{ created_at: 'desc' }, { id: 'desc' }]
+					: [{ created_at: 'asc' }, { id: 'asc' }],
 				skip: Math.max(0, offset || 0),
 				take: Math.min(limit || 500, 5000),
 				include: { user: { select: { username: true } } },

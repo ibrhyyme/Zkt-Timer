@@ -50,6 +50,7 @@ export default function Appearance() {
 	const highlightPbs = useSettings('highlight_pbs');
 	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
+	const backgroundEnabled = useSettings('timer_background_enabled');
 	const me = useMe();
 
 	function updateSetting(name: keyof AllSettings, value: any) {
@@ -94,6 +95,16 @@ export default function Appearance() {
 				>
 					<TimerBackground />
 				</TimerSettingsAction>
+				{/* Per platform, because settings are stored per platform: a live wallpaper
+				    can stay on at a desk and off on a phone. Only shown once there is a
+				    background to switch off. */}
+				<TimerSettingsToggle
+					label={t('appearance.timer_background_enabled')}
+					description={t('appearance.timer_background_enabled_desc')}
+					hidden={!me?.timer_background?.storage_path}
+					isActive={backgroundEnabled}
+					onClick={() => toggleSetting('timer_background_enabled')}
+				/>
 			</TimerSettingsGroup>
 
 			{/* Yazı Tipi */}
