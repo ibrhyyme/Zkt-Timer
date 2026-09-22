@@ -7,6 +7,7 @@ import {
 	DEFAULT_CLOCK_COLORS,
 	DEFAULT_FTO_COLORS,
 	DEFAULT_OUTLINE_COLOR,
+	migrateLegacyNxnColors,
 	sanitizeColor,
 	sanitizeColors,
 } from './palette';
@@ -28,7 +29,7 @@ export function useCubePalette(): CubePalette {
 
 	return useMemo(
 		() => ({
-			nxn: sanitizeColors(nxn, DEFAULT_NXN_COLORS),
+			nxn: migrateLegacyNxnColors(sanitizeColors(nxn, DEFAULT_NXN_COLORS)),
 			sq1: sanitizeColors(sq1, DEFAULT_SQ1_COLORS),
 			clock: sanitizeColors(clock, DEFAULT_CLOCK_COLORS),
 			fto: sanitizeColors(fto, DEFAULT_FTO_COLORS),

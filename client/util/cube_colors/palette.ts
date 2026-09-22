@@ -72,6 +72,29 @@ export const DEFAULT_PALETTE: CubePalette = {
 	outline: DEFAULT_OUTLINE_COLOR,
 };
 
+/**
+ * What `cube_face_colors` held while it had no UI.
+ *
+ * The setting existed in `AllSettings` long before anything read it, and
+ * `collectPlatformPrefs()` collects every platform setting whether or not it is used — so
+ * this value sits saved in the prefs blob of every account created before the Colors
+ * section shipped. Once the renderers started reading the setting, that saved value won
+ * over the new default and those users opened the timer to a green top face.
+ *
+ * Nobody chose these colours: there was no way to. Matching the array exactly and handing
+ * back the default is therefore safe, and it is done on read rather than by rewriting the
+ * setting, so nothing is written to a user's account behind their back.
+ */
+const LEGACY_UNSET_NXN_COLORS = ['#43ff43', '#ff9826', '#ffffff', '#246bfd', '#ff4343', '#ffff49'];
+
+/** Replace the never-chosen legacy array with the real default. Any other value is kept. */
+export function migrateLegacyNxnColors(colors: string[]): string[] {
+	const isLegacy =
+		colors.length === LEGACY_UNSET_NXN_COLORS.length &&
+		colors.every((c, i) => c === LEGACY_UNSET_NXN_COLORS[i]);
+	return isLegacy ? DEFAULT_NXN_COLORS : colors;
+}
+
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 /**
@@ -83,14 +106,17 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
  */
 export function sanitizeColors(value: unknown, defaults: string[]): string[] {
 	const arr = Array.isArray(value) ? value : [];
-	return defaults.map((fallback, i) => {
-		const v = arr[i];
-		return typeof v === 'string' && HEX.test(v) ? v.toLowerCase() : fallback;
-	});
+	return defaults.map((fallback, i) => sanitizeColor(arr[i], fallback));
 }
 
+/**
+ * Always lowercase, including the fallback. Callers compare these arrays against known
+ * palettes (see `migrateLegacyNxnColors`), and a mix of cases in one array turns those
+ * comparisons into a coin toss depending on which entries happened to be valid.
+ */
 export function sanitizeColor(value: unknown, fallback: string): string {
-	return typeof value === 'string' && HEX.test(value) ? value.toLowerCase() : fallback;
+	const hex = typeof value === 'string' && HEX.test(value) ? value : fallback;
+	return hex.toLowerCase();
 }
 
 /** `#rrggbb` to the packed 0xRRGGBB form the poly3d renderers index colours by. */
