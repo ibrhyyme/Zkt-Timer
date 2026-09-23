@@ -47,7 +47,11 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
             alg: alg,
             background: 'none',
             controlPanel: 'none',
-            hintFacelets: 'none',
+            // Floating hint facelets: the three faces turned away from the camera (back,
+            // left, bottom) are mirrored just outside the cube, so the whole scramble can be
+            // checked from one view. PG3D draws them from the same colour buffer as the
+            // stickers, so the recolouring below covers them too. Meaningless in 2D.
+            hintFacelets: visualization === '2D' ? 'none' : 'floating',
             backView: 'none',
         });
         containerRef.current.appendChild(player);
