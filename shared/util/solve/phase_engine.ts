@@ -28,7 +28,6 @@ import {
 	MoveCounts,
 	IdentifiedCase,
 } from './types';
-import { buildPrettyRecon } from './pretty_recon';
 import { getMethod, MethodDefinition } from './methods';
 
 const ROTATION_MOVES = new Set(['x', 'y', 'z', "x'", "y'", "z'", 'x2', 'y2', 'z2']);
@@ -241,13 +240,10 @@ export class PhaseAnalyzer {
 			cases,
 			ollIdentified: cases.find((c) => c.set === 'oll'),
 			pllIdentified: cases.find((c) => c.set === 'pll'),
-			prettyRecon: '',
 			method: this.method.id,
 			finalProgress: this.progress,
 			crossFace: this.crossAxisIndex !== null ? CROSS_AXIS_LABELS[this.crossAxisIndex % 6] : null,
 		};
-
-		result.prettyRecon = buildPrettyRecon(result);
 
 		return result;
 	}

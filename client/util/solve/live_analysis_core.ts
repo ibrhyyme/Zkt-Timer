@@ -9,7 +9,6 @@
  *   - timestamps -> seconds (relative to first turn)
  *   - currentPhase derivation: last completed step + 1 next step
  *   - recognition/execution split per phase
- *   - prettyRecon: cstimer format annotated solve string (for clipboard)
  *
  * Which method runs is decided by the caller; the two settings that describe
  * it are combined by resolveAnalysisMethod().
@@ -79,7 +78,6 @@ export interface LiveAnalysisResult {
 		recognition?: PhaseTimes;
 		execution?: PhaseTimes;
 	};
-	prettyRecon?: string;
 }
 
 const EMPTY_RESULT: LiveAnalysisResult = {
@@ -336,6 +334,5 @@ export function buildLiveAnalysisResult(
 			recognition,
 			execution,
 		},
-		prettyRecon: result.prettyRecon,
 	};
 }

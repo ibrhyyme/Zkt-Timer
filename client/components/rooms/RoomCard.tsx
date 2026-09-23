@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FriendlyRoomData, FriendlyRoomClientEvent } from '../../../shared/friendly_room';
+import { FriendlyRoomData, FriendlyRoomClientEvent, FriendlyRoomConst } from '../../../shared/friendly_room';
 import { FriendlyRoomRole } from '../../../shared/friendly_room/roles';
 import Button from '../common/button/Button';
 import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye, MapPin } from 'phosphor-react';
@@ -26,6 +26,8 @@ export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom
 
     const participantCount = room.participants.length;
     const isFull = participantCount >= room.max_players;
+    // A full room still takes a request the owner can accept; only the system ceiling is final.
+    const atHardLimit = participantCount >= FriendlyRoomConst.MAX_PLAYERS;
     const statusText = room.status === 'WAITING' ? t('rooms.waiting') : t('rooms.active');
     const statusClass = room.status === 'WAITING' ? 'waiting' : 'active';
 
@@ -113,15 +115,17 @@ export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom
             <div className="room-card__footer">
                 <Button
                     primary={isMyActiveRoom || !isFull}
-                    disabled={!isMyActiveRoom && isFull}
+                    disabled={!isMyActiveRoom && atHardLimit}
                     small
                     onClick={onJoin}
                 >
                     {isMyActiveRoom
                         ? t('rooms.return_to_room')
-                        : isFull
+                        : atHardLimit
                             ? t('rooms.full')
-                            : t('rooms.join')}
+                            : isFull
+                                ? t('rooms.request_to_join')
+                                : t('rooms.join')}
                 </Button>
 
                 {/* Admin Menu */}
@@ -171,12 +175,15 @@ export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom
                         currentName={room.name}
                         isPrivate={room.is_private}
                         cubeType={room.cube_type}
-                        onSubmit={(name, isPrivate, password, _, cubeType) => {
+                        currentMaxPlayers={room.max_players}
+                        participantCount={room.participants.length}
+                        onSubmit={(name, isPrivate, password, _, cubeType, maxPlayers) => {
                             getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, room.id, {
                                 name,
                                 is_private: isPrivate,
                                 password,
-                                cube_type: cubeType
+                                cube_type: cubeType,
+                                max_players: maxPlayers,
                             });
                         }}
                     />

@@ -38,6 +38,10 @@ export enum RedisNamespace {
 	ZKT_FED_PERSON = 'cd:zktfed:person',
 	IAP_EVENTS = 'cd:iap:events',
 	FRIENDLY_ROOM_SESSION = 'cd:friendly_room:session',
+	// Pending requests to join a full room (hash per room, field per user) and the one-shot
+	// approval a manager's "accept" leaves behind. See friendly_room/join_requests.ts.
+	FRIENDLY_ROOM_JOIN_REQUESTS = 'cd:friendly_room:join_requests',
+	FRIENDLY_ROOM_JOIN_APPROVAL = 'cd:friendly_room:join_approval',
 	SUPPORT_TICKET_RATE = 'cd:support:rate',
 	NATIVE_MIGRATE_STASH = 'cd:native_migrate:stash',
 	NATIVE_MIGRATE_RATE = 'cd:native_migrate:rate',

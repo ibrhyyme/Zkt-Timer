@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Lock, Check, Crown } from 'phosphor-react';
@@ -7,6 +7,7 @@ import Button from '../common/button/Button';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { maxPlayerChoices } from './max_players';
 
 
 
@@ -17,15 +18,27 @@ interface EditRoomModalProps {
     isPrivate: boolean;
     currentAllowedTypes?: string[];
     cubeType?: string;
-    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string) => void;
+    /** `maxPlayers` is only passed when the owner changed it, so saving a name never moves capacity. */
+    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number) => void;
+    currentMaxPlayers?: number;
+    participantCount?: number;
 }
 
-export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, cubeType, onSubmit }: EditRoomModalProps) {
+export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, cubeType, onSubmit, currentMaxPlayers, participantCount = 0 }: EditRoomModalProps) {
     const { t } = useTranslation();
     const [name, setName] = useState(currentName);
     const [selectedCubeType, setSelectedCubeType] = useState(cubeType || '333');
     const [privateRoom, setPrivateRoom] = useState(isPrivate);
     const [password, setPassword] = useState('');
+    const playerChoices = maxPlayerChoices(participantCount);
+    // A room that took people in past its capacity starts from its head count.
+    const initialMaxPlayers = Math.max(currentMaxPlayers ?? playerChoices[0], playerChoices[0]);
+    const [maxPlayers, setMaxPlayers] = useState(initialMaxPlayers);
+    // The modal stays mounted between openings, and approvals can grow the room while it is
+    // closed: start each opening from the room as it is now.
+    useEffect(() => {
+        if (isOpen) setMaxPlayers(initialMaxPlayers);
+    }, [isOpen, initialMaxPlayers]);
 
     // Default all allowed if undefined
     const allTypes = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'smart', 'manual'];
@@ -101,6 +114,22 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         />
                     </div>
 
+                    {/* Capacity */}
+                    {currentMaxPlayers !== undefined && (
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('create_room.max_players')}</label>
+                            <FancyDropdown
+                                value={String(maxPlayers)}
+                                onValueChange={(v) => setMaxPlayers(parseInt(v, 10))}
+                                options={playerChoices.map((n) => ({ value: String(n), label: `${n} ${t('create_room.players_suffix')}` }))}
+                                triggerLabel={`${maxPlayers} ${t('create_room.players_suffix')}`}
+                                ariaLabel={t('create_room.max_players')}
+                                noTriggerStyles
+                                className="w-full bg-module border border-text/[0.1] rounded-lg px-4 py-3 text-text flex items-center justify-between gap-2 focus:outline-none focus:border-blue-500 transition-colors"
+                            />
+                        </div>
+                    )}
+
                     {/* Private Toggle */}
                     <div className="flex items-center gap-3">
                         <button
@@ -172,7 +201,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                 return;
                             }
                         }
-                        onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType);
+                        onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType, maxPlayers !== initialMaxPlayers ? maxPlayers : undefined);
                         onClose();
                     }} primary className="px-6 py-2">
                         {t('rooms.save')}

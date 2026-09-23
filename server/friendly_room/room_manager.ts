@@ -6,7 +6,7 @@ import {
     CreateFriendlyRoomInput,
     EditFriendlyRoomSolveInput,
 } from '../../shared/friendly_room';
-import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../shared/friendly_room/consts';
+import { FriendlyRoomConst, ALLOWED_CUBE_TYPES, FriendlyRoomJoinSignal } from '../../shared/friendly_room/consts';
 import {
     FriendlyRoomRole,
     getFriendlyRoomRole,
@@ -297,10 +297,16 @@ export async function getRoomsForUser(userId: string): Promise<FriendlyRoomData[
 }
 
 // Add participant to room
+//
+// `approved` is set when the room's owner or a moderator accepted this user's request to
+// join a full room (see join_requests.ts). It lets them in past the room's own capacity and
+// skips the password, which was already checked when the request was made. It never lifts
+// the system ceiling, MAX_PLAYERS.
 export async function addParticipant(
     roomId: string,
     user: PublicUserAccount,
-    password?: string
+    password?: string,
+    options: { approved?: boolean } = {}
 ): Promise<{ room: FriendlyRoomData | null; isNew: boolean; newAdminId?: string }> {
     const room = await getRoom(roomId);
     if (!room) {
@@ -318,13 +324,10 @@ export async function addParticipant(
         return { room: mapRoomToData(room), isNew: false };
     }
 
-    // Check if room is full (only for genuinely new participants)
-    if (room.participants.length >= room.max_players) {
-        throw new Error('Room is full');
-    }
-
-    // Check password if room is private (skip if user is creator)
-    if (room.is_private && room.password && room.created_by_id !== user.id) {
+    // Password before capacity. A full room answers with a join request rather than a
+    // refusal, and a request must only ever come from someone who knows the password, or
+    // anyone could flood the owner with requests for a private room.
+    if (!options.approved && room.is_private && room.password && room.created_by_id !== user.id) {
         if (!password) {
             throw new Error('Password required');
         }
@@ -332,6 +335,17 @@ export async function addParticipant(
         if (!isValid) {
             throw new Error('Invalid password');
         }
+    }
+
+    // The ceiling no approval can lift: the room table grows a column per person and every
+    // event resends every participant's solves, and MAX_PLAYERS is the load that was built for.
+    if (room.participants.length >= FriendlyRoomConst.MAX_PLAYERS) {
+        throw new Error(FriendlyRoomJoinSignal.HARD_LIMIT);
+    }
+
+    // At the room's own capacity: the owner decides. The socket layer turns this into a request.
+    if (!options.approved && room.participants.length >= room.max_players) {
+        throw new Error(FriendlyRoomJoinSignal.REQUEST_REQUIRED);
     }
 
     // Add participant (with unique constraint safety for race conditions)
@@ -628,7 +642,7 @@ export async function deleteRoom(roomId: string, userId: string, isAdmin: boolea
 export async function updateRoom(
     roomId: string,
     userId: string,
-    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string },
+    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number },
     isAdmin: boolean = false
 ): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
@@ -640,6 +654,12 @@ export async function updateRoom(
     const data: any = {};
     if (updates.name) data.name = updates.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH);
     if (updates.is_private !== undefined) data.is_private = updates.is_private;
+    if (typeof updates.max_players === 'number' && Number.isFinite(updates.max_players)) {
+        // Never below the people already inside: lowering capacity must not strand anyone,
+        // and a room that took people in past its capacity can only be set to at least that.
+        const floor = Math.max(FriendlyRoomConst.MIN_PLAYERS, room.participants.length);
+        data.max_players = Math.max(floor, Math.min(Math.floor(updates.max_players), FriendlyRoomConst.MAX_PLAYERS));
+    }
     if (updates.password && updates.password.length > 0) {
         data.password = await bcrypt.hash(updates.password.slice(0, FriendlyRoomConst.MAX_PASSWORD_LENGTH), 10);
     } else if (updates.is_private === false) {

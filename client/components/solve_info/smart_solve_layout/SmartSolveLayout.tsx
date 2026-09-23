@@ -6,6 +6,7 @@ import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import SolutionInfo from '../solution_info/SolutionInfo';
 import SmartOverviewTab from '../stats_info/smart_overview_tab/SmartOverviewTab';
 import StepsTable from '../stats_info/steps_table/StepsTable';
+import { getSmartSolveTps } from '../util/solution';
 import Avatar from '../../common/avatar/Avatar';
 import Button from '../../common/button/Button';
 import SendSolveModal from '../send_solve/SendSolveModal';
@@ -37,9 +38,9 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 	const [page, setPage] = useState('overview');
 	const showProOverlay = isProEnabled() && !isPro(me);
 
-	const rawTime = solve.raw_time;
 	const smartTurnCount = solve.smart_turn_count;
-	const tps = (smartTurnCount / rawTime).toFixed(2);
+	const tpsValue = getSmartSolveTps(solve);
+	const tps = tpsValue === null ? '-' : tpsValue.toFixed(2);
 
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;

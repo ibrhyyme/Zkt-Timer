@@ -97,7 +97,6 @@ export interface PhaseEngineResult {
 	/** Convenience aliases for the CFOP consumers that predate `cases`. */
 	ollIdentified?: CaseMatch;
 	pllIdentified?: CaseMatch;
-	prettyRecon: string;
 	method: SolveMethod;
 	finalProgress: number;
 	/**

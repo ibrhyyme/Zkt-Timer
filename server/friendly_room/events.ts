@@ -11,6 +11,11 @@ import {
     FriendlyRoomSolveData,
     EditFriendlyRoomSolveInput,
     FriendlyRoomConst,
+    FriendlyRoomJoinSignal,
+    FriendlyRoomData,
+    RespondJoinRequestInput,
+    canManageRoom,
+    getFriendlyRoomRole,
 } from '../../shared/friendly_room';
 import {
     createRoom,
@@ -38,6 +43,16 @@ import {
     transferOwnership,
 } from './room_manager';
 import { sendChatMessage } from './chat';
+import {
+    addJoinRequest,
+    clearJoinApproval,
+    grantJoinApproval,
+    hasJoinApproval,
+    listJoinRequests,
+    removeJoinRequestsBySocket,
+    takeJoinRequest,
+    toPublicRequests,
+} from './join_requests';
 import { logger } from '../services/logger';
 import {
     createRedisKey,
@@ -115,6 +130,47 @@ async function clearActiveSession(userId: string, expectedSocketId?: string): Pr
     }
     const key = createRedisKey(RedisNamespace.FRIENDLY_ROOM_SESSION, userId);
     await deleteKeyInRedis(key);
+}
+
+// -- Full-room join requests (storage in join_requests.ts) --
+
+function isRoomManager(room: FriendlyRoomData, userId: string): boolean {
+    const participant = room.participants.find((p) => p.user_id === userId);
+    return canManageRoom(getFriendlyRoomRole(room.created_by.id, userId, participant?.is_moderator));
+}
+
+/**
+ * Send the pending list to the room's owner and moderators, and only to them.
+ *
+ * Addressed through each manager's active-session socket rather than to the whole socket
+ * room: the rest of the room has no say in who gets in, and no reason to see who asked.
+ */
+async function emitJoinRequestsToManagers(roomId: string): Promise<void> {
+    const room = await getRoomForClient(roomId);
+    if (!room) return;
+    const requests = toPublicRequests(await listJoinRequests(roomId));
+
+    for (const participant of room.participants) {
+        if (!isRoomManager(room, participant.user_id)) continue;
+        const session = await getActiveSession(participant.user_id);
+        if (session && session.roomId === roomId) {
+            io().to(session.socketId).emit(FriendlyRoomServerEvent.JOIN_REQUESTS, { room_id: roomId, requests });
+        }
+    }
+}
+
+/** The room is at capacity: ask its managers instead of turning the user away. */
+async function requestToJoin(client: Socket, roomId: string, user: { id: string; username: string }): Promise<void> {
+    await addJoinRequest(roomId, {
+        user_id: user.id,
+        username: user.username,
+        requested_at: Date.now(),
+        socket_id: client.id,
+    });
+    // Remembered on the socket so a disconnect can withdraw the request.
+    (client as any).pendingJoinRoomId = roomId;
+    client.emit(FriendlyRoomServerEvent.JOIN_REQUEST_PENDING, { room_id: roomId });
+    await emitJoinRequestsToManagers(roomId);
 }
 
 function getOrCreateEntry(userId: string): DisconnectEntry {
@@ -385,11 +441,32 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 }
             }
 
-            const result = await addParticipant(input.room_id, user, input.password);
+            // A manager accepted this user's request to join the full room: let them past the
+            // room's own capacity. Checked, not consumed, until the join has gone through.
+            const approved = await hasJoinApproval(input.room_id, user.id);
+
+            let result: Awaited<ReturnType<typeof addParticipant>>;
+            try {
+                result = await addParticipant(input.room_id, user, input.password, { approved });
+            } catch (joinError) {
+                if ((joinError as Error).message === FriendlyRoomJoinSignal.REQUEST_REQUIRED) {
+                    await requestToJoin(client, input.room_id, user);
+                    return;
+                }
+                throw joinError;
+            }
             if (!result.room) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Could not join room');
                 return;
             }
+
+            if (approved) await clearJoinApproval(input.room_id, user.id);
+            // In the room now, however they got here (approved, or a seat opened up while
+            // they waited): a request left behind would keep asking the owner about them.
+            if (result.isNew && (await takeJoinRequest(result.room.id, user.id))) {
+                await emitJoinRequestsToManagers(result.room.id);
+            }
+            (client as any).pendingJoinRoomId = undefined;
 
             const socketRoom = getFriendlyRoomSocketRoom(result.room.id);
 
@@ -409,6 +486,12 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             // Send room data to joining user
             client.emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
+
+            // An owner or moderator arriving (or coming back) sees who is already waiting.
+            if (isRoomManager(result.room, user.id)) {
+                const requests = toPublicRequests(await listJoinRequests(result.room.id));
+                client.emit(FriendlyRoomServerEvent.JOIN_REQUESTS, { room_id: result.room.id, requests });
+            }
 
             // Sticky Admin: Notify everyone if admin changed
             if (result.newAdminId) {
@@ -720,7 +803,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     });
 
     // Update room settings (room creator or site admin)
-    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string }) => {
+    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number }) => {
         try {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
@@ -1130,8 +1213,62 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
+    // Owner or moderator answers a request to join the full room.
+    client.on(FriendlyRoomClientEvent.RESPOND_JOIN_REQUEST, async (input: RespondJoinRequestInput) => {
+        try {
+            if (!input || typeof input.room_id !== 'string' || typeof input.user_id !== 'string') return;
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+            if (!(await socketRateLimit(client, 'join_respond', 60, 60, user.id))) return;
+
+            const room = await getRoomForClient(input.room_id);
+            if (!room) return;
+            if (!isRoomManager(room, user.id) && user.admin !== true) return;
+
+            const request = await takeJoinRequest(input.room_id, input.user_id);
+            if (request) {
+                if (input.accept) await grantJoinApproval(input.room_id, input.user_id);
+                io().to(request.socket_id).emit(FriendlyRoomServerEvent.JOIN_REQUEST_RESOLVED, {
+                    room_id: input.room_id,
+                    accepted: !!input.accept,
+                });
+            }
+            // Always resend, so a second manager answering the same request sees it gone.
+            await emitJoinRequestsToManagers(input.room_id);
+        } catch (error) {
+            logger.error('Error responding to friendly room join request', { error });
+        }
+    });
+
+    // The person waiting gives up.
+    client.on(FriendlyRoomClientEvent.CANCEL_JOIN_REQUEST, async (input: { room_id: string }) => {
+        try {
+            if (!input || typeof input.room_id !== 'string') return;
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+            (client as any).pendingJoinRoomId = undefined;
+            if (await takeJoinRequest(input.room_id, user.id)) {
+                await emitJoinRequestsToManagers(input.room_id);
+            }
+        } catch (error) {
+            logger.error('Error cancelling friendly room join request', { error });
+        }
+    });
+
     // Handle disconnect - automatically remove user from room when they close browser/tab
     client.on('disconnect', async () => {
+        // A request this socket was waiting on can no longer be answered to anyone.
+        const pendingRoomId = (client as any).pendingJoinRoomId;
+        if (pendingRoomId) {
+            try {
+                if (await removeJoinRequestsBySocket(pendingRoomId, client.id)) {
+                    await emitJoinRequestsToManagers(pendingRoomId);
+                }
+            } catch (error) {
+                logger.error('Error clearing join request on disconnect', { error });
+            }
+        }
+
         try {
             let user: any = null;
             try {

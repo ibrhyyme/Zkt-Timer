@@ -15,6 +15,10 @@ import {
     EditFriendlyRoomSolveInput,
     FriendlyRoomConst,
     FriendlyRoomChatMessage,
+    FriendlyRoomJoinSignal,
+    FriendlyRoomJoinRequestData,
+    JoinRequestsPayload,
+    JoinRequestResolvedPayload,
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
@@ -62,6 +66,8 @@ import { SmartSolveEngine, SmartEngineEvent } from '../../util/smart_cube';
 import { recordEngineEvent } from '../../util/smart_cube/telemetry';
 import SmartCubeView, { SmartCubeViewHandle } from '../timer/smart_cube/cube_view/SmartCubeView';
 import NotificationLog, { NotificationItem } from './NotificationLog';
+import RoomStatsPanel from './RoomStatsPanel';
+import JoinRequestBanner from './JoinRequestBanner';
 import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
 import ReactDOM from 'react-dom';
 import { isPro } from '../../lib/pro';
@@ -129,6 +135,16 @@ function FriendlyRoomContent() {
     const [needsPassword, setNeedsPassword] = useState(false);
     const [takenOver, setTakenOver] = useState(false);
     const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; slug: string | null; name: string } | null>(null);
+    // Joining a full room asks its owner first. This is the asking side: waiting for an
+    // answer, turned down, or the request lapsed unanswered.
+    const [joinRequestState, setJoinRequestState] = useState<'pending' | 'rejected' | 'expired' | null>(null);
+    const joinRequestStateRef = useRef(joinRequestState);
+    joinRequestStateRef.current = joinRequestState;
+    // Last password typed for this room. A join sent again (reconnect while waiting, retry)
+    // has to carry it, since the request is only made once the password checks out.
+    const joinPasswordRef = useRef<string | undefined>(undefined);
+    // The answering side: who is waiting to get in. Only owners and moderators are sent this.
+    const [joinRequests, setJoinRequests] = useState<FriendlyRoomJoinRequestData[]>([]);
     const [editModalOpen, setEditModalOpen] = useState(false);
     // Desktop edit popover (EditRoomDropdown) open state — shared so the cube-type chip can open the same popover
     const [editPopoverOpen, setEditPopoverOpen] = useState(false);
@@ -967,6 +983,12 @@ function FriendlyRoomContent() {
             setNeedsPassword(false);
             setAlreadyInRoom(null);
             setTakenOver(false);
+            // Inside the room, however that happened (accepted, or a seat opened while
+            // waiting): the request is settled. GET_ROOM also sends this to people who are
+            // not in the room yet, so it is only cleared once they are actually listed.
+            if (me && roomData.participants.some((p) => p.user_id === me.id)) {
+                setJoinRequestState(null);
+            }
 
             // After reconnect, full hydration: reset live statuses, clear manual input/inspection
             if (isReconnectingRef.current) {
@@ -988,9 +1010,38 @@ function FriendlyRoomContent() {
                 setNeedsPassword(true);
                 setLoading(false);
             } else {
-                setError(errorMsg);
+                setJoinRequestState(null);
+                setError(
+                    errorMsg === FriendlyRoomJoinSignal.HARD_LIMIT
+                        ? t('rooms.join_request_hard_limit', { max: FriendlyRoomConst.MAX_PLAYERS })
+                        : errorMsg
+                );
                 setLoading(false);
             }
+        });
+
+        // The room is full: the server asked its owner instead of refusing.
+        socket.on(FriendlyRoomServerEvent.JOIN_REQUEST_PENDING, (data: { room_id: string }) => {
+            if (data.room_id !== roomId) return;
+            setJoinRequestState('pending');
+            setLoading(false);
+        });
+
+        socket.on(FriendlyRoomServerEvent.JOIN_REQUEST_RESOLVED, (data: JoinRequestResolvedPayload) => {
+            if (data.room_id !== roomId) return;
+            if (data.accepted) {
+                // The approval is waiting on the server; joining again is what spends it. The
+                // waiting screen stays up until ROOM_DATA lists us as a participant.
+                const input: JoinFriendlyRoomInput = { room_id: roomId, password: joinPasswordRef.current };
+                socket.emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
+            } else {
+                setJoinRequestState('rejected');
+            }
+        });
+
+        socket.on(FriendlyRoomServerEvent.JOIN_REQUESTS, (data: JoinRequestsPayload) => {
+            if (data.room_id !== roomId) return;
+            setJoinRequests(data.requests);
         });
 
         // Single active session: this device's session was taken over by another device
@@ -1280,6 +1331,9 @@ function FriendlyRoomContent() {
             socket.off(FriendlyRoomServerEvent.NOTIFICATION);
             socket.off(FriendlyRoomServerEvent.SESSION_TAKEOVER);
             socket.off(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM);
+            socket.off(FriendlyRoomServerEvent.JOIN_REQUEST_PENDING);
+            socket.off(FriendlyRoomServerEvent.JOIN_REQUEST_RESOLVED);
+            socket.off(FriendlyRoomServerEvent.JOIN_REQUESTS);
         };
     }, [roomId, history, me]);
 
@@ -1305,7 +1359,12 @@ function FriendlyRoomContent() {
 
             lastDisconnectRef.current = null; // Reset
 
-            if (!needsPassword) {
+            if (joinRequestStateRef.current === 'pending') {
+                // Still waiting on the owner. The server dropped the request with the old
+                // socket, so ask again from this one or the answer has nowhere to go.
+                const input: JoinFriendlyRoomInput = { room_id: roomId, password: joinPasswordRef.current };
+                socket.emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
+            } else if (!needsPassword) {
                 const input: JoinFriendlyRoomInput = { room_id: roomId };
                 socket.emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
             }
@@ -1335,6 +1394,27 @@ function FriendlyRoomContent() {
         };
     }, [me, roomId, needsPassword, history]);
 
+    // A request nobody answers lapses on the server after JOIN_REQUEST_TTL_MS; say so here at
+    // the same moment rather than leaving the spinner up forever.
+    useEffect(() => {
+        if (joinRequestState !== 'pending' || !roomId) return;
+        const timer = setTimeout(() => {
+            getSocket().emit(FriendlyRoomClientEvent.CANCEL_JOIN_REQUEST, { room_id: roomId });
+            setJoinRequestState('expired');
+        }, FriendlyRoomConst.JOIN_REQUEST_TTL_MS);
+        return () => clearTimeout(timer);
+    }, [joinRequestState, roomId]);
+
+    // Navigating away keeps the socket open, so the disconnect cleanup would never run:
+    // withdraw a request still waiting when the page goes.
+    useEffect(() => {
+        return () => {
+            if (joinRequestStateRef.current === 'pending' && roomId) {
+                getSocket().emit(FriendlyRoomClientEvent.CANCEL_JOIN_REQUEST, { room_id: roomId });
+            }
+        };
+    }, [roomId]);
+
     // Handle visibility change (tab switch/minimize) logic for Grace Period
     useEffect(() => {
         if (!room || !me) return;
@@ -1361,8 +1441,30 @@ function FriendlyRoomContent() {
     }, [room, me, roomId]);
 
     function handlePasswordSubmit(password: string) {
+        joinPasswordRef.current = password;
         const input: JoinFriendlyRoomInput = { room_id: roomId, password };
         getSocket().emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
+    }
+
+    function cancelJoinRequest() {
+        getSocket().emit(FriendlyRoomClientEvent.CANCEL_JOIN_REQUEST, { room_id: roomId });
+        setJoinRequestState(null);
+        history.push('/rooms');
+    }
+
+    function retryJoinRequest() {
+        // Optimistic: the server answers with PENDING again, or ROOM_DATA if a seat opened,
+        // or an ERROR, and each of those replaces this.
+        setJoinRequestState('pending');
+        const input: JoinFriendlyRoomInput = { room_id: roomId, password: joinPasswordRef.current };
+        getSocket().emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
+    }
+
+    function respondToJoinRequest(userId: string, accept: boolean) {
+        // Drop it at once; the server's updated list follows and also clears it for any
+        // other manager looking at the same request.
+        setJoinRequests((prev) => prev.filter((r) => r.user_id !== userId));
+        getSocket().emit(FriendlyRoomClientEvent.RESPOND_JOIN_REQUEST, { room_id: roomId, user_id: userId, accept });
     }
 
     function handleLeaveRoom() {
@@ -1549,6 +1651,36 @@ function FriendlyRoomContent() {
         );
     }
 
+    // Ahead of the password screen on purpose: a private full room asks for the password
+    // first, and needsPassword is only cleared by ROOM_DATA, which does not arrive while the
+    // request is waiting.
+    if (joinRequestState) {
+        return (
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center gap-4 bg-background p-6 text-center text-text">
+                {joinRequestState === 'pending' ? (
+                    <>
+                        <div className="h-12 w-12 animate-spin rounded-full border-2 border-text/20 border-t-blue-500" />
+                        <div className="text-lg font-bold">{t('rooms.join_request_pending_title')}</div>
+                        <div className="max-w-sm text-sm font-medium">{t('rooms.join_request_pending_desc')}</div>
+                        <Button gray onClick={cancelJoinRequest}>{t('rooms.join_request_cancel')}</Button>
+                    </>
+                ) : (
+                    <>
+                        <div className="max-w-sm text-lg font-bold">
+                            {joinRequestState === 'rejected'
+                                ? t('rooms.join_request_rejected')
+                                : t('rooms.join_request_expired')}
+                        </div>
+                        <div className="flex gap-3">
+                            <Button gray onClick={() => history.push('/rooms')}>{t('rooms.back_to_rooms')}</Button>
+                            <Button primary onClick={retryJoinRequest}>{t('rooms.join_request_retry')}</Button>
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
+
     if (needsPassword) {
         return (
             <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background p-4 text-text">
@@ -1608,48 +1740,9 @@ function FriendlyRoomContent() {
     const canManage = canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
 
-    // Calculate current user's stats for bottom panel
+    // The bottom panel's singles and averages live in RoomStatsPanel (room_stats.ts does the
+    // maths with the timer's own average rules).
     const mySolves = myParticipant?.solves || [];
-
-    // Get valid times (not DNF), apply +2 penalty
-    const times = mySolves
-        .filter((s) => !s.dnf)
-        .map((s) => (s.plus_two ? s.time + 2 : s.time) * 1000); // Convert to ms
-
-    // Best single
-    const single = times.length > 0 ? Math.min(...times) : null;
-
-    // Calculate average (WCA style: sort, drop best and worst, average middle)
-    const calculateAvg = (arr: number[], count: number): number | null => {
-        if (arr.length < count) return null;
-        const last = arr.slice(-count);
-        const sorted = [...last].sort((a, b) => a - b);
-        // Remove best and worst
-        const middle = sorted.slice(1, -1);
-        return middle.reduce((a, b) => a + b, 0) / middle.length;
-    };
-
-    const ao5 = calculateAvg(times, 5);
-    const ao12 = calculateAvg(times, 12);
-
-    // Best averages
-    const calculateBestAvg = (arr: number[], count: number): number | null => {
-        if (arr.length < count) return null;
-        let best: number | null = null;
-        for (let i = 0; i <= arr.length - count; i++) {
-            const window = arr.slice(i, i + count);
-            const sorted = [...window].sort((a, b) => a - b);
-            const middle = sorted.slice(1, -1);
-            const avg = middle.reduce((a, b) => a + b, 0) / middle.length;
-            if (best === null || avg < best) best = avg;
-        }
-        return best;
-    };
-
-    const bestAo5 = calculateBestAvg(times, 5);
-    const bestAo12 = calculateBestAvg(times, 12);
-
-    const formatStat = (val: number | null) => val !== null ? (val / 1000).toFixed(timerDecimalPoints ?? 2) : '-';
 
     return (
         <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-background text-text overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
@@ -1741,15 +1834,18 @@ function FriendlyRoomContent() {
                                         isPrivate={room.is_private}
                                         currentAllowedTypes={room.allowed_timer_types}
                                         cubeType={room.cube_type}
+                                        currentMaxPlayers={room.max_players}
+                                        participantCount={room.participants.length}
                                         open={editPopoverOpen}
                                         onOpenChange={setEditPopoverOpen}
-                                        onSubmit={(name, isPrivate, password, allowedTypes, cubeType) => {
+                                        onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers) => {
                                             getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                                                 name,
                                                 is_private: isPrivate,
                                                 password,
                                                 allowed_timer_types: allowedTypes,
                                                 cube_type: cubeType,
+                                                max_players: maxPlayers,
                                             });
                                         }}
                                     />
@@ -2331,24 +2427,7 @@ function FriendlyRoomContent() {
                 <div className="shrink-0 bg-module border-t border-text/[0.1] p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full">
                     <div className="flex items-center justify-between w-full px-2 md:px-6">
                         {/* Compact Stats */}
-                        <div className="flex flex-col gap-1 text-xs md:text-sm">
-                            <div className="grid grid-cols-[50px_repeat(3,minmax(40px,1fr))] gap-x-2 gap-y-1 items-center">
-                                <span className="text-text font-semibold text-[10px] uppercase tracking-wider"></span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.single')}</span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao5')}</span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao12')}</span>
-
-                                <span className="text-text font-medium text-left">{t('rooms.current')}</span>
-                                <span className="text-text font-mono text-center">{formatStat(times.length > 0 ? times[times.length - 1] : null)}</span>
-                                <span className="text-text font-mono text-center">{formatStat(ao5)}</span>
-                                <span className="text-text font-mono text-center">{formatStat(ao12)}</span>
-
-                                <span className="text-text font-medium text-left">{t('rooms.best')}</span>
-                                <span className="text-text font-mono text-center">{formatStat(single)}</span>
-                                <span className="text-text font-mono text-center">{formatStat(bestAo5)}</span>
-                                <span className="text-text font-mono text-center">{formatStat(bestAo12)}</span>
-                            </div>
-                        </div>
+                        <RoomStatsPanel solves={mySolves} decimalPoints={timerDecimalPoints ?? 2} />
 
                         {/* Cube preview. With a smart cube connected the flat scramble drawing is
                             redundant — the physical cube is the source of truth — so the live 3D
@@ -2500,6 +2579,7 @@ function FriendlyRoomContent() {
                     hideSlamStop
                 />
             )}
+            {canManage && <JoinRequestBanner requests={joinRequests} onRespond={respondToJoinRequest} />}
             {/* New Modals */}
             <EditRoomModal
                 isOpen={editModalOpen}
@@ -2508,13 +2588,16 @@ function FriendlyRoomContent() {
                 isPrivate={room.is_private}
                 currentAllowedTypes={room.allowed_timer_types}
                 cubeType={room.cube_type}
-                onSubmit={(name, isPrivate, password, allowedTypes, cubeType) => {
+                currentMaxPlayers={room.max_players}
+                participantCount={room.participants.length}
+                onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers) => {
                     getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                         name,
                         is_private: isPrivate,
                         password,
                         allowed_timer_types: allowedTypes,
-                        cube_type: cubeType
+                        cube_type: cubeType,
+                        max_players: maxPlayers,
                     });
                 }}
             />

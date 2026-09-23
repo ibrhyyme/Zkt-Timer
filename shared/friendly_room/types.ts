@@ -90,6 +90,29 @@ export interface JoinFriendlyRoomInput {
     password?: string;
 }
 
+/** A person waiting to be let into a full room, as the owner and moderators see it. */
+export interface FriendlyRoomJoinRequestData {
+    user_id: string;
+    username: string;
+    requested_at: number;
+}
+
+export interface JoinRequestsPayload {
+    room_id: string;
+    requests: FriendlyRoomJoinRequestData[];
+}
+
+export interface RespondJoinRequestInput {
+    room_id: string;
+    user_id: string;
+    accept: boolean;
+}
+
+export interface JoinRequestResolvedPayload {
+    room_id: string;
+    accepted: boolean;
+}
+
 export interface SessionTakeoverPayload {
     room_id: string;
     room_name: string;

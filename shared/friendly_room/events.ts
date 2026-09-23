@@ -29,6 +29,8 @@ export enum FriendlyRoomClientEvent {
     UNBAN_USER = 'friendlyRoomUnbanUser',
     SET_MODERATOR = 'friendlyRoomSetModerator', // Owner: promote/demote a moderator
     TRANSFER_OWNERSHIP = 'friendlyRoomTransferOwnership', // Owner: hand the room to someone else
+    RESPOND_JOIN_REQUEST = 'friendlyRoomRespondJoinRequest', // Owner/moderator: accept or reject a full-room request
+    CANCEL_JOIN_REQUEST = 'friendlyRoomCancelJoinRequest', // Requester: withdraw a pending request
 }
 
 export enum FriendlyRoomServerEvent {
@@ -60,6 +62,9 @@ export enum FriendlyRoomServerEvent {
     SESSION_TAKEOVER = 'friendlyRoomSessionTakeover',
     ALREADY_IN_OTHER_ROOM = 'friendlyRoomAlreadyInOtherRoom',
     MY_ACTIVE_ROOM = 'friendlyRoomMyActiveRoom',
+    JOIN_REQUEST_PENDING = 'friendlyRoomJoinRequestPending', // To requester: room is full, asked the owner
+    JOIN_REQUESTS = 'friendlyRoomJoinRequests', // To owner/moderators: current pending list
+    JOIN_REQUEST_RESOLVED = 'friendlyRoomJoinRequestResolved', // To requester: accepted or rejected
 }
 
 export const FriendlyRoomSocketRoom = {

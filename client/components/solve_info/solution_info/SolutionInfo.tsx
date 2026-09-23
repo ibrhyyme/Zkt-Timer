@@ -3,14 +3,13 @@ import { useTranslation } from 'react-i18next';
 import './SolutionInfo.scss';
 import CopyText from '../../common/copy_text/CopyText';
 import { getSolveStepsWithoutParents } from '../util/solution';
-import { getCrossRotation, transformMoves, simplifyMoves } from '../util/cross_rotation';
+import { getCrossRotation, transformMoves } from '../util/cross_rotation';
 import { getStepDisplayName } from '../util/consts';
 import block from '../../../styles/bem';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import ReplayPlayer from './replay/ReplayPlayer';
 import { useFlattenedMoves } from './replay/useFlattenedMoves';
-import { parseSmartTurns } from '../../../../shared/smart_cube/parse_turns';
-import { analyzePhases } from '../../../../shared/util/solve/phase_engine';
+import { buildSmartSolveCopyText, buildSmartSolveDetailedCopyText } from './solution_copy_text';
 
 const b = block('solve-info-solution-info');
 
@@ -51,31 +50,10 @@ export default function SolutionInfo(props: Props) {
 	const [currentMoveIdx, setCurrentMoveIdx] = useState(0);
 	const { stepStartIndices, tokenStartIndices, tokenQuarterCounts } = useFlattenedMoves(steps);
 
-	const allTurnsWithRotation = steps.map((s) => {
-		const isCross = s.step_name === 'cross';
-		// BLE ham hamlesini kullanicinin pozisyonel perspectifine cevir (transformMoves).
-		// Smart cube CORE'a gore kayit yapar, kullanici cube'i rotation ile cevirdiyse
-		// CORE yuzleri farkli pozisyonlarda olur — kullanicinin gordugu hamleyi gosteriyoruz.
-		const transformed = simplifyMoves(rotation ? transformMoves(s.turns, rotation) : s.turns);
-		if (!transformed) return null;
-		const prefix = isCross && rotation ? `${rotation} ` : '';
-		const label = getStepDisplayName(s);
-		return `${prefix}${transformed} // ${label}`;
-	}).filter(Boolean).join('\n');
-
-	// Detayli rekonstruksiyon: cstimer formatinda annotated solve string.
-	// Smart cube ile yapilmis solve'lar icin engine canli regenerate eder; klasik solve'larda bos.
-	const prettyRecon = useMemo(() => {
-		if (!solve.is_smart_cube || !solve.smart_turns) return '';
-		const parsed = parseSmartTurns(solve.smart_turns);
-		if (!parsed.length) return '';
-		const engineTurns = parsed.map((p) => ({ turn: p.turn, timestamp: p.completedAt }));
-		try {
-			return analyzePhases(engineTurns).prettyRecon || '';
-		} catch {
-			return '';
-		}
-	}, [solve.id, solve.smart_turns, solve.is_smart_cube]);
+	// Both clipboard texts come from the steps and rotation the table below renders, so what
+	// is copied is what is on screen (see solution_copy_text.ts).
+	const copyText = buildSmartSolveCopyText(t, solve);
+	const detailedCopyText = buildSmartSolveDetailedCopyText(t, solve, steps, rotation);
 
 	return (
 		<div className={b()}>
@@ -87,16 +65,14 @@ export default function SolutionInfo(props: Props) {
 							<th>
 								{t('solve_info.turns')}
 								<CopyText
-									text={allTurnsWithRotation}
+									text={copyText}
 									buttonProps={{ text: '' }}
 								/>
-								{prettyRecon && (
-									<CopyText
-										text={prettyRecon}
-										buttonProps={{ text: t('solve_info.copy_detailed') }}
-										toastifyMessageOnCopy={t('solve_info.copied_detailed')}
-									/>
-								)}
+								<CopyText
+									text={detailedCopyText}
+									buttonProps={{ text: t('solve_info.copy_detailed') }}
+									toastifyMessageOnCopy={t('solve_info.copied_detailed')}
+								/>
 							</th>
 						</tr>
 					</thead>

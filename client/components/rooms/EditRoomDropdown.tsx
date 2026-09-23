@@ -12,6 +12,7 @@ import Button from '../common/button/Button';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { maxPlayerChoices } from './max_players';
 import block from '../../styles/bem';
 import './EditRoomDropdown.scss';
 
@@ -22,7 +23,10 @@ interface Props {
 	isPrivate: boolean;
 	currentAllowedTypes?: string[];
 	cubeType?: string;
-	onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string) => void;
+	/** `maxPlayers` is only passed when the owner changed it, so saving a name never moves capacity. */
+	onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number) => void;
+	currentMaxPlayers?: number;
+	participantCount?: number;
 	// Optional controlled open state — lets a sibling trigger (e.g. the cube-type chip) open this same popover
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
@@ -37,6 +41,8 @@ export default function EditRoomDropdown({
 	currentAllowedTypes,
 	cubeType,
 	onSubmit,
+	currentMaxPlayers,
+	participantCount = 0,
 	open: controlledOpen,
 	onOpenChange,
 }: Props) {
@@ -51,6 +57,10 @@ export default function EditRoomDropdown({
 	const [selectedCubeType, setSelectedCubeType] = useState(cubeType || '333');
 	const [privateRoom, setPrivateRoom] = useState(isPrivate);
 	const [password, setPassword] = useState('');
+	const playerChoices = maxPlayerChoices(participantCount);
+	// A room that took people in past its capacity starts from its head count.
+	const initialMaxPlayers = Math.max(currentMaxPlayers ?? playerChoices[0], playerChoices[0]);
+	const [maxPlayers, setMaxPlayers] = useState(initialMaxPlayers);
 	const [allowedTypes, setAllowedTypes] = useState<string[]>(
 		currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : ALL_TYPES
 	);
@@ -65,8 +75,9 @@ export default function EditRoomDropdown({
 			setAllowedTypes(
 				currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : ALL_TYPES
 			);
+			setMaxPlayers(initialMaxPlayers);
 		}
-	}, [open, currentName, cubeType, isPrivate, currentAllowedTypes]);
+	}, [open, currentName, cubeType, isPrivate, currentAllowedTypes, initialMaxPlayers]);
 
 	const toggleType = (type: string) => {
 		if (allowedTypes.includes(type)) {
@@ -96,7 +107,7 @@ export default function EditRoomDropdown({
 				return;
 			}
 		}
-		onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType);
+		onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType, maxPlayers !== initialMaxPlayers ? maxPlayers : undefined);
 		setOpen(false);
 	}
 
@@ -152,6 +163,22 @@ export default function EditRoomDropdown({
 								className={`${b('select')} flex items-center justify-between gap-2`}
 							/>
 						</div>
+
+						{/* Capacity */}
+						{currentMaxPlayers !== undefined && (
+							<div className={b('field')}>
+								<label className={b('label')}>{t('create_room.max_players')}</label>
+								<FancyDropdown
+									value={String(maxPlayers)}
+									onValueChange={(v) => setMaxPlayers(parseInt(v, 10))}
+									options={playerChoices.map((n) => ({ value: String(n), label: `${n} ${t('create_room.players_suffix')}` }))}
+									triggerLabel={`${maxPlayers} ${t('create_room.players_suffix')}`}
+									ariaLabel={t('create_room.max_players')}
+									noTriggerStyles
+									className={`${b('select')} flex items-center justify-between gap-2`}
+								/>
+							</div>
+						)}
 
 						{/* Private Toggle */}
 						<div className={b('toggle-row')}>
