@@ -7,6 +7,8 @@ import { toastError } from '../../../util/toast';
 import { deleteLocalStorage } from '../../../util/data/local_storage';
 import { clearOfflineData } from '../../layout/offline';
 import { clearAllSolveTombstones } from '../../../util/solve-tombstones';
+import { clearAccountCaches } from '../../../util/auth/clear-account-cache';
+import { cancelPersist } from '../../../db/persist';
 import { ArrowCounterClockwise, Trash } from 'phosphor-react';
 import SettingsCard from '../common/settings_card/SettingsCard';
 import block from '../../../styles/bem';
@@ -47,6 +49,9 @@ export default function DangerZone() {
 		deleteLocalStorage('wasBasicUser');
 		deleteLocalStorage('offlineHash');
 		clearAllSolveTombstones();
+		await clearAccountCaches();
+		// A pending scheduled save would rewrite the database cleared below
+		cancelPersist();
 		try { await clearOfflineData(); } catch (e) { /* ignore */ }
 		window.location.href = '/';
 	}

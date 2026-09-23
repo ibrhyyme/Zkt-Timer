@@ -884,6 +884,7 @@ export type MethodStepsBackfillResult = {
   downgraded?: Maybe<Scalars['Int']>;
   error?: Maybe<Scalars['Int']>;
   filled?: Maybe<Scalars['Int']>;
+  methodChanged?: Maybe<Scalars['Int']>;
   processed?: Maybe<Scalars['Int']>;
   skippedAlreadyHasSteps?: Maybe<Scalars['Int']>;
   skippedNoTurns?: Maybe<Scalars['Int']>;

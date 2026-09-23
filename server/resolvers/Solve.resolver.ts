@@ -12,7 +12,7 @@ import { GraphQLVoid } from 'graphql-scalars';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
-import { invalidSolveTimeFields, solveFingerprint } from '../../shared/solve';
+import { invalidSolveTimeFields, solveFingerprint, SOLVE_SESSION_MISSING_I18N_KEY } from '../../shared/solve';
 import { isPro, isProEnabled } from '../lib/pro';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
@@ -33,6 +33,18 @@ function assertValidSolveTimes(input: Partial<SolveInput>) {
 	if (invalid.length) {
 		throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${invalid[0]}`);
 	}
+}
+
+/**
+ * The caller's stored solve, answered to a create that had already landed on an earlier
+ * attempt. With its steps: the client applies the answer to its local row, and a row
+ * without them would read as "no steps" and wipe the ones already on the device.
+ */
+function findOwnSolveWithSteps(context: GraphQLContext, userId: string, id: string) {
+	return context.prisma.solve.findFirst({
+		where: { id, user_id: userId },
+		include: { solve_method_steps: { orderBy: { step_index: 'asc' } } },
+	});
 }
 
 @Resolver()
@@ -236,6 +248,30 @@ export class SolveResolver {
 		if (input.cube_type === 'wca' && !input.scramble_subset) {
 			input.scramble_subset = '333';
 		}
+
+		// The session has to be the caller's. Without this check a solve could be attached to
+		// someone else's session, and a session that does not exist surfaced as a Prisma
+		// foreign key failure, which formatError reports as INTERNAL_SERVER_ERROR. The offline
+		// queue could not tell that apart from any other fault and retried it for ever; with
+		// the i18nKey it knows to send the session first. (Trainer solves carry no session:
+		// sanitizeSolve clears it.)
+		if (input.session_id && !input.trainer_name) {
+			const ownsSession = await context.prisma.session.findFirst({
+				where: { id: input.session_id, user_id: user.id },
+				select: { id: true },
+			});
+			if (!ownsSession) {
+				// Stored on an earlier attempt, before its session went away: that attempt counts.
+				if (input.id) {
+					const existing = await findOwnSolveWithSteps(context, user.id, input.id);
+					if (existing) return existing;
+				}
+				throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found', {
+					i18nKey: SOLVE_SESSION_MISSING_I18N_KEY,
+				});
+			}
+		}
+
 		let createdSolve;
 		try {
 			createdSolve = await createSolve(user, input);
@@ -245,9 +281,7 @@ export class SolveResolver {
 			// it as an error is what made the client retry it and eventually throw away a
 			// solve that had in fact been saved all along.
 			if (e?.code === 'P2002' && input.id) {
-				const existing = await context.prisma.solve.findFirst({
-					where: { id: input.id, user_id: user.id },
-				});
+				const existing = await findOwnSolveWithSteps(context, user.id, input.id);
 				if (existing) return existing;
 			}
 			throw e;
@@ -270,9 +304,11 @@ export class SolveResolver {
 			if (allowed) {
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
-					// Break the solve down with the method the user is actually solving
-					// with. Unknown or missing values fall back to CFOP inside getMethod.
-					const steps = getSolveSteps(turns, input.scramble, input.analysis_method as any);
+					// Break the solve down with the method the user is solving with. A client
+					// that sends none (virtual cube, older app versions) gets the method
+					// detected from the solve itself, the same as the app's own default
+					// setting: 'cfop' here would mislabel every Roux and ZZ solve.
+					const steps = getSolveSteps(turns, input.scramble, input.analysis_method || 'auto');
 					const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
 					(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
 						...s,
@@ -371,10 +407,28 @@ export class SolveResolver {
 		// backups and the app's own launch-time backfill, so rejecting the batch stranded
 		// every good solve travelling with a bad one, and the client, which re-derives what
 		// is missing on every launch, retried the same doomed batch forever.
+		// A row that names a session the caller does not own is set aside the same way. It used
+		// to hit the foreign key and take the whole chunk down with it; the launch-time
+		// backfill then re-sent that same chunk on every start, so one solve whose session had
+		// gone missing kept up to 499 others off the server indefinitely. Ownership is checked
+		// too, not just existence, so a solve cannot be hung on someone else's session.
+		const ownedSessionIds = new Set(
+			(
+				await context.prisma.session.findMany({
+					where: { user_id: user.id },
+					select: { id: true },
+				})
+			).map((s) => s.id)
+		);
+
 		const accepted: SolveInput[] = [];
 		const rejected: { id?: string; fields: string[] }[] = [];
 		for (const solve of solves) {
 			const invalid = invalidSolveTimeFields(solve);
+			// Trainer solves carry no session (sanitizeSolve clears it)
+			if (solve.session_id && !solve.trainer_name && !ownedSessionIds.has(solve.session_id)) {
+				invalid.push('session_id');
+			}
 			if (invalid.length) {
 				rejected.push({ id: solve.id, fields: invalid });
 			} else {
@@ -405,6 +459,18 @@ export class SolveResolver {
 		// Use existing model function
 		await bulkCreateSolves(user, accepted);
 
+		// skipDuplicates passes over an id that already exists, including one that belongs to
+		// another account. The steps pass below deletes and rewrites steps by solve id, so it
+		// must only ever touch the caller's own rows.
+		const ownedIds = new Set(
+			(
+				await context.prisma.solve.findMany({
+					where: { id: { in: accepted.map((s) => s.id) }, user_id: user.id },
+					select: { id: true },
+				})
+			).map((s) => s.id)
+		);
+
 		// Smart cube solves arrive through this path too, not just manual imports: the app
 		// migrates locally held solves to the server in chunks. Until this ran, those solves
 		// kept their moves but never got an analysis, so cross time, turn count and the phase
@@ -415,6 +481,7 @@ export class SolveResolver {
 			// `accepted`, not `solves`: a rejected row has no solve to hang steps off.
 			for (const input of accepted) {
 				if (!input.smart_turns) continue;
+				if (!ownedIds.has(input.id)) continue;
 				// Same rule as the single-solve path: virtual cube solves are analysed
 				// for everyone, smart cube solves only for Pro. Without the virtual
 				// clause a free user's migrated virtual solves would keep their moves
@@ -424,7 +491,8 @@ export class SolveResolver {
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
 					if (!turns.length) continue;
-					const steps = getSolveSteps(turns, input.scramble, (input as any).analysis_method);
+					// Bulk rows (backfill, migration, transfer) carry no method: detect it.
+					const steps = getSolveSteps(turns, input.scramble, (input as any).analysis_method || 'auto');
 					// Idempotent: re-importing the same solve must not stack duplicate steps.
 					await deleteSolveMethodSteps({ id: input.id });
 					await createSolveMethodSteps({ id: input.id }, steps);

@@ -33,6 +33,7 @@ import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
 import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
+import { isKnownMethod } from '../../shared/util/solve/methods';
 import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { countHTM } from '../../shared/util/solve/move_counter';
@@ -690,8 +691,15 @@ export class AdminResolver {
 	 *   - Solves without step records -> created (old backfill behavior)
 	 *   - Solves with step records -> deleted and recalculated (fixes old step.turn_count values
 	 *     after engine fix)
-	 *   - If smart_turns missing or unparseable, solve downgraded to is_smart_cube=false
-	 *     (old corrupted data cleanup).
+	 *   - If smart_turns is present but unreadable, solve downgraded to is_smart_cube=false
+	 *     (old corrupted data cleanup). Missing smart_turns is skipped: that is how every
+	 *     non-Pro smart solve is stored.
+	 *
+	 * The method is detected from the solve itself ('auto'), falling back to the method the
+	 * solve was already analysed with when detection is not confident. It used to be called
+	 * with no method at all, which meant CFOP: one run turned every Roux and ZZ analysis
+	 * into a CFOP one. Detecting instead also repairs the solves saved while the client's
+	 * chosen method never reached the server (2026-08-31 onwards, all stored as CFOP).
 	 *
 	 * Run when engine algorithm changes (e.g. boundary-aware HTM fix).
 	 */
@@ -708,11 +716,18 @@ export class AdminResolver {
 			skippedAlreadyHasSteps: 0,
 			downgraded: 0,
 			error: 0,
+			methodChanged: 0,
 		};
 
 		const candidates = await prisma.solve.findMany({
 			where: { is_smart_cube: true },
-			select: { id: true, smart_turns: true, scramble: true },
+			select: {
+				id: true,
+				smart_turns: true,
+				scramble: true,
+				// Every step row of a solve carries the same method_name; one is enough.
+				solve_method_steps: { select: { method_name: true }, take: 1 },
+			},
 		});
 
 		result.totalCandidates = candidates.length;
@@ -721,15 +736,14 @@ export class AdminResolver {
 		for (const cand of candidates) {
 			result.processed++;
 
-			// smart_turns missing or unparseable -> downgrade
+			// No turns at all: nothing to analyse, and not corrupt either. createSolve clears
+			// smart_turns on purpose for accounts without Pro (reconstruction is a Pro
+			// feature) while the solve stays a smart cube solve. This used to downgrade such
+			// rows to is_smart_cube=false, which run on production would have stripped the
+			// smart flag from every Basic user's smart solves. Only an unreadable turn string
+			// (below) is treated as corrupt.
 			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
 				result.skippedNoTurns++;
-				try {
-					await updateSolveLiteral(cand.id, { is_smart_cube: false });
-					result.downgraded++;
-				} catch (e) {
-					result.error++;
-				}
 				continue;
 			}
 
@@ -741,7 +755,13 @@ export class AdminResolver {
 					result.downgraded++;
 					continue;
 				}
-				const steps = getSolveSteps(turns, cand.scramble);
+				const storedMethod = cand.solve_method_steps?.[0]?.method_name;
+				const fallback = isKnownMethod(storedMethod) ? storedMethod : undefined;
+				const steps = getSolveSteps(turns, cand.scramble, 'auto', fallback);
+				const newMethod = (steps as any).__method;
+				if (storedMethod && newMethod && storedMethod !== newMethod) {
+					result.methodChanged++;
+				}
 				const htmCount = countHTM(turns.map((t) => t.turn));
 				await deleteSolveMethodSteps({ id: cand.id });
 				await createSolveMethodSteps({ id: cand.id }, steps);
@@ -986,7 +1006,8 @@ export class AdminResolver {
 				try {
 					const turns = parseSmartTurns(solve.smart_turns);
 					if (turns.length === 0) continue;
-					const steps = getSolveSteps(turns, solve.scramble);
+					// Case keys of OLL/PLL rows: a CFOP-only pass by definition
+					const steps = getSolveSteps(turns, solve.scramble, 'cfop');
 					result.scanned++;
 
 					for (const step of solve.solve_method_steps) {

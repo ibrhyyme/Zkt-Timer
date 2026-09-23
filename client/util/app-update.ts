@@ -3,6 +3,7 @@ import i18n from '../i18n/i18n';
 import {isNative} from './platform';
 import {toastInfo} from './toast';
 import {waitUntilNotSolving} from './native-shell-boot';
+import {flushPersist} from '../db/persist';
 
 // Play's own dialog is what the user actually answers, so this only governs how often
 // the app is allowed to raise the subject at all.
@@ -84,6 +85,8 @@ type AppUpdatePlugin = typeof import('@capawesome/capacitor-app-update')['AppUpd
  */
 async function finishFlexibleUpdate(AppUpdate: AppUpdatePlugin): Promise<void> {
 	await waitUntilNotSolving();
+	// The install restarts the app: write out what is still waiting for its scheduled save
+	await flushPersist();
 	toastInfo(i18n.t('app_update.installing'));
 	await AppUpdate.completeFlexibleUpdate();
 }

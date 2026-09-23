@@ -18,7 +18,8 @@ import {deleteAllTopAverages, deleteAllTopSolves, deleteTopAverage, deleteTopSol
 import {deleteSolveMethodSteps} from '../models/solve_method_step';
 import {generateRandomString} from '../../shared/code';
 import {createSolveView, deleteSolveViewsBySolveId} from '../models/solve_view';
-import {invalidSolveTimeFields} from '../../shared/solve';
+import {invalidSolveTimeFields, SOLVE_SESSION_MISSING_I18N_KEY} from '../../shared/solve';
+import {getPrisma} from '../database';
 import {ErrorCode} from '../constants/errors';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
@@ -232,6 +233,21 @@ export const mutateActions = {
 		const invalidTimes = invalidSolveTimeFields(input);
 		if (invalidTimes.length) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${invalidTimes[0]}`);
+		}
+
+		// Moving a solve is only allowed into one of the caller's own sessions. Nothing checked
+		// this, so a solve could be pointed at another account's session (or at one that does
+		// not exist, which surfaced as an opaque foreign key failure).
+		if (input.session_id && input.session_id !== solve.session_id) {
+			const ownsSession = await getPrisma().session.findFirst({
+				where: {id: input.session_id, user_id: user.id},
+				select: {id: true},
+			});
+			if (!ownsSession) {
+				throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found', {
+					i18nKey: SOLVE_SESSION_MISSING_I18N_KEY,
+				});
+			}
 		}
 
 		// These two fields can't be updated by the user

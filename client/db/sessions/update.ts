@@ -13,14 +13,27 @@ import {
 	UpdateSessionDocument,
 } from '../../@types/generated/graphql';
 import { fetchSessionById, fetchSessions } from './query';
-import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
-import { canReadSync, canWriteSync } from '../../lib/sync-gate';
+import { canWriteSync } from '../../lib/sync-gate';
+import { requestPersist } from '../persist';
 import { generateId } from '../../../shared/code';
 import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
+import { addToQueue, transformQueue } from '../../util/offline-queue';
+import { requestQueueFlush } from '../../util/offline-sync';
+import { isConnectivityError } from '../../util/offline-replay';
+import { toSessionInput } from '../solves/solve-input';
+import { toastError, toastWarning } from '../../util/toast';
+import i18n from '../../i18n/i18n';
+
+// Offline model for sessions: creating, renaming and reordering work without a connection
+// (queued, replayed in order before the solves that depend on them). Deleting and merging
+// do not: they go to the server first and only then change local data. Done locally while
+// offline, they used to be silently undone by the next reconciliation (the server still had
+// the session) and a merge left this device and the server disagreeing about every solve.
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
 	let session = sessionInput as Session;
+	let queueCreate = false;
 
 	if (canWriteSync()) {
 		try {
@@ -31,8 +44,15 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 			});
 			session = res.data.createSession as Session;
 		} catch (e) {
+			// Only a connection failure falls back to a local session. A refusal (an invalid
+			// name) is the user's to see: a local session made from it would be refused
+			// again on every sync, and its solves with it.
+			if (!isConnectivityError(e)) {
+				throw e;
+			}
 			console.error('Failed to create session on server, falling back to local', e);
 			session = { ...session, id: generateId() } as Session;
+			queueCreate = true;
 		}
 	} else {
 		session = { ...session, id: generateId() } as Session;
@@ -46,41 +66,128 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 	});
 	updateLocalDbOrderValueForAllSessions();
 
+	if (queueCreate) {
+		// Before any solve can be timed in it: the queue replays in order, so the session
+		// always reaches the server ahead of its solves. Reconciliation also reads this
+		// record as "not deleted elsewhere, just not sent yet".
+		await addToQueue('createSession', { session: toSessionInput(fetchSessionById(session.id) || session) });
+	}
+
 	postProcessDbUpdate(session, false);
 
 	return session;
 }
 
-export async function deleteSessionDb(session: Session) {
-	// A single solve delete still inside its undo window belongs to a session that may be
-	// about to disappear. Settle it first, so an undo can never put a solve back into a
-	// session that no longer exists.
+/**
+ * Sends a destructive session change to the server before any local data is touched.
+ * Returns whether the local change should go ahead.
+ *
+ * Anything still queued is flushed first, so the server has seen every session and solve
+ * this device knows about. The server's NOT_FOUND means it never had the session (a local
+ * default session, or one whose creation is still queued): the change is then purely local.
+ */
+async function confirmOnServer(sendToServer: () => Promise<unknown>): Promise<boolean> {
+	if (!canWriteSync()) {
+		return true;
+	}
+
+	try {
+		await requestQueueFlush('manual');
+	} catch (e) {
+		// A failed flush is not a reason to refuse; the server call below decides
+	}
+
+	try {
+		await sendToServer();
+		return true;
+	} catch (e: any) {
+		if (isConnectivityError(e)) {
+			toastWarning(i18n.t('offline.requires_connection'));
+			return false;
+		}
+		const codes = (e?.graphQLErrors || []).map((err: any) => err?.extensions?.code);
+		if (codes.includes('NOT_FOUND')) {
+			return true;
+		}
+		console.error('Session change refused by the server', e);
+		toastError(e);
+		return false;
+	}
+}
+
+/**
+ * Queued records for sessions that were just deleted locally, and for the solves that went
+ * with them, can only do harm now: a queued solve create for a vanished session would be
+ * "rescued" into another session on replay, bringing back a solve the user deleted.
+ */
+async function purgeQueuedForSessions(sessionIds: string[], solveIds: string[]): Promise<void> {
+	const sessions = new Set(sessionIds);
+	const solves = new Set(solveIds);
+
+	await transformQueue((m) => {
+		const v = m.variables || {};
+		switch (m.mutationName) {
+			case 'createSession':
+				return sessions.has(v.session?.id) ? null : m;
+			case 'updateSession':
+				return sessions.has(v.id) ? null : m;
+			case 'createSolve':
+				return sessions.has(v.input?.session_id) || solves.has(v.input?.id) ? null : m;
+			case 'updateSolve':
+				return solves.has(v.id) ? null : m;
+			default:
+				return m;
+		}
+	});
+}
+
+/** deleteSessionDb and friends run `onConfirmed` after the server agreed, before the local change. */
+export async function deleteSessionDb(session: Session, onConfirmed?: () => void): Promise<boolean> {
+	const confirmed = await confirmOnServer(() =>
+		gqlMutateTyped(DeleteSessionDocument, {
+			id: session.id,
+		})
+	);
+	if (!confirmed) {
+		return false;
+	}
+
+	onConfirmed?.();
 
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
 
 	// Deleting a session deletes its solves, so they are tallied like any other deletion
 	const removedSolves = solveDb.find({session_id: session.id});
-	sessionDb.remove(session);
+	const stored = sessionDb.findOne({id: session.id});
+	if (stored) {
+		sessionDb.remove(stored);
+	}
 	solveDb.removeWhere({
 		session_id: session.id,
 	});
 	recordDeletedSolves(removedSolves);
 
-	postProcessDbUpdate(session);
+	postProcessDbUpdate(session, true, true);
 	updateLocalDbOrderValueForAllSessions();
 
-	if (canWriteSync()) {
-		await gqlMutateTyped(DeleteSessionDocument, {
-			id: session.id,
-		});
-	}
+	await purgeQueuedForSessions(
+		[session.id],
+		removedSolves.map((s) => s.id)
+	);
+
+	return true;
 }
 
-export async function bulkDeleteSessionsDb(ids: string[]) {
-	if (!ids.length) return;
+export async function bulkDeleteSessionsDb(ids: string[], onConfirmed?: () => void): Promise<boolean> {
+	if (!ids.length) return false;
 
-	// Same reason as deleteSessionDb: no undo may outlive the sessions it belongs to.
+	const confirmed = await confirmOnServer(() => gqlMutateTyped(BulkDeleteSessionsDocument, {ids}));
+	if (!confirmed) {
+		return false;
+	}
+
+	onConfirmed?.();
 
 	const sessionDb = getSessionDb();
 	const solveDb = getSolveDb();
@@ -103,19 +210,14 @@ export async function bulkDeleteSessionsDb(ids: string[]) {
 	emitEvent('solveDbUpdatedEvent');
 	emitEvent('sessionsDbUpdatedEvent');
 
-	if (canWriteSync()) {
-		try {
-			await gqlMutateTyped(BulkDeleteSessionsDocument, {ids});
-		} catch (e) {
-			console.error('bulkDeleteSessions failed', e);
-		}
-	}
+	void requestPersist({ destructive: true });
 
-	if (canReadSync()) {
-		updateOfflineHash();
-	} else {
-		saveLokiDb();
-	}
+	await purgeQueuedForSessions(
+		ids,
+		removedSolves.map((s) => s.id)
+	);
+
+	return true;
 }
 
 export async function reorderSessions(sessionIds: string[]) {
@@ -125,9 +227,17 @@ export async function reorderSessions(sessionIds: string[]) {
 	updateLocalDbOrderValuesForSessionIds(validIds);
 
 	if (canWriteSync()) {
-		await gqlMutateTyped(ReorderSessionsDocument, {
-			ids: validIds,
-		});
+		try {
+			await gqlMutateTyped(ReorderSessionsDocument, {
+				ids: validIds,
+			});
+		} catch (e) {
+			if (isConnectivityError(e)) {
+				await addToQueue('reorderSessions', { ids: validIds });
+			} else {
+				console.error('reorderSessions failed', e);
+			}
+		}
 	}
 }
 
@@ -162,19 +272,34 @@ export async function updateSessionDb(session: Session, input: Partial<Session>)
 	postProcessDbUpdate(session, false);
 
 	if (canWriteSync()) {
-		await gqlMutateTyped(UpdateSessionDocument, {
-			id: session.id,
-			input: {
-				...input,
-			},
-		});
+		try {
+			await gqlMutateTyped(UpdateSessionDocument, {
+				id: session.id,
+				input: {
+					...input,
+				},
+			});
+		} catch (e) {
+			if (isConnectivityError(e)) {
+				await addToQueue('updateSession', { id: session.id, input: toSessionInput(input) });
+			} else {
+				console.error('updateSession failed', e);
+				toastError(e as Error);
+			}
+		}
 	}
 }
 
-export async function mergeSessionsDb(oldSessionId: string, newSessionId: string) {
-	// The merge rewrites every solve's session, and a solve waiting out its undo window is
-	// not in the DB to be rewritten. Settle it first so it cannot come back with a session
-	// id the merge has already retired.
+export async function mergeSessionsDb(oldSessionId: string, newSessionId: string): Promise<boolean> {
+	const confirmed = await confirmOnServer(() =>
+		gqlMutateTyped(MergeSessionsDocument, {
+			oldSessionId,
+			newSessionId,
+		})
+	);
+	if (!confirmed) {
+		return false;
+	}
 
 	const solvesDb = getSolveDb();
 	const sessionsDb = getSessionDb();
@@ -196,19 +321,35 @@ export async function mergeSessionsDb(oldSessionId: string, newSessionId: string
 	sessionsDb.remove(oldSession);
 
 	// Finally, update the database
-	postProcessDbUpdate(oldSession, true);
+	postProcessDbUpdate(oldSession, true, true);
 	postProcessDbUpdate(newSession, true);
 	updateLocalDbOrderValueForAllSessions();
 
-	if (canWriteSync()) {
-		await gqlMutateTyped(MergeSessionsDocument, {
-			oldSessionId,
-			newSessionId,
-		});
-	}
+	// Queued solves still name the old session. Point them at the one they now belong to,
+	// and drop what only concerned the old session (its pending creation, a rename).
+	await transformQueue((m) => {
+		const v = m.variables || {};
+		if (m.mutationName === 'createSession' && v.session?.id === oldSessionId) return null;
+		if (m.mutationName === 'updateSession' && v.id === oldSessionId) return null;
+		if (m.mutationName === 'createSolve' && v.input?.session_id === oldSessionId) {
+			return { ...m, variables: { ...v, input: { ...v.input, session_id: newSessionId } } };
+		}
+		if (m.mutationName === 'updateSolve' && v.input?.session_id === oldSessionId) {
+			return { ...m, variables: { ...v, input: { ...v.input, session_id: newSessionId } } };
+		}
+		return m;
+	});
+
+	return true;
 }
 
-function postProcessDbUpdate(session: Session, clearSolveCache = true) {
+/**
+ * `destructive` for a deleted or merged-away session: its offline hash goes out at once so
+ * no other device can open in between and re-upload what was removed (persist-scheduler.ts).
+ * Everything else is written out with the next scheduled save; reordering, which calls this
+ * once per session, used to serialise the whole database and send a request each time.
+ */
+function postProcessDbUpdate(session: Session, clearSolveCache = true, destructive = false) {
 	if (clearSolveCache) {
 		clearSolveStatCache({
 			filterOptions: {
@@ -220,9 +361,5 @@ function postProcessDbUpdate(session: Session, clearSolveCache = true) {
 	emitEvent('solveDbUpdatedEvent');
 	emitEvent('sessionsDbUpdatedEvent', session);
 
-	if (canReadSync()) {
-		updateOfflineHash();
-	} else {
-		saveLokiDb();
-	}
+	void requestPersist({ destructive });
 }

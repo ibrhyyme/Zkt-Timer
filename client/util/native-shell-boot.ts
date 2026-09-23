@@ -2,6 +2,7 @@ import {Capacitor} from '@capacitor/core';
 import type {CapacitorUpdaterPlugin} from '@capgo/capacitor-updater';
 import {isLocalShell} from './api-base';
 import {getStore} from '../components/store';
+import {flushPersist} from '../db/persist';
 
 // Remembers the bundle version that was downloaded and handed to the plugin. A bundle
 // that fails to boot gets rolled back by Capgo, and without this guard the next launch
@@ -95,6 +96,8 @@ export async function armLatestBundle(updater: CapacitorUpdaterPlugin): Promise<
 
 	await updater.set({id: bundle.id});
 	await waitUntilNotSolving();
+	// Changes still waiting for their scheduled save would not survive the reload
+	await flushPersist();
 	await updater.reload();
 }
 

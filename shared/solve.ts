@@ -57,6 +57,16 @@ export function getBucketEventKey(
 export const DNF_TIME = -1;
 
 /**
+ * The `i18nKey` createSolve attaches when the solve's session is not one of the caller's.
+ *
+ * Without it the case surfaced as a Prisma foreign key failure, which formatError hides
+ * behind INTERNAL_SERVER_ERROR, so the offline queue could not tell "this session never
+ * reached the server" (recoverable: upload the session, send again) apart from any other
+ * server fault. Shared so the resolver and the queue match on the same string.
+ */
+export const SOLVE_SESSION_MISSING_I18N_KEY = 'offline.solve_session_missing';
+
+/**
  * Whether a solve time field may be stored.
  *
  * Lives in shared/ deliberately: the server rejects on this rule and the client filters

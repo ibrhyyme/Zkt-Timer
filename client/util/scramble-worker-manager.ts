@@ -11,6 +11,7 @@ let worker: Worker | null = null;
 let requestId = 0;
 const pendingRequests = new Map<number, { resolve: (s: string) => void; reject: (e: Error) => void }>();
 let initPromise: Promise<void> | null = null;
+let resolveInit: (() => void) | null = null;
 let workerFailed = false;
 
 function getWorker(): Worker | null {
@@ -46,6 +47,11 @@ function getWorker(): Worker | null {
 			}
 			pendingRequests.clear();
 			worker = null;
+			// A worker whose script never loaded (offline, and not in the HTTP cache) never
+			// sends its ready message. Without this, every caller waiting on init waited for
+			// ever and no scramble appeared; released, they fall back to the main thread.
+			resolveInit?.();
+			resolveInit = null;
 		};
 
 		return worker;
@@ -69,10 +75,12 @@ export function initScrambleWorker(): Promise<void> {
 	}
 
 	initPromise = new Promise((resolve) => {
+		resolveInit = resolve;
 		const handler = (e: MessageEvent) => {
 			if (e.data.type === 'init' && e.data.ready) {
 				console.log('[scramble-worker] Worker ready');
 				w.removeEventListener('message', handler);
+				resolveInit = null;
 				resolve();
 			}
 		};

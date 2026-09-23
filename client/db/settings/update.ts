@@ -14,7 +14,7 @@ import {
 } from './query';
 import {getSettingsDb, SettingValue} from './init';
 import {getMe} from '../../components/store';
-import {updateOfflineHash} from '../../components/layout/offline';
+import {requestPersist} from '../persist';
 import {emitEvent} from '../../util/event_handler';
 import {setLocalSettingValue} from './local';
 
@@ -166,51 +166,15 @@ function setSettingLocal(setVals: SettingValue[]) {
 	}
 }
 
-// updateOfflineHash() serialises the entire LokiJS DB into IndexedDB and fires a
-// second mutation of its own. Running that once per settings write is wasted work when
-// settings change in bursts, and the main-thread cost of back-to-back serialisations
-// delays the writes it is bookkeeping for. Collapse a burst into a single trailing
-// update, flushed on pagehide so closing the tab mid-burst can't drop it.
-const OFFLINE_HASH_DEBOUNCE_MS = 400;
-let offlineHashTimer: ReturnType<typeof setTimeout> | null = null;
-let offlineHashFlushBound = false;
-
-function flushOfflineHashUpdate() {
-	if (!offlineHashTimer) {
-		return;
-	}
-	clearTimeout(offlineHashTimer);
-	offlineHashTimer = null;
-	void updateOfflineHash();
-}
-
-function scheduleOfflineHashUpdate() {
-	if (typeof window === 'undefined') {
-		void updateOfflineHash();
-		return;
-	}
-
-	if (!offlineHashFlushBound) {
-		offlineHashFlushBound = true;
-		window.addEventListener('pagehide', flushOfflineHashUpdate);
-	}
-
-	if (offlineHashTimer) {
-		clearTimeout(offlineHashTimer);
-	}
-	offlineHashTimer = setTimeout(() => {
-		offlineHashTimer = null;
-		void updateOfflineHash();
-	}, OFFLINE_HASH_DEBOUNCE_MS);
-}
-
 async function setSettingApi(gqlPayload: Record<string, any>) {
 	// Terminate if no keys to set
 	if (!Object.keys(gqlPayload).length) {
 		return;
 	}
 
-	scheduleOfflineHashUpdate();
+	// Settings change in bursts; the shared scheduler writes the database out once for the
+	// whole burst (it used to be a local 400 ms debounce doing the same job for settings only).
+	void requestPersist();
 
 	const query = gql`
 		mutation Mutate($input: SettingInput) {

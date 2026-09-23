@@ -905,7 +905,17 @@
   },
   "offline": {
     "page_title": "No internet connection",
-    "page_description": "This page requires an internet connection. It will load automatically once you're back online."
+    "page_description": "This page requires an internet connection. It will load automatically once you're back online.",
+    "sync_in_progress_one": "Syncing {{count}} solve…",
+    "sync_in_progress_other": "Syncing {{count}} solves…",
+    "sync_done_one": "{{count}} solve synced",
+    "sync_done_other": "{{count}} solves synced",
+    "sync_item_failed": "Some changes could not be sent to the server. They will be retried later.",
+    "requires_connection": "This action needs an internet connection.",
+    "saved_offline": "Solve saved offline. It will sync when you are back online.",
+    "save_queued": "Solve could not be saved and was queued. It will be retried automatically.",
+    "pending_badge_title": "Solves waiting to sync",
+    "solve_session_missing": "The solve’s session was not found on the server."
   },
   "my_schedule": {
     "page_title": "My Competition Schedule",

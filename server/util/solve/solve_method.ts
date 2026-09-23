@@ -29,10 +29,14 @@ const F2L_SUB_STEPS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
  *                'auto' is the default for new clients: the user's setting can be
  *                stale (left on Roux while solving CFOP), whereas the states the
  *                cube passed through cannot lie.
+ * @param fallbackMethod  With 'auto', the method used when detection is not confident
+ *                (a very short solve, a partial subset). CFOP unless given: a reindex
+ *                passes the method already stored on the solve, so an unclear case keeps
+ *                what it had instead of being flipped to CFOP.
  */
-export function getSolveSteps(turns: SmartTurn[], scramble?: string, method: string = 'cfop') {
+export function getSolveSteps(turns: SmartTurn[], scramble?: string, method: string = 'cfop', fallbackMethod?: SolveMethod) {
 	try {
-		return getSolveStepsInner(turns, scramble, method);
+		return getSolveStepsInner(turns, scramble, method, fallbackMethod);
 	} catch (e: any) {
 		console.warn('[getSolveSteps] engine failed:', e?.message);
 		return emptySteps('cfop');
@@ -47,7 +51,7 @@ function emptySteps(method: SolveMethod | string) {
 	return out;
 }
 
-function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: string = 'cfop') {
+function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: string = 'cfop', fallbackMethod?: SolveMethod) {
 	const engineTurns: SolveTurn[] = (turns || [])
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
@@ -77,7 +81,7 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: st
 
 	// Resolve 'auto' against the solve itself; an explicit choice is respected.
 	const method: SolveMethod = requested === 'auto'
-		? detectSolveMethod(engineTurns, startState).method
+		? detectSolveMethod(engineTurns, startState, fallbackMethod).method
 		: (requested as SolveMethod);
 
 	const result = analyzePhases(engineTurns, startState, { method });

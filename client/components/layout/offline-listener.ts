@@ -4,67 +4,48 @@
  * Listens for online/offline events and performs automatic sync
  */
 
-import { processQueue, registerBackgroundSync, isOnline } from '../../util/offline-sync';
-import { getPendingCount } from '../../util/offline-queue';
-import { initNetworkListener, getNetworkStatus } from '../../util/native-plugins';
+import { requestQueueFlush } from '../../util/offline-sync';
+import { initNetworkListener } from '../../util/native-plugins';
+import { onVisibilityChange } from '../../util/app-visibility';
 import { isNative } from '../../util/platform';
 import { isLocalShell } from '../../util/api-base';
 import { Capacitor } from '@capacitor/core';
 import { toastWarning } from '../../util/toast';
 import i18n from '../../i18n/i18n';
 
-let syncInProgress = false;
+let listenersRegistered = false;
 
 /**
  * Start online/offline event listeners
+ *
+ * Every trigger goes through requestQueueFlush, which runs one flush at a time and joins
+ * late arrivals to the running one. There is deliberately no Background Sync any more: the
+ * service worker never synced anything itself, it only messaged the page, and re-registering
+ * it after each run made Chrome fire the next run immediately. The launch-time flush it
+ * used to provide is now an explicit call in the boot sequence (init.ts).
  */
 export function initOfflineSyncListener() {
+    if (listenersRegistered) return;
+    listenersRegistered = true;
+
     // Sync when online
-    window.addEventListener('online', handleOnline);
+    window.addEventListener('online', () => {
+        void requestQueueFlush('online');
+    });
 
     // Native network listener — more reliable than navigator.onLine
     initNetworkListener((connected) => {
-        if (connected) handleOnline();
+        if (connected) void requestQueueFlush('online');
     });
 
-    // Service Worker message listener
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data?.type === 'BACKGROUND_SYNC') {
-                handleOnline();
-            }
-        });
-    }
+    // Coming back to the app (tab focus, native resume): the connection may have come back
+    // while nothing was listening, e.g. the app was suspended.
+    onVisibilityChange((visible) => {
+        if (visible) void requestQueueFlush('resume');
+    });
 
     // Register Service Worker
     registerServiceWorker();
-}
-
-async function handleOnline() {
-    // Skip if sync is already in progress
-    if (syncInProgress) return;
-
-    // Short delay for Service Worker to detect online status
-    await new Promise(r => setTimeout(r, 2000));
-
-    // Check if still online after delay
-    const online = await getNetworkStatus();
-    if (!online) return;
-
-    // Skip if no pending items
-    const pendingCount = await getPendingCount();
-    if (pendingCount === 0) return;
-
-    // Perform sync
-    syncInProgress = true;
-    try {
-        await processQueue();
-        await registerBackgroundSync();
-    } catch (error) {
-        console.error('Auto-sync error:', error);
-    } finally {
-        syncInProgress = false;
-    }
 }
 
 /**
@@ -150,9 +131,6 @@ async function registerServiceWorker() {
             setInterval(() => {
                 registration.update().catch(() => {});
             }, 5 * 60 * 1000);
-
-            // Register Background Sync
-            await registerBackgroundSync();
         } catch (error) {
             console.error('Service Worker registration failed:', error);
         }

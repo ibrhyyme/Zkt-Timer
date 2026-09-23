@@ -905,7 +905,15 @@
   },
   "offline": {
     "page_title": "没有网络连接",
-    "page_description": "此页面需要网络连接。恢复联网后将自动加载。"
+    "page_description": "此页面需要网络连接。恢复联网后将自动加载。",
+    "sync_in_progress_other": "正在同步 {{count}} 次还原…",
+    "sync_done_other": "已同步 {{count}} 次还原",
+    "sync_item_failed": "部分更改未能发送到服务器，稍后将重试。",
+    "requires_connection": "此操作需要网络连接。",
+    "saved_offline": "还原已离线保存，联网后将自动同步。",
+    "save_queued": "还原保存失败，已加入队列，将自动重试。",
+    "pending_badge_title": "等待同步的还原",
+    "solve_session_missing": "服务器上找不到该还原所属的会话。"
   },
   "my_schedule": {
     "page_title": "我的比赛日程",

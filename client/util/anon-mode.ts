@@ -12,6 +12,7 @@ import {getSolveDb} from '../db/solves/init';
 import {ANON_DB_NAME, stripLokiJsMetadata} from '../db/lokijs';
 import {canWriteSync} from '../lib/sync-gate';
 import {SessionInput, SolveInput} from '../@types/generated/graphql';
+import {toSessionInput, toSolveInput} from '../db/solves/solve-input';
 
 const ANON_SOLVE_COUNT_KEY = 'zkt_anon_solve_count';
 
@@ -98,59 +99,9 @@ export interface AnonSnapshot {
 	sessions: SessionInput[];
 }
 
-// A local row is not a GraphQL input, and the difference is not cosmetic: graphql-js
-// rejects an input object carrying a field the schema does not declare, and it does so
-// during validation, before the resolver runs. One stray field therefore fails the whole
-// mutation, not the row that carried it.
-//
-// That is what broke the first transfer in the field. `ensureLocalDefaultSession` stamps
-// every anonymous session with `created_at` and `user_id: '_local'`, neither of which
-// exists on SessionInput, so the session batch was refused every time and the prompt fell
-// through to "some of them could not be moved" with nothing moved at all.
-//
-// Whitelists, not deletions: a field added to the local row later must not silently start
-// travelling to the server. These mirror `input SessionInput` and `input SolveInput` in
-// schema.graphql.
-export const SESSION_INPUT_FIELDS: (keyof SessionInput)[] = ['id', 'name', 'order'];
-
-export const SOLVE_INPUT_FIELDS: (keyof SolveInput)[] = [
-	'id',
-	'time',
-	'raw_time',
-	'cube_type',
-	'scramble_subset',
-	'scramble',
-	'session_id',
-	'started_at',
-	'ended_at',
-	'dnf',
-	'plus_two',
-	'bulk',
-	'notes',
-	'from_timer',
-	'trainer_name',
-	'is_smart_cube',
-	'is_virtual_cube',
-	'training_session_id',
-	'smart_device_id',
-	'smart_turn_count',
-	'smart_turns',
-	'smart_put_down_time',
-	'smart_pick_up_time',
-	'inspection_time',
-	'phase_splits',
-	// `analysis_method` is deliberately absent. The schema accepts it, but it is an
-	// instruction to the resolver rather than a stored column, and `sanitizeSolve` strips
-	// it on the normal save path too.
-];
-
-function pickFields<T>(row: any, fields: (keyof T)[]): T {
-	const out: any = {};
-	for (const field of fields) {
-		if (row[field] !== undefined) out[field] = row[field];
-	}
-	return out as T;
-}
+// The input whitelists live with the solve DB now: the offline queue replays local rows
+// too, and two copies of the same list would drift apart. Re-exported for existing callers.
+export {SESSION_INPUT_FIELDS, SOLVE_INPUT_FIELDS} from '../db/solves/solve-input';
 
 /** Everything the anonymous visitor accumulated, shaped for the import mutations. */
 export async function readAnonSnapshot(): Promise<AnonSnapshot | null> {
@@ -161,10 +112,8 @@ export async function readAnonSnapshot(): Promise<AnonSnapshot | null> {
 		const solves = db.getCollection('solves')?.find() || [];
 		const sessions = db.getCollection('sessions')?.find() || [];
 		return {
-			solves: solves.map(stripLokiJsMetadata).map((row) => pickFields<SolveInput>(row, SOLVE_INPUT_FIELDS)),
-			sessions: sessions
-				.map(stripLokiJsMetadata)
-				.map((row) => pickFields<SessionInput>(row, SESSION_INPUT_FIELDS)),
+			solves: solves.map(stripLokiJsMetadata).map(toSolveInput),
+			sessions: sessions.map(stripLokiJsMetadata).map(toSessionInput),
 		};
 	} catch {
 		return null;

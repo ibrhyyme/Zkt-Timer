@@ -905,7 +905,17 @@
   },
   "offline": {
     "page_title": "Sin conexión a internet",
-    "page_description": "Esta página necesita conexión a internet. Se cargará automáticamente cuando vuelvas a estar en línea."
+    "page_description": "Esta página necesita conexión a internet. Se cargará automáticamente cuando vuelvas a estar en línea.",
+    "sync_in_progress_one": "Sincronizando {{count}} resolución…",
+    "sync_in_progress_other": "Sincronizando {{count}} resoluciones…",
+    "sync_done_one": "{{count}} resolución sincronizada",
+    "sync_done_other": "{{count}} resoluciones sincronizadas",
+    "sync_item_failed": "Algunos cambios no se pudieron enviar al servidor. Se volverá a intentar más tarde.",
+    "requires_connection": "Esta acción necesita conexión a internet.",
+    "saved_offline": "Resolución guardada sin conexión. Se sincronizará cuando vuelvas a estar en línea.",
+    "save_queued": "No se pudo guardar la resolución y se puso en cola. Se volverá a intentar automáticamente.",
+    "pending_badge_title": "Resoluciones pendientes de sincronizar",
+    "solve_session_missing": "No se encontró la sesión de la resolución en el servidor."
   },
   "my_schedule": {
     "page_title": "Mi Programa de Competencia",

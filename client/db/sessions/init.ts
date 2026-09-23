@@ -49,7 +49,12 @@ export function ensureLocalDefaultSession() {
 	} as Session);
 }
 
-export function reconcileSessionDb(serverSessions: Session[]): boolean {
+/**
+ * `pendingCreateIds` are sessions created on this device whose creation is still in the
+ * offline queue. The server not having them yet is not a deletion made elsewhere; removing
+ * them here used to strand every solve timed in a session opened without a connection.
+ */
+export function reconcileSessionDb(serverSessions: Session[], pendingCreateIds: Set<string> = new Set()): boolean {
 	const sessionDb = getSessionDb();
 	if (!sessionDb) return false;
 
@@ -83,7 +88,7 @@ export function reconcileSessionDb(serverSessions: Session[]): boolean {
 	}
 
 	for (const local of localSessions) {
-		if (!serverMap.has(local.id)) {
+		if (!serverMap.has(local.id) && !pendingCreateIds.has(local.id)) {
 			sessionDb.remove(local);
 			changed = true;
 		}

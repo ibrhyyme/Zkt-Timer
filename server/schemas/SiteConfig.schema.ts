@@ -192,6 +192,10 @@ export class MethodStepsBackfillResult {
 
 	@Field(() => Int)
 	error: number;
+
+	/** Solves whose analysis now names a different method than it did before the run. */
+	@Field(() => Int)
+	methodChanged: number;
 }
 
 @ObjectType()

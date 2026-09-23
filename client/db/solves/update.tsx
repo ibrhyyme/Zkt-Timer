@@ -8,7 +8,7 @@ import { getStore } from '../../components/store';
 import { openModal } from '../../actions/general';
 import ConfirmModal from '../../components/common/confirm_modal/ConfirmModal';
 import { checkForPB } from './stats/solves/pb';
-import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
+import { requestPersist } from '../persist';
 import { getSetting } from '../settings/query';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { checkForWorst } from './stats/solves/worst';
@@ -16,9 +16,14 @@ import { sanitizeSolve } from '../../../shared/solve';
 import { checkForCurrentAverageUpdate } from './stats/solves/cache/average_cache';
 import { fetchLastSolve, buildBucketFilter } from './query';
 import { setTimerParam } from '../../components/timer/helpers/params';
-import { addToQueue } from '../../util/offline-queue';
+import { addToQueue, releaseInFlight, removeFromQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
-import { canReadSync, canWriteSync } from '../../lib/sync-gate';
+import i18n from '../../i18n/i18n';
+import { pickFields, SOLVE_INPUT_FIELDS, toCreateSolveInput, toSolveInput } from './solve-input';
+import { applyCreatedSolve, CREATED_SOLVE_SELECTION } from './apply-created';
+import { classifyReplayError } from '../../util/offline-replay';
+import { requestQueueFlush } from '../../util/offline-sync';
+import { canWriteSync } from '../../lib/sync-gate';
 import { syncAnonSolveCount } from '../../util/anon-mode';
 import { addSolveTombstones } from '../../util/solve-tombstones';
 import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
@@ -35,7 +40,7 @@ if (typeof window !== 'undefined') {
 
 function showOfflineToastOnce() {
 	if (!offlineToastShown) {
-		toastInfo('Çözüm offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+		toastInfo(i18n.t('offline.saved_offline'));
 		offlineToastShown = true;
 	}
 }
@@ -55,13 +60,18 @@ function reportSaveFailure(error: unknown) {
 	}
 	console.error('[solve] save failed while online — queued for retry:', error);
 	if (!queuedToastShown) {
-		toastInfo('Çözüm kaydedilemedi, kuyruğa alındı. Otomatik olarak tekrar denenecek.');
+		toastInfo(i18n.t('offline.save_queued'));
 		queuedToastShown = true;
 	}
 }
 
 export async function createSolveDb(solveInput: Solve) {
 	const solveDb = getSolveDb();
+
+	// Read before sanitizing: sanitizeSolve drops it (it is not a column), and that is how
+	// the chosen method (Auto, Roux, ZZ) stopped reaching the server and every smart solve
+	// came back analysed as CFOP. It travels beside the row, never inside it.
+	const analysisMethod = (solveInput as any)?.analysis_method as string | undefined;
 
 	const solve = sanitizeSolve(solveInput) as Solve;
 	solveDb.insert({
@@ -74,49 +84,47 @@ export async function createSolveDb(solveInput: Solve) {
 		const query = gql`
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
-					id
-					is_smart_cube
-					solve_method_steps {
-						id
-						step_name
-						total_time
-						recognition_time
-						turn_count
-						turns
-						tps
-						oll_case_key
-						pll_case_key
-						skipped
-						parent_name
-						method_name
-						step_index
-						created_at
-					}
+					${CREATED_SOLVE_SELECTION}
 				}
 			}
 		`;
 
+		// Write-ahead: the solve is on file in the queue before its request leaves, and comes
+		// off it only once the server has it. Before this, a solve whose request was still
+		// out when the app closed (or the WebView reloaded, or the connection hung) was on
+		// neither the server nor the queue, and the next launch's reconciliation took it for
+		// a solve deleted on another device and removed it for good.
+		const input = toSolveInput(solve);
+		const queued = addToQueue(
+			'createSolve',
+			analysisMethod ? { input, analysis_method: analysisMethod } : { input },
+			{ inFlight: true }
+		);
+
 		try {
-			const result = await gqlMutate(query, { input: solve });
-			const created = (result as any)?.data?.createSolve;
-			if (created) {
-				const db = getSolveDb();
-				const existing = db.findOne({ id: solve.id });
-				if (existing) {
-					// Server downgrade ettiyse (örn. smart_turns parse hatasi) client'i sync et
-					if (typeof created.is_smart_cube === 'boolean' && created.is_smart_cube !== existing.is_smart_cube) {
-						existing.is_smart_cube = created.is_smart_cube;
-					}
-					// method_steps her zaman güncelle — bos array de gecerli sonuc (stale veriyi temizler)
-					existing.solve_method_steps = created.solve_method_steps || [];
-					db.update(existing);
-					emitEvent('solveDbUpdatedEvent', existing);
-				}
+			const result = await gqlMutate(query, { input: toCreateSolveInput(input, analysisMethod) });
+			const queueId = await queued;
+			releaseInFlight(queueId);
+			if (queueId) {
+				await removeFromQueue(queueId);
+			}
+
+			if (applyCreatedSolve(solve.id, (result as any)?.data?.createSolve)) {
+				// The steps arrive after the solve was scheduled for saving; on a slow
+				// connection after that save ran. Without this they lived only in memory.
+				void requestPersist();
 			}
 		} catch (e) {
-			// Offline queue'ya ekle
-			await addToQueue('createSolve', { input: solve });
-			reportSaveFailure(e);
+			// Already queued above: releasing it hands it to the next sync
+			releaseInFlight(await queued);
+			if (classifyReplayError('createSolve', e) === 'session_missing') {
+				// The session has not reached the server yet (opened without a connection,
+				// or a local default session). The queue sends the session first, then the
+				// solve; no reason to make the user wait for the next reconnect for that.
+				void requestQueueFlush('retry');
+			} else {
+				reportSaveFailure(e);
+			}
 		}
 	}
 }
@@ -168,7 +176,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 	// Before postProcessDbUpdate, whose solveDbUpdatedEvent makes the goal progress
 	// recount: the tally has to be in place by then.
 	recordDeletedSolves([snapshot]);
-	postProcessDbUpdate(solve, false);
+	postProcessDbUpdate(solve, false, false, true);
 
 	refreshBucketLastSolve(solve);
 
@@ -237,17 +245,23 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 			}
 		`;
 
+		// Same write-ahead as createSolveDb: a +2/DNF toggle whose request is lost must not
+		// leave the server on the old value while this device shows the new one.
+		const variables = {
+			id: solve.id,
+			input: pickFields({ ...input, time: solve.time }, SOLVE_INPUT_FIELDS),
+		};
+		const queued = addToQueue('updateSolve', variables, { inFlight: true });
+
 		try {
-			await gqlMutate(query, {
-				id: solve.id,
-				input: {
-					...input,
-					time: solve.time,
-				},
-			});
+			await gqlMutate(query, variables);
+			const queueId = await queued;
+			releaseInFlight(queueId);
+			if (queueId) {
+				await removeFromQueue(queueId);
+			}
 		} catch (e) {
-			// Offline queue'ya ekle
-			await addToQueue('updateSolve', { id: solve.id, input: { ...input, time: solve.time } });
+			releaseInFlight(await queued);
 			reportSaveFailure(e);
 		}
 	}
@@ -256,16 +270,15 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 /**
  * Write the solve collection back to disk after a change.
  *
- * Pro users also bump the server-side offline hash; everyone else just saves
- * locally. Anonymous visitors additionally refresh their solve counter, which is
- * what tells a later signed-in boot that there is data here worth transferring.
+ * Scheduled, not immediate (see db/persist-scheduler.ts): saving serialises the whole
+ * database on the main thread, and doing it here put that cost on the instant the timer
+ * stopped. Pro users also bump the server-side offline hash; a deletion sends it at once,
+ * anything else with the next write-out. Anonymous visitors additionally refresh their
+ * solve counter, which is what tells a later signed-in boot that there is data here worth
+ * transferring.
  */
-function persistSolveChange() {
-	if (canReadSync()) {
-		updateOfflineHash();
-	} else {
-		saveLokiDb();
-	}
+function persistSolveChange(destructive = false) {
+	void requestPersist({ destructive });
 
 	syncAnonSolveCount();
 }
@@ -276,7 +289,7 @@ function persistSolveChange() {
  * it is not a new result: `checkForPB`/`checkForWorst` only fire their events when isNew
  * is set, so this clears the same caches without announcing a record the user already had.
  */
-function postProcessDbUpdate(solve: Solve, isNew: boolean, restored = false) {
+function postProcessDbUpdate(solve: Solve, isNew: boolean, restored = false, destructive = false) {
 	clearSolveStatCache({
 		solve: {
 			id: solve.id,
@@ -289,7 +302,7 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean, restored = false) {
 	checkForPB(solve, isNew && !restored);
 	checkForWorst(solve, isNew && !restored);
 
-	persistSolveChange();
+	persistSolveChange(destructive);
 
 	emitEvent('solveDbUpdatedEvent', solve);
 }
@@ -356,7 +369,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		}
 	}
 
-	persistSolveChange();
+	persistSolveChange(true);
 }
 
 export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean = false) {
@@ -406,7 +419,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 			if (!buckets.has(key)) buckets.set(key, s);
 		}
 		for (const representative of buckets.values()) {
-			postProcessDbUpdate(representative, false);
+			postProcessDbUpdate(representative, false, false, true);
 		}
 
 		refreshBucketLastSolve(solves[0]);

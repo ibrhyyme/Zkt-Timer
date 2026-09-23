@@ -225,60 +225,10 @@ self.addEventListener('fetch', (e) => {
   }
 });
 
-// Background Sync API - Offline mutation sync
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-solves') {
-    event.waitUntil(syncOfflineQueue());
-  }
-});
-
-/**
- * IndexedDB'deki offline queue'yu sync et
- */
-async function syncOfflineQueue() {
-  try {
-    // IndexedDB'den pending mutation'ları al
-    const db = await openQueueDB();
-    if (!db.objectStoreNames.contains('mutations')) {
-      // Client henuz queue'yu olusturmamis — sessizce cik
-      return;
-    }
-    const tx = db.transaction('mutations', 'readonly');
-    const store = tx.objectStore('mutations');
-    const mutations = await new Promise((resolve, reject) => {
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-
-    console.log('[SW] Background Sync:', mutations.length, 'mutation');
-
-    // Client'lara bildir (client-side processQueue kullanacak)
-    const clients = await self.clients.matchAll();
-    clients.forEach(client => {
-      client.postMessage({
-        type: 'BACKGROUND_SYNC',
-        count: mutations.length
-      });
-    });
-  } catch (error) {
-    console.error('[SW] Background Sync hatası:', error);
-  }
-}
-
-async function openQueueDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('ZktOfflineQueue', 1);
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains('mutations')) {
-        db.createObjectStore('mutations', { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
+// No Background Sync handler. It never synced anything itself (it only messaged the open
+// page to sync), and the page re-registering it after every sync made Chrome fire the next
+// one at once: with one unsendable record in the queue that was an endless run of sync
+// toasts on desktop. The page now syncs on its own triggers (launch, reconnect, focus).
 
 // ==========================================
 // PUSH NOTIFICATIONS

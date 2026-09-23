@@ -1284,6 +1284,7 @@ type MethodStepsBackfillResult {
   skippedAlreadyHasSteps: Int
   downgraded: Int
   error: Int
+  methodChanged: Int
 }
 
 type IpInfo {

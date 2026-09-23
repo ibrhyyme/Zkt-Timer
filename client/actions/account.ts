@@ -11,6 +11,8 @@ import {getSessionToken, refreshSessionTokenCache} from '../util/auth/session-to
 // one-off fetch failures right after a full-page navigation (the post-login reload),
 // and a single miss there used to bounce a freshly-logged-in user back to /login.
 const GET_ME_RETRY_DELAYS_MS = [400, 1200];
+// Per attempt. A request that never settles is the same verdict as one that failed.
+const GET_ME_FETCH_TIMEOUT_MS = 8000;
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -60,6 +62,8 @@ export function getMe() {
 					await sleep(GET_ME_RETRY_DELAYS_MS[attempt - 1]);
 				}
 				let res: Response;
+				const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+				const abortTimer = controller ? setTimeout(() => controller.abort(), GET_ME_FETCH_TIMEOUT_MS) : null;
 				try {
 					res = await fetch(`${getApiBase()}/graphql`, {
 						method: 'POST',
@@ -69,10 +73,13 @@ export function getMe() {
 							...(token ? {Authorization: `Bearer ${token}`} : {}),
 						},
 						body,
+						signal: controller?.signal,
 					});
 				} catch (err) {
 					lastNetworkErr = err;
 					continue;
+				} finally {
+					if (abortTimer) clearTimeout(abortTimer);
 				}
 				if (!res.ok) {
 					// Gateway/server errors (e.g. nginx 502/503) are infrastructure, not

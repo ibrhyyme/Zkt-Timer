@@ -24,7 +24,7 @@ const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
 const BACKFILL_ZKT_IDS = gql`mutation { backfillZktIds { total filled stillNull conflict error } }`;
-const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error } }`;
+const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error methodChanged } }`;
 const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
 const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending zktConnected zktWithId zktWithoutId zktRevoked bothConnected } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
@@ -527,8 +527,11 @@ export default function SiteConfigPanel() {
 						<div className={b('row-desc')}>
 							Tum is_smart_cube=true solve'lari isler. Step kaydi olanlari SILIP yeniden hesaplar
 							(engine algoritmasi degistiginde eski turn_count'lari duzeltir), step kaydi olmayanlari
-							olusturur (eski solve'lari doldurur). smart_turns yoksa veya parse edilemez ise
-                            is_smart_cube=false olarak downgrade eder. Buyuk DB'lerde dakikalar surebilir, sayfayi kapatma.
+							olusturur (eski solve'lari doldurur). Yontem cozumun kendisinden tespit edilir; emin
+							olunamazsa cozumun kayitli yontemi korunur (CFOP cozenlerde degisiklik olmaz, 31 Agustos
+							sonrasi CFOP diye kaydedilmis Roux/ZZ cozumleri duzelir). smart_turns hic yoksa atlar (Pro
+							olmayan kullanicilarda boyle saklaniyor); var ama okunamiyorsa is_smart_cube=false olarak
+							downgrade eder. Buyuk DB'lerde dakikalar surebilir, sayfayi kapatma.
 						</div>
 					</div>
 					<button
@@ -546,7 +549,8 @@ export default function SiteConfigPanel() {
 								if (r) {
 									const parts = [`${r.processed}/${r.totalCandidates} islendi`];
 									if (r.filled > 0) parts.push(`${r.filled} step kaydi yeniden olusturuldu`);
-									if (r.skippedNoTurns > 0) parts.push(`${r.skippedNoTurns} smart_turns yok`);
+									if (r.methodChanged > 0) parts.push(`${r.methodChanged} cozumun yontemi degisti`);
+									if (r.skippedNoTurns > 0) parts.push(`${r.skippedNoTurns} smart_turns yok (atlandi)`);
 									if (r.downgraded > 0) parts.push(`${r.downgraded} downgrade edildi`);
 									if (r.error > 0) parts.push(`${r.error} hata`);
 									setReindexResult(parts.join(' | '));

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPendingCount } from '../../../util/offline-queue';
-import { processQueue, isOnline } from '../../../util/offline-sync';
+import { requestQueueFlush } from '../../../util/offline-sync';
 import { useEventListener } from '../../../util/event_handler';
 import './PendingSyncBadge.scss';
 import block from '../../../styles/bem';
@@ -13,6 +14,7 @@ const b = block('pending-sync-badge');
  * Offline pending solve sayısını gösteren ve sync tetikleyen badge
  */
 export default function PendingSyncBadge() {
+    const { t } = useTranslation();
     const me = useMe();
     const [pendingCount, setPendingCount] = useState(0);
     const [syncing, setSyncing] = useState(false);
@@ -22,10 +24,9 @@ export default function PendingSyncBadge() {
         updateCount();
     }, []);
 
-    // Offline sync tamamlandığında count'u güncelle
+    // Her sync koşusundan sonra (başarılı olsun olmasın) count'u güncelle
     useEventListener('offlineSyncCompleted', () => {
         updateCount();
-        setSyncing(false);
     });
 
     // Solve kaydedildiğinde/silindiğinde count'u güncelle
@@ -42,13 +43,11 @@ export default function PendingSyncBadge() {
     async function handleClick() {
         if (syncing || pendingCount === 0) return;
 
-        if (!isOnline()) {
-            return;
-        }
-
+        // A manual flush retries every record, including ones waiting out a backoff. It
+        // checks connectivity itself.
         setSyncing(true);
         try {
-            await processQueue();
+            await requestQueueFlush('manual');
             await updateCount();
         } catch (error) {
             console.error('Sync hatası:', error);
@@ -68,7 +67,7 @@ export default function PendingSyncBadge() {
     }
 
     return (
-        <div className={b({ syncing })} onClick={handleClick} title="Senkronize edilmeyi bekleyen çözümler">
+        <div className={b({ syncing })} onClick={handleClick} title={t('offline.pending_badge_title')}>
             <span className={b('icon')}>🔄</span>
             <span className={b('count')}>{pendingCount}</span>
             {syncing && <span className={b('spinner')}>⏳</span>}

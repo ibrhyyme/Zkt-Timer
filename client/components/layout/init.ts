@@ -37,8 +37,14 @@ import {
 	importSessionsInChunks,
 	importSolvesInChunks,
 } from '../settings/data/import_data/review_import/chunked_import';
-import { getAllQueued } from '../../util/offline-queue';
+import { getAllQueued, getPendingSessionCreateIds } from '../../util/offline-queue';
 import { getSolveTombstones } from '../../util/solve-tombstones';
+import { requestQueueFlush } from '../../util/offline-sync';
+import { isConnectivityError } from '../../util/offline-replay';
+import { isSuspiciousMassDeletion, planDeltaSync } from '../../util/sync-plan';
+import { toSessionInput, toSolveInput } from '../../db/solves/solve-input';
+import { initNetworkListener } from '../../util/native-plugins';
+import { requestPersist } from '../../db/persist';
 import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
@@ -273,9 +279,16 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			if (!passed && canSyncUser) {
 				if (hasLocalData) {
 					// Delta sync: fetch only diff
-					const deltaSuccess = await deltaSyncSolves();
+					const delta = await deltaSyncSolves();
 
-					if (!deltaSuccess) {
+					if (delta === 'network') {
+						// The server could not be reached. The local data just loaded is the
+						// best there is: keep it and catch up once the connection is back.
+						// Falling through to the full fetch below used to drop it from memory,
+						// fail the same way, and lock saving for the rest of the session, so a
+						// launch on wifi without internet showed no solves at all.
+						armDeferredBootReconcile();
+					} else if (delta === 'failed') {
 						// Delta sync failed — fallback: full fetch
 						initSolvesCollection(true);
 						await initAllSolves();
@@ -330,6 +343,19 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 }
 
 async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean, canSyncUser: boolean, migrationSkipped: boolean = false) {
+	// Send whatever the offline queue holds before reconciliation and backfill look at the
+	// server. This used to be left to a Background Sync the service worker fired, which does
+	// not exist in the native app at all: there the queue waited for the next network change,
+	// and the backfill below uploaded the same solves through the bulk path in the meantime,
+	// which stores them as imported (bulk = true).
+	if (canWriteSync()) {
+		try {
+			await requestQueueFlush('boot');
+		} catch (e) {
+			console.error('[Boot] queue flush failed:', e);
+		}
+	}
+
 	try {
 		const bgPromises: Promise<any>[] = [];
 
@@ -437,8 +463,13 @@ async function tryLoadExistingDb(): Promise<LocalDbLoadResult> {
 /**
  * Delta sync: fetch only solve ID list from server, compare with local,
  * apply only diff (fetch new solves, remove deleted solves).
+ *
+ * `network`: the server could not be reached, local data is untouched and still good.
+ * `failed`: something else went wrong; the caller falls back to a full fetch.
  */
-async function deltaSyncSolves(): Promise<boolean> {
+type DeltaSyncResult = 'ok' | 'network' | 'failed';
+
+async function deltaSyncSolves(): Promise<DeltaSyncResult> {
 	try {
 		// 1. Fetch all solve IDs from server (only id field).
 		// `mySolveIds` selects nothing but the id column. The `solves` query used to
@@ -457,12 +488,12 @@ async function deltaSyncSolves(): Promise<boolean> {
 		// so the caller falls back to a full fetch, matching the previous behaviour
 		// where a malformed response threw.
 		const serverIdList = idsRes.data?.mySolveIds;
-		if (!serverIdList) return false;
+		if (!serverIdList) return 'failed';
 		const serverIds = new Set(serverIdList);
 
 		// 2. Get local solve IDs
 		const solveDb = getSolveDb();
-		if (!solveDb) return false;
+		if (!solveDb) return 'failed';
 		const localSolves = solveDb.find();
 		const localIds = new Set(localSolves.map((s) => s.id));
 
@@ -471,7 +502,7 @@ async function deltaSyncSolves(): Promise<boolean> {
 		// Genuine local-only solves are uploaded later by backfillLocalDataToServer.
 		if (serverIds.size === 0 && localIds.size > 50) {
 			console.error(`[DeltaSync] Server returned 0 ids while ${localIds.size} local solves exist — skipping`);
-			return true;
+			return 'ok';
 		}
 
 		// 3. Get pending mutations from offline queue (race condition prevention)
@@ -482,50 +513,75 @@ async function deltaSyncSolves(): Promise<boolean> {
 		const tombstoned = getSolveTombstones();
 
 		// 4. Calculate diff
-		const toFetch: string[] = [];
-		const resurrected: string[] = [];
-		for (const id of serverIds) {
-			if (localIds.has(id) || pendingDeleteIds.has(id)) continue;
-			if (tombstoned.has(id)) {
-				resurrected.push(id);
-				continue;
-			}
-			toFetch.push(id);
-		}
+		const plan = planDeltaSync({serverIds, localIds, pendingCreateIds, pendingDeleteIds, tombstoned});
 
 		// Re-issue the delete for anything that came back from the dead.
-		if (resurrected.length) {
-			void redeleteResurrectedSolves(resurrected);
-		}
-
-		const toRemove: string[] = [];
-		for (const id of localIds) {
-			if (!serverIds.has(id) && !pendingCreateIds.has(id)) {
-				toRemove.push(id);
-			}
+		if (plan.resurrected.length) {
+			void redeleteResurrectedSolves(plan.resurrected);
 		}
 
 		// 5. Remove deleted solves from local
-		if (toRemove.length > 0) {
-			const toRemoveSet = new Set(toRemove);
+		if (plan.toRemove.length > 0) {
+			const toRemoveSet = new Set(plan.toRemove);
 			const solvesToRemove = solveDb.find().filter((s) => toRemoveSet.has(s.id));
 			solvesToRemove.forEach((s) => solveDb.remove(s));
 		}
 
 		// 6. Fetch new solves in batches (solvesByIds query)
-		if (toFetch.length > 0) {
-			await withBootTimeout(fetchSolvesByIds(toFetch), 'delta_solve_fetch', BOOT_BULK_TIMEOUT_MS);
+		if (plan.toFetch.length > 0) {
+			await withBootTimeout(fetchSolvesByIds(plan.toFetch), 'delta_solve_fetch', BOOT_BULK_TIMEOUT_MS);
 		}
 
 		// 7. Emit event if changes occurred
-		if (toFetch.length > 0 || toRemove.length > 0) {
+		if (plan.toFetch.length > 0 || plan.toRemove.length > 0) {
 			emitEvent('solveDbUpdatedEvent');
 		}
 
-		return true;
+		return 'ok';
 	} catch (e) {
 		console.error('[DeltaSync] Failed:', e);
-		return false;
+		return e instanceof BootTimeoutError || isConnectivityError(e) ? 'network' : 'failed';
+	}
+}
+
+// Set when launch could not reach the server and kept its local data instead. The launch
+// never reconciled, so the first chance with a connection has to do it.
+let pendingBootReconcile = false;
+let deferredReconcileArmed = false;
+
+function armDeferredBootReconcile() {
+	pendingBootReconcile = true;
+	if (deferredReconcileArmed || typeof window === 'undefined') return;
+	deferredReconcileArmed = true;
+
+	const onConnected = () => {
+		void runDeferredBootReconcile();
+	};
+	window.addEventListener('online', onConnected);
+	initNetworkListener((connected) => {
+		if (connected) onConnected();
+	});
+	// Focus is covered by the visibility sync listener, which checks the same flag.
+}
+
+let deferredReconcileRunning = false;
+
+async function runDeferredBootReconcile(): Promise<void> {
+	if (!pendingBootReconcile || deferredReconcileRunning || !canReadSync()) return;
+	deferredReconcileRunning = true;
+	try {
+		// Queued changes first, so the server already has them when the id sets are compared
+		await requestQueueFlush('online');
+		const [solvesOk] = await Promise.all([syncNewSolves(true), syncNewSessions()]);
+		if (solvesOk) {
+			pendingBootReconcile = false;
+			lastReconcileTime = Date.now();
+			await updateOfflineHash();
+		}
+	} catch (e) {
+		console.error('[Sync] deferred reconcile failed', e);
+	} finally {
+		deferredReconcileRunning = false;
 	}
 }
 
@@ -562,6 +618,11 @@ function initVisibilitySyncListener() {
 		if (!visible) return;
 		if (!canReadSync()) return;
 
+		if (pendingBootReconcile) {
+			void runDeferredBootReconcile();
+			return;
+		}
+
 		const now = Date.now();
 		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
 		lastSyncTime = now;
@@ -571,8 +632,11 @@ function initVisibilitySyncListener() {
 			lastReconcileTime = now;
 		}
 
+		// Written out through the scheduler: a full save plus a hash request on every
+		// focus of the tab was the most frequent write of all, and a catch-up from the
+		// server is not something another device needs to hear about right away.
 		Promise.all([syncNewSolves(reconcile), syncNewSessions()])
-			.then(() => updateOfflineHash())
+			.then(() => requestPersist())
 			.catch(() => {});
 	});
 }
@@ -638,7 +702,7 @@ async function redeleteResurrectedSolves(ids: string[]): Promise<void> {
  * window by months, and every local solve inside it that wasn't in the last 500
  * was deleted as "stale" even though the server still had it.
  */
-async function syncNewSolves(reconcile = false) {
+async function syncNewSolves(reconcile = false): Promise<boolean> {
 	const query = gql`
 		${MICRO_SOLVE_FRAGMENT}
 
@@ -672,10 +736,10 @@ async function syncNewSolves(reconcile = false) {
 			void redeleteResurrectedSolves(resurrected);
 		}
 
-		if (!reconcile) return;
+		if (!reconcile) return true;
 
 		const solveDb = getSolveDb();
-		if (!solveDb) return;
+		if (!solveDb) return false;
 
 		// Full id set — the only way to detect a solve deleted on another device
 		// without guessing at a time window.
@@ -688,7 +752,7 @@ async function syncNewSolves(reconcile = false) {
 
 		// An empty response is indistinguishable from a failed/partial one —
 		// never treat it as "server has no solves" and wipe local data.
-		if (serverIds.size === 0) return;
+		if (serverIds.size === 0) return false;
 
 		// A solve finished seconds ago can still have its createSolve mutation in
 		// flight: not on the server yet, not in the offline queue either. Give recent
@@ -703,9 +767,9 @@ async function syncNewSolves(reconcile = false) {
 		// Guard against partial server responses: deleting a large share of the
 		// local DB in one sweep is almost certainly a bad payload, not real deletes.
 		const localCount = solveDb.count();
-		if (stale.length > 50 && stale.length > localCount * 0.2) {
+		if (isSuspiciousMassDeletion(stale.length, localCount)) {
 			console.error(`[Sync] Refusing to delete ${stale.length}/${localCount} local solves — suspicious server response`);
-			return;
+			return false;
 		}
 
 		if (stale.length > 0) {
@@ -728,8 +792,10 @@ async function syncNewSolves(reconcile = false) {
 			await fetchSolvesByIds(missing);
 			emitEvent('solveDbUpdatedEvent');
 		}
+		return true;
 	} catch (e) {
 		console.error('Failed to sync new solves', e);
+		return false;
 	}
 }
 
@@ -971,7 +1037,7 @@ async function getAllSessions() {
 	try {
 		const res = await withBootTimeout(gqlQuery<{ sessions: Session[] }>(query), 'sessions');
 		initSessionCollection();
-		reconcileSessionDb(res.data.sessions);
+		reconcileSessionDb(res.data.sessions, await getPendingSessionCreateIds());
 		emitEvent('sessionsDbUpdatedEvent');
 	} catch (error) {
 		// Fetch failed — don't touch local cache, just ensure collection.
@@ -995,7 +1061,7 @@ async function syncNewSessions() {
 
 	try {
 		const res = await gqlQuery<{ sessions: Session[] }>(query);
-		const changed = reconcileSessionDb(res.data.sessions);
+		const changed = reconcileSessionDb(res.data.sessions, await getPendingSessionCreateIds());
 		if (changed) {
 			emitEvent('sessionsDbUpdatedEvent');
 		}
@@ -1180,7 +1246,7 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 		// First upload sessions (solves depend on session_id)
 		if (localSessions.length > 0) {
 			const sessionInputs = localSessions.map((s) => ({
-				id: s.id,
+				...toSessionInput(s),
 				name: s.name || 'Session',
 				order: s.order || 0,
 			}));
@@ -1193,31 +1259,14 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 			}
 		}
 
-		// Then upload solves (only send SolveInput fields)
+		// Then upload solves (only send SolveInput fields). The shared whitelist, not a list
+		// written out here: the hand-written one had drifted and dropped scramble_subset,
+		// is_virtual_cube and phase_splits, so a Basic user's wca::222 solves arrived on the
+		// server without their event after upgrading.
 		if (localSolves.length > 0) {
 			const solveInputs = localSolves.map((s) => ({
-				id: s.id,
-				time: s.time,
-				raw_time: s.raw_time,
-				cube_type: s.cube_type,
-				scramble: s.scramble,
-				session_id: s.session_id,
-				started_at: s.started_at,
-				ended_at: s.ended_at,
-				dnf: s.dnf,
-				plus_two: s.plus_two,
-				bulk: s.bulk,
-				notes: s.notes,
+				...toSolveInput(s),
 				from_timer: s.from_timer ?? true,
-				trainer_name: s.trainer_name,
-				is_smart_cube: s.is_smart_cube,
-				training_session_id: s.training_session_id,
-				smart_device_id: s.smart_device_id,
-				smart_turn_count: s.smart_turn_count,
-				smart_turns: s.smart_turns,
-				smart_put_down_time: s.smart_put_down_time,
-				smart_pick_up_time: s.smart_pick_up_time,
-				inspection_time: s.inspection_time,
 			}));
 			const solveResult = await importSolvesInChunks(solveInputs, () => {});
 			// Silent fail protection: if solve chunk fails, migration failed.
@@ -1278,7 +1327,7 @@ async function backfillLocalDataToServer(): Promise<void> {
 	const missingSessions = localSessions.filter((s) => !serverSessionIds.has(s.id));
 	if (missingSessions.length > 0) {
 		const sessionInputs = missingSessions.map((s) => ({
-			id: s.id,
+			...toSessionInput(s),
 			name: s.name || 'Session',
 			order: s.order || 0,
 		}));
@@ -1293,33 +1342,20 @@ async function backfillLocalDataToServer(): Promise<void> {
 	// Tombstoned ids are excluded: "local but not on server" is ambiguous, and without
 	// this check a solve deleted on another device gets re-uploaded here forever.
 	const tombstoned = getSolveTombstones();
-	const missingSolves = localSolves.filter((s) => !serverSolveIds.has(s.id) && !tombstoned.has(s.id));
+	// A solve with a create still in the offline queue is left to the queue. The bulk path
+	// stores every row as imported (bulk = true), so a solve timed offline that went this way
+	// arrived on the server labelled as an import.
+	const {pendingCreateIds} = await getPendingSolveMutationIds();
+	const missingSolves = localSolves.filter(
+		(s) => !serverSolveIds.has(s.id) && !tombstoned.has(s.id) && !pendingCreateIds.has(s.id)
+	);
 	let solveResult: ChunkedImportResult | null = null;
 	if (missingSolves.length > 0) {
+		// Shared whitelist: the list written out here had drifted and left is_virtual_cube
+		// and phase_splits behind.
 		const solveInputs = missingSolves.map((s) => ({
-			id: s.id,
-			time: s.time,
-			raw_time: s.raw_time,
-			cube_type: s.cube_type,
-			scramble_subset: s.scramble_subset,
-			scramble: s.scramble,
-			session_id: s.session_id,
-			started_at: s.started_at,
-			ended_at: s.ended_at,
-			dnf: s.dnf,
-			plus_two: s.plus_two,
-			bulk: s.bulk,
-			notes: s.notes,
+			...toSolveInput(s),
 			from_timer: s.from_timer ?? true,
-			trainer_name: s.trainer_name,
-			is_smart_cube: s.is_smart_cube,
-			training_session_id: s.training_session_id,
-			smart_device_id: s.smart_device_id,
-			smart_turn_count: s.smart_turn_count,
-			smart_turns: s.smart_turns,
-			smart_put_down_time: s.smart_put_down_time,
-			smart_pick_up_time: s.smart_pick_up_time,
-			inspection_time: s.inspection_time,
 		}));
 		solveResult = await importSolvesInChunks(solveInputs, () => {});
 		if (solveResult.failureCount > 0) {

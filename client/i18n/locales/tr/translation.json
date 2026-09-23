@@ -912,7 +912,17 @@
   },
   "offline": {
     "page_title": "İnternet bağlantısı yok",
-    "page_description": "Bu sayfa için internet bağlantısı gerekiyor. Bağlantı geri geldiğinde sayfa otomatik olarak yüklenecek."
+    "page_description": "Bu sayfa için internet bağlantısı gerekiyor. Bağlantı geri geldiğinde sayfa otomatik olarak yüklenecek.",
+    "sync_in_progress_one": "{{count}} çözüm senkronize ediliyor…",
+    "sync_in_progress_other": "{{count}} çözüm senkronize ediliyor…",
+    "sync_done_one": "{{count}} çözüm senkronize edildi",
+    "sync_done_other": "{{count}} çözüm senkronize edildi",
+    "sync_item_failed": "Bazı değişiklikler sunucuya gönderilemedi. Daha sonra tekrar denenecek.",
+    "requires_connection": "Bu işlem için internet bağlantısı gerekiyor.",
+    "saved_offline": "Çözüm offline kaydedildi. İnternet bağlandığında senkronize edilecek.",
+    "save_queued": "Çözüm kaydedilemedi, kuyruğa alındı. Otomatik olarak tekrar denenecek.",
+    "pending_badge_title": "Senkronize edilmeyi bekleyen çözümler",
+    "solve_session_missing": "Çözümün sezonu sunucuda bulunamadı."
   },
   "my_schedule": {
     "page_title": "Yarışma Programım",

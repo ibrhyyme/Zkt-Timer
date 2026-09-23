@@ -218,8 +218,11 @@ export default function Sessions() {
 			openModal(
 				<ConfirmModal
 					triggerAction={async () => {
-						await mergeSessionsDb(selectedSessionId, currentSessionId);
-						setSelectedSessionId(currentSessionId);
+						// Needs the server: a merge done offline was undone by the next sync
+						const merged = await mergeSessionsDb(selectedSessionId, currentSessionId);
+						if (merged) {
+							setSelectedSessionId(currentSessionId);
+						}
 					}}
 					buttonText={t('sessions.merge_sessions')}
 					buttonProps={{
@@ -246,23 +249,30 @@ export default function Sessions() {
 		async function triggerAction() {
 			const id = session.id;
 			const name = session.name;
-			let updatedSessionId = currentSessionId;
 
-			if (currentSessionId === id) {
-				const fallback = allSessions.find((s) => s.id !== id);
-				const fallbackBucket = fetchLastBucketForSession(fallback.id);
+			// The selection moves only once the server has agreed: without a connection the
+			// delete is refused and nothing on screen may change.
+			const deleted = await deleteSessionDb(session, () => {
+				let updatedSessionId = currentSessionId;
 
-				setCurrentSession(fallback.id);
-				const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
-				setCubeType(fallbackCubeType);
-				setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
+				if (currentSessionId === id) {
+					const fallback = allSessions.find((s) => s.id !== id);
+					const fallbackBucket = fetchLastBucketForSession(fallback.id);
 
-				updatedSessionId = fallback.id;
+					setCurrentSession(fallback.id);
+					const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
+					setCubeType(fallbackCubeType);
+					setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
+
+					updatedSessionId = fallback.id;
+				}
+
+				setSelectedSessionId(updatedSessionId);
+			});
+
+			if (deleted) {
+				toastSuccess(t('sessions.session_deleted', { name }));
 			}
-
-			setSelectedSessionId(updatedSessionId);
-			await deleteSessionDb(session);
-			toastSuccess(t('sessions.session_deleted', { name }));
 		}
 
 		dispatch(
@@ -330,26 +340,34 @@ export default function Sessions() {
 				<ConfirmModal
 					hideInput
 					triggerAction={async () => {
-						let updatedSessionId = currentSessionId;
-						const deletingCurrent = idsToDelete.includes(currentSessionId);
+						let deleted = false;
+						try {
+							// Server first: without a connection nothing is deleted and the
+							// selection stays as it was.
+							deleted = await bulkDeleteSessionsDb(idsToDelete, () => {
+								let updatedSessionId = currentSessionId;
+								const deletingCurrent = idsToDelete.includes(currentSessionId);
 
-						if (deletingCurrent) {
-							const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
-							const fallbackBucket = fetchLastBucketForSession(fallback.id);
-							setCurrentSession(fallback.id);
-							const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
-							setCubeType(fallbackCubeType);
-							setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
-							updatedSessionId = fallback.id;
+								if (deletingCurrent) {
+									const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
+									const fallbackBucket = fetchLastBucketForSession(fallback.id);
+									setCurrentSession(fallback.id);
+									const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
+									setCubeType(fallbackCubeType);
+									setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
+									updatedSessionId = fallback.id;
+								}
+
+								setMultiSelectedIds(new Set());
+								setSelectedSessionId(updatedSessionId);
+							});
+						} catch (e) {
+							console.error('bulkDeleteSessionsDb failed', e);
 						}
 
-						setMultiSelectedIds(new Set());
-						setSelectedSessionId(updatedSessionId);
-						toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
-
-						bulkDeleteSessionsDb(idsToDelete).catch((e) => {
-							console.error('bulkDeleteSessionsDb failed', e);
-						});
+						if (deleted) {
+							toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
+						}
 					}}
 					buttonText={t('sessions.yes_delete')}
 					buttonProps={{

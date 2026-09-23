@@ -64,6 +64,33 @@ interface Props {
  */
 let pushInitUserId: string | null = null;
 
+// The native local shell has no SSR, so launch waits on this request before anything shows.
+// On a connection that accepts the socket and never answers (wifi without internet) it could
+// wait indefinitely behind the loading cover. Past this deadline it counts as a network
+// failure, which boots from the cached identity and the local database.
+const BOOT_AUTH_TIMEOUT_MS = 12_000;
+
+function withBootAuthTimeout<T>(promise: Promise<T>): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(() => {
+			const err: any = new Error('getMe timed out');
+			// Shaped like a fetch failure so isNetworkError takes the offline path
+			err.networkError = new Error('timeout');
+			reject(err);
+		}, BOOT_AUTH_TIMEOUT_MS);
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(err) => {
+				clearTimeout(timer);
+				reject(err);
+			}
+		);
+	});
+}
+
 export default function App(props: Props = {}) {
 	const { path, standalone, children, hideTopNav, restricted } = props;
 
@@ -240,7 +267,7 @@ export default function App(props: Props = {}) {
 				const bootAuth = async () => {
 					for (let attempt = 0; ; attempt++) {
 						try {
-							await dispatch(getMe() as any);
+							await withBootAuthTimeout(Promise.resolve(dispatch(getMe() as any)));
 						} catch (err) {
 							// A network failure (offline, or the SW's synthesized 503) is
 							// NOT an auth rejection: keep the session flag and boot from
