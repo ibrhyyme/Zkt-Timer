@@ -884,10 +884,13 @@ export type MethodStepsBackfillResult = {
   downgraded?: Maybe<Scalars['Int']>;
   error?: Maybe<Scalars['Int']>;
   filled?: Maybe<Scalars['Int']>;
+  finishedAt?: Maybe<Scalars['String']>;
   methodChanged?: Maybe<Scalars['Int']>;
   processed?: Maybe<Scalars['Int']>;
+  running?: Maybe<Scalars['Boolean']>;
   skippedAlreadyHasSteps?: Maybe<Scalars['Int']>;
   skippedNoTurns?: Maybe<Scalars['Int']>;
+  startedAt?: Maybe<Scalars['String']>;
   totalCandidates?: Maybe<Scalars['Int']>;
 };
 
@@ -2013,6 +2016,7 @@ export type Query = {
   messageRecipientSearch?: Maybe<Array<Maybe<PublicUserAccount>>>;
   messageReports?: Maybe<MessageReportList>;
   messages?: Maybe<MessageList>;
+  methodStepsReindexStatus?: Maybe<MethodStepsBackfillResult>;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
   myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
   myRecordWatches?: Maybe<Array<Maybe<RecordWatch>>>;

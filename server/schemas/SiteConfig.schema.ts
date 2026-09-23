@@ -196,6 +196,16 @@ export class MethodStepsBackfillResult {
 	/** Solves whose analysis now names a different method than it did before the run. */
 	@Field(() => Int)
 	methodChanged: number;
+
+	/** The job runs in the background; the admin panel polls until this turns false. */
+	@Field(() => Boolean)
+	running: boolean;
+
+	@Field(() => String, {nullable: true})
+	startedAt: string | null;
+
+	@Field(() => String, {nullable: true})
+	finishedAt: string | null;
 }
 
 @ObjectType()

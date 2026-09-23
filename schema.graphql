@@ -296,6 +296,7 @@ type Query {
   adminDashboardStats: AdminDashboardStats
   ipInfo(ip: String): IpInfo
   wcaStats: WcaStats
+  methodStepsReindexStatus: MethodStepsBackfillResult
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   publicWcaProfile(userId: String): PublicWcaProfile
@@ -1285,6 +1286,9 @@ type MethodStepsBackfillResult {
   downgraded: Int
   error: Int
   methodChanged: Int
+  running: Boolean
+  startedAt: String
+  finishedAt: String
 }
 
 type IpInfo {

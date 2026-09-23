@@ -33,11 +33,8 @@ import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
 import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
-import { isKnownMethod } from '../../shared/util/solve/methods';
-import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
+import { getMethodStepsReindexStatus, startMethodStepsReindex } from '../services/method_steps_reindex';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
-import { countHTM } from '../../shared/util/solve/move_counter';
-import { updateSolveLiteral } from '../models/solve';
 import { getOnlineCounts, getOnlineUsers, disconnectUserSockets } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -685,103 +682,22 @@ export class AdminResolver {
 	}
 
 	/**
-	 * DELETES and recalculates SolveMethodStep records for all smart cube solves.
-	 *
-	 * Single comprehensive mutation:
-	 *   - Solves without step records -> created (old backfill behavior)
-	 *   - Solves with step records -> deleted and recalculated (fixes old step.turn_count values
-	 *     after engine fix)
-	 *   - If smart_turns is present but unreadable, solve downgraded to is_smart_cube=false
-	 *     (old corrupted data cleanup). Missing smart_turns is skipped: that is how every
-	 *     non-Pro smart solve is stored.
-	 *
-	 * The method is detected from the solve itself ('auto'), falling back to the method the
-	 * solve was already analysed with when detection is not confident. It used to be called
-	 * with no method at all, which meant CFOP: one run turned every Roux and ZZ analysis
-	 * into a CFOP one. Detecting instead also repairs the solves saved while the client's
-	 * chosen method never reached the server (2026-08-31 onwards, all stored as CFOP).
-	 *
-	 * Run when engine algorithm changes (e.g. boundary-aware HTM fix).
+	 * DELETES and recalculates SolveMethodStep records for all smart cube solves, as a
+	 * background job (server/services/method_steps_reindex.ts has the rules and why).
+	 * Returns at once with the job's status; the panel polls methodStepsReindexStatus.
+	 * Pressing it while a run is in progress (on any instance) returns that run's status
+	 * instead of starting a second one.
 	 */
 	@Authorized([Role.ADMIN])
 	@Mutation(() => MethodStepsBackfillResult)
 	async reindexSmartCubeMethodSteps(): Promise<MethodStepsBackfillResult> {
-		const prisma = getPrisma();
+		return startMethodStepsReindex();
+	}
 
-		const result: MethodStepsBackfillResult = {
-			totalCandidates: 0,
-			processed: 0,
-			filled: 0,
-			skippedNoTurns: 0,
-			skippedAlreadyHasSteps: 0,
-			downgraded: 0,
-			error: 0,
-			methodChanged: 0,
-		};
-
-		const candidates = await prisma.solve.findMany({
-			where: { is_smart_cube: true },
-			select: {
-				id: true,
-				smart_turns: true,
-				scramble: true,
-				// Every step row of a solve carries the same method_name; one is enough.
-				solve_method_steps: { select: { method_name: true }, take: 1 },
-			},
-		});
-
-		result.totalCandidates = candidates.length;
-		console.log(`[MethodStepsReindex] ${candidates.length} candidate solves found`);
-
-		for (const cand of candidates) {
-			result.processed++;
-
-			// No turns at all: nothing to analyse, and not corrupt either. createSolve clears
-			// smart_turns on purpose for accounts without Pro (reconstruction is a Pro
-			// feature) while the solve stays a smart cube solve. This used to downgrade such
-			// rows to is_smart_cube=false, which run on production would have stripped the
-			// smart flag from every Basic user's smart solves. Only an unreadable turn string
-			// (below) is treated as corrupt.
-			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
-				result.skippedNoTurns++;
-				continue;
-			}
-
-			try {
-				const turns = parseSmartTurns(cand.smart_turns);
-				if (!turns.length) {
-					// Empty turns -> downgrade
-					await updateSolveLiteral(cand.id, { is_smart_cube: false });
-					result.downgraded++;
-					continue;
-				}
-				const storedMethod = cand.solve_method_steps?.[0]?.method_name;
-				const fallback = isKnownMethod(storedMethod) ? storedMethod : undefined;
-				const steps = getSolveSteps(turns, cand.scramble, 'auto', fallback);
-				const newMethod = (steps as any).__method;
-				if (storedMethod && newMethod && storedMethod !== newMethod) {
-					result.methodChanged++;
-				}
-				const htmCount = countHTM(turns.map((t) => t.turn));
-				await deleteSolveMethodSteps({ id: cand.id });
-				await createSolveMethodSteps({ id: cand.id }, steps);
-				// Old solves may have null or incorrect smart_turn_count — recalculate with engine.
-				// This is the single source of truth for all turn/TPS displays in the UI.
-				await updateSolveLiteral(cand.id, { smart_turn_count: htmCount });
-				result.filled++;
-			} catch (e: any) {
-				// Corrupted data — don't corrupt solve metadata, just skip it.
-				console.warn(`[MethodStepsReindex] solve ${cand.id} skipped: ${e?.message}`);
-				result.error++;
-			}
-
-			if (result.processed % 100 === 0) {
-				console.log(`[MethodStepsReindex] ${result.processed}/${result.totalCandidates}...`);
-			}
-		}
-
-		console.log(`[MethodStepsReindex] Done.`, result);
-		return result;
+	@Authorized([Role.ADMIN])
+	@Query(() => MethodStepsBackfillResult, {nullable: true})
+	async methodStepsReindexStatus(): Promise<MethodStepsBackfillResult | null> {
+		return getMethodStepsReindexStatus();
 	}
 
 	@Authorized([Role.ADMIN])

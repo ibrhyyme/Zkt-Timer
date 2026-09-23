@@ -24,7 +24,26 @@ const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
 const BACKFILL_ZKT_IDS = gql`mutation { backfillZktIds { total filled stillNull conflict error } }`;
-const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error methodChanged } }`;
+const REINDEX_STATUS_FIELDS = 'totalCandidates processed filled skippedNoTurns downgraded error methodChanged running startedAt finishedAt';
+const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { ${REINDEX_STATUS_FIELDS} } }`;
+const REINDEX_METHOD_STEPS_STATUS = gql`query { methodStepsReindexStatus { ${REINDEX_STATUS_FIELDS} } }`;
+
+// The reindex runs as a background job; this is what the panel shows of it.
+function describeReindex(r: any): string {
+	if (!r) return '';
+	const progress = `${r.processed}/${r.totalCandidates || '?'} islendi`;
+	if (r.running) {
+		return `Calisiyor: ${progress}`;
+	}
+	const parts = [progress];
+	if (r.filled > 0) parts.push(`${r.filled} step kaydi yeniden olusturuldu`);
+	if (r.methodChanged > 0) parts.push(`${r.methodChanged} cozumun yontemi degisti`);
+	if (r.skippedNoTurns > 0) parts.push(`${r.skippedNoTurns} smart_turns yok (atlandi)`);
+	if (r.downgraded > 0) parts.push(`${r.downgraded} downgrade edildi`);
+	if (r.error > 0) parts.push(`${r.error} hata`);
+	if (r.finishedAt) parts.push(`bitti: ${new Date(r.finishedAt).toLocaleString()}`);
+	return parts.join(' | ');
+}
 const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
 const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending zktConnected zktWithId zktWithoutId zktRevoked bothConnected } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
@@ -56,6 +75,20 @@ export default function SiteConfigPanel() {
 
 	const [reindexLoading, setReindexLoading] = useState(false);
 	const [reindexResult, setReindexResult] = useState<string | null>(null);
+	// Polled only while a run is in progress; the first read on mount also shows the last
+	// run's result, or a run started from another tab or by another admin.
+	const [reindexPolling, setReindexPolling] = useState(false);
+	const {data: reindexStatusData} = useQuery(REINDEX_METHOD_STEPS_STATUS, {
+		pollInterval: reindexPolling ? 3000 : 0,
+		fetchPolicy: 'no-cache',
+	});
+	const reindexStatus = reindexStatusData?.methodStepsReindexStatus;
+	const reindexRunning = Boolean(reindexStatus?.running);
+	useEffect(() => {
+		if (!reindexStatus) return;
+		setReindexPolling(reindexStatus.running);
+		setReindexResult(describeReindex(reindexStatus));
+	}, [reindexStatus]);
 
 	const [reindexLLLoading, setReindexLLLoading] = useState(false);
 	const [reindexLLResult, setReindexLLResult] = useState<string | null>(null);
@@ -531,29 +564,27 @@ export default function SiteConfigPanel() {
 							olunamazsa cozumun kayitli yontemi korunur (CFOP cozenlerde degisiklik olmaz, 31 Agustos
 							sonrasi CFOP diye kaydedilmis Roux/ZZ cozumleri duzelir). smart_turns hic yoksa atlar (Pro
 							olmayan kullanicilarda boyle saklaniyor); var ama okunamiyorsa is_smart_cube=false olarak
-							downgrade eder. Buyuk DB'lerde dakikalar surebilir, sayfayi kapatma.
+							downgrade eder. Arka planda calisir: sayfayi kapatsan da devam eder, ilerlemesi burada
+							gorunur, ayni anda tek kopya calisabilir.
 						</div>
 					</div>
 					<button
 						className={b('action-btn')}
-						disabled={reindexLoading}
+						disabled={reindexLoading || reindexRunning}
 						onClick={async () => {
-							if (!window.confirm('Bu islem tum is_smart_cube=true solve\'larin step kayitlarini SILIP yeniden olusturur. Devam?')) {
+							if (!window.confirm('Bu islem tum is_smart_cube=true solve\'larin step kayitlarini SILIP yeniden olusturur. Arka planda calisir. Devam?')) {
 								return;
 							}
 							setReindexLoading(true);
 							setReindexResult(null);
 							try {
+								// Returns at once: the job runs on the server and is polled above.
+								// If one is already running, this returns that run instead.
 								const res = await gqlMutate(REINDEX_METHOD_STEPS);
 								const r = res?.data?.reindexSmartCubeMethodSteps;
 								if (r) {
-									const parts = [`${r.processed}/${r.totalCandidates} islendi`];
-									if (r.filled > 0) parts.push(`${r.filled} step kaydi yeniden olusturuldu`);
-									if (r.methodChanged > 0) parts.push(`${r.methodChanged} cozumun yontemi degisti`);
-									if (r.skippedNoTurns > 0) parts.push(`${r.skippedNoTurns} smart_turns yok (atlandi)`);
-									if (r.downgraded > 0) parts.push(`${r.downgraded} downgrade edildi`);
-									if (r.error > 0) parts.push(`${r.error} hata`);
-									setReindexResult(parts.join(' | '));
+									setReindexResult(describeReindex(r));
+									setReindexPolling(Boolean(r.running));
 								} else {
 									setReindexResult('Sonuc alinamadi');
 								}
@@ -564,7 +595,7 @@ export default function SiteConfigPanel() {
 							}
 						}}
 					>
-						{reindexLoading ? 'Calisiyor...' : 'Calistir'}
+						{reindexLoading || reindexRunning ? 'Calisiyor...' : 'Calistir'}
 					</button>
 				</div>
 				{reindexResult && (
