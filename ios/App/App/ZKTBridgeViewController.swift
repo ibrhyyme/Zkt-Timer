@@ -14,6 +14,7 @@ class ZKTBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(NativeAudioPlugin())
         bridge?.registerPluginInstance(SlamDetectorPlugin())
+        bridge?.registerPluginInstance(MagnetDetectorPlugin())
         bridge?.registerPluginInstance(NativeCalendarPlugin())
 
         // Back gesture toggle: Capacitor posts this notification on every decidePolicyFor.

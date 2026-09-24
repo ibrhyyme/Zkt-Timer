@@ -72,6 +72,7 @@ public class MainActivity extends BridgeActivity {
         }
         registerPlugin(GestureExclusionPlugin.class);
         registerPlugin(SlamDetectorPlugin.class);
+        registerPlugin(MagnetDetectorPlugin.class);
         registerPlugin(NativeCalendarPlugin.class);
         super.onCreate(savedInstanceState);
 

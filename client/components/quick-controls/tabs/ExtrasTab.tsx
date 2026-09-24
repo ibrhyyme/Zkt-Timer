@@ -17,6 +17,10 @@ import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
 import SlamSensitivitySlider from './SlamSensitivitySlider';
+import MagnetPanel from './MagnetPanel';
+import { useMagnetStartSettings } from '../../../util/magnet-start/settings';
+import { useMagnetAvailability } from '../../../util/magnet-start/availability';
+import { canUseMagnetStart } from '../../../lib/magnet-start-access';
 
 interface ExtrasNumberInputProps {
 	label: string;
@@ -216,7 +220,10 @@ export default function ExtrasTab({
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
 	const slamStop = useSlamStop();
+	const magnetStart = useMagnetStartSettings();
 	const me = useMe();
+	const magnetAllowed = canUseMagnetStart(me);
+	const magnetCaps = useMagnetAvailability(magnetAllowed);
 	const dispatch = useDispatch();
 
 	// Device-local setting (NOT a synced Redux setting) — only meaningful where
@@ -226,6 +233,19 @@ export default function ExtrasTab({
 	// Pro feature: shown to everyone (visible-but-locked), but non-Pro users get a
 	// "Pro" badge + upsell modal instead of the toggle. PRO_ENABLED=false → no gate.
 	const slamProGated = isProEnabled() && isNotPro(me);
+	// Magnet lift-to-start: admin field test for now (canUseMagnetStart is the single
+	// switch). Same scope as slam-to-stop: touch timer only, hidden in rooms, and only on
+	// binaries that ship the MagnetDetector plugin with an uncalibrated magnetometer.
+	const magnetVisible =
+		!!magnetCaps && magnetAllowed && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
+
+	function toggleMagnetStart() {
+		const next = !magnetStart.enabled;
+		magnetStart.setEnabled(next);
+		// The flow is lift to start, drop to stop. Turning it on switches slam-to-stop on
+		// as well where it is usable; it stays independent (a tap always stops).
+		if (next && slamVisible && !slamProGated && !slamStop.enabled) slamStop.setEnabled(true);
+	}
 
 	const extrasOptions = [
 		{
@@ -358,6 +378,17 @@ export default function ExtrasTab({
 						onClick={() => slamStop.setEnabled(!slamStop.enabled)}
 					/>
 					{slamVisible && slamStop.enabled && <SlamSensitivitySlider />}
+				</>
+			)}
+
+			{magnetVisible && (
+				<>
+					<ExtrasOption
+						label={`${t('quick_controls.magnet_start')} · ${t('quick_controls.magnet_admin_tag')}`}
+						isActive={magnetStart.enabled}
+						onClick={toggleMagnetStart}
+					/>
+					{magnetStart.enabled && <MagnetPanel />}
 				</>
 			)}
 

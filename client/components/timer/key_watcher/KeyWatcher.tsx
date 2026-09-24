@@ -28,6 +28,7 @@ import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
+import { useMagnetStart } from '../../../util/magnet-start/useMagnetStart';
 import { classifyTouchTarget } from '../helpers/touch_target';
 import { isCancelSwipe } from '../helpers/touch_gesture';
 import {
@@ -93,6 +94,8 @@ export default function KeyWatcher(props: Props) {
 
 	// Slam-to-stop: native-only extra stop trigger for the touch timer
 	useSlamToStop(context);
+	// Magnet lift-to-start: native-only start trigger for the touch timer (admin field test)
+	useMagnetStart(context);
 
 	// While the timer is on screen, header pickers closing do not hand focus back to their
 	// trigger, so the next Space starts a solve instead of reopening the picker.

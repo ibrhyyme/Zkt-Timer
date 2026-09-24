@@ -22,6 +22,8 @@ import QiyiTimer from './qiyitimer/QiyiTimer';
 import SolveDiff from './SolveDiff';
 import MultiPhaseIndicator from './multi_phase/MultiPhaseIndicator';
 import OfflineModeIndicator from './OfflineModeIndicator';
+import MagnetHint from './magnet/MagnetHint';
+import { useMagnetStatus } from '../../../util/magnet-start/status_store';
 
 const b = block('time-display');
 const bi = block('timer-bottom-info');
@@ -95,6 +97,12 @@ export default function TimeDisplay() {
 
 	const mobileMode = useGeneral('mobile_mode');
 	let timerTimeSize = useSettings('timer_time_size');
+
+	// Magnet lift-to-start keeps its ready state outside canStart: KeyWatcher relies on
+	// canStart never being true without a live spaceTimerStarted (a touch or Space hold).
+	const magnet = useMagnetStatus();
+	const magnetGreen = magnet.green && !timeStartedAt;
+	const magnetOrange = magnet.orange && !timeStartedAt;
 
 	useEffect(() => {
 		if (timerCounter.current && !solving) {
@@ -290,6 +298,8 @@ export default function TimeDisplay() {
 		bottomInfo = <GanTimer />;
 	} else if (qiyiTimerOn) {
 		bottomInfo = <QiyiTimer />;
+	} else if (magnet.active && timerType === 'keyboard' && !timeStartedAt) {
+		bottomInfo = <MagnetHint />;
 	} else if (smartCubeSelected(context) && !mobileMode) {
 		if (context.smartNeedsCubeReset) {
 			bottomInfo = (
@@ -315,8 +325,8 @@ export default function TimeDisplay() {
 					}}
 					className={b({
 						gray: inInspection,
-						green: canStart,
-						orange: !!spaceTimerStarted,
+						green: canStart || magnetGreen,
+						orange: !!spaceTimerStarted || magnetOrange,
 						disabled,
 						// Digits grow/shrink only on this edge (armed/inspecting stay at
 						// scale 1 — colour classes above already cover those states).

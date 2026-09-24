@@ -22,7 +22,9 @@ public class SlamDetectorPlugin: CAPPlugin, CAPBridgedPlugin {
     // CoreMotion reports acceleration in g; convert to m/s² so thresholds
     // match the Android (SensorManager) units and the FiveTimer reference.
     private static let gravity = 9.81
-    private let motionManager = CMMotionManager()
+    // The app-wide instance (declared in MagnetDetectorPlugin.swift): Apple asks for a
+    // single CMMotionManager per app.
+    private let motionManager = zktSharedMotionManager
     private let queue = OperationQueue()
     // Threshold + noise-floor deadband (m/s²) for the Z-axis delta; set per start()
     private var threshold: Double = 1.0

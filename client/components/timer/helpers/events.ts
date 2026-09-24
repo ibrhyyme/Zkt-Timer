@@ -66,6 +66,15 @@ export function setSmartCubeClockSkew(skew: number) {
 	_smartCubeClockSkew = skew;
 }
 
+// Wall-clock start of the running inspection. The +2 flag is set by the inspection
+// interval on its own 100 ms tick; an input that starts the solve from a backdated
+// timestamp (magnet lift-to-start) judges +2 against this instead.
+let _inspectionStartedAt: number | null = null;
+
+export function getInspectionStartedAt(): number | null {
+	return _inspectionStartedAt;
+}
+
 export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number) {
 	const now = Date.now();
 	let timeStartedAt: Date;
@@ -348,6 +357,8 @@ export function startInspection(context: ITimerContext) {
 		startTimer();
 		return;
 	}
+
+	_inspectionStartedAt = Date.now();
 
 	// Close open dropdowns
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
