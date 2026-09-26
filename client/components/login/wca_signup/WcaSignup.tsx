@@ -7,14 +7,16 @@ import {useInput} from '../../../util/hooks/useInput';
 import {UserAccount} from '../../../@types/generated/graphql';
 import {resourceUri} from '../../../util/storage';
 import block from '../../../styles/bem';
+import {clearPendingSignupToken, readPendingSignupToken} from '../../../util/auth/pending-signup';
+import {getGqlErrorMessage} from '../../../util/gql-error';
 
 // WcaSignup renders inside the .zt-zkt-auth scope (ZktAuthScene legacyChild),
 // so it can reuse the shared zkt-auth consent style.
 const b = block('zkt-auth');
 
 const COMPLETE_WCA_SIGNUP = gql`
-	mutation Mutate($username: String!, $acceptedTerms: Boolean!) {
-		completeWcaSignup(username: $username, acceptedTerms: $acceptedTerms) {
+	mutation Mutate($username: String!, $acceptedTerms: Boolean!, $pendingToken: String) {
+		completeWcaSignup(username: $username, acceptedTerms: $acceptedTerms, pendingToken: $pendingToken) {
 			id
 			session_token
 		}
@@ -62,7 +64,7 @@ export default function WcaSignup() {
 
 	const [completeSignup, completeSignupData] = useMutation<
 		{completeWcaSignup: UserAccount},
-		{username: string; acceptedTerms: boolean}
+		{username: string; acceptedTerms: boolean; pendingToken: string | null}
 	>(COMPLETE_WCA_SIGNUP);
 
 	async function handleSubmit(e: React.FormEvent) {
@@ -99,19 +101,16 @@ export default function WcaSignup() {
 				variables: {
 					username: trimmed,
 					acceptedTerms: agreed,
+					pendingToken: readPendingSignupToken('wca'),
 				},
 			});
 
+			clearPendingSignupToken('wca');
 			localStorage.setItem('zkt_has_auth', 'true');
 			setRedirecting(true);
 			window.location.href = '/timer';
 		} catch (e) {
-			const errorMessage =
-				e?.graphQLErrors?.[0]?.extensions?.exception?.message ||
-				e?.graphQLErrors?.[0]?.message ||
-				e?.message ||
-				t('wca_signup.session_expired');
-			flashError(errorMessage);
+			flashError(getGqlErrorMessage(e, t, 'wca_signup.session_expired'));
 		}
 	}
 

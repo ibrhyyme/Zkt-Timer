@@ -7,6 +7,8 @@ import {useInput} from '../../../util/hooks/useInput';
 import {UserAccount} from '../../../@types/generated/graphql';
 import {resourceUri} from '../../../util/storage';
 import block from '../../../styles/bem';
+import {clearPendingSignupToken, readPendingSignupToken} from '../../../util/auth/pending-signup';
+import {getGqlErrorMessage} from '../../../util/gql-error';
 
 // Last step of "sign in with Zeka Kupu Turkiye" for somebody who has no
 // Zkt-Timer account yet: pick a username, accept the terms, done. Everything
@@ -18,8 +20,8 @@ import block from '../../../styles/bem';
 const b = block('zkt-auth');
 
 const COMPLETE_ZKT_SIGNUP = gql`
-	mutation Mutate($username: String!, $acceptedTerms: Boolean!) {
-		completeZktSignup(username: $username, acceptedTerms: $acceptedTerms) {
+	mutation Mutate($username: String!, $acceptedTerms: Boolean!, $pendingToken: String) {
+		completeZktSignup(username: $username, acceptedTerms: $acceptedTerms, pendingToken: $pendingToken) {
 			id
 			session_token
 		}
@@ -63,7 +65,7 @@ export default function ZktSignup() {
 
 	const [completeSignup, completeSignupData] = useMutation<
 		{completeZktSignup: UserAccount},
-		{username: string; acceptedTerms: boolean}
+		{username: string; acceptedTerms: boolean; pendingToken: string | null}
 	>(COMPLETE_ZKT_SIGNUP);
 
 	async function handleSubmit(e: React.FormEvent) {
@@ -90,17 +92,15 @@ export default function ZktSignup() {
 		}
 
 		try {
-			await completeSignup({variables: {username: trimmed, acceptedTerms: agreed}});
+			await completeSignup({
+				variables: {username: trimmed, acceptedTerms: agreed, pendingToken: readPendingSignupToken('zkt')},
+			});
+			clearPendingSignupToken('zkt');
 			localStorage.setItem('zkt_has_auth', 'true');
 			setRedirecting(true);
 			window.location.href = '/timer';
 		} catch (err: any) {
-			flashError(
-				err?.graphQLErrors?.[0]?.extensions?.exception?.message ||
-					err?.graphQLErrors?.[0]?.message ||
-					err?.message ||
-					t('zkt_signup.session_expired')
-			);
+			flashError(getGqlErrorMessage(err, t, 'zkt_signup.session_expired'));
 		}
 	}
 

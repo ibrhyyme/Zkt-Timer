@@ -21,7 +21,13 @@ import {
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
 import {createDefaultSession} from '../models/session';
-import {getJwtString, setSessionCookie, sessionTokenForBody} from '../util/auth';
+import {
+	getJwtString,
+	pendingSignupTokenForBody,
+	readPendingSignupToken,
+	setSessionCookie,
+	sessionTokenForBody,
+} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
@@ -56,6 +62,12 @@ interface ZktPendingPayload {
 	accessToken: string;
 	refreshToken: string | null;
 	expiresAt: number;
+}
+
+function sessionExpiredError() {
+	return new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar ZKT ile giris yapin.', {
+		i18nKey: 'zkt_signup.session_expired',
+	});
 }
 
 /** Attach the federation identity to an account that has just proven ownership. */
@@ -239,6 +251,8 @@ export class ZktAuthResolver {
 			zktEmail: profile.email,
 			zktId: profile.zktId || undefined,
 			zktMemberNo: profile.memberNo ?? undefined,
+			// iOS native never keeps the cookie above (third-party under ITP).
+			pendingToken: pendingSignupTokenForBody(req, pendingToken),
 		};
 	}
 
@@ -248,7 +262,9 @@ export class ZktAuthResolver {
 		@Arg('username') username: string,
 		// Explicit non-nullable: schema-wide nullableByDefault would otherwise emit
 		// `Boolean`, and consent must not be omissible.
-		@Arg('acceptedTerms', {nullable: false}) acceptedTerms: boolean
+		@Arg('acceptedTerms', {nullable: false}) acceptedTerms: boolean,
+		// Native carrier for the pending cookie; see pendingSignupTokenForBody.
+		@Arg('pendingToken', () => String, {nullable: true}) pendingTokenArg?: string | null
 	): Promise<PublicUserAccount> {
 		const {req, res} = context;
 
@@ -260,15 +276,15 @@ export class ZktAuthResolver {
 			);
 		}
 
-		const pendingToken = req.cookies[ZKT_PENDING_COOKIE];
+		const pendingToken = readPendingSignupToken(req, ZKT_PENDING_COOKIE, pendingTokenArg);
 		if (!pendingToken) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar ZKT ile giris yapin.');
+			throw sessionExpiredError();
 		}
 		let payload: ZktPendingPayload;
 		try {
 			payload = jwt.verify(pendingToken, jwtSecret) as ZktPendingPayload;
 		} catch {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar ZKT ile giris yapin.');
+			throw sessionExpiredError();
 		}
 
 		const trimmed = (username || '').trim();

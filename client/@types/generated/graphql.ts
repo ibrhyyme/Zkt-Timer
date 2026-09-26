@@ -1158,12 +1158,14 @@ export type MutationClearConversationArgs = {
 
 export type MutationCompleteWcaSignupArgs = {
   acceptedTerms: Scalars['Boolean'];
+  pendingToken?: InputMaybe<Scalars['String']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
 
 export type MutationCompleteZktSignupArgs = {
   acceptedTerms: Scalars['Boolean'];
+  pendingToken?: InputMaybe<Scalars['String']>;
   username?: InputMaybe<Scalars['String']>;
 };
 
@@ -3497,6 +3499,7 @@ export type WcaLiveTimeLimit = {
 export type WcaOAuthResult = {
   __typename?: 'WcaOAuthResult';
   needsUsername?: Maybe<Scalars['Boolean']>;
+  pendingToken?: Maybe<Scalars['String']>;
   sessionToken?: Maybe<Scalars['String']>;
   success?: Maybe<Scalars['Boolean']>;
   wcaEmail?: Maybe<Scalars['String']>;
@@ -3677,6 +3680,7 @@ export type ZktEventPb = {
 export type ZktOAuthResult = {
   __typename?: 'ZktOAuthResult';
   needsUsername?: Maybe<Scalars['Boolean']>;
+  pendingToken?: Maybe<Scalars['String']>;
   sessionToken?: Maybe<Scalars['String']>;
   success?: Maybe<Scalars['Boolean']>;
   zktEmail?: Maybe<Scalars['String']>;

@@ -5,6 +5,7 @@ import { gqlMutate } from '../api';
 import { consumeAndValidateOAuthState } from '../../util/oauth_state';
 import { isNativeRelayState, buildNativeRelayDeepLink } from '../../util/oauth-native';
 import { isNative } from '../../util/platform';
+import { storePendingSignupToken } from '../../util/auth/pending-signup';
 import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
 const AUTHENTICATE_WITH_WCA = gql`
@@ -16,6 +17,7 @@ const AUTHENTICATE_WITH_WCA = gql`
 			wcaEmail
 			wcaId
 			sessionToken
+			pendingToken
 		}
 	}
 `;
@@ -118,6 +120,9 @@ export default function WcaLoginCallback() {
 						localStorage.setItem('zkt_has_auth', 'true');
 						window.location.href = '/timer';
 					} else if (result?.needsUsername) {
+						// Native only (null on web, which clears any leftover): iOS
+						// drops the pending cookie, the username page sends this instead.
+						storePendingSignupToken('wca', result.pendingToken);
 						const params = new URLSearchParams();
 						if (result.wcaName) params.set('name', result.wcaName);
 						if (result.wcaEmail) params.set('email', result.wcaEmail);

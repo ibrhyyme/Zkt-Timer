@@ -466,9 +466,9 @@ type Mutation {
   recordOllcpAttempt(correct: Boolean, algId: String): OllcpStatType
   mergeOllcpStats(entries: [OllcpStatInput]): Boolean
   authenticateWithWca(code: String): WcaOAuthResult
-  completeWcaSignup(acceptedTerms: Boolean!, username: String): PublicUserAccount
+  completeWcaSignup(pendingToken: String, acceptedTerms: Boolean!, username: String): PublicUserAccount
   authenticateWithZkt(code: String): ZktOAuthResult
-  completeZktSignup(acceptedTerms: Boolean!, username: String): PublicUserAccount
+  completeZktSignup(pendingToken: String, acceptedTerms: Boolean!, username: String): PublicUserAccount
   createPromoCode(input: CreatePromoCodeInput): PromoCode
   redeemPromoCode(code: String): RedeemPromoCodeResult
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
@@ -1540,6 +1540,7 @@ type WcaOAuthResult {
   wcaEmail: String
   wcaId: String
   sessionToken: String
+  pendingToken: String
 }
 
 type ZktOAuthResult {
@@ -1550,6 +1551,7 @@ type ZktOAuthResult {
   zktId: String
   zktMemberNo: Float
   sessionToken: String
+  pendingToken: String
 }
 
 type WcaResult {

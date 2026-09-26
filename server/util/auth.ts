@@ -272,6 +272,21 @@ export function sessionTokenForBody(req: any, jwtToken: string): string | undefi
 	return (req as any)?.isWebView ? jwtToken : undefined;
 }
 
+// OAuth signup (ZKT, WCA) parks the provider profile in an httpOnly pending cookie
+// between the callback and the username step. The local-bundle app calls the API
+// cross-origin and iOS ITP drops that cookie as third-party, so WebView clients also
+// get the same signed token in the body and send it back as a mutation argument.
+// Web keeps the httpOnly cookie only.
+export function pendingSignupTokenForBody(req: any, pendingToken: string): string | undefined {
+	return (req as any)?.isWebView ? pendingToken : undefined;
+}
+
+// Cookie first (web, Android), then the token the native client carried over. Both
+// are the same signed JWT and neither is trusted before jwt.verify.
+export function readPendingSignupToken(req: any, cookieName: string, fromArg?: string | null): string | undefined {
+	return req?.cookies?.[cookieName] || fromArg || undefined;
+}
+
 export function clearSessionCookie(req: any, res: any) {
 	const isProduction = process.env.NODE_ENV === 'production';
 	const sameSite: 'none' | 'lax' = isProduction ? getSameSitePolicy(req) : 'lax';

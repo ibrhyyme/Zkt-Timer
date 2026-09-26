@@ -9,7 +9,13 @@ import {createIntegration, getIntegration, getIntegrationByWcaId, getIntegration
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
 import {createDefaultSession} from '../models/session';
-import {getJwtString, setSessionCookie, sessionTokenForBody} from '../util/auth';
+import {
+	getJwtString,
+	pendingSignupTokenForBody,
+	readPendingSignupToken,
+	setSessionCookie,
+	sessionTokenForBody,
+} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
@@ -33,6 +39,12 @@ interface WcaPendingPayload {
 	accessToken: string;
 	refreshToken: string;
 	expiresAt: number;
+}
+
+function sessionExpiredError() {
+	return new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar WCA ile giris yapin.', {
+		i18nKey: 'wca_signup.session_expired',
+	});
 }
 
 @Resolver()
@@ -214,6 +226,8 @@ export class WcaAuthResolver {
 			wcaName: wcaData.name,
 			wcaEmail: wcaData.email,
 			wcaId: wcaData.wcaId,
+			// iOS native never keeps the cookie above (third-party under ITP).
+			pendingToken: pendingSignupTokenForBody(req, pendingToken),
 		};
 	}
 
@@ -223,7 +237,9 @@ export class WcaAuthResolver {
 		@Arg('username') username: string,
 		// Explicit non-nullable: schema-wide nullableByDefault is true, so without this
 		// the arg generates as `Boolean` — keep parity with createUserAccount's `terms_agreed: Boolean!`.
-		@Arg('acceptedTerms', {nullable: false}) acceptedTerms: boolean
+		@Arg('acceptedTerms', {nullable: false}) acceptedTerms: boolean,
+		// Native carrier for the pending cookie; see pendingSignupTokenForBody.
+		@Arg('pendingToken', () => String, {nullable: true}) pendingTokenArg?: string | null
 	): Promise<PublicUserAccount> {
 		const {req, res} = context;
 
@@ -233,17 +249,17 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Devam etmek icin Gizlilik Politikasi ve Kullanim Kosullari kabul edilmelidir.');
 		}
 
-		// 1. Read JWT from wca_pending cookie
-		const pendingToken = req.cookies[WCA_PENDING_COOKIE];
+		// 1. Read JWT from the wca_pending cookie, or from the native client's copy
+		const pendingToken = readPendingSignupToken(req, WCA_PENDING_COOKIE, pendingTokenArg);
 		if (!pendingToken) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar WCA ile giris yapin.');
+			throw sessionExpiredError();
 		}
 
 		let payload: WcaPendingPayload;
 		try {
 			payload = jwt.verify(pendingToken, jwtSecret) as WcaPendingPayload;
 		} catch {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar WCA ile giris yapin.');
+			throw sessionExpiredError();
 		}
 
 		// 2. Username validation
@@ -275,6 +291,23 @@ export class WcaAuthResolver {
 			}
 		}
 
+		// Is the WCA account linked to another user? wca_user_id always exists, including
+		// newcomers. Checked BEFORE anything is written: it used to run after the account,
+		// settings and session were created, so a refusal left an orphan passwordless
+		// account holding this email and username.
+		if (payload.wcaUserId) {
+			const existing = await getIntegrationByWcaUserId(payload.wcaUserId);
+			if (existing) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
+			}
+		}
+		if (payload.wcaId) {
+			const existingByWcaId = await getIntegrationByWcaId(payload.wcaId);
+			if (existingByWcaId) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
+			}
+		}
+
 		// 4. Split WCA name
 		const nameParts = (payload.name || '').trim().split(/\s+/);
 		const firstName = nameParts[0] || '';
@@ -297,21 +330,7 @@ export class WcaAuthResolver {
 		await createNotificationPreference(user);
 		await createDefaultSession(user, wcaLocale);
 
-		// 7. Check if WCA account is linked to another user — wca_user_id always exists including newcomers
-		if (payload.wcaUserId) {
-			const existing = await getIntegrationByWcaUserId(payload.wcaUserId);
-			if (existing) {
-				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
-			}
-		}
-		if (payload.wcaId) {
-			const existingByWcaId = await getIntegrationByWcaId(payload.wcaId);
-			if (existingByWcaId) {
-				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
-			}
-		}
-
-		// 8. Create Integration record — write all WCA information from pendingPayload
+		// 7. Create Integration record — write all WCA information from pendingPayload
 		let integration = await createIntegration(
 			user,
 			'wca',

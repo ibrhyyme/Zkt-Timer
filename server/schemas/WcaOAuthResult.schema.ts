@@ -20,4 +20,8 @@ export class WcaOAuthResult {
 	// Faz 2 native auth: session JWT in the response body for the local-bundle client.
 	@Field({nullable: true})
 	sessionToken?: string;
+
+	/** Signup-pending token for the native shell, where iOS drops the pending cookie. */
+	@Field({nullable: true})
+	pendingToken?: string;
 }
