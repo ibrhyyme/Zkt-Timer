@@ -50,7 +50,14 @@ function scoreMethod(turns: SolveTurn[], startState: string | undefined, method:
 		// racks up more 1-move merges simply by having more phase boundaries where one can
 		// occur, understating its score against coarser ladders that rarely land on exactly
 		// one move per step.
-		const done = result.transitions.filter((t) => !t.skipped || t.merged).length;
+		//
+		// Steps the scramble had already completed count as done too: the score is how much
+		// of the ladder the cube went through. A partial-solve drill (333cfop>oll) starts with
+		// cross and F2L complete; leaving those out scored CFOP 2/7 while ZZ, whose EOLine
+		// the OLL happens to complete, got 2/4, and OLL drills were confidently stored as ZZ
+		// with no OLL/PLL rows. For a full solve nothing is complete at the start, so this
+		// changes nothing there.
+		const done = result.transitions.filter((t) => !t.skipped || t.merged).length + result.initialCompleted;
 		return done / total;
 	} catch {
 		return 0;

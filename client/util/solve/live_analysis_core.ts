@@ -125,6 +125,17 @@ export function resolveAnalysisMethod(
 	return 'cfop';
 }
 
+/**
+ * The ladder the overlay actually draws. On a phone the two-look ladder (cffffoopp)
+ * wraps to eleven lines, so it is drawn as cffffop there. The post-solve analysis has
+ * to run with this same mode: computed as cfop2 but drawn as a cfop ladder, a 1-look
+ * OLL or PLL showed up as SKIP rows with no case name.
+ */
+export function effectiveAnalysisMode(mode: string | null | undefined, mobile: boolean): string {
+	const resolved = mode || 'cffffop';
+	return mobile && resolved === 'cffffoopp' ? 'cffffop' : resolved;
+}
+
 /** Display labels per step id, shared by every method. */
 export const STEP_LABELS: Record<string, string> = {
 	cross: 'Cross',

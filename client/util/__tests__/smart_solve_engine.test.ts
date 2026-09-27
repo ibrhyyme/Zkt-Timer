@@ -104,6 +104,46 @@ describe('SmartSolveEngine — move order recovery', () => {
 
 		expect(of('SOLVE_COMPLETE')).toHaveLength(0);
 	});
+
+	/**
+	 * The timer page, unlike rooms, clears its turn stream when the scramble completes, so
+	 * the window starts on the scramble target instead of a solved cube. The recovery looks
+	 * for a sequence that comes back to solved, so it could never fire there.
+	 */
+	function driveTimerPageSolve(engine: SmartSolveEngine, solution: string[]) {
+		let at = 1000;
+		engine.setScramble(LONG_SCRAMBLE);
+		engine.setConnected(true);
+		const scrambleTurns = LONG_SCRAMBLE.split(' ').map((move) => turn(move, (at += 100)));
+		engine.pushTurns(scrambleTurns);
+		// SmartCube.resetMoves(false, true) on SCRAMBLE_COMPLETE:
+		engine.pushTurns([]);
+		const turns: SmartTurn[] = [];
+		for (const move of solution) {
+			turns.push(turn(move, (at += 100)));
+			engine.pushTurns(turns.slice());
+		}
+	}
+
+	it('finishes a misread solve on the timer page, where the stream starts at the target', async () => {
+		const { engine, of } = harness({ moveOrderFix: true });
+		driveTimerPageSolve(engine, MISREAD);
+		expect(of('TIMER_START')).toHaveLength(1);
+
+		await wait(1200);
+
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('move-order-fix');
+	});
+
+	it('leaves an unfinished timer-page solve running', async () => {
+		const { engine, of } = harness({ moveOrderFix: true });
+		driveTimerPageSolve(engine, SOLUTION.slice(0, 4));
+
+		await wait(1200);
+
+		expect(of('SOLVE_COMPLETE')).toHaveLength(0);
+	});
 });
 
 describe('SmartSolveEngine — scramble phase', () => {
@@ -776,5 +816,42 @@ describe('SmartSolveEngine — state-based matching cannot misfire on a shared f
 		engine.pushTurns([turn("L'", 1000), turn("L'", 1100), turn('R', 1200), turn('U', 1300)]);
 		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
 		expect(of('UNDO_MOVES').filter((e) => e.moves && e.moves.length)).toHaveLength(0);
+	});
+});
+
+describe('SmartSolveEngine — suspend (timer page, after an inspection DNF)', () => {
+	it('neither completes the scramble again nor starts a timer until a new scramble', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), turn('F', 1200)]);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+
+		engine.suspend();
+
+		// The cube is still on the scramble target and reports it again.
+		engine.pushFacelets(computeTargetFacelets(SCRAMBLE)!);
+		const later = of('SCRAMBLE_COMPLETE')[0].at + 5000;
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), turn('F', 1200), turn("F'", later)]);
+
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+		expect(of('TIMER_START')).toHaveLength(0);
+		expect(engine.isTiming).toBe(false);
+	});
+
+	it('works normally again once a new scramble is installed', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), turn('F', 1200)]);
+		engine.suspend();
+
+		// Back to solved, then a fresh scramble.
+		engine.pushTurns([]);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		engine.setScramble('L D B');
+		engine.pushTurns([turn('L', 3000), turn('D', 3100), turn('B', 3200)]);
+
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(2);
 	});
 });

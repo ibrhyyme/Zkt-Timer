@@ -59,6 +59,19 @@ const initialState: TimerStore = {
 	...smartState,
 };
 
+/**
+ * No turn in the stream belongs to the running solve yet, so the next one is the pick-up.
+ *
+ * When the cube starts the timer, the move that started it is stamped with the start
+ * itself, so this stays false and the pick-up stays 0 as before. When the keyboard starts
+ * it (use_space_with_smart_cube) the stream still holds the scramble turns: the old
+ * "stream is empty" test was never true there and the pick-up was never recorded.
+ */
+function noMoveSinceStart(state: TimerStore): boolean {
+	const startMs = new Date(state.timeStartedAt).getTime();
+	return !state.smartTurns.some((t: any) => (t?.completedAt || 0) >= startMs);
+}
+
 // TODO revisit all of these
 export default (state = initialState, action) => {
 	switch (action.type) {
@@ -98,7 +111,7 @@ export default (state = initialState, action) => {
 
 			if (state.timeStartedAt) {
 				// Timer is running
-				if (state.smartTurns.length === 0 && newPickUpTime === 0) {
+				if (newPickUpTime === 0 && noMoveSinceStart(state)) {
 					newPickUpTime = (now - new Date(state.timeStartedAt).getTime()) / 1000;
 				}
 				lastSmartMoveTime = now;
@@ -130,7 +143,7 @@ export default (state = initialState, action) => {
 
 			if (state.timeStartedAt) {
 				// Timer is running
-				if (state.smartTurns.length === 0 && newPickUpTime === 0) {
+				if (newPickUpTime === 0 && noMoveSinceStart(state)) {
 					const now = firstMove.completedAt || Date.now();
 					newPickUpTime = (now - new Date(state.timeStartedAt).getTime()) / 1000;
 				}

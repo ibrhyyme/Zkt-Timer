@@ -110,6 +110,31 @@ function checkSwap(
  * cube, or NO_SWAP_FOUND when none does or the search budget runs out.
  */
 export function checkMoves(moves: number[]): number {
+	return checkMovesFrom(moves, 0);
+}
+
+/** The cube after the first `count` moves, starting from solved. */
+function stateAfter(moves: number[], count: number): CubieCube {
+	let state = new CubieCube();
+	const tmp = new CubieCube();
+	for (let i = 0; i < count; i++) {
+		CubieCube.CubeMult(state, CubieCube.moveCube[moves[i]], tmp);
+		state = new CubieCube().init(tmp.ca, tmp.ea);
+	}
+	return state;
+}
+
+/**
+ * `checkMoves` with the swap search starting at `firstSwappable` instead of 0, through
+ * checkSwap's own `start` parameter (checkSwap itself is untouched).
+ *
+ * cstimer's window is every turn since the cube was last solved, scramble turns included.
+ * The timer page clears its stream when the scramble completes, so its window starts on the
+ * scramble target: `moves` is then the scramble (as quarter turns) followed by the solution,
+ * and only the solution may hold the swap. The scramble part is already verified: the
+ * tracker or the cube's own facelets confirmed the target before the timer could start.
+ */
+export function checkMovesFrom(moves: number[], firstSwappable: number): number {
 	// cstimer's parity pre-filter: an odd-length sequence is not a candidate.
 	if (moves.length % 2 == 1) {
 		return NO_SWAP_FOUND;
@@ -122,7 +147,7 @@ export function checkMoves(moves: number[]): number {
 	}
 	for (let nswap = 1; nswap < 3; nswap++) {
 		const budget = { searched: 0 };
-		if (checkSwap(moves, 0, nswap, new CubieCube(), stateToEnd, budget)) {
+		if (checkSwap(moves, firstSwappable, nswap, stateAfter(moves, firstSwappable), stateToEnd, budget)) {
 			return nswap;
 		}
 		if (budget.searched > MAX_NODES_SEARCHED) {
@@ -130,6 +155,19 @@ export function checkMoves(moves: number[]): number {
 		}
 	}
 	return NO_SWAP_FOUND;
+}
+
+/** "R2" as the two quarter turns a smart cube would report, so the parity filter holds. */
+export function toQuarterTurns(moves: string[]): string[] {
+	const out: string[] = [];
+	for (const move of moves) {
+		if (move.length > 1 && move[1] === '2') {
+			out.push(move[0], move[0]);
+		} else {
+			out.push(move);
+		}
+	}
+	return out;
 }
 
 /**
@@ -144,13 +182,21 @@ export function checkMoves(moves: number[]): number {
  *   - a cube already past F2L is close enough to solved that a swap "explaining" it is more
  *     likely a coincidence than a real transport error;
  *   - a state that a short solution reaches is likewise too close to call.
+ *
+ * `fromSolved` is the move sequence that took a solved cube to where `moves` begins, when
+ * that is not solved (the timer page's window starts on the scramble target). The swap is
+ * only searched for in `moves`.
  */
-export function shouldRecoverFromMoveOrder(moves: string[], facelets: string): boolean {
-	const indices = movesToIndices(moves);
-	if (!indices || indices.length === 0) {
+export function shouldRecoverFromMoveOrder(moves: string[], facelets: string, fromSolved: string[] = []): boolean {
+	if (!moves.length) {
 		return false;
 	}
-	if (checkMoves(indices) === NO_SWAP_FOUND) {
+	const prefix = toQuarterTurns(fromSolved);
+	const indices = movesToIndices([...prefix, ...moves]);
+	if (!indices) {
+		return false;
+	}
+	if (checkMovesFrom(indices, prefix.length) === NO_SWAP_FOUND) {
 		return false;
 	}
 	// cstimer: "all unsolved pieces is on same face" — progress <= 2 means F2L or better.

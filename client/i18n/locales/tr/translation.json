@@ -2745,6 +2745,8 @@
     "place_hands_on_qytoys": "QYtoys timer'a ellerinizi koyarak başlayın"
   },
   "smart_cube": {
+    "turns_label": "hamle",
+    "tps_label": "tps",
     "bt_unavailable_title": "Bluetooth kullanılamıyor!",
     "bt_check_enabled": "Sisteminizde Bluetooth'un etkin olup olmadığını kontrol edin.",
     "bt_browser_hint": "Tarayıcınız Web Bluetooth API'sini desteklemiyor olabilir. Uyumlu bir tarayıcı kullanmayı düşünün, en iyi seçenekler:",

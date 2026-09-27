@@ -32,12 +32,13 @@ export default function StepsTable(props: Props) {
 		totalExec += Math.max(0, stepTotal - stepRec);
 	}
 
-	// Toplam HTM ve TPS kaynak olarak solve.smart_turn_count kullanir — bu tum projedeki
-	// "tek dogru" hamle sayimi (countHTM, boundary-aware monolitik). Per-phase
-	// step.turn_count engine fix sonrasi zaten Sigma === smart_turn_count olur, ama burada
-	// DB'deki tek kaynaktan gostererek savunma katmani.
+	// Turns and time come from the same rows. For a complete breakdown the engine's
+	// boundary-aware HTM makes SUM(step.turn_count) === smart_turn_count, so this is the
+	// same number as before. For one whose last phases are missing (a DNF), the whole
+	// solve's turns over only the stored steps' time inflated the TPS.
 	const totalStepTime = totalRec + totalExec;
-	const totalTurns = solve.smart_turn_count || 0;
+	const stepTurns = steps.reduce((sum, step) => sum + (step.turn_count || 0), 0);
+	const totalTurns = stepTurns || solve.smart_turn_count || 0;
 	const totalTps = totalStepTime > 0 && totalTurns > 0
 		? (totalTurns / totalStepTime).toFixed(2)
 		: '-';

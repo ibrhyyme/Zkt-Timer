@@ -105,6 +105,10 @@ export class SiteConfig {
 	@Field()
 	smart_telemetry_enabled: boolean;
 
+	/** See schema.prisma SiteConfig.method_steps_version. Nullable: an older cached config lacks it. */
+	@Field(() => Int, {nullable: true})
+	method_steps_version?: number;
+
 	@Field(() => [FeatureOverrideEntry])
 	featureOverrides: FeatureOverrideEntry[];
 

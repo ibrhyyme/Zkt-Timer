@@ -86,8 +86,20 @@ function solveTurns(solve: Solve): number | null {
 	return found ? sum : null;
 }
 
+// TPS takes its turns from the same step rows as its time. Equal to smart_turn_count for a
+// complete breakdown; for one missing its last phases, the whole solve's turns over only the
+// stored steps' time inflated the TPS.
+function solveStepTurns(solve: Solve): number | null {
+	let sum = 0, found = false;
+	for (const phase of PHASES) {
+		const s = (solve.solve_method_steps || []).find((x) => x.step_name === phase);
+		if (s?.turn_count != null) { sum += s.turn_count; found = true; }
+	}
+	return found ? sum : solveTurns(solve);
+}
+
 function solveTps(solve: Solve): string {
-	const turns = solveTurns(solve);
+	const turns = solveStepTurns(solve);
 	const time = solveTotalStepTime(solve.solve_method_steps || []);
 	if (!turns || time === 0) return '–';
 	return (turns / time).toFixed(2);
@@ -106,7 +118,7 @@ function avgTurns(solves: Solve[]): number | null {
 function avgTps(solves: Solve[]): string {
 	let time = 0, turns = 0, found = false;
 	for (const solve of solves) {
-		const t = solveTurns(solve);
+		const t = solveStepTurns(solve);
 		const stepTime = solveTotalStepTime(solve.solve_method_steps || []);
 		if (t != null && stepTime > 0) {
 			time += stepTime;
@@ -168,9 +180,11 @@ export default function PhaseAnalysis(props: Props) {
 
 	if (mobileMode) return <MobileView solves={solves} />;
 
-	const smartSolves = solves.filter((s) => s.is_smart_cube);
+	// Rows list every solve; the averages leave DNFs out, since an aborted solve's phases
+	// stop wherever it was abandoned.
+	const smartSolves = solves.filter((s) => s.is_smart_cube && !s.dnf);
 
-	if (!smartSolves.length) {
+	if (!solves.some((s) => s.is_smart_cube)) {
 		return (
 			<div className="zt-phase-analysis">
 				<Empty text={t('phase_analysis.no_smart_solves')} />

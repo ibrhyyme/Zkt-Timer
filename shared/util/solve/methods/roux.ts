@@ -45,11 +45,30 @@ function blockSolved(cube: any, block: { edges: number[]; corners: number[] }): 
 	return true;
 }
 
-function llCornersSolved(cube: any): boolean {
+function llCornersHome(cube: any): boolean {
 	for (const i of LL_CORNERS) {
 		if (cube.cp[i] !== i || cube.co[i] !== 0) return false;
 	}
 	return true;
+}
+
+/**
+ * CMLL is done when the last-layer corners are oriented and permuted relative to each
+ * other, whatever the U layer's offset. That is cstimer's roux3Mask (cubeutil.js:35): the
+ * lowercase r/f/l/b groups only ask a side's two top corner stickers to match each other,
+ * not the centre. Requiring the corners in their home slots made CMLL complete only after
+ * the AUF, moving the CMLL/LSE boundary to a later move than cstimer puts it.
+ *
+ * A U turn leaves both blocks alone, so trying the four offsets is safe.
+ */
+function llCornersSolved(cube: any): boolean {
+	if (llCornersHome(cube)) return true;
+	const probe = cube.clone();
+	for (let k = 1; k < 4; k++) {
+		probe.move('U');
+		if (llCornersHome(probe)) return true;
+	}
+	return false;
 }
 
 /**

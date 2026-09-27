@@ -5,7 +5,7 @@
  *   - Phase detection with progress-based monotonic level descent
  *   - Orientation scanning (method-defined: 6 for cross-based, 24 for block-based)
  *   - Burst handling: if consecutive phases are skipped in one turn, filled with skipped:true
- *   - 1-move phase merge: merges very short noisy phases into next phase
+ *   - 1-move phase merge: folds a one-move phase into the phase before it (cstimer's direction)
  *   - Case identification at phase boundaries
  *   - Recognition vs execution time split (tsStart vs tsFirst)
  *
@@ -29,6 +29,7 @@ import {
 	IdentifiedCase,
 } from './types';
 import { getMethod, MethodDefinition } from './methods';
+import { normalizeMove } from './notation';
 
 const ROTATION_MOVES = new Set(['x', 'y', 'z', "x'", "y'", "z'", 'x2', 'y2', 'z2']);
 
@@ -76,6 +77,7 @@ export class PhaseAnalyzer {
 	private processedCount = 0;
 	private firstTurnMs = 0;
 	private lastTurnMs = 0;
+	private initialCompleted = 0;
 
 	constructor(startState?: string, options: AnalyzeOptions = {}) {
 		this.method = getMethod(options.method);
@@ -103,6 +105,7 @@ export class PhaseAnalyzer {
 			this.phaseEndStates[this.method.steps[i]] = initialState;
 			this.phaseEndAxis[this.method.steps[i]] = initial.axisIndex;
 		}
+		this.initialCompleted = numCompleted;
 	}
 
 	/** How many turns from a caller's stream this instance has already applied. */
@@ -130,7 +133,9 @@ export class PhaseAnalyzer {
 
 		for (let i = this.processedCount; i < turnsSoFar.length; i++) {
 			const t = turnsSoFar[i];
-			const move = t.turn;
+			// Virtual cube wide/slice notation ("Rw", "2-2Rw") is rewritten to what cubejs
+			// accepts; before, those moves hit the catch below and the replay drifted.
+			const move = normalizeMove(t.turn);
 			try {
 				this.cube.move(move);
 			} catch {
@@ -242,6 +247,7 @@ export class PhaseAnalyzer {
 			pllIdentified: cases.find((c) => c.set === 'pll'),
 			method: this.method.id,
 			finalProgress: this.progress,
+			initialCompleted: this.initialCompleted,
 			crossFace: this.crossAxisIndex !== null ? CROSS_AXIS_LABELS[this.crossAxisIndex % 6] : null,
 		};
 
@@ -333,45 +339,57 @@ function orderTransitions(
 }
 
 /**
- * cstimer recons.js:127-151 port. Merges phases with HTM=1 into next real phase.
- * Typically "noise" moves (accidentally made single move, undone) are cleaned this way.
+ * cstimer recons.js:127-151, ported in cstimer's direction: a phase that took a single
+ * move is folded into the phase BEFORE it.
  *
- * Algorithm: when HTM=1 phase found, find next HTM>0 phase, merge the two.
+ * cstimer stores its phases by progress level, so its `data[0]` is the LAST phase and
+ * `data[i + 1]` is the one before `data[i]` in time. The earlier port read that index as
+ * chronological and folded the move into the NEXT phase instead, which (a) left an
+ * AUF-only PLL as its own one-move PLL where cstimer shows it as skipped, and (b) shifted
+ * the next phase's recognition start back, so the overlay's cumulative time lost the
+ * folded phase's duration.
+ *
+ * Per cstimer: walk from the last phase back; a phase with exactly one move is appended
+ * to the nearest earlier phase that has moves, that phase now ends where the one-move
+ * phase ended, and the one-move phase collapses to zero length at its own end. The first
+ * phase is never folded (cstimer breaks when there is nothing before it).
+ *
+ * One deliberate difference: cstimer recounts the merged phase with a fresh counter, we
+ * add the two boundary-aware deltas, which is what keeps
+ * SUM(transitions.htm) === totalMoves.htm.
  */
 function mergeOneMovePhases(transitions: PhaseTransition[]) {
-	for (let i = 0; i < transitions.length; i++) {
+	for (let i = transitions.length - 1; i >= 0; i--) {
 		const cur = transitions[i];
-		if (cur.skipped) continue;
 		if (cur.moveCount.htm !== 1) continue;
 
-		// Find next real phase
-		let j = i + 1;
-		while (j < transitions.length && (transitions[j].skipped || transitions[j].moves.length === 0)) {
-			j++;
+		// Nearest earlier phase that has moves of its own (cstimer skips data[j][3] == 0).
+		let j = i - 1;
+		while (j >= 0 && transitions[j].moveCount.htm === 0) {
+			j--;
 		}
-		if (j >= transitions.length) break;
+		if (j < 0) break;
 
-		const next = transitions[j];
+		const prev = transitions[j];
 
-		// Add current phase's moves to next phase start (chronological order)
-		next.moves = cur.moves.concat(next.moves);
+		// Chronological: the folded move happened after the earlier phase's moves.
+		prev.moves = prev.moves.concat(cur.moves);
+		prev.moveTimestamps = (prev.moveTimestamps || []).concat(cur.moveTimestamps || []);
+		prev.moveCount = addCounts(prev.moveCount, cur.moveCount);
+		// The earlier phase now ends where the one-move phase ended; its own recognition
+		// start and first move are unchanged (cstimer: data[j][2] = ts).
+		prev.timestamp = cur.timestamp;
+		prev.turnIndex = cur.turnIndex;
 
-		// HTM sum: cur and next are already boundary-aware deltas. Simple addition,
-		// SUM(transitions.htm) === totalCounter.htm invariant is preserved.
-		next.moveCount = addCounts(cur.moveCount, next.moveCount);
-
-		// Shift recognition start: this merged phase now starts from current phase's start
-		next.recognitionStart = cur.recognitionStart;
-		next.firstMoveTimestamp = Math.min(cur.firstMoveTimestamp, next.firstMoveTimestamp);
-
-		// Transform current phase: change to zero-move skipped (make invisible). `merged`
-		// records that this was a real, completed phase folded into the next one for
-		// display — unlike a burst-skipped phase, its moves are still accounted for
-		// (added into next.moveCount above), just attributed to the following phase.
+		// The one-move phase becomes zero length at its own end (cstimer: [ts, ts, ts, 0]).
+		// `merged` records that it did happen, its move now counted in the earlier phase.
 		cur.skipped = true;
 		cur.merged = true;
 		cur.moves = [];
+		cur.moveTimestamps = [];
 		cur.moveCount = { htm: 0, obtm: 0, etm: 0, stm: 0 };
+		cur.recognitionStart = cur.timestamp;
+		cur.firstMoveTimestamp = cur.timestamp;
 	}
 }
 

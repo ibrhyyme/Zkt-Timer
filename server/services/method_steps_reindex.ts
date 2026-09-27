@@ -4,10 +4,11 @@ import {logger} from './logger';
 import {acquireRedisLock, createRedisKey, getValueFromRedis, RedisNamespace, setKeyInRedis} from './redis';
 import {getSolveSteps} from '../util/solve/solve_method';
 import {isKnownMethod} from '../../shared/util/solve/methods';
-import {createSolveMethodSteps, deleteSolveMethodSteps} from '../models/solve_method_step';
+import {replaceSolveMethodSteps} from '../models/solve_method_step';
 import {parseSmartTurns} from '../../shared/smart_cube/parse_turns';
 import {countHTM} from '../../shared/util/solve/move_counter';
 import {updateSolveLiteral} from '../models/solve';
+import {updateSiteConfig} from '../models/site_config';
 
 /**
  * Recalculates the method steps of every smart cube solve, as a background job.
@@ -23,12 +24,20 @@ import {updateSolveLiteral} from '../models/solve';
  *   itself cannot reorder what is left to read;
  * - progress and the final result live in Redis, where the admin panel polls them.
  *
- * Per solve (unchanged rules):
+ * Per solve:
+ * - smart cube and virtual cube solves both carry smart_turns and both get a breakdown,
+ *   so both are candidates;
  * - the method is detected from the solve ('auto'), falling back to the method it was
  *   already analysed with when detection is not confident;
+ * - a completed solve whose moves lost a packet is analysed from the start derived from
+ *   its moves (getSolveSteps endedSolved); a DNF never is;
  * - a solve without smart_turns is skipped, not downgraded: that is how every non-Pro
  *   smart solve is stored;
- * - smart_turns present but unreadable downgrades the solve to is_smart_cube=false.
+ * - smart_turns present but unreadable downgrades a smart solve to is_smart_cube=false;
+ * - an engine failure keeps the steps the solve already has instead of wiping them.
+ *
+ * When the run completes, SiteConfig.method_steps_version is bumped so devices re-fetch
+ * the breakdowns once: they only ever fetch solves they do not have yet.
  */
 
 export interface MethodStepsReindexStatus {
@@ -43,6 +52,28 @@ export interface MethodStepsReindexStatus {
 	running: boolean;
 	startedAt: string | null;
 	finishedAt: string | null;
+}
+
+// Every solve that carries moves the phase engine can break down.
+const CANDIDATES = {OR: [{is_smart_cube: true}, {is_virtual_cube: true}]};
+
+/**
+ * Tells devices the stored breakdowns changed. Only after a run that reached the end:
+ * a device that re-fetched in the middle of a run would store half-repaired data and,
+ * with its version already caught up, never ask again.
+ */
+async function bumpMethodStepsVersion() {
+	try {
+		// From the row, not getSiteConfig(): a config cached before the column existed
+		// would read as 0 and could move the version backwards.
+		const row = await getPrisma().siteConfig.findUnique({
+			where: {id: 'singleton'},
+			select: {method_steps_version: true},
+		});
+		await updateSiteConfig({method_steps_version: (row?.method_steps_version || 0) + 1});
+	} catch (e: any) {
+		logger.warn('[MethodStepsReindex] could not bump method_steps_version', {error: e?.message});
+	}
 }
 
 const LOCK_KEY = createRedisKey(RedisNamespace.PRO_DATA, 'method_steps_reindex_lock');
@@ -114,24 +145,35 @@ async function processOne(cand: any, status: MethodStepsReindexStatus) {
 	try {
 		const turns = parseSmartTurns(cand.smart_turns);
 		if (!turns.length) {
-			// A turn string that parses to nothing is corrupt
-			await updateSolveLiteral(cand.id, {is_smart_cube: false});
-			status.downgraded++;
+			if (cand.is_smart_cube) {
+				// A turn string that parses to nothing is corrupt
+				await updateSolveLiteral(cand.id, {is_smart_cube: false});
+				status.downgraded++;
+			} else {
+				status.skippedNoTurns++;
+			}
 			return;
 		}
 		const storedMethod = cand.solve_method_steps?.[0]?.method_name;
 		const fallback = isKnownMethod(storedMethod) ? storedMethod : undefined;
-		const steps = getSolveSteps(turns, cand.scramble, 'auto', fallback);
+		const steps = getSolveSteps(turns, cand.scramble, 'auto', fallback, {endedSolved: !cand.dnf});
+		if (!steps) {
+			// The engine failed on these moves: the steps already stored stay.
+			status.error++;
+			return;
+		}
 		const newMethod = (steps as any).__method;
 		if (storedMethod && newMethod && storedMethod !== newMethod) {
 			status.methodChanged++;
 		}
-		const htmCount = countHTM(turns.map((t) => t.turn));
-		await deleteSolveMethodSteps({id: cand.id});
-		await createSolveMethodSteps({id: cand.id}, steps);
-		// Old solves may have null or incorrect smart_turn_count: recalculate with engine.
-		// This is the single source of truth for all turn/TPS displays in the UI.
-		await updateSolveLiteral(cand.id, {smart_turn_count: htmCount});
+		await replaceSolveMethodSteps({id: cand.id}, steps);
+		if (cand.is_smart_cube) {
+			// Old solves may have null or incorrect smart_turn_count: recalculate with engine.
+			// This is the single source of truth for all turn/TPS displays in the UI. A
+			// virtual cube solve keeps the count its own recorder wrote.
+			const htmCount = countHTM(turns.map((t) => t.turn));
+			await updateSolveLiteral(cand.id, {smart_turn_count: htmCount});
+		}
 		status.filled++;
 	} catch (e: any) {
 		// Corrupted data: don't corrupt solve metadata, just skip it.
@@ -145,14 +187,16 @@ async function runJob(initialLock: Lock, status: MethodStepsReindexStatus) {
 	let lock = initialLock;
 	let cursor: string | undefined;
 
+	let completed = false;
+
 	try {
-		status.totalCandidates = await prisma.solve.count({where: {is_smart_cube: true}});
+		status.totalCandidates = await prisma.solve.count({where: CANDIDATES});
 		console.log(`[MethodStepsReindex] ${status.totalCandidates} candidate solves found`);
 		await saveStatus(status);
 
 		for (;;) {
 			const batch: any[] = await prisma.solve.findMany({
-				where: {is_smart_cube: true},
+				where: CANDIDATES,
 				orderBy: {id: 'asc'},
 				take: BATCH_SIZE,
 				...(cursor ? {skip: 1, cursor: {id: cursor}} : {}),
@@ -160,6 +204,8 @@ async function runJob(initialLock: Lock, status: MethodStepsReindexStatus) {
 					id: true,
 					smart_turns: true,
 					scramble: true,
+					dnf: true,
+					is_smart_cube: true,
 					// Every step row of a solve carries the same method_name; one is enough.
 					solve_method_steps: {select: {method_name: true}, take: 1},
 				},
@@ -178,8 +224,10 @@ async function runJob(initialLock: Lock, status: MethodStepsReindexStatus) {
 			await saveStatus(status);
 			console.log(`[MethodStepsReindex] ${status.processed}/${status.totalCandidates}...`);
 		}
+		completed = true;
+		await bumpMethodStepsVersion();
 	} catch (e: any) {
-		logger.error('[MethodStepsReindex] job stopped', {error: e?.message, processed: status.processed});
+		logger.error('[MethodStepsReindex] job stopped', {error: e?.message, processed: status.processed, completed});
 		status.error++;
 	} finally {
 		status.running = false;

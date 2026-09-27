@@ -2738,6 +2738,8 @@
     "place_hands_on_qytoys": "Place your hands on the QYtoys timer to start"
   },
   "smart_cube": {
+    "turns_label": "turns",
+    "tps_label": "tps",
     "bt_unavailable_title": "Bluetooth unavailable!",
     "bt_check_enabled": "Check whether Bluetooth is enabled on your system.",
     "bt_browser_hint": "Your browser may not support the Web Bluetooth API. Consider using a compatible browser; the best options are:",

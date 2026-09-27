@@ -2740,6 +2740,8 @@
     "place_hands_on_qytoys": "Положите руки на QYtoys таймер, чтобы начать"
   },
   "smart_cube": {
+    "turns_label": "ходов",
+    "tps_label": "tps",
     "bt_unavailable_title": "Bluetooth недоступен!",
     "bt_check_enabled": "Проверьте, включён ли Bluetooth в вашей системе.",
     "bt_browser_hint": "Ваш браузер может не поддерживать Web Bluetooth API. Используйте совместимый браузер; лучшие варианты:",

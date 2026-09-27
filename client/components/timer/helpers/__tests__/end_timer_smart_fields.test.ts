@@ -169,12 +169,26 @@ describe('endTimer with a smart cube stopped from the keyboard', () => {
 		expect(overrides).toMatchObject({
 			is_smart_cube: true,
 			smart_device_id: 'cube-1',
-			// Only turns from the start on are saved: U and R'.
-			smart_turn_count: 2,
+			// The same turns as the count on screen (R, U, R', the R inside the 500 ms
+			// lead-in), counted in HTM. It used to save 2 from a stricter filter as a raw
+			// length, so the saved solve and the screen disagreed.
+			smart_turn_count: 3,
 			smart_turns: null,
 			smart_pick_up_time: 0.8,
 			smart_put_down_time: 1.5,
+			analysis_method: 'auto',
 		});
+	});
+
+	it('saves offsets that are never negative when the lead-in move is included', () => {
+		mockMe = { pro: true };
+
+		stop(timerContext());
+		runDeferredSave();
+
+		const overrides = (saveSolve as jest.Mock).mock.calls[0][7];
+		// R was stamped 200 ms before the start: the baseline is the earliest saved turn.
+		expect(overrides.smart_turns).toBe("R@0 U@2200 R'@5200");
 	});
 
 	it('serializes the saved turns for a Pro user from the same snapshot', () => {

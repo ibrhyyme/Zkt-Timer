@@ -907,6 +907,7 @@ export class AdminResolver {
 					id: true,
 					smart_turns: true,
 					scramble: true,
+					dnf: true,
 					solve_method_steps: {
 						where: { step_name: { in: ['oll', 'pll'] } },
 						select: { id: true, step_name: true, oll_case_key: true, pll_case_key: true },
@@ -923,7 +924,8 @@ export class AdminResolver {
 					const turns = parseSmartTurns(solve.smart_turns);
 					if (turns.length === 0) continue;
 					// Case keys of OLL/PLL rows: a CFOP-only pass by definition
-					const steps = getSolveSteps(turns, solve.scramble, 'cfop');
+					const steps = getSolveSteps(turns, solve.scramble, 'cfop', undefined, { endedSolved: !solve.dnf });
+					if (!steps) continue;
 					result.scanned++;
 
 					for (const step of solve.solve_method_steps) {

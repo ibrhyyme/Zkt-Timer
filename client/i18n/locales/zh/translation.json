@@ -2736,6 +2736,8 @@
     "place_hands_on_qytoys": "将双手放在 QYtoys 计时器上开始"
   },
   "smart_cube": {
+    "turns_label": "步",
+    "tps_label": "tps",
     "bt_unavailable_title": "蓝牙不可用！",
     "bt_check_enabled": "请检查您的系统是否已启用蓝牙。",
     "bt_browser_hint": "您的浏览器可能不支持 Web Bluetooth API。请考虑使用兼容的浏览器，最佳选择为：",

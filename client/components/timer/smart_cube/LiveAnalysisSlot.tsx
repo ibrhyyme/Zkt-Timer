@@ -4,6 +4,8 @@ import block from '../../../styles/bem';
 import './LiveAnalysisSlot.scss';
 
 const b = block('live-analysis-slot');
+// The ladder LiveAnalysisOverlay renders into this slot.
+const ladderBlock = block('live-analysis');
 
 /**
  * The id SmartCube renders its phase ladder into. One per page: a module is keyed by
@@ -59,8 +61,10 @@ export default function LiveAnalysisSlot() {
 		const target = targetRef.current;
 		if (!root || !target) return;
 
-		const ladder = target.querySelector<HTMLElement>('.live-analysis');
-		if (!ladder || !ladder.querySelector('.live-analysis__row')) return;
+		// Derived from the BEM helper: a hard-coded '.live-analysis' never matched the
+		// namespaced class the overlay renders, so the fit bailed here on every call.
+		const ladder = target.querySelector<HTMLElement>(`.${ladderBlock()}`);
+		if (!ladder || !ladder.querySelector(`.${ladderBlock('row')}`)) return;
 
 		// Measure at scale 1 every time. Measuring on top of the previous scale compounds
 		// rounding and the size creeps between renders.

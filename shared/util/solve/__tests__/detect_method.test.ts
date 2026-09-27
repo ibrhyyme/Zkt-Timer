@@ -115,14 +115,41 @@ describe('detectSolveMethod', () => {
 		// well it actually fits.
 		//
 		// CFOP_SOLVE's very first move happens to already satisfy ZZ's EOLine check on its
-		// own — a genuine one-move phase completion, confirmed via analyzePhases directly:
-		// it comes back skipped:true, merged:true (not skipped:true alone, which would mean
-		// it never happened). Before the fix this was scored as 3/4 for zz (the completed
-		// step didn't count); after the fix it is correctly scored as 4/4, because the step
-		// genuinely did complete.
+		// own — a genuine one-move phase completion. Since the merge follows cstimer's
+		// direction (a one-move phase folds into the phase BEFORE it) a one-move FIRST
+		// phase is not folded at all, so it counts as done outright; a later one-move phase
+		// comes back skipped:true, merged:true and must still count. Either way the score
+		// is 4/4, because the step genuinely did complete.
 		const { startState, turns } = build(CFOP_SOLVE);
 		const d = detectSolveMethod(turns, startState);
 		const zzScore = d.scores.find((s) => s.method === 'zz')?.score;
 		expect(zzScore).toBe(1);
+	});
+});
+
+describe('detectSolveMethod on partial-solve subsets (333cfop>oll, >pll)', () => {
+	// In a drill the scramble leaves cross and F2L (and for PLL, OLL too) already solved.
+	// Those phases are complete before the first move, so no ladder should be scored on
+	// them: a CFOP drill must stay CFOP.
+	const SUNE = "R U R' U R U2 R'";
+	const T_PERM = "R U R' U' R' F R2 U' R' U' R U R' F'";
+
+	it('an OLL drill (flipped edges) is CFOP', () => {
+		const oll = "F R U R' U' F'";
+		const { startState, turns, solved } = build([oll, T_PERM]);
+		expect(solved).toBe(true);
+		expect(detectSolveMethod(turns, startState, 'cfop').method).toBe('cfop');
+	});
+
+	it('an OLL drill (corners only) is CFOP', () => {
+		const { startState, turns, solved } = build([SUNE, T_PERM]);
+		expect(solved).toBe(true);
+		expect(detectSolveMethod(turns, startState, 'cfop').method).toBe('cfop');
+	});
+
+	it('a PLL drill is CFOP', () => {
+		const { startState, turns, solved } = build([T_PERM]);
+		expect(solved).toBe(true);
+		expect(detectSolveMethod(turns, startState, 'cfop').method).toBe('cfop');
 	});
 });

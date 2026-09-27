@@ -25,8 +25,14 @@ import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
-import { analyzeCurrentState, resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
-import { endTimer, startTimer, startInspection } from '../helpers/events';
+import {
+	analyzeCurrentState,
+	effectiveAnalysisMode,
+	resolveAnalysisMethod,
+} from '../../../util/solve/live_analysis_core';
+import { faceletsSolved, resolveAnalysisStartState } from '../../../../shared/util/solve/start_state';
+import { getTimerStore } from '../../../util/store/getTimer';
+import { endTimer, keyboardStartedSolveTurns, startTimer, startInspection } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
 import { saveSolve } from '../helpers/save';
@@ -165,8 +171,8 @@ export default function SmartCube() {
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeShow = useSettings('smart_cube_show');
 	// Post-solve phase analysis only feeds LiveAnalysisOverlay; when the overlay is
-	// off there is nothing to compute for.
-	const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
+	// off there is nothing to compute for. Same effective mode as the overlay draws.
+	const analysisMode = effectiveAnalysisMode(useSettings('smart_cube_analysis_mode'), !!mobileMode);
 	const solveMethod = useSettings('smart_cube_method');
 
 	// Limit cube size on mobile based on viewport (prevent timer/dashboard from being squeezed on small phones)
@@ -296,10 +302,73 @@ export default function SmartCube() {
 	useEffect(() => {
 		if (dnfTime && !timeStartedAt) {
 			scrambleCompletedAtRef.current = null;
+			// The engine was still 'ready' on this scramble: the next move started a second
+			// solve on it. Parked until the cube is solved and a new scramble comes in.
+			engineRef.current?.suspend();
 			setNeedsCubeReset(true);
 			setTimerParams({ smartCanStart: false, lastSmartSolveStats: null, smartUndoMoves: null });
 		}
 	}, [dnfTime]);
+
+	// ── Keyboard-started solves (use_space_with_smart_cube) ──
+	// The engine is not fed in this mode, so there is no SCRAMBLE_COMPLETE to take a start
+	// state from and no SOLVE_COMPLETE to analyse at. The live ladder used to replay the
+	// whole stream, scramble turns included, from a solved cube and never found a phase.
+	// The start is the cube's state when the key started the timer (the connection
+	// manager's tracker follows every move), and the analysis runs when the key stops it.
+	const smartPhysicallySolved = useSmartCubeStore('smartPhysicallySolved');
+	const keyboardStartRef = useRef<{ at: number; state: string } | null>(null);
+	const keyboardSolveTurnsRef = useRef<typeof smartTurns>([]);
+	if (useSpaceWithSmartCube && timeStartedAt) {
+		keyboardSolveTurnsRef.current = keyboardStartedSolveTurns(smartTurns, timeStartedAt.getTime());
+	}
+	useEffect(() => {
+		if (!useSpaceWithSmartCube) return;
+		if (timeStartedAt) {
+			const state = manager.trackerState;
+			keyboardStartRef.current = { at: timeStartedAt.getTime(), state };
+			setStartState(state);
+			return;
+		}
+
+		const start = keyboardStartRef.current;
+		keyboardStartRef.current = null;
+		const solveTurns = keyboardSolveTurnsRef.current;
+		keyboardSolveTurnsRef.current = [];
+		if (!start || !solveTurns.length || analysisMode === 'none' || !(mobileMode || liveSlot)) return;
+
+		// endTimer has just written this solve's stats; the analysis only lands on them.
+		const solveStats = getTimerStore('lastSmartSolveStats');
+		if (!solveStats) return;
+		// The keyboard stops the timer, so "ended solved" is what the cube says right now.
+		const endedSolved = !!smartPhysicallySolved || faceletsSolved(manager.trackerState);
+		const analysisTurns = solveTurns.map((t) => ({ ...t, time: t.completedAt }));
+		setTimeout(() => {
+			if (getTimerStore('lastSmartSolveStats') !== solveStats) return;
+			try {
+				const { state } = resolveAnalysisStartState({
+					turns: analysisTurns,
+					preferred: start.state,
+					endedSolved,
+				});
+				const correctedAnalysis = analyzeCurrentState(analysisTurns, state, resolveAnalysisMethod(solveMethod, analysisMode));
+				setTimerParams({ lastSmartSolveStats: { ...solveStats, correctedAnalysis } });
+			} catch (e: any) {
+				dbgCorr(`KEYBOARD_ANALYSIS FAIL | message=${e?.message}`);
+			}
+		}, 0);
+	}, [timeStartedAt, useSpaceWithSmartCube]);
+
+	// After an abort or an inspection DNF the page asks the user to solve the cube; this is
+	// what answers it. The engine is parked by then, so no SOLVE_COMPLETE ever arrives for
+	// the old needsCubeReset branch below, and solving the cube used to change nothing: only
+	// the "reset cube state" button got the user out.
+	useEffect(() => {
+		if (!needsCubeReset || timeStartedAt || !smartPhysicallySolved) return;
+		resetMoves(true);
+		setNeedsCubeReset(false);
+		resetScramble(context);
+	}, [needsCubeReset, smartPhysicallySolved, timeStartedAt]);
 
 	// Precompute target FACELETS (target state of scramble)
 	// Always use originalScramble — not correction scramble, original scramble
@@ -394,6 +463,12 @@ export default function SmartCube() {
 				// The 3D view is driven by moves, so it is now showing a state that never
 				// happened. Replay it to the state the cube actually reports.
 				cubeViewRef.current?.syncToFacelets(event.facelets);
+				// Between the scramble finishing and the first solve move, the solve starts from
+				// wherever the cube now really is. startState was only written at
+				// SCRAMBLE_COMPLETE, so the live ladder replayed from a state the cube had left.
+				if (engineRef.current?.isReady) {
+					setStartState(engineRef.current.trackerState);
+				}
 				break;
 		}
 	};
@@ -564,8 +639,11 @@ export default function SmartCube() {
 				? Number((htmCount / (finalTimeMilli / 1000)).toFixed(2))
 				: 0;
 
-			// Move count and TPS are cheap, so they go out with the time.
-			setTimerParams({ lastSmartSolveStats: { turns: htmCount, tps } });
+			// Move count and TPS are cheap, so they go out with the time. Kept as one object:
+			// the deferred analysis below only lands while this exact object is still the
+			// current stats, so it can never overwrite a newer solve's.
+			const solveStats = { turns: htmCount, tps };
+			setTimerParams({ lastSmartSolveStats: solveStats });
 
 			// Corrected phase analysis: so LiveAnalysisOverlay shows correct times
 			// correctedMoves.completedAt corrected via linear fit — more accurate than raw timestamps.
@@ -574,20 +652,34 @@ export default function SmartCube() {
 			// main thread (measured over 26 solves) BEFORE React can paint the final
 			// time, so the timer visibly hangs on the frozen value. The overlay it
 			// feeds sits below the timer and does not need the same frame.
-			if (analysisMode !== 'none') {
+			//
+			// Skipped on desktop when there is no live phase module: the finished ladder is
+			// only ever drawn there, so the work would be thrown away.
+			if (analysisMode !== 'none' && (mobileMode || liveSlot)) {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
-				const analysisStartState = startState;
-				dbgCorr(`CORR_ANALYSIS scheduled | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${analysisStartState?.length === 54 ? analysisStartState.slice(0, 27) + '...' : `INVALID(len=${analysisStartState?.length})`}`);
+				const scrambledState = startState;
+				dbgCorr(`CORR_ANALYSIS scheduled | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${scrambledState?.length === 54 ? scrambledState.slice(0, 27) + '...' : `INVALID(len=${scrambledState?.length})`}`);
 				setTimeout(() => {
+					if (getTimerStore('lastSmartSolveStats') !== solveStats) return;
 					try {
+						// A completed solve ended on a solved cube, so when the moves we hold cannot
+						// get there from the scrambled state (a lost or reordered packet) the start
+						// is derived from the moves instead, cstimer's way. See
+						// shared/util/solve/start_state.ts.
+						const { state: analysisStartState, derived } = resolveAnalysisStartState({
+							turns: correctedTurns,
+							preferred: scrambledState,
+							endedSolved: !!solveResult,
+						});
+						if (derived) dbgCorr('CORR_ANALYSIS start derived from the moves (incomplete or reordered list)');
 						const correctedAnalysis = analyzeCurrentState(correctedTurns, analysisStartState, resolveAnalysisMethod(solveMethod, analysisMode));
 						dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
 						setTimerParams({
-							lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
+							lastSmartSolveStats: { ...solveStats, correctedAnalysis }
 						});
 					} catch (e: any) {
 						// If analysis fails, simple stats from endTimer are sufficient
-						dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${analysisStartState?.length} | corrLen=${correctedTurns.length} | stack=${e?.stack?.slice(0, 200)}`);
+						dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${scrambledState?.length} | corrLen=${correctedTurns.length} | stack=${e?.stack?.slice(0, 200)}`);
 					}
 				}, 0);
 			}
@@ -671,7 +763,10 @@ export default function SmartCube() {
 
 		// Reset timer WITHOUT generating a new scramble or clearing smartTurns.
 		// smartTurns is kept so cubejs continues tracking the physical cube state.
-		// When the user physically solves the cube, the solve detection will fire.
+		// The engine is parked right away (a SOLVE_COMPLETE must not land after the abort);
+		// once the user physically solves the cube, the needsCubeReset watcher brings the
+		// next scramble.
+		engineRef.current?.suspend();
 		stopTimer(START_TIMEOUT);
 		clearInspectionTimers(true, true);
 		setTimerParams({
@@ -692,6 +787,8 @@ export default function SmartCube() {
 	function handleAbortDiscard() {
 		// Reset timer WITHOUT generating a new scramble or clearing smartTurns.
 		// smartTurns is kept so cubejs continues tracking the physical cube state.
+		// Parked like handleAbortDnf; the needsCubeReset watcher takes it from there.
+		engineRef.current?.suspend();
 		stopTimer(START_TIMEOUT);
 		clearInspectionTimers(true, true);
 		setTimerParams({
@@ -924,6 +1021,8 @@ export default function SmartCube() {
 	// Mismatch banner: show after aborting a solve, when the physical cube
 	// still needs to be solved before a new scramble can be generated
 	const showCubeMismatch = needsCubeReset && !timeStartedAt && cubeResetFromAbort;
+	// A keyboard-started solve's turns begin at the start; see keyboardStartRef.
+	const keyboardTurnsFrom = useSpaceWithSmartCube && timeStartedAt ? timeStartedAt.getTime() : null;
 
 	return (
 		<div className={b({ mobile: mobileMode })}>
@@ -972,6 +1071,7 @@ export default function SmartCube() {
 						<>
 							<LiveAnalysisOverlay
 								startState={startState || engineRef.current?.trackerState || null}
+								turnsFrom={keyboardTurnsFrom}
 								compact
 							/>
 							<SmartStats />
@@ -980,7 +1080,10 @@ export default function SmartCube() {
 					)}
 				{!mobileMode && !!timeStartedAt && (
 					<div className={b('stats-container')}>
-						<LiveAnalysisOverlay startState={startState || engineRef.current?.trackerState || null} />
+						<LiveAnalysisOverlay
+							startState={startState || engineRef.current?.trackerState || null}
+							turnsFrom={keyboardTurnsFrom}
+						/>
 						<SmartStats />
 					</div>
 				)}
@@ -993,6 +1096,7 @@ export default function SmartCube() {
 						)}
 						<LiveAnalysisOverlay
 							startState={startState || engineRef.current?.trackerState || null}
+							turnsFrom={keyboardTurnsFrom}
 							mobile={true}
 						/>
 						<SmartStats mobile={true} />

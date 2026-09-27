@@ -30,6 +30,8 @@ export interface SiteConfigData {
 	wca_backfill_enabled: boolean;
 	zkt_backfill_enabled: boolean;
 	smart_telemetry_enabled: boolean;
+	/** Missing on a config cached before the column existed; read as 0. */
+	method_steps_version?: number;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
 	featureOverrides: FeatureOverrideEntryData[];
 	updated_at: Date;
@@ -48,6 +50,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	wca_backfill_enabled: true,
 	zkt_backfill_enabled: true,
 	smart_telemetry_enabled: false,
+	method_steps_version: 0,
 	feature_overrides: {},
 };
 

@@ -4,7 +4,7 @@ import { Role } from '../middlewares/auth';
 import { Solve, SolveInput } from '../schemas/Solve.schema';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
 import { getSolveSteps } from '../util/solve/solve_method';
-import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
+import { createSolveMethodSteps, replaceSolveMethodSteps } from '../models/solve_method_step';
 import { generateUUID } from '../../shared/code';
 import { logger } from '../services/logger';
 import { updateUserAccountWithParams } from '../models/user_account';
@@ -308,8 +308,12 @@ export class SolveResolver {
 					// that sends none (virtual cube, older app versions) gets the method
 					// detected from the solve itself, the same as the app's own default
 					// setting: 'cfop' here would mislabel every Roux and ZZ solve.
-					const steps = getSolveSteps(turns, input.scramble, input.analysis_method || 'auto');
-					const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
+					const steps = getSolveSteps(turns, input.scramble, input.analysis_method || 'auto', undefined, {
+						endedSolved: !input.dnf,
+					});
+					// null: the engine failed on these moves. The solve stays as it is, with no
+					// breakdown, exactly as when the engine used to hand back an empty one.
+					const methodStepsData = steps ? await createSolveMethodSteps(createdSolve, steps) : [];
 					(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
 						...s,
 						created_at: new Date(),
@@ -492,10 +496,13 @@ export class SolveResolver {
 					const turns = parseSmartTurns(input.smart_turns);
 					if (!turns.length) continue;
 					// Bulk rows (backfill, migration, transfer) carry no method: detect it.
-					const steps = getSolveSteps(turns, input.scramble, (input as any).analysis_method || 'auto');
+					const steps = getSolveSteps(turns, input.scramble, (input as any).analysis_method || 'auto', undefined, {
+						endedSolved: !input.dnf,
+					});
+					// The engine failed on these moves: keep whatever steps the solve already has.
+					if (!steps) continue;
 					// Idempotent: re-importing the same solve must not stack duplicate steps.
-					await deleteSolveMethodSteps({ id: input.id });
-					await createSolveMethodSteps({ id: input.id }, steps);
+					await replaceSolveMethodSteps({ id: input.id }, steps);
 				} catch (e) {
 					// One unreadable solve must not cost the caller the whole chunk.
 					logger.warn('Failed to create solve method steps during bulk import', {

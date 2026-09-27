@@ -191,8 +191,8 @@ interface ExtrasTabProps {
 	// This setting is for the Timer page's mobile view — the room has its own layout.
 	hideMobileModules?: boolean;
 	// Hide smart cube-specific settings in FriendlyRoom (multi-phase analysis, recognition times)
-	// — the room's smart cube flow uses LiveAnalysisOverlay and recognition, but the settings
-	// remain ineffective because the room has its own flow.
+	// — the room's smart cube flow shows no phase ladder at all (LiveAnalysisOverlay is only
+	// mounted on the timer page), so these settings would do nothing there.
 	hideSmartCubeFeatures?: boolean;
 	// Hide slam-to-stop in FriendlyRoom — the room stops via RoomTimerOverlay,
 	// not KeyWatcher, so the setting would be ineffective there.

@@ -242,8 +242,12 @@ export default function VirtualCube() {
 			remainingRef.current = dimension === 3 ? getVirtualStepCount(multiPhaseRef.current) : 1;
 			moveCountRef.current = 0;
 			phaseSplitsRef.current = [];
-			// Inspection rotations stay in the log at offset 0, ahead of the solve.
-			movesRef.current = movesRef.current.filter((m) => m.completedAt === 0);
+			// Inspection rotations stay in the log at offset 0, ahead of the solve. They are
+			// recorded with completedAt 0 because the start is not known yet; stamp them with
+			// the start now, or serializing relative to it writes about -1.7e12 ms.
+			movesRef.current = movesRef.current
+				.filter((m) => m.completedAt === 0)
+				.map((m) => ({ ...m, completedAt: now }));
 		}
 
 		if (!running()) return;

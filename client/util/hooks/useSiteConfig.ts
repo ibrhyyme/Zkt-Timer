@@ -85,6 +85,14 @@ export function refreshSiteConfig() {
 	void requestConfig();
 }
 
+/** Fresh config for boot-time decisions; null when the server could not be reached. */
+export async function fetchSiteConfig(): Promise<SiteConfigData | null> {
+	const before = cachedConfig;
+	await requestConfig();
+	// requestConfig swallows failures; an unchanged cache entry means nothing new arrived.
+	return cachedConfig && cachedConfig !== before ? cachedConfig.data : null;
+}
+
 // Manual cache set (optimistic update after admin mutation)
 export function setSiteConfigCache(data: SiteConfigData) {
 	cachedConfig = {data, ts: Date.now()};

@@ -1252,6 +1252,7 @@ type SiteConfig {
   wca_backfill_enabled: Boolean
   zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
+  method_steps_version: Int
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
 }

@@ -127,6 +127,16 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
  * re-rendered the app on their own. Batching merges them without postponing any: the
  * render still happens before this function returns.
  */
+/**
+ * The turns of a solve the keyboard started (use_space_with_smart_cube), where the stream
+ * still holds the scramble and inspection turns. Moves up to 500 ms before the start count,
+ * to catch a first turn made as the key was released. One definition for the count on
+ * screen, the saved count and turns, and the smart cube page's phase analysis.
+ */
+export function keyboardStartedSolveTurns<T extends { completedAt?: number }>(turns: T[], startMs: number): T[] {
+	return (turns || []).filter((t) => (t?.completedAt || 0) >= startMs - 500);
+}
+
 export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
 	unstable_batchedUpdates(() => stopSolve(context, finalTimeMilli, overrides, endTimestamp));
 }
@@ -193,12 +203,8 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		if (overrides && overrides.smart_turn_count !== undefined) {
 			turnCount = overrides.smart_turn_count;
 		} else {
-			// Otherwise calculate from the recorded turns with leniency for the first move
-			const startTime = timeStartedAt.getTime();
-			// Allow moves up to 500ms before timer start (to catch the starting move)
-			const solutionTurns = smartTurns.filter((t: any) => t.completedAt >= startTime - 500);
 			// cstimer-grade HTM: repeated moves on same face in consecutive parallel planes count as 1
-			turnCount = countHTM(solutionTurns.map((t: any) => t.turn));
+			turnCount = countHTM(keyboardStartedSolveTurns(smartTurns, timeStartedAt.getTime()).map((t: any) => t.turn));
 		}
 
 		// Over the measured time, not the offset one: TPS is a turning speed, and the
@@ -246,21 +252,29 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		const overridesCombined = { ...overrides };
 
 		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
+			// The keyboard started and stopped this one (use_space_with_smart_cube). The saved
+			// turns and count used to come from a stricter filter than the count on screen and
+			// as a raw length instead of HTM, so the two disagreed on every such solve.
 			const startTime = timeStartedAt.getTime();
-			const solutionTurns = smartTurns.filter((t: any) => t.completedAt >= startTime);
+			const solutionTurns = keyboardStartedSolveTurns(smartTurns, startTime);
 
 			overridesCombined.is_smart_cube = true;
 			// Connection-owned, so it comes from the smart cube slice rather than the context.
 			overridesCombined.smart_device_id = getSmartCubeStore('smartDeviceId');
-			overridesCombined.smart_turn_count = solutionTurns.length;
+			overridesCombined.smart_turn_count = countHTM(solutionTurns.map((t: any) => t.turn));
+			// Same as the cube-driven path: 'auto' lets the server infer the method.
+			overridesCombined.analysis_method = getSetting('smart_cube_method') || 'auto';
 
 			// Pro user: moves serialized to compact format + server creates method_steps.
 			// Free user: smart_turns stays null, method_steps not created, doesn't store in DB.
 			const me = getStore()?.getState()?.account?.me;
 			if (isPro(me)) {
+				// The lenient window can include a move stamped just before the start; offsets
+				// are taken from whichever is earlier so none of them is negative.
+				const baseMs = Math.min(startTime, solutionTurns[0]?.completedAt ?? startTime);
 				overridesCombined.smart_turns = serializeSmartTurnsCompact(
 					solutionTurns.map((t: any) => ({ turn: t.turn, completedAt: t.completedAt })),
-					startTime
+					baseMs
 				);
 			} else {
 				overridesCombined.smart_turns = null;

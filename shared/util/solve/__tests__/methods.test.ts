@@ -379,3 +379,28 @@ describe('method selection', () => {
 		}
 	});
 });
+
+describe('Roux CMLL — AUF-agnostic like cstimer roux3Mask', () => {
+	// cstimer's CMLL mask (cubeutil.js:35) only asks the last-layer corners to be oriented
+	// and to match each other; the U layer can sit at any offset. Checking the corners in
+	// their home slots moved the CMLL/LSE boundary past the AUF.
+	const { getRouxProgressOneAxis } = require('../methods/roux');
+
+	it('counts CMLL as done with the U layer one turn off', () => {
+		const cube = new Cube();
+		cube.move('U');
+		expect(getRouxProgressOneAxis(cube.asString(), cube)).toBe(1);
+	});
+
+	it('still requires the corners to be oriented', () => {
+		const cube = new Cube();
+		// Sune: blocks untouched, corners twisted.
+		cube.move("R U R' U R U2 R'");
+		expect(getRouxProgressOneAxis(cube.asString(), cube)).toBe(2);
+	});
+
+	it('reports solved only when the U layer is aligned', () => {
+		const cube = new Cube();
+		expect(getRouxProgressOneAxis(cube.asString(), cube)).toBe(0);
+	});
+});

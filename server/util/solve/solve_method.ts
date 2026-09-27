@@ -20,6 +20,11 @@ import { detectSolveMethod } from '../../../shared/util/solve/detect_method';
 import { SolveTurn, PhaseTransition, SolveMethod, SolvePhase } from '../../../shared/util/solve/types';
 import { countHTM } from '../../../shared/util/solve/move_counter';
 import { getPrettyMoves, TimedMove } from '../../../shared/util/solve/pretty_moves';
+import {
+	resolveAnalysisStartState,
+	startStateFromScramble,
+	startStateFromSolvedEnd,
+} from '../../../shared/util/solve/start_state';
 void cascadeQuartersForDisplay; // legacy import — migrated to getPrettyMoves
 
 const F2L_SUB_STEPS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
@@ -33,13 +38,26 @@ const F2L_SUB_STEPS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
  *                (a very short solve, a partial subset). CFOP unless given: a reindex
  *                passes the method already stored on the solve, so an unclear case keeps
  *                what it had instead of being flipped to CFOP.
+ * @param options.endedSolved  The solve finished on a solved cube (completed, not DNF).
+ *                Only then may the start be derived from the moves when a lost packet
+ *                keeps them from solving the cube from the scramble. Defaults to false so
+ *                a caller that forgets cannot invent a complete breakdown for a DNF.
+ *
+ * Returns null when the engine fails, so a caller that is replacing existing rows can
+ * keep them instead of wiping them for an empty result.
  */
-export function getSolveSteps(turns: SmartTurn[], scramble?: string, method: string = 'cfop', fallbackMethod?: SolveMethod) {
+export function getSolveSteps(
+	turns: SmartTurn[],
+	scramble?: string,
+	method: string = 'cfop',
+	fallbackMethod?: SolveMethod,
+	options: { endedSolved?: boolean } = {}
+) {
 	try {
-		return getSolveStepsInner(turns, scramble, method, fallbackMethod);
+		return getSolveStepsInner(turns, scramble, method, fallbackMethod, !!options.endedSolved);
 	} catch (e: any) {
 		console.warn('[getSolveSteps] engine failed:', e?.message);
-		return emptySteps('cfop');
+		return null;
 	}
 }
 
@@ -51,16 +69,28 @@ function emptySteps(method: SolveMethod | string) {
 	return out;
 }
 
-function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: string = 'cfop', fallbackMethod?: SolveMethod) {
+function getSolveStepsInner(
+	turns: SmartTurn[],
+	scramble: string | undefined,
+	requested: string,
+	fallbackMethod: SolveMethod | undefined,
+	endedSolved: boolean
+) {
 	const engineTurns: SolveTurn[] = (turns || [])
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
 			turn: t.turn,
-			timestamp: typeof (t as any).completedAt === 'number'
-				? (t as any).completedAt
-				: typeof (t as any).time === 'number'
-					? (t as any).time
-					: 0,
+			// Negative offsets are not a real time: the virtual cube stored its inspection
+			// rotations at absolute 0, which serialized as about -1.7e12 ms and turned the
+			// first phase into a 1.7-billion-second step. They happened at the start.
+			timestamp: Math.max(
+				0,
+				typeof (t as any).completedAt === 'number'
+					? (t as any).completedAt
+					: typeof (t as any).time === 'number'
+						? (t as any).time
+						: 0
+			),
 		}));
 
 	if (engineTurns.length === 0) {
@@ -68,16 +98,19 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: st
 	}
 
 	// Start state calculation:
-	// IDEAL: apply scramble to solved cube -> actual starting state. For partial-solve subsets
-	// (333cfop>oll, >pll etc.) this is the CORRECT approach; engine already pre-populates
-	// solved phases and case identification works.
+	// The scramble applied to a solved cube is the real start, and the only one that keeps
+	// partial-solve subsets (333cfop>oll, >pll etc.) identifying their cases. When a lost or
+	// reordered packet leaves moves that cannot solve the cube from there, a completed solve
+	// falls back to cstimer's start derived from the moves (shared/util/solve/start_state.ts).
 	//
-	// FALLBACK (legacy): if scramble not provided (old admin scripts), calculate by reversing
-	// turns — works for full solves, identification breaks for partial subsets.
-	let startState = scramble ? computeStartStateFromScramble(scramble) : undefined;
-	if (!startState) {
-		startState = computeStartStateFromSolvedEnd(engineTurns);
-	}
+	// No scramble at all (old admin scripts): the derived start, as before.
+	const startState = scramble
+		? resolveAnalysisStartState({
+				turns: engineTurns,
+				preferred: startStateFromScramble(scramble),
+				endedSolved,
+			}).state
+		: startStateFromSolvedEnd(engineTurns);
 
 	// Resolve 'auto' against the solve itself; an explicit choice is respected.
 	const method: SolveMethod = requested === 'auto'
@@ -210,53 +243,4 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string, requested: st
 	}
 
 	return steps;
-}
-
-/**
- * Apply scramble string to a solved cube to compute the actual starting state.
- * This gives the CORRECT result even for partial-solve subsets (cube already partially solved).
- */
-function computeStartStateFromScramble(scramble: string): string | undefined {
-	try {
-		const Cube = require('cubejs');
-		const cube = new Cube();
-		const moves = (scramble || '').trim().split(/\s+/).filter(Boolean);
-		for (const m of moves) {
-			try {
-				cube.move(m);
-			} catch {
-				// Invalid move: skip
-			}
-		}
-		return cube.asString();
-	} catch {
-		return undefined;
-	}
-}
-
-/**
- * LEGACY fallback: compute start state by reversing turns. Only works correctly
- * for full-solve solves. Used when scramble is unavailable.
- */
-function computeStartStateFromSolvedEnd(turns: SolveTurn[]): string | undefined {
-	try {
-		// Lazy import — shared engine already imports Cube; use require here too.
-		const Cube = require('cubejs');
-		const cube = new Cube();
-		for (let i = turns.length - 1; i >= 0; i--) {
-			const m = turns[i].turn;
-			let inv: string;
-			if (m.endsWith("'")) inv = m.slice(0, -1);
-			else if (m.endsWith('2')) inv = m;
-			else inv = m + "'";
-			try {
-				cube.move(inv);
-			} catch {
-				// Skip
-			}
-		}
-		return cube.asString();
-	} catch {
-		return undefined;
-	}
 }

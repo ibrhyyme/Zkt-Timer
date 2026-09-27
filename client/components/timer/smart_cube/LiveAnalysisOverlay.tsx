@@ -8,29 +8,33 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import { is3x3CubeType } from '../helpers/util';
 import { getTimeString } from '../../../util/time';
-import { resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
+import { effectiveAnalysisMode, resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
 
 const b = block('live-analysis');
 
-// Phase ID -> wrapper steps key. Composite IDs like cf_plus_op are mapped to the nearest actual step.
-function phaseIdToStepKey(id: string): string | null {
+const F2L_PAIRS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
+
+// Row id -> the engine steps it covers. A combined row (F2L in the four-step ladder, CF and
+// OP in the two-step one) covers several: it used to borrow a single step's flags, so one
+// skipped fourth pair marked the whole F2L row as a skip and dropped its time from the sum.
+function phaseIdToStepKeys(id: string): string[] {
     switch (id) {
-        case 'Cross': return 'cross';
-        case 'F2L': return 'f2l';
-        case 'F2L_1': return 'f2l_1';
-        case 'F2L_2': return 'f2l_2';
-        case 'F2L_3': return 'f2l_3';
-        case 'F2L_4': return 'f2l_4';
+        case 'Cross': return ['cross'];
+        case 'F2L': return F2L_PAIRS;
+        case 'F2L_1': return ['f2l_1'];
+        case 'F2L_2': return ['f2l_2'];
+        case 'F2L_3': return ['f2l_3'];
+        case 'F2L_4': return ['f2l_4'];
         case 'OLL':
         case 'OLL_CO':
-            return 'oll';
-        case 'OLL_EO': return 'eo';
+            return ['oll'];
+        case 'OLL_EO': return ['eo'];
         case 'PLL':
         case 'PLL_EP':
-            return 'pll';
-        case 'PLL_CP': return 'cp';
-        case 'CF': return 'f2l';
-        case 'OP': return 'pll';
+            return ['pll'];
+        case 'PLL_CP': return ['cp'];
+        case 'CF': return ['cross', ...F2L_PAIRS];
+        case 'OP': return ['oll', 'pll'];
         // Roux and ZZ step ids are used verbatim as row ids.
         case 'fb':
         case 'sb':
@@ -40,8 +44,8 @@ function phaseIdToStepKey(id: string): string | null {
         case 'block_1':
         case 'block_2':
         case 'll':
-            return id;
-        default: return null;
+            return [id];
+        default: return [];
     }
 }
 
@@ -49,20 +53,27 @@ export default function LiveAnalysisOverlay({
     startState,
     mobile,
     compact,
+    turnsFrom,
 }: {
     startState?: string;
     /** Phone layout: portaled under the cube, narrow. */
     mobile?: boolean;
     /** Inside the live analysis module, where the card decides the width. */
     compact?: boolean;
+    /**
+     * Keyboard-started solve (use_space_with_smart_cube): the stream still holds the
+     * scramble turns, so only turns from this moment on are the solve. `startState` is
+     * the cube's state at that same moment.
+     */
+    turnsFrom?: number | null;
 }) {
     const { t: tr } = useTranslation();
     const { timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
     // Per-move, so not in TimerContext (see FAST_TIMER_FIELDS).
     const smartTurns = useTimerStore('smartTurns');
-    const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
-    // On mobile, cffffoopp wraps to 11 lines — not ideal. Fallback to cffffop (7 lines).
-    const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;
+    // On mobile, cffffoopp wraps to 11 lines, so it is drawn as cffffop. SmartCube runs the
+    // post-solve analysis through the same helper so the two cannot disagree.
+    const analysisMode = effectiveAnalysisMode(useSettings('smart_cube_analysis_mode'), !!mobile);
     // Method comes from main settings (an identity written onto each solve);
     // analysisMode only controls how finely the ladder is drawn.
     const solveMethod = useSettings('smart_cube_method');
@@ -78,22 +89,30 @@ export default function LiveAnalysisOverlay({
     // that case is pure waste: it re-analyses the whole solve on every move and then
     // throws the result away. Users who switch the panel off do it for performance,
     // so the setting has to actually stop the work.
-    const shouldRun = analysisMode !== 'none'
-        && (!!timeStartedAt || (smartTurns && smartTurns.length > 0))
-        && is3x3;
+    // Only while a solve is timed: that is the only moment the live result is drawn.
+    // Running it on scramble moves too re-analysed every turn for nothing.
+    const shouldRun = analysisMode !== 'none' && !!timeStartedAt && is3x3;
 
     const [cachedAnalysis, setCachedAnalysis] = React.useState<any>(null);
-    const prevStartState = React.useRef(startState);
 
     // STICKY HISTORY: Keep completed phases visible even if user breaks them temporarily.
     // Moved to top-level to avoid "Rendered more hooks" error.
     const phaseHistory = React.useRef<Record<string, any>>({});
+    // Reset during render, not in an effect: an effect runs after paint, so the first
+    // frame of a new solve used to flash the previous solve's rows.
+    const historyStartRef = React.useRef(timeStartedAt);
+    if (timeStartedAt && timeStartedAt !== historyStartRef.current) {
+        phaseHistory.current = {};
+    }
+    historyStartRef.current = timeStartedAt;
 
     // Map smartTurns to include time property (from completedAt)
-    const processedTurns = React.useMemo(() => (smartTurns || []).map(t => ({
-        ...t,
-        time: t.completedAt ? new Date(t.completedAt).getTime() : 0
-    })), [smartTurns]);
+    const processedTurns = React.useMemo(() => (smartTurns || [])
+        .filter(t => turnsFrom == null || (t.completedAt ? new Date(t.completedAt).getTime() : 0) >= turnsFrom)
+        .map(t => ({
+            ...t,
+            time: t.completedAt ? new Date(t.completedAt).getTime() : 0
+        })), [smartTurns, turnsFrom]);
 
     const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState, analysisMethod);
 
@@ -137,11 +156,10 @@ export default function LiveAnalysisOverlay({
         console.log('%c[ANALYSIS]', 'color:#E91E63;font-weight:bold', snapshot);
     }, [analysis, lastSmartSolveStats, shouldRun, is3x3, timeStartedAt]);
 
-    // Clear cache on new start
+    // Clear cache on new start (history is reset during render above)
     React.useEffect(() => {
         if (timeStartedAt) {
             setCachedAnalysis(null);
-            phaseHistory.current = {}; // Clear history on start
         }
     }, [timeStartedAt]);
 
@@ -173,8 +191,6 @@ export default function LiveAnalysisOverlay({
 
     if (!displayAnalysis || analysisMode === 'none' || !is3x3) return null;
 
-    const formatTime = (t?: number) => t ? t.toFixed(2) : '-';
-
     // Calculate splits
     const t = displayAnalysis.times || {};
     const f2lPairs = t.f2l_pairs || [];
@@ -194,8 +210,11 @@ export default function LiveAnalysisOverlay({
     // Logic for different modes
     let phases: any[] = [];
     const currentPhase = displayAnalysis.currentPhase;
+    // A finished result is drawn with the method it was computed with: switching the
+    // method setting after a solve used to draw that solve through the wrong ladder.
+    const renderMethod = displayAnalysis.method || analysisMethod;
 
-    if (analysisMethod === 'roux' || analysisMethod === 'zz') {
+    if (renderMethod === 'roux' || renderMethod === 'zz') {
         // Roux and ZZ render straight from the method definition: one row per step,
         // in order, each showing its own duration. No hand-written ladder needed —
         // the engine already reports these steps under their own ids.
@@ -335,17 +354,20 @@ export default function LiveAnalysisOverlay({
 
     // Inject fields from engine: skipped + recognition/execution split into each phase.
     // Wrapper steps[stepKey] = { skipped, recognitionMs, executionMs, ... }
+    // A row that covers several steps is a skip only when every step it covers that was
+    // reached is one, and its split is the sum of theirs.
     phases.forEach((p) => {
-        const stepKey = phaseIdToStepKey(p.id);
-        const step = stepKey ? displayAnalysis.steps?.[stepKey] : null;
-        p.skipped = !!step?.skipped;
-        p.recognitionTime = step?.recognitionMs != null ? step.recognitionMs / 1000 : undefined;
-        p.executionTime = step?.executionMs != null ? step.executionMs / 1000 : undefined;
-    });
-
-    // Re-mapping labels for all modes to numeric style
-    phases.forEach((p, i) => {
-        p.label = i === 0 ? '=' : '+';
+        const steps = phaseIdToStepKeys(p.id)
+            .map((key) => displayAnalysis.steps?.[key])
+            .filter(Boolean);
+        p.skipped = steps.length > 0 && steps.every((step: any) => step.skipped);
+        const timed = steps.filter((step: any) => !step.skipped);
+        const sum = (field: 'recognitionMs' | 'executionMs') =>
+            timed.length && timed.every((step: any) => step[field] != null)
+                ? timed.reduce((acc: number, step: any) => acc + step[field], 0) / 1000
+                : undefined;
+        p.recognitionTime = sum('recognitionMs');
+        p.executionTime = sum('executionMs');
     });
 
     // Update history with currently DONE phases (Using ref from top scope)
@@ -375,10 +397,16 @@ export default function LiveAnalysisOverlay({
     ) return null;
 
     // Render phases that are done. Skipped phases come with time=0; we want to show them
-    // (for the badge) — but they don't affect the cumulative.
+    // (for the badge) — but they don't affect the cumulative. A real step can also take
+    // 0.00 (two phases completed by moves stamped together), so it is not filtered out.
     const renderableRows = mergedPhases.filter(p =>
-        p.done && (p.skipped || (p.time != null && p.time > 0))
+        p.done && (p.skipped || (p.time != null && p.time >= 0))
     );
+    // Numeric labels after filtering: labelling first let the first VISIBLE row start
+    // with '+' whenever an earlier row (Cross in a subset) was filtered out.
+    renderableRows.forEach((p, i) => {
+        p.label = i === 0 ? '=' : '+';
+    });
     let cumulative = 0;
 
     return (

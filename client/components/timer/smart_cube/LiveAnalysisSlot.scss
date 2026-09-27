@@ -26,14 +26,15 @@
 		gap: 10px;
 		min-height: 0;
 
-		// Sized by the measured scale in LiveAnalysisSlot, not by a fixed value.
-		.live-analysis {
+		// Sized by the measured scale in LiveAnalysisSlot, not by a fixed value. The ladder
+		// is namespaced like every block; bare .live-analysis selectors never matched it.
+		.#{$namespace}-live-analysis {
 			flex: 1 1 auto;
 			min-width: 0;
 			margin-bottom: 0;
 		}
 
-		.live-analysis__row {
+		.#{$namespace}-live-analysis__row {
 			font-size: calc(20px * var(--zt-live-scale, 1));
 		}
 
@@ -55,18 +56,18 @@
 	// The recognition split moves onto its own line when that leaves more room for the
 	// numbers. The rows are flex, so a full-width basis is what pushes it to its own line.
 	&--split-stacked &__target {
-		.live-analysis__split-inline {
+		.#{$namespace}-live-analysis__split-inline {
 			flex: 0 0 100%;
 			margin-right: 0;
 		}
 
-		.live-analysis__row {
+		.#{$namespace}-live-analysis__row {
 			flex-wrap: wrap;
 		}
 	}
 
 	// Width measurement only: what the numbers need without the split in front of them.
-	&--measuring &__target .live-analysis__split-inline {
+	&--measuring &__target .#{$namespace}-live-analysis__split-inline {
 		display: none;
 	}
 

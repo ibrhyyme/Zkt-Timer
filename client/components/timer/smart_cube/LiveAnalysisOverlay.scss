@@ -1,81 +1,11 @@
-.live-analysis {
-    display: flex;
-    flex-direction: column;
-    gap: 0; // Very tight vertical stacking
-    margin-bottom: 20px;
+// The ladder is styled inline in LiveAnalysisOverlay.tsx, and sized by the live phase module
+// through LiveAnalysisSlot.scss. The rules that used to live here targeted a bare
+// `.live-analysis` class the component has never rendered (the BEM namespace is `zt-`), so
+// none of them ever applied; they were removed rather than switched on, which would have
+// changed the ladder's look (font, letter spacing, badge colours).
 
-    font-family: 'Roboto Mono', monospace;
-    pointer-events: none;
-
-    &__table {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    &__row {
-        display: flex;
-        flex-direction: row;
-        align-items: baseline;
-        gap: 0; // Reset gap
-        white-space: nowrap;
-
-        font-size: 3rem;
-        font-weight: 700;
-        line-height: 0.9;
-
-        opacity: 0.5;
-        transition: opacity 0.2s;
-
-        &--done {
-            opacity: 1;
-        }
-
-        &--active {
-            opacity: 1;
-        }
-    }
-
-    &__symbol {
-        color: rgb(var(--text-color));
-        min-width: 0; // Reset width
-        text-align: right;
-        font-weight: 400;
-        margin-right: 2px; // Tiny gap if needed, or 0
-    }
-
-    &__time-val {
-        color: rgb(var(--primary-color));
-        letter-spacing: -2px;
-        font-variant-numeric: tabular-nums;
-    }
-
-    &__skip-badge {
-        background: rgb(var(--success-color, 34 197 94));
-        color: #fff;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.55em;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin-left: 4px;
-        text-transform: uppercase;
-    }
-
-    &__row--skipped {
-        .live-analysis__symbol {
-            opacity: 0.7;
-        }
-    }
-
-    &__split-row {
-        font-family: 'Roboto Mono', monospace;
-        color: rgb(var(--text-color));
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-    }
-}
-
+// Global keyframes: several stylesheets define `pulse` and the last one loaded wins for
+// every `animation: pulse` user, so this one stays where it is.
 @keyframes pulse {
     0% {
         transform: scale(0.9);

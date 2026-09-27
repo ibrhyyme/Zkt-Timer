@@ -45,6 +45,7 @@ import { isSuspiciousMassDeletion, planDeltaSync } from '../../util/sync-plan';
 import { toSessionInput, toSolveInput } from '../../db/solves/solve-input';
 import { initNetworkListener } from '../../util/native-plugins';
 import { requestPersist } from '../../db/persist';
+import { fetchSiteConfig } from '../../util/hooks/useSiteConfig';
 import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
@@ -324,11 +325,14 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 				}
 			}
 
-			// Background: backfill missing method_steps (should also work when passed=true)
+			// Background: backfill missing method_steps (should also work when passed=true),
+			// then catch up with a server-side reindex if one finished since the last launch.
 			if (canSyncUser) {
-				backfillMissingMethodSteps().catch((e) => {
-					console.error('[Backfill] failed:', e);
-				});
+				backfillMissingMethodSteps()
+					.then(refreshMethodStepsIfVersionChanged)
+					.catch((e) => {
+						console.error('[Backfill] failed:', e);
+					});
 			}
 		} catch (e) {
 			console.error(e);
@@ -845,6 +849,48 @@ async function backfillMissingMethodSteps(): Promise<void> {
 	if (!missingIds.length) return;
 
 	console.log(`[Backfill] ${missingIds.length} smart cube solves missing method_steps, fetching...`);
+	await refetchMethodSteps(missingIds);
+}
+
+const METHOD_STEPS_VERSION_KEY = 'zkt_method_steps_version';
+
+/**
+ * Re-fetches every local breakdown once after the server recomputed them.
+ *
+ * Delta sync only pulls solve ids this device does not have, and the backfill above only
+ * pulls solves with no steps at all, so a server-side reindex (which repaired breakdowns
+ * that lost their last phases to a dropped BLE packet) never reached the copy every stats
+ * screen reads from. The reindex bumps SiteConfig.method_steps_version when it finishes;
+ * this compares it with the version this device last caught up to.
+ */
+async function refreshMethodStepsIfVersionChanged(): Promise<void> {
+	if (!canReadSync()) return;
+
+	const config = await fetchSiteConfig();
+	const serverVersion = config?.method_steps_version || 0;
+	if (!serverVersion) return;
+
+	const localVersion = Number(getLocalStorage(METHOD_STEPS_VERSION_KEY)) || 0;
+	if (localVersion >= serverVersion) return;
+
+	const db = getSolveDb();
+	if (!db) return;
+
+	const ids = db
+		.find()
+		.filter((s) => s.is_smart_cube || (s as any).is_virtual_cube)
+		.map((s) => s.id);
+
+	console.log(`[Backfill] method steps v${localVersion} -> v${serverVersion}, refetching ${ids.length} solves`);
+	const complete = await refetchMethodSteps(ids);
+	// Only a run that reached every batch counts: a partial one retries on the next launch.
+	if (complete) setLocalStorage(METHOD_STEPS_VERSION_KEY, String(serverVersion));
+}
+
+/** Pulls the server's breakdown for these solves into LokiJS. True when every batch arrived. */
+async function refetchMethodSteps(ids: string[]): Promise<boolean> {
+	const db = getSolveDb();
+	if (!db) return false;
 
 	const fetchQuery = gql`
 		${MICRO_SOLVE_FRAGMENT}
@@ -857,9 +903,10 @@ async function backfillMissingMethodSteps(): Promise<void> {
 	`;
 
 	let updated = 0;
+	let complete = true;
 
-	for (let i = 0; i < missingIds.length; i += DELTA_SYNC_BATCH_SIZE) {
-		const batch = missingIds.slice(i, i + DELTA_SYNC_BATCH_SIZE);
+	for (let i = 0; i < ids.length; i += DELTA_SYNC_BATCH_SIZE) {
+		const batch = ids.slice(i, i + DELTA_SYNC_BATCH_SIZE);
 		try {
 			const res = await gqlQuery<{ solvesByIds: Solve[] }>(fetchQuery, { ids: batch });
 			for (const fetched of res.data.solvesByIds) {
@@ -877,6 +924,7 @@ async function backfillMissingMethodSteps(): Promise<void> {
 				updated++;
 			}
 		} catch (e) {
+			complete = false;
 			console.error('[Backfill] Batch fetch failed:', e);
 		}
 	}
@@ -885,6 +933,7 @@ async function backfillMissingMethodSteps(): Promise<void> {
 		console.log(`[Backfill] ${updated} solves updated`);
 		emitEvent('solveDbUpdatedEvent');
 	}
+	return complete;
 }
 
 // Solves are pulled a page at a time rather than in one request. `take: 0` was

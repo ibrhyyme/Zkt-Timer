@@ -178,6 +178,8 @@ export class SmartSolveEngine {
 	private phase: Phase = 'idle';
 	private scramble = '';
 	private scrambleMoves: string[] = [];
+	/** The moves that take a solved cube to `targetFacelets` (the original scramble). */
+	private targetMoves: string[] = [];
 	private targetFacelets: string | null = null;
 	/**
 	 * One facelet state per scramble prefix, rebuilt whenever the scramble changes.
@@ -269,6 +271,7 @@ export class SmartSolveEngine {
 
 		this.scramble = scramble || '';
 		this.scrambleMoves = this.scramble.split(' ').filter((m) => m.trim());
+		this.targetMoves = (targetScramble || scramble || '').split(' ').filter((m) => m.trim());
 		this.targetFacelets = nextTarget;
 		// Every state the cube will pass through on the way to the target. Built once here
 		// so a re-anchor mid-scramble can answer "how far did the user actually get".
@@ -470,6 +473,21 @@ export class SmartSolveEngine {
 		this.streamOffset = this.turns.length;
 		this.solutionOffset = this.turns.length;
 		this.setUndo(null);
+	}
+
+	/**
+	 * Park the engine until the next setScramble: no scramble matching, no timer start.
+	 *
+	 * For the timer page after an inspection-timeout DNF. The scramble stays on screen, so
+	 * abort() would put the engine back to 'scrambling' on a cube already on the target: the
+	 * next facelets packet completed the scramble again and restarted inspection, and in
+	 * 'ready' the first move started a second solve on the same scramble. The page asks the
+	 * user to solve the cube instead and installs a fresh scramble once it is solved.
+	 */
+	suspend(): void {
+		if (this.disposed) return;
+		this.abort();
+		this.phase = 'idle';
 	}
 
 	dispose(): void {
@@ -713,10 +731,22 @@ export class SmartSolveEngine {
 	private runMoveOrderFix(): void {
 		if (this.phase !== 'timing' || !this.opts.moveOrderFix) return;
 		// Same window cstimer inspects: everything since the cube was last known solved,
-		// scramble turns included.
+		// scramble turns included. Rooms keep the scramble turns in the stream, so their
+		// window starts solved. The timer page clears the stream when the scramble completes,
+		// so its window starts on the scramble target, and a sequence that did not start
+		// solved could never "come out solved": the recovery could not fire there at all.
+		// The scramble that reaches the target stands in for the cleared turns.
 		const moves = this.turns.slice(this.streamOffset).map((t) => t.turn);
 		const facelets = this.tracker.state;
-		if (!shouldRecoverFromMoveOrder(moves, facelets)) return;
+		const windowStart = stateBeforeMoves(facelets, moves);
+		let fromSolved: string[] | null = null;
+		if (windowStart === this.opts.solvedState) {
+			fromSolved = [];
+		} else if (this.targetFacelets && windowStart === this.targetFacelets) {
+			fromSolved = this.targetMoves;
+		}
+		if (!fromSolved) return;
+		if (!shouldRecoverFromMoveOrder(moves, facelets, fromSolved)) return;
 		dbg('move order fix: recovering solve', { moves: moves.length });
 		this.commitSolve('move-order-fix');
 	}
@@ -1048,6 +1078,18 @@ function moveTime(turn: SmartTurn | undefined): number {
  * The facelets string the cube will report once the scramble is done. Computed from the
  * scramble rather than read from the cube, so it is available before the user touches it.
  */
+/** The state the cube was in before `moves` took it to `state`. */
+function stateBeforeMoves(state: string, moves: string[]): string | null {
+	const tracker = new CubeTracker();
+	if (!tracker.setFromFacelets(state, 0)) return null;
+	const undo = moves
+		.slice()
+		.reverse()
+		.map((turn) => ({ turn: invertMove(turn) }) as SmartTurn);
+	tracker.applyNew(undo);
+	return tracker.state;
+}
+
 export function computeTargetFacelets(scramble: string): string | null {
 	const moves = (scramble || '').split(' ').filter((m) => m.trim());
 	if (!moves.length) return null;

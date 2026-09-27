@@ -153,3 +153,69 @@ describe('analyzePhases — partial-solve subsets (333cfop>oll, >pll etc.)', () 
 		expect(result.pllIdentified).toBeUndefined();
 	});
 });
+
+describe('mergeOneMovePhases — cstimer direction (recons.js:127-151)', () => {
+	// cstimer indexes phases by progress level, so data[i + 1] is the phase BEFORE data[i]:
+	// a one-move phase is folded into the earlier phase, which then ends where it ended.
+	const inverse = (moves: string[]) =>
+		moves.slice().reverse().map((m) => (m.endsWith("'") ? m.slice(0, -1) : m.endsWith('2') ? m : m + "'"));
+
+	function solveFrom(solution: string[], stepMs = 200) {
+		const startState = startStateFromScramble(inverse(solution).join(' '));
+		return analyzePhases(turnsFromMoves(solution, stepMs), startState);
+	}
+
+	it('folds an AUF-only PLL into OLL and shows PLL as skipped', () => {
+		const sune = ['R', 'U', "R'", 'U', 'R', 'U2', "R'"];
+		const result = solveFrom([...sune, 'U']);
+
+		const oll = result.transitions.find((t) => t.phase === 'oll')!;
+		const pll = result.transitions.find((t) => t.phase === 'pll')!;
+
+		expect(oll.moves).toEqual([...sune, 'U']);
+		expect(oll.moveCount.htm).toBe(8);
+		// OLL now ends on the AUF, the last turn.
+		expect(oll.timestamp).toBe(7 * 200);
+		expect(pll.skipped).toBe(true);
+		expect(pll.merged).toBe(true);
+		expect(pll.moves).toEqual([]);
+		expect(pll.moveCount.htm).toBe(0);
+		// Zero length at its own end.
+		expect(pll.recognitionStart).toBe(pll.timestamp);
+	});
+
+	it('keeps the phase splits adding up to the whole solve', () => {
+		const sune = ['R', 'U', "R'", 'U', 'R', 'U2', "R'"];
+		const result = solveFrom([...sune, 'U']);
+		const last = result.transitions[result.transitions.length - 1];
+		// Each phase ends where the next one's split starts, so the last end is the solve end.
+		expect(last.timestamp).toBe(7 * 200);
+		const oll = result.transitions.find((t) => t.phase === 'oll')!;
+		expect(oll.timestamp - oll.recognitionStart).toBe(7 * 200);
+	});
+
+	it('carries the folded move timestamps along with the moves', () => {
+		const sune = ['R', 'U', "R'", 'U', 'R', 'U2', "R'"];
+		const oll = solveFrom([...sune, 'U']).transitions.find((t) => t.phase === 'oll')!;
+		expect(oll.moveTimestamps).toHaveLength(oll.moves.length);
+		expect(oll.moveTimestamps![oll.moveTimestamps!.length - 1]).toBe(7 * 200);
+	});
+
+	it('never folds a one-move first phase (nothing before it)', () => {
+		// One D turn away from solved: with U as the bottom, cross, F2L and OLL are already
+		// done, so the only phase performed is a one-move PLL with nothing before it.
+		const result = solveFrom(['D']);
+		expect(result.transitions).toHaveLength(1);
+		const [only] = result.transitions;
+		expect(only.moveCount.htm).toBe(1);
+		expect(only.merged).toBeFalsy();
+		expect(only.moves).toEqual(['D']);
+	});
+
+	it('preserves SUM(htm) === totalMoves.htm after folding', () => {
+		const sune = ['R', 'U', "R'", 'U', 'R', 'U2', "R'"];
+		const result = solveFrom([...sune, 'U']);
+		const sum = result.transitions.reduce((s, t) => s + t.moveCount.htm, 0);
+		expect(sum).toBe(result.totalMoves.htm);
+	});
+});

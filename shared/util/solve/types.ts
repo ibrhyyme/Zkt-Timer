@@ -10,9 +10,9 @@
  *
  * Methods:
  *   cfop  — cross, f2l_1..4, oll, pll                    (6 axes, cstimer cf4op)
- *   cfop2 — cross, f2l_1..4, eo, co, cp, ep              (6 axes, cstimer cf4o2p2)
+ *   cfop2 — cross, f2l_1..4, eo, oll, cp, pll            (6 axes, cstimer cf4o2p2)
  *   roux  — fb, sb, cmll, lse                            (24 axes, cstimer roux)
- *   zz    — eoline, block_1, block_2, ll                 (6 axes, Zkt-Timer original)
+ *   zz    — eoline, block_1, block_2, ll                 (24 axes, Zkt-Timer original)
  */
 
 export interface SolveTurn {
@@ -61,8 +61,8 @@ export interface PhaseTransition {
 	skipped: boolean;
 	/**
 	 * Set only by mergeOneMovePhases: this phase genuinely happened (real moves, a real
-	 * progress descent) but was cosmetically folded into the next phase for display
-	 * because it was too short (1 HTM) to show on its own. Distinct from a `skipped`
+	 * progress descent) but its single move was folded into the phase before it, as
+	 * cstimer does, because it was too short (1 HTM) to show on its own. Distinct from a `skipped`
 	 * phase whose progress level was jumped past with zero moves of its own — that one
 	 * truly didn't happen as a step; this one did, it's just not shown separately.
 	 * Method-detection scoring reads this to avoid penalizing a method's ladder for
@@ -99,6 +99,11 @@ export interface PhaseEngineResult {
 	pllIdentified?: CaseMatch;
 	method: SolveMethod;
 	finalProgress: number;
+	/**
+	 * How many of the method's steps were already complete before the first move (a
+	 * partial-solve subset scramble). Method detection scores only what was left to do.
+	 */
+	initialCompleted: number;
 	/**
 	 * Reference face the method locked onto: cross face for CFOP/ZZ, first-block
 	 * face for Roux. Null when no phase completed.

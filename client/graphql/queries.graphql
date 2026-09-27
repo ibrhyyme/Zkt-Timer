@@ -157,6 +157,7 @@ query siteConfig {
 		wca_backfill_enabled
 		zkt_backfill_enabled
 		smart_telemetry_enabled
+		method_steps_version
 		featureOverrides {
 			feature
 			mode

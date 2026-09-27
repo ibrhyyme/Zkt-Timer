@@ -304,6 +304,10 @@ model SiteConfig {
   /// switched on for a few days at a time: it records one row per solve, so leaving it on
   /// indefinitely grows a table nobody reads.
   smart_telemetry_enabled Boolean @default(false)
+  /// Bumped by the smart cube method steps reindex when it finishes. Devices only ever
+  /// fetch solves they do not have yet, so without this a reindex that repaired a solve's
+  /// breakdown on the server never reached the copy the device's stats read from.
+  method_steps_version Int      @default(0)
   feature_overrides    Json     @default("{}")
   updated_at           DateTime @updatedAt @default(now())
   updated_by           String?

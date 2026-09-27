@@ -1,4 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
 import './SmartStats.scss';
@@ -6,7 +7,6 @@ import './SmartStats.scss';
 const b = block('smart-stats');
 
 interface Props {
-    time?: number; // Optional time override from parent
     mobile?: boolean;
     stats?: {
         turns: number;
@@ -14,7 +14,8 @@ interface Props {
     };
 }
 
-function SmartStats({ time: propTime, mobile, stats: propStats }: Props) {
+function SmartStats({ mobile, stats: propStats }: Props) {
+    const { t } = useTranslation();
     const context = useContext(TimerContext);
 
     // Use prop stats if available, otherwise try context
@@ -29,10 +30,10 @@ function SmartStats({ time: propTime, mobile, stats: propStats }: Props) {
     return (
         <div className={b({ mobile })}>
             <h4 className={b('text')}>
-                <span>{turns}</span> <span className='text-blue-400'>turns</span>
+                <span>{turns}</span> <span className='text-blue-400'>{t('smart_cube.turns_label')}</span>
             </h4>
             <h4 className={b('text')}>
-                <span>{tps}</span> <span className='text-blue-400'>tps</span>
+                <span>{tps}</span> <span className='text-blue-400'>{t('smart_cube.tps_label')}</span>
             </h4>
         </div>
     );
