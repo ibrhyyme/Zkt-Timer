@@ -2656,6 +2656,7 @@
     "slam_ultra": "Ultra",
     "magnet_start": "Levantar para Iniciar",
     "magnet_admin_tag": "Prueba de admin",
+    "magnet_reversed": "Teléfono al revés",
     "magnet_state": "Estado",
     "magnet_state_starting": "Iniciando",
     "magnet_state_unknown": "Base desconocida",

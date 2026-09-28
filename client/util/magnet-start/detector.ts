@@ -133,7 +133,12 @@ export class MagnetDetector {
 		this.lastT = null;
 		this.lastSample = null;
 		this.lastSigma = null;
+		// All three explicitly: clearBuffer only restarts the probe while no rate has been
+		// measured yet, so a probe start time from the previous stream survived into this
+		// one and every restart read as a ~0.2 Hz "unsupported" sensor.
 		this.rateHz = null;
+		this.rateFirstT = null;
+		this.rateCount = 0;
 		this.muteUntil = -Infinity;
 		this.phase = 'unknown';
 		this.hint = 'none';
@@ -457,7 +462,10 @@ export class MagnetDetector {
 		this.refSigma = st.rms;
 		this.lastSigma = st.rms;
 		this.nearDelta = d;
-		this.nearSince = t;
+		// A re-placement (the cube slid or tipped along the edge but never left) keeps the
+		// time of the original placement: the cube has been resting all along, and restarting
+		// the dwell refused a real lift that came 20 ms after a wobble (field log 2026-09-27).
+		if (!replaced || this.nearSince === null) this.nearSince = t;
 		this.candidate = null;
 		this.setPhase('near', t);
 		this.setHint('none', t, d);

@@ -388,6 +388,15 @@ export default function ExtrasTab({
 						isActive={magnetStart.enabled}
 						onClick={toggleMagnetStart}
 					/>
+					{/* Phone upside down on the table: the cube rests between the user and the
+						phone, and the timer page is drawn rotated (util/reversed-ui.ts). Mobile
+						layout only, which counts an unfolded foldable. */}
+					<ExtrasOption
+						label={t('quick_controls.magnet_reversed')}
+						isActive={magnetStart.reversed}
+						hidden={!magnetStart.enabled || !mobileMode}
+						onClick={() => magnetStart.setReversed(!magnetStart.reversed)}
+					/>
 					{magnetStart.enabled && <MagnetPanel />}
 				</>
 			)}

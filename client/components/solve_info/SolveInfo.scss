@@ -262,10 +262,10 @@
 		color: rgb(var(--text-color));
 		overflow-y: auto;
 		padding: 0 20px;
-		padding-top: env(safe-area-inset-top, 20px);
+		padding-top: sa(top, 20px);
 		// Clears the home indicator / gesture bar, so the last row is reachable rather
 		// than sitting underneath it.
-		padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+		padding-bottom: calc(#{sa(bottom)} + 24px);
 		border-radius: 0;
 
 		.#{$namespace}-solve-info__top-actions {

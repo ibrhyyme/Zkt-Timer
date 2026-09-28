@@ -7,6 +7,7 @@ import { closeModal } from '../../../actions/general';
 import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
 import { useSwipeBack } from '../../../util/hooks/useSwipeBack';
+import { isUiReversed } from '../../../util/reversed-ui';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { isAndroidNative } from '../../../util/platform';
 
@@ -85,7 +86,9 @@ export default function Modal(props: IModalProps) {
 	const { translateX: swipeX, progress: swipeProgress, phase: swipePhase } = useSwipeBack({
 		containerRef: modalRef,
 		onSwipeBack: clickClose,
-		disabled: !mobileMode || isAndroidNative(),
+		// Reversed use turns the modal 180°, so the physical left edge and translateX would
+		// move the content against the finger. Closing still works through the backdrop/Done.
+		disabled: !mobileMode || isAndroidNative() || isUiReversed(),
 		edgeWidth: 24,
 		threshold: 100,
 	});

@@ -2656,6 +2656,7 @@
     "slam_ultra": "Ultra",
     "magnet_start": "Lift to Start",
     "magnet_admin_tag": "Admin test",
+    "magnet_reversed": "Phone upside down",
     "magnet_state": "State",
     "magnet_state_starting": "Starting",
     "magnet_state_unknown": "Baseline unknown",

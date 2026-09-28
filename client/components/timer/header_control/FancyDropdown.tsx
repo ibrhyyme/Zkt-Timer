@@ -5,13 +5,14 @@
 // "New Session +"), virtual values (e.g. "__action__new_session") are used —
 // parent component's handleValueChange catches these with switch statement.
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { CaretDown, Check } from 'phosphor-react';
 import block from '../../../styles/bem';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
 import { timerOwnsSpaceKey } from '../helpers/space_target';
+import { inReversedFrame, reversedPlacement } from '../../../util/reversed-ui';
 import './FancyDropdown.scss';
 
 const b = block('fancy-dropdown');
@@ -83,6 +84,18 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 	// useExclusiveDropdown: opening this closes any other header dropdown.
 	const [open, setOpen] = useExclusiveDropdown();
 	const viewportRef = useRef<HTMLDivElement>(null);
+	const triggerRef = useRef<HTMLButtonElement>(null);
+
+	// Reversed use (util/reversed-ui.ts): a trigger drawn inside the 180° rotated timer
+	// opens a panel in physical coordinates. Decided per trigger when it opens, because
+	// dropdowns in the upright edge drawers must stay as they are.
+	const [reversed, setReversed] = useState(false);
+	function handleOpenChange(next: boolean) {
+		if (next) setReversed(inReversedFrame(triggerRef.current));
+		setOpen(next);
+	}
+	// "Below" for the reader is physically above; the reader's start edge is the physical end.
+	const placement = reversedPlacement('bottom', align, reversed);
 
 	// When panel opens, scroll selected item to viewport center
 	// (Radix default only makes it visible, manual scroll needed to center)
@@ -129,8 +142,9 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 	if (triggerMaxWidth !== undefined) triggerStyle.maxWidth = triggerMaxWidth;
 
 	return (
-		<Select.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={setOpen}>
+		<Select.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={handleOpenChange}>
 			<Select.Trigger
+				ref={triggerRef}
 				className={[noTriggerStyles ? null : b('trigger'), className].filter(Boolean).join(' ')}
 				aria-label={ariaLabel}
 				style={triggerStyle}
@@ -152,10 +166,10 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 				<Select.Content
 					className={[b('panel'), panelClassName].filter(Boolean).join(' ')}
 					position="popper"
-					side="bottom"
+					side={placement.side}
 					avoidCollisions={false}
 					sideOffset={6}
-					align={align}
+					align={placement.align}
 					collisionPadding={12}
 					style={{ maxHeight: `min(${maxHeight}px, var(--radix-select-content-available-height))` }}
 					// On the timer page Space is the timer's key. Handing focus back to the
@@ -165,7 +179,17 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 						if (timerOwnsSpaceKey()) e.preventDefault();
 					}}
 				>
-					<Select.Viewport className={b('viewport')} ref={viewportRef}>
+					<Select.Viewport
+						// The list is turned, not the panel: the panel's transform-origin is the
+						// trigger's anchor point, so turning it would swing it off-screen.
+						className={b('viewport', { reversed })}
+						ref={viewportRef}
+						// Radix Select's scroll lock (react-remove-scroll, a non-capture document
+						// listener) judges the drag direction physically, so in a turned list it
+						// cancels drags at both ends. Keeping touchmove from reaching document
+						// leaves scrolling to the browser, which follows the finger.
+						onTouchMove={reversed ? (e) => e.stopPropagation() : undefined}
+					>
 						{groups
 							? groups.map((group, gIdx) => (
 								<React.Fragment key={`group-${gIdx}`}>

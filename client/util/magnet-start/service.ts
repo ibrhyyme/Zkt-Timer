@@ -20,6 +20,7 @@ import {
 } from './plugin';
 import { getStoredFar, setStoredFar } from './settings';
 import { setMagnetStatus } from './status_store';
+import type { MagnetTouchInput } from './touch_guard';
 import {
 	decodeSamples,
 	DetectorEvent,
@@ -157,6 +158,23 @@ class MagnetService {
 
 	getSnapshot(): DetectorSnapshot | null {
 		return this.detector ? this.detector.snapshot() : null;
+	}
+
+	/**
+	 * What the touch timer needs to know to stay out of the magnet's way. `active` is the
+	 * live stream, not a stale snapshot: the stream is off while a solve runs.
+	 */
+	touchInput(): MagnetTouchInput | null {
+		if (!this.detector) return null;
+		const snap = this.detector.snapshot();
+		return {
+			active: this.running,
+			testMode: this.isTestMode(),
+			phase: snap.phase,
+			hint: snap.hint,
+			delta: snap.delta,
+			farMax: this.detector.getConfig().farMax,
+		};
 	}
 
 	exportLog(): Promise<void> {

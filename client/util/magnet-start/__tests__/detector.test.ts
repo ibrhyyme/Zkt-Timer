@@ -186,6 +186,10 @@ describe('magnet detector on synthetic signals', () => {
 		expect(nearsOf(events).filter((n) => n.replaced)).toHaveLength(1);
 		expect(det.snapshot().phase).toBe('near');
 
+		// The rest time counts from the original placement: the cube never left.
+		const nears = nearsOf(events);
+		expect(det.snapshot().nearSince).toBe(nears[0].t);
+
 		// And a real lift after that still works.
 		const b2 = new SignalBuilder(FAR, { noise: ANDROID_NOISE, seed: 11 });
 		placeAndRest(b2);
@@ -316,6 +320,47 @@ describe('magnet detector on synthetic signals', () => {
 		expect(events.filter((e) => e.type === 'gap')).toHaveLength(2);
 		// The long gap forgets the near plateau; the resting cube is not trusted again.
 		expect(det.snapshot().phase).toBe('unknown');
+	});
+
+	it('keeps the rest time of a wobbling cube, so a lift right after a wobble is not refused', () => {
+		// Field log 2026-09-27: the cube slid on the phone several times, the last
+		// re-placement was 20 ms before the lift, and the lift was refused as "not ready".
+		const b = new SignalBuilder(FAR, { noise: ANDROID_NOISE, seed: 71 });
+		placeAndRest(b, 1500);
+		b.moveTo(add(NEAR, [0, 60, -40]), 120).hold(400); // wobble, settles as a re-placement
+		b.moveTo(FAR, 90).hold(500); // lift right after it
+
+		const det = new MagnetDetector(detectorConfigFor('android'), FAR);
+		const events = runDetector(det, b.samples());
+		const nears = nearsOf(events);
+		const lifts = liftsOf(events);
+		expect(nears.filter((n) => n.replaced).length).toBeGreaterThanOrEqual(1);
+		expect(lifts).toHaveLength(1);
+		// Measured from the first placement: well past the 300 ms dwell.
+		expect(lifts[0].nearSince).toBe(nears[0].t);
+		expect(lifts[0].onset - lifts[0].nearSince).toBeGreaterThan(1500);
+	});
+
+	it('measures the delivery rate afresh after a reset, however long the pause was', () => {
+		// Field regression (Z Fold 6, 2026-09-27): every stream restart after a solve read
+		// ~0.2 Hz and went "unsupported", because the rate probe kept its start time from the
+		// first session.
+		const det = new MagnetDetector(detectorConfigFor('android'), FAR);
+		const first = new SignalBuilder(FAR, { noise: ANDROID_NOISE, seed: 51 });
+		placeAndRest(first);
+		first.moveTo(FAR, 90).hold(500);
+		expect(liftsOf(runDetector(det, first.samples()))).toHaveLength(1);
+		expect(det.snapshot().rateHz).toBeGreaterThan(90);
+
+		det.reset();
+		const second = new SignalBuilder(FAR, { noise: ANDROID_NOISE, seed: 52, t0: first.now() + 240_000 });
+		placeAndRest(second, 4000);
+		second.moveTo(FAR, 90).hold(500);
+		const events = runDetector(det, second.samples());
+
+		expect(events.some((e) => e.type === 'unsupported')).toBe(false);
+		expect(det.snapshot().rateHz).toBeGreaterThan(90);
+		expect(liftsOf(events)).toHaveLength(1);
 	});
 
 	it('forgets everything but the baseline on reset', () => {

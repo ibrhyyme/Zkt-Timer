@@ -1,0 +1,59 @@
+// Reversed use (client/util/reversed-ui.ts, magnet lift-to-start): the phone lies upside
+// down on the table, so everything the person at the table reads is drawn rotated 180°.
+//
+// The individual `rotate` property is used rather than `transform`: Radix popovers and the
+// enter animations set `transform` themselves, and `rotate` composes with it. Like
+// `transform`, it makes the rotated box the containing block of its fixed descendants; the
+// timer root and the modals below are full-viewport and fixed already, so a centre pivot
+// maps each box onto itself and nothing moves.
+
+// Safe areas are physical: the notch is now at the reader's bottom and the home indicator
+// at their top. sa() (styles/config.scss) reads these; without the class it is plain env().
+body.#{$namespace}-reversed {
+	--zt-sa-top: env(safe-area-inset-bottom, 0px);
+	--zt-sa-bottom: env(safe-area-inset-top, 0px);
+	--zt-sa-left: env(safe-area-inset-right, 0px);
+	--zt-sa-right: env(safe-area-inset-left, 0px);
+}
+
+// The mobile root is sized by --stable-vh, which only ever grows. Rotation pivots on the
+// box centre, so the box is pinned to the real viewport to make it map onto itself.
+.#{$namespace}-timer--mobile.#{$namespace}-timer--reversed {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: auto;
+	height: auto;
+	rotate: 180deg;
+}
+
+@supports (height: 100dvh) {
+	.#{$namespace}-timer--mobile.#{$namespace}-timer--reversed {
+		--stable-vh: 100dvh;
+	}
+}
+
+// Rendered outside the timer root, so they are turned on their own. All are full-screen
+// fixed overlays, so the centre pivot keeps them in place.
+body.#{$namespace}-reversed {
+	.#{$namespace}-modal--list > .#{$namespace}-modal {
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width: auto;
+		height: auto;
+		rotate: 180deg;
+	}
+
+	.#{$namespace}-mobile-timer-scramble__expanded,
+	.#{$namespace}-scramble-visual__expanded-overlay {
+		rotate: 180deg;
+	}
+
+	// Pinned to the physical top; turned about its own centre it stays there and reads upright.
+	.Toastify__toast-container {
+		rotate: 180deg;
+	}
+}

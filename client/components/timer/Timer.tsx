@@ -35,6 +35,10 @@ import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
 import { isCancelSwipe } from './helpers/touch_gesture';
 import StreamerOverlay from './streamer/StreamerOverlay';
+import { useMagnetReversed } from '../../util/magnet-start/useMagnetReversed';
+import { isUiReversed, orientDelta, REVERSED_BODY_CLASS } from '../../util/reversed-ui';
+import { TOUCH_GUARD_AFTER_MAGNET_MS } from '../../util/magnet-start/config';
+import { getLastMagnetActionAt, touchGuardedAfterMagnet } from '../../util/magnet-start/touch_guard';
 
 const b = block('timer');
 
@@ -83,6 +87,15 @@ export default function Timer(props: TimerProps) {
 	// (used to hide chrome that lives OUTSIDE this component) and the overlay all
 	// agree.
 	const isStreamer = !!streamerMode && canUseStreamerMode(me);
+
+	// Reversed use (magnet lift-to-start): the phone lies upside down on the table, so the
+	// page is drawn rotated 180° (see util/reversed-ui.ts).
+	const reversed = useMagnetReversed({
+		mobileLayout: mobileMode && !props.inModal,
+		inModal: !!props.inModal,
+		matchMode: !!props.matchMode,
+		streamer: isStreamer,
+	});
 
 	// All default values from the settings should go here - Memoized to prevent re-renders
 	const context: ITimerContext = useMemo(() => ({
@@ -139,6 +152,15 @@ export default function Timer(props: TimerProps) {
 			document.body.classList.remove('streamer-mode-active');
 		};
 	}, [isStreamer]);
+
+	// Same body-level signal for reversed use: modals, toasts and the scramble overlays are
+	// rendered outside this subtree and turn with it, and code outside React reads it.
+	useEffect(() => {
+		document.body.classList.toggle(REVERSED_BODY_CLASS, reversed);
+		return () => {
+			document.body.classList.remove(REVERSED_BODY_CLASS);
+		};
+	}, [reversed]);
 
 	// Desktop-only immersive background: when the user has a Pro timer background image,
 	// let it bleed up behind the global HeaderNav (which lives OUTSIDE this component's
@@ -339,6 +361,7 @@ export default function Timer(props: TimerProps) {
 					// the running timer already produces.
 					started: !!context.timeStartedAt || (virtualActive && !!context.virtualArmed),
 					mobile: mobileMode && !props.inModal,
+					reversed,
 					streamerMode: isStreamer,
 					// 'left' layout mirrors the header selectors to the right (above the timer column)
 					layoutLeft: timerLayout === 'left' && !mobileMode && !props.inModal,
@@ -364,6 +387,12 @@ export default function Timer(props: TimerProps) {
 									active: (!!context.timeStartedAt || !!context.inInspection) && !virtualActive,
 								})}
 								onTouchStart={(e) => {
+									// Right after a magnet start the grabbing hand brushes the
+									// screen; that brush must not become an inspection-cancel swipe.
+									if (touchGuardedAfterMagnet(getLastMagnetActionAt(), Date.now(), TOUCH_GUARD_AFTER_MAGNET_MS)) {
+										overlayTouchStart.current = null;
+										return;
+									}
 									if (context.inInspection) {
 										// Store start point for swipe
 										overlayTouchStart.current = {
@@ -385,7 +414,8 @@ export default function Timer(props: TimerProps) {
 										// Swipe up to abandon the inspection, at the same distance that
 										// drops a primed hold (see helpers/touch_gesture).
 										const end = e.changedTouches[0];
-										if (isCancelSwipe(end.clientX - start.x, end.clientY - start.y)) {
+										const [dx, dy] = orientDelta(end.clientX - start.x, end.clientY - start.y, isUiReversed());
+										if (isCancelSwipe(dx, dy)) {
 											clearInspectionTimers(true, true);
 										}
 									}

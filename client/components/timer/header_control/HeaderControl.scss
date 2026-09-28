@@ -6,7 +6,7 @@
 	grid-template-columns: 1fr 1fr 1fr;
 	transition: opacity 0.2s ease-in-out;
 	justify-content: space-between;
-	padding: calc(20px + env(safe-area-inset-top, 0px)) 20px 20px 20px;
+	padding: calc(20px + #{sa(top)}) 20px 20px 20px;
 	box-sizing: border-box;
 	top: 0;
 	width: 100%;
@@ -145,7 +145,7 @@
 // Mobile-specific styles
 @include bp-down($bp-lg) {
 	.#{$namespace}-timer-header-control {
-		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
+		padding: calc(10px + #{sa(top)}) 12px 10px 12px !important;
 		// minmax(0, 1fr) — without the 0 min, the grid item refuses to shrink below
 		// its intrinsic content width and the picker row overflows the viewport.
 		grid-template-columns: minmax(0, 1fr) 0px auto;
@@ -230,7 +230,7 @@
 // picker widths are already fluid via clamp() above, no fixed overrides needed.
 @media (max-width: 390px) {
 	.#{$namespace}-timer-header-control {
-		padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px 10px !important;
+		padding: calc(8px + #{sa(top)}) 10px 8px 10px !important;
 
 		&__left-controls {
 			padding: 2px;

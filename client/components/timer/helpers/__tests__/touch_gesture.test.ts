@@ -1,4 +1,5 @@
 import { isCancelSwipe, SWIPE_UP_CANCEL_PX } from '../touch_gesture';
+import { orientDelta } from '../../../../util/reversed-ui';
 
 // This gesture has been broken once already: a refactor swapped the upward-swipe test
 // for an omnidirectional distance test, so lifting a finger with a few pixels of
@@ -38,5 +39,18 @@ describe('isCancelSwipe', () => {
 
 	it('still cancels on a diagonal the swipe dominates', () => {
 		expect(isCancelSwipe(10, -OVER)).toBe(true);
+	});
+});
+
+describe('isCancelSwipe on the reversed (180°) timer', () => {
+	// The phone lies upside down: the reader's "up" is physically down the screen.
+	const cancel = (dx: number, dy: number) => isCancelSwipe(...orientDelta(dx, dy, true));
+
+	it('cancels on a physical downward swipe, which is up for the reader', () => {
+		expect(cancel(0, OVER)).toBe(true);
+	});
+
+	it('never cancels on a physical upward swipe, which is down for the reader', () => {
+		expect(cancel(0, -200)).toBe(false);
 	});
 });

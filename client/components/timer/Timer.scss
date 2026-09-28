@@ -618,10 +618,10 @@ body.timer-immersive-bg {
 		flex-direction: column;
 		width: 100%;
 		flex: 1; // Fill remaining space
-		padding-top: calc(56px + env(safe-area-inset-top, 0px));
+		padding-top: calc(56px + #{sa(top)});
 
 		@media (max-height: 745px) {
-			padding-top: calc(45px + env(safe-area-inset-top, 0px)); // Closer to header
+			padding-top: calc(45px + #{sa(top)}); // Closer to header
 			gap: 0.2rem; // Reduce gap between items
 		}
 
@@ -941,3 +941,6 @@ body.timer-immersive-bg {
 		touch-action: none;
 	}
 }
+
+// Reversed use for magnet lift-to-start (phone upside down on the table)
+@import 'TimerReversed';

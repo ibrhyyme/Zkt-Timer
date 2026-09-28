@@ -103,6 +103,12 @@ export const ARM_FAR_MS = 3000;
 export const MAX_ONSET_AGE_MS = 2000;
 /** Lift triggers are ignored this long after our own READY vibration. */
 export const HAPTIC_MUTE_MS = 120;
+/**
+ * Timer touches are ignored this long after the magnet started inspection or a solve: the
+ * hand grabbing the cube brushes the screen, and a brush would otherwise stop the solve at
+ * ~0.1 s (or prime, then start, a solve on top of a magnet-started inspection).
+ */
+export const TOUCH_GUARD_AFTER_MAGNET_MS = 600;
 
 // Native stream
 export const STREAM_PERIOD_US = 10000;

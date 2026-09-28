@@ -2,7 +2,7 @@
 // Mevcut Dropdown (legacy) yerine fancy panel: blur + soft border + stagger entrance,
 // hover sol-stripe + translateX, Pro item icin koyu mor glow korunur.
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { logOut } from '../../../../util/auth/logout';
 import { useMe } from '../../../../util/hooks/useMe';
 import { isPro } from '../../../../lib/pro';
 import useExclusiveDropdown from '../../../../util/hooks/useExclusiveDropdown';
+import { inReversedFrame, reversedPlacement } from '../../../../util/reversed-ui';
 import './AccountDropdown.scss';
 
 const b = block('nav-account-dropdown');
@@ -102,6 +103,16 @@ export default function AccountDropdown() {
 		onClick: logOut,
 	});
 
+	// Reversed use (util/reversed-ui.ts): on the 180° rotated timer the popover opens in
+	// physical coordinates, so it is placed on the reader's side and its list is turned.
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [reversed, setReversed] = useState(false);
+	function handleOpenChange(next: boolean) {
+		if (next) setReversed(inReversedFrame(triggerRef.current));
+		setOpen(next);
+	}
+	const placement = reversedPlacement('bottom', 'end', reversed);
+
 	function handleItemClick(item: Item) {
 		setOpen(false);
 		if (item.onClick) {
@@ -112,9 +123,9 @@ export default function AccountDropdown() {
 	}
 
 	return (
-		<Popover.Root open={open} onOpenChange={setOpen}>
+		<Popover.Root open={open} onOpenChange={handleOpenChange}>
 			<Popover.Trigger asChild>
-				<button type="button" className={b('handle')}>
+				<button ref={triggerRef} type="button" className={b('handle')}>
 					<div className={b('pfp')}>
 						<AvatarImage user={me} profile={me.profile} />
 					</div>
@@ -125,11 +136,12 @@ export default function AccountDropdown() {
 			<Popover.Portal>
 				<Popover.Content
 					className={b('panel')}
-					align="end"
+					side={placement.side}
+					align={placement.align}
 					sideOffset={8}
 					collisionPadding={12}
 				>
-					<div className={b('options')}>
+					<div className={b('options', { reversed })}>
 						{items.map((item, i) => (
 							<button
 								key={item.key}

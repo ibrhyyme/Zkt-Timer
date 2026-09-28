@@ -129,6 +129,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+
+		// Reversed use: the list turns with the rotated timer; the panel stays physical
+		// because its transform-origin is the trigger's anchor point.
+		&--reversed {
+			rotate: 180deg;
+		}
 	}
 
 	// ============================================================

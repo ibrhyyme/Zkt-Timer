@@ -2663,6 +2663,7 @@
     "slam_ultra": "Ultra",
     "magnet_start": "Kaldırınca Başlat",
     "magnet_admin_tag": "Admin testi",
+    "magnet_reversed": "Telefonu ters koyuyorum",
     "magnet_state": "Durum",
     "magnet_state_starting": "Başlatılıyor",
     "magnet_state_unknown": "Taban bilinmiyor",

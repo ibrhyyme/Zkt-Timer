@@ -29,6 +29,15 @@ import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/up
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { useMagnetStart } from '../../../util/magnet-start/useMagnetStart';
+import { magnetService } from '../../../util/magnet-start/service';
+import { magnetDebugLog } from '../../../util/magnet-start/debug_log';
+import { TOUCH_GUARD_AFTER_MAGNET_MS } from '../../../util/magnet-start/config';
+import {
+	getLastMagnetActionAt,
+	magnetOwnsTouchStart,
+	touchGuardedAfterMagnet,
+} from '../../../util/magnet-start/touch_guard';
+import { isUiReversed, orientDelta } from '../../../util/reversed-ui';
 import { classifyTouchTarget } from '../helpers/touch_target';
 import { isCancelSwipe } from '../helpers/touch_gesture';
 import {
@@ -187,6 +196,13 @@ export default function KeyWatcher(props: Props) {
 			return;
 		}
 
+		// Magnet lift-to-start: the hand that places or lifts the cube passes by the screen.
+		// Checked after touchDrivesTimer so header, stats and drawer taps are never touched.
+		if (magnetTouchIgnored()) {
+			e.preventDefault();
+			return;
+		}
+
 		touchPrimingCancelledRef.current = false;
 
 		if (e.touches && e.touches[0]) {
@@ -267,6 +283,27 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	/**
+	 * Whether a timer touch must be ignored because of magnet lift-to-start (see
+	 * magnet-start/touch_guard.ts). Only ever true for admins with the feature on: without
+	 * it no magnet action is recorded and the stream never runs.
+	 */
+	function magnetTouchIgnored(): boolean {
+		// Right after the magnet started inspection or a solve, the grabbing hand brushes
+		// the screen: a brush would stop the solve at ~0.1 s.
+		if (touchGuardedAfterMagnet(getLastMagnetActionAt(), Date.now(), TOUCH_GUARD_AFTER_MAGNET_MS)) {
+			magnetDebugLog.record('touch_ignored', { reason: 'after_magnet' });
+			return true;
+		}
+		// While the cube rests at the hot spot or is being placed or lifted, the magnet owns
+		// the start. The stream is off during a solve, so stopping is never blocked here.
+		if (!getTimerStore('timeStartedAt') && magnetOwnsTouchStart(magnetService.touchInput())) {
+			magnetDebugLog.record('touch_ignored', { reason: 'magnet_owns_start' });
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Gives up on a touch without starting anything, leaving no armed state behind.
 	 * Used by every `touchEnd` bail: the finger is gone, so a hold that was priming the
 	 * timer must not survive it.
@@ -285,8 +322,12 @@ export default function KeyWatcher(props: Props) {
 		const touch = e.touches[0];
 		if (!touch) return;
 
-		const diffX = touch.clientX - touchStartX.current;
-		const diffY = touch.clientY - touchStartY.current;
+		// In the reader's frame: with the page rotated for reversed use, physically down is up.
+		const [diffX, diffY] = orientDelta(
+			touch.clientX - touchStartX.current,
+			touch.clientY - touchStartY.current,
+			isUiReversed()
+		);
 
 		// Sliding the finger UP is how a cuber says "not this one after all". Movement in
 		// any other direction is just the hand settling or lifting, and must never cost
@@ -609,6 +650,15 @@ export default function KeyWatcher(props: Props) {
 		// Releasing some other key while space is held is not the end of the hold, so this
 		// one must stay a plain bail.
 		if ((e.keyCode !== 32 && !touch) || !spaceTimerStarted) return;
+
+		// A palm that primed before the cube came within the magnet's reach and lifts while
+		// the cube is being placed or rests at the hot spot: that was the hand placing the
+		// cube. With freeze_time 0 any such brush would otherwise start a solve.
+		if (touch && magnetOwnsTouchStart(magnetService.touchInput())) {
+			disarmPriming();
+			magnetDebugLog.record('touch_ignored', { reason: 'release_magnet_owns_start' });
+			return;
+		}
 
 		// The solve is already running under this hold: inspection ran out and auto-started
 		// it while the key or finger was still down. The hold is spent, and carrying on

@@ -167,6 +167,36 @@ describe('magnet service', () => {
 		expect(lifts[0].armed).toBe(false);
 	});
 
+	it('keeps detecting lifts after the stream restarts between solves', async () => {
+		const h = loadService();
+		const batches: any[] = [];
+		h.service.subscribe((b) => batches.push(b));
+
+		// Solve 1: stream runs while idle, a lift is detected.
+		let release = h.service.acquire('solve');
+		await settle();
+		const s1 = new SignalBuilder(FAR, { noise: IOS_NOISE, seed: 61, t0: Date.now() });
+		s1.hold(4000).moveTo(NEAR, 300).hold(800).moveTo(FAR, 90).hold(300);
+		for (const batch of toBatches(s1.samples())) h.plugin.emit(toPayload(batch));
+
+		// The solve runs: the hook releases, the stream stops, then restarts afterwards.
+		release();
+		await settle();
+		const restartAt = Date.now() + 60_000;
+		jest.spyOn(Date, 'now').mockReturnValue(restartAt);
+		release = h.service.acquire('solve');
+		await settle();
+
+		const s2 = new SignalBuilder(FAR, { noise: IOS_NOISE, seed: 62, t0: restartAt });
+		s2.hold(4000).moveTo(NEAR, 300).hold(800).moveTo(FAR, 90).hold(300);
+		for (const batch of toBatches(s2.samples())) h.plugin.emit(toPayload(batch));
+
+		const events = batches.flatMap((b) => b.events);
+		expect(events.some((e) => e.type === 'unsupported')).toBe(false);
+		expect(batches.flatMap((b) => b.lifts)).toHaveLength(2);
+		release();
+	});
+
 	it('drops samples queued from before the stream restart', async () => {
 		const h = loadService();
 		const batches: any[] = [];

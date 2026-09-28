@@ -10,6 +10,8 @@ import { hapticImpact } from '../native-plugins';
 import { canUseMagnetStart } from '../../lib/magnet-start-access';
 import { ITimerContext } from '../../components/timer/Timer';
 import { setTimerParams } from '../../components/timer/helpers/params';
+import { START_TIMEOUT, stopTimer } from '../../components/timer/helpers/timers';
+import { getTimerStore } from '../store/getTimer';
 import { getInspectionStartedAt, startInspection, startTimer } from '../../components/timer/helpers/events';
 import { HAPTIC_MUTE_MS, MIN_DWELL_MS } from './config';
 import { computeReadiness, decideOnLift, dwellMsFor, MagnetAction, TimerSide } from './controller';
@@ -19,6 +21,7 @@ import { useMagnetStartSettings } from './settings';
 import { startBlockReason } from './start_guard';
 import { setMagnetStatus } from './status_store';
 import { useMagnetAvailability } from './availability';
+import { markMagnetAction, shouldCancelHoldOnPlacement } from './touch_guard';
 
 const BLIND_SUBSET = /(ni|bld)$/;
 
@@ -59,6 +62,9 @@ function runAction(action: MagnetAction, ctx: ITimerContext): void {
 	if (action.kind === 'none') return;
 	// The callback comes from Capacitor, outside React 17's own batching: without this each
 	// store write below would re-render the timer on its own.
+	// Applied now, not at the onset: the brush the touch guard protects against follows the
+	// start the user sees.
+	markMagnetAction(Date.now());
 	unstable_batchedUpdates(() => {
 		setMagnetStatus({ green: false, orange: false });
 		if (action.kind === 'startInspection') {
@@ -114,6 +120,16 @@ export function useMagnetStart(context: ITimerContext) {
 			const ctx = contextRef.current;
 			const settings = getSettings();
 			const dwellMs = dwellMsFor(settings.freeze_time, MIN_DWELL_MS);
+
+			// A palm that landed before the cube came within reach primed a touch hold; once
+			// the cube settles at the hot spot that hold was the hand placing it. Dropping it
+			// here (before any decision) keeps the magnet start from being refused as
+			// 'touch_priming' and keeps the palm's release from starting a solve.
+			if (shouldCancelHoldOnPlacement(batch.events, !!getTimerStore('spaceTimerStarted'), batch.testMode)) {
+				setTimerParams({ spaceTimerStarted: 0, canStart: false });
+				stopTimer(START_TIMEOUT);
+				magnetDebugLog.record('touch_hold_cancelled');
+			}
 
 			for (const { event, armed } of batch.lifts) {
 				const side = readTimerSide(ctx, batch.testMode);

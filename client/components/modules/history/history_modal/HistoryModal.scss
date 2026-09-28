@@ -73,7 +73,7 @@
 		padding: 16px 20px;
 		margin-bottom: 0;
 		background-color: rgb(var(--background-color));
-		padding-top: env(safe-area-inset-top, 20px); // Handle iOS notch
+		padding-top: sa(top, 20px); // Handle iOS notch
 		flex-shrink: 0; // Don't shrink
 		z-index: 10;
 	}

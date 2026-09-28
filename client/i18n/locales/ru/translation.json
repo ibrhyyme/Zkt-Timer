@@ -2658,6 +2658,7 @@
     "slam_ultra": "Ультра",
     "magnet_start": "Поднять для старта",
     "magnet_admin_tag": "Тест админа",
+    "magnet_reversed": "Телефон перевёрнут",
     "magnet_state": "Состояние",
     "magnet_state_starting": "Запуск",
     "magnet_state_unknown": "База неизвестна",

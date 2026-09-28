@@ -2654,6 +2654,7 @@
     "slam_ultra": "超高",
     "magnet_start": "拿起开始",
     "magnet_admin_tag": "管理员测试",
+    "magnet_reversed": "手机倒放",
     "magnet_state": "状态",
     "magnet_state_starting": "启动中",
     "magnet_state_unknown": "基准未知",

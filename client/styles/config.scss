@@ -17,6 +17,14 @@ $defaultFontFamily: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	--safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
+// Safe-area inset that follows "reversed use" (client/util/reversed-ui.ts). body.zt-reversed
+// defines --zt-sa-* with top<->bottom and left<->right swapped for the 180° rotated timer;
+// everywhere else the variable is undefined and this is exactly the plain env() value.
+// Call it interpolated inside calc()/max(): `calc(20px + #{sa(top)})`.
+@function sa($side, $fallback: 0px) {
+	@return var(--zt-sa-#{$side}, env(safe-area-inset-#{$side}, #{$fallback}));
+}
+
 $primaryColor: #246bfd;
 $secondaryGreen: #66bb6a;
 $primaryGreen: #66bb6a;

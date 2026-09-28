@@ -185,6 +185,12 @@
 		z-index: 1;
 		max-height: inherit;
 		overflow-y: auto;
+
+		// Reversed use: the list turns with the rotated timer it was opened from (the panel
+		// itself is positioned physically, see FancyDropdown.tsx).
+		&--reversed {
+			rotate: 180deg;
+		}
 		// Subtle scrollbar
 		scrollbar-width: thin;
 		scrollbar-color: rgba(var(--text-color), 0.2) transparent;
