@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BattleProvider, useBattle, BattleSolve } from './BattleContext';
+import { BattleCubesProvider } from './smart/BattleCubesProvider';
 import BattleTimer from './BattleTimer';
 import BattleMenu from './BattleMenu';
 import BattleHistory from './BattleHistory';
@@ -56,8 +57,16 @@ function BattleInner() {
 			}
 		};
 
+		// Both events: touch is how the page is played, but the dropdown was unclosable with a
+		// mouse, which is the only way battle can be driven in a desktop browser. A tap fires
+		// both, and closing twice is the same as closing once, so no timestamp guard is needed
+		// here the way it is on the timer halves.
 		document.addEventListener('touchstart', handleClickOutside);
-		return () => document.removeEventListener('touchstart', handleClickOutside);
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => {
+			document.removeEventListener('touchstart', handleClickOutside);
+			document.removeEventListener('mousedown', handleClickOutside);
+		};
 	}, [cubeDropdownOpen]);
 
 	const currentCubeName = CUBE_TYPES.find((ct) => ct.id === settings.cubeType)?.name || settings.cubeType;
@@ -71,7 +80,7 @@ function BattleInner() {
 			<div className={b('toolbar')}>
 				<div className={b('toolbar-buttons')}>
 					{/* Kup turu dropdown */}
-					<div style={{ position: 'relative' }} ref={dropdownRef}>
+					<div className={b('toolbar-cube')} ref={dropdownRef}>
 						<button
 							className={b('toolbar-btn', { 'cube-type': true })}
 							onClick={() => setCubeDropdownOpen((prev) => !prev)}
@@ -124,24 +133,27 @@ function BattleInner() {
 }
 
 export default function Battle() {
-	const [isMobile, setIsMobile] = useState(false);
-
-	useEffect(() => {
-		if (typeof window !== 'undefined') {
-			setIsMobile(window.innerWidth <= 750);
-			const handleResize = () => setIsMobile(window.innerWidth <= 750);
-			window.addEventListener('resize', handleResize);
-			return () => window.removeEventListener('resize', handleResize);
-		}
-	}, []);
-
+	/**
+	 * Client-only, but no longer phone-only.
+	 *
+	 * This used to return null above 750px, which rendered a blank dark page on every iPad
+	 * except the mini, on any phone turned sideways, and on every desktop. 750 matched nothing
+	 * in the design system either; the scale runs 400/480/640/768/1024/1280/1600. The stylesheet
+	 * now scales the layout up instead of the component refusing to draw it.
+	 *
+	 * The window check stays. Battle builds its first scramble while the reducer initialises, so
+	 * a server render would produce a different scramble than the client and break hydration.
+	 */
 	if (typeof window === 'undefined') return null;
-	if (!isMobile) return null;
 
 	return (
 		<FeatureGuard feature="battle_enabled" pageNameKey="nav.battle">
 			<BattleProvider>
-				<BattleInner />
+				{/* Inside BattleProvider: the cube layer follows the round's scramble, so it
+				    has to be able to read battle state. */}
+				<BattleCubesProvider>
+					<BattleInner />
+				</BattleCubesProvider>
 			</BattleProvider>
 		</FeatureGuard>
 	);

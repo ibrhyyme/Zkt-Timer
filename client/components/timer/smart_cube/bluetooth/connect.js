@@ -112,6 +112,11 @@ export default class Connect extends SmartCube {
 		setTelemetryDevice(device.name || null, cubeType);
 
 		if (cube) {
+			// Hand the driver this connection's own sink BEFORE init(): a cube can deliver a valid
+			// packet while init is still awaiting its handshake chain, and that callback must already
+			// know where to post. Null here leaves the driver on the app-wide manager, which is what
+			// the timer page, rooms and the trainer all use.
+			cube._sink = this._sink;
 			this.activeCube = cube;
 			if (this._onCubeCreated) this._onCubeCreated(cube);
 			console.log(`[BLE-CONNECT] cube.init() starting (${cubeType})...`);
@@ -135,9 +140,16 @@ export default class Connect extends SmartCube {
 		}
 	};
 
-	connect = async (acceptAll = false, surface = 'timer') => {
+	/**
+	 * `initialExcludeIds`: devices the caller already knows must not be picked.
+	 *
+	 * Battle runs two links side by side and has to keep the second player from choosing the
+	 * cube the first one is already holding; the app-wide manager has no such case and passes
+	 * nothing. The list is copied, because the retry loop below appends to it.
+	 */
+	connect = async (acceptAll = false, surface = 'timer', initialExcludeIds = []) => {
 		const MAX_RETRIES = 3;
-		const excludeDeviceIds = [];
+		const excludeDeviceIds = [...initialExcludeIds];
 		this._cancelled = false;
 		this._surface = surface;
 		// Clear the previous cube's identity before scanning. Without this a scan that fails

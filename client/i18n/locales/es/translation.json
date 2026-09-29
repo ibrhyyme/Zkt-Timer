@@ -3825,7 +3825,6 @@
     }
   },
   "battle": {
-    "mobile_only": "El modo batalla solo está disponible en móvil",
     "tap_to_start": "Toca para comenzar",
     "solving": "Resolviendo...",
     "score": "Puntuación",
@@ -3856,7 +3855,22 @@
     "display": "Visualización",
     "round_detail": "Ronda {{number}}",
     "scramble_label": "Mezcla",
-    "wins": "¡{{name}} gana!"
+    "wins": "¡{{name}} gana!",
+    "connect_cube": "Conectar cubo",
+    "cube_connected": "Cubo conectado",
+    "cube_connecting": "Conectando...",
+    "cube_ready": "Listo",
+    "scramble_cube": "Mezcla tu cubo",
+    "cube_just_solve": "El cubo está mezclado. Resuélvelo primero y luego mézclalo",
+    "cube_scan_busy": "El otro jugador está conectando un cubo",
+    "cube_mark_solved": "Marcar como resuelto",
+    "cube_disconnect": "Desconectar",
+    "cube_state_solved": "El cubo se declara resuelto",
+    "cube_state_scrambled": "El cubo se declara mezclado",
+    "cube_state_unknown": "Esperando el estado del cubo",
+    "cube_held_elsewhere": "Hay un cubo conectado en otra página: {{name}}",
+    "cube_already_in_play": "Ese cubo ya está en juego para el otro jugador",
+    "cube_mark_solved_failed": "El cubo no aceptó el comando, inténtalo de nuevo"
   },
   "phase_analysis": {
     "no_smart_solves": "No se encontraron soluciones con cubo inteligente",

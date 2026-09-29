@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBattle } from './BattleContext';
+import { useBattleCubes } from './smart/BattleCubesProvider';
 import { X, ArrowsDownUp, ArrowClockwise, Trash, ArrowCounterClockwise } from 'phosphor-react';
 import block from '../../styles/bem';
 
@@ -9,6 +10,7 @@ const b = block('battle');
 export default function BattleMenu() {
 	const { t } = useTranslation();
 	const { state, dispatch } = useBattle();
+	const { swapPlayers } = useBattleCubes();
 	const { settings, menuOpen } = state;
 
 	if (!menuOpen) return null;
@@ -29,7 +31,7 @@ export default function BattleMenu() {
 			{/* Actions */}
 			<div className={b('section-label')}>{t('battle.settings')}</div>
 			<div className={b('menu-actions')}>
-				<button className={b('menu-action')} onClick={() => { dispatch({ type: 'SWITCH_SIDES' }); dispatch({ type: 'TOGGLE_MENU' }); }}>
+				<button className={b('menu-action')} onClick={() => { swapPlayers(); dispatch({ type: 'SWITCH_SIDES' }); dispatch({ type: 'TOGGLE_MENU' }); }}>
 					<ArrowsDownUp size={18} />
 					{t('battle.switch_sides')}
 				</button>

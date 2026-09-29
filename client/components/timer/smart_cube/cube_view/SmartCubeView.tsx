@@ -45,10 +45,22 @@ interface Props {
 	 */
 	keepVisualOnClear?: boolean;
 	onStreamCleared?: () => void;
+	/**
+	 * Where the cube's signals come from, for a caller that is not on the app-wide link.
+	 *
+	 * Left out, the view reads the Redux mirror and the app-wide connection manager, which is
+	 * what the timer page and rooms have always done and still do. Battle passes them in
+	 * because it runs two cubes at once, below the manager, and neither of its streams reaches
+	 * Redux — without this the second cube would have nothing to draw from.
+	 */
+	turns?: SmartTurn[];
+	facelets?: string | null;
+	/** Null disables the gyroscope (battle draws no gyro). Undefined means the app-wide manager. */
+	gyroSource?: { subscribeGyro: (listener: (event: any) => void) => () => void } | null;
 }
 
 const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeView(
-	{ connected, size, hidden, keepVisualOnClear, onStreamCleared },
+	{ connected, size, hidden, keepVisualOnClear, onStreamCleared, turns, facelets, gyroSource },
 	ref
 ) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -82,8 +94,12 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	const recolorPendingRef = useRef(true);
 	const appliedTurnsRef = useRef(0);
 
-	const smartTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
-	const smartCurrentState: string | null = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
+	// Hooks run unconditionally; the props simply win when a caller supplies them.
+	const reduxTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
+	const reduxFacelets: string | null = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
+
+	const smartTurns: SmartTurn[] = turns ?? reduxTurns;
+	const smartCurrentState: string | null = facelets !== undefined ? facelets : reduxFacelets;
 	const smartCurrentStateRef = useRef(smartCurrentState);
 	smartCurrentStateRef.current = smartCurrentState;
 
@@ -215,7 +231,11 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	// stops processing those packets entirely.
 	useEffect(() => {
 		if (!connected) return;
-		const unsubscribe = getSmartCubeManager().subscribeGyro((event: any) => {
+		// undefined means "use the app-wide manager" (timer, rooms); null means this caller
+		// has no gyro to offer and the whole subscription is skipped.
+		const source = gyroSource === undefined ? getSmartCubeManager() : gyroSource;
+		if (!source) return;
+		const unsubscribe = source.subscribeGyro((event: any) => {
 			if (event.type !== 'GYRO' || !event.quaternion) return;
 			const { x: qx, y: qy, z: qz, w: qw } = event.quaternion;
 			const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
@@ -231,7 +251,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 		});
 
 		return () => unsubscribe();
-	}, [connected]);
+	}, [connected, gyroSource]);
 
 	function resetVisualToSolved() {
 		if (!twistyPlayerRef.current) return;

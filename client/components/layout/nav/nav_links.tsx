@@ -51,7 +51,10 @@ export const NAV_LINKS: NavLinkProps[] = [
 		match: /^\/battle/,
 		link: '/battle',
 		loginRequired: false,
-		mobileOnly: true,
+		// No mobileOnly flag: battle used to refuse to render above 750px, so a desktop link
+		// would have led to a blank page. It now scales to the viewport, and the desktop header
+		// filters this flag out (HeaderNav), which would otherwise leave the page reachable only
+		// by typing the URL.
 	},
 	{
 		name: 'nav.sessions',

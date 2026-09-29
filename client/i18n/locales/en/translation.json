@@ -3825,7 +3825,6 @@
     }
   },
   "battle": {
-    "mobile_only": "Battle mode is only available on mobile",
     "tap_to_start": "Tap to start",
     "solving": "Solving...",
     "score": "Score",
@@ -3856,7 +3855,22 @@
     "display": "Display",
     "round_detail": "Round {{number}}",
     "scramble_label": "Scramble",
-    "wins": "{{name}} wins!"
+    "wins": "{{name}} wins!",
+    "connect_cube": "Connect Cube",
+    "cube_connected": "Cube connected",
+    "cube_connecting": "Connecting...",
+    "cube_ready": "Ready",
+    "scramble_cube": "Scramble your cube",
+    "cube_just_solve": "Cube is scrambled. Solve it first, then scramble",
+    "cube_scan_busy": "The other player is connecting a cube",
+    "cube_mark_solved": "Mark as solved",
+    "cube_disconnect": "Disconnect",
+    "cube_state_solved": "Cube reports solved",
+    "cube_state_scrambled": "Cube reports scrambled",
+    "cube_state_unknown": "Waiting for cube state",
+    "cube_held_elsewhere": "A cube is connected on another page: {{name}}",
+    "cube_already_in_play": "That cube is already in play for the other player",
+    "cube_mark_solved_failed": "The cube did not accept the command, try again"
   },
   "phase_analysis": {
     "no_smart_solves": "No smart cube solves found",

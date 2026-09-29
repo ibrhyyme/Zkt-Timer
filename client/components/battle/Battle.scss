@@ -2,6 +2,37 @@
 
 $self: '.zt-battle';
 
+// -- Local scale ------------------------------------------
+// The project keeps only breakpoint and motion tokens globally; spacing, radius and shadow are
+// defined per file (ProPage does the same). One place to change instead of free numbers spread
+// across the sheet.
+$radius-half: 18px; // a timer half
+$radius-panel: 13px; // panel, dropdown, card
+$radius-ctrl: 9px; // button, badge, chip
+$radius-pill: 999px;
+
+$edge: 14px; // distance from a timer half's edge
+$gap-tight: 6px;
+$gap: 10px;
+
+$shadow-ctrl: 0 1px 3px rgba(0, 0, 0, 0.18);
+$shadow-panel: 0 12px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+// A state that is ON fills solid, so it reads as pressed rather than as a hint. The colour it
+// fills with decides the text on top, which for the two theme colours is the computed
+// --theme-*-opposite pair. --error-color and --warning-color are NOT among the six colours a
+// user can theme (see themes.ts): they are fixed in index.scss, so the colour that reads on them
+// is fixed too and can be stated here. Measured against each fill: 4.79:1 on the error red,
+// 6.73:1 on the warning orange. This is the one place a literal belongs, because the background
+// it is written against is a literal as well.
+$on-error: #000;
+$on-warning: #000;
+
+// A control centred at the bottom of a half has a stats block in one bottom corner and the cube
+// preview in the other. Keeping clear of both is what stops the three from overlapping on a
+// narrow phone, which they did at every width below about 400px.
+$bottom-corner-clearance: 210px;
+
 .zt-battle {
 	position: fixed;
 	inset: 0;
@@ -16,60 +47,132 @@ $self: '.zt-battle';
 	-webkit-tap-highlight-color: transparent;
 
 	// =====================
-	// TIMER AREAS
+	// TIMER HALVES
 	// =====================
+	//
+	// Each half owns `--on-surface`: the colour that reads ON this half right now. Everything
+	// layered on top (badges, buttons, preview, stats) draws from it, so when the half fills with
+	// a state colour the whole layer follows in one step.
+	//
+	// This is what fixes "blue controls on a blue fill": the theme pair resolves to black on a
+	// light fill and white on a dark one, in every theme, which a hardcoded white cannot do.
 	&__timer {
+		--on-surface: var(--text-color);
+
 		flex: 1;
+		// Without this a long scramble refuses to shrink, both halves grow past the viewport and
+		// the bottom one loses its edge off-screen.
+		min-height: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		position: relative;
+		// A 7x7 or Megaminx scramble is longer than a half is tall. It used to spill over the
+		// toolbar and onto the opponent side; clipping it here keeps the damage inside the
+		// player own card.
+		overflow: hidden;
 		margin: 6px;
-		border-radius: 16px;
-		@include dark-glass(0.3, 8px, 0.06);
-		transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+		// Reserves the two absolute rows so the centred column stops short of them instead of
+		// running underneath: the badge strip at the top, the cube button at the bottom. A
+		// Megaminx scramble on a 320px screen came within 4px of both.
+		//
+		// Equal on both sides on purpose. Tying the reserve to the cube button actually being
+		// present is the obvious move and it is wrong twice over: the button unmounts while a
+		// solve runs, so the column would jump the moment the timer starts, and a build without
+		// the cube layer at all would keep a band of nothing under every half. Padding the same
+		// amount top and bottom leaves the column centred either way.
+		padding: 46px 0;
+		border-radius: $radius-half;
+		color: rgb(var(--on-surface));
+		background: rgba(var(--button-color), 0.32);
+		border: 1px solid rgba(var(--text-color), 0.07);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		// Written out rather than @include dark-glass: that mixin stamps !important on all five
+		// properties, which is why every state modifier below used to need !important too.
+		transition: background $motion-shrink $ease-standard, border-color $motion-shrink $ease-standard;
 
 		&--rotated {
 			transform: rotate(180deg);
 		}
 
+		// Ready. The fill is functional, not decoration: the player across the table reads the
+		// state without looking at any text. Two stops rather than one flat colour so the time on
+		// top keeps its contrast.
 		&--priming {
-			background: rgba(var(--secondary-color), 0.7) !important;
-			border-color: rgba(var(--secondary-color), 0.8) !important;
-
-			.zt-battle__time {
-				text-shadow: none;
-			}
+			--on-surface: var(--theme-secondary-opposite);
+			background: linear-gradient(
+				180deg,
+				rgba(var(--secondary-color), 0.94),
+				rgba(var(--secondary-color), 0.78)
+			);
+			border-color: rgba(var(--secondary-color), 0.9);
 		}
 
+		// Solving: everything recedes, the time is alone on the page.
 		&--timing {
-			background: transparent !important;
-			border-color: transparent !important;
-			box-shadow: none !important;
-			backdrop-filter: none !important;
-			-webkit-backdrop-filter: none !important;
+			background: transparent;
+			border-color: transparent;
+			box-shadow: none;
+			backdrop-filter: none;
+			-webkit-backdrop-filter: none;
 		}
 
 		&--done {
-			background: rgba(var(--primary-color), 0.7) !important;
-			border-color: rgba(var(--primary-color), 0.8) !important;
+			--on-surface: var(--theme-primary-opposite);
+			background: linear-gradient(
+				180deg,
+				rgba(var(--primary-color), 0.94),
+				rgba(var(--primary-color), 0.78)
+			);
+			border-color: rgba(var(--primary-color), 0.9);
 		}
 
-		&:first-child {
+		// Safe area, keyed off the player rather than the DOM position. These used to be
+		// :first-child and :nth-child(3) and matched nothing at all: the screen-reader heading is
+		// the block first child, so the halves are actually the second and the fourth. The notch
+		// has been eating the top card edge for as long as the rules have been here.
+		&--top {
 			margin-top: calc(6px + env(safe-area-inset-top, 0px));
 		}
 
-		&:nth-child(3) {
+		&--bottom {
 			margin-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+		}
+
+		// touch-action is NOT inherited, so a child of a display-only block does not pick up that
+		// block's value. A press landing on such a child falls back to a text-selection or pan
+		// gesture, the touchend is swallowed and the timer never starts.
+		//
+		// Stated once for the whole half rather than per block, which is exactly how the bug came
+		// back twice: each time it was fixed by listing the elements that existed that day, and
+		// each time a later addition was not on the list. The scramble area, the stats lines and
+		// the cube preview all hold children now, and whatever is added next is covered without
+		// anyone having to remember this rule.
+		*:not(button) {
+			touch-action: none;
+		}
+
+		// Anything meant to be pressed keeps the tap and only gives up the double-tap zoom delay.
+		button {
+			touch-action: manipulation;
 		}
 	}
 
+	// =====================
+	// TYPOGRAPHY INSIDE A HALF
+	// =====================
+	// One ladder: time, then scramble, then status, then badges and stats. Size and weight carry
+	// the hierarchy; nothing is faded to sit lower, because a faded control reads as disabled.
 	&__player-name {
-		font-size: 0.8rem;
-		opacity: 1;
-		margin-bottom: 4px;
-		font-weight: 500;
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgb(var(--on-surface));
+		margin-bottom: 6px;
 		pointer-events: none;
 		touch-action: none;
 	}
@@ -81,151 +184,419 @@ $self: '.zt-battle';
 		// font-variant-numeric can trigger locl feature on iOS Turkish locale,
 		// which converts decimal point to comma.
 		font-feature-settings: 'tnum' 1, 'locl' 0;
-		letter-spacing: -0.02em;
-		font-size: clamp(2.5rem, 12vw, 4.5rem);
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		letter-spacing: -0.03em;
+		font-size: clamp(2.6rem, 13vw, 4.6rem);
+		line-height: 1.05;
+		color: rgb(var(--on-surface));
 		transition: font-size 0.15s ease;
 		pointer-events: none;
 		touch-action: none;
 
+		// A penalty is only ever on screen while the half is filled for "done", so painting the
+		// digits in the penalty colour meant the result was unreadable every single time it
+		// mattered. The mark moves to a rule under the number: it survives any fill, it reads
+		// from across the table, and the digits keep the contrast of a normal time.
 		&--dnf {
-			color: rgb(var(--error-color));
+			border-bottom: 4px solid rgb(var(--error-color));
+			padding-bottom: 4px;
 		}
 
 		&--plus2 {
-			color: rgb(var(--warning-color));
+			border-bottom: 4px solid rgb(var(--warning-color));
+			padding-bottom: 4px;
 		}
 
+		// Prompt text, not a number: drops the mono face and the display size, keeps full strength
+		// so it never reads as a disabled label.
 		&--idle {
-			font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-			font-size: clamp(1rem, 4vw, 1.3rem);
-			opacity: 1;
-			font-weight: 400;
-			text-shadow: none;
+			font-family: $defaultFontFamily;
+			font-size: clamp(0.95rem, 4vw, 1.2rem);
+			font-weight: 600;
+			letter-spacing: 0;
+			color: rgb(var(--on-surface));
 		}
 	}
 
 	// =====================
-	// STATS (in timer corners)
+	// SCRAMBLE (inside a half)
 	// =====================
-	&__stats {
-		position: absolute;
-		bottom: 12px;
-		font-size: 0.7rem;
-		opacity: 1;
-		font-family: 'Roboto Mono', monospace;
-		line-height: 1.6;
+	&__scramble {
+		// Smaller than the display size it used to sit at. The area has to hold a 7x7 or Megaminx
+		// scramble as well as a 3x3 one, and the time above it is what the eye should reach first.
+		font-size: clamp(0.85rem, 3.6vw, 1rem);
+		font-weight: 500;
+		line-height: 1.5;
+		letter-spacing: 0.01em;
+		text-align: center;
+		max-width: 88%;
+		word-break: break-word;
+		margin-top: $gap;
+		color: rgb(var(--on-surface));
 		pointer-events: none;
 		touch-action: none;
 
-		&--left {
-			left: 14px;
-			text-align: left;
+		// This area used to hold one text node; it now holds a per-move list, a correction
+		// sequence, an alert and a button. touch-action for those children is handled once on
+		// the half above; what is specific to this block is the line below.
+		//
+		// pointer-events IS inherited, unlike touch-action, so the `none` above reaches every
+		// child and anything meant to be pressed has to opt back in by hand. This is the only
+		// place in a half where a button sits inside a block that refuses pointer events.
+		button {
+			pointer-events: auto;
 		}
+	}
 
-		&--right {
-			right: 14px;
-			text-align: right;
-		}
+	// =====================
+	// TOP STRIP: score, streak, penalties
+	// =====================
+	// The score and the streak hold the left end, the penalties the right. All three share one
+	// height and one surface language, so the top of a half reads as a strip rather than as
+	// things pinned to corners.
+	//
+	// The left end is one row rather than two absolute corners: the streak only ever appears
+	// alongside the score, and two independently positioned badges would have had to agree on a
+	// width neither of them knows.
+	&__top-left {
+		position: absolute;
+		top: $edge;
+		left: $edge;
+		// Keeps the row clear of the penalty buttons at the other end of the strip.
+		max-width: calc(100% - 170px);
+		display: flex;
+		align-items: center;
+		gap: $gap-tight;
+		pointer-events: none;
+		touch-action: none;
 	}
 
 	&__score-badge {
-		position: absolute;
-		top: 12px;
-		left: 14px;
-		font-size: 1.1rem;
-		font-weight: 700;
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		height: 30px;
+		padding: 0 11px;
+		border-radius: $radius-ctrl;
 		font-family: 'Roboto Mono', monospace;
-		opacity: 1;
-		transition: font-size 0.2s ease, color 0.2s ease;
-		background: rgba(0, 0, 0, 0.5);
-		padding: 4px 10px;
-		border-radius: 8px;
+		font-feature-settings: 'tnum' 1, 'locl' 0;
+		font-size: 1rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		color: rgb(var(--on-surface));
+		background: rgba(var(--on-surface), 0.1);
+		border: 1px solid rgba(var(--on-surface), 0.16);
+		transition: border-color $motion-shrink $ease-standard, background $motion-shrink $ease-standard;
 		pointer-events: none;
 		touch-action: none;
 
+		// The lead is stated in colour, not in size: a badge that grows shifts the whole strip
+		// every time the score changes.
+		//
+		// The badge fills solid and the digits take the colour that reads on that fill. Coloured
+		// digits over the blue "done" fill measured 1.6:1 and 1.1:1, which is not weak contrast
+		// but none at all: the score was simply gone for the half of the round that matters most.
+		// Its own solid background makes the badge independent of whatever the half is filled
+		// with, so it reads the same in every state and every theme.
 		&--winning {
-			color: rgb(var(--secondary-color));
-			font-size: 1.3rem;
+			border-color: rgb(var(--secondary-color));
+			background: rgb(var(--secondary-color));
+			color: rgb(var(--theme-secondary-opposite));
 		}
 
 		&--losing {
-			color: rgb(var(--error-color));
+			border-color: rgb(var(--error-color));
+			background: rgb(var(--error-color));
+			color: $on-error;
 		}
 	}
 
 	&__streak-badge {
-		position: absolute;
-		top: 12px;
-		right: 14px;
+		display: inline-flex;
+		align-items: center;
+		min-width: 0;
+		height: 30px;
+		padding: 0 11px;
+		border-radius: $radius-pill;
 		font-size: 0.7rem;
-		font-weight: 600;
-		color: rgb(var(--secondary-color));
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		// Same reason as the score badge: the streak can be on screen while the half is filled
+		// green for PRIMING, and green text on a green fill is nothing at all.
+		color: rgb(var(--theme-secondary-opposite));
+		background: rgb(var(--secondary-color));
+		border: 1px solid rgb(var(--secondary-color));
 		pointer-events: none;
 		touch-action: none;
 	}
 
-	// =====================
-	// SCRAMBLE (inside timer)
-	// =====================
-	&__scramble {
-		font-size: 1.1rem;
-		opacity: 1;
-		text-align: center;
-		line-height: 1.4;
-		max-width: 90%;
-		word-break: break-word;
-		margin-top: 8px;
-		pointer-events: none;
-		touch-action: none;
-	}
-
-	// =====================
-	// PENALTY BUTTONS
-	// =====================
 	&__penalties {
 		position: absolute;
-		top: 12px;
-		right: 14px;
+		top: $edge;
+		right: $edge;
 		display: flex;
-		gap: 8px;
+		gap: $gap-tight;
 	}
 
 	&__penalty-btn {
-		padding: 6px 16px;
-		border-radius: 8px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgba(var(--button-color), 0.5);
-		color: rgb(var(--text-color));
-		font-size: 0.85rem;
-		font-weight: 600;
-		backdrop-filter: blur(4px);
-		-webkit-backdrop-filter: blur(4px);
+		height: 30px;
+		padding: 0 14px;
+		border-radius: $radius-ctrl;
+		border: 1px solid rgba(var(--on-surface), 0.2);
+		background: rgba(var(--on-surface), 0.1);
+		color: rgb(var(--on-surface));
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		box-shadow: $shadow-ctrl;
 		-webkit-tap-highlight-color: transparent;
+		transition: background 0.12s $ease-standard, border-color 0.12s $ease-standard;
 
+		// An applied penalty fills the button solid. The unapplied state stays a thin surface
+		// tint, so the difference between the two is a filled shape rather than a shade, which
+		// is what makes it readable at a glance from the other side of the table. The label
+		// takes the colour that reads on the fill, not the half's surface colour.
 		&--active-plus2 {
 			border-color: rgb(var(--warning-color));
-			background: rgba(var(--warning-color), 0.2);
-			color: rgb(var(--warning-color));
+			background: rgb(var(--warning-color));
+			color: $on-warning;
 		}
 
 		&--active-dnf {
 			border-color: rgb(var(--error-color));
-			background: rgba(var(--error-color), 0.2);
-			color: rgb(var(--error-color));
+			background: rgb(var(--error-color));
+			color: $on-error;
 		}
+	}
+
+	// =====================
+	// STATS (bottom corner)
+	// =====================
+	&__stats {
+		position: absolute;
+		bottom: $edge;
+		font-family: 'Roboto Mono', monospace;
+		font-feature-settings: 'tnum' 1, 'locl' 0;
+		font-size: 0.7rem;
+		font-weight: 600;
+		line-height: 1.7;
+		color: rgb(var(--on-surface));
+		pointer-events: none;
+		touch-action: none;
+
+		&--left {
+			left: $edge;
+			text-align: left;
+		}
+
+		&--right {
+			right: $edge;
+			text-align: right;
+		}
+	}
+
+	// =====================
+	// SMART CUBE
+	// =====================
+	// The 3D mirror. Collapsed rather than unmounted while a solve runs: keeping the WebGL context
+	// parked is cheaper than rebuilding one every round, and the visual state survives.
+	//
+	// It now sits on a surface of its own. Floating on the fill with no edge made it read as a
+	// stray image rather than as a live reading of the player cube.
+	&__cube-preview {
+		position: absolute;
+		bottom: $edge;
+		// No surface behind it. A panel here drew a box around a cube that only fills part of
+		// its frame, and the leftover margin then read as an empty box rather than as nothing
+		// at all. Transparent, that same margin is invisible and only the cube shows.
+		pointer-events: none;
+		touch-action: none;
+
+		// The corner opposite this player stats. The top corners carry the score and the
+		// penalties, the bottom centre carries the cube button; this is what is left.
+		&--left {
+			left: $edge;
+		}
+
+		&--right {
+			right: $edge;
+		}
+
+		&--hidden {
+			display: none;
+		}
+	}
+
+	// Bottom centre: the stats sit in the bottom corners and the badges along the top, so this is
+	// the one free anchor inside a timer half. It is a real button, so unlike the display-only
+	// children it keeps its pointer events.
+	//
+	// Connection is NOT stated in green any more. A green pill on the blue "done" fill put two
+	// unrelated meanings in the same colour space; now the button speaks the surface language and
+	// being connected shows as a firmer edge plus the device name and the battery reading.
+	&__cube-btn {
+		position: absolute;
+		bottom: $edge;
+		left: 50%;
+		transform: translateX(-50%);
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		max-width: #{'max(128px, calc(100% - ' + $bottom-corner-clearance + '))'};
+		height: 32px;
+		padding: 0 12px;
+		border-radius: $radius-pill;
+		border: 1px solid rgba(var(--on-surface), 0.2);
+		background: rgba(var(--on-surface), 0.1);
+		color: rgb(var(--on-surface));
+		font-size: 0.74rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		box-shadow: $shadow-ctrl;
+		-webkit-tap-highlight-color: transparent;
+		transition: border-color 0.15s $ease-standard, background 0.15s $ease-standard;
+
+		&--connected {
+			border-color: rgba(var(--on-surface), 0.38);
+			background: rgba(var(--on-surface), 0.15);
+		}
+
+		&--busy {
+			border-color: rgba(var(--on-surface), 0.3);
+			animation: zt-battle-cube-pulse 1.4s $ease-standard infinite;
+		}
+	}
+
+	&__cube-btn-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+
+	&__cube-btn-battery {
+		flex-shrink: 0;
+		font-family: 'Roboto Mono', monospace;
+		font-feature-settings: 'tnum' 1, 'locl' 0;
+		font-size: 0.68rem;
+		font-weight: 700;
+		color: rgb(var(--on-surface));
+		pointer-events: none;
+	}
+
+	// Opened from the cube button, anchored just above it. Everything in here is about one
+	// player own cube, which is why it is not in the shared battle menu.
+	//
+	// Drawn on the page background rather than in the surface language: it is a layer above the
+	// half, not part of it, and it has to stay readable over a coloured fill.
+	&__cube-panel {
+		position: absolute;
+		bottom: 54px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: $gap-tight;
+		min-width: 182px;
+		padding: 10px;
+		border-radius: $radius-panel;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		box-shadow: $shadow-panel;
+		animation: zt-battle-panel-in 0.2s $ease-out-snap both;
+	}
+
+	&__cube-panel-state {
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		text-align: center;
+		color: rgb(var(--text-color));
+		padding: 2px 0 4px;
+		pointer-events: none;
+	}
+
+	&__cube-panel-btn {
+		height: 36px;
+		padding: 0 12px;
+		border-radius: $radius-ctrl;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background: rgba(var(--button-color), 0.75);
+		color: rgb(var(--text-color));
+		font-size: 0.8rem;
+		font-weight: 600;
+		-webkit-tap-highlight-color: transparent;
+		transition: background 0.12s $ease-standard;
+
+		// The warning lives in the edge, not in the label. Error red on this panel measured
+		// 3.73:1, under the 4.5 a 0.8rem label needs, and it was the last thing on the page
+		// still below the line. The label keeps the panel's own text colour at 16.4:1 and the
+		// red border says the same thing without costing anything to read.
+		&--danger {
+			border-color: rgb(var(--error-color));
+		}
+	}
+
+	// The correction sequence, shown INSTEAD of the scramble. Deliberately larger and louder than
+	// the scramble text: it has to break the reading rhythm, because a player mid-algorithm does
+	// not stop for a note tucked underneath.
+	&__cube-undo {
+		display: inline-block;
+		padding: 8px 16px;
+		border-radius: $radius-ctrl;
+		font-family: 'Roboto Mono', monospace;
+		font-size: clamp(1.3rem, 6vw, 1.85rem);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		// A solid block, not a tint: the half behind it can be any of three colours, and a solid
+		// fill is the only thing that looks the same on all of them. The moves take the colour
+		// that reads on the warning orange.
+		color: $on-warning;
+		background: rgb(var(--warning-color));
+		border: 1px solid rgb(var(--warning-color));
+		text-align: center;
+		word-break: break-word;
+	}
+
+	// Cube cannot be matched at all: out of sync, or turned so far past the scramble that the
+	// shortest way back is to solve it.
+	&__cube-alert {
+		display: inline-block;
+		padding: 9px 14px;
+		border-radius: $radius-ctrl;
+		font-size: clamp(0.85rem, 3.6vw, 0.98rem);
+		font-weight: 600;
+		line-height: 1.45;
+		color: $on-error;
+		background: rgb(var(--error-color));
+		border: 1px solid rgb(var(--error-color));
+		text-align: center;
+		word-break: break-word;
 	}
 
 	// =====================
 	// CENTER TOOLBAR
 	// =====================
+	// Carries no state colour, so the shared glass mixin is the right tool here.
 	&__toolbar {
 		flex-shrink: 0;
+		// The anchor for the cube-type dropdown. It belongs here and not on the button: the
+		// toolbar is the full width of the screen, so centring the panel on it centres it in the
+		// viewport. Centred on the button instead, the panel hung 36px off the left edge at
+		// 320px, and the block's overflow:hidden cut four cube types off with no way to reach
+		// them.
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 4px;
+		gap: 5px;
 		padding: 6px 16px;
 		min-height: 52px;
 	}
@@ -233,13 +604,20 @@ $self: '.zt-battle';
 	&__toolbar-buttons {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: $gap;
+	}
+
+	// Wraps the cube-type button with its dropdown, so one ref covers both for the
+	// click-outside check. It is deliberately NOT positioned: the dropdown anchors to the
+	// toolbar above instead.
+	&__toolbar-cube {
+		display: flex;
 	}
 
 	&__toolbar-btn {
 		width: 40px;
 		height: 40px;
-		border-radius: 12px;
+		border-radius: $radius-panel;
 		border: none;
 		display: flex;
 		align-items: center;
@@ -247,12 +625,18 @@ $self: '.zt-battle';
 		color: rgb(var(--text-color));
 		@include dark-glass(0.3, 6px, 0.08);
 		-webkit-tap-highlight-color: transparent;
+		transition: transform 0.12s $ease-standard;
+
+		&:active {
+			transform: scale(0.94);
+		}
 
 		&--cube-type {
 			width: auto;
 			padding: 0 14px;
-			font-size: 0.85rem;
-			font-weight: 600;
+			font-size: 0.82rem;
+			font-weight: 700;
+			letter-spacing: 0.01em;
 			gap: 6px;
 		}
 	}
@@ -263,26 +647,35 @@ $self: '.zt-battle';
 		left: 50%;
 		transform: translateX(-50%);
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 6px;
-		padding: 10px;
-		border-radius: 12px;
-		@include dark-glass(0.9, 16px, 0.12);
+		// Four columns of nowrap labels made the grid wider than a small phone, and the block
+		// overflow:hidden then cut the last column off with no way to scroll to it. Three columns
+		// plus a viewport cap keeps every cube type reachable at 320px.
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: $gap-tight;
+		width: #{'min(320px, calc(100vw - 28px))'};
+		padding: $gap;
+		border-radius: $radius-panel;
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		box-shadow: $shadow-panel;
 		z-index: 100;
-		width: max-content;
+		animation: zt-battle-panel-in 0.2s $ease-out-snap both;
 
 		#{$self}__cube-chip {
-			padding: 6px 10px;
-			font-size: 0.7rem;
+			padding: 8px 6px;
+			font-size: 0.72rem;
 			text-align: center;
 			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 	}
 
 	&__toolbar-streak {
-		font-size: 0.7rem;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.03em;
 		color: rgb(var(--secondary-color));
-		font-weight: 600;
 	}
 
 	// =====================
@@ -298,6 +691,7 @@ $self: '.zt-battle';
 		color: rgb(var(--text-color));
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
+		// Puts back what the block turns off, or the menu cannot be scrolled at all.
 		touch-action: auto;
 		padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px));
 	}
@@ -306,109 +700,116 @@ $self: '.zt-battle';
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		padding-bottom: 14px;
 		margin-bottom: 20px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.1);
 
 		h2 {
-			font-size: 1.25rem;
+			font-size: 1.3rem;
 			font-weight: 700;
+			letter-spacing: -0.01em;
 		}
 	}
 
-	&__overlay-close {
-		background: none;
-		border: none;
+	&__overlay-close,
+	&__overlay-action {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 36px;
+		height: 36px;
+		border-radius: $radius-ctrl;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--button-color), 0.5);
 		color: rgb(var(--text-color));
-		padding: 8px;
-		opacity: 1;
 		-webkit-tap-highlight-color: transparent;
+		transition: background 0.12s $ease-standard;
+
+		&:active {
+			background: rgba(var(--text-color), 0.12);
+		}
 	}
 
 	&__overlay-actions {
 		display: flex;
 		align-items: center;
-		gap: 4px;
-	}
-
-	&__overlay-action {
-		background: none;
-		border: none;
-		color: rgb(var(--text-color));
-		padding: 8px;
-		cursor: pointer;
-		-webkit-tap-highlight-color: transparent;
-		opacity: 0.85;
-
-		&:hover {
-			opacity: 1;
-		}
+		gap: $gap-tight;
 	}
 
 	// =====================
 	// MENU
 	// =====================
 	&__section-label {
-		font-size: 0.75rem;
-		opacity: 1;
-		margin-bottom: 8px;
-		font-weight: 600;
+		font-size: 0.7rem;
+		margin-bottom: 10px;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	&__cube-types {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-bottom: 24px;
+		letter-spacing: 0.06em;
+		color: rgb(var(--text-color));
 	}
 
 	&__cube-chip {
 		padding: 8px 14px;
-		border-radius: 10px;
+		border-radius: $radius-ctrl;
 		font-size: 0.8rem;
-		font-weight: 500;
+		font-weight: 600;
 		color: rgb(var(--text-color));
-		@include dark-glass(0.2, 4px, 0.08);
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--button-color), 0.55);
 		-webkit-tap-highlight-color: transparent;
+		transition: border-color 0.12s $ease-standard, background 0.12s $ease-standard;
 
+		// The selected cube type fills solid, the same way the penalty buttons do, so which one
+		// is active reads without comparing shades across the grid.
 		&--active {
-			border-color: rgb(var(--primary-color)) !important;
-			background: rgba(var(--primary-color), 0.15) !important;
+			border-color: rgb(var(--primary-color));
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 
 	&__menu-actions {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: $gap-tight;
 		margin-bottom: 24px;
 	}
 
 	&__menu-action {
 		padding: 14px 16px;
-		border-radius: 12px;
-		border: none;
-		@include dark-glass(0.2, 4px, 0.06);
+		border-radius: $radius-panel;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		// Plain CSS rather than dark-glass: the mixin writes background with !important, which is
+		// why the pressed state below used to change nothing at all.
+		background: rgba(var(--button-color), 0.55);
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
-		font-weight: 500;
+		font-weight: 600;
 		text-align: left;
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		-webkit-tap-highlight-color: transparent;
-		transition: transform 0.1s ease, background 0.1s ease;
+		transition: transform 0.1s $ease-standard, background 0.1s $ease-standard;
 
 		&:active {
-			transform: scale(0.96);
-			background: rgba(var(--primary-color), 0.2);
+			transform: scale(0.98);
+			background: rgba(var(--primary-color), 0.18);
 		}
 
+		// Same reason as the panel's disconnect button: the red label measured 3.86:1. The red
+		// moves to the edge and to the icon, which is a graphic and only has to clear 3:1, so
+		// the action still reads as destructive at a glance while the words stay legible.
 		&--danger {
-			color: rgb(var(--error-color));
+			border-color: rgb(var(--error-color));
+
+			> svg {
+				color: rgb(var(--error-color));
+			}
 
 			&:active {
-				background: rgba(var(--error-color), 0.2);
+				background: rgba(var(--error-color), 0.18);
 			}
 		}
 	}
@@ -416,19 +817,25 @@ $self: '.zt-battle';
 	&__toggles {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
 	}
 
 	&__toggle-row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 12px 0;
+		gap: 12px;
+		padding: 13px 2px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
 		-webkit-tap-highlight-color: transparent;
+
+		&:last-child {
+			border-bottom: none;
+		}
 	}
 
 	&__toggle-label {
 		font-size: 0.9rem;
+		font-weight: 500;
 	}
 
 	&__toggle-track {
@@ -436,8 +843,8 @@ $self: '.zt-battle';
 		height: 24px;
 		border-radius: 12px;
 		position: relative;
-		transition: background 0.2s;
-		background: rgba(var(--text-color), 0.15);
+		transition: background 0.2s $ease-standard;
+		background: rgba(var(--text-color), 0.16);
 		flex-shrink: 0;
 
 		&--on {
@@ -453,10 +860,13 @@ $self: '.zt-battle';
 		position: absolute;
 		top: 2px;
 		left: 2px;
-		transition: left 0.2s;
+		transition: left 0.2s $ease-out-snap, background 0.2s $ease-standard;
 
 		&--on {
 			left: 22px;
+			// The thumb sits on the primary fill once it is on, so it has to be the colour that
+			// reads on primary, not the page text colour.
+			background: rgb(var(--theme-primary-opposite));
 		}
 	}
 
@@ -465,44 +875,53 @@ $self: '.zt-battle';
 	// =====================
 	&__history-header-row {
 		display: flex;
-		padding: 8px 0;
-		border-bottom: 1px solid rgba(var(--text-color), 0.1);
-		font-size: 0.75rem;
-		opacity: 1;
+		padding: 0 4px 10px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.12);
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: rgb(var(--text-color));
 	}
 
 	&__history-row {
 		display: flex;
-		padding: 12px 0;
-		border-bottom: 1px solid rgba(var(--text-color), 0.04);
-		font-size: 0.85rem;
+		padding: 13px 4px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
+		font-size: 0.88rem;
 		align-items: center;
 		font-family: 'Roboto Mono', monospace;
+		font-feature-settings: 'tnum' 1, 'locl' 0;
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
+		transition: background 0.12s $ease-standard;
 
 		&:active {
-			background: rgba(var(--text-color), 0.05);
+			background: rgba(var(--text-color), 0.06);
 		}
 	}
 
 	&__history-col {
 		&--num {
-			width: 36px;
-			opacity: 1;
+			width: 38px;
+			font-weight: 700;
+			color: rgb(var(--text-color));
 		}
 
 		&--time {
 			flex: 1;
+			min-width: 0;
 		}
 
 		&--winner {
-			width: 50px;
+			width: 52px;
 			text-align: center;
-			font-size: 0.75rem;
+			font-size: 0.72rem;
+			font-weight: 700;
 		}
 	}
 
+	// Added ON TOP of a time cell, so it cannot bring a box of its own: weight and colour only.
 	&__history-winner-text {
 		color: rgb(var(--secondary-color));
 		font-weight: 700;
@@ -515,7 +934,9 @@ $self: '.zt-battle';
 		position: fixed;
 		inset: 0;
 		z-index: 10000;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(0, 0, 0, 0.72);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -525,79 +946,448 @@ $self: '.zt-battle';
 	&__round-detail-card {
 		width: 90%;
 		max-width: 340px;
-		@include dark-glass(0.85, 16px, 0.1);
-		border-radius: 16px;
+		border-radius: $radius-half;
 		padding: 20px;
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		box-shadow: $shadow-panel;
+		// Its own keyframe: the panel one carries translateX(-50%), which would slide this card
+		// off-centre for the length of the animation.
+		animation: zt-battle-card-in 0.22s $ease-out-snap both;
 	}
 
 	&__round-detail-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 16px;
+		margin-bottom: 18px;
 
 		h3 {
 			font-size: 1.1rem;
 			font-weight: 700;
+			letter-spacing: -0.01em;
 		}
 	}
 
 	&__round-detail-scramble {
-		margin-bottom: 16px;
+		margin-bottom: 18px;
 	}
 
 	&__round-detail-label {
-		font-size: 0.75rem;
-		font-weight: 600;
+		font-size: 0.68rem;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		margin-bottom: 6px;
+		letter-spacing: 0.06em;
+		margin-bottom: 7px;
+		color: rgb(var(--text-color));
 	}
 
 	&__round-detail-scramble-text {
-		font-size: 0.95rem;
-		line-height: 1.5;
+		font-family: 'Roboto Mono', monospace;
+		font-size: 0.9rem;
+		line-height: 1.6;
 		word-break: break-word;
 	}
 
 	&__round-detail-players {
 		display: flex;
-		gap: 12px;
-		margin-bottom: 16px;
+		gap: $gap;
+		margin-bottom: 18px;
 	}
 
 	&__round-detail-player {
+		// Same idea as --on-surface on a timer half, scoped to one card: the winner fills solid,
+		// so the name and the time underneath have to follow the fill rather than the page.
+		--on-card: var(--text-color);
+
 		flex: 1;
-		padding: 12px;
-		border-radius: 12px;
-		@include dark-glass(0.3, 4px, 0.08);
+		min-width: 0;
+		padding: 13px 10px;
+		border-radius: $radius-panel;
+		background: rgba(var(--button-color), 0.6);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		color: rgb(var(--on-card));
 		text-align: center;
 
 		&--winner {
-			border-color: rgb(var(--secondary-color)) !important;
+			--on-card: var(--theme-secondary-opposite);
+			border-color: rgb(var(--secondary-color));
+			background: rgb(var(--secondary-color));
 		}
 
+		// Marked by absence rather than in red: the round is already decided by the winner
+		// highlight, and painting the other side as an error reads as a mistake, not a loss.
 		&--loser {
-			border-color: rgb(var(--error-color)) !important;
+			border-color: rgba(var(--text-color), 0.08);
 		}
 	}
 
 	&__round-detail-player-name {
-		font-size: 0.75rem;
-		font-weight: 600;
-		margin-bottom: 6px;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgb(var(--on-card));
+		margin-bottom: 7px;
 	}
 
 	&__round-detail-player-time {
 		font-family: 'Roboto Mono', monospace;
-		font-size: 1.2rem;
+		font-feature-settings: 'tnum' 1, 'locl' 0;
+		font-size: 1.25rem;
 		font-weight: 700;
+		letter-spacing: -0.02em;
 	}
 
 	&__round-detail-result {
 		text-align: center;
 		font-size: 0.9rem;
-		font-weight: 600;
+		font-weight: 700;
 		color: rgb(var(--secondary-color));
+	}
+
+	// =====================
+	// LARGER SCREENS
+	// =====================
+	//
+	// Everything above this point is the phone layout and stays untouched, because that is the
+	// one that has been validated on real hardware with two cubes. These blocks are purely
+	// additive: below 768px not a single declaration here applies, so the phone cannot regress
+	// by construction. That is worth more than the repetition it costs.
+	//
+	// Sizes are written in px rather than rem on purpose. The root font-size DROPS from 15px to
+	// 14px between 768 and 1499 (reset.scss), which is exactly the band being scaled up, so a rem
+	// ceiling would shrink where it has to grow. ProPage reaches for px clamps for the same
+	// reason.
+	//
+	// Every scaling value is bound by viewport HEIGHT as well as width. A half is roughly 45% of
+	// the viewport, so on a tablet held sideways the binding constraint is height, not width:
+	// measured at 1180x820 a half is only 344px tall. Sizing on width alone put the time at 132px
+	// and pushed the scramble under the cube button.
+	@include bp-up($bp-md) {
+		#{$self}__timer {
+			margin: 10px;
+			// Same reserve as the phone, scaled: the badge strip on top, the cube button row
+			// underneath. Symmetric so the column stays centred whether or not a cube is linked.
+			padding: 72px 0;
+			border-radius: 26px;
+		}
+
+		#{$self}__time {
+			font-size: #{'clamp(39px, min(13vw, 12vh), 124px)'};
+		}
+
+		#{$self}__time--idle {
+			font-size: #{'clamp(15px, min(3vw, 3.4vh), 30px)'};
+		}
+
+		#{$self}__scramble {
+			// The width term sets it on a tablet held upright, the height term takes over when
+			// the tablet is turned sideways and the half is barely 340px tall. Measured: 22px at
+			// 820x1180, 20px at 1180x820.
+			font-size: #{'clamp(14px, min(2.7vw, 2.4vh), 26px)'};
+			margin-top: 18px;
+		}
+
+		#{$self}__player-name {
+			font-size: 15px;
+			margin-bottom: 10px;
+		}
+
+		#{$self}__stats {
+			font-size: 15px;
+			bottom: 24px;
+
+			&--left {
+				left: 24px;
+			}
+
+			&--right {
+				right: 24px;
+			}
+		}
+
+		#{$self}__top-left {
+			top: 24px;
+			left: 24px;
+			gap: 10px;
+			// Clears the penalty buttons at the other end of the strip, which are wider here.
+			max-width: calc(100% - 260px);
+		}
+
+		#{$self}__score-badge {
+			height: 44px;
+			padding: 0 16px;
+			font-size: 21px;
+			border-radius: 12px;
+		}
+
+		#{$self}__streak-badge {
+			height: 44px;
+			padding: 0 16px;
+			font-size: 15px;
+		}
+
+		#{$self}__penalties {
+			top: 24px;
+			right: 24px;
+			gap: 10px;
+		}
+
+		#{$self}__penalty-btn {
+			height: 44px;
+			padding: 0 22px;
+			font-size: 17px;
+			border-radius: 12px;
+		}
+
+		#{$self}__cube-btn {
+			height: 46px;
+			padding: 0 18px;
+			gap: 10px;
+			bottom: 24px;
+			font-size: 16px;
+			// The corner clearance grows with the preview and the stats beside it, same
+			// calculation as the phone rule, larger inputs.
+			max-width: #{'max(160px, calc(100% - 340px))'};
+		}
+
+		#{$self}__cube-btn-battery {
+			font-size: 15px;
+		}
+
+		#{$self}__cube-preview {
+			bottom: 24px;
+
+			&--left {
+				left: 24px;
+			}
+
+			&--right {
+				right: 24px;
+			}
+		}
+
+		#{$self}__cube-panel {
+			bottom: 78px;
+			min-width: 240px;
+			padding: 14px;
+		}
+
+		#{$self}__cube-panel-state {
+			font-size: 14px;
+		}
+
+		#{$self}__cube-panel-btn {
+			height: 46px;
+			font-size: 16px;
+		}
+
+		#{$self}__cube-undo {
+			font-size: #{'clamp(22px, min(4vw, 4.4vh), 42px)'};
+			padding: 12px 22px;
+		}
+
+		#{$self}__cube-alert {
+			font-size: #{'clamp(15px, min(2.2vw, 2.6vh), 22px)'};
+			padding: 14px 20px;
+		}
+
+		#{$self}__toolbar {
+			min-height: 68px;
+			gap: 8px;
+		}
+
+		#{$self}__toolbar-btn {
+			width: 52px;
+			height: 52px;
+			border-radius: 16px;
+
+			&--cube-type {
+				width: auto;
+				padding: 0 20px;
+				font-size: 16px;
+			}
+		}
+
+		#{$self}__toolbar-streak {
+			font-size: 14px;
+		}
+	}
+
+	// A wide screen that is also short: a tablet or a phone turned sideways. The block above
+	// scales on the assumption that a taller screen means a taller half, and that breaks here,
+	// because the viewport is split in two and a toolbar sits between them. Measured at 1180x820
+	// a half is 319px, of which the scaled-up reserve claimed 144. A running time plus a
+	// three-line Megaminx scramble then overflowed by 68px and landed on the cube button.
+	//
+	// The answer is not a smaller time alone: with a 144px reserve the time would have to drop
+	// below the phone's to fit. The controls shrink too, which gives the reserve back to the
+	// column that needs it.
+	@media (min-width: #{$bp-md}) and (max-height: 900px) {
+		#{$self}__timer {
+			padding: 54px 0;
+		}
+
+		#{$self}__time {
+			font-size: #{'clamp(39px, min(13vw, 10vh), 96px)'};
+		}
+
+		#{$self}__scramble {
+			font-size: #{'clamp(14px, min(2.2vw, 2vh), 22px)'};
+			margin-top: 12px;
+		}
+
+		#{$self}__stats {
+			bottom: 16px;
+
+			&--left {
+				left: 16px;
+			}
+
+			&--right {
+				right: 16px;
+			}
+		}
+
+		#{$self}__top-left {
+			top: 16px;
+			left: 16px;
+		}
+
+		#{$self}__penalties {
+			top: 16px;
+			right: 16px;
+		}
+
+		#{$self}__score-badge,
+		#{$self}__streak-badge,
+		#{$self}__penalty-btn {
+			height: 36px;
+		}
+
+		#{$self}__cube-btn {
+			height: 38px;
+			bottom: 16px;
+		}
+
+		#{$self}__cube-preview {
+			bottom: 16px;
+
+			&--left {
+				left: 16px;
+			}
+
+			&--right {
+				right: 16px;
+			}
+		}
+
+		#{$self}__cube-panel {
+			bottom: 62px;
+		}
+
+		#{$self}__toolbar {
+			min-height: 56px;
+		}
+
+		#{$self}__toolbar-btn {
+			width: 44px;
+			height: 44px;
+
+			// Restated because this block comes after the one above and would otherwise force
+			// the cube-type button to a square 44px, clipping its label onto the button beside
+			// it. It is a label, not an icon, so it sizes to its text.
+			&--cube-type {
+				width: auto;
+			}
+		}
+	}
+
+	// Desktop. The mobile edge drawer refuses to render at this width while the desktop header
+	// does render, and a full-bleed battle covered it: whoever opened the page had no way back
+	// out. Sitting below the header restores the normal way off the page and costs nothing else.
+	@include bp-up($bp-lg) {
+		top: var(--nav-h);
+
+		#{$self}__overlay {
+			top: var(--nav-h);
+			// Centres the menu and the history on a wide screen instead of stretching a settings
+			// row across 1400px. Same idea as MySchedule and Messages, expressed as padding so no
+			// child needs its own wrapper.
+			padding-left: #{'max(32px, calc((100% - 900px) / 2))'};
+			padding-right: #{'max(32px, calc((100% - 900px) / 2))'};
+		}
+	}
+
+	// =====================
+	// MOTION
+	// =====================
+	// Reduced motion means no MOVEMENT, not no feedback: the state fills, the penalty colours and
+	// the connected edge all stay, only the things that travel are stilled.
+	@include reduced-motion {
+		#{$self}__timer,
+		#{$self}__time,
+		#{$self}__score-badge,
+		#{$self}__penalty-btn,
+		#{$self}__cube-btn,
+		#{$self}__cube-chip,
+		#{$self}__menu-action,
+		#{$self}__toolbar-btn,
+		#{$self}__history-row,
+		#{$self}__overlay-close,
+		#{$self}__overlay-action,
+		#{$self}__cube-panel-btn,
+		#{$self}__toggle-track,
+		#{$self}__toggle-thumb {
+			transition: none;
+		}
+
+		#{$self}__cube-panel,
+		#{$self}__cube-dropdown,
+		#{$self}__round-detail-card,
+		#{$self}__cube-btn--busy {
+			animation: none;
+		}
+
+		#{$self}__toolbar-btn:active,
+		#{$self}__menu-action:active {
+			transform: none;
+		}
+	}
+}
+
+// Scanning or handshaking: the edge breathes so the button reads as working rather than stuck.
+@keyframes zt-battle-cube-pulse {
+	0%,
+	100% {
+		border-color: rgba(var(--on-surface), 0.3);
+	}
+	50% {
+		border-color: rgba(var(--on-surface), 0.6);
+	}
+}
+
+// For the two elements that are already centred with translateX(-50%). The transform has to be
+// restated here or the keyframe drops it and the panel jumps to the right as it opens.
+@keyframes zt-battle-panel-in {
+	from {
+		opacity: 0;
+		transform: translateX(-50%) translateY(6px) scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0) scale(1);
+	}
+}
+
+@keyframes zt-battle-card-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
 	}
 }

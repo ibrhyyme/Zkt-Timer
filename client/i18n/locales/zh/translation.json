@@ -3823,7 +3823,6 @@
     }
   },
   "battle": {
-    "mobile_only": "对战模式仅在移动设备上可用",
     "tap_to_start": "点击开始",
     "solving": "还原中...",
     "score": "得分",
@@ -3854,7 +3853,22 @@
     "display": "显示",
     "round_detail": "第 {{number}} 回合",
     "scramble_label": "打乱",
-    "wins": "{{name}} 获胜!"
+    "wins": "{{name}} 获胜!",
+    "connect_cube": "连接魔方",
+    "cube_connected": "魔方已连接",
+    "cube_connecting": "连接中...",
+    "cube_ready": "准备就绪",
+    "scramble_cube": "打乱你的魔方",
+    "cube_just_solve": "魔方未还原。请先还原，再打乱",
+    "cube_scan_busy": "另一位玩家正在连接魔方",
+    "cube_mark_solved": "标记为已还原",
+    "cube_disconnect": "断开连接",
+    "cube_state_solved": "魔方报告：已还原",
+    "cube_state_scrambled": "魔方报告：未还原",
+    "cube_state_unknown": "等待魔方状态",
+    "cube_held_elsewhere": "另一个页面已连接魔方：{{name}}",
+    "cube_already_in_play": "该魔方已被另一位玩家使用",
+    "cube_mark_solved_failed": "魔方未接受指令，请重试"
   },
   "phase_analysis": {
     "no_smart_solves": "未找到智能魔方还原记录",

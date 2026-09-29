@@ -3830,7 +3830,6 @@
     }
   },
   "battle": {
-    "mobile_only": "Mücadele modu yalnızca mobilde kullanılabilir",
     "tap_to_start": "Başlamak için dokun",
     "solving": "Çözülüyor...",
     "score": "Skor",
@@ -3861,7 +3860,22 @@
     "display": "Görünüm",
     "round_detail": "Tur {{number}}",
     "scramble_label": "Karıştırma",
-    "wins": "{{name}} kazandı!"
+    "wins": "{{name}} kazandı!",
+    "connect_cube": "Küp Bağla",
+    "cube_connected": "Küp bağlı",
+    "cube_connecting": "Bağlanıyor...",
+    "cube_ready": "Hazır",
+    "scramble_cube": "Küpü karıştır",
+    "cube_just_solve": "Küp karışık. Önce çöz, sonra karıştır",
+    "cube_scan_busy": "Diğer oyuncu küp bağlıyor",
+    "cube_mark_solved": "Çözülmüş İşaretle",
+    "cube_disconnect": "Bağlantıyı Kes",
+    "cube_state_solved": "Küp çözülmüş durumda",
+    "cube_state_scrambled": "Küp karışık durumda",
+    "cube_state_unknown": "Küp durumu bekleniyor",
+    "cube_held_elsewhere": "Başka sayfada bağlı bir küp var: {{name}}",
+    "cube_already_in_play": "Bu küp zaten diğer oyuncuda bağlı",
+    "cube_mark_solved_failed": "Küp komutu kabul etmedi, tekrar dene"
   },
   "phase_analysis": {
     "no_smart_solves": "Akıllı küp çözümü bulunamadı",

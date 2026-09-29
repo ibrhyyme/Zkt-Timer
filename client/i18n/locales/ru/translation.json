@@ -3826,7 +3826,6 @@
     }
   },
   "battle": {
-    "mobile_only": "Режим битвы доступен только на мобильных устройствах",
     "tap_to_start": "Нажмите, чтобы начать",
     "solving": "Решение...",
     "score": "Счёт",
@@ -3857,7 +3856,22 @@
     "display": "Отображение",
     "round_detail": "Раунд {{number}}",
     "scramble_label": "Скрамбл",
-    "wins": "{{name}} побеждает!"
+    "wins": "{{name}} побеждает!",
+    "connect_cube": "Подключить кубик",
+    "cube_connected": "Кубик подключён",
+    "cube_connecting": "Подключение...",
+    "cube_ready": "Готов",
+    "scramble_cube": "Перемешайте кубик",
+    "cube_just_solve": "Кубик не собран. Сначала соберите его, потом скрамбл",
+    "cube_scan_busy": "Другой игрок подключает кубик",
+    "cube_mark_solved": "Отметить собранным",
+    "cube_disconnect": "Отключить",
+    "cube_state_solved": "Кубик сообщает: собран",
+    "cube_state_scrambled": "Кубик сообщает: не собран",
+    "cube_state_unknown": "Ожидание состояния кубика",
+    "cube_held_elsewhere": "На другой странице подключён кубик: {{name}}",
+    "cube_already_in_play": "Этот кубик уже занят другим игроком",
+    "cube_mark_solved_failed": "Кубик не принял команду, попробуйте снова"
   },
   "phase_analysis": {
     "no_smart_solves": "Сборки с умным кубом не найдены",
