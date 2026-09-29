@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { inReversedFrame, isUiReversed, orientDelta, reversedPlacement } from '../reversed-ui';
+import { inReversedFrame, isUiReversed, orientDelta, reversedPlacement, toReaderPoint } from '../reversed-ui';
 
 describe('reversed UI helpers', () => {
 	it('flips popper placement for a trigger inside the rotated timer', () => {
@@ -19,11 +19,24 @@ describe('reversed UI helpers', () => {
 		expect(orientDelta(10, -60, true)).toEqual([-10, 60]);
 	});
 
+	it('turns touch points into the reader frame (the viewport turned about its centre)', () => {
+		expect(toReaderPoint(30, 100, 400, 800, false)).toEqual([30, 100]);
+		expect(toReaderPoint(30, 100, 400, 800, true)).toEqual([370, 700]);
+		// A notch dragged physically to 25 % height sits at 75 % in the drawer's own frame.
+		expect((toReaderPoint(390, 200, 400, 800, true)[1] / 800) * 100).toBe(75);
+	});
+
 	it('finds rotated frames by ancestry', () => {
 		expect(inReversedFrame({ closest: () => ({}) })).toBe(true);
 		expect(inReversedFrame({ closest: () => null })).toBe(false);
 		expect(inReversedFrame(null)).toBe(false);
 		expect(inReversedFrame({})).toBe(false);
+	});
+
+	it('counts the edge drawers as rotated frames', () => {
+		// A popover opened from inside a drawer has to flip like one opened from the timer.
+		const inDrawer = { closest: (sel: string) => (sel.split(', ').includes('body.zt-reversed .zt-edge-drawer__drawer') ? {} : null) };
+		expect(inReversedFrame(inDrawer)).toBe(true);
 	});
 
 	it('is never reversed without a document (SSR, node)', () => {

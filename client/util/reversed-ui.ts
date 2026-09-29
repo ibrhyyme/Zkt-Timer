@@ -9,8 +9,10 @@
 
 export const REVERSED_BODY_CLASS = 'zt-reversed';
 
-// The frames that are drawn rotated: the timer root, and app modals while the class is on.
-const REVERSED_FRAME_SELECTOR = '.zt-timer--reversed, body.zt-reversed .zt-modal--list > .zt-modal';
+// The frames that are drawn rotated: the timer root, and app modals and the edge drawers
+// while the class is on.
+const REVERSED_FRAME_SELECTOR =
+	'.zt-timer--reversed, body.zt-reversed .zt-modal--list > .zt-modal, body.zt-reversed .zt-edge-drawer__drawer';
 
 export type PopperSide = 'top' | 'right' | 'bottom' | 'left';
 export type PopperAlign = 'start' | 'center' | 'end';
@@ -23,10 +25,21 @@ export function isUiReversed(): boolean {
 /**
  * Whether an element is drawn inside a rotated frame. Popovers anchored to it open in
  * physical coordinates, so they have to be flipped and turned to match. Checked per
- * element rather than globally: the edge drawers stay upright while the timer is reversed.
+ * element rather than globally: anything else portaled into <body> is still upright.
  */
 export function inReversedFrame(el: { closest?: (selector: string) => unknown } | null | undefined): boolean {
 	return !!el && typeof el.closest === 'function' && !!el.closest(REVERSED_FRAME_SELECTOR);
+}
+
+/** A touch point in the reader's frame: the viewport turned about its centre. */
+export function toReaderPoint(
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	reversed: boolean
+): [number, number] {
+	return reversed ? [width - x, height - y] : [x, y];
 }
 
 /** A touch movement in the reader's frame: physically down is "up" for a reversed reader. */

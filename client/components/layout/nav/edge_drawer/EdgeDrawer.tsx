@@ -13,7 +13,9 @@ import useIsomorphicLayoutEffect from '../../../../util/hooks/useIsomorphicLayou
 import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
 import {useSelector} from 'react-redux';
 import {useGeneral} from '../../../../util/hooks/useGeneral';
-import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
+import {isNative} from '../../../../util/platform';
+import {isUiReversed, toReaderPoint} from '../../../../util/reversed-ui';
+import {setEdgeNotch} from './gesture_exclusion';
 import block from '../../../../styles/bem';
 import './EdgeDrawer.scss';
 
@@ -120,6 +122,9 @@ export default function EdgeDrawer(props: Props) {
 	const longPressTimer = useRef<any>(null);
 	const peekEndTimer = useRef<any>(null);
 	const openedBySwipe = useRef(false);
+	// Reversed use (util/reversed-ui.ts) draws the notch and the panel rotated 180°. Read once
+	// per gesture so a gesture's start and moves are in the same frame.
+	const reversedGesture = useRef(false);
 	// edgeDrawerClosed event'i sadece gercek open->close gecisinde firlasin
 	// (mount'ta open=false oldugu icin yanlis erken dispatch'i onler)
 	const wasOpened = useRef(false);
@@ -128,6 +133,11 @@ export default function EdgeDrawer(props: Props) {
 	// Touch flag globali — App.tsx Android back-button listener bu globalleri
 	// okur. Sol/sag ayri tutulur ki ikisi de izlenebilsin.
 	const notchTouchingFlag = isLeft ? '__notchTouchingLeft' : '__notchTouchingRight';
+
+	// Touch point in the drawer's own frame, which is mirrored in reversed use.
+	function readerPoint(t: Touch): [number, number] {
+		return toReaderPoint(t.clientX, t.clientY, window.innerWidth, window.innerHeight, reversedGesture.current);
+	}
 
 	function gridWidth() {
 		return drawerRef.current?.querySelector(`.${b('grid')}`)?.clientWidth || 250;
@@ -309,9 +319,10 @@ export default function EdgeDrawer(props: Props) {
 	}, [peeking, open, solving]);
 
 	// --- Android gesture exclusion: centik bolgesini geri hareketinden muaf tut ---
+	// Maps the notch to its physical edge, which swaps in reversed use (gesture_exclusion.ts).
 	useEffect(() => {
-		updateGestureExclusion(side, notchY, 115);
-		return () => clearGestureExclusion(side);
+		setEdgeNotch(side, notchY);
+		return () => setEdgeNotch(side, null);
 	}, [side, notchY]);
 
 	// --- Notch touch: tap to open, swipe to open, long-press to reposition ---
@@ -333,8 +344,10 @@ export default function EdgeDrawer(props: Props) {
 			// Guvenlik: touchend/touchcancel firlamazsa 2s sonra temizle
 			setTimeout(clearNotchFlag, 2000);
 
-			startX.current = e.touches[0].clientX;
-			startY.current = e.touches[0].clientY;
+			reversedGesture.current = isUiReversed();
+			const [x, y] = readerPoint(e.touches[0]);
+			startX.current = x;
+			startY.current = y;
 			locked.current = false;
 			horizontal.current = false;
 
@@ -349,8 +362,7 @@ export default function EdgeDrawer(props: Props) {
 			// Swipe ile acildiysa sonraki hareketleri yoksay
 			if (openedBySwipe.current) return;
 
-			const tx = e.touches[0].clientX;
-			const ty = e.touches[0].clientY;
+			const [tx, ty] = readerPoint(e.touches[0]);
 
 			// Repositioning mode — surukle yukari/asagi
 			if (repositioning) {
@@ -459,8 +471,10 @@ export default function EdgeDrawer(props: Props) {
 			// Centik swipe'indan acildiysa bu dokunusu yoksay (parmak hala ekranda)
 			if (openedBySwipe.current) return;
 
-			startX.current = e.touches[0].clientX;
-			startY.current = e.touches[0].clientY;
+			reversedGesture.current = isUiReversed();
+			const [x, y] = readerPoint(e.touches[0]);
+			startX.current = x;
+			startY.current = y;
 			locked.current = false;
 			horizontal.current = false;
 
@@ -478,9 +492,9 @@ export default function EdgeDrawer(props: Props) {
 			// Close-swipe yonu drawer side'in tersi:
 			// Sag drawer: parmak SAGA giderse (tx > startX) kapanir → dx = tx - startX
 			// Sol drawer: parmak SOLA giderse (tx < startX) kapanir → dx = startX - tx
-			const tx = e.touches[0].clientX;
+			const [tx, ty] = readerPoint(e.touches[0]);
 			const dx = isLeft ? (startX.current - tx) : (tx - startX.current);
-			const dy = Math.abs(e.touches[0].clientY - startY.current);
+			const dy = Math.abs(ty - startY.current);
 
 			if (!locked.current) {
 				if (Math.abs(dx) < 10 && dy < 10) return;
@@ -568,7 +582,7 @@ export default function EdgeDrawer(props: Props) {
 					<div
 						ref={notchRef}
 						className={b('notch', {hidden: open || solving, repositioning, hint: showHint && !open && !solving, [sideMod]: true})}
-						style={{top: `${notchY}%`}}
+						style={{'--zt-notch-y': `${notchY}%`} as React.CSSProperties}
 						onClick={() => {
 							if (repositioning) return;
 							markNotchUsed();

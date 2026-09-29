@@ -8,7 +8,8 @@
 .#{$namespace}-edge-drawer {
 	&__notch {
 		position: fixed;
-		top: 50%;
+		// Set inline from the saved notch position (EdgeDrawer.tsx), percent of screen height
+		top: var(--zt-notch-y, 50%);
 		transform: translateY(-50%);
 		width: 8px;
 		height: 115px;
@@ -295,6 +296,49 @@
 			color: #fff;
 			opacity: 1;
 			font-weight: 600;
+		}
+	}
+}
+
+// Reversed use (client/util/reversed-ui.ts): the phone lies upside down, so the drawers are
+// drawn turned 180° about the screen centre like the timer behind them. Each box is anchored
+// to the opposite edge and turned about its own centre instead, which lands in the same place
+// and keeps the stacking untouched: one full-screen rotated wrapper would be a single
+// stacking context, lifting the notch above the modals and the backdrop off their level.
+// Touch maths and the Android edge exclusion mirror to match (EdgeDrawer.tsx,
+// gesture_exclusion.ts).
+body.#{$namespace}-reversed .#{$namespace}-edge-drawer {
+	&__notch {
+		top: calc(100% - var(--zt-notch-y, 50%));
+		rotate: 180deg;
+		// translateY(-50%) now applies before the turn; pivoting on the top edge keeps the
+		// notch centred on `top` rather than a full notch height below it.
+		transform-origin: 50% 0;
+
+		&--right {
+			right: auto;
+			left: 0;
+		}
+
+		&--left {
+			left: auto;
+			right: 0;
+		}
+	}
+
+	// Full height, so the centre pivot keeps it vertically in place; the slide (transform)
+	// runs before the turn, so "closed" ends up off the opposite edge.
+	&__drawer {
+		rotate: 180deg;
+
+		&--right {
+			right: auto;
+			left: 0;
+		}
+
+		&--left {
+			left: auto;
+			right: 0;
 		}
 	}
 }
