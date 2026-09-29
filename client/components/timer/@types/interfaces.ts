@@ -118,6 +118,12 @@ export interface TimerStore {
 	 * other global key handler stands down — see helpers/virtual_cube.ts.
 	 */
 	virtualArmed?: boolean;
+	// Scramble navigation, see helpers/scramble_history.ts. `scrambleBucket` is the
+	// cube::subset the current scramble was generated for, so the layout that mounts after
+	// a swap can tell its bucket is already served.
+	scrambleBucket?: string | null;
+	scrambleHistory?: string[];
+	scrambleHistoryIndex?: number;
 }
 
 /**

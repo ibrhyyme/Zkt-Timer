@@ -28,12 +28,22 @@ export const FAST_TIMER_FIELDS = [
 
 export type FastTimerField = typeof FAST_TIMER_FIELDS[number];
 
-export type StableTimerStore = Omit<TimerStore, FastTimerField>;
+/**
+ * Scramble navigation state (helpers/scramble_history.ts). Not fast, but no context
+ * reader needs it: only the navigation hooks read it, through useTimerStore. It changes
+ * right after `scramble` does, so carrying it in the context would render the whole timer
+ * page a second time for every new scramble.
+ */
+export const SCRAMBLE_NAV_FIELDS = ['scrambleBucket', 'scrambleHistory', 'scrambleHistoryIndex'] as const;
 
-const FAST = new Set<string>(FAST_TIMER_FIELDS);
+export type ScrambleNavField = typeof SCRAMBLE_NAV_FIELDS[number];
+
+export type StableTimerStore = Omit<TimerStore, FastTimerField | ScrambleNavField>;
+
+const NOT_IN_CONTEXT = new Set<string>([...FAST_TIMER_FIELDS, ...SCRAMBLE_NAV_FIELDS]);
 
 /**
- * The timer slice without the fast fields.
+ * The timer slice without the fast fields and the scramble navigation fields.
  *
  * Builds a new object on every call, so pair it with shallowEqual: an update that touched
  * only fast fields then compares equal, and the subscriber neither re-renders nor gets a
@@ -45,7 +55,7 @@ export function selectStableTimerStore(state: { timer?: TimerStore } | null | un
 	const stable: Record<string, unknown> = {};
 
 	for (const key of Object.keys(timer)) {
-		if (!FAST.has(key)) {
+		if (!NOT_IN_CONTEXT.has(key)) {
 			stable[key] = timer[key];
 		}
 	}

@@ -13,6 +13,7 @@ import {fetchAllCubeTypesSolved, FilterSolvesOptions, fetchSolves} from '../../d
 import {fetchSessions} from '../../db/sessions/query';
 import {getCubeTypeInfoById, getUniqueCubeTypes, getSubsetsForBuckets} from '../../util/cubes/util';
 import {CubeType} from '../../util/cubes/cube_types';
+import {toStoredSubset} from '../../../shared/solve';
 import AllStats from './all/AllStats';
 import {gql, useQuery} from '@apollo/client';
 import {Stats as StatsSchema} from '../../@types/generated/graphql';
@@ -176,7 +177,8 @@ export default function Stats() {
 	};
 	if (!all) {
 		filterOptions.cube_type = tabCubeType;
-		filterOptions.scramble_subset = tabSubset;
+		// The URL keeps the picker's '' for a default subset; solves store it as null.
+		filterOptions.scramble_subset = toStoredSubset(tabSubset);
 	}
 	if (tabSession) {
 		filterOptions.session_id = tabSession;
@@ -187,7 +189,7 @@ export default function Stats() {
 	const sessionsForCurrentBucket = useMemo(() => {
 		if (all) return allSessions;
 		const sessionFilter: any = { cube_type: tabCubeType };
-		if (tabSubset != null) sessionFilter.scramble_subset = tabSubset;
+		if (tabSubset != null) sessionFilter.scramble_subset = toStoredSubset(tabSubset);
 		const solves = fetchSolves(sessionFilter);
 		const sessionIdsWithData = new Set<string>();
 		for (const s of solves) {

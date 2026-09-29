@@ -638,6 +638,42 @@ export async function deleteRoom(roomId: string, userId: string, isAdmin: boolea
     return true;
 }
 
+// Wipes every round: all solves, the scramble history and the round counter, then opens
+// round 1 on a fresh scramble for `cubeType`. An event change and the explicit reset both
+// go through here, so the two can never clear different things. `data` carries any other
+// room fields to write in the same transaction.
+async function resetRoomRounds(roomId: string, cubeType: string, data: Record<string, any> = {}) {
+    const scramble = generateScrambleForCubeType(cubeType);
+
+    await prisma().$transaction([
+        prisma().friendlyRoomSolve.deleteMany({ where: { room_id: roomId } }),
+        prisma().friendlyRoomScramble.deleteMany({ where: { room_id: roomId } }),
+        prisma().friendlyRoom.update({
+            where: { id: roomId },
+            data: { ...data, current_scramble: scramble, scramble_index: 1 },
+        }),
+        prisma().friendlyRoomScramble.create({
+            data: { room_id: roomId, scramble_index: 1, scramble },
+        }),
+    ]);
+}
+
+// Start the room over on the same event: every solve and round is removed and round 1
+// opens on a fresh scramble. Participants, roles, readiness, chat, bans and join requests
+// stay. Owner, moderator or site admin: the same people who could already do this by
+// switching the event away and back.
+export async function resetRoom(roomId: string, userId: string, isAdmin: boolean = false): Promise<FriendlyRoomData | null> {
+    const room = await getRoom(roomId);
+    if (!room) return null;
+
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, userId))) return null;
+
+    await resetRoomRounds(roomId, room.cube_type);
+
+    const updatedRoom = await getRoom(roomId);
+    return mapRoomToData(updatedRoom);
+}
+
 // Update room settings (creator or site admin)
 export async function updateRoom(
     roomId: string,
@@ -668,31 +704,20 @@ export async function updateRoom(
     }
 
     // Handle Cube Type Change (RESET ROOM)
-    let cubeTypeChanged = false;
-    let newCubeScramble: string | null = null;
+    let newCubeType: string | null = null;
     if (updates.cube_type) {
-        const newCubeType = normalizeCubeType(updates.cube_type);
-        if (newCubeType !== room.cube_type) {
-            cubeTypeChanged = true;
-            newCubeScramble = generateScrambleForCubeType(newCubeType);
-            data.cube_type = newCubeType;
-            data.current_scramble = newCubeScramble;
-            data.scramble_index = 1;
+        const normalized = normalizeCubeType(updates.cube_type);
+        if (normalized !== room.cube_type) {
+            newCubeType = normalized;
+            data.cube_type = normalized;
         }
     }
 
     // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
 
-    if (cubeTypeChanged && newCubeScramble) {
-        // Atomic reset: solves + scramble history + room update + new scramble row
-        await prisma().$transaction([
-            prisma().friendlyRoomSolve.deleteMany({ where: { room_id: roomId } }),
-            prisma().friendlyRoomScramble.deleteMany({ where: { room_id: roomId } }),
-            prisma().friendlyRoom.update({ where: { id: roomId }, data }),
-            prisma().friendlyRoomScramble.create({
-                data: { room_id: roomId, scramble_index: 1, scramble: newCubeScramble },
-            }),
-        ]);
+    if (newCubeType) {
+        // Rounds timed on the old puzzle mean nothing on the new one
+        await resetRoomRounds(roomId, newCubeType, data);
     } else {
         await prisma().friendlyRoom.update({
             where: { id: roomId },

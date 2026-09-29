@@ -4,6 +4,7 @@ import {DailyGoal, DailyGoalStorage} from '../@types/interfaces';
 import {emitEvent} from '../../../util/event_handler';
 import {gqlMutate, gqlQuery} from '../../api';
 import {fetchRoomSolveCounts} from './room-solves';
+import {toStoredSubset} from '../../../../shared/solve';
 
 const STORAGE_KEY = 'daily_goals';
 
@@ -47,7 +48,8 @@ export function setDailyGoalStorage(data: DailyGoalStorage): void {
 }
 
 function sameGoal(a: Pick<DailyGoal, 'cube_type' | 'scramble_subset'>, cubeType: string, subset?: string | null): boolean {
-	return a.cube_type === cubeType && (a.scramble_subset ?? null) === (subset ?? null);
+	// Goals written before subsets were normalized can still hold '' for a default subset.
+	return a.cube_type === cubeType && toStoredSubset(a.scramble_subset) === toStoredSubset(subset);
 }
 
 export function getGoalForCubeType(cubeType: string, scrambleSubset?: string | null): DailyGoal | null {
@@ -62,7 +64,7 @@ export function setGoalForCubeType(cubeType: string, target: number, scrambleSub
 	if (existingIndex >= 0) {
 		storage.goals[existingIndex].target = target;
 	} else {
-		storage.goals.push({cube_type: cubeType, scramble_subset: scrambleSubset ?? null, target, enabled: true});
+		storage.goals.push({cube_type: cubeType, scramble_subset: toStoredSubset(scrambleSubset), target, enabled: true});
 	}
 
 	setDailyGoalStorage(storage);
@@ -245,7 +247,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 			// Update localStorage with goals from server
 			storage.goals = serverGoals.map((g) => ({
 				cube_type: g.cube_type,
-				scramble_subset: g.scramble_subset ?? null,
+				scramble_subset: toStoredSubset(g.scramble_subset),
 				target: g.target,
 				enabled: g.enabled,
 			}));

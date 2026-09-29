@@ -25,6 +25,7 @@ jest.mock('../deleted-solves', () => ({
 
 import {getDailyGoalProgress, getTodaysSolveCount} from '../progress';
 import {getDeletedCountForBucketToday} from '../deleted-solves';
+import {fetchSolveCount} from '../../../../db/solves/query';
 
 beforeEach(() => {
 	jest.clearAllMocks();
@@ -55,6 +56,11 @@ describe('getTodaysSolveCount', () => {
 		mockStorage.count_deleted_solves = true;
 		expect(getTodaysSolveCount('333', null)).toBe(10);
 		expect(getDeletedCountForBucketToday).toHaveBeenCalledWith('333', null);
+	});
+
+	it("queries a default subset ('') the way the timer stored it (null)", () => {
+		getTodaysSolveCount('fto', '');
+		expect(fetchSolveCount).toHaveBeenCalledWith(expect.objectContaining({cube_type: 'fto', scramble_subset: null}));
 	});
 
 	it('adds room and deleted solves together when both are on', () => {

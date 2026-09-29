@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import { Check, Copy, FloppyDisk, PencilSimple, X } from 'phosphor-react';
@@ -10,8 +10,8 @@ import { smartCubeSelected } from './helpers/util';
 import SmartScramble from './time_display/timer_scramble/smart_scramble/SmartScramble';
 import block from '../../styles/bem';
 import './MobileTimerScramble.scss';
-import { resetScramble } from './helpers/scramble';
-import { setTimerParam, setTimerParams } from './helpers/params';
+import { useScrambleForBucket } from './helpers/scramble_navigation';
+import { setTimerParams } from './helpers/params';
 import { hapticImpact } from '../../util/native-plugins';
 
 const b = block('mobile-timer-scramble');
@@ -25,7 +25,6 @@ export default function MobileTimerScramble() {
     const {t} = useTranslation();
     const context = useContext(TimerContext);
     const cubeType = context.cubeType;
-    const scrambleSubset = context.scrambleSubset;
     const isMegaminx = cubeType === 'minx';
     const [copied, setCopied] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -41,23 +40,16 @@ export default function MobileTimerScramble() {
 
     const timerScrambleSize = useSettings('timer_scramble_size');
 
-    const { hideScramble, timeStartedAt, scrambleLocked } = context;
+    const { hideScramble, scrambleLocked } = context;
     let scramble = context.scramble;
-    const lockedScramble = useSettings('locked_scramble');
     const scrambleMonospace = useSettings('scramble_monospace');
     const scrambleAlignment = useSettings('scramble_alignment');
 
     const isSmart = smartCubeSelected(context);
 
-    // Generate scramble when cube type or subset changes
-    useEffect(() => {
-        if (lockedScramble && !timeStartedAt) {
-            setTimerParam('scramble', lockedScramble);
-            setTimerParam('scrambleLocked', true);
-        } else {
-            resetScramble(context);
-        }
-    }, [cubeType, scrambleSubset]);
+    // Generate scramble when cube type or subset changes. Shared with the desktop layout,
+    // so a tablet rotating across 1024px keeps the scramble it already has.
+    useScrambleForBucket(context);
 
     if (hideScramble) {
         scramble = '';

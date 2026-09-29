@@ -3,6 +3,7 @@ import {GoalProgress} from '../@types/interfaces';
 import {getGoalForCubeType, getDailyGoalStorage} from './storage';
 import {getRoomCountForBucketToday} from './room-solves';
 import {getDeletedCountForBucketToday} from './deleted-solves';
+import {toStoredSubset} from '../../../../shared/solve';
 
 export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | null): number {
 	const today = new Date();
@@ -10,7 +11,7 @@ export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | 
 
 	const timerCount = fetchSolveCount({
 		cube_type: cubeType,
-		scramble_subset: scrambleSubset ?? null,
+		scramble_subset: toStoredSubset(scrambleSubset),
 		from_timer: true,
 		started_at: {$gte: today.getTime()},
 	});

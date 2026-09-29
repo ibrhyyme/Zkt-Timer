@@ -1706,6 +1706,9 @@
     "edit_room": "Edit Room",
     "manage_users": "Manage Users",
     "delete_room": "Delete Room",
+    "reset_room": "Reset Room",
+    "reset_room_confirm": "All solves and rounds in the room will be deleted and everyone starts again from round 1. The event stays the same. Do you confirm?",
+    "reset_notification": "{{username}} reset the room",
     "room_name": "Room Name",
     "room_name_placeholder": "Enter Room Name...",
     "cube_type": "Cube Type",
@@ -4599,6 +4602,7 @@
         "notes": [
           "There are three ranks: owner, moderator and participant. A moderator can kick and ban participants but cannot touch another moderator or the owner. Only the owner can appoint moderators and hand over the room.",
           "Tap the round number, or any time in the table, to see that round's scramble again.",
+          "The owner or a moderator can reset the room from the menu. All solves and rounds are deleted, the cube type stays the same and everyone starts again from round 1.",
           "A chat message can be at most 500 characters.",
           "Playing music in a room requires Pro."
         ]

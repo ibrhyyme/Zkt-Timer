@@ -31,6 +31,7 @@ export enum FriendlyRoomClientEvent {
     TRANSFER_OWNERSHIP = 'friendlyRoomTransferOwnership', // Owner: hand the room to someone else
     RESPOND_JOIN_REQUEST = 'friendlyRoomRespondJoinRequest', // Owner/moderator: accept or reject a full-room request
     CANCEL_JOIN_REQUEST = 'friendlyRoomCancelJoinRequest', // Requester: withdraw a pending request
+    RESET_ROOM = 'friendlyRoomReset', // Owner/moderator: clear every solve and round, same event
 }
 
 export enum FriendlyRoomServerEvent {
@@ -65,6 +66,7 @@ export enum FriendlyRoomServerEvent {
     JOIN_REQUEST_PENDING = 'friendlyRoomJoinRequestPending', // To requester: room is full, asked the owner
     JOIN_REQUESTS = 'friendlyRoomJoinRequests', // To owner/moderators: current pending list
     JOIN_REQUEST_RESOLVED = 'friendlyRoomJoinRequestResolved', // To requester: accepted or rejected
+    ROOM_RESET = 'friendlyRoomResetDone', // To the room: a manager started it over (ROOM_DATA carries the state)
 }
 
 export const FriendlyRoomSocketRoom = {

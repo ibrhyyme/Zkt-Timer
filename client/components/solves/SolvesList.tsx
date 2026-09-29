@@ -13,6 +13,7 @@ import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util'
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import jsonStr from 'json-stable-stringify';
 import { CubeType } from '../../util/cubes/cube_types';
+import { toStoredSubset } from '../../../shared/solve';
 import Button, { CommonType } from '../common/button/Button';
 import Dropdown from '../common/inputs/dropdown/Dropdown';
 import { IDropdownOption } from '../common/inputs/dropdown/dropdown_option/DropdownOption';
@@ -125,7 +126,7 @@ export default function SolvesList() {
 		};
 		if (cubeType !== ALL_CUBES_MARKER) {
 			final.cube_type = cubeType;
-			final.scramble_subset = scrambleSubset;
+			final.scramble_subset = toStoredSubset(scrambleSubset);
 		}
 		return final;
 	}

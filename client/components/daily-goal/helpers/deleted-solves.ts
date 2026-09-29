@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import {getMe} from '../../store';
+import {toStoredSubset} from '../../../../shared/solve';
 
 /**
  * Deleted-solve tally behind "Silinen çözümleri de say" (DailyGoalStorage.count_deleted_solves).
@@ -45,11 +46,11 @@ export function deletedTallyDayKey(ms: number): string {
 }
 
 /**
- * Bucket identity. JSON keeps a null subset apart from an empty-string one, as the solve
- * query does ('' is a real subset id, e.g. 7x7 WCA).
+ * Bucket identity. The subset goes through toStoredSubset, the same as the solve query,
+ * so the picker's '' for a default subset and the stored null land on one key.
  */
 export function deletedTallyBucketKey(cubeType: string, scrambleSubset?: string | null): string {
-	return JSON.stringify([cubeType, scrambleSubset ?? null]);
+	return JSON.stringify([cubeType, toStoredSubset(scrambleSubset)]);
 }
 
 function parseBucketKey(key: string): [string, string | null] | null {
@@ -190,7 +191,7 @@ export function deletedDailyCountsFromTally(
 			if (cubeType) {
 				const bucket = parseBucketKey(bucketKey);
 				if (!bucket || bucket[0] !== cubeType) continue;
-				if (scrambleSubset !== undefined && bucket[1] !== (scrambleSubset ?? null)) continue;
+				if (scrambleSubset !== undefined && toStoredSubset(bucket[1]) !== toStoredSubset(scrambleSubset)) continue;
 			}
 			sum += count;
 		}

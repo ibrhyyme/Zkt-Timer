@@ -87,11 +87,12 @@ describe('addDeletedSolvesToTally', () => {
 		expect(countDeletedForBucketDay(tally, TODAY, '333', null)).toBe(0);
 	});
 
-	it('keeps a null subset apart from an empty-string one, as the solve query does', () => {
-		const tally = addDeletedSolvesToTally({}, [solve({cube_type: '777', scramble_subset: ''})], NOW);
+	it('treats an empty-string subset as null, as the solve query does', () => {
+		const tally = addDeletedSolvesToTally({}, [solve({cube_type: 'fto', scramble_subset: ''})], NOW);
 
-		expect(countDeletedForBucketDay(tally, TODAY, '777', '')).toBe(1);
-		expect(countDeletedForBucketDay(tally, TODAY, '777', null)).toBe(0);
+		expect(countDeletedForBucketDay(tally, TODAY, 'fto', '')).toBe(1);
+		expect(countDeletedForBucketDay(tally, TODAY, 'fto', null)).toBe(1);
+		expect(deletedTallyBucketKey('fto', '')).toBe(deletedTallyBucketKey('fto', null));
 		expect(deletedTallyBucketKey('777', undefined)).toBe(deletedTallyBucketKey('777', null));
 	});
 

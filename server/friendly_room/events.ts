@@ -32,6 +32,7 @@ import {
     getRoomForClient,
     resolveRoomKey,
     updateRoom,
+    resetRoom,
     kickParticipant,
     banParticipant,
     isUserBanned,
@@ -821,6 +822,38 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         } catch (error) {
             logger.error('Error updating room', { error });
             client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Oda güncellenemedi (Veritabanı hatası olabilir).' });
+        }
+    });
+
+    // Reset the room: every solve and round goes, same event (owner, moderator or site admin)
+    client.on(FriendlyRoomClientEvent.RESET_ROOM, async (roomId: string) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'reset_room', 10, 60, user.id))) return;
+
+            const room = await resetRoom(roomId, user.id, user.admin === true);
+            if (!room) {
+                // Not ERROR: the client turns ERROR into a full-screen "room not found"
+                // page, which would throw the manager out of their own live room.
+                client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Oda sıfırlanamadı' });
+                return;
+            }
+
+            const socketRoom = getFriendlyRoomSocketRoom(roomId);
+            // Full state first, then the event that clears each client's live round state
+            // (statuses, manual entry, inspection) and names who reset.
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DATA, room);
+            io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_RESET, {
+                room_id: roomId,
+                username: user.username,
+            });
+        } catch (error) {
+            logger.error('Error resetting room', { error });
+            client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Oda sıfırlanamadı' });
         }
     });
 

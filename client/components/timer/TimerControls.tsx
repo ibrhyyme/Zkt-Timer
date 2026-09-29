@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple, Trash } from 'phosphor-react';
 import Button from '../common/button/Button';
@@ -11,19 +11,15 @@ import { useSmartCubeStore } from '../../util/hooks/useSmartCubeStore';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
 import { setTimerParam } from './helpers/params';
-import { commitScramble, getNewScrambleAsync, resetScramble } from './helpers/scramble';
-import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { resetScramble } from './helpers/scramble';
+import { useScrambleHistory } from './helpers/scramble_navigation';
 import { smartCubeSelected } from './helpers/util';
 import { setSetting } from '../../db/settings/update';
-import {virtualCubeOwnsKeyboard} from './helpers/virtual_cube';
 import block from '../../styles/bem';
 import { hapticNotification } from '../../util/native-plugins';
 import './TimerControls.scss';
 
 const b = block('timer-controls');
-
-// Max scramble history back steps
-const MAX_HISTORY_BACK_STEPS = 2;
 
 export default function TimerControls() {
     const { t } = useTranslation();
@@ -32,7 +28,7 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt } = context;
     // Connection state lives in its own slice now (reducers/smart_cube.ts), so it is not
     // part of the timer context.
     const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
@@ -47,40 +43,13 @@ export default function TimerControls() {
     // over from an earlier connection must not keep the buttons dead.
     const isSmartScrambling = isSmart && !!smartCubeConnected && hasSmartTurns && !timeStartedAt;
 
-    // Scramble history state
-    const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(-1);
-    const lastCubeTypeRef = useRef(cubeType);
-    const lastScrambleSubsetRef = useRef(scrambleSubset);
-    const isNavigatingRef = useRef(false);
-
-    // Kategori veya alt dal değiştiğinde history'yi sıfırla
-    useEffect(() => {
-        if (lastCubeTypeRef.current !== cubeType || lastScrambleSubsetRef.current !== scrambleSubset) {
-            setScrambleHistory([]);
-            setCurrentIndex(-1);
-            lastCubeTypeRef.current = cubeType;
-            lastScrambleSubsetRef.current = scrambleSubset;
-        }
-    }, [cubeType, scrambleSubset]);
-
-    // Scramble değiştiğinde (navigasyon dışında) history'ye ekle
-    // Correction scramble'ları (smartTurnOffset > 0) history'ye ekleme
-    const smartTurnOffset = context.smartTurnOffset || 0;
-    useEffect(() => {
-        if (scramble && !isNavigatingRef.current && smartTurnOffset === 0) {
-            setScrambleHistory((prev) => {
-                let newHistory = prev.slice(0, currentIndex + 1);
-                newHistory.push(scramble);
-                if (newHistory.length > MAX_HISTORY_BACK_STEPS + 1) {
-                    newHistory = newHistory.slice(-MAX_HISTORY_BACK_STEPS - 1);
-                }
-                return newHistory;
-            });
-            setCurrentIndex((prev) => Math.min(prev + 1, MAX_HISTORY_BACK_STEPS));
-        }
-        isNavigatingRef.current = false;
-    }, [scramble]);
+    // Previous / Next history lives in the timer store, shared with the desktop layout, so
+    // a tablet rotating across 1024px keeps it.
+    const {
+        goPrevious: handlePreviousScramble,
+        goNext: handleNextScramble,
+        canGoPrevious: historyCanGoPrevious,
+    } = useScrambleHistory(context, !!timeStartedAt || scrambleLocked || isSmartScrambling);
 
     // +2 toggle
     function handlePlusTwo() {
@@ -129,68 +98,9 @@ export default function TimerControls() {
         }
     }
 
-    // Previous scramble
-    const handlePreviousScramble = useCallback(() => {
-        if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
-
-        if (currentIndex > 0) {
-            isNavigatingRef.current = true;
-            const newIndex = currentIndex - 1;
-            setCurrentIndex(newIndex);
-            commitScramble(scrambleHistory[newIndex]);
-        }
-    }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
-
-    // Next scramble
-    const nextScrambleRef = useRef(0);
-    const handleNextScramble = useCallback(() => {
-        if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
-
-        if (currentIndex < scrambleHistory.length - 1) {
-            isNavigatingRef.current = true;
-            const newIndex = currentIndex + 1;
-            setCurrentIndex(newIndex);
-            commitScramble(scrambleHistory[newIndex]);
-        } else {
-            const ct = getCubeTypeInfoById(cubeType);
-            if (!ct) return;
-            const callId = ++nextScrambleRef.current;
-            commitScramble('');
-            getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
-                if (callId === nextScrambleRef.current && newScramble) {
-                    commitScramble(newScramble);
-                }
-            }).catch((e) => { console.error('[scramble] next failed:', e); });
-        }
-    }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling, cubeType, scrambleSubset]);
-
-    // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            const target = e.target as HTMLElement;
-            if (target.closest('input, textarea')) return;
-            if (timeStartedAt) return;
-            // Arrows orbit the virtual cube's camera while it is armed, so changing
-            // the scramble underneath the solver would be the wrong reading of them.
-            if (virtualCubeOwnsKeyboard()) return;
-
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                handlePreviousScramble();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                handleNextScramble();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handlePreviousScramble, handleNextScramble, timeStartedAt]);
-
     // Navigation disable states
-    const minHistoryIndex = Math.max(0, scrambleHistory.length - 1 - MAX_HISTORY_BACK_STEPS);
     const disableControls = !!timeStartedAt || !!context.inInspection; // Timer veya Inspection sırasında kontrolleri kilitle
-    const canGoPrevious = currentIndex > minHistoryIndex && !scrambleLocked && !disableControls && !isSmartScrambling;
+    const canGoPrevious = historyCanGoPrevious && !disableControls;
     const canGoNext = !scrambleLocked && !disableControls && !isSmartScrambling;
 
     return (

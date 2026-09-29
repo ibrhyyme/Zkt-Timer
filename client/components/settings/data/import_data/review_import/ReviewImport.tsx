@@ -20,7 +20,7 @@ import { getSubsetsForCube } from '../../../../../util/cubes/scramble_subsets';
 import { getCubeTypeBucketLabel } from '../../../../../util/cubes/util';
 import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
 import { fetchServerSolveFingerprints } from './chunked_import';
-import { solveFingerprint } from '../../../../../../shared/solve';
+import { solveFingerprint, toStoredSubset } from '../../../../../../shared/solve';
 
 // Import only registers WCA events (cube_type='wca' + this subset).
 // Method-based cube_type's (333cfop/roux/mehta/zz, 444yau, other, wca parent) are not shown.
@@ -378,7 +378,7 @@ export default function ReviewImport() {
 			} else {
 				// Method-based cube_type (333cfop, 333roux, etc.) — as-is
 				solve.cube_type = cubeType;
-				solve.scramble_subset = subset;
+				solve.scramble_subset = toStoredSubset(subset);
 			}
 		}
 

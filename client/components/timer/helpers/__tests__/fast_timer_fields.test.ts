@@ -8,7 +8,7 @@ import {
 	turnSmartCube,
 	turnSmartCubeBatch,
 } from '../../../../actions/timer';
-import { FAST_TIMER_FIELDS, selectStableTimerStore } from '../fast_timer_fields';
+import { FAST_TIMER_FIELDS, SCRAMBLE_NAV_FIELDS, selectStableTimerStore } from '../fast_timer_fields';
 
 /**
  * Timer hands the timer slice to the whole page through TimerContext and re-renders only
@@ -21,6 +21,7 @@ const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 const SCRAMBLED = 'DUUUUUUUURRRRRRRRRFFFFFFFFFUDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 const FAST: readonly string[] = FAST_TIMER_FIELDS;
+const NOT_IN_CONTEXT: readonly string[] = [...FAST_TIMER_FIELDS, ...SCRAMBLE_NAV_FIELDS];
 
 const initial = () => timer(undefined, { type: '@@INIT' });
 const initialSmart = () => smartCube(undefined, { type: '@@INIT' });
@@ -41,14 +42,14 @@ function moves(turns: string[], at: number) {
 }
 
 describe('selectStableTimerStore', () => {
-	it('drops every fast field and passes everything else through untouched', () => {
+	it('drops every fast and scramble navigation field and passes everything else through untouched', () => {
 		const slice = initial();
 		const stable = selectStableTimerStore({ timer: slice });
 
-		for (const key of FAST) {
+		for (const key of NOT_IN_CONTEXT) {
 			expect(stable).not.toHaveProperty(key);
 		}
-		for (const key of Object.keys(slice).filter((k) => !FAST.includes(k))) {
+		for (const key of Object.keys(slice).filter((k) => !NOT_IN_CONTEXT.includes(k))) {
 			expect(stable[key]).toBe(slice[key]);
 		}
 	});
@@ -145,6 +146,20 @@ describe('connection state is out of reach of Timer entirely', () => {
 
 		expect(afterReset.smartCubeConnected).toBe(true);
 		expect(afterReset.smartDeviceId).toBe('cube-1');
+	});
+});
+
+describe('scramble navigation does not re-render Timer a second time', () => {
+	// `scramble` itself re-renders Timer; the history entry it produces right after must not.
+	it.each([
+		['recording a scramble', { scrambleHistory: ['R U'], scrambleHistoryIndex: 0 }],
+		['stepping back through the history', { scrambleHistoryIndex: 1 }],
+		['switching to another bucket', { scrambleBucket: 'fto::' }],
+	])('%s', (_, params) => {
+		const prev = initial();
+		const next = timer(prev, setTimerParamsAction(params as any));
+
+		expect(rerendersTimer(prev, next)).toBe(false);
 	});
 });
 

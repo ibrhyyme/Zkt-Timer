@@ -8,6 +8,19 @@ const WCA_EVENT_IDS = new Set([
 ]);
 
 /**
+ * The stored form of a scramble subset.
+ *
+ * `''` is how the subset pickers name a puzzle's default subset (fto "Random State",
+ * 444yau "WCA", ...), but the timer has always saved that subset as `null`. LokiJS
+ * compares with `===`, so a filter carrying `''` matches none of those solves: the
+ * per-puzzle card counted them while its stats page and the solves list found zero.
+ * Every write and every solve filter goes through this, so there is one value.
+ */
+export function toStoredSubset(subset: string | null | undefined): string | null {
+	return subset || null;
+}
+
+/**
  * Collapses a standalone WCA-event bucket onto the canonical `wca` bucket.
  *
  * `333::null`, `333::''`, `333::333` -> `wca::333` (the duplicate "3x3" boxes).
@@ -26,7 +39,7 @@ export function normalizeWcaEventBucket(
 			return { cube_type: 'wca', scramble_subset: cubeType };
 		}
 	}
-	return { cube_type: cubeType, scramble_subset: scrambleSubset ?? null };
+	return { cube_type: cubeType, scramble_subset: toStoredSubset(scrambleSubset) };
 }
 
 /**

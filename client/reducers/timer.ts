@@ -49,6 +49,9 @@ const defaultTimerState = {
 	canStart: false,
 	phaseSplits: [],
 	virtualArmed: false,
+	scrambleBucket: null,
+	scrambleHistory: [],
+	scrambleHistoryIndex: -1,
 
 	disabled: false,
 	scramble: ''

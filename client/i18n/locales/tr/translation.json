@@ -1713,6 +1713,9 @@
     "edit_room": "Odayı Düzenle",
     "manage_users": "Kullanıcıları Yönet",
     "delete_room": "Odayı Sil",
+    "reset_room": "Odayı Sıfırla",
+    "reset_room_confirm": "Odadaki tüm çözümler ve turlar silinecek, herkes 1. turdan başlayacak. Event değişmez. Onaylıyor musunuz?",
+    "reset_notification": "{{username}} odayı sıfırladı",
     "room_name": "Oda İsmi",
     "room_name_placeholder": "Oda İsmi Girin...",
     "cube_type": "Küp Türü",
@@ -4604,6 +4607,7 @@
         "notes": [
           "Yetkiler üç kademelidir: sahip, moderatör ve katılımcı. Moderatör katılımcıları atabilir ve engelleyebilir ama bir başka moderatöre ya da oda sahibine dokunamaz. Moderatör atamak ve odayı devretmek yalnızca oda sahibinin elindedir.",
           "Tur numarasına veya tablodaki bir süreye dokunarak o turun karıştırmasını yeniden görebilirsiniz.",
+          "Oda sahibi veya moderatör menüden odayı sıfırlayabilir. Tüm çözümler ve turlar silinir, küp tipi aynı kalır ve herkes 1. turdan başlar.",
           "Sohbet panelinde bir mesaj en fazla 500 karakter olabilir.",
           "Odada müzik çalmak Pro üyelik gerektirir."
         ]

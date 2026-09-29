@@ -42,6 +42,19 @@ export function migrateLokiSolvesToWcaSubset(): number {
 
 	let migrated = 0;
 
+	// Phase 0: a default subset is stored as null (toStoredSubset). An import could write the
+	// picker's '' instead (fto "Random State", 444yau "WCA"), and every solve filter sends
+	// null, so those solves would drop out of their own bucket. Runs first so a legacy
+	// `777::''` row becomes `777::null` and phase 1 moves it to wca::777 in the same pass.
+	// WCA rows are left to phase 2, which gives them their required subset.
+	const emptySubsetSolves = db.chain().find({ scramble_subset: '' }).data();
+	for (const solve of emptySubsetSolves) {
+		if (solve.cube_type === 'wca') continue;
+		solve.scramble_subset = null;
+		db.update(solve);
+		migrated++;
+	}
+
 	// Faz 1: Legacy cube_type'lari yeni (wca, <subset>) bucket'ina cevir
 	const legacyIds = [...PURE_WCA_IDS, ...Object.keys(VARIANT_MAP)];
 	const legacySolves = db.chain()

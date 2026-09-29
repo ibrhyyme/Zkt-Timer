@@ -43,7 +43,7 @@ import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
 import { FriendlyRoomRole, getFriendlyRoomRole, canManageRoom } from '../../../shared/friendly_room/roles';
 import { looksLikeRoomId, roomPath } from '../../../shared/friendly_room/slug';
-import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
+import { List, PencilSimple, Users, ArrowCounterClockwise, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote, Gear } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
@@ -953,6 +953,21 @@ function FriendlyRoomContent() {
         return roomRef.current?.participants.find((p) => p.user_id === userId)?.username ?? '';
     }
 
+    // Live state of the current round that room data does not carry: everyone's
+    // solving/finished badges, this user's manual entry and inspection, a pending cube
+    // reset. Cleared when a new round opens and when the room is reset.
+    function clearLiveRoundState() {
+        setUserStatuses({});
+        setManualTimeInput('');
+        setManualTimeError(false);
+        setManualInspecting(false);
+        if (manualInspectionRef.current) {
+            clearInterval(manualInspectionRef.current);
+            manualInspectionRef.current = null;
+        }
+        setNeedsCubeReset(false);
+    }
+
     function addRoomNotification(type: string, message: string) {
         setNotifications((prev) => [
             ...prev,
@@ -1124,17 +1139,21 @@ function FriendlyRoomContent() {
                         ].sort((a, b) => a.scramble_index - b.scramble_index),
                     };
                 });
-                // Clear statuses for new round
-                setUserStatuses({});
-                // Clear manual entry input and inspection
-                setManualTimeInput('');
-                setManualTimeError(false);
-                setManualInspecting(false);
-                if (manualInspectionRef.current) {
-                    clearInterval(manualInspectionRef.current);
-                    manualInspectionRef.current = null;
-                }
-                setNeedsCubeReset(false);
+                clearLiveRoundState();
+            }
+        });
+
+        // A manager started the room over. ROOM_DATA just before this carried the emptied
+        // table and the new round 1; this clears what room data does not hold.
+        socket.on(FriendlyRoomServerEvent.ROOM_RESET, (data: { room_id: string; username: string }) => {
+            if (data.room_id !== roomId) return;
+
+            clearLiveRoundState();
+            addRoomNotification('INFO', t('rooms.reset_notification', { username: data.username }));
+
+            // This user's room solves are gone too, so a goal that counts them drops back
+            if (getDailyGoalStorage().count_room_solves) {
+                fetchRoomSolveCounts();
             }
         });
 
@@ -1319,6 +1338,7 @@ function FriendlyRoomContent() {
             socket.off(FriendlyRoomServerEvent.PLAYER_JOINED);
             socket.off(FriendlyRoomServerEvent.PLAYER_LEFT);
             socket.off(FriendlyRoomServerEvent.SCRAMBLE_UPDATED);
+            socket.off(FriendlyRoomServerEvent.ROOM_RESET);
             socket.off(FriendlyRoomServerEvent.SOLVE_SUBMITTED);
             socket.off(FriendlyRoomServerEvent.SOLVE_UPDATED);
             socket.off(FriendlyRoomServerEvent.SOLVE_DELETED);
@@ -1479,6 +1499,12 @@ function FriendlyRoomContent() {
 
     function handleStartRoom() {
         getSocket().emit(FriendlyRoomClientEvent.START_ROOM, roomId);
+    }
+
+    function handleResetRoom() {
+        setHostMenuOpen(false);
+        if (!window.confirm(t('rooms.reset_room_confirm'))) return;
+        getSocket().emit(FriendlyRoomClientEvent.RESET_ROOM, roomId);
     }
 
     function handleNextScramble() {
@@ -1795,6 +1821,13 @@ function FriendlyRoomContent() {
                                         >
                                             <Users size={18} weight="bold" />
                                             {t('rooms.manage_users')}
+                                        </button>
+                                        <button
+                                            onClick={handleResetRoom}
+                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
+                                        >
+                                            <ArrowCounterClockwise size={18} weight="bold" />
+                                            {t('rooms.reset_room')}
                                         </button>
                                         {isHost && (
                                             <>

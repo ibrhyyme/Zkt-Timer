@@ -1706,6 +1706,9 @@
     "edit_room": "Editar sala",
     "manage_users": "Gestionar usuarios",
     "delete_room": "Eliminar sala",
+    "reset_room": "Reiniciar sala",
+    "reset_room_confirm": "Se eliminarán todas las resoluciones y rondas de la sala y todos empezarán de nuevo desde la ronda 1. El evento no cambia. ¿Confirmas?",
+    "reset_notification": "{{username}} reinició la sala",
     "room_name": "Nombre de la sala",
     "room_name_placeholder": "Ingresa el nombre de la sala...",
     "cube_type": "Tipo de cubo",
@@ -4553,6 +4556,7 @@
         "notes": [
           "Hay tres rangos: propietario, moderador y participante. Un moderador puede expulsar y bloquear participantes, pero no puede tocar a otro moderador ni al propietario. Solo el propietario nombra moderadores y cede la sala.",
           "Toca el número de ronda, o cualquier tiempo de la tabla, para volver a ver el scramble de esa ronda.",
+          "El dueño o un moderador puede reiniciar la sala desde el menú. Se eliminan todas las resoluciones y rondas, el tipo de cubo no cambia y todos empiezan de nuevo desde la ronda 1.",
           "Un mensaje del chat puede tener como mucho 500 caracteres.",
           "Poner música en una sala requiere Pro."
         ]

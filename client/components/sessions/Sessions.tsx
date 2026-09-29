@@ -17,6 +17,7 @@ import { fetchSessionById, fetchSessions, getCubeBucketsFromSession } from '../.
 import { fetchLastBucketForSession } from '../../db/solves/query';
 import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util';
 import { CubeType } from '../../util/cubes/cube_types';
+import { toStoredSubset } from '../../../shared/solve';
 import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb, bulkDeleteSessionsDb } from '../../db/sessions/update';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
@@ -408,7 +409,7 @@ export default function Sessions() {
 	const fetchFilter: Record<string, any> = {
 		session_id: selectedSessionId,
 		cube_type: currentCube,
-		scramble_subset: effectiveSubset,
+		scramble_subset: toStoredSubset(effectiveSubset),
 	};
 
 	const isCurrentSession = selectedSessionId === currentSessionId;
