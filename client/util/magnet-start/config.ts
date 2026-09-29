@@ -109,6 +109,14 @@ export const HAPTIC_MUTE_MS = 120;
  * ~0.1 s (or prime, then start, a solve on top of a magnet-started inspection).
  */
 export const TOUCH_GUARD_AFTER_MAGNET_MS = 600;
+/**
+ * The stream pauses while a solve runs. The far baseline confirmed just before the pause is
+ * still trusted when it resumes within this long, so a cube dropped at the hot spot by
+ * slam-to-stop reads as resting there instead of as an unknown baseline (whose re-learn
+ * button would learn the cube itself). The phone lies on the table all along; turning it
+ * moves the far field well under nearMin.
+ */
+export const RESUME_TRUST_MS = 10 * 60_000;
 
 // Native stream
 export const STREAM_PERIOD_US = 10000;

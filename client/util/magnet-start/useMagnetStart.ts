@@ -17,7 +17,7 @@ import { HAPTIC_MUTE_MS, MIN_DWELL_MS } from './config';
 import { computeReadiness, decideOnLift, dwellMsFor, MagnetAction, TimerSide } from './controller';
 import { magnetDebugLog } from './debug_log';
 import { magnetService, ServiceBatch } from './service';
-import { useMagnetStartSettings } from './settings';
+import { markMagnetIntroDone, useMagnetStartSettings } from './settings';
 import { startBlockReason } from './start_guard';
 import { setMagnetStatus } from './status_store';
 import { useMagnetAvailability } from './availability';
@@ -77,6 +77,10 @@ function runAction(action: MagnetAction, ctx: ITimerContext): void {
 			// startTimer stopped the inspection interval, so nothing overwrites this before save.
 			setTimerParams({ addTwoToSolve: action.addTwo });
 		}
+		// A solve started by lifting the cube: the user has found the hot spot and done the
+		// whole loop once, so the routine instructions under the digits go quiet (MagnetHint).
+		// Inside the batch: the first time it re-renders the settings listeners.
+		markMagnetIntroDone();
 	});
 }
 
@@ -111,6 +115,9 @@ export function useMagnetStart(context: ITimerContext) {
 	const contextRef = useRef(context);
 	contextRef.current = context;
 	const wasGreen = useRef(false);
+	// Read by the effect cleanup below, which runs after the render that turned `active` off.
+	const solvingRef = useRef(solving);
+	solvingRef.current = solving;
 
 	useEffect(() => {
 		if (!active) return;
@@ -164,6 +171,7 @@ export function useMagnetStart(context: ITimerContext) {
 				lastT: batch.snapshot.lastT,
 				dwellMs,
 				armed: batch.armed,
+				resting: batch.resting,
 			});
 			setMagnetStatus({ stage: r.stage, green: r.green, orange: r.orange });
 
@@ -178,6 +186,8 @@ export function useMagnetStart(context: ITimerContext) {
 
 		return () => {
 			unsubscribe();
+			// The stream pauses for the solve and resumes right after it (see RESUME_TRUST_MS).
+			if (solvingRef.current) magnetService.pauseForSolve();
 			release();
 			wasGreen.current = false;
 			setMagnetStatus({ stage: 'off', green: false, orange: false });

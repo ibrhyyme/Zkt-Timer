@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMagnetStatus } from '../../../../util/magnet-start/status_store';
 import { magnetService } from '../../../../util/magnet-start/service';
+import { useMagnetStartSettings } from '../../../../util/magnet-start/settings';
 import type { MagnetStage } from '../../../../util/magnet-start/controller';
 
 const STAGE_KEYS: Partial<Record<MagnetStage, string>> = {
@@ -20,14 +21,20 @@ const STAGE_KEYS: Partial<Record<MagnetStage, string>> = {
  * One line under the digits telling the user what the cube should do next. While the
  * baseline is unknown it carries the re-learn button: a <button> never starts the timer
  * (touch_target.ts), so tapping it is safe on the start surface.
+ *
+ * "Cube away, put it at the camera" only speaks until the first solve started by lifting
+ * the cube: after that the user knows where it goes, and repeating it after every solve is
+ * noise. 'resting' (cube left at the hot spot through a stop) has no line at all.
  */
 export default function MagnetHint() {
 	const { t } = useTranslation();
 	const status = useMagnetStatus();
+	const { introDone } = useMagnetStartSettings();
 	const [relearnFailed, setRelearnFailed] = useState(false);
 
 	const key = STAGE_KEYS[status.stage];
 	if (!status.active || !key) return null;
+	if (status.stage === 'far' && introDone) return null;
 
 	function relearn() {
 		setRelearnFailed(!magnetService.relearnFar());

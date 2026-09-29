@@ -38,6 +38,8 @@ export type DetectorEvent =
 		delta: number;
 		/** The cube moved along the edge and settled again; not a fresh placement. */
 		replaced: boolean;
+		/** Already resting when the stream resumed after a solve: never arms (detector reset). */
+		resumed: boolean;
 		/** Start of the far phase that preceded this placement (null for a re-placement). */
 		farSince: number | null;
 	}
@@ -76,6 +78,8 @@ export interface DetectorSnapshot {
 	sigma: number | null;
 	lastT: number | null;
 	rateHz: number | null;
+	/** Restarted after a solve with F vouched for, and no far or near plateau found yet. */
+	resumePending: boolean;
 }
 
 /** Wire format of one native `samples` event: flat [t, x, y, z, t, x, y, z, ...]. */

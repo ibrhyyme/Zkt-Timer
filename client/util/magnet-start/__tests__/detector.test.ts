@@ -247,6 +247,58 @@ describe('magnet detector on synthetic signals', () => {
 		expect(nearsOf(events)).toHaveLength(1);
 	});
 
+	it('takes a static near reading as the cube after a vouched-for restart, without arming it', () => {
+		// Slam-to-stop dropped the cube at the hot spot while the stream was paused for the
+		// solve. Without the vouch this read as an unknown baseline, and its re-learn button
+		// would have learned the cube itself.
+		const det = new MagnetDetector(detectorConfigFor('ios'), FAR);
+		det.reset({ trustFar: true });
+		const b = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 81 });
+		b.hold(1000);
+		let events = runDetector(det, b.samples());
+		const nears = nearsOf(events);
+		expect(nears).toHaveLength(1);
+		expect(nears[0]).toMatchObject({ resumed: true, replaced: false, farSince: null });
+		expect(events.some((e) => e.type === 'hint' && e.hint === 'unknown')).toBe(false);
+		expect(det.snapshot().phase).toBe('near');
+
+		// Picking it up to scramble is an ordinary lift (the service refuses it, it is not
+		// armed); from far the next placement is a normal one again.
+		const b2 = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 82, t0: b.now() });
+		b2.moveTo(FAR, 90).hold(1000).moveTo(NEAR, 300).hold(800);
+		events = runDetector(det, b2.samples());
+		expect(liftsOf(events)).toHaveLength(1);
+		const next = nearsOf(events);
+		expect(next).toHaveLength(1);
+		expect(next[0].resumed).toBe(false);
+		expect(next[0].farSince).not.toBeNull();
+	});
+
+	it('waits quietly for a cube dropped just off the hot spot after a vouched-for restart', () => {
+		// Between farMax and nearMin is neither the cube at the hot spot nor the baseline: no
+		// placement, and no "unknown" hint whose re-learn would learn the cube lying there.
+		const det = new MagnetDetector(detectorConfigFor('ios'), FAR);
+		det.reset({ trustFar: true });
+		const b = new SignalBuilder(add(FAR, [0, 110, 0]), { noise: IOS_NOISE, seed: 83 });
+		b.hold(1000);
+		const events = runDetector(det, b.samples());
+		expect(nearsOf(events)).toHaveLength(0);
+		expect(events.some((e) => e.type === 'hint')).toBe(false);
+		expect(det.snapshot()).toMatchObject({ phase: 'unknown', resumePending: true });
+
+		// Picked up: far as usual, and the vouch is spent.
+		const up = new SignalBuilder(add(FAR, [0, 110, 0]), { noise: IOS_NOISE, seed: 85, t0: b.now() });
+		up.moveTo(FAR, 90).hold(600);
+		runDetector(det, up.samples());
+		expect(det.snapshot()).toMatchObject({ phase: 'far', resumePending: false });
+
+		const bare = new MagnetDetector(detectorConfigFor('ios'));
+		bare.reset({ trustFar: true });
+		const b2 = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 84 });
+		b2.hold(1000);
+		expect(nearsOf(runDetector(bare, b2.samples()))).toHaveLength(0);
+	});
+
 	it('stays unknown without a stored baseline until the user re-learns it', () => {
 		const b = new SignalBuilder(FAR, { noise: IOS_NOISE, seed: 23 });
 		b.hold(2000);

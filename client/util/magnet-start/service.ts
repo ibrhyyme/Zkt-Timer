@@ -7,7 +7,7 @@
 // (Slam-to-stop's owner-token model does not fit here: the hook is active whenever the
 // timer is idle, so a panel taking the stream would leave the hook with nothing.)
 import { onVisibilityChange, isAppVisible } from '../app-visibility';
-import { ARM_FAR_MS, detectorConfigFor } from './config';
+import { ARM_FAR_MS, RESUME_TRUST_MS, detectorConfigFor } from './config';
 import { isArmed } from './controller';
 import { magnetDebugLog } from './debug_log';
 import { MagnetDetector, distVV } from './detector';
@@ -42,6 +42,8 @@ export interface ServiceBatch {
 	snapshot: DetectorSnapshot;
 	/** Whether the current near plateau (if any) may start something from idle. */
 	armed: boolean;
+	/** The current near plateau was already there when the stream resumed after a solve. */
+	resting: boolean;
 	/** Samples before this epoch-ms instant belong to an earlier stream. */
 	resumeAt: number;
 	testMode: boolean;
@@ -74,6 +76,9 @@ class MagnetService {
 	private resumeAt = 0;
 	private disarmedAt = 0;
 	private armed = false;
+	private resting = false;
+	/** Set when the timer hook lets go because a solve started; read by the next restart. */
+	private solvePause: { at: number; farTrusted: boolean } | null = null;
 
 	private lastPersistedFar: Vec3 | null = null;
 	private lastPersistAt = 0;
@@ -128,6 +133,16 @@ class MagnetService {
 		this.disarmedAt = Date.now();
 		if (this.armed) this.armed = false;
 		magnetDebugLog.record('disarm', { reason });
+	}
+
+	/**
+	 * The timer hook is about to release the stream because a solve started. Call before
+	 * the release. The baseline is trusted on the restart if the detector had one confirmed
+	 * (far, near and lifting are only reached through far).
+	 */
+	pauseForSolve(): void {
+		const phase = this.running && this.detector ? this.detector.snapshot().phase : null;
+		this.solvePause = { at: Date.now(), farTrusted: phase === 'far' || phase === 'near' || phase === 'lifting' };
 	}
 
 	/** Ignores lift triggers for `ms` (our own vibration). */
@@ -208,14 +223,16 @@ class MagnetService {
 					return;
 				}
 				this.ensureDetector();
-				this.detector.reset();
+				const trustFar = this.takeSolvePause();
+				this.detector.reset({ trustFar });
 				this.armed = false;
+				this.resting = false;
 				this.resumeAt = Date.now();
 				this.disarmedAt = this.resumeAt;
 				setMagnetSamplesHandler(this.onPayload);
 				const ok = await startMagnetStream();
 				this.running = ok;
-				magnetDebugLog.record(ok ? 'stream_start' : 'stream_start_failed');
+				magnetDebugLog.record(ok ? 'stream_start' : 'stream_start_failed', trustFar ? { trustFar } : undefined);
 				setMagnetStatus({ active: ok, phase: 'unknown', hint: 'none' });
 				if (!ok) return;
 			} else {
@@ -227,6 +244,13 @@ class MagnetService {
 				setMagnetStatus({ active: false, stage: 'off', green: false, orange: false, phase: 'unknown', hint: 'none' });
 			}
 		}
+	}
+
+	/** Consumes the pause marker: only the restart right after the solve may use it. */
+	private takeSolvePause(): boolean {
+		const pause = this.solvePause;
+		this.solvePause = null;
+		return !!pause && pause.farTrusted && Date.now() - pause.at <= RESUME_TRUST_MS;
 	}
 
 	private ensureDetector(): void {
@@ -250,8 +274,14 @@ class MagnetService {
 
 		for (const e of events) {
 			if (e.type === 'near') {
-				// A re-placement keeps the arming of the placement it came from.
-				if (!e.replaced) this.armed = isArmed(e.farSince, e.t, this.disarmedAt, ARM_FAR_MS);
+				if (e.resumed) {
+					this.armed = false;
+					this.resting = true;
+				} else if (!e.replaced) {
+					// A re-placement keeps the arming of the placement it came from.
+					this.armed = isArmed(e.farSince, e.t, this.disarmedAt, ARM_FAR_MS);
+					this.resting = false;
+				}
 			} else if (e.type === 'lift') {
 				lifts.push({ event: e, armed: this.armed });
 				this.armed = false;
@@ -262,7 +292,10 @@ class MagnetService {
 		const snapshot = this.detector.snapshot();
 		// A lift is usually confirmed a batch or two after it starts, so the arming of the
 		// placement has to survive the 'lifting' phase.
-		if (snapshot.phase !== 'near' && snapshot.phase !== 'lifting') this.armed = false;
+		if (snapshot.phase !== 'near' && snapshot.phase !== 'lifting') {
+			this.armed = false;
+			this.resting = false;
+		}
 		setMagnetStatus({ phase: snapshot.phase, hint: snapshot.hint });
 		this.persistFar(false);
 
@@ -271,6 +304,8 @@ class MagnetService {
 			lifts,
 			snapshot,
 			armed: this.armed,
+			// Also while the cube lies just off the hot spot after the drop (detector waits quietly).
+			resting: this.resting || (snapshot.phase === 'unknown' && snapshot.resumePending),
 			resumeAt: this.resumeAt,
 			testMode: this.isTestMode(),
 		};
@@ -318,7 +353,11 @@ class MagnetService {
 					magnetDebugLog.captureAround({ label: `reject_${e.reason}`, centerT: e.t, far });
 					break;
 				case 'near':
-					magnetDebugLog.record('near', { delta: Math.round(e.delta), replaced: e.replaced }, e.t);
+					magnetDebugLog.record(
+						'near',
+						{ delta: Math.round(e.delta), replaced: e.replaced, resumed: e.resumed || undefined },
+						e.t
+					);
 					break;
 				case 'far_learned':
 					magnetDebugLog.record('far_learned', { source: e.source, shift: +e.shift.toFixed(1) }, e.t);
@@ -357,7 +396,11 @@ class MagnetService {
 
 		// app-visibility guards its own document access, so this needs no window check.
 		onVisibilityChange((visible) => {
-			if (!visible) this.disarm('hidden');
+			if (!visible) {
+				// The phone may be picked up while the app is away: the baseline proves itself again.
+				this.solvePause = null;
+				this.disarm('hidden');
+			}
 			this.scheduleReconcile();
 		});
 
@@ -367,10 +410,13 @@ class MagnetService {
 			const prev = this.lastSize;
 			const next = { w: window.innerWidth, h: window.innerHeight };
 			this.lastSize = next;
-			if (!prev || !this.detector || !this.running) return;
+			if (!prev) return;
 			const widthJump = prev.w > 0 && Math.abs(next.w - prev.w) / prev.w > RESIZE_RESET_RATIO;
 			const aspectFlip = prev.w > prev.h !== next.w > next.h;
-			if (widthJump || aspectFlip) {
+			if (!widthJump && !aspectFlip) return;
+			// A fold mid-solve moves the magnetometer too, so the pause marker goes as well.
+			this.solvePause = null;
+			if (this.detector && this.running) {
 				// Fold, unfold or rotation: the magnetometer moved relative to everything.
 				this.detector.reset();
 				this.resumeAt = Date.now();

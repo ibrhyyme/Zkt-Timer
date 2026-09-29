@@ -51,8 +51,8 @@ describe('touchGuardedAfterMagnet', () => {
 });
 
 describe('shouldCancelHoldOnPlacement', () => {
-	const fresh: DetectorEvent = { type: 'near', t: 1, delta: 490, replaced: false, farSince: 0 };
-	const replaced: DetectorEvent = { type: 'near', t: 1, delta: 470, replaced: true, farSince: null };
+	const fresh: DetectorEvent = { type: 'near', t: 1, delta: 490, replaced: false, resumed: false, farSince: 0 };
+	const replaced: DetectorEvent = { type: 'near', t: 1, delta: 470, replaced: true, resumed: false, farSince: null };
 
 	it('drops a hold primed by the palm that placed the cube', () => {
 		expect(shouldCancelHoldOnPlacement([fresh], true, false)).toBe(true);

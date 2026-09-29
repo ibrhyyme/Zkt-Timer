@@ -7,6 +7,8 @@ const ENABLED_KEY = 'zkt_magnet_enabled';
 // The phone lies upside down on the table (see client/util/reversed-ui.ts).
 const REVERSED_KEY = 'zkt_magnet_reversed';
 const FAR_KEY = 'zkt_magnet_far';
+// Set once the first solve has been started by lifting the cube (useMagnetStart).
+const INTRO_KEY = 'zkt_magnet_intro_done';
 const CHANGE_EVENT = 'magnetStartChanged';
 
 interface StoredFar {
@@ -53,6 +55,16 @@ export function setMagnetReversed(reversed: boolean): void {
 	if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 }
 
+export function getMagnetIntroDone(): boolean {
+	return read(INTRO_KEY) === true;
+}
+
+export function markMagnetIntroDone(): void {
+	if (getMagnetIntroDone()) return;
+	write(INTRO_KEY, true);
+	if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
+}
+
 export function getStoredFar(platform: MagnetPlatform): Vec3 | null {
 	const value = read(FAR_KEY) as StoredFar | null;
 	if (!value || value.v !== 1 || value.platform !== platform || !Array.isArray(value.far) || value.far.length !== 3) {
@@ -71,15 +83,17 @@ export function setStoredFar(platform: MagnetPlatform, far: Vec3): void {
 export function useMagnetStartSettings() {
 	const [enabled, setEnabledState] = useState(getMagnetEnabled);
 	const [reversed, setReversedState] = useState(getMagnetReversed);
+	const [introDone, setIntroDoneState] = useState(getMagnetIntroDone);
 
 	useEffect(() => {
 		function sync() {
 			setEnabledState(getMagnetEnabled());
 			setReversedState(getMagnetReversed());
+			setIntroDoneState(getMagnetIntroDone());
 		}
 		window.addEventListener(CHANGE_EVENT, sync);
 		return () => window.removeEventListener(CHANGE_EVENT, sync);
 	}, []);
 
-	return { enabled, setEnabled: setMagnetEnabled, reversed, setReversed: setMagnetReversed };
+	return { enabled, setEnabled: setMagnetEnabled, reversed, setReversed: setMagnetReversed, introDone };
 }

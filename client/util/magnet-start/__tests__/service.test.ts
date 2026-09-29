@@ -1,4 +1,5 @@
 import type { MagnetSamplesPayload, Vec3 } from '../types';
+import { RESUME_TRUST_MS } from '../config';
 import { SignalBuilder, IOS_NOISE, add } from '../testing/synth';
 import { toBatches } from '../testing/load_fixture';
 
@@ -195,6 +196,95 @@ describe('magnet service', () => {
 		expect(events.some((e) => e.type === 'unsupported')).toBe(false);
 		expect(batches.flatMap((b) => b.lifts)).toHaveLength(2);
 		release();
+	});
+
+	// Runs one far rest, pauses the stream for a solve (as the hook does), and resumes it
+	// `pauseMs` later with the cube resting at the hot spot.
+	async function solveThenResumeOnCube(h: Harness, pauseMs: number, between?: () => void) {
+		const batches: any[] = [];
+		h.service.subscribe((b) => batches.push(b));
+		let release = h.service.acquire('solve');
+		await settle();
+		const s1 = new SignalBuilder(FAR, { noise: IOS_NOISE, seed: 71, t0: Date.now() });
+		s1.hold(1000);
+		for (const batch of toBatches(s1.samples())) h.plugin.emit(toPayload(batch));
+		expect(h.service.getSnapshot()?.phase).toBe('far');
+
+		h.service.pauseForSolve();
+		release();
+		await settle();
+		between?.();
+		const restartAt = Date.now() + pauseMs;
+		jest.spyOn(Date, 'now').mockReturnValue(restartAt);
+		release = h.service.acquire('solve');
+		await settle();
+		batches.length = 0;
+		return { batches, restartAt, release };
+	}
+
+	it('reads a cube dropped at the hot spot during the solve as resting, never armed', async () => {
+		const h = loadService();
+		const { batches, restartAt } = await solveThenResumeOnCube(h, 20_000);
+
+		// Resting, picked up to scramble, away 4 s, placed again, lifted.
+		const s2 = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 72, t0: restartAt });
+		s2.hold(1500).moveTo(FAR, 90).hold(4000).moveTo(NEAR, 300).hold(800).moveTo(FAR, 90).hold(300);
+		for (const batch of toBatches(s2.samples())) h.plugin.emit(toPayload(batch));
+
+		const events = batches.flatMap((b) => b.events);
+		expect(events.some((e) => e.type === 'hint' && e.hint === 'unknown')).toBe(false);
+		const firstNear = batches.findIndex((b) => b.events.some((e: any) => e.type === 'near'));
+		expect(batches[firstNear].events.find((e: any) => e.type === 'near').resumed).toBe(true);
+		expect(batches[firstNear]).toMatchObject({ resting: true, armed: false });
+
+		const lifts = batches.flatMap((b) => b.lifts);
+		expect(lifts).toHaveLength(2);
+		expect(lifts[0].armed).toBe(false);
+		expect(lifts[1].armed).toBe(true);
+		expect(batches[batches.length - 1].resting).toBe(false);
+	});
+
+	it('stays silent for a cube dropped just off the hot spot, and arms normally afterwards', async () => {
+		const h = loadService();
+		const { batches, restartAt } = await solveThenResumeOnCube(h, 20_000);
+		const offSpot = add(FAR, [0, 110, 0]);
+		const s2 = new SignalBuilder(offSpot, { noise: IOS_NOISE, seed: 75, t0: restartAt });
+		s2.hold(1500);
+		for (const batch of toBatches(s2.samples())) h.plugin.emit(toPayload(batch));
+		expect(batches[batches.length - 1]).toMatchObject({ resting: true, armed: false });
+		expect(batches.flatMap((b) => b.events).some((e) => e.type === 'hint')).toBe(false);
+
+		const s3 = new SignalBuilder(offSpot, { noise: IOS_NOISE, seed: 76, t0: s2.now() });
+		s3.moveTo(FAR, 90).hold(4000).moveTo(NEAR, 300).hold(800).moveTo(FAR, 90).hold(300);
+		for (const batch of toBatches(s3.samples())) h.plugin.emit(toPayload(batch));
+		const lifts = batches.flatMap((b) => b.lifts);
+		expect(lifts).toHaveLength(1);
+		expect(lifts[0].armed).toBe(true);
+	});
+
+	it('does not vouch for the baseline after a pause longer than RESUME_TRUST_MS', async () => {
+		const h = loadService();
+		const { batches, restartAt } = await solveThenResumeOnCube(h, RESUME_TRUST_MS + 1000);
+		const s2 = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 73, t0: restartAt });
+		s2.hold(1500);
+		for (const batch of toBatches(s2.samples())) h.plugin.emit(toPayload(batch));
+
+		const events = batches.flatMap((b) => b.events);
+		expect(events.some((e) => e.type === 'near')).toBe(false);
+		expect(events.some((e) => e.type === 'hint' && e.hint === 'unknown')).toBe(true);
+	});
+
+	it('does not vouch for the baseline once the app went to the background mid-solve', async () => {
+		const h = loadService();
+		const { batches, restartAt } = await solveThenResumeOnCube(h, 20_000, () => {
+			h.setVisible(false);
+			h.setVisible(true);
+		});
+		const s2 = new SignalBuilder(NEAR, { noise: IOS_NOISE, seed: 74, t0: restartAt });
+		s2.hold(1500);
+		for (const batch of toBatches(s2.samples())) h.plugin.emit(toPayload(batch));
+
+		expect(batches.flatMap((b) => b.events).some((e) => e.type === 'near')).toBe(false);
 	});
 
 	it('drops samples queued from before the stream restart', async () => {

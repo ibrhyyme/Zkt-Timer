@@ -11,6 +11,9 @@ import type { DetectorPhase, MagnetHint } from './types';
  * far:                cube away, nothing to do
  * closer:             cube near the phone but not at the hot spot
  * not_armed:          cube placed too soon after a stop; take it away (scramble) first
+ * resting:            cube left at (or just off) the hot spot through a stop; locked like
+ *                     not_armed, but nobody placed it, so there is nothing to tell
+ *                     (picking it up to scramble is the next step anyway)
  * dwelling:           cube placed, waiting out the rest time (orange)
  * ready_inspection:   lifting starts inspection (green)
  * ready_solve:        lifting starts the solve (green)
@@ -25,6 +28,7 @@ export type MagnetStage =
 	| 'far'
 	| 'closer'
 	| 'not_armed'
+	| 'resting'
 	| 'dwelling'
 	| 'ready_inspection'
 	| 'ready_solve'
@@ -51,6 +55,11 @@ export interface ReadinessInput extends TimerSide {
 	dwellMs: number;
 	/** The current placement may start something from idle (see service armed rule). */
 	armed: boolean;
+	/**
+	 * The cube was already at (or just off) the hot spot when the stream resumed after a
+	 * solve: the service's `resting`.
+	 */
+	resting: boolean;
 }
 
 export interface Readiness {
@@ -69,7 +78,7 @@ export function computeReadiness(r: ReadinessInput): Readiness {
 
 	if (r.solving) return none('solving');
 	if (r.phase === 'unsupported') return none('unsupported');
-	if (r.phase === 'unknown') return none('unknown');
+	if (r.phase === 'unknown') return none(r.resting ? 'resting' : 'unknown');
 	if (r.phase !== 'near') {
 		if (r.hint === 'closer') return none('closer');
 		return none(r.inInspection ? 'inspection_waiting' : 'far');
@@ -77,7 +86,7 @@ export function computeReadiness(r: ReadinessInput): Readiness {
 
 	if (r.guard || r.touchPriming) return none('blocked');
 	if (r.inInspection && r.dnfTime) return none('blocked');
-	if (!r.inInspection && !r.armed) return none('not_armed');
+	if (!r.inInspection && !r.armed) return none(r.resting ? 'resting' : 'not_armed');
 
 	const dwellDone = r.nearSince !== null && r.lastT !== null && r.lastT - r.nearSince >= r.dwellMs;
 	if (!dwellDone) return { stage: 'dwelling', green: false, orange: true };

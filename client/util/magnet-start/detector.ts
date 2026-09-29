@@ -63,7 +63,10 @@ export function distSV(s: MagnetSample, v: Vec3): number {
  * the vector by tens of uT):
  * - F is the far baseline, R the near plateau.
  * - "near" is only ever entered from "far": a static reading taken while the cube
- *   already rests at the phone can never be told apart from a changed baseline.
+ *   already rests at the phone can never be told apart from a changed baseline. The one
+ *   exception is a restart the caller vouches for (the stream paused for a solve, so F was
+ *   confirmed moments ago): there a static near reading is the cube dropped at the hot
+ *   spot, and it enters near marked `resumed`, which never arms.
  * - A lift starts when the field leaves R by the trigger, is backdated to the last
  *   sample still on R, and is confirmed only once the field has travelled most of the
  *   way back to F. A deviation that falls back onto R was a spike (vibration, speaker);
@@ -88,6 +91,8 @@ export class MagnetDetector {
 	private nearSince: number | null = null;
 	private farSince: number | null = null;
 	private lift: LiftInProgress | null = null;
+	/** The first plateau after a vouched-for restart may be near without coming from far. */
+	private resumeTrusted = false;
 
 	private lastT: number | null = null;
 	private lastSample: MagnetSample | null = null;
@@ -127,8 +132,10 @@ export class MagnetDetector {
 	/**
 	 * Forgets everything except the far baseline: stream restart, resize, fold. The next
 	 * reading has to prove itself again, and the delivery rate is measured again.
+	 * `trustFar`: the caller knows F was confirmed just before the pause (see the class
+	 * comment), so a static near reading right after it is taken as the cube.
 	 */
-	reset(): void {
+	reset(opts: { trustFar?: boolean } = {}): void {
 		this.clearBuffer();
 		this.lastT = null;
 		this.lastSample = null;
@@ -146,6 +153,7 @@ export class MagnetDetector {
 		this.farSince = null;
 		this.candidate = null;
 		this.pending = [];
+		this.resumeTrusted = !!opts.trustFar && this.far !== null;
 	}
 
 	/** Ignore lift triggers until this sample time (our own vibration shakes the field). */
@@ -185,6 +193,7 @@ export class MagnetDetector {
 			sigma: this.lastSigma,
 			lastT: this.lastT,
 			rateHz: this.rateHz,
+			resumePending: this.resumeTrusted,
 		};
 	}
 
@@ -264,12 +273,23 @@ export class MagnetDetector {
 		if (!st || !st.stable) return;
 		this.lastSigma = st.rms;
 
-		if (this.far && distVV(st.mean, this.far) < this.cfg.farMax) {
+		const d = this.far ? distVV(st.mean, this.far) : null;
+		if (d !== null && d < this.cfg.farMax) {
 			this.enterFar(s.t);
 			this.trackFar(st, s.t);
 			return;
 		}
-		this.setHint('unknown', s.t, this.far ? distVV(st.mean, this.far) : null);
+		if (this.resumeTrusted && d !== null) {
+			if (d >= this.cfg.nearMin) {
+				this.enterNear(st, d, s.t, false, true);
+				return;
+			}
+			// Dropped a little off the hot spot: not the baseline, not a placement either.
+			// Wait quietly for the cube to be picked up rather than asking for a re-learn,
+			// which would learn the cube lying there.
+			return;
+		}
+		this.setHint('unknown', s.t, d);
 	}
 
 	private onFar(idx: number, s: MagnetSample): void {
@@ -456,8 +476,9 @@ export class MagnetDetector {
 		return !this.anchor || distVV(v, this.anchor) <= this.cfg.farMax;
 	}
 
-	private enterNear(st: WindowStats, d: number, t: number, replaced: boolean): void {
-		const farSince = replaced ? null : this.farSince;
+	private enterNear(st: WindowStats, d: number, t: number, replaced: boolean, resumed = false): void {
+		const farSince = replaced || resumed ? null : this.farSince;
+		this.resumeTrusted = false;
 		this.ref = st.mean;
 		this.refSigma = st.rms;
 		this.lastSigma = st.rms;
@@ -469,10 +490,11 @@ export class MagnetDetector {
 		this.candidate = null;
 		this.setPhase('near', t);
 		this.setHint('none', t, d);
-		this.pending.push({ type: 'near', t, delta: d, replaced, farSince });
+		this.pending.push({ type: 'near', t, delta: d, replaced, resumed, farSince });
 	}
 
 	private enterFar(t: number): void {
+		this.resumeTrusted = false;
 		this.dropNearState();
 		this.farSince = t;
 		this.setPhase('far', t);
@@ -480,6 +502,7 @@ export class MagnetDetector {
 	}
 
 	private toUnknown(t: number, emit: boolean): void {
+		this.resumeTrusted = false;
 		this.dropNearState();
 		this.farSince = null;
 		this.candidate = null;

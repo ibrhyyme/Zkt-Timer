@@ -112,6 +112,7 @@ describe('computeReadiness', () => {
 			lastT: NOW,
 			dwellMs: MIN_DWELL_MS,
 			armed: true,
+			resting: false,
 			...over,
 		};
 	}
@@ -136,6 +137,9 @@ describe('computeReadiness', () => {
 		['blocked', { touchPriming: true }],
 		['blocked', { inInspection: true, dnfTime: true }],
 		['not_armed', { armed: false }],
+		// Left at the hot spot through a stop: just as locked, but silent (no hint line).
+		['resting', { armed: false, resting: true }],
+		['resting', { phase: 'unknown' as const, resting: true }],
 		['solving', { solving: true }],
 	])('shows %s without a colour', (stage, over) => {
 		expect(computeReadiness(input(over))).toEqual({ stage, green: false, orange: false });
