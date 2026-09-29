@@ -2556,7 +2556,7 @@
       {
         "id": "battle",
         "q": "What is Battle mode?",
-        "a": "Battle mode is a 1v1 competitive mode on a shared mobile screen. Two cubers race side-by-side with independent start timing, penalty tracking (+2, DNF), round-by-round scoring, and a review modal to examine each round. Perfect for quick duels with a friend."
+        "a": "Battle mode is a 1v1 competitive mode on one shared screen, and it works on phones, tablets and computers. Two cubers race side-by-side with independent start timing, penalty tracking (+2, DNF), round-by-round scoring, and a review modal to examine each round. Each player can also connect their own smart cube. Perfect for quick duels with a friend."
       },
       {
         "id": "leaderboard",
@@ -2611,7 +2611,7 @@
       {
         "id": "desktop-usage",
         "q": "How do I use Zkt Timer on a desktop?",
-        "a": "The menus at the top select your session, puzzle and timer type, with the scramble right below them. Hold space and release to start, press again to stop. The lower part of the page shows your recent solves, your averages and the solve analysis. Click any time to open its detail window, where you can add a penalty, write a note or delete the solve."
+        "a": "The menus at the top select your session, puzzle and timer type, with the scramble right below them. Hold space and release to start, press again to stop. Your recent solves, your averages and the solve analysis sit in modules beside the timer, and you can drag the modules wherever you like. Click any time to open its detail window, where you can add a penalty, see the scramble or delete the solve."
       },
       {
         "id": "mobile-usage",
@@ -4503,8 +4503,8 @@
         "body": [
           "You can use Zkt Timer in a browser or through the iOS and Android apps. With an account your solves are backed up to the server, so your data survives losing the device. Seeing that history on every device you sign in on comes with Pro; without it, your solves stay on the device that made them.",
           "You can also try it without an account. Signed out, the timer, your solves and the trainer all work; the times stay on that device only. If you sign up later, the app offers to move those solves into your account.",
-          "On desktop there are three menus across the top: session, cube type and timer type. The scramble sits below them, the time in the middle, and your solve list and stat modules underneath.",
-          "Settings are split into seven sections: Timer, Scramble, Hardware, Appearance, Stats, Data and Language. If you are not sure which section holds the setting you want, use the search box inside settings."
+          "On desktop the timer sits in the middle of the screen: three menus at the top (session, cube type and timer type), with the scramble and the time below them. In the default layout your solve list and stat modules sit in the columns on either side, and you can move the modules wherever you like.",
+          "Settings are split into eight sections: Timer, Input & Devices, Smart Cube, Scramble, Appearance, Colors, Data and Language. If you are not sure which section holds the setting you want, use the search box inside settings."
         ]
       },
       "timer": {
@@ -4512,7 +4512,7 @@
         "body": [
           "Hold the space bar, let go when the timer turns green, and the time starts. Press any key to stop. On mobile you press and release the middle of the screen.",
           "With inspection on, a 15-second countdown runs before the time starts. Following the WCA rule, going past 15 seconds is a +2 and going past 17 is a DNF. Escape cancels the countdown.",
-          "A scramble is generated after every solve. Tap the scramble to copy it, and use the arrows beside it to move between the previous and next scrambles.",
+          "A scramble is generated after every solve. Tap the scramble to copy it, and use the arrows beside it to move between the previous and next scrambles. In the 3D scramble preview, the three faces you cannot see (back, left and bottom) are also shown floating beside the cube, so you can check the whole scramble at a glance.",
           "You pick the timer type from the menu at the top. These are the supported inputs:"
         ],
         "notes": [
@@ -4523,7 +4523,7 @@
       "solves": {
         "title": "Solves and sessions",
         "body": [
-          "The list under the timer shows the solves in that session. Tapping a time opens the detail window: you can add a penalty, write a note, look at the scramble and the solve breakdown, or delete the solve.",
+          "The list under the timer shows the solves in that session. Tapping a time opens the detail window: you can add a penalty, look at the scramble and the solve breakdown, or delete the solve.",
           "The +2 and DNF buttons right below the timer always apply to your last solve.",
           "The solves page gathers every solve into one list. You can filter by time range, by penalty, by whether the solve was done with a smart cube and by whether it was imported, and sort by time or by date.",
           "The same page has multi-select: tick several solves and delete them in one go.",
@@ -4572,7 +4572,35 @@
         "notes": [
           "In a browser this needs Web Bluetooth: use Chrome or Edge, Safari does not support it. The iOS and Android apps have no such limit.",
           "If the cube on screen drifts from the real one, set the cube to solved and sync again. If the connection drops, power-cycle the cube and scan again.",
-          "Step-by-step analysis after a solve comes with Pro: Cross, F2L, OLL and PLL times, move count, turns per second and a replay of the solve."
+          "Step-by-step analysis after a solve comes with Pro: Cross, F2L, OLL and PLL times, move count, turns per second and a replay of the solve.",
+          "If the scan cannot find your cube, press Show all devices on the screen that opens; every Bluetooth device nearby is listed.",
+          "A connected cube stays connected as you move between the timer, rooms and the trainer, so you do not have to pair it again on each page. If the app or browser tab stays in the background for five minutes, the connection closes to save battery.",
+          "As you turn the cube, the scramble's moves are ticked off one by one. If you make a wrong move, the moves needed to fix it are shown. When the scramble is done, \"Ready to Start\" appears and the timer starts with your first move.",
+          "In Settings > Smart Cube you set the size of the cube view, how finely the solve is split into steps, and extra time added to every smart cube solve. On desktop, add the Live Phases module to watch phase times come in while you solve a 3x3."
+        ]
+      },
+      "lift-to-start": {
+        "title": "Lift to start",
+        "body": [
+          "Lift to Start starts the timer when you lift the cube, without touching the screen. The phone lies flat on the table and the cube rests at the phone's rear camera end. The timer starts the moment you lift the cube, and when you finish and put the cube down on the table, Drop to Stop stops it.",
+          "The phone's compass sensor picks up the magnets inside the cube, so you need a magnetic cube; most cubes sold today are magnetic. You also need the Zkt Timer iOS or Android app, and the timer type has to be Touch. It does not work in a browser, in rooms, with manual entry or with a smart cube.",
+          "Not every phone's sensor is fast enough for this. On unsupported phones the setting does not appear at all, or the screen says \"This device's sensor is too slow\". If you cannot see the setting, update the app first."
+        ],
+        "steps": [
+          "Lay the phone flat on the table. Open Quick Settings from the left notch and turn on Lift to Start.",
+          "Put the cube right next to the phone at its rear camera end. It does not have to touch the phone.",
+          "Leave the cube still. You are ready when the time turns green and \"Lift to start the timer\" appears under it.",
+          "Lift the cube and the timer starts at that moment. When you finish, put the cube down on the table or tap the screen."
+        ],
+        "notes": [
+          "Lift to Start is being tested right now and does not appear on every account yet.",
+          "With inspection on, the first lift starts inspection. Put the cube back and lift it again when you are ready; the timer starts at that moment. +2 and DNF apply as usual.",
+          "After a solve, lifting the cube from its spot does not start a new one; the cube has to be away for a few seconds first. That way picking the cube up to scramble it never starts the timer by accident. If the screen says \"Pick up the cube, scramble it, then put it back\", do exactly that.",
+          "While the cube rests in place, touching the screen does not start the timer, so it is fine if your hand brushes the screen while you place it. With the cube away, a tap starts the timer as usual.",
+          "If the screen says \"Move the cube away from the phone\", do that. If the message stays, press Reset baseline while the phone is still; the phone then learns its surroundings without the cube again.",
+          "With Phone upside down you can turn the phone around and put the cube between you and the phone. The timer screen and the side menus turn 180 degrees.",
+          "Drop to Stop needs Pro. With Pro, turning on Lift to Start switches Drop to Stop on as well; without it, you stop the timer by tapping the screen.",
+          "Drop to Stop also works on its own: when you finish, put the cube or your hands down on the table, and the phone feels the impact and stops the timer. Set its sensitivity to suit your table in Quick Settings."
         ]
       },
       "mobile": {
@@ -4583,6 +4611,26 @@
         ],
         "notes": [
           "To go back from a page, swipe right from the left edge of the screen. It is switched off on the timer page, where the left edge belongs to the quick settings notch. In the Android app the system's own back button does this instead."
+        ]
+      },
+      "customize": {
+        "title": "Personalization",
+        "body": [
+          "In Settings > Colors you choose the colors of the puzzles. Cubes from 2x2 to 7x7, Square-1, Clock and FTO each have their own color group. The colors you pick are used in the scramble image, the smart cube view and the other puzzle drawings across the app.",
+          "In Settings > Appearance you can put an image or a video behind the timer. PNG, JPG or an MP4 of up to 40 MB can be uploaded, and the video pauses while the timer runs. Show background is set per device, so you can keep it on at your desk and off on your phone.",
+          "In the same section, Solve list colors changes the color of the times and records in the list.",
+          "On desktop you place the modules on the timer screen wherever you like: the left column, the right column, the strip under the timer or any empty spot. A module dropped on an empty spot stays there, floating."
+        ],
+        "steps": [
+          "Drag a module by its header and drop it into a column, the bottom strip or an empty spot.",
+          "Click the module's name to swap it for another module; remove it with the X button.",
+          "Press the plus button to add a new module.",
+          "Resize columns and floating modules by dragging their edges."
+        ],
+        "notes": [
+          "Putting your own image or video behind the timer needs Pro.",
+          "To put the modules back where they started, use the Reset layout button in Settings > Appearance. Modules cannot be moved while the timer is running.",
+          "On mobile the modules sit in two slots under the timer; you choose which ones show in Quick Settings."
         ]
       },
       "rooms": {
@@ -4610,9 +4658,11 @@
       "battle": {
         "title": "Battle",
         "body": [
-          "Battle is a two-player duel on a single phone. The screen splits in half, the far player's side is turned upside down, and two people sit facing each other and solve the same scramble. Mobile only.",
+          "Battle is a two-player duel on a single device. The screen splits in half, the far player's side is turned upside down, and two people sit facing each other and solve the same scramble. It works on phones, tablets and computers.",
           "A round does not begin until both players hold the screen and go ready. Once both are ready, each player lifts their finger whenever they like and their own timer starts at that moment.",
-          "When a round ends the times stay on screen. The next round opens with a fresh scramble as soon as both players hold again."
+          "When a round ends the times stay on screen. The next round opens with a fresh scramble as soon as both players hold again.",
+          "Each player can also play with their own smart cube. That takes one smart cube per player; two players cannot share the same cube. One player can use a cube while the other taps the screen. Smart cubes in Battle do not need Pro.",
+          "A player with a connected cube applies their side's scramble to the cube. The moves are ticked off as they go, and once the scramble is done that side turns Ready. The timer starts with the first move and stops on its own when the cube is solved. Screen taps do not start or stop this player's timer."
         ],
         "steps": [
           "Open the Battle page and pick a cube type from the toolbar in the middle.",
@@ -4623,7 +4673,12 @@
         "notes": [
           "The menu lets you switch sides, get a new scramble, delete the last round or start a fresh battle.",
           "The time, scramble, names, statistics, score and win streak displays can each be turned off on their own.",
-          "Battle rounds stay on the device and are not saved to your solve history."
+          "Battle rounds stay on the device and are not saved to your solve history.",
+          "To connect a smart cube, press Connect Cube on your side and pick your cube from the list. The two players connect their cubes one after the other. In a browser this needs Chrome or Edge; the iOS and Android apps have no such limit.",
+          "A cube connected on the timer page stays connected there. To use that same cube in Battle, disconnect it on the timer page first.",
+          "If the cube shows as scrambled when it connects, solve it first. If it is solved but shows as scrambled on screen, press Mark as solved in the cube button's menu.",
+          "When you switch sides, connected cubes move with their players, so there is no need to reconnect them.",
+          "On a computer without a touch screen, two players cannot hold at the same time. There, at least one player has to connect a smart cube."
         ]
       },
       "messages": {

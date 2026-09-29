@@ -2556,7 +2556,7 @@
       {
         "id": "battle",
         "q": "¿Qué es el modo Battle?",
-        "a": "El modo Battle es un modo competitivo 1v1 en una pantalla móvil compartida. Dos cuberos compiten lado a lado con inicio independiente, seguimiento de penalizaciones (+2, DNF), puntuación por ronda y un modal de revisión para examinar cada ronda. Perfecto para duelos rápidos con un amigo."
+        "a": "El modo Battle es un modo competitivo 1v1 en una sola pantalla compartida, y funciona en móviles, tabletas y ordenadores. Dos cuberos compiten lado a lado con inicio independiente, seguimiento de penalizaciones (+2, DNF), puntuación por ronda y un modal de revisión para examinar cada ronda. Cada jugador puede conectar también su propio cubo inteligente. Perfecto para duelos rápidos con un amigo."
       },
       {
         "id": "leaderboard",
@@ -2611,7 +2611,7 @@
       {
         "id": "desktop-usage",
         "q": "¿Cómo se usa Zkt Timer en el ordenador?",
-        "a": "Los menús de arriba seleccionan la sesión, el puzzle y el tipo de cronómetro, y la mezcla aparece justo debajo. Mantén pulsada la barra espaciadora y suéltala para empezar, pulsa de nuevo para parar. La parte inferior muestra tus solves recientes, tus medias y el análisis del solve. Haz clic en cualquier tiempo para abrir su ventana de detalle, donde puedes añadir una penalización, escribir una nota o borrar el solve."
+        "a": "Los menús de arriba seleccionan la sesión, el puzzle y el tipo de cronómetro, y la mezcla aparece justo debajo. Mantén pulsada la barra espaciadora y suéltala para empezar, pulsa de nuevo para parar. Tus solves recientes, tus medias y el análisis del solve están en módulos junto al cronómetro, y puedes arrastrar los módulos donde quieras. Haz clic en cualquier tiempo para abrir su ventana de detalle, donde puedes añadir una penalización, ver la mezcla o borrar el solve."
       },
       {
         "id": "mobile-usage",
@@ -4457,8 +4457,8 @@
         "body": [
           "Puedes usar Zkt Timer desde el navegador o con las apps de iOS y Android. Con una cuenta tus resuelves se respaldan en el servidor, así que tus datos sobreviven a la pérdida del dispositivo. Ver ese historial en cada dispositivo donde inicies sesión viene con Pro; sin Pro, tus resuelves se quedan en el dispositivo que los hizo.",
           "También puedes probarlo sin cuenta. Sin sesión iniciada funcionan el cronómetro, tus resuelves y el entrenador; los tiempos se quedan solo en ese dispositivo. Si te registras más tarde, la aplicación te ofrece pasar esos resuelves a tu cuenta.",
-          "En el ordenador hay tres menús en la parte de arriba: sesión, tipo de cubo y tipo de cronómetro. Debajo está el scramble, en el centro el tiempo, y más abajo tu lista de resuelves y los módulos de estadísticas.",
-          "Los ajustes se reparten en siete secciones: Cronómetro, Scramble, Hardware, Apariencia, Estadísticas, Datos e Idioma. Si no sabes en qué sección está el ajuste que buscas, usa el buscador dentro de los ajustes."
+          "En el ordenador el cronómetro queda en el centro de la pantalla: arriba hay tres menús (sesión, tipo de cubo y tipo de cronómetro) y debajo el scramble y el tiempo. En la disposición por defecto, tu lista de resuelves y los módulos de estadísticas están en las columnas de los lados, y puedes mover los módulos donde quieras.",
+          "Los ajustes se reparten en ocho secciones: Timer, Entrada y dispositivos, Cubo inteligente, Mezcla, Apariencia, Colores, Datos e Idioma. Si no sabes en qué sección está el ajuste que buscas, usa el buscador dentro de los ajustes."
         ]
       },
       "timer": {
@@ -4466,7 +4466,7 @@
         "body": [
           "Mantén pulsada la barra espaciadora, suéltala cuando el cronómetro se ponga verde y el tiempo empieza. Pulsa cualquier tecla para parar. En el móvil pulsas y sueltas en la zona central de la pantalla.",
           "Con la inspección activada, corre una cuenta atrás de 15 segundos antes de empezar. Siguiendo la regla de la WCA, pasar de 15 segundos es un +2 y pasar de 17 es DNF. Escape cancela la cuenta atrás.",
-          "El scramble se genera solo después de cada resuelve. Toca el scramble para copiarlo y usa las flechas de al lado para moverte entre el anterior y el siguiente.",
+          "El scramble se genera solo después de cada resuelve. Toca el scramble para copiarlo y usa las flechas de al lado para moverte entre el anterior y el siguiente. En la vista 3D del scramble, las tres caras que no se ven (trasera, izquierda e inferior) aparecen también flotando junto al cubo, así puedes revisar todo el scramble de un vistazo.",
           "El tipo de cronómetro se elige en el menú de arriba. Estas son las entradas admitidas:"
         ],
         "notes": [
@@ -4477,7 +4477,7 @@
       "solves": {
         "title": "Solves y sesiones",
         "body": [
-          "La lista debajo del cronómetro muestra los resuelves de esa sesión. Al tocar un tiempo se abre la ventana de detalle: puedes añadir una penalización, escribir una nota, ver el scramble y el desglose del resuelve, o borrarlo.",
+          "La lista debajo del cronómetro muestra los resuelves de esa sesión. Al tocar un tiempo se abre la ventana de detalle: puedes añadir una penalización, ver el scramble y el desglose del resuelve, o borrarlo.",
           "Los botones de +2 y DNF que están justo debajo del cronómetro se aplican siempre a tu último resuelve.",
           "La página de resuelves reúne todos tus resuelves en una sola lista. Puedes filtrar por rango de tiempo, por penalización, por si se hizo con cubo inteligente y por si viene importado, y ordenar por tiempo o por fecha.",
           "En esa misma página hay selección múltiple: marcas varios resuelves y los borras de una vez.",
@@ -4526,7 +4526,35 @@
         "notes": [
           "En el navegador hace falta Web Bluetooth: usa Chrome o Edge, Safari no lo admite. Las apps de iOS y Android no tienen esa limitación.",
           "Si el cubo de la pantalla se desvía del real, deja el cubo resuelto y vuelve a sincronizar. Si se corta la conexión, apaga y enciende el cubo y busca otra vez.",
-          "El análisis paso a paso después de un resuelve viene con Pro: tiempos de Cross, F2L, OLL y PLL, número de movimientos, movimientos por segundo y una repetición del resuelve."
+          "El análisis paso a paso después de un resuelve viene con Pro: tiempos de Cross, F2L, OLL y PLL, número de movimientos, movimientos por segundo y una repetición del resuelve.",
+          "Si la búsqueda no encuentra tu cubo, pulsa Mostrar todos los dispositivos en la pantalla que se abre; aparecerán todos los dispositivos Bluetooth cercanos.",
+          "El cubo conectado sigue conectado al pasar entre el cronómetro, las salas y el entrenador, así que no hace falta volver a emparejarlo en cada página. Si la app o la pestaña del navegador pasa cinco minutos en segundo plano, la conexión se cierra para ahorrar batería.",
+          "Al girar el cubo, los movimientos del scramble se van marcando uno a uno. Si haces un movimiento equivocado, se muestran los movimientos para corregirlo. Cuando el scramble termina aparece \"Listo para Comenzar\" y el cronómetro arranca con tu primer movimiento.",
+          "En Ajustes > Cubo inteligente eliges el tamaño de la vista del cubo, con qué detalle se divide el resuelve en pasos y un tiempo adicional que se suma a cada resuelve con cubo inteligente. En el ordenador, añade el módulo Fases en vivo para ver los tiempos de cada fase mientras resuelves un 3x3."
+        ]
+      },
+      "lift-to-start": {
+        "title": "Levantar para iniciar",
+        "body": [
+          "Con Levantar para Iniciar el cronómetro arranca al levantar el cubo, sin tocar la pantalla. El teléfono queda plano sobre la mesa y el cubo se apoya en el extremo de la cámara trasera. El tiempo empieza en el momento en que levantas el cubo, y cuando terminas y dejas el cubo sobre la mesa, Soltar para Detener lo para.",
+          "El sensor de brújula del teléfono detecta los imanes del cubo, así que necesitas un cubo magnético; la mayoría de los cubos que se venden hoy lo son. También necesitas la app de Zkt Timer para iOS o Android, y el tipo de cronómetro tiene que ser Táctil. No funciona en el navegador, en salas, con entrada manual ni con cubo inteligente.",
+          "No todos los teléfonos tienen un sensor lo bastante rápido. En los que no son compatibles el ajuste no aparece, o la pantalla dice \"El sensor de este dispositivo es demasiado lento\". Si no ves el ajuste, actualiza primero la app."
+        ],
+        "steps": [
+          "Deja el teléfono plano sobre la mesa. Abre Ajustes Rápidos desde la muesca izquierda y activa Levantar para Iniciar.",
+          "Pon el cubo justo al lado del teléfono, en el extremo de la cámara trasera. No hace falta que toque el teléfono.",
+          "Deja el cubo quieto. Estás listo cuando el tiempo se pone verde y debajo aparece \"Levanta para iniciar el tiempo\".",
+          "Levanta el cubo y el cronómetro arranca en ese momento. Al terminar, deja el cubo sobre la mesa o toca la pantalla."
+        ],
+        "notes": [
+          "Levantar para Iniciar está en fase de pruebas y todavía no aparece en todas las cuentas.",
+          "Con la inspección activada, el primer levantamiento inicia la inspección. Vuelve a poner el cubo en su sitio y levántalo de nuevo cuando estés listo; el tiempo empieza en ese momento. El +2 y el DNF se aplican como siempre.",
+          "Después de un resuelve, levantar el cubo de su sitio no inicia uno nuevo; antes el cubo tiene que estar lejos unos segundos. Así, coger el cubo para mezclarlo nunca arranca el cronómetro por error. Si la pantalla dice \"Toma el cubo, mézclalo y vuelve a ponerlo\", haz justo eso.",
+          "Mientras el cubo está en su sitio, tocar la pantalla no inicia el cronómetro, así que no pasa nada si rozas la pantalla al colocarlo. Con el cubo lejos, un toque inicia el cronómetro como siempre.",
+          "Si la pantalla dice \"Aleja el cubo del teléfono\", hazlo. Si el mensaje no desaparece, pulsa Restablecer base con el teléfono quieto; así el teléfono vuelve a aprender su entorno sin el cubo.",
+          "Con Teléfono al revés puedes girar el teléfono y poner el cubo entre tú y el teléfono. La pantalla del cronómetro y los menús laterales giran 180 grados.",
+          "Soltar para Detener requiere Pro. Con Pro, al activar Levantar para Iniciar también se activa Soltar para Detener; sin Pro, paras el cronómetro tocando la pantalla.",
+          "Soltar para Detener también funciona por separado: al terminar, deja el cubo o las manos sobre la mesa y el teléfono nota el golpe y para el cronómetro. Ajusta su sensibilidad a tu mesa en Ajustes Rápidos."
         ]
       },
       "mobile": {
@@ -4537,6 +4565,26 @@
         ],
         "notes": [
           "Para volver atrás desde una página, desliza hacia la derecha desde el borde izquierdo. En la página del cronómetro está desactivado, porque allí el borde izquierdo es de la muesca de ajustes rápidos. En la app de Android lo hace el botón atrás del propio sistema."
+        ]
+      },
+      "customize": {
+        "title": "Personalización",
+        "body": [
+          "En Ajustes > Colores eliges los colores de los puzzles. Hay grupos de colores separados para los cubos de 2x2 a 7x7, Square-1, Clock y FTO. Los colores que elijas se usan en la imagen del scramble, en la vista del cubo inteligente y en los demás dibujos de puzzles de la app.",
+          "En Ajustes > Apariencia puedes poner una imagen o un vídeo de fondo en el cronómetro. Se admite PNG, JPG o un MP4 de hasta 40 MB; el vídeo se detiene mientras corre el tiempo. El ajuste Mostrar fondo es independiente en cada dispositivo, así que puedes dejarlo activado en el ordenador y apagarlo en el teléfono.",
+          "En esa misma sección, Colores de la lista de resoluciones cambia el color de los tiempos y de los récords en la lista.",
+          "En el ordenador colocas los módulos de la pantalla del cronómetro donde quieras: la columna izquierda, la columna derecha, la franja bajo el cronómetro o un hueco libre de la pantalla. Un módulo que sueltas en un hueco libre se queda flotando ahí."
+        ],
+        "steps": [
+          "Arrastra el módulo por su cabecera y suéltalo en una columna, en la franja inferior o en un hueco libre.",
+          "Haz clic en el nombre del módulo para cambiarlo por otro; quítalo con el botón de la X.",
+          "Para añadir un módulo nuevo, pulsa el botón de más.",
+          "Cambia el tamaño de las columnas y de los módulos flotantes arrastrando sus bordes."
+        ],
+        "notes": [
+          "Poner tu propia imagen o vídeo de fondo en el cronómetro requiere Pro.",
+          "Para devolver los módulos a su sitio inicial, usa el botón Restablecer diseño en Ajustes > Apariencia. Mientras corre el tiempo los módulos no se pueden mover.",
+          "En el móvil los módulos están en dos huecos bajo el cronómetro; eliges cuáles se ven en Ajustes Rápidos."
         ]
       },
       "rooms": {
@@ -4564,9 +4612,11 @@
       "battle": {
         "title": "Duelo",
         "body": [
-          "Duelo es un enfrentamiento de dos jugadores en un solo teléfono. La pantalla se parte por la mitad, el lado del jugador de enfrente se pone del revés, y dos personas se sientan cara a cara y resuelven el mismo scramble. Solo en móvil.",
+          "Duelo es un enfrentamiento de dos jugadores en un solo dispositivo. La pantalla se parte por la mitad, el lado del jugador de enfrente se pone del revés, y dos personas se sientan cara a cara y resuelven el mismo scramble. Funciona en el móvil, la tableta y el ordenador.",
           "La ronda no empieza hasta que los dos jugadores mantienen pulsada la pantalla y se ponen listos. Cuando los dos están listos, cada uno levanta el dedo cuando quiere y su propio cronómetro arranca en ese momento.",
-          "Al terminar la ronda los tiempos se quedan en pantalla. La siguiente ronda se abre con un scramble nuevo en cuanto los dos vuelven a mantener pulsado."
+          "Al terminar la ronda los tiempos se quedan en pantalla. La siguiente ronda se abre con un scramble nuevo en cuanto los dos vuelven a mantener pulsado.",
+          "Cada jugador también puede jugar con su propio cubo inteligente. Para eso cada uno necesita un cubo inteligente distinto; dos jugadores no pueden compartir el mismo cubo. Un jugador puede usar el cubo y el otro tocar la pantalla. En Duelo el cubo inteligente no requiere Pro.",
+          "El jugador con cubo conectado aplica a su cubo el scramble de su lado. Los movimientos se van marcando y, al terminar el scramble, su lado pasa a Listo. El tiempo arranca con el primer movimiento y para solo cuando el cubo queda resuelto. Tocar la pantalla no inicia ni para el tiempo de ese jugador."
         ],
         "steps": [
           "Abre la página de Duelo y elige el tipo de cubo en la barra del centro.",
@@ -4577,7 +4627,12 @@
         "notes": [
           "El menú permite cambiar de lado, sacar un scramble nuevo, borrar la última ronda o empezar un duelo desde cero.",
           "El tiempo, el scramble, los nombres, las estadísticas, el marcador y la racha de victorias se pueden apagar por separado.",
-          "Las rondas de duelo se quedan en el dispositivo y no se guardan en tu historial de resuelves."
+          "Las rondas de duelo se quedan en el dispositivo y no se guardan en tu historial de resuelves.",
+          "Para conectar un cubo inteligente, pulsa Conectar cubo en tu lado y elige tu cubo en la lista. Los dos jugadores conectan sus cubos por turnos. En el navegador hace falta Chrome o Edge; las apps de iOS y Android no tienen esa limitación.",
+          "Un cubo conectado en la página del cronómetro sigue conectado allí. Si quieres usar ese mismo cubo en Duelo, desconéctalo primero en la página del cronómetro.",
+          "Si el cubo aparece mezclado al conectarse, resuélvelo primero. Si está resuelto pero en pantalla aparece mezclado, pulsa Marcar como resuelto en el menú del botón del cubo.",
+          "Al cambiar de lado, los cubos conectados se mueven con sus jugadores y no hace falta volver a conectarlos.",
+          "En un ordenador sin pantalla táctil los dos jugadores no pueden mantener pulsado a la vez. Ahí al menos uno de los dos tiene que conectar un cubo inteligente."
         ]
       },
       "messages": {

@@ -34,16 +34,16 @@ export function DesktopLayoutDiagram() {
 				<rect className={b('frame')} x="1" y="1" width="358" height="230" rx="10" />
 
 				{/* Top row: the three pickers */}
-				<Region x={12} y={14} w={100} h={26} label={t('help.diagram.session')} />
-				<Region x={120} y={14} w={100} h={26} label={t('help.diagram.cube_type')} />
-				<Region x={228} y={14} w={100} h={26} label={t('help.diagram.timer_type')} />
+				<Region x={12} y={14} w={106} h={26} label={t('help.diagram.session')} />
+				<Region x={127} y={14} w={106} h={26} label={t('help.diagram.cube_type')} />
+				<Region x={242} y={14} w={106} h={26} label={t('help.diagram.timer_type')} />
 
-				<Region x={12} y={50} w={336} h={26} label={t('help.diagram.scramble')} />
-				<Region x={12} y={84} w={336} h={64} label={t('help.diagram.timer_area')} />
-
-				{/* Bottom modules */}
-				<Region x={12} y={156} w={164} h={62} label={t('help.diagram.solve_list')} dim />
-				<Region x={184} y={156} w={164} h={62} label={t('help.diagram.modules')} dim />
+				{/* The default tile layout: a module rail on either side of the timer column.
+				    Modules can be moved anywhere, so this is the starting arrangement only. */}
+				<Region x={12} y={50} w={96} h={168} label={t('help.diagram.solve_list')} dim />
+				<Region x={116} y={50} w={128} h={26} label={t('help.diagram.scramble')} />
+				<Region x={116} y={84} w={128} h={134} label={t('help.diagram.timer_area')} />
+				<Region x={252} y={50} w={96} h={168} label={t('help.diagram.modules')} dim />
 			</svg>
 			<figcaption>{t('help.diagram.desktop_caption')}</figcaption>
 		</figure>

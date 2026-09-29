@@ -2563,7 +2563,7 @@
       {
         "id": "battle",
         "q": "Battle modu nedir?",
-        "a": "Battle modu paylaşımlı mobil ekranda 1v1 rekabet modudur. İki cuber bağımsız başlama süresi, ceza takibi (+2, DNF), round bazlı puanlama ve her round'u inceleyen detay modali ile yan yana yarışır. Arkadaşlarla hızlı düellolar için mükemmel."
+        "a": "Battle modu tek bir cihazın ekranını paylaşan 1v1 rekabet modudur ve telefonda, tablette ve bilgisayarda çalışır. İki cuber bağımsız başlama süresi, ceza takibi (+2, DNF), round bazlı puanlama ve her round'u inceleyen detay modali ile yan yana yarışır. Her oyuncu isterse kendi akıllı küpünü bağlayabilir. Arkadaşlarla hızlı düellolar için mükemmel."
       },
       {
         "id": "leaderboard",
@@ -2618,7 +2618,7 @@
       {
         "id": "desktop-usage",
         "q": "Masaüstünde nasıl kullanılır?",
-        "a": "Üstteki menülerden oturumu, küp tipini ve timer tipini seçersiniz, karıştırma hemen altında görünür. Boşluk tuşunu basılı tutup bıraktığınızda süre başlar, tekrar bastığınızda durur. Sayfanın altında son çözümleriniz, ortalamalarınız ve çözüm analizi yer alır. Bir süreye tıkladığınızda detay penceresi açılır; ceza ekleyebilir, not yazabilir veya çözümü silebilirsiniz."
+        "a": "Üstteki menülerden oturumu, küp tipini ve timer tipini seçersiniz, karıştırma hemen altında görünür. Boşluk tuşunu basılı tutup bıraktığınızda süre başlar, tekrar bastığınızda durur. Son çözümleriniz, ortalamalarınız ve çözüm analizi timer'ın yanındaki modüllerde yer alır; modülleri sürükleyerek istediğiniz yere taşıyabilirsiniz. Bir süreye tıkladığınızda detay penceresi açılır; ceza ekleyebilir, karıştırmayı görebilir veya çözümü silebilirsiniz."
       },
       {
         "id": "mobile-usage",
@@ -4508,8 +4508,8 @@
         "body": [
           "Zkt Timer'ı tarayıcıdan, iOS veya Android uygulamasından kullanabilirsiniz. Hesap açtığınızda çözümleriniz sunucuya yedeklenir, yani cihazınız kaybolsa da veriniz durur. Geçmişinizi girdiğiniz her cihazda görmek Pro üyelikle gelir; Pro olmadan çözümleriniz onları yaptığınız cihazda kalır.",
           "Hesap açmadan da deneyebilirsiniz. Kayıtsızken timer, çözümleriniz ve antrenör çalışır; süreler yalnızca o cihazda durur. Sonradan hesap açarsanız uygulama bu çözümleri hesabınıza taşımayı önerir.",
-          "Masaüstünde ekranın üstünde üç menü bulunur: oturum, küp tipi ve timer tipi. Hemen altında karıştırma, ortada süre, aşağıda ise çözüm listeniz ve istatistik modülleri yer alır.",
-          "Ayarlar yedi bölüme ayrılır: Timer, Karıştırma, Donanım, Görünüm, İstatistik, Veri ve Dil. Aradığınız ayarın hangi bölümde olduğunu bilmiyorsanız ayarların içindeki arama kutusunu kullanın."
+          "Masaüstünde timer ekranın ortasında durur: üstte üç menü (oturum, küp tipi ve timer tipi), altında karıştırma ve süre. Varsayılan düzende çözüm listeniz ve istatistik modülleri iki yandaki sütunlardadır; modülleri istediğiniz yere taşıyabilirsiniz.",
+          "Ayarlar sekiz bölüme ayrılır: Timer, Girdi ve Cihazlar, Akıllı Küp, Karıştırma, Görünüm, Renkler, Veri ve Dil. Aradığınız ayarın hangi bölümde olduğunu bilmiyorsanız ayarların içindeki arama kutusunu kullanın."
         ]
       },
       "timer": {
@@ -4517,7 +4517,7 @@
         "body": [
           "Boşluk tuşunu basılı tutun, timer yeşile döndüğünde bırakın; süre başlar. Durdurmak için herhangi bir tuşa basın. Mobilde ekranın orta bölgesine dokunup bırakırsınız.",
           "Inspection açıksa süre başlamadan önce 15 saniyelik geri sayım çalışır. WCA kuralına göre 15 saniyeyi geçerseniz +2, 17 saniyeyi geçerseniz DNF uygulanır. Escape geri sayımı iptal eder.",
-          "Karıştırma her çözümden sonra kendiliğinden üretilir. Karıştırmaya dokunarak kopyalayabilir, yanındaki oklarla önceki ve sonraki karıştırmalar arasında gezinebilirsiniz.",
+          "Karıştırma her çözümden sonra kendiliğinden üretilir. Karıştırmaya dokunarak kopyalayabilir, yanındaki oklarla önceki ve sonraki karıştırmalar arasında gezinebilirsiniz. Üç boyutlu karıştırma görselinde küpün görünmeyen üç yüzü (arka, sol ve alt) küpün yanında ayrıca gösterilir, böylece karıştırmanın tamamını tek bakışta kontrol edebilirsiniz.",
           "Timer tipini üstteki menüden seçersiniz. Desteklenen giriş yöntemleri şunlardır:"
         ],
         "notes": [
@@ -4528,7 +4528,7 @@
       "solves": {
         "title": "Çözümler ve oturumlar",
         "body": [
-          "Timer'ın altındaki liste o oturumdaki çözümleri gösterir. Bir süreye dokunduğunuzda detay penceresi açılır: ceza ekleyebilir, not yazabilir, karıştırmayı ve çözüm analizini görebilir veya çözümü silebilirsiniz.",
+          "Timer'ın altındaki liste o oturumdaki çözümleri gösterir. Bir süreye dokunduğunuzda detay penceresi açılır: ceza ekleyebilir, karıştırmayı ve çözüm analizini görebilir veya çözümü silebilirsiniz.",
           "Timer'ın hemen altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır.",
           "Çözümler sayfası bütün çözümlerinizi tek listede toplar. Süre aralığına, cezaya, akıllı küple yapılıp yapılmadığına ve dışarıdan aktarılıp aktarılmadığına göre süzebilir, süreye veya tarihe göre sıralayabilirsiniz.",
           "Aynı sayfada çoklu seçim vardır: birden fazla çözümü işaretleyip tek seferde silebilirsiniz.",
@@ -4577,7 +4577,35 @@
         "notes": [
           "Tarayıcıda Web Bluetooth gerekir: Chrome veya Edge kullanın, Safari desteklemez. iOS ve Android uygulamasında bu kısıt yoktur.",
           "Ekrandaki küp gerçek küple ayrışırsa küpü çözülmüş konuma getirip yeniden senkronlayın. Bağlantı koparsa küpü kapatıp açın ve yeniden tarayın.",
-          "Çözüm sonrası adım adım analiz Pro üyelikle açılır: Cross, F2L, OLL ve PLL sürelerini, hareket sayısını, saniyedeki hareketi ve çözümün animasyonunu gösterir."
+          "Çözüm sonrası adım adım analiz Pro üyelikle açılır: Cross, F2L, OLL ve PLL sürelerini, hareket sayısını, saniyedeki hareketi ve çözümün animasyonunu gösterir.",
+          "Tarama küpünüzü bulamazsa açılan ekranda Tüm cihazları göster'e basın; çevredeki bütün Bluetooth cihazları listelenir.",
+          "Bağladığınız küp timer, odalar ve antrenör arasında geçerken bağlı kalır, her sayfada yeniden bağlamanız gerekmez. Uygulama veya tarayıcı sekmesi beş dakika arka planda kalırsa pil tüketmemek için bağlantı kapanır.",
+          "Küpü çevirdikçe karıştırmanın hamleleri tek tek işaretlenir. Yanlış bir hamle yaparsanız düzeltmek için gereken hamleler gösterilir. Karıştırma bitince \"Başlamaya Hazırsın\" yazar ve ilk hamlenizle süre başlar.",
+          "Ayarlar > Akıllı Küp bölümünden küp görünümünün boyutunu, çözümün hangi ayrıntıda adımlara bölüneceğini ve akıllı küple yapılan her çözüme eklenecek ilave süreyi ayarlarsınız. Masaüstünde Canlı Evre modülünü eklerseniz 3x3 çözerken evre sürelerini çözüm sırasında canlı izlersiniz."
+        ]
+      },
+      "lift-to-start": {
+        "title": "Kaldırınca başlat",
+        "body": [
+          "Kaldırınca Başlat ile süreyi ekrana dokunmadan, küpü kaldırarak başlatırsınız. Telefon masada düz durur, küp telefonun arka kamera tarafına konur. Küpü kaldırdığınız anda süre başlar; çözümü bitirip küpü masaya bıraktığınızda Bırakınca Durdur süreyi durdurur.",
+          "Telefonun pusula sensörü küpün mıknatıslarını algılar. Bu yüzden mıknatıslı bir küp gerekir; bugün satılan küplerin çoğu mıknatıslıdır. Ayrıca Zkt Timer'ın iOS veya Android uygulaması gerekir ve timer tipi Dokunmatik olmalıdır. Tarayıcıda, odalarda, manuel girişte ve akıllı küple çalışmaz.",
+          "Her telefonun sensörü bu iş için yeterince hızlı değildir. Desteklenmeyen telefonlarda ayar hiç görünmez ya da ekranda \"Bu cihazın sensörü yeterince hızlı değil\" yazar. Ayarı göremiyorsanız önce uygulamayı güncelleyin."
+        ],
+        "steps": [
+          "Telefonu masaya düz koyun. Soldaki çentikten Hızlı Ayarlar'a girin ve Kaldırınca Başlat'ı açın.",
+          "Küpü telefonun arka kamera tarafına, telefonun hemen yanına koyun. Telefona değmesi gerekmez.",
+          "Küpü sabit bırakın. Süre yeşile dönüp altında \"Kaldırınca süre başlar\" yazdığında hazırsınız.",
+          "Küpü kaldırın, süre o anda başlar. Bitirince küpü masaya bırakın ya da ekrana dokunun."
+        ],
+        "notes": [
+          "Kaldırınca Başlat şu an test aşamasındadır ve henüz her hesapta görünmez.",
+          "Inspection açıksa ilk kaldırış inspection'ı başlatır. Küpü yerine koyun ve hazır olunca yeniden kaldırın; süre o anda başlar. +2 ve DNF kuralları her zamanki gibi uygulanır.",
+          "Çözüm bittikten sonra küpü yerinden kaldırmak yeni bir süre başlatmaz; küp önce birkaç saniye uzakta kalmalıdır. Böylece küpü karıştırmak için aldığınızda süre yanlışlıkla başlamaz. Ekranda \"Küpü al, karıştır, sonra tekrar koy\" yazıyorsa küpü karıştırıp yeniden yerine koyun.",
+          "Küp yerindeyken ekrana dokunmak süreyi başlatmaz, küpü koyarken elinizin ekrana değmesi sorun olmaz. Küp uzaktayken ekrana dokunarak her zamanki gibi başlatabilirsiniz.",
+          "Ekranda \"Küpü telefondan uzaklaştır\" yazarsa küpü uzaklaştırın. Uyarı gitmezse telefon sabitken Tabanı yenile'ye basın; telefon küpsüz ortamı yeniden öğrenir.",
+          "Telefonu ters koyuyorum seçeneğiyle telefonu ters çevirip küpü telefonla aranıza koyabilirsiniz. Timer ekranı ve kenar menüleri 180 derece döner.",
+          "Bırakınca Durdur Pro üyelik gerektirir. Pro üyeliğiniz varsa Kaldırınca Başlat'ı açtığınızda o da kendiliğinden açılır; yoksa süreyi ekrana dokunarak durdurursunuz.",
+          "Bırakınca Durdur tek başına da kullanılabilir: çözümü bitirince küpü ya da ellerinizi masaya bırakırsınız, telefon sarsıntıyı algılayıp süreyi durdurur. Hassasiyeti Hızlı Ayarlar'dan masanıza göre ayarlarsınız."
         ]
       },
       "mobile": {
@@ -4588,6 +4616,26 @@
         ],
         "notes": [
           "Bir sayfadan geri dönmek için ekranın sol kenarından sağa kaydırabilirsiniz. Timer sayfasında bu kapalıdır, çünkü orada sol kenar hızlı ayarlar çentiğine aittir. Android uygulamasında sistemin kendi geri düğmesi kullanılır."
+        ]
+      },
+      "customize": {
+        "title": "Kişiselleştirme",
+        "body": [
+          "Ayarlar > Renkler bölümünde küplerin renklerini seçersiniz. 2x2 ile 7x7 arası küpler, Square-1, Clock ve FTO için ayrı renk grupları vardır. Seçtiğiniz renkler karıştırma görselinde, akıllı küp görünümünde ve uygulamadaki diğer küp çizimlerinde kullanılır.",
+          "Ayarlar > Görünüm bölümünde timer'ın arka planına resim veya video koyabilirsiniz. PNG, JPG ya da en fazla 40 MB'lık MP4 yüklenir; video süre işlerken durur. Arka planı göster ayarı her cihaz için ayrıdır, masaüstünde açık bırakıp telefonda kapatabilirsiniz.",
+          "Aynı bölümdeki Çözüm listesi renkleri ile listedeki sürelerin ve rekorların rengini değiştirirsiniz.",
+          "Masaüstünde timer ekranındaki modülleri istediğiniz yere yerleştirirsiniz: sol sütun, sağ sütun, timer'ın altındaki şerit ya da ekranda boş bir yer. Boş bir yere bıraktığınız modül orada serbest durur."
+        ],
+        "steps": [
+          "Modülü başlığından tutup sürükleyin ve bir sütuna, alt şeride ya da boş bir yere bırakın.",
+          "Modülün adına tıklayıp başka bir modülle değiştirin; çarpı düğmesiyle kaldırın.",
+          "Yeni modül eklemek için artı düğmesine basın.",
+          "Sütunların ve serbest duran modüllerin boyutunu kenarlarından çekerek değiştirin."
+        ],
+        "notes": [
+          "Timer arka planına kendi resminizi veya videonuzu koymak Pro üyelik gerektirir.",
+          "Modülleri başladıkları yere geri koymak için Ayarlar > Görünüm'deki Düzeni sıfırla düğmesini kullanın. Süre işlerken modüller taşınamaz.",
+          "Mobilde modüller timer'ın altındaki iki yuvadadır; hangilerinin görüneceğini Hızlı Ayarlar'dan seçersiniz."
         ]
       },
       "rooms": {
@@ -4615,9 +4663,11 @@
       "battle": {
         "title": "Mücadele",
         "body": [
-          "Mücadele tek telefonda iki kişilik bir düellodur. Ekran ikiye bölünür, karşıdaki oyuncunun tarafı ters çevrilir ve iki kişi karşılıklı oturup aynı karıştırmayı çözer. Yalnızca mobilde çalışır.",
+          "Mücadele tek cihazda iki kişilik bir düellodur. Ekran ikiye bölünür, karşıdaki oyuncunun tarafı ters çevrilir ve iki kişi karşılıklı oturup aynı karıştırmayı çözer. Telefonda, tablette ve bilgisayarda çalışır.",
           "İki oyuncu da ekrana basılı tutup hazır duruma geçmeden tur başlamaz. Hazır olduktan sonra herkes parmağını kendi istediği anda kaldırır ve kendi süresi o anda başlar.",
-          "Tur bitince süreler ekranda kalır. İki oyuncu da yeniden basılı tuttuğunda bir sonraki tur yeni karıştırmayla açılır."
+          "Tur bitince süreler ekranda kalır. İki oyuncu da yeniden basılı tuttuğunda bir sonraki tur yeni karıştırmayla açılır.",
+          "Her oyuncu kendi akıllı küpüyle de oynayabilir. Bunun için her oyuncunun ayrı bir akıllı küpü olmalıdır, iki oyuncu aynı küpü paylaşamaz. Bir oyuncu küple, diğeri ekrana dokunarak da oynayabilir. Mücadelede akıllı küp için Pro üyelik gerekmez.",
+          "Küpü bağlı olan oyuncu kendi tarafındaki karıştırmayı küpe uygular. Hamleler yapıldıkça işaretlenir, karıştırma bitince o taraf Hazır olur. İlk hamlede süre başlar, küp çözülünce kendiliğinden durur. Bu oyuncunun süresi ekrana dokunarak başlamaz ve durmaz."
         ],
         "steps": [
           "Mücadele sayfasını açın ve ortadaki araç çubuğundan küp tipini seçin.",
@@ -4628,7 +4678,12 @@
         "notes": [
           "Menüden taraf değiştirebilir, karıştırmayı yenileyebilir, son turu silebilir veya yeni bir mücadele başlatabilirsiniz.",
           "Süre, karıştırma, isimler, istatistikler, skor ve galibiyet serisi göstergelerinin her biri ayrı ayrı kapatılabilir.",
-          "Mücadele turları cihazda kalır, çözüm geçmişinize kaydedilmez."
+          "Mücadele turları cihazda kalır, çözüm geçmişinize kaydedilmez.",
+          "Akıllı küp bağlamak için kendi tarafınızdaki Küp Bağla düğmesine basıp listeden küpünüzü seçin. İki oyuncu küplerini sırayla bağlar. Tarayıcıda Chrome veya Edge gerekir; iOS ve Android uygulamasında bu kısıt yoktur.",
+          "Timer sayfasında bağladığınız küp orada bağlı kalır. Aynı küpü mücadelede kullanacaksanız önce timer sayfasında bağlantısını kesin.",
+          "Küp bağlanınca karışık görünüyorsa önce küpü çözün. Küp çözülmüş olduğu halde ekranda karışık görünüyorsa küp düğmesindeki menüden Çözülmüş İşaretle'ye basın.",
+          "Taraf değiştirdiğinizde bağlı küpler de oyuncularıyla birlikte yer değiştirir, yeniden bağlamanız gerekmez.",
+          "Dokunmatik ekranı olmayan bir bilgisayarda iki oyuncu aynı anda basılı tutamaz. Orada en az bir oyuncunun akıllı küp bağlaması gerekir."
         ]
       },
       "messages": {
