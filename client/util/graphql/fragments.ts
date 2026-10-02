@@ -191,6 +191,9 @@ export const IMAGE_FRAGMENT = gql`
 	}
 `;
 
+// Keep the field set in step with client/graphql/fragments.graphql. `is_premium` was
+// missing here, so the signed-in user's `me` (getMe) never carried it, and since a Premium
+// grant clears is_pro, every client Pro gate (isPro) locked Premium members out.
 export const PUBLIC_USER_FRAGMENT = gql`
 	${IMAGE_FRAGMENT}
 
@@ -201,6 +204,7 @@ export const PUBLIC_USER_FRAGMENT = gql`
 		created_at
 		banned_forever
 		is_pro
+		is_premium
 		banned_until
 		admin
 		mod

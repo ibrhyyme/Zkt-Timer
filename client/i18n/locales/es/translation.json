@@ -2072,7 +2072,8 @@
     "promo": "Promo",
     "site_config": "Configuración del sitio",
     "media": "Medios",
-    "smart_telemetry": "Telemetría"
+    "smart_telemetry": "Telemetría",
+    "magnet_telemetry": "Estudio de Levantar para Iniciar"
   },
   "feature_access": {
     "title": "Acceso especial",
@@ -2658,7 +2659,6 @@
     "slam_high": "Alta",
     "slam_ultra": "Ultra",
     "magnet_start": "Levantar para Iniciar",
-    "magnet_admin_tag": "Prueba de admin",
     "magnet_reversed": "Teléfono al revés",
     "magnet_state": "Estado",
     "magnet_state_starting": "Iniciando",
@@ -3300,6 +3300,10 @@
       "slam_to_stop": {
         "title": "Soltar para detener",
         "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa: el cronómetro se detiene solo. No hace falta volver a la pantalla y consigues la sensación de un StackMat sin comprar hardware. Funciona en la app móvil y ajustas la sensibilidad a tu mesa."
+      },
+      "magnet_start": {
+        "title": "Levantar para iniciar",
+        "desc": "Pon el cubo junto a la cámara trasera del teléfono y el cronómetro arranca en cuanto lo levantas. Con Soltar para Detener funciona como un StackMat: levanta para empezar, suelta para parar. Solo necesitas un cubo magnético y la app móvil."
       }
     },
     "promo": {
@@ -3641,10 +3645,10 @@
     "hands": {
       "name": "Sin hardware extra",
       "title": "Suelta el cubo y el tiempo se detiene",
-      "body": "Deja el móvil sobre la mesa y resuelve. Cuando sueltas el cubo, el teléfono siente el golpe y detiene el tiempo. Levantar para Iniciar, ahora en pruebas, usa la brújula del teléfono para iniciar el cronómetro en cuanto levantas el cubo.",
+      "body": "Deja el móvil sobre la mesa y resuelve. Cuando sueltas el cubo, el teléfono siente el golpe y detiene el tiempo. Levantar para Iniciar usa la brújula del teléfono para iniciar el cronómetro en cuanto levantas el cubo.",
       "fact_1": "Soltar para Detener funciona en las apps de iOS y Android",
       "fact_2": "Sensibilidad ajustable según tu mesa",
-      "fact_3": "Levantar para Iniciar se está probando en algunas cuentas",
+      "fact_3": "Levantar para Iniciar funciona con cubos magnéticos",
       "caption": "Soltar para Detener y Levantar para Iniciar, contados con una animación"
     },
     "stats": {
@@ -3816,6 +3820,10 @@
       "slam_to_stop": {
         "title": "Soltar para Detener",
         "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa para detener el cronómetro automáticamente. Sin tocar la pantalla, como un StackMat."
+      },
+      "magnet_start": {
+        "title": "Levantar para Iniciar",
+        "desc": "Pon el cubo junto a la cámara trasera del teléfono y el cronómetro arranca en cuanto lo levantas. Sin tocar la pantalla, como un StackMat."
       }
     },
     "highlights": {
@@ -4424,6 +4432,48 @@
     "col_battery": "Batería (limpio/recuperado)",
     "col_correction": "Corrección de tiempo"
   },
+  "magnet_telemetry": {
+    "title": "Estudio de Levantar para Iniciar",
+    "days": "{{count}} días",
+    "refresh": "Actualizar",
+    "hint": "Una fila por modelo de teléfono. Si el valor más bajo de µT al colocar se acerca al umbral de 150, al teléfono le cuesta detectar el cubo. Un porcentaje alto de levantamientos rechazados o muchos descartes indican que el detector tiene problemas en ese teléfono. Pulsa un teléfono para filtrar los registros; las ventanas en bruto se descargan desde los registros y sirven directamente como pruebas.",
+    "loading": "Cargando...",
+    "empty": "Aún no hay registros. Activa el estudio desde la página de configuración del sitio.",
+    "rows_title": "Registros",
+    "rows_empty": "Ningún registro coincide con este filtro.",
+    "filter_username": "Nombre de usuario",
+    "filter_event": "Tipo de evento",
+    "filter_all_events": "Todos los eventos",
+    "filter_device": "Teléfono",
+    "filter_all_devices": "Todos los teléfonos",
+    "search": "Buscar",
+    "download_all": "Descargar todo en CSV",
+    "exporting": "Preparando...",
+    "download_samples": "Descargar ventana",
+    "unsupported": "no compatible",
+    "yes": "Sí",
+    "col_device": "Teléfono",
+    "col_sensor": "Sensor",
+    "col_users": "Usuarios",
+    "col_placements": "Colocaciones",
+    "col_near": "µT al colocar (mínimo / mediana)",
+    "col_lifts": "Levantamientos (iniciados / rechazados)",
+    "col_latency": "Latencia (mediana / p95)",
+    "col_approach": "Aproximación",
+    "col_rejects": "Descartes",
+    "col_unknown": "Avisos de base",
+    "col_sigma": "Ruido σ",
+    "col_rate": "Frecuencia del sensor",
+    "col_time": "Hora",
+    "col_user": "Usuario",
+    "col_event": "Evento",
+    "col_detail": "Detalle",
+    "col_latency_short": "Latencia",
+    "col_rest": "Reposo",
+    "col_reversed": "Invertido",
+    "col_version": "Versión",
+    "col_samples": "Ventana en bruto"
+  },
   "solves_page": {
     "solve_count_one": "{{countText}} resolución",
     "solve_count_other": "{{countText}} resoluciones",
@@ -4572,13 +4622,13 @@
           "Levanta el cubo y el cronómetro arranca en ese momento. Al terminar, deja el cubo sobre la mesa o toca la pantalla."
         ],
         "notes": [
-          "Levantar para Iniciar está en fase de pruebas y todavía no aparece en todas las cuentas.",
+          "Levantar para Iniciar y Soltar para Detener requieren Pro.",
           "Con la inspección activada, el primer levantamiento inicia la inspección. Vuelve a poner el cubo en su sitio y levántalo de nuevo cuando estés listo; el tiempo empieza en ese momento. El +2 y el DNF se aplican como siempre.",
           "Después de un resuelve, levantar el cubo de su sitio no inicia uno nuevo; antes el cubo tiene que estar lejos unos segundos. Así, coger el cubo para mezclarlo nunca arranca el cronómetro por error. Si la pantalla dice \"Toma el cubo, mézclalo y vuelve a ponerlo\", haz justo eso.",
           "Mientras el cubo está en su sitio, tocar la pantalla no inicia el cronómetro, así que no pasa nada si rozas la pantalla al colocarlo. Con el cubo lejos, un toque inicia el cronómetro como siempre.",
           "Si la pantalla dice \"Aleja el cubo del teléfono\", hazlo. Si el mensaje no desaparece, pulsa Restablecer base con el teléfono quieto; así el teléfono vuelve a aprender su entorno sin el cubo.",
           "Con Teléfono al revés puedes girar el teléfono y poner el cubo entre tú y el teléfono. La pantalla del cronómetro y los menús laterales giran 180 grados.",
-          "Soltar para Detener requiere Pro. Con Pro, al activar Levantar para Iniciar también se activa Soltar para Detener; sin Pro, paras el cronómetro tocando la pantalla.",
+          "Al activar Levantar para Iniciar también se activa Soltar para Detener; si quieres, puedes parar el cronómetro tocando la pantalla.",
           "Soltar para Detener también funciona por separado: al terminar, deja el cubo o las manos sobre la mesa y el teléfono nota el golpe y para el cronómetro. Ajusta su sensibilidad a tu mesa en Ajustes Rápidos."
         ]
       },

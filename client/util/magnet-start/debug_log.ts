@@ -21,6 +21,8 @@ export interface PendingWindow {
 	confirmedAt?: number;
 	nearDelta?: number;
 	far: Vec3 | null;
+	/** Identifies the event the window belongs to, for window listeners (telemetry). */
+	key?: string;
 }
 
 export interface CapturedWindow {
@@ -57,6 +59,7 @@ class MagnetDebugLog {
 	private platform: MagnetPlatform | null = null;
 	private persistTimer: ReturnType<typeof setTimeout> | null = null;
 	private listeners = new Set<() => void>();
+	private windowListeners = new Set<(window: CapturedWindow | null, key: string | undefined) => void>();
 
 	setPlatform(platform: MagnetPlatform | null): void {
 		this.platform = platform;
@@ -124,6 +127,17 @@ class MagnetDebugLog {
 		};
 	}
 
+	/**
+	 * Called once per requested window when it is cut, with null when too few samples
+	 * arrived to cut it (the stream stopped right after the event).
+	 */
+	onWindowCaptured(listener: (window: CapturedWindow | null, key: string | undefined) => void): () => void {
+		this.windowListeners.add(listener);
+		return () => {
+			this.windowListeners.delete(listener);
+		};
+	}
+
 	buildExport(meta: {
 		platform: MagnetPlatform | null;
 		capabilities: MagnetCapabilities | null;
@@ -173,6 +187,7 @@ class MagnetDebugLog {
 				this.windows.push(captured);
 				if (this.windows.length > MAX_WINDOWS) this.windows.shift();
 			}
+			this.windowListeners.forEach((listener) => listener(captured, p.key));
 		}
 		this.pending = keep;
 		this.notify();

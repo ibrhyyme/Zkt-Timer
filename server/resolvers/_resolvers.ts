@@ -44,3 +44,4 @@ export * from './RecordWatch.resolver';
 export * from './Activity.resolver';
 export * from './Messaging.resolver';
 export * from './SmartCubeTelemetry.resolver';
+export * from './MagnetTelemetry.resolver';

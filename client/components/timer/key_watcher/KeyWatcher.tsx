@@ -31,6 +31,7 @@ import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { useMagnetStart } from '../../../util/magnet-start/useMagnetStart';
 import { magnetService } from '../../../util/magnet-start/service';
 import { magnetDebugLog } from '../../../util/magnet-start/debug_log';
+import { magnetTelemetry } from '../../../util/magnet-start/telemetry';
 import { TOUCH_GUARD_AFTER_MAGNET_MS } from '../../../util/magnet-start/config';
 import {
 	getLastMagnetActionAt,
@@ -61,6 +62,13 @@ const PASSIVE_FALSE: AddEventListenerOptions = { passive: false };
 // Width of the left/right notch strips the EdgeDrawer owns. A press that lands here is
 // reaching for the menu, not the timer — but only where starting is concerned.
 const EDGE_DEAD_ZONE_PX = 20;
+
+// A touch the magnet's touch guard swallowed: kept in the admin log and, outside the admin
+// test panel, counted in the field study (how often the guard steps in, per phone model).
+function logMagnetTouchIgnored(reason: string): void {
+	magnetDebugLog.record('touch_ignored', { reason });
+	if (!magnetService.isTestMode()) magnetTelemetry.record({ event_type: 'touch_ignored', detail: reason });
+}
 
 interface Props {
 	children: ReactNode;
@@ -291,13 +299,13 @@ export default function KeyWatcher(props: Props) {
 		// Right after the magnet started inspection or a solve, the grabbing hand brushes
 		// the screen: a brush would stop the solve at ~0.1 s.
 		if (touchGuardedAfterMagnet(getLastMagnetActionAt(), Date.now(), TOUCH_GUARD_AFTER_MAGNET_MS)) {
-			magnetDebugLog.record('touch_ignored', { reason: 'after_magnet' });
+			logMagnetTouchIgnored('after_magnet');
 			return true;
 		}
 		// While the cube rests at the hot spot or is being placed or lifted, the magnet owns
 		// the start. The stream is off during a solve, so stopping is never blocked here.
 		if (!getTimerStore('timeStartedAt') && magnetOwnsTouchStart(magnetService.touchInput())) {
-			magnetDebugLog.record('touch_ignored', { reason: 'magnet_owns_start' });
+			logMagnetTouchIgnored('magnet_owns_start');
 			return true;
 		}
 		return false;
@@ -656,7 +664,7 @@ export default function KeyWatcher(props: Props) {
 		// cube. With freeze_time 0 any such brush would otherwise start a solve.
 		if (touch && magnetOwnsTouchStart(magnetService.touchInput())) {
 			disarmPriming();
-			magnetDebugLog.record('touch_ignored', { reason: 'release_magnet_owns_start' });
+			logMagnetTouchIgnored('release_magnet_owns_start');
 			return;
 		}
 

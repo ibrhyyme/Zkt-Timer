@@ -2072,7 +2072,8 @@
     "promo": "Promo",
     "site_config": "Site Config",
     "media": "Media",
-    "smart_telemetry": "Cube Telemetry"
+    "smart_telemetry": "Cube Telemetry",
+    "magnet_telemetry": "Lift to Start Study"
   },
   "feature_access": {
     "title": "Special access",
@@ -2658,7 +2659,6 @@
     "slam_high": "High",
     "slam_ultra": "Ultra",
     "magnet_start": "Lift to Start",
-    "magnet_admin_tag": "Admin test",
     "magnet_reversed": "Phone upside down",
     "magnet_state": "State",
     "magnet_state_starting": "Starting",
@@ -3300,6 +3300,10 @@
       "slam_to_stop": {
         "title": "Drop to stop",
         "desc": "Finish your solve and drop the cube or your hands on the table, and the timer stops by itself. No reaching back for the screen, and you get the StackMat feel without buying any hardware. Works in the mobile app, with sensitivity you tune to your own table."
+      },
+      "magnet_start": {
+        "title": "Lift to start",
+        "desc": "Put the cube by the phone's rear camera and the timer starts the moment you lift it. With Drop to Stop it works like a StackMat: lift to start, drop to stop. All you need is a magnetic cube and the mobile app."
       }
     },
     "promo": {
@@ -3641,10 +3645,10 @@
     "hands": {
       "name": "No extra hardware",
       "title": "Put the cube down and the time stops",
-      "body": "Lay your phone flat on the table and solve. When you put the cube down, the phone feels the impact and stops the time. Lift to Start, in testing now, uses the phone's compass sensor to start the timer the moment you pick the cube up.",
+      "body": "Lay your phone flat on the table and solve. When you put the cube down, the phone feels the impact and stops the time. Lift to Start uses the phone's compass sensor to start the timer the moment you pick the cube up.",
       "fact_1": "Drop to Stop works in the iOS and Android apps",
       "fact_2": "Sensitivity you can set to suit your table",
-      "fact_3": "Lift to Start is being tested on some accounts",
+      "fact_3": "Lift to Start works with magnetic cubes",
       "caption": "Drop to Stop and Lift to Start, drawn as an animation"
     },
     "stats": {
@@ -3816,6 +3820,10 @@
       "slam_to_stop": {
         "title": "Drop to Stop",
         "desc": "Finish your solve and drop the cube — or your hands — on the table to stop the timer automatically. No need to reach for the screen, just like a StackMat."
+      },
+      "magnet_start": {
+        "title": "Lift to Start",
+        "desc": "Put the cube by the phone's rear camera and the timer starts the moment you lift it. No need to touch the screen, just like a StackMat."
       }
     },
     "highlights": {
@@ -4470,6 +4478,48 @@
     "col_battery": "Battery (clean/recovered)",
     "col_correction": "Time correction"
   },
+  "magnet_telemetry": {
+    "title": "Lift to Start Study",
+    "days": "{{count}} days",
+    "refresh": "Refresh",
+    "hint": "One row per phone model. If the lowest placement µT gets close to the 150 threshold, the cube is hard to detect on that phone. A high share of refused lifts or many rejects means the detector struggles there. Click a phone to filter the records; raw windows download from the records and drop straight into the tests.",
+    "loading": "Loading...",
+    "empty": "No records yet. Turn the study on from the Site Config page.",
+    "rows_title": "Records",
+    "rows_empty": "No records match this filter.",
+    "filter_username": "Username",
+    "filter_event": "Event type",
+    "filter_all_events": "All events",
+    "filter_device": "Phone",
+    "filter_all_devices": "All phones",
+    "search": "Search",
+    "download_all": "Download all as CSV",
+    "exporting": "Preparing...",
+    "download_samples": "Download window",
+    "unsupported": "unsupported",
+    "yes": "Yes",
+    "col_device": "Phone",
+    "col_sensor": "Sensor",
+    "col_users": "Users",
+    "col_placements": "Placements",
+    "col_near": "Placement µT (lowest / median)",
+    "col_lifts": "Lifts (started / refused)",
+    "col_latency": "Latency (median / p95)",
+    "col_approach": "Approach",
+    "col_rejects": "Rejects",
+    "col_unknown": "Baseline warnings",
+    "col_sigma": "Noise σ",
+    "col_rate": "Sensor rate",
+    "col_time": "Time",
+    "col_user": "User",
+    "col_event": "Event",
+    "col_detail": "Detail",
+    "col_latency_short": "Latency",
+    "col_rest": "Rest",
+    "col_reversed": "Reversed",
+    "col_version": "Version",
+    "col_samples": "Raw window"
+  },
   "solves_page": {
     "solve_count_one": "{{countText}} solve",
     "solve_count_other": "{{countText}} solves",
@@ -4618,13 +4668,13 @@
           "Lift the cube and the timer starts at that moment. When you finish, put the cube down on the table or tap the screen."
         ],
         "notes": [
-          "Lift to Start is being tested right now and does not appear on every account yet.",
+          "Lift to Start and Drop to Stop need Pro.",
           "With inspection on, the first lift starts inspection. Put the cube back and lift it again when you are ready; the timer starts at that moment. +2 and DNF apply as usual.",
           "After a solve, lifting the cube from its spot does not start a new one; the cube has to be away for a few seconds first. That way picking the cube up to scramble it never starts the timer by accident. If the screen says \"Pick up the cube, scramble it, then put it back\", do exactly that.",
           "While the cube rests in place, touching the screen does not start the timer, so it is fine if your hand brushes the screen while you place it. With the cube away, a tap starts the timer as usual.",
           "If the screen says \"Move the cube away from the phone\", do that. If the message stays, press Reset baseline while the phone is still; the phone then learns its surroundings without the cube again.",
           "With Phone upside down you can turn the phone around and put the cube between you and the phone. The timer screen and the side menus turn 180 degrees.",
-          "Drop to Stop needs Pro. With Pro, turning on Lift to Start switches Drop to Stop on as well; without it, you stop the timer by tapping the screen.",
+          "Turning on Lift to Start switches Drop to Stop on as well; you can still stop the timer by tapping the screen.",
           "Drop to Stop also works on its own: when you finish, put the cube or your hands down on the table, and the phone feels the impact and stops the timer. Set its sensitivity to suit your table in Quick Settings."
         ]
       },

@@ -2079,7 +2079,8 @@
     "promo": "Promo",
     "site_config": "Site Ayarları",
     "media": "Medya",
-    "smart_telemetry": "Küp Telemetrisi"
+    "smart_telemetry": "Küp Telemetrisi",
+    "magnet_telemetry": "Kaldırınca Başlat Ölçümü"
   },
   "feature_access": {
     "title": "Özel erişim",
@@ -2665,7 +2666,6 @@
     "slam_high": "Yüksek",
     "slam_ultra": "Ultra",
     "magnet_start": "Kaldırınca Başlat",
-    "magnet_admin_tag": "Admin testi",
     "magnet_reversed": "Telefonu ters koyuyorum",
     "magnet_state": "Durum",
     "magnet_state_starting": "Başlatılıyor",
@@ -3307,6 +3307,10 @@
       "slam_to_stop": {
         "title": "Bırakınca durdur",
         "desc": "Çözümü bitirince küpü ya da ellerini masaya bırak, zamanlayıcı kendiliğinden dursun. Ekrana dokunmana gerek kalmaz, StackMat hissini ek donanım almadan yaşarsın. Mobil uygulamada çalışır, hassasiyeti kendi masana göre ayarlarsın."
+      },
+      "magnet_start": {
+        "title": "Kaldırınca başlat",
+        "desc": "Küpü telefonun arka kamera tarafına koy, kaldırdığın anda süre başlasın. Bırakınca Durdur ile birlikte StackMat gibi çalışır: kaldır başla, bırak dur. Mıknatıslı bir küp ve mobil uygulama yeterli."
       }
     },
     "promo": {
@@ -3646,10 +3650,10 @@
     "hands": {
       "name": "Ek donanım yok",
       "title": "Küpü bırak, süre dursun",
-      "body": "Telefonu masaya yatır ve çöz. Küpü bıraktığında telefon darbeyi hisseder ve süreyi durdurur. Şu an test aşamasındaki Kaldırınca Başlat ise telefonun pusula sensörüyle, küpü kaldırdığın anda süreyi başlatır.",
+      "body": "Telefonu masaya yatır ve çöz. Küpü bıraktığında telefon darbeyi hisseder ve süreyi durdurur. Kaldırınca Başlat ise telefonun pusula sensörüyle, küpü kaldırdığın anda süreyi başlatır.",
       "fact_1": "Bırakınca Durdur iOS ve Android uygulamalarında çalışır",
       "fact_2": "Hassasiyeti masana göre ayarlayabilirsin",
-      "fact_3": "Kaldırınca Başlat bazı hesaplarda test ediliyor",
+      "fact_3": "Kaldırınca Başlat mıknatıslı küplerle çalışır",
       "caption": "Bırakınca Durdur ve Kaldırınca Başlat, animasyonla anlatıldı"
     },
     "stats": {
@@ -3821,6 +3825,10 @@
       "slam_to_stop": {
         "title": "Bırakınca Durdur",
         "desc": "Çözümü bitir, küpü ya da ellerini masaya bırak — timer otomatik dursun. Ellerini ekrana götürmene gerek yok, tıpkı StackMat gibi."
+      },
+      "magnet_start": {
+        "title": "Kaldırınca Başlat",
+        "desc": "Küpü telefonun arka kamera tarafına koy, kaldırdığın anda süre başlasın. Ekrana dokunmana gerek yok, tıpkı StackMat gibi."
       }
     },
     "highlights": {
@@ -4475,6 +4483,48 @@
     "col_battery": "Pil (temiz/kurtarma)",
     "col_correction": "Süre düzeltmesi"
   },
+  "magnet_telemetry": {
+    "title": "Kaldırınca Başlat Ölçümü",
+    "days": "{{count}} gün",
+    "refresh": "Yenile",
+    "hint": "Her satır bir telefon modeli. Koyuş µT sütununda en düşük değer 150 eşiğine yaklaşıyorsa küp o telefonda zor algılanıyor demektir. Reddedilen kaldırma oranı ya da ret sayısı yüksekse dedektör o telefonda zorlanıyor. Telefon adına tıklayınca kayıtlar o telefona göre süzülür; ham pencereler kayıtlardan indirilip doğrudan test olarak eklenebilir.",
+    "loading": "Yükleniyor...",
+    "empty": "Henüz kayıt yok. Ölçümü Site Ayarları sayfasından açman gerekiyor.",
+    "rows_title": "Kayıtlar",
+    "rows_empty": "Bu filtreye uyan kayıt yok.",
+    "filter_username": "Kullanıcı adı",
+    "filter_event": "Olay tipi",
+    "filter_all_events": "Tüm olaylar",
+    "filter_device": "Telefon",
+    "filter_all_devices": "Tüm telefonlar",
+    "search": "Ara",
+    "download_all": "Tüm veriyi CSV indir",
+    "exporting": "Hazırlanıyor...",
+    "download_samples": "Pencereyi indir",
+    "unsupported": "desteklenmiyor",
+    "yes": "Evet",
+    "col_device": "Telefon",
+    "col_sensor": "Sensör",
+    "col_users": "Kullanıcı",
+    "col_placements": "Koyuş",
+    "col_near": "Koyuş µT (en düşük / ortanca)",
+    "col_lifts": "Kaldırma (başladı / reddedildi)",
+    "col_latency": "Gecikme (ortanca / p95)",
+    "col_approach": "Yaklaşma",
+    "col_rejects": "Ret",
+    "col_unknown": "Taban uyarısı",
+    "col_sigma": "Gürültü σ",
+    "col_rate": "Sensör hızı",
+    "col_time": "Zaman",
+    "col_user": "Kullanıcı",
+    "col_event": "Olay",
+    "col_detail": "Detay",
+    "col_latency_short": "Gecikme",
+    "col_rest": "Bekleme",
+    "col_reversed": "Ters",
+    "col_version": "Sürüm",
+    "col_samples": "Ham pencere"
+  },
   "solves_page": {
     "solve_count_one": "{{countText}} çözüm",
     "solve_count_other": "{{countText}} çözüm",
@@ -4623,13 +4673,13 @@
           "Küpü kaldırın, süre o anda başlar. Bitirince küpü masaya bırakın ya da ekrana dokunun."
         ],
         "notes": [
-          "Kaldırınca Başlat şu an test aşamasındadır ve henüz her hesapta görünmez.",
+          "Kaldırınca Başlat ve Bırakınca Durdur Pro üyelik gerektirir.",
           "Inspection açıksa ilk kaldırış inspection'ı başlatır. Küpü yerine koyun ve hazır olunca yeniden kaldırın; süre o anda başlar. +2 ve DNF kuralları her zamanki gibi uygulanır.",
           "Çözüm bittikten sonra küpü yerinden kaldırmak yeni bir süre başlatmaz; küp önce birkaç saniye uzakta kalmalıdır. Böylece küpü karıştırmak için aldığınızda süre yanlışlıkla başlamaz. Ekranda \"Küpü al, karıştır, sonra tekrar koy\" yazıyorsa küpü karıştırıp yeniden yerine koyun.",
           "Küp yerindeyken ekrana dokunmak süreyi başlatmaz, küpü koyarken elinizin ekrana değmesi sorun olmaz. Küp uzaktayken ekrana dokunarak her zamanki gibi başlatabilirsiniz.",
           "Ekranda \"Küpü telefondan uzaklaştır\" yazarsa küpü uzaklaştırın. Uyarı gitmezse telefon sabitken Tabanı yenile'ye basın; telefon küpsüz ortamı yeniden öğrenir.",
           "Telefonu ters koyuyorum seçeneğiyle telefonu ters çevirip küpü telefonla aranıza koyabilirsiniz. Timer ekranı ve kenar menüleri 180 derece döner.",
-          "Bırakınca Durdur Pro üyelik gerektirir. Pro üyeliğiniz varsa Kaldırınca Başlat'ı açtığınızda o da kendiliğinden açılır; yoksa süreyi ekrana dokunarak durdurursunuz.",
+          "Kaldırınca Başlat'ı açtığınızda Bırakınca Durdur da kendiliğinden açılır; dilerseniz süreyi ekrana dokunarak da durdurabilirsiniz.",
           "Bırakınca Durdur tek başına da kullanılabilir: çözümü bitirince küpü ya da ellerinizi masaya bırakırsınız, telefon sarsıntıyı algılayıp süreyi durdurur. Hassasiyeti Hızlı Ayarlar'dan masanıza göre ayarlarsınız."
         ]
       },

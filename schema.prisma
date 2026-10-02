@@ -84,6 +84,7 @@ model UserAccount {
   settings                      Setting?
   smart_device                  SmartDevice[]
   smart_cube_telemetry          SmartCubeTelemetry[]
+  magnet_telemetry              MagnetTelemetry[]
   solves                        Solve[]
   solve_views                   SolveView[]             @relation("solve_view_user")
   viewed_solve                  SolveView[]             @relation("solve_view_viewer")
@@ -304,6 +305,9 @@ model SiteConfig {
   /// switched on for a few days at a time: it records one row per solve, so leaving it on
   /// indefinitely grows a table nobody reads.
   smart_telemetry_enabled Boolean @default(false)
+  /// Field study of magnet lift-to-start across phone models (MagnetTelemetry). Off by
+  /// default, switched on for a study and off again: a row per placement and lift.
+  magnet_telemetry_enabled Boolean @default(false)
   /// Bumped by the smart cube method steps reindex when it finishes. Devices only ever
   /// fetch solves they do not have yet, so without this a reindex that repaired a solve's
   /// breakdown on the server never reached the copy the device's stats read from.
@@ -534,6 +538,58 @@ model SmartCubeTelemetry {
   @@index([created_at])
   @@index([cube_type, event_type])
   @@map("smart_cube_telemetry")
+}
+
+/// Field study of magnet lift-to-start across phone models and cubes, recorded only while
+/// SiteConfig.magnet_telemetry_enabled is on. Answers what two phones on one desk cannot:
+/// whether the 150 uT placement threshold, the lift detection and the 40 Hz sensor floor
+/// hold on every phone people actually own.
+///
+/// No solve content. Deleting a user cascades their rows away. Removing this model later
+/// leaves the table behind and `db push` then refuses to start the container: drop the
+/// table on the server first (see the orphan-table note in CLAUDE.md's change safety rules).
+model MagnetTelemetry {
+  id      String       @id @default(uuid())
+  user_id String?
+  user    UserAccount? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  /// ios | android
+  platform     String
+  /// Manufacturer and model as the device reports them, e.g. "samsung SM-F956B".
+  device_model String
+  os_version   String?
+  /// Native sensor name, e.g. "AK09918 Magnetometer-Uncalibrated", "CMMagnetometer".
+  sensor_name  String?
+  /// device | near | lift | reject | unsupported | hint | far_learned | touch_ignored
+  event_type   String
+  /// Event label: lift decision (startTimer, none:not_armed, ...), reject reason, hint kind,
+  /// far_learned source, touch_ignored reason, near replaced/resumed.
+  detail       String?
+
+  /// near / lift: |R - F| of the placement. hint: |B - F|. far_learned: the shift.
+  delta_ut    Float?
+  /// lift: trigger to confirmation.
+  latency_ms  Int?
+  /// lift: how long the cube rested before it was lifted.
+  rest_ms     Int?
+  /// near: time spent in the "move closer" band before the placement was recognised.
+  approach_ms Int?
+  /// Plateau noise (rms) of the placement, or of the far rest on device rows.
+  sigma       Float?
+  /// device / unsupported: measured sensor delivery rate.
+  rate_hz     Float?
+  /// The phone lay upside down (reversed use).
+  reversed    Boolean @default(false)
+  /// Raw sample window in the test-fixture format, only on flagged events. Not called
+  /// `window`: that is a reserved word in Postgres and every raw query would need quoting.
+  samples     Json?
+
+  app_version String?
+  created_at  DateTime @default(now())
+
+  @@index([created_at])
+  @@index([device_model, event_type])
+  @@map("magnet_telemetry")
 }
 
 model SolveMethodStep {

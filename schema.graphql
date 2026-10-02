@@ -352,6 +352,9 @@ type Query {
   messageReports(page: Int, status: ReportStatus): MessageReportList
   smartCubeTelemetryRows(newestFirst: Boolean, eventType: String, username: String, offset: Int, cubeType: String, limit: Int): [SmartCubeTelemetryRow]
   smartCubeTelemetrySummary(days: Int): [SmartCubeTelemetrySummary]
+  magnetTelemetryRows(newestFirst: Boolean, deviceModel: String, eventType: String, username: String, offset: Int, limit: Int): [MagnetTelemetryRow]
+  magnetTelemetrySamples(id: String): String
+  magnetTelemetrySummary(days: Int): [MagnetTelemetrySummary]
 }
 
 type Mutation {
@@ -499,6 +502,7 @@ type Mutation {
   updateSocialPreference(input: UpdateSocialPreferenceInput): SocialPreference
   resolveMessageReport(note: String, action: ReportStatus, reportId: String): Boolean
   recordSmartCubeTelemetry(events: [SmartCubeTelemetryInput]): SmartCubeTelemetryResult
+  recordMagnetTelemetry(events: [MagnetTelemetryInput]): MagnetTelemetryResult
 }
 
 type SmartDevice {
@@ -1252,6 +1256,7 @@ type SiteConfig {
   wca_backfill_enabled: Boolean
   zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
+  magnet_telemetry_enabled: Boolean
   method_steps_version: Int
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
@@ -2451,6 +2456,53 @@ type SmartCubeTelemetrySummary {
   median_time_correction_ms: Int
 }
 
+type MagnetTelemetryResult {
+  accepted: Int
+  enabled: Boolean
+}
+
+type MagnetTelemetryRow {
+  id: String
+  username: String
+  platform: String
+  device_model: String
+  os_version: String
+  sensor_name: String
+  event_type: String
+  detail: String
+  delta_ut: Float
+  latency_ms: Int
+  rest_ms: Int
+  approach_ms: Int
+  sigma: Float
+  rate_hz: Float
+  reversed: Boolean
+  has_samples: Boolean
+  app_version: String
+  created_at: DateTime
+}
+
+type MagnetTelemetrySummary {
+  platform: String
+  device_model: String
+  sensor_name: String
+  distinct_users: Int
+  placements: Int
+  min_near_ut: Float
+  median_near_ut: Float
+  lifts: Int
+  started: Int
+  refused: Int
+  median_latency_ms: Int
+  p95_latency_ms: Int
+  median_approach_ms: Int
+  rejects: Int
+  unsupported: Int
+  unknown_hints: Int
+  median_sigma: Float
+  rate_hz: Float
+}
+
 type Notification {
   id: String
   user_id: String
@@ -2619,6 +2671,7 @@ input UpdateSiteConfigInput {
   wca_backfill_enabled: Boolean
   zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
+  magnet_telemetry_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
 }
 
@@ -2742,6 +2795,24 @@ input SmartCubeTelemetryInput {
   battery_level: Int
   time_correction_ms: Int
   is_native: Boolean
+  app_version: String
+}
+
+input MagnetTelemetryInput {
+  platform: String
+  device_model: String
+  os_version: String
+  sensor_name: String
+  event_type: String
+  detail: String
+  delta_ut: Float
+  latency_ms: Int
+  rest_ms: Int
+  approach_ms: Int
+  sigma: Float
+  rate_hz: Float
+  reversed: Boolean
+  samples: String
   app_version: String
 }
 

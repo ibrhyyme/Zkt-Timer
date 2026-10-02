@@ -50,3 +50,4 @@ export * from './Translation.schema';
 export * from './Activity.schema';
 export * from './Messaging.schema';
 export * from './SmartCubeTelemetry.schema';
+export * from './MagnetTelemetry.schema';

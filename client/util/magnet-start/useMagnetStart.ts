@@ -21,6 +21,7 @@ import { markMagnetIntroDone, useMagnetStartSettings } from './settings';
 import { startBlockReason } from './start_guard';
 import { setMagnetStatus } from './status_store';
 import { useMagnetAvailability } from './availability';
+import { magnetTelemetry } from './telemetry';
 import { markMagnetAction, shouldCancelHoldOnPlacement } from './touch_guard';
 
 const BLIND_SUBSET = /(ni|bld)$/;
@@ -159,6 +160,9 @@ export function useMagnetStart(context: ITimerContext) {
 					addTwo: action.kind === 'startTimer' ? action.addTwo : undefined,
 					ageMs: Math.round(Date.now() - event.onset),
 				});
+				if (!batch.testMode) {
+					magnetTelemetry.recordLift(event, action.kind === 'none' ? `none:${action.reason}` : action.kind);
+				}
 				runAction(action, ctx);
 			}
 

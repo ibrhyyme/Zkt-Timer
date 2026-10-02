@@ -157,6 +157,7 @@ query siteConfig {
 		wca_backfill_enabled
 		zkt_backfill_enabled
 		smart_telemetry_enabled
+		magnet_telemetry_enabled
 		method_steps_version
 		featureOverrides {
 			feature
@@ -822,6 +823,56 @@ query SmartCubeTelemetrySummary($days: Int) {
 		avg_battery_recovered
 		median_time_correction_ms
 	}
+}
+
+query MagnetTelemetrySummary($days: Int) {
+	magnetTelemetrySummary(days: $days) {
+		platform
+		device_model
+		sensor_name
+		distinct_users
+		placements
+		min_near_ut
+		median_near_ut
+		lifts
+		started
+		refused
+		median_latency_ms
+		p95_latency_ms
+		median_approach_ms
+		rejects
+		unsupported
+		unknown_hints
+		median_sigma
+		rate_hz
+	}
+}
+
+query MagnetTelemetryRows($limit: Int, $offset: Int, $username: String, $eventType: String, $deviceModel: String, $newestFirst: Boolean) {
+	magnetTelemetryRows(limit: $limit, offset: $offset, username: $username, eventType: $eventType, deviceModel: $deviceModel, newestFirst: $newestFirst) {
+		id
+		username
+		platform
+		device_model
+		os_version
+		sensor_name
+		event_type
+		detail
+		delta_ut
+		latency_ms
+		rest_ms
+		approach_ms
+		sigma
+		rate_hz
+		reversed
+		has_samples
+		app_version
+		created_at
+	}
+}
+
+query MagnetTelemetrySamples($id: String!) {
+	magnetTelemetrySamples(id: $id)
 }
 
 query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int, $username: String, $eventType: String, $newestFirst: Boolean) {

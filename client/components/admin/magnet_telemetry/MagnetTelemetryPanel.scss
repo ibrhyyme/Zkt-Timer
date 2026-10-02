@@ -1,0 +1,185 @@
+@import '../../../styles/config';
+
+// Theme colours are RGB triplets (styles/index.scss), so every use goes through rgb()/rgba().
+.#{$namespace}-magnet-telemetry {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	color: rgb(var(--text-color));
+
+	&__header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__title {
+		font-size: 20px;
+		font-weight: 700;
+		margin: 0;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__windows {
+		display: flex;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	&__window {
+		padding: 6px 12px;
+		font-size: 13px;
+		font-weight: 600;
+		background: transparent;
+		border: none;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&--active {
+			background: rgba(var(--primary-color), 0.15);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	&__empty {
+		padding: 32px;
+		text-align: center;
+		font-weight: 600;
+		border: 1px dashed rgba(var(--text-color), 0.2);
+		border-radius: 12px;
+	}
+
+	// Many columns; let the table scroll rather than squeezing the page.
+	&__table-wrap {
+		overflow-x: auto;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 12px;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+		white-space: nowrap;
+
+		th,
+		td {
+			padding: 10px 12px;
+			text-align: left;
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		}
+
+		th {
+			font-weight: 700;
+			position: sticky;
+			top: 0;
+			background: rgb(var(--module-color));
+		}
+
+		tbody tr:last-child td {
+			border-bottom: none;
+		}
+	}
+
+	&__device {
+		font-weight: 700;
+	}
+
+	&__device-link {
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	&__platform {
+		margin-left: 6px;
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	&__row {
+		&--warn {
+			background: rgba(255, 152, 0, 0.08);
+		}
+	}
+
+	&__cell {
+		&--warn {
+			color: #ff9800;
+			font-weight: 700;
+		}
+	}
+
+	&__download {
+		padding: 4px 10px;
+		border-radius: 6px;
+		border: 1px solid rgba(var(--primary-color), 0.4);
+		background: rgba(var(--primary-color), 0.1);
+		color: rgb(var(--primary-color));
+		font-size: 12px;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:disabled {
+			cursor: wait;
+		}
+	}
+
+	&__rows-section {
+		margin-top: 32px;
+		padding-top: 24px;
+		border-top: 1px solid rgba(var(--text-color), 0.12);
+	}
+
+	&__subtitle {
+		margin: 0 0 12px;
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	&__filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 16px;
+	}
+
+	&__filter-input,
+	&__filter-select {
+		height: 38px;
+		padding: 0 12px;
+		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.18);
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	&__filter-input {
+		min-width: 220px;
+	}
+}

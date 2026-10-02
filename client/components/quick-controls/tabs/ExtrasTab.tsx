@@ -223,7 +223,9 @@ export default function ExtrasTab({
 	const magnetStart = useMagnetStartSettings();
 	const me = useMe();
 	const magnetAllowed = canUseMagnetStart(me);
-	const magnetCaps = useMagnetAvailability(magnetAllowed);
+	// Probed for everyone who could see the row, not only for members: the locked Pro row
+	// is shown only on phones whose binary and sensor can actually run the feature.
+	const magnetCaps = useMagnetAvailability(timerType === 'keyboard' && !manualEntry && !hideSlamStop);
 	const dispatch = useDispatch();
 
 	// Device-local setting (NOT a synced Redux setting) — only meaningful where
@@ -233,11 +235,12 @@ export default function ExtrasTab({
 	// Pro feature: shown to everyone (visible-but-locked), but non-Pro users get a
 	// "Pro" badge + upsell modal instead of the toggle. PRO_ENABLED=false → no gate.
 	const slamProGated = isProEnabled() && isNotPro(me);
-	// Magnet lift-to-start: admin field test for now (canUseMagnetStart is the single
-	// switch). Same scope as slam-to-stop: touch timer only, hidden in rooms, and only on
-	// binaries that ship the MagnetDetector plugin with an uncalibrated magnetometer.
-	const magnetVisible =
-		!!magnetCaps && magnetAllowed && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
+	// Magnet lift-to-start: Pro (canUseMagnetStart is the single switch). Same scope as
+	// slam-to-stop: touch timer only, hidden in rooms, and only on binaries that ship the
+	// MagnetDetector plugin with an uncalibrated magnetometer. Visible-but-locked for
+	// non-members, like slam-to-stop.
+	const magnetVisible = !!magnetCaps && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
+	const magnetProGated = !magnetAllowed;
 
 	function toggleMagnetStart() {
 		const next = !magnetStart.enabled;
@@ -381,10 +384,27 @@ export default function ExtrasTab({
 				</>
 			)}
 
-			{magnetVisible && (
+			{magnetVisible && magnetProGated && (
+				// Visible-but-locked: tap anywhere on the row opens the Pro upsell modal
+				<button
+					type="button"
+					onClick={() => openProOnlyModal(dispatch, t, 'magnet_start')}
+					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
+				>
+					<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+						{t('quick_controls.magnet_start')}
+					</span>
+					<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
+						<Crown weight="fill" size={12} />
+						Pro
+					</span>
+				</button>
+			)}
+
+			{magnetVisible && !magnetProGated && (
 				<>
 					<ExtrasOption
-						label={`${t('quick_controls.magnet_start')} · ${t('quick_controls.magnet_admin_tag')}`}
+						label={t('quick_controls.magnet_start')}
 						isActive={magnetStart.enabled}
 						onClick={toggleMagnetStart}
 					/>
@@ -397,7 +417,9 @@ export default function ExtrasTab({
 						hidden={!magnetStart.enabled || !mobileMode}
 						onClick={() => magnetStart.setReversed(!magnetStart.reversed)}
 					/>
-					{magnetStart.enabled && <MagnetPanel />}
+					{/* Field-test readout (live gauge, detector state, log export). Members get
+						the toggle only; the hint under the digits covers what they need. */}
+					{magnetStart.enabled && me?.admin && <MagnetPanel />}
 				</>
 			)}
 

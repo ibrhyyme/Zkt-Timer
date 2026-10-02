@@ -60,6 +60,7 @@ import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
 import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
 import SmartCubeTelemetryPanel from '../admin/smart_cube_telemetry/SmartCubeTelemetryPanel';
+import MagnetTelemetryPanel from '../admin/magnet_telemetry/MagnetTelemetryPanel';
 import AdminMedia from '../admin/media/AdminMedia';
 import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
 import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
@@ -309,6 +310,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
 	route('/admin/media', App, Admin, AdminMedia, true, false, true),
 	route('/admin/smart-telemetry', App, Admin, SmartCubeTelemetryPanel, true, false, true),
+	route('/admin/magnet-telemetry', App, Admin, MagnetTelemetryPanel, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),

@@ -20,6 +20,7 @@ import {
 } from './plugin';
 import { getStoredFar, setStoredFar } from './settings';
 import { setMagnetStatus } from './status_store';
+import { magnetTelemetry } from './telemetry';
 import type { MagnetTouchInput } from './touch_guard';
 import {
 	decodeSamples,
@@ -157,6 +158,7 @@ class MagnetService {
 		if (res.ok) {
 			this.persistFar(true);
 			this.logEvents(res.events);
+			if (!this.isTestMode()) this.feedTelemetry(res.events, this.detector.snapshot());
 		}
 		magnetDebugLog.record('relearn', { ok: res.ok });
 		this.emitLive();
@@ -223,6 +225,7 @@ class MagnetService {
 					return;
 				}
 				this.ensureDetector();
+				magnetTelemetry.begin(this.platform, caps);
 				const trustFar = this.takeSolvePause();
 				this.detector.reset({ trustFar });
 				this.armed = false;
@@ -298,6 +301,8 @@ class MagnetService {
 		}
 		setMagnetStatus({ phase: snapshot.phase, hint: snapshot.hint });
 		this.persistFar(false);
+		// The admin panel's test mode is a bench, not the field: it stays out of the study.
+		if (!this.isTestMode()) this.feedTelemetry(events, snapshot);
 
 		const batch: ServiceBatch = {
 			events,
@@ -346,11 +351,13 @@ class MagnetService {
 						confirmedAt: e.t,
 						nearDelta: e.delta,
 						far,
+						// The lift's telemetry row (useMagnetStart) asks for this window by key.
+						key: `lift@${e.onset}`,
 					});
 					break;
 				case 'reject':
 					magnetDebugLog.record('reject', { reason: e.reason, peak: +e.peak.toFixed(1) }, e.t);
-					magnetDebugLog.captureAround({ label: `reject_${e.reason}`, centerT: e.t, far });
+					magnetDebugLog.captureAround({ label: `reject_${e.reason}`, centerT: e.t, far, key: `reject@${e.t}` });
 					break;
 				case 'near':
 					magnetDebugLog.record(
@@ -377,6 +384,40 @@ class MagnetService {
 		}
 	}
 
+	/** Detector events as field-study rows (telemetry.ts). Lifts are recorded with their decision in useMagnetStart. */
+	private feedTelemetry(events: DetectorEvent[], snapshot: DetectorSnapshot): void {
+		for (const e of events) {
+			switch (e.type) {
+				case 'hint':
+					magnetTelemetry.noteHint(e.hint, e.t);
+					if (e.hint !== 'none') magnetTelemetry.record({ event_type: 'hint', detail: e.hint, delta_ut: e.delta });
+					break;
+				case 'near':
+					magnetTelemetry.record({
+						event_type: 'near',
+						detail: e.resumed ? 'resumed' : e.replaced ? 'replaced' : undefined,
+						delta_ut: e.delta,
+						approach_ms: e.replaced || e.resumed ? null : magnetTelemetry.takeApproach(e.t),
+						sigma: snapshot.sigma,
+					});
+					break;
+				case 'reject':
+					magnetTelemetry.record(
+						{ event_type: 'reject', detail: e.reason, delta_ut: e.peak },
+						{ key: `reject@${e.t}`, want: true }
+					);
+					break;
+				case 'unsupported':
+					magnetTelemetry.record({ event_type: 'unsupported', rate_hz: e.rateHz });
+					break;
+				case 'far_learned':
+					magnetTelemetry.record({ event_type: 'far_learned', detail: e.source, delta_ut: e.shift });
+					break;
+			}
+		}
+		magnetTelemetry.reportDevice(snapshot.rateHz, snapshot.sigma);
+	}
+
 	private persistFar(force: boolean): void {
 		if (!this.detector || !this.platform) return;
 		const far = this.detector.getFar();
@@ -393,6 +434,9 @@ class MagnetService {
 	private attachGlobals(): void {
 		if (this.globalsAttached) return;
 		this.globalsAttached = true;
+
+		// Raw windows cut around lifts and rejects, for the rows that asked for them.
+		magnetDebugLog.onWindowCaptured((captured, key) => magnetTelemetry.onWindow(captured, key));
 
 		// app-visibility guards its own document access, so this needs no window check.
 		onVisibilityChange((visible) => {

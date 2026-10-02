@@ -8,6 +8,7 @@ import {
 	FilePdf,
 	FrameCorners,
 	Lightning,
+	Magnet,
 	Medal,
 	MusicNote,
 	PaintBrush,
@@ -76,6 +77,10 @@ export const PRO_FEATURES: readonly ProFeature[] = [
 	// Gate: client ExtrasTab `slamProGated` (upsell) and useSlamToStop `proAllowed`
 	// (checked at arm time, so an expired subscription stops arming the detector).
 	feature('slam_to_stop', ArrowFatLineDown),
+	// Gate: client canUseMagnetStart (lib/magnet-start-access.ts), read at consumption by
+	// useMagnetStart (arming the detector) and useMagnetReversed (turning the screen), and
+	// ExtrasTab `magnetProGated` (upsell row).
+	feature('magnet_start', Magnet),
 	// Gate: client FriendlyRoom music button -> openProOnlyModal('room_music'),
 	// server YouTubeSearch.resolver.ts @Authorized([Role.PRO]).
 	feature('room_music', MusicNote),
