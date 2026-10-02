@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { Star } from 'phosphor-react';
 import './HeroSection.scss';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
@@ -13,13 +14,18 @@ import { staggerContainer, fadeInUp, fadeInLeft, fadeInRight, hoverScale, tapSca
 import { useMagnetic } from '../hooks/useMagnetic';
 import { APP_STORE_URL, PLAY_STORE_URL } from '../../../../util/store-links';
 import { isNative } from '../../../../util/platform';
+import { STORE_RATINGS } from '../landing-data';
 
 const b = block('welcome-hero');
 
 export default function HeroSection() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const native = isNative();
 	const sectionRef = useRef<HTMLElement>(null);
+	const lang = i18n.language || 'en';
+
+	const rating = (value: number) =>
+		new Intl.NumberFormat(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
 
 	// Scroll-linked orb parallax
 	const { scrollYProgress } = useScroll({
@@ -59,6 +65,19 @@ export default function HeroSection() {
 			>
 				<img src="/public/images/landing/google-play-badge.svg" alt={t('welcome_hero.google_play_alt')} />
 			</motion.a>
+		</div>
+	);
+
+	// Store ratings, pinned by hand with the date they were read (see STORE_RATINGS).
+	const proof = (
+		<div className={b('proof')}>
+			<span className={b('proof-item')}>
+				<Star size={15} weight="fill" className={b('proof-star')} />
+				{t('welcome_hero.rating_line', {
+					play: rating(STORE_RATINGS.googlePlay.rating),
+					apple: rating(STORE_RATINGS.appStore.rating),
+				})}
+			</span>
 		</div>
 	);
 
@@ -187,6 +206,7 @@ export default function HeroSection() {
 					{!native && (
 						<motion.div className={b('actions-desktop')} variants={fadeInUp}>
 							{storeCta}
+							{proof}
 							{tryCta}
 						</motion.div>
 					)}
@@ -210,7 +230,10 @@ export default function HeroSection() {
 					animate="visible"
 				>
 					{!native && storeCta}
+					{/* Below the button on phones: above it, the proof pushed the one
+					    button that matters under the fold. */}
 					{tryCta}
+					{!native && proof}
 					{authButtons}
 				</motion.div>
 			</div>

@@ -1,0 +1,401 @@
+@import '../../../../styles/config.scss';
+
+// Chapters: one pinned stage, six scrolling chapters.
+//
+// The stage is the page's one piece of spectacle, so everything around it stays
+// quiet: no cards, no glows, no entrance animation on the text. Colour comes from the
+// six sticker colours only, and each one marks a chapter.
+
+$chapters-ink: #f5f6f8;
+$chapters-body: #c3c7d2;
+$chapters-muted: #aeb3c0;
+$chapters-line: #232733;
+$chapters-stage-bg: #0b0d12;
+
+.zt-welcome-chapters {
+	position: relative;
+	z-index: 2;
+	padding: 7rem 0 4rem;
+
+	@include bp-down($bp-lg) {
+		padding: 4.5rem 0 2rem;
+	}
+
+	// Wider than the other sections on purpose: the stage is the page's showpiece and
+	// the screenshots need the room to be legible.
+	&__container {
+		max-width: 1360px;
+		margin: 0 auto;
+		padding: 0 24px;
+	}
+
+	&__header {
+		max-width: 46rem;
+		margin-bottom: 2rem;
+	}
+
+	&__title {
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 118%;
+		font-weight: 800;
+		font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+		color: $chapters-ink;
+		margin: 0 0 1rem;
+	}
+
+	&__lede {
+		font-size: clamp(1rem, 1.3vw, 1.15rem);
+		line-height: 1.6;
+		color: $chapters-muted;
+		margin: 0;
+		max-width: 34rem;
+	}
+
+	&__body {
+		display: grid;
+		grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+		gap: 56px;
+
+		@include bp-down($bp-lg) {
+			display: block;
+		}
+	}
+
+	// ----------------------------------------------------------------------------
+	// Chapter text
+	// ----------------------------------------------------------------------------
+
+	&__chapter {
+		min-height: 78vh;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: 6vh 0;
+
+		@include bp-down($bp-lg) {
+			min-height: 0;
+			padding: 3rem 0 1rem;
+		}
+	}
+
+	&__marker {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-bottom: 1rem;
+	}
+
+	&__sticker {
+		width: 14px;
+		height: 14px;
+		border-radius: 3px;
+		flex-shrink: 0;
+	}
+
+	&__name {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: $chapters-ink;
+	}
+
+	&__pro {
+		font-size: 0.72rem;
+		font-weight: 800;
+		line-height: 1;
+		padding: 0.28rem 0.45rem;
+		border-radius: 4px;
+		color: #f5c542;
+		border: 1px solid rgba(245, 197, 66, 0.5);
+	}
+
+	&__chapter-title {
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 112%;
+		font-weight: 800;
+		font-size: clamp(1.7rem, 2.6vw, 2.55rem);
+		line-height: 1.08;
+		letter-spacing: -0.015em;
+		color: $chapters-ink;
+		margin: 0 0 1rem;
+	}
+
+	&__chapter-body {
+		font-size: 1.06rem;
+		line-height: 1.65;
+		color: $chapters-body;
+		margin: 0 0 1.25rem;
+		max-width: 34rem;
+	}
+
+	&__facts {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.55rem;
+	}
+
+	&__fact {
+		position: relative;
+		padding-left: 1.2rem;
+		font-size: 0.98rem;
+		line-height: 1.5;
+		color: $chapters-ink;
+
+		// A single sticker per line, in the chapter's own colour.
+		&::before {
+			content: '';
+			position: absolute;
+			left: 0;
+			top: 0.5em;
+			width: 7px;
+			height: 7px;
+			border-radius: 2px;
+			background: var(--face, #{$chapters-ink});
+		}
+	}
+
+	// Pictures inside the text column exist for narrow screens only.
+	&__inline-visual {
+		display: none;
+		margin: 1.75rem 0 0;
+
+		@include bp-down($bp-lg) {
+			display: block;
+		}
+	}
+
+	&__inline-media {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		border-radius: 12px;
+		border: 1px solid $chapters-line;
+		background: $chapters-stage-bg;
+		object-fit: cover;
+	}
+
+	&__caption {
+		margin-top: 0.65rem;
+		font-size: 0.85rem;
+		line-height: 1.45;
+		color: $chapters-muted;
+	}
+
+	// ----------------------------------------------------------------------------
+	// Pinned stage
+	// ----------------------------------------------------------------------------
+
+	&__stage-col {
+		position: relative;
+
+		@include bp-down($bp-lg) {
+			display: none;
+		}
+	}
+
+	&__pin {
+		position: sticky;
+		top: max(6rem, calc(50vh - 17rem));
+	}
+
+	&__rail {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+		margin-top: 1.1rem;
+	}
+
+	&__stickers {
+		display: flex;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+
+	&__rail-sticker {
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		border: 0;
+		border-radius: 4px;
+		cursor: pointer;
+		outline: 2px solid transparent;
+		outline-offset: 2px;
+		transition: outline-color 0.2s $ease-standard, transform 0.2s $ease-standard;
+
+		&:hover {
+			transform: translateY(-2px);
+		}
+
+		&:focus-visible,
+		&--active {
+			outline-color: $chapters-ink;
+		}
+
+		@include reduced-motion {
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+
+	&__rail-caption {
+		margin: 0;
+		min-height: 1.4em;
+		font-size: 0.92rem;
+		line-height: 1.4;
+		color: $chapters-muted;
+	}
+}
+
+// --------------------------------------------------------------------------------
+// The stage itself (LayerStage.tsx)
+// --------------------------------------------------------------------------------
+
+.zt-welcome-stage {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	border-radius: 14px;
+	border: 1px solid $chapters-line;
+	background: $chapters-stage-bg;
+	overflow: hidden;
+	perspective: var(--depth, 4000px);
+	box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.85);
+
+	@supports not (aspect-ratio: 16 / 9) {
+		height: 0;
+		padding-top: 56.25%;
+	}
+
+	&__still,
+	&__video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	&__video {
+		opacity: 0;
+		transition: opacity 0.2s linear;
+
+		&--on {
+			opacity: 1;
+		}
+	}
+
+	// Layers exist visually only for the length of a turn.
+	&__layers {
+		position: absolute;
+		inset: 0;
+		display: none;
+		transform-style: preserve-3d;
+	}
+
+	&--turning &__layers {
+		display: block;
+	}
+
+	&--turning &__still,
+	&--turning &__video {
+		visibility: hidden;
+	}
+
+	&__layer {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		height: 33.3334%;
+		transform-style: preserve-3d;
+
+		&--row-0 {
+			top: 0;
+		}
+
+		&--row-1 {
+			top: 33.3333%;
+		}
+
+		&--row-2 {
+			top: 66.6666%;
+		}
+	}
+
+	&__prism {
+		position: absolute;
+		inset: 0;
+		transform-style: preserve-3d;
+		will-change: transform;
+	}
+
+	&__face {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		// A hair of dark between layers, like the plastic between a real cube's layers.
+		// Clipped rather than inset, so each third of the screen keeps its exact height
+		// and lines up with the still when the turn hands over.
+		clip-path: inset(1px 0);
+		background-color: $chapters-stage-bg;
+		backface-visibility: hidden;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: #000;
+			pointer-events: none;
+		}
+
+		&--front {
+			transform: translateZ(var(--half, 480px));
+
+			&::after {
+				opacity: var(--shade-front, 0);
+			}
+		}
+
+		&--side {
+			&::after {
+				opacity: var(--shade-side, 0.7);
+			}
+		}
+	}
+
+	&__prism[data-dir='right'] &__face--side {
+		transform: rotateY(90deg) translateZ(var(--half, 480px));
+	}
+
+	&__prism[data-dir='left'] &__face--side {
+		transform: rotateY(-90deg) translateZ(var(--half, 480px));
+	}
+
+	// The full screen, three layers tall; each layer shows its own third of it.
+	&__face-img {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		height: 300%;
+		max-width: none;
+		object-fit: cover;
+		display: block;
+	}
+
+	&__layer--row-0 &__face-img {
+		top: 0;
+	}
+
+	&__layer--row-1 &__face-img {
+		top: -100%;
+	}
+
+	&__layer--row-2 &__face-img {
+		top: -200%;
+	}
+}

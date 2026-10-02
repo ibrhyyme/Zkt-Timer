@@ -141,9 +141,12 @@
 		background-size: 300% 100%;
 		animation: welcomeScrollProgressShift 6s ease infinite;
 		z-index: 9999;
-		transition: width 0.05s linear;
-		box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+		// Full width, scaled from the left: a transform the compositor applies without
+		// relayout, written once per frame by useScrollProgress.
+		width: 100%;
+		transform: scaleX(0);
 		transform-origin: left;
+		box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
 	}
 }
 

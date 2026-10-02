@@ -3033,39 +3033,6 @@
     "signup": "Kayıt Ol",
     "open_app": "Uygulamaya dön"
   },
-  "features": {
-    "timer_title": "Kusursuz Zamanlayıcı",
-    "timer_desc": "Sade, dikkat dağıtmayan ve milisaniye hassasiyetinde çalışan bir arayüz. Keyboard shortcutları ile tam kontrol elinizde.",
-    "timer_bullet_1": "Gecikmesiz başlatma",
-    "timer_bullet_2": "Özelleştirilebilir görünüm",
-    "timer_bullet_3": "WCA Scramble algoritmaları",
-    "timer_alt": "Timer Arayüzü",
-    "stats_title": "Detaylı İstatistikler",
-    "stats_desc": "Gelişiminizi grafiklerle takip edin. PB'lerinizi, ortalamalarınızı (AO5, AO12, AO100) ve trendlerinizi görün.",
-    "stats_bullet_1": "PB takibi",
-    "stats_bullet_2": "AO5/AO12/AO100",
-    "stats_bullet_3": "Trend analizi",
-    "stats_alt": "İstatistik Paneli",
-    "smart_cube_title": "Akıllı Küp Desteği",
-    "smart_cube_desc": "Bluetooth özellikli küpünüzü bağlayın ve hamlelerinizi, TPS'inizi ve dönüş hatalarınızı analiz edin.",
-    "smart_cube_bullet_1": "Hamle analizi",
-    "smart_cube_bullet_2": "TPS takibi",
-    "smart_cube_bullet_3": "Dönüş doğruluğu",
-    "smart_cube_alt": "Akıllı Küp Entegrasyonu",
-    "rooms_title": "Rekabetçi Odalar",
-    "rooms_desc": "Arkadaşlarınızla özel odalar kurun veya herkese açık odalarda yarışın. Canlı sıralama ve anlık sohbet.",
-    "rooms_bullet_1": "Özel odalar",
-    "rooms_bullet_2": "Canlı liderlik tablosu",
-    "rooms_bullet_3": "Anlık sohbet",
-    "rooms_alt": "Çok Oyunculu Odalar"
-  },
-  "trust_section": {
-    "solves": "Çözüm",
-    "cube_type": "Küp Türü",
-    "countries": "Ülke",
-    "title": "WCA Uyumlu & Güncel",
-    "description": "Ulusal ve Dünya rekorlarına anında erişin. Resmi WCA karıştırmaları ile güncel kalın."
-  },
   "time_display": {
     "inspection_on": "İnceleme Açık",
     "solve": "ÇÖZ",
@@ -3603,59 +3570,6 @@
     "messaging_item_4": "Bir mesajı geri aldığınızda içeriği veritabanından silinir. Sohbeti sildiğinizde sohbet yalnızca sizin tarafınızdan kaldırılır, karşı tarafın kopyası korunur.",
     "messaging_item_5": "Hesabınızı sildiğinizde gönderdiğiniz tüm mesajlar da silinir."
   },
-  "welcome_live_timer": {
-    "eyebrow": "Canlı Deneyim",
-    "title": "Profesyonel bir timer'ın nasıl çalıştığını izle",
-    "subtitle": "Hazırlan, incele, çöz, kaydet. Hepsi tek akışta. WCA standartlarına tam uyumlu bir timer deneyimi seni bekliyor.",
-    "scramble": "Scramble",
-    "phase_ready": "Hazır",
-    "phase_inspecting": "İnceleme",
-    "phase_solving": "Çözülüyor",
-    "phase_done": "Tamam",
-    "feature_inspection_title": "15 saniye inceleme",
-    "feature_inspection_desc": "WCA standardına uygun inceleme, +2 ve DNF otomatik.",
-    "feature_penalty_title": "Ceza yönetimi",
-    "feature_penalty_desc": "+2 ve DNF tek tıkla, geri al desteğiyle.",
-    "feature_smart_cube_title": "Akıllı küp desteği",
-    "feature_smart_cube_desc": "GAN, MoYu, Giiker — otomatik çözüm algılama.",
-    "feature_stackmat_title": "StackMat & GAN Timer",
-    "feature_stackmat_desc": "Profesyonel donanımla tam uyumlu, yarışma hazır.",
-    "cta": "Hemen Dene"
-  },
-  "welcome_comparison": {
-    "eyebrow": "Karşılaştırma",
-    "title": "Neden Zkt Timer?",
-    "subtitle": "Timer, istatistik, akıllı küp, yarışma takibi — hepsi tek platformda. İşte Zkt Timer'ı diğer popüler timer'lardan ayıran özellikler.",
-    "th_feature": "Özellik",
-    "badge_us": "Biz",
-    "row_wca_scrambles": "WCA scramble setleri (tüm eventler)",
-    "row_smart_cube": "Akıllı küp (BLE) entegrasyonu",
-    "row_stackmat_gan": "StackMat & GAN Timer desteği",
-    "row_solver": "Dahili çözücü (Cross, F2L, OLL, Roux, ZZ, Petrus)",
-    "row_trainer": "Algoritma trainer'ı (OLL/PLL/ZBLL)",
-    "row_1v1_battle": "1v1 Battle modu",
-    "row_rooms": "Çok oyunculu odalar (canlı sohbet)",
-    "row_wca_oauth": "WCA hesabıyla giriş & bağlantı",
-    "row_wca_competitions": "WCA yarışma takibi (detaylı sayfa)",
-    "row_wca_live": "WCA Live canlı sonuç entegrasyonu",
-    "row_wca_notifications": "WCA Live anlık tur bildirimleri",
-    "row_wca_assignments": "Yarışma görev atamaları (judge, scrambler, runner)",
-    "row_native_apps": "iOS & Android native uygulama",
-    "row_offline_sync": "Offline çalışma + cihaz senkronu",
-    "legend_yes": "Var",
-    "legend_partial": "Kısmi",
-    "legend_no": "Yok"
-  },
-  "welcome_testimonials": {
-    "eyebrow": "Kullanıcı Yorumları",
-    "title": "Cuber'lar Zkt Timer hakkında ne diyor?",
-    "t1_quote": "WCA yarışmalarını takip etmek, antrenman yapmak ve istatistiklerimi görmek için tek ihtiyacım olan uygulama. Her güncellemede daha iyi oluyor.",
-    "t1_role": "3x3 TR sıralaması ilk 50",
-    "t2_quote": "Akıllı küpümle sorunsuz çalışıyor, solver ve trainer bölümü resmen ders kitabı gibi. Başlayanlar için bile anlaşılır.",
-    "t2_role": "OLL öğrenme aşamasında",
-    "t3_quote": "1v1 battle modu arkadaşlarımla çözüm yaparken çok eğlenceli. WCA yarışma sayfası da inanılmaz detaylı.",
-    "t3_role": "Kayıtlı WCA yarışmacısı"
-  },
   "welcome_wca": {
     "eyebrow": "WCA Yarışmaları",
     "title": "Tüm WCA Yarışmalarını Tek Platformda Takip Et",
@@ -3701,29 +3615,140 @@
     "or_continue_web": "veya web'de devam et",
     "app_store_alt": "App Store'dan indir",
     "google_play_alt": "Google Play'den al",
-    "cta_try": "Hemen Dene"
+    "cta_try": "Hemen Dene",
+    "rating_line": "Google Play'de {{play}}, App Store'da {{apple}}"
+  },
+  "welcome_reel": {
+    "label": "Zkt Timer filmi",
+    "caption": "Filmdeki küp gerçek bir 8.73 çözümünü, çözüldüğü hızda hamle hamle yeniden oynatıyor."
+  },
+  "welcome_chapters": {
+    "title": "Çözümün etrafındaki her şey",
+    "lede": "Aşağıdaki ekranlar doğrudan uygulamadan, gerçek oturumlardan alındı.",
+    "timer": {
+      "name": "Zamanlayıcı",
+      "title": "Bir kez ayarla, sonra sadece çöz",
+      "body": "Otomatik +2 ve DNF'li WCA incelemesi, her çözümden sonra yeni bir karıştırma ve kendin düzenlediğin bir ekran. Modülleri taşı, bir tema seç; Pro ile sürenin arkasına kendi fotoğrafını ya da videonu koy.",
+      "fact_1": "Klavye, dokunmatik, StackMat, GAN ve QiYi timer'lar ya da akıllı küp",
+      "fact_2": "Her karıştırma için hesaplanmış Cross ve XCross çözümleri",
+      "fact_3": "Tüm WCA branşları, karıştırmanın 3D önizlemesiyle",
+      "caption": "Çözücü, evre analizi ve süre dağılımı modülleriyle bir 3x3 oturumu"
+    },
+    "smart": {
+      "name": "Akıllı küp",
+      "title": "Her hamle kayıtta",
+      "body": "Akıllı küpü bağla; süre ilk hamlende başlar, küp çözülünce durur. Sonra çözümü aç ve adım adım gez: cross, her F2L çifti, OLL ve PLL. Bakarak geçen süre ile çevirerek geçen süre ayrı ayrı görünür.",
+      "fact_1": "{{brands}} marka destekleniyor, aralarında GAN, MoYu ve QiYi var",
+      "fact_2": "Küpün ekranda 3D olarak, hamle hamle",
+      "fact_3": "Adım adım analiz ve tekrar izleme Pro ile",
+      "caption": "GAN i4 ile yapılmış 8.73'lük bir çözümün tekrarı: 55 hamle, saniyede 6.30 hamle"
+    },
+    "hands": {
+      "name": "Ek donanım yok",
+      "title": "Küpü bırak, süre dursun",
+      "body": "Telefonu masaya yatır ve çöz. Küpü bıraktığında telefon darbeyi hisseder ve süreyi durdurur. Şu an test aşamasındaki Kaldırınca Başlat ise telefonun pusula sensörüyle, küpü kaldırdığın anda süreyi başlatır.",
+      "fact_1": "Bırakınca Durdur iOS ve Android uygulamalarında çalışır",
+      "fact_2": "Hassasiyeti masana göre ayarlayabilirsin",
+      "fact_3": "Kaldırınca Başlat bazı hesaplarda test ediliyor",
+      "caption": "Bırakınca Durdur ve Kaldırınca Başlat, animasyonla anlatıldı"
+    },
+    "stats": {
+      "name": "İstatistikler",
+      "title": "Süren nereye gidiyor, gör",
+      "body": "En iyi tek çözümün ve ortalamaların, zaman çizelgesi, günün saatine göre tutarlılık, çözüm takvimi ve bir yıllık aktivite tek bakışta. Oturuma, küpe ve alt türe göre süz, o görünümü bağlantı olarak paylaş.",
+      "fact_1": "ao5'ten ao1000'e kadar ortalamalar",
+      "fact_2": "Günlük çözüm hedefleri ve seriler",
+      "fact_3": "Geçmişini diğer timer'lardan içe aktar",
+      "caption": "Tek bir hesabın bir yıllık çözüm geçmişi: 193 aktif gün"
+    },
+    "trainer": {
+      "name": "Trainer",
+      "title": "Kaçırdığın vakaları çalış",
+      "body": "Bir set seç ve vaka vaka çalış. Trainer her algoritmanın süresini ve başarı oranını tutar, zayıf olanlar en üste çıkar. Düz çalışmadan klavyeyle PLL tanımaya kadar dört mod var.",
+      "fact_1": "PLL, OLL, F2L, COLL, ZBLL, ZBLS ve fazlası",
+      "fact_2": "2x2, 4x4, Pyraminx, Skewb ve Square-1 setleri",
+      "fact_3": "Akıllı küple çalışma ve PDF çıktısı Pro ile",
+      "caption": "Algoritma trainer'ında PLL seti"
+    },
+    "together": {
+      "name": "Birlikte",
+      "title": "Karşındakiyle yarış",
+      "body": "Battle tek ekranı karşı karşıya oturan iki oyuncuya böler: aynı karıştırma, ayrı skor ve istersen ikisine de birer akıllı küp. Uzaktaki arkadaşların için odalar var; herkes aynı karıştırmayı çözer, süreler canlı tabloya düşer.",
+      "fact_1": "16 kişiye kadar odalar, sohbet ve izleyici modu",
+      "fact_2": "Battle telefonda, tablette ve bilgisayarda çalışır",
+      "fact_3": "Çözüm ekleyebildiğin mesajlar",
+      "caption": "Tek ekranda bir Battle turu: 8.41, 9.62'yi geçiyor"
+    }
+  },
+  "welcome_inside": {
+    "title": "Uygulamada neler var",
+    "lede": "Bu listedeki her şey bugün Zkt Timer'da. Pro işaretli satırlar Pro üyelikle gelir.",
+    "platforms": "Web, iOS ve Android'de; Türkçe, İngilizce, İspanyolca, Rusça ve Çince.",
+    "timer": {
+      "title": "Zamanlayıcı",
+      "inspection": "Otomatik +2 ve DNF'li 15 saniyelik WCA incelemesi",
+      "inputs": "Klavye, dokunmatik, sanal küp, StackMat ve QYtoys, GAN ve QiYi akıllı timer'lar, elle giriş",
+      "scrambles": "Her WCA branşı için karıştırma, 3D önizlemeyle",
+      "solvers": "Mevcut karıştırma için Cross, XCross, EOCross, Roux, Petrus ve ZZ adımları",
+      "layout": "Masaüstünde sürükleyip boyutlandırdığın, değiştirdiğin modüller",
+      "background": "Timer'ın arkasında kendi fotoğrafın ya da videon",
+      "drop": "Telefon uygulamalarında Bırakınca Durdur"
+    },
+    "smart": {
+      "title": "Akıllı küp",
+      "brands": "Desteklenen markalar: {{brands}}",
+      "mirror": "Küpün 3D olarak, hamle hamle",
+      "auto": "İlk hamlede başlar, küp çözülünce durur",
+      "scramble": "Karıştırma hamleleri çevirdikçe işaretlenir, yanlış hamlede düzeltmesi gösterilir",
+      "phases": "Hamle sayısı, TPS ve tekrar izlemeyle Cross, F2L, OLL ve PLL süreleri",
+      "cases": "Ortalama evre süreleri ve vaka vaka OLL, PLL istatistikleri"
+    },
+    "training": {
+      "title": "Antrenman",
+      "modes": "Dört mod: standart, akıllı küp, cross verimliliği ve PLL tanıma",
+      "sets": "PLL, OLL, F2L, COLL, ZBLL, ZBLS, WVLS, VHLS, OLLCP ve Roux setleri",
+      "puzzles": "2x2, 4x4, Pyraminx, Skewb ve Square-1 setleri",
+      "weak": "Her algoritma için süre ve başarı oranı",
+      "quest": "PLL tanımaya 13 adımlık rehberli yol",
+      "smart": "Her hamleyi kontrol eden akıllı küple çalışma",
+      "pdf": "PDF olarak algoritma sayfaları"
+    },
+    "stats": {
+      "title": "İstatistik ve veri",
+      "averages": "En iyi tek çözüm ve ao1000'e kadar ortalamalar",
+      "charts": "Zaman çizelgesi, saate göre tutarlılık ve 365 günlük aktivite haritası",
+      "sessions": "Sıralayıp birleştirebildiğin oturumlar",
+      "goals": "Hatırlatmalı günlük çözüm hedefleri",
+      "import": "Diğer timer'lardan içe aktarma, her şeyi tek dosyaya dışa aktarma",
+      "sync": "Çevrimdışı çalışır, internet gelince çözümlerini yedekler"
+    },
+    "together": {
+      "title": "Birlikte",
+      "rooms": "Sohbet ve izleyici modlu, 16 kişiye kadar odalar",
+      "battle": "Battle: tek ekranda iki oyuncu, istersen ikisine de birer akıllı küp",
+      "messages": "Çözüm ekleyebildiğin özel mesajlar",
+      "profile": "Herkese açık profil ve paylaşılabilir Cuber Card",
+      "rankings": "Zkt Timer kullanıcılarının WCA sonuçlarına göre sıralaması"
+    },
+    "competitions": {
+      "title": "Yarışmalar",
+      "upcoming": "Dünyadaki yaklaşan WCA yarışmaları, branşa göre süzülebilir",
+      "live": "Her tur bittikçe WCA Live sonuçları",
+      "groups": "Gruplar, görevler ve tüm program",
+      "persons": "Herhangi bir yarışmacının grupları ve görevleri",
+      "records": "Son kırılan rekorlar",
+      "alerts": "Rekor bildirimleri ve beş yarışmacıya kadar takip"
+    }
   },
   "hero_cube": {
     "hint": "Küpü sürükleyerek çözmeye çalışın",
     "try_again": "Tekrar dene"
   },
   "welcome_mobile": {
-    "title": "Her Zaman Yanınızda",
-    "description": "Mobil uyumlu arayüzü ile Zkt Timer'ı her yerden kullanabilirsiniz. Uygulama indirmeye gerek yok.",
+    "title": "Her zaman yanında",
+    "description": "iOS ve Android'de Zkt Timer; çözümlerin hesabına yedeklenir.",
     "label_timer": "Zamanlayıcı",
-    "label_solves": "Çözümler"
-  },
-  "welcome_partners": {
-    "title": "Profesyonel Entegrasyonlar",
-    "description": "WCA standartları, akıllı küpler ve profesyonel timer'lar ile tam uyumlu. En gelişmiş speedcubing ekipmanlarıyla sorunsuz çalışır.",
-    "category_official": "🏆 Resmi Standart",
-    "category_timer": "⏱️ Timer Desteği",
-    "category_smart_cube": "🎯 Akıllı Küp",
-    "wca_desc": "Resmi WCA scramble algoritmaları ve kuralları",
-    "gan_timer_desc": "Bluetooth bağlantı ile kablosuz ölçüm",
-    "stackmat_desc": "WCA onaylı profesyonel timer desteği",
-    "gan_cube_desc": "Gerçek zamanlı çözüm takibi ve analiz",
-    "moyu_desc": "AI destekli akıllı küp entegrasyonu"
+    "label_stats": "İstatistikler"
   },
   "welcome_footer": {
     "cta_title": "Topluluğumuza Katılın",

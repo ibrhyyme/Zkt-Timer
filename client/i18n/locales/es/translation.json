@@ -3026,39 +3026,6 @@
     "signup": "Registrarse",
     "open_app": "Abrir la aplicación"
   },
-  "features": {
-    "timer_title": "Timer impecable",
-    "timer_desc": "Una interfaz limpia y sin distracciones con precisión de milisegundos. Control total con atajos de teclado.",
-    "timer_bullet_1": "Inicio sin retraso",
-    "timer_bullet_2": "Apariencia personalizable",
-    "timer_bullet_3": "Algoritmos de mezcla WCA",
-    "timer_alt": "Interfaz del Timer",
-    "stats_title": "Estadísticas detalladas",
-    "stats_desc": "Sigue tu progreso con gráficos. Ve tus PBs, promedios (AO5, AO12, AO100) y tendencias.",
-    "stats_bullet_1": "Seguimiento de PB",
-    "stats_bullet_2": "AO5/AO12/AO100",
-    "stats_bullet_3": "Análisis de tendencias",
-    "stats_alt": "Panel de estadísticas",
-    "smart_cube_title": "Soporte para cubo inteligente",
-    "smart_cube_desc": "Conecta tu cubo con Bluetooth y analiza tus movimientos, TPS y errores de giro.",
-    "smart_cube_bullet_1": "Análisis de movimientos",
-    "smart_cube_bullet_2": "Seguimiento de TPS",
-    "smart_cube_bullet_3": "Precisión de giros",
-    "smart_cube_alt": "Integración con cubo inteligente",
-    "rooms_title": "Salas competitivas",
-    "rooms_desc": "Crea salas privadas con amigos o compite en salas públicas. Clasificaciones en vivo y chat instantáneo.",
-    "rooms_bullet_1": "Salas privadas",
-    "rooms_bullet_2": "Clasificación en vivo",
-    "rooms_bullet_3": "Chat instantáneo",
-    "rooms_alt": "Salas multijugador"
-  },
-  "trust_section": {
-    "solves": "Resoluciones",
-    "cube_type": "Tipo de cubo",
-    "countries": "Países",
-    "title": "Compatible con WCA & Actualizado",
-    "description": "Accede instantáneamente a los récords nacionales y mundiales. Mantente actualizado con las mezclas oficiales de la WCA."
-  },
   "time_display": {
     "inspection_on": "Inspección activada",
     "solve": "RESOLVER",
@@ -3598,59 +3565,6 @@
     "messaging_item_4": "Al deshacer el envio de un mensaje, su contenido se elimina de la base de datos. Al eliminar un chat, se elimina solo de tu lado.",
     "messaging_item_5": "Al eliminar tu cuenta se eliminan tambien todos los mensajes que enviaste."
   },
-  "welcome_live_timer": {
-    "eyebrow": "Vista en vivo",
-    "title": "Descubre cómo se siente un timer profesional",
-    "subtitle": "Prepárate, inspecciona, resuelve, guarda. Todo en un solo flujo. Una experiencia de timer totalmente compatible con los estándares WCA.",
-    "scramble": "Scramble",
-    "phase_ready": "Listo",
-    "phase_inspecting": "Inspección",
-    "phase_solving": "Resolviendo",
-    "phase_done": "Hecho",
-    "feature_inspection_title": "Inspección de 15 segundos",
-    "feature_inspection_desc": "Inspección conforme a WCA con reglas +2 y DNF automáticas.",
-    "feature_penalty_title": "Gestión de penalizaciones",
-    "feature_penalty_desc": "+2 y DNF con un toque, con soporte para deshacer.",
-    "feature_smart_cube_title": "Soporte de cubos inteligentes",
-    "feature_smart_cube_desc": "GAN, MoYu, Giiker — detección automática de resolución.",
-    "feature_stackmat_title": "StackMat y GAN Timer",
-    "feature_stackmat_desc": "Compatibilidad total con hardware profesional, listo para competir.",
-    "cta": "Pruébalo ahora"
-  },
-  "welcome_comparison": {
-    "eyebrow": "Comparación",
-    "title": "¿Por qué Zkt Timer?",
-    "subtitle": "Timer, estadísticas, cubo inteligente, seguimiento de competiciones — todo en una plataforma. Esto es lo que distingue a Zkt Timer.",
-    "th_feature": "Característica",
-    "badge_us": "Nosotros",
-    "row_wca_scrambles": "Scrambles WCA (todos los eventos)",
-    "row_smart_cube": "Integración de cubo inteligente (BLE)",
-    "row_stackmat_gan": "Soporte StackMat y GAN Timer",
-    "row_solver": "Solver integrado (Cross, F2L, OLL, Roux, ZZ, Petrus)",
-    "row_trainer": "Entrenador de algoritmos (OLL/PLL/ZBLL)",
-    "row_1v1_battle": "Modo Batalla 1v1",
-    "row_rooms": "Salas multijugador (chat en vivo)",
-    "row_wca_oauth": "Inicio de sesión y vinculación WCA",
-    "row_wca_competitions": "Seguimiento de competiciones WCA (página detallada)",
-    "row_wca_live": "Integración de resultados WCA Live",
-    "row_wca_notifications": "Notificaciones push de rondas en vivo",
-    "row_wca_assignments": "Asignaciones de competición (juez, scrambler, runner)",
-    "row_native_apps": "Apps nativas iOS y Android",
-    "row_offline_sync": "Soporte offline + sincronización de dispositivos",
-    "legend_yes": "Sí",
-    "legend_partial": "Parcial",
-    "legend_no": "No"
-  },
-  "welcome_testimonials": {
-    "eyebrow": "Reseñas de usuarios",
-    "title": "Lo que dicen los cubers sobre Zkt Timer",
-    "t1_quote": "La única app que necesito para seguir competiciones WCA, entrenar y ver mis estadísticas. Cada actualización la hace mejor.",
-    "t1_role": "Top 50 3x3 en TR",
-    "t2_quote": "Funciona perfectamente con mi cubo inteligente, y las secciones de solver y entrenador son como un libro de texto. Fácil de entender incluso para principiantes.",
-    "t2_role": "Aprendiendo OLL",
-    "t3_quote": "El modo batalla 1v1 es muy divertido con amigos. La página de competiciones WCA también es increíblemente detallada.",
-    "t3_role": "Competidor WCA registrado"
-  },
   "welcome_wca": {
     "eyebrow": "Competiciones WCA",
     "title": "Sigue Todas las Competiciones WCA en Una Sola Plataforma",
@@ -3696,29 +3610,140 @@
     "or_continue_web": "o continúa en la web",
     "app_store_alt": "Descargar en App Store",
     "google_play_alt": "Disponible en Google Play",
-    "cta_try": "Pruébalo ahora"
+    "cta_try": "Pruébalo ahora",
+    "rating_line": "{{play}} en Google Play, {{apple}} en la App Store"
+  },
+  "welcome_reel": {
+    "label": "Película de Zkt Timer",
+    "caption": "El cubo de la película repite una resolución real de 8.73, giro a giro y a la velocidad en que se hizo."
+  },
+  "welcome_chapters": {
+    "title": "Todo lo que rodea a una resolución",
+    "lede": "Las pantallas de abajo salen directamente de la app, de sesiones reales.",
+    "timer": {
+      "name": "Cronómetro",
+      "title": "Configúralo una vez y solo resuelve",
+      "body": "Inspección WCA con +2 y DNF automáticos, una mezcla nueva tras cada resolución y una pantalla que organizas a tu manera. Mueve los módulos, elige un tema y, con Pro, pon tu propia foto o vídeo detrás del tiempo.",
+      "fact_1": "Teclado, táctil, StackMat, cronómetros GAN y QiYi o un cubo inteligente",
+      "fact_2": "Soluciones de Cross y XCross calculadas para cada mezcla",
+      "fact_3": "Todas las pruebas WCA, con vista previa 3D de la mezcla",
+      "caption": "Una sesión de 3x3 con los módulos de solucionadores, análisis de fases y distribución de tiempos"
+    },
+    "smart": {
+      "name": "Cubo inteligente",
+      "title": "Cada giro, registrado",
+      "body": "Conecta un cubo inteligente: el tiempo empieza con tu primer giro y se detiene cuando el cubo queda resuelto. Después abre la resolución y recórrela paso a paso: la cruz, cada par de F2L, OLL y PLL, con el tiempo que pasaste mirando separado del que pasaste girando.",
+      "fact_1": "{{brands}} marcas compatibles, entre ellas GAN, MoYu y QiYi",
+      "fact_2": "Tu cubo reflejado en 3D, giro a giro",
+      "fact_3": "Análisis paso a paso y repetición con Pro",
+      "caption": "Repetición de una resolución de 8.73 con un GAN i4: 55 giros a 6.30 giros por segundo"
+    },
+    "hands": {
+      "name": "Sin hardware extra",
+      "title": "Suelta el cubo y el tiempo se detiene",
+      "body": "Deja el móvil sobre la mesa y resuelve. Cuando sueltas el cubo, el teléfono siente el golpe y detiene el tiempo. Levantar para Iniciar, ahora en pruebas, usa la brújula del teléfono para iniciar el cronómetro en cuanto levantas el cubo.",
+      "fact_1": "Soltar para Detener funciona en las apps de iOS y Android",
+      "fact_2": "Sensibilidad ajustable según tu mesa",
+      "fact_3": "Levantar para Iniciar se está probando en algunas cuentas",
+      "caption": "Soltar para Detener y Levantar para Iniciar, contados con una animación"
+    },
+    "stats": {
+      "name": "Estadísticas",
+      "title": "Mira en qué se te va el tiempo",
+      "body": "Tu mejor single y tus medias, una línea de tiempo, la regularidad según la hora del día, un calendario de resoluciones y un año entero de actividad de un vistazo. Filtra por sesión, cubo y subconjunto y comparte esa vista exacta con un enlace.",
+      "fact_1": "Medias desde ao5 hasta ao1000",
+      "fact_2": "Objetivos diarios y rachas",
+      "fact_3": "Importa tu historial desde otros cronómetros",
+      "caption": "Un año de resoluciones en una sola cuenta: 193 días activos"
+    },
+    "trainer": {
+      "name": "Entrenador",
+      "title": "Practica los casos que más fallas",
+      "body": "Elige un set y practícalo caso por caso. El entrenador guarda el tiempo y el porcentaje de acierto de cada algoritmo, así los más flojos suben arriba. Cuatro modos, desde la práctica simple hasta el reconocimiento de PLL con el teclado.",
+      "fact_1": "PLL, OLL, F2L, COLL, ZBLL, ZBLS y más",
+      "fact_2": "Sets de 2x2, 4x4, Pyraminx, Skewb y Square-1",
+      "fact_3": "Práctica con cubo inteligente y hojas en PDF con Pro",
+      "caption": "El set de PLL en el entrenador de algoritmos"
+    },
+    "together": {
+      "name": "En compañía",
+      "title": "Compite con quien tienes enfrente",
+      "body": "Battle divide una sola pantalla entre dos jugadores sentados frente a frente: la misma mezcla, un marcador para cada uno y, si quieren, un cubo inteligente cada uno. Para los amigos que están lejos, en las salas todos resuelven la misma mezcla y los tiempos aparecen en una tabla en directo.",
+      "fact_1": "Salas de hasta 16 personas, con chat y espectadores",
+      "fact_2": "Battle funciona en móviles, tabletas y ordenadores",
+      "fact_3": "Mensajes con resoluciones adjuntas",
+      "caption": "Una ronda de Battle en una sola pantalla: 8.41 gana a 9.62"
+    }
+  },
+  "welcome_inside": {
+    "title": "Qué hay en la app",
+    "lede": "Todo lo de esta lista ya está en Zkt Timer. Las líneas marcadas con Pro vienen con la membresía Pro.",
+    "platforms": "En la web, iOS y Android, en turco, inglés, español, ruso y chino.",
+    "timer": {
+      "title": "Cronómetro",
+      "inspection": "Inspección WCA de 15 segundos con +2 y DNF automáticos",
+      "inputs": "Teclado, táctil, cubo virtual, StackMat y QYtoys, cronómetros inteligentes GAN y QiYi, entrada manual",
+      "scrambles": "Una mezcla para cada prueba WCA, con vista previa 3D",
+      "solvers": "Pasos de Cross, XCross, EOCross, Roux, Petrus y ZZ resueltos para la mezcla actual",
+      "layout": "Módulos que arrastras, redimensionas y cambias en el ordenador",
+      "background": "Tu propia foto o vídeo detrás del cronómetro",
+      "drop": "Soltar para Detener en las apps del móvil"
+    },
+    "smart": {
+      "title": "Cubo inteligente",
+      "brands": "Compatible con {{brands}}",
+      "mirror": "Tu cubo en 3D, giro a giro",
+      "auto": "Empieza con tu primer giro y para cuando el cubo está resuelto",
+      "scramble": "Los movimientos de la mezcla se marcan al girar, con la corrección si te equivocas",
+      "phases": "Tiempos de cruz, F2L, OLL y PLL con giros, TPS y repetición",
+      "cases": "Tiempos medios por fase y estadísticas de OLL y PLL caso por caso"
+    },
+    "training": {
+      "title": "Entrenamiento",
+      "modes": "Cuatro modos: estándar, cubo inteligente, eficiencia de cruz y reconocimiento de PLL",
+      "sets": "Sets de PLL, OLL, F2L, COLL, ZBLL, ZBLS, WVLS, VHLS, OLLCP y Roux",
+      "puzzles": "Sets de 2x2, 4x4, Pyraminx, Skewb y Square-1",
+      "weak": "Tiempo y porcentaje de acierto de cada algoritmo",
+      "quest": "Un camino guiado de 13 pasos hacia el reconocimiento de PLL",
+      "smart": "Práctica con un cubo inteligente que comprueba cada giro",
+      "pdf": "Hojas de algoritmos en PDF"
+    },
+    "stats": {
+      "title": "Estadísticas y datos",
+      "averages": "Mejor single y medias hasta ao1000",
+      "charts": "Línea de tiempo, regularidad por hora y un mapa de actividad de 365 días",
+      "sessions": "Sesiones que puedes reordenar y fusionar",
+      "goals": "Objetivos diarios de resoluciones con recordatorios",
+      "import": "Importa desde otros cronómetros y exporta todo a un solo archivo",
+      "sync": "Funciona sin conexión y guarda tus resoluciones al volver a estar en línea"
+    },
+    "together": {
+      "title": "En compañía",
+      "rooms": "Salas de hasta 16 personas con chat y espectadores",
+      "battle": "Battle: dos jugadores en una pantalla, con un cubo inteligente cada uno si quieren",
+      "messages": "Mensajes directos con resoluciones adjuntas",
+      "profile": "Un perfil público y una Cuber Card para compartir",
+      "rankings": "Clasificaciones de los usuarios de Zkt Timer según sus resultados WCA"
+    },
+    "competitions": {
+      "title": "Competiciones",
+      "upcoming": "Próximas competiciones WCA de todo el mundo, filtrables por prueba",
+      "live": "Resultados de WCA Live al terminar cada ronda",
+      "groups": "Grupos, asignaciones y el horario completo",
+      "persons": "Grupos y tareas de cualquier competidor",
+      "records": "Récords batidos recientemente",
+      "alerts": "Alertas de récords y seguimiento de hasta cinco competidores"
+    }
   },
   "hero_cube": {
     "hint": "Intenta resolverlo arrastrando",
     "try_again": "Intentar de nuevo"
   },
   "welcome_mobile": {
-    "title": "Siempre a Tu Lado",
-    "description": "Usa Zkt Timer desde cualquier lugar con su interfaz optimizada para móviles. No necesitas descargar ninguna aplicación.",
+    "title": "Siempre a tu lado",
+    "description": "Zkt Timer en iOS y Android, con tus resoluciones guardadas en tu cuenta.",
     "label_timer": "Cronómetro",
-    "label_solves": "Resoluciones"
-  },
-  "welcome_partners": {
-    "title": "Integraciones Profesionales",
-    "description": "Totalmente compatible con estándares WCA, cubos inteligentes y cronómetros profesionales. Funciona perfectamente con los equipos de speedcubing más avanzados.",
-    "category_official": "🏆 Estándar Oficial",
-    "category_timer": "⏱️ Soporte Timer",
-    "category_smart_cube": "🎯 Cubo Inteligente",
-    "wca_desc": "Algoritmos y reglas oficiales de scramble WCA",
-    "gan_timer_desc": "Medición inalámbrica mediante conexión Bluetooth",
-    "stackmat_desc": "Soporte de cronómetro profesional aprobado por WCA",
-    "gan_cube_desc": "Seguimiento y análisis de resolución en tiempo real",
-    "moyu_desc": "Integración de cubo inteligente con IA"
+    "label_stats": "Estadísticas"
   },
   "welcome_footer": {
     "cta_title": "Únete a Nuestra Comunidad",

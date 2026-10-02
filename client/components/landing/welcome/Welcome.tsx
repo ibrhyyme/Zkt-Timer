@@ -1,20 +1,18 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import HeroSection from './hero_section/HeroSection';
-import FeaturesSection from './features_section/FeaturesSection';
-import LiveTimerSection from './live_timer_section/LiveTimerSection';
-import ComparisonSection from './comparison_section/ComparisonSection';
+import ReelSection from './reel_section/ReelSection';
+import ChaptersSection from './chapters_section/ChaptersSection';
 import WcaSection from './wca_section/WcaSection';
-import TestimonialsSection from './testimonials_section/TestimonialsSection';
+import InsideSection from './inside_section/InsideSection';
 import MobileGrid from './mobile_grid/MobileGrid';
-import PartnersSection from './partners_section/PartnersSection';
 import WelcomeFooter from './welcome_footer/WelcomeFooter';
 import {useScrollProgress} from './hooks/useScrollProgress';
 import './Welcome.scss';
 
 import { useMe } from '../../../util/hooks/useMe';
 import { useHistory } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { getStructuredData, SITE_URL, getPageKeywords } from '../../layout/header/Header';
@@ -23,7 +21,9 @@ export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
 	const { t, i18n } = useTranslation();
-	const scrollProgress = useScrollProgress();
+	// The bar is written to directly; see useScrollProgress for why this is not state.
+	const progressRef = useRef<HTMLDivElement>(null);
+	useScrollProgress(progressRef);
 
 	useEffect(() => {
 		if (me) {
@@ -85,17 +85,15 @@ export default function Welcome() {
 
 			<div className="zt-welcome min-h-screen bg-[#050505] text-white">
 				<div
+					ref={progressRef}
 					className="zt-welcome__scroll-progress"
-					style={{width: `${scrollProgress * 100}%`}}
 				/>
 				<HeroSection />
-				<LiveTimerSection />
-				<FeaturesSection />
-				<ComparisonSection />
+				<ReelSection />
+				<ChaptersSection />
 				<WcaSection />
-				<TestimonialsSection />
+				<InsideSection />
 				<MobileGrid />
-				<PartnersSection />
 				<WelcomeFooter />
 			</div>
 		</>

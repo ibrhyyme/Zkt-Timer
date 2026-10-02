@@ -129,7 +129,26 @@ export default function ParticleCanvas() {
 
 			reqId = requestAnimationFrame(render);
 		}
-		render();
+
+		// Draw only while the hero is on screen: sixty shadow-blurred shapes a frame is
+		// real work to keep doing for a canvas nobody can see.
+		let running = false;
+		const start = () => {
+			if (running) return;
+			running = true;
+			reqId = requestAnimationFrame(render);
+		};
+		const stop = () => {
+			running = false;
+			cancelAnimationFrame(reqId);
+		};
+		let observer: IntersectionObserver | null = null;
+		if ('IntersectionObserver' in window) {
+			observer = new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()));
+			observer.observe(canvas);
+		} else {
+			start();
+		}
 
 		function onMouseMove(e: MouseEvent) {
 			const rect = canvas.getBoundingClientRect();
@@ -150,7 +169,8 @@ export default function ParticleCanvas() {
 		canvas.addEventListener('touchmove', onTouchMove, { passive: true });
 
 		return () => {
-			cancelAnimationFrame(reqId);
+			stop();
+			observer?.disconnect();
 			window.removeEventListener('resize', resize);
 			canvas.removeEventListener('mousemove', onMouseMove);
 			canvas.removeEventListener('touchmove', onTouchMove);

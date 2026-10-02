@@ -169,11 +169,16 @@ export default function WcaSection() {
 						viewport={{once: true, amount: 0.2}}
 						transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
 					>
+						{/* WCA Live results for the 3x3 final of the WCA African Championship
+						    2026, public data, captured in the app on 2026-09-30. */}
 						<img
-							src={landingAsset('/public/welcome/web/wca_comp.jpg')}
+							src={landingAsset('/public/welcome/v2/wca-live.webp')}
 							alt={t('welcome_wca.image_alt')}
 							className={b('image')}
 							loading="lazy"
+							decoding="async"
+							width={1600}
+							height={1000}
 						/>
 						<div className={b('image-glow')} />
 						<div className={b('image-badge')}>

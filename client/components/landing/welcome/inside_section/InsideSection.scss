@@ -1,0 +1,112 @@
+@import '../../../../styles/config.scss';
+
+// What's in the app: a plain inventory. Typography and the six sticker colours carry
+// it; no cards, no icons, no hover effects.
+
+$inside-ink: #f5f6f8;
+$inside-body: #c3c7d2;
+$inside-muted: #aeb3c0;
+
+.zt-welcome-inside {
+	position: relative;
+	z-index: 2;
+	padding: 6rem 0;
+
+	@include bp-down($bp-md) {
+		padding: 4rem 0;
+	}
+
+	&__container {
+		max-width: 85rem;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	&__header {
+		max-width: 46rem;
+		margin-bottom: 3rem;
+	}
+
+	&__title {
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 118%;
+		font-weight: 800;
+		font-size: clamp(2.2rem, 4.6vw, 4.2rem);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+		color: $inside-ink;
+		margin: 0 0 1rem;
+	}
+
+	&__lede {
+		font-size: clamp(1rem, 1.3vw, 1.15rem);
+		line-height: 1.6;
+		color: $inside-muted;
+		margin: 0;
+		max-width: 36rem;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+		gap: 3rem 3.5rem;
+	}
+
+	&__group-title {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 110%;
+		font-weight: 800;
+		font-size: 1.25rem;
+		line-height: 1.2;
+		color: $inside-ink;
+		margin: 0 0 1rem;
+	}
+
+	&__sticker {
+		width: 14px;
+		height: 14px;
+		border-radius: 3px;
+		flex-shrink: 0;
+		background: var(--face, #{$inside-ink});
+	}
+
+	&__items {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.7rem;
+	}
+
+	&__item {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+		font-size: 0.98rem;
+		line-height: 1.5;
+		color: $inside-body;
+	}
+
+	&__pro {
+		flex-shrink: 0;
+		font-size: 0.7rem;
+		font-weight: 800;
+		line-height: 1;
+		padding: 0.26rem 0.42rem;
+		border-radius: 4px;
+		color: #f5c542;
+		border: 1px solid rgba(245, 197, 66, 0.5);
+	}
+
+	&__platforms {
+		margin: 3.5rem 0 0;
+		font-size: 1rem;
+		line-height: 1.6;
+		color: $inside-ink;
+		font-weight: 600;
+	}
+}

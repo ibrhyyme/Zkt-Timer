@@ -33,8 +33,8 @@ export function isLocalShell(): boolean {
 	return window.location.origin !== Consts.STORAGE_ORIGIN;
 }
 
-// Landing/marketing imagery (public/welcome, public/partners) is deliberately NOT
-// packed into the native bundle (~20 MB of binary weight for online-only pages).
+// Landing imagery and films (public/welcome) are deliberately NOT packed into the
+// native bundle: binary weight for pages that only make sense online.
 // In the local shell these resolve to the remote site instead; everywhere else the
 // relative path is kept (web SSR, old binaries, and bundled assets).
 export function landingAsset(path: string): string {

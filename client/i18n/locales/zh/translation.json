@@ -3024,39 +3024,6 @@
     "signup": "注册",
     "open_app": "打开应用"
   },
-  "features": {
-    "timer_title": "精准计时器",
-    "timer_desc": "干净、无干扰的界面，精确到毫秒。通过键盘快捷键完全控制。",
-    "timer_bullet_1": "无延迟启动",
-    "timer_bullet_2": "可自定义外观",
-    "timer_bullet_3": "WCA打乱公式",
-    "timer_alt": "计时器界面",
-    "stats_title": "详细统计",
-    "stats_desc": "通过图表跟踪您的进度。查看您的个人最好成绩、平均成绩（AO5、AO12、AO100）和趋势。",
-    "stats_bullet_1": "个人最好成绩跟踪",
-    "stats_bullet_2": "AO5/AO12/AO100",
-    "stats_bullet_3": "趋势分析",
-    "stats_alt": "统计面板",
-    "smart_cube_title": "智能魔方支持",
-    "smart_cube_desc": "连接您的蓝牙魔方，分析您的步数、TPS和转动错误。",
-    "smart_cube_bullet_1": "步数分析",
-    "smart_cube_bullet_2": "TPS跟踪",
-    "smart_cube_bullet_3": "转动准确度",
-    "smart_cube_alt": "智能魔方集成",
-    "rooms_title": "竞技房间",
-    "rooms_desc": "与朋友创建私人房间或在公共房间比赛。实时排名和即时聊天。",
-    "rooms_bullet_1": "私人房间",
-    "rooms_bullet_2": "实时排行榜",
-    "rooms_bullet_3": "即时聊天",
-    "rooms_alt": "多人房间"
-  },
-  "trust_section": {
-    "solves": "还原",
-    "cube_type": "魔方类型",
-    "countries": "国家",
-    "title": "WCA 兼容 & 最新",
-    "description": "即时访问全国和世界纪录。使用官方 WCA 打乱保持最新状态。"
-  },
   "time_display": {
     "inspection_on": "观察中",
     "solve": "还原",
@@ -3596,59 +3563,6 @@
     "messaging_item_4": "撤回消息会从数据库中删除其内容；删除聊天仅对你生效。",
     "messaging_item_5": "删除账号时，你发送的所有消息也会被删除。"
   },
-  "welcome_live_timer": {
-    "eyebrow": "实时预览",
-    "title": "体验专业计时器的感觉",
-    "subtitle": "准备、观察、还原、保存。一气呵成。一个完全符合WCA标准的计时器体验等待着您。",
-    "scramble": "打乱",
-    "phase_ready": "准备",
-    "phase_inspecting": "观察",
-    "phase_solving": "还原中",
-    "phase_done": "完成",
-    "feature_inspection_title": "15秒观察时间",
-    "feature_inspection_desc": "符合WCA标准的观察时间，具有自动+2和DNF规则。",
-    "feature_penalty_title": "处罚管理",
-    "feature_penalty_desc": "一键+2和DNF，支持撤销。",
-    "feature_smart_cube_title": "智能魔方支持",
-    "feature_smart_cube_desc": "GAN、魔方格、Giiker — 自动还原检测。",
-    "feature_stackmat_title": "StackMat和GAN计时器",
-    "feature_stackmat_desc": "完全兼容专业硬件，为比赛做好准备。",
-    "cta": "立即试用"
-  },
-  "welcome_comparison": {
-    "eyebrow": "对比",
-    "title": "为什么选择Zkt Timer？",
-    "subtitle": "计时器、统计数据、智能魔方、比赛追踪 — 尽在一个平台。Zkt Timer与其它热门计时器的不同之处在于：",
-    "th_feature": "功能",
-    "badge_us": "我们",
-    "row_wca_scrambles": "WCA打乱（所有项目）",
-    "row_smart_cube": "智能魔方（BLE）集成",
-    "row_stackmat_gan": "StackMat和GAN计时器支持",
-    "row_solver": "内置还原器（Cross, F2L, OLL, Roux, ZZ, Petrus）",
-    "row_trainer": "公式训练器（OLL/PLL/ZBLL）",
-    "row_1v1_battle": "1v1对战模式",
-    "row_rooms": "多人房间（实时聊天）",
-    "row_wca_oauth": "WCA账户登录与绑定",
-    "row_wca_competitions": "WCA比赛追踪（详情页）",
-    "row_wca_live": "WCA Live实时结果集成",
-    "row_wca_notifications": "实时轮次推送通知",
-    "row_wca_assignments": "比赛任务分配（裁判、打乱员、引导员）",
-    "row_native_apps": "iOS和Android原生应用",
-    "row_offline_sync": "离线支持+设备同步",
-    "legend_yes": "是",
-    "legend_partial": "部分",
-    "legend_no": "否"
-  },
-  "welcome_testimonials": {
-    "eyebrow": "用户评价",
-    "title": "魔方玩家怎么评价Zkt Timer",
-    "t1_quote": "我追踪WCA比赛、训练和查看统计数据的唯一应用。每次更新都更好。",
-    "t1_role": "土耳其3x3排名前50",
-    "t2_quote": "我的智能魔方运行完美，还原器和训练器部分就像一本教科书。对初学者也很容易理解。",
-    "t2_role": "学习OLL",
-    "t3_quote": "1v1对战模式和朋友们玩非常有趣。WCA比赛页面也非常详细。",
-    "t3_role": "注册WCA选手"
-  },
   "welcome_wca": {
     "eyebrow": "WCA比赛",
     "title": "在一个平台追踪所有WCA比赛",
@@ -3694,7 +3608,130 @@
     "or_continue_web": "或继续在网页版使用",
     "app_store_alt": "在App Store下载",
     "google_play_alt": "在Google Play获取",
-    "cta_try": "立即体验"
+    "cta_try": "立即体验",
+    "rating_line": "Google Play 评分 {{play}}，App Store 评分 {{apple}}"
+  },
+  "welcome_reel": {
+    "label": "Zkt Timer 短片",
+    "caption": "短片中的魔方按原速逐步重放了一次真实的 8.73 秒还原。"
+  },
+  "welcome_chapters": {
+    "title": "围绕还原的一切",
+    "lede": "下面的画面都直接来自应用和真实的练习。",
+    "timer": {
+      "name": "计时器",
+      "title": "设置一次，然后专心还原",
+      "body": "符合 WCA 规则的观察时间，自动判定 +2 和 DNF；每次还原后生成新打乱；界面由你自己安排。移动模块、选择主题，开通 Pro 后还能在时间后面放上自己的照片或视频。",
+      "fact_1": "键盘、触屏、StackMat、GAN 和 QiYi 计时器，或智能魔方",
+      "fact_2": "为每个打乱算好十字和 XCross 解法",
+      "fact_3": "支持全部 WCA 项目，并提供打乱的 3D 预览",
+      "caption": "一个 3x3 分组，打开了求解器、阶段分析和时间分布模块"
+    },
+    "smart": {
+      "name": "智能魔方",
+      "title": "每一步都有记录",
+      "body": "连接智能魔方后，第一步转动时开始计时，魔方还原时自动停止。之后打开这次还原逐步查看：十字、每组 F2L、OLL 和 PLL，观察用时和转动用时分开显示。",
+      "fact_1": "支持 {{brands}} 个品牌，包括 GAN、MoYu 和 QiYi",
+      "fact_2": "魔方在屏幕上以 3D 同步，一步不差",
+      "fact_3": "Pro 提供逐步分析和回放",
+      "caption": "GAN i4 上一次 8.73 秒还原的回放：55 步，每秒 6.30 步"
+    },
+    "hands": {
+      "name": "无需额外设备",
+      "title": "放下魔方，计时就停",
+      "body": "把手机平放在桌上开始还原。放下魔方时，手机感受到震动并停止计时。正在测试的「拿起开始」则借助手机的指南针传感器，在你拿起魔方的瞬间开始计时。",
+      "fact_1": "「放下停止」可在 iOS 和 Android 应用中使用",
+      "fact_2": "灵敏度可根据桌面调整",
+      "fact_3": "「拿起开始」正在部分账户中测试",
+      "caption": "用动画展示「放下停止」和「拿起开始」"
+    },
+    "stats": {
+      "name": "统计",
+      "title": "看清时间花在哪里",
+      "body": "最佳单次和各项平均、时间线、按小时的稳定性、还原日历，以及一整年的活跃度，一目了然。可按分组、魔方和子类型筛选，并把当前视图作为链接分享。",
+      "fact_1": "从 ao5 到 ao1000 的平均成绩",
+      "fact_2": "每日还原目标和连续天数",
+      "fact_3": "可从其他计时器导入历史记录",
+      "caption": "一个账户一整年的还原：193 个活跃日"
+    },
+    "trainer": {
+      "name": "训练器",
+      "title": "专练总是出错的情况",
+      "body": "选择一套公式，逐个情况练习。训练器会记录每条公式的用时和成功率，薄弱的会排到最前面。共有四种模式，从普通练习到用键盘识别 PLL。",
+      "fact_1": "PLL、OLL、F2L、COLL、ZBLL、ZBLS 等",
+      "fact_2": "2x2、4x4、Pyraminx、Skewb 和 Square-1 公式集",
+      "fact_3": "Pro 提供智能魔方练习和 PDF 公式表",
+      "caption": "公式训练器中的 PLL 公式集"
+    },
+    "together": {
+      "name": "一起玩",
+      "title": "和对面的人比一比",
+      "body": "对战模式把一块屏幕分给面对面坐着的两位玩家：同一个打乱，各自计分，愿意的话还能各用一个智能魔方。离得远的朋友可以进房间，大家还原同一个打乱，成绩实时显示在表格中。",
+      "fact_1": "最多 16 人的房间，支持聊天和观战",
+      "fact_2": "对战模式可在手机、平板和电脑上使用",
+      "fact_3": "可附带还原记录的私信",
+      "caption": "同一块屏幕上的一局对战：8.41 胜过 9.62"
+    }
+  },
+  "welcome_inside": {
+    "title": "应用里有什么",
+    "lede": "这份清单上的功能如今都已在 Zkt Timer 中。标有 Pro 的项目需要 Pro 会员。",
+    "platforms": "支持网页、iOS 和 Android，提供土耳其语、英语、西班牙语、俄语和中文。",
+    "timer": {
+      "title": "计时器",
+      "inspection": "15 秒 WCA 观察时间，自动判定 +2 和 DNF",
+      "inputs": "键盘、触屏、虚拟魔方、StackMat 和 QYtoys、GAN 与 QiYi 智能计时器、手动输入",
+      "scrambles": "所有 WCA 项目的打乱，带 3D 预览",
+      "solvers": "针对当前打乱求解 Cross、XCross、EOCross、Roux、Petrus 和 ZZ 步骤",
+      "layout": "电脑上可拖动、调整大小和替换的模块",
+      "background": "在计时器后面放上你自己的照片或视频",
+      "drop": "手机应用中的「放下停止」"
+    },
+    "smart": {
+      "title": "智能魔方",
+      "brands": "支持 {{brands}}",
+      "mirror": "你的魔方以 3D 同步显示",
+      "auto": "第一步转动开始计时，还原后自动停止",
+      "scramble": "转动时逐步勾选打乱步骤，转错会提示纠正",
+      "phases": "十字、F2L、OLL 和 PLL 分段用时，附步数、TPS 和回放",
+      "cases": "各阶段平均用时和 OLL、PLL 分情况统计"
+    },
+    "training": {
+      "title": "训练",
+      "modes": "四种模式：标准、智能魔方、十字效率和 PLL 识别",
+      "sets": "PLL、OLL、F2L、COLL、ZBLL、ZBLS、WVLS、VHLS、OLLCP 和 Roux 公式集",
+      "puzzles": "2x2、4x4、Pyraminx、Skewb 和 Square-1 公式集",
+      "weak": "记录每条公式的用时和成功率",
+      "quest": "13 步引导入门 PLL 识别",
+      "smart": "用智能魔方练习，每一步都会被检查",
+      "pdf": "导出 PDF 公式表"
+    },
+    "stats": {
+      "title": "统计与数据",
+      "averages": "最佳单次和最高到 ao1000 的平均",
+      "charts": "时间线、按小时的稳定性和 365 天活跃图",
+      "sessions": "可排序和合并的分组",
+      "goals": "带提醒的每日还原目标",
+      "import": "从其他计时器导入，全部导出到一个文件",
+      "sync": "离线可用，联网后自动备份你的还原"
+    },
+    "together": {
+      "title": "一起玩",
+      "rooms": "最多 16 人的房间，支持聊天和观战",
+      "battle": "对战：两位玩家共用一块屏幕，愿意的话各用一个智能魔方",
+      "messages": "可附带还原记录的私信",
+      "profile": "公开个人主页和可分享的 Cuber Card",
+      "rankings": "按 WCA 成绩排列的 Zkt Timer 用户排名"
+    },
+    "competitions": {
+      "title": "比赛",
+      "upcoming": "全球即将举行的 WCA 比赛，可按项目筛选",
+      "live": "每轮结束即显示 WCA Live 成绩",
+      "groups": "分组、任务分配和完整赛程",
+      "persons": "任意选手的分组和任务",
+      "records": "最新打破的纪录",
+      "alerts": "纪录提醒，最多关注五位选手"
+    }
   },
   "hero_cube": {
     "hint": "尝试拖动来还原它",
@@ -3702,21 +3739,9 @@
   },
   "welcome_mobile": {
     "title": "永远在你身边",
-    "description": "使用Zkt计时器，随时随地，界面友好。无需下载App。",
+    "description": "Zkt Timer 支持 iOS 和 Android，你的还原会备份到账户中。",
     "label_timer": "计时器",
-    "label_solves": "还原记录"
-  },
-  "welcome_partners": {
-    "title": "专业集成",
-    "description": "完全兼容WCA标准、智能魔方和专业计时器。与最先进的速拧设备无缝协作。",
-    "category_official": "🏆 官方标准",
-    "category_timer": "⏱️ 计时器支持",
-    "category_smart_cube": "🎯 智能魔方",
-    "wca_desc": "官方WCA打乱公式和规则",
-    "gan_timer_desc": "通过蓝牙连接进行无线测量",
-    "stackmat_desc": "WCA认证的专业计时器支持",
-    "gan_cube_desc": "实时还原追踪与分析",
-    "moyu_desc": "AI驱动的智能魔方集成"
+    "label_stats": "统计"
   },
   "welcome_footer": {
     "cta_title": "加入我们的社区",

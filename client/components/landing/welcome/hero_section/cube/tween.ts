@@ -22,6 +22,7 @@ class AnimationEngine {
 	private animations: Record<number, Animation> = {};
 	private raf = 0;
 	private time = 0;
+	private paused = false;
 
 	private update = () => {
 		const now = performance.now();
@@ -29,7 +30,7 @@ class AnimationEngine {
 		this.time = now;
 
 		let i = this.ids.length;
-		this.raf = i ? requestAnimationFrame(this.update) : 0;
+		this.raf = i && !this.paused ? requestAnimationFrame(this.update) : 0;
 
 		while (i--) {
 			if (this.animations[this.ids[i]]) this.animations[this.ids[i]].update(delta);
@@ -42,8 +43,28 @@ class AnimationEngine {
 		this.ids.push((animation as any).id);
 		this.animations[(animation as any).id] = animation;
 
-		if (this.raf !== 0) return;
+		if (this.raf !== 0 || this.paused) return;
 
+		this.time = performance.now();
+		this.raf = requestAnimationFrame(this.update);
+	}
+
+	/**
+	 * Stops the loop without dropping any animation. The hero cube's world is itself an
+	 * animation that re-renders WebGL every frame, forever, so without this the landing
+	 * page kept drawing the cube while the reader was far down the page.
+	 */
+	pause() {
+		this.paused = true;
+		if (this.raf) cancelAnimationFrame(this.raf);
+		this.raf = 0;
+	}
+
+	/** Picks up where it left off; the clock restarts so nothing jumps by the paused time. */
+	resume() {
+		if (!this.paused) return;
+		this.paused = false;
+		if (this.ids.length === 0 || this.raf !== 0) return;
 		this.time = performance.now();
 		this.raf = requestAnimationFrame(this.update);
 	}

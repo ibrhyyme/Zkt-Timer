@@ -163,10 +163,11 @@
 		pointer-events: none;
 	}
 
+	// Top right: the screenshot's own heading occupies the top-left corner.
 	&__image-badge {
 		position: absolute;
 		top: 1rem;
-		left: 1rem;
+		right: 1rem;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.45rem;

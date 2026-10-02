@@ -16,7 +16,7 @@
  */
 
 import * as THREE from 'three';
-import { Animation, Tween, Easing } from './tween';
+import { Animation, Tween, Easing, animationEngine } from './tween';
 
 // ============================================
 // Constants
@@ -1373,9 +1373,16 @@ export class CubeGame {
 		this.cube.reset();
 	}
 
+	/** Stop or restart every frame of work (render, float, turns) with the hero's visibility. */
+	setVisible(visible: boolean) {
+		if (visible) animationEngine.resume();
+		else animationEngine.pause();
+	}
+
 	dispose() {
 		if (this.disposed) return;
 		this.disposed = true;
+		animationEngine.resume();
 
 		if (this.floatTween) this.floatTween.stop();
 		if (this.controls.rotationTween) this.controls.rotationTween.stop();

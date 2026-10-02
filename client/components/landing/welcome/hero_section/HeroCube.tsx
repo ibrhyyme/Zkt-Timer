@@ -58,6 +58,7 @@ export default function HeroCube() {
 		if (!container) return;
 
 		let disposed = false;
+		let observer: IntersectionObserver | null = null;
 
 		import('./cube/game').then(({ CubeGame }) => {
 			if (disposed) return;
@@ -79,10 +80,18 @@ export default function HeroCube() {
 			setTimeout(() => {
 				if (!disposed) game.scramble(20);
 			}, 1200);
+
+			// The cube re-renders WebGL every frame while it is alive; stop that whenever
+			// the hero is scrolled out of view.
+			if ('IntersectionObserver' in window) {
+				observer = new IntersectionObserver(([entry]) => game.setVisible(entry.isIntersecting));
+				observer.observe(container);
+			}
 		});
 
 		return () => {
 			disposed = true;
+			observer?.disconnect();
 			cancelAnimationFrame(rafRef.current);
 			gameRef.current?.dispose();
 		};

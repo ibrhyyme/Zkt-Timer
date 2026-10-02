@@ -28,12 +28,11 @@ const PUBLIC = path.join(ROOT, 'public');
 const version = process.env.RELEASE_NAME || Date.now().toString();
 
 // Everything the app can fetch at runtime must ship; everything site-only stays out.
-// partners/ + welcome/ (~20 MB landing imagery) are intentionally excluded — the
-// client resolves them remotely in the local shell (client/util/api-base.ts
-// landingAsset). uploads/ is server-side user content, never bundled.
+// welcome/ (landing imagery and films) is intentionally excluded: the client resolves
+// it remotely in the local shell (client/util/api-base.ts landingAsset). uploads/ is
+// server-side user content, never bundled.
 const PUBLIC_EXCLUDES = new Set([
 	'uploads',
-	'partners',
 	'welcome',
 	'.well-known',
 	'sw.js',

@@ -257,6 +257,34 @@
 		}
 	}
 
+	// Store ratings and the live solve count, right under the badges they vouch for.
+	&__proof {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.25rem;
+		margin-top: 1rem;
+		font-size: 1.05rem;
+		font-weight: 600;
+		line-height: 1.4;
+		color: #c3c7d2;
+
+		@include bp-down($bp-grid-collapse) {
+			justify-content: center;
+			margin-bottom: 1.25rem;
+		}
+	}
+
+	&__proof-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	&__proof-star {
+		color: #ffd400;
+		flex-shrink: 0;
+	}
+
 	&__auth-divider {
 		display: flex;
 		align-items: center;

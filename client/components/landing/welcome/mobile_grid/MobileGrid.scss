@@ -22,20 +22,19 @@
 	}
 
 	&__title {
-		font-size: 2.5rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		margin-bottom: 1rem;
-		line-height: 1.2;
-
-		@include bp-down($bp-md) {
-			font-size: 2rem;
-		}
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 118%;
+		font-weight: 800;
+		font-size: clamp(2rem, 4.2vw, 3.6rem);
+		letter-spacing: -0.02em;
+		color: #f5f6f8;
+		margin: 0 0 1rem;
+		line-height: 1.04;
 	}
 
 	&__description {
 		font-size: 1.125rem;
-		color: rgba(var(--text-color), 0.7);
+		color: #c3c7d2;
 		max-width: 600px;
 		margin: 0 auto;
 		line-height: 1.7;
@@ -142,9 +141,40 @@
 	&__label {
 		text-align: center;
 		margin-top: 1rem;
-		font-size: 0.875rem;
-		color: rgba(var(--text-color), 0.6);
-		font-weight: 500;
+		font-size: 0.9rem;
+		color: #c3c7d2;
+		font-weight: 600;
+	}
+
+	// Closing call to action. The badge SVGs sit in a square viewBox with the badge
+	// across its middle third, hence the tall boxes (same sizing as the hero).
+	&__stores {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 1.2rem;
+		margin-top: 2rem;
+	}
+
+	&__store {
+		display: inline-block;
+		border-radius: 0.85rem;
+		overflow: hidden;
+		transition: filter 0.2s ease;
+
+		img {
+			display: block;
+			height: 150px;
+			width: auto;
+
+			@include bp-down($bp-md) {
+				height: 114px;
+			}
+		}
+
+		&:hover {
+			filter: brightness(1.15);
+		}
 	}
 
 	// ============================================

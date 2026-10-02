@@ -3026,39 +3026,6 @@
     "signup": "Sign Up",
     "open_app": "Open the app"
   },
-  "features": {
-    "timer_title": "Flawless Timer",
-    "timer_desc": "A clean, distraction-free interface with millisecond precision. Full control with keyboard shortcuts.",
-    "timer_bullet_1": "Lag-free start",
-    "timer_bullet_2": "Customizable appearance",
-    "timer_bullet_3": "WCA Scramble algorithms",
-    "timer_alt": "Timer Interface",
-    "stats_title": "Detailed Statistics",
-    "stats_desc": "Track your progress with charts. View your PBs, averages (AO5, AO12, AO100) and trends.",
-    "stats_bullet_1": "PB tracking",
-    "stats_bullet_2": "AO5/AO12/AO100",
-    "stats_bullet_3": "Trend analysis",
-    "stats_alt": "Statistics Panel",
-    "smart_cube_title": "Smart Cube Support",
-    "smart_cube_desc": "Connect your Bluetooth-enabled cube and analyze your moves, TPS and turn errors.",
-    "smart_cube_bullet_1": "Move analysis",
-    "smart_cube_bullet_2": "TPS tracking",
-    "smart_cube_bullet_3": "Turn accuracy",
-    "smart_cube_alt": "Smart Cube Integration",
-    "rooms_title": "Competitive Rooms",
-    "rooms_desc": "Create private rooms with friends or compete in public rooms. Live rankings and instant chat.",
-    "rooms_bullet_1": "Private rooms",
-    "rooms_bullet_2": "Live leaderboard",
-    "rooms_bullet_3": "Instant chat",
-    "rooms_alt": "Multiplayer Rooms"
-  },
-  "trust_section": {
-    "solves": "Solves",
-    "cube_type": "Cube Type",
-    "countries": "Countries",
-    "title": "WCA Compatible & Up-to-Date",
-    "description": "Access national and world records instantly. Stay current with official WCA scrambles."
-  },
   "time_display": {
     "inspection_on": "Inspection On",
     "solve": "SOLVE",
@@ -3598,59 +3565,6 @@
     "messaging_item_4": "Unsending a message removes its content from the database. Deleting a chat removes it from your side only; the other person keeps their copy.",
     "messaging_item_5": "Deleting your account also deletes every message you sent."
   },
-  "welcome_live_timer": {
-    "eyebrow": "Live Preview",
-    "title": "See how a pro timer feels",
-    "subtitle": "Get ready, inspect, solve, save. All in one flow. A timer experience fully compliant with WCA standards awaits you.",
-    "scramble": "Scramble",
-    "phase_ready": "Ready",
-    "phase_inspecting": "Inspection",
-    "phase_solving": "Solving",
-    "phase_done": "Done",
-    "feature_inspection_title": "15-second inspection",
-    "feature_inspection_desc": "WCA-compliant inspection with automatic +2 and DNF rules.",
-    "feature_penalty_title": "Penalty management",
-    "feature_penalty_desc": "+2 and DNF with one tap, plus undo support.",
-    "feature_smart_cube_title": "Smart cube support",
-    "feature_smart_cube_desc": "GAN, MoYu, Giiker — automatic solve detection.",
-    "feature_stackmat_title": "StackMat & GAN Timer",
-    "feature_stackmat_desc": "Full compatibility with pro hardware, competition-ready.",
-    "cta": "Try it now"
-  },
-  "welcome_comparison": {
-    "eyebrow": "Comparison",
-    "title": "Why Zkt Timer?",
-    "subtitle": "Timer, stats, smart cube, competition tracking — all in one platform. Here's what sets Zkt Timer apart from other popular timers.",
-    "th_feature": "Feature",
-    "badge_us": "Us",
-    "row_wca_scrambles": "WCA scrambles (all events)",
-    "row_smart_cube": "Smart cube (BLE) integration",
-    "row_stackmat_gan": "StackMat & GAN Timer support",
-    "row_solver": "Built-in solver (Cross, F2L, OLL, Roux, ZZ, Petrus)",
-    "row_trainer": "Algorithm trainer (OLL/PLL/ZBLL)",
-    "row_1v1_battle": "1v1 Battle mode",
-    "row_rooms": "Multiplayer rooms (live chat)",
-    "row_wca_oauth": "WCA account login & linking",
-    "row_wca_competitions": "WCA competition tracking (detail page)",
-    "row_wca_live": "WCA Live live-results integration",
-    "row_wca_notifications": "Live round push notifications",
-    "row_wca_assignments": "Competition task assignments (judge, scrambler, runner)",
-    "row_native_apps": "iOS & Android native apps",
-    "row_offline_sync": "Offline support + device sync",
-    "legend_yes": "Yes",
-    "legend_partial": "Partial",
-    "legend_no": "No"
-  },
-  "welcome_testimonials": {
-    "eyebrow": "User Reviews",
-    "title": "What cubers say about Zkt Timer",
-    "t1_quote": "The only app I need to track WCA competitions, train, and see my stats. Every update makes it better.",
-    "t1_role": "Top 50 3x3 in TR",
-    "t2_quote": "Works flawlessly with my smart cube, and the solver and trainer sections are like a textbook. Easy to understand even for beginners.",
-    "t2_role": "Learning OLL",
-    "t3_quote": "1v1 battle mode is so fun with friends. The WCA competition page is incredibly detailed too.",
-    "t3_role": "Registered WCA competitor"
-  },
   "welcome_wca": {
     "eyebrow": "WCA Competitions",
     "title": "Track Every WCA Competition on One Platform",
@@ -3696,29 +3610,140 @@
     "or_continue_web": "or continue on the web",
     "app_store_alt": "Download on the App Store",
     "google_play_alt": "Get it on Google Play",
-    "cta_try": "Try it now"
+    "cta_try": "Try it now",
+    "rating_line": "{{play}} on Google Play, {{apple}} on the App Store"
+  },
+  "welcome_reel": {
+    "label": "Zkt Timer film",
+    "caption": "The cube in the film replays a real 8.73 solve, turn for turn, at the speed it was solved."
+  },
+  "welcome_chapters": {
+    "title": "Everything around the solve",
+    "lede": "The screens below come straight from the app, taken from real sessions.",
+    "timer": {
+      "name": "Timer",
+      "title": "Set it up once, then just solve",
+      "body": "WCA inspection with automatic +2 and DNF, a fresh scramble after every solve, and a screen you arrange yourself. Move the modules, pick a theme and, with Pro, put your own photo or video behind the time.",
+      "fact_1": "Keyboard, touch, StackMat, GAN and QiYi timers, or a smart cube",
+      "fact_2": "Cross and XCross solutions worked out for every scramble",
+      "fact_3": "Every WCA event, with a 3D preview of the scramble",
+      "caption": "A 3x3 session with the Solvers, Phase Analysis and Time Distribution modules"
+    },
+    "smart": {
+      "name": "Smart cube",
+      "title": "Every turn on the record",
+      "body": "Connect a smart cube and the time starts with your first turn and stops when the cube is solved. Then open the solve and walk through it: the cross, each F2L pair, OLL and PLL, with the time you spent looking kept apart from the time you spent turning.",
+      "fact_1": "{{brands}} brands supported, GAN, MoYu and QiYi among them",
+      "fact_2": "Your cube mirrored in 3D, turn for turn",
+      "fact_3": "Step-by-step analysis and replay with Pro",
+      "caption": "Replay of an 8.73 solve on a GAN i4: 55 turns at 6.30 turns per second"
+    },
+    "hands": {
+      "name": "No extra hardware",
+      "title": "Put the cube down and the time stops",
+      "body": "Lay your phone flat on the table and solve. When you put the cube down, the phone feels the impact and stops the time. Lift to Start, in testing now, uses the phone's compass sensor to start the timer the moment you pick the cube up.",
+      "fact_1": "Drop to Stop works in the iOS and Android apps",
+      "fact_2": "Sensitivity you can set to suit your table",
+      "fact_3": "Lift to Start is being tested on some accounts",
+      "caption": "Drop to Stop and Lift to Start, drawn as an animation"
+    },
+    "stats": {
+      "name": "Statistics",
+      "title": "See where the time goes",
+      "body": "Your best single and averages, a timeline, consistency by hour of day, a solve calendar and a whole year of activity at a glance. Filter by session, cube and subset, then share the exact view as a link.",
+      "fact_1": "Averages from ao5 up to ao1000",
+      "fact_2": "Daily solve goals and streaks",
+      "fact_3": "Import your history from other timers",
+      "caption": "One account's year of solving: 193 active days"
+    },
+    "trainer": {
+      "name": "Trainer",
+      "title": "Drill the cases you keep missing",
+      "body": "Pick a set and practise it case by case. The trainer keeps the time and success rate of every algorithm, so the weak ones rise to the top. Four modes, from plain drilling to PLL recognition on the keyboard.",
+      "fact_1": "PLL, OLL, F2L, COLL, ZBLL, ZBLS and more",
+      "fact_2": "Sets for 2x2, 4x4, Pyraminx, Skewb and Square-1",
+      "fact_3": "Smart cube drilling and PDF sheets with Pro",
+      "caption": "The PLL set in the algorithm trainer"
+    },
+    "together": {
+      "name": "Together",
+      "title": "Race the person across the table",
+      "body": "Battle splits one screen between two players facing each other: the same scramble, a score each and, if they like, a smart cube each. For friends further away, rooms give everyone the same scramble and a live table of times.",
+      "fact_1": "Rooms for up to 16 people, with chat and spectators",
+      "fact_2": "Battle works on phones, tablets and computers",
+      "fact_3": "Messages with solves you can attach",
+      "caption": "A Battle round on one screen: 8.41 beats 9.62"
+    }
+  },
+  "welcome_inside": {
+    "title": "What's in the app",
+    "lede": "Everything on this list is in Zkt Timer today. Lines marked Pro come with a Pro membership.",
+    "platforms": "On the web, iOS and Android, in Turkish, English, Spanish, Russian and Chinese.",
+    "timer": {
+      "title": "Timer",
+      "inspection": "15-second WCA inspection with automatic +2 and DNF",
+      "inputs": "Keyboard, touch, virtual cube, StackMat and QYtoys, GAN and QiYi smart timers, manual entry",
+      "scrambles": "A scramble for every WCA event, with a 3D preview",
+      "solvers": "Cross, XCross, EOCross, Roux, Petrus and ZZ steps solved for the current scramble",
+      "layout": "Modules you drag, resize and swap on desktop",
+      "background": "Your own photo or video behind the timer",
+      "drop": "Drop to Stop in the phone apps"
+    },
+    "smart": {
+      "title": "Smart cube",
+      "brands": "Works with {{brands}}",
+      "mirror": "Your cube in 3D, turn for turn",
+      "auto": "Starts on your first turn, stops when the cube is solved",
+      "scramble": "Scramble moves tick off as you turn, with the fix for a wrong move",
+      "phases": "Cross, F2L, OLL and PLL splits with turns, TPS and a replay",
+      "cases": "Average phase times and case-by-case OLL and PLL stats"
+    },
+    "training": {
+      "title": "Training",
+      "modes": "Four modes: standard, smart cube, cross efficiency and PLL recognition",
+      "sets": "PLL, OLL, F2L, COLL, ZBLL, ZBLS, WVLS, VHLS, OLLCP and Roux sets",
+      "puzzles": "Sets for 2x2, 4x4, Pyraminx, Skewb and Square-1",
+      "weak": "Time and success rate kept for every algorithm",
+      "quest": "A guided 13-step path into PLL recognition",
+      "smart": "Drilling with a smart cube that checks every turn",
+      "pdf": "Algorithm sheets as PDF"
+    },
+    "stats": {
+      "title": "Statistics and data",
+      "averages": "Best single and averages up to ao1000",
+      "charts": "Timeline, consistency by hour and a 365-day activity map",
+      "sessions": "Sessions you can reorder and merge",
+      "goals": "Daily solve goals with reminders",
+      "import": "Import from other timers, export everything to one file",
+      "sync": "Works offline and backs up your solves once you are back online"
+    },
+    "together": {
+      "title": "Together",
+      "rooms": "Rooms for up to 16 people with chat and spectators",
+      "battle": "Battle: two players on one screen, a smart cube each if they like",
+      "messages": "Direct messages with solves you can attach",
+      "profile": "A public profile and a shareable Cuber Card",
+      "rankings": "Rankings of Zkt Timer users by their WCA results"
+    },
+    "competitions": {
+      "title": "Competitions",
+      "upcoming": "Upcoming WCA competitions worldwide, filtered by event",
+      "live": "WCA Live results as each round finishes",
+      "groups": "Groups, assignments and the full schedule",
+      "persons": "Any competitor's groups and duties",
+      "records": "Recently broken records",
+      "alerts": "Record alerts and following up to five competitors"
+    }
   },
   "hero_cube": {
     "hint": "Try to solve it by dragging",
     "try_again": "Try again"
   },
   "welcome_mobile": {
-    "title": "Always By Your Side",
-    "description": "Use Zkt Timer from anywhere with its mobile-friendly interface. No app download needed.",
+    "title": "Always by your side",
+    "description": "Zkt Timer on iOS and Android, with your solves backed up to your account.",
     "label_timer": "Timer",
-    "label_solves": "Solves"
-  },
-  "welcome_partners": {
-    "title": "Professional Integrations",
-    "description": "Fully compatible with WCA standards, smart cubes, and professional timers. Works seamlessly with the most advanced speedcubing equipment.",
-    "category_official": "🏆 Official Standard",
-    "category_timer": "⏱️ Timer Support",
-    "category_smart_cube": "🎯 Smart Cube",
-    "wca_desc": "Official WCA scramble algorithms and rules",
-    "gan_timer_desc": "Wireless measurement via Bluetooth connection",
-    "stackmat_desc": "WCA-approved professional timer support",
-    "gan_cube_desc": "Real-time solve tracking and analysis",
-    "moyu_desc": "AI-powered smart cube integration"
+    "label_stats": "Statistics"
   },
   "welcome_footer": {
     "cta_title": "Join Our Community",
