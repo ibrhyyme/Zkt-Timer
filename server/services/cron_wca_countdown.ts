@@ -86,8 +86,11 @@ async function runTick() {
 				// WCIF'ten baslangic saatini cek (cache'li)
 				let wcif = wcifCache.get(state.competition_id);
 				if (!wcif) {
+					// Own key, not the page's `cd:wca:wcif#<id>`: whichever caller misses
+					// first sets the TTL, and this cron's hour would pin the competition
+					// page to hour-old groups and times.
 					wcif = await fetchDataFromCache(
-						createRedisKey(RedisNamespace.WCA_WCIF, state.competition_id),
+						createRedisKey(RedisNamespace.WCA_WCIF, `countdown:${state.competition_id}`),
 						() => WcaApiService.fetchCompetitionWcif(state.competition_id),
 						WCIF_CACHE_TTL,
 					);

@@ -38,6 +38,11 @@ import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { getOnlineCounts, getOnlineUsers, disconnectUserSockets } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
+import CompetitionGroupsPublishedNotification from '../resources/notification_types/competition_groups_published';
+import CompetitionScheduleChangedNotification from '../resources/notification_types/competition_schedule_changed';
+import CompetitionResultsOfficialNotification from '../resources/notification_types/competition_results_official';
+import { buildZktAnnouncementText } from '../resources/notification_types/zkt_competition_announced';
+import { TimelineEntry } from '../services/CompetitionLifecycle';
 import { getPrisma } from '../database';
 import { WcaApiService } from '../services/WcaApiService';
 import axios from 'axios';
@@ -599,6 +604,88 @@ export class AdminResolver {
 				competitionId: compId,
 				eventId,
 				roundNumber: '3',
+			});
+		}
+
+		// --- Competition lifecycle samples (this user only, never a broadcast) ---
+		const day = new Date();
+		day.setUTCDate(day.getUTCDate() + 3);
+		const at = (hour: number, minute = 0) => {
+			const d = new Date(day);
+			d.setUTCHours(hour, minute, 0, 0);
+			return d.toISOString();
+		};
+		const entry = (activityCode: string, assignmentCode: string, start: string): TimelineEntry => ({
+			key: `${activityCode}|${assignmentCode}`,
+			activityCode,
+			assignmentCode,
+			name: null,
+			start,
+			end: start,
+		});
+		const lifecycleMeta = {
+			source: 'wca' as const,
+			competitionId: compId,
+			competitionName: compName,
+			registrantId: 1,
+			timezone: 'Europe/Istanbul',
+			locale,
+		};
+
+		// --- Test 5: Groups published ---
+		{
+			const notif = new CompetitionGroupsPublishedNotification(baseInput, {
+				...lifecycleMeta,
+				summary: {
+					competing: [entry('333-r1-g2', 'competitor', at(7, 30))],
+					duties: {judge: 2, scrambler: 1, runner: 0, other: 0},
+				},
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.detail(), notif.pushData());
+		}
+
+		// --- Test 6: Schedule changed (one move + one more change) ---
+		{
+			const notif = new CompetitionScheduleChangedNotification(baseInput, {
+				...lifecycleMeta,
+				diff: {
+					changed: [
+						{before: entry('333-r1-g2', 'competitor', at(7, 30)), after: entry('333-r1-g2', 'competitor', at(8, 0))},
+						{before: entry('222-r1-g1', 'staff-judge', at(9, 0)), after: entry('222-r1-g1', 'staff-judge', at(9, 30))},
+					],
+					added: [],
+					removed: [],
+				},
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.detail(), notif.pushData());
+		}
+
+		// --- Test 7: Results official, with a national rank climb ---
+		{
+			const notif = new CompetitionResultsOfficialNotification(baseInput, {
+				...lifecycleMeta,
+				rankLines: [{eventId: '333', type: 'average', best: 1124, before: 45, after: 38}],
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.detail(), notif.pushData());
+		}
+
+		// --- Test 8: ZKT announcement text, pushed to this user alone ---
+		{
+			const openAt = new Date(at(17, 0));
+			const {title, body} = buildZktAnnouncementText(locale, {
+				stage: 'announced',
+				competitionName: 'ZKT Test Open 2026',
+				openAt,
+				timezone: 'Europe/Istanbul',
+			});
+			await sendPushToUser(user.id, title, body, {
+				type: 'zkt_competition_announced',
+				stage: 'announced',
+				competitionId: 'zkt-test-open-2026',
+				link: '/competitions',
 			});
 		}
 

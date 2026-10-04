@@ -76,7 +76,34 @@ export async function createNotificationPreference(user: UserAccount) {
 
 // Only user-toggleable boolean preference columns. The key is client-supplied, so it must
 // be whitelisted before reaching the Prisma `data` object (don't pass arbitrary input through).
-const ALLOWED_PREFERENCE_KEYS = ['marketing_emails', 'membership_granted', 'support_ticket_reply'];
+const ALLOWED_PREFERENCE_KEYS = [
+	'marketing_emails',
+	'membership_granted',
+	'support_ticket_reply',
+	'zkt_competition_announced',
+	'competition_groups_published',
+	'competition_schedule_changed',
+	'competition_results_official',
+];
+
+export type PushPreferenceKey =
+	| 'zkt_competition_announced'
+	| 'competition_groups_published'
+	| 'competition_schedule_changed'
+	| 'competition_results_official';
+
+/**
+ * Of these users, who switched `key` off. One query for a whole batch, and it
+ * never creates rows: a user without a preference row has never opted out.
+ */
+export async function getUserIdsWithPrefDisabled(userIds: string[], key: PushPreferenceKey): Promise<Set<string>> {
+	if (userIds.length === 0) return new Set();
+	const rows = await getPrisma().notificationPreference.findMany({
+		where: {user_id: {in: userIds}, [key]: false},
+		select: {user_id: true},
+	});
+	return new Set(rows.map((r) => r.user_id));
+}
 
 export async function setNotificationPreference(user: UserAccount, key: string, value: boolean) {
 	if (!ALLOWED_PREFERENCE_KEYS.includes(key)) {

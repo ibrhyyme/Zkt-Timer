@@ -237,6 +237,10 @@ export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 	fragment NotificationPreferenceFragment on NotificationPreference {
 		marketing_emails
 		support_ticket_reply
+		zkt_competition_announced
+		competition_groups_published
+		competition_schedule_changed
+		competition_results_official
 	}
 `;
 

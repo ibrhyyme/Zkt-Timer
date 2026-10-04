@@ -444,6 +444,34 @@ export class WcaApiService {
 	}
 
 	/**
+	 * Like fetchPersonResults, but a failure throws instead of reading as "no
+	 * results". The official-results notification has to tell "did not compete"
+	 * apart from "WCA did not answer".
+	 */
+	static async fetchPersonResultsOrThrow(wcaId: string): Promise<any[]> {
+		const response = await axios.get(`${this.BASE_URL}/persons/${encodeURIComponent(wcaId)}/results`, {
+			timeout: 20000,
+		});
+		return Array.isArray(response.data) ? response.data : [];
+	}
+
+	/**
+	 * When the competition's results were posted, or null if not yet.
+	 *
+	 * `/competitions/{id}` does not carry `results_posted_at`; the list endpoint
+	 * does, and `q=<id>` narrows it to the competition. Throws on a network or
+	 * HTTP error so the caller retries instead of reading "not posted".
+	 */
+	static async fetchResultsPostedAt(competitionId: string): Promise<string | null> {
+		const response = await axios.get(`${this.BASE_URL}/competitions`, {
+			params: { q: competitionId, per_page: 10 },
+			timeout: 15000,
+		});
+		const match = (response.data || []).find((c: any) => c?.id === competitionId);
+		return match?.results_posted_at || null;
+	}
+
+	/**
 	 * Fetch all competitions a person attended
 	 */
 	static async fetchPersonCompetitions(wcaId: string): Promise<any[]> {

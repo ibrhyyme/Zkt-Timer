@@ -110,6 +110,9 @@ model UserAccount {
   // WCA competition notification tracking (auto-managed dedup state)
   wca_competition_notification_states WcaCompetitionNotificationState[]
 
+  // Competition lifecycle notifications (groups, schedule, official results)
+  competition_lifecycle_states  CompetitionLifecycleState[]
+
   // WCA competition competitor follows (Pro feature)
   competition_follows           CompetitionFollow[]
 
@@ -273,6 +276,12 @@ model NotificationPreference {
   marketing_emails      Boolean     @default(true)
   membership_granted    Boolean     @default(true)
   support_ticket_reply  Boolean     @default(true)
+  // Push opt-outs for competition lifecycle notifications. Column names equal
+  // the NotificationType values.
+  zkt_competition_announced    Boolean @default(true)
+  competition_groups_published Boolean @default(true)
+  competition_schedule_changed Boolean @default(true)
+  competition_results_official Boolean @default(true)
   user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
@@ -1316,6 +1325,90 @@ model WcaCompetitionCountdownNotified {
 
   @@unique([state_id, days_before])
   @@map("wca_competition_countdown_notified")
+}
+
+// Competition lifecycle notifications: groups published, schedule changed and
+// official results, for WCA and ZKT competitions. Separate from
+// WcaCompetitionNotificationState on purpose: those rows are deleted the day
+// after a competition ends, while WCA results turn official weeks later.
+//
+// One watch per competition. `competition_id` is the WCA id or `zkt-<slug>`.
+model CompetitionLifecycleWatch {
+  competition_id        String    @id
+  source                String // 'wca' | 'zkt'
+  name                  String    @default("")
+  timezone              String?
+  start_date            DateTime  @db.Date
+  end_date              DateTime  @db.Date
+  next_check_at         DateTime  @default(now())
+  // Null until the cron has read this competition's WCIF once. Registrants found
+  // on that first read are seeded silently (what already happened is not news);
+  // anyone matched on a later read is new and gets the normal flow.
+  synced_at             DateTime?
+  results_next_check_at DateTime?
+  results_official_at   DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  states CompetitionLifecycleState[]
+
+  @@index([next_check_at])
+  @@index([end_date])
+  @@map("competition_lifecycle_watch")
+}
+
+// One row per (user, competition) for an accepted registrant whose linked WCA
+// or ZKT identity matches a WCIF person. Every *_notified_at doubles as the
+// dedup claim: a send only happens after an updateMany flips it from null.
+model CompetitionLifecycleState {
+  id                     String    @id @default(uuid())
+  user_id                String
+  competition_id         String
+  registrant_id          Int?
+  wca_id                 String?
+  groups_pending_hash    String?
+  groups_pending_since   DateTime?
+  groups_notified_at     DateTime?
+  schedule_hash          String
+  schedule_baseline      Json
+  schedule_pending_hash  String?
+  schedule_pending_since DateTime?
+  schedule_notified_at   DateTime?
+  rank_baseline          Json?
+  results_checked_at     DateTime?
+  results_detected_at    DateTime?
+  results_notified_at    DateTime?
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+
+  user  UserAccount               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  watch CompetitionLifecycleWatch @relation(fields: [competition_id], references: [competition_id], onDelete: Cascade)
+
+  @@unique([user_id, competition_id])
+  @@index([competition_id])
+  @@map("competition_lifecycle_state")
+}
+
+// ZKT competition announcements broadcast to every user with push enabled.
+// Keyed by the federation's competition id (the slug can be edited).
+// `seeded` rows existed before the scanner first ran and are never announced.
+model ZktCompetitionAnnouncement {
+  competition_id       String    @id
+  slug                 String
+  name                 String
+  status               String    @default("")
+  timezone             String?
+  start_date           String    @default("") // YYYY-MM-DD
+  seeded               Boolean   @default(false)
+  cancelled            Boolean   @default(false)
+  registration_open_at DateTime?
+  open_checked_at      DateTime?
+  announced_at         DateTime?
+  reminder_sent_at     DateTime?
+  first_seen_at        DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  @@map("zkt_competition_announcement")
 }
 
 model CompetitionFollow {

@@ -14,6 +14,12 @@ export enum NotificationType {
 	WCA_FOLLOW_RESULT_ENTERED = 'wca_follow_result_entered',
 	WCA_FOLLOW_ROUND_FINISHED = 'wca_follow_round_finished',
 	WCA_FOLLOW_COUNTDOWN = 'wca_follow_countdown',
+	// Competition lifecycle. Each value is also a NotificationPreference column,
+	// so a user can switch the push off per type.
+	ZKT_COMPETITION_ANNOUNCED = 'zkt_competition_announced',
+	COMPETITION_GROUPS_PUBLISHED = 'competition_groups_published',
+	COMPETITION_SCHEDULE_CHANGED = 'competition_schedule_changed',
+	COMPETITION_RESULTS_OFFICIAL = 'competition_results_official',
 }
 
 export enum MetricLogType {

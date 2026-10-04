@@ -14,6 +14,19 @@ export class NotificationPreference {
 	@Field()
 	support_ticket_reply: boolean;
 
+	// Push opt-outs for competition lifecycle notifications.
+	@Field()
+	zkt_competition_announced: boolean;
+
+	@Field()
+	competition_groups_published: boolean;
+
+	@Field()
+	competition_schedule_changed: boolean;
+
+	@Field()
+	competition_results_official: boolean;
+
 	@Field()
 	created_at: Date;
 }

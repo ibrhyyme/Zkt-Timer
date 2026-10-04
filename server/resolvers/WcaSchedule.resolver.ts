@@ -18,6 +18,7 @@ import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, ge
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
+import {ensureLifecycleForViewer} from '../services/CompetitionLifecycleDiscovery';
 import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
 import {ZktFederationService} from '../services/ZktFederationService';
 import {
@@ -164,6 +165,17 @@ export class WcaScheduleResolver {
 				});
 			}
 
+			// Official-results notification for a finished competition whose
+			// results are not posted yet. Fire-and-forget, never throws.
+			if (detail && detail.myRegistrationStatus === 'accepted') {
+				ensureLifecycleForViewer({
+					userId: ctx.user.id,
+					competitionId: input.competitionId,
+					wcif: archive.wcif_data,
+					identity: {wcaId, wcaUserId},
+				});
+			}
+
 			return detail;
 		}
 
@@ -210,6 +222,18 @@ export class WcaScheduleResolver {
 					competitionId: input.competitionId,
 					err: err?.message,
 				});
+			});
+		}
+
+		// Groups / schedule / official-results tracking for this viewer.
+		// Unlike the line above it needs no WCA id: a first-timer is matched on
+		// their WCA account id. Fire-and-forget, never throws.
+		if (detail && detail.myRegistrationStatus === 'accepted') {
+			ensureLifecycleForViewer({
+				userId: ctx.user.id,
+				competitionId: input.competitionId,
+				wcif: wcifData,
+				identity: {wcaId, wcaUserId},
 			});
 		}
 
@@ -438,6 +462,15 @@ export class WcaScheduleResolver {
 						competitionId,
 						err: err?.message,
 					});
+				});
+
+				// Groups / schedule / official-results tracking, matched on the
+				// linked ZKT account like the page itself. Fire-and-forget.
+				ensureLifecycleForViewer({
+					userId,
+					competitionId,
+					wcif,
+					identity: {wcaId, wcaUserId, zktUserId: zkt?.zktUserId, zktId: zkt?.zktId},
 				});
 			}
 			return detail;

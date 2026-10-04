@@ -2,7 +2,7 @@ import {WcaApiService} from './WcaApiService';
 
 // --- WCIF Interfaces ---
 
-interface WcifActivity {
+export interface WcifActivity {
 	id: number;
 	name: string;
 	activityCode: string;
@@ -12,14 +12,14 @@ interface WcifActivity {
 	scrambleSetId?: number;
 }
 
-interface WcifRoom {
+export interface WcifRoom {
 	id: number;
 	name: string;
 	color: string;
 	activities: WcifActivity[];
 }
 
-interface WcifVenue {
+export interface WcifVenue {
 	id: number;
 	name: string;
 	latitudeMicrodegrees: number;
@@ -28,13 +28,13 @@ interface WcifVenue {
 	rooms: WcifRoom[];
 }
 
-interface WcifAssignment {
+export interface WcifAssignment {
 	activityId: number;
 	assignmentCode: string;
 	stationNumber?: number;
 }
 
-interface WcifPersonalBest {
+export interface WcifPersonalBest {
 	eventId: string;
 	best: number;
 	type: 'single' | 'average';
@@ -43,7 +43,7 @@ interface WcifPersonalBest {
 	nationalRanking: number;
 }
 
-interface WcifPerson {
+export interface WcifPerson {
 	registrantId: number;
 	wcaUserId: number;
 	wcaId: string;
@@ -67,7 +67,7 @@ interface WcifPerson {
 	personalBests?: WcifPersonalBest[];
 }
 
-interface WcifData {
+export interface WcifData {
 	id: string;
 	name: string;
 	persons: WcifPerson[];
@@ -95,7 +95,7 @@ interface WcifData {
 	};
 }
 
-interface ActivityInfo {
+export interface ActivityInfo {
 	id: number;
 	name: string;
 	activityCode: string;
@@ -293,7 +293,7 @@ function zktCompetitionDays(
 
 const ACTIVITY_CODE_REGEX = /^(\w+)-r(\d+)(?:-g(\d+))?(?:-a(\d+))?$/;
 
-function flattenActivities(venues: WcifVenue[]): Map<number, ActivityInfo> {
+export function flattenActivities(venues: WcifVenue[]): Map<number, ActivityInfo> {
 	const map = new Map<number, ActivityInfo>();
 
 	for (const venue of venues) {
@@ -324,7 +324,7 @@ function flattenActivities(venues: WcifVenue[]): Map<number, ActivityInfo> {
 	return map;
 }
 
-function parseActivityCode(activityCode: string): {eventId: string; roundNumber: number; groupNumber: number | null} {
+export function parseActivityCode(activityCode: string): {eventId: string; roundNumber: number; groupNumber: number | null} {
 	const match = activityCode.match(ACTIVITY_CODE_REGEX);
 	if (!match) {
 		return {eventId: activityCode, roundNumber: 0, groupNumber: null};
@@ -663,6 +663,50 @@ export interface ZktViewerIdentity {
 	zktId?: string | null;
 }
 
+/** Every identity a Zkt-Timer user can be recognised by in a WCIF. */
+export interface WcifIdentity {
+	wcaId?: string | null;
+	wcaUserId?: string | null;
+	zktUserId?: string | null;
+	zktId?: string | null;
+}
+
+/**
+ * Find a user among WCIF persons. The single matcher behind both the
+ * competition page ("who am I here") and every per-registrant notification, so
+ * the two can never disagree about who someone is.
+ *
+ * Order: WCA id, WCA account id, then the federation ids. ZKT competitions carry
+ * no wcaId, so on those only the last two can hit. The ZKT account id is checked
+ * before the competitor id because every member has one; the competitor id only
+ * exists after a first result. Every comparison is between non-empty strings:
+ * two nulls are not a match. Names are never used.
+ */
+export function findPersonInWcif<
+	P extends {wcaId?: string | null; wcaUserId?: number | string | null; zktId?: string | null; zktUserId?: string | null}
+>(persons: P[], identity: WcifIdentity): P | null {
+	const list = persons || [];
+	const {wcaId, wcaUserId, zktUserId, zktId} = identity || {};
+
+	if (wcaId) {
+		const hit = list.find((p) => p.wcaId === wcaId);
+		if (hit) return hit;
+	}
+	if (wcaUserId) {
+		const hit = list.find((p) => p.wcaUserId && String(p.wcaUserId) === String(wcaUserId));
+		if (hit) return hit;
+	}
+	if (zktUserId) {
+		const hit = list.find((p) => p.zktUserId && String(p.zktUserId) === String(zktUserId));
+		if (hit) return hit;
+	}
+	if (zktId) {
+		const hit = list.find((p) => p.zktId && String(p.zktId) === String(zktId));
+		if (hit) return hit;
+	}
+	return null;
+}
+
 export function buildCompetitionDetail(
 	wcifData: WcifData,
 	myWcaId: string,
@@ -676,23 +720,12 @@ export function buildCompetitionDetail(
 	const persons = wcifData.persons || [];
 	const activityMap = flattenActivities(wcifData.schedule?.venues || []);
 
-	let myPerson = myWcaId ? persons.find((p) => p.wcaId === myWcaId) || null : null;
-	if (!myPerson && myWcaUserId) {
-		myPerson = persons.find((p) => p.wcaUserId && String(p.wcaUserId) === myWcaUserId) || null;
-	}
-	// ZKT competitions: nobody in the WCIF carries a wcaId, so the two lookups
-	// above can never hit and the viewer stays anonymous on their own
-	// competition page. The account id is checked first because every member has
-	// one; the competitor id only exists after they have competed. Both are
-	// compared as non-empty strings — two nulls are not a match.
-	if (!myPerson && (myZkt?.zktUserId || myZkt?.zktId)) {
-		const wantUser = myZkt.zktUserId || null;
-		const wantComp = myZkt.zktId || null;
-		myPerson =
-			persons.find((p) => wantUser && p.zktUserId && String(p.zktUserId) === String(wantUser)) ||
-			persons.find((p) => wantComp && p.zktId && String(p.zktId) === String(wantComp)) ||
-			null;
-	}
+	const myPerson = findPersonInWcif(persons, {
+		wcaId: myWcaId,
+		wcaUserId: myWcaUserId,
+		zktUserId: myZkt?.zktUserId,
+		zktId: myZkt?.zktId,
+	});
 
 	return {
 		competitionId: wcifData.id,

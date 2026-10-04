@@ -14,6 +14,14 @@ export interface PushResult {
 
 const EMPTY_PUSH_RESULT: PushResult = { successCount: 0, failureCount: 0, totalTokens: 0 };
 
+// FCM multicast limit.
+const BATCH_SIZE = 500;
+
+const INVALID_TOKEN_CODES = new Set([
+	'messaging/registration-token-not-registered',
+	'messaging/invalid-registration-token',
+]);
+
 export function initFirebase(): void {
 	const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
 	if (!serviceAccountPath) {
@@ -39,6 +47,70 @@ export function initFirebase(): void {
 	}
 }
 
+function multicastMessage(tokens: string[], title: string, body: string, data?: Record<string, string>) {
+	return {
+		tokens,
+		notification: { title, body },
+		data: data || {},
+		apns: {
+			payload: {
+				aps: {
+					sound: 'default',
+				},
+			},
+		},
+		android: {
+			notification: {
+				sound: 'default',
+			},
+		},
+	};
+}
+
+/**
+ * Send one message to many tokens in FCM-sized batches. A failed batch is logged
+ * and skipped; the rest still go out. Returns the tokens FCM reported as dead.
+ */
+async function sendInBatches(
+	tokenStrings: string[],
+	title: string,
+	body: string,
+	data?: Record<string, string>
+): Promise<{ success: number; failure: number; invalid: string[] }> {
+	let success = 0;
+	let failure = 0;
+	const invalid: string[] = [];
+
+	for (let i = 0; i < tokenStrings.length; i += BATCH_SIZE) {
+		const batch = tokenStrings.slice(i, i + BATCH_SIZE);
+
+		try {
+			const response = await admin.messaging().sendEachForMulticast(multicastMessage(batch, title, body, data));
+
+			success += response.successCount;
+			failure += response.failureCount;
+
+			response.responses.forEach((resp, idx) => {
+				if (resp.error && INVALID_TOKEN_CODES.has(resp.error.code)) {
+					invalid.push(batch[idx]);
+				}
+			});
+		} catch (batchError) {
+			logger.error(`[Push] Batch send error (batch ${i / BATCH_SIZE + 1}):`, batchError);
+		}
+	}
+
+	return { success, failure, invalid };
+}
+
+async function removeInvalidTokens(tokens: string[]): Promise<void> {
+	if (tokens.length === 0) return;
+	await getPrisma().pushToken.deleteMany({
+		where: { token: { in: tokens } },
+	});
+	logger.info(`[Push] Removed ${tokens.length} invalid tokens`);
+}
+
 /**
  * Send push notifications to all registered devices.
  * Fire-and-forget: on error, only log without blocking the notification process.
@@ -50,8 +122,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 	}
 
 	try {
-		const prisma = getPrisma();
-		const tokens = await prisma.pushToken.findMany({
+		const tokens = await getPrisma().pushToken.findMany({
 			select: { token: true },
 		});
 
@@ -61,65 +132,11 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 		}
 
 		const tokenStrings = tokens.map((t) => t.token);
+		const { success, failure, invalid } = await sendInBatches(tokenStrings, title, body, data);
+		await removeInvalidTokens(invalid);
 
-		// FCM has a batch limit of 500
-		const BATCH_SIZE = 500;
-		let totalSuccess = 0;
-		let totalFailure = 0;
-		const tokensToRemove: string[] = [];
-
-		for (let i = 0; i < tokenStrings.length; i += BATCH_SIZE) {
-			const batch = tokenStrings.slice(i, i + BATCH_SIZE);
-
-			try {
-				const response = await admin.messaging().sendEachForMulticast({
-					tokens: batch,
-					notification: { title, body },
-					data: data || {},
-					apns: {
-						payload: {
-							aps: {
-								sound: 'default',
-							},
-						},
-					},
-					android: {
-						notification: {
-							sound: 'default',
-						},
-					},
-				});
-
-				totalSuccess += response.successCount;
-				totalFailure += response.failureCount;
-
-				// Clean up invalid tokens
-				response.responses.forEach((resp, idx) => {
-					if (resp.error) {
-						const code = resp.error.code;
-						if (
-							code === 'messaging/registration-token-not-registered' ||
-							code === 'messaging/invalid-registration-token'
-						) {
-							tokensToRemove.push(batch[idx]);
-						}
-					}
-				});
-			} catch (batchError) {
-				logger.error(`[Push] Batch send error (batch ${i / BATCH_SIZE + 1}):`, batchError);
-			}
-		}
-
-		// Delete invalid tokens from database
-		if (tokensToRemove.length > 0) {
-			await prisma.pushToken.deleteMany({
-				where: { token: { in: tokensToRemove } },
-			});
-			logger.info(`[Push] Removed ${tokensToRemove.length} invalid tokens`);
-		}
-
-		logger.info(`[Push] Sent: ${totalSuccess} success, ${totalFailure} failure, ${tokenStrings.length} total`);
-		return { successCount: totalSuccess, failureCount: totalFailure, totalTokens: tokenStrings.length };
+		logger.info(`[Push] Sent: ${success} success, ${failure} failure, ${tokenStrings.length} total`);
+		return { successCount: success, failureCount: failure, totalTokens: tokenStrings.length };
 	} catch (error) {
 		logger.error('[Push] sendPushToAll error:', error);
 		return EMPTY_PUSH_RESULT;
@@ -141,8 +158,7 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 	}
 
 	try {
-		const prisma = getPrisma();
-		const tokens = await prisma.pushToken.findMany({
+		const tokens = await getPrisma().pushToken.findMany({
 			where: { platform: { in: platforms as any[] } },
 			select: { token: true },
 		});
@@ -153,63 +169,83 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 		}
 
 		const tokenStrings = tokens.map((t) => t.token);
-		const BATCH_SIZE = 500;
-		let totalSuccess = 0;
-		let totalFailure = 0;
-		const tokensToRemove: string[] = [];
+		const { success, failure, invalid } = await sendInBatches(tokenStrings, title, body, data);
+		await removeInvalidTokens(invalid);
 
-		for (let i = 0; i < tokenStrings.length; i += BATCH_SIZE) {
-			const batch = tokenStrings.slice(i, i + BATCH_SIZE);
-
-			try {
-				const response = await admin.messaging().sendEachForMulticast({
-					tokens: batch,
-					notification: { title, body },
-					data: data || {},
-					apns: {
-						payload: {
-							aps: {
-								sound: 'default',
-							},
-						},
-					},
-					android: {
-						notification: {
-							sound: 'default',
-						},
-					},
-				});
-
-				totalSuccess += response.successCount;
-				totalFailure += response.failureCount;
-
-				response.responses.forEach((resp, idx) => {
-					if (resp.error) {
-						const code = resp.error.code;
-						if (
-							code === 'messaging/registration-token-not-registered' ||
-							code === 'messaging/invalid-registration-token'
-						) {
-							tokensToRemove.push(batch[idx]);
-						}
-					}
-				});
-			} catch (batchError) {
-				logger.error(`[Push] Batch send error (batch ${i / BATCH_SIZE + 1}):`, batchError);
-			}
-		}
-
-		if (tokensToRemove.length > 0) {
-			await prisma.pushToken.deleteMany({
-				where: { token: { in: tokensToRemove } },
-			});
-			logger.info(`[Push] Removed ${tokensToRemove.length} invalid tokens`);
-		}
-
-		logger.info(`[Push] Sent to [${platforms.join(', ')}]: ${totalSuccess} success, ${totalFailure} failure, ${tokenStrings.length} total`);
-		return { successCount: totalSuccess, failureCount: totalFailure, totalTokens: tokenStrings.length };
+		logger.info(`[Push] Sent to [${platforms.join(', ')}]: ${success} success, ${failure} failure, ${tokenStrings.length} total`);
+		return { successCount: success, failureCount: failure, totalTokens: tokenStrings.length };
 	} catch (error) {
 		logger.error('[Push] sendPushToPlatforms error:', error);
+		return EMPTY_PUSH_RESULT;
+	}
+}
+
+/**
+ * Broadcast to every device, in each recipient's own language, skipping users
+ * who switched this notification type off.
+ *
+ * `prefKey` is a NotificationPreference column. A user with no preference row
+ * has never changed anything and counts as opted in. Tokens are grouped by the
+ * owner's `settings.locale` (unknown or missing: `fallbackLocale`) and `build`
+ * runs once per language.
+ */
+export async function sendPushToAllLocalized(args: {
+	prefKey: string;
+	locales: string[];
+	fallbackLocale: string;
+	build: (locale: string) => { title: string; body: string };
+	data?: Record<string, string>;
+}): Promise<PushResult> {
+	if (!firebaseInitialized) {
+		logger.warn('[Push] Firebase not initialized, skipping localized broadcast');
+		return EMPTY_PUSH_RESULT;
+	}
+
+	try {
+		const rows = await getPrisma().pushToken.findMany({
+			where: {
+				user: {
+					NOT: { notification_preferences: { is: { [args.prefKey]: false } as any } },
+				},
+			},
+			select: { token: true, user: { select: { settings: { select: { locale: true } } } } },
+		});
+
+		if (rows.length === 0) {
+			logger.info('[Push] Localized broadcast: no eligible tokens', { prefKey: args.prefKey });
+			return EMPTY_PUSH_RESULT;
+		}
+
+		const byLocale = new Map<string, string[]>();
+		for (const row of rows) {
+			const raw = (row as any).user?.settings?.locale;
+			const locale = raw && args.locales.includes(raw) ? raw : args.fallbackLocale;
+			if (!byLocale.has(locale)) byLocale.set(locale, []);
+			byLocale.get(locale).push(row.token);
+		}
+
+		let success = 0;
+		let failure = 0;
+		const invalid: string[] = [];
+		for (const [locale, tokens] of byLocale) {
+			const { title, body } = args.build(locale);
+			const res = await sendInBatches(tokens, title, body, args.data);
+			success += res.success;
+			failure += res.failure;
+			invalid.push(...res.invalid);
+		}
+		await removeInvalidTokens(invalid);
+
+		logger.info('[Push] Localized broadcast sent', {
+			prefKey: args.prefKey,
+			success,
+			failure,
+			total: rows.length,
+			locales: [...byLocale.keys()],
+		});
+		return { successCount: success, failureCount: failure, totalTokens: rows.length };
+	} catch (error) {
+		logger.error('[Push] sendPushToAllLocalized error:', error);
 		return EMPTY_PUSH_RESULT;
 	}
 }
@@ -230,23 +266,7 @@ export async function sendPushToUser(userId: string, title: string, body: string
 		if (tokens.length === 0) return;
 
 		const tokenStrings = tokens.map((t) => t.token);
-		const response = await admin.messaging().sendEachForMulticast({
-			tokens: tokenStrings,
-			notification: { title, body },
-			data: data || {},
-			apns: {
-				payload: {
-					aps: {
-						sound: 'default',
-					},
-				},
-			},
-			android: {
-				notification: {
-					sound: 'default',
-				},
-			},
-		});
+		const response = await admin.messaging().sendEachForMulticast(multicastMessage(tokenStrings, title, body, data));
 
 		// Clean up invalid tokens
 		const tokensToRemove: string[] = [];
@@ -259,10 +279,7 @@ export async function sendPushToUser(userId: string, title: string, body: string
 					errorCode: code,
 					errorMessage: resp.error.message,
 				});
-				if (
-					code === 'messaging/registration-token-not-registered' ||
-					code === 'messaging/invalid-registration-token'
-				) {
+				if (INVALID_TOKEN_CODES.has(code)) {
 					tokensToRemove.push(tokenStrings[idx]);
 				}
 			}

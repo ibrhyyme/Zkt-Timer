@@ -777,6 +777,10 @@ type NotificationPreference {
   user_id: String
   marketing_emails: Boolean
   support_ticket_reply: Boolean
+  zkt_competition_announced: Boolean
+  competition_groups_published: Boolean
+  competition_schedule_changed: Boolean
+  competition_results_official: Boolean
   created_at: DateTime
 }
 

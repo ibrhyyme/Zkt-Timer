@@ -8,6 +8,8 @@ import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
+import {rememberWcaCompetitions} from '../services/CompetitionLifecycleDiscovery';
+import {logger} from '../services/logger';
 
 const CACHE_TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
@@ -131,6 +133,12 @@ export class WcaCompetitionResolver {
 			return [];
 		}
 		const raw = await WcaApiService.fetchMyCompetitions(authToken);
+		// Abroad competitions are not in the lifecycle cron's TR feed; this list
+		// is how it learns about them, using the token the user just spent
+		// anyway. Fire-and-forget.
+		rememberWcaCompetitions(raw).catch((err: any) => {
+			logger.warn('[Lifecycle] remember my competitions failed', {err: err?.message});
+		});
 		return dropFinished(
 			raw.map((c) => ({
 				id: c.id,

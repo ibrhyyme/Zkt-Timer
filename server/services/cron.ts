@@ -5,6 +5,8 @@ import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
 import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
 import {initWcaCompetitionCountdownCronJob} from './cron_wca_countdown';
+import {initCompetitionLifecycleCronJob} from './cron_competition_lifecycle';
+import {initZktAnnouncementCronJob} from './cron_zkt_announcements';
 import {initWcaRecordRadarCronJob} from './cron_wca_records';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {initZktBackfillCronJob} from './cron_zkt_backfill';
@@ -29,6 +31,8 @@ export function initCronJobs() {
 	initProPremiumExpiryCronJob();
 	initWcaCompetitionNotificationCronJob();
 	initWcaCompetitionCountdownCronJob();
+	initCompetitionLifecycleCronJob();
+	initZktAnnouncementCronJob();
 	initWcaRecordRadarCronJob();
 	initWcaBackfillCronJob();
 	initZktBackfillCronJob();
