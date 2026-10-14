@@ -16,8 +16,10 @@
  *   and cases keep page order inside a subset. Where the page interleaves subgroups (OLL, PLL,
  *   F2L, Advanced F2L, CLS) grouping them changes the overall case order; nothing else does.
  * - "algorithm" is the site's curated "Standard Alg" when it has one, else its top-voted alg.
- *   "alternatives" are all other algs the site shows, in vote order, without exact repeats
- *   (same moves after removing brackets and extra spaces).
+ *   "alternatives" are all other algs the site shows, in vote order, without repeats: algs that
+ *   are the same after the rewrites below, ignoring brackets and spaces ("R3" and "R'" count as
+ *   the same spelling). The main alg's own copy in the site list is found the same way, or by
+ *   merging adjacent turns ("R' R'" = "R2") when the Standard Alg is written uncancelled.
  * - Cases with slot tabs (F2L, Advanced F2L, Pyraminx L4E) become one entry per slot,
  *   named "<case> - <slot>", like the existing F2L category.
  * - Names are unique within a category: the site reuses some case names for different cases
@@ -28,8 +30,10 @@
  * - Notation is rewritten only where the meaning stays the same, so the trainer's
  *   expandNotation() / cleanAlgorithmForCubing() and cubing.js read it as the site means it:
  *   turn amounts other than 1 and 2 ("R3" → "R'", "U3'" → "U", "R4" dropped), group repeats
- *   ("(R U R')3" → three copies), "R '" → "R'", 3x3 wide turns "Rw" → "r", 2x2 two-layer turns
- *   as the rotations they are ("d2" → "y2", "Rw" → "x"), Square-1 "/" with a space on each side.
+ *   ("(R U R')3" → three copies, primed and nested groups too), "R '" → "R'", 3x3 wide turns
+ *   "Rw" → "r", 2x2 two-layer turns as the rotations they are ("d2" → "y2", "Rw" → "x"),
+ *   Square-1 "/" with a space on each side. Skewb's H/S macros keep their amounts. Anything the
+ *   rewrites cannot resolve is listed in the manifest ("unhandledNotation"), never guessed.
  *   The raw dump keeps the site's spelling.
  * - A page listed under two sets (PLL under 1LLL, ZBLL U under 1LLL and ZBLL) is emitted once,
  *   under the set that owns it. The manifest's "alsoIncludes" lists what was left out.
@@ -37,7 +41,7 @@
 
 import {readFileSync, writeFileSync, mkdirSync} from 'fs';
 import {join, dirname} from 'path';
-import {fileURLToPath} from 'url';
+import {fileURLToPath, pathToFileURL} from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -146,13 +150,35 @@ function cleanName(name) {
 	return name.replace(/\s+/g, ' ').trim();
 }
 
-/** "(R U R')3" → "(R U R') (R U R') (R U R')"; the trainer would read the 3 as nothing. */
-function expandGroupRepeats(alg) {
-	return alg.replace(/(\([^()]*\))\s*(\d+)('?)(?=$|[\s)\]}])/g, (m, group, count, prime) => {
-		const n = Number(count);
-		if (prime || n < 2 || n > 12) return m;
-		return Array(n).fill(group).join(' ');
-	});
+/**
+ * "(R U R')3" → "(R U R') (R U R') (R U R')", "[R U]2'" → "(U' R') (U' R')", "((R U)2 F)3"
+ * from the inside out. The trainer would read the trailing digits as nothing.
+ */
+function expandGroupRepeats(alg, puzzle) {
+	const OPEN = '([{';
+	const CLOSE = ')]}';
+	for (let pass = 0; pass < 10; pass++) {
+		// Find the first closing bracket that carries a repeat count, then its opening bracket
+		const m = /[)\]}]\s*(\d+)('?)(?=$|[\s)\]}])/.exec(alg);
+		if (!m) return alg;
+		const close = m.index;
+		let depth = 0;
+		let open = -1;
+		for (let i = close; i >= 0; i--) {
+			if (CLOSE.includes(alg[i])) depth++;
+			else if (OPEN.includes(alg[i]) && --depth === 0) {
+				open = i;
+				break;
+			}
+		}
+		const n = Number(m[1]);
+		if (open === -1 || n < 1 || n > 12) return alg;
+		const inner = alg.slice(open + 1, close).trim();
+		const body = m[2] ? invertMoves(inner, puzzle) : inner;
+		if (body === null) return alg;
+		alg = alg.slice(0, open) + Array(n).fill(`(${body})`).join(' ') + alg.slice(close + m[0].length);
+	}
+	return alg;
 }
 
 /**
@@ -160,18 +186,42 @@ function expandGroupRepeats(alg) {
  * keeps the 2). x/y/z use the rotation order, everything else the puzzle's face order.
  */
 function canonicalAmounts(alg, puzzle) {
-	return alg.replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
-		if (amount === '2') return m;
-		if (amount === '1') return pre + move + prime;
-		const order = /^[xyz]$/.test(move) ? ROTATION_ORDER[puzzle] : TURN_ORDER[puzzle];
+	return alg.replace(/(^|[\s([{])(\d*[A-Za-z]+w?)('?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, primeBefore, amount, primeAfter) => {
+		const prime = Boolean(primeBefore) !== Boolean(primeAfter);
+		if (amount === '2' && !primeBefore) return m;
+		const order = turnOrder(move, puzzle);
 		if (!order) return m;
 		const n = Number(amount) % order;
 		const turns = prime ? (order - n) % order : n;
 		if (turns === 0) return pre;
 		if (turns === 1) return pre + move;
 		if (turns === order - 1) return pre + move + "'";
-		return pre + move + '2';
+		return pre + move + '2' + (prime && order !== 4 ? "'" : '');
 	});
+}
+
+/**
+ * Turns per full rotation of one move token, or null when not known. On Skewb only the single
+ * corner turns are thirds: Sarah's H and S macros are not, and are left as written.
+ */
+function turnOrder(move, puzzle) {
+	if (/^[xyz]$/.test(move)) return ROTATION_ORDER[puzzle] ?? null;
+	if (puzzle === 'Skewb' && !/^[RLUBFDrlubfd]$/.test(move)) return null;
+	return TURN_ORDER[puzzle] ?? null;
+}
+
+/**
+ * Turn amounts the rewrites could not resolve: a digit after a group, a prime before a digit,
+ * an amount other than 2 on a token, or a wide "w" left on 3x3/2x2. Reported, not guessed.
+ */
+function unhandledNotation(alg, puzzle) {
+	if (isSquare1(puzzle) || puzzle === 'Megaminx') return false;
+	if (/[)\]}]\s*\d/.test(alg) || /'\d/.test(alg)) return true;
+	for (const token of normalize(alg).split(' ')) {
+		const m = token.match(/^\d*[A-Za-z]+w?(\d+)'?$/);
+		if (m && m[1] !== '2') return true;
+	}
+	return (puzzle === '3x3' || puzzle === '2x2') && /[A-Za-z]w/.test(alg);
 }
 
 // On a 2x2 a two-layer turn moves the whole puzzle: "d" and "Dw" are "y'", "r" and "Rw" are "x".
@@ -179,10 +229,11 @@ function canonicalAmounts(alg, puzzle) {
 const WIDE_2X2 = {u: ['y', false], d: ['y', true], r: ['x', false], l: ['x', true], f: ['z', false], b: ['z', true]};
 
 function wideToRotations2x2(alg) {
-	return alg.replace(/(^|[\s([{])(?:([udrlfb])|([UDRLFB])w)(2?)('?)(?=$|[\s)\]}])/g, (m, pre, lower, upper, half, prime) => {
+	return alg.replace(/(^|[\s([{])(?:([udrlfb])|([UDRLFB])w)('?)(2?)('?)(?=$|[\s)\]}])/g, (m, pre, lower, upper, primeBefore, half, primeAfter) => {
 		const [axis, inverted] = WIDE_2X2[(lower ?? upper).toLowerCase()];
-		if (half) return pre + axis + '2' + prime;
-		return pre + axis + (inverted !== Boolean(prime) ? "'" : '');
+		const prime = Boolean(primeBefore) !== Boolean(primeAfter);
+		if (half) return pre + axis + '2' + (prime ? "'" : '');
+		return pre + axis + (inverted !== prime ? "'" : '');
 	});
 }
 
@@ -212,13 +263,13 @@ function rewriteAlg(alg, puzzle) {
 		step('square1Spacing', spaceSquare1);
 	} else {
 		step('primeSpace', (a) => a.replace(/([A-Za-z0-9)\]])\s+'(?=\s|$)/g, "$1'"));
-		step('groupRepeats', expandGroupRepeats);
+		step('groupRepeats', (a) => expandGroupRepeats(a, puzzle));
 		step('amounts', (a) => canonicalAmounts(a, puzzle));
 		if (puzzle === '3x3') step('wide3x3', wideToLowercase3x3);
 		if (puzzle === '2x2') step('wide2x2', wideToRotations2x2);
 	}
 	if (applied.length) alg = alg.replace(/\s+/g, ' ').trim();
-	return {alg, applied};
+	return {alg, applied, unhandled: unhandledNotation(alg, puzzle)};
 }
 
 /** Square-1: "1,0 / 3,0 / -1,-1" or "/ (0,3) / (-3,-3) /" → reversed, every turn negated. */
@@ -265,6 +316,28 @@ function invertMoves(alg, puzzle) {
 	return out.reverse().join(' ');
 }
 
+/**
+ * The alg with adjacent turns of the same move merged ("R' R'" → "R2", "U' U'" → "U2",
+ * "R2'" → "R2"), as a comparable string. Only used to find the site's own copy of a Standard Alg.
+ */
+function cancelKey(alg, puzzle) {
+	const out = [];
+	for (const token of normalize(alg).split(' ')) {
+		const m = token.match(/^(\d*[A-Za-z]+w?)(\d*)('?)$/);
+		const order = m ? turnOrder(m[1], puzzle) : null;
+		if (!m || !order) {
+			out.push([token, null]);
+			continue;
+		}
+		const turns = ((Number(m[2] || 1) * (m[3] ? -1 : 1)) % order + order) % order;
+		const last = out[out.length - 1];
+		if (last && last[0] === m[1] && last[1] !== null) last[1] = (last[1] + turns) % order;
+		else out.push([m[1], turns]);
+		while (out.length && out[out.length - 1][1] === 0) out.pop();
+	}
+	return out.map(([move, turns]) => (turns === null ? move : `${move}${turns}`)).join(' ');
+}
+
 function invert(alg, puzzle) {
 	return isSquare1(puzzle) ? invertSquare1(alg) : invertMoves(alg, puzzle);
 }
@@ -301,10 +374,14 @@ function newCounters() {
 		cases: 0,
 		algorithms: 0,
 		duplicatesDropped: 0,
+		duplicatesBySpelling: 0,
+		emptySiteAlgs: 0,
 		standardAlgNotOnSite: 0,
 		unreachableAlternatives: 0,
 		rewritten: Object.fromEntries(REWRITES.map((k) => [k, 0])),
 		rewrittenAlgs: 0,
+		rewrittenSetups: 0,
+		unhandledNotation: [],
 		setupFromSite: 0,
 		setupFromInverse: 0,
 		setupMissing: [],
@@ -313,17 +390,22 @@ function newCounters() {
 	};
 }
 
-/** One canonical spelling per source string, counted once per distinct string. */
+/** One canonical spelling per source string, counted once per distinct string and role. */
 function makeCanonical(puzzle, counters) {
 	const cache = new Map();
-	return (alg) => {
-		if (!cache.has(alg)) {
-			const {alg: out, applied} = rewriteAlg(alg, puzzle);
+	return (alg, role = 'alg', where = null) => {
+		const key = `${role}\u0000${alg}`;
+		if (!cache.has(key)) {
+			const {alg: out, applied, unhandled} = rewriteAlg(alg, puzzle);
 			for (const kind of applied) counters.rewritten[kind]++;
-			if (applied.length) counters.rewrittenAlgs++;
-			cache.set(alg, out);
+			if (applied.length) role === 'setup' ? counters.rewrittenSetups++ : counters.rewrittenAlgs++;
+			if (unhandled) {
+				counters.unhandledNotation.push({...(where ?? {}), role, alg: out});
+				console.warn(`[warn] unhandled notation (${role}): ${out}`);
+			}
+			cache.set(key, out);
 		}
-		return cache.get(alg);
+		return cache.get(key);
 	};
 }
 
@@ -336,39 +418,42 @@ function orientationEntries(c, caseIndex, pageKey, puzzle, counters, canonical) 
 		counters.unreachableAlternatives += o.unreachableAtLeast ?? 0;
 
 		const siteAlgs = o.algorithms.filter((a) => normalize(a.alg));
+		counters.emptySiteAlgs += o.algorithms.length - siteAlgs.length;
 		const primarySource = o.index === 0 && c.standardAlg ? c.standardAlg : siteAlgs[0]?.alg;
 		if (!primarySource) {
 			// The site lists a case with no moves at all (e.g. SQ1 "Square / Square", already solved)
 			counters.emptyCases.push(name);
 			continue;
 		}
-		const primary = canonical(primarySource);
+		const where = {name};
+		const primary = canonical(primarySource, 'alg', where);
 		const primaryKey = normalize(primary);
-		const seen = new Set([primaryKey]);
-		let primaryMatched = false;
+		const rewritten = siteAlgs.map((a) => canonical(a.alg, 'alg', where));
+		// The site's own copy of the main alg is the main alg, not an alternative. A Standard Alg
+		// may be the top-voted alg written without cancelling ("R' R'" for "R2").
+		let copyIndex = rewritten.findIndex((alg) => normalize(alg) === primaryKey);
+		if (copyIndex === -1) copyIndex = rewritten.findIndex((alg) => cancelKey(alg, puzzle) === cancelKey(primary, puzzle));
+		if (copyIndex === -1) counters.standardAlgNotOnSite++;
+		const kept = new Map([[primaryKey, normalize(copyIndex === -1 ? primarySource : siteAlgs[copyIndex].alg)]]);
 		const alternatives = [];
-		for (const a of siteAlgs) {
-			const alg = canonical(a.alg);
+		rewritten.forEach((alg, i) => {
+			if (i === copyIndex) return;
 			const key = normalize(alg);
-			if (key === primaryKey && !primaryMatched) {
-				// The site's own copy of the main alg is the main alg, not a dropped duplicate
-				primaryMatched = true;
-				continue;
-			}
-			if (seen.has(key)) {
+			if (kept.has(key)) {
 				counters.duplicatesDropped++;
-				continue;
+				// Same moves only after the rewrites (R3 / R', Fw / f, ...), not in the site's spelling
+				if (kept.get(key) !== normalize(siteAlgs[i].alg)) counters.duplicatesBySpelling++;
+				return;
 			}
-			seen.add(key);
+			kept.set(key, normalize(siteAlgs[i].alg));
 			alternatives.push(alg);
-		}
-		if (!primaryMatched) counters.standardAlgNotOnSite++;
+		});
 
 		const entry = {name, algorithm: primary};
 		if (alternatives.length) entry.alternatives = alternatives;
 
 		if (o.index === 0 && c.setup) {
-			entry.setup = canonical(c.setup);
+			entry.setup = canonical(c.setup, 'setup', where);
 			counters.setupFromSite++;
 		} else {
 			const inverse = invert(primary, puzzle);
@@ -402,16 +487,21 @@ function pageSubsets(page, puzzle, fallbackName, counters, canonical) {
 
 /** Make entry names unique within the category, in page order: "N2-", "N2- (2)", ... */
 function uniqueNames(subsets, counters) {
-	const used = new Map();
+	const taken = new Set(subsets.flatMap((s) => s.items.map((i) => i.entry.name)));
+	const seen = new Set();
 	for (const s of subsets) {
 		for (const {entry} of s.items) {
-			const n = (used.get(entry.name) ?? 0) + 1;
-			used.set(entry.name, n);
-			if (n > 1) {
-				const renamed = `${entry.name} (${n})`;
-				counters.renamed.push({subset: s.subset, from: entry.name, to: renamed});
-				entry.name = renamed;
+			if (!seen.has(entry.name)) {
+				seen.add(entry.name);
+				continue;
 			}
+			let n = 2;
+			while (taken.has(`${entry.name} (${n})`)) n++;
+			const renamed = `${entry.name} (${n})`;
+			taken.add(renamed);
+			seen.add(renamed);
+			counters.renamed.push({subset: s.subset, from: entry.name, to: renamed});
+			entry.name = renamed;
 		}
 	}
 }
@@ -497,10 +587,14 @@ function main() {
 				entries,
 				algorithms: counters.algorithms,
 				duplicatesDropped: counters.duplicatesDropped,
+				duplicatesBySpelling: counters.duplicatesBySpelling,
+				emptySiteAlgs: counters.emptySiteAlgs,
 				standardAlgNotOnSite: counters.standardAlgNotOnSite,
 				unreachableAlternatives: counters.unreachableAlternatives,
 				rewrittenAlgs: counters.rewrittenAlgs,
+				rewrittenSetups: counters.rewrittenSetups,
 				rewrites: counters.rewritten,
+				unhandledNotation: counters.unhandledNotation,
 				setup: {fromSite: counters.setupFromSite, fromInverse: counters.setupFromInverse, missing: counters.setupMissing},
 				emptyCases: counters.emptyCases,
 				renamedDuplicates: counters.renamed,
@@ -539,4 +633,6 @@ function main() {
 	}
 }
 
-main();
+export {rewriteAlg, canonicalAmounts, expandGroupRepeats, wideToRotations2x2, wideToLowercase3x3, cancelKey, invert, uniqueNames, cleanName};
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main();

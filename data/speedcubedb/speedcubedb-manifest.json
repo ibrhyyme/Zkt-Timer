@@ -7,7 +7,7 @@
 		"subsets": 348,
 		"cases": 6063,
 		"entries": 6404,
-		"algorithms": 22285,
+		"algorithms": 22280,
 		"siteAlgorithms": 22377,
 		"unreachableAlternatives": 843
 	},
@@ -27,9 +27,12 @@
 			"entries": 164,
 			"algorithms": 2319,
 			"duplicatesDropped": 9,
+			"duplicatesBySpelling": 3,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 61,
 			"rewrittenAlgs": 11,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 11,
 				"groupRepeats": 0,
@@ -38,6 +41,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 41,
 				"fromInverse": 123,
@@ -83,9 +87,12 @@
 			"entries": 216,
 			"algorithms": 907,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 1,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 72,
-			"rewrittenAlgs": 10,
+			"rewrittenAlgs": 1,
+			"rewrittenSetups": 9,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -94,6 +101,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 54,
 				"fromInverse": 162,
@@ -136,11 +144,14 @@
 			"subsets": 14,
 			"cases": 57,
 			"entries": 57,
-			"algorithms": 2060,
+			"algorithms": 2055,
 			"duplicatesDropped": 6,
-			"standardAlgNotOnSite": 5,
+			"duplicatesBySpelling": 5,
+			"emptySiteAlgs": 0,
+			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 9,
 			"rewrittenAlgs": 9,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 6,
 				"groupRepeats": 0,
@@ -149,6 +160,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 57,
 				"fromInverse": 0,
@@ -159,13 +171,13 @@
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
-				"U": 8398,
-				"R": 7339,
-				"F": 3016,
+				"U": 8382,
+				"R": 7315,
+				"F": 3006,
 				"L": 1801,
-				"r": 1480,
-				"y": 1257,
-				"M": 617,
+				"r": 1479,
+				"y": 1255,
+				"M": 616,
 				"D": 402,
 				"l": 378,
 				"f": 355,
@@ -194,9 +206,12 @@
 			"entries": 21,
 			"algorithms": 1517,
 			"duplicatesDropped": 23,
+			"duplicatesBySpelling": 21,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 1,
 			"rewrittenAlgs": 25,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 20,
 				"groupRepeats": 0,
@@ -205,6 +220,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 21,
 				"fromInverse": 0,
@@ -250,9 +266,12 @@
 			"entries": 40,
 			"algorithms": 443,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 18,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -261,6 +280,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 40,
 				"fromInverse": 0,
@@ -305,9 +325,12 @@
 			"entries": 27,
 			"algorithms": 184,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 2,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 11,
 			"rewrittenAlgs": 2,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 1,
 				"groupRepeats": 0,
@@ -316,6 +339,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 27,
 				"fromInverse": 0,
@@ -361,9 +385,12 @@
 			"entries": 42,
 			"algorithms": 599,
 			"duplicatesDropped": 3,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 14,
 			"rewrittenAlgs": 1,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -372,6 +399,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 42,
 				"fromInverse": 0,
@@ -413,9 +441,12 @@
 			"entries": 65,
 			"algorithms": 311,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 25,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -424,6 +455,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 65,
 				"fromInverse": 0,
@@ -462,9 +494,12 @@
 			"entries": 9,
 			"algorithms": 60,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 9,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -473,6 +508,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 9,
 				"fromInverse": 0,
@@ -509,9 +545,12 @@
 			"entries": 22,
 			"algorithms": 122,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 10,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -520,6 +559,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 22,
 				"fromInverse": 0,
@@ -562,9 +602,12 @@
 			"entries": 27,
 			"algorithms": 73,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 2,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 8,
 			"rewrittenAlgs": 5,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 5,
 				"groupRepeats": 0,
@@ -573,6 +616,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 27,
 				"fromInverse": 0,
@@ -615,9 +659,12 @@
 			"entries": 25,
 			"algorithms": 278,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 1,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 14,
 			"rewrittenAlgs": 1,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 1,
 				"groupRepeats": 0,
@@ -626,6 +673,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 25,
 				"fromInverse": 0,
@@ -667,9 +715,12 @@
 			"entries": 42,
 			"algorithms": 124,
 			"duplicatesDropped": 1,
+			"duplicatesBySpelling": 1,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 11,
 			"rewrittenAlgs": 2,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 2,
 				"groupRepeats": 0,
@@ -678,6 +729,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 42,
 				"fromInverse": 0,
@@ -719,9 +771,12 @@
 			"entries": 97,
 			"algorithms": 194,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 6,
-			"rewrittenAlgs": 3,
+			"rewrittenAlgs": 1,
+			"rewrittenSetups": 2,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -730,6 +785,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 97,
 				"fromInverse": 0,
@@ -769,9 +825,12 @@
 			"entries": 3399,
 			"algorithms": 4403,
 			"duplicatesDropped": 5,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 31,
 			"rewrittenAlgs": 4,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 2,
 				"groupRepeats": 0,
@@ -780,6 +839,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 3399,
 				"fromInverse": 0,
@@ -877,9 +937,12 @@
 			"entries": 342,
 			"algorithms": 1392,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 1,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 126,
 			"rewrittenAlgs": 1,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 1,
 				"groupRepeats": 0,
@@ -888,6 +951,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 342,
 				"fromInverse": 0,
@@ -936,9 +1000,12 @@
 			"entries": 189,
 			"algorithms": 685,
 			"duplicatesDropped": 1,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 72,
 			"rewrittenAlgs": 6,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -947,6 +1014,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 189,
 				"fromInverse": 0,
@@ -1010,9 +1078,12 @@
 			"entries": 472,
 			"algorithms": 3746,
 			"duplicatesDropped": 25,
+			"duplicatesBySpelling": 10,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 202,
 			"rewrittenAlgs": 27,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 22,
 				"groupRepeats": 0,
@@ -1021,6 +1092,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 472,
 				"fromInverse": 0,
@@ -1070,9 +1142,12 @@
 			"entries": 7,
 			"algorithms": 63,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 2,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1081,6 +1156,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 7,
@@ -1115,9 +1191,12 @@
 			"entries": 6,
 			"algorithms": 157,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 3,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1126,6 +1205,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 6,
@@ -1162,9 +1242,12 @@
 			"entries": 40,
 			"algorithms": 426,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 2,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 21,
 			"rewrittenAlgs": 4,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1173,6 +1256,7 @@
 				"wide2x2": 4,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
@@ -1209,9 +1293,12 @@
 			"entries": 40,
 			"algorithms": 176,
 			"duplicatesDropped": 2,
+			"duplicatesBySpelling": 1,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 7,
 			"rewrittenAlgs": 1,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1220,6 +1307,7 @@
 				"wide2x2": 1,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
@@ -1254,9 +1342,12 @@
 			"entries": 40,
 			"algorithms": 191,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 21,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1265,6 +1356,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
@@ -1301,9 +1393,12 @@
 			"entries": 3,
 			"algorithms": 45,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 1,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1312,6 +1407,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 3,
@@ -1353,9 +1449,12 @@
 			"entries": 22,
 			"algorithms": 137,
 			"duplicatesDropped": 3,
+			"duplicatesBySpelling": 2,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 7,
 			"rewrittenAlgs": 2,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 2,
 				"groupRepeats": 0,
@@ -1364,6 +1463,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 22,
@@ -1413,9 +1513,12 @@
 			"entries": 13,
 			"algorithms": 37,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1424,6 +1527,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 13,
@@ -1469,9 +1573,12 @@
 			"entries": 18,
 			"algorithms": 40,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 2,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1480,6 +1587,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 18,
@@ -1516,9 +1624,12 @@
 			"entries": 169,
 			"algorithms": 173,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 1,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 165,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1527,6 +1638,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 165
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 169,
 				"fromInverse": 0,
@@ -1564,9 +1676,12 @@
 			"entries": 7,
 			"algorithms": 14,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1575,6 +1690,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 7,
 				"fromInverse": 0,
@@ -1604,9 +1720,12 @@
 			"entries": 7,
 			"algorithms": 10,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1615,6 +1734,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 7,
 				"fromInverse": 0,
@@ -1644,9 +1764,12 @@
 			"entries": 8,
 			"algorithms": 19,
 			"duplicatesDropped": 1,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1655,6 +1778,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 8,
 				"fromInverse": 0,
@@ -1684,9 +1808,12 @@
 			"entries": 5,
 			"algorithms": 5,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1695,6 +1822,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 5,
 				"fromInverse": 0,
@@ -1724,9 +1852,12 @@
 			"entries": 49,
 			"algorithms": 52,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 10,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1735,6 +1866,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 10
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 49,
 				"fromInverse": 0,
@@ -1764,9 +1896,12 @@
 			"entries": 115,
 			"algorithms": 115,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 41,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1775,6 +1910,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 41
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 115,
 				"fromInverse": 0,
@@ -1904,9 +2040,12 @@
 			"entries": 3,
 			"algorithms": 3,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1915,6 +2054,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 3,
@@ -1945,9 +2085,12 @@
 			"entries": 16,
 			"algorithms": 32,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -1956,6 +2099,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 16,
@@ -1990,9 +2134,12 @@
 			"entries": 5,
 			"algorithms": 5,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2001,6 +2148,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 5,
@@ -2032,9 +2180,12 @@
 			"entries": 15,
 			"algorithms": 15,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2043,6 +2194,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 15,
@@ -2076,9 +2228,12 @@
 			"entries": 178,
 			"algorithms": 254,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2087,6 +2242,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 178,
@@ -2139,9 +2295,12 @@
 			"entries": 151,
 			"algorithms": 203,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 0,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2150,6 +2309,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 151,
@@ -2207,9 +2367,12 @@
 			"entries": 5,
 			"algorithms": 16,
 			"duplicatesDropped": 0,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 1,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2218,6 +2381,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 5,
 				"fromInverse": 0,
@@ -2248,9 +2412,12 @@
 			"entries": 95,
 			"algorithms": 187,
 			"duplicatesDropped": 1,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 7,
 			"rewrittenAlgs": 0,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2259,6 +2426,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 37,
 				"fromInverse": 58,
@@ -2299,9 +2467,12 @@
 			"entries": 131,
 			"algorithms": 493,
 			"duplicatesDropped": 4,
+			"duplicatesBySpelling": 0,
+			"emptySiteAlgs": 0,
 			"standardAlgNotOnSite": 0,
 			"unreachableAlternatives": 71,
 			"rewrittenAlgs": 1,
+			"rewrittenSetups": 0,
 			"rewrites": {
 				"amounts": 0,
 				"groupRepeats": 0,
@@ -2310,6 +2481,7 @@
 				"wide2x2": 0,
 				"square1Spacing": 0
 			},
+			"unhandledNotation": [],
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 131,

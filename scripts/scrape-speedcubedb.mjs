@@ -93,10 +93,13 @@ function cachePath(url) {
 }
 
 /**
- * Returns why a response body is unusable, or null. Leaf pages end with the login footer.
- * The puzzle page /a/3x3 and every large-set index page are cut off by the server before the
- * footer on every request, after their content, so they are checked for their content instead.
- * A More fragment is empty or a complete list of <li> items.
+ * Returns why a response body is unusable, or null.
+ * - Leaf pages and every puzzle page but /a/3x3 end with the login footer.
+ * - /a/3x3 and the large-set index pages are cut off by the server before the footer on every
+ *   request, after their content. An index page then ends with its description panel's
+ *   closing tags; /a/3x3 ends with the ad column after its set tiles (18 of them today).
+ * - A More fragment is empty or a complete list of <li> items. A fragment cut exactly between
+ *   two items cannot be told from a shorter list; nothing in it says how many items to expect.
  */
 function invalidBody(path, text) {
 	if (path.startsWith('/category.algs.php')) {
@@ -107,12 +110,14 @@ function invalidBody(path, text) {
 		return body.endsWith('</li>') && open > 0 && open === close ? null : 'incomplete More fragment';
 	}
 	if (!text.includes('<div id="search-result">')) return 'no content container';
-	if (path === '/') return text.includes('class="search-category"') ? null : 'no puzzle links';
-	const segments = path.split('/').filter(Boolean);
-	if (segments.length === 2) return /href=["']\/?a\/[^"'/]+\/[^"'/]+["']/.test(text) ? null : 'no set links';
-	if (text.includes('Log In to Track Your Progress')) return null;
+	if (text.includes('Log In to Track Your Progress') && text.trimEnd().endsWith('</html>')) return null;
+	if (path === '/a/3x3') {
+		const links = new Set(text.match(/href=["']\/?a\/3x3\/[^"'/]+["']/g) ?? []);
+		return links.size >= 15 && text.trimEnd().endsWith('</div>') ? null : 'puzzle page cut off before its set tiles';
+	}
 	const isIndex = /<a data-search='[^']*' href='a\//.test(text) && !text.includes('class="row singlealgorithm');
-	return isIndex ? null : 'page cut off before its footer';
+	if (isIndex) return /acknowledgments[\s\S]*<\/div><\/div><\/div><\/div>\s*$/.test(text) ? null : 'index page cut off';
+	return 'page cut off before its footer';
 }
 
 async function fetchText(path) {

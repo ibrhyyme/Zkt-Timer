@@ -11,16 +11,20 @@
  *           particular colour: PLL starts from an oriented last layer of any one face, OLL from
  *           a solved F2L under any one face, F2L from an intact cross (START_GOALS).
  * - image:  the setup state looks exactly like the site's own drawing of the case (the sticker
- *           data in the raw dump), up to a turn of the top layer. 3x3, 2x2, 4x4 and 5x5 cases
- *           drawn from above (jcube).
- * Either check passing proves the setup is the case the entry names. When neither applies and
- * the setup is just the inverse of the main alg, the main alg is reported "unverified": it
- * trivially solves its own inverse, which proves nothing.
+ *           data in the raw dump), up to the AUF the main alg leaves out, how the puzzle is held,
+ *           a turn of the top layer, and (2x2, 4x4) the colour scheme's orientation. Cases with
+ *           one drawing from above (jcube): 3x3, 2x2 and 4x4. 5x5 L2C has two per case.
+ * The start check shows only that the setup is a legal start for the step. What ties a setup to
+ * the case the entry names is the site: its own setup text, or its drawing. A main alg checked
+ * against a setup the converter made from its own inverse, with no drawing to confirm it, is
+ * reported "unverified": it trivially solves its own inverse, which proves nothing. An entry
+ * whose setup fails the start or image check has its algs reported "badSetup", not judged.
  *
  * Per algorithm (the main one and every alternative):
  * - parse:  the alg parses and every move exists on the puzzle (cubing.js KPuzzle).
  * - solve:  setup + alg reaches the category's goal (GOALS). Allowed: a trailing AUF (a turn of
- *           whichever layer is on top after the alg) and any final rotation of the whole puzzle.
+ *           the layer on top after the alg, or of the last layer once the puzzle is held upright)
+ *           and any final rotation of the whole puzzle.
  *           Not solving that way, the alg is tried after an AUF, a rotation, or both in front:
  *           "preAuf" / "preRotation" / "preRotationAuf" (a correct alg that starts from another
  *           angle than the setup), else "wrong".
@@ -132,6 +136,9 @@ const GOAL_AUF_MOVES = {
 	// Roux 4a leaves the M slice and the U layer wherever they land
 	'cubing:L6EO': ['U', 'M'],
 };
+// Goals whose trailing moves are composed last list first: L6EO aligns the centres with M
+// before turning U, so a U turn cannot carry different edges into the slice before an odd M.
+const REVERSED_TRAILING = new Set(['cubing:L6EO']);
 
 const ROTATION_GENERATORS = {
 	'3x3x3': ['x', 'y'],
@@ -400,7 +407,7 @@ function aufCombos(lists) {
 const comboCache = new WeakMap();
 function combosFor(P, goal) {
 	const lists = P.aufs(goal);
-	if (!comboCache.has(lists)) comboCache.set(lists, aufCombos(lists));
+	if (!comboCache.has(lists)) comboCache.set(lists, aufCombos(REVERSED_TRAILING.has(goal) ? [...lists].reverse() : lists));
 	return comboCache.get(lists);
 }
 
@@ -410,10 +417,14 @@ function combosFor(P, goal) {
  */
 function reachesGoal(P, pattern, mask, goal, useAufs = true) {
 	const combos = useAufs ? combosFor(P, goal) : [];
-	const afterAuf = combos.length ? combos.map((t) => pattern.applyTransformation(t)) : [pattern];
-	for (const p of afterAuf) {
+	if (!combos.length) return P.rotations.some((r) => meetsMask(P, pattern.applyTransformation(r), mask));
+	for (const t of combos) {
+		const turned = pattern.applyTransformation(t);
 		for (const r of P.rotations) {
-			if (meetsMask(P, p.applyTransformation(r), mask)) return true;
+			// The AUF turns the layer on top after the alg (the alg may end with a rotation that
+			// puts the last layer elsewhere), or the last layer once the puzzle is held upright
+			if (meetsMask(P, turned.applyTransformation(r), mask)) return true;
+			if (meetsMask(P, pattern.applyTransformation(r).applyTransformation(t), mask)) return true;
 		}
 	}
 	return false;
@@ -543,13 +554,18 @@ function imageCheck(P, setupTransformation, image) {
 	const site = {U: image.us, B: image.ub, F: image.uf, L: image.ul, R: image.ur};
 	if (Object.values(site).some((s) => !s)) return null;
 	const topTurns = P.aufs('full')[0] ?? [P.kpuzzle.identityTransformation()];
-	const views = [];
-	for (const end of combosFor(P, 'full')) {
-		const state = P.solved.applyTransformation(end).applyTransformation(setupTransformation);
-		for (const r of P.rotations) for (const t of topTurns) views.push(state.applyTransformation(r).applyTransformation(t));
-	}
-	for (let a = 0; a < views.length; a++) {
-		const p = views[a];
+	// On puzzles without fixed centres (2x2, 4x4) the drawing may also use another colour scheme
+	// orientation: the same case built on a solved puzzle that is held differently.
+	const recolours = P.id === '2x2x2' || P.id === '4x4x4' ? P.rotations : [P.kpuzzle.identityTransformation()];
+	const views = (function* () {
+		for (const q of recolours) {
+			for (const end of combosFor(P, 'full')) {
+				const state = P.solved.applyTransformation(q).applyTransformation(end).applyTransformation(setupTransformation);
+				for (const r of P.rotations) for (const t of topTurns) yield state.applyTransformation(r).applyTransformation(t);
+			}
+		}
+	})();
+	for (const p of views) {
 		let ok = true;
 		for (const face of ['U', 'B', 'F', 'L', 'R']) {
 			const cells = P.net[face];
@@ -561,7 +577,7 @@ function imageCheck(P, setupTransformation, image) {
 			}
 			if (!ok) break;
 		}
-		if (ok) return {ok: true, auf: a};
+		if (ok) return {ok: true};
 	}
 	return {ok: false};
 }
@@ -584,7 +600,7 @@ async function main() {
 	const raw = read('speedcubedb-raw.json');
 	const puzzleCache = {};
 
-	const STATUSES = ['ok', 'unverified', 'preAuf', 'preRotation', 'preRotationAuf', 'wrong', 'unparsable', 'parseOnly'];
+	const STATUSES = ['ok', 'unverified', 'preAuf', 'preRotation', 'preRotationAuf', 'wrong', 'badSetup', 'unparsable', 'parseOnly'];
 	const ENTRY_FLAGS = ['startChecked', 'startOk', 'imageChecked', 'imageOk', 'badStart', 'imageMismatch', 'trivialSetup', 'setupUnparsable', 'setupFallback', 'mainFails', 'mainDisagrees', 'suggestedSetup'];
 	const zero = (keys) => Object.fromEntries(keys.map((k) => [k, 0]));
 
@@ -593,22 +609,34 @@ async function main() {
 		source: manifest.source,
 		scrapedAt: manifest.scrapedAt,
 		legend: {
-			ok: 'setup + alg reaches the goal (trailing AUF / rotation allowed), and the setup is checked',
-			unverified: 'main alg whose setup is its own inverse, with no start or image check available',
+			ok: "setup + alg reaches the goal (trailing AUF / rotation allowed), against a setup that is the site's own or matches the site's drawing, or that another alg of the entry was not derived from",
+			unverified: "reaches the goal, but only against a setup made from its own inverse (the converter's setup for the main alg, or the stand-in for an unparsable site setup) that no drawing confirms",
 			preAuf: 'reaches the goal only with an AUF before the alg; "auf" says which',
 			preRotation: 'reaches the goal only when the puzzle is first held from another side',
 			preRotationAuf: 'reaches the goal only with both a rotation and an AUF before the alg',
 			wrong: 'parses, but setup + alg does not reach the goal from any angle',
+			badSetup: "not judged: the entry's setup failed its start or image check (see the entry's badStart / imageMismatch issue)",
 			unparsable: 'cubing.js cannot parse it for this puzzle',
 			parseOnly: 'category not simulated (no goal); only parsed',
 			engineMangled: 'expandNotation() + cleanAlgorithmForCubing() turn it into a different (or unparsable) alg',
 			badStart: 'entry: the setup state is not a legal start for the category',
+			setupUnparsable: "entry: the site's setup does not parse on this puzzle; the inverse of the entry's first parsable alg stands in for it (setupIsFallback)",
+			unverifiedMain: 'see unverified; listed per entry with the reason',
 			imageMismatch: "entry: the setup state does not look like the site's drawing of the case",
 			trivialSetup: 'entry: the setup state already meets the goal, so its algs are not tested',
 			mainFails: 'entry: the main alg does not solve the setup state as written; "firstOkAlternative" does',
 			mainDisagrees: 'entry: the main alg passes but every alternative fails, so the main alg and setup are suspect',
 			betterSetup: 'entry: no check failed, but another setup (inverse of one of its algs) is solved by more of its algs',
 			suggestedSetup: 'entry: a setup (inverse of one of its algs) that passes the failed checks',
+		},
+		totalsLegend: {
+			'ok … parseOnly': 'algs per status (every alg of every entry counts once)',
+			engineMangled: 'algs the trainer would play differently',
+			startChecked: 'entries whose category has a start goal; startOk / badStart split them',
+			imageChecked: 'entries with one site drawing (jcube) on 3x3, 2x2 or 4x4; imageOk / imageMismatch split them',
+			setupFallback: 'entries simulated with the inverse of an alg because the site setup does not parse',
+			mainFails: 'entries whose main alg does not solve its setup as written',
+			suggestedSetup: 'entries with a suggestedSetup issue (badStart, imageMismatch or betterSetup)',
 		},
 		totals: {...zero(STATUSES), engineMangled: 0, ...zero(ENTRY_FLAGS)},
 		categories: [],
@@ -649,7 +677,7 @@ async function main() {
 
 		algs[category].forEach((subset, si) => {
 			subset.algorithms.forEach((entry, ei) => {
-				const [pageKey, caseIndex] = sources[category][si][ei];
+				const [pageKey, caseIndex, oriIndex] = sources[category][si][ei];
 				const rawCase = raw.pages[pageKey].cases[caseIndex];
 				const where = {subset: subset.subset, name: entry.name};
 				const all = [entry.algorithm, ...(entry.alternatives ?? [])];
@@ -687,6 +715,10 @@ async function main() {
 				let setupText = entry.setup ?? null;
 				let setupPattern = null;
 				let setupTransformation = null;
+				let fallbackIndex = -1;
+				// The site's own setup defines the case independently of the algs; a setup the
+				// converter derived from the main alg does not
+				const siteSetup = oriIndex === 0 && Boolean(rawCase.setup);
 				if ((mask || progressGoal) && setupText) {
 					try {
 						setupTransformation = P.kpuzzle.algToTransformation(toCubing(setupText, meta.puzzleType));
@@ -694,10 +726,10 @@ async function main() {
 					} catch (e) {
 						result.entries.setupUnparsable++;
 						result.issues.push({...where, status: 'setupUnparsable', setup: setupText, error: e.message});
-						const firstOk = parsed.findIndex((t) => !(t instanceof Error));
-						if (firstOk >= 0) {
-							setupText = invertText(all[firstOk], meta.puzzleType);
-							setupTransformation = parsed[firstOk].invert();
+						fallbackIndex = parsed.findIndex((t) => !(t instanceof Error));
+						if (fallbackIndex >= 0) {
+							setupText = invertText(all[fallbackIndex], meta.puzzleType);
+							setupTransformation = parsed[fallbackIndex].invert();
 							setupPattern = P.solved.applyTransformation(setupTransformation);
 							result.entries.setupFallback++;
 						}
@@ -753,34 +785,49 @@ async function main() {
 					if (entryChecks.image) result.entries.imageOk++;
 					else result.entries.imageMismatch++;
 				}
-				const setupVerified = entryChecks.start === true || entryChecks.image === true;
 				const setupFailed = entryChecks.start === false || entryChecks.image === false;
+				// What the issues show: the setup actually simulated, and the site's if it differs
+				const setupShown = fallbackIndex >= 0 ? {setup: setupText, siteSetup: entry.setup, setupIsFallback: true} : {setup: entry.setup};
 
 				// A setup that already meets the goal tests nothing
 				const trivial = progressGoal ? false : reachesGoal(P, setupPattern, mask, goal);
 				if (trivial) {
 					result.entries.trivialSetup++;
-					result.issues.push({...where, status: 'trivialSetup', setup: setupText});
+					result.issues.push({...where, status: 'trivialSetup', ...setupShown});
 				}
 
 				const outcomes = simulate(setupPattern);
 				const mainIsOwnInverse =
 					!(parsed[0] instanceof Error) && reachesGoal(P, setupPattern.applyTransformation(parsed[0]), P.fullMask ??= orderMaskSync(P), 'none', false);
 
+				// A main alg proves nothing against a setup made from its own inverse, unless the site's
+				// drawing shows that this setup is the named case. The same goes for the alg whose
+				// inverse stood in for an unparsable setup.
+				const circular = (index) =>
+					index === fallbackIndex || (index === 0 && !siteSetup && mainIsOwnInverse && entryChecks.image !== true);
 				outcomes.forEach((o, index) => {
 					let status = o.status;
-					if (index === 0 && status === 'ok' && mainIsOwnInverse && !setupVerified) status = 'unverified';
-					const issue = status === 'ok' ? null : {...where, alg: all[index], ...(o.auf ? {auf: preAufName(P, goal, o.auf)} : {}), ...(o.error ? {error: o.error} : {})};
+					let reason = null;
+					if (setupFailed && status !== 'unparsable') {
+						status = 'badSetup';
+					} else if (status === 'ok' && circular(index)) {
+						status = 'unverified';
+						reason = index === fallbackIndex ? 'setup is the inverse of this alg (site setup unparsable)' : 'setup is the inverse of the main alg';
+					}
+					const issue =
+						status === 'ok' || status === 'badSetup'
+							? null
+							: {...where, alg: all[index], ...(reason ? {reason} : {}), ...(o.auf ? {auf: preAufName(P, goal, o.auf)} : {}), ...(o.error ? {error: o.error} : {})};
 					record(result, index, status, issue);
 				});
 
 				const passing = (o) => ['ok', 'preAuf', 'preRotation', 'preRotationAuf'].includes(o.status);
-				if (outcomes[0].status !== 'ok' && outcomes[0].status !== 'unparsable') {
+				if (!setupFailed && outcomes[0].status !== 'ok' && outcomes[0].status !== 'unparsable') {
 					const firstOk = outcomes.findIndex((o) => o.status === 'ok');
 					result.entries.mainFails++;
 					result.issues.push({...where, status: 'mainFails', main: entry.algorithm, mainStatus: outcomes[0].status, firstOkAlternative: firstOk > 0 ? all[firstOk] : null});
 				}
-				if (outcomes.length > 2 && passing(outcomes[0]) && outcomes.slice(1).every((o) => o.status === 'wrong')) {
+				if (!setupFailed && outcomes.length > 2 && passing(outcomes[0]) && outcomes.slice(1).every((o) => o.status === 'wrong')) {
 					result.entries.mainDisagrees++;
 					result.issues.push({...where, status: 'mainDisagrees', main: entry.algorithm});
 				}
@@ -807,7 +854,7 @@ async function main() {
 						result.issues.push({
 							...where,
 							status: setupFailed ? (entryChecks.start === false ? 'badStart' : 'imageMismatch') : 'betterSetup',
-							setup: entry.setup,
+							...setupShown,
 							suggestedSetup: invertText(all[best.index], meta.puzzleType),
 							okWithSetup: currentOk,
 							okWithSuggested: best.ok,
@@ -818,7 +865,7 @@ async function main() {
 					}
 				}
 				if (setupFailed) {
-					result.issues.push({...where, status: entryChecks.start === false ? 'badStart' : 'imageMismatch', setup: entry.setup, suggestedSetup: null});
+					result.issues.push({...where, status: entryChecks.start === false ? 'badStart' : 'imageMismatch', ...setupShown, suggestedSetup: null});
 				}
 			});
 		});
@@ -871,11 +918,10 @@ function preAufName(P, goal, power) {
 function record(result, index, status, issue) {
 	result.counts[status]++;
 	if (index === 0) result.mainAlg[status]++;
-	// "unverified" is a property of the setup, not of the alg: counted, not listed one by one
-	if (issue && status !== 'parseOnly' && status !== 'unverified') result.issues.push({...issue, status, main: index === 0});
+	if (issue && status !== 'parseOnly') result.issues.push({...issue, status, main: index === 0});
 }
 
-export {loadPuzzle, buildMask, meetsMask, reachesGoal, stickerColor, imageCheck, toCubing, f2lState, GOALS};
+export {loadPuzzle, buildMask, meetsMask, reachesGoal, stickerColor, imageCheck, toCubing, f2lState, combosFor, GOALS};
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 	main().catch((err) => {
