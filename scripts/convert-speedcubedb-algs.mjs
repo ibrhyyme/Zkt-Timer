@@ -17,6 +17,9 @@
  *   named "<case> - <slot>", like the existing F2L category.
  * - "setup" is the site's own setup when it gives one for that case/slot, otherwise the
  *   inverse of "algorithm". The manifest records which, per category.
+ * - Turn amounts other than 1 and 2 are rewritten to the same turn ("R3" → "R'", "U3'" → "U",
+ *   "R4" dropped). The trainer's cleanAlgorithmForCubing() strips those digits, which would turn
+ *   "R3" into "R". The raw dump keeps the site's spelling.
  * - A page listed under two sets (PLL under 1LLL, ZBLL U under 1LLL and ZBLL) is emitted once,
  *   under the set that owns it. The manifest's "alsoIncludes" lists what was left out.
  */
@@ -115,6 +118,25 @@ function isSquare1(puzzle) {
 	return puzzle === 'SQ1';
 }
 
+// Quarter turns per full rotation of a move, per puzzle. Megaminx (R++/D--) is left as written.
+const TURN_ORDER = {'3x3': 4, '2x2': 4, '4x4': 4, '5x5': 4, Pyraminx: 3, Skewb: 3};
+
+/** "R3" → "R'", "R3'" → "R", "R4" → "", "2R5" → "2R"; "R2" / "R2'" stay as written. */
+function canonicalAmounts(alg, puzzle) {
+	const order = TURN_ORDER[puzzle];
+	if (!order) return alg;
+	const out = alg.replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
+		if (amount === '2' && order === 4) return m;
+		const n = Number(amount) % order;
+		const turns = prime ? (order - n) % order : n;
+		if (turns === 0) return pre;
+		if (turns === 1) return pre + move;
+		if (turns === order - 1) return pre + move + "'";
+		return pre + move + '2';
+	});
+	return out === alg ? alg : out.replace(/\s+/g, ' ').trim();
+}
+
 /** Square-1: "1,0 / 3,0 / -1,-1" or "/ (0,3) / (-3,-3) /" → reversed, every turn negated. */
 function invertSquare1(alg) {
 	const tokens = alg.match(/\(?\s*-?\d+\s*,\s*-?\d+\s*\)?|\//g) ?? [];
@@ -197,25 +219,31 @@ function orientationEntries(c, puzzle, counters) {
 			continue;
 		}
 
-		const primary = o.index === 0 && c.standardAlg ? c.standardAlg : o.algorithms[0].alg;
+		const canonical = (alg) => {
+			const out = canonicalAmounts(alg, puzzle);
+			if (out !== alg) counters.amountsRewritten++;
+			return out;
+		};
+		const primary = canonical(o.index === 0 && c.standardAlg ? c.standardAlg : o.algorithms[0].alg);
 		const seen = new Set([normalize(primary)]);
 		const alternatives = [];
 		for (const a of o.algorithms) {
-			const key = normalize(a.alg);
+			const alg = canonical(a.alg);
+			const key = normalize(alg);
 			if (!key) continue;
 			if (seen.has(key)) {
 				counters.duplicatesDropped++;
 				continue;
 			}
 			seen.add(key);
-			alternatives.push(a.alg);
+			alternatives.push(alg);
 		}
 
 		const entry = {name, algorithm: primary};
 		if (alternatives.length) entry.alternatives = alternatives;
 
 		if (o.index === 0 && c.setup) {
-			entry.setup = c.setup;
+			entry.setup = canonical(c.setup);
 			counters.setupFromSite++;
 		} else {
 			const inverse = invert(primary, puzzle);
@@ -290,6 +318,7 @@ function main() {
 				cases: 0,
 				algorithms: 0,
 				duplicatesDropped: 0,
+				amountsRewritten: 0,
 				setupFromSite: 0,
 				setupFromInverse: 0,
 				setupMissing: [],
@@ -330,6 +359,7 @@ function main() {
 				entries,
 				algorithms: counters.algorithms,
 				duplicatesDropped: counters.duplicatesDropped,
+				amountsRewritten: counters.amountsRewritten,
 				setup: {fromSite: counters.setupFromSite, fromInverse: counters.setupFromInverse, missing: counters.setupMissing},
 				emptyCases: counters.emptyCases,
 				alsoIncludes,
