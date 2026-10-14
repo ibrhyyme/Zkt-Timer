@@ -37,3 +37,7 @@ Durum: scraper, converter, validator ve migration script'leri çalışıyor. Hep
    - Pyraminx Super Hedge: yerine `U R' L R L2' U' L`.
    - Pyraminx Bad Hedge: setup `L' U' L U' L R' L' R`.
 5. Trainer motoru `expandNotation` yüzünden 4x4/5x5/Megaminx notasyonunu bozuyor; 423 algoritma etkileniyor. Implement'ten önce motor düzeltilmeli.
+
+## Merge öncesi dikkat
+- `data/speedcubedb/*.json` dosyaları main'e girmemeli (GitHub'a yüklenmeyecek). Veriyi lokalden doğrudan sunucuya yükleyin, merge'e yalnızca script'leri ve gerekirse `default-algs.json` değişikliğini alın.
+- İş bitince `zkt-server` dalı silinecek.
