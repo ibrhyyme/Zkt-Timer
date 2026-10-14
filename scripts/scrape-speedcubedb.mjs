@@ -1,18 +1,25 @@
 /**
- * Scrapes every algorithm set on speedcubedb.com into a lossless raw JSON dump.
+ * Scrapes every algorithm set on speedcubedb.com into a raw JSON dump that keeps everything
+ * the site shows.
  *
  * Usage: node scripts/scrape-speedcubedb.mjs [--out <file>] [--cache-dir <dir>]
- *        [--concurrency <n>] [--delay <ms>] [--only <puzzle>[/<set>]]
+ *        [--concurrency <n>] [--delay <ms>] [--only <puzzle>/<set> --out <file>]
  *
  * 1. Discovers puzzles from the home page and their sets from each puzzle page (site order)
  * 2. Follows "large set" index pages (ZBLL, OLLCP, 1LLL, VLS, Lin, Megaminx OLL/PLL) into their pages
  * 3. Parses every case on every leaf page (image, setup, standard alg, slot/orientation tabs)
  * 4. Calls category.algs.php (the "More Algorithms" button) for every case + orientation,
- *    so each case carries every alternative the site has, in the site's (vote) order
+ *    so each case carries every alternative the site shows, in the site's (vote) order
  * 5. Writes data/speedcubedb/speedcubedb-raw.json
  *
- * Responses are cached gzipped under --cache-dir, so a re-run only hits the network for
- * what is missing. Delete the cache directory to force a fresh scrape.
+ * Alternatives the site never shows: the page lists a case's first 4 algs, and
+ * category.algs.php returns everything except ITS first 4 (ordered by votes, then altId,
+ * descending). When the two orders break a vote tie differently, some algs land in neither
+ * list. Each such orientation records "unreachableAtLeast": how many page algs came back in
+ * More, which is how many algs of the endpoint's own top 4 were never shown.
+ *
+ * Responses are validated before they are cached (gzipped, under --cache-dir), so a re-run
+ * only hits the network for what is missing. Delete the cache directory to force a fresh scrape.
  */
 
 import {mkdirSync, readFileSync, writeFileSync, existsSync} from 'fs';
@@ -46,6 +53,9 @@ function parseArgs(argv) {
 		else if (key === '--only') args.only = val, i++;
 		else throw new Error(`Unknown argument: ${key}`);
 	}
+	if (args.only && !argv.includes('--out')) {
+		throw new Error('--only needs --out: a partial dump must not replace data/speedcubedb/speedcubedb-raw.json');
+	}
 	return args;
 }
 
@@ -59,17 +69,19 @@ const waiting = [];
 const stats = {network: 0, cached: 0, retries: 0};
 
 async function acquire() {
+	// A released slot is handed straight to the next waiter (see release()), so a retry that
+	// calls acquire() again queues behind it instead of slipping in as an extra request.
 	if (active >= ARGS.concurrency) await new Promise((resolve) => waiting.push(resolve));
-	active++;
+	else active++;
 	const wait = lastRequestAt + ARGS.delay - Date.now();
 	lastRequestAt = Math.max(Date.now(), lastRequestAt + ARGS.delay);
 	if (wait > 0) await sleep(wait);
 }
 
 function release() {
-	active--;
 	const next = waiting.shift();
 	if (next) next();
+	else active--;
 }
 
 function sleep(ms) {
@@ -80,12 +92,38 @@ function cachePath(url) {
 	return join(ARGS.cacheDir, createHash('sha1').update(url).digest('hex') + '.html.gz');
 }
 
+/**
+ * Returns why a response body is unusable, or null. Leaf pages end with the login footer.
+ * The puzzle page /a/3x3 and every large-set index page are cut off by the server before the
+ * footer on every request, after their content, so they are checked for their content instead.
+ * A More fragment is empty or a complete list of <li> items.
+ */
+function invalidBody(path, text) {
+	if (path.startsWith('/category.algs.php')) {
+		const body = text.trim();
+		if (body === '') return null;
+		const open = body.split("<li class='list-group-item'>").length - 1;
+		const close = body.split('</li>').length - 1;
+		return body.endsWith('</li>') && open > 0 && open === close ? null : 'incomplete More fragment';
+	}
+	if (!text.includes('<div id="search-result">')) return 'no content container';
+	if (path === '/') return text.includes('class="search-category"') ? null : 'no puzzle links';
+	const segments = path.split('/').filter(Boolean);
+	if (segments.length === 2) return /href=["']\/?a\/[^"'/]+\/[^"'/]+["']/.test(text) ? null : 'no set links';
+	if (text.includes('Log In to Track Your Progress')) return null;
+	const isIndex = /<a data-search='[^']*' href='a\//.test(text) && !text.includes('class="row singlealgorithm');
+	return isIndex ? null : 'page cut off before its footer';
+}
+
 async function fetchText(path) {
 	const url = BASE + path;
 	const file = cachePath(url);
 	if (existsSync(file)) {
-		stats.cached++;
-		return gunzipSync(readFileSync(file)).toString('utf-8');
+		const text = gunzipSync(readFileSync(file)).toString('utf-8');
+		if (!invalidBody(path, text)) {
+			stats.cached++;
+			return text;
+		}
 	}
 
 	for (let attempt = 1; ; attempt++) {
@@ -94,12 +132,8 @@ async function fetchText(path) {
 			const res = await fetch(url);
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const text = await res.text();
-			// The AJAX fragment may legitimately be empty. Pages are checked for their content
-			// container only: the server cuts /a/3x3 and /a/3x3/ZBLL off before the footer on
-			// every request, after the content has been sent.
-			if (!path.startsWith('/category.algs.php') && !text.includes('<div id="search-result">')) {
-				throw new Error('unexpected page');
-			}
+			const problem = invalidBody(path, text);
+			if (problem) throw new Error(problem);
 			stats.network++;
 			mkdirSync(ARGS.cacheDir, {recursive: true});
 			writeFileSync(file, gzipSync(text));
@@ -214,12 +248,13 @@ function parseDescription(body) {
 
 // ─── Leaf page parsing ───
 
+/** The filter bar, in site order. Skewb's filters have no "learnt/total" badge: count is null. */
 function parseFilters(body) {
 	const related = between(body, '<h3 class="me-2 align-self-center">Filter:</h3>', '<div class="container mt-3">') ?? '';
-	return [...related.matchAll(/data-filter="([^"]*)"[\s\S]*?<div class="tree-progress">\d+\/(\d+)<\/div>/g)].map((m) => ({
-		name: decode(m[1]),
-		count: Number(m[2]),
-	}));
+	return [...related.matchAll(/<a\b[^>]*data-filter="([^"]*)"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => {
+		const count = m[2].match(/<div class="tree-progress">\d+\/(\d+)<\/div>/);
+		return {name: decode(m[1]), count: count ? Number(count[1]) : null};
+	});
 }
 
 function parseImages(block) {
@@ -345,14 +380,21 @@ async function loadMore(orientation) {
 	const html = await fetchText(`/category.algs.php?${qs}`);
 	const extra = parseAlgList(html);
 	const known = new Set(orientation.algorithms.map((a) => a.altId));
+	let repeats = 0;
 	for (const item of extra) {
 		if (item.altId !== undefined) {
-			if (known.has(item.altId)) continue;
+			if (known.has(item.altId)) {
+				repeats++;
+				continue;
+			}
 			known.add(item.altId);
 		}
 		orientation.algorithms.push(item);
 	}
 	orientation.moreLoaded = extra.length;
+	// Every page alg that comes back in More stands for one alg of the endpoint's own top 4
+	// that is on neither list (see the header). The site has no way to show those.
+	if (repeats) orientation.unreachableAtLeast = repeats;
 }
 
 /**
@@ -408,6 +450,10 @@ async function loadPage(puzzle, id, name) {
 		page.kind = 'leaf';
 		page.filters = parseFilters(body);
 		page.cases = cases;
+		if (page.filters.length && page.filters.every((f) => f.count !== null)) {
+			const total = page.filters.reduce((n, f) => n + f.count, 0);
+			if (total !== cases.length) throw new Error(`${key}: filters count ${total} cases, page has ${cases.length}`);
+		}
 		pages[key] = page;
 		pageOrder.push(key);
 	}
@@ -430,6 +476,10 @@ async function main() {
 			console.log(`[pages] ${page.key} ${page.kind === 'index' ? `index → ${page.children.length} pages` : `${page.cases.length} cases`}`);
 		}
 		puzzles.push({id: puzzle, url: `${BASE}/a/${puzzle}`, sets});
+	}
+	if (ARGS.only && !puzzles.some((p) => p.sets.length)) {
+		// Pages inside a large set (ZBLLT, 1LLL05, ...) are not on any puzzle page
+		throw new Error(`--only ${ARGS.only} matches no set on a puzzle page; use the large set's id (e.g. 3x3/ZBLL)`);
 	}
 
 	const orientations = [];

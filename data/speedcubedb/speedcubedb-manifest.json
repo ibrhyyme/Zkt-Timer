@@ -1,13 +1,15 @@
 {
 	"source": "https://speedcubedb.com",
-	"scrapedAt": "2026-10-14T11:34:09.401Z",
+	"scrapedAt": "2026-10-14T13:24:06.275Z",
 	"generatedBy": "scripts/convert-speedcubedb-algs.mjs",
 	"totals": {
 		"categories": 43,
 		"subsets": 348,
 		"cases": 6063,
 		"entries": 6404,
-		"algorithms": 22292
+		"algorithms": 22285,
+		"siteAlgorithms": 22377,
+		"unreachableAlternatives": 843
 	},
 	"categories": [
 		{
@@ -19,18 +21,30 @@
 			"siteSet": "3x3/F2L",
 			"url": "https://speedcubedb.com/a/3x3/F2L",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 6,
 			"cases": 41,
 			"entries": 164,
 			"algorithms": 2319,
-			"duplicatesDropped": 173,
-			"amountsRewritten": 11,
+			"duplicatesDropped": 9,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 61,
+			"rewrittenAlgs": 11,
+			"rewrites": {
+				"amounts": 11,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 41,
 				"fromInverse": 123,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -63,24 +77,36 @@
 			"siteSet": "3x3/AdvancedF2L",
 			"url": "https://speedcubedb.com/a/3x3/AdvancedF2L",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 3,
 			"cases": 54,
 			"entries": 216,
-			"algorithms": 908,
-			"duplicatesDropped": 217,
-			"amountsRewritten": 0,
+			"algorithms": 907,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 72,
+			"rewrittenAlgs": 10,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 10,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 54,
 				"fromInverse": 162,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
-				"U": 2715,
-				"R": 2083,
-				"L": 1383,
+				"U": 2714,
+				"R": 2082,
+				"L": 1381,
 				"F": 606,
 				"y": 278,
 				"f": 140,
@@ -88,14 +114,13 @@
 				"B": 71,
 				"d": 49,
 				"S": 45,
-				"u": 43,
 				"D": 43,
+				"u": 43,
 				"M": 38,
 				"l": 22,
-				"b": 6,
 				"x": 6,
-				"E": 2,
-				"Fw": 2
+				"b": 6,
+				"E": 2
 			}
 		},
 		{
@@ -107,31 +132,43 @@
 			"siteSet": "3x3/OLL",
 			"url": "https://speedcubedb.com/a/3x3/OLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 14,
 			"cases": 57,
 			"entries": 57,
-			"algorithms": 2061,
-			"duplicatesDropped": 57,
-			"amountsRewritten": 6,
+			"algorithms": 2060,
+			"duplicatesDropped": 6,
+			"standardAlgNotOnSite": 5,
+			"unreachableAlternatives": 9,
+			"rewrittenAlgs": 9,
+			"rewrites": {
+				"amounts": 6,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 3,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 57,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
-				"U": 8400,
-				"R": 7344,
-				"F": 3019,
+				"U": 8398,
+				"R": 7339,
+				"F": 3016,
 				"L": 1801,
 				"r": 1480,
-				"y": 1258,
+				"y": 1257,
 				"M": 617,
 				"D": 402,
-				"l": 376,
-				"f": 354,
+				"l": 378,
+				"f": 355,
 				"B": 332,
 				"S": 305,
 				"x": 183,
@@ -139,10 +176,7 @@
 				"d": 40,
 				"u": 15,
 				"b": 8,
-				"E": 6,
-				"Lw": 2,
-				"Dw": 1,
-				"Fw": 1
+				"E": 6
 			}
 		},
 		{
@@ -154,42 +188,51 @@
 			"siteSet": "3x3/PLL",
 			"url": "https://speedcubedb.com/a/3x3/PLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 3,
 			"cases": 21,
 			"entries": 21,
-			"algorithms": 1521,
-			"duplicatesDropped": 40,
-			"amountsRewritten": 20,
+			"algorithms": 1517,
+			"duplicatesDropped": 23,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 1,
+			"rewrittenAlgs": 25,
+			"rewrites": {
+				"amounts": 20,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 5,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 21,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
-				"U": 7023,
-				"R": 6780,
+				"U": 7017,
+				"R": 6766,
 				"F": 1803,
 				"L": 1666,
-				"D": 1259,
+				"D": 1255,
 				"r": 915,
-				"M": 813,
-				"y": 733,
+				"M": 810,
+				"y": 732,
 				"B": 330,
 				"x": 214,
-				"l": 212,
-				"u": 212,
-				"S": 209,
+				"l": 213,
+				"u": 210,
+				"S": 207,
 				"f": 177,
 				"z": 131,
 				"E": 52,
 				"d": 29,
-				"b": 6,
-				"Lw": 4,
-				"Fw": 2,
-				"Uw": 2
+				"b": 6
 			}
 		},
 		{
@@ -201,18 +244,30 @@
 			"siteSet": "3x3/COLL",
 			"url": "https://speedcubedb.com/a/3x3/COLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 40,
 			"entries": 40,
 			"algorithms": 443,
-			"duplicatesDropped": 40,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 18,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 40,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -244,25 +299,37 @@
 			"siteSet": "3x3/WV",
 			"url": "https://speedcubedb.com/a/3x3/WV",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 27,
 			"entries": 27,
-			"algorithms": 185,
-			"duplicatesDropped": 28,
-			"amountsRewritten": 1,
+			"algorithms": 184,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 11,
+			"rewrittenAlgs": 2,
+			"rewrites": {
+				"amounts": 1,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 1,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 27,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
-				"U": 789,
+				"U": 786,
 				"R": 773,
-				"F": 129,
-				"L": 118,
+				"F": 128,
+				"L": 116,
 				"D": 76,
 				"r": 48,
 				"l": 27,
@@ -276,8 +343,7 @@
 				"z": 5,
 				"u": 5,
 				"d": 5,
-				"b": 4,
-				"Lw": 2
+				"b": 4
 			}
 		},
 		{
@@ -289,18 +355,30 @@
 			"siteSet": "3x3/CMLL",
 			"url": "https://speedcubedb.com/a/3x3/CMLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 8,
 			"cases": 42,
 			"entries": 42,
 			"algorithms": 599,
-			"duplicatesDropped": 45,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 3,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 14,
+			"rewrittenAlgs": 1,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 1,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 42,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -311,14 +389,13 @@
 				"L": 545,
 				"D": 227,
 				"B": 72,
-				"f": 61,
+				"f": 63,
 				"l": 40,
 				"y": 37,
 				"z": 32,
 				"M": 19,
 				"S": 13,
-				"x": 10,
-				"Fw": 2
+				"x": 10
 			}
 		},
 		{
@@ -330,18 +407,30 @@
 			"siteSet": "3x3/SBLS",
 			"url": "https://speedcubedb.com/a/3x3/SBLS",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 6,
 			"cases": 65,
 			"entries": 65,
 			"algorithms": 311,
-			"duplicatesDropped": 65,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 25,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 65,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -354,8 +443,8 @@
 				"B": 17,
 				"D": 10,
 				"f": 6,
-				"x": 1,
-				"l": 1
+				"l": 1,
+				"x": 1
 			}
 		},
 		{
@@ -367,18 +456,30 @@
 			"siteSet": "3x3/EO4A",
 			"url": "https://speedcubedb.com/a/3x3/EO4A",
 			"replacesExisting": false,
+			"overlapsExisting": "L6E-EO",
 			"subsets": 1,
 			"cases": 9,
 			"entries": 9,
 			"algorithms": 60,
-			"duplicatesDropped": 9,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 9,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 9,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -402,18 +503,30 @@
 			"siteSet": "3x3/AntiPLL",
 			"url": "https://speedcubedb.com/a/3x3/AntiPLL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 22,
 			"entries": 22,
 			"algorithms": 122,
-			"duplicatesDropped": 22,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 10,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 22,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -443,18 +556,30 @@
 			"siteSet": "3x3/SV",
 			"url": "https://speedcubedb.com/a/3x3/SV",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 27,
 			"entries": 27,
 			"algorithms": 73,
-			"duplicatesDropped": 29,
-			"amountsRewritten": 5,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 8,
+			"rewrittenAlgs": 5,
+			"rewrites": {
+				"amounts": 5,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 27,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -484,18 +609,30 @@
 			"siteSet": "3x3/ELL",
 			"url": "https://speedcubedb.com/a/3x3/ELL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 25,
 			"entries": 25,
 			"algorithms": 278,
-			"duplicatesDropped": 27,
-			"amountsRewritten": 1,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 14,
+			"rewrittenAlgs": 1,
+			"rewrites": {
+				"amounts": 1,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 25,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -524,18 +661,30 @@
 			"siteSet": "3x3/FRUF",
 			"url": "https://speedcubedb.com/a/3x3/FRUF",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 42,
 			"entries": 42,
 			"algorithms": 124,
-			"duplicatesDropped": 43,
-			"amountsRewritten": 2,
+			"duplicatesDropped": 1,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 11,
+			"rewrittenAlgs": 2,
+			"rewrites": {
+				"amounts": 2,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 42,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -564,18 +713,30 @@
 			"siteSet": "3x3/CLS",
 			"url": "https://speedcubedb.com/a/3x3/CLS",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 4,
 			"cases": 97,
 			"entries": 97,
 			"algorithms": 194,
-			"duplicatesDropped": 97,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 6,
+			"rewrittenAlgs": 3,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 3,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 97,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -586,11 +747,11 @@
 				"D": 62,
 				"L": 46,
 				"r": 11,
+				"u": 2,
 				"M": 2,
 				"B": 2,
 				"x": 2,
-				"u": 2,
-				"Lw": 1
+				"l": 1
 			}
 		},
 		{
@@ -602,12 +763,23 @@
 			"siteSet": "3x3/1LLL",
 			"url": "https://speedcubedb.com/a/3x3/1LLL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 49,
 			"cases": 3400,
 			"entries": 3399,
 			"algorithms": 4403,
-			"duplicatesDropped": 3404,
-			"amountsRewritten": 2,
+			"duplicatesDropped": 5,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 31,
+			"rewrittenAlgs": 4,
+			"rewrites": {
+				"amounts": 2,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 2,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 3399,
 				"fromInverse": 0,
@@ -616,6 +788,7 @@
 			"emptyCases": [
 				"1LLL 4 63"
 			],
+			"renamedDuplicates": [],
 			"alsoIncludes": [
 				{
 					"page": "3x3/PLL",
@@ -677,17 +850,15 @@
 				"L": 952,
 				"D": 593,
 				"M": 493,
-				"f": 426,
+				"f": 428,
 				"S": 254,
-				"l": 175,
+				"l": 177,
 				"B": 150,
 				"x": 93,
 				"u": 75,
 				"E": 24,
 				"d": 9,
 				"z": 6,
-				"Lw": 2,
-				"Fw": 2,
 				"b": 1
 			}
 		},
@@ -700,18 +871,30 @@
 			"siteSet": "3x3/OLLCP",
 			"url": "https://speedcubedb.com/a/3x3/OLLCP",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 57,
 			"cases": 342,
 			"entries": 342,
 			"algorithms": 1392,
-			"duplicatesDropped": 344,
-			"amountsRewritten": 1,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 126,
+			"rewrittenAlgs": 1,
+			"rewrites": {
+				"amounts": 1,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 342,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": {
 				"title": "OLLCP",
@@ -747,18 +930,30 @@
 			"siteSet": "3x3/VLS",
 			"url": "https://speedcubedb.com/a/3x3/VLS",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 189,
 			"entries": 189,
 			"algorithms": 685,
-			"duplicatesDropped": 190,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 1,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 72,
+			"rewrittenAlgs": 6,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 6,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 189,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": {
 				"title": "VLS",
@@ -792,14 +987,12 @@
 				"D": 139,
 				"B": 96,
 				"M": 89,
+				"l": 60,
 				"x": 60,
-				"l": 54,
 				"S": 37,
+				"f": 32,
 				"d": 31,
-				"f": 28,
-				"u": 14,
-				"Lw": 6,
-				"Fw": 4
+				"u": 14
 			}
 		},
 		{
@@ -811,18 +1004,30 @@
 			"siteSet": "3x3/ZBLL",
 			"url": "https://speedcubedb.com/a/3x3/ZBLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 40,
 			"cases": 472,
 			"entries": 472,
 			"algorithms": 3746,
-			"duplicatesDropped": 497,
-			"amountsRewritten": 22,
+			"duplicatesDropped": 25,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 202,
+			"rewrittenAlgs": 27,
+			"rewrites": {
+				"amounts": 22,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 5,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 472,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": {
 				"title": "ZBLL",
@@ -842,11 +1047,10 @@
 				"B": 282,
 				"x": 268,
 				"M": 213,
-				"l": 190,
+				"l": 201,
 				"z": 124,
 				"u": 65,
 				"d": 12,
-				"Lw": 11,
 				"b": 5,
 				"E": 5
 			}
@@ -860,18 +1064,30 @@
 			"siteSet": "2x2/OrtegaOLL",
 			"url": "https://speedcubedb.com/a/2x2/OrtegaOLL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 7,
 			"entries": 7,
 			"algorithms": 63,
-			"duplicatesDropped": 7,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 2,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 7,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -893,18 +1109,30 @@
 			"siteSet": "2x2/OrtegaPBL",
 			"url": "https://speedcubedb.com/a/2x2/OrtegaPBL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 6,
 			"entries": 6,
 			"algorithms": 157,
-			"duplicatesDropped": 6,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 3,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 6,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -928,18 +1156,30 @@
 			"siteSet": "2x2/CLL",
 			"url": "https://speedcubedb.com/a/2x2/CLL",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 40,
 			"entries": 40,
 			"algorithms": 426,
-			"duplicatesDropped": 42,
-			"amountsRewritten": 4,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 21,
+			"rewrittenAlgs": 4,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 4,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -963,18 +1203,30 @@
 			"siteSet": "2x2/EG1",
 			"url": "https://speedcubedb.com/a/2x2/EG1",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 40,
 			"entries": 40,
 			"algorithms": 176,
-			"duplicatesDropped": 42,
-			"amountsRewritten": 1,
+			"duplicatesDropped": 2,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 7,
+			"rewrittenAlgs": 1,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 1,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -996,18 +1248,30 @@
 			"siteSet": "2x2/EG2",
 			"url": "https://speedcubedb.com/a/2x2/EG2",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 40,
 			"entries": 40,
 			"algorithms": 191,
-			"duplicatesDropped": 40,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 21,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 40,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1031,18 +1295,30 @@
 			"siteSet": "4x4/OLLParity",
 			"url": "https://speedcubedb.com/a/4x4/OLLParity",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 3,
 			"entries": 3,
 			"algorithms": 45,
-			"duplicatesDropped": 3,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 1,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 3,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1071,18 +1347,30 @@
 			"siteSet": "4x4/PLLParity",
 			"url": "https://speedcubedb.com/a/4x4/PLLParity",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 3,
 			"cases": 22,
 			"entries": 22,
 			"algorithms": 137,
-			"duplicatesDropped": 25,
-			"amountsRewritten": 2,
+			"duplicatesDropped": 3,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 7,
+			"rewrittenAlgs": 2,
+			"rewrites": {
+				"amounts": 2,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 22,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1100,12 +1388,12 @@
 				"y": 25,
 				"x": 24,
 				"L": 21,
-				"nRw": 8,
-				"nLw": 8,
 				"Lw": 8,
+				"nLw": 8,
+				"nRw": 8,
 				"B": 6,
-				"z": 4,
 				"d": 4,
+				"z": 4,
 				"Fw": 3,
 				"l": 2
 			}
@@ -1119,18 +1407,30 @@
 			"siteSet": "5x5/L2E",
 			"url": "https://speedcubedb.com/a/5x5/L2E",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 13,
 			"entries": 13,
 			"algorithms": 37,
-			"duplicatesDropped": 13,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 13,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1163,18 +1463,30 @@
 			"siteSet": "5x5/L2C",
 			"url": "https://speedcubedb.com/a/5x5/L2C",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 18,
 			"entries": 18,
 			"algorithms": 40,
-			"duplicatesDropped": 18,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 2,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 18,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1198,12 +1510,23 @@
 			"siteSet": "SQ1/SQ1CS",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1CS",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 170,
 			"entries": 169,
 			"algorithms": 173,
-			"duplicatesDropped": 169,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 165,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 165
+			},
 			"setup": {
 				"fromSite": 169,
 				"fromInverse": 0,
@@ -1211,6 +1534,13 @@
 			},
 			"emptyCases": [
 				"Square / Square"
+			],
+			"renamedDuplicates": [
+				{
+					"subset": "5 Slices",
+					"from": "Right 4-2 / Perpendicular Edges",
+					"to": "Right 4-2 / Perpendicular Edges (2)"
+				}
 			],
 			"alsoIncludes": [],
 			"description": null,
@@ -1228,18 +1558,30 @@
 			"siteSet": "SQ1/SQ1CO",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1CO",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 7,
 			"entries": 7,
 			"algorithms": 14,
-			"duplicatesDropped": 7,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 7,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1256,18 +1598,30 @@
 			"siteSet": "SQ1/SQ1EO",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1EO",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 7,
 			"entries": 7,
 			"algorithms": 10,
-			"duplicatesDropped": 7,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 7,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1284,18 +1638,30 @@
 			"siteSet": "SQ1/SQ1CP",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1CP",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 8,
 			"entries": 8,
 			"algorithms": 19,
-			"duplicatesDropped": 9,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 1,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 8,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1312,18 +1678,30 @@
 			"siteSet": "SQ1/SQ1Parity",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1Parity",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 5,
 			"entries": 5,
 			"algorithms": 5,
-			"duplicatesDropped": 5,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 5,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1340,18 +1718,30 @@
 			"siteSet": "SQ1/SQ1EP",
 			"url": "https://speedcubedb.com/a/SQ1/SQ1EP",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 49,
 			"entries": 49,
 			"algorithms": 52,
-			"duplicatesDropped": 49,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 10,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 10
+			},
 			"setup": {
 				"fromSite": 49,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1368,18 +1758,126 @@
 			"siteSet": "SQ1/Lin",
 			"url": "https://speedcubedb.com/a/SQ1/Lin",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 3,
 			"cases": 115,
 			"entries": 115,
 			"algorithms": 115,
-			"duplicatesDropped": 115,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 41,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 41
+			},
 			"setup": {
 				"fromSite": 115,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [
+				{
+					"subset": "Lin PLL+1",
+					"from": "Opp Blocks",
+					"to": "Opp Blocks (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Opp-Opp Blocks",
+					"to": "Opp-Opp Blocks (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2c-swap",
+					"to": "2c-swap (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2c + H-perm",
+					"to": "2c + H-perm (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Fake Gc-perm",
+					"to": "Fake Gc-perm (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Opp line + block on",
+					"to": "Opp line + block on (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2c-swap",
+					"to": "2c-swap (3)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Line + Square",
+					"to": "Line + Square (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Line + Block",
+					"to": "Line + Block (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2c + H-perm",
+					"to": "2c + H-perm (3)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Fake Ga-perm",
+					"to": "Fake Ga-perm (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2 Blocks + opp line",
+					"to": "2 Blocks + opp line (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "2 Blocks + adj line",
+					"to": "2 Blocks + adj line (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "1-opp (a)",
+					"to": "1-opp (a) (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "1-opp (b)",
+					"to": "1-opp (b) (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Blocks-F+",
+					"to": "Blocks-F+ (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Blocks-F-",
+					"to": "Blocks-F- (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Blocks-R+",
+					"to": "Blocks-R+ (2)"
+				},
+				{
+					"subset": "Lin PLL+1",
+					"from": "Blocks-L-",
+					"to": "Blocks-L- (2)"
+				}
+			],
 			"alsoIncludes": [],
 			"description": {
 				"title": "Lin",
@@ -1400,18 +1898,30 @@
 			"siteSet": "Megaminx/MegaminxEO",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxEO",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 3,
 			"entries": 3,
 			"algorithms": 3,
-			"duplicatesDropped": 3,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 3,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1429,18 +1939,30 @@
 			"siteSet": "Megaminx/MegaminxCO",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxCO",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 16,
 			"entries": 16,
 			"algorithms": 32,
-			"duplicatesDropped": 16,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 16,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1462,18 +1984,30 @@
 			"siteSet": "Megaminx/MegaminxEP",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxEP",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 5,
 			"entries": 5,
 			"algorithms": 5,
-			"duplicatesDropped": 5,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 5,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1492,18 +2026,30 @@
 			"siteSet": "Megaminx/MegaminxCP",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxCP",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 15,
 			"entries": 15,
 			"algorithms": 15,
-			"duplicatesDropped": 15,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 15,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1524,18 +2070,30 @@
 			"siteSet": "Megaminx/MegaminxOLL",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxOLL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 37,
 			"cases": 178,
 			"entries": 178,
 			"algorithms": 254,
-			"duplicatesDropped": 178,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 178,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": {
 				"title": "MegaminxOLL",
@@ -1575,18 +2133,36 @@
 			"siteSet": "Megaminx/MegaminxPLL",
 			"url": "https://speedcubedb.com/a/Megaminx/MegaminxPLL",
 			"replacesExisting": false,
+			"overlapsExisting": null,
 			"subsets": 25,
 			"cases": 151,
 			"entries": 151,
 			"algorithms": 203,
-			"duplicatesDropped": 151,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 0,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 151,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [
+				{
+					"subset": "5 2x1s",
+					"from": "N2-",
+					"to": "N2- (2)"
+				}
+			],
 			"alsoIncludes": [],
 			"description": {
 				"title": "MegaminxPLL",
@@ -1625,18 +2201,30 @@
 			"siteSet": "Pyraminx/L3E",
 			"url": "https://speedcubedb.com/a/Pyraminx/L3E",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 1,
 			"cases": 5,
 			"entries": 5,
 			"algorithms": 16,
-			"duplicatesDropped": 5,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 0,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 1,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 5,
 				"fromInverse": 0,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1654,12 +2242,23 @@
 			"siteSet": "Pyraminx/L4E",
 			"url": "https://speedcubedb.com/a/Pyraminx/L4E",
 			"replacesExisting": true,
+			"overlapsExisting": null,
 			"subsets": 7,
 			"cases": 37,
 			"entries": 95,
 			"algorithms": 187,
-			"duplicatesDropped": 96,
-			"amountsRewritten": 0,
+			"duplicatesDropped": 1,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 7,
+			"rewrittenAlgs": 0,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 0,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 37,
 				"fromInverse": 58,
@@ -1675,6 +2274,7 @@
 				"Double Sexy - Right Slot (ML4E)",
 				"Double Ugly - Left Slot (ML4E)"
 			],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {
@@ -1693,18 +2293,30 @@
 			"siteSet": "Skewb/SarahsAdvanced",
 			"url": "https://speedcubedb.com/a/Skewb/SarahsAdvanced",
 			"replacesExisting": false,
+			"overlapsExisting": "Sarah Advanced",
 			"subsets": 20,
 			"cases": 131,
 			"entries": 131,
 			"algorithms": 493,
-			"duplicatesDropped": 135,
-			"amountsRewritten": 2,
+			"duplicatesDropped": 4,
+			"standardAlgNotOnSite": 0,
+			"unreachableAlternatives": 71,
+			"rewrittenAlgs": 1,
+			"rewrites": {
+				"amounts": 0,
+				"groupRepeats": 0,
+				"primeSpace": 1,
+				"wide3x3": 0,
+				"wide2x2": 0,
+				"square1Spacing": 0
+			},
 			"setup": {
 				"fromSite": 0,
 				"fromInverse": 131,
 				"missing": []
 			},
 			"emptyCases": [],
+			"renamedDuplicates": [],
 			"alsoIncludes": [],
 			"description": null,
 			"notationTokens": {

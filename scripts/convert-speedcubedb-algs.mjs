@@ -7,21 +7,30 @@
  * Output: data/speedcubedb/speedcubedb-algs.json      Record<category, AlgorithmSubset[]>,
  *                                                     same shape as public/trainer/default-algs.json
  *         data/speedcubedb/speedcubedb-manifest.json  per-category metadata for the merge
+ *         data/speedcubedb/speedcubedb-sources.json   for every entry, the raw case it came from:
+ *                                                     sources[category][subsetIndex][entryIndex] =
+ *                                                     [page key, case index, orientation index]
  *
  * Rules:
- * - Categories, subsets, cases and alternatives keep the site's order. Alternatives are the
- *   site's vote order, every one of them, with exact duplicates (ignoring brackets and
- *   spacing) dropped.
+ * - Categories follow the site. Subsets follow the order their first case appears on the page,
+ *   and cases keep page order inside a subset. Where the page interleaves subgroups (OLL, PLL,
+ *   F2L, Advanced F2L, CLS) grouping them changes the overall case order; nothing else does.
  * - "algorithm" is the site's curated "Standard Alg" when it has one, else its top-voted alg.
+ *   "alternatives" are all other algs the site shows, in vote order, without exact repeats
+ *   (same moves after removing brackets and extra spaces).
  * - Cases with slot tabs (F2L, Advanced F2L, Pyraminx L4E) become one entry per slot,
  *   named "<case> - <slot>", like the existing F2L category.
+ * - Names are unique within a category: the site reuses some case names for different cases
+ *   (SQ1 Lin PLL+1, Megaminx PLL "N2-", ...); repeats get " (2)", " (3)" in page order. Names
+ *   and subsets lose stray spaces. The manifest lists every rename.
  * - "setup" is the site's own setup when it gives one for that case/slot, otherwise the
  *   inverse of "algorithm". The manifest records which, per category.
- * - On 2x2, two-layer turns are written as the rotations they are ("d2" → "y2"); cubing.js
- *   has no wide moves on 2x2x2.
- * - Turn amounts other than 1 and 2 are rewritten to the same turn ("R3" → "R'", "U3'" → "U",
- *   "R4" dropped). The trainer's cleanAlgorithmForCubing() strips those digits, which would turn
- *   "R3" into "R". The raw dump keeps the site's spelling.
+ * - Notation is rewritten only where the meaning stays the same, so the trainer's
+ *   expandNotation() / cleanAlgorithmForCubing() and cubing.js read it as the site means it:
+ *   turn amounts other than 1 and 2 ("R3" → "R'", "U3'" → "U", "R4" dropped), group repeats
+ *   ("(R U R')3" → three copies), "R '" → "R'", 3x3 wide turns "Rw" → "r", 2x2 two-layer turns
+ *   as the rotations they are ("d2" → "y2", "Rw" → "x"), Square-1 "/" with a space on each side.
+ *   The raw dump keeps the site's spelling.
  * - A page listed under two sets (PLL under 1LLL, ZBLL U under 1LLL and ZBLL) is emitted once,
  *   under the set that owns it. The manifest's "alsoIncludes" lists what was left out.
  */
@@ -99,6 +108,12 @@ const CATEGORY_KEYS = {
 	'Skewb/SarahsAdvanced': 'Skewb Sarah Advanced',
 };
 
+// New categories that cover the same step as an existing one under another key and case split
+const OVERLAPS_EXISTING = {
+	'EO4A': 'L6E-EO',
+	'Skewb Sarah Advanced': 'Sarah Advanced',
+};
+
 // cubing.js puzzle id per SpeedCubeDB puzzle
 const PUZZLE_TYPES = {
 	'3x3': '3x3x3',
@@ -122,18 +137,34 @@ function isSquare1(puzzle) {
 	return puzzle === 'SQ1';
 }
 
-// Quarter turns per full rotation of a move, per puzzle. Megaminx (R++/D--) is left as written.
+// Turns per full rotation of a face move, per puzzle. Megaminx (R++/D--) is left as written.
 const TURN_ORDER = {'3x3': 4, '2x2': 4, '4x4': 4, '5x5': 4, Pyraminx: 3, Skewb: 3};
+// Whole-puzzle x/y/z rotations are quarter turns on every cube-shaped puzzle, Skewb included
+const ROTATION_ORDER = {'3x3': 4, '2x2': 4, '4x4': 4, '5x5': 4, Skewb: 4};
+
+function cleanName(name) {
+	return name.replace(/\s+/g, ' ').trim();
+}
+
+/** "(R U R')3" → "(R U R') (R U R') (R U R')"; the trainer would read the 3 as nothing. */
+function expandGroupRepeats(alg) {
+	return alg.replace(/(\([^()]*\))\s*(\d+)('?)(?=$|[\s)\]}])/g, (m, group, count, prime) => {
+		const n = Number(count);
+		if (prime || n < 2 || n > 12) return m;
+		return Array(n).fill(group).join(' ');
+	});
+}
 
 /**
  * "R3" → "R'", "R3'" → "R", "R4" → "", "2R5" → "2R"; "R2" / "R2'" stay as written (the trainer
- * keeps the 2). Also closes a stray space before a prime ("R '" → "R'").
+ * keeps the 2). x/y/z use the rotation order, everything else the puzzle's face order.
  */
 function canonicalAmounts(alg, puzzle) {
-	const order = TURN_ORDER[puzzle];
-	if (!order) return alg;
-	const out = alg.replace(/([A-Za-z0-9)\]])\s+'(?=\s|$)/g, "$1'").replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
-		if (amount === '1' || amount === '2') return amount === '1' ? pre + move + prime : m;
+	return alg.replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
+		if (amount === '2') return m;
+		if (amount === '1') return pre + move + prime;
+		const order = /^[xyz]$/.test(move) ? ROTATION_ORDER[puzzle] : TURN_ORDER[puzzle];
+		if (!order) return m;
 		const n = Number(amount) % order;
 		const turns = prime ? (order - n) % order : n;
 		if (turns === 0) return pre;
@@ -141,19 +172,53 @@ function canonicalAmounts(alg, puzzle) {
 		if (turns === order - 1) return pre + move + "'";
 		return pre + move + '2';
 	});
-	return out === alg ? alg : out.replace(/\s+/g, ' ').trim();
 }
 
-// On a 2x2 a two-layer turn moves the whole puzzle: "d" is "y'", "r" is "x" and so on.
+// On a 2x2 a two-layer turn moves the whole puzzle: "d" and "Dw" are "y'", "r" and "Rw" are "x".
 // cubing.js (and so the trainer) has no wide moves on 2x2x2, so they are written as rotations.
 const WIDE_2X2 = {u: ['y', false], d: ['y', true], r: ['x', false], l: ['x', true], f: ['z', false], b: ['z', true]};
 
 function wideToRotations2x2(alg) {
-	return alg.replace(/(^|[\s([{])([udrlfb])(2?)('?)(?=$|[\s)\]}])/g, (m, pre, move, half, prime) => {
-		const [axis, inverted] = WIDE_2X2[move];
+	return alg.replace(/(^|[\s([{])(?:([udrlfb])|([UDRLFB])w)(2?)('?)(?=$|[\s)\]}])/g, (m, pre, lower, upper, half, prime) => {
+		const [axis, inverted] = WIDE_2X2[(lower ?? upper).toLowerCase()];
 		if (half) return pre + axis + '2' + prime;
 		return pre + axis + (inverted !== Boolean(prime) ? "'" : '');
 	});
+}
+
+/** On 3x3 "Rw" is "r". expandNotation() drops the w, which would turn "Rw" into "R". */
+function wideToLowercase3x3(alg) {
+	return alg.replace(/(^|[\s([{])([UDRLFB])w(?=[2']*(?:$|[\s)\]}]))/g, (m, pre, face) => pre + face.toLowerCase());
+}
+
+/** Square-1: one space on each side of every "/" (the pattern generator splits on spaces). */
+function spaceSquare1(alg) {
+	return alg.replace(/\s*\/\s*/g, ' / ').replace(/\s+/g, ' ').trim();
+}
+
+const REWRITES = ['amounts', 'groupRepeats', 'primeSpace', 'wide3x3', 'wide2x2', 'square1Spacing'];
+
+/** Meaning-preserving rewrites (see the header). Returns the new alg and which rules changed it. */
+function rewriteAlg(alg, puzzle) {
+	const applied = [];
+	const step = (kind, fn) => {
+		const out = fn(alg);
+		if (out !== alg) {
+			applied.push(kind);
+			alg = out;
+		}
+	};
+	if (isSquare1(puzzle)) {
+		step('square1Spacing', spaceSquare1);
+	} else {
+		step('primeSpace', (a) => a.replace(/([A-Za-z0-9)\]])\s+'(?=\s|$)/g, "$1'"));
+		step('groupRepeats', expandGroupRepeats);
+		step('amounts', (a) => canonicalAmounts(a, puzzle));
+		if (puzzle === '3x3') step('wide3x3', wideToLowercase3x3);
+		if (puzzle === '2x2') step('wide2x2', wideToRotations2x2);
+	}
+	if (applied.length) alg = alg.replace(/\s+/g, ' ').trim();
+	return {alg, applied};
 }
 
 /** Square-1: "1,0 / 3,0 / -1,-1" or "/ (0,3) / (-3,-3) /" → reversed, every turn negated. */
@@ -231,22 +296,45 @@ function buildOwnership(raw) {
 
 // ─── Conversion ───
 
-function orientationEntries(c, puzzle, counters) {
+function newCounters() {
+	return {
+		cases: 0,
+		algorithms: 0,
+		duplicatesDropped: 0,
+		standardAlgNotOnSite: 0,
+		unreachableAlternatives: 0,
+		rewritten: Object.fromEntries(REWRITES.map((k) => [k, 0])),
+		rewrittenAlgs: 0,
+		setupFromSite: 0,
+		setupFromInverse: 0,
+		setupMissing: [],
+		emptyCases: [],
+		renamed: [],
+	};
+}
+
+/** One canonical spelling per source string, counted once per distinct string. */
+function makeCanonical(puzzle, counters) {
+	const cache = new Map();
+	return (alg) => {
+		if (!cache.has(alg)) {
+			const {alg: out, applied} = rewriteAlg(alg, puzzle);
+			for (const kind of applied) counters.rewritten[kind]++;
+			if (applied.length) counters.rewrittenAlgs++;
+			cache.set(alg, out);
+		}
+		return cache.get(alg);
+	};
+}
+
+function orientationEntries(c, caseIndex, pageKey, puzzle, counters, canonical) {
 	const entries = [];
 	const multi = c.orientations.length > 1;
 	for (const o of c.orientations) {
-		const name = multi ? `${c.name} - ${o.label ?? `Slot ${o.index + 1}`}` : c.name;
-		if (o.algorithms.length === 0) {
-			counters.emptyCases.push(name);
-			continue;
-		}
+		const caseName = cleanName(c.name);
+		const name = multi ? `${caseName} - ${cleanName(o.label ?? `Slot ${o.index + 1}`)}` : caseName;
+		counters.unreachableAlternatives += o.unreachableAtLeast ?? 0;
 
-		const canonical = (alg) => {
-			let out = canonicalAmounts(alg, puzzle);
-			if (puzzle === '2x2') out = wideToRotations2x2(out);
-			if (out !== alg) counters.amountsRewritten++;
-			return out;
-		};
 		const siteAlgs = o.algorithms.filter((a) => normalize(a.alg));
 		const primarySource = o.index === 0 && c.standardAlg ? c.standardAlg : siteAlgs[0]?.alg;
 		if (!primarySource) {
@@ -255,12 +343,18 @@ function orientationEntries(c, puzzle, counters) {
 			continue;
 		}
 		const primary = canonical(primarySource);
-		const seen = new Set([normalize(primary)]);
+		const primaryKey = normalize(primary);
+		const seen = new Set([primaryKey]);
+		let primaryMatched = false;
 		const alternatives = [];
-		for (const a of o.algorithms) {
+		for (const a of siteAlgs) {
 			const alg = canonical(a.alg);
 			const key = normalize(alg);
-			if (!key) continue;
+			if (key === primaryKey && !primaryMatched) {
+				// The site's own copy of the main alg is the main alg, not a dropped duplicate
+				primaryMatched = true;
+				continue;
+			}
 			if (seen.has(key)) {
 				counters.duplicatesDropped++;
 				continue;
@@ -268,6 +362,7 @@ function orientationEntries(c, puzzle, counters) {
 			seen.add(key);
 			alternatives.push(alg);
 		}
+		if (!primaryMatched) counters.standardAlgNotOnSite++;
 
 		const entry = {name, algorithm: primary};
 		if (alternatives.length) entry.alternatives = alternatives;
@@ -285,23 +380,40 @@ function orientationEntries(c, puzzle, counters) {
 			}
 		}
 		counters.algorithms += 1 + alternatives.length;
-		entries.push(entry);
+		entries.push({entry, source: [pageKey, caseIndex, o.index]});
 	}
 	return entries;
 }
 
-/** Subsets of one leaf page, in the site's filter order, then any subgroup it did not list. */
-function pageSubsets(page, puzzle, fallbackName, counters) {
-	const order = page.filters.map((f) => f.name);
-	const bySubgroup = new Map();
-	for (const c of page.cases) {
-		const subset = c.subgroup ?? fallbackName;
-		if (!bySubgroup.has(subset)) bySubgroup.set(subset, []);
-		bySubgroup.get(subset).push(...orientationEntries(c, puzzle, counters));
-		counters.cases++;
+/** Subsets of one leaf page, in the order their first case appears on the page. */
+function pageSubsets(page, puzzle, fallbackName, counters, canonical) {
+	if (page.cases.some((c) => c.subgroup) && !page.filters.length) {
+		console.warn(`[warn] ${page.key}: cases have subgroups but the page has no filter bar`);
 	}
-	const names = [...order.filter((n) => bySubgroup.has(n)), ...[...bySubgroup.keys()].filter((n) => !order.includes(n))];
-	return names.map((subset) => ({subset, algorithms: bySubgroup.get(subset)})).filter((s) => s.algorithms.length);
+	const bySubgroup = new Map();
+	page.cases.forEach((c, i) => {
+		const subset = c.subgroup ? cleanName(c.subgroup) : fallbackName;
+		if (!bySubgroup.has(subset)) bySubgroup.set(subset, []);
+		bySubgroup.get(subset).push(...orientationEntries(c, i, page.key, puzzle, counters, canonical));
+		counters.cases++;
+	});
+	return [...bySubgroup].map(([subset, items]) => ({subset, items})).filter((s) => s.items.length);
+}
+
+/** Make entry names unique within the category, in page order: "N2-", "N2- (2)", ... */
+function uniqueNames(subsets, counters) {
+	const used = new Map();
+	for (const s of subsets) {
+		for (const {entry} of s.items) {
+			const n = (used.get(entry.name) ?? 0) + 1;
+			used.set(entry.name, n);
+			if (n > 1) {
+				const renamed = `${entry.name} (${n})`;
+				counters.renamed.push({subset: s.subset, from: entry.name, to: renamed});
+				entry.name = renamed;
+			}
+		}
+	}
 }
 
 function tokenInventory(subsets, puzzle) {
@@ -329,11 +441,12 @@ function main() {
 	} catch {}
 
 	const algs = {};
+	const sources = {};
 	const manifest = {
 		source: raw.source,
 		scrapedAt: raw.scrapedAt,
 		generatedBy: 'scripts/convert-speedcubedb-algs.mjs',
-		totals: {categories: 0, subsets: 0, cases: 0, entries: 0, algorithms: 0},
+		totals: {categories: 0, subsets: 0, cases: 0, entries: 0, algorithms: 0, siteAlgorithms: raw.totals.algorithms, unreachableAlternatives: 0},
 		categories: [],
 	};
 
@@ -344,21 +457,13 @@ function main() {
 			if (!category) throw new Error(`No category key for ${setKey}; add it to CATEGORY_KEYS`);
 
 			const page = raw.pages[s.page];
-			const counters = {
-				cases: 0,
-				algorithms: 0,
-				duplicatesDropped: 0,
-				amountsRewritten: 0,
-				setupFromSite: 0,
-				setupFromInverse: 0,
-				setupMissing: [],
-				emptyCases: [],
-			};
+			const counters = newCounters();
+			const canonical = makeCanonical(puzzle.id, counters);
 			const subsets = [];
 			const alsoIncludes = [];
 
 			if (page.kind === 'leaf') {
-				subsets.push(...pageSubsets(page, puzzle.id, 'Default', counters));
+				subsets.push(...pageSubsets(page, puzzle.id, 'Default', counters, canonical));
 			} else {
 				for (const childKey of page.children) {
 					if (topLevel.has(childKey) || owner[childKey] !== s.page) {
@@ -369,12 +474,14 @@ function main() {
 						continue;
 					}
 					const child = raw.pages[childKey];
-					subsets.push(...pageSubsets(child, puzzle.id, child.name, counters));
+					subsets.push(...pageSubsets(child, puzzle.id, cleanName(child.name), counters, canonical));
 				}
 			}
 
-			algs[category] = subsets;
-			const entries = subsets.reduce((n, x) => n + x.algorithms.length, 0);
+			uniqueNames(subsets, counters);
+			algs[category] = subsets.map((x) => ({subset: x.subset, algorithms: x.items.map((i) => i.entry)}));
+			sources[category] = subsets.map((x) => x.items.map((i) => i.source));
+			const entries = subsets.reduce((n, x) => n + x.items.length, 0);
 			manifest.categories.push({
 				category,
 				displayName: s.name,
@@ -384,29 +491,40 @@ function main() {
 				siteSet: setKey,
 				url: page.url,
 				replacesExisting: Boolean(existing[category]),
+				overlapsExisting: OVERLAPS_EXISTING[category] ?? null,
 				subsets: subsets.length,
 				cases: counters.cases,
 				entries,
 				algorithms: counters.algorithms,
 				duplicatesDropped: counters.duplicatesDropped,
-				amountsRewritten: counters.amountsRewritten,
+				standardAlgNotOnSite: counters.standardAlgNotOnSite,
+				unreachableAlternatives: counters.unreachableAlternatives,
+				rewrittenAlgs: counters.rewrittenAlgs,
+				rewrites: counters.rewritten,
 				setup: {fromSite: counters.setupFromSite, fromInverse: counters.setupFromInverse, missing: counters.setupMissing},
 				emptyCases: counters.emptyCases,
+				renamedDuplicates: counters.renamed,
 				alsoIncludes,
 				description: page.description,
-				notationTokens: tokenInventory(subsets, puzzle.id),
+				notationTokens: tokenInventory(algs[category], puzzle.id),
 			});
 			manifest.totals.categories++;
 			manifest.totals.subsets += subsets.length;
 			manifest.totals.cases += counters.cases;
 			manifest.totals.entries += entries;
 			manifest.totals.algorithms += counters.algorithms;
+			manifest.totals.unreachableAlternatives += counters.unreachableAlternatives;
 		}
 	}
 
 	mkdirSync(ARGS.outDir, {recursive: true});
 	writeFileSync(join(ARGS.outDir, 'speedcubedb-algs.json'), JSON.stringify(algs, null, '\t') + '\n');
 	writeFileSync(join(ARGS.outDir, 'speedcubedb-manifest.json'), JSON.stringify(manifest, null, '\t') + '\n');
+	// One line per subset keeps the index small and diffable
+	const sourceLines = Object.entries(sources).map(
+		([category, subs]) => `\t${JSON.stringify(category)}: [\n${subs.map((x) => `\t\t${JSON.stringify(x)}`).join(',\n')}\n\t]`,
+	);
+	writeFileSync(join(ARGS.outDir, 'speedcubedb-sources.json'), `{\n${sourceLines.join(',\n')}\n}\n`);
 
 	console.log(`[done] ${manifest.totals.categories} categories, ${manifest.totals.subsets} subsets, ${manifest.totals.entries} entries, ${manifest.totals.algorithms} algorithms`);
 	for (const c of manifest.categories) {
@@ -414,6 +532,7 @@ function main() {
 			c.replacesExisting ? 'replaces existing' : 'new',
 			c.setup.missing.length ? `${c.setup.missing.length} without setup` : null,
 			c.emptyCases.length ? `${c.emptyCases.length} empty` : null,
+			c.renamedDuplicates.length ? `${c.renamedDuplicates.length} renamed` : null,
 			c.alsoIncludes.length ? `+${c.alsoIncludes.length} shared pages` : null,
 		].filter(Boolean);
 		console.log(`  ${c.category.padEnd(18)} ${String(c.entries).padStart(5)} entries ${String(c.algorithms).padStart(6)} algs  (${flags.join(', ')})`);
