@@ -1,0 +1,5963 @@
+{
+	"generatedBy": "scripts/validate-speedcubedb-algs.mjs",
+	"source": "https://speedcubedb.com",
+	"scrapedAt": "2026-10-14T11:34:09.401Z",
+	"legend": {
+		"ok": "setup + alg reaches the goal (trailing AUF / rotation allowed)",
+		"preAuf": "reaches the goal only with an extra AUF before the alg; \"auf\" says which",
+		"preRotation": "reaches the goal only when the puzzle is first held from another side",
+		"wrong": "parses, but setup + alg does not reach the goal",
+		"unparsable": "cubing.js cannot parse it for this puzzle",
+		"parseOnly": "category not simulated (see goal); only parsed",
+		"engineMangled": "cleanAlgorithmForCubing() turns it into a different (or unparsable) alg"
+	},
+	"totals": {
+		"ok": 21159,
+		"preAuf": 21,
+		"preRotation": 1,
+		"wrong": 34,
+		"unparsable": 522,
+		"parseOnly": 555,
+		"engineMangled": 179
+	},
+	"categories": [
+		{
+			"category": "F2L",
+			"puzzleType": "3x3x3",
+			"goal": "f2l-progress",
+			"counts": {
+				"ok": 2318,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 164,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Free Pairs",
+					"name": "F2L 4 - Front Right",
+					"alg": "l b d",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "Advanced F2L",
+			"puzzleType": "3x3x3",
+			"goal": "f2l-progress",
+			"counts": {
+				"ok": 908,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 216,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "OLL",
+			"puzzleType": "3x3x3",
+			"goal": "oll",
+			"counts": {
+				"ok": 2061,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 57,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "PLL",
+			"puzzleType": "3x3x3",
+			"goal": "full",
+			"counts": {
+				"ok": 1518,
+				"preAuf": 1,
+				"preRotation": 0,
+				"wrong": 2,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 21,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "EPLL",
+					"name": "H",
+					"alg": "M2 U2 M2 U' M2 U2 M2 U' M2",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "EPLL",
+					"name": "Ua",
+					"alg": "x U' L U M U' L' U2 R' U' M' U R U",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "EPLL",
+					"name": "Ub",
+					"alg": "R2' U R U R' U' R' U' R' U R'",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				}
+			]
+		},
+		{
+			"category": "COLL",
+			"puzzleType": "3x3x3",
+			"goal": "coll",
+			"counts": {
+				"ok": 443,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 40,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "WVLS",
+			"puzzleType": "3x3x3",
+			"goal": "oll",
+			"counts": {
+				"ok": 185,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 27,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "CMLL",
+			"puzzleType": "3x3x3",
+			"goal": "cubing:CMLL",
+			"counts": {
+				"ok": 598,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 42,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Anti Sune",
+					"name": "Anti Sune Columns",
+					"alg": "y R U' r' U R2 U R2 U R F R U2 r2 U F",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "SBLS",
+			"puzzleType": "3x3x3",
+			"goal": "cubing:SecondBlock",
+			"counts": {
+				"ok": 311,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 65,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "EO4A",
+			"puzzleType": "3x3x3",
+			"goal": "cubing:L6EO",
+			"counts": {
+				"ok": 60,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 9,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "Anti PLL",
+			"puzzleType": "3x3x3",
+			"goal": "full",
+			"counts": {
+				"ok": 122,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 22,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SV",
+			"puzzleType": "3x3x3",
+			"goal": "oll",
+			"counts": {
+				"ok": 72,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 26,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Default",
+					"name": "SV 7",
+					"alg": "R U2 R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U R U' R' U",
+					"main": true,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "ELL",
+			"puzzleType": "3x3x3",
+			"goal": "full",
+			"counts": {
+				"ok": 278,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 25,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "FRUF",
+			"puzzleType": "3x3x3",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 124
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 42
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "CLS",
+			"puzzleType": "3x3x3",
+			"goal": "oll",
+			"counts": {
+				"ok": 192,
+				"preAuf": 0,
+				"preRotation": 1,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 95,
+				"preAuf": 0,
+				"preRotation": 1,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Cross Color Facing Front",
+					"name": "CLS FRU23",
+					"alg": "y U R' U2 R U' R' U R U R' U R",
+					"main": true,
+					"status": "preRotation"
+				},
+				{
+					"subset": "Cross Color Facing Right",
+					"name": "CLS RFU23",
+					"alg": "U R U2 R' U R U' R' U' R U' R'",
+					"main": true,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "1LLL",
+			"puzzleType": "3x3x3",
+			"goal": "full",
+			"counts": {
+				"ok": 4399,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 4,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 3399,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "1LLL 6",
+					"name": "1LLL 6 13",
+					"alg": "r' U L U R' l' F R F' l F2 r' F r F2",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "1LLL 6",
+					"name": "1LLL 6 13",
+					"alg": "r' U L U' L' U' L F L' U' L U L F' L2 U L",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "1LLL 44",
+					"name": "1LLL 44 69",
+					"alg": "M U L U' R' U2 l' R' F R F' l F2 r' F r F2",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "1LLL 55",
+					"name": "1LLL 55 3",
+					"alg": "x' U' l' U' R2 U R2 U R2 U2 R' U2 R' U' l",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "OLLCP",
+			"puzzleType": "3x3x3",
+			"goal": "coll",
+			"counts": {
+				"ok": 1390,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 2,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 342,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "OLLCP 10",
+					"name": "OLLCP10 2",
+					"alg": "y' z U R U' R U R' U F' U' F R' U",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "OLLCP 27",
+					"name": "OLLCP27 2",
+					"alg": "F' R U2 R' U2 R' F2 R U R U' R' F'",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "VLS",
+			"puzzleType": "3x3x3",
+			"goal": "oll",
+			"counts": {
+				"ok": 685,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 189,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "ZBLL",
+			"puzzleType": "3x3x3",
+			"goal": "full",
+			"counts": {
+				"ok": 3746,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 472,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "2x2 Ortega OLL",
+			"puzzleType": "2x2x2",
+			"goal": "ortega",
+			"counts": {
+				"ok": 52,
+				"preAuf": 8,
+				"preRotation": 0,
+				"wrong": 3,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 7,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Default",
+					"name": "Sune",
+					"alg": "y R' U2 R U R' U R",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "Anti Sune",
+					"alg": "R' F R F' R U R'",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "Anti Sune",
+					"alg": "R' U' R U' R' U2 R",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "Anti Sune",
+					"alg": "R U2 R U R U R",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Default",
+					"name": "Pi",
+					"alg": "y R U' R2 F R2 U' R'",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "Pi",
+					"alg": "R U R2 F' R2 U R'",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "P",
+					"alg": "y2 L' U' L U L F' L' F",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Default",
+					"name": "L",
+					"alg": "F' R U R' U' R' F R",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "L",
+					"alg": "y2 R U' R' D' R' F R",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "T",
+					"alg": "R' F' R U R U' R' F",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "T",
+					"alg": "R U2 R U2 R2",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "2x2 PBL",
+			"puzzleType": "2x2x2",
+			"goal": "full",
+			"counts": {
+				"ok": 157,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 6,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "2x2 CLL",
+			"puzzleType": "2x2x2",
+			"goal": "full",
+			"counts": {
+				"ok": 425,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 40,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "AS",
+					"name": "CLL AS 3",
+					"alg": "R' U L U' R U L'",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "2x2 EG1",
+			"puzzleType": "2x2x2",
+			"goal": "full",
+			"counts": {
+				"ok": 176,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 40,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "2x2 EG2",
+			"puzzleType": "2x2x2",
+			"goal": "full",
+			"counts": {
+				"ok": 191,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 40,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "4x4 OLL Parity",
+			"puzzleType": "4x4x4",
+			"goal": "oll",
+			"counts": {
+				"ok": 39,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 4,
+				"parseOnly": 2
+			},
+			"mainAlg": {
+				"ok": 2,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 1,
+				"parseOnly": 0
+			},
+			"engineMangled": 4,
+			"engineMangledMain": 1,
+			"engineMangledExamples": [
+				{
+					"alg": "2R' U2 2L F2 2L' F2 2R2 U2 2R U2 2R' U2 F2 2R2 F2",
+					"cleaned": "2 R' U22 L F22 L' F22 R2 U22 R U22 R' U2 F22 R2 F2"
+				},
+				{
+					"alg": "2R2 B2 U2 2L U2 2R' U2 2R U2 F2 2R F2 2L' B2 2R2",
+					"cleaned": "2 R2 B2 U22 L U22 R' U22 R U2 F22 R F22 L' B22 R2"
+				},
+				{
+					"alg": "y2 2R2 U2 2R2 Uw2 2R2 Uw2 Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw'",
+					"cleaned": "y22 R2 U22 R2 u22 R2 u2 r U2 x r U2 r U2 r' U2 l U2 r' U2 r U2 r' U2 r'"
+				},
+				{
+					"alg": "y2 2R2 U2 2R2 Uw2 2R2 Uw2 Rw' U2 Lw F2 Lw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+					"cleaned": "y22 R2 U22 R2 u22 R2 u2 r' U2 l F2 l' F2 r2 U2 r U2 r' U2 F2 r2 F2"
+				}
+			],
+			"issues": [
+				{
+					"subset": "Default",
+					"name": "Pure",
+					"alg": "2R U2 x 2R U2 2R U2 2R' U2 2L U2 2R' U2 2R U2 2R' U2 2R' U2 M' x' U2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Default",
+					"name": "M",
+					"setup": "M Rw U2 Rw U2 Rw' U2 Rw U2 Lw' U2 Rw U2 Rw' U2 Rw' x' U2 Rw' M'",
+					"status": "setupUnparsable",
+					"error": "Bad grip in move M"
+				},
+				{
+					"subset": "Default",
+					"name": "M",
+					"alg": "M Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw' M'",
+					"error": "Bad grip in move M",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Default",
+					"name": "M",
+					"alg": "M Rw2 B2 U2 Lw U2 Rw' U2 Rw U2 F2 Rw F2 Lw' B2 Rw2 M'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Default",
+					"name": "M",
+					"alg": "M Rw' U2' Rw U2 Rw U2' Rw2' F2 Rw' U2 Rw' U2' F2 Rw2 F2 M'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				}
+			]
+		},
+		{
+			"category": "4x4 PLL Parity",
+			"puzzleType": "4x4x4",
+			"goal": "full",
+			"counts": {
+				"ok": 116,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 19,
+				"parseOnly": 2
+			},
+			"mainAlg": {
+				"ok": 20,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 2,
+				"parseOnly": 0
+			},
+			"engineMangled": 102,
+			"engineMangledMain": 17,
+			"engineMangledExamples": [
+				{
+					"alg": "R U R' U' R' F R2 U' R' U' R U R' F' U' 2L2 U2 2L2 Uw2 2L2 Uw2",
+					"cleaned": "R U R' U' R' F R2 U' R' U' R U R' F' U2' L2 U22 L2 u22 L2 u2"
+				},
+				{
+					"alg": "R U R' U' R' F R2 U' R' U' R U R' F' U' 2R2 U2 2R2 Uw2 2R2 Uw2",
+					"cleaned": "R U R' U' R' F R2 U' R' U' R U R' F' U2' R2 U22 R2 u22 R2 u2"
+				},
+				{
+					"alg": "Rw' R2 U' R' U 2R U' R U2 R' U' 2R U 2R' U' Rw' F Rw2 U' Rw' U' Rw U Rw' F'",
+					"cleaned": "r' R2 U' R' U2 R U' R U2 R' U2' R U2 R' U' r' F r2 U' r' U' r U r' F'"
+				},
+				{
+					"alg": "R U R' U' R' F R2 U' R' U' R U R' F' U' 2R2 U2 2R2 u2 2R2 u2",
+					"cleaned": "R U R' U' R' F R2 U' R' U' R U R' F' U2' R2 U22 R2 u22 R2 u2"
+				},
+				{
+					"alg": "R U R' U' R' F R2 U' R' U' R U R' F' U u2 r2 U2 2R2 U2 r2 u2",
+					"cleaned": "R U R' U' R' F R2 U' R' U' R U R' F' U u2 r2 U22 R2 U2 r2 u2"
+				},
+				{
+					"alg": "R U R' F' U' 2R2 U2 2R2 Uw2 2R2 Uw2 U' R U R' U' R' F R2 U' R'",
+					"cleaned": "R U R' F' U2' R2 U22 R2 u22 R2 u2 U' R U R' U' R' F R2 U' R'"
+				},
+				{
+					"alg": "R U R' U' R' F R2 U' R' U' R U R' F' U 2L2 U2 2L2 Uw2 2L2 Uw2",
+					"cleaned": "R U R' U' R' F R2 U' R' U' R U R' F' U2 L2 U22 L2 u22 L2 u2"
+				},
+				{
+					"alg": "R' Uw2 2R2 Uw2 2R2 U2 2R2 U R U' R' U R U R2 F' R U R U' R' F U R",
+					"cleaned": "R' u22 R2 u22 R2 U22 R2 U R U' R' U R U R2 F' R U R U' R' F U R"
+				},
+				{
+					"alg": "y' 2R2 U2 2R2 Uw2 2R2 Uw2 U' R U R' U' R' F R2 U' R' U' R U R' F'",
+					"cleaned": "y2' R2 U22 R2 u22 R2 u2 U' R U R' U' R' F R2 U' R' U' R U R' F'"
+				},
+				{
+					"alg": "Uw2 2L2 Uw2 2L2 U2 2L2 U R U R' F' R U R' U' R' F R2 U' R'",
+					"cleaned": "u22 L2 u22 L2 U22 L2 U R U R' F' R U R' U' R' F R2 U' R'"
+				}
+			],
+			"issues": [
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"setup": "Uw2 2R2 Uw2 2R2 U2 2R2 M U2 M2 U2 M U M2 U M2",
+					"status": "setupUnparsable",
+					"error": "Bad grip in move M"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2 U' M2 U' M' U2 M2 U2 M' 2R2 U2 2R2 Uw2 2R2 Uw2",
+					"error": "Bad grip in move M",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2 U M2 U M' U2 M2 U2 M' U 2L2 U2 2L2 Uw2 2L2 Uw2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2 U' M2 U' M' U2 M2 U2 M' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "Uw2 2L2 Uw2 2L2 U2 2R2 U M2 U M' U2 M2 U2 M'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M' U' M2 U' M2 U' M' U2 M2 u2 2R2 u2 2R2 U2 2R2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M U' M2 U' M2 U' M U2 M2 2R2 U2 2R2 u2 2R2 u2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M' U' M2 U' M2 U' M' U2 M2 r2 F2 U2 r2 R2 U2 F2 r2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2' U2 M' U M2' U M2' U M' U 2R2 U2 2R2 u2 2R2 u2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2' U2 M' U M2' U M2' U M' U 2R2 U2 2R2 Uw2 2R2 Uw2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CwO",
+					"alg": "M2 U2 M U' M2 U' M2 U' M 2R2 U2 2R2 Uw2 2R2 Uw2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"setup": "M2 U' M2 U' M U2 M2 U2 R Rw2 3Rw U2 2L2 Uw2 2L2 Uw2",
+					"status": "setupUnparsable",
+					"error": "Bad grip in move M"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "Uw2 2L2 Uw2 2L2 U2 3Rw' Rw2 R' U2 M2 U2 M' U M2 U M2",
+					"error": "Bad grip in move M",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M2' U2 M' U M2' U M2' U M' 2R2 U2 2R2 u2 2R2 u2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M2 U' M2 U' M' U2 M2 U2 M' U' 2R2 U2 2R2 Uw2 2R2 Uw2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "u2 2R2 u2 2R2 U2 2R2 M2 U' M2 U' M' U2 M2 U2 M'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M U' M2 U' M2 U' M U2 M2 U' 2R2 U2 2R2 u2 2R2 u2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M' U' M2 U' M2 U' M' U2 M2 U' r2 F2 U2 r2 R2 U2 F2 r2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M2 U M2 U M' U2 M2 U2 M' r2 F2 U2 r2 R2 U2 F2 r2",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M2' U' M2' U' M' U2' M2' U2' M' U' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Edge Swap",
+					"name": "CcwO",
+					"alg": "M2 U' M2 U' M' U2 M2 U2 M' U' Uw2' Rw2 U2 Lw2 3Lw2' U2 Rw2 Uw2'",
+					"error": "Bad grip in move M",
+					"main": false,
+					"status": "unparsable"
+				}
+			]
+		},
+		{
+			"category": "5x5 L2E",
+			"puzzleType": "5x5x5",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 37
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 13
+			},
+			"engineMangled": 6,
+			"engineMangledMain": 3,
+			"engineMangledExamples": [
+				{
+					"alg": "Rw' U2 3Rw U2 3Rw' F2 Rw2 U2 Rw U2 Rw' U2 F2 Rw2 F2",
+					"cleaned": "r' U2 r U2 r' F2 r2 U2 r U2 r' U2 F2 r2 F2"
+				},
+				{
+					"alg": "Rw U2 x Rw U2 Rw U2 3Rw' U2 Lw U2 Rw' U2 Rw U2 Rw' U2 Rw'",
+					"cleaned": "r U2 x r U2 r U2 r' U2 l U2 r' U2 r U2 r' U2 r'"
+				},
+				{
+					"alg": "Rw U2 x Rw U2 Rw U2 Rw' U2 Lw U2 3Rw' U2 Rw U2 Rw' U2 Rw'",
+					"cleaned": "r U2 x r U2 r U2 r' U2 l U2 r' U2 r U2 r' U2 r'"
+				},
+				{
+					"alg": "Rw U2 x Rw U2 Rw U2' 3Rw' U2 Lw U2 Rw' U2' Rw U2 Rw' U2' Rw'",
+					"cleaned": "r U2 x r U2 r U2' r' U2 l U2 r' U2' r U2 r' U2' r'"
+				},
+				{
+					"alg": "y2 Rw U2 Rw U2' x U2 Rw U2' 3Rw' U2 Lw U2' Rw2",
+					"cleaned": "y2 r U2 r U2' x U2 r U2' r' U2 l U2' r2"
+				},
+				{
+					"alg": "Rw' U2 Rw U2 3Lw' U2 Rw U2 Rw U2' Rw' U2 Rw U2' Rw2 D2 F2 U2 D2",
+					"cleaned": "r' U2 r U2 l' U2 r U2 r U2' r' U2 r U2' r2 D2 F2 U2 D2"
+				}
+			],
+			"issues": []
+		},
+		{
+			"category": "5x5 L2C",
+			"puzzleType": "5x5x5",
+			"goal": "centers",
+			"counts": {
+				"ok": 39,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 1,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 18,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 2,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [
+				{
+					"alg": "U 3Rw U Rw' U' 3R'",
+					"cleaned": "U r U r' U' R'"
+				},
+				{
+					"alg": "U' 3Rw U' Rw' U 3R'",
+					"cleaned": "U' r U' r' U R'"
+				}
+			],
+			"issues": [
+				{
+					"subset": "Default",
+					"name": "L2C 15",
+					"alg": "Rw U' Rw' U Rw U2 Rw'",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "SQ1 Cube Shape",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 173
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 169
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 CO",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 14
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 7
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 EO",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 10
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 7
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 CP",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 19
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 8
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 Parity",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 5
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 5
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 EP",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 52
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 49
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "SQ1 Lin",
+			"puzzleType": "square1",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 115
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 115
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "Megaminx EO",
+			"puzzleType": "megaminx",
+			"goal": "eoll",
+			"counts": {
+				"ok": 3,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 3,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "Megaminx CO",
+			"puzzleType": "megaminx",
+			"goal": "oll",
+			"counts": {
+				"ok": 27,
+				"preAuf": 3,
+				"preRotation": 0,
+				"wrong": 2,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 16,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 3,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [
+				{
+					"alg": "y2' R2' DR' R U2 R' DR R U2' R",
+					"cleaned": "y2' R2' D R' R U2 R' D R R U2' R"
+				},
+				{
+					"alg": "y2' R BR R' F R BR' R' F'",
+					"cleaned": "y2' R B R R' F R B R' R' F'"
+				},
+				{
+					"alg": "R' F R BR' R' F' R BR",
+					"cleaned": "R' F R B R' R' F' R B R"
+				}
+			],
+			"issues": [
+				{
+					"subset": "Default",
+					"name": "CO 1",
+					"alg": "y2' R2' DR' R U2 R' DR R U2' R",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Default",
+					"name": "CO 4",
+					"alg": "F R' F' L F R F' L'",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "CO 4",
+					"alg": "R' F R BR' R' F' R BR",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Default",
+					"name": "CO 9",
+					"alg": "y F R U R' U' R U R' U' R U R' U' F'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Default",
+					"name": "CO 12",
+					"alg": "R U2' R' U2' R U2 R' U2' R U' R'",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				}
+			]
+		},
+		{
+			"category": "Megaminx EP",
+			"puzzleType": "megaminx",
+			"goal": "epll",
+			"counts": {
+				"ok": 5,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 5,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "Megaminx CP",
+			"puzzleType": "megaminx",
+			"goal": "full",
+			"counts": {
+				"ok": 15,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 15,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 5,
+			"engineMangledMain": 5,
+			"engineMangledExamples": [
+				{
+					"alg": "R' BR' R BR R' F' R BR' R' BR F R",
+					"cleaned": "R' B R' R B R R' F' R B R' R' B R F R"
+				},
+				{
+					"alg": "R' F' BR' R BR R' F R BR' R' BR R",
+					"cleaned": "R' F' B R' R B R R' F R B R' R' B R R"
+				},
+				{
+					"alg": "BR' R' U L U' R' U L' U' R2 BR",
+					"cleaned": "B R' R' U L U' R' U L' U' R2 B R"
+				},
+				{
+					"alg": "BR' R2' U L U' R U L' U' R BR",
+					"cleaned": "B R' R2' U L U' R U L' U' R B R"
+				},
+				{
+					"alg": "F R U2 R' U' R U' R' F' R' y' R' U' R U' R' U2 R BR U'",
+					"cleaned": "F R U2 R' U' R U' R' F' R' y' R' U' R U' R' U2 R B R U'"
+				}
+			],
+			"issues": []
+		},
+		{
+			"category": "Megaminx OLL",
+			"puzzleType": "megaminx",
+			"goal": "oll",
+			"counts": {
+				"ok": 237,
+				"preAuf": 6,
+				"preRotation": 0,
+				"wrong": 6,
+				"unparsable": 5,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 175,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 3,
+				"parseOnly": 0
+			},
+			"engineMangled": 37,
+			"engineMangledMain": 27,
+			"engineMangledExamples": [
+				{
+					"alg": "R BR R' F R BR' R' F'",
+					"cleaned": "R B R R' F R B R' R' F'"
+				},
+				{
+					"alg": "R' F R BR' R' F' R BR",
+					"cleaned": "R' F R B R' R' F' R B R"
+				},
+				{
+					"alg": "y2' R U R BR' R' BR U' R'",
+					"cleaned": "y2' R U R B R' R' B R U' R'"
+				},
+				{
+					"alg": "BR' R' U2' R U2 BR",
+					"cleaned": "B R' R' U2' R U2 B R"
+				},
+				{
+					"alg": "y' R BR' R2' U' R U' R' U2 R2 BR R'",
+					"cleaned": "y' R B R' R2' U' R U' R' U2 R2 B R R'"
+				},
+				{
+					"alg": "R U2 R BR' R' BR U2",
+					"cleaned": "R U2 R B R' R' B R U2"
+				},
+				{
+					"alg": "BL' F R U R' U' F' BL",
+					"cleaned": "B L' F R U R' U' F' B L"
+				},
+				{
+					"alg": "y BR' R' F' U' F U R BR",
+					"cleaned": "y B R' R' F' U' F U R B R"
+				},
+				{
+					"alg": "y BR' U' R' U R U' R' U' R U2 BR",
+					"cleaned": "y B R' U' R' U R U' R' U' R U2 B R"
+				},
+				{
+					"alg": "y BR' U2' R' U R U R' U' R U BR",
+					"cleaned": "y B R' U2' R' U R U R' U' R U B R"
+				}
+			],
+			"issues": [
+				{
+					"subset": "Y Shapes",
+					"name": "11A-",
+					"alg": "L R' F R U R' U' F' L' U R",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "W Shapes",
+					"name": "13-",
+					"alg": "y2' R' F R U2 R' F' R U' F' U' F",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Megaphone Shapes",
+					"name": "15A-",
+					"alg": "y' x' R U' R' F' R U R' U' F U",
+					"error": "Could not split X into face names.",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Claw Shapes",
+					"name": "16B-",
+					"alg": "R' F' U2' F U' R U R' U2 R",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Rabbit Shapes",
+					"name": "17A-",
+					"alg": "F U R U2' R' U2 R U R' F'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Rabbit Shapes",
+					"name": "17A-",
+					"alg": "y' R U2 R' U F R' F' R2 U2 R'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Long Block",
+					"name": "18B",
+					"alg": "y' R' U2' R F R' F' U2 R U2' R U2 R'",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Line Shapes",
+					"name": "21C+",
+					"alg": "y' R U2' R' F R' F' U2' R2 U' R2' U2' R",
+					"auf": "U2'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "E Shapes",
+					"name": "25A-",
+					"alg": "R' U' L F R' F' R L' U R",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "E Shapes",
+					"name": "25B-",
+					"alg": "F R' F' R U2 R U R' U' R U2' R' is",
+					"error": "Could not split IS into face names.",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Eagle Shapes",
+					"name": "27A+",
+					"alg": "bL' F R' F' R U R U' R' bL",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Big Block",
+					"name": "28-",
+					"setup": "L' U' R U' R' U2 L x",
+					"status": "setupUnparsable",
+					"error": "Could not split X into face names."
+				},
+				{
+					"subset": "Big Block",
+					"name": "28-",
+					"alg": "x' L' U2' R U R' U L",
+					"error": "Could not split X into face names.",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Big Block",
+					"name": "28+",
+					"setup": "D R U' R U R2' D' x",
+					"status": "setupUnparsable",
+					"error": "Could not split X into face names."
+				},
+				{
+					"subset": "Big Block",
+					"name": "28+",
+					"alg": "x' D R2 U' R' U R' D'",
+					"error": "Could not split X into face names.",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Human Shapes",
+					"name": "34A",
+					"alg": "F R2 U R' U R' U' R U R' U' R2 U' R2' F",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Axe Shapes",
+					"name": "35A+",
+					"setup": "D R2 U' R' U R U' R' U R' D' x",
+					"status": "setupUnparsable",
+					"error": "Could not split X into face names."
+				},
+				{
+					"subset": "Axe Shapes",
+					"name": "35A+",
+					"alg": "x' D R U' R U R' U' R U R2' D'",
+					"error": "Could not split X into face names.",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Axe Shapes",
+					"name": "35B-",
+					"alg": "y R' U F R' F' R2 U R2' F R F' R",
+					"auf": "U2'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Axe Shapes",
+					"name": "35E-",
+					"alg": "bL' F R U R' U' R U R' U F' bL",
+					"main": false,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "Megaminx PLL",
+			"puzzleType": "megaminx",
+			"goal": "full",
+			"counts": {
+				"ok": 193,
+				"preAuf": 3,
+				"preRotation": 0,
+				"wrong": 4,
+				"unparsable": 2,
+				"parseOnly": 1
+			},
+			"mainAlg": {
+				"ok": 150,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 1,
+				"parseOnly": 0
+			},
+			"engineMangled": 20,
+			"engineMangledMain": 11,
+			"engineMangledExamples": [
+				{
+					"alg": "BR' R2' U L U' R U L' U' R BR",
+					"cleaned": "B R' R2' U L U' R U L' U' R B R"
+				},
+				{
+					"alg": "BR' R' U L U' R' U L' U' R2 BR",
+					"cleaned": "B R' R' U L U' R' U L' U' R2 B R"
+				},
+				{
+					"alg": "y2 R2' U2 R2 BR2' U R2' U' R2 U' BR2 U R2' U2' R2",
+					"cleaned": "y2 R2' U2 R2 B R2' U R2' U' R2 U' B R2 U R2' U2' R2"
+				},
+				{
+					"alg": "y2 R' U' R' DR' R U' R' DR R U R' DR' R U R' DR R2",
+					"cleaned": "y2 R' U' R' D R' R U' R' D R R U R' D R' R U R' D R R2"
+				},
+				{
+					"alg": "R' dR R U' R' dR' R U' R' dR R U' R' dR' R U' R' dR R U' R' dR' R",
+					"cleaned": "R' d R R U' R' d R' R U' R' d R R U' R' d R' R U' R' d R R U' R' d R' R"
+				},
+				{
+					"alg": "R' dR R U R' dR' R U R' dR R U R' dR' R U R' dR R U R' dR' R",
+					"cleaned": "R' d R R U R' d R' R U R' d R R U R' d R' R U R' d R R U R' d R' R"
+				},
+				{
+					"alg": "R2 U2' R2' U' R2 BR2' U R2' U' R2 U' BR2 U' R2'",
+					"cleaned": "R2 U2' R2' U' R2 B R2' U R2' U' R2 U' B R2 U' R2'"
+				},
+				{
+					"alg": "R2 U BR2' U R2' U R2 U' BR2 R2' U R2 U2 R2'",
+					"cleaned": "R2 U B R2' U R2' U R2 U' B R2 R2' U R2 U2 R2'"
+				},
+				{
+					"alg": "R2 BR2' R2' U' R2 BR2 R2' U2 R2 BR2' R2' U' R2 BR2 R2'",
+					"cleaned": "R2 B R2' R2' U' R2 B R2 R2' U2 R2 B R2' R2' U' R2 B R2 R2'"
+				},
+				{
+					"alg": "y2' R' U2 R U2 F' R' y' R U R' BR U2 R U R' U2 R",
+					"cleaned": "y2' R' U2 R U2 F' R' y' R U R' B R U2 R U R' U2 R"
+				}
+			],
+			"issues": [
+				{
+					"subset": "3 corner CP",
+					"name": "A2+",
+					"alg": "R' U2' R U' R' F' R U R' U' R' F R U2' R",
+					"auf": "U'",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "Double R block",
+					"name": "B2+",
+					"alg": "y2'R U' R' U2' R2 U R' U R U' R' U2 R' U2' R2 U' R2'",
+					"error": "Unexpected character at index 3. Are you missing a space?",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "2 2x1s touching",
+					"name": "C1-",
+					"alg": "y' R' U' R U2 R U2 R' U R' U' R2 U2' R' U2 R' U2 R",
+					"auf": "U2",
+					"main": false,
+					"status": "preAuf"
+				},
+				{
+					"subset": "4 corner CP",
+					"name": "E1",
+					"alg": "y2 R' U' R' DR' R U' R' DR R U R' DR' R U R' DR R2",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "4 corner CP",
+					"name": "E2",
+					"setup": "x' dR R U R' dR' R U' R' dR R U' R' dR' R U R' x",
+					"status": "setupUnparsable",
+					"error": "Could not split X into face names."
+				},
+				{
+					"subset": "4 corner CP",
+					"name": "E2",
+					"alg": "x' R U' R' dR R U R' dR' R U R' dR R U' R' dR' x",
+					"error": "Could not split X into face names.",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "5 piece EP/CP",
+					"name": "H1-",
+					"alg": "R' dR R U' R' dR' R U' R' dR R U' R' dR' R U' R' dR R U' R' dR' R",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "5 piece EP/CP",
+					"name": "H1+",
+					"alg": "F R U2 R' U' R U' R' F' R' F' U' F U' F' U2 F R",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "5 piece EP/CP",
+					"name": "H1+",
+					"alg": "R' U' R U' R U R2' U R U' R U' R' U' R' U' R U' R U R2' U R U' R U' R'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "No blocks or headlights",
+					"name": "X5+",
+					"alg": "y2 R2 U R' U2 R U' R' U' R U' R2' U R U2 R' U2 R U R'",
+					"auf": "U",
+					"main": false,
+					"status": "preAuf"
+				}
+			]
+		},
+		{
+			"category": "Pyraminx LL",
+			"puzzleType": "pyraminx",
+			"goal": "no-tips",
+			"counts": {
+				"ok": 16,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 5,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": []
+		},
+		{
+			"category": "Pyraminx L4E",
+			"puzzleType": "pyraminx",
+			"goal": "no-tips",
+			"counts": {
+				"ok": 182,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 5,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"mainAlg": {
+				"ok": 93,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 2,
+				"unparsable": 0,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Connected Bar",
+					"name": "Bad Hedge - Front Slot",
+					"alg": "R' L R L' U L' U L",
+					"main": true,
+					"status": "wrong"
+				},
+				{
+					"subset": "Connected Bar",
+					"name": "Bad Hedge - Front Slot",
+					"alg": "L' U L2 R' L' R2 U' R'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Connected Bar",
+					"name": "Bad Hedge - Front Slot",
+					"alg": "U R' L R L2' U' L U R U' R'",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "L3E",
+					"name": "Counterclockwise - Front Slot",
+					"alg": "U' R U R' L R' L' R",
+					"main": false,
+					"status": "wrong"
+				},
+				{
+					"subset": "Separated Bar",
+					"name": "Super Hedge - Front Slot",
+					"alg": "L' U L2' R' L' R",
+					"main": true,
+					"status": "wrong"
+				}
+			]
+		},
+		{
+			"category": "Skewb Sarah Advanced",
+			"puzzleType": "skewb",
+			"goal": "parse only",
+			"counts": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 492,
+				"parseOnly": 1
+			},
+			"mainAlg": {
+				"ok": 0,
+				"preAuf": 0,
+				"preRotation": 0,
+				"wrong": 0,
+				"unparsable": 131,
+				"parseOnly": 0
+			},
+			"engineMangled": 0,
+			"engineMangledMain": 0,
+			"engineMangledExamples": [],
+			"issues": [
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "y x R b' r' R' r z B' r B",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "H z H z' S z H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "y' x r' R r R' z' R r' R r z R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "H z S z' H z H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "R r' z' r' z r' R r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "y x r' R r' R' r' R r R z R r R' b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1a",
+					"alg": "x r' R r' R' B' r' B' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "y2 x r' B R r R' B r' B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "x r' R r R r' R' r z' r' R r R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "z' S z' S z S z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "y x r' R r R z2 r' R r R' z' R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "y2 x R r R' r' R r R z' r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1b",
+					"alg": "z' S z' H z S z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2a",
+					"alg": "z2 H z' S z S z' S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2a",
+					"alg": "y2 x r B R' B' r R r R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2a",
+					"alg": "y' x b' r' R r R' z' R r' R' r R r R'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2a",
+					"alg": "y2 x b' r' R r R r' R' r z r B r' B'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2a",
+					"alg": "z2 S z' S z H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2b",
+					"alg": "z S z' H z H z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2b",
+					"alg": "x R b R' z' R r' R' B' r",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2b",
+					"alg": "x z R' r' R' r z R r R' r z' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2b",
+					"alg": "y2 x B' r' R r R z R r R' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2b",
+					"alg": "z H z' H z S z' H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1c",
+					"alg": "S z H z' S z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1c",
+					"alg": "x y2 r' R r R b' r R' b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1c",
+					"alg": "y x R r' R r R' B R' B' r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1c",
+					"alg": "y' x r B' b' r' B' r B b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1c",
+					"alg": "S z S z' S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1d",
+					"alg": "z' H z' S z H z' H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1d",
+					"alg": "x r' R r z R r R' z' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1d",
+					"alg": "y x R' r' R' r z R r' R' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1d",
+					"alg": "y x' R r' R' r' B R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "1d",
+					"alg": "z' H z' H z H z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2c",
+					"alg": "z2 S z' H z H z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2c",
+					"alg": "z2 H z' H z S z' H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2c",
+					"alg": "x r' R r' R' z' r' R r B R B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2c",
+					"alg": "y2 x R' r' B' r B R r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2d",
+					"alg": "z S z S z' H z S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2d",
+					"alg": "y' x R r' R r B R' B' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2d",
+					"alg": "x b r B r' B' z' r' R' b",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2d",
+					"alg": "y2 z B' b' R r' b r B r'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Swirl Perm",
+					"name": "2d",
+					"alg": "z H z S z' S z S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3a",
+					"alg": "z' S z2 H z' S z' S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3a",
+					"alg": "x r2' R r B R r' R B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3a",
+					"alg": "y x R B R' B' R' r' R r R r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3a",
+					"alg": "y' x r' R r R' r' R' r R B R B' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3b",
+					"alg": "y x B R' B' R B R B' R' r' R' r R",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3b",
+					"alg": "x B' R' B' r' R' B R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3b",
+					"alg": "y x R' r' R r R B R' B' R' B R B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3b",
+					"alg": "y2 x R r R' r' R' z' r' R r z R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3b",
+					"alg": "z2 S z2 H z H z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4a",
+					"alg": "x r' R' r B R' B' R' r' R r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4a",
+					"alg": "y2 x r R' r B r' z r R' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4a",
+					"alg": "z S y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4b",
+					"alg": "y x r' R r R B' r' R' r B R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4b",
+					"alg": "x B R B' r' R r R B R' B' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4b",
+					"alg": "y' x R r' R' r R r' R r B R' B' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4b",
+					"alg": "z2 H y' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3c",
+					"alg": "z S z S z H z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3c",
+					"alg": "y' x R r' R' r R' r' R r z r R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3c",
+					"alg": "y x B R B' R' r' R' r R r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3c",
+					"alg": "y' x R' r R r' R' r R' r' z R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3c",
+					"alg": "z S z2 H z' H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3d",
+					"alg": "H z' H z' S z2 H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3d",
+					"alg": "x r' R r R' r R r' R' z' R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3d",
+					"alg": "x r R' r' R r R' z' R B r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3d",
+					"alg": "y' x r' R' r R z R r R' r' R r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "3d",
+					"alg": "z2 S z2 H z S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4c",
+					"alg": "y' x R r' R r z R r' R' r R r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4c",
+					"alg": "y2 x r' R r R B R' B' R' r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4c",
+					"alg": "x R r' R' r' R r R' z' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4c",
+					"alg": "z H y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4d",
+					"alg": "y x R r' R' r' z' r' R r R z R r R' r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4d",
+					"alg": "y' x r' R r R r' R' r B R B' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4d",
+					"alg": "y x R' B R' B' r' R r R' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Wat Perm",
+					"name": "4d",
+					"alg": "z2 S y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5a",
+					"alg": "x' S z2 S y2 x' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5a",
+					"alg": "x z' r' R z' r' R r z r R r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5a",
+					"alg": "x R' r' R r R z B R' B' R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5a",
+					"alg": "x z' r' R' r B r' R r z R r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5a",
+					"alg": "z2 S z S S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5b",
+					"alg": "y2 x R r' B R' B' R' r' R r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5b",
+					"alg": "y z' S z2 S x y2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5b",
+					"alg": "y x b' r' R r R' z2 r' R' r R'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5b",
+					"alg": "r R' r B x r' l r l' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5b",
+					"alg": "z H z' S S S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6a",
+					"alg": "y x R r' R r z2 R r' R' r b",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6a",
+					"alg": "y x R r' R r z B R' B' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6a",
+					"alg": "x r2' R' r z r R r R' b r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6a",
+					"alg": "z H z2 x' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6b",
+					"alg": "y' x R' r R' r' z' r' R' r z R' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6b",
+					"alg": "y2 x r' R r' R' z2 r' R r R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6b",
+					"alg": "z2 S y2 x' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5c",
+					"alg": "x' S z2 S y2 x' S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5c",
+					"alg": "y' x r' R r' R' r' R r R' z' R r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5c",
+					"alg": "x r' R' r R' z2 r' R r R' b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5c",
+					"alg": "y' x R r R' r R r' R' r z' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5c",
+					"alg": "z2 H z S S S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5d",
+					"alg": "y z' S z2 S z2 x' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5d",
+					"alg": "x r' R' r R' r' R r R' B R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5d",
+					"alg": "x z R r R' z' R r z' r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5d",
+					"alg": "x R r' R r R r' R' r z r' R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "5d",
+					"alg": "z S z' S S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6c",
+					"alg": "y' x B' r' R r R' z2 r' R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6c",
+					"alg": "x r' R r R' z' R' r' R r R B R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6c",
+					"alg": "y2 x B R B' R r' R' r R r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6c",
+					"alg": "z S z2 y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6d",
+					"alg": "y x r B R' B' R r z' r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6d",
+					"alg": "x z R r' R' r R B R' B' R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6d",
+					"alg": "x z r R' B r z' r2' R r B' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6d",
+					"alg": "y2 x r' R' r z r' R r R' r2/r' R r' R'",
+					"error": "Unexpected character at index 28. Are you missing a space?",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi  + X Perm",
+					"name": "6d",
+					"alg": "z2 H y2 x' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7a",
+					"alg": "y' x B r' R r' R' r B r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7a",
+					"alg": "z S S y2 x' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7b",
+					"alg": "y2 x r' z R r' R r z r' B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7b",
+					"alg": "y x b' R r' R r R' b' R",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7b",
+					"alg": "z S S y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7c",
+					"alg": "y' x r B' r' R r R' r B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7c",
+					"alg": "z' S S z2 y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7d",
+					"alg": "y2 x B' r z R r' R' r z' B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7d",
+					"alg": "y z' r' R r B' r' b B' l",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "7d",
+					"alg": "S S y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8a",
+					"alg": "x R' r R' B b r' R r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8a",
+					"alg": "y2 x r' R r B R' B' R' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8a",
+					"alg": "S z' S z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8b",
+					"alg": "x R' r B R' B' r2' R' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8b",
+					"alg": "y x r' B R B' z' r' R r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8b",
+					"alg": "y' x B R' B r' R' r B R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8b",
+					"alg": "y' x r' R r R z' r' R' r B r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8b",
+					"alg": "S z' H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8c",
+					"alg": "H z H z H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8c",
+					"alg": "x r R' r b' B' R r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8c",
+					"alg": "y2 x R r' R' z' r' R r R z R r R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8c",
+					"alg": "S z H z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8d",
+					"alg": "H z S z H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8d",
+					"alg": "y x R B' r' R r z R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8d",
+					"alg": "x B r' R' r z B R' B' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8d",
+					"alg": "y2 x r' R r' B R B' r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Horizontal U Perm",
+					"name": "8d",
+					"alg": "S z S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "y' x B' r' R r R B' R' r' R' r B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "y' x R r R' r B r' z' r' R r R' b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "y' r' R r B' R B r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "r' l r l' r' R' F r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "z2 S S z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9a",
+					"alg": "z' S z2 S z S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9b",
+					"alg": "S z2 S z' S S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9b",
+					"alg": "y' x B r' R r z R r' R' r R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9b",
+					"alg": "x z r B R' B' z' r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9b",
+					"alg": "y2 x r' B R' B' r' R r R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "9b",
+					"alg": "z S S z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10a",
+					"alg": "x z r B r B' r' B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10a",
+					"alg": "y' z' B R r R' B' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10a",
+					"alg": "S z2 H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10b",
+					"alg": "x B' r' B' r B r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10b",
+					"alg": "x B' r' y' r' R r b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Vertical U Perm",
+					"name": "10b",
+					"alg": "z2 H z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11a",
+					"alg": "y' x R r' R' r' R r R' z' r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11a",
+					"alg": "z2 H z' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11b",
+					"alg": "x r' R r R r' R' r z R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11b",
+					"alg": "z S z S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12a",
+					"alg": "z S z' x' S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12a",
+					"alg": "y' x r' R' r z R r' R' r R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12a",
+					"alg": "y' x r' R' r B' R z R r R' r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12a",
+					"alg": "y2 x R r' R' r b r' R r R' z' R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12a",
+					"alg": "z2 S z2 S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12b",
+					"alg": "z2 H z x S z2 S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12b",
+					"alg": "y x B R B' r' R r R' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12b",
+					"alg": "y2 x R r' z r R r R' z2 r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12b",
+					"alg": "z S z2 S z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11c",
+					"alg": "y x r R' r B r' R B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11c",
+					"alg": "y x r2' R' r B r' R B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11c",
+					"alg": "z2 S z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11d",
+					"alg": "z H z H z2 H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11d",
+					"alg": "y2 x R' r R' z' r' B R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "11d",
+					"alg": "z H z S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12c",
+					"alg": "z H y' z' S z2 S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12c",
+					"alg": "x B' R' r B' r' R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12c",
+					"alg": "z2 S z2 S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12d",
+					"alg": "z2 S x y' S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12d",
+					"alg": "x r R B' r B R' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + O Perm",
+					"name": "12d",
+					"alg": "z S z2 S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13a",
+					"alg": "y x r' R' r' R' z' r' R r R B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13a",
+					"alg": "y x r' R' r B' r' R r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13a",
+					"alg": "H x' y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13b",
+					"alg": "y' x B R B' r B R' B' r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13b",
+					"alg": "y' r B r' R r B' r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13b",
+					"alg": "z' S x' y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13c",
+					"alg": "x r B R B' r' B R' B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13c",
+					"alg": "H x' y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13d",
+					"alg": "x B' r' R' r B r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "13d",
+					"alg": "z' S x' y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14a",
+					"alg": "z' H z' S z S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14a",
+					"alg": "x R' r' R' r R r' R' r R r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14a",
+					"alg": "x z R' r' R r B' r' R' r B R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14a",
+					"alg": "y x r R r R' r' R r' R' r R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14a",
+					"alg": "z' S z' S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14b",
+					"alg": "z H z' H z S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14b",
+					"alg": "y x R' B' r' R r B r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14b",
+					"alg": "y2 x B R' B' r' R r R' z' R r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14b",
+					"alg": "z S z' H z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14c",
+					"alg": "z' S z H z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14c",
+					"alg": "y2 x r R r R' r' R' r R r R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14c",
+					"alg": "y2 x R' r' R r' R' r R r' R r R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14c",
+					"alg": "y z r' R' r R r' R' r' R r R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14c",
+					"alg": "z' H z H z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14d",
+					"alg": "z S z S z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14d",
+					"alg": "z H z S z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14d",
+					"alg": "y' x R r R' B R B' R r2' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Z Perm Conjugates",
+					"name": "14d",
+					"alg": "x R r R' r R r' R' r R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15a",
+					"alg": "S S y S S S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15a",
+					"alg": "x r' R r R r' z' r' R r z r R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15a",
+					"alg": "x R r' R' r' R B R' B' R' r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15a",
+					"alg": "y2 x R r R' B' R r' R' r R r R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15b",
+					"alg": "y' S S y' S S S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15b",
+					"alg": "x r R' r' z' r' R' r z r R' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15b",
+					"alg": "x R' r' R r z r b r' R r R' z' R r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + Triple Sledge",
+					"name": "15b",
+					"alg": "y2 x b' r' R r R r' R' r b' r' R r",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "16",
+					"alg": "z' S z2 S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "16",
+					"alg": "z S z2 S z2 H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "16",
+					"alg": "x r B R B' r2' R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "16",
+					"alg": "y2 x R' r' R' r' B R' B' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17a",
+					"alg": "z S z' H z H z' S z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17a",
+					"alg": "y2 x r' R' r R B R' B' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17a",
+					"alg": "x r' R' r B R B' R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17b",
+					"alg": "z S z H z' H z S z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17b",
+					"alg": "y2 x R r R' r' z' r' R r z R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17b",
+					"alg": "y x R r2' R' r B r' R r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Pi + H or Z Perm",
+					"name": "17b",
+					"alg": "x R r R' z' r' R' r R z R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18a",
+					"alg": "H z H z' H z H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18a",
+					"alg": "S z' H x y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18a",
+					"alg": "z2 H z H x S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18a",
+					"alg": "y x b' r' R r R' z' R r' R' r'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18b",
+					"alg": "z' S z' S z S z' S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18b",
+					"alg": "z' H z S x' y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18b",
+					"alg": "z S z' S y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18b",
+					"alg": "x r R r R' z R r' R' r b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18c",
+					"alg": "z2 S z' H z S z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18c",
+					"alg": "S z' H x y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18c",
+					"alg": "z2 H z H x S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18c",
+					"alg": "x R r' R r z R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18d",
+					"alg": "z H z S z' H z S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18d",
+					"alg": "z' H z S y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18d",
+					"alg": "z S z' S x' y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18d",
+					"alg": "x z r' R r' R' z' r' R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18e",
+					"alg": "y' x B r' R r R' z R r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18e",
+					"alg": "S z S z' S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18e",
+					"alg": "z2 S z S y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18e",
+					"alg": "H z' S x y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18f",
+					"alg": "z' H z' H z H z' H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18f",
+					"alg": "z H z' H y' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18f",
+					"alg": "z' S z H x' y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18f",
+					"alg": "y2 x B r' R r R' z R r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18g",
+					"alg": "z2 H z' S z H z' S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18g",
+					"alg": "H z' S y' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18g",
+					"alg": "z2 S z' S x' y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18g",
+					"alg": "x R' r' R' r z R r R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18h",
+					"alg": "z S z H z' S z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18h",
+					"alg": "z H z' H x' y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18h",
+					"alg": "z' S z H y S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Swirl Perm",
+					"name": "18h",
+					"alg": "x z r R r R' z' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19a",
+					"alg": "z' H z S y' S z2 S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19a",
+					"alg": "y' x r R r R' B R' B' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19a",
+					"alg": "z2 S z2 S z' H z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19a",
+					"alg": "S z S z S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19b",
+					"alg": "S z' H y S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19b",
+					"alg": "z S z2 S z S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19b",
+					"alg": "z' H z' H z' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19b",
+					"alg": "y2 x r' R r z R r R' z R r' R' r b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19c",
+					"alg": "z S z' S y S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19c",
+					"alg": "z2 S z2 S z S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19c",
+					"alg": "S z' H z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19c",
+					"alg": "x r2' R r R' z' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19d",
+					"alg": "z2 H z' H y' S z2 S",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19d",
+					"alg": "z S z2 S z' H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19d",
+					"alg": "z' H z S z S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19d",
+					"alg": "x R r R' z' r' R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19e",
+					"alg": "z2 S z2 S z' S z' S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19e",
+					"alg": "H z H z S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19e",
+					"alg": "y x B' R r R' r' R r R' B' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19e",
+					"alg": "y2 x b r' R' r z2 r' R r b'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19e",
+					"alg": "z' S z H y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19f",
+					"alg": "z S z2 S z H z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19f",
+					"alg": "S z' S z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19f",
+					"alg": "y r' R r b' B z' R' r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19f",
+					"alg": "x z' B' R r R' z2 R r' R' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19f",
+					"alg": "H z' S y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19g",
+					"alg": "z2 S z2 S z H z S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19g",
+					"alg": "H z S z' S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19g",
+					"alg": "x z R' r' R r z r R r R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19g",
+					"alg": "x r' R r' R' r' z' r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19g",
+					"alg": "z H z' H y S z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19h",
+					"alg": "z S z2 S z' S z' H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19h",
+					"alg": "S z H z S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19h",
+					"alg": "x r R r' R' z' R' r' R' r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19h",
+					"alg": "y' x R r' R r R z R r R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Wat Perm",
+					"name": "19h",
+					"alg": "z2 S z S y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20a",
+					"alg": "z S z' S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20b",
+					"alg": "S z S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20c",
+					"alg": "z2 H z H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20d",
+					"alg": "y r' B r' R r R' r2 B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20d",
+					"alg": "z' H z' H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20e",
+					"alg": "y2 x B' R r' R' r z r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20e",
+					"alg": "S z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20f",
+					"alg": "y' x r' R' r z' r' R r R' B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20f",
+					"alg": "z S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20g",
+					"alg": "x y b r' R r R' z' R r' R'",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20g",
+					"alg": "y x R' r' R r R' z' R r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20g",
+					"alg": "z' H z S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20h",
+					"alg": "x R r R' z R r' R' r b'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20h",
+					"alg": "x B' r' R r R' z R r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + X Perm",
+					"name": "20h",
+					"alg": "z2 H z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21a",
+					"alg": "y x b' r' R r R z' r' B' r B r'",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21a",
+					"alg": "y' x R r' R' z' r' R r z r R r' R' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21a",
+					"alg": "z H z H z S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21b",
+					"alg": "y' x R r R' z R r' R' r z' r2' R r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21b",
+					"alg": "x z R r R r' R' r' z' r' R r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21b",
+					"alg": "y2 x B r' R r R z R r R' B R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21b",
+					"alg": "z H z' S z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21c",
+					"alg": "x B' r R' r' B r R r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21c",
+					"alg": "x B' r' B r B' z r' R' r z' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21c",
+					"alg": "x r' R z R r' z' r' R' r' R' r R' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21c",
+					"alg": "z2 S z' S z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21d",
+					"alg": "x r' R' r' R r R B R' B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21d",
+					"alg": "x r' R' r z' r' R r R' z R' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21d",
+					"alg": "y x b' R r' R' r' z' r' R' r z' r' R r",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21d",
+					"alg": "y2 x r R' r' B' r R r' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21d",
+					"alg": "z2 S z H z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21e",
+					"alg": "y x R' r R' r' z' r' R' r z r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21e",
+					"alg": "y2 x R r R' B R B' r' R r R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21e",
+					"alg": "y2 x R r R' r' R' z' r' R' r B R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21e",
+					"alg": "z' S z' H z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21f",
+					"alg": "y' x R r' z' r' R r z r R r' R",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21f",
+					"alg": "x r' R' z' r' R r z R r R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21f",
+					"alg": "z' S z S z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21g",
+					"alg": "x R' B' R r' y' r' R' z' R r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21g",
+					"alg": "x R' r' R' r B R' B' R r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21g",
+					"alg": "y2 x r R' r z r R r R' r' z' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21g",
+					"alg": "x z B r' R r R r' R' r B r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21g",
+					"alg": "H z S z S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21h",
+					"alg": "x r' R B R' B' R' r' R r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21h",
+					"alg": "y2 x r' R r R' r' R' z' r' R' r B R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Horizontal U Perm",
+					"name": "21h",
+					"alg": "H z' H z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22a",
+					"alg": "x r R' r' R r R B R' B' r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22a",
+					"alg": "x z2 r B R B' R' r' R' r R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22b",
+					"alg": "x B' R B R' B' R' r' R r B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22b",
+					"alg": "x z2 B' r' R' r R B R B' R' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22b",
+					"alg": "y' R' r' R r z' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22c",
+					"alg": "y r' R' r R z' R r' R' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22c",
+					"alg": "y x r R' r' z' r' R' r z r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22c",
+					"alg": "y' x R' r' z' r' R r z r R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22d",
+					"alg": "y r R r' R' x r' R r R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22d",
+					"alg": "z2 R r R' r' z r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Vertical U Perm",
+					"name": "22d",
+					"alg": "x r R z R r' R' z' R' r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23a",
+					"alg": "x z r R r' R' z' R' r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23a",
+					"alg": "z2 H z' H z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23b",
+					"alg": "x R' r' R r z r R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23b",
+					"alg": "y2 x B r R' r' B' r R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23b",
+					"alg": "z S z S z2 H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23c",
+					"alg": "x r' R' r R z R r R' r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23c",
+					"alg": "z H z H z2 S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23d",
+					"alg": "x z R r R' r' z' r' R' r R",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23d",
+					"alg": "z2 S z' S z2 H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23e",
+					"alg": "y' R r R B R' B' R' r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23e",
+					"alg": "x z2 r R r R' r' R' z' r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23e",
+					"alg": "S z H z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23f",
+					"alg": "y x B' r' R r R' z R' r' R r R",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23f",
+					"alg": "y x R B' r' B' r B r B R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23f",
+					"alg": "y r R B R B' R' r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23f",
+					"alg": "x2 r' R' z' R' r' R r z r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23f",
+					"alg": "z' H z' S z2 H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23g",
+					"alg": "y2 x b r' R r R' z' R r R' r",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23g",
+					"alg": "y' z' r' R' r l' r' R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23g",
+					"alg": "y x r B' r' R r R' r z r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23g",
+					"alg": "H z S z2 H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23h",
+					"alg": "y r' R' r' R r z' r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23h",
+					"alg": "y x r' R r' R' z R r' R' r b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + O Perm",
+					"name": "23h",
+					"alg": "z' S z' H z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24a",
+					"alg": "x z R r R' r' R r R' r z' r' R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24a",
+					"alg": "z' S z' H z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24b",
+					"alg": "x r' R' r R r' R' r R' z R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24b",
+					"alg": "x R B R' B' r' R' r R r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24b",
+					"alg": "y x B r' R r' R' r B z' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24b",
+					"alg": "y' x R' r' R' r' z' r' R' r R r' R' r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24b",
+					"alg": "H z S z' H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24c",
+					"alg": "x r' R' r R' z R r' R' r R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24c",
+					"alg": "x r' B R' B' R B R' B' R' r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24c",
+					"alg": "x z2 r R r z B r' B' z' r' R' r' z' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24c",
+					"alg": "z' H z' S z H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24d",
+					"alg": "y' x R r' R r R' z R r' R' r R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24d",
+					"alg": "y x R r R' r z' r' R r R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24d",
+					"alg": "x B r' R r R' r' R r z r R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "24d",
+					"alg": "S z H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25a",
+					"alg": "y' x r' R' r' z' r' R' r R r' R' r B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25a",
+					"alg": "y2 x r R r R' r' R r R' z' R r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25a",
+					"alg": "x z' r B r' R' r B r' R r' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25a",
+					"alg": "z2 S z' S z S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25b",
+					"alg": "y2 r B R' B' R B R' B' R' r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25b",
+					"alg": "z' S z S z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25c",
+					"alg": "y' x b' R r R' r' R r R' r z' r' R r'",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25c",
+					"alg": "x R r z r R r R' r' R r R' z' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25c",
+					"alg": "z H z H z' H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25d",
+					"alg": "y2 x B' r' R r R' r' R r z r R r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25d",
+					"alg": "x z r' R r R' z' b' r' R r R' z' R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + Z Perm Conjugates",
+					"name": "25d",
+					"alg": "H z' H z H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26a",
+					"alg": "S z H H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26a",
+					"alg": "S z' S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26b",
+					"alg": "S z' H H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26b",
+					"alg": "x r R r' R' r B R' B' R' r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26b",
+					"alg": "x B r' R r R z R r R' r' R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26b",
+					"alg": "z2 S S z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26c",
+					"alg": "z2 S S z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26c",
+					"alg": "z' H z H H",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26d",
+					"alg": "z H H z H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26d",
+					"alg": "x z' r' B R' B' R' r' R' r R r' R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut+ Triple Sledge",
+					"name": "26d",
+					"alg": "z2 H z S S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "27",
+					"alg": "y2 B r' R r R' B' z' R r' R' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "27",
+					"alg": "z2 S S z S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "27",
+					"alg": "y2 x r' R' z' r B r' R r y' r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "27",
+					"alg": "x z' B' r' R r R' B' z2 R r' R' r b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "27",
+					"alg": "z' S S z' S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "28",
+					"alg": "S z' S S z' S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "28",
+					"alg": "x z' r' R' r z r' R r R' r z' r' R' r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "28",
+					"alg": "x z R' r' R r R' z R r' R' r z' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "28",
+					"alg": "x z r' R r x R r' R z R r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29a",
+					"alg": "y x r' R' r R r' R' r' z' r' R' r B",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29a",
+					"alg": "y x r R r' R' z' r' R' r z r' R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29a",
+					"alg": "x z' B' r' R r R z R r R' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29a",
+					"alg": "x z2 R r R' r' R r R z R r R' b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29a",
+					"alg": "z' S z' S z' H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29b",
+					"alg": "y' r' R r y' r l B r' l B'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29b",
+					"alg": "y z' r' R' r y z' r' R r b r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29b",
+					"alg": "z S z' H z S z' H z H",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "Peanut + H or Z Perm and Pure Peanut",
+					"name": "29b",
+					"alg": "x R r' R r' R' z' r' R r B' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30a",
+					"alg": "y2 x B' r' B r B R r' R'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30a",
+					"alg": "y2 x r B r' z' b' r' R' r b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30a",
+					"alg": "y' x R' r' R' r b z r B r' z' b' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30a",
+					"alg": "y' x R' r' B' r B R r R' B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30a",
+					"alg": "y2 x R r R' B' r' B' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30b",
+					"alg": "y x B r' B' z' r' R' r b R",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30b",
+					"alg": "x B' r B r' B' z' r' R' r b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30b",
+					"alg": "y' x R r R' r' R r R' r2 R r R' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30b",
+					"alg": "x B r B' r' B' z' r' R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "30b",
+					"alg": "x z' r' R' r b z r B r' z' b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "31",
+					"alg": "y2 x b' r' R' r b z r B r'",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "31",
+					"alg": "y2 x b z r B r' B' z' r' R' r",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "31",
+					"alg": "x z2 B R r R' B' r' B' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "31",
+					"alg": "x z2 B' r' B' r B R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "31",
+					"alg": "S S S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "U Perm",
+					"alg": "z' x S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "U Perm",
+					"alg": "y x b' r' R r R' z2 r' R r",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "U Perm",
+					"alg": "y x' r' R' r z2 R r' R' r b",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "32",
+					"alg": "y x r' B r' B' z' r' R' r z B r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "32",
+					"alg": "y x r B' r B R r R' B' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "32",
+					"alg": "y x R2' B' r' B' r B R r R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "32",
+					"alg": "x r' B' r' B' r B R r R r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "33",
+					"alg": "r R' r R' b' r B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "33",
+					"alg": "r R' r R' x' B' R r' B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "33",
+					"alg": "r R' r R' y L' l L' l",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "33",
+					"alg": "x r' R r R' B' r' B' r B r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "33",
+					"alg": "S z2 H z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "34a",
+					"alg": "x b r' R r R' z2 r' R r R",
+					"error": "Bad move b",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "34b",
+					"alg": "x B' r' R r R' z2 r' R r R' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L4C",
+					"name": "34b",
+					"alg": "y x R' r' R' r z2 R r' R' r b'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35a",
+					"alg": "y' x r' R r R' r R y' r' R r B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35a",
+					"alg": "y' x b R r' b r R' b' r R' r'",
+					"error": "Bad move b",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35a",
+					"alg": "y x r' R r R' b' R r' R r R' b' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35a",
+					"alg": "z' S z2 S x y' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35b",
+					"alg": "y2 x R r' R' r B r' R r' R' r B r'",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35b",
+					"alg": "x r B' r' R r R' r B' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35b",
+					"alg": "y x B' r' R r R' r R y' r' R r B' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35b",
+					"alg": "x z R r' b z' R B' r' R B' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "35b",
+					"alg": "S z2 S y' z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36a",
+					"alg": "H z2 H z H z2 H",
+					"error": "Bad move H",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36a",
+					"alg": "y' x r' R' r B r' R r' R' r B r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36a",
+					"alg": "y x R' r B r' R r' R' r B r' R r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36a",
+					"alg": "y x r' R r R' r B' r' R r R' r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36a",
+					"alg": "S z2 S z S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36b",
+					"alg": "S z2 S x' y S z2 S",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36b",
+					"alg": "y' x B r' R r' R' r B r' R r' R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36b",
+					"alg": "x B' r' R' r B r' R r z' r' R r R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36b",
+					"alg": "y2 x B r' R r R' r R y' r' R r B'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "36b",
+					"alg": "z' S z2 S z' S z2 S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37a",
+					"alg": "S z S z' H z H",
+					"error": "Bad move S",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37a",
+					"alg": "x B' r' R r R' r B' r' R r R' r",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37a",
+					"alg": "y' x r' R' r B r' R r z' r' R r R' z' r'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37a",
+					"alg": "y2 x R r' R r R' z' r2' R' r B r' R",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37a",
+					"alg": "H z H z' S z S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37b",
+					"alg": "x r' R r z' r B' R r' R' B' r",
+					"error": "Bad move r",
+					"main": true,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37b",
+					"alg": "z' H z' H z S z' S",
+					"error": "Bad move H",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37b",
+					"alg": "x r B r' R r' R' r B r' R r' R'",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37b",
+					"alg": "y2 x r' R r' R' r B r' R r' R' r B",
+					"error": "Bad move r",
+					"main": false,
+					"status": "unparsable"
+				},
+				{
+					"subset": "L5C",
+					"name": "37b",
+					"alg": "z' S z' H z H z' S",
+					"error": "Bad move S",
+					"main": false,
+					"status": "unparsable"
+				}
+			]
+		}
+	]
+}

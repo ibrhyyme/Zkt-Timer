@@ -114,10 +114,6 @@ async function fetchText(path) {
 	}
 }
 
-async function mapLimit(items, fn) {
-	return Promise.all(items.map(fn));
-}
-
 // ─── HTML helpers ───
 
 const NAMED_ENTITIES = {amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' '};
@@ -444,10 +440,13 @@ async function main() {
 	}
 	console.log(`[more] ${orientations.length} case orientations to complete`);
 	let done = 0;
-	await mapLimit(orientations, async (o) => {
-		await loadMore(o);
-		if (++done % 250 === 0) console.log(`[more] ${done}/${orientations.length} (network ${stats.network}, cached ${stats.cached}, retries ${stats.retries})`);
-	});
+	// All at once: acquire() caps the requests actually in flight at --concurrency
+	await Promise.all(
+		orientations.map(async (o) => {
+			await loadMore(o);
+			if (++done % 250 === 0) console.log(`[more] ${done}/${orientations.length} (network ${stats.network}, cached ${stats.cached}, retries ${stats.retries})`);
+		}),
+	);
 
 	let caseCount = 0;
 	let algCount = 0;
@@ -473,7 +472,7 @@ async function main() {
 		pages: Object.fromEntries(pageOrder.map((k) => [k, pages[k]])),
 	};
 	mkdirSync(dirname(ARGS.out), {recursive: true});
-	writeFileSync(ARGS.out, JSON.stringify(out));
+	writeFileSync(ARGS.out, JSON.stringify(out, null, '\t') + '\n');
 	console.log(`[done] ${caseCount} cases, ${algCount} algorithms → ${ARGS.out}`);
 	console.log(`[http] network ${stats.network}, cached ${stats.cached}, retries ${stats.retries}`);
 }

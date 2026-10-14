@@ -36,10 +36,15 @@ const args = process.argv.slice(2);
 const DIR = args[0] === '--dir' ? args[1] : join(ROOT, 'data', 'speedcubedb');
 
 // Goal per category. Mask names are defined in buildMask(); "cubing:<name>" uses a cubing.js
-// stickering mask directly (Roux steps, where the M slice is free).
+// stickering mask directly (Roux steps, where the M slice is free). "f2l-progress" means the cross
+// stays solved and at least one more F2L slot is solved than before the alg: Advanced F2L cases
+// have a pair trapped in another slot, and the site lists algs that solve it into either slot
+// under the same tab. Not listed (parse only): FRUF (the site's cases
+// start in the middle of an F ... F' bracket, so there is no fixed goal), Square-1, 5x5 L2E,
+// Skewb Sarah Advanced (Sarah's notation).
 const GOALS = {
-	'F2L': 'f2l',
-	'Advanced F2L': 'f2l',
+	'F2L': 'f2l-progress',
+	'Advanced F2L': 'f2l-progress',
 	'OLL': 'oll',
 	'PLL': 'full',
 	'COLL': 'coll',
@@ -50,7 +55,6 @@ const GOALS = {
 	'Anti PLL': 'full',
 	'SV': 'oll',
 	'ELL': 'full',
-	'FRUF': 'oll',
 	'CLS': 'oll',
 	'1LLL': 'full',
 	'OLLCP': 'coll',
@@ -81,7 +85,7 @@ const AUF_MOVES = {
 	'4x4x4': ['U'],
 	'5x5x5': ['U'],
 	megaminx: ['U'],
-	pyraminx: [],
+	pyraminx: ['U'],
 };
 
 const ROTATION_GENERATORS = {
@@ -90,8 +94,8 @@ const ROTATION_GENERATORS = {
 	'4x4x4': ['x', 'y'],
 	'5x5x5': ['x', 'y'],
 	megaminx: ['Uv', 'Rv'],
-	pyraminx: ['rv', 'uv'],
-	skewb: ['Rv', 'Uv'],
+	pyraminx: ['Rv', 'Uv'],
+	skewb: ['Rv', 'Lv'],
 };
 
 // ─── Puzzle model ───
@@ -245,6 +249,51 @@ function orderMask(P, mask) {
 	return mask.sort((a, b) => weight(a) - weight(b));
 }
 
+// cubing.js 3x3x3 piece order: edges UF UR UB UL DF DR DB DL FR FL BR BL,
+// corners UFR URB UBL ULF DRF DFL DLB DBR, centers U L F R B D
+const SLOTS = [
+	{edge: 8, corner: 4},
+	{edge: 9, corner: 5},
+	{edge: 11, corner: 6},
+	{edge: 10, corner: 7},
+];
+
+function piecesMask(P, edges, corners) {
+	const required = [];
+	P.orbits.forEach((orbit, oi) => {
+		const slots = orbit.name === 'EDGES' ? edges : orbit.name === 'CORNERS' ? corners : [];
+		for (const i of slots) {
+			for (let f = 0; f < orbit.k; f++) required.push([oi, i, f, P.color[`${orbit.name}-${i}-${f}`]]);
+		}
+	});
+	return required;
+}
+
+/** Cross intact → number of solved F2L slots, after the best rotation and trailing AUF; else -1. */
+function f2lProgress(P, pattern) {
+	P.crossMask ??= orderMask(P, [...piecesMask(P, [4, 5, 6, 7], []), ...centerMask(P)]);
+	P.slotMasks ??= SLOTS.map((s) => piecesMask(P, [s.edge], [s.corner]));
+	let best = -1;
+	for (const r of P.rotations) {
+		const rotated = pattern.applyTransformation(r);
+		if (!meetsMask(P, rotated, P.crossMask)) continue;
+		for (const t of P.aufs[0]) {
+			const p = rotated.applyTransformation(t);
+			best = Math.max(best, P.slotMasks.filter((m) => meetsMask(P, p, m)).length);
+		}
+	}
+	return best;
+}
+
+function centerMask(P) {
+	const required = [];
+	P.orbits.forEach((orbit, oi) => {
+		if (orbit.name !== 'CENTERS') return;
+		for (let i = 0; i < orbit.n; i++) required.push([oi, i, 0, P.color[`${orbit.name}-${i}-0`]]);
+	});
+	return required;
+}
+
 function meetsMask(P, pattern, mask) {
 	for (const [oi, slot, f, c] of mask) {
 		if (stickerColor(P, pattern, P.orbits[oi], slot, f) !== c) return false;
@@ -273,7 +322,8 @@ function tryAufs(P, pattern, mask, depth) {
 
 /** Square-1: the site writes "1,0 / 3,0"; cubing.js wants "(1,0) / (3,0)". */
 function toCubingSquare1(alg) {
-	return alg.replace(/\(?\s*(-?\d+)\s*,\s*(-?\d+)\s*\)?/g, '($1,$2)');
+	const tokens = alg.match(/-?\d+\s*,\s*-?\d+|\//g) ?? [];
+	return tokens.map((t) => (t === '/' ? t : `(${t.replace(/\s/g, '')})`)).join(' ');
 }
 
 function toCubing(alg, puzzleType) {
@@ -334,12 +384,13 @@ async function main() {
 		legend: {
 			ok: 'setup + alg reaches the goal (trailing AUF / rotation allowed)',
 			preAuf: 'reaches the goal only with an extra AUF before the alg; "auf" says which',
+			preRotation: 'reaches the goal only when the puzzle is first held from another side',
 			wrong: 'parses, but setup + alg does not reach the goal',
 			unparsable: 'cubing.js cannot parse it for this puzzle',
 			parseOnly: 'category not simulated (see goal); only parsed',
 			engineMangled: 'cleanAlgorithmForCubing() turns it into a different (or unparsable) alg',
 		},
-		totals: {ok: 0, preAuf: 0, wrong: 0, unparsable: 0, parseOnly: 0, engineMangled: 0},
+		totals: {ok: 0, preAuf: 0, preRotation: 0, wrong: 0, unparsable: 0, parseOnly: 0, engineMangled: 0},
 		categories: [],
 	};
 
@@ -347,13 +398,14 @@ async function main() {
 		const category = meta.category;
 		const goal = GOALS[category] ?? null;
 		const P = (puzzleCache[meta.puzzleType] ??= await loadPuzzle(meta.puzzleType));
-		const mask = goal ? orderMask(P, await buildMask(P, goal)) : null;
+		const progressGoal = goal === 'f2l-progress';
+		const mask = goal && !progressGoal ? orderMask(P, await buildMask(P, goal)) : null;
 		const result = {
 			category,
 			puzzleType: meta.puzzleType,
 			goal: goal ?? 'parse only',
-			counts: {ok: 0, preAuf: 0, wrong: 0, unparsable: 0, parseOnly: 0},
-			mainAlg: {ok: 0, preAuf: 0, wrong: 0, unparsable: 0, parseOnly: 0},
+			counts: {ok: 0, preAuf: 0, preRotation: 0, wrong: 0, unparsable: 0, parseOnly: 0},
+			mainAlg: {ok: 0, preAuf: 0, preRotation: 0, wrong: 0, unparsable: 0, parseOnly: 0},
 			engineMangled: 0,
 			engineMangledMain: 0,
 			engineMangledExamples: [],
@@ -363,9 +415,11 @@ async function main() {
 		for (const subset of algs[category]) {
 			for (const entry of subset.algorithms) {
 				let setupPattern = null;
-				if (mask && entry.setup) {
+				let slotsBefore = 0;
+				if ((mask || progressGoal) && entry.setup) {
 					try {
 						setupPattern = P.solved.applyAlg(toCubing(entry.setup, meta.puzzleType));
+						if (progressGoal) slotsBefore = f2lProgress(P, setupPattern);
 					} catch (e) {
 						result.issues.push({subset: subset.subset, name: entry.name, setup: entry.setup, status: 'setupUnparsable', error: e.message});
 					}
@@ -395,19 +449,27 @@ async function main() {
 						}
 					}
 
-					if (!mask || !setupPattern) {
+					if ((!mask && !progressGoal) || !setupPattern) {
 						record(result, index, 'parseOnly');
 						return;
 					}
-					if (reachesGoal(P, setupPattern.applyTransformation(transformation), mask)) {
+					const reaches = (p) => (progressGoal ? f2lProgress(P, p) > slotsBefore : reachesGoal(P, p, mask));
+					if (reaches(setupPattern.applyTransformation(transformation))) {
 						record(result, index, 'ok');
 						return;
 					}
 					const pre = P.aufs[0] ?? [];
 					for (let a = 1; a < pre.length; a++) {
 						const p = setupPattern.applyTransformation(pre[a]).applyTransformation(transformation);
-						if (reachesGoal(P, p, mask)) {
+						if (reaches(p)) {
 							record(result, index, 'preAuf', {subset: subset.subset, name: entry.name, alg, auf: aufName(P, a)});
+							return;
+						}
+					}
+					for (const r of P.rotations.slice(1)) {
+						const p = setupPattern.applyTransformation(r).applyTransformation(transformation);
+						if (reaches(p)) {
+							record(result, index, 'preRotation', {subset: subset.subset, name: entry.name, alg});
 							return;
 						}
 					}
@@ -421,8 +483,8 @@ async function main() {
 		report.categories.push(result);
 		const c = result.counts;
 		console.log(
-			`${category.padEnd(18)} ${String(result.goal).padEnd(20)} ok ${c.ok}  preAuf ${c.preAuf}  wrong ${c.wrong}  unparsable ${c.unparsable}  parseOnly ${c.parseOnly}` +
-				`   | main alg: wrong ${result.mainAlg.wrong}, preAuf ${result.mainAlg.preAuf}, unparsable ${result.mainAlg.unparsable}` +
+			`${category.padEnd(18)} ${String(result.goal).padEnd(20)} ok ${c.ok}  preAuf ${c.preAuf}  preRot ${c.preRotation}  wrong ${c.wrong}  unparsable ${c.unparsable}  parseOnly ${c.parseOnly}` +
+				`   | main alg: wrong ${result.mainAlg.wrong}, preAuf ${result.mainAlg.preAuf}, preRot ${result.mainAlg.preRotation}, unparsable ${result.mainAlg.unparsable}` +
 				`   | engine mangles ${result.engineMangled} (main ${result.engineMangledMain})`,
 		);
 	}

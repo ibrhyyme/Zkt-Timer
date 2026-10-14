@@ -17,6 +17,8 @@
  *   named "<case> - <slot>", like the existing F2L category.
  * - "setup" is the site's own setup when it gives one for that case/slot, otherwise the
  *   inverse of "algorithm". The manifest records which, per category.
+ * - On 2x2, two-layer turns are written as the rotations they are ("d2" → "y2"); cubing.js
+ *   has no wide moves on 2x2x2.
  * - Turn amounts other than 1 and 2 are rewritten to the same turn ("R3" → "R'", "U3'" → "U",
  *   "R4" dropped). The trainer's cleanAlgorithmForCubing() strips those digits, which would turn
  *   "R3" into "R". The raw dump keeps the site's spelling.
@@ -92,7 +94,9 @@ const CATEGORY_KEYS = {
 	'Megaminx/MegaminxPLL': 'Megaminx PLL',
 	'Pyraminx/L3E': 'Pyraminx LL',
 	'Pyraminx/L4E': 'Pyraminx L4E',
-	'Skewb/SarahsAdvanced': 'Sarah Advanced',
+	// Not "Sarah Advanced": the site writes Sarah's notation (H/S macros, lowercase turns), which
+	// cubing.js cannot parse; the existing category uses notation it can. Keep both apart.
+	'Skewb/SarahsAdvanced': 'Skewb Sarah Advanced',
 };
 
 // cubing.js puzzle id per SpeedCubeDB puzzle
@@ -121,12 +125,15 @@ function isSquare1(puzzle) {
 // Quarter turns per full rotation of a move, per puzzle. Megaminx (R++/D--) is left as written.
 const TURN_ORDER = {'3x3': 4, '2x2': 4, '4x4': 4, '5x5': 4, Pyraminx: 3, Skewb: 3};
 
-/** "R3" → "R'", "R3'" → "R", "R4" → "", "2R5" → "2R"; "R2" / "R2'" stay as written. */
+/**
+ * "R3" → "R'", "R3'" → "R", "R4" → "", "2R5" → "2R"; "R2" / "R2'" stay as written (the trainer
+ * keeps the 2). Also closes a stray space before a prime ("R '" → "R'").
+ */
 function canonicalAmounts(alg, puzzle) {
 	const order = TURN_ORDER[puzzle];
 	if (!order) return alg;
-	const out = alg.replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
-		if (amount === '2' && order === 4) return m;
+	const out = alg.replace(/([A-Za-z0-9)\]])\s+'(?=\s|$)/g, "$1'").replace(/(^|[\s([{])(\d*[A-Za-z]+w?)(\d+)('?)(?=$|[\s)\]}])/g, (m, pre, move, amount, prime) => {
+		if (amount === '1' || amount === '2') return amount === '1' ? pre + move + prime : m;
 		const n = Number(amount) % order;
 		const turns = prime ? (order - n) % order : n;
 		if (turns === 0) return pre;
@@ -135,6 +142,18 @@ function canonicalAmounts(alg, puzzle) {
 		return pre + move + '2';
 	});
 	return out === alg ? alg : out.replace(/\s+/g, ' ').trim();
+}
+
+// On a 2x2 a two-layer turn moves the whole puzzle: "d" is "y'", "r" is "x" and so on.
+// cubing.js (and so the trainer) has no wide moves on 2x2x2, so they are written as rotations.
+const WIDE_2X2 = {u: ['y', false], d: ['y', true], r: ['x', false], l: ['x', true], f: ['z', false], b: ['z', true]};
+
+function wideToRotations2x2(alg) {
+	return alg.replace(/(^|[\s([{])([udrlfb])(2?)('?)(?=$|[\s)\]}])/g, (m, pre, move, half, prime) => {
+		const [axis, inverted] = WIDE_2X2[move];
+		if (half) return pre + axis + '2' + prime;
+		return pre + axis + (inverted !== Boolean(prime) ? "'" : '');
+	});
 }
 
 /** Square-1: "1,0 / 3,0 / -1,-1" or "/ (0,3) / (-3,-3) /" → reversed, every turn negated. */
@@ -159,8 +178,11 @@ function invertSquare1(alg) {
  * cannot be inverted with confidence, so the caller can leave the setup out instead of
  * writing a wrong one.
  */
-function invertMoves(alg) {
+function invertMoves(alg, puzzle) {
 	const tokens = normalize(alg).split(' ').filter(Boolean);
+	// A half turn is its own inverse only on a puzzle with quarter turns: on Megaminx (fifths)
+	// and on Pyraminx/Skewb (thirds) "R2" and "R2'" are different turns.
+	const halfTurnSelfInverse = TURN_ORDER[puzzle] === 4;
 	const out = [];
 	for (const token of tokens) {
 		let m;
@@ -168,7 +190,7 @@ function invertMoves(alg) {
 			out.push(m[1] + (m[2] === '++' ? '--' : '++'));
 		} else if ((m = token.match(/^(\d*[A-Za-z]+w?)(\d*)('?)$/))) {
 			const [, move, amount, prime] = m;
-			if (amount === '2') out.push(move + '2');
+			if (amount === '2' && halfTurnSelfInverse) out.push(move + '2');
 			else if (amount === '' || amount === '1') out.push(move + (prime ? '' : "'"));
 			else out.push(move + amount + (prime ? '' : "'"));
 		} else {
@@ -179,7 +201,7 @@ function invertMoves(alg) {
 }
 
 function invert(alg, puzzle) {
-	return isSquare1(puzzle) ? invertSquare1(alg) : invertMoves(alg);
+	return isSquare1(puzzle) ? invertSquare1(alg) : invertMoves(alg, puzzle);
 }
 
 // ─── Page ownership ───
@@ -220,11 +242,19 @@ function orientationEntries(c, puzzle, counters) {
 		}
 
 		const canonical = (alg) => {
-			const out = canonicalAmounts(alg, puzzle);
+			let out = canonicalAmounts(alg, puzzle);
+			if (puzzle === '2x2') out = wideToRotations2x2(out);
 			if (out !== alg) counters.amountsRewritten++;
 			return out;
 		};
-		const primary = canonical(o.index === 0 && c.standardAlg ? c.standardAlg : o.algorithms[0].alg);
+		const siteAlgs = o.algorithms.filter((a) => normalize(a.alg));
+		const primarySource = o.index === 0 && c.standardAlg ? c.standardAlg : siteAlgs[0]?.alg;
+		if (!primarySource) {
+			// The site lists a case with no moves at all (e.g. SQ1 "Square / Square", already solved)
+			counters.emptyCases.push(name);
+			continue;
+		}
+		const primary = canonical(primarySource);
 		const seen = new Set([normalize(primary)]);
 		const alternatives = [];
 		for (const a of o.algorithms) {
@@ -375,7 +405,7 @@ function main() {
 	}
 
 	mkdirSync(ARGS.outDir, {recursive: true});
-	writeFileSync(join(ARGS.outDir, 'speedcubedb-algs.json'), JSON.stringify(algs));
+	writeFileSync(join(ARGS.outDir, 'speedcubedb-algs.json'), JSON.stringify(algs, null, '\t') + '\n');
 	writeFileSync(join(ARGS.outDir, 'speedcubedb-manifest.json'), JSON.stringify(manifest, null, '\t') + '\n');
 
 	console.log(`[done] ${manifest.totals.categories} categories, ${manifest.totals.subsets} subsets, ${manifest.totals.entries} entries, ${manifest.totals.algorithms} algorithms`);
