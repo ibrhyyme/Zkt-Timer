@@ -5,7 +5,7 @@
  * Usage: node scripts/map-speedcubedb-migration.mjs [--dir <data dir>]
  *
  * Input:  public/trainer/default-algs.json (the categories as shipped today)
- *         data/speedcubedb/speedcubedb-algs.json + speedcubedb-manifest.json
+ *         data/speedcubedb/speedcubedb-algs.json, -manifest.json, -validation.json
  * Output: data/speedcubedb/speedcubedb-migration.json
  *
  * Why: the trainer keys user data by entry name and by alg text. Per-alg stats (best time, last
@@ -14,23 +14,32 @@
  * the variant's alg id. Replacing a category renames entries (PLL "Aa perm" → "Aa") and changes
  * main algs, which would orphan all of that. This file says which new entry each old one is.
  *
- * Matching is by the case itself, not by name: both entries' main algs are inverted to get the
- * case, and the cases are compared as the category's goal sees them (all stickers for PLL, the
- * orientation pattern for OLL, ...), up to AUF before and after and the way the puzzle is held.
- * F2L entries compare where the slot's own two pieces are. When no case matches, the same name
- * (or the name without " perm") is used, and the match is marked "by": "name". Square-1 is
- * matched by name only.
+ * Matching, in order:
+ * 1. text: the old main alg is, letter for letter (brackets and spaces aside), the main alg or
+ *    an alternative of exactly one new entry.
+ * 2. case: both main algs are inverted and the cases compared as the category's goal sees them
+ *    (all stickers for PLL, which stickers face up and how corners twist for OLL, where the
+ *    slot's two pieces are for F2L, the whole puzzle for Square-1), up to the AUF before and
+ *    after (U and D turns on 2x2 and Square-1) and the way the puzzle is held. A new entry whose
+ *    main alg the validator found broken is keyed by its first working alternative.
+ * 3. name: the same name, or the name without " perm".
+ * A case match onto a new entry that another old entry also claims (by case or by text) falls
+ * back to the name, marked "caseConflict". "SQ1 EP" is also matched against the new "SQ1 Parity"
+ * category, which holds the parity EP cases.
  */
 
 import {readFileSync, writeFileSync} from 'fs';
 import {join, dirname} from 'path';
 import {fileURLToPath} from 'url';
-import {loadPuzzle, buildMask, stickerColor, toCubing, GOALS} from './validate-speedcubedb-algs.mjs';
+import {loadPuzzle, buildMask, stickerColor, toCubing, combosFor, GOALS} from './validate-speedcubedb-algs.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const args = process.argv.slice(2);
 const DIR = args[0] === '--dir' ? args[1] : join(ROOT, 'data', 'speedcubedb');
+
+// New categories searched as well, per replaced category
+const EXTRA_TARGETS = {'SQ1 EP': ['SQ1 Parity']};
 
 // ─── Trainer ids (verbatim port of client/util/trainer/algorithm_engine.ts) ───
 
@@ -80,6 +89,11 @@ const SLOT_PIECES = [
 	{edge: 10, corner: 7},
 ];
 
+function textKey(alg, puzzleType) {
+	const cubing = puzzleType === 'square1' ? toCubing(alg, 'square1') : alg;
+	return cubing.replace(/[()[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 /**
  * The rotation that holds the puzzle the standard way: fixed centres solved where the puzzle has
  * them (3x3, 5x5, Megaminx), else a reference piece home (the DLB corner on 2x2/4x4, the four
@@ -101,7 +115,32 @@ function standardHold(P, pattern) {
 	return null;
 }
 
-/** The case an entry's main alg solves, as one string, the same for every equivalent angle. */
+/** F2L: hold with the centres home, then turn D until the cross is home. */
+function crossHolds(P, state) {
+	P.dTurns ??= (() => {
+		const step = P.kpuzzle.algToTransformation('D');
+		const list = [P.kpuzzle.identityTransformation()];
+		for (let t = step; list.length < 4; t = t.applyTransformation(step)) list.push(t);
+		return list;
+	})();
+	const held = standardHold(P, state);
+	if (!held) return [];
+	return P.dTurns
+		.map((d) => held.applyTransformation(d))
+		.filter((p) => [4, 5, 6, 7].every((i) => p.patternData.EDGES.pieces[i] === i && p.patternData.EDGES.orientation[i] === 0));
+}
+
+/** Square-1 turns of both layers: (a,b) for a, b in 0..11. */
+function square1Turns(P) {
+	P.sq1Turns ??= (() => {
+		const list = [];
+		for (let a = 0; a < 12; a++) for (let b = 0; b < 12; b++) list.push(P.kpuzzle.algToTransformation(`(${a},${b})`));
+		return list;
+	})();
+	return P.sq1Turns;
+}
+
+/** The case an alg solves, as one string, the same for every equivalent angle. */
 function caseKey(P, alg, goal, mask, slot) {
 	let t;
 	try {
@@ -110,46 +149,40 @@ function caseKey(P, alg, goal, mask, slot) {
 		return null;
 	}
 	const inverse = t.invert();
-	const turns = P.aufs(goal)[0] ?? [P.kpuzzle.identityTransformation()];
 	let best = null;
+	const consider = (key) => {
+		if (key !== null && (best === null || key < best)) best = key;
+	};
+
+	if (P.id === 'square1') {
+		const turns = square1Turns(P);
+		for (const end of turns) {
+			const state = P.solved.applyTransformation(end).applyTransformation(inverse);
+			for (const top of turns) consider(JSON.stringify(state.applyTransformation(top).patternData));
+		}
+		return best;
+	}
+
+	const turns = slot === null ? combosFor(P, 'full') : P.aufs(goal)[0];
 	for (const end of turns) {
 		const state = P.solved.applyTransformation(end).applyTransformation(inverse);
-		// F2L cases are defined against the cross, not the centres ("d R U R'" moves the centres)
-		const holds = slot === null ? [standardHold(P, state)].filter(Boolean) : crossHolds(P, state);
-		for (const held of holds) {
-			for (const top of turns) {
-				const p = held.applyTransformation(top);
-				const key = slot === null ? stickerKey(P, p, mask) : slotKey(P, p, slot);
-				if (key !== null && (best === null || key < best)) best = key;
+		for (const top of turns) {
+			const turned = state.applyTransformation(top);
+			if (slot === null) {
+				const held = standardHold(P, turned);
+				if (held) consider(stickerKey(P, held, mask));
+			} else {
+				for (const held of crossHolds(P, turned)) consider(slotKey(held, slot));
 			}
 		}
 	}
 	return best;
 }
 
-/** Every way to hold the puzzle with the cross home: a rotation, then a turn of the D layer. */
-function crossHolds(P, state) {
-	P.dTurns ??= (() => {
-		const step = P.kpuzzle.algToTransformation('D');
-		const list = [P.kpuzzle.identityTransformation()];
-		for (let t = step; list.length < 4; t = t.applyTransformation(step)) list.push(t);
-		return list;
-	})();
-	const holds = [];
-	for (const r of P.rotations) {
-		for (const d of P.dTurns) {
-			const p = state.applyTransformation(r).applyTransformation(d);
-			const e = p.patternData.EDGES;
-			if ([4, 5, 6, 7].every((i) => e.pieces[i] === i && e.orientation[i] === 0)) holds.push(p);
-		}
-	}
-	return holds;
-}
-
 /**
  * The mask's stickers, by colour. Where the goal only asks a last-layer piece to have its top
- * sticker up (OLL, COLL edges, ...), only "up or not" counts: the other colours there depend
- * on how the alg happens to permute the pieces, not on the case.
+ * sticker up (OLL, COLL edges, ...), only which of its stickers shows the top colour counts:
+ * the other colours there depend on how the alg permutes the pieces, not on the case.
  */
 function stickerKey(P, p, mask) {
 	P.keyModes ??= new WeakMap();
@@ -172,7 +205,6 @@ function stickerKey(P, p, mask) {
 			key += (stickerColor(P, p, orbit, slot, f) ?? '?') + ',';
 			return;
 		}
-		// Which of the piece's stickers shows the top colour: the twist, not just "up or not"
 		for (let g = 0; g < orbit.k; g++) key += stickerColor(P, p, orbit, slot, g) === P.uColor ? '^' : '.';
 		key += ',';
 	});
@@ -180,7 +212,7 @@ function stickerKey(P, p, mask) {
 }
 
 /** F2L: where the slot's corner and edge are (and how they are twisted), with the cross home. */
-function slotKey(P, p, slot) {
+function slotKey(p, slot) {
 	const {edge, corner} = SLOT_PIECES[slot];
 	const e = p.patternData.EDGES;
 	const c = p.patternData.CORNERS;
@@ -190,8 +222,7 @@ function slotKey(P, p, slot) {
 }
 
 function slotOf(name) {
-	const label = name.split(' - ').pop();
-	const i = SLOT_LABELS.indexOf(label);
+	const i = SLOT_LABELS.indexOf(name.split(' - ').pop());
 	return i === -1 ? null : i;
 }
 
@@ -206,81 +237,96 @@ async function main() {
 	const oldAlgs = read(join(ROOT, 'public', 'trainer', 'default-algs.json'));
 	const newAlgs = read(join(DIR, 'speedcubedb-algs.json'));
 	const manifest = read(join(DIR, 'speedcubedb-manifest.json'));
+	const validation = read(join(DIR, 'speedcubedb-validation.json'));
 	const puzzleCache = {};
+
+	// New entries whose main alg is broken are keyed by their first working alternative
+	const workingAlg = new Map();
+	for (const c of validation.categories) {
+		for (const i of c.issues) {
+			if (i.status === 'mainFails' && i.firstOkAlternative) workingAlg.set(`${c.category}::${i.subset}::${i.name}`, i.firstOkAlternative);
+		}
+	}
 
 	const out = {
 		generatedBy: 'scripts/map-speedcubedb-migration.mjs',
 		note:
 			'For every category the SpeedCubeDB data replaces: each old entry and the new entry for the same case. ' +
-			'statsId is algToId(expandNotation(main alg)), the id the trainer stores per-alg stats under. ' +
-			'customAltKey is the key custom alternatives are stored under.',
+			'"by" says how they were matched (text, case, name). statsId is algToId(expandNotation(main alg)), ' +
+			'the id the trainer stores per-alg stats under. customAltKey is the key custom alternatives are stored under.',
 		categories: [],
 	};
 
 	for (const meta of manifest.categories.filter((c) => c.replacesExisting)) {
 		const category = meta.category;
 		const goal = GOALS[category] ?? null;
-		const square1 = meta.puzzleType === 'square1';
-		const P = square1 ? null : (puzzleCache[meta.puzzleType] ??= await loadPuzzle(meta.puzzleType));
-		const keyGoal = goal === 'f2l-progress' ? null : goal;
-		const mask = P && keyGoal ? await buildMask(P, keyGoal) : null;
+		const P = (puzzleCache[meta.puzzleType] ??= await loadPuzzle(meta.puzzleType));
+		const progress = goal === 'f2l-progress';
+		const mask = goal && !progress ? await buildMask(P, goal) : null;
 
-		const flatten = (subsets) => subsets.flatMap((s) => s.algorithms.map((e) => ({subset: s.subset, ...e})));
-		const olds = flatten(oldAlgs[category]);
-		const news = flatten(newAlgs[category]);
+		const flatten = (cat, subsets) => subsets.flatMap((s) => s.algorithms.map((e) => ({category: cat, subset: s.subset, ...e})));
+		const olds = flatten(category, oldAlgs[category]);
+		const news = [category, ...(EXTRA_TARGETS[category] ?? [])].flatMap((cat) => flatten(cat, newAlgs[cat]));
 
-		const keyOf = (e) => {
-			if (!P) return null;
-			const slot = goal === 'f2l-progress' ? slotOf(e.name) : null;
-			if (goal === 'f2l-progress' && slot === null) return null;
-			if (!mask && slot === null) return null;
-			return caseKey(P, e.algorithm, keyGoal ?? 'full', mask, slot) + (slot === null ? '' : `#${slot}`);
+		const keyOf = (e, alg = e.algorithm) => {
+			if (P.id === 'square1') return caseKey(P, alg, null, null, null);
+			const slot = progress ? slotOf(e.name) : null;
+			if (progress ? slot === null : !mask) return null;
+			const k = caseKey(P, alg, goal, mask, slot);
+			return k === null ? null : k + (slot === null ? '' : `#${slot}`);
 		};
-		const newByKey = new Map();
+
+		// 1. text: an alg string that belongs to exactly one new entry
+		const byText = new Map();
 		for (const e of news) {
-			const k = keyOf(e);
-			if (k && !newByKey.has(k)) newByKey.set(k, e);
+			for (const alg of new Set([e.algorithm, ...(e.alternatives ?? [])].map((a) => textKey(a, meta.puzzleType)))) {
+				byText.set(alg, byText.has(alg) && byText.get(alg) !== e ? null : e);
+			}
 		}
-		const newByName = new Map();
-		for (const e of news) if (!newByName.has(looseName(e.name))) newByName.set(looseName(e.name), e);
+		// 2. case
+		const byKey = new Map();
+		for (const e of news) {
+			const k = keyOf(e, workingAlg.get(`${e.category}::${e.subset}::${e.name}`) ?? e.algorithm);
+			if (k !== null && !byKey.has(k)) byKey.set(k, e);
+		}
+		// 3. name
+		const byName = new Map();
+		for (const e of news.filter((x) => x.category === category)) if (!byName.has(looseName(e.name))) byName.set(looseName(e.name), e);
+
+		const first = olds.map((e) => {
+			const t = byText.get(textKey(e.algorithm, meta.puzzleType));
+			if (t) return {match: t, by: 'text'};
+			const k = keyOf(e);
+			const c = k === null ? undefined : byKey.get(k);
+			if (c) return {match: c, by: 'case'};
+			const n = byName.get(looseName(e.name));
+			return n ? {match: n, by: 'name'} : {match: null, by: null};
+		});
+		const claims = new Map();
+		for (const f of first) if (f.match && f.by === 'case') claims.set(f.match, (claims.get(f.match) ?? 0) + 1);
+		const textClaims = new Set(first.filter((f) => f.by === 'text').map((f) => f.match));
 
 		const describe = (e) => ({
+			...(e.category !== category ? {category: e.category} : {}),
 			subset: e.subset,
 			name: e.name,
 			algorithm: e.algorithm,
 			statsId: statsId(e.algorithm),
-			customAltKey: `${category}::${e.subset}::${e.name}`,
-		});
-
-		// First by case. A new entry claimed by several old ones means the old algs do not tell
-		// their cases apart (e.g. the old data's "d" read as cubing.js's Dw), so those fall back to
-		// the name and carry "caseConflict".
-		const byCase = olds.map((e) => {
-			const k = keyOf(e);
-			return k ? newByKey.get(k) : undefined;
-		});
-		// Claims include the name match an old entry without a case match would fall back to
-		const claims = new Map();
-		olds.forEach((e, i) => {
-			const m = byCase[i] ?? newByName.get(looseName(e.name));
-			if (m) claims.set(m, (claims.get(m) ?? 0) + 1);
+			customAltKey: `${e.category}::${e.subset}::${e.name}`,
 		});
 
 		const pairs = [];
 		const unmatched = [];
 		const usedNew = new Set();
 		olds.forEach((e, i) => {
-			let match = byCase[i];
-			let by = 'case';
+			let {match, by} = first[i];
 			let caseConflict = false;
-			if (match && claims.get(match) > 1) {
+			// A case match onto an entry another old entry also claims (by case or by text) is not
+			// trustworthy; the name decides, if there is one
+			if (by === 'case' && (claims.get(match) > 1 || textClaims.has(match))) {
 				caseConflict = true;
-				const named = newByName.get(looseName(e.name));
+				const named = byName.get(looseName(e.name));
 				if (named) [match, by] = [named, 'name'];
-			}
-			if (!match) {
-				match = newByName.get(looseName(e.name));
-				by = 'name';
 			}
 			if (!match) {
 				unmatched.push(describe(e));
@@ -292,23 +338,28 @@ async function main() {
 			pairs.push(pair);
 		});
 
+		const count = (fn) => pairs.filter(fn).length;
+		const targets = pairs.map((p) => p.new.customAltKey);
 		out.categories.push({
 			category,
+			...(EXTRA_TARGETS[category] ? {alsoSearched: EXTRA_TARGETS[category]} : {}),
 			oldEntries: olds.length,
-			newEntries: news.length,
-			matchedByCase: pairs.filter((p) => p.by === 'case').length,
-			matchedByName: pairs.filter((p) => p.by === 'name').length,
-			caseConflicts: pairs.filter((p) => p.caseConflict).length,
+			newEntries: news.filter((e) => e.category === category).length,
+			matchedByText: count((p) => p.by === 'text'),
+			matchedByCase: count((p) => p.by === 'case'),
+			matchedByName: count((p) => p.by === 'name'),
+			caseConflicts: count((p) => p.caseConflict),
 			unmatchedOld: unmatched.length,
-			renamed: pairs.filter((p) => !p.sameName).length,
-			statsIdChanged: pairs.filter((p) => !p.sameStatsId).length,
-			newWithoutOld: news.filter((e) => !usedNew.has(e)).length,
+			newEntriesClaimedTwice: targets.length - new Set(targets).size,
+			renamed: count((p) => !p.sameName),
+			statsIdChanged: count((p) => !p.sameStatsId),
+			newWithoutOld: news.filter((e) => e.category === category && !usedNew.has(e)).length,
 			pairs,
 			unmatched,
 		});
 		const c = out.categories.at(-1);
 		console.log(
-			`${category.padEnd(16)} old ${String(c.oldEntries).padStart(4)}  case ${String(c.matchedByCase).padStart(4)}  name ${String(c.matchedByName).padStart(3)}  conflicts ${String(c.caseConflicts).padStart(2)}  unmatched ${String(c.unmatchedOld).padStart(3)}  renamed ${String(c.renamed).padStart(4)}  statsId changed ${String(c.statsIdChanged).padStart(4)}  new-only ${c.newWithoutOld}`,
+			`${category.padEnd(16)} old ${String(c.oldEntries).padStart(4)}  text ${String(c.matchedByText).padStart(4)}  case ${String(c.matchedByCase).padStart(4)}  name ${String(c.matchedByName).padStart(3)}  conflicts ${String(c.caseConflicts).padStart(2)}  unmatched ${String(c.unmatchedOld).padStart(3)}  twice ${c.newEntriesClaimedTwice}  renamed ${String(c.renamed).padStart(4)}  statsId changed ${String(c.statsIdChanged).padStart(4)}  new-only ${c.newWithoutOld}`,
 		);
 	}
 
