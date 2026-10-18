@@ -177,6 +177,28 @@ $bottom-corner-clearance: 210px;
 		touch-action: none;
 	}
 
+	// The player's keyboard key in the side by side layout (3.0-i), drawn as a key cap so it
+	// reads as "press this" without a sentence. Display only, like the name under it.
+	&__key {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.2em;
+		height: 2.2em;
+		padding: 0 0.5em;
+		margin-bottom: 10px;
+		font-family: 'Roboto Mono', monospace;
+		font-size: 1.1rem;
+		font-weight: 700;
+		line-height: 1;
+		color: rgb(var(--on-surface));
+		border: 2px solid rgba(var(--on-surface), 0.55);
+		border-bottom-width: 4px;
+		border-radius: $radius-ctrl;
+		pointer-events: none;
+		touch-action: none;
+	}
+
 	&__time {
 		font-family: 'Roboto Mono', monospace;
 		font-weight: 500;
@@ -1317,6 +1339,55 @@ $bottom-corner-clearance: 210px;
 			// child needs its own wrapper.
 			padding-left: #{'max(32px, calc((100% - 900px) / 2))'};
 			padding-right: #{'max(32px, calc((100% - 900px) / 2))'};
+		}
+	}
+
+	// =====================
+	// SIDE BY SIDE (desktop, 3.0-i)
+	// =====================
+	// Both players look at the screen from the same side, so the halves sit left and right,
+	// both upright, with the toolbar across the top. Chosen by the device (battle_layout.ts),
+	// never by width, so this block carries no media query. It comes after the scaling blocks
+	// above on purpose: the font sizes here replace theirs, which were written for a half that
+	// is the full width and half the height.
+	&--side {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-rows: auto minmax(0, 1fr);
+
+		#{$self}__toolbar {
+			grid-column: 1 / -1;
+			grid-row: 1;
+		}
+
+		#{$self}__timer--side-left {
+			grid-column: 1;
+			grid-row: 2;
+		}
+
+		#{$self}__timer--side-right {
+			grid-column: 2;
+			grid-row: 2;
+		}
+
+		// The toolbar is at the top now: the cube list opens downwards, or the block's
+		// overflow:hidden would cut it off above the toolbar.
+		#{$self}__cube-dropdown {
+			top: calc(100% + 8px);
+			bottom: auto;
+		}
+
+		#{$self}__time {
+			font-size: #{'clamp(39px, min(7vw, 15vh), 140px)'};
+		}
+
+		#{$self}__time--idle {
+			font-size: #{'clamp(15px, min(1.6vw, 3vh), 28px)'};
+		}
+
+		#{$self}__scramble {
+			font-size: #{'clamp(14px, min(1.5vw, 2.6vh), 24px)'};
+			max-width: 90%;
 		}
 	}
 

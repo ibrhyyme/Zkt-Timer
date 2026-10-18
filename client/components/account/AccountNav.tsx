@@ -31,25 +31,11 @@ export interface AccountTab {
 	id: string;
 	link: string;
 	label: string;
-	// Each section carries a cube-face colour, worn by its own icon. It is not
-	// decoration: after a couple of visits the shape and colour together are what you
-	// aim for, and they make the list scannable without reading every label.
-	tone: string;
+	// One outline icon in the text colour per row; the current row takes the accent.
+	// A different colour per section read as decoration, not as wayfinding.
 	icon: React.ReactNode;
 	danger?: boolean;
 }
-
-const TONE = {
-	blue: '36, 107, 253',
-	yellow: '245, 183, 0',
-	green: '45, 189, 97',
-	orange: '238, 106, 38',
-	violet: '167, 139, 255',
-	// A cube's white face would vanish against the light theme's white page, so support
-	// takes the one tone that stays readable on both.
-	cyan: '0, 176, 209',
-	red: '226, 51, 67',
-};
 
 export function useAccountTabs(): AccountTab[] {
 	const {t} = useTranslation();
@@ -59,50 +45,43 @@ export function useAccountTabs(): AccountTab[] {
 			id: 'personal-info',
 			link: '/account/personal-info',
 			label: t('account_nav.personal_info'),
-			tone: TONE.blue,
-			icon: <UserCircle weight="fill" />,
+			icon: <UserCircle />,
 		},
 		{
 			id: 'notifications',
 			link: '/account/notifications',
 			label: t('account_nav.notifications'),
-			tone: TONE.yellow,
-			icon: <BellRinging weight="fill" />,
+			icon: <BellRinging />,
 		},
 		{
 			id: 'social',
 			link: '/account/social',
 			label: t('account_nav.social'),
-			tone: TONE.green,
-			icon: <ChatCircleText weight="fill" />,
+			icon: <ChatCircleText />,
 		},
 		{
 			id: 'linked-accounts',
 			link: '/account/linked-accounts',
 			label: t('account_nav.linked_accounts'),
-			tone: TONE.orange,
-			icon: <LinkSimple weight="bold" />,
+			icon: <LinkSimple />,
 		},
 		{
 			id: 'announcements',
 			link: '/account/announcements',
 			label: t('account_nav.announcements'),
-			tone: TONE.violet,
-			icon: <Megaphone weight="fill" />,
+			icon: <Megaphone />,
 		},
 		{
 			id: 'support',
 			link: '/account/support',
 			label: t('account_nav.support'),
-			tone: TONE.cyan,
-			icon: <Lifebuoy weight="fill" />,
+			icon: <Lifebuoy />,
 		},
 		{
 			id: 'danger-zone',
 			link: '/account/danger-zone',
 			label: t('account_nav.danger_zone'),
-			tone: TONE.red,
-			icon: <Warning weight="fill" />,
+			icon: <Warning />,
 			danger: true,
 		},
 	];
@@ -138,7 +117,6 @@ export default function AccountNav() {
 							key={tab.id}
 							to={tab.link}
 							className={b('item', {active, danger: !!tab.danger})}
-							style={{'--tab-tone': tab.tone} as React.CSSProperties}
 							aria-current={active ? 'page' : undefined}
 						>
 							{/* Shared layoutId means the highlight travels between rows instead of

@@ -1,0 +1,1225 @@
+@import '../../../styles/config';
+
+// Online Battle (/battle/online): queue, match and result on one fixed screen.
+//
+// The screen never scrolls and never rubber-bands on iOS (design 5.4): the root is fixed to the
+// viewport, the match fits by shrinking type instead of overflowing. Colours come from the theme
+// variables only; character comes from type (Archivo headings, monospace times), no effects.
+
+$radius-card: 13px;
+$radius-ctrl: 9px;
+$radius-pill: 999px;
+$gap-tight: 6px;
+$gap: 12px;
+$gap-wide: 20px;
+$side: 16px;
+$mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+.#{$namespace}-online-battle {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	overscroll-behavior: none;
+	background: rgb(var(--background-color));
+	color: rgb(var(--text-color));
+	padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+	-webkit-tap-highlight-color: transparent;
+
+	&--match {
+		touch-action: manipulation;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	&__body {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 0 $side;
+	}
+
+	&__gate {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: $side;
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+	}
+
+	// A plain mono label ("unrated match"), no pill. Not uppercased: Turkish casing turns the
+	// loanword in "Rating'siz" into "RATİNG'SİZ".
+	&__tag {
+		display: inline-flex;
+		align-items: center;
+		font-family: $mono;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+
+	&__notice {
+		display: flex;
+		flex-direction: column;
+		gap: $gap-tight;
+		max-width: 440px;
+		margin: 0 auto;
+		padding: $gap $side;
+		border-radius: $radius-card;
+		background: rgb(var(--module-color));
+		font-size: 14px;
+		line-height: 1.45;
+
+		strong {
+			font-size: 16px;
+		}
+	}
+
+	// ── Queue ──
+	// The search, the player's card, recent matches, how a match runs. No effects: no glow,
+	// no shadow, no gradient. Hierarchy comes from Archivo's wide heavy cut and Roboto Mono for
+	// every number; state comes from flat cube stickers. One column on a phone (it scrolls,
+	// unlike the match); on a desktop the search sits on the left and the cards beside it.
+	&__queue {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: 'stage' 'me' 'recent' 'how';
+		align-content: start;
+		gap: $gap;
+		width: 100%;
+		max-width: 1040px;
+		margin: 0 auto;
+		padding: $gap 0 calc(#{$gap-wide} + 24px);
+
+		// Desktop: one boxed panel instead of loose pieces on a wide canvas. The search on the
+		// left, a hairline, the cards on the right as sections of the same surface (no boxes
+		// inside the box). Sized to its content and centred in the screen; the empty last row
+		// takes the search column's extra height.
+		@include bp-up($bp-lg) {
+			flex: 0 1 auto;
+			margin: auto;
+			max-height: 100%;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+			grid-template-rows: auto auto auto 1fr;
+			grid-template-areas: 'stage me' 'stage recent' 'stage how' 'stage .';
+			gap: 0;
+			padding: 0;
+			border: 1px solid rgba(var(--text-color), 0.08);
+			border-radius: 20px;
+			background: rgba(var(--text-color), 0.025);
+
+			.#{$namespace}-online-battle__q-card {
+				padding: 24px 28px;
+				border: none;
+				border-radius: 0;
+				background: transparent;
+			}
+
+			.#{$namespace}-online-battle__q-recent,
+			.#{$namespace}-online-battle__q-how {
+				border-top: 1px solid rgba(var(--text-color), 0.08);
+			}
+		}
+	}
+
+	&__q-stage {
+		grid-area: stage;
+		display: flex;
+		align-items: center;
+
+		@include bp-up($bp-lg) {
+			align-self: stretch;
+			min-height: 460px;
+			padding: 48px;
+			border-right: 1px solid rgba(var(--text-color), 0.08);
+		}
+	}
+	&__q-me {
+		grid-area: me;
+	}
+	&__q-recent {
+		grid-area: recent;
+	}
+	&__q-how {
+		grid-area: how;
+		align-self: start;
+	}
+
+	// Small caps label in mono: section titles, units, stat names.
+	&__eyebrow {
+		margin: 0;
+		font-family: $mono;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	// A cube sticker: the one coloured mark on these screens. Flat, full colour, never faded
+	// (a faded sticker turns pastel on a white page).
+	&__sticker {
+		flex-shrink: 0;
+		display: inline-block;
+		width: 13px;
+		height: 13px;
+		border-radius: 3px;
+		background: rgba(var(--text-color), 0.22);
+
+		&--green {
+			background: rgb(var(--success-color));
+		}
+		&--red {
+			background: rgb(var(--error-color));
+		}
+		&--orange {
+			background: rgb(var(--warning-color));
+		}
+		&--blue {
+			background: rgb(var(--primary-color));
+		}
+	}
+
+	&__stickers {
+		display: inline-flex;
+		gap: 4px;
+	}
+
+	// ── The search ──
+	&__stage {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		width: 100%;
+		max-width: 440px;
+		padding: 28px 4px 8px;
+
+		@include bp-up($bp-lg) {
+			padding: 0;
+		}
+	}
+
+	&__stage-title {
+		margin: 0;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 32px;
+		font-weight: 800;
+		font-stretch: 125%;
+		line-height: 1.05;
+		letter-spacing: -0.01em;
+
+		@include bp-up($bp-lg) {
+			font-size: 44px;
+		}
+	}
+
+	&__stage-clock {
+		font-family: $mono;
+		font-size: 64px;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__stage-sub {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 1.45;
+	}
+
+	&__stage-action {
+		width: 100%;
+		max-width: 360px;
+		margin-top: 6px;
+	}
+
+	&__cube-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	&__cube-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__cube-battery {
+		font-family: $mono;
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	// ── Cards ──
+	&__q-card {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 20px;
+		border-radius: 14px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	// A picture, or the initial in white on the primary fill.
+	&__q-avatar {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		overflow: hidden;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-weight: 800;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		&--lg {
+			width: 36px;
+			height: 36px;
+			font-size: 15px;
+		}
+
+		&--sm {
+			width: 24px;
+			height: 24px;
+			font-size: 11px;
+		}
+	}
+
+	&__me-head {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+
+	&__me-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 17px;
+		font-weight: 800;
+		font-stretch: 112%;
+	}
+
+	&__me-rank {
+		margin-left: auto;
+		font-family: $mono;
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	&__me-rating {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+	}
+
+	&__me-rating-value {
+		font-family: $mono;
+		font-size: 52px;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.02em;
+	}
+
+	&__me-stats {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 8px;
+		margin: 0;
+		padding-top: 14px;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__me-stat {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		min-width: 0;
+
+		dt {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			letter-spacing: 0.06em;
+		}
+	}
+
+	&__me-stat-value {
+		margin: 0;
+		font-family: $mono;
+		font-size: 20px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__me-first {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 14px;
+		line-height: 1.45;
+
+		strong {
+			font-size: 16px;
+		}
+	}
+
+	&__form {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $gap;
+	}
+
+	&__me-link {
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+		text-decoration: none;
+
+		&:hover {
+			color: rgb(var(--primary-color));
+			text-decoration: underline;
+		}
+	}
+
+	// ── Recent matches ──
+	&__recent {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__recent-row {
+		display: grid;
+		grid-template-columns: 13px minmax(0, 1fr) auto 48px;
+		align-items: center;
+		gap: 12px;
+		padding: 9px 0;
+		font-size: 14px;
+
+		& + & {
+			border-top: 1px solid rgba(var(--text-color), 0.06);
+		}
+	}
+
+	&__recent-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-weight: 600;
+	}
+
+	&__recent-score,
+	&__recent-delta {
+		font-family: $mono;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__recent-delta {
+		text-align: right;
+	}
+
+	// ── How a match runs ──
+	&__how {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__how-step {
+		display: grid;
+		grid-template-columns: 24px minmax(0, 1fr);
+		gap: 10px;
+		font-size: 14px;
+		line-height: 1.45;
+	}
+
+	&__how-num {
+		font-family: $mono;
+		font-size: 13px;
+		font-weight: 700;
+		line-height: 1.6;
+	}
+
+	// ── Dialogs ──
+	&__dialog-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: $side;
+		background: rgba(0, 0, 0, 0.55);
+	}
+
+	&__dialog {
+		width: 100%;
+		max-width: 380px;
+		padding: $gap-wide;
+		border-radius: $radius-card;
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+	}
+
+	&__dialog-text {
+		margin: 0 0 $gap;
+		font-size: 17px;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	&__dialog-actions {
+		display: flex;
+		justify-content: flex-end;
+		flex-wrap: wrap;
+		gap: $gap-tight;
+	}
+
+	&__report-input {
+		width: 100%;
+		margin-bottom: $gap;
+		padding: 10px 12px;
+		border-radius: $radius-ctrl;
+		border: 1px solid rgba(var(--text-color), 0.2);
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		font: inherit;
+		font-size: 15px;
+		resize: none;
+	}
+
+	// ── Players ──
+	&__player {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+
+	&__avatar {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		overflow: hidden;
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite, var(--text-color)));
+		font-weight: 800;
+		font-size: 15px;
+		vertical-align: middle;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__player-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	&__player-rating {
+		font-family: $mono;
+		font-size: 15px;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__provisional {
+		margin-left: 2px;
+		font-weight: 800;
+		color: rgb(var(--warning-color));
+	}
+
+	&__dots {
+		display: inline-flex;
+		gap: 5px;
+		margin-left: auto;
+	}
+
+	// Rounds won, as cube stickers: green for a won round, neutral otherwise.
+	&__dot {
+		width: 13px;
+		height: 13px;
+		border-radius: 3px;
+		background: rgba(var(--text-color), 0.22);
+
+		&--won {
+			background: rgb(var(--success-color));
+		}
+	}
+
+	// ── Opponent phase bar ──
+	// Mono label over a thin track per CFOP step; F2L's track has its four pairs. Flat fill,
+	// no boxes, no text on the fill.
+	&__phases {
+		display: grid;
+		grid-template-columns: 1fr 2fr 1fr 1fr;
+		gap: 8px;
+	}
+
+	&__phase {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		min-width: 0;
+	}
+
+	&__phase-label {
+		font-family: $mono;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	&__phase-track {
+		display: flex;
+		gap: 3px;
+	}
+
+	&__phase-seg {
+		flex: 1;
+		height: 6px;
+		border-radius: 2px;
+		background: rgba(var(--text-color), 0.14);
+
+		&--done {
+			background: rgb(var(--primary-color));
+		}
+	}
+
+	&__opponent {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: $gap;
+		border-radius: $radius-card;
+		background: rgb(var(--module-color));
+
+		&--offline {
+			outline: 2px solid rgb(var(--warning-color));
+		}
+	}
+
+	&__opponent-status {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: $gap;
+		min-height: 28px;
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	&__opponent-time {
+		font-family: $mono;
+		font-size: 28px;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	// ── Match ──
+	&__match {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto minmax(0, 1fr) auto;
+		grid-template-areas:
+			'head'
+			'opponent'
+			'self'
+			'foot';
+		gap: $gap;
+		padding: $gap 0;
+
+		@include bp-up($bp-lg) {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: auto minmax(0, 1fr) auto;
+			grid-template-areas:
+				'head head'
+				'self opponent'
+				'foot foot';
+			gap: $gap-wide;
+			padding: $gap-wide 0;
+		}
+	}
+
+	&__match-head {
+		grid-area: head;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: $gap;
+		font-weight: 700;
+	}
+
+	&__match-round {
+		font-family: $mono;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	&__match-score {
+		font-family: $mono;
+		font-size: 20px;
+		font-weight: 800;
+	}
+
+	&__match-opponent {
+		grid-area: opponent;
+		min-width: 0;
+
+		@include bp-up($bp-lg) {
+			display: flex;
+			flex-direction: column;
+
+			> * {
+				flex: 1;
+				justify-content: center;
+			}
+		}
+	}
+
+	&__match-self {
+		grid-area: self;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: $gap-tight;
+		text-align: center;
+
+		@include bp-up($bp-lg) {
+			padding: $gap-wide;
+			border-radius: $radius-card;
+			background: rgb(var(--module-color));
+		}
+	}
+
+	&__scramble {
+		width: 100%;
+		min-height: 1.4em;
+		font-family: $mono;
+		font-size: clamp(16px, 4.6vw, 22px);
+		font-weight: 600;
+		line-height: 1.45;
+		word-spacing: 0.15em;
+		overflow-wrap: anywhere;
+	}
+
+	&__cube-alert {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $gap-tight;
+		font-family: inherit;
+		font-size: 15px;
+		color: rgb(var(--warning-color));
+	}
+
+	&__undo {
+		color: rgb(var(--error-color));
+		font-weight: 800;
+	}
+
+	&__headline {
+		min-height: 24px;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 22px;
+		font-weight: 800;
+		font-stretch: 125%;
+		letter-spacing: -0.01em;
+	}
+
+	&__big-time {
+		font-family: $mono;
+		font-size: min(19vw, 14vh, 128px);
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+
+		@include bp-up($bp-lg) {
+			font-size: min(9vw, 16vh, 140px);
+		}
+
+		// Colour only where it means something: late (+2, DNF), a lost round, a won round.
+		// The countdown and the inspection clock stay in the text colour.
+		&--late,
+		&--lost {
+			color: rgb(var(--error-color));
+		}
+
+		&--won {
+			color: rgb(var(--success-color));
+		}
+	}
+
+	&__note,
+	&__preview,
+	&__cube-warning {
+		min-height: 20px;
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	&__preview {
+		font-family: $mono;
+	}
+
+	&__cube-warning {
+		color: rgb(var(--warning-color));
+	}
+
+	// The player's own cube on the match screen: the 3D mirror and a row of tools under it.
+	&__my-cube {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $gap-tight;
+	}
+
+	&__my-cube-view {
+		line-height: 0;
+
+		// Link down: the mirror stays mounted but steps back.
+		&--off {
+			opacity: 0.35;
+		}
+	}
+
+	&__cube-tools {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 6px 10px;
+		min-height: 32px;
+	}
+
+	&__cube-tool {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 10px;
+		border-radius: $radius-ctrl;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 700;
+		cursor: pointer;
+
+		svg {
+			font-size: 15px;
+		}
+
+		&:hover {
+			background: rgba(var(--text-color), 0.08);
+		}
+	}
+
+	&__match-foot {
+		grid-area: foot;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $gap;
+		padding: $gap;
+		border-radius: $radius-card;
+		background: rgb(var(--module-color));
+
+		> :first-child {
+			flex: 1;
+		}
+	}
+
+	// ── Result ──
+	// The headline in display type with the outcome as a sticker in front of it, the scoreboard,
+	// the rounds and the rating in flat cards, the rematch as the one filled button. Numbers in
+	// mono. Scrolls on a short phone rather than clipping.
+	&__result {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: $gap;
+		width: 100%;
+		max-width: 480px;
+		margin: 0 auto;
+		padding: $gap-wide 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+
+		// Desktop: the whole result in one boxed panel, its parts split by hairlines, instead of
+		// a narrow column floating in an empty window.
+		@include bp-up($bp-lg) {
+			flex: 0 1 auto;
+			margin: auto;
+			max-width: 560px;
+			max-height: 100%;
+			gap: 0;
+			padding: 28px 32px 20px;
+			border: 1px solid rgba(var(--text-color), 0.08);
+			border-radius: 20px;
+			background: rgba(var(--text-color), 0.025);
+
+			> .#{$namespace}-online-battle__q-card {
+				padding: 20px 0;
+				border: none;
+				border-top: 1px solid rgba(var(--text-color), 0.08);
+				border-radius: 0;
+				background: transparent;
+			}
+
+			> .#{$namespace}-online-battle__result-head {
+				padding: 0 0 20px;
+			}
+		}
+	}
+
+	&__result-head {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 8px 4px 4px;
+	}
+
+	&__result-title {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin: 0;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 40px;
+		font-weight: 800;
+		font-stretch: 125%;
+		line-height: 1.05;
+		letter-spacing: -0.01em;
+	}
+
+	&__sticker--big {
+		width: 22px;
+		height: 22px;
+		border-radius: 5px;
+	}
+
+	&__result-reason {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+	}
+
+	// ── Scoreboard ──
+	&__vs {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
+		gap: $gap;
+	}
+
+	&__vs-side {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
+		min-width: 0;
+
+		&--end {
+			align-items: flex-end;
+			text-align: right;
+		}
+	}
+
+	&__vs-name {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		max-width: 100%;
+		min-width: 0;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 15px;
+		font-weight: 800;
+		font-stretch: 112%;
+	}
+
+	&__vs-side--end &__vs-name {
+		flex-direction: row-reverse;
+	}
+
+	&__vs-name-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__vs-rating {
+		font-family: $mono;
+		font-size: 14px;
+		font-weight: 600;
+	}
+
+	&__vs-score {
+		font-family: $mono;
+		font-size: 48px;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	// ── Rounds ──
+	&__round-row {
+		display: grid;
+		grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: 4px $gap;
+		padding: 8px 0;
+		font-size: 15px;
+
+		& + & {
+			border-top: 1px solid rgba(var(--text-color), 0.06);
+		}
+
+		&--head {
+			padding-top: 0;
+
+			> :last-child {
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+	}
+
+	// Column names over the round times. Not the uppercase eyebrow: one of them is a username.
+	&__round-who {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 12px;
+		font-weight: 700;
+
+		&--end {
+			text-align: right;
+		}
+	}
+
+	&__round-label {
+		font-family: $mono;
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	&__round-time {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-family: $mono;
+		font-variant-numeric: tabular-nums;
+
+		&--win {
+			font-weight: 800;
+		}
+
+		&--end {
+			justify-content: flex-end;
+		}
+	}
+
+	&__dnf-reason {
+		grid-column: 2 / -1;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	// ── Rating ──
+	&__rating-change {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $gap;
+		font-size: 16px;
+		font-weight: 700;
+	}
+
+	&__rating-numbers {
+		font-family: $mono;
+		font-size: 20px;
+		font-weight: 600;
+	}
+
+	&__rating-delta {
+		font-family: $mono;
+		font-size: 34px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	// At the foot of the screen on a phone, where the thumb is; right under the cards on a
+	// desktop, where the foot of a tall window left a gap the size of the cards themselves.
+	&__result-actions {
+		display: flex;
+		flex-direction: column;
+		gap: $gap-tight;
+		width: 100%;
+		margin-top: auto;
+		padding-top: $gap-tight;
+
+		@include bp-up($bp-lg) {
+			margin-top: $gap;
+		}
+	}
+
+	&__rematch-asked {
+		text-align: center;
+		font-size: 14px;
+		font-weight: 700;
+	}
+
+	&__result-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $gap-tight;
+
+		> * {
+			width: 100%;
+		}
+	}
+
+	// A quiet action, but a button: icon, padding, a hover fill. It used to be underlined
+	// text that did not look pressable at all.
+	&__report-link {
+		align-self: center;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 14px;
+		border-radius: $radius-ctrl;
+		background: none;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 13px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background 0.15s ease;
+
+		svg {
+			font-size: 15px;
+		}
+
+		&:hover:not(:disabled) {
+			background: rgba(var(--text-color), 0.07);
+		}
+
+		&:active:not(:disabled) {
+			background: rgba(var(--text-color), 0.12);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
+		}
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	// ── Cancelled ──
+	&__cancelled {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: $gap-wide;
+		text-align: center;
+	}
+
+	&__cancelled-text {
+		margin: 0;
+		max-width: 360px;
+		font-size: 18px;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	// Short screens (a phone in landscape): everything tighter, nothing scrolls.
+	@media (max-height: $bp-short-height) {
+		&__match {
+			gap: $gap-tight;
+			padding: $gap-tight 0;
+		}
+
+		&__headline {
+			font-size: 16px;
+		}
+
+		&__big-time {
+			font-size: min(12vw, 18vh, 96px);
+		}
+	}
+}

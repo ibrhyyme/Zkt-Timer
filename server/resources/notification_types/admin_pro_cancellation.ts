@@ -6,9 +6,9 @@ type Plan = 'monthly' | 'yearly' | 'lifetime' | 'unknown';
 type Platform = 'ios' | 'android';
 
 function planLabel(plan: Plan): string {
-	if (plan === 'monthly') return 'aylik';
-	if (plan === 'yearly') return 'yillik';
-	if (plan === 'lifetime') return 'omur boyu';
+	if (plan === 'monthly') return 'aylık';
+	if (plan === 'yearly') return 'yıllık';
+	if (plan === 'lifetime') return 'ömür boyu';
 	return 'plan bilinmiyor';
 }
 
@@ -31,12 +31,12 @@ export default class AdminProCancellationNotification extends Notification {
 	}
 
 	inAppMessage() {
-		return `${this.input.triggeringUser.username} Pro aboneligini iptal etti`;
+		return `${this.input.triggeringUser.username} Pro aboneliğini iptal etti`;
 	}
 
 	message() {
 		const planPart = this.plan ? ` (${planLabel(this.plan)})` : '';
-		return `${this.input.triggeringUser.username} kullanicisi Pro aboneligini${planPart} iptal etti. Donem sonuna kadar erisimi devam ediyor.`;
+		return `${this.input.triggeringUser.username} kullanıcısı Pro aboneliğini${planPart} iptal etti. Dönem sonuna kadar erişimi devam ediyor.`;
 	}
 
 	icon() {
@@ -48,7 +48,7 @@ export default class AdminProCancellationNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Pro kullanicilari goruntule';
+		return 'Pro kullanıcıları görüntüle';
 	}
 
 	categoryName() {

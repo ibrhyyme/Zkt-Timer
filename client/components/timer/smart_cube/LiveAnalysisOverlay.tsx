@@ -368,6 +368,11 @@ export default function LiveAnalysisOverlay({
                 : undefined;
         p.recognitionTime = sum('recognitionMs');
         p.executionTime = sum('executionMs');
+        // HTM moves in the row. Skipped steps count 0, so the whole reached set is summed;
+        // the engine's counts are boundary-aware, so the rows add up to the solve's total.
+        p.moves = steps.length && steps.every((step: any) => step.moveCount)
+            ? steps.reduce((acc: number, step: any) => acc + step.moveCount.htm, 0)
+            : undefined;
     });
 
     // Update history with currently DONE phases (Using ref from top scope)
@@ -467,6 +472,17 @@ export default function LiveAnalysisOverlay({
                         marginRight: '4px',
                     };
 
+                    // Move count beside the phase time, sized relative to the row so it
+                    // follows the module's scale. A phase that took no moves shows nothing.
+                    const movesTag = !p.skipped && p.moves > 0 ? (
+                        <span
+                            className={b('moves')}
+                            style={{ fontSize: mobile ? '0.6em' : '0.45em', fontWeight: 600, color: '#fff', marginLeft: '0.4em' }}
+                        >
+                            {p.moves} {tr('smart_cube.turns_label')}
+                        </span>
+                    ) : null;
+
                     const skipBadge = p.skipped ? (
                         <span className={b('skip-badge')}>{tr('solve_info.skip_badge')}</span>
                     ) : null;
@@ -487,6 +503,7 @@ export default function LiveAnalysisOverlay({
                                             </span>
                                         </span>
                                     )}
+                                    {movesTag}
                                 </div>
                                 <div className={b('row', { done: p.done })} style={rowStyle}>
                                     {showCumulative && (
@@ -526,6 +543,7 @@ export default function LiveAnalysisOverlay({
                                         </span>
                                     </span>
                                 )}
+                                {movesTag}
                             </div>
                             {showCumulative && (
                                 <div style={{

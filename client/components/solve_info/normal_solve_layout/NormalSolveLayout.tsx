@@ -29,7 +29,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 		solve, effSolve, user, disabled, editMode, mobileMode,
 		toggleEditMode, togglePlusTwo, toggleDnf, deleteSolve,
 		handleChange, handleDone, onComplete,
-		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf,
+		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf, cubeTag,
 	} = props;
 
 	const { t } = useTranslation();
@@ -57,7 +57,9 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	}
 
 	let shareLink = null;
-	if (typeof window !== 'undefined' && canReadSync()) {
+	// An old solve opened by someone other than its owner can lack a code (the server only
+	// fills one in for the owner); a link to /solve/null would lead nowhere.
+	if (typeof window !== 'undefined' && canReadSync() && solve.share_code) {
 		shareLink = (
 			<>
 				<CopyText
@@ -158,6 +160,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 					<Avatar small user={user} hideBadges profile={user?.profile} />
 					<div className={b('sub-actions')}>
 						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo.name} />
+						{cubeTag}
 						{plusTwoButton}
 						{dnfButton}
 					</div>

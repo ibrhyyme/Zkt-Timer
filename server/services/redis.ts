@@ -20,7 +20,6 @@ export enum RedisNamespace {
 	WCA_WCIF = 'cd:wca:wcif',
 	WCA_COMP_INFO = 'cd:wca:compinfo',
 	WCA_WORLD_RECORDS = 'cd:wca:worldrecords',
-	WCA_RANKINGS = 'cd:wca:rankings',
 	ZKT_COMP_LIST = 'cd:zktcomp:list',
 	ZKT_COMP_DETAIL = 'cd:zktcomp:detail',
 	ZKT_RECORDS = 'cd:zktcomp:records',
@@ -48,6 +47,21 @@ export enum RedisNamespace {
 	SUPPORT_TICKET_RATE = 'cd:support:rate',
 	NATIVE_MIGRATE_STASH = 'cd:native_migrate:stash',
 	NATIVE_MIGRATE_RATE = 'cd:native_migrate:rate',
+	// Online Battle leaderboard pages (server/models/battle.ts), 60 s.
+	BATTLE_LEADERBOARD = 'cd:battle:leaderboard',
+	// Online Battle realtime (server/battle). Queue: sorted set per puzzle (score = rating)
+	// plus a meta hash; the matcher's lock; one JSON snapshot per running match; the
+	// one-queue-or-one-match session per user; abandon cooldowns; the last opponent; and a
+	// short tombstone so a reconnect learns why its match ended.
+	BATTLE_QUEUE = 'cd:battle:queue',
+	BATTLE_QUEUE_META = 'cd:battle:queue_meta',
+	BATTLE_MATCHER_LOCK = 'cd:battle:matcher',
+	BATTLE_MATCH = 'cd:battle:match',
+	BATTLE_SESSION = 'cd:battle:session',
+	BATTLE_COOLDOWN = 'cd:battle:cooldown',
+	BATTLE_ABANDONS = 'cd:battle:abandons',
+	BATTLE_RECENT_OPPONENT = 'cd:battle:recent_opponent',
+	BATTLE_ENDED = 'cd:battle:ended',
 }
 
 export type generatedRedisKey = {

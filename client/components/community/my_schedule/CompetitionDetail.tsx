@@ -9,7 +9,7 @@ import AddToCalendarButton from '../../common/add_to_calendar/AddToCalendarButto
 import CompetitionSchedule from './CompetitionSchedule';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
-	getEventShortName, formatRoundFormat,
+	getEventShortName, formatRoundFormat, localEventName, ChanceTag,
 } from './shared';
 
 type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live' | 'schedule';
@@ -42,10 +42,14 @@ export default function CompetitionDetail() {
 		});
 	}
 
-	TABS.push(
-		{id: 'events', label: t('my_schedule.tab_events'), icon: ListBullets, count: detail.events.length},
-		{id: 'rankings', label: t('my_schedule.tab_rankings'), icon: ChartBar},
-	);
+	TABS.push({id: 'events', label: t('my_schedule.tab_events'), icon: ListBullets, count: detail.events.length});
+
+	// The ranking here is built from personal records set at earlier competitions.
+	// On a ZKT competition people read it as this competition's live standings
+	// ("I came third"), which ZKT Live already shows, so it is left out there.
+	if (!isZktCompetition) {
+		TABS.push({id: 'rankings', label: t('my_schedule.tab_rankings'), icon: ChartBar});
+	}
 
 	// The whole programme, not just the viewer's own assignments. It rides on the
 	// live overview, so it is offered wherever that exists.
@@ -88,7 +92,7 @@ export default function CompetitionDetail() {
 												month: 'long',
 											})}`
 										: ''}
-									{detail.myDayLabel === d.label ? ` — ${t('zkt_comp.your_day')}` : ''}
+									{detail.myDayLabel === d.label ? ` (${t('zkt_comp.your_day')})` : ''}
 								</span>
 							))}
 						</div>
@@ -310,7 +314,7 @@ function EventsTab({events, competitionId, locale, t}: any) {
 				const round = event.rounds[i];
 				result.push({
 					eventId: event.eventId,
-					eventName: event.eventName,
+					eventName: localEventName(t, event.eventId, event.eventName),
 					// Day-split competition: an event pinned to one day is the fact a
 					// competitor cannot afford to miss — they would come on the wrong
 					// morning and the event would be over.
@@ -324,13 +328,14 @@ function EventsTab({events, competitionId, locale, t}: any) {
 					cutoffAttempts: round.cutoffAttempts,
 					advancementType: round.advancementType,
 					advancementLevel: round.advancementLevel,
+					dualChance: !!round.dualChance,
 					isFirstRound: i === 0,
 					roundKey: `${event.eventId}-r${round.roundNumber}`,
 				});
 			}
 		}
 		return result;
-	}, [events]);
+	}, [events, t]);
 
 	return (
 		<div className={b('events-tab')}>
@@ -357,7 +362,10 @@ function EventsTab({events, competitionId, locale, t}: any) {
 											<span className={b('competitor-day')}>{row.dayLabel}</span>
 										)}
 									</td>
-									<td className={b('events-cell-center')}>{row.roundNumber}</td>
+									<td className={b('events-cell-center')}>
+										{row.roundNumber}
+										{row.dualChance && <span className={b('chance-tag')}>{t('zkt_comp.dual_chance')}</span>}
+									</td>
 									<td className={b('events-cell-center')}>{row.groupCount}</td>
 									<td className={b('events-cell-view')}>
 										{row.groupCount > 0 && (
@@ -400,6 +408,9 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 						{formatRoundFormat(row.format)}
 					</span>
 				)}
+				{row.dualChance && (
+					<span className={b('round-info-item')}>{t('zkt_comp.dual_chance')}</span>
+				)}
 				{row.timeLimit && (
 					<span className={b('round-info-item')}>
 						{t('my_schedule.time_limit')}: {formatWcaTime(row.timeLimit)}
@@ -430,7 +441,10 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 							className={b('group-card')}
 							onClick={() => history.push(`/competitions/${competitionId}/activities/${activityCode}`)}
 						>
-							<span className={b('group-card-title')}>{t('my_schedule.col_group')} {group.groupNumber}</span>
+							<span className={b('group-card-title')}>
+								{t('my_schedule.col_group')} {group.groupNumber}
+								<ChanceTag chance={group.chance} t={t} />
+							</span>
 							{group.startTime && (
 								<span className={b('group-card-time')}>
 									{formatTime(group.startTime, locale)}

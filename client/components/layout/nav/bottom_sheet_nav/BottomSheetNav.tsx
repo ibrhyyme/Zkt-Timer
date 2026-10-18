@@ -10,7 +10,8 @@ import React from 'react';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import EdgeDrawer from '../edge_drawer/EdgeDrawer';
-import {NAV_LINKS} from '../nav_links';
+import {NAV_LINKS, visibleNavLinks} from '../nav_links';
+import {useBattleLaunch} from '../../../battle/useBattleLaunch';
 import {useInbox} from '../../../../util/hooks/useInbox';
 import block from '../../../../styles/bem';
 
@@ -25,6 +26,8 @@ export default function BottomSheetNav() {
 	const history = useHistory();
 	const {t} = useTranslation();
 	const inbox = useInbox();
+	// Sıralama joins the grid only once Online Battle is public (nav_links launchOnly).
+	const links = visibleNavLinks(NAV_LINKS, useBattleLaunch()?.launched);
 
 	// Istekler de sayilir: kimse push almadigi icin rozet onlarin tek isareti.
 	const unread = inbox.unread_total + inbox.request_count;
@@ -39,7 +42,7 @@ export default function BottomSheetNav() {
 			gridHeightPx={310}
 			notchBadge={unread > 0}
 		>
-			{NAV_LINKS.map((link) => {
+			{links.map((link) => {
 				const isActive = link.match.test(match.path);
 				const showCount = link.link === MESSAGES_LINK && unread > 0;
 				return (

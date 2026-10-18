@@ -36,6 +36,9 @@ export const SOLVE_INPUT_FIELDS: (keyof SolveInput)[] = [
 	'is_virtual_cube',
 	'training_session_id',
 	'smart_device_id',
+	// Physical cube (My Cubes). The server stores an unknown or foreign id as null, so a
+	// stale value can never stall the offline queue (server/util/solve_links.ts).
+	'cube_id',
 	'smart_turn_count',
 	'smart_turns',
 	'smart_put_down_time',

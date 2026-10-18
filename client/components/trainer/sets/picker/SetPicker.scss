@@ -1,0 +1,679 @@
+@import '../../../../styles/config';
+
+// Set picker (trainer-sets 5.1-5.8). A non scrolling column from the shell: head (title +
+// search), a body that scrolls on its own, the selection list and the bottom bar. Theme
+// variables only (no fixed #fff), breakpoints from tokens.scss, 44px touch targets.
+// From $bp-lg the categories stay in a list on the left (5.8).
+
+.#{$namespace}-set-picker {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	color: rgb(var(--text-color));
+	// The keyboard covers the bottom of the page on iOS: lift the bar above it.
+	padding-bottom: var(--keyboard-h, 0px);
+	box-sizing: border-box;
+
+	// ── Head ──
+	&__head {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 0.75rem 1rem 0.6rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+
+		@include bp-up($bp-lg) {
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+			gap: 1.5rem;
+			padding: 0.75rem 1.25rem;
+		}
+	}
+
+	&__title-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
+	&__titles {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 1.15rem;
+		font-weight: 700;
+		line-height: 1.25;
+		overflow-wrap: anywhere;
+	}
+
+	&__subtitle {
+		font-size: 0.85rem;
+		overflow-wrap: anywhere;
+	}
+
+	&__search {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 0.35rem 0 0.75rem;
+		border-radius: 12px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		box-sizing: border-box;
+
+		&:focus-within {
+			border-color: rgb(var(--primary-color));
+		}
+
+		input {
+			flex: 1;
+			min-width: 0;
+			height: 42px;
+			border: none;
+			background: transparent;
+			color: rgb(var(--text-color));
+			// 16px keeps iOS from zooming into the field.
+			font-size: 1rem;
+			outline: none;
+
+			&::-webkit-search-cancel-button {
+				display: none;
+			}
+		}
+
+		@include bp-up($bp-lg) {
+			width: 360px;
+			flex-shrink: 0;
+		}
+	}
+
+	&__icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		border: none;
+		border-radius: 10px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.06);
+		}
+	}
+
+	// ── Body ──
+	&__body {
+		display: flex;
+		flex: 1;
+		min-height: 0;
+	}
+
+	&__scroll {
+		flex: 1;
+		min-width: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		padding: 0.5rem 1rem 1.25rem;
+		box-sizing: border-box;
+
+		@include bp-up($bp-lg) {
+			padding: 0.75rem 1.25rem 1.5rem;
+		}
+	}
+
+	&__nav {
+		width: 250px;
+		flex-shrink: 0;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 0.5rem 0.5rem 1rem;
+		border-right: 1px solid rgba(var(--text-color), 0.08);
+		box-sizing: border-box;
+	}
+
+	// Wide: the search stays on top of the category list while it scrolls.
+	&__nav-search {
+		position: sticky;
+		top: -0.5rem;
+		z-index: 1;
+		margin: -0.5rem 0 0.5rem -0.5rem;
+		padding: 0.5rem 0 0.5rem 0.5rem;
+		background: rgb(var(--background-color));
+	}
+
+	&__nav-group + &__nav-group {
+		margin-top: 0.5rem;
+	}
+
+	&__nav-title {
+		margin: 0.5rem 0.6rem 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__nav-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	&__nav-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+		min-height: 40px;
+		padding: 0.35rem 0.6rem;
+		border: none;
+		border-radius: 8px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.92rem;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.06);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.14);
+			font-weight: 700;
+		}
+	}
+
+	&__nav-name {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	&__nav-counts {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-shrink: 0;
+		font-size: 0.8rem;
+	}
+
+	&__nav-in-set {
+		color: rgb(var(--primary-color));
+	}
+
+	&__nav-total {
+		min-width: 2ch;
+		text-align: right;
+	}
+
+	&__panel-heading {
+		margin: 0 0 0.6rem;
+		font-size: 1.1rem;
+		font-weight: 700;
+	}
+
+	// ── Sections and tiles (steps 1 and 2) ──
+	&__section + &__section {
+		margin-top: 0.75rem;
+	}
+
+	&__section-title {
+		margin: 0.75rem 0 0.5rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__tiles,
+	&__cases {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.6rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		@include bp-up($bp-sm) {
+			grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+		}
+	}
+
+	&__tile,
+	&__case {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		border-radius: 12px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		overflow: hidden;
+	}
+
+	&__tile--all {
+		border-style: dashed;
+	}
+
+	&__tile-main,
+	&__case-main {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		width: 100%;
+		min-height: 44px;
+		padding: 0.6rem;
+		border: none;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		box-sizing: border-box;
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	&__tile-pattern,
+	&__case-pattern {
+		display: flex;
+		align-self: center;
+		width: 100%;
+		max-width: 120px;
+		aspect-ratio: 1 / 1;
+
+		@include bp-down($bp-xxs) {
+			max-width: 88px;
+		}
+	}
+
+	&__tile-name {
+		font-size: 0.95rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__tile-counts {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.25rem 0.5rem;
+		font-size: 0.8rem;
+	}
+
+	&__tile-in-set {
+		color: rgb(var(--primary-color));
+	}
+
+	&__tile-selected {
+		padding: 0 0.4rem;
+		border-radius: 999px;
+		background: rgba(var(--primary-color), 0.16);
+		color: rgb(var(--text-color));
+		font-weight: 700;
+	}
+
+	&__tile-select {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-height: 44px;
+		padding: 0 0.6rem;
+		border: none;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		text-align: left;
+		cursor: pointer;
+
+		&--on {
+			color: rgb(var(--primary-color));
+			font-weight: 700;
+		}
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	// ── Cases (step 3) ──
+	&__cases-tools {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		margin-bottom: 0.6rem;
+	}
+
+	&__select-all {
+		min-height: 44px;
+		padding: 0 0.85rem;
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.88rem;
+		cursor: pointer;
+
+		&--on {
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
+			font-weight: 700;
+		}
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	&__case {
+		.#{$namespace}-set-picker__case-main {
+			flex: 1;
+		}
+
+		&--selected {
+			border-color: rgb(var(--primary-color));
+			box-shadow: 0 0 0 1px rgb(var(--primary-color));
+		}
+	}
+
+	&__case-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem;
+		min-width: 0;
+	}
+
+	&__case-name {
+		min-width: 0;
+		font-size: 0.9rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__case-badge {
+		align-self: flex-start;
+		padding: 0.05rem 0.45rem;
+		border-radius: 6px;
+		background: rgba(var(--text-color), 0.08);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	// One line; a long algorithm scrolls sideways instead of being cut (5.2).
+	&__case-alg {
+		display: block;
+		overflow-x: auto;
+		white-space: nowrap;
+		font-size: 0.8rem;
+		line-height: 1.5;
+		scrollbar-width: thin;
+	}
+
+	&__check {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		border: 2px solid rgba(var(--text-color), 0.35);
+		box-sizing: border-box;
+
+		&--on {
+			border-color: rgb(var(--primary-color));
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+		}
+	}
+
+	// In-set note: the Algorithm chip's place and height on cards already in the set.
+	&__case-foot {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem;
+		min-height: 44px;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+		background: rgba(var(--primary-color), 0.1);
+		color: rgb(var(--text-color));
+		font-size: 0.82rem;
+		font-weight: 700;
+	}
+
+	&__case-chip {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem;
+		min-height: 44px;
+		border: none;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.82rem;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.05);
+		}
+	}
+
+	&__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+
+		&--subsets {
+			margin-bottom: 0.75rem;
+
+			.#{$namespace}-set-picker__cases-tools > & {
+				flex: 1;
+				min-width: 0;
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	&__chip {
+		min-height: 36px;
+		padding: 0 0.8rem;
+		border-radius: 999px;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		cursor: pointer;
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.14);
+			font-weight: 700;
+		}
+
+		@include bp-down($bp-lg) {
+			min-height: 44px;
+		}
+	}
+
+	&__sentinel {
+		height: 1px;
+	}
+
+	&__message {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 1rem 0;
+		font-size: 0.92rem;
+		line-height: 1.45;
+	}
+
+	&__state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 2rem 1rem;
+		text-align: center;
+	}
+
+	// ── Selection list and bar ──
+	&__panel {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		max-height: 45%;
+		border-top: 1px solid rgba(var(--text-color), 0.1);
+		background: rgb(var(--module-color));
+	}
+
+	&__panel-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.25rem 0.5rem 0 1rem;
+	}
+
+	&__panel-title {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	&__panel-body {
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: 0 1rem 0.5rem;
+	}
+
+	&__panel-group-title {
+		margin: 0.5rem 0 0.25rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	&__panel-rows {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	&__panel-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+	}
+
+	&__panel-row-body {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+		padding: 0.35rem 0;
+	}
+
+	&__panel-row-name {
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	&__panel-row-alg {
+		overflow-x: auto;
+		white-space: nowrap;
+		font-size: 0.78rem;
+	}
+
+	&__bar {
+		flex-shrink: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+		border-top: 1px solid rgba(var(--text-color), 0.1);
+		background: var(--zt-surface-float, rgb(var(--module-color)));
+	}
+
+	&__bar-note {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin: 0;
+		font-size: 0.85rem;
+
+		&--warning {
+			color: rgb(var(--warning-color));
+			font-weight: 600;
+		}
+	}
+
+	&__bar-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+
+		button {
+			margin: 0;
+		}
+	}
+
+	&__bar-count {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex: 1;
+		min-width: 0;
+		min-height: 44px;
+		padding: 0 0.5rem;
+		border: none;
+		border-radius: 10px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	&__bar-count-text {
+		flex-shrink: 0;
+		font-weight: 700;
+	}
+
+	&__bar-names {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-size: 0.88rem;
+	}
+}

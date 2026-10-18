@@ -18,177 +18,157 @@
 	}
 }
 
+// One row of the solves grid. Every row is its own CSS grid (react-list mounts only
+// the visible rows), and History.tsx hands them the shared column template in one
+// variable.
 .#{$namespace}-history-solve-row {
+	$self: &;
+
+	display: grid;
+	// Set by History.tsx (history_grid.ts historyGridTemplate). The fallback is for rows
+	// drawn outside the module, like the streamer overlay: number and time.
+	grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(0, 1fr) auto);
+	align-items: stretch;
 	width: 100%;
-	display: flex;
-	flex-direction: row;
-	height: 40px;
-	padding-right: 5px;
+	min-width: max-content;
+	// Uniform height: react-list's "uniform" virtualization measures one row and
+	// assumes the rest.
+	height: 32px;
 	box-sizing: border-box;
-	justify-content: space-between;
-	align-items: center;
+	border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	color: rgb(var(--text-color));
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: background 0.1s ease;
+
+	&:hover,
+	&:focus-visible {
+		background: rgba(var(--text-color), 0.06);
+		outline: none;
+	}
 
 	&--new {
 		animation: historySolveRowEnter $motion-fast $ease-standard;
 	}
 
-	>div {
-		color: rgb(var(--text-color));
-		font-size: 1rem;
-	}
-
-	>div:first-of-type {
-		min-width: 40px;
-		padding-bottom: 3px;
-		padding-right: 5px;
-	}
-
-	>div:nth-of-type(2) {
-		width: 150px;
-	}
-
-	>div:nth-of-type(3) {
-		justify-content: flex-end;
-		text-align: right;
-		width: calc(100% - 190px);
-	}
-
-	&--mobile {
-		// Rows sit flush against each other, and react-list's "uniform" virtualization
-		// (see History.tsx) relies on every row reporting the same height, so this has
-		// to be a real height change, not a margin/gap that would desync its scroll
-		// math. 40px left the delete button's touch target only a handful of px from
-		// the row above/below; taller rows give the enlarged target below room to sit
-		// inside its own row without reaching into the next one.
-		height: 48px;
-		font-size: clamp(0.85rem, 2.5vw, 0.95rem);
-
-		>div {
-			font-size: clamp(0.85rem, 2.5vw, 0.95rem);
-		}
-
-		>div:nth-of-type(2) {
-			flex: 1;
-			width: auto;
-		}
-
-		>div:nth-of-type(3) {
-			width: auto;
-			flex-shrink: 0;
-		}
-	}
-
-	&__actions {
+	&__cell {
 		display: flex;
-		flex-direction: row;
 		align-items: center;
-		padding-right: 5px;
+		min-width: 0;
+		padding: 0 8px;
+		box-sizing: border-box;
+		border-left: 1px solid rgba(var(--text-color), 0.08);
+		font-size: 0.9rem;
+		white-space: nowrap;
 
-		>* {
-			margin-left: 10px;
-		}
-	}
-
-	// Hierarchy comes from size and weight, never from opacity. The row used to
-	// fade these to 0.3 and reveal them on hover, which left +2, DNF and delete
-	// looking identical and unreadable until you went looking for them.
-	&__index {
-		font-size: 0.8rem;
-		font-weight: 500;
-	}
-
-	&__action {
-		font-size: 0.72rem !important;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		height: 26px !important;
-		min-height: 26px !important;
-		padding: 0 2px !important;
-		border-radius: 0 !important;
-		transition: box-shadow 0.1s ease-in-out;
-		box-shadow: inset 0 -2px 0 transparent;
-
-		&:hover {
-			box-shadow: inset 0 -2px 0 rgba(var(--text-color), 0.35);
+		&:first-child {
+			border-left: none;
 		}
 
-		// A penalty that is switched on is underlined in its own meaning colour,
-		// which the Button's warning/danger themes already provide.
-		&--active {
-			box-shadow: inset 0 -2px 0 currentColor;
+		// Hierarchy from size and weight, never from fading the number out.
+		&--index {
+			justify-content: flex-end;
+			font-size: 0.8rem;
+			font-weight: 500;
 		}
 
-		// Delete is not a penalty toggle: no underline, and a gap that separates it
-		// from the +2 / DNF pair.
-		&--remove {
-			margin-left: 22px !important;
-			font-size: 0.95rem !important;
-			box-shadow: none;
+		// Centred in their columns on the desktop grid; the phone row puts the time back on
+		// the left (see --mobile below).
+		&--time {
+			justify-content: center;
+			gap: 6px;
+		}
+
+		&--average {
+			justify-content: center;
+			font-weight: 500;
+			color: rgb(var(--text-color));
+			background: transparent;
+			cursor: pointer;
 
 			&:hover {
-				box-shadow: none;
+				text-decoration: underline;
+				text-underline-offset: 3px;
 			}
 		}
-	}
 
-	// Mobile only shows this one delete button (no +2/DNF, see HistorySolveRow.tsx),
-	// and it is the button users mis-tap into the neighbouring row. The base 26px
-	// tall / icon-width-only box is a precise-pointer size; this grows it toward a
-	// real touch target while staying under the 48px mobile row height above, so it
-	// never reaches into the row above or below.
-	&--mobile &__action--remove {
-		min-width: 44px !important;
-		min-height: 40px !important;
-		padding: 0 12px !important;
+		&--empty {
+			cursor: default;
+
+			&:hover {
+				text-decoration: none;
+			}
+		}
+
+		// The column's best average, in the PB colour unless highlighting is off.
+		&--best {
+			color: rgb(var(--solve-pb-color, var(--primary-color)));
+			font-weight: 700;
+		}
+
+		&--remove {
+			justify-content: center;
+			color: rgb(var(--text-color));
+			background: transparent;
+			font-size: 1rem;
+			cursor: pointer;
+		}
 	}
 
 	&__time {
-		// Appearance > Lists can override both list colours. The variables exist only
-		// while an override is set (themes.ts), so unset they fall back to the theme's
-		// secondary / primary colour, as before.
-		color: rgb(var(--solve-time-color, var(--secondary-color))) !important;
+		// Appearance > Lists can override the time colour. Unset it is the text colour:
+		// colour is kept for what means something (PB, +2, DNF), see solve_list_colors.ts.
+		color: rgb(var(--solve-time-color, var(--text-color)));
 		font-weight: 600;
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		width: 100%;
-		padding-top: 0;
-
-		span {
-			font-size: 1rem;
-			padding-top: 3px;
-			border-bottom: solid 2px transparent;
-			color: inherit;
-		}
-
-		&:hover {
-			span {
-				border-bottom: solid 2px !important;
-			}
-		}
+		font-size: 0.95rem;
 
 		&--plusTwo {
-			color: rgb(var(--warning-color)) !important;
+			color: rgb(var(--warning-color));
 		}
 
 		&--dnf {
-			color: rgb(var(--error-color)) !important;
+			color: rgb(var(--error-color));
 		}
 
 		&--pbColor {
-			color: rgb(var(--solve-pb-color, var(--primary-color))) !important;
+			color: rgb(var(--solve-pb-color, var(--primary-color)));
 		}
 
 		&--pbBold {
 			font-weight: 800;
 		}
+	}
 
-		>i {
-			color: rgb(var(--text-color));
-			font-size: 0.8rem;
-			margin-left: 8px;
-			position: relative;
-			top: 1px;
+	// cstimer's "12.34+": the +2 is already in the time, the mark says why.
+	&__penalty {
+		margin-left: 1px;
+		font-weight: 800;
+	}
+
+	&__smart {
+		flex-shrink: 0;
+		font-size: 0.8rem;
+		color: rgb(var(--text-color));
+	}
+
+	// Phone: number, time, delete. Taller rows so the delete button is a real touch
+	// target that stays inside its own row (it is the button people mis-tap into the
+	// neighbouring row otherwise).
+	&--mobile {
+		min-width: 0;
+		height: 48px;
+
+		#{$self}__cell {
+			padding: 0 6px;
+			font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+		}
+
+		#{$self}__cell--time {
+			justify-content: flex-start;
+		}
+
+		#{$self}__time {
+			font-size: clamp(0.85rem, 2.6vw, 0.95rem);
 		}
 	}
 }

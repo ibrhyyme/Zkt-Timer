@@ -11,9 +11,7 @@ import {gqlMutate, gqlMutateTyped, gqlQuery, gqlQueryTyped} from '../../../api';
 import {
 	ConversationsDocument,
 	ConversationsQuery,
-	GetActiveAnnouncementsDocument,
 	GetActiveAnnouncementsQuery,
-	MarkAnnouncementAsViewedDocument,
 	ArchiveConversationDocument,
 	MessageRecipientSearchDocument,
 	MessageRecipientSearchQuery,
@@ -23,6 +21,7 @@ import {openInAppBrowser} from '../../../../util/external-link';
 import {NOTIFICATION_FRAGMENT} from '../../../../util/graphql/fragments';
 import {useInbox, refreshInbox, useDmMessageListener, useDmPresence} from '../../../../util/hooks/useInbox';
 import {useMe} from '../../../../util/hooks/useMe';
+import {fetchActiveAnnouncements, markAnnouncementViewed} from '../../../../util/announcements';
 import {getDateFromNow} from '../../../../util/dates';
 import block from '../../../../styles/bem';
 import InboxRow from './InboxRow';
@@ -82,6 +81,15 @@ function toRoutePath(link: string): {path: string; external: boolean} {
 		return {path: link, external: false};
 	}
 }
+
+/**
+ * The server stores a category as a plain word and it heads the row. The ones a
+ * member sees are shown in their language; WCA, ZKT and Admin are names.
+ */
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+	Membership: 'inbox.category_membership',
+	Destek: 'inbox.category_support',
+};
 
 /** Colour key on the left edge, the same vocabulary as the cube-face legend. */
 function keyToneFor(row: Row): string {
@@ -151,6 +159,23 @@ type Row =
 	| {kind: 'announcement'; id: string; date: number; unread: boolean; data: Announcement};
 
 /**
+ * The panel's last list, kept across mounts.
+ *
+ * App remounts on every route change (each route is its own <Route> key, map_route.tsx)
+ * and this panel with it, so a mount-time load sent the same four requests on every
+ * page switch. A mount inside this window shows the kept list instead. Messages stay
+ * current through the socket either way; notifications have no push, so their badge
+ * can be up to this far behind until the panel is opened, which always reloads.
+ */
+const PANEL_MAX_AGE_MS = 60 * 1000;
+
+let panelCache: {userId: string; rows: Row[]; extraUnread: number; loadedAt: number} | null = null;
+
+function cachedPanelFor(userId: string | undefined) {
+	return userId && panelCache?.userId === userId ? panelCache : null;
+}
+
+/**
  * The single attention surface: messages, notifications and announcements in one
  * chronological list behind one icon.
  *
@@ -158,7 +183,7 @@ type Row =
  * them into tabs only asks the user to check three places instead of one.
  */
 export default function InboxPanel() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const history = useHistory();
 	const inbox = useInbox();
 	const me = useMe();
@@ -166,10 +191,17 @@ export default function InboxPanel() {
 
 	const dropdownRef = useRef<any>(null);
 
-	const [rows, setRows] = useState<Row[]>([]);
+	const [rows, setRows] = useState<Row[]>(() => cachedPanelFor(me?.id)?.rows ?? []);
 	const [loading, setLoading] = useState(false);
-	const [loaded, setLoaded] = useState(false);
-	const [extraUnread, setExtraUnread] = useState(0);
+	const [loaded, setLoaded] = useState(() => !!cachedPanelFor(me?.id));
+	const [extraUnread, setExtraUnread] = useState(() => cachedPanelFor(me?.id)?.extraUnread ?? 0);
+
+	// load() is a stable callback fired from many places; it reads who and which
+	// language through refs so it never runs against a stale closure.
+	const meIdRef = useRef(me?.id);
+	meIdRef.current = me?.id;
+	const languageRef = useRef(i18n.language);
+	languageRef.current = i18n.language;
 
 	// Composing takes over the panel rather than opening a second surface on top of it.
 	// Somewhere to type a name is the whole feature; a modal for it would be heavier
@@ -193,18 +225,20 @@ export default function InboxPanel() {
 
 	const load = useCallback(async () => {
 		if (!mountedRef.current) return;
+		const userId = meIdRef.current;
 		setLoading(true);
 		try {
-			const [convRes, notifRes, annRes, countRes] = await Promise.all([
+			const [convRes, notifRes, annList, countRes] = await Promise.all([
 				gqlQueryTyped(ConversationsDocument, {page: 1, requests: false}, {fetchPolicy: 'no-cache'}).catch(() => null),
 				gqlQuery(NOTIFICATIONS_QUERY, {page: 0} as any).catch(() => null),
-				gqlQueryTyped(GetActiveAnnouncementsDocument, {}, {fetchPolicy: 'no-cache'}).catch(() => null),
+				// Always fresh here, but shared with the layout's carousel (util/announcements.ts).
+				fetchActiveAnnouncements(`${userId}|${languageRef.current}`, 0),
 				gqlQuery(UNREAD_NOTIFICATION_COUNT).catch(() => null),
 			]);
 
 			const conversations = (convRes?.data?.conversations?.conversations || []) as Conversation[];
 			const notifications = ((notifRes as any)?.data?.notifications || []) as any[];
-			const announcements = (annRes?.data?.getActiveAnnouncements || []) as Announcement[];
+			const announcements = (annList || []) as Announcement[];
 			const hidden = readHiddenAnnouncements();
 
 			const merged: Row[] = [
@@ -231,13 +265,23 @@ export default function InboxPanel() {
 				})),
 			].sort((x, y) => y.date - x.date);
 
-			if (!mountedRef.current) return;
-
-			setRows(merged);
 			// Notifications and announcements are not tracked by useInbox, so their
 			// unread counts are folded into the badge here.
 			const notifUnread = (countRes as any)?.data?.unreadNotificationCount ?? notifications.filter((n) => !n.read_at).length;
-			setExtraUnread(notifUnread + announcements.filter((a) => !a.hasViewed && !hidden.has(a.id)).length);
+			const nextExtraUnread = notifUnread + announcements.filter((a) => !a.hasViewed && !hidden.has(a.id)).length;
+
+			// Kept even when this mount is already gone (a page switch mid-load is the
+			// common case), but only a complete answer for the same user: a failed request
+			// must not pin a half-empty list for a minute.
+			const complete = convRes && notifRes && annList && countRes;
+			if (complete && userId && userId === meIdRef.current) {
+				panelCache = {userId, rows: merged, extraUnread: nextExtraUnread, loadedAt: Date.now()};
+			}
+
+			if (!mountedRef.current) return;
+
+			setRows(merged);
+			setExtraUnread(nextExtraUnread);
 			setLoaded(true);
 		} finally {
 			if (mountedRef.current) {
@@ -246,9 +290,19 @@ export default function InboxPanel() {
 		}
 	}, []);
 
+	// Reload on mount only when the kept list is missing or old (see PANEL_MAX_AGE_MS).
 	useEffect(() => {
+		const kept = cachedPanelFor(me?.id);
+		if (kept && Date.now() - kept.loadedAt <= PANEL_MAX_AGE_MS) return;
 		void load();
-	}, [load]);
+	}, [load, me?.id]);
+
+	// Local edits (a socket-patched message, a dismissed row) must survive the next
+	// remount too, so they are written back without moving the load timestamp.
+	useEffect(() => {
+		const kept = cachedPanelFor(me?.id);
+		if (kept) panelCache = {...kept, rows, extraUnread};
+	}, [rows, extraUnread, me?.id]);
 
 	/**
 	 * Patch the list from the message we were just handed, instead of refetching it.
@@ -452,7 +506,7 @@ export default function InboxPanel() {
 
 		const announcement = row.data;
 		if (row.unread) {
-			void gqlMutate(MarkAnnouncementAsViewedDocument as any, {announcementId: announcement.id}).catch(() => {});
+			void markAnnouncementViewed(announcement.id).catch(() => {});
 		}
 		if (announcement.targetUrl) {
 			const {path, external} = toRoutePath(announcement.targetUrl);
@@ -485,7 +539,7 @@ export default function InboxPanel() {
 
 			hideAnnouncement(row.data.id);
 			if (row.unread) {
-				await gqlMutateTyped(MarkAnnouncementAsViewedDocument, {announcementId: row.data.id});
+				await markAnnouncementViewed(row.data.id);
 				setExtraUnread((n) => Math.max(0, n - 1));
 			}
 		} catch {
@@ -526,7 +580,7 @@ export default function InboxPanel() {
 			if (row.kind !== 'announcement') continue;
 			hideAnnouncement(row.data.id);
 			if (row.unread) {
-				await gqlMutateTyped(MarkAnnouncementAsViewedDocument, {announcementId: row.data.id}).catch(() => {});
+				await markAnnouncementViewed(row.data.id).catch(() => {});
 			}
 		}
 
@@ -540,7 +594,9 @@ export default function InboxPanel() {
 			? row.data.other_user?.username
 			: row.kind === 'announcement'
 				? t('inbox.announcement')
-				: row.data.notification_category_name;
+				: CATEGORY_LABEL_KEYS[row.data.notification_category_name]
+					? t(CATEGORY_LABEL_KEYS[row.data.notification_category_name])
+					: row.data.notification_category_name;
 
 		const text = isMessage
 			? row.data.last_message?.body || (row.data.last_message?.solve ? t('inbox.sent_a_solve') : '')
@@ -662,6 +718,7 @@ export default function InboxPanel() {
 				left
 				preventCloseOnInnerClick
 				onOpen={handleOpen}
+				handleLabel={t('inbox.title')}
 				rawHandle={
 					<div className={b('handle')} title={t('inbox.title')}>
 						<ChatCircleDots weight="bold" />

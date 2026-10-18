@@ -93,6 +93,13 @@ export class MagnetDetector {
 	private lift: LiftInProgress | null = null;
 	/** The first plateau after a vouched-for restart may be near without coming from far. */
 	private resumeTrusted = false;
+	/**
+	 * Sample time of the last steady plateau window, or of the (re)start of the reading
+	 * (first sample, gap) when none was seen since. A phone lying on the table produces a
+	 * steady plateau every few hundred ms whenever the cube is away or resting; a phone held
+	 * in the hand never does, because the earth field turns with it (design 6.4).
+	 */
+	private steadyAt: number | null = null;
 
 	private lastT: number | null = null;
 	private lastSample: MagnetSample | null = null;
@@ -154,6 +161,7 @@ export class MagnetDetector {
 		this.candidate = null;
 		this.pending = [];
 		this.resumeTrusted = !!opts.trustFar && this.far !== null;
+		this.steadyAt = null;
 	}
 
 	/** Ignore lift triggers until this sample time (our own vibration shakes the field). */
@@ -194,6 +202,7 @@ export class MagnetDetector {
 			lastT: this.lastT,
 			rateHz: this.rateHz,
 			resumePending: this.resumeTrusted,
+			unsteadyMs: this.lastT !== null && this.steadyAt !== null ? this.lastT - this.steadyAt : null,
 		};
 	}
 
@@ -220,11 +229,15 @@ export class MagnetDetector {
 				this.pending.push({ type: 'gap', t: s.t, ms: dt });
 				this.clearBuffer();
 				this.toUnknown(s.t, true);
+				// A stall says nothing about the phone moving: start counting afresh.
+				this.steadyAt = s.t;
 			} else if (dt > this.cfg.gapResetMs) {
 				this.pending.push({ type: 'gap', t: s.t, ms: dt });
 				this.clearBuffer();
+				this.steadyAt = s.t;
 			}
 		}
+		if (this.steadyAt === null) this.steadyAt = s.t;
 
 		this.lastT = s.t;
 		this.lastSample = s;
@@ -271,6 +284,7 @@ export class MagnetDetector {
 	private onUnknown(idx: number, s: MagnetSample): void {
 		const st = this.stats(idx, this.cfg.plateauMs, 0);
 		if (!st || !st.stable) return;
+		this.steadyAt = s.t;
 		this.lastSigma = st.rms;
 
 		const d = this.far ? distVV(st.mean, this.far) : null;
@@ -300,6 +314,7 @@ export class MagnetDetector {
 			if (this.candidate && s.t - this.candidate.lastSeen > this.cfg.plateauMs) this.candidate = null;
 			return;
 		}
+		this.steadyAt = s.t;
 		this.lastSigma = st.rms;
 
 		const d = distVV(st.mean, far);
@@ -333,6 +348,7 @@ export class MagnetDetector {
 		// Let R follow slow drift, but never from the newest samples: a lift that is just
 		// starting must not drag its own reference along.
 		const st = this.stats(idx, this.cfg.plateauMs, this.cfg.excludeRecentMs);
+		if (st && st.stable) this.steadyAt = s.t;
 		if (st && st.stable && distVV(st.mean, ref) <= trigger) {
 			this.ref = st.mean;
 			this.refSigma = st.rms;
@@ -405,6 +421,7 @@ export class MagnetDetector {
 		if (s.t - L.triggerT >= this.cfg.plateauMs) {
 			const st = this.stats(idx, this.cfg.plateauMs, 0);
 			if (st && st.stable) {
+				this.steadyAt = s.t;
 				const d = distVV(st.mean, far);
 				if (d >= this.cfg.nearMin) {
 					// Re-placed: the dwell starts over from the new plateau.

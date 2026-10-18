@@ -1,4 +1,4 @@
-// The app's navigation links, and the SiteConfig feature flag each one is gated on.
+// The app's navigation links. Only the leaderboard entry is gated on site flags (launchOnly).
 //
 // Extracted from Nav.tsx when that component was deleted: the sidebar it drew had not
 // been mounted anywhere in a long time, but HeaderNav and NavLink still read this list
@@ -19,15 +19,6 @@ import {
 } from 'phosphor-react';
 
 
-// Nav link adi → SiteConfig feature key
-const NAV_FEATURE_MAP: Record<string, string> = {
-	'nav.trainer': 'trainer_enabled',
-	'nav.community': 'community_enabled',
-	'nav.rooms': 'rooms_enabled',
-	'nav.battle': 'battle_enabled',
-	'nav.ranks': 'leaderboards_enabled',
-};
-
 export interface NavLinkProps {
 	name: string;
 	icon: React.ReactElement;
@@ -36,6 +27,16 @@ export interface NavLinkProps {
 	newTag?: boolean;
 	loginRequired?: boolean;
 	mobileOnly?: boolean;
+	/**
+	 * Shown only once Online Battle is public: `leaderboards_enabled && online_battle_enabled`
+	 * (ranking-battle S-6, 7.1 step 7). Admins do not bypass it; they reach the page by URL.
+	 */
+	launchOnly?: boolean;
+}
+
+/** The links a menu draws: the launch-gated ones only after launch (null = not known yet). */
+export function visibleNavLinks(links: NavLinkProps[], launched: boolean | null | undefined): NavLinkProps[] {
+	return launched === true ? links : links.filter((link) => !link.launchOnly);
 }
 
 export const NAV_LINKS: NavLinkProps[] = [
@@ -94,16 +95,20 @@ export const NAV_LINKS: NavLinkProps[] = [
 	{
 		name: 'nav.community',
 		icon: <Users weight="bold" />,
-		match: /^\/community/,
+		// The section left /community for /competitions (WCA) and /zkt-competitions (ZKT);
+		// the old prefix only survives as redirects (Routes.ts).
+		match: /^\/(competitions|zkt-competitions)(\/|$)/,
 		link: '/competitions',
 		loginRequired: false,
 	},
+	// The Online Battle leaderboard. Hidden until launch (S-6): before that /ranks is an empty state.
 	{
 		name: 'nav.ranks',
 		icon: <Trophy weight="bold" />,
 		match: /^\/ranks/,
 		link: '/ranks',
 		loginRequired: false,
+		launchOnly: true,
 	},
 	// Mobile only: the desktop header carries its own inbox icon, but HeaderNav renders
 	// nothing in mobile mode, which left messages with no entry point on phones at all.

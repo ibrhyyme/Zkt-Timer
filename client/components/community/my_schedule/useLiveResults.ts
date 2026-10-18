@@ -9,6 +9,8 @@ import {
 	WcaLiveCompetitorResultsQuery,
 } from '../../../@types/generated/graphql';
 import {socketClient} from '../../../util/socket/socketio';
+import {retryDelayMs} from './fetch-error';
+import {peekCached, loadCached, storeCached, isOlderThan, CacheEntry} from '../competition-cache';
 
 export type LiveRoundData = WcaLiveRoundResultsQuery['wcaLiveRoundResults'];
 export type LiveOverviewData = WcaLiveCompetitionOverviewQuery['wcaLiveCompetitionOverview'];
@@ -16,27 +18,29 @@ export type LiveCompetitorData = WcaLiveCompetitorResultsQuery['wcaLiveCompetito
 
 const ROUND_POLL_INTERVAL = 60 * 1000; // Fallback when Socket.IO push is available
 const OVERVIEW_CACHE_TTL = 60 * 1000; // 60s — align with server cache
-const OVERVIEW_CACHE_MAX = 20;
+// The overview carries which rounds are live right now; refresh it while the tab
+// is open and visible. The server answers from its cache.
+const OVERVIEW_REFRESH_MS = 60 * 1000;
 const COMPETITOR_CACHE_TTL = 60 * 1000;
-const COMPETITOR_CACHE_MAX = 20;
+// Live data is drawn from the last copy kept on the device (competition-cache)
+// whatever its age within this window, and refreshed behind it: switching tabs,
+// rounds or competitors, or reopening the app, never shows an empty skeleton for
+// something already seen.
+const LIVE_SHOWN_MAX_AGE = 3 * 24 * 60 * 60 * 1000;
 
-// Module-level cache: prevent overview data loss during page transitions
-const overviewCache = new Map<string, {data: LiveOverviewData; timestamp: number}>();
+const overviewKey = (competitionId: string) => `overview:${competitionId}`;
+const roundKey = (competitionId: string, liveRoundId: string) => `round:${competitionId}:${liveRoundId}`;
+const competitorKey = (competitionId: string, personLiveId: string) => `competitor:${competitionId}:${personLiveId}`;
 
-function setOverviewCache(key: string, data: LiveOverviewData) {
-	overviewCache.delete(key);
-	overviewCache.set(key, {data, timestamp: Date.now()});
-	while (overviewCache.size > OVERVIEW_CACHE_MAX) {
-		const firstKey = overviewCache.keys().next().value;
-		if (firstKey) overviewCache.delete(firstKey);
-	}
+function shown<T>(entry: CacheEntry<T> | null): CacheEntry<T> | null {
+	return entry && !isOlderThan(entry, LIVE_SHOWN_MAX_AGE) ? entry : null;
 }
 
 // Silent prefetch — can be called externally, populates cache
 export async function prefetchWcaLiveOverview(competitionId: string): Promise<LiveOverviewData | null> {
 	if (!competitionId) return null;
-	const cached = overviewCache.get(competitionId);
-	if (cached && Date.now() - cached.timestamp < OVERVIEW_CACHE_TTL) {
+	const cached = await loadCached<LiveOverviewData>(overviewKey(competitionId));
+	if (cached && !isOlderThan(cached, OVERVIEW_CACHE_TTL)) {
 		return cached.data;
 	}
 	try {
@@ -47,7 +51,7 @@ export async function prefetchWcaLiveOverview(competitionId: string): Promise<Li
 		);
 		const overview = res?.data?.wcaLiveCompetitionOverview || null;
 		if (overview) {
-			setOverviewCache(competitionId, overview);
+			storeCached(overviewKey(competitionId), overview, 'idb');
 			// Also prefetch default round of first event (silent)
 			const firstEvent = overview.events?.[0];
 			if (firstEvent && firstEvent.rounds?.length > 0) {
@@ -69,44 +73,56 @@ export async function prefetchWcaLiveOverview(competitionId: string): Promise<Li
 export async function prefetchWcaLiveRound(competitionId: string, liveRoundId: string): Promise<void> {
 	if (!competitionId || !liveRoundId) return;
 	try {
-		await gqlQueryTyped(
+		const res = await gqlQueryTyped(
 			WcaLiveRoundResultsDocument,
 			{input: {competitionId, liveRoundId}},
 			{fetchPolicy: 'no-cache'}
 		);
+		// Kept, so the round opens with its table already drawn. The result used to
+		// be thrown away, which made this prefetch a request for nothing.
+		const result = res?.data?.wcaLiveRoundResults || null;
+		if (result) storeCached(roundKey(competitionId, liveRoundId), result, 'idb');
 	} catch {
 		// silent
 	}
 }
 
 export function useWcaLiveOverview(competitionId: string, enabled: boolean) {
-	const [data, setData] = useState<LiveOverviewData | null>(() => {
-		const cached = overviewCache.get(competitionId);
-		if (cached && Date.now() - cached.timestamp < OVERVIEW_CACHE_TTL) {
-			return cached.data;
-		}
-		return null;
-	});
+	const [data, setData] = useState<LiveOverviewData | null>(
+		() => shown(peekCached<LiveOverviewData>(overviewKey(competitionId)))?.data || null
+	);
 	const [loading, setLoading] = useState(false);
-	const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
-		const cached = overviewCache.get(competitionId);
-		return cached ? cached.timestamp : null;
-	});
+	const [lastUpdated, setLastUpdated] = useState<number | null>(
+		() => shown(peekCached<LiveOverviewData>(overviewKey(competitionId)))?.ts ?? null
+	);
+	// The last request failed (federation busy, connection dropped). Not the same
+	// as "this competition is not on ZKT Live", which is a null answer.
+	const [failed, setFailed] = useState(false);
 	const overviewReqIdRef = useRef(0);
+	const retryRef = useRef<{timer: ReturnType<typeof setTimeout> | null; attempt: number}>({timer: null, attempt: 0});
 
 	const fetchOverview = useCallback((force: boolean = false) => {
 		if (!enabled || !competitionId) return;
 
+		const myReqId = ++overviewReqIdRef.current;
 		if (!force) {
-			const cached = overviewCache.get(competitionId);
-			if (cached && Date.now() - cached.timestamp < OVERVIEW_CACHE_TTL) {
+			const cached = shown(peekCached<LiveOverviewData>(overviewKey(competitionId)));
+			if (cached) {
 				setData(cached.data);
-				setLastUpdated(cached.timestamp);
-				return;
+				setLastUpdated(cached.ts);
+				if (!isOlderThan(cached, OVERVIEW_CACHE_TTL)) return;
+			} else {
+				// Not in memory: draw the copy on the device, if any, while the
+				// network answers.
+				loadCached<LiveOverviewData>(overviewKey(competitionId)).then((stored) => {
+					const usable = shown(stored);
+					if (!usable || myReqId !== overviewReqIdRef.current) return;
+					setData((prev) => prev || usable.data);
+					setLastUpdated((prev) => prev ?? usable.ts);
+				});
 			}
 		}
 
-		const myReqId = ++overviewReqIdRef.current;
 		setLoading(true);
 		gqlQueryTyped(
 			WcaLiveCompetitionOverviewDocument,
@@ -117,12 +133,27 @@ export function useWcaLiveOverview(competitionId: string, enabled: boolean) {
 				if (myReqId !== overviewReqIdRef.current) return;
 				const overview = res?.data?.wcaLiveCompetitionOverview || null;
 				if (overview) {
-					setOverviewCache(competitionId, overview);
+					storeCached(overviewKey(competitionId), overview, 'idb');
 					setLastUpdated(Date.now());
 				}
-				setData(overview);
+				// A null after real data is a hiccup, not the competition leaving
+				// ZKT Live: keep what is on screen.
+				setData((prev) => overview || prev || null);
+				setFailed(false);
+				retryRef.current.attempt = 0;
 			})
-			.catch(() => {})
+			.catch(() => {
+				if (myReqId !== overviewReqIdRef.current) return;
+				// Keep whatever is shown and ask again shortly.
+				setFailed(true);
+				if (retryRef.current.timer) clearTimeout(retryRef.current.timer);
+				const delay = retryDelayMs(retryRef.current.attempt);
+				retryRef.current.attempt += 1;
+				retryRef.current.timer = setTimeout(() => {
+					retryRef.current.timer = null;
+					fetchOverview(true);
+				}, delay);
+			})
 			.finally(() => {
 				if (myReqId === overviewReqIdRef.current) setLoading(false);
 			});
@@ -132,9 +163,22 @@ export function useWcaLiveOverview(competitionId: string, enabled: boolean) {
 		fetchOverview();
 	}, [fetchOverview]);
 
+	useEffect(() => {
+		if (!enabled || !competitionId) return;
+		const id = setInterval(() => {
+			if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+			fetchOverview(true);
+		}, OVERVIEW_REFRESH_MS);
+		return () => clearInterval(id);
+	}, [fetchOverview, enabled, competitionId]);
+
+	useEffect(() => () => {
+		if (retryRef.current.timer) clearTimeout(retryRef.current.timer);
+	}, []);
+
 	const refresh = useCallback(() => fetchOverview(true), [fetchOverview]);
 
-	return {data, loading, lastUpdated, refresh};
+	return {data, loading, lastUpdated, refresh, failed};
 }
 
 export function useLiveRoundResults(
@@ -168,6 +212,7 @@ export function useLiveRoundResults(
 			}
 
 			if (result) {
+				storeCached(roundKey(competitionId, liveRoundId), result, 'idb');
 				setData(result);
 				setLastUpdated(Date.now());
 				setLastError(null);
@@ -185,8 +230,14 @@ export function useLiveRoundResults(
 	}, [competitionId, liveRoundId]);
 
 	useEffect(() => {
-		setData(null);
-		setLastUpdated(null);
+		// The round's last table is drawn at once (memory, else the device), the
+		// fresh one replaces it. An empty skeleton on every round switch made the
+		// results feel slow even when the server answered quickly.
+		const memory = competitionId && liveRoundId
+			? shown(peekCached<LiveRoundData>(roundKey(competitionId, liveRoundId)))
+			: null;
+		setData(memory?.data || null);
+		setLastUpdated(memory?.ts ?? null);
 		setLastError(null);
 
 		if (!enabled || !competitionId || !liveRoundId) {
@@ -195,6 +246,14 @@ export function useLiveRoundResults(
 		}
 
 		const myRequestId = ++requestIdRef.current;
+		if (!memory) {
+			loadCached<LiveRoundData>(roundKey(competitionId, liveRoundId)).then((stored) => {
+				const usable = shown(stored);
+				if (!usable || myRequestId !== requestIdRef.current) return;
+				setData((prev) => prev || usable.data);
+				setLastUpdated((prev) => prev ?? usable.ts);
+			});
+		}
 		setLoading(true);
 		doFetch(myRequestId);
 
@@ -204,6 +263,7 @@ export function useLiveRoundResults(
 
 		const handleUpdate = (data: LiveRoundData) => {
 			if (!data) return;
+			storeCached(roundKey(competitionId, liveRoundId), data, 'idb');
 			setData(data);
 			setLastUpdated(Date.now());
 			setLastError(null);
@@ -243,6 +303,7 @@ export function useLiveRoundResults(
 					if (myRequestId !== requestIdRef.current) return;
 					const result = res?.data?.wcaLiveRoundResults || null;
 					if (result) {
+						storeCached(roundKey(competitionId, liveRoundId!), result, 'idb');
 						setData(result);
 						setLastUpdated(Date.now());
 						setLastError(null);
@@ -281,36 +342,20 @@ export function useLiveRoundResults(
 
 // --- Competitor Live Results (in-app competitor result display) ---
 
-const competitorCache = new Map<string, {data: LiveCompetitorData; timestamp: number}>();
-
-function setCompetitorCache(key: string, data: LiveCompetitorData) {
-	competitorCache.delete(key);
-	competitorCache.set(key, {data, timestamp: Date.now()});
-	while (competitorCache.size > COMPETITOR_CACHE_MAX) {
-		const firstKey = competitorCache.keys().next().value;
-		if (firstKey) competitorCache.delete(firstKey);
-	}
-}
-
 export function useCompetitorLiveResults(
 	competitionId: string,
 	personLiveId: string | null,
 	enabled: boolean
 ) {
-	const cacheKey = `${competitionId}:${personLiveId}`;
+	const cacheKey = competitorKey(competitionId, personLiveId || '');
 	const [data, setData] = useState<LiveCompetitorData | null>(() => {
 		if (!enabled || !personLiveId) return null;
-		const cached = competitorCache.get(cacheKey);
-		if (cached && Date.now() - cached.timestamp < COMPETITOR_CACHE_TTL) {
-			return cached.data;
-		}
-		return null;
+		return shown(peekCached<LiveCompetitorData>(cacheKey))?.data || null;
 	});
 	const [loading, setLoading] = useState(false);
-	const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
-		const cached = competitorCache.get(cacheKey);
-		return cached ? cached.timestamp : null;
-	});
+	const [lastUpdated, setLastUpdated] = useState<number | null>(
+		() => shown(peekCached<LiveCompetitorData>(cacheKey))?.ts ?? null
+	);
 	const [lastError, setLastError] = useState<number | null>(null);
 	const requestIdRef = useRef(0);
 
@@ -332,7 +377,7 @@ export function useCompetitorLiveResults(
 			}
 
 			if (result) {
-				setCompetitorCache(cacheKey, result);
+				storeCached(cacheKey, result, 'idb');
 				setData(result);
 				setLastUpdated(Date.now());
 				setLastError(null);
@@ -355,22 +400,29 @@ export function useCompetitorLiveResults(
 			return;
 		}
 
-		const cached = competitorCache.get(cacheKey);
-		if (cached && Date.now() - cached.timestamp < COMPETITOR_CACHE_TTL) {
-			setData(cached.data);
-			setLastUpdated(cached.timestamp);
-			setLoading(false);
-			return;
-		}
-
 		const myRequestId = ++requestIdRef.current;
+		const cached = shown(peekCached<LiveCompetitorData>(cacheKey));
+		if (cached) {
+			setData(cached.data);
+			setLastUpdated(cached.ts);
+			if (!isOlderThan(cached, COMPETITOR_CACHE_TTL)) {
+				setLoading(false);
+				return;
+			}
+		} else {
+			loadCached<LiveCompetitorData>(cacheKey).then((stored) => {
+				const usable = shown(stored);
+				if (!usable || myRequestId !== requestIdRef.current) return;
+				setData((prev) => prev || usable.data);
+				setLastUpdated((prev) => prev ?? usable.ts);
+			});
+		}
 		setLoading(true);
 		doFetch(myRequestId);
 	}, [competitionId, personLiveId, enabled, cacheKey, doFetch]);
 
 	const refresh = useCallback(() => {
 		if (!enabled || !competitionId || !personLiveId) return;
-		competitorCache.delete(cacheKey);
 		const myRequestId = ++requestIdRef.current;
 		setLoading(true);
 		doFetch(myRequestId);

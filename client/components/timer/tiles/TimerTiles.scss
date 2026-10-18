@@ -124,10 +124,19 @@
 		z-index: 5;
 		background: transparent;
 		transition: background 0.12s ease;
+		// A finger drag on the edge is a resize, not a scroll. Without this a tablet took
+		// the gesture over a few pixels in (pointercancel) and the size was never saved.
+		touch-action: none;
 
-		&:hover,
 		&:active {
 			background: rgba(var(--primary-color), 0.55);
+		}
+
+		// Only where a real hover exists: on a tablet it stays on the edge after the drag.
+		@media (hover: hover) {
+			&:hover {
+				background: rgba(var(--primary-color), 0.55);
+			}
 		}
 	}
 
@@ -136,6 +145,11 @@
 		bottom: 0;
 		width: 8px;
 		cursor: col-resize;
+
+		// A finger needs more than 8px to land on.
+		@media (pointer: coarse) {
+			width: 24px;
+		}
 
 		// Flush with the edge rather than hanging outside it: the rail is a scroll
 		// container now, and anything past its border box gets clipped away.
@@ -154,6 +168,10 @@
 		top: 0;
 		height: 8px;
 		cursor: row-resize;
+
+		@media (pointer: coarse) {
+			height: 24px;
+		}
 	}
 
 	// "Add module". Sits in the zone's corner rather than in the flow, so adding a

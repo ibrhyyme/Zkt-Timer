@@ -73,7 +73,7 @@ export default class OldDropdown extends React.Component {
 	};
 
 	render() {
-		const {up, left, legend: legendText, icon, rawHandle, maxHeight} = this.props;
+		const {up, left, legend: legendText, icon, rawHandle, handleLabel, maxHeight} = this.props;
 		const {open} = this.state;
 		let body = null;
 
@@ -106,7 +106,11 @@ export default class OldDropdown extends React.Component {
 
 		let handleWrapper;
 		if (rawHandle) {
-			handleWrapper = <button onClick={this.openDropdown}>{rawHandle}</button>;
+			handleWrapper = (
+				<button onClick={this.openDropdown} aria-label={handleLabel}>
+					{rawHandle}
+				</button>
+			);
 		} else {
 			handleWrapper = <Button onClick={this.openDropdown}>{handle}</Button>;
 		}

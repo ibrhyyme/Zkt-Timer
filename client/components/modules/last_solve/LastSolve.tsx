@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './LastSolve.scss';
 import { useDispatch } from 'react-redux';
 import { Info } from 'phosphor-react';
@@ -21,6 +22,7 @@ interface Props {
 }
 
 function LastSolve(props: Props) {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	useSolveDb();
@@ -63,7 +65,7 @@ function LastSolve(props: Props) {
 		<div className={b()}>
 			<div className={b('top')}>
 				<div className={b('time', { dnf, plusTwo })}>
-					<h5>Last Solve</h5>
+					<h5>{t('timer_modules.last_solve')}</h5>
 					<h4>{time}</h4>
 					<h6>{cubeTypeName}</h6>
 				</div>

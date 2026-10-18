@@ -8,7 +8,7 @@ import {IDropdownOption} from '../common/inputs/dropdown/dropdown_option/Dropdow
 import HeroBand from './common/hero_band/HeroBand';
 import CubeStatHero from './cube_stats/cube_hero/CubeStatHero';
 import CubeStats from './cube_stats/CubeStats';
-import StatsFilterControls, {FilterChip} from './common/filter_controls/StatsFilterControls';
+import StatsFilterControls, {FilterChip, PhysicalCubeChip} from './common/filter_controls/StatsFilterControls';
 import {fetchAllCubeTypesSolved, FilterSolvesOptions, fetchSolves} from '../../db/solves/query';
 import {fetchSessions} from '../../db/sessions/query';
 import {getCubeTypeInfoById, getUniqueCubeTypes, getSubsetsForBuckets} from '../../util/cubes/util';
@@ -24,6 +24,11 @@ import AccountRequired from '../common/account_required/AccountRequired';
 import {useGeneral} from '../../util/hooks/useGeneral';
 import {useTranslation} from 'react-i18next';
 import {StatsView} from './cube_stats/view_toggle/StatsViewToggle';
+import {formatInteger} from '../../util/locale_format';
+import {puzzleOfBucket} from '../../../shared/cube_puzzle';
+import {useCubeFilter} from '../solves/cube_filter/useCubeFilter';
+import {cubeFitsPuzzle} from '../solves/cube_filter/cube_filter_options';
+import {canReadSync} from '../../lib/sync-gate';
 
 const b = block('stats');
 
@@ -31,6 +36,8 @@ const CUBE_TYPE_QUERY_PARAM = 'cubeType';
 const SCRAMBLE_SUBSET_QUERY_PARAM = 'subset';
 const SESSION_QUERY_PARAM = 'session';
 const LAST_N_QUERY_PARAM = 'lastN';
+// Physical cube (Cube.id), design magnet-cubes 8.2. Kept in shared links like the rest.
+const CUBE_QUERY_PARAM = 'cube';
 
 export const LAST_N_OPTIONS = [12, 25, 50, 100, 500, 1000, 2000] as const;
 const LAST_N_SET = new Set<number>(LAST_N_OPTIONS);
@@ -39,11 +46,20 @@ interface StatsQueryData {
 	stats: StatsSchema;
 }
 
+export interface StatsScope {
+	session_id?: string;
+	cube_id?: string;
+}
+
 export interface IStatsContext {
 	all: boolean;
 	cubeType: CubeType;
 	stats: StatsSchema;
 	filterOptions: FilterSolvesOptions;
+	/** The season and cube filter alone, without the bucket: what the "All" view counts per puzzle. */
+	scope: StatsScope;
+	/** Opens one bucket's view, keeping the season and the cube (when it fits that puzzle). */
+	openBucket: (cube_type: string, scramble_subset: string | null) => void;
 	view: StatsView;
 	setView: (view: StatsView) => void;
 	smartLastN: number | null;
@@ -62,7 +78,7 @@ const STATS_QUERY = gql`
 export const StatsContext = createContext<IStatsContext>(null);
 
 export default function Stats() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const me = useMe();
 	const mobileMode = useGeneral('mobile_mode');
 
@@ -80,6 +96,20 @@ export default function Stats() {
 	const tabSession = urlParams.get(SESSION_QUERY_PARAM);
 	const rawLastN = urlParams.get(LAST_N_QUERY_PARAM);
 	const tabLastN = rawLastN && LAST_N_SET.has(Number(rawLastN)) ? Number(rawLastN) : null;
+	const tabCube = urlParams.get(CUBE_QUERY_PARAM);
+
+	// "All" mode: no cubeType OR subset URL parameter never provided (null).
+	// Empty string ('') is a valid subset id (777 WCA, 333 Random State, etc.).
+	const all = !tabCubeType || tabSubset === null;
+
+	// Cube filter: only cubes of the selected type's puzzle (a 3x3 cube never filters 7x7). An
+	// unknown id, or one of another puzzle, is ignored and the page shows every cube's solves.
+	const cubeFilter = useCubeFilter({
+		requestedId: tabCube,
+		puzzle: all ? null : puzzleOfBucket(tabCubeType, toStoredSubset(tabSubset)),
+		allMode: all,
+	});
+	const selectedCube = cubeFilter.cube;
 
 	// If lastN is in URL, user is targeting smart view — don't break the shared link.
 	const [view, setView] = useState<StatsView>(tabLastN !== null ? 'smart' : 'all');
@@ -100,19 +130,35 @@ export default function Stats() {
 		scramble_subset?: string | null,
 		session_id?: string | null,
 		last_n?: number | null,
+		cube_id?: string | null,
 	) {
 		const params = new URLSearchParams();
 		if (cube_type) params.set(CUBE_TYPE_QUERY_PARAM, cube_type);
 		if (scramble_subset != null) params.set(SCRAMBLE_SUBSET_QUERY_PARAM, scramble_subset);
 		if (session_id) params.set(SESSION_QUERY_PARAM, session_id);
 		if (last_n != null) params.set(LAST_N_QUERY_PARAM, String(last_n));
+		if (cube_id) params.set(CUBE_QUERY_PARAM, cube_id);
 		const qs = params.toString();
 		return qs ? `/stats?${qs}` : '/stats';
 	}
 
+	/**
+	 * The cube parameter that survives a move to another bucket: kept in "All" (it shows all of
+	 * the cube's buckets), dropped when the new type's puzzle is not the cube's (8.2). An id the
+	 * cube list does not know yet stays as it is; it is ignored until it resolves.
+	 */
+	function cubeParamFor(cube_type: string | null, scramble_subset: string | null): string | null {
+		if (!tabCube) return null;
+		const known = cubeFilter.findCube(tabCube);
+		if (!known) return tabCube;
+		const nextAll = !cube_type || scramble_subset === null;
+		const nextPuzzle = nextAll ? null : puzzleOfBucket(cube_type, toStoredSubset(scramble_subset));
+		return cubeFitsPuzzle(known, nextPuzzle, nextAll) ? tabCube : null;
+	}
+
 	function navigateToBucket(cube_type: string | null, scramble_subset?: string | null) {
 		if (!cube_type) {
-			history.push(buildStatsUrl(null, null, tabSession, tabLastN));
+			history.push(buildStatsUrl(null, null, tabSession, tabLastN, cubeParamFor(null, null)));
 			return;
 		}
 		// Empty string ('') is a valid subset id (777 WCA, 333 Random State) — only null/undefined
@@ -120,21 +166,25 @@ export default function Stats() {
 		if (scramble_subset == null) {
 			const subs = getSubsetsForBuckets(cube_type, cubeTypes);
 			if (subs.length === 0) {
-				history.push(buildStatsUrl(null, null, tabSession, tabLastN));
+				history.push(buildStatsUrl(null, null, tabSession, tabLastN, cubeParamFor(null, null)));
 				return;
 			}
-			history.push(buildStatsUrl(cube_type, subs[0].id, tabSession, tabLastN));
+			history.push(buildStatsUrl(cube_type, subs[0].id, tabSession, tabLastN, cubeParamFor(cube_type, subs[0].id)));
 			return;
 		}
-		history.push(buildStatsUrl(cube_type, scramble_subset, tabSession, tabLastN));
+		history.push(buildStatsUrl(cube_type, scramble_subset, tabSession, tabLastN, cubeParamFor(cube_type, scramble_subset)));
 	}
 
 	function navigateToSession(session_id: string | null) {
-		history.push(buildStatsUrl(tabCubeType, tabSubset, session_id, tabLastN));
+		history.push(buildStatsUrl(tabCubeType, tabSubset, session_id, tabLastN, tabCube));
 	}
 
 	function navigateToLastN(last_n: number | null) {
-		history.push(buildStatsUrl(tabCubeType, tabSubset, tabSession, last_n));
+		history.push(buildStatsUrl(tabCubeType, tabSubset, tabSession, last_n, tabCube));
+	}
+
+	function navigateToCube(cube_id: string | null) {
+		history.push(buildStatsUrl(tabCubeType, tabSubset, tabSession, tabLastN, cube_id));
 	}
 
 	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(cubeTypes), [cubeTypes]);
@@ -155,23 +205,21 @@ export default function Stats() {
 	useEffect(() => {
 		if (tabCubeType && tabSubset === null) {
 			if (subsetsForCurrentCube.length > 0) {
-				history.replace(buildStatsUrl(tabCubeType, subsetsForCurrentCube[0].id, tabSession, tabLastN));
+				const subset = subsetsForCurrentCube[0].id;
+				history.replace(buildStatsUrl(tabCubeType, subset, tabSession, tabLastN, cubeParamFor(tabCubeType, subset)));
 			} else {
-				history.replace(buildStatsUrl(null, null, tabSession, tabLastN));
+				history.replace(buildStatsUrl(null, null, tabSession, tabLastN, cubeParamFor(null, null)));
 			}
 		}
-	}, [tabCubeType, tabSubset, subsetsForCurrentCube, tabSession, tabLastN]);
+	}, [tabCubeType, tabSubset, subsetsForCurrentCube, tabSession, tabLastN, tabCube]);
 
 	// When view changes from 'smart' to 'all', remove lastN from URL (smart-only selection).
 	useEffect(() => {
 		if (view !== 'smart' && tabLastN !== null) {
-			history.replace(buildStatsUrl(tabCubeType, tabSubset, tabSession, null));
+			history.replace(buildStatsUrl(tabCubeType, tabSubset, tabSession, null, tabCube));
 		}
-	}, [view, tabLastN, tabCubeType, tabSubset, tabSession]);
+	}, [view, tabLastN, tabCubeType, tabSubset, tabSession, tabCube]);
 
-	// "All" mode: no cubeType OR subset URL parameter never provided (null).
-	// Empty string ('') is a valid subset id (777 WCA, 333 Random State, etc.).
-	const all = !tabCubeType || tabSubset === null;
 	const filterOptions: FilterSolvesOptions = {
 		from_timer: true,
 	};
@@ -183,20 +231,33 @@ export default function Stats() {
 	if (tabSession) {
 		filterOptions.session_id = tabSession;
 	}
+	// Plain equality on the indexed column; every stat below reads this same object (8.1)
+	if (selectedCube) {
+		filterOptions.cube_id = selectedCube.id;
+	}
 
-	// Session dropdown: show sessions with solves for the selected bucket (cube_type+subset).
-	// In "all" mode, show all sessions.
+	const scope: StatsScope = {};
+	if (tabSession) scope.session_id = tabSession;
+	if (selectedCube) scope.cube_id = selectedCube.id;
+
+	// Session dropdown: show sessions with solves for the selected bucket (cube_type+subset)
+	// and cube. In "all" mode without a cube, show all sessions.
+	const selectedCubeId = selectedCube?.id ?? null;
 	const sessionsForCurrentBucket = useMemo(() => {
-		if (all) return allSessions;
-		const sessionFilter: any = { cube_type: tabCubeType };
-		if (tabSubset != null) sessionFilter.scramble_subset = toStoredSubset(tabSubset);
+		if (all && !selectedCubeId) return allSessions;
+		const sessionFilter: any = {};
+		if (!all) {
+			sessionFilter.cube_type = tabCubeType;
+			if (tabSubset != null) sessionFilter.scramble_subset = toStoredSubset(tabSubset);
+		}
+		if (selectedCubeId) sessionFilter.cube_id = selectedCubeId;
 		const solves = fetchSolves(sessionFilter);
 		const sessionIdsWithData = new Set<string>();
 		for (const s of solves) {
 			if (s.session_id) sessionIdsWithData.add(s.session_id);
 		}
 		return allSessions.filter((s) => sessionIdsWithData.has(s.id));
-	}, [allSessions, all, tabCubeType, tabSubset, solveUpdate]);
+	}, [allSessions, all, tabCubeType, tabSubset, selectedCubeId, solveUpdate]);
 
 	const sessionDropdownText = useMemo(() => {
 		if (!tabSession) return t('stats.all_sessions');
@@ -257,6 +318,10 @@ export default function Stats() {
 		all,
 		cubeType: getCubeTypeInfoById(tabCubeType),
 		filterOptions,
+		scope,
+		// A bucket stored without a subset is the picker's '' (toStoredSubset), so the card
+		// opens exactly its own list rather than the type's first subset.
+		openBucket: (cube_type, scramble_subset) => navigateToBucket(cube_type, scramble_subset ?? ''),
 		stats: statsData?.stats || {},
 		view,
 		setView,
@@ -265,8 +330,8 @@ export default function Stats() {
 
 	const lastNDropdownText = useMemo(() => {
 		if (tabLastN == null) return t('stats.last_n.all');
-		return t('stats.last_n.option', {value: tabLastN.toLocaleString()});
-	}, [tabLastN, t]);
+		return t('stats.last_n.option', {value: formatInteger(tabLastN, i18n.language)});
+	}, [tabLastN, t, i18n.language]);
 
 	const lastNOptions: IDropdownOption[] = useMemo(() => {
 		const opts: IDropdownOption[] = [
@@ -278,7 +343,7 @@ export default function Stats() {
 		];
 		for (const n of LAST_N_OPTIONS) {
 			opts.push({
-				text: t('stats.last_n.option', {value: n.toLocaleString()}),
+				text: t('stats.last_n.option', {value: formatInteger(n, i18n.language)}),
 				selected: tabLastN === n,
 				onClick: () => navigateToLastN(n),
 			});
@@ -296,6 +361,16 @@ export default function Stats() {
 		label: subsetDropdownText,
 		options: subsetOptions,
 		visible: true,
+	} : null;
+
+	// Basic users' history stays on the device (canReadSync), so the filtered count can be lower
+	// than the cube profile's server count; the note says whose solves these are (8.1).
+	const physicalCubeChip: PhysicalCubeChip | null = cubeFilter.visible ? {
+		groups: cubeFilter.groups,
+		value: selectedCubeId,
+		valueName: selectedCube?.name ?? null,
+		onChange: navigateToCube,
+		note: selectedCube && !canReadSync() ? t('cube_filter.local_note') : null,
 	} : null;
 
 	const sessionChip: FilterChip | null = sessionsForCurrentBucket.length > 0 ? {
@@ -318,6 +393,7 @@ export default function Stats() {
 			onAllClick={() => navigateToBucket(null, null)}
 			cubeChip={cubeChip}
 			subsetChip={subsetChip}
+			physicalCubeChip={physicalCubeChip}
 			sessionChip={sessionChip}
 			lastNChip={lastNChip}
 		/>

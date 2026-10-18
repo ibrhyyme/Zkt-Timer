@@ -1,6 +1,4 @@
 import { setTimerParams } from '../../helpers/params';
-import { gql } from '@apollo/client';
-import { gqlMutate } from '../../../api';
 import { getSmartCubeDriverSink } from '../../../../util/smart_cube/driver_sink';
 
 /**
@@ -55,50 +53,9 @@ export default class SmartCube {
 		this._target().handleLinkLost();
 	};
 
-	smartCubeInDb = async (server) => {
-		const query = gql`
-			query Query {
-				smartDevices {
-					id
-					device_id
-				}
-			}
-		`;
-
-		const res = await gqlMutate(query);
-
-		for (const dev of res.data.smartDevices) {
-			if (dev.device_id === server.device.id) {
-				return dev;
-			}
-		}
-
-		return false;
-	};
-
-	addSmartCubeToDb = async (originalName, deviceId) => {
-		const query = gql`
-			mutation Mutate($originalName: String, $deviceId: String) {
-				addNewSmartDevice(originalName: $originalName, deviceId: $deviceId) {
-					id
-					name
-					internal_name
-					device_id
-					created_at
-				}
-			}
-		`;
-
-		const res = await gqlMutate(query, {
-			originalName,
-			deviceId,
-		});
-
-		return res.data.addNewSmartDevice;
-	};
-
 	alertConnected = async (server) => {
-		// `this` is the driver instance, which owns the DB helpers above.
+		// `this` is the driver instance. Registering the cube in My Cubes is the manager's job
+		// (connection_manager.ts registerCube), not the driver's.
 		await this._target().handleConnected(this, server);
 	};
 

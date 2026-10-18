@@ -7,6 +7,8 @@ import jsonStr from 'json-stable-stringify';
 import {FilterSolvesOptions} from '../../../db/solves/query';
 import {getGoalForCubeType} from '../../daily-goal/helpers/storage';
 import {getExtraDailyCounts} from '../../daily-goal/helpers/extra-daily-counts';
+import {useTranslation} from 'react-i18next';
+import {formatDayMonth} from '../../../util/locale_format';
 
 interface Props {
 	days: number;
@@ -15,6 +17,7 @@ interface Props {
 
 export default function SolvesPerDay(props: Props) {
 	const {days, filterOptions} = props;
+	const {i18n} = useTranslation();
 
 	const solveUpdate = useSolveDb();
 	const [goalVersion, setGoalVersion] = useState(0);
@@ -38,11 +41,12 @@ export default function SolvesPerDay(props: Props) {
 			started_at: startDate.getTime(),
 			ended_at: endDate.getTime(),
 		}, extraDailyCounts).map((d) => {
-			// Data keys are year-safe 'YYYY-M-D'; bars keep the short 'M/D' label.
-			const [, month, day] = d.x.split('-');
-			return {...d, x: `${month}/${day}`};
+			// Data keys are year-safe 'YYYY-M-D'; bars show day and month in the app's
+			// language ("24.09" in Turkish), not the US 'M/D' (2.7-e).
+			const [year, month, day] = d.x.split('-').map(Number);
+			return {...d, x: formatDayMonth(new Date(year, month - 1, day), i18n.language)};
 		});
-	}, [jsonStr(filterOptions), filterOptions, solveUpdate, extraDailyCounts]);
+	}, [jsonStr(filterOptions), filterOptions, solveUpdate, extraDailyCounts, i18n.language]);
 
 	// The goal line is read from goal storage during render, so a goal set, edited or
 	// switched off elsewhere (quick settings, another module) has to trigger a render here.

@@ -192,40 +192,19 @@
 			}
 		}
 
-		// Left side active stripe (hidden start)
-		&::before {
-			content: '';
-			position: absolute;
-			left: 4px;
-			top: 50%;
-			width: 3px;
-			height: 0;
-			background: rgb(var(--primary-color));
-			border-radius: 2px;
-			transform: translateY(-50%);
-			transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-		}
-
-		// Simple hover: no background fill, just partial left stripe + text color
+		// Hover / keyboard highlight: a soft tint of the whole row. It used to be a
+		// 3x10px grey stripe at the row's left edge plus a 2px nudge, which read as a
+		// stray vertical line next to the label (most visibly on "Klavye", the first row
+		// the pointer crosses on the way down from the trigger).
 		&[data-highlighted] {
-			background: transparent;
+			background: rgba(var(--text-color), 0.08);
 			color: rgb(var(--text-color));
 			outline: none;
-			transform: translateX(2px);
-
-			&::before {
-				height: 10px;
-				background: rgba(var(--text-color), 0.4);
-			}
 		}
 
 		&--active {
 			background: rgb(var(--primary-color));
 			color: #fff;
-
-			&::before {
-				height: 0;
-			}
 
 			.#{$namespace}-timer-type-picker__option-icon {
 				color: #fff;
@@ -235,11 +214,6 @@
 			&[data-highlighted] {
 				background: rgb(var(--primary-color));
 				color: #fff;
-				transform: none;
-
-				&::before {
-					height: 0;
-				}
 			}
 		}
 
@@ -298,6 +272,13 @@
 			color: rgb(239, 68, 68);
 			background: rgba(239, 68, 68, 0.16);
 			box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+		}
+
+		// Magnet Timer is still in beta (K-1): a quiet outline, not a second Pro badge.
+		&--beta {
+			color: rgb(var(--text-color));
+			background: transparent;
+			box-shadow: 0 0 0 1px rgba(var(--text-color), 0.25);
 		}
 	}
 

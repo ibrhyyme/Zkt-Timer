@@ -18,8 +18,13 @@ function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getMe() {
-	return async (dispatch) => {
+/**
+ * Fetches `me` and stores it. Resolves to the account, or null on an auth rejection.
+ * `keepOnReject`: a rejection is returned but not written to the store, for a caller that
+ * is already showing a cached identity and handles the rejection itself (App.tsx).
+ */
+export function getMe(opts: {keepOnReject?: boolean} = {}) {
+	return async (dispatch): Promise<UserAccount | null> => {
 		const query = gql`
 			${USER_FOR_ME_FRAGMENT}
 
@@ -112,11 +117,16 @@ export function getMe() {
 			me = null;
 		}
 
+		if (!me && opts.keepOnReject) {
+			return null;
+		}
+
 		dispatch({
 			type: 'SET_ME',
 			payload: {
 				me,
 			},
 		});
+		return me;
 	};
 }

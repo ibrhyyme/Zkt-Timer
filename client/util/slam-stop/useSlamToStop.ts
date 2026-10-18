@@ -7,14 +7,16 @@ import { useSlamStop, sensitivityToThreshold } from './settings';
 import { endTimer } from '../../components/timer/helpers/events';
 import { smartCubeSelected } from '../../components/timer/helpers/util';
 import { ITimerContext } from '../../components/timer/Timer';
+import { useMagnetTimerOwnsInput } from '../magnet-start/useMagnetTimer';
 
 // Ignore slams in the first moments after start — kills accidental
 // early stops from the phone being set down on the table.
 const ARM_DELAY_MS = 400;
 
 /**
- * Arms the native slam detector while a touch-timer solve is running.
- * Native-only, touch timer type only, stop-only (start flow untouched).
+ * Arms the native slam detector while a solve is running: on the touch timer when the user
+ * turned it on (Pro), and always on the Magnet Timer, where dropping the cube is the stop.
+ * Native-only, stop-only (start flow untouched).
  * Mounted in KeyWatcher alongside the regular touch/keyboard handlers.
  */
 export function useSlamToStop(context: ITimerContext) {
@@ -32,13 +34,17 @@ export function useSlamToStop(context: ITimerContext) {
 	const contextRef = useRef(context);
 	contextRef.current = context;
 
+	// The Magnet Timer has no switch for this: it is how that input stops (Pro is checked
+	// inside useMagnetTimerOwnsInput).
+	const magnetOwnsInput = useMagnetTimerOwnsInput();
+	// A Magnet selection that fell back (lost Pro, failed probe) runs as the touch timer.
+	const touchTimerSlam =
+		enabled && proAllowed && (timerType === 'keyboard' || timerType === 'magnet') && !manualEntry;
+
 	const solving = !!context.timeStartedAt;
 	const active =
 		isSlamDetectorAvailable() &&
-		enabled &&
-		proAllowed &&
-		timerType === 'keyboard' &&
-		!manualEntry &&
+		(touchTimerSlam || magnetOwnsInput) &&
 		!smartCubeSelected(context) &&
 		solving;
 

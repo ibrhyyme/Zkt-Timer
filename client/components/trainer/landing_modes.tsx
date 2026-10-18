@@ -1,62 +1,107 @@
 /**
- * landing_modes — Trainer landing'in 4 modunun paylasilan config'i (masaustu grid +
- * mobil Coverflow ayni veriyi kullanir). Metinler i18n key'leri; accent renkleri
- * TrainerModeHeader ile paylasilir. Icon, boyutu cagirana birakmak icin component olarak
- * tutulur (instantiate edilmemis).
+ * landing_modes: shared config of the trainer's card pages (desktop grid and mobile card stack
+ * use the same lists). Texts are i18n keys; accent colours come from common/TrainerAccents.scss
+ * and match TrainerModeHeader. The icon stays a component (not instantiated) so the caller picks
+ * its size.
+ *
+ * Hub (`/trainer`): two cards, Trainers and Algorithm Sets (HUB_CARDS).
+ * Trainers page (`/trainer/modes`): three cards for everyone (trainer-sets 2.1), Algorithm
+ * Trainer, PLL Recognition, Cross and XCross. The admin-only OLLCP card is prepended by the
+ * caller. A card is an entry, not a study mode: the Algorithm Trainer card opens Standard or
+ * Smart Cube from the remembered `lastMode`.
  */
-import {Timer, BluetoothConnected, Lightning, Eye, Target} from 'phosphor-react';
+import {Timer, Lightning, Eye, Target, Barbell, Stack} from 'phosphor-react';
 import type {Icon} from 'phosphor-react';
-import type {TrainerMode} from './types';
 
 export type ModeAccent = 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
-export interface ModeConfig {
-	id: TrainerMode;
+/** What a hub card opens. */
+export type HubEntryId = 'trainers' | 'sets';
+
+export interface HubCardConfig {
+	id: HubEntryId;
 	Icon: Icon;
 	accent: ModeAccent;
-	pro?: boolean;
 	titleKey: string;
 	descKey: string;
-	groups: {labelKey: string; itemKeys: string[]}[];
+	/** Feature lines (Algorithm Sets); the Trainers card lists the trainers themselves instead. */
+	itemKeys: string[];
+}
+
+export const HUB_CARDS: HubCardConfig[] = [
+	{
+		id: 'trainers',
+		Icon: Barbell,
+		accent: 'blue',
+		titleKey: 'trainer.hub.trainers_title',
+		descKey: 'trainer.hub.trainers_desc',
+		itemKeys: [],
+	},
+	{
+		id: 'sets',
+		Icon: Stack,
+		accent: 'purple',
+		titleKey: 'trainer.hub.sets_title',
+		descKey: 'trainer.hub.sets_desc',
+		itemKeys: ['trainer.hub.sets_feat1', 'trainer.hub.sets_feat2', 'trainer.hub.sets_feat3'],
+	},
+];
+
+/** What a hub card opens. `algorithms` is the Algorithm Trainer (Standard and Smart Cube study modes). */
+export type TrainerEntryId = 'algorithms' | 'recognition' | 'efficiency' | 'ollcp';
+
+export interface ModeFeatureGroup {
+	labelKey: string;
+	itemKeys: string[];
+	/** Items that get a "Pro" badge next to them (only shown when Pro gating is on in this build). */
+	proItemKeys?: string[];
+}
+
+export interface ModeConfig {
+	id: TrainerEntryId;
+	Icon: Icon;
+	accent: ModeAccent;
+	/** Admin-only card: its top row says "Admin". */
+	admin?: boolean;
+	titleKey: string;
+	descKey: string;
+	groups: ModeFeatureGroup[];
 }
 
 export const TRAINER_MODES: ModeConfig[] = [
 	{
-		id: 'standard',
+		id: 'algorithms',
 		Icon: Timer,
 		accent: 'blue',
-		titleKey: 'trainer.landing_standard_title',
-		descKey: 'trainer.landing_standard_desc',
+		titleKey: 'trainer.landing_algorithms_title',
+		descKey: 'trainer.landing_algorithms_desc',
 		groups: [
 			{
-				labelKey: 'trainer.landing_standard_categories',
-				itemKeys: ['trainer.landing_standard_3x3', 'trainer.landing_standard_roux', 'trainer.landing_standard_other'],
-			},
-			{
-				labelKey: 'trainer.landing_standard_features',
-				itemKeys: ['trainer.landing_standard_feat1', 'trainer.landing_standard_feat2', 'trainer.landing_standard_feat3'],
+				labelKey: 'trainer.landing_algorithms_features',
+				itemKeys: [
+					'trainer.landing_algorithms_feat1',
+					'trainer.landing_algorithms_feat2',
+					'trainer.landing_algorithms_feat3',
+					'trainer.landing_algorithms_feat4',
+				],
+				proItemKeys: ['trainer.landing_algorithms_feat4'],
 			},
 		],
 	},
 	{
-		id: 'smart',
-		Icon: BluetoothConnected,
-		accent: 'purple',
-		pro: true,
-		titleKey: 'trainer.landing_smart_title',
-		descKey: 'trainer.landing_smart_desc',
+		id: 'recognition',
+		Icon: Eye,
+		accent: 'orange',
+		titleKey: 'trainer.landing_recognition_title',
+		descKey: 'trainer.landing_recognition_desc',
 		groups: [
 			{
-				labelKey: 'trainer.landing_smart_categories',
-				itemKeys: ['trainer.landing_smart_3x3', 'trainer.landing_smart_roux'],
-			},
-			{
-				labelKey: 'trainer.landing_smart_features',
+				labelKey: 'trainer.landing_recognition_features',
 				itemKeys: [
-					'trainer.landing_smart_feat1',
-					'trainer.landing_smart_feat2',
-					'trainer.landing_smart_feat3',
-					'trainer.landing_smart_feat4',
+					'trainer.landing_recognition_feat1',
+					'trainer.landing_recognition_feat2',
+					'trainer.landing_recognition_feat3',
+					'trainer.landing_recognition_feat4',
 				],
 			},
 		],
@@ -79,32 +124,15 @@ export const TRAINER_MODES: ModeConfig[] = [
 			},
 		],
 	},
-	{
-		id: 'recognition',
-		Icon: Eye,
-		accent: 'orange',
-		titleKey: 'trainer.landing_recognition_title',
-		descKey: 'trainer.landing_recognition_desc',
-		groups: [
-			{
-				labelKey: 'trainer.landing_recognition_features',
-				itemKeys: [
-					'trainer.landing_recognition_feat1',
-					'trainer.landing_recognition_feat2',
-					'trainer.landing_recognition_feat3',
-					'trainer.landing_recognition_feat4',
-				],
-			},
-		],
-	},
 ];
 
-// Admin-only 5th mode. NOT in TRAINER_MODES so regular users never see it; TrainerLanding /
-// Coverflow prepend it to the displayed list when `me.admin` (so it shows up FIRST).
+// Admin-only card. NOT in TRAINER_MODES so regular users never see it; TrainerLanding prepends
+// it when `me.admin`.
 export const OLLCP_MODE: ModeConfig = {
 	id: 'ollcp',
 	Icon: Target,
 	accent: 'red',
+	admin: true,
 	titleKey: 'trainer.landing_ollcp_title',
 	descKey: 'trainer.landing_ollcp_desc',
 	groups: [

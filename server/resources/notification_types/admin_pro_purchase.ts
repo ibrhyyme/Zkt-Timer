@@ -6,9 +6,9 @@ type Plan = 'monthly' | 'yearly' | 'lifetime' | 'unknown';
 type Platform = 'ios' | 'android';
 
 function planLabel(plan: Plan): string {
-	if (plan === 'monthly') return 'aylik';
-	if (plan === 'yearly') return 'yillik';
-	if (plan === 'lifetime') return 'omur boyu';
+	if (plan === 'monthly') return 'aylık';
+	if (plan === 'yearly') return 'yıllık';
+	if (plan === 'lifetime') return 'ömür boyu';
 	return 'plan bilinmiyor';
 }
 
@@ -39,7 +39,7 @@ export default class AdminProPurchaseNotification extends Notification {
 	}
 
 	message() {
-		return `${this.input.triggeringUser.username} kullanicisi ${planLabel(this.plan)} Pro abonelik satin aldi (${platformLabel(this.platform)}).`;
+		return `${this.input.triggeringUser.username} kullanıcısı ${planLabel(this.plan)} Pro abonelik satın aldı (${platformLabel(this.platform)}).`;
 	}
 
 	icon() {
@@ -51,7 +51,7 @@ export default class AdminProPurchaseNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Pro kullanicilari goruntule';
+		return 'Pro kullanıcıları görüntüle';
 	}
 
 	categoryName() {

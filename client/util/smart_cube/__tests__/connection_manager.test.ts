@@ -36,8 +36,6 @@ class FakeCube {
 		};
 	};
 	emitGyro = (event: any) => { for (const cb of [...this.gyroListeners]) cb(event); };
-	smartCubeInDb = jest.fn(async () => ({ id: 'row-1', device_id: deviceOne.deviceId }));
-	addSmartCubeToDb = jest.fn(async () => ({ id: 'row-1' }));
 	_trackerCube: any = null;
 	resetCubeState = jest.fn(async () => true);
 	init = jest.fn(async () => { /* handshake */ });
@@ -147,6 +145,17 @@ async function flushPromises(): Promise<void> {
 	for (let i = 0; i < 5; i++) await Promise.resolve();
 }
 
+// My Cubes, reduced to what the manager asks: is anyone signed in, which cubes are known, and
+// the one request that registers a new smart cube.
+let mockCubeState: any = { userId: null, cubes: [], mains: {}, pendingCalibrations: [] };
+const mockEnsureSmartCube = jest.fn(async (..._args: any[]): Promise<any> => null);
+let mockConnectivityError = false;
+jest.mock('../../../lib/cubes/store', () => ({ getCubeState: () => mockCubeState }));
+jest.mock('../../../lib/cubes/sync', () => ({
+	ensureSmartCubeOnline: (...args: any[]) => mockEnsureSmartCube(...args),
+	isCubeConnectivityError: () => mockConnectivityError,
+}));
+
 const dispatched: any[] = [];
 let storeState: any = { timer: {}, smartCube: {}, general: { modals: [] } };
 
@@ -189,6 +198,10 @@ beforeEach(() => {
 	mockAppVisible = true;
 	mockVisibilityListeners.length = 0;
 	storeState = { timer: {}, smartCube: {}, general: { modals: [] } };
+	mockCubeState = { userId: null, cubes: [], mains: {}, pendingCalibrations: [] };
+	mockEnsureSmartCube.mockReset();
+	mockEnsureSmartCube.mockImplementation(async () => null);
+	mockConnectivityError = false;
 	__resetSmartCubeManagerForTests();
 });
 
@@ -672,3 +685,58 @@ async function flushRetry(): Promise<void> {
 		await Promise.resolve();
 	}
 }
+
+describe('My Cubes registration', () => {
+	const smartCube = (bleId: string) => ({
+		id: 'cube-1', puzzle: '333', name: 'GAN', brand: null, is_smart: true, ble_device_id: bleId,
+		ble_name: 'GAN-0001', legacy_smart_device_ids: [], archived_at: null, created_at: null,
+		updated_at: null, solve_count: 0, first_used_at: null, last_used_at: null, calibrations: [],
+	});
+
+	it('publishes the BLE id, not a database row id', async () => {
+		const manager = getSmartCubeManager();
+		await manager.connect();
+
+		expect(manager.getSnapshot().deviceId).toBe(deviceOne.deviceId);
+		const published = dispatched.filter((a) => a.type === 'SET_SMART_CUBE_PARAM' && a.payload.params.smartCubeConnected);
+		expect(published[published.length - 1].payload.params.smartBleDeviceId).toBe(deviceOne.deviceId);
+	});
+
+	it('registers a cube My Cubes does not know yet, once', async () => {
+		mockCubeState = { ...mockCubeState, userId: 'user-1' };
+		const manager = getSmartCubeManager();
+		await manager.connect();
+
+		expect(mockEnsureSmartCube).toHaveBeenCalledTimes(1);
+		expect(mockEnsureSmartCube).toHaveBeenCalledWith(deviceOne.deviceId, deviceOne.name);
+	});
+
+	it('sends nothing for a cube already in My Cubes', async () => {
+		mockCubeState = { ...mockCubeState, userId: 'user-1', cubes: [smartCube(deviceOne.deviceId)] };
+		const manager = getSmartCubeManager();
+		await manager.connect();
+
+		expect(manager.getSnapshot().connected).toBe(true);
+		expect(mockEnsureSmartCube).not.toHaveBeenCalled();
+	});
+
+	it('sends nothing for a visitor', async () => {
+		const manager = getSmartCubeManager();
+		await manager.connect();
+
+		expect(manager.getSnapshot().connected).toBe(true);
+		expect(mockEnsureSmartCube).not.toHaveBeenCalled();
+	});
+
+	it('does not hold the connection up while the request is pending or failing', async () => {
+		mockCubeState = { ...mockCubeState, userId: 'user-1' };
+		mockConnectivityError = true;
+		mockEnsureSmartCube.mockImplementation(() => Promise.reject(new Error('offline')));
+		const manager = getSmartCubeManager();
+		await manager.connect();
+		await flushPromises();
+
+		expect(manager.getSnapshot().connected).toBe(true);
+		expect(mockEnsureSmartCube).toHaveBeenCalledTimes(1);
+	});
+});

@@ -15,12 +15,13 @@ import { useGeneral } from '../../util/hooks/useGeneral';
 import { useMe } from '../../util/hooks/useMe';
 import { setGeneral, closeModal } from '../../actions/general';
 import { getMe } from '../../actions/account';
+import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getMe as getMeFromStore, getStore } from '../store';
 import { updateThemeColors } from './themes';
 import { initSocketIO } from '../../util/socket/socketio';
 import AnnouncementCarousel from '../announcements/AnnouncementCarousel';
-import { GetActiveAnnouncementsDocument, Announcement } from '../../@types/generated/graphql';
-import { gqlQueryTyped } from '../api';
+import { Announcement } from '../../@types/generated/graphql';
+import { fetchActiveAnnouncements } from '../../util/announcements';
 import PendingSyncBadge from '../common/pending_sync_badge/PendingSyncBadge';
 import { initOfflineSyncListener } from './offline-listener';
 import { Capacitor } from '@capacitor/core';
@@ -28,6 +29,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
 import { initStatusBar, lockTextZoom, initCrashlytics, setCrashlyticsUser } from '../../util/native-plugins';
+import { initViewportLock } from '../../util/viewport-lock';
 import { setBackButtonHandle, releaseNativeBackButton } from '../../util/native-back';
 import { openInAppBrowser } from '../../util/external-link';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
@@ -63,6 +65,35 @@ interface Props {
  * different account logging in on the same tab still registers its own token.
  */
 let pushInitUserId: string | null = null;
+
+/**
+ * The account whose local data boot (initAppData) already started in this page. `me` can
+ * change before `app_loaded` (a cached identity, then the fresh one from the server), and
+ * each change re-runs the boot effect; without this the data boot ran twice.
+ */
+let bootedUserId: string | null = null;
+
+/**
+ * Native local shell, launch from the stored identity: the server check runs behind the
+ * open app instead of in front of it. A network failure keeps the identity, as an offline
+ * launch always has. A real rejection (password changed elsewhere, ban, expired session)
+ * clears it and goes to login, the same handling as a rejection at launch.
+ */
+async function verifyCachedIdentity(dispatch: any): Promise<void> {
+	let fresh: UserAccount | null;
+	try {
+		fresh = await withBootAuthTimeout(Promise.resolve(dispatch(getMe({keepOnReject: true}) as any)));
+	} catch (err) {
+		// Offline, timed out or an unclear failure: keep the identity, the next launch asks again.
+		return;
+	}
+	if (fresh) return;
+
+	localStorage.removeItem('zkt_has_auth');
+	clearCachedMe();
+	await clearSessionToken();
+	window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+}
 
 // The native local shell has no SSR, so launch waits on this request before anything shows.
 // On a connection that accepts the socket and never answers (wifi without internet) it could
@@ -120,6 +151,14 @@ export default function App(props: Props = {}) {
 		notifyRouteChange();
 	}, [me?.id, location.pathname]);
 
+	// Whether the user's theme applies depends on the page and on being signed in
+	// (util/themes/theme_lock.ts), so both re-evaluate it: logging in brings the theme back,
+	// opening the login scene from the timer pins it to the fixed one.
+	useEffect(() => {
+		if (!appLoaded) return;
+		updateThemeColors();
+	}, [appLoaded, location.pathname, me?.id]);
+
 	// Persist the identity snapshot on every successful auth (SSR boot or getMe)
 	// so an offline cold start can restore the session from localStorage. The flag
 	// keeps future boots on the authenticated path (matters after the Faz 2 session
@@ -148,6 +187,8 @@ export default function App(props: Props = {}) {
 		// Decode the inspection calls up front. Not native-only: the same first-play
 		// delay this removes on Android exists in any browser.
 		preloadTimerSounds();
+		// No pinch zoom on iOS Safari, which ignores the viewport meta (feedback 2.0).
+		initViewportLock();
 
 		// On native: hide splash screen and initialize native plugins
 		if (Capacitor.isNativePlatform()) {
@@ -252,6 +293,16 @@ export default function App(props: Props = {}) {
 			// getMe once — success silently restores the account and mints a Bearer
 			// token via X-Session-Token. iOS ITP typically blocks the cookie, so
 			// those users fall through to anonymous and log in once.
+			// The local shell has no SSR, so without this every launch waited a round trip
+			// for `me` behind the logo, though users stay signed in for months (E-29).
+			const cachedAtLaunch = isLocalShell() && hasAuth ? getCachedMe() : null;
+			if (cachedAtLaunch) {
+				dispatch({type: 'SET_ME', payload: {me: cachedAtLaunch}});
+				setAuthResolved(true);
+				void verifyCachedIdentity(dispatch);
+				return;
+			}
+
 			const carryoverEligible = isLocalShell() && !hasAuth && !localStorage.getItem('zkt_session_carryover_done');
 			if (carryoverEligible) {
 				localStorage.setItem('zkt_session_carryover_done', '1');
@@ -340,6 +391,8 @@ export default function App(props: Props = {}) {
 		}
 
 		setAuthResolved(true);
+		if (bootedUserId === me.id) return;
+		bootedUserId = me.id;
 		initSocketIO();
 		initAppData(me, dispatch, appInitiated);
 	}, [me]);
@@ -392,7 +445,8 @@ export default function App(props: Props = {}) {
 		};
 	}, [me?.id]);
 
-	// Fetch announcements when user logs in
+	// Fetch announcements when user logs in. App remounts on every route change, so this
+	// goes through the shared one-minute cache instead of asking on every page.
 	useEffect(() => {
 		if (!me || !appLoaded) return;
 
@@ -401,23 +455,17 @@ export default function App(props: Props = {}) {
 		const fetchAnnouncements = async () => {
 			setLoadingAnnouncements(true);
 			try {
-				const res = await gqlQueryTyped(GetActiveAnnouncementsDocument, {}, {
-					fetchPolicy: 'network-only'
-				});
+				const list = await fetchActiveAnnouncements(`${me.id}|${i18n.language}`);
 
-				if (mounted) {
+				if (mounted && list) {
 					// Notification-only announcements (showInApp off) still reach the
 					// inbox, which runs the same query - they just never take over the
 					// screen. Older rows have the field unset, so treat that as on.
-					const announcements = (res.data?.getActiveAnnouncements || []).filter(
-						(a) => a?.showInApp !== false
-					);
+					const announcements = list.filter((a) => a?.showInApp !== false);
 					if (announcements.length > 0) {
 						setUnseenAnnouncements(announcements);
 					}
 				}
-			} catch (error) {
-				console.error('Failed to fetch announcements:', error);
 			} finally {
 				if (mounted) {
 					setLoadingAnnouncements(false);
@@ -430,7 +478,7 @@ export default function App(props: Props = {}) {
 		return () => {
 			mounted = false;
 		};
-	}, [me, appLoaded, i18n.language]);
+	}, [me?.id, appLoaded, i18n.language]);
 
 	if (typeof window !== 'undefined') {
 		if (!me && restricted) {

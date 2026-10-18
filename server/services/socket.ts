@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import { getRedisPubClient, getRedisSubClient } from './redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { listenForFriendlyRoomEvents } from '../friendly_room';
+import { listenForBattleEvents, initBattleRealtime } from '../battle/events';
 import { getUserFromClient, broadcastOnlineUsersChanged, ADMIN_ONLINE_WATCHERS_ROOM, getOnlineUsers, userRoom } from './socket_util';
 import { subscribeRound, unsubscribeRound, unsubscribeAllRounds, setPollerIOGetter } from './WcaLivePoller';
 import { handleSocketTransition } from './dm_presence';
@@ -46,6 +47,9 @@ export function initSocket(server: any) {
 
 	setPollerIOGetter(() => io);
 
+	// Online Battle: startup cleanup, then the matcher loop (server/battle).
+	void initBattleRealtime();
+
 	io.sockets.on('connection', async (client) => {
 		// Online sayaci icin userId attach et (anonymous ise null kalir)
 		try {
@@ -68,6 +72,9 @@ export function initSocket(server: any) {
 
 		// Friendly Room events
 		listenForFriendlyRoomEvents(client);
+
+		// Online Battle events
+		listenForBattleEvents(client);
 
 		// WCA Live round subscription
 		client.on('wca-live:subscribe', ({competitionId, liveRoundId}: {competitionId: string; liveRoundId: string}) => {

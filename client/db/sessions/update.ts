@@ -2,7 +2,7 @@ import { gqlMutateTyped } from '../../components/api';
 import { getSessionDb } from './init';
 import { emitEvent } from '../../util/event_handler';
 import { getSolveDb } from '../solves/init';
-import { clearSolveStatCache, clearSolveStatCacheForSession } from '../solves/stats/solves/caching';
+import { clearSolveStatCacheForSession } from '../solves/stats/solves/caching';
 import { Session } from '../../../server/schemas/Session.schema';
 import {
 	BulkDeleteSessionsDocument,
@@ -10,6 +10,7 @@ import {
 	DeleteSessionDocument,
 	MergeSessionsDocument,
 	ReorderSessionsDocument,
+	SplitSessionDocument,
 	UpdateSessionDocument,
 } from '../../@types/generated/graphql';
 import { fetchSessionById, fetchSessions } from './query';
@@ -23,6 +24,7 @@ import { isConnectivityError } from '../../util/offline-replay';
 import { toSessionInput } from '../solves/solve-input';
 import { toastError, toastWarning } from '../../util/toast';
 import i18n from '../../i18n/i18n';
+import { createSplitBucketMatcher, normalizeSplitBuckets, orderAfterSource, SolveBucket } from '../../../shared/session_split';
 
 // Offline model for sessions: creating, renaming and reordering work without a connection
 // (queued, replayed in order before the solves that depend on them). Deleting and merging
@@ -344,6 +346,100 @@ export async function mergeSessionsDb(oldSessionId: string, newSessionId: string
 }
 
 /**
+ * "Split session", the reverse of merge: the solves of the chosen (cube_type,
+ * scramble_subset) buckets move out of `source` into a new session placed right after it.
+ *
+ * Like merge it goes to the server first (a split done offline would be undone by the next
+ * reconciliation, the server still holding the solves in the old session). Only when the
+ * server never had the source session (local default session, creation still queued) is
+ * the split purely local; the new session is then queued ahead of the solves moved into it.
+ */
+export async function splitSessionDb(source: Session, buckets: SolveBucket[], name: string): Promise<Session | null> {
+	const chosen = normalizeSplitBuckets(buckets);
+	const trimmedName = (name || '').trim();
+	if (!source || !chosen.length || !trimmedName) {
+		return null;
+	}
+
+	const result: { created: Session | null } = { created: null };
+	const confirmed = await confirmOnServer(async () => {
+		const res = await gqlMutateTyped(SplitSessionDocument, {
+			sessionId: source.id,
+			buckets: chosen,
+			name: trimmedName,
+		});
+		result.created = (res.data?.splitSession as unknown as Session) || null;
+	});
+	if (!confirmed) {
+		return null;
+	}
+
+	// The server never had the source session, or this user does not sync
+	const localOnly = !result.created;
+	const newSession: Session = result.created || ({
+		id: generateId(),
+		name: trimmedName,
+		order: (source.order ?? 0) + 1,
+		created_at: new Date().toISOString(),
+	} as unknown as Session);
+
+	const sessionDb = getSessionDb();
+	const solveDb = getSolveDb();
+
+	sessionDb.insert({ ...newSession });
+
+	const matches = createSplitBucketMatcher(chosen);
+	const movedIds = new Set<string>();
+	solveDb
+		.chain()
+		.find({ session_id: source.id })
+		.where((solve) => matches(solve))
+		.update((solve) => {
+			movedIds.add(solve.id);
+			solve.session_id = newSession.id;
+		});
+
+	const ordered = orderAfterSource(
+		fetchSessions().map((s) => s.id),
+		source.id,
+		newSession.id
+	);
+	updateLocalDbOrderValuesForSessionIds(ordered);
+
+	postProcessDbUpdate(source, true);
+	postProcessDbUpdate(fetchSessionById(newSession.id) || newSession, true);
+
+	// Queued solves that just moved still name the old session: point them at the new one.
+	// A holder, not a `let`: TypeScript does not see assignments made inside the callback
+	const queued = { earliestMoved: null as number | null };
+	await transformQueue((m) => {
+		const v = m.variables || {};
+		if (m.mutationName === 'createSolve' && movedIds.has(v.input?.id)) {
+			if (queued.earliestMoved === null || m.timestamp < queued.earliestMoved) queued.earliestMoved = m.timestamp;
+			return { ...m, variables: { ...v, input: { ...v.input, session_id: newSession.id } } };
+		}
+		if (m.mutationName === 'updateSolve' && movedIds.has(v.id) && v.input?.session_id) {
+			return { ...m, variables: { ...v, input: { ...v.input, session_id: newSession.id } } };
+		}
+		return m;
+	});
+
+	if (localOnly && canWriteSync()) {
+		// The queue replays in timestamp order: the session has to reach the server before
+		// the queued solves that now belong to it.
+		const queuedId = await addToQueue('createSession', {
+			session: toSessionInput(fetchSessionById(newSession.id) || newSession),
+		});
+		if (queuedId && queued.earliestMoved !== null) {
+			const before = queued.earliestMoved - 1;
+			await transformQueue((m) => (m.id === queuedId && m.timestamp > before ? { ...m, timestamp: before } : m));
+		}
+	}
+
+	return fetchSessionById(newSession.id) || newSession;
+}
+
+/**
  * `destructive` for a deleted or merged-away session: its offline hash goes out at once so
  * no other device can open in between and re-upload what was removed (persist-scheduler.ts).
  * Everything else is written out with the next scheduled save; reordering, which calls this
@@ -351,11 +447,10 @@ export async function mergeSessionsDb(oldSessionId: string, newSessionId: string
  */
 function postProcessDbUpdate(session: Session, clearSolveCache = true, destructive = false) {
 	if (clearSolveCache) {
-		clearSolveStatCache({
-			filterOptions: {
-				session_id: session.id,
-			},
-		});
+		// Every stat type, not only the single-solve ones: a merge or split changes which
+		// solves the session holds, so its cached best, worst and current averages are stale
+		// too (a merged-in faster ao5 stayed hidden until the page was reloaded).
+		clearSolveStatCacheForSession(session.id);
 	}
 
 	emitEvent('solveDbUpdatedEvent');

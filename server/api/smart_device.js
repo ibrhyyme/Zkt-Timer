@@ -7,6 +7,8 @@ import {
 	updateSmartDevice
 } from '../models/smart_device';
 import GraphQLError from '../util/graphql_error';
+import {getPrisma} from '../database';
+import {ensureCubeForLegacyDevice} from '../models/cube';
 
 export const gqlQuery = `
     smartDevices: [SmartDevice]
@@ -38,7 +40,14 @@ export const mutateActions = {
 			throw new GraphQLError(400, 'Invalid device ID');
 		}
 
-		return createSmartDevice(user, originalName, originalName, deviceId);
+		const row = await createSmartDevice(user, originalName, originalName, deviceId);
+
+		// Apps still on an older OTA bundle register cubes only through here. The matching
+		// My Cubes entry (id = this row's id) keeps them feeding the new pages and lets their
+		// solves, which carry smart_device_id, count on the cube (server/util/solve_links.ts).
+		await ensureCubeForLegacyDevice(getPrisma(), row);
+
+		return row;
 	},
 
 	changeSmartDeviceName: async (_, {id, name}, {user}) => {

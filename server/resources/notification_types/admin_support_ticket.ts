@@ -25,7 +25,7 @@ export default class AdminSupportTicketNotification extends Notification {
 	}
 
 	message() {
-		return `${this.input.triggeringUser.username} kullanicisi yeni bir destek talebi gonderdi: "${this.ticketSubject}"`;
+		return `${this.input.triggeringUser.username} kullanıcısı yeni bir destek talebi gönderdi: "${this.ticketSubject}"`;
 	}
 
 	icon() {
@@ -38,7 +38,7 @@ export default class AdminSupportTicketNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Destek taleplerini goruntule';
+		return 'Destek taleplerini görüntüle';
 	}
 
 	categoryName() {

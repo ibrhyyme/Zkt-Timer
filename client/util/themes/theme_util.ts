@@ -1,4 +1,13 @@
-import {Color} from 'react-color-palette/lib/interfaces/Color.interface';
+export interface RgbColor {
+	r: number;
+	g: number;
+	b: number;
+}
+
+/** Anything carrying an `rgb` triplet, e.g. a react-color-palette colour object. */
+export interface RgbColorHolder {
+	rgb: RgbColor;
+}
 
 export function hexToRgb(hex: string) {
 	if (hex.includes(',')) {
@@ -17,7 +26,7 @@ export function hexToRgb(hex: string) {
 	return `${r}, ${g}, ${b}`;
 }
 
-export function getAnyColorStringAsRgb(input: string): Color['rgb'] {
+export function getAnyColorStringAsRgb(input: string): RgbColor {
 	if (input.includes(',')) {
 		const parts = input.split(/,\s*/);
 		return {
@@ -32,8 +41,8 @@ export function getAnyColorStringAsRgb(input: string): Color['rgb'] {
 	return null;
 }
 
-export function getAnyColorStringAsRawRgbString(input: string | Color): string {
-	let rgb: Color['rgb'];
+export function getAnyColorStringAsRawRgbString(input: string | RgbColorHolder): string {
+	let rgb: RgbColor;
 	if (typeof input === 'string') {
 		rgb = getAnyColorStringAsRgb(input);
 	} else {
@@ -54,6 +63,6 @@ export function getAnyColorStringAsRgbString(input: string): string {
 // default pulled from settings ("255, 255, 255") against a stripped copy of the same
 // value ("255,255,255") never matches, so both sides are normalised through the same
 // raw-RGB conversion before comparing.
-export function colorStringsEqual(a: string | Color, b: string | Color): boolean {
+export function colorStringsEqual(a: string | RgbColorHolder, b: string | RgbColorHolder): boolean {
 	return getAnyColorStringAsRawRgbString(a) === getAnyColorStringAsRawRgbString(b);
 }

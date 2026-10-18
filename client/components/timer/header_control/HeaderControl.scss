@@ -3,7 +3,10 @@
 .#{$namespace}-timer-header-control {
 	display: grid;
 	flex-direction: row;
-	grid-template-columns: 1fr 1fr 1fr;
+	// The picker cells take what their controls need and the empty middle gives way. Equal
+	// thirds (380px at 1180) squeezed the timer type button to "Dokunm..." / "Stack..." on
+	// tablets and 1024-1280 windows while the middle cell sat empty.
+	grid-template-columns: auto 1fr auto;
 	transition: opacity 0.2s ease-in-out;
 	justify-content: space-between;
 	padding: calc(20px + #{sa(top)}) 20px 20px 20px;

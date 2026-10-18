@@ -4,6 +4,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { fetchSolves } from '../../../db/solves/query';
 import { TimerContext } from '../Timer';
+import { smartCubeSelected } from '../helpers/util';
 import block from '../../../styles/bem';
 import './SolveDiff.scss';
 
@@ -21,7 +22,10 @@ function SolveDiff() {
     useSolveDb();
 
     // Timer çalışıyorken veya inceleme esnasındayken gizle ama yer kapla (timer kaymasin)
-    if (timeStartedAt || solving || (context.inInspection && inspectionLeft)) {
+    // Same while a smart cube waits to be solved again after an abandoned attempt: the
+    // display reads 0.00 then, and the difference between the last two saved solves
+    // under it described neither (feedback 2.3-c, "0.00 (+4.58)").
+    if (timeStartedAt || solving || (context.inInspection && inspectionLeft) || (smartCubeSelected(context) && context.smartNeedsCubeReset)) {
         return <div className={b()} style={{ visibility: 'hidden' }}>&nbsp;</div>;
     }
 
@@ -43,7 +47,8 @@ function SolveDiff() {
     // Find the most recent non-DNF solve before current for comparison
     const previous = solves.find((s, idx) => idx > 0 && !s.dnf);
     if (!previous) {
-        return null;
+        // Placeholder, not null: dropping the line moved the time up by its height.
+        return placeholder;
     }
 
     const currTime = Number(current.time) || 0;

@@ -36,6 +36,11 @@ $bp-step: 0.02px;
 // a phone in landscape is 800px wide but only ~380px tall.
 $bp-short-height: 500px;
 
+// A short phone in portrait (iPhone SE 375x667, 360x740 Androids). Measured on
+// 2026-10-14 (E-50): at these heights the first-run notch hints covered the timer
+// digits and, at 667, the button row; at 844 there is room below the digits.
+$bp-short-phone-height: 740px;
+
 // ---------------------------------------------------------------------------
 // Content thresholds
 //
@@ -137,9 +142,23 @@ $ease-out-snap: cubic-bezier(0.16, 1, 0.3, 1);
 // Referans/CubeTime-main HelperUI.swift / TimerView.swift.
 $ease-out-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+// Timer STOP landing: settles back with a small dip under the resting size, so the
+// stop reads as the digits landing rather than just shrinking (feedback 2.1-b).
+$ease-out-land: cubic-bezier(0.3, 1.5, 0.6, 1);
+$motion-land: 280ms; // timer digits: landing after the stop
+
 // How much the timer digits grow while a solve is running. Kept as one variable
 // because it is tuned by feel, not by formula — never inline this number elsewhere.
-$timer-running-scale: 1.06;
+// Was 1.06: on a phone that is a few pixels, and the running time also drops to
+// one decimal there, so the shorter string hid the growth completely (2.1-b).
+$timer-running-scale: 1.1;
+
+// Status badge fills (E-30, the 2.9-i rule). A small status badge is a full fill
+// with contrasting text, never a tint with text of the same hue. The text follows
+// the fill's own lightness, the way --theme-primary-opposite does for the primary
+// colour: the light status hues (green, orange, yellow) take dark text, red takes white.
+$status-fill-text-dark: rgb(18, 20, 26);
+$status-fill-text-light: rgb(255, 255, 255);
 
 /// Wraps `@media (prefers-reduced-motion: reduce)` so every motion consumer writes
 /// the same guard instead of a hand-written media query (and, in a couple of
@@ -148,4 +167,117 @@ $timer-running-scale: 1.06;
 	@media (prefers-reduced-motion: reduce) {
 		@content;
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Design language
+//
+// One shape, one set of surfaces, one control size scale for every page. Before
+// this block existed the stylesheet carried 25+ border-radius values, 186 distinct
+// box-shadows and four separate ideas of what a button is, so a modal in Battle and
+// a modal in the trainer never looked like the same product. Change a value here
+// and every consumer follows; never hand-write a radius, a control height or a
+// surface alpha next to a component.
+//
+// The direction is a precision instrument, not a SaaS dashboard: quiet flat
+// surfaces, hairline borders instead of shadows, one accent (the user's own
+// --primary-color). No backdrop blur, no decorative gradient, no glow, no hover
+// lift. Floating layers (modal, dropdown, popover) are the only things that cast
+// a shadow, because they really are above the page.
+//
+// Surfaces are built from --text-color at a small alpha rather than from a fixed
+// colour, so the same token reads correctly on the dark and the light theme and on
+// every custom palette. They are SCSS variables, not CSS custom properties, on
+// purpose: a custom property is resolved once on :root, while these expand at the
+// use site and follow a subtree that re-declares --text-color (the theme-locked
+// auth scene).
+// ---------------------------------------------------------------------------
+
+// Shape. sm: chip, badge, segment, tag. md: button, input, list row, icon button.
+// lg: card, modal, popover, sheet.
+$zt-radius-sm: 6px;
+$zt-radius-md: 10px;
+$zt-radius-lg: 14px;
+$zt-radius-full: 999px;
+
+// Control heights. md is the default; lg is the touch-first size for primary actions
+// on phones; sm is for dense toolbars. Nothing tappable goes below sm.
+$zt-control-h-sm: 32px;
+$zt-control-h-md: 40px;
+$zt-control-h-lg: 48px;
+
+// Spacing, on an 8px grid with a 4px half step for tight pairs (icon + label).
+$zt-space-1: 4px;
+$zt-space-2: 8px;
+$zt-space-3: 12px;
+$zt-space-4: 16px;
+$zt-space-5: 24px;
+$zt-space-6: 32px;
+$zt-space-7: 48px;
+$zt-space-8: 64px;
+
+// Surfaces.
+$zt-card-bg: rgba(var(--text-color), 0.035);
+$zt-card-border: rgba(var(--text-color), 0.09);
+$zt-control-bg: rgba(var(--text-color), 0.06);
+$zt-control-bg-hover: rgba(var(--text-color), 0.1);
+$zt-control-bg-active: rgba(var(--text-color), 0.14);
+$zt-control-border: rgba(var(--text-color), 0.14);
+$zt-control-border-hover: rgba(var(--text-color), 0.26);
+$zt-divider: rgba(var(--text-color), 0.09);
+// Secondary text: descriptions, captions, meta. Never lower than this; a fainter
+// grey is unreadable on the light theme and over a timer background image.
+$zt-text-muted: rgba(var(--text-color), 0.72);
+// Behind a modal or a sheet. Flat: a blur re-renders every frame behind a video
+// background on low-end Android WebViews and is the most recognisable AI-template
+// signature there is.
+$zt-overlay: rgba(0, 0, 0, 0.62);
+// The single shadow, for layers that float above the page.
+$zt-shadow-float: 0 16px 40px rgba(0, 0, 0, 0.32);
+
+$zt-transition: 120ms ease;
+
+/// Keyboard focus, identical on every control.
+@mixin zt-focus-ring {
+	&:focus-visible {
+		outline: 2px solid rgb(var(--primary-color));
+		outline-offset: 2px;
+	}
+}
+
+/// A card sitting on the page: settings groups, hub tiles, profile sections.
+@mixin zt-card($padding: $zt-space-5) {
+	background: $zt-card-bg;
+	border: 1px solid $zt-card-border;
+	border-radius: $zt-radius-lg;
+	padding: $padding;
+}
+
+/// A neutral control surface: secondary buttons, icon buttons, segmented options.
+/// Hover and press change the fill only; nothing moves.
+@mixin zt-control {
+	background: $zt-control-bg;
+	border: 1px solid $zt-control-border;
+	border-radius: $zt-radius-md;
+	color: rgb(var(--text-color));
+	transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
+
+	&:hover:not(:disabled) {
+		background: $zt-control-bg-hover;
+		border-color: $zt-control-border-hover;
+	}
+
+	&:active:not(:disabled) {
+		background: $zt-control-bg-active;
+	}
+
+	@include zt-focus-ring;
+}
+
+/// A layer above the page: modal body, dropdown menu, popover.
+@mixin zt-float {
+	background: rgb(var(--background-color));
+	border: 1px solid $zt-card-border;
+	border-radius: $zt-radius-lg;
+	box-shadow: $zt-shadow-float;
 }

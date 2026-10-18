@@ -5,11 +5,13 @@ import 'dayjs/locale/tr';
 import 'dayjs/locale/en';
 import 'dayjs/locale/es';
 import 'dayjs/locale/ru';
+import 'dayjs/locale/zh-cn';
 import i18n from '../i18n/i18n';
 
-const SUPPORTED_LANGS = ['tr', 'en', 'es', 'ru'];
+// App language -> dayjs locale. Chinese is zh-cn in dayjs; without it zh fell back to Turkish.
+const DAYJS_LOCALES: [string, string][] = [['tr', 'tr'], ['en', 'en'], ['es', 'es'], ['ru', 'ru'], ['zh', 'zh-cn']];
 function resolveLang(lng: string): string {
-	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'tr';
+	return DAYJS_LOCALES.find(([app]) => lng?.startsWith(app))?.[1] || 'tr';
 }
 
 dayjs.extend(relativeTime);

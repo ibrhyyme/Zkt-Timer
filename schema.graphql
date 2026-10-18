@@ -310,6 +310,8 @@ type Query {
   customTrainer(id: String): CustomTrainer
   trainerAlternatives(caseName: String, category: String): [TrainerAlternative]
   adminTrainerAlternatives(pageSize: Int = 25, page: Int = 0, category: String): PaginatedTrainerAlternatives
+  trainerLibrary(knownVersion: String): TrainerLibrary
+  trainerLibraryAlternatives(category: String): TrainerLibraryAlternatives
   youtubeSearch(input: YouTubeSearchInput): [YouTubeVideoResult]
   dailyGoals: [DailyGoalType]
   dailyGoalReminderStatus: DailyGoalReminderResult
@@ -327,7 +329,6 @@ type Query {
   getPromoCodes: [PromoCode]
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
   siteConfig: SiteConfig
-  rankings(search: String, page: Int, mode: String): RankingsPage
   zktPublicCompetitions(q: String, pageSize: Int, page: Int): ZktPublicCompetitionList
   zktPublicMyCompetitions: [ZktPublicMyListItem]
   publicZktProfile(userId: String): PublicZktProfile
@@ -336,6 +337,7 @@ type Query {
   zktPublicRoundResults(roundId: String, competitionId: String): ZktPublicRoundResults
   zktPublicGroupAssignments(groupId: String, competitionId: String): ZktPublicGroupAssignments
   zktPublicCompetitor(key: String, competitionId: String): ZktPublicCompetitorDetail
+  zktPersonBests(zktId: String): [ZktEventPb!]
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
@@ -355,6 +357,18 @@ type Query {
   magnetTelemetryRows(newestFirst: Boolean, deviceModel: String, eventType: String, username: String, offset: Int, limit: Int): [MagnetTelemetryRow]
   magnetTelemetrySamples(id: String): String
   magnetTelemetrySummary(days: Int): [MagnetTelemetrySummary]
+  myCubeState: MyCubeState
+  adminCubeCalibrations(deviceModel: String, platform: String, puzzle: String, username: String, offset: Int, limit: Int): [AdminCubeCalibrationRow]
+  adminCubeCalibrationSummary(days: Int): [AdminCubeCalibrationSummary]
+  myAlgSets: MyAlgSets
+  algSet(code: String): AlgSet
+  communityAlgSets(page_size: Int, page: Int, category: String, puzzle: String, sort: String, q: String): CommunityAlgSetPage
+  battleLeaderboard(search: String, page: Int = 0, puzzle: String = "333"): BattleLeaderboardPage
+  myBattleRating(puzzle: String = "333"): MyBattleRating
+  userBattleRating(puzzle: String = "333", userId: String): MyBattleRating
+  battleMatchHistory(page: Int = 0, userId: String): BattleMatchHistoryPage
+  battleMatch(id: String): BattleMatchDetail
+  adminFlaggedBattleMatches(page: Int = 0): AdminBattleMatchPage
 }
 
 type Mutation {
@@ -364,6 +378,7 @@ type Mutation {
   deleteSolvesByCubeType(cubeType: String): Void
   deleteAllTrainingSolves: Void
   deleteAllSolves: Void
+  recordSolveView(shareCode: String!): Boolean!
   createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!, terms_agreed: Boolean!): PublicUserAccount
   updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, language: String): PublicUserAccount
   updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
@@ -374,12 +389,13 @@ type Mutation {
   uploadProfileHeader(file: Upload): Image!
   uploadProfilePicture(file: Upload): Image!
   updateProfile(input: ProfileInput): Profile!
+  recordProfileView(username: String!): Boolean!
   addNewSmartDevice(originalName: String, deviceId: String): SmartDevice
   changeSmartDeviceName(id: String, name: String): SmartDevice
   deleteSmartDevice(id: String): SmartDevice
-  deleteTimerBackground: TimerBackground!
-  uploadTimerBackground(file: Upload): TimerBackground!
-  setTimerBackgroundHex(hex: String): TimerBackground!
+  deleteTimerBackground(target: String): TimerBackground!
+  uploadTimerBackground(file: Upload, target: String): TimerBackground!
+  setTimerBackgroundMobileSame(same: Boolean!): TimerBackground!
   deleteNotification(id: String): Notification
   deleteAllNotifications: Int
   markNotificationAsRead(id: String): Notification
@@ -403,6 +419,7 @@ type Mutation {
   reorderSessions(ids: [String]): Void
   deleteSession(id: String): Session
   mergeSessions(newSessionId: String, oldSessionId: String): Session
+  splitSession(name: String, buckets: [SessionBucketInput], sessionId: String): Session
   bulkDeleteSessions(ids: [String]): Void
   bulkCreateSessions(sessions: [SessionInput]): Void
   setSetting(input: SettingInput): Setting
@@ -457,7 +474,6 @@ type Mutation {
   createCustomTrainer(input: CustomTrainerCreateInput): CustomTrainer
   updateCustomTrainer(input: CustomTrainerCreateInput, id: String): CustomTrainer
   deleteCustomTrainer(id: String): CustomTrainer
-  createTrainerAlternative(input: TrainerAlternativeCreateInput): TrainerAlternative
   adminDeleteTrainerAlternative(id: String): TrainerAlternative
   sendBulkEmail(input: SendBulkEmailInput): BulkEmailResult
   registerPushToken(input: RegisterPushTokenInput): PushTokenResult
@@ -477,7 +493,6 @@ type Mutation {
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
   deletePromoCode(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
-  recalculateAllRankings: Boolean
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
   unfollowCompetitor(id: String): Boolean
@@ -503,6 +518,27 @@ type Mutation {
   resolveMessageReport(note: String, action: ReportStatus, reportId: String): Boolean
   recordSmartCubeTelemetry(events: [SmartCubeTelemetryInput]): SmartCubeTelemetryResult
   recordMagnetTelemetry(events: [MagnetTelemetryInput]): MagnetTelemetryResult
+  createCube(input: CubeInput): Cube
+  updateCube(input: CubeUpdateInput, id: String): Cube
+  setCubeArchived(archived: Boolean, id: String): Cube
+  deleteCube(id: String): Boolean
+  setMainCube(cube_id: String, set_at: DateTime, puzzle: String): CubeMain
+  ensureSmartCube(ble_name: String, ble_device_id: String): Cube
+  saveCubeCalibration(input: CubeCalibrationInput): CubeCalibration
+  deleteCubeCalibration(id: String): Boolean
+  createAlgSet(input: AlgSetCreateInput): AlgSet
+  updateAlgSet(input: AlgSetUpdateInput, id: String): AlgSet
+  deleteAlgSet(id: String): Boolean
+  resetAlgSetCode(id: String): AlgSet
+  addAlgSetItems(items: [AlgSetItemInput], set_id: String): AlgSet
+  updateAlgSetItem(algorithm: String, item_id: String): AlgSetItem
+  removeAlgSetItems(item_ids: [String], set_id: String): AlgSet
+  reorderAlgSetItems(item_ids: [String], set_id: String): AlgSet
+  saveAlgSet(set_id: String): Boolean
+  unsaveAlgSet(set_id: String): Boolean
+  reportAlgSet(note: String, reason: String, set_id: String): Boolean
+  adminSetAlgSetHidden(reason: String, hidden: Boolean, set_id: String): AlgSet
+  adminVoidBattleMatch(id: String): VoidBattleMatchResult
 }
 
 type SmartDevice {
@@ -514,6 +550,117 @@ type SmartDevice {
   created_at: DateTime
   solves: [Solve]
   user: PublicUserAccount
+}
+
+type CubeCalibration {
+  id: String
+  cube_id: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type Cube {
+  id: String
+  puzzle: String
+  name: String
+  brand: String
+  is_smart: Boolean
+  ble_device_id: String
+  ble_name: String
+  legacy_smart_device_ids: [String]
+  archived_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+  solve_count: Int
+  first_used_at: DateTime
+  last_used_at: DateTime
+  calibrations: [CubeCalibration]
+}
+
+type CubeMain {
+  puzzle: String
+  cube_id: String
+  set_at: DateTime
+}
+
+type MyCubeState {
+  cubes: [Cube]
+  mains: [CubeMain]
+}
+
+type SolveCube {
+  id: String
+  name: String
+  brand: String
+  puzzle: String
+  is_smart: Boolean
+}
+
+type AdminCubeCalibrationRow {
+  id: String
+  user_id: String
+  username: String
+  email: String
+  cube_id: String
+  cube_name: String
+  cube_brand: String
+  puzzle: String
+  puzzle_name: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  current_near_min_ut: Float
+  current_far_max_ut: Float
+  current_quality: String
+  noisy: Boolean
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type AdminCubeCalibrationSummary {
+  puzzle: String
+  platform: String
+  device_model: String
+  calibrations: Int
+  distinct_users: Int
+  median_rest_ut: Float
+  p10_rest_ut: Float
+  median_peak_ut: Float
+  median_noise_ut: Float
+  weak_ratio: Float
+  telemetry_placements: Int
+  telemetry_median_near_ut: Float
+  telemetry_lifts: Int
+  telemetry_rejects: Int
 }
 
 type Solve {
@@ -538,6 +685,7 @@ type Solve {
   is_smart_cube: Boolean
   is_virtual_cube: Boolean
   smart_device_id: String
+  cube_id: String
   smart_turn_count: Int
   smart_turns: String
   smart_put_down_time: Float
@@ -548,6 +696,7 @@ type Solve {
   solve_method_steps: [SolveMethodStep]
   solve_views: [SolveView]
   smart_device: SmartDevice
+  cube: SolveCube
   user: PublicUserAccount
 }
 
@@ -647,8 +796,6 @@ type Integration {
   id: String
   user_id: String
   service_name: IntegrationType
-  auth_token: String
-  refresh_token: String
   auth_expires_at: BigInt
   wca_id: String
   wca_user_id: String
@@ -739,7 +886,91 @@ type Setting {
   scramble_top_color: String
   desktop_prefs: String
   mobile_prefs: String
+  trainer_options: String
   custom_cube_types: [CustomCubeType]
+}
+
+type AlgSetItem {
+  id: String
+  category: String
+  case_name: String
+  subset: String
+  puzzle: String
+  algorithm: String
+  position: Int
+}
+
+type AlgSetOwner {
+  id: String
+  username: String
+  verified: Boolean
+  avatar_path: String
+}
+
+type AlgSetSummary {
+  id: String
+  code: String
+  name: String
+  description: String
+  visibility: String
+  item_count: Int
+  save_count: Int
+  categories: [String]
+  puzzles: [String]
+  preview: [AlgSetItem]
+  owner: AlgSetOwner
+  published_at: DateTime
+  updated_at: DateTime
+  created_at: DateTime
+  hidden: Boolean
+}
+
+type AlgSet {
+  id: String
+  code: String
+  name: String
+  description: String
+  visibility: String
+  item_count: Int
+  save_count: Int
+  categories: [String]
+  puzzles: [String]
+  preview: [AlgSetItem]
+  owner: AlgSetOwner
+  published_at: DateTime
+  updated_at: DateTime
+  created_at: DateTime
+  hidden: Boolean
+  items: [AlgSetItem]
+  is_owner: Boolean
+  is_saved: Boolean
+}
+
+type SavedAlgSet {
+  set_id: String
+  saved_at: DateTime
+  set: AlgSetSummary
+  unavailable: Boolean
+}
+
+type MyAlgSets {
+  own: [AlgSetSummary]
+  saved: [SavedAlgSet]
+}
+
+type CommunityAlgSetPage {
+  items: [AlgSetSummary]
+  total: Int
+  has_more: Boolean
+}
+
+type ReportAlgSet {
+  id: String
+  code: String
+  name: String
+  visibility: String
+  hidden: Boolean
+  hidden_reason: String
 }
 
 type Report {
@@ -751,6 +982,8 @@ type Report {
   created_at: DateTime
   created_by: PublicUserAccount
   reported_user: PublicUserAccount
+  alg_set_id: String
+  alg_set: ReportAlgSet
 }
 
 type ReportSummary {
@@ -768,6 +1001,9 @@ type TimerBackground {
   user_id: String
   hex: String
   media_type: String
+  mobile_storage_path: String
+  mobile_media_type: String
+  mobile_same_as_desktop: Boolean
   created_at: DateTime
   user: PublicUserAccount
 }
@@ -931,8 +1167,8 @@ type BanLog {
   minutes: Int
   forever: Boolean
   created_at: DateTime
-  created_by: UserAccountForAdmin
-  banned_user: UserAccountForAdmin
+  created_by: PublicUserAccount
+  banned_user: PublicUserAccount
 }
 
 type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAccountForAdmin {
@@ -1072,7 +1308,6 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   iap_paused_until: DateTime
   iap_latest_event_at: DateTime
   revenuecat_user_id: String
-  password: String
 }
 
 interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & IPublicUserAccount {
@@ -1118,7 +1353,6 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   iap_paused_until: DateTime
   iap_latest_event_at: DateTime
   revenuecat_user_id: String
-  password: String
 }
 
 type PaginatedUserAccounts {
@@ -1208,6 +1442,8 @@ type MediaAsset {
   id: String
   kind: MediaAssetKind
   storage_path: String
+  is_video: Boolean
+  background_target: String
   created_at: DateTime
   size_bytes: Int
   user: PublicUserAccount
@@ -1261,6 +1497,7 @@ type SiteConfig {
   zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
   magnet_telemetry_enabled: Boolean
+  online_battle_enabled: Boolean
   method_steps_version: Int
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
@@ -1496,6 +1733,39 @@ type PaginatedTrainerAlternatives {
   hasMore: Boolean
 }
 
+type TrainerLibraryEntry {
+  name: String
+  algorithm: String
+  setup: String
+  alternativeCount: Int
+}
+
+type TrainerLibrarySubset {
+  subset: String
+  algorithms: [TrainerLibraryEntry]
+}
+
+type TrainerLibraryCategory {
+  category: String
+  subsets: [TrainerLibrarySubset]
+}
+
+type TrainerLibrary {
+  version: String
+  categories: [TrainerLibraryCategory!]
+}
+
+type TrainerCaseAlternatives {
+  name: String
+  alternatives: [String]
+}
+
+type TrainerLibraryAlternatives {
+  version: String
+  category: String
+  cases: [TrainerCaseAlternatives]
+}
+
 type YouTubeVideoResult {
   videoId: String
   title: String
@@ -1590,6 +1860,7 @@ type WcaScheduleAssignment {
   roomColor: String
   venueName: String
   stationNumber: Int
+  chance: Int
 }
 
 type WcaScheduleDay {
@@ -1607,6 +1878,7 @@ type WcaCompetitorAssignment {
   endTime: String
   stationNumber: Int
   roomName: String
+  chance: Int
 }
 
 type WcaPersonalBest {
@@ -1653,6 +1925,7 @@ type WcaGroup {
   competitors: [WcaGroupCompetitor]
   startTime: String
   endTime: String
+  chance: Int
 }
 
 type WcaRound {
@@ -1663,6 +1936,7 @@ type WcaRound {
   cutoffAttempts: Int
   advancementType: String
   advancementLevel: Int
+  dualChance: Boolean
   groups: [WcaGroup]
 }
 
@@ -1719,6 +1993,15 @@ type WcaLiveAttempt {
   result: Int
 }
 
+type WcaLiveChance {
+  chance: Int
+  attempts: [WcaLiveAttempt]
+  best: Int
+  average: Int
+  noShow: Boolean
+  counting: Boolean
+}
+
 type WcaLiveResult {
   ranking: Int
   best: Int
@@ -1732,6 +2015,7 @@ type WcaLiveResult {
   averageRecordTag: String
   advancing: Boolean
   advancingQuestionable: Boolean
+  chances: [WcaLiveChance!]
 }
 
 type WcaLiveTimeLimit {
@@ -1770,6 +2054,7 @@ type WcaLiveRoundInfo {
   dayIndex: Int
   dayLabel: String
   isFinal: Boolean
+  dualChance: Boolean
 }
 
 type WcaLiveEventInfo {
@@ -1786,6 +2071,9 @@ type WcaLiveScheduleActivity {
   endTime: String
   dayIndex: Int
   dayLabel: String
+  roundNumber: Int
+  isFinal: Boolean
+  chance: Int
 }
 
 type WcaLiveScheduleRoom {
@@ -1857,6 +2145,7 @@ type WcaLiveRoundResults {
   finished: Boolean
   numberOfAttempts: Int
   sortBy: String
+  dualChance: Boolean
   results: [WcaLiveResult]
 }
 
@@ -1925,27 +2214,6 @@ type RedeemPromoCodeResult {
   success: Boolean
   membership_type: String
   expires_at: DateTime
-}
-
-type RankedUser {
-  rank: Int
-  user_id: String
-  username: String
-  is_pro: Boolean
-  wca_id: String
-  country_iso2: String
-  score: Float
-  wca_competition_count: Int
-  wca_medal_gold: Int
-  wca_medal_silver: Int
-  wca_medal_bronze: Int
-  pfp_image_url: String
-}
-
-type RankingsPage {
-  rows: [RankedUser]
-  total_count: Int
-  page: Int
 }
 
 type ZktEventPb {
@@ -2036,6 +2304,7 @@ type ZktPublicDetailRound {
   startTime: String
   endTime: String
   roomId: String
+  dualChance: Boolean
   groups: [ZktPublicRoundGroup]
 }
 
@@ -2157,6 +2426,15 @@ type ZktPublicCompetitionList {
   pageSize: Int
 }
 
+type ZktPublicChance {
+  chance: Int
+  attempts: [Int]
+  best: Int
+  average: Int
+  noShow: Boolean
+  counting: Boolean
+}
+
 type ZktPublicAttemptResult {
   competitor: ZktPublicCompetitor
   ranking: Int
@@ -2167,6 +2445,7 @@ type ZktPublicAttemptResult {
   advancing: Boolean
   clinched: Boolean
   questionable: Boolean
+  chances: [ZktPublicChance!]
 }
 
 type ZktPublicRoundResults {
@@ -2181,6 +2460,7 @@ type ZktPublicRoundResults {
   cutoffAttempts: Int
   advancementType: String
   advancementLevel: Int
+  dualChance: Boolean
   results: [ZktPublicAttemptResult]
 }
 
@@ -2219,6 +2499,7 @@ type ZktPublicScheduleItemRow {
   startTime: String
   endTime: String
   dayLabel: String
+  chance: Int
   round: ZktPublicMiniRound
 }
 
@@ -2483,12 +2764,16 @@ type MagnetTelemetryRow {
   reversed: Boolean
   has_samples: Boolean
   app_version: String
+  cube_puzzle: String
+  near_min_ut: Float
   created_at: DateTime
 }
 
 type MagnetTelemetrySummary {
   platform: String
   device_model: String
+  cube_puzzle: String
+  median_near_min_ut: Float
   sensor_name: String
   distinct_users: Int
   placements: Int
@@ -2505,6 +2790,133 @@ type MagnetTelemetrySummary {
   unknown_hints: Int
   median_sigma: Float
   rate_hz: Float
+}
+
+type BattlePlayer {
+  id: String
+  username: String
+  pfp_image_url: String
+}
+
+type BattleLeaderboardRow {
+  rank: Int
+  user_id: String
+  username: String
+  pfp_image_url: String
+  rating: Int
+  provisional: Boolean
+  games: Int
+  wins: Int
+  losses: Int
+  draws: Int
+}
+
+type BattleLeaderboardPage {
+  rows: [BattleLeaderboardRow]
+  total_count: Int
+  page: Int
+  page_size: Int
+}
+
+type MyBattleRating {
+  puzzle: String
+  rating: Int
+  provisional: Boolean
+  games: Int
+  wins: Int
+  losses: Int
+  draws: Int
+  peak_rating: Int
+  rank: Int
+}
+
+type BattleMatchSummary {
+  id: String
+  puzzle: String
+  ended_at: DateTime
+  result: String
+  score_for: Int
+  score_against: Int
+  rated: Boolean
+  is_rematch: Boolean
+  end_reason: String
+  rating_before: Int
+  rating_after: Int
+  delta: Int
+  opponent: BattlePlayer
+}
+
+type BattleMatchHistoryPage {
+  items: [BattleMatchSummary]
+  total: Int
+  hasMore: Boolean
+}
+
+type BattleRoundDetail {
+  index: Int
+  scramble: String
+  winner: String
+  a_time_ms: Int
+  a_penalty: String
+  b_time_ms: Int
+  b_penalty: String
+  a_flags: [String]
+  b_flags: [String]
+  a_moves: String
+  b_moves: String
+}
+
+type BattleMatchDetail {
+  id: String
+  puzzle: String
+  status: String
+  end_reason: String
+  rated: Boolean
+  is_rematch: Boolean
+  winner: String
+  rounds_a: Int
+  rounds_b: Int
+  rating_a_before: Int
+  rating_a_after: Int
+  rating_b_before: Int
+  rating_b_after: Int
+  started_at: DateTime
+  ended_at: DateTime
+  voided_at: DateTime
+  flags: [String]
+  viewer_side: String
+  player_a: BattlePlayer
+  player_b: BattlePlayer
+  rounds: [BattleRoundDetail]
+}
+
+type AdminBattleMatchRow {
+  id: String
+  puzzle: String
+  status: String
+  end_reason: String
+  rated: Boolean
+  winner: String
+  rounds_a: Int
+  rounds_b: Int
+  ended_at: DateTime
+  voided_at: DateTime
+  flags: [String]
+  player_a: BattlePlayer
+  player_b: BattlePlayer
+}
+
+type AdminBattleMatchPage {
+  items: [AdminBattleMatchRow]
+  total: Int
+  hasMore: Boolean
+}
+
+type VoidBattleMatchResult {
+  match_id: String
+  changed: Boolean
+  reverted_a: Boolean
+  reverted_b: Boolean
 }
 
 type Notification {
@@ -2554,6 +2966,42 @@ input SmartDeviceInput {
   device_id: String
 }
 
+input CubeInput {
+  id: String
+  puzzle: String
+  name: String
+  brand: String
+  is_smart: Boolean
+  make_main: Boolean
+  set_at: DateTime
+}
+
+input CubeUpdateInput {
+  name: String
+  brand: String
+  is_smart: Boolean
+}
+
+input CubeCalibrationInput {
+  cube_id: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
+}
+
 input SolveInput {
   id: String
   time: Float
@@ -2574,6 +3022,7 @@ input SolveInput {
   is_virtual_cube: Boolean
   training_session_id: String
   smart_device_id: String
+  cube_id: String
   smart_turn_count: Int
   smart_turns: String
   analysis_method: String
@@ -2637,12 +3086,36 @@ input SettingInput {
   locale: String
   desktop_prefs: String
   mobile_prefs: String
+  trainer_options: String
+}
+
+input AlgSetCreateInput {
+  name: String
+  description: String
+  visibility: String
+}
+
+input AlgSetUpdateInput {
+  name: String
+  description: String
+  visibility: String
+}
+
+input AlgSetItemInput {
+  category: String
+  case_name: String
+  algorithm: String
 }
 
 input SessionInput {
   id: String
   name: String
   order: Float
+}
+
+input SessionBucketInput {
+  cube_type: String
+  scramble_subset: String
 }
 
 input SupportTicketInput {
@@ -2676,6 +3149,7 @@ input UpdateSiteConfigInput {
   zkt_backfill_enabled: Boolean
   smart_telemetry_enabled: Boolean
   magnet_telemetry_enabled: Boolean
+  online_battle_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
 }
 
@@ -2707,16 +3181,6 @@ input CustomTrainerCreateInput {
   name: String!
   private: Boolean
   description: String
-}
-
-input TrainerAlternativeCreateInput {
-  category: String!
-  subset: String!
-  case_name: String!
-  algorithm: String!
-  original_input: String!
-  setup: String
-  ll_pattern: String
 }
 
 input YouTubeSearchInput {
@@ -2818,6 +3282,8 @@ input MagnetTelemetryInput {
   reversed: Boolean
   samples: String
   app_version: String
+  cube_puzzle: String
+  near_min_ut: Float
 }
 
 input PaginationArgsInput {

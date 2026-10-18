@@ -2,7 +2,6 @@ import Notification from './notification';
 import {NotificationInput} from '../../@types/interfaces/server.interface';
 import {NotificationType} from '../../@types/enums';
 import {createI18nInstance} from '../../i18n_server';
-import {zktSlugOf} from '../../services/ZktWcaAdapter';
 
 /**
  * A record was broken at a live competition, for either authority.
@@ -95,15 +94,11 @@ export default class RecordBrokenNotification extends Notification {
 	 * absolute http link to the in-app browser and only navigates in-app for a
 	 * relative one.
 	 *
-	 * ZKT records land in the native ZKT view, not the WCA-adapted one. That route
-	 * passes its `:competitionId` straight through to the federation, which keys on
-	 * the bare slug — so the `zkt-` prefix has to come off here.
+	 * WCA and ZKT records land on the same live round page: a ZKT competition is
+	 * `/competitions/zkt-<slug>` and its ZKT Live tab is the wca-live route.
 	 */
 	relativeLink() {
 		const {competitionId, eventId, roundNumber} = this.meta;
-		if (this.isZkt()) {
-			return `/zkt-competitions/${zktSlugOf(competitionId)}/live/${eventId}/${roundNumber}`;
-		}
 		return `/competitions/${competitionId}/wca-live/${eventId}/${roundNumber}`;
 	}
 

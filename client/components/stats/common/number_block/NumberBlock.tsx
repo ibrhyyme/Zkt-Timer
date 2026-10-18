@@ -6,9 +6,17 @@ import StatModule from '../stat_module/StatModule';
 import { useMe } from '../../../../util/hooks/useMe';
 import { isNotPro } from '../../../../util/pro';
 import CountUp from '../count_up/CountUp';
-import { getTimeString } from '../../../../util/time';
+import { useTranslation } from 'react-i18next';
+import { formatDurationText, formatInteger } from '../../../../util/locale_format';
 
 const b = block('number-block');
+
+/**
+ * Icon colour for a stat with nothing to highlight. Only the icon takes it: the value
+ * itself is drawn in the theme's text colour, because grey values read as disabled
+ * (the faded-text rule) and grey on the module background had poor contrast.
+ */
+export const NEUTRAL_STAT_COLOR = '#6D7D90';
 
 interface Props {
 	icon: React.ReactElement;
@@ -35,20 +43,20 @@ interface Props {
  * Checks if a value can be animated with CountUp.
  * Returns the numeric value and decimal count if animatable.
  */
-function parseAnimatableValue(value: string | number): { to: number; decimals: number; separator: string } | null {
+function parseAnimatableValue(value: string | number): { to: number; decimals: number } | null {
 	if (typeof value === 'number') {
-		return { to: value, decimals: 0, separator: ',' };
+		return { to: value, decimals: 0 };
 	}
 
-	// Simple decimal number like "12.34" or "0.92"
+	// Simple decimal number like "12.34" or "0.92": a solve time, which keeps its point
 	if (/^\d+\.\d+$/.test(value)) {
 		const decimals = value.split('.')[1].length;
-		return { to: parseFloat(value), decimals, separator: '' };
+		return { to: parseFloat(value), decimals };
 	}
 
 	// Plain integer string like "1523"
 	if (/^\d+$/.test(value)) {
-		return { to: parseInt(value, 10), decimals: 0, separator: ',' };
+		return { to: parseInt(value, 10), decimals: 0 };
 	}
 
 	// Non-animatable: "-", "DNF", "1:02.34", "5 days", etc.
@@ -76,17 +84,23 @@ export default function NumberBlock(props: Props) {
 		animateSeconds,
 	} = props;
 
-	const timeFormatter = useCallback((seconds: number) => getTimeString(seconds, undefined, true), []);
+	const { t, i18n } = useTranslation();
+	const language = i18n.language;
+
+	// Total cubing time reads as words ("1 gün 15 sa 37 dk"), not as a stopwatch ("1d 15:37")
+	const timeFormatter = useCallback((seconds: number) => formatDurationText(seconds, t), [t, language]);
+	// Counts are grouped in the app's language: "12.450" in Turkish, "12,450" in English
+	const integerFormatter = useCallback((value: number) => formatInteger(Math.round(value), language), [language]);
 
 	let displayValue: string;
 	if (typeof props.value === 'number') {
-		displayValue = props.value.toLocaleString();
+		displayValue = formatInteger(props.value, language);
 	} else {
 		displayValue = props.value;
 	}
 
 	const style: CSS.Properties = {
-		color,
+		color: color === NEUTRAL_STAT_COLOR ? 'rgb(var(--text-color))' : color,
 		...props.style,
 	};
 	if (rowSpan) {
@@ -124,7 +138,7 @@ export default function NumberBlock(props: Props) {
 						<CountUp
 							to={animatable.to}
 							decimals={animatable.decimals}
-							separator={animatable.separator}
+							formatFn={animatable.decimals === 0 ? integerFormatter : undefined}
 							duration={0.5}
 						/>
 					) : (

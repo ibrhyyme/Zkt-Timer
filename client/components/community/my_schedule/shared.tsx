@@ -175,12 +175,12 @@ export function RecordTag({tag}: {tag: string | null | undefined}) {
 }
 
 const WCA_EVENTS_MAP: Record<string, string> = {
-	'333': '3x3x3',
-	'222': '2x2x2',
-	'444': '4x4x4',
-	'555': '5x5x5',
-	'666': '6x6x6',
-	'777': '7x7x7',
+	'333': '3x3',
+	'222': '2x2',
+	'444': '4x4',
+	'555': '5x5',
+	'666': '6x6',
+	'777': '7x7',
 	'333bf': '3x3 BLD',
 	'333fm': '3x3 FMC',
 	'333oh': '3x3 OH',
@@ -194,8 +194,42 @@ const WCA_EVENTS_MAP: Record<string, string> = {
 	'333mbf': '3x3 MBLD',
 };
 
+// Official event order. Object key order cannot carry it: integer-like keys
+// such as '333' are always enumerated first, in ascending order.
+export const WCA_EVENT_ORDER = Object.freeze([
+	'333', '222', '444', '555', '666', '777', '333bf', '333fm', '333oh',
+	'clock', 'minx', 'pyram', 'skewb', 'sq1', '444bf', '555bf', '333mbf',
+]);
+
 export function getEventShortName(eventId: string): string {
 	return WCA_EVENTS_MAP[eventId] || eventId;
+}
+
+/**
+ * Event name in the viewer's language. The names that ride on the data are the
+ * federation's (English, "3x3x3 One-Handed") or the server's (Turkish), whatever
+ * language the page is in, so the same event read differently tab to tab.
+ */
+export function localEventName(t: any, eventId: string, fallback?: string | null): string {
+	const key = `wca_events.${eventId}`;
+	const translated = t(key);
+	return translated !== key ? translated : fallback || getEventShortName(eventId);
+}
+
+/**
+ * A ZKT round in the viewer's language: "Final" for a chain's last round, else
+ * "1. Tur". A WCA round keeps the name WCA Live gave it.
+ */
+export function liveRoundLabel(t: any, round: {number?: number; isFinal?: boolean | null; name?: string}, isZkt: boolean): string {
+	if (round.isFinal) return t('zkt_comp.round_final');
+	if (isZkt && round.number) return t('zkt_comp.round_n', {n: round.number});
+	return round.name || '';
+}
+
+/** "Şans 2" next to a group of a ZKT Dual Chance round; nothing on other rounds. */
+export function ChanceTag({chance, t}: {chance?: number | null; t: any}) {
+	if (!chance) return null;
+	return <span className={b('chance-tag')}>{t('zkt_comp.chance_n', {n: chance})}</span>;
 }
 
 export function EventIcon({eventId, size = 16}: {eventId: string; size?: number}) {

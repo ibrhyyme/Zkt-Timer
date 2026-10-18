@@ -9,6 +9,7 @@ import hexToRgba from 'hex-to-rgba';
 import { AxisBottom } from '@visx/axis';
 import block from '../../../styles/bem';
 import { useTheme } from '../../../util/hooks/useTheme';
+import { labelStride } from '../../../util/chart_axis';
 
 const b = block('bar-graph');
 
@@ -64,6 +65,11 @@ export default function BarGraph(props: Props) {
 						range: [parent.height, 0],
 					});
 
+					// Range labels such as "13.3-15.4" are wider than a narrow bar and ran into
+					// each other (2.7-f): label every n-th bar so neighbours never touch.
+					const xLabels = displayData.map(getX);
+					const stride = labelStride(xLabels, xScale.bandwidth());
+
 					return (
 						<svg width={parent.width} height={parent.height}>
 							<filter id="distroShadow" height="130%">
@@ -92,7 +98,8 @@ export default function BarGraph(props: Props) {
 								})}
 								left={-2}
 								strokeWidth={0}
-								numTicks={Math.min(20, displayData.length)}
+								tickValues={xLabels}
+								tickFormat={(value, index) => (index % stride === 0 ? String(value) : '')}
 								top={parent.height - 20}
 							/>
 

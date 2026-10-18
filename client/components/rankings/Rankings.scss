@@ -1,535 +1,442 @@
 @import '../../styles/config';
+$mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+$hair: 1px solid rgba(var(--text-color), 0.08);
 
+// The column header and every row share one grid.
+@mixin rankings-cols {
+	display: grid;
+	grid-template-columns: 2.75rem minmax(0, 1fr) 7rem 4.5rem 5rem;
+	align-items: center;
+	column-gap: 1rem;
+	padding-left: 1.75rem;
+	padding-right: 1.75rem;
+}
+
+// /ranks (ranking-battle 5.6), in the Online Battle screens' language: a heading in
+// Archivo's wide heavy cut, one boxed panel, numbers in mono, small caps labels in mono.
+// No effects; hierarchy from size and weight.
 .zt-rankings {
 	width: 100%;
+	color: rgb(var(--text-color));
 
 	&__inner {
-		max-width: 42rem;
+		max-width: 52rem;
 		margin: 0 auto;
+
+		@include bp-up($bp-lg) {
+			padding-top: 1.5rem;
+		}
 	}
 
-	// WCA Banner
-	&__wca-banner {
-		display: flex;
-		align-items: center;
-		gap: 1.25rem;
-		padding: 1.25rem 1.5rem;
+	&__head {
+		display: none;
 		margin-bottom: 1.5rem;
-		border-radius: 0.75rem;
-		background: linear-gradient(135deg, rgba(30, 60, 114, 0.4) 0%, rgba(42, 82, 152, 0.2) 100%);
-		border: 1px solid rgba(100, 150, 255, 0.12);
+
+		@include bp-up($bp-lg) {
+			display: block;
+		}
+	}
+
+	&__title {
+		margin: 0 0 0.5rem;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 2.75rem;
+		font-weight: 800;
+		font-stretch: 125%;
+		line-height: 1.05;
+		letter-spacing: -0.01em;
+	}
+
+	&__subtitle {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 500;
+	}
+
+	// Small caps label in mono: column names, "You", stat names.
+	&__label {
+		margin: 0;
+		font-family: $mono;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+	}
+
+	// ── Not open yet ──
+	&__coming-soon {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		padding: 2.5rem 1.5rem;
+		border-radius: 20px;
+		background: rgba(var(--text-color), 0.025);
+		border: $hair;
+		text-align: center;
 
 		@include bp-down($bp-sm) {
-			flex-direction: column;
-			text-align: center;
+			padding: 2rem 1rem;
 		}
 	}
 
-	&__wca-banner-logo {
-		width: 48px;
-		height: 48px;
-		flex-shrink: 0;
+	&__coming-soon-icon {
+		color: rgb(var(--primary-color));
 	}
 
-	&__wca-banner-body {
-		flex: 1;
-	}
-
-	&__wca-banner-title {
+	&__coming-soon-body {
+		margin: 0;
+		max-width: 28rem;
 		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	// ── The board: one panel ──
+	&__board {
+		display: flex;
+		flex-direction: column;
+		border-radius: 20px;
+		background: rgba(var(--text-color), 0.025);
+		border: $hair;
+		overflow: hidden;
+	}
+
+	&__me {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 1rem 2rem;
+		padding: 1.5rem 1.75rem;
+		border-bottom: $hair;
+
+		@include bp-down($bp-sm) {
+			padding: 1.25rem;
+		}
+
+		&--cta {
+			align-items: center;
+		}
+	}
+
+	&__me-cta {
+		margin: 0;
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 1.25rem;
+		font-weight: 800;
+		font-stretch: 112%;
+		line-height: 1.3;
+	}
+
+	&__me-main {
+		display: flex;
+		flex-direction: column;
+		gap: 0.375rem;
+	}
+
+	&__me-rating .zt-rankings__rating {
+		font-size: 3rem;
 		font-weight: 700;
-		color: rgb(var(--text-color));
-		margin: 0 0 0.25rem;
+		line-height: 1;
+		letter-spacing: -0.02em;
 	}
 
-	&__wca-banner-desc {
-		font-size: 0.82rem;
-		color: rgba(var(--text-color), 0.7);
-		margin: 0 0 0.75rem;
-		line-height: 1.4;
+	&__me-stats {
+		display: flex;
+		gap: 2rem;
+		margin: 0;
 	}
 
-	&__wca-banner-btn {
-		display: inline-flex;
+	&__me-stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	&__me-stat-value {
+		margin: 0;
+		font-family: $mono;
+		font-size: 1.25rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 1rem 1.75rem;
+		border-bottom: $hair;
+
+		@include bp-down($bp-sm) {
+			padding: 0.875rem 1.25rem;
+		}
+	}
+
+	&__search {
+		flex: 1;
+		min-width: 0;
+		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.55rem 1.25rem;
-		background: rgba(var(--text-color), 0.1);
-		border: 1px solid rgba(var(--text-color), 0.18);
-		color: rgb(var(--text-color));
+		padding: 0 0.75rem;
+		height: 2.5rem;
 		border-radius: 0.5rem;
-		font-weight: 600;
-		font-size: 0.85rem;
-		cursor: pointer;
-		transition: all 0.15s;
-
-		&:hover {
-			background: rgba(var(--text-color), 0.16);
-			border-color: rgba(var(--text-color), 0.25);
-		}
-	}
-
-	// Tabs
-	&__tabs {
-		display: flex;
-		background: rgb(var(--module-color));
-		border-radius: 0.5rem;
-		padding: 3px;
-		margin-bottom: 1rem;
-		border: 1px solid rgba(var(--text-color), 0.06);
-	}
-
-	&__tab {
-		flex: 1;
-		padding: 0.5rem 0.5rem;
-		border-radius: 0.4rem;
-		border: none;
-		background: transparent;
-		color: rgba(var(--text-color), 0.4);
-		font-size: 0.8rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s;
-
-		&:hover {
-			color: rgba(var(--text-color), 0.7);
-		}
-
-		&--active {
-			background: rgba(var(--text-color), 0.08);
-			color: rgb(var(--text-color));
-			font-weight: 600;
-		}
-	}
-
-	// Info toggle (inside tabs bar)
-	&__info-toggle {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		flex-shrink: 0;
-		border-radius: 0.4rem;
-		border: none;
-		background: transparent;
-		color: rgba(var(--text-color), 0.35);
-		cursor: pointer;
-		transition: all 0.15s;
-
-		&:hover {
-			color: rgba(var(--text-color), 0.7);
-		}
-
-		&--active {
-			color: rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.1);
-		}
-	}
-
-	// Info card
-	&__info-card {
-		@include dark-glass(0.08, 12px, 0.06);
-		border-radius: 0.6rem;
-		padding: 1rem 1.2rem;
-		margin-bottom: 1rem;
-	}
-
-	&__info-title {
-		font-size: 0.9rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		margin: 0 0 0.5rem;
-	}
-
-	&__info-text {
-		font-size: 0.8rem;
-		line-height: 1.5;
-		color: rgba(var(--text-color), 0.7);
-		margin: 0 0 0.35rem;
-
-		&:last-child {
-			margin-bottom: 0;
-		}
-
-		&--dim {
-			color: rgba(var(--text-color), 0.45);
-			font-size: 0.75rem;
-		}
-	}
-
-	&__info-subtitle {
-		font-size: 0.82rem;
-		font-weight: 600;
-		color: rgba(var(--text-color), 0.85);
-		margin: 0.7rem 0 0.3rem;
-	}
-
-	&__info-list {
-		margin: 0.25rem 0 0.35rem 1.2rem;
-		padding: 0;
-		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.65);
-		line-height: 1.6;
-	}
-
-	// Search
-	&__search-box {
-		position: relative;
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 1rem;
-		padding: 0.65rem 1rem;
-		background: rgb(var(--module-color));
-		border-radius: 0.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		font-size: 0.95rem;
-		overflow: hidden;
-		color: #fff;
-
-		svg {
-			color: #fff;
-			flex-shrink: 0;
-		}
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.14);
 
 		&:focus-within {
 			border-color: rgb(var(--primary-color));
 		}
 	}
 
+	&__search-icon {
+		flex-shrink: 0;
+	}
+
 	&__search-input {
 		flex: 1;
-		background: transparent;
-		border: none;
+		min-width: 0;
+		height: 100%;
+		border: 0;
 		outline: none;
-		color: #fff;
-		font-size: 0.9rem;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 1rem;
 
 		&::placeholder {
-			color: rgba(255, 255, 255, 0.3);
+			color: rgba(var(--text-color), 0.7);
 		}
 	}
 
-	// Content
-	&__content {
-		min-height: 200px;
+	&__puzzle {
+		flex-shrink: 0;
+		font-family: $mono;
+		font-size: 0.8125rem;
+		font-weight: 700;
 	}
 
-	// States
 	&__state {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		padding: 4rem 1rem;
+		gap: 0.75rem;
+		padding: 2.5rem 1rem;
+		font-size: 1.5rem;
+		text-align: center;
 	}
 
-	&__spinner {
-		width: 1.5rem;
-		height: 1.5rem;
-		border: 2px solid rgba(var(--text-color), 0.08);
-		border-top-color: rgb(var(--primary-color));
-		border-radius: 50%;
-		animation: zt-rankings-spin 0.6s linear infinite;
+	&__state-text {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.5;
 	}
 
-	@keyframes zt-rankings-spin {
-		to { transform: rotate(360deg); }
+	&__cols {
+		@include rankings-cols;
+		padding-top: 0.875rem;
+		padding-bottom: 0.5rem;
+		font-family: $mono;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+
+		@include bp-down($bp-sm) {
+			display: none;
+		}
 	}
 
-	&__empty-text {
-		font-size: 0.85rem;
-		color: rgba(var(--text-color), 0.4);
+	&__cols-end {
+		text-align: right;
 	}
 
-	// Card list
-	&__card-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
+	&__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
 	}
 
-	// Card
-	&__card {
+	&__row {
+		@include rankings-cols;
+		grid-template-areas: 'rank player rating games win' 'hint hint hint hint hint';
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		border-top: $hair;
+
+		// The viewer's own row: a primary bar on the left edge, no fill.
+		&--me {
+			box-shadow: inset 3px 0 0 rgb(var(--primary-color));
+		}
+
+		@include bp-down($bp-sm) {
+			grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+			grid-template-areas: 'rank player rating' '. meta meta' 'hint hint hint';
+			row-gap: 0.125rem;
+			padding: 0.75rem 1.25rem;
+		}
+	}
+
+	&__rank {
+		grid-area: rank;
+		font-family: $mono;
+		font-size: 0.9375rem;
+		font-weight: 700;
+	}
+
+	&__player {
+		grid-area: player;
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 0.85rem 1rem;
-		background: rgb(var(--module-color));
-		border-radius: 0.5rem;
-		border: 1px solid rgba(var(--text-color), 0.06);
-		cursor: pointer;
-		transition: all 0.15s;
+		min-width: 0;
+		color: rgb(var(--text-color));
+		text-decoration: none;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 
-		&--gold {
-			border-left: 3px solid #ffd700;
-		}
-
-		&--silver {
-			border-left: 3px solid #c0c0c0;
-		}
-
-		&--bronze {
-			border-left: 3px solid #cd7f32;
+		&:hover .zt-rankings__name {
+			text-decoration: underline;
 		}
 	}
 
-	// Rank
-	&__card-rank {
-		width: 2rem;
-		text-align: center;
+	&__avatar {
 		flex-shrink: 0;
-	}
-
-	&__rank-num {
-		font-weight: 700;
-		font-size: 0.85rem;
-		color: rgba(var(--text-color), 0.4);
-
-		&--gold { color: #ffd700; }
-		&--silver { color: #c0c0c0; }
-		&--bronze { color: #cd7f32; }
-	}
-
-	// Avatar
-	&__card-avatar {
-		position: relative;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		overflow: hidden;
-		flex-shrink: 0;
-		border: 2px solid rgba(var(--text-color), 0.1);
-
-		&--pro {
-			overflow: visible;
-			border: none;
-			padding: 3px;
-
-			&::before {
-				content: '';
-				position: absolute;
-				inset: 0;
-				border-radius: 50%;
-				background: conic-gradient(from 0deg, #246bfd, #a855f7, #66bb6a, #246bfd);
-				animation: pro-ring-spin 8s linear infinite;
-			}
-
-			.zt-rankings__avatar-img {
-				position: relative;
-				z-index: 1;
-				border-radius: 50%;
-			}
-
-			.zt-rankings__avatar-fallback {
-				position: relative;
-				z-index: 1;
-				border-radius: 50%;
-				overflow: hidden;
-				background: rgb(var(--module-color));
-			}
-		}
-	}
-
-	&__avatar-img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	&__avatar-fallback {
-		width: 100%;
-		height: 100%;
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(var(--primary-color), 0.15);
-		color: rgb(var(--primary-color));
-		font-weight: 700;
-		font-size: 1rem;
-	}
-
-	// Info
-	&__card-info {
-		flex: 1;
-		min-width: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-	}
-
-	&__card-name-row {
-		display: flex;
-		align-items: center;
-		gap: 0.35rem;
-	}
-
-	&__flag {
-		font-size: 0.8rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		flex-shrink: 0;
-		letter-spacing: 0.5px;
-	}
-
-	&__username {
-		font-weight: 600;
-		font-size: 0.9rem;
-		color: rgb(var(--text-color));
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	&__pro-badge {
-		flex-shrink: 0;
-		font-size: 0.5rem;
-		font-weight: 700;
-		padding: 0.1rem 0.3rem;
-		border-radius: 3px;
-		background: rgba(var(--primary-color), 0.12);
-		color: rgb(var(--primary-color));
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	&__wca-id {
-		font-size: 0.65rem;
-		color: rgba(var(--text-color), 0.25);
-	}
-
-	// Stats (medals, competitions)
-	&__card-stats {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-top: 0.15rem;
-	}
-
-	&__stat {
-		display: flex;
-		align-items: center;
-		gap: 0.2rem;
-		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.4);
-
-		svg {
-			flex-shrink: 0;
-		}
-
-		&--gold {
-			color: #ffd700;
-		}
-
-		&--silver {
-			color: #c0c0c0;
-		}
-
-		&--bronze {
-			color: #cd7f32;
-		}
-	}
-
-	// Score
-	&__card-score {
-		text-align: right;
-		flex-shrink: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-	}
-
-	&__score-value {
-		font-family: 'Roboto Mono', 'SF Mono', monospace;
-		font-size: 1rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-	}
-
-	&__score-label {
-		font-size: 0.6rem;
-		color: rgba(var(--text-color), 0.3);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-
-	// Pagination
-	&__pagination {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 0.15rem;
-		margin-top: 1.25rem;
-	}
-
-	&__page-btn {
 		width: 2rem;
 		height: 2rem;
-		display: flex;
+		border-radius: 50%;
+		overflow: hidden;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-weight: 800;
+		font-size: 0.875rem;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	&__rating {
+		grid-area: rating;
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.375rem;
+		font-family: $mono;
+		font-size: 1.125rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__provisional {
+		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 6px;
-		border: 1px solid rgba(var(--text-color), 0.06);
+		min-width: 1.375rem;
+		height: 1.375rem;
+		padding: 0;
+		border-radius: 5px;
+		border: 1px solid rgba(var(--text-color), 0.35);
 		background: transparent;
-		color: rgba(var(--text-color), 0.5);
-		font-size: 0.78rem;
+		color: rgb(var(--text-color));
+		font-family: $mono;
+		font-size: 0.75rem;
+		font-weight: 700;
 		cursor: pointer;
-		transition: all 0.12s;
 
-		&:hover:not(:disabled) {
-			background: rgba(var(--text-color), 0.06);
-			color: rgb(var(--text-color));
-		}
-
-		&:disabled {
-			opacity: 0.2;
-			cursor: default;
-		}
-
-		&--active {
-			background: rgba(var(--text-color), 0.08);
-			border-color: rgba(var(--text-color), 0.15);
-			color: rgb(var(--text-color));
-			font-weight: 600;
+		&[aria-expanded='true'] {
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
 		}
 	}
 
-	// Responsive
-	@include bp-down($bp-xs) {
-		&__tab {
-			font-size: 0.68rem;
-			padding: 0.4rem 0.25rem;
-		}
+	// Desktop: the two figures are columns of the row grid. Phone: one line under the name.
+	&__meta {
+		display: contents;
 
-		&__card {
-			padding: 0.7rem 0.6rem;
-			gap: 0.5rem;
-		}
-
-		&__card-avatar {
-			width: 32px;
-			height: 32px;
-		}
-
-		&__username {
-			font-size: 0.8rem;
-		}
-
-		&__score-value {
-			font-size: 0.85rem;
-		}
-
-		&__card-stats {
-			gap: 0.35rem;
+		@include bp-down($bp-sm) {
+			grid-area: meta;
+			display: inline-flex;
+			gap: 0.75rem;
+			font-size: 0.8125rem;
+			white-space: nowrap;
+			padding-left: 2.75rem;
 		}
 	}
-}
 
-@keyframes pro-ring-spin {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(360deg); }
+	&__games,
+	&__win {
+		font-family: $mono;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+
+		@include bp-down($bp-sm) {
+			font-family: inherit;
+			font-size: inherit;
+			text-align: left;
+		}
+	}
+
+	&__games {
+		grid-area: games;
+	}
+
+	&__win {
+		grid-area: win;
+	}
+
+	&__games-full {
+		display: none;
+
+		@include bp-down($bp-sm) {
+			display: inline;
+		}
+	}
+
+	&__games-num {
+		@include bp-down($bp-sm) {
+			display: none;
+		}
+	}
+
+	&__hint {
+		margin: 0;
+		font-size: 0.875rem;
+		line-height: 1.4;
+
+		&--row {
+			grid-area: hint;
+			padding-top: 0.375rem;
+		}
+
+		&--me {
+			flex-basis: 100%;
+		}
+	}
+
+	&__more {
+		display: flex;
+		justify-content: center;
+		padding: 1rem;
+		border-top: $hair;
+	}
 }

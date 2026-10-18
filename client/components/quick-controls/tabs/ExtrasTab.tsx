@@ -10,17 +10,15 @@ import { isProEnabled, isNotPro } from '../../../lib/pro';
 import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
 import { isNative } from '../../../util/platform';
 import { CaretDown, CaretUp, Crown, Minus, Plus } from 'phosphor-react';
-import { TimerModuleType } from '../../timer/@types/enums';
-import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
 import { useSlamStop } from '../../../util/slam-stop/settings';
 import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared/util/solve/multiphase';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
 import SlamSensitivitySlider from './SlamSensitivitySlider';
 import MagnetPanel from './MagnetPanel';
+import CubeSelectRow from '../cube_select/CubeSelectRow';
 import { useMagnetStartSettings } from '../../../util/magnet-start/settings';
-import { useMagnetAvailability } from '../../../util/magnet-start/availability';
-import { canUseMagnetStart } from '../../../lib/magnet-start-access';
+import { useMagnetTimerOwnsInput } from '../../../util/magnet-start/useMagnetTimer';
 
 interface ExtrasNumberInputProps {
 	label: string;
@@ -45,10 +43,11 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 
 	return (
 		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-			<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+			{/* One line: the label used to wrap into three lines in the narrow mobile panel. */}
+			<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 				{label}
 			</span>
-			<div className="flex items-center space-x-2">
+			<div className="shrink-0 flex items-center space-x-2">
 				<button
 					type="button"
 					onClick={decrement}
@@ -90,13 +89,13 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 
 	return (
 		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-			<span className={`font-medium transition-colors ${disabled ? 'text-text/30' : 'text-text/80 group-hover:text-text'}`}>
+			<span className={`min-w-0 truncate font-medium transition-colors ${disabled ? 'text-text/30' : 'text-text/80 group-hover:text-text'}`}>
 				{label}
 			</span>
 			<button
 				type="button"
 				disabled={disabled}
-				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
+				className={`relative shrink-0 h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
 					? 'bg-primary border-primary shadow-lg shadow-primary/30'
 					: 'bg-button border-text/[0.1] hover:bg-button'
 					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
@@ -143,14 +142,14 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 
 	return (
 		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] transition-all duration-200 hover:border-text/[0.15]">
-			<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+			<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 				{label}
 			</span>
-			<div className="relative" ref={containerRef}>
+			<div className="relative shrink-0" ref={containerRef}>
 				<button
 					type="button"
 					onClick={() => setIsOpen(!isOpen)}
-					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[120px] justify-between border ${isOpen
+					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[96px] justify-between border ${isOpen
 							? 'bg-button border-primary/50 text-text'
 							: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15]'
 						}`}
@@ -187,8 +186,8 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 }
 
 interface ExtrasTabProps {
-	// Hide mobile timer module selectors when opened from FriendlyRoom (room).
-	// This setting is for the Timer page's mobile view — the room has its own layout.
+	// No longer read: the mobile module selectors left this panel (the modules are switched
+	// by swiping over them). Still accepted so SettingsDropdown and the room drawer compile.
 	hideMobileModules?: boolean;
 	// Hide smart cube-specific settings in FriendlyRoom (multi-phase analysis, recognition times)
 	// — the room's smart cube flow shows no phase ladder at all (LiveAnalysisOverlay is only
@@ -200,7 +199,6 @@ interface ExtrasTabProps {
 }
 
 export default function ExtrasTab({
-	hideMobileModules = false,
 	hideSmartCubeFeatures = false,
 	hideSlamStop = false,
 }: ExtrasTabProps = {}) {
@@ -215,40 +213,29 @@ export default function ExtrasTab({
 	const multiPhaseCount = useSettings('multi_phase_count');
 	const virtualCubeMultiPhase = useSettings('virtual_cube_multi_phase');
 	const showRecognition = useSettings('smart_cube_show_recognition');
-	const mobileModules = useSettings('mobile_timer_modules');
 	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
 	const slamStop = useSlamStop();
 	const magnetStart = useMagnetStartSettings();
 	const me = useMe();
-	const magnetAllowed = canUseMagnetStart(me);
-	// Probed for everyone who could see the row, not only for members: the locked Pro row
-	// is shown only on phones whose binary and sensor can actually run the feature.
-	const magnetCaps = useMagnetAvailability(timerType === 'keyboard' && !manualEntry && !hideSlamStop);
+	// The Magnet Timer is its own input now (timer_type 'magnet'): lifting the cube starts,
+	// dropping it stops, both always on, so it has no toggles here. Its only option is the
+	// upside-down phone. Rooms never run it (hideSlamStop marks the room panel).
+	// useMagnetTimerOwnsInput checks Pro, the sensor probe and the slam detector; a Magnet
+	// selection that fails one of them runs as the touch timer and gets the touch options.
+	const magnetOwnsInput = useMagnetTimerOwnsInput();
+	const magnetOptionsVisible = magnetOwnsInput && !hideSlamStop;
+	const touchType = timerType === 'keyboard' || (timerType === 'magnet' && !magnetOwnsInput);
 	const dispatch = useDispatch();
 
 	// Device-local setting (NOT a synced Redux setting) — only meaningful where
 	// the touch timer + KeyWatcher stop path is active. Availability check keeps
 	// it hidden on old binaries that don't ship the native plugin yet.
-	const slamVisible = isSlamDetectorAvailable() && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
+	const slamVisible = isSlamDetectorAvailable() && touchType && !manualEntry && !hideSlamStop;
 	// Pro feature: shown to everyone (visible-but-locked), but non-Pro users get a
 	// "Pro" badge + upsell modal instead of the toggle. PRO_ENABLED=false → no gate.
 	const slamProGated = isProEnabled() && isNotPro(me);
-	// Magnet lift-to-start: Pro (canUseMagnetStart is the single switch). Same scope as
-	// slam-to-stop: touch timer only, hidden in rooms, and only on binaries that ship the
-	// MagnetDetector plugin with an uncalibrated magnetometer. Visible-but-locked for
-	// non-members, like slam-to-stop.
-	const magnetVisible = !!magnetCaps && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
-	const magnetProGated = !magnetAllowed;
-
-	function toggleMagnetStart() {
-		const next = !magnetStart.enabled;
-		magnetStart.setEnabled(next);
-		// The flow is lift to start, drop to stop. Turning it on switches slam-to-stop on
-		// as well where it is usable; it stays independent (a tap always stops).
-		if (next && slamVisible && !slamProGated && !slamStop.enabled) slamStop.setEnabled(true);
-	}
 
 	const extrasOptions = [
 		{
@@ -285,32 +272,6 @@ export default function ExtrasTab({
 		},
 	];
 
-	const MODULE_LABELS: Record<string, string> = {
-		[TimerModuleType.HISTORY]: t('timer_modules.history'),
-		[TimerModuleType.SCRAMBLE]: t('timer_modules.scramble'),
-		[TimerModuleType.CROSS_SOLVER]: t('timer_modules.cross_solver'),
-		[TimerModuleType.SOLVE_GRAPH]: t('timer_modules.solve_graph'),
-		[TimerModuleType.TIME_DISTRO]: t('timer_modules.time_distro'),
-		[TimerModuleType.PHASE_ANALYSIS]: t('timer_modules.phase_analysis'),
-	};
-
-	function handleModuleChange(index: number, value: string) {
-		const next = [...(mobileModules || [TimerModuleType.HISTORY, TimerModuleType.SCRAMBLE])];
-		next[index] = value as TimerModuleType;
-		setSetting('mobile_timer_modules', next);
-	}
-
-	function moduleOptions(currentIndex: number) {
-		const current = mobileModules?.[currentIndex];
-		const other = mobileModules?.[currentIndex === 0 ? 1 : 0];
-		return MOBILE_MODULE_OPTIONS
-			.filter((opt) => opt === current || opt !== other)
-			.map((opt) => ({ label: MODULE_LABELS[opt], value: opt as string }));
-	}
-
-	const slot0 = mobileModules?.[0] || TimerModuleType.HISTORY;
-	const slot1 = mobileModules?.[1] || TimerModuleType.SCRAMBLE;
-
 	const analysisOptions = [
 		{ label: t('quick_controls.none'), value: 'none' },
 		{ label: 'CFOP', value: 'cfop' },
@@ -341,33 +302,22 @@ export default function ExtrasTab({
 
 	return (
 		<div className="space-y-3">
-			<div className="flex items-center space-x-1.5 mb-1">
-				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
-				<p className="text-text/50 text-xs font-medium">
-					{t('quick_controls.extras_description')}
-				</p>
-			</div>
-			{extrasOptions.map((option) => (
-				<ExtrasOption
-					key={option.label}
-					label={option.label}
-					isActive={option.isActive}
-					hidden={option.hidden}
-					onClick={option.onClick}
-				/>
-			))}
-
+			{/* Slam-to-stop first (owner request, 1.6): it is the Pro option of the touch timer,
+			    so members find it at once and everyone else sees what Pro adds (Pro badge, opens
+			    the Pro dialog). */}
 			{slamVisible && slamProGated ? (
-				// Visible-but-locked: tap anywhere on the row opens the Pro upsell modal
+				// Visible-but-locked: tap anywhere on the row opens the Pro upsell modal.
+				// [font-size:inherit]: a button gets the browser's smaller control font and the
+				// other rows (divs) the panel's; without it this label read a size smaller.
 				<button
 					type="button"
 					onClick={() => openProOnlyModal(dispatch, t, 'slam_to_stop')}
-					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
+					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200 [font-size:inherit]"
 				>
-					<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+					<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 						{t('quick_controls.slam_to_stop')}
 					</span>
-					<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
+					<span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
 						<Crown weight="fill" size={12} />
 						Pro
 					</span>
@@ -384,42 +334,38 @@ export default function ExtrasTab({
 				</>
 			)}
 
-			{magnetVisible && magnetProGated && (
-				// Visible-but-locked: tap anywhere on the row opens the Pro upsell modal
-				<button
-					type="button"
-					onClick={() => openProOnlyModal(dispatch, t, 'magnet_start')}
-					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
-				>
-					<span className="font-medium text-text/80 group-hover:text-text transition-colors">
-						{t('quick_controls.magnet_start')}
-					</span>
-					<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
-						<Crown weight="fill" size={12} />
-						Pro
-					</span>
-				</button>
-			)}
+			{/* The cube new solves are stamped with (magnet-cubes 5.4), right after slam-to-stop
+			    (first on the Magnet Timer, which has no slam row). Not in rooms (hideSlamStop
+			    marks the room panel): room solves carry no cube. */}
+			{!hideSlamStop && <CubeSelectRow magnetOwnsInput={magnetOwnsInput} />}
 
-			{magnetVisible && !magnetProGated && (
+			{extrasOptions.map((option) => (
+				<ExtrasOption
+					key={option.label}
+					label={option.label}
+					isActive={option.isActive}
+					hidden={option.hidden}
+					onClick={option.onClick}
+				/>
+			))}
+
+			{magnetOptionsVisible && (
 				<>
-					<ExtrasOption
-						label={t('quick_controls.magnet_start')}
-						isActive={magnetStart.enabled}
-						onClick={toggleMagnetStart}
-					/>
 					{/* Phone upside down on the table: the cube rests between the user and the
 						phone, and the timer page is drawn rotated (util/reversed-ui.ts). Mobile
 						layout only, which counts an unfolded foldable. */}
 					<ExtrasOption
 						label={t('quick_controls.magnet_reversed')}
 						isActive={magnetStart.reversed}
-						hidden={!magnetStart.enabled || !mobileMode}
+						hidden={!mobileMode}
 						onClick={() => magnetStart.setReversed(!magnetStart.reversed)}
 					/>
-					{/* Field-test readout (live gauge, detector state, log export). Members get
-						the toggle only; the hint under the digits covers what they need. */}
-					{magnetStart.enabled && me?.admin && <MagnetPanel />}
+					{/* Drop-to-stop is always on in this input, so there is no switch for it, but
+					    the table and the phone still decide how hard a drop must be. */}
+					{isSlamDetectorAvailable() && <SlamSensitivitySlider />}
+					{/* Field-test readout (live gauge, detector state, log export). Admin only:
+						an open panel puts the stream in test mode, where a lift never starts. */}
+					{me?.admin && <MagnetPanel />}
 				</>
 			)}
 
@@ -446,7 +392,7 @@ export default function ExtrasTab({
 				label={t('quick_controls.multi_phase')}
 				value={String(multiPhaseCount ?? 1)}
 				options={multiPhaseOptions}
-				hidden={timerType !== 'keyboard' || manualEntry}
+				hidden={!touchType || manualEntry}
 				openUp
 				onChange={(val) => setSetting('multi_phase_count', parseInt(val))}
 			/>
@@ -462,24 +408,6 @@ export default function ExtrasTab({
 				hidden={timerType !== 'virtual' || manualEntry}
 				openUp
 				onChange={(val) => setSetting('virtual_cube_multi_phase', val)}
-			/>
-
-			<ExtrasSelect
-				label={t('mobile_modules.slot_left')}
-				value={slot0}
-				options={moduleOptions(0)}
-				hidden={!mobileMode || hideMobileModules}
-				openUp
-				onChange={(val) => handleModuleChange(0, val)}
-			/>
-
-			<ExtrasSelect
-				label={t('mobile_modules.slot_right')}
-				value={slot1}
-				options={moduleOptions(1)}
-				hidden={!mobileMode || hideMobileModules}
-				openUp
-				onChange={(val) => handleModuleChange(1, val)}
 			/>
 		</div>
 	);

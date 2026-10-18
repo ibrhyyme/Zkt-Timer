@@ -22,6 +22,7 @@ export enum CommonType {
 	WHITE = 'white',
 	WARNING = 'warning',
 	TRANSPARENT = 'transparent',
+	OUTLINE = 'outline',
 }
 
 export interface ButtonProps {
@@ -66,6 +67,8 @@ export interface ButtonProps {
 	white?: boolean;
 	success?: boolean;
 	gray?: boolean;
+	/** Secondary action: a visible border, no fill until hovered. */
+	outline?: boolean;
 }
 
 export default function Button(props: ButtonProps) {
@@ -110,6 +113,7 @@ export default function Button(props: ButtonProps) {
 		white,
 		success,
 		gray,
+		outline,
 	} = props;
 
 	let theme = props.theme;
@@ -128,8 +132,12 @@ export default function Button(props: ButtonProps) {
 		theme = CommonType.WHITE;
 	} else if (transparent) {
 		theme = CommonType.TRANSPARENT;
+	} else if (outline) {
+		theme = CommonType.OUTLINE;
 	} else {
-		theme = CommonType.GRAY;
+		// The `theme` prop when no flag is set. This said GRAY unconditionally, so every
+		// `theme={CommonType.PRIMARY}` (or DANGER, SUCCESS...) across the app rendered gray.
+		theme = props.theme || CommonType.GRAY;
 	}
 
 	const dispatch = useDispatch();

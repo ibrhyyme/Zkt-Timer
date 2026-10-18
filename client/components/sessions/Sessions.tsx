@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import './Sessions.scss';
@@ -10,6 +11,8 @@ import History from '../modules/history/History';
 import Input from '../common/inputs/input/Input';
 import { openModal } from '../../actions/general';
 import CreateNewSession from './new_session/CreateNewSession';
+import SplitSession from './split_session/SplitSession';
+import { formatInteger } from '../../util/locale_format';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 import Session from './session/Session';
@@ -28,6 +31,8 @@ import Button from '../common/button/Button';
 import Module from '../common/module/Module';
 import TimeDistro from '../modules/time_distro/TimeDistro';
 import QuickStats from '../modules/quick_stats/QuickStats';
+import ModuleHeaderMenu from '../timer/tiles/ModuleHeaderMenu';
+import { TimerModuleType } from '../timer/@types/enums';
 import SolvesPerDay from '../modules/solves_per_day/SolvesPerDay';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setCurrentSession } from '../../db/settings/update';
@@ -42,6 +47,7 @@ interface SortableItemProps {
 	selectSession: (e: any, id: any) => void;
 	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
 	multiSelectedIds: Set<string>;
+	selecting: boolean;
 }
 
 interface SortableListProps {
@@ -50,19 +56,21 @@ interface SortableListProps {
 	selectSession: (e: any, id: any) => void;
 	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
 	multiSelectedIds: Set<string>;
+	selecting: boolean;
 }
 
-const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds }) => (
+const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds, selecting }) => (
 	<Session
 		setSelectedSessionId={setSelectedSessionId}
 		session={session}
 		selectedSessionId={selectedSessionId}
 		selectSession={selectSession}
 		isMultiSelected={multiSelectedIds.has(session.id)}
+		selecting={selecting}
 	/>
 ));
 
-const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds }) => {
+const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds, selecting }) => {
 	return (
 		<div className={b('list')}>
 			{sessions.map((s, index) => (
@@ -72,6 +80,7 @@ const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedS
 					selectedSessionId={selectedSessionId}
 					selectSession={selectSession}
 					multiSelectedIds={multiSelectedIds}
+					selecting={selecting}
 					key={s.id}
 					index={index}
 				/>
@@ -80,9 +89,13 @@ const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedS
 	);
 });
 
+// react-sortable-hoc's own default: never start a drag from a form control (the "N types"
+// chip is a button).
+const SORT_CANCEL_TAGS = ['input', 'textarea', 'select', 'option', 'button'];
+
 export default function Sessions() {
 	const dispatch = useDispatch();
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	useSessionDb();
 	// The default stats bucket (fetchLastBucketForSession below) is read from the solve
@@ -94,6 +107,9 @@ export default function Sessions() {
 
 	const [selectedSessionId, setSelectedSessionId] = useState<string>(currentSessionId);
 	const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
+	// Bulk delete mode: opened by the "Select" button (Ctrl+click still opens it on desktop,
+	// but nobody found that on their own) and a tap on a row toggles it.
+	const [selecting, setSelecting] = useState(false);
 	const [pendingBulkDelete, setPendingBulkDelete] = useState<string[] | null>(null);
 	const [cubeType, setCubeType] = useState('');
 	const [scrambleSubset, setScrambleSubset] = useState<string | null>(null);
@@ -111,9 +127,24 @@ export default function Sessions() {
 		}
 	}
 
+	// Shows a session in the panel together with the bucket it was last solved in. Every
+	// place that moves the selection goes through here: a cube type filter left over from
+	// the session shown before (2x2 after deleting a split-off 2x2 session) matched nothing
+	// in the new one, and its stats, solves and charts all read empty.
+	function showSession(id: string) {
+		const lastBucket = fetchLastBucketForSession(id);
+		const lastCubeType = lastBucket?.cube_type || 'wca';
+		// One render, not three: these often run outside a React event handler
+		ReactDOM.unstable_batchedUpdates(() => {
+			setSelectedSessionId(id);
+			setCubeType(lastCubeType);
+			setScrambleSubset(lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
+		});
+	}
+
 	useEffect(() => {
 		if (session && session.id !== selectedSessionId) {
-			setSelectedSessionId(session.id);
+			showSession(session.id);
 		}
 	}, [session, selectedSessionId]);
 
@@ -127,8 +158,9 @@ export default function Sessions() {
 			target = target.parentNode;
 		}
 
-		// Ctrl+Click: multi-select
-		if (e && (e.ctrlKey || e.metaKey)) {
+		// Bulk delete mode, or Ctrl+Click which opens it
+		if (selecting || (e && (e.ctrlKey || e.metaKey))) {
+			setSelecting(true);
 			setMultiSelectedIds((prev) => {
 				const next = new Set(prev);
 				if (next.has(id)) {
@@ -143,13 +175,8 @@ export default function Sessions() {
 
 		// Normal click: clear multi-select
 		setMultiSelectedIds(new Set());
-		setSelectedSessionId(id);
 		setIsEditingName(false);
-
-		const lastBucket = fetchLastBucketForSession(id);
-		const lastCubeType = lastBucket?.cube_type || 'wca';
-		setCubeType(lastCubeType);
-		setScrambleSubset(lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
+		showSession(id);
 	}
 
 	function handleCubeTypeChange(ct: CubeType) {
@@ -190,7 +217,7 @@ export default function Sessions() {
 				description: t('sessions.create_new_session_desc'),
 				closeButtonText: t('solve_info.done'),
 				onComplete: (session) => {
-					setSelectedSessionId(session.id);
+					showSession(session.id);
 				},
 			})
 		);
@@ -206,11 +233,38 @@ export default function Sessions() {
 	}
 
 	function makeCurrent() {
-		const lastBucket = fetchLastBucketForSession(selectedSessionId);
 		setCurrentSession(selectedSessionId);
-		const lastCubeType = lastBucket?.cube_type || 'wca';
-		setCubeType(lastCubeType);
-		setScrambleSubset(lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
+		showSession(selectedSessionId);
+	}
+
+	// "Split session" (2.7-b): the reverse of merge. The new session is selected afterwards,
+	// so removing a type from a session (K-6) is one more click on "Delete Session".
+	function openSplitSession() {
+		dispatch(
+			openModal(<SplitSession session={session} />, {
+				compact: true,
+				width: 480,
+				title: t('sessions.split_session'),
+				description: t('sessions.split_session_desc'),
+				closeButtonText: t('solve_info.done'),
+				onComplete: (result) => {
+					const created = result?.session;
+					if (!created) return;
+
+					setMultiSelectedIds(new Set());
+					setIsEditingName(false);
+					showSession(created.id);
+
+					toastSuccess(
+						t('sessions.split_done', {
+							count: result.moved || 0,
+							countText: formatInteger(result.moved || 0, i18n.language),
+							name: created.name,
+						})
+					);
+				},
+			})
+		);
 	}
 
 	async function mergeSessions() {
@@ -222,7 +276,7 @@ export default function Sessions() {
 						// Needs the server: a merge done offline was undone by the next sync
 						const merged = await mergeSessionsDb(selectedSessionId, currentSessionId);
 						if (merged) {
-							setSelectedSessionId(currentSessionId);
+							showSession(currentSessionId);
 						}
 					}}
 					buttonText={t('sessions.merge_sessions')}
@@ -258,17 +312,11 @@ export default function Sessions() {
 
 				if (currentSessionId === id) {
 					const fallback = allSessions.find((s) => s.id !== id);
-					const fallbackBucket = fetchLastBucketForSession(fallback.id);
-
 					setCurrentSession(fallback.id);
-					const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
-					setCubeType(fallbackCubeType);
-					setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
-
 					updatedSessionId = fallback.id;
 				}
 
-				setSelectedSessionId(updatedSessionId);
+				showSession(updatedSessionId);
 			});
 
 			if (deleted) {
@@ -311,7 +359,11 @@ export default function Sessions() {
 			openModal(
 				<ConfirmModal
 					triggerAction={async () => {
-						setPendingBulkDelete(idsToDelete);
+						// The second "are you sure" speaks of several sessions; one is
+						// confirmed enough by typing the word, like "Delete Session".
+						if (idsToDelete.length === 1) {
+							await runBulkDelete(idsToDelete);
+						}
 					}}
 					buttonText={t('sessions.delete_sessions')}
 					buttonProps={{
@@ -324,10 +376,62 @@ export default function Sessions() {
 					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
+					// Runs after this modal is closed. Closing pops the newest modal, so a second
+					// one opened from triggerAction could land on the stack first and be the one
+					// closed (it did: a passive-effect flush inside the click ran the opener early).
+					onComplete: () => {
+						if (idsToDelete.length > 1) {
+							setPendingBulkDelete(idsToDelete);
+						}
+					},
 				}
 			)
 		);
 	}
+
+	function exitSelecting() {
+		setSelecting(false);
+		setMultiSelectedIds(new Set());
+	}
+
+	async function runBulkDelete(idsToDelete: string[]) {
+		let deleted = false;
+		try {
+			// Server first: without a connection nothing is deleted and the
+			// selection stays as it was.
+			deleted = await bulkDeleteSessionsDb(idsToDelete, () => {
+				let updatedSessionId = currentSessionId;
+				const deletingCurrent = idsToDelete.includes(currentSessionId);
+
+				if (deletingCurrent) {
+					const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
+					setCurrentSession(fallback.id);
+					updatedSessionId = fallback.id;
+				}
+
+				exitSelecting();
+				showSession(updatedSessionId);
+			});
+		} catch (e) {
+			console.error('bulkDeleteSessionsDb failed', e);
+		}
+
+		if (deleted) {
+			toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
+		}
+	}
+
+	// Escape leaves bulk delete mode on desktop. Captured before the modal's own Escape
+	// handler runs, so a press that closes the delete confirmation keeps the selection.
+	useEffect(() => {
+		if (!selecting) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key !== 'Escape' || document.querySelector(`.${block('modal')()}`)) return;
+			exitSelecting();
+		};
+		window.addEventListener('keydown', onKey, true);
+		return () => window.removeEventListener('keydown', onKey, true);
+	}, [selecting]);
 
 	// Second confirmation modal: opens when pendingBulkDelete is set
 	useEffect(() => {
@@ -340,36 +444,7 @@ export default function Sessions() {
 			openModal(
 				<ConfirmModal
 					hideInput
-					triggerAction={async () => {
-						let deleted = false;
-						try {
-							// Server first: without a connection nothing is deleted and the
-							// selection stays as it was.
-							deleted = await bulkDeleteSessionsDb(idsToDelete, () => {
-								let updatedSessionId = currentSessionId;
-								const deletingCurrent = idsToDelete.includes(currentSessionId);
-
-								if (deletingCurrent) {
-									const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
-									const fallbackBucket = fetchLastBucketForSession(fallback.id);
-									setCurrentSession(fallback.id);
-									const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
-									setCubeType(fallbackCubeType);
-									setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
-									updatedSessionId = fallback.id;
-								}
-
-								setMultiSelectedIds(new Set());
-								setSelectedSessionId(updatedSessionId);
-							});
-						} catch (e) {
-							console.error('bulkDeleteSessionsDb failed', e);
-						}
-
-						if (deleted) {
-							toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
-						}
-					}}
+					triggerAction={() => runBulkDelete(idsToDelete)}
 					buttonText={t('sessions.yes_delete')}
 					buttonProps={{
 						danger: true,
@@ -413,6 +488,7 @@ export default function Sessions() {
 	};
 
 	const isCurrentSession = selectedSessionId === currentSessionId;
+	const selectedCount = multiSelectedIds.size;
 
 	// TODO NOW fix session stats. Replace with QuickStats with proper options
 	const body = (
@@ -456,6 +532,14 @@ export default function Sessions() {
 								noMargin
 							/>
 						)}
+						{!isEditingName && sessionBuckets.length > 1 && (
+							<Button
+								text={t('sessions.split_session')}
+								onClick={openSplitSession}
+								primary
+								noMargin
+							/>
+						)}
 						{!isCurrentSession && !isEditingName && (
 							<Button
 								text={t('sessions.make_current')}
@@ -480,14 +564,6 @@ export default function Sessions() {
 								noMargin
 							/>
 						)}
-						{!isEditingName && multiSelectedIds.size > 1 && (
-							<Button
-								text={t('sessions.delete_selected_button', { count: multiSelectedIds.size })}
-								onClick={deleteSelectedSessions}
-								danger
-								noMargin
-							/>
-						)}
 					</div>
 				</div>
 			</Module>
@@ -495,7 +571,22 @@ export default function Sessions() {
 			{/* Columns of numbers, not charts: these two stay readable in a narrow
 			    track, so they take the space next to the settings panel. */}
 			<Module smallPadding>
-				<QuickStats filterOptions={fetchFilter} />
+				{/* Same gear as the timer's stats module (K-12): one global list of blocks,
+				    edited in the same modal, previewed against this session's solves. */}
+				<div className={b('quick-stats')}>
+					<div className={b('quick-stats-head')}>
+						<h3 className={b('quick-stats-title')}>{t('timer_modules.stats')}</h3>
+						<ModuleHeaderMenu
+							moduleType={TimerModuleType.STATS}
+							filterOptions={fetchFilter}
+							className={b('quick-stats-gear')}
+							align="right"
+						/>
+					</div>
+					<div className={b('quick-stats-body')}>
+						<QuickStats filterOptions={fetchFilter} />
+					</div>
+				</div>
 			</Module>
 			<Module smallPadding>
 				<History filterOptions={fetchFilter} />
@@ -549,24 +640,68 @@ export default function Sessions() {
 			<PageTitle pageName={t('sessions.page_title')} />
 			<div className={b('body')}>
 				<div className={b('sessions-container')}>
-					<Button
-						primary
-						glow
-						large={!mobileMode}
-						text={t('sessions.new_session')}
-						onClick={openCreateNewSession}
-						type="button"
-						icon={<Plus weight="bold" />}
-						noMargin
-					/>
+					{selecting ? (
+						<div className={b('select-bar')}>
+							<Button
+								gray
+								large={!mobileMode}
+								text={t('sessions.select_cancel')}
+								onClick={exitSelecting}
+								type="button"
+								noMargin
+							/>
+							<span className={b('select-count')}>
+								{selectedCount
+									? t('sessions.selected_count', { count: selectedCount })
+									: t('sessions.select_prompt')}
+							</span>
+							<Button
+								danger
+								large={!mobileMode}
+								text={t('sessions.delete_selected_short', { count: selectedCount })}
+								onClick={deleteSelectedSessions}
+								disabled={!selectedCount}
+								type="button"
+								noMargin
+							/>
+						</div>
+					) : (
+						<div className={b('list-head')}>
+							<Button
+								primary
+								glow
+								large={!mobileMode}
+								text={t('sessions.new_session')}
+								onClick={openCreateNewSession}
+								type="button"
+								icon={<Plus weight="bold" />}
+								noMargin
+							/>
+							{allSessions.length > 1 && (
+								<Button
+									gray
+									large={!mobileMode}
+									text={t('sessions.select')}
+									onClick={() => setSelecting(true)}
+									type="button"
+									noMargin
+								/>
+							)}
+						</div>
+					)}
 					<SortableList
 						{...sortableConfig}
 						helperClass="zt-session-row--sortable-helper"
+						// No dragging while picking rows to delete: a tap is a toggle then
+						shouldCancelStart={(e: any) =>
+							selecting || SORT_CANCEL_TAGS.includes(String(e.target?.tagName || '').toLowerCase())
+						}
 						selectSession={selectSession}
 						setSelectedSessionId={setSelectedSessionId}
 						sessions={allSessions}
 						selectedSessionId={selectedSessionId}
 						multiSelectedIds={multiSelectedIds}
+						selecting={selecting}
 						onSortEnd={onSortEnd}
 					/>
 				</div>

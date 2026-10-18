@@ -6,6 +6,7 @@ import {gqlQueryTyped, gqlMutate} from '../../api';
 import {WcaCompetitionsDocument, WcaSearchCompetitionsDocument, MyWcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
 import {useTheme} from '../../../util/hooks/useTheme';
+import {useZktBadge} from '../../../util/hooks/useZktBadge';
 import {MagnifyingGlass, Trophy, Bell, CaretRight} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
@@ -15,6 +16,8 @@ import {isPastCompetition, localTodayStr} from './competition-past';
 import CompEventFilter from './CompEventFilter';
 import {getEventFilter, setEventFilter} from './eventFilterStorage';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
+import {retryDelayMs} from './fetch-error';
+import {peekCached, storeCached, isOlderThan, userScoped, markHydrated} from '../competition-cache';
 
 // ZKT competitions are owned by the Zeka Kupu Turkiye federation; Zkt-Timer reads
 // them (view-only) through the federation public API proxied by ZktPublic.resolver.
@@ -58,24 +61,20 @@ const ZKT_MY_COMPETITIONS_QUERY = gql`
 	}
 `;
 
-let cachedZktComps: {data: any[]; ts: number} | null = null;
-function getZktCache(): any[] | null {
-	if (!cachedZktComps) return null;
-	if (Date.now() - cachedZktComps.ts > 30 * 60 * 1000) {
-		cachedZktComps = null;
-		return null;
-	}
-	return cachedZktComps.data;
-}
+// Every list on this page is drawn from the copy kept on the device and refreshed
+// behind it. A competitor opening the app must see their own competition in the
+// first frame, not after two requests (one per federation) come back and the
+// ZKT card pops in a second later.
+const ZKT_LIST_KEY = 'list:zkt';
+const WCA_LIST_KEY = 'list:wca';
+const myZktKey = () => userScoped('list:my-zkt');
+const myWcaKey = () => userScoped('list:my-wca');
+// How old a copy may be and still be drawn while the fresh one loads.
+const MAX_SHOWN_AGE = 7 * 24 * 60 * 60 * 1000;
 
-let cachedMyZktComps: {data: any[]; ts: number} | null = null;
-function getMyZktCache(): any[] | null {
-	if (!cachedMyZktComps) return null;
-	if (Date.now() - cachedMyZktComps.ts > 30 * 60 * 1000) {
-		cachedMyZktComps = null;
-		return null;
-	}
-	return cachedMyZktComps.data;
+function shownList(key: string): any[] | null {
+	const entry = peekCached<any[]>(key);
+	return entry && !isOlderThan(entry, MAX_SHOWN_AGE) ? entry.data : null;
 }
 
 // Federation list item → the field names the WCA competition card reads.
@@ -102,21 +101,9 @@ function normalizeZktComp(c: any): any {
 	};
 }
 
-// Module-level cache with TTL
+// The WCA lists change slowly: a copy younger than this is not asked for again
+// on a visit (the ZKT lists always are, behind the copy on screen).
 const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
-let cachedCompetitions: {data: any[]; ts: number} | null = null;
-let cachedMyComps: {data: any[]; ts: number} | null = null;
-
-function getListCache(): any[] | null {
-	if (!cachedCompetitions) return null;
-	if (Date.now() - cachedCompetitions.ts > LIST_CACHE_TTL) { cachedCompetitions = null; return null; }
-	return cachedCompetitions.data;
-}
-function getMyCache(): any[] | null {
-	if (!cachedMyComps) return null;
-	if (Date.now() - cachedMyComps.ts > LIST_CACHE_TTL) { cachedMyComps = null; return null; }
-	return cachedMyComps.data;
-}
 
 export default function CompetitionList() {
 	const {t, i18n} = useTranslation();
@@ -127,15 +114,18 @@ export default function CompetitionList() {
 	// depends on what is behind it. The theme is only a set of colour variables
 	// in CSS — there is no "light mode" selector — so the decision is made here.
 	const isDarkTheme = useTheme('module_color')?.isDark !== false;
+	const zktBadge = useZktBadge();
 
-	const [competitions, setCompetitions] = useState<any[] | null>(getListCache());
+	const [competitions, setCompetitions] = useState<any[] | null>(() => shownList(WCA_LIST_KEY));
 	const [compSearch, setCompSearch] = useState('');
 	const [searchResults, setSearchResults] = useState<any[] | null>(null);
 	const [searching, setSearching] = useState(false);
-	const [myComps, setMyComps] = useState<any[] | null>(getMyCache());
-	const [zktComps, setZktComps] = useState<any[] | null>(getZktCache());
-	const [myZktComps, setMyZktComps] = useState<any[] | null>(getMyZktCache());
+	const [myComps, setMyComps] = useState<any[] | null>(() => shownList(myWcaKey()));
+	const [zktComps, setZktComps] = useState<any[] | null>(() => shownList(ZKT_LIST_KEY));
+	const [myZktComps, setMyZktComps] = useState<any[] | null>(() => shownList(myZktKey()));
 	const [loadError, setLoadError] = useState<string | null>(null);
+	// The ZKT list failed and there is nothing cached to show in its place.
+	const [zktError, setZktError] = useState(false);
 	const [eventFilter, setEventFilterState] = useState<string[]>(() => getEventFilter());
 
 	// Union match: a comp passes when it holds at least one of the selected events.
@@ -201,12 +191,39 @@ export default function CompetitionList() {
 	}, [myComps, myZktComps, todayStr]);
 
 	const mountedRef = useRef(true);
+	// Quiet retries for the two ZKT lists. A failed fetch used to replace the
+	// list with [], so on competition day, while the federation was refusing
+	// us, the ZKT section and the viewer's own registration vanished until
+	// they came back a minute or two later.
+	const zktRetryRef = useRef<{timer: ReturnType<typeof setTimeout> | null; attempt: number}>({timer: null, attempt: 0});
+	const myZktRetryRef = useRef<{timer: ReturnType<typeof setTimeout> | null; attempt: number}>({timer: null, attempt: 0});
 	useEffect(() => () => {
 		mountedRef.current = false;
+		if (zktRetryRef.current.timer) clearTimeout(zktRetryRef.current.timer);
+		if (myZktRetryRef.current.timer) clearTimeout(myZktRetryRef.current.timer);
 	}, []);
 
+	function scheduleRetry(
+		ref: React.MutableRefObject<{timer: ReturnType<typeof setTimeout> | null; attempt: number}>,
+		run: () => void
+	) {
+		if (!mountedRef.current) return;
+		if (ref.current.timer) clearTimeout(ref.current.timer);
+		const delay = retryDelayMs(ref.current.attempt);
+		ref.current.attempt += 1;
+		ref.current.timer = setTimeout(() => {
+			ref.current.timer = null;
+			if (mountedRef.current) run();
+		}, delay);
+	}
+
 	useEffect(() => {
-		if (!getListCache()) fetchCompetitions();
+		// On the web the first render matched the server markup, which has none of
+		// the device copies; draw them now.
+		markHydrated();
+		setCompetitions((prev) => prev ?? shownList(WCA_LIST_KEY));
+		setZktComps((prev) => prev ?? shownList(ZKT_LIST_KEY));
+		if (isOlderThan(peekCached(WCA_LIST_KEY), LIST_CACHE_TTL)) fetchCompetitions();
 		// ZKT competitions are published/updated often, and an empty cache (from a
 		// visit before any comp existed, or a transient error) would otherwise stay
 		// stuck for 30 min and hide the section. Always refetch on mount — the
@@ -215,7 +232,11 @@ export default function CompetitionList() {
 	}, []);
 
 	useEffect(() => {
-		if (me && !getMyCache()) fetchMyCompetitions();
+		if (me) {
+			setMyComps((prev) => prev ?? shownList(myWcaKey()));
+			setMyZktComps((prev) => prev ?? shownList(myZktKey()));
+		}
+		if (me && isOlderThan(peekCached(myWcaKey()), LIST_CACHE_TTL)) fetchMyCompetitions();
 		// Same SWR reasoning as the ZKT list: a registration made minutes ago must
 		// not be hidden behind a 30-minute cache.
 		if (me) fetchMyZktCompetitions();
@@ -228,11 +249,21 @@ export default function CompetitionList() {
 				pageSize: 50,
 			});
 			const data = res?.data?.zktPublicCompetitions?.items || [];
-			cachedZktComps = {data, ts: Date.now()};
-			if (mountedRef.current) setZktComps(data);
+			storeCached(ZKT_LIST_KEY, data, 'local');
+			zktRetryRef.current.attempt = 0;
+			if (mountedRef.current) {
+				setZktComps(data);
+				setZktError(false);
+			}
 		} catch (err) {
-			// silent — if no ZKT competitions or not logged in, empty list will be shown anyway
-			if (mountedRef.current) setZktComps([]);
+			// Keep whatever is on screen (the module cache outlives its TTL here on
+			// purpose) and ask again shortly. Only an empty screen gets a notice.
+			const fallback = peekCached<any[]>(ZKT_LIST_KEY)?.data || null;
+			if (mountedRef.current) {
+				if (fallback) setZktComps(fallback);
+				setZktError(!fallback);
+			}
+			scheduleRetry(zktRetryRef, fetchZktCompetitions);
 		}
 	}
 
@@ -240,11 +271,15 @@ export default function CompetitionList() {
 		try {
 			const res = await gqlMutate(ZKT_MY_COMPETITIONS_QUERY, {});
 			const data = res?.data?.zktPublicMyCompetitions || [];
-			cachedMyZktComps = {data, ts: Date.now()};
+			storeCached(myZktKey(), data, 'local');
+			myZktRetryRef.current.attempt = 0;
 			if (mountedRef.current) setMyZktComps(data);
 		} catch (err) {
-			// Silent: no WCA link (or no ZKT registration) is the normal empty case.
-			if (mountedRef.current) setMyZktComps([]);
+			// No ZKT link is not an error (the server answers []), so this is a real
+			// failure: keep the last known registrations and retry.
+			const fallback = peekCached<any[]>(myZktKey())?.data || null;
+			if (mountedRef.current && fallback) setMyZktComps(fallback);
+			scheduleRetry(myZktRetryRef, fetchMyZktCompetitions);
 		}
 	}
 
@@ -254,44 +289,53 @@ export default function CompetitionList() {
 		const silentRefresh = () => {
 			if (document.visibilityState !== 'visible') return;
 			// If last fetch was older than 2 minutes, refetch (avoid excessive requests)
-			const cache = cachedCompetitions;
-			if (!cache || Date.now() - cache.ts > 2 * 60 * 1000) {
-				fetchCompetitions();
-			}
+			const RESUME_REFRESH_MS = 2 * 60 * 1000;
+			if (isOlderThan(peekCached(WCA_LIST_KEY), RESUME_REFRESH_MS)) fetchCompetitions();
 			if (me) {
-				const myCache = cachedMyComps;
-				if (!myCache || Date.now() - myCache.ts > 2 * 60 * 1000) {
-					fetchMyCompetitions();
-				}
+				if (isOlderThan(peekCached(myWcaKey()), RESUME_REFRESH_MS)) fetchMyCompetitions();
+				if (isOlderThan(peekCached(myZktKey()), RESUME_REFRESH_MS)) fetchMyZktCompetitions();
 			}
+			if (isOlderThan(peekCached(ZKT_LIST_KEY), RESUME_REFRESH_MS)) fetchZktCompetitions();
 		};
 		window.addEventListener('focus', silentRefresh);
+		window.addEventListener('online', silentRefresh);
 		document.addEventListener('visibilitychange', silentRefresh);
 		return () => {
 			window.removeEventListener('focus', silentRefresh);
+			window.removeEventListener('online', silentRefresh);
 			document.removeEventListener('visibilitychange', silentRefresh);
 		};
 	}, [me]);
 
-	// Prefetch: user's competitions + next 3 upcoming competitions
+	// Prefetch: user's competitions + next 3 upcoming competitions.
+	// Keyed on the ids, not on the arrays: every list response is a new array
+	// with the same competitions, and re-running on each one fired the same
+	// prefetches three times per visit. prefetchCompetitionDetail also skips
+	// anything fetched in the last minute or already in flight.
+	const myPrefetchKey = (myAllComps || [])
+		.slice(0, 3)
+		.map((c: any) => (c.__zkt ? `zkt-${c.slug || c.id}` : c.competitionId || c.id))
+		.join('|');
 	useEffect(() => {
-		if (!myAllComps || myAllComps.length === 0) return;
-		// Once user competitions load, prefetch first 3
-		const targets = myAllComps.slice(0, 3);
-		targets.forEach((c: any, i: number) => {
-			const id = c.__zkt ? `zkt-${c.slug || c.id}` : c.competitionId || c.id;
-			setTimeout(() => prefetchCompetitionDetail(id), 500 + i * 200);
-		});
-	}, [myAllComps]);
+		if (!myPrefetchKey) return;
+		const timers = myPrefetchKey.split('|').map((id, i) =>
+			setTimeout(() => prefetchCompetitionDetail(id), 500 + i * 200)
+		);
+		return () => timers.forEach(clearTimeout);
+	}, [myPrefetchKey]);
 
+	const listPrefetchKey = (competitions || [])
+		.slice(0, 3)
+		.map((c: any) => c.id)
+		.join('|');
 	useEffect(() => {
-		if (!competitions || competitions.length === 0) return;
+		if (!listPrefetchKey) return;
 		// Prefetch first 3 from general list (usually the nearest upcoming)
-		const targets = competitions.slice(0, 3);
-		targets.forEach((c: any, i: number) => {
-			setTimeout(() => prefetchCompetitionDetail(c.id), 1500 + i * 300);
-		});
-	}, [competitions]);
+		const timers = listPrefetchKey.split('|').map((id, i) =>
+			setTimeout(() => prefetchCompetitionDetail(id), 1500 + i * 300)
+		);
+		return () => timers.forEach(clearTimeout);
+	}, [listPrefetchKey]);
 
 	// On hover, prefetch competition detail after 200ms
 	const hoverTimerRef = useRef<any>(null);
@@ -307,11 +351,17 @@ export default function CompetitionList() {
 		try {
 			const res = await gqlQueryTyped(MyWcaCompetitionsDocument, {});
 			const data = res.data?.myWcaCompetitions || [];
-			cachedMyComps = {data, ts: Date.now()};
+			storeCached(myWcaKey(), data, 'local');
 			if (mountedRef.current) setMyComps(data);
 		} catch (err) {
 			console.warn('[CompetitionList] myWcaCompetitions fetch failed:', err);
-			if (mountedRef.current) setMyComps([]);
+			// Keep the last known registrations rather than blanking them, the
+			// same rule the ZKT lists follow.
+			// With no connection and nothing on the device, "no registrations" would
+			// be a false answer; keep the section loading until the connection is back.
+			const known = peekCached<any[]>(myWcaKey())?.data;
+			const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+			if (mountedRef.current) setMyComps(known || (offline ? null : []));
 		}
 	}
 
@@ -323,23 +373,29 @@ export default function CompetitionList() {
 			if (data.length > 0) {
 				// Only cache data with results — if empty, don't cache to avoid showing
 				// "no competitions found" for 30 minutes when user force-refreshes
-				cachedCompetitions = {data, ts: Date.now()};
+				storeCached(WCA_LIST_KEY, data, 'local');
 			} else {
 				console.warn('[CompetitionList] wcaCompetitions returned empty array — cache not written');
 			}
 			if (mountedRef.current) setCompetitions(data);
 		} catch (err: any) {
 			console.warn('[CompetitionList] wcaCompetitions fetch failed:', err);
+			// A failed refresh keeps the list that is already on screen; the error
+			// box is only for an empty page.
+			const fallback = peekCached<any[]>(WCA_LIST_KEY)?.data || null;
 			if (mountedRef.current) {
-				setLoadError(err?.message || 'network_error');
-				setCompetitions(null);
+				if (fallback) {
+					setCompetitions(fallback);
+				} else {
+					setLoadError(err?.message || 'network_error');
+					setCompetitions(null);
+				}
 			}
 		}
 	}
 
 	function handleRetry() {
 		setCompetitions(null);
-		cachedCompetitions = null;
 		fetchCompetitions();
 	}
 
@@ -495,9 +551,7 @@ export default function CompetitionList() {
 				    mark is just the coloured cube, so one file serves every theme.
 				    Decorative, so hidden from screen readers. */}
 				<img
-					src={resourceUri(
-						isZkt ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg'
-					)}
+					src={isZkt ? zktBadge : resourceUri('/images/logos/wca_logo.svg')}
 					alt=""
 					aria-hidden="true"
 					className={b('zkt-card-watermark', {light: !isDarkTheme})}
@@ -579,9 +633,9 @@ export default function CompetitionList() {
 	function renderConnectBanner(service: 'zkt' | 'wca') {
 		const isZktService = service === 'zkt';
 		// The federation's own badge, not the product logo: these competitions are run
-		// by Zeka Küpü Türkiye, and `zkt-logo.png` is the Zkt Timer mark. Like the WCA
-		// crest it is a coloured badge, so one file serves both themes.
-		const logo = isZktService ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg';
+		// by Zeka Küpü Türkiye, and `zkt-logo.png` is the Zkt Timer mark. Its lettering
+		// follows the theme (useZktBadge); the WCA crest serves both themes as one file.
+		const logo = isZktService ? zktBadge : resourceUri('/images/logos/wca_logo.svg');
 		const label = !me
 			? t(isZktService ? 'my_schedule.zkt_login' : 'my_schedule.wca_login')
 			: t(isZktService ? 'my_schedule.connect_zkt_btn' : 'my_schedule.connect_wca_btn');
@@ -609,7 +663,7 @@ export default function CompetitionList() {
 				className={b('connect-row', {[service]: true})}
 				onClick={start}
 			>
-				<img src={resourceUri(logo)} alt="" aria-hidden="true" className={b('connect-row-logo')} />
+				<img src={logo} alt="" aria-hidden="true" className={b('connect-row-logo')} />
 				<span className={b('connect-row-body')}>
 					<span className={b('connect-row-title')}>{label}</span>
 					<span className={b('connect-row-desc')}>{desc}</span>
@@ -665,6 +719,22 @@ export default function CompetitionList() {
 
 			{/* ZKT competitions — their OWN section (not WCA comps, avoid confusion),
 			     on the same showcase card as My Competitions above. */}
+			{/* While the ZKT list has never loaded (first visit, or the federation
+			     was unreachable with nothing cached), say so in place instead of
+			     leaving the section out: an absent section reads as "no ZKT
+			     competitions", which on competition day is the wrong message. */}
+			{!compSearch.trim() && zktCards.length === 0 && (zktComps === null || zktError) && (
+				<div className={b('zkt-competitions')}>
+					<h3 className={b('section-title')}>
+						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
+						{t('my_schedule.zkt_competitions')}
+					</h3>
+					<p className={b('my-competitions-empty')}>
+						{zktError ? t('my_schedule.zkt_list_unavailable') : t('my_schedule.loading_competitions')}
+					</p>
+				</div>
+			)}
+
 			{!compSearch.trim() && zktCards.length > 0 && (
 				<div className={b('zkt-competitions')}>
 					<h3 className={b('section-title')}>

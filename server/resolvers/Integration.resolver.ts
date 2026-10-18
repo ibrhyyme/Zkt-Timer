@@ -1,4 +1,4 @@
-import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
+import {Arg, Authorized, Ctx, FieldResolver, Mutation, Query, Resolver, Root} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import {Integration, IntegrationTypeSchema} from '../schemas/Integration.schema';
@@ -86,7 +86,11 @@ export class IntegrationResolver {
 
 			return result;
 		} catch (e) {
-			console.error('createIntegration error:', e);
+			// Never the error object itself: a failed provider call surfaces here as a raw
+			// AxiosError whose `config` carries the Bearer access token (WCA / ZKT /me) or
+			// the form body with client_secret and the auth code (WCA token exchange on a
+			// network failure), and console.error would print all of it to the logs.
+			console.error('createIntegration error:', integrationType, 'status=', e?.response?.status, ':', e?.message);
 			throw new GraphQLError(ErrorCode.BAD_INPUT, e?.message || 'Failed to create integration');
 		}
 	}
@@ -185,5 +189,67 @@ export class IntegrationResolver {
 			console.warn(`[Integration] remote revoke failed for ${integrationType}:`, err?.message);
 		}
 		return deleteIntegrationById(context, integration.id);
+	}
+}
+
+/**
+ * Whether a viewer may see one of an integration's WCA counts. The `wca_show_*` switches used
+ * to apply only to `publicWcaProfile`; the same numbers were readable unmasked from every
+ * public path that carries a user's integrations (profiles, rankings, shared solves). The owner
+ * and admins see their real values, everyone else gets null where the owner switched it off.
+ */
+export function wcaCountVisible(
+	integration: Pick<Integration, 'user_id' | 'wca_show_competitions' | 'wca_show_medals' | 'wca_show_records'>,
+	viewer: {id?: string; admin?: boolean} | null | undefined,
+	group: 'competitions' | 'medals' | 'records'
+): boolean {
+	if (viewer?.admin || (viewer?.id && viewer.id === integration?.user_id)) return true;
+	const toggle = {
+		competitions: integration?.wca_show_competitions,
+		medals: integration?.wca_show_medals,
+		records: integration?.wca_show_records,
+	}[group];
+	return toggle !== false;
+}
+
+@Resolver(() => Integration)
+export class IntegrationVisibilityResolver {
+	private gated(root: Integration, ctx: GraphQLContext, group: 'competitions' | 'medals' | 'records', key: keyof Integration) {
+		return wcaCountVisible(root, ctx?.user, group) ? (root[key] as number) ?? null : null;
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_competition_count(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'competitions', 'wca_competition_count');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_medal_gold(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'medals', 'wca_medal_gold');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_medal_silver(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'medals', 'wca_medal_silver');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_medal_bronze(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'medals', 'wca_medal_bronze');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_record_nr(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'records', 'wca_record_nr');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_record_cr(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'records', 'wca_record_cr');
+	}
+
+	@FieldResolver(() => Number, {nullable: true})
+	wca_record_wr(@Root() root: Integration, @Ctx() ctx: GraphQLContext) {
+		return this.gated(root, ctx, 'records', 'wca_record_wr');
 	}
 }

@@ -22,11 +22,16 @@ export class Integration {
 	@Field(() => IntegrationTypeSchema)
 	service_name: string;
 
-	@Field()
-	auth_token: string;
+	// OAuth credentials (WCA / ZKT federation). Server-only: deliberately NOT a
+	// @Field. This type is reachable from every public user (solve share codes,
+	// profiles, user search, leaderboards, WCA records), so a @Field here hands any
+	// anonymous client every linked account's tokens. The properties stay on the
+	// class only so server code that refreshes tokens keeps its typing; they are
+	// optional because public loaders (publicIntegrationSelect) never fetch them.
+	// Guarded by server/__tests__/graphql_secret_fields.test.ts.
+	auth_token?: string;
 
-	@Field()
-	refresh_token: string;
+	refresh_token?: string;
 
 	@Field(() => GraphQLBigInt)
 	auth_expires_at: bigint;

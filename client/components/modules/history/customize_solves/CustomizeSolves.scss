@@ -1,0 +1,160 @@
+@import '../../../../styles/config';
+
+// "Customize solves" modal. Text at full contrast throughout: hierarchy comes from size
+// and weight, and the only coloured text is an error.
+.#{$namespace}-customize-solves {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	color: rgb(var(--text-color));
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	&__heading {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	&__columns,
+	&__presets {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		height: 34px;
+		padding: 0 4px;
+		box-sizing: border-box;
+		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.16);
+		background: rgba(var(--text-color), 0.05);
+		font-size: 0.9rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+
+		&--fixed {
+			padding: 0 12px;
+			border-style: dashed;
+			background: transparent;
+		}
+	}
+
+	&__chip-label {
+		padding: 0 6px;
+	}
+
+	&__chip-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		border-radius: 6px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			background: rgba(var(--text-color), 0.12);
+		}
+
+		&:disabled {
+			cursor: default;
+			visibility: hidden;
+		}
+
+		&--remove:hover:not(:disabled) {
+			background: rgba(var(--error-color), 0.18);
+		}
+	}
+
+	&__preset {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 34px;
+		padding: 0 12px;
+		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.16);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.12s ease;
+
+		&:hover:not(:disabled) {
+			background: rgba(var(--text-color), 0.08);
+		}
+
+		&--selected {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.9);
+			color: rgb(var(--theme-text-opposite));
+
+			&:hover:not(:disabled) {
+				background: rgb(var(--primary-color));
+			}
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			border-style: dashed;
+		}
+	}
+
+	&__custom {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__custom-prefix {
+		font-weight: 700;
+	}
+
+	&__custom-input {
+		width: 120px;
+		height: 34px;
+		padding: 0 10px;
+		box-sizing: border-box;
+		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.2);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-size: 0.95rem;
+		font-variant-numeric: tabular-nums;
+		outline: none;
+
+		&:focus {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__note {
+		margin: 0;
+		font-size: 0.85rem;
+
+		&--error {
+			color: rgb(var(--error-color));
+			font-weight: 600;
+		}
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+}

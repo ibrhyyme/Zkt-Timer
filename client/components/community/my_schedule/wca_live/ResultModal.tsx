@@ -15,6 +15,11 @@ export interface ResultModalRow {
 	singleRecordTag?: string | null;
 	personWcaId?: string | null;
 	personRegistrantId?: number | null;
+	/**
+	 * ZKT Dual Chance round: both chances, already formatted. They replace the
+	 * average and attempts blocks, which would only repeat the counting chance.
+	 */
+	chances?: {label: string; value: string; counting: boolean; attempts: string[]}[];
 }
 
 interface Props {
@@ -78,7 +83,23 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 				</div>
 
 				<div className={b('wca-live-modal-body')}>
-					{showAverage && (
+					{row.chances?.map((c) => (
+						<div key={c.label} className={b('wca-live-modal-stat', {full: true, counting: c.counting})}>
+							<div className={b('wca-live-modal-stat-label')}>{c.label}</div>
+							<div className={b('wca-live-modal-stat-value')}>
+								{c.value}
+								{c.counting && showAverage && <RecordTag tag={row.averageRecordTag} />}
+							</div>
+							{c.attempts.length > 0 && (
+								<div className={b('wca-live-modal-attempts')}>
+									{c.attempts.map((a: string, i: number) => (
+										<span key={i} className={b('wca-live-modal-attempt')}>{a}</span>
+									))}
+								</div>
+							)}
+						</div>
+					))}
+					{showAverage && !row.chances && (
 						<div className={b('wca-live-modal-stat')}>
 							<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_average')}</div>
 							<div className={b('wca-live-modal-stat-value')}>
@@ -94,14 +115,16 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 							<RecordTag tag={row.singleRecordTag} />
 						</div>
 					</div>
-					<div className={b('wca-live-modal-stat', {full: true})}>
-						<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_attempts')}</div>
-						<div className={b('wca-live-modal-attempts')}>
-							{row.attempts.map((a: string, i: number) => (
-								<span key={i} className={b('wca-live-modal-attempt')}>{a}</span>
-							))}
+					{!row.chances && (
+						<div className={b('wca-live-modal-stat', {full: true})}>
+							<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_attempts')}</div>
+							<div className={b('wca-live-modal-attempts')}>
+								{row.attempts.map((a: string, i: number) => (
+									<span key={i} className={b('wca-live-modal-attempt')}>{a}</span>
+								))}
+							</div>
 						</div>
-					</div>
+					)}
 				</div>
 
 				{showProfile && (

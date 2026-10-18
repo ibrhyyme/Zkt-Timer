@@ -162,8 +162,8 @@ export default function WcaResults({ wcaId, data }: Props) {
 									<th>{t('profile.wca_event_col')}</th>
 									<th>{t('profile.wca_round_col')}</th>
 									<th>{t('profile.wca_place')}</th>
-									<th>Single</th>
-									<th>Average</th>
+									<th>{t('profile.single')}</th>
+									<th>{t('profile.average')}</th>
 									<th>{t('profile.wca_solves_col')}</th>
 								</tr>
 							</thead>

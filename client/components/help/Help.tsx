@@ -21,6 +21,7 @@ import {
 	PaintBrush,
 	UsersThree,
 	Sword,
+	Globe,
 	ChatCircleText,
 	Trophy,
 	UserCircle,
@@ -39,6 +40,7 @@ import HelpNav from './HelpNav';
 import {DesktopLayoutDiagram, MobileNotchDiagram} from './diagrams/LayoutDiagrams';
 import {useScrollSpy} from '../../util/hooks/useScrollSpy';
 import {useMobileModeSync} from '../../util/hooks/useMobileModeSync';
+import {useBattleLaunch} from '../battle/useBattleLaunch';
 // Deliberately the small dependency-free modules, not the screens that own these lists:
 // this page is server-rendered, and importing the settings UI, the parsers or the BLE
 // stack to read three constants would drag all of it into the SSR path.
@@ -81,6 +83,8 @@ interface SectionDef {
 	tone: string;
 	icon: React.ReactNode;
 	extra?: Extra;
+	/** Shown only once Online Battle is public (ranking-battle 7.4). */
+	launchOnly?: boolean;
 }
 
 // Bare icons, no chip and no glow — they label the card, they are not its decoration.
@@ -97,6 +101,7 @@ const SECTIONS: SectionDef[] = [
 	{id: 'customize', tone: TONE.violet, icon: <PaintBrush weight="fill" />},
 	{id: 'rooms', tone: TONE.green, icon: <UsersThree weight="fill" />},
 	{id: 'battle', tone: TONE.red, icon: <Sword weight="fill" />},
+	{id: 'online-battle', tone: TONE.red, icon: <Globe weight="fill" />, launchOnly: true},
 	{id: 'messages', tone: TONE.yellow, icon: <ChatCircleText weight="fill" />},
 	{id: 'competitions', tone: TONE.blue, icon: <Trophy weight="fill" />},
 	{id: 'profile', tone: TONE.violet, icon: <UserCircle weight="fill" />},
@@ -303,7 +308,11 @@ export default function Help() {
 	const rawFaq = t('seo.faq', {returnObjects: true, defaultValue: []});
 	const faq: FaqEntry[] = Array.isArray(rawFaq) ? (rawFaq as FaqEntry[]) : [];
 
-	const sectionIds = useMemo(() => SECTIONS.map((s) => s.id), []);
+	// The Online Battle card joins once the flag is on; before that the page reads as it did.
+	const launched = useBattleLaunch()?.launched === true;
+	const sections = useMemo(() => (launched ? SECTIONS : SECTIONS.filter((s) => !s.launchOnly)), [launched]);
+
+	const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
 	// Band starts below the fixed landing nav. `pick: 'last'` because a section
 	// scrolled to the top still shares the band with the tail of the one before it.
 	const activeId = useScrollSpy({
@@ -314,13 +323,13 @@ export default function Help() {
 
 	const navItems = useMemo(
 		() =>
-			SECTIONS.map((s) => ({
+			sections.map((s) => ({
 				id: s.id,
 				tone: s.tone,
 				icon: s.icon,
 				label: t(`help.sections.${s.id}.title`),
 			})),
-		[t]
+		[t, sections]
 	);
 
 	function scrollToSection(id: string, behavior: ScrollBehavior = 'smooth') {
@@ -340,7 +349,7 @@ export default function Help() {
 		}
 	}
 
-	const visibleSections = SECTIONS.filter((def) => sectionMatches(def, faq, trimmedQuery, t));
+	const visibleSections = sections.filter((def) => sectionMatches(def, faq, trimmedQuery, t));
 
 	// A visitor arriving on /help#smart-cube lands on that section. Waits a frame:
 	// the sections are not laid out yet on the first paint after hydration.

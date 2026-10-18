@@ -22,7 +22,9 @@ setInterval(() => {
 
 @Resolver()
 export class YouTubeSearchResolver {
-	@Authorized([Role.PRO])
+	// LOGGED_IN as well: with Pro switched off the PRO check passes for everyone,
+	// anonymous included, and the body below reads context.user.id.
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Query(() => [YouTubeVideoResult])
 	async youtubeSearch(
 		@Ctx() context: GraphQLContext,

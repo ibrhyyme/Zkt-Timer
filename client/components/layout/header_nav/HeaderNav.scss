@@ -129,9 +129,10 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		border-radius: 0.5rem;
-		background: linear-gradient(to right, rgba(99, 102, 241, 0.7), rgba(217, 70, 239, 0.6));
-		box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+		border-radius: $zt-radius-md;
+		// The user's own accent, flat. Was an indigo-to-fuchsia gradient with a coloured
+		// glow, the same on every theme and every custom palette.
+		background: rgb(var(--primary-color));
 		pointer-events: none;
 		z-index: 0;
 	}
@@ -242,22 +243,10 @@
 		a {
 			padding: 0.8rem 1.067rem !important;
 			justify-content: flex-start !important;
-			border-radius: 12px;
-			font-size: 1.067rem;
-			background: rgba(var(--button-color), 0.6);
-			color: rgb(var(--text-color));
-			border: 1px solid rgba(var(--text-color), 0.15);
-			backdrop-filter: blur(8px);
-			transition: all 0.2s ease-in-out;
-			font-weight: 500;
+			@include zt-control;
 
-			&:hover {
-				background: rgba(var(--button-color), 0.8);
-				color: rgb(var(--text-color));
-				border-color: rgba(var(--text-color), 0.25);
-				transform: translateY(-1px);
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-			}
+			font-size: 1.067rem;
+			font-weight: 500;
 		}
 	}
 

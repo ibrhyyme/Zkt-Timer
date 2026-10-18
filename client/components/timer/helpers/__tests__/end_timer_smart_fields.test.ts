@@ -6,7 +6,7 @@
  */
 
 const mockStore: Record<string, any> = {};
-const mockSmartCubeStore: Record<string, any> = {smartDeviceId: 'cube-1'};
+const mockSmartCubeStore: Record<string, any> = {smartBleDeviceId: 'ble-1'};
 const mockSettings: Record<string, any> = {};
 let mockMe: any = null;
 
@@ -105,10 +105,21 @@ function stop(...args: Parameters<typeof endTimer>) {
 	}
 }
 
+/** Runs the deferred stop work and what it defers in turn: the save follows the scramble a paint later. */
 function runDeferredSave() {
-	const queued = deferred;
-	deferred = [];
-	queued.forEach((fn) => fn());
+	const spy = jest.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void) => {
+		deferred.push(fn);
+		return 0;
+	}) as any);
+	try {
+		while (deferred.length) {
+			const queued = deferred;
+			deferred = [];
+			queued.forEach((fn) => fn());
+		}
+	} finally {
+		spy.mockRestore();
+	}
 }
 
 beforeAll(() => {
@@ -166,9 +177,10 @@ describe('endTimer with a smart cube stopped from the keyboard', () => {
 
 		expect(saveSolve).toHaveBeenCalledTimes(1);
 		const overrides = (saveSolve as jest.Mock).mock.calls[0][7];
+		// The cube is stamped by saveSolve from the connected BLE id; the old row id is gone.
+		expect(overrides.smart_device_id).toBeUndefined();
 		expect(overrides).toMatchObject({
 			is_smart_cube: true,
-			smart_device_id: 'cube-1',
 			// The same turns as the count on screen (R, U, R', the R inside the 500 ms
 			// lead-in), counted in HTM. It used to save 2 from a stricter filter as a raw
 			// length, so the saved solve and the screen disagreed.

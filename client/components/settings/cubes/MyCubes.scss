@@ -1,0 +1,680 @@
+@import '../../../styles/config';
+
+// My Cubes page, its rows and the cube profile (design .feedback/designs/magnet-cubes.md 5.1, 5.3).
+// One row markup serves both layouts: two lines on phones, a table row from $bp-md up.
+
+.#{$namespace}-my-cubes {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+	width: 100%;
+	color: rgb(var(--text-color));
+
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+
+		// On phones the settings shell already shows the section title with its back arrow.
+		@include bp-down($bp-md) {
+			justify-content: flex-end;
+		}
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 1.35rem;
+		font-weight: 700;
+
+		@include bp-down($bp-md) {
+			display: none;
+		}
+	}
+
+	&__loading,
+	&__no-match {
+		margin: 0;
+		padding: 12px 4px;
+		font-size: 0.95rem;
+	}
+
+	&__empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 18px;
+		padding: 48px 16px;
+		text-align: center;
+	}
+
+	&__empty-text {
+		max-width: 380px;
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	// --- Section -----------------------------------------------------------
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__section-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px 16px;
+	}
+
+	&__section-title {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 10px;
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+
+		@include bp-down($bp-md) {
+			flex: 1 1 100%;
+		}
+	}
+
+	&__section-count {
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	&__tools {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
+
+		@include bp-down($bp-md) {
+			flex: 1 1 100%;
+		}
+	}
+
+	&__search {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex: 1 1 180px;
+	}
+
+	&__search-icon {
+		position: absolute;
+		left: 10px;
+		pointer-events: none;
+	}
+
+	&__search-input,
+	&__sort-select {
+		min-height: 38px;
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.9rem;
+
+		&:focus {
+			outline: none;
+			border-color: rgba(var(--primary-color), 0.7);
+		}
+	}
+
+	&__search-input {
+		width: 100%;
+		padding: 8px 12px 8px 32px;
+	}
+
+	&__sort {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	&__sort-select {
+		padding: 6px 10px;
+
+		option {
+			background: rgb(var(--module-color));
+			color: rgb(var(--text-color));
+		}
+	}
+
+	// --- Rows --------------------------------------------------------------
+
+	&__table {
+		display: flex;
+		flex-direction: column;
+		border-radius: 14px;
+		border: 1px solid rgba(var(--text-color), 0.09);
+		background: rgba(var(--text-color), 0.035);
+		overflow: hidden;
+
+		> [role='listitem'] + [role='listitem'] {
+			border-top: 1px solid rgba(var(--text-color), 0.08);
+		}
+	}
+
+	&__table-head {
+		display: none;
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 60px;
+		padding: 10px 6px 10px 14px;
+		cursor: pointer;
+		// Long press opens the cube menu, not the system's text callout.
+		-webkit-touch-callout: none;
+		user-select: none;
+		transition: background 0.12s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.04);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgba(var(--primary-color), 0.8);
+			outline-offset: -2px;
+		}
+	}
+
+	&__cell {
+		min-width: 0;
+
+		&--name {
+			display: flex;
+			flex: 1 1 auto;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 4px 8px;
+		}
+
+		&--brand,
+		&--count,
+		&--last {
+			display: none;
+		}
+
+		&--menu {
+			flex-shrink: 0;
+		}
+	}
+
+	&__name {
+		font-size: 1rem;
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+
+		&--main {
+			background: rgba(var(--primary-color), 0.16);
+			color: rgb(var(--primary-color));
+		}
+
+		&--smart {
+			background: rgba(var(--text-color), 0.08);
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__meta {
+		flex: 1 1 100%;
+		font-size: 0.85rem;
+	}
+
+	&__menu-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 10px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		svg {
+			width: 20px;
+			height: 20px;
+		}
+
+		&:hover {
+			background: rgba(var(--text-color), 0.08);
+		}
+	}
+
+	// Desktop: a table with a header row.
+	@include bp-up($bp-md) {
+		&__table-head,
+		&__row {
+			display: grid;
+			grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.1fr) 44px;
+			align-items: center;
+			gap: 12px;
+		}
+
+		&__table-head {
+			padding: 10px 6px 10px 14px;
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.04em;
+		}
+
+		&__row {
+			min-height: 52px;
+			padding-top: 4px;
+			padding-bottom: 4px;
+		}
+
+		&__cell {
+			&--brand,
+			&--count,
+			&--last {
+				display: block;
+				font-size: 0.92rem;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			&--count {
+				font-variant-numeric: tabular-nums;
+			}
+		}
+
+		&__meta {
+			display: none;
+		}
+
+		// Archived cubes mix puzzles, so they keep the two-line form with the puzzle in it.
+		&__table--archive {
+			.#{$namespace}-my-cubes__row {
+				display: flex;
+			}
+
+			.#{$namespace}-my-cubes__cell--brand,
+			.#{$namespace}-my-cubes__cell--count,
+			.#{$namespace}-my-cubes__cell--last {
+				display: none;
+			}
+
+			.#{$namespace}-my-cubes__meta {
+				display: block;
+			}
+		}
+	}
+
+	// --- Archive -----------------------------------------------------------
+
+	&__archive {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__archive-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 48px;
+		padding: 0 14px;
+		border: 1px solid rgba(var(--text-color), 0.09);
+		border-radius: 14px;
+		background: rgba(var(--text-color), 0.035);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		&--open .#{$namespace}-my-cubes__archive-caret {
+			transform: rotate(90deg);
+		}
+	}
+
+	&__archive-caret {
+		transition: transform 0.15s ease;
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+		}
+	}
+}
+
+// --- Menu (popover on desktop, bottom sheet on phones) ---------------------------
+
+.#{$namespace}-cube-menu {
+	display: flex;
+	flex-direction: column;
+	color: rgb(var(--text-color));
+
+	&--popover {
+		position: fixed;
+		z-index: 1000;
+		min-width: 200px;
+		padding: 6px;
+		border-radius: 12px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgb(var(--module-color));
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+	}
+
+	&--sheet {
+		gap: 2px;
+		padding: 14px 12px 20px;
+		padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+		border-radius: 28px 28px 0 0;
+		background: rgb(var(--module-color));
+	}
+
+	&__grabber {
+		align-self: center;
+		width: 40px;
+		height: 4px;
+		margin-bottom: 8px;
+		border-radius: 2px;
+		background: rgba(var(--text-color), 0.18);
+	}
+
+	&__title {
+		padding: 4px 12px 10px;
+		font-size: 1.05rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 40px;
+		padding: 8px 12px;
+		border: 0;
+		border-radius: 8px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.95rem;
+		font-weight: 500;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover,
+		&:focus-visible {
+			outline: none;
+			background: rgba(var(--text-color), 0.07);
+		}
+
+		&--danger {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&--sheet &__item {
+		min-height: 52px;
+		font-size: 1rem;
+	}
+
+	&__icon {
+		display: inline-flex;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+}
+
+// --- Profile ------------------------------------------------------------------
+
+.#{$namespace}-cube-profile {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	width: 100%;
+	color: rgb(var(--text-color));
+
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	&__back,
+	&__menu-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 40px;
+		height: 40px;
+		border: 0;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+	}
+
+	&__heading {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__name {
+		margin: 0;
+		font-size: 1.45rem;
+		font-weight: 700;
+		line-height: 1.25;
+		overflow-wrap: anywhere;
+	}
+
+	&__subline {
+		font-size: 0.9rem;
+	}
+
+	&__message {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.5;
+	}
+
+	&__card {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 16px;
+		border-radius: 14px;
+		border: 1px solid rgba(var(--text-color), 0.09);
+		background: rgba(var(--text-color), 0.035);
+	}
+
+	&__card-title {
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 700;
+	}
+
+	&__subtitle {
+		margin: 6px 0 0;
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__numbers {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 12px;
+	}
+
+	&__number {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__number-value {
+		font-size: 1.7rem;
+		font-weight: 700;
+		line-height: 1.15;
+		font-variant-numeric: tabular-nums;
+
+		&--text {
+			font-size: 1.15rem;
+			line-height: 1.6;
+		}
+	}
+
+	&__number-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	&__local-note {
+		font-weight: 500;
+	}
+
+	&__first {
+		margin: 0;
+		font-size: 0.92rem;
+	}
+
+	&__solves-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 14px;
+		border-radius: 10px;
+		background: rgba(var(--primary-color), 0.12);
+		color: rgb(var(--primary-color));
+		font-weight: 700;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.18);
+		}
+	}
+
+	&__phone {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 0;
+
+		& + & {
+			border-top: 1px solid rgba(var(--text-color), 0.08);
+		}
+
+		&--current {
+			padding-top: 0;
+		}
+
+		@include bp-down($bp-xs) {
+			&--current {
+				flex-wrap: wrap;
+			}
+		}
+	}
+
+	&__phone-main {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__phone-name {
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__phone-values {
+		font-size: 0.92rem;
+	}
+
+	&__phone-date {
+		font-size: 0.85rem;
+	}
+
+	&__calibrate {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		min-height: 44px;
+		padding: 0 16px;
+		border-radius: 10px;
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+		font-weight: 700;
+
+		@include bp-down($bp-xs) {
+			width: 100%;
+		}
+	}
+
+	&__delete {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		border: 0;
+		border-radius: 10px;
+		background: transparent;
+		color: rgb(var(--error-color));
+		cursor: pointer;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:hover {
+			background: rgba(var(--error-color), 0.1);
+		}
+	}
+}

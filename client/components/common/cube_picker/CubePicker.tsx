@@ -1,6 +1,6 @@
 import React from 'react';
 import FancyDropdown, { FancyDropdownGroup, FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
-import { getCubeTypeInfoById } from '../../../util/cubes/util';
+import { getCubeTypeInfoById, getCubeTypeName } from '../../../util/cubes/util';
 import { CubeType } from '../../../util/cubes/cube_types';
 import { resourceUri } from '../../../util/storage';
 import { useTranslation } from 'react-i18next';
@@ -72,7 +72,7 @@ export default function CubePicker(props: Props) {
 		}
 		return {
 			value: ct.id,
-			label: ct.name,
+			label: getCubeTypeName(ct.id),
 		};
 	}
 
@@ -91,7 +91,7 @@ export default function CubePicker(props: Props) {
 			alt="WCA"
 			style={{ height: 18, display: 'block' }}
 		/>
-	) : ((handlePrefix || '') + (cubeType?.name || ''));
+	) : ((handlePrefix || '') + (cubeType ? getCubeTypeName(cubeType.id) : ''));
 
 	// Flat list (custom cubeTypes) vs grouped (default)
 	if (cubeTypes) {
@@ -105,7 +105,7 @@ export default function CubePicker(props: Props) {
 				onValueChange={handleValueChange}
 				options={options}
 				triggerLabel={triggerLabel}
-				ariaLabel="Cube Type"
+				ariaLabel={t('stats.select_cube')}
 				triggerMaxWidth={160}
 			/>
 		);
@@ -134,7 +134,7 @@ export default function CubePicker(props: Props) {
 			onValueChange={handleValueChange}
 			groups={groups}
 			triggerLabel={triggerLabel}
-			ariaLabel="Cube Type"
+			ariaLabel={t('stats.select_cube')}
 			maxHeight={500}
 			triggerMaxWidth={160}
 			panelClassName="cube-picker-panel"

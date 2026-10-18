@@ -194,12 +194,12 @@ const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
 							<div className={b('edit-ao-section')}>
 								{!editingAo ? (
 									<div className={b('edit-ao-label')} onClick={handleAoEditStart}>
-										<span>Average Of {localStatOptions?.averageCount}</span>
+										<span>{t('timer_modules.stat_avg_of', { num: localStatOptions?.averageCount })}</span>
 										<PencilSimple weight="fill" size={14} />
 									</div>
 								) : (
 									<div className={b('edit-ao-row')}>
-										<span className={b('edit-ao-prefix')}>Average Of</span>
+										<span className={b('edit-ao-prefix')}>{t('timer_modules.average_count_label')}</span>
 										<input
 											ref={aoInputRef}
 											className={b('edit-ao-input')}

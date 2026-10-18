@@ -53,6 +53,14 @@ export class MagnetTelemetryInput {
 
 	@Field({ nullable: true })
 	app_version?: string;
+
+	/** Puzzle key of the cube in use (shared/cube_puzzle.ts). */
+	@Field({ nullable: true })
+	cube_puzzle?: string;
+
+	/** The "ready" threshold the detector ran with, calibrated or default. */
+	@Field(() => Float, { nullable: true })
+	near_min_ut?: number;
 }
 
 @ObjectType()
@@ -120,6 +128,12 @@ export class MagnetTelemetryRow {
 	@Field({ nullable: true })
 	app_version?: string;
 
+	@Field({ nullable: true })
+	cube_puzzle?: string;
+
+	@Field(() => Float, { nullable: true })
+	near_min_ut?: number;
+
 	@Field()
 	created_at: Date;
 }
@@ -136,6 +150,14 @@ export class MagnetTelemetrySummary {
 
 	@Field()
 	device_model: string;
+
+	/** Puzzle of the cube in use; null for rows recorded before cubes existed. */
+	@Field({ nullable: true })
+	cube_puzzle?: string;
+
+	/** Median "ready" threshold the detector ran with; 0 when no row recorded one. */
+	@Field(() => Float)
+	median_near_min_ut: number;
 
 	@Field({ nullable: true })
 	sensor_name?: string;

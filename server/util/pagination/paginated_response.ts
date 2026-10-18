@@ -28,12 +28,12 @@ export async function getPaginatedResponse<T>(input: PaginatedRequestInput): Pro
 	prismaPayload.skip = page * pageSize;
 	prismaPayload.take = pageSize + 1;
 
+	// Only the shape goes to the logs: the search term and the where clause carry what an
+	// admin typed (emails, names), and logs are read far more widely than the database.
+	const logContext = {tableName, page, pageSize};
+
 	try {
-		logger.info(`Fetching paginated data for table: ${tableName}`, {
-			tableName,
-			paginationArgs,
-			prismaPayload
-		});
+		logger.info(`Fetching paginated data for table: ${tableName}`, logContext);
 
 		const [total, items] = await Promise.all([
 			getPaginatedResponseTotalCount(input),
@@ -59,8 +59,7 @@ export async function getPaginatedResponse<T>(input: PaginatedRequestInput): Pro
 		};
 	} catch (e) {
 		logger.error(`Could not fetch paginated result.`, {
-			tableName,
-			paginationArgs: input,
+			...logContext,
 			error: e,
 			errorMessage: e.message,
 			errorStack: e.stack

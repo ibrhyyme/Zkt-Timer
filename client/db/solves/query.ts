@@ -78,39 +78,90 @@ export function fetchLastCubeTypeForSession(sessionId: string): string {
  * time and its mean. Sessions previously showed only a name and a creation date,
  * which is not what you ask when picking one.
  *
- * Counts every solve in the session including DNFs (so the number matches the
- * session's real size), but excludes them from best/average since a DNF has no
- * comparable time. `plus_two` is already baked into `time` by the writer.
+ * `count` is every solve in the session including DNFs (so the number matches the
+ * session's real size). Best and mean come from ONE bucket only, the most solved
+ * (cube_type, scramble_subset) pair, returned as `topBucket` so the row can name it
+ * (K-13). Mixing buckets made a 3x3 session show a 1.16 PLL as its best. DNFs are
+ * left out of best and mean since they have no comparable time; `plus_two` is
+ * already baked into `time` by the writer.
  */
 export function fetchSessionSummary(sessionId: string): {
 	count: number;
 	best: number | null;
 	average: number | null;
+	/** Distinct (cube_type, scramble_subset) buckets: each one is a separate list on the timer */
+	bucketCount: number;
+	/** The bucket best and average belong to: the one with the most solves */
+	topBucket: {cube_type: string; scramble_subset: string | null} | null;
 } {
 	const solveDb = getSolveDb();
 
 	const solves = solveDb.chain().find({session_id: sessionId}).data();
-	if (!solves || !solves.length) {
-		return {count: 0, best: null, average: null};
+	return summarizeSessionSolves(solves || []);
+}
+
+interface SummaryBucket {
+	cube_type: string;
+	scramble_subset: string | null;
+	count: number;
+	lastEndedAt: number;
+	best: number | null;
+	total: number;
+	counted: number;
+}
+
+/** Pure part of fetchSessionSummary, exported for tests. */
+export function summarizeSessionSolves(
+	solves: {cube_type?: string | null; scramble_subset?: string | null; dnf?: boolean; time?: number; ended_at?: any}[]
+): ReturnType<typeof fetchSessionSummary> {
+	if (!solves.length) {
+		return {count: 0, best: null, average: null, bucketCount: 0, topBucket: null};
 	}
 
-	let best: number | null = null;
-	let total = 0;
-	let counted = 0;
+	const buckets = new Map<string, SummaryBucket>();
 
 	for (const solve of solves) {
+		const subset = solve.scramble_subset || null;
+		const key = `${solve.cube_type}::${subset ?? ''}`;
+		let bucket = buckets.get(key);
+		if (!bucket) {
+			bucket = {
+				cube_type: solve.cube_type,
+				scramble_subset: subset,
+				count: 0,
+				lastEndedAt: 0,
+				best: null,
+				total: 0,
+				counted: 0,
+			};
+			buckets.set(key, bucket);
+		}
+		bucket.count++;
+		const endedAt = new Date(solve.ended_at as any).getTime();
+		if (Number.isFinite(endedAt) && endedAt > bucket.lastEndedAt) bucket.lastEndedAt = endedAt;
+
 		if (solve.dnf) continue;
 		const time = solve.time;
 		if (typeof time !== 'number' || !isFinite(time)) continue;
-		if (best === null || time < best) best = time;
-		total += time;
-		counted++;
+		if (bucket.best === null || time < bucket.best) bucket.best = time;
+		bucket.total += time;
+		bucket.counted++;
+	}
+
+	// Most solves wins; a tie goes to the bucket solved most recently
+	let top: SummaryBucket | null = null;
+	for (const bucket of buckets.values()) {
+		if (!top || bucket.count > top.count || (bucket.count === top.count && bucket.lastEndedAt > top.lastEndedAt)) {
+			top = bucket;
+		}
 	}
 
 	return {
 		count: solves.length,
-		best,
-		average: counted ? total / counted : null,
+		best: top.best,
+		average: top.counted ? top.total / top.counted : null,
+		bucketCount: buckets.size,
+		topBucket: {cube_type: top.cube_type, scramble_subset: top.scramble_subset},
 	};
 }
 
@@ -147,7 +198,11 @@ export function fetchSingleSolve(options: FilterSolvesOptions = {}, fetchOptions
 	return solves[0];
 }
 
-export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false) {
+/**
+ * Every (cube_type, scramble_subset) bucket with its count of timed solves, most solved first.
+ * `scope` narrows the solves counted (the Stats page passes its season and cube filter).
+ */
+export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false, scope: FilterSolvesOptions = {}) {
 	type CubeTypeCount = {
 		cube_type: string;
 		scramble_subset: string | null;
@@ -157,6 +212,7 @@ export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false) {
 	const typeListMap: Record<string, number> = {};
 	const list: CubeTypeCount[] = [];
 	const solves = fetchSolves({
+		...scope,
 		dnf: false,
 		from_timer: true,
 		time: { $gt: 0 },

@@ -48,9 +48,29 @@
 		opacity: 1;
 		transition: all 0.1s ease-in-out;
 		display: block;
+		// react-color-palette 7 fills its container (6.x took a width prop). The cap keeps
+		// it inside a narrow phone instead of widening the page.
+		width: 350px;
+		max-width: calc(100vw - 32px);
 
 		input {
 			max-width: unset;
+		}
+
+		// 7.x ships a single dark look. These are the colours 6.x used for its dark and
+		// light modes, so the picker looks as it did before the upgrade.
+		.rcp-root {
+			--rcp-background-color: #181818;
+			--rcp-field-input-color: #f3f3f3;
+			--rcp-field-input-border-color: rgba(255, 255, 255, 0.1);
+			--rcp-field-label-color: #999999;
+		}
+
+		.theme-light & .rcp-root {
+			--rcp-background-color: #ffffff;
+			--rcp-field-input-color: #111111;
+			--rcp-field-input-border-color: rgba(0, 0, 0, 0.1);
+			--rcp-field-label-color: #717171;
 		}
 
 		&--up {

@@ -1,4 +1,5 @@
 import React, {useContext} from 'react';
+import {formatInteger} from '../../../../util/locale_format';
 import './AvgRow.scss';
 import block from '../../../../styles/bem';
 import {getCurrentAverage} from '../../../../db/solves/stats/solves/average/average';
@@ -20,7 +21,7 @@ interface Props {
 
 export default function AvgRow(props: Props) {
 	const dispatch = useDispatch();
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 
 	const context = useContext(StatsContext);
 	const filter = context.filterOptions;
@@ -33,7 +34,7 @@ export default function AvgRow(props: Props) {
 		avg = getCurrentAverage(filter, count);
 	}
 
-	const localCount = count.toLocaleString();
+	const localCount = formatInteger(count, i18n.language);
 
 	function openSolveModal() {
 		if (!avg) {

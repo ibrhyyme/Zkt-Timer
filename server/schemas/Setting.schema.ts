@@ -93,6 +93,9 @@ export class Setting {
 	@Field({ nullable: true })
 	mobile_prefs?: string;
 
+	@Field({ nullable: true })
+	trainer_options?: string;
+
 	@Field(() => [CustomCubeType])
 	custom_cube_types?: CustomCubeType[];
 }
@@ -182,4 +185,7 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field({ nullable: true })
 	mobile_prefs?: string;
+
+	@Field({ nullable: true })
+	trainer_options?: string;
 }

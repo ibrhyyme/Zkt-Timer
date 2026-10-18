@@ -1,0 +1,67 @@
+@import '../../../styles/config';
+
+.#{$namespace}-split-session {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	width: 100%;
+
+	&__groups {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		max-height: 45vh;
+		overflow-y: auto;
+	}
+
+	&__group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.6rem 0.75rem;
+		border-radius: 0.6rem;
+		background-color: rgb(var(--module-color));
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		min-width: 0;
+
+		> :first-child {
+			flex: 1;
+			min-width: 0;
+		}
+
+		&--head {
+			font-weight: 600;
+		}
+
+		&--child {
+			padding-left: 1.6rem;
+		}
+	}
+
+	&__count {
+		flex-shrink: 0;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+	}
+
+	&__note {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(var(--warning-color));
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 0.25rem;
+	}
+}

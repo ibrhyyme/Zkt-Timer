@@ -66,6 +66,18 @@ export function getSessionCount(filter: FilterSolvesOptions): number {
 	return seen.size;
 }
 
+/**
+ * Timed solves (DNFs left out) per season that holds any solve of the filter, rounded. One
+ * number for "Avg. solves / session" and "Active sessions": the first used to divide by runs
+ * of consecutive active days, so the two boxes on one page disagreed (100 against 4 114).
+ */
+export function getAvgSolvesPerSession(filter: FilterSolvesOptions): number {
+	const sessions = getSessionCount(filter);
+	if (!sessions) return 0;
+	const timed = fetchSolves({...filter, dnf: false, time: {$gt: 0}}).length;
+	return Math.round(timed / sessions);
+}
+
 export interface DayOfWeekStat {
 	bestDayIdx: number | null;
 	bestAvg: number | null;

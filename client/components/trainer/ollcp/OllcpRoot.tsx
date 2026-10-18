@@ -6,12 +6,13 @@
  */
 import React, {ReactNode, useEffect, useRef} from 'react';
 import {X, Lightning, CheckSquare} from 'phosphor-react';
+import {useTranslation} from 'react-i18next';
 import block from '../../../styles/bem';
 import './ollcp.scss';
 import {useMe} from '../../../util/hooks/useMe';
 import {useGeneral} from '../../../util/hooks/useGeneral';
 import {useTrainerContext} from '../TrainerContext';
-import TrainerModeHeader from '../common/TrainerModeHeader';
+import TrainerModeHeader, {kindCrumb, trainersCrumb} from '../common/TrainerModeHeader';
 import {OllcpProvider, useOllcp} from './OllcpContext';
 import {loadOllcpStats} from './stats';
 import {OLL_NUMBERS} from './data';
@@ -36,6 +37,7 @@ function OllcpRouter() {
 }
 
 function OllcpInner() {
+	const {t} = useTranslation();
 	const {state, goList, backToDetail, enterSelect, exitSelect, trainMulti} = useOllcp();
 	const {dispatch} = useTrainerContext();
 	const mobileMode = useGeneral('mobile_mode');
@@ -57,7 +59,7 @@ function OllcpInner() {
 		// Multi-OLL mixed session has no single detail to return to → back to the list.
 		if (state.view === 'train') state.currentOll ? backToDetail() : goList();
 		else if (state.view === 'detail') goList();
-		else dispatch({type: 'SET_VIEW', payload: 'landing'}); // list → trainer landing
+		else dispatch({type: 'SET_VIEW', payload: 'modes'}); // list → Trainers page
 	};
 
 	// Header top-right actions, only on the list. Select mode → İptal + "Çalış (N)"; otherwise on web
@@ -93,7 +95,12 @@ function OllcpInner() {
 
 	return (
 		<>
-			<TrainerModeHeader mode="ollcp" onBack={onBack} backToRoot={state.view === 'list'} actions={actions} />
+			<TrainerModeHeader
+				kind="ollcp"
+				trail={[trainersCrumb(t, () => dispatch({type: 'SET_VIEW', payload: 'modes'})), kindCrumb(t, 'ollcp')]}
+				onBack={onBack}
+				actions={actions}
+			/>
 			<div className={b()} ref={scrollRef}>
 				<OllcpRouter />
 			</div>
@@ -107,7 +114,7 @@ export default function OllcpRoot() {
 
 	// Admin-only: if a non-admin somehow lands here (stale persisted mode), bounce to landing.
 	useEffect(() => {
-		if (me && !me.admin) dispatch({type: 'SET_VIEW', payload: 'landing'});
+		if (me && !me.admin) dispatch({type: 'SET_VIEW', payload: 'modes'});
 	}, [me, dispatch]);
 
 	// Pull server accuracy (and one-time-merge this device's legacy local data) on mode entry, so the

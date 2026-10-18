@@ -1,5 +1,5 @@
 import {Field, InputType, Int, ObjectType} from 'type-graphql';
-import {UserAccountForAdmin} from './UserAccount.schema';
+import {PublicUserAccount} from './UserAccount.schema';
 
 @ObjectType()
 export class BanLog {
@@ -30,11 +30,14 @@ export class BanLog {
 	@Field()
 	created_at: Date;
 
-	@Field(() => UserAccountForAdmin)
-	created_by?: UserAccountForAdmin;
+	// Public shape on purpose: BanLog hangs off UserAccount.bans, so an admin type here
+	// would put email and join_ip one relation away from any path that loads bans.
+	// The admin panel only reads id and username.
+	@Field(() => PublicUserAccount)
+	created_by?: PublicUserAccount;
 
-	@Field(() => UserAccountForAdmin)
-	banned_user?: UserAccountForAdmin;
+	@Field(() => PublicUserAccount)
+	banned_user?: PublicUserAccount;
 }
 
 @InputType()

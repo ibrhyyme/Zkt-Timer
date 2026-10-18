@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LINKED_SERVICES } from '../../../../shared/integration';
 import { resourceUri } from '../../../util/storage';
+import { ZKT_BADGE_ON_DARK } from '../../../util/hooks/useZktBadge';
 import { createAndStoreOAuthState } from '../../../util/oauth_state';
 import { oauthRedirectUri, openOAuthAuthorize } from '../../../util/oauth-native';
 import block from '../../../styles/bem';
@@ -53,8 +54,9 @@ export default function ZktSection({ onTrigger, showDivider = false, mode = 'log
 				onClick={handleClick}
 				disabled={loading}
 			>
+				{/* The auth scene is dark in every theme, so always the white-lettered badge. */}
 				<img
-					src={resourceUri('/images/logos/zkt_logo.png')}
+					src={resourceUri(ZKT_BADGE_ON_DARK)}
 					alt="Zeka Küpü Türkiye"
 					className={b('zkt-logo-img')}
 				/>

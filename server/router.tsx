@@ -17,9 +17,13 @@ import { mapSingleRoute } from '../client/components/map_route';
 import { ApolloClient, ApolloProvider, InMemoryCache, ApolloLink } from '@apollo/client';
 import { I18nextProvider } from 'react-i18next';
 import { createI18nInstance } from './i18n_server';
+import { FALLBACK_LANGUAGE, matchSupportedLanguage, parseAcceptLanguage, pickSupportedLanguage } from '../shared/i18n_language';
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { logger } from './services/logger';
 import { ErrorCode } from './constants/errors';
+import { fillRedirectParams, mergeRedirectQuery } from '../shared/redirect_query';
+import { seedBattleLaunch } from './services/battle_launch_ssr';
+import { seedSiteConfig } from './services/site_config_ssr';
 
 if (process.env.NODE_ENV !== "production") {
 	loadDevMessages();
@@ -91,7 +95,7 @@ function SsrMetaTags({meta, path}: {meta: SsrMeta; path: string}) {
 
 function createComponents(req, store, route?: PageContext) {
 	// Detect language from cookie for SSR
-	const lng = req.cookies?.zkt_language || 'en';
+	const lng = matchSupportedLanguage(req.cookies?.zkt_language) || FALLBACK_LANGUAGE;
 	const i18nInstance = createI18nInstance(lng);
 
 	const client = new ApolloClient({
@@ -152,12 +156,15 @@ function createComponents(req, store, route?: PageContext) {
 function appUseRouteForPage(routePath, route: PageContext) {
 	global.app.all(routePath, async (req, res) => {
 		// If no language cookie on first visit, detect from Accept-Language
+		// Ranked by q value: a substring check used to find "en" inside
+		// "tr-TR,tr;q=0.9,en;q=0.8" and served English to Turkish browsers.
 		if (!req.cookies?.zkt_language) {
-			const acceptLang = req.headers['accept-language'] || '';
-			const preferred = ['zh', 'en', 'es', 'ru', 'tr'].find(
-				(l) => acceptLang.toLowerCase().includes(l)
-			) || 'en';
+			const preferred =
+				pickSupportedLanguage(parseAcceptLanguage(req.headers['accept-language'])) || FALLBACK_LANGUAGE;
 			res.cookie('zkt_language', preferred, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
+			// Render this first page in the same language the client will read back from
+			// the cookie, otherwise hydration swaps every string on the first visit.
+			if (req.cookies) req.cookies.zkt_language = preferred;
 		}
 
 		const store = createStore(reducers, {}, applyMiddleware(promise(), thunk));
@@ -200,6 +207,10 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			res.status(302).redirect('/timer');
 			return;
 		}
+
+		// Online Battle launch flags for the menu, /ranks noindex and /battle (every page has the menu),
+		// and the site config itself so feature-guarded pages know their flags on the first frame.
+		await Promise.all([seedBattleLaunch(store, me), seedSiteConfig(store, me)]);
 
 		let code = 200;
 		try {
@@ -267,12 +278,13 @@ export function mapPathToPage() {
 
 function redirectPage(routePath, route) {
 	global.app.get(routePath, (req, res) => {
-		let redirect = route.redirect;
-		const keys = Object.keys(req.params);
-		for (const key of keys) {
-			redirect = redirect.replace(`:${key}`, req.params[key]);
-		}
+		const target = fillRedirectParams(route.redirect, req.params);
+		// Keep the incoming query (`/trainer/standard?cat=pll` keeps `cat`); the target's own
+		// query wins on a shared key. Same helper as the in-app redirect in map_route.tsx.
+		const url: string = req.originalUrl || req.url || '';
+		const queryAt = url.indexOf('?');
+		const search = queryAt >= 0 ? url.slice(queryAt + 1) : '';
 
-		res.status(301).redirect(redirect);
+		res.status(301).redirect(mergeRedirectQuery(target, search));
 	});
 }

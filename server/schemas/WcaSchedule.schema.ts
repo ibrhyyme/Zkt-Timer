@@ -35,6 +35,10 @@ export class WcaScheduleAssignment {
 
 	@Field(() => Int, {nullable: true})
 	stationNumber?: number;
+
+	/** ZKT Dual Chance round: which of the two chances this group belongs to. */
+	@Field(() => Int, {nullable: true})
+	chance?: number;
 }
 
 @ObjectType()
@@ -75,6 +79,10 @@ export class WcaCompetitorAssignment {
 
 	@Field({nullable: true})
 	roomName?: string;
+
+	/** ZKT Dual Chance round: which of the two chances this group belongs to. */
+	@Field(() => Int, {nullable: true})
+	chance?: number;
 }
 
 @ObjectType()
@@ -200,6 +208,13 @@ export class WcaGroup {
 
 	@Field({nullable: true})
 	endTime?: string;
+
+	/**
+	 * ZKT Dual Chance round: 1 for groups 1..N, 2 for groups N+1..2N. The
+	 * federation guarantees that numbering, so it is derived, not shipped.
+	 */
+	@Field(() => Int, {nullable: true})
+	chance?: number;
 }
 
 @ObjectType()
@@ -224,6 +239,13 @@ export class WcaRound {
 
 	@Field(() => Int, {nullable: true})
 	advancementLevel?: number;
+
+	/**
+	 * ZKT Dual Chance: every competitor does the format twice and the better
+	 * chance counts. Not a WCA dual round; the round number and format stay the same.
+	 */
+	@Field({nullable: true})
+	dualChance?: boolean;
 
 	@Field(() => [WcaGroup])
 	groups: WcaGroup[];
@@ -344,6 +366,30 @@ export class WcaLiveAttempt {
 	result: number;
 }
 
+/** One chance of a ZKT Dual Chance round result. */
+@ObjectType()
+export class WcaLiveChance {
+	@Field(() => Int)
+	chance: number;
+
+	@Field(() => [WcaLiveAttempt])
+	attempts: WcaLiveAttempt[];
+
+	@Field(() => Int)
+	best: number;
+
+	@Field(() => Int)
+	average: number;
+
+	/** The competitor did not show up for this chance; read as DNS, not DNF. */
+	@Field()
+	noShow: boolean;
+
+	/** The better chance, the one the row's own attempts and average come from. */
+	@Field()
+	counting: boolean;
+}
+
 @ObjectType()
 export class WcaLiveResult {
 	@Field(() => Int, {nullable: true})
@@ -381,6 +427,14 @@ export class WcaLiveResult {
 
 	@Field()
 	advancingQuestionable: boolean;
+
+	/**
+	 * ZKT Dual Chance round only. A chance the competitor never entered is absent
+	 * from the list. The row's own attempts and average are the counting chance's,
+	 * and `best` is the best single across both chances.
+	 */
+	@Field(() => [WcaLiveChance], {nullable: true})
+	chances?: WcaLiveChance[];
 }
 
 @ObjectType()
@@ -472,6 +526,10 @@ export class WcaLiveRoundInfo {
 	/** Last round of its own chain — what the viewer reads as "Final". */
 	@Field({nullable: true})
 	isFinal?: boolean;
+
+	/** ZKT Dual Chance round (see WcaRound.dualChance). */
+	@Field({nullable: true})
+	dualChance?: boolean;
 }
 
 @ObjectType()
@@ -513,6 +571,20 @@ export class WcaLiveScheduleActivity {
 
 	@Field({nullable: true})
 	dayLabel?: string;
+
+	/**
+	 * ZKT rounds only: the parts the client needs to name the block in the
+	 * viewer's language. `name` stays as a ready Turkish label for older clients.
+	 */
+	@Field(() => Int, {nullable: true})
+	roundNumber?: number;
+
+	@Field({nullable: true})
+	isFinal?: boolean;
+
+	/** ZKT Dual Chance round: the chance this block runs. */
+	@Field(() => Int, {nullable: true})
+	chance?: number;
 }
 
 @ObjectType()
@@ -678,6 +750,10 @@ export class WcaLiveRoundResults {
 
 	@Field()
 	sortBy: string;
+
+	/** ZKT Dual Chance round (see WcaRound.dualChance). */
+	@Field({nullable: true})
+	dualChance?: boolean;
 
 	@Field(() => [WcaLiveResult])
 	results: WcaLiveResult[];

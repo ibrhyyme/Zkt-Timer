@@ -528,6 +528,80 @@ describe('SmartSolveEngine — solve detection', () => {
 });
 
 /**
+ * Battle installs the round's scramble after the cube connected. A GAN 12 ui whose firmware
+ * had drifted (it reported D2 while sitting solved) raised the warning on connect, and the
+ * round's setScramble wiped it: the player got an undo hint for every correct move instead of
+ * "mark as solved". Seen in the Online Battle test, 2026-10-13.
+ */
+describe('SmartSolveEngine — a new scramble keeps an unplaceable cube flagged', () => {
+	const DRIFTED = faceletsAfter(['D2']);
+	const ROUND_SCRAMBLE = 'B2 L B2 L F2';
+
+	it('raises the warning when the scramble arrives after a drifted cube connected', async () => {
+		const { engine, of } = harness({ outOfSyncDelayMs: 20 });
+		engine.setConnected(true);
+		engine.pushFacelets(DRIFTED);
+
+		engine.setScramble(ROUND_SCRAMBLE);
+		await wait(60);
+
+		expect(of('OUT_OF_SYNC').slice(-1)[0].out).toBe(true);
+		// No undo hint alongside it: there is nothing the player did to undo.
+		const undo = of('UNDO_MOVES').slice(-1)[0];
+		expect(!undo || !undo.moves || undo.moves.length === 0).toBe(true);
+	});
+
+	it('stays quiet for a solved cube', async () => {
+		const { engine, of } = harness({ outOfSyncDelayMs: 20 });
+		engine.setConnected(true);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+
+		engine.setScramble(ROUND_SCRAMBLE);
+		await wait(60);
+
+		expect(of('OUT_OF_SYNC').filter((e) => e.out)).toHaveLength(0);
+	});
+
+	it('stays quiet for a cube already part way along the new scramble', async () => {
+		const { engine, of } = harness({ outOfSyncDelayMs: 20 });
+		engine.setConnected(true);
+		engine.pushFacelets(faceletsAfter(['B2', 'L']));
+
+		engine.setScramble(ROUND_SCRAMBLE);
+		await wait(60);
+
+		expect(of('OUT_OF_SYNC').filter((e) => e.out)).toHaveLength(0);
+	});
+
+	it('stays quiet on the timer correction path, where the cube is mis-scrambled on purpose', async () => {
+		const { engine, of } = harness({ outOfSyncDelayMs: 20 });
+		engine.setConnected(true);
+		// The user turned R instead of the scramble's first move; the page shows a fix-up
+		// sequence from there to the original target.
+		const original = 'R U F';
+		const misScrambled = faceletsAfter(['R', 'U', 'F', 'D']);
+		engine.pushFacelets(misScrambled);
+
+		engine.setScramble("D'", original);
+		await wait(60);
+
+		expect(of('OUT_OF_SYNC').filter((e) => e.out)).toHaveLength(0);
+	});
+
+	it('clears once the player marks the cube solved', async () => {
+		const { engine, of } = harness({ outOfSyncDelayMs: 20 });
+		engine.setConnected(true);
+		engine.pushFacelets(DRIFTED);
+		engine.setScramble(ROUND_SCRAMBLE);
+		await wait(60);
+		expect(of('OUT_OF_SYNC').slice(-1)[0].out).toBe(true);
+
+		engine.markSolved();
+		expect(of('OUT_OF_SYNC').slice(-1)[0].out).toBe(false);
+	});
+});
+
+/**
  * A dropped BLE packet used to cost the user their whole scramble. The tracker was
  * re-anchored to the state the cube reported and the matcher was wiped along with it, so
  * the display went blank part way through and the correction hint started fighting a user

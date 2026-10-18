@@ -4,9 +4,11 @@ import {getAnyColorStringAsRgb} from './theme_util';
 /**
  * The two solve list colours (Appearance > Lists): a normal time and a PB.
  *
- * Each is an optional override of a theme colour. Unset (null) it follows the theme,
- * which is what the list always did: a time in the secondary colour, a PB in the
- * primary one. themes.ts turns a set colour into the CSS variable below, and
+ * Each is an optional override of a theme colour. Unset (null) it follows the theme: a
+ * time in the text colour, a PB in the primary one. A normal time used to take the
+ * secondary colour, which made the colour mean nothing (red in one theme, green in
+ * another, see feedback 1.9-k) and sank into a background image; colour is now kept for
+ * what carries meaning (PB, +2, DNF). themes.ts turns a set colour into the CSS variable below, and
  * HistorySolveRow.scss reads that variable with the theme colour as its fallback, so a
  * cleared setting has to remove the variable rather than write something into it.
  */
@@ -22,7 +24,7 @@ export const SOLVE_LIST_COLOR_VARS: Record<SolveListColorKey, string> = {
 
 /** The theme colour each one falls back to while unset. */
 export const SOLVE_LIST_COLOR_THEME_FALLBACK: Record<SolveListColorKey, keyof AllSettings> = {
-	solve_time_color: 'secondary_color',
+	solve_time_color: 'text_color',
 	solve_pb_color: 'primary_color',
 };
 

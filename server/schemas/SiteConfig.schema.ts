@@ -109,6 +109,10 @@ export class SiteConfig {
 	@Field({nullable: true})
 	magnet_telemetry_enabled?: boolean;
 
+	/** Online Battle switch, off by default. Nullable: a config cached before the column existed lacks it (read as off). */
+	@Field({nullable: true})
+	online_battle_enabled?: boolean;
+
 	/** See schema.prisma SiteConfig.method_steps_version. Nullable: an older cached config lacks it. */
 	@Field(() => Int, {nullable: true})
 	method_steps_version?: number;
@@ -398,6 +402,9 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	magnet_telemetry_enabled?: boolean;
+
+	@Field({nullable: true})
+	online_battle_enabled?: boolean;
 
 	@Field(() => [FeatureOverrideEntryInput], {nullable: true})
 	featureOverrides?: FeatureOverrideEntryInput[];

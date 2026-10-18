@@ -7,6 +7,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
 import { IModalProps } from '../../common/modal/Modal';
 import { isNative } from '../../../util/platform';
+import type { WiredBrand } from '../../timer/helpers/timer_type_catalog';
 import block from '../../../styles/bem';
 import './StackMatPicker.scss';
 
@@ -26,11 +27,17 @@ export function getAudioPickerModalProps(t: (key: string) => string) {
 }
 
 interface StackMatPickerProps extends IModalProps {
+	/**
+	 * Which desktop option opened the picker (StackMat or the QiYi wired timer). Both run on
+	 * this one engine; the brand only decides which option shows as checked. Saved together
+	 * with the device, so cancelling the picker changes nothing.
+	 */
+	brand?: WiredBrand;
 }
 
 export default function StackMatPicker(props: StackMatPickerProps) {
 	const { t } = useTranslation();
-	const { onComplete } = props;
+	const { onComplete, brand } = props;
 
 	const stackMatId = useSettings('stackmat_id');
 	const [selectedStackMatId, setSelectedStackMatId] = useState(stackMatId);
@@ -100,7 +107,11 @@ export default function StackMatPicker(props: StackMatPickerProps) {
 		// server overwrites rather than merges, so two calls race. And locally this
 		// commits the device id and the input type before a single update event fires,
 		// so StackMat can never mount on the new type with no id to initialise from.
-		setSettings({stackmat_id: selectedStackMatId, timer_type: 'stackmat'});
+		setSettings({
+			stackmat_id: selectedStackMatId,
+			timer_type: 'stackmat',
+			...(brand ? {wired_timer_brand: brand} : {}),
+		});
 		onComplete();
 	}
 

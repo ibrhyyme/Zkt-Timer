@@ -33,6 +33,18 @@ describe('planDeltaSync', () => {
 		expect(plan.toRemove).toEqual([]);
 	});
 
+	it('never removes a solve made while the id list was on its way', () => {
+		const plan = planDeltaSync({
+			serverIds: ids('a'),
+			localIds: ids('a', 'just-solved', 'deleted-elsewhere'),
+			pendingCreateIds: ids(),
+			pendingDeleteIds: ids(),
+			tombstoned: ids(),
+			recentIds: ids('just-solved'),
+		});
+		expect(plan.toRemove).toEqual(['deleted-elsewhere']);
+	});
+
 	it('does not fetch back what this device is deleting or has deleted', () => {
 		const plan = planDeltaSync({
 			serverIds: ids('pending-delete', 'tombstoned', 'new'),

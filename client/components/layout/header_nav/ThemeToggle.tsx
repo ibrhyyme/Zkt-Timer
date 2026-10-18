@@ -1,9 +1,11 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sun, Moon } from 'phosphor-react';
 import tinycolor from 'tinycolor2';
 import block from '../../../styles/bem';
 import './ThemeToggle.scss';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useMe } from '../../../util/hooks/useMe';
 import { setSettings } from '../../../db/settings/update';
 import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
 import { getAnyColorStringAsRgbString } from '../../../util/themes/theme_util';
@@ -23,6 +25,8 @@ function applyPreset(preset: 'light' | 'dark') {
 }
 
 export default function ThemeToggle() {
+	const { t } = useTranslation();
+	const me = useMe();
 	const bg = useSettings('background_color') as string;
 
 	// Active mode from background luminance — works even on a Pro theme (a dark Pro
@@ -31,11 +35,14 @@ export default function ThemeToggle() {
 		? tinycolor(getAnyColorStringAsRgbString(bg)).isLight()
 		: false;
 
+	// Only an account picks a theme; a visitor stays on the fixed one (theme_lock.ts, E-106).
+	if (!me) return null;
+
 	return (
 		<button
 			type="button"
 			className={b()}
-			aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+			aria-label={isLight ? t('nav.switch_to_dark') : t('nav.switch_to_light')}
 			onClick={() => applyPreset(isLight ? 'dark' : 'light')}
 		>
 			{isLight ? <Sun weight="fill" size={18} /> : <Moon weight="fill" size={18} />}

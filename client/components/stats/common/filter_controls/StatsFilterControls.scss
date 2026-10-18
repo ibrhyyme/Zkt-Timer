@@ -72,6 +72,13 @@
 		font-size: 0.85rem;
 	}
 
+	// "Solves on this device" next to the Cube chip (magnet-cubes 8.1, Basic users)
+	&__note {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
 	// Old Dropdown overrides removed — now using FancyDropdown.
 
 	@include bp-down($bp-md) {

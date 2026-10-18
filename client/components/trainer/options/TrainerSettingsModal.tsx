@@ -19,9 +19,14 @@ interface TrainerSettingsModalProps {
 	 */
 	initialOptions: TrainerOptions;
 	onOptionChange: <K extends keyof TrainerOptions>(key: K, value: TrainerOptions[K]) => void;
+	/**
+	 * Study mode is Smart Cube (trainer-sets 6.7): only then is the Smart Cube section shown.
+	 * The mode itself is a snapshot; switching mode with the modal open is not possible.
+	 */
+	smartMode?: boolean;
 }
 
-export default function TrainerSettingsModal({initialOptions, onOptionChange}: TrainerSettingsModalProps) {
+export default function TrainerSettingsModal({initialOptions, onOptionChange, smartMode = false}: TrainerSettingsModalProps) {
 	const {t} = useTranslation();
 	const [options, setLocalOptions] = useState<TrainerOptions>(initialOptions);
 
@@ -29,6 +34,16 @@ export default function TrainerSettingsModal({initialOptions, onOptionChange}: T
 		setLocalOptions((prev) => ({...prev, [key]: value}));
 		onOptionChange(key, value);
 	};
+
+	// Keeping the screen on covers the Standard timer too (TrainingArea), so in Standard mode it
+	// moves to the practice section instead of disappearing with the Smart Cube section.
+	const wakeLockToggle = (
+		<SettingToggle
+			label={t('trainer.option_wake_lock')}
+			checked={options.wakeLockEnabled}
+			onChange={(v) => set('wakeLockEnabled', v)}
+		/>
+	);
 
 	return (
 		<div className={b('settings-modal')}>
@@ -81,6 +96,7 @@ export default function TrainerSettingsModal({initialOptions, onOptionChange}: T
 					checked={options.flashingError}
 					onChange={(v) => set('flashingError', v)}
 				/>
+				{!smartMode && wakeLockToggle}
 			</SettingsSection>
 
 			<SettingsSection title={t('trainer.settings_section_visualization')}>
@@ -111,19 +127,17 @@ export default function TrainerSettingsModal({initialOptions, onOptionChange}: T
 				/>
 			</SettingsSection>
 
-			<SettingsSection title={t('trainer.settings_section_smart_cube')}>
-				<SettingToggle
-					label={t('trainer.option_wake_lock')}
-					checked={options.wakeLockEnabled}
-					onChange={(v) => set('wakeLockEnabled', v)}
-				/>
-				<SettingToggle
-					label={t('trainer.option_show_all_ble_devices')}
-					description={t('trainer.option_show_all_ble_devices_desc')}
-					checked={options.showAllBleDevices}
-					onChange={(v) => set('showAllBleDevices', v)}
-				/>
-			</SettingsSection>
+			{smartMode && (
+				<SettingsSection title={t('trainer.settings_section_smart_cube')}>
+					{wakeLockToggle}
+					<SettingToggle
+						label={t('trainer.option_show_all_ble_devices')}
+						description={t('trainer.option_show_all_ble_devices_desc')}
+						checked={options.showAllBleDevices}
+						onChange={(v) => set('showAllBleDevices', v)}
+					/>
+				</SettingsSection>
+			)}
 		</div>
 	);
 }

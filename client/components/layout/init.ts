@@ -9,7 +9,7 @@ import { gqlMutate, gqlQuery, removeTypename } from '../api';
 import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, saveLokiDb, setDbLoadDegraded, updateOfflineHash } from './offline';
-import { initSettingsDb, SettingValue } from '../../db/settings/init';
+import { getSettingsDb, initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, isMobileViewport, AllSettings, isGlobalSetting, isLocalOnlySetting } from '../../db/settings/query';
 import { ANON_DB_NAME, getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
@@ -46,6 +46,9 @@ import { toSessionInput, toSolveInput } from '../../db/solves/solve-input';
 import { initNetworkListener } from '../../util/native-plugins';
 import { requestPersist } from '../../db/persist';
 import { fetchSiteConfig } from '../../util/hooks/useSiteConfig';
+import { backfillLocalStepRows } from '../../db/solves/local-analysis';
+import { refreshCubes } from '../../lib/cubes/sync';
+import { migrateCubeLink } from '../../db/solves/migrate_cube_link';
 import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
@@ -254,9 +257,16 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			}
 		}
 
+		// With the local database loaded, the screen can be drawn from it: sessions and the
+		// solve delta catch up behind the open app (loadNonCriticalData). Only a launch with
+		// nothing local has to wait for the server before it can show anything.
+		const deferServerSync = !passed && canSyncUser && hasLocalData;
+
 		const criticalPromises: Promise<any>[] = [];
 		if (!passed && canSyncUser) {
-			criticalPromises.push(getAllSessions());
+			if (!hasLocalData) {
+				criticalPromises.push(getAllSessions());
+			}
 		} else if (!passed && !hasLocalData) {
 			// Basic with no local data — start empty; recoverBasicDataFromServer()
 			// below pulls sessions + solves back from the server. A Basic user that
@@ -271,33 +281,17 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		}
 
 		criticalPromises.push(getAllSettings(me?.id));
-		criticalPromises.push(initNewScramble());
+		// Warm-up only (the timer asks for its own scramble on mount), so it does not hold
+		// the launch: once the network waits are gone, the worker's start-up is the longest pole.
+		void initNewScramble();
 
 		try {
 			await Promise.all(criticalPromises);
 			initSolvesCollection();
 
-			if (!passed && canSyncUser) {
-				if (hasLocalData) {
-					// Delta sync: fetch only diff
-					const delta = await deltaSyncSolves();
-
-					if (delta === 'network') {
-						// The server could not be reached. The local data just loaded is the
-						// best there is: keep it and catch up once the connection is back.
-						// Falling through to the full fetch below used to drop it from memory,
-						// fail the same way, and lock saving for the rest of the session, so a
-						// launch on wifi without internet showed no solves at all.
-						armDeferredBootReconcile();
-					} else if (delta === 'failed') {
-						// Delta sync failed — fallback: full fetch
-						initSolvesCollection(true);
-						await initAllSolves();
-					}
-				} else {
-					// First launch or corrupted DB: fetch all solves
-					await initAllSolves();
-				}
+			if (!passed && canSyncUser && !hasLocalData) {
+				// First launch or corrupted DB: fetch all solves
+				await initAllSolves();
 			}
 
 			// Basic recovery: Basic users write to the server (canWriteSync) but do
@@ -327,13 +321,21 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 			// Background: backfill missing method_steps (should also work when passed=true),
 			// then catch up with a server-side reindex if one finished since the last launch.
-			if (canSyncUser) {
-				backfillMissingMethodSteps()
+			// Last, whatever still has moves but no breakdown (timed offline, or the server has
+			// none either) gets one worked out on the device. After the server pass, so the
+			// server's breakdown wins wherever it exists.
+			const serverStepsBackfill = canSyncUser
+				? backfillMissingMethodSteps()
 					.then(refreshMethodStepsIfVersionChanged)
 					.catch((e) => {
 						console.error('[Backfill] failed:', e);
-					});
-			}
+					})
+				: Promise.resolve();
+			serverStepsBackfill
+				.then(() => backfillLocalStepRows())
+				.catch((e) => {
+					console.error('[Backfill] local analysis failed:', e);
+				});
 		} catch (e) {
 			console.error(e);
 		}
@@ -342,11 +344,18 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		callback();
 
 		// PHASE 2: Non-critical data — loads in background after UI is visible
-		loadNonCriticalData(me, dispatch, passed, canSyncUser, migrationSkipped);
+		loadNonCriticalData(me, dispatch, passed, canSyncUser, migrationSkipped, deferServerSync);
 	});
 }
 
-async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean, canSyncUser: boolean, migrationSkipped: boolean = false) {
+async function loadNonCriticalData(
+	_me: UserAccount,
+	dispatch: Dispatch<any>,
+	passedFromOffline: boolean,
+	canSyncUser: boolean,
+	migrationSkipped: boolean = false,
+	deferredServerSync: boolean = false
+) {
 	// Send whatever the offline queue holds before reconciliation and backfill look at the
 	// server. This used to be left to a Background Sync the service worker fired, which does
 	// not exist in the native app at all: there the queue waited for the next network change,
@@ -358,6 +367,13 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		} catch (e) {
 			console.error('[Boot] queue flush failed:', e);
 		}
+
+		// My Cubes: one read in the background, then link local smart solves to their migrated
+		// cubes. The link also runs on the stored list when the read fails (offline launch).
+		refreshCubes({ force: true })
+			.catch(() => false)
+			.then(() => migrateCubeLink())
+			.catch((e) => console.error('[Boot] cubes failed:', e));
 	}
 
 	try {
@@ -374,6 +390,14 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 				bgPromises.push(syncNewSolves(true));
 			}
 			bgPromises.push(syncNewSessions());
+		}
+
+		// Launch drew from the local database while it differed from the server (another
+		// device changed something). Catch up here, after the queue flush above and before
+		// the backfill below, which must not re-upload solves deleted elsewhere.
+		if (deferredServerSync) {
+			bgPromises.push(syncNewSessions());
+			bgPromises.push(runDeferredDeltaSync());
 		}
 
 		bgPromises.push(getStatsModule(dispatch));
@@ -516,8 +540,14 @@ async function deltaSyncSolves(): Promise<DeltaSyncResult> {
 		// hasn't reconciled yet can re-upload them via its own backfill.
 		const tombstoned = getSolveTombstones();
 
+		// Runs behind the open app, so a solve can finish while the id list is on its way.
+		const graceCutoff = Date.now() - RECENT_SOLVE_GRACE_MS;
+		const recentIds = new Set(
+			localSolves.filter((s) => parseInt(String(s.started_at), 10) >= graceCutoff).map((s) => s.id)
+		);
+
 		// 4. Calculate diff
-		const plan = planDeltaSync({serverIds, localIds, pendingCreateIds, pendingDeleteIds, tombstoned});
+		const plan = planDeltaSync({serverIds, localIds, pendingCreateIds, pendingDeleteIds, tombstoned, recentIds});
 
 		// Re-issue the delete for anything that came back from the dead.
 		if (plan.resurrected.length) {
@@ -545,6 +575,23 @@ async function deltaSyncSolves(): Promise<DeltaSyncResult> {
 	} catch (e) {
 		console.error('[DeltaSync] Failed:', e);
 		return e instanceof BootTimeoutError || isConnectivityError(e) ? 'network' : 'failed';
+	}
+}
+
+// The launch-time delta sync, run once the app is open (initAppData, deferServerSync).
+async function runDeferredDeltaSync(): Promise<void> {
+	const delta = await deltaSyncSolves();
+
+	if (delta === 'network') {
+		// The server could not be reached. The local data is the best there is: keep it
+		// and catch up once the connection is back.
+		armDeferredBootReconcile();
+	} else if (delta === 'failed') {
+		// Launch used to drop the collection and refetch everything here. Behind an open app
+		// that would blank the screen and lose a solve made meanwhile; the reconciling sync
+		// reaches the same state without touching what is on screen.
+		const ok = await syncNewSolves(true);
+		if (!ok) armDeferredBootReconcile();
 	}
 }
 
@@ -1136,7 +1183,42 @@ async function getStatsModule(disatch: Dispatch<any>) {
 	disatch(initStatsModuleStore(removeTypename(res.data.statsModule)));
 }
 
+// Users whose resolved settings this device has stored (rememberResolvedSettings). For
+// them launch draws from storage and asks the server behind the open app; anyone else
+// (a first launch here, or the first since this was added) waits for the server once.
+const SETTINGS_RESOLVED_KEY = 'settings_resolved';
+
 async function getAllSettings(userId: string) {
+	const resolvedUsers = getLocalStorage(SETTINGS_RESOLVED_KEY);
+	if (resolvedUsers && typeof resolvedUsers === 'object' && resolvedUsers[userId]) {
+		// The settings query used to sit on every launch's critical path, so the logo waited
+		// a round trip for values this device already had.
+		const {settings} = resolveSettings(userId, {});
+		initSettingsDb(settings);
+		void refreshSettingsAfterBoot(userId, settings);
+		return;
+	}
+
+	const backendSettings = await fetchBackendSettings();
+	const {settings, sourced, needsPlatformMigration} = resolveSettings(userId, backendSettings || {});
+	initSettingsDb(settings);
+	if (backendSettings) {
+		rememberResolvedSettings(userId, settings, sourced);
+	}
+
+	// First-time platform migration: seed this platform's prefs on the server
+	// from the values just resolved (old columns + localStorage). Runs once per
+	// platform — guarded by the server-side null prefs check.
+	if (needsPlatformMigration) {
+		try {
+			await syncPlatformPrefs();
+		} catch (e) {
+			console.warn('Platform prefs migration failed (will retry next launch):', e);
+		}
+	}
+}
+
+async function fetchBackendSettings(): Promise<Record<string, any> | null> {
 	const query = gql`
 		${SETTING_FRAGMENT}
 
@@ -1147,26 +1229,22 @@ async function getAllSettings(userId: string) {
 		}
 	`;
 
-	let backendSettings: any = {};
 	try {
 		const res = await withBootTimeout(gqlQuery<{ settings: Setting }>(query), 'settings');
-		backendSettings = res.data.settings;
-
-		// Back up server settings to localStorage (offline fallback)
-		if (backendSettings && Object.keys(backendSettings).length > 0) {
-			const allSettingsVal = getLocalStorage('settings') || {};
-			if (!allSettingsVal[userId]) {
-				allSettingsVal[userId] = {};
-			}
-			for (const key of Object.keys(backendSettings)) {
-				allSettingsVal[userId][key] = backendSettings[key];
-			}
-			setLocalStorageObject('settings', allSettingsVal);
-		}
+		const backend = res.data.settings as any;
+		return backend && Object.keys(backend).length > 0 ? backend : null;
 	} catch (error) {
-		console.warn('Offline: Could not fetch settings, using defaults', error);
+		console.warn('Offline: Could not fetch settings, using stored values', error);
+		return null;
 	}
+}
 
+/**
+ * Every setting's value for this launch: server first (global columns, then this
+ * platform's prefs blob), then what this device stored, then the default.
+ * `sourced` holds the keys that did not fall through to the default.
+ */
+function resolveSettings(userId: string, backendSettings: Record<string, any>) {
 	// Active platform's prefs blob (desktop_prefs / mobile_prefs)
 	const platformPrefsKey = isMobileViewport() ? 'mobile_prefs' : 'desktop_prefs';
 	let platformPrefs: Record<string, any> | null = null;
@@ -1183,6 +1261,7 @@ async function getAllSettings(userId: string) {
 	const needsPlatformMigration = hasBackend && !platformPrefs;
 
 	const settings: SettingValue[] = [];
+	const sourced = new Set<string>();
 	const localSettings = getAllLocalSettings(userId);
 	const defaultSettings = { ...getDefaultSettings() };
 
@@ -1222,14 +1301,65 @@ async function getAllSettings(userId: string) {
 			}
 		}
 
+		if (hasLocal || hasBackendCol || (platformPrefs && platformPrefs[key] !== undefined && platformPrefs[key] !== null)) {
+			sourced.add(key);
+		}
 		settings.push(setting);
 	}
 
-	initSettingsDb(settings);
+	return { settings, sourced, needsPlatformMigration };
+}
 
-	// First-time platform migration: seed this platform's prefs on the server
-	// from the values just resolved (old columns + localStorage). Runs once per
-	// platform — guarded by the server-side null prefs check.
+/**
+ * Stores the values a launch resolved from the server, so the next launch can draw from them
+ * straight away (and an offline one shows them). Resolved values, not the raw columns: platform
+ * settings live in the prefs blob, and the old column copy of one is stale. Defaults are left
+ * out on purpose, or a default changed in a later release would never reach this user.
+ */
+function rememberResolvedSettings(userId: string, settings: SettingValue[], sourced: Set<string>) {
+	const allSettingsVal = getLocalStorage('settings') || {};
+	const stored = allSettingsVal[userId] && typeof allSettingsVal[userId] === 'object' ? allSettingsVal[userId] : {};
+	for (const setting of settings) {
+		if (sourced.has(setting.id)) stored[setting.id] = setting.value;
+	}
+	allSettingsVal[userId] = stored;
+	setLocalStorageObject('settings', allSettingsVal);
+
+	const resolvedUsers = getLocalStorage(SETTINGS_RESOLVED_KEY);
+	const nextResolved = resolvedUsers && typeof resolvedUsers === 'object' ? resolvedUsers : {};
+	nextResolved[userId] = true;
+	setLocalStorageObject(SETTINGS_RESOLVED_KEY, nextResolved);
+}
+
+/**
+ * The server's answer for a launch that drew from stored settings. Applies only what changed
+ * elsewhere: a setting the user changed on this device since launch keeps their choice, since
+ * that write is already on its way to the server and this answer may predate it.
+ */
+async function refreshSettingsAfterBoot(userId: string, bootSettings: SettingValue[]) {
+	const backendSettings = await fetchBackendSettings();
+	if (!backendSettings) return;
+
+	const {settings, sourced, needsPlatformMigration} = resolveSettings(userId, backendSettings);
+	const bootValues = new Map(bootSettings.map((s) => [s.id, JSON.stringify(s.value)]));
+	const settingsDb = getSettingsDb();
+	const toRemember: SettingValue[] = [];
+
+	for (const setting of settings) {
+		const row = settingsDb?.findOne({ id: setting.id });
+		if (!row) continue;
+		const current = JSON.stringify(row.value);
+		if (current !== bootValues.get(setting.id)) continue;
+		toRemember.push(setting);
+		if (current === JSON.stringify(setting.value)) continue;
+
+		row.value = setting.value;
+		settingsDb.update(row);
+		emitEvent('settingsDbUpdatedEvent', row);
+	}
+
+	rememberResolvedSettings(userId, toRemember, sourced);
+
 	if (needsPlatformMigration) {
 		try {
 			await syncPlatformPrefs();

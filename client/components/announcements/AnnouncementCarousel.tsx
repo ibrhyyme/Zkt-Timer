@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Announcement, MarkAnnouncementAsViewedDocument } from '../../@types/generated/graphql';
+import { Announcement } from '../../@types/generated/graphql';
 import AnnouncementModal from './AnnouncementModal';
-import { gqlMutateTyped } from '../api';
+import { markAnnouncementViewed } from '../../util/announcements';
 
 interface AnnouncementCarouselProps {
 	announcements: Announcement[];
@@ -18,9 +18,7 @@ export default function AnnouncementCarousel(props: AnnouncementCarouselProps) {
 
 	const markAsViewed = async (announcementId: string) => {
 		try {
-			await gqlMutateTyped(MarkAnnouncementAsViewedDocument, {
-				announcementId
-			});
+			await markAnnouncementViewed(announcementId);
 		} catch (error) {
 			console.error('Failed to mark announcement as viewed:', error);
 		}

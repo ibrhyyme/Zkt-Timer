@@ -112,7 +112,12 @@ export default function ActivityHeatmap() {
 
 		const active = data.filter((d) => d.y > 0).length;
 
-		return {grid: cells, activeDays: active, monthMarkers: markers, max: maxCount};
+		// The first, partial month can start a week or two before the next month's label; on a
+		// phone (about 6 px a week) the two names ran together ("EkiKas"). A label is kept only
+		// with three weeks of room before the next one, which full months always have.
+		const spaced = markers.filter((m, i) => i === markers.length - 1 || markers[i + 1].col - m.col >= 3);
+
+		return {grid: cells, activeDays: active, monthMarkers: spaced, max: maxCount};
 	}, [filterOptions, solveUpdate, extraDailyCounts]);
 
 	const streak = useMemo(() => getSolveStreak(filterOptions, extraDailyCounts), [filterOptions, solveUpdate, extraDailyCounts]);

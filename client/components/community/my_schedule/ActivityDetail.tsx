@@ -5,7 +5,7 @@ import {ArrowLeft, ArrowRight, Info, MapPin} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime, getRoleLabel,
-	parseActivityCodeLabel, parseActivityCodeParts, formatRoundFormat,
+	parseActivityCodeLabel, parseActivityCodeParts, formatRoundFormat, ChanceTag,
 } from './shared';
 
 const ROLE_HEADER_COLORS: Record<string, string> = {
@@ -152,11 +152,18 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 		return () => document.removeEventListener('keydown', handleKeydown);
 	}, [prevCode, nextCode, detail?.competitionId]);
 	const activityLabel = parseActivityCodeLabel(activityCode);
+	// ZKT Dual Chance: which chance this group runs.
+	const groupChance = parsed?.groupNumber
+		? roundMeta?.groups?.find((g: any) => g.groupNumber === parsed.groupNumber)?.chance ?? null
+		: null;
 
 	if (peopleInActivity.length === 0) {
 		return (
 			<div className={b('activity-detail')}>
-				<h2 className={b('activity-title')}>{activityLabel}</h2>
+				<h2 className={b('activity-title')}>
+					{activityLabel}
+					<ChanceTag chance={groupChance} t={t} />
+				</h2>
 				<div className={b('info-banner')}>
 					<Info size={18} />
 					<span>{t('my_schedule.no_people_in_activity')}</span>
@@ -198,7 +205,10 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 				</div>
 			)}
 
-			<h2 className={b('activity-title')}>{activityLabel}</h2>
+			<h2 className={b('activity-title')}>
+				{activityLabel}
+				<ChanceTag chance={groupChance} t={t} />
+			</h2>
 
 			{timeInfo && (
 				<div className={b('activity-meta')}>
@@ -221,6 +231,9 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 				<div className={b('round-info')}>
 					{roundMeta.format && (
 						<span className={b('round-info-item')}>{formatRoundFormat(roundMeta.format)}</span>
+					)}
+					{roundMeta.dualChance && (
+						<span className={b('round-info-item')}>{t('zkt_comp.dual_chance')}</span>
 					)}
 					{roundMeta.timeLimit && (
 						<span className={b('round-info-item')}>

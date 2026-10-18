@@ -5,7 +5,8 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import { getPrisma, initPrisma } from './database';
-import requestIp from 'request-ip';
+// Never request-ip: it reads x-client-ip and the first X-Forwarded-For entry, both client-written.
+import { extractIp } from './util/request';
 import { initLogger, logger } from './services/logger';
 import { ApolloServer } from 'apollo-server-express';
 import { baseResolvers, baseScalars } from './graphql';
@@ -220,7 +221,7 @@ app.use((req, res, next) => {
 				referer: req.headers.referer || null,
 				ua: req.headers['user-agent']?.substring(0, 120),
 				isWebView: !!(req as any).isWebView,
-				ip: requestIp.getClientIp(req),
+				ip: extractIp(req),
 			});
 		}
 	}
@@ -484,19 +485,29 @@ if (!isDev) {
 			// client can render the message in the user's language instead of the raw
 			// server string; everything else in extensions stays server-side.
 			const i18nKey = err?.extensions?.i18nKey;
+			// addAlgSetItems / updateAlgSetItem name the refused cases (`category::case_name`)
+			// so the client can fall back to the library algorithm for just those (trainer-sets 5.5).
+			const rejected = err?.extensions?.rejected;
+			const rejectedList = Array.isArray(rejected) && rejected.every((r: unknown) => typeof r === 'string')
+				? rejected.slice(0, 500)
+				: null;
 			// Expected errors are logged too, at warn: a solve that keeps failing to sync
 			// usually fails on one of these, and without a line here the only evidence is
 			// on the user's screen.
 			logger.warn('GraphQL rejected request', { message: err?.message, path: err?.path, code });
 			return {
 				message: err.message,
-				extensions: i18nKey ? { code, i18nKey } : { code },
+				extensions: {
+					code,
+					...(i18nKey ? { i18nKey } : {}),
+					...(rejectedList ? { rejected: rejectedList } : {}),
+				},
 				path: err.path,
 			};
 		},
 		context: async ({ req, res }) => {
 			const user = await getMe(req);
-			const ipAddress = requestIp.getClientIp(req);
+			const ipAddress = extractIp(req);
 
 			if (user && (user.banned_until || user.banned_forever)) {
 				throw new GraphQLError(ErrorCode.FORBIDDEN, ErrorMessage.BANNED);
@@ -585,33 +596,6 @@ async function checkAdminEndpointRateLimit(adminId: string, endpoint: string, re
 	return true;
 }
 
-// Admin: Recalculate Kinch + SoR scores for all WCA-linked users
-app.post('/api/admin/recalculate-rankings', async (req, res) => {
-	const {getMe} = require('./util/auth');
-	const {recalculateAllRankings} = require('./models/ranking');
-
-	try {
-		const me = await getMe(req);
-		if (!me || !me.admin) {
-			res.status(403).json({error: 'Forbidden'});
-			return;
-		}
-
-		if (!(await checkAdminEndpointRateLimit(me.id, 'recalc-rankings', res))) return;
-
-		recalculateAllRankings().then(() => {
-			console.log('[Rankings] All rankings recalculated via API');
-		}).catch((err: any) => {
-			console.error('[Rankings] Recalculation failed:', err);
-		});
-
-		res.json({success: true, message: 'Ranking recalculation started'});
-	} catch (err) {
-		console.error('[Rankings] API error:', err);
-		res.status(500).json({error: 'Internal server error'});
-	}
-});
-
 // Admin: Manually regenerate sitemap (cron runs every 2 hours, trigger here if urgent)
 // Query param ?force=1 → bypass ENV check and Redis lock (for debugging)
 app.post('/api/admin/regenerate-sitemap', async (req, res) => {
@@ -639,33 +623,6 @@ app.post('/api/admin/regenerate-sitemap', async (req, res) => {
 		}
 	} catch (err) {
 		console.error('[Sitemap] API error:', err);
-		res.status(500).json({error: 'Internal server error'});
-	}
-});
-
-// Admin: Re-sync world records from Robin WCA REST API
-app.post('/api/admin/sync-world-records', async (req, res) => {
-	const {getMe} = require('./util/auth');
-	const {syncAllWorldRecords} = require('./services/WorldRecordSyncService');
-
-	try {
-		const me = await getMe(req);
-		if (!me || !me.admin) {
-			res.status(403).json({error: 'Forbidden'});
-			return;
-		}
-
-		if (!(await checkAdminEndpointRateLimit(me.id, 'sync-wr', res))) return;
-
-		syncAllWorldRecords().then((result: any) => {
-			console.log(`[WRSync] Manual sync done. Updated: ${result.updated}, Failed: ${result.failed}`);
-		}).catch((err: any) => {
-			console.error('[WRSync] Manual sync failed:', err);
-		});
-
-		res.json({success: true, message: 'World record sync started'});
-	} catch (err) {
-		console.error('[WRSync] API error:', err);
 		res.status(500).json({error: 'Internal server error'});
 	}
 });
@@ -756,7 +713,7 @@ app.post('/api/native-migrate/stash', async (req, res) => {
 		return;
 	}
 
-	const ip = requestIp.getClientIp(req) || 'unknown';
+	const ip = extractIp(req) || 'unknown';
 	const rate = await checkRateLimit(`native_migrate:${ip}`, 10, 3600);
 	if (!rate.allowed) {
 		res.status(429).json({ error: 'rate limited' });

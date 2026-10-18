@@ -2,7 +2,8 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useCompetitionData} from './CompetitionLoader';
 import {useWcaLiveOverview} from './useLiveResults';
-import {I18N_LOCALE_MAP} from './shared';
+import {I18N_LOCALE_MAP, localEventName, liveRoundLabel} from './shared';
+import {useDelayedFlag} from './useDelayedFlag';
 // The programme is drawn by the ZKT competition timeline, so this view pulls in
 // that stylesheet too — it is not loaded by the WCA-view page otherwise.
 import '../zkt_competitions/ZktCompetitions.scss';
@@ -53,9 +54,21 @@ export default function CompetitionSchedule() {
 					// items carry none and are drawn as plain blocks.
 					const code: string = activity.activityCode || '';
 					const eventId = code ? code.split('-')[0] : undefined;
+					// A ZKT round ships its parts, so it is named in the viewer's language
+					// ("Pyraminx 1. Tur", "3x3x3 1. Tur, Şans 2"); a WCA activity keeps
+					// the name WCA gave it.
+					const title =
+						eventId && activity.roundNumber
+							? [
+									`${localEventName(t, eventId)} ${liveRoundLabel(t, {number: activity.roundNumber, isFinal: activity.isFinal}, true)}`,
+									activity.chance ? t('zkt_comp.chance_n', {n: activity.chance}) : null,
+							  ]
+									.filter(Boolean)
+									.join(', ')
+							: activity.name;
 					out.push({
 						id: String(activity.activityId),
-						title: activity.name,
+						title,
 						start: activity.startTime,
 						end: activity.endTime || null,
 						isRound: !!code,
@@ -69,8 +82,9 @@ export default function CompetitionSchedule() {
 			}
 		}
 		return out.sort((a, c) => String(a.start).localeCompare(String(c.start)));
-	}, [overview?.schedule]);
+	}, [overview?.schedule, t]);
 
+	const showLoading = useDelayedFlag(loading && rows.length === 0);
 	const rooms = collectRooms(rows);
 	const showRooms = rooms.length > 1;
 	// The venue's own zone is not published on this payload, so times read in the
@@ -78,7 +92,7 @@ export default function CompetitionSchedule() {
 	const days = groupRowsByDay(rows, locale);
 
 	if (loading && rows.length === 0) {
-		return <div className={zktB('empty')}>{t('my_schedule.loading')}</div>;
+		return showLoading ? <div className={zktB('empty')}>{t('my_schedule.loading')}</div> : null;
 	}
 	if (rows.length === 0) {
 		return <div className={zktB('empty')}>{t('zkt_comp.no_schedule_yet')}</div>;

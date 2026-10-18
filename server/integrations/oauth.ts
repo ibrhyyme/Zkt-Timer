@@ -235,7 +235,7 @@ export async function getOAuthPostRequest(
 			// Log and re-throw error (request body contains secrets, not logged)
 			if (error.response) {
 				console.error('WCA token exchange failed:', error.response.status, error.response.data);
-				throw new Error(error.response.data?.error_description || error.response.data?.error || 'WCA token exchange failed');
+				throw oauthHttpError(error, 'WCA token exchange failed');
 			}
 			throw error;
 		}
@@ -269,10 +269,25 @@ export async function getOAuthPostRequest(
 		// Log and re-throw error with response body for debugging
 		if (error.response) {
 			console.error('OAuth token exchange failed:', error.response.status, error.response.data);
-			throw new Error(error.response.data?.error_description || error.response.data?.error || 'OAuth token exchange failed');
+			throw oauthHttpError(error, 'OAuth token exchange failed');
 		}
 		throw error;
 	}
+}
+
+/**
+ * A plain Error for a provider's HTTP error answer, carrying the status and the
+ * RFC 6749 error code as properties so a caller can tell a dead grant
+ * (`invalid_grant`) from a misconfigured client or a provider outage. The axios
+ * error itself is not passed on: its `config` holds the request body, which
+ * carries the client secret.
+ */
+function oauthHttpError(axiosError: any, fallback: string): Error {
+	const data = axiosError?.response?.data;
+	const err: any = new Error(data?.error_description || data?.error || fallback);
+	err.status = axiosError?.response?.status;
+	err.oauthError = typeof data?.error === 'string' ? data.error : undefined;
+	return err;
 }
 
 export async function exchangeWcaLoginCode(code: string) {
@@ -316,9 +331,16 @@ export async function exchangeWcaLoginCode(code: string) {
 	};
 }
 
-// Sentinel: token is permanently invalid (revoked by WCA or user deleted)
-// Callers catch this message and mark integration with revoked_at.
-export const WCA_TOKEN_REVOKED = 'WCA_TOKEN_REVOKED';
+/**
+ * The refresh token itself is dead (revoked, expired, user deleted): RFC 6749 `invalid_grant`.
+ * Only that code marks a link revoked. A bare 400/401 is not enough: a wrong client secret
+ * (`invalid_client`) answers the same way for every user, and treating it as dead would cut
+ * everybody's link. The previous status check never fired at all, because
+ * getOAuthPostRequest hands back a plain error (oauthHttpError) with no `response`.
+ */
+function isDeadGrant(err: any): boolean {
+	return err?.oauthError === 'invalid_grant';
+}
 
 export async function getAuthToken(intType: IntegrationType, user: UserAccount) {
 	const integration = await getIntegration(user, intType);
@@ -336,7 +358,7 @@ export async function getAuthToken(intType: IntegrationType, user: UserAccount) 
 			authToken = await getNewAuthToken(integration);
 		} catch (e: any) {
 			// Refresh hit permanent error — mark integration as revoked, re-throw error
-			if (e?.message === WCA_TOKEN_REVOKED) {
+			if (isDeadGrant(e)) {
 				try {
 					await updateIntegration(integration, {revoked_at: new Date()} as any);
 				} catch (markErr: any) {
@@ -350,7 +372,9 @@ export async function getAuthToken(intType: IntegrationType, user: UserAccount) 
 	return authToken;
 }
 
-async function getNewAuthToken(integration: Integration) {
+// Exported for server/ops/oauth-tokens.ts, which rotates every WCA grant through
+// this same refresh path after the token leak (see .feedback/reports).
+export async function getNewAuthToken(integration: Integration) {
 	const intType = integration.service_name;
 	const service = LINKED_SERVICES[intType];
 
@@ -372,12 +396,8 @@ async function getNewAuthToken(integration: Integration) {
 
 		return int.auth_token;
 	} catch (e: any) {
-		const status = e?.response?.status;
-		console.warn('Token refresh failed for', integration.service_name, 'status=', status, ':', e?.message);
-		// 400/401 -> refresh_token invalid, permanent error. Other cases are transient.
-		if (status === 400 || status === 401) {
-			throw new Error(WCA_TOKEN_REVOKED);
-		}
+		// Thrown as is: getAuthToken and server/ops read its `status` / `oauthError`.
+		console.warn('Token refresh failed for', integration.service_name, 'status=', e?.status, ':', e?.message);
 		throw e;
 	}
 }

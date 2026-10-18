@@ -10,7 +10,8 @@ import {simplifyMoves, transformMoves} from '../../util/cross_rotation';
 const t = (key: string, opts?: any) => (opts && opts.date ? `${key} ${opts.date}` : key);
 
 function step(step_name: string, turns: string, total_time: number, recognition_time: number, parent_name: string | null = null) {
-	return {step_name, turns, total_time, recognition_time, parent_name, oll_case_key: null, pll_case_key: null};
+	const turn_count = turns.split(' ').filter(Boolean).length;
+	return {step_name, turns, total_time, recognition_time, turn_count, parent_name, oll_case_key: null, pll_case_key: null};
 }
 
 const CFOP_STEPS = [
@@ -45,6 +46,7 @@ describe('summarizeStepGroups', () => {
 		expect(groups.map((g) => g.label)).toEqual(['Cross', 'F2L', 'OLL', 'PLL']);
 		// Step times already include recognition, so the stage total is their plain sum.
 		expect(groups[1].total).toBeCloseTo(1.5 + 1.2 + 1.0 + 1.1);
+		expect(groups.map((g) => g.turns)).toEqual([2, 4 + 3 + 3 + 3, 7, 14]);
 	});
 });
 
@@ -69,10 +71,16 @@ describe('buildSmartSolveDetailedCopyText', () => {
 		expect(text).toContain('solve_info.copy_time: 12.34');
 		expect(text).toContain('TPS: 4.05');
 		expect(text).toContain('// F2L Slot 3');
-		expect(text).toMatch(/^Cross: 2\.00$/m);
-		expect(text).toMatch(/^F2L: 4\.80$/m);
+		expect(text).toMatch(/^Cross: 2\.00 \(2 smart_cube\.turns_label\)$/m);
+		expect(text).toMatch(/^F2L: 4\.80 \(13 smart_cube\.turns_label\)$/m);
+		expect(text).toMatch(/^PLL: 2\.00 \(14 smart_cube\.turns_label\)$/m);
 		expect(text).not.toContain('solve_info.recognition');
 		expect(text).not.toMatch(/OBTM|ETM|STM|HTM/);
+	});
+
+	it('leaves the move count off a stage whose steps have none stored', () => {
+		const old = [{...step('cross', 'R U', 2.0, 0.5), turn_count: 0}];
+		expect(buildSmartSolveDetailedCopyText(t, solve(), old as any, '')).toMatch(/^Cross: 2\.00$/m);
 	});
 
 	it('writes DNF and +2 the way the solve card does', () => {

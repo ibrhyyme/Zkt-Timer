@@ -23,6 +23,7 @@ const SECONDARY_TABS = [
 	{id: 'site-config', link: '/admin/site-config', labelKey: 'admin_nav.site_config'},
 	{id: 'smart-telemetry', link: '/admin/smart-telemetry', labelKey: 'admin_nav.smart_telemetry'},
 	{id: 'magnet-telemetry', link: '/admin/magnet-telemetry', labelKey: 'admin_nav.magnet_telemetry'},
+	{id: 'online-battle', link: '/admin/online-battle', labelKey: 'admin_nav.online_battle'},
 ];
 
 interface Props {

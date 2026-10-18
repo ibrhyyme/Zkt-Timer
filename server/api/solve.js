@@ -23,6 +23,7 @@ import {getPrisma} from '../database';
 import {ErrorCode} from '../constants/errors';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
+import {resolveOwnedLinks} from '../util/solve_links';
 
 export const gqlType = `
 	enum SolvesSortBy {
@@ -57,6 +58,7 @@ export const gqlMutation = `
 	deleteSolvesByCubeType(cubeType: String): Void
 	deleteAllTrainingSolves: Void
 	deleteAllSolves: Void
+	recordSolveView(shareCode: String!): Boolean!
 `;
 
 const filterMap = {
@@ -77,15 +79,28 @@ const orderByMap = {
 	TIME_ASC: {time: 'asc'},
 };
 
+// Both solve reads are open to anyone holding an id or share code. `solve_views` lists
+// who opened the solve and when (viewer_id per row); that is the owner's business, not
+// the next visitor's. The client never selects it, so non-owners get an empty list.
+function hideSolveViewsFromOthers(solve, user) {
+	if (solve && (!user || user.id !== solve.user_id)) {
+		solve.solve_views = [];
+	}
+	return solve;
+}
+
 export const queryActions = {
-	solve: async (_, {id}) => {
+	solve: async (_, {id}, context) => {
 		const solve = await getSolve(id);
 
 		if (!solve) {
 			throw new GraphQLError(ErrorCode.NOT_FOUND);
 		}
 
-		if (!solve.share_code) {
+		// Every solve gets a code when it is created; only rows from before that lack one.
+		// Only the owner fills it in: this query is open to anyone holding an id, and a
+		// visitor must not be able to write to someone else's solve.
+		if (!solve.share_code && context?.user?.id && context.user.id === solve.user_id) {
 			const shareCode = generateRandomString(8);
 			solve.share_code = shareCode;
 
@@ -94,12 +109,12 @@ export const queryActions = {
 			});
 		}
 
-		return solve;
+		return hideSolveViewsFromOthers(solve, context?.user);
 	},
 
 	solveByShareCode: async (_, {shareCode}, {user, req}) => {
 		// Defense in depth: share_code is a strong capability token (36^8), but throttle
-		// per IP to deter enumeration attempts and createSolveView spam on the public route.
+		// per IP to deter enumeration attempts on the public route.
 		const ip = req ? extractIp(req) : null;
 		if (ip) {
 			const limit = await checkRateLimit(`solve_share:ip:${ip}`, 60, 60);
@@ -114,11 +129,9 @@ export const queryActions = {
 			throw new GraphQLError(ErrorCode.NOT_FOUND);
 		}
 
-		if (!user || (user && user.id !== solve.user_id)) {
-			await createSolveView(user, solve);
-		}
-
-		return solve;
+		// No view is recorded here (see recordSolveView): this query also serves the SSR
+		// prefetch, which reaches the API without the visitor's cookie.
+		return hideSolveViewsFromOthers(solve, user);
 	},
 
 	solveList: async (_, {cubeType, filters, sortBy, page, includeAll}, {user}) => {
@@ -153,6 +166,31 @@ export const queryActions = {
 };
 
 export const mutateActions = {
+	// The shared solve page calls this once it has mounted, with the visitor's own session.
+	// Counting inside solveByShareCode recorded the SSR prefetch, which carries no cookie: the
+	// owner opening their own link was counted as an anonymous visitor, and so was every link
+	// preview bot. Over the limit the view is skipped, never an error the page would show.
+	recordSolveView: async (_, {shareCode}, {user, req}) => {
+		const ip = req ? extractIp(req) : null;
+		if (ip) {
+			const limit = await checkRateLimit(`solve_view:ip:${ip}`, 60, 60);
+			if (!limit.allowed) {
+				return false;
+			}
+		}
+
+		const solve = await getPrisma().solve.findUnique({
+			where: {share_code: shareCode},
+			select: {id: true, user_id: true},
+		});
+		if (!solve || user?.id === solve.user_id) {
+			return false;
+		}
+
+		await createSolveView(user, solve);
+		return true;
+	},
+
 	deleteSolve: async (_, {id}, {user}) => {
 		checkLoggedIn(user);
 
@@ -248,6 +286,30 @@ export const mutateActions = {
 					i18nKey: SOLVE_SESSION_MISSING_I18N_KEY,
 				});
 			}
+		}
+
+		// The device link follows the same rule as on create (Solve.resolver.ts): one of the
+		// caller's own devices, by row id or by BLE identifier, or nothing. Corrected, never
+		// refused, so an edit cannot fail on the foreign key or point at another account's device.
+		// The cube link (cube_id, no foreign key) is checked in the same pass against the bucket
+		// the solve will have after this edit: the caller's own cube of that puzzle, or null. A
+		// request that does not name a cube may get one from its device link (an older app);
+		// an explicit null unlinks (server/util/solve_links.ts).
+		const bucketChanges = input.cube_type !== undefined || input.scramble_subset !== undefined;
+		if (input.smart_device_id !== undefined || input.cube_id !== undefined || (bucketChanges && solve.cube_id)) {
+			const link = {
+				id,
+				smart_device_id: input.smart_device_id !== undefined ? input.smart_device_id : solve.smart_device_id,
+				cube_id: input.cube_id !== undefined ? input.cube_id : solve.cube_id,
+				cube_type: input.cube_type !== undefined ? input.cube_type : solve.cube_type,
+				scramble_subset: input.scramble_subset !== undefined ? input.scramble_subset : solve.scramble_subset,
+				trainer_name: input.trainer_name !== undefined ? input.trainer_name : solve.trainer_name,
+			};
+			await resolveOwnedLinks(getPrisma(), user.id, [link], 'updateSolve', {
+				deriveFromSmartDevice: input.cube_id === undefined && !solve.cube_id,
+			});
+			if (input.smart_device_id !== undefined) input.smart_device_id = link.smart_device_id;
+			if (input.cube_id !== undefined || link.cube_id !== solve.cube_id) input.cube_id = link.cube_id;
 		}
 
 		// These two fields can't be updated by the user

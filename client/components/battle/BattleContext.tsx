@@ -25,8 +25,21 @@ export interface BattleSettings {
 	showScore: boolean;
 	showWinStreak: boolean;
 	cubeType: string;
+	/** A custom name, or one of DEFAULT_PLAYER_NAME_KEYS (shown through displayPlayerName). */
 	player1Name: string;
 	player2Name: string;
+}
+
+/**
+ * Default player names are stored as i18n keys rather than text, so they follow the UI
+ * language and still travel with the player when SWITCH_SIDES swaps the two names.
+ */
+export const DEFAULT_PLAYER_NAME_KEYS = { 1: 'battle.player_1', 2: 'battle.player_2' } as const;
+
+const DEFAULT_NAME_KEY_SET = new Set<string>(Object.values(DEFAULT_PLAYER_NAME_KEYS));
+
+export function displayPlayerName(name: string, t: (key: string) => string): string {
+	return DEFAULT_NAME_KEY_SET.has(name) ? t(name) : name;
 }
 
 export interface BattleState {
@@ -314,8 +327,8 @@ function createInitialState(cubeType: string = '333', scramble?: string): Battle
 			showScore: true,
 			showWinStreak: true,
 			cubeType,
-			player1Name: 'Player 1',
-			player2Name: 'Player 2',
+			player1Name: DEFAULT_PLAYER_NAME_KEYS[1],
+			player2Name: DEFAULT_PLAYER_NAME_KEYS[2],
 		},
 		winStreak: { player: null, count: 0 },
 		menuOpen: false,

@@ -3,6 +3,8 @@ import {useTranslation} from 'react-i18next';
 import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
+import {buildCsv, CSV_MIME} from '../../../util/csv';
+import {saveFile} from '../../../util/save-file';
 import {
 	SmartCubeTelemetrySummaryDocument,
 	SmartCubeTelemetryRowsDocument,
@@ -119,24 +121,8 @@ export default function SmartCubeTelemetryPanel() {
 			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'time_correction_ms', 'is_native', 'app_version',
 		];
 
-		const escape = (v: any) => {
-			if (v === null || v === undefined) return '';
-			const s = String(v);
-			// Quote anything a spreadsheet would otherwise split or mangle.
-			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-		};
-
-		const body = rows
-			.map((r: any) => headers.map((h) => escape(r[h])).join(','))
-			.join('\n');
-
-		const blob = new Blob([`${headers.join(',')}\n${body}`], {type: 'text/csv;charset=utf-8'});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `smart-cube-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
-		a.click();
-		URL.revokeObjectURL(url);
+		const csv = buildCsv(headers, rows.map((r: any) => headers.map((h) => r[h])));
+		void saveFile(csv, `smart-cube-telemetry-${new Date().toISOString().slice(0, 10)}.csv`, CSV_MIME);
 	}
 
 	function reload() {

@@ -49,9 +49,16 @@ export default function OfflineGuard({children}: Props) {
 				<div className={b('progress')}>
 					<span className={b('progress-fill')} />
 				</div>
-				<button className={b('back-btn')} onClick={() => history.push('/timer')}>
+				{/* Back to where the reader came from, not always to the timer: someone
+				    who tapped a competition while offline wants the list again. The
+				    router only keys entries it pushed itself, so a keyless entry is
+				    the first page of the session and the timer is the way out. */}
+				<button
+					className={b('back-btn')}
+					onClick={() => (history.location.key ? history.goBack() : history.push('/timer'))}
+				>
 					<ArrowLeft size={16} />
-					{t('site_config.go_to_timer')}
+					{t('offline.go_back')}
 				</button>
 			</div>
 		</div>

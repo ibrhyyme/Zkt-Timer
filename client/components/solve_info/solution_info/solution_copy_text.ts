@@ -19,12 +19,14 @@ import type {SolveMethodStep} from '../../../../server/schemas/SolveStepMethod.s
 
 type Translate = (key: string, opts?: any) => string;
 
-type CopyStep = Pick<SolveMethodStep, 'step_name' | 'parent_name' | 'turns' | 'total_time' | 'oll_case_key' | 'pll_case_key'>;
+type CopyStep = Pick<SolveMethodStep, 'step_name' | 'parent_name' | 'turns' | 'total_time' | 'turn_count' | 'oll_case_key' | 'pll_case_key'>;
 
 export interface StepGroupSummary {
 	label: string;
 	/** Seconds spent on the stage, recognition included. */
 	total: number;
+	/** HTM moves in the stage, the same count the Stats tab's steps table shows. */
+	turns: number;
 }
 
 function formatTps(solve: Solve): string {
@@ -51,11 +53,12 @@ export function buildStepMoveLines(steps: CopyStep[], rotation: string): string[
 }
 
 /**
- * Total time per stage: Cross, F2L, OLL, PLL for CFOP.
+ * Total time and move count per stage: Cross, F2L, OLL, PLL for CFOP.
  *
  * Grouped on the parent step, so the four F2L slots add up to one F2L line, and a Roux or ZZ
  * solve groups by its own stages without a method-specific branch. A step's `total_time`
- * already includes its recognition, so the stage total is a plain sum.
+ * already includes its recognition, so the stage total is a plain sum. The engine's HTM
+ * count is boundary-aware (SUM(turn_count) === smart_turn_count), so moves sum the same way.
  */
 export function summarizeStepGroups(steps: CopyStep[]): StepGroupSummary[] {
 	const groups = new Map<string, StepGroupSummary>();
@@ -63,10 +66,11 @@ export function summarizeStepGroups(steps: CopyStep[]): StepGroupSummary[] {
 		const key = step.parent_name || step.step_name;
 		let group = groups.get(key);
 		if (!group) {
-			group = {label: STEP_NAME_MAP[key] || key, total: 0};
+			group = {label: STEP_NAME_MAP[key] || key, total: 0, turns: 0};
 			groups.set(key, group);
 		}
 		group.total += step.total_time || 0;
+		group.turns += step.turn_count || 0;
 	}
 	return [...groups.values()];
 }
@@ -101,7 +105,9 @@ export function buildSmartSolveDetailedCopyText(
 	if (groups.length) {
 		lines.push('');
 		for (const g of groups) {
-			lines.push(`${g.label}: ${getTimeString(g.total, 2)}`);
+			// Solves saved before turn_count existed have 0 there; no count beats a wrong one.
+			const turns = g.turns > 0 ? ` (${g.turns} ${t('smart_cube.turns_label')})` : '';
+			lines.push(`${g.label}: ${getTimeString(g.total, 2)}${turns}`);
 		}
 	}
 

@@ -49,16 +49,24 @@ const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWi
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'zkt_backfill_enabled' | 'smart_telemetry_enabled' | 'magnet_telemetry_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'zkt_backfill_enabled' | 'smart_telemetry_enabled' | 'magnet_telemetry_enabled' | 'online_battle_enabled';
 
-const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
+// labelKey / descriptionKey (translated) win over the plain label / description when set.
+const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string; labelKey?: string; descriptionKey?: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algorithm trainer page'},
 	{key: 'community_enabled', label: 'Competitions', description: 'WCA competitions page + WCA Live'},
 	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms page'},
 	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle mode (mobile)'},
 	{key: 'messaging_enabled', label: 'Messaging', description: 'Direct messages. Off blocks sending and hides the inbox; existing messages are kept.'},
 	{key: 'presence_enabled', label: 'Online status', description: 'The green dot in messages. Off keeps messaging fully working and only drops the live presence traffic. First thing to shed if the server is struggling.'},
-	{key: 'leaderboards_enabled', label: 'Rankings', description: 'Kinch Ranks + Sum of Ranks leaderboard page'},
+	{key: 'leaderboards_enabled', label: 'Rankings', description: 'Online Battle ranking page (hidden until launch)'},
+	{
+		key: 'online_battle_enabled',
+		label: 'Online Battle',
+		description: '',
+		labelKey: 'site_config.online_battle_enabled',
+		descriptionKey: 'site_config.online_battle_enabled_desc',
+	},
 	{key: 'pro_enabled', label: 'Pro Membership', description: 'Pro subscription sales page + paywall. Keep off if payment not ready.'},
 ];
 
@@ -168,6 +176,13 @@ export default function SiteConfigPanel() {
 		// Confirm for maintenance mode
 		if (key === 'maintenance_mode' && newValue === true) {
 			if (!window.confirm('All users will see maintenance page. Only you (admin) can access. Continue?')) {
+				return;
+			}
+		}
+
+		// Turning Online Battle on is the public launch (menu entry, /ranks indexed, sitemap).
+		if (key === 'online_battle_enabled' && newValue === true) {
+			if (!window.confirm(t('site_config.online_battle_enable_confirm'))) {
 				return;
 			}
 		}
@@ -318,15 +333,15 @@ export default function SiteConfigPanel() {
 				<div className={b('section-header')}>
 					<h3>Page Access</h3>
 				</div>
-				{PAGE_TOGGLES.map(({key, label, description}) => {
+				{PAGE_TOGGLES.map(({key, label, description, labelKey, descriptionKey}) => {
 					const value = (config as any)[key];
 					const override = config.featureOverrides?.find((o: any) => o.feature === key) ?? null;
 					return (
 						<div key={key} className={b('feature-block')}>
 							<div className={b('row')}>
 								<div className={b('row-text')}>
-									<div className={b('row-label')}>{label}</div>
-									<div className={b('row-desc')}>{description}</div>
+									<div className={b('row-label')}>{labelKey ? t(labelKey) : label}</div>
+									<div className={b('row-desc')}>{descriptionKey ? t(descriptionKey) : description}</div>
 								</div>
 								<button
 									className={b('toggle', {on: value})}
@@ -454,7 +469,7 @@ export default function SiteConfigPanel() {
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Lift to Start Telemetry</div>
+						<div className={b('row-label')}>Magnet Timer Telemetry</div>
 						<div className={b('row-desc')}>
 							Records placements, lifts and rejected lifts of magnet lift-to-start per phone model
 							(placement strength, lift latency, sensor rate), with raw sensor windows for the odd
@@ -475,7 +490,7 @@ export default function SiteConfigPanel() {
 					<div className={b('row-text')}>
 						<div className={b('row-label')}>Manual Backfill</div>
 						<div className={b('row-desc')}>
-							Fetches from WCA API and fills users with linked WCA account but missing wca_user_id / wca_id + recalculates rankings.
+							Fetches from WCA API and fills users with linked WCA account but missing wca_user_id / wca_id, then fetches WCA records for users that have none yet.
 							Trigger now instead of waiting for cron.
 						</div>
 					</div>
@@ -496,8 +511,8 @@ export default function SiteConfigPanel() {
 									if (r.revoked > 0) parts.push(`${r.revoked} revoked (isaretlendi)`);
 									if (r.rateLimited > 0) parts.push(`${r.rateLimited} rate-limit`);
 									if (r.error > 0) parts.push(`${r.error} hata`);
-									parts.push(`Ranking: ${r.recordsFilled}/${r.recordsTotal} hesaplandi`);
-									if (r.recordsError > 0) parts.push(`${r.recordsError} ranking hatasi`);
+									parts.push(`Records: ${r.recordsFilled}/${r.recordsTotal} fetched`);
+									if (r.recordsError > 0) parts.push(`${r.recordsError} record errors`);
 									setBackfillResult(parts.join(' | '));
 								} else {
 									setBackfillResult('Sonuc alinamadi');

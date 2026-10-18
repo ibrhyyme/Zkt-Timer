@@ -58,6 +58,6 @@ export default class CompetitionScheduleChangedNotification extends CompetitionL
 	}
 
 	relativeLink() {
-		return lifecyclePersonPath(this.meta.source, this.meta.competitionId, this.meta.registrantId);
+		return lifecyclePersonPath(this.meta.competitionId, this.meta.registrantId);
 	}
 }

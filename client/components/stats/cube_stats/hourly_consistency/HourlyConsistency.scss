@@ -31,6 +31,8 @@
 
 	&__peak {
 		display: inline-flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		align-items: center;
 		gap: 0.4rem;
 		padding: 0.267rem 0;
@@ -105,15 +107,8 @@
 		z-index: 1;
 	}
 
-	&__mean-label {
-		position: absolute;
-		right: 0.4rem;
-		top: -0.6rem;
-		font-family: 'Roboto Mono', ui-monospace, monospace;
-		font-size: 0.65rem;
+	&__mean {
 		color: rgb(var(--primary-color));
-		background-color: rgb(var(--background-color));
-		padding: 0 0.333rem;
 		white-space: nowrap;
 	}
 

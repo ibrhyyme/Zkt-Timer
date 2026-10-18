@@ -23,9 +23,22 @@ export async function ensureCubingReady(): Promise<void> {
 
 const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
+// Private use code points stand in for wide and layer moves while the spacing rules run.
+const MOVE_SLOT_BASE = 0xe000;
+const MOVE_SLOT_CHARS = /[-]/g;
+// A layer prefix ("2R2", "3Rw'", "2-3Rw") only counts at the start of a move, so "U2 2R2" is
+// not read as "U22 R2". Spaces are dropped later, which is why this runs on the raw input.
+const LAYER_MOVE = /(^|[\s(])(\d+(?:-\d+)?(?:[RLFBUD]w|[RLFBUDrlfbud]))/g;
+const WIDE_MOVE = /[RLFBUD]w/g;
+
 /**
  * Normalize and expand cube algorithm notation.
  * Cleans up various quote characters, brackets, spacing, and ensures consistent format.
+ *
+ * Wide moves ("Rw", "Uw2'"), layer prefixes ("2R2", "3Rw'", "2-3Rw") and turn counts other
+ * than 2 ("R3", "(R U)3") are kept. Every text without them comes out exactly as before:
+ * algToId() keys the trainer stats by this output, and client/util/trainer/migrate_alg_ids.ts
+ * moves the stats of the texts this changed (B-1).
  */
 export function expandNotation(input: string): string {
 	// SQ1 notation uses different format (/ -3,0 / 3,3 /) — cube cleanup breaks it
@@ -34,31 +47,59 @@ export function expandNotation(input: string): string {
 	}
 
 	let output = input
+		.replace(MOVE_SLOT_CHARS, '')
 		.replace(/["´`']/g, "'")
 		.replace(/\[/g, '(')
 		.replace(/\]/g, ')')
 		.replace(/XYZ/g, 'xyz');
 
+	// Each wide or layer move becomes one letter-like slot, restored at the end
+	const slots: string[] = [];
+	const toSlot = (move: string) => {
+		slots.push(move);
+		return String.fromCharCode(MOVE_SLOT_BASE + slots.length - 1);
+	};
+	output = output.replace(LAYER_MOVE, (_m, before: string, move: string) => before + toSlot(move));
+	output = output.replace(WIDE_MOVE, toSlot);
+
 	// Remove characters not allowed
-	output = output.replace(/[^RLFBUDMESrlfbudxyz2()']/g, '');
+	output = output.replace(/[^RLFBUDMESrlfbudxyz2-9()'-]/g, '');
 
 	// Spacing rules
 	output = output.replace(/\(/g, ' (');
 	output = output.replace(/\)(?!\s)/g, ') ');
 	output = output.replace(/'(?![\s)])/g, "' ");
-	output = output.replace(/2(?![\s')])/g, '2 ');
-	output = output.replace(/([RLFBUDMESrlfbudxyz])(?![\s)'2])/g, '$1 ');
+	output = output.replace(/([2-9])(?![\s')])/g, '$1 ');
+	output = output.replace(/([RLFBUDMESrlfbudxyz-])(?![\s)'2-9])/g, '$1 ');
 
-	// No space before 2
-	output = output.replace(/(\s)(?=2)/g, '');
+	// No space before a turn count
+	output = output.replace(/(\s)(?=[2-9])/g, '');
 
 	// R'2 must be R2' instead
-	output = output.replace(/'2/g, "2'");
+	output = output.replace(/'([2-9])/g, "$1'");
 
 	// No multiple spaces
 	output = output.replace(/\s+/g, ' ');
 
-	return output.trim();
+	return output.trim().replace(MOVE_SLOT_CHARS, (slot) => slots[slot.charCodeAt(0) - MOVE_SLOT_BASE]);
+}
+
+/**
+ * Writes counterclockwise half turns as plain half turns: "U2'" -> "U2", "Rw2'" -> "Rw2",
+ * "x2'" -> "x2". A half turn lands in the same state either way, so the prime only adds
+ * noise. cubing.js emits it whenever it inverts or merges moves (invert(U2) is U2',
+ * U' U' simplifies to U2'), and some library algorithms are written with it.
+ *
+ * Only a single move is rewritten (a letter right before the 2). A repeated group such as
+ * "(R U)2'" is the inverse of "(R U)2", a different sequence, and is left as it is.
+ *
+ * Only for sequences the app computes (the setup inverse, merged AUF moves, the "Fix:" text).
+ * Stored library and user algorithms are shown exactly as written: a U2' there is a deliberate
+ * finger trick direction hint. algToId() and the pattern lookups are keyed by that text too.
+ */
+export function normalizeHalfTurns(alg: string): string {
+	if (!alg) return alg;
+	return alg.replace(/([A-Za-z])2'/g, '$12');
 }
 
 /**
@@ -218,6 +259,8 @@ export function getStickering(category: string): string {
 	// Categories without direct match in cubing.js aliased here
 	const STICKERING_ALIASES: Record<string, string> = {
 		'vhls': 'VLS',
+		// Summer Variation: last slot + edge orientation like WV, drawn from the top the same way
+		'sv': 'WVLS',
 	};
 
 	const validStickering = [
@@ -432,9 +475,12 @@ export function invertRotation(rotation: string): string {
 export function simplifyAlg(alg: string): string {
 	if (!_Alg) return alg;
 	try {
-		return _Alg.fromString(alg)
-			.experimentalSimplify({cancel: true, puzzleLoader: _cube3x3x3})
-			.toString();
+		// Computed sequence: half turns written as U2 (see normalizeHalfTurns).
+		return normalizeHalfTurns(
+			_Alg.fromString(alg)
+				.experimentalSimplify({cancel: true, puzzleLoader: _cube3x3x3})
+				.toString()
+		);
 	} catch {
 		return alg;
 	}
@@ -485,11 +531,38 @@ export function buildRandomAUFAlg(
 
 	if ((areNotIdentical && !isOLL) || (isOLL && !isSymmetricOLL(result.join(' ')))) {
 		result.unshift(randomAUF);
-		// Simplify to cancel possible adjacent U moves
-		result = simplifyAlg(result.join(' ')).split(/\s+/);
+		// Cancel the AUF moves into their neighbouring U moves
+		result = mergeAUFEdges(result, true, result.length > algMoves.length + 1, simplifyAlg);
 	}
 
 	return result;
+}
+
+/**
+ * Merges the added AUF moves (first and/or last move) with their neighbours, e.g. "U" + "U" is
+ * "U2". Only those two pairs are simplified: running the whole algorithm through the simplifier
+ * would also rewrite the stored moves (cubing.js writes every U2' as U2), and stored algorithms
+ * are shown as written.
+ */
+export function mergeAUFEdges(
+	moves: string[],
+	head: boolean,
+	tail: boolean,
+	simplify: (alg: string) => string
+): string[] {
+	// Two moves that did not merge come back as two moves: keep them as written.
+	const merge = (a: string, b: string): string[] => {
+		const merged = simplify(`${a} ${b}`).split(/\s+/).filter((m) => m.length > 0);
+		return merged.length < 2 ? merged : [a, b];
+	};
+	let out = moves;
+	if (head && out.length >= 2) {
+		out = [...merge(out[0], out[1]), ...out.slice(2)];
+	}
+	if (tail && out.length >= 2) {
+		out = [...out.slice(0, -2), ...merge(out[out.length - 2], out[out.length - 1])];
+	}
+	return out;
 }
 
 /**
@@ -529,6 +602,8 @@ export function cleanAlgorithmForCubing(alg: string): string {
 	s = s.replace(/([RLFBUD])w/g, (_, m: string) => m.toLowerCase());
 	s = s.replace(/\(([RLFBUDMESrlfbudxyz][2']?)\)/g, '$1');
 	s = expandNotation(s);
+	// No normalizeHalfTurns here: this is the stored algorithm, and the smart cube move list
+	// shows it as written (U2' is a finger trick hint). Matching works on cube states.
 	return s;
 }
 
@@ -543,9 +618,10 @@ export async function computeSetupInverse(algorithm: string): Promise<string> {
 	await ensureCubingReady();
 	const cleaned = cleanAlgorithmForCubing(algorithm);
 	const inverse = _Alg.fromString(cleaned).invert();
+	// invert() turns every U2 into U2'; written as U2 (see normalizeHalfTurns).
 	try {
-		return inverse.expand().toString();
+		return normalizeHalfTurns(inverse.expand().toString());
 	} catch {
-		return inverse.toString();
+		return normalizeHalfTurns(inverse.toString());
 	}
 }

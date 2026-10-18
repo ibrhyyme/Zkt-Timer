@@ -4,6 +4,7 @@ import {Prisma} from '@prisma/client';
 import {getAverage} from '../../client/db/solves/stats/solves/average/average';
 import {UserAccount} from '../schemas/UserAccount.schema';
 import {Solve as SolveClientType} from '../schemas/Solve.schema';
+import {publicIntegrationSelect} from './integration';
 
 export async function deleteAllPublishedSolves(user) {
 	return Promise.all([deleteAllTopSolves(user), deleteAllTopAverages(user)]);
@@ -118,7 +119,7 @@ const topSolveInclude = {
 					badge_type: true,
 				},
 			},
-			integrations: true,
+			integrations: {select: publicIntegrationSelect},
 			profile: {
 				include: {
 					pfp_image: true,
@@ -141,7 +142,7 @@ const topAverageInclude = {
 					badge_type: true,
 				},
 			},
-			integrations: true,
+			integrations: {select: publicIntegrationSelect},
 			profile: {
 				include: {
 					pfp_image: true,

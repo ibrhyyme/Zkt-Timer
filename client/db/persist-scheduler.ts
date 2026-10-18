@@ -22,7 +22,8 @@
  * - Offline hash, destructive changes (deletes, merges): sent at once. The hash is what
  *   tells another device "run a full delta". If it lags, a device opening meanwhile takes
  *   the reconcile path, whose mass-deletion guard refuses a large deletion, and the launch
- *   backfill then uploads the deleted solves again.
+ *   backfill then uploads the deleted solves again. "At once" is the first idle moment
+ *   after the change is painted (runIdle), never inside the tap that made it.
  */
 
 export interface PersistDeps {
@@ -148,7 +149,23 @@ export function createPersistScheduler(deps: PersistDeps): PersistScheduler {
 			const wantsHash = deps.wantsHash();
 
 			if (destructive && wantsHash) {
-				return doSaveAndHash();
+				// At once, but after the deletion is on screen. The write serialises the
+				// whole database on the main thread (hundreds of ms for a large history on a
+				// phone), and run straight from the tap it held the frame that removes the
+				// row: deleting a solve took up to two seconds to show (owner, 2026-10-13).
+				// A flush or cancel in between settles it; nothing is written twice.
+				hashDirty = true;
+				clearHashTimer();
+				const gen = generation;
+				return new Promise<void>((resolve) => {
+					deps.runIdle(() => {
+						if (gen !== generation || !hashDirty) {
+							resolve();
+							return;
+						}
+						void doSaveAndHash().then(resolve);
+					});
+				});
 			}
 
 			savePending = true;

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {Prisma} from '@prisma/client';
 import {getPrisma} from '../database';
 import {LINKED_SERVICES} from '../../shared/integration';
 import {updateIntegration} from '../models/integration';
@@ -19,6 +20,21 @@ export interface WcaBackfillResult {
 	recordsError: number;
 }
 
+/**
+ * Phase 2 selector: linked WCA users with a wca_id and no WcaRecord row yet.
+ * The marker must be the relation, not a derived column: a column that gets
+ * cleared would make every WCA user look "not fetched" and the nightly cron
+ * would hit the WCA API for all of them at once (429).
+ * Users whose WCA profile has no results (only DNFs) never get a row and are
+ * asked again every night, same as before.
+ */
+export const WCA_RECORDS_MISSING_WHERE: Prisma.IntegrationWhereInput = {
+	service_name: 'wca',
+	revoked_at: null,
+	wca_id: {not: null},
+	wca_records: {none: {}},
+};
+
 export interface WcaBackfillOptions {
 	batchSize?: number;
 	requestDelayMs?: number;
@@ -35,7 +51,7 @@ export interface WcaBackfillOptions {
  *  - If WCA /me returns 401/404, marks revoked_at.
  *  - If WCA /me returns 429 (rate limit), sleeps 10s and skips (retry next tick).
  *  - Writes fields via syncWcaProfileToIntegration (idempotent).
- *  - Then Phase 2: fetches records + computes ranking for those with wca_id but no kinch_score.
+ *  - Then Phase 2: fetches WCA records for users with a wca_id whose records were never fetched.
  */
 export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<WcaBackfillResult> {
 	const {batchSize = 500, requestDelayMs = 300, includeRecords = true} = opts;
@@ -148,22 +164,17 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 		}
 	}
 
-	// Phase 2: fetch records + compute ranking for those with wca_id but no kinch_score
+	// Phase 2: fetch records for users with a wca_id whose records were never fetched
 	if (includeRecords) {
-		const missingRankings = await prisma.integration.findMany({
-			where: {
-				service_name: 'wca',
-				revoked_at: null,
-				wca_id: {not: null},
-				kinch_score: null,
-			},
+		const missingRecords = await prisma.integration.findMany({
+			where: WCA_RECORDS_MISSING_WHERE,
 			include: {user: true},
 			take: batchSize,
 		});
 
-		result.recordsTotal = missingRankings.length;
+		result.recordsTotal = missingRecords.length;
 
-		for (const int of missingRankings) {
+		for (const int of missingRecords) {
 			try {
 				// Be kind to WCA API for records too — 500ms between consecutive requests avoids 429
 				await new Promise((r) => setTimeout(r, 500));

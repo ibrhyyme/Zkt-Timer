@@ -314,3 +314,87 @@ export function createFlushScheduler<T>(
 		return running;
 	};
 }
+
+// =====================================================
+// Runs that stop on the connection, and what the user is told
+// =====================================================
+
+/**
+ * A run that stopped on the connection (dead link, server unreachable, a request that never
+ * answered) while the device still reported a network. Nothing else would ever start the
+ * next run: the browser's `online` event and the native network listener only fire on a
+ * change, and a phone in a tunnel stays "connected" the whole time it has no data. The
+ * queue then waited for the user to leave the app and come back. These delays re-try it on
+ * their own, quietly, growing so a long outage costs a request every five minutes at most.
+ */
+const HALT_RETRY_BASE_MS = 30_000;
+const HALT_RETRY_MAX_MS = 5 * 60_000;
+
+/** Delay before re-trying after the `streak`-th consecutive run that stopped on the connection. */
+export function nextHaltRetryMs(streak: number): number {
+	const exponent = Math.max(0, streak - 1);
+	return Math.min(HALT_RETRY_BASE_MS * 2 ** exponent, HALT_RETRY_MAX_MS);
+}
+
+/**
+ * Thrown when a live save gets no answer in time. Carries 408 so isConnectivityError reads it
+ * as the connection's fault, never as the server refusing the solve.
+ */
+export class SaveTimeoutError extends Error {
+	statusCode = 408;
+
+	constructor(ms: number) {
+		super(`No answer from the server after ${ms} ms`);
+		this.name = 'SaveTimeoutError';
+	}
+}
+
+/**
+ * A live save that never answers must not hold its solve "in flight" for the rest of the
+ * session: a sync skips in-flight records and the pending badge does not count them, so a
+ * request hung on a dead connection (minutes on Android) hid its solve from every sync while
+ * the toast reported the others as synced.
+ */
+export function raceTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(() => reject(new SaveTimeoutError(ms)), ms);
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(err) => {
+				clearTimeout(timer);
+				reject(err);
+			}
+		);
+	});
+}
+
+export type SyncResultMessage =
+	| {key: 'offline.sync_done'; params: {count: number}}
+	| {key: 'offline.sync_partial'; params: {count: number; remaining: number}}
+	| {key: 'offline.sync_interrupted'; params: {count: number}}
+	| null;
+
+/**
+ * What a finished run tells the user. "Synced" only when the server confirmed every solve
+ * still waiting on this device: before, a run that sent 3 of 50 and then lost the connection
+ * said "3 solves synced", which reads as "done", and the other device stayed 47 behind.
+ *
+ * `remaining` is the number of distinct solves still queued after the run. `progressShown`:
+ * the "syncing" toast is up and must be turned into something, never silently removed (a
+ * toast that just vanished looked like a sync that had worked).
+ */
+export function syncResultMessage(synced: number, remaining: number, progressShown: boolean): SyncResultMessage {
+	if (synced > 0 && remaining === 0) {
+		return {key: 'offline.sync_done', params: {count: synced}};
+	}
+	if (synced > 0) {
+		return {key: 'offline.sync_partial', params: {count: synced, remaining}};
+	}
+	if (progressShown && remaining > 0) {
+		return {key: 'offline.sync_interrupted', params: {count: remaining}};
+	}
+	return null;
+}

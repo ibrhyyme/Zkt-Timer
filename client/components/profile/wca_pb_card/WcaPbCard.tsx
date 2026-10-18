@@ -58,7 +58,7 @@ export default function WcaPbCard(props: Props) {
 
 			{/* Orta: Average */}
 			<div className={b('record-section')}>
-				<div className={b('record-type')}>Average</div>
+				<div className={b('record-type')}>{t('profile.average')}</div>
 				{record.average_record ? (
 					<>
 						<div className={b('time-container')}>
@@ -81,7 +81,7 @@ export default function WcaPbCard(props: Props) {
 
 			{/* Sağ: Single */}
 			<div className={b('record-section')}>
-				<div className={b('record-type')}>Single</div>
+				<div className={b('record-type')}>{t('profile.single')}</div>
 				{record.single_record ? (
 					<>
 						<div className={b('time-container')}>

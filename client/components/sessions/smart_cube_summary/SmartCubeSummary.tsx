@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatInteger } from '../../../util/locale_format';
 import { useTranslation } from 'react-i18next';
 import { fetchSolves, FilterSolvesOptions } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
@@ -31,7 +32,7 @@ function formatTotalDuration(totalSeconds: number, t: (k: string) => string): st
 }
 
 export default function SmartCubeSummary({ sessionId, filterOptions }: Props) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	useSolveDb();
 
 	if (!sessionId && !filterOptions) return null;
@@ -61,7 +62,7 @@ export default function SmartCubeSummary({ sessionId, filterOptions }: Props) {
 			<div className={b('stats')}>
 				<div className={b('stat')}>
 					<div className={b('stat-label')}>{t('sessions.smart_cube_count')}</div>
-					<div className={b('stat-value')}>{count.toLocaleString()}</div>
+					<div className={b('stat-value')}>{formatInteger(count, i18n.language)}</div>
 				</div>
 				<div className={b('stat')}>
 					<div className={b('stat-label')}>{t('sessions.smart_cube_total_time')}</div>

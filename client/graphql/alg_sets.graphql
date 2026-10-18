@@ -1,0 +1,183 @@
+# Trainer algorithm sets (server/resolvers/AlgSet.resolver.ts).
+# Design: .feedback/designs/trainer-sets.md section 4.
+
+fragment AlgSetItemFragment on AlgSetItem {
+	id
+	category
+	case_name
+	subset
+	puzzle
+	algorithm
+	position
+}
+
+fragment AlgSetOwnerFragment on AlgSetOwner {
+	id
+	username
+	verified
+	avatar_path
+}
+
+fragment AlgSetSummaryFragment on AlgSetSummary {
+	id
+	code
+	name
+	description
+	visibility
+	item_count
+	save_count
+	categories
+	puzzles
+	preview {
+		...AlgSetItemFragment
+	}
+	owner {
+		...AlgSetOwnerFragment
+	}
+	published_at
+	updated_at
+	created_at
+	hidden
+}
+
+# AlgSet without its rows: SSR link preview and responses where the rows did not change.
+fragment AlgSetHeadFragment on AlgSet {
+	id
+	code
+	name
+	description
+	visibility
+	item_count
+	save_count
+	categories
+	puzzles
+	preview {
+		...AlgSetItemFragment
+	}
+	owner {
+		...AlgSetOwnerFragment
+	}
+	published_at
+	updated_at
+	created_at
+	hidden
+	is_owner
+	is_saved
+}
+
+fragment AlgSetFragment on AlgSet {
+	...AlgSetHeadFragment
+	items {
+		...AlgSetItemFragment
+	}
+}
+
+query MyAlgSets {
+	myAlgSets {
+		own {
+			...AlgSetSummaryFragment
+		}
+		saved {
+			set_id
+			saved_at
+			unavailable
+			set {
+				...AlgSetSummaryFragment
+			}
+		}
+	}
+}
+
+query AlgSet($code: String!) {
+	algSet(code: $code) {
+		...AlgSetFragment
+	}
+}
+
+# SSR preview (client/components/trainer/sets/ssr.ts): summary only, no rows.
+query AlgSetMeta($code: String!) {
+	algSet(code: $code) {
+		...AlgSetHeadFragment
+	}
+}
+
+query CommunityAlgSets(
+	$q: String
+	$sort: String
+	$puzzle: String
+	$category: String
+	$page: Int
+	$page_size: Int
+) {
+	communityAlgSets(q: $q, sort: $sort, puzzle: $puzzle, category: $category, page: $page, page_size: $page_size) {
+		items {
+			...AlgSetSummaryFragment
+		}
+		total
+		has_more
+	}
+}
+
+mutation CreateAlgSet($input: AlgSetCreateInput!) {
+	createAlgSet(input: $input) {
+		...AlgSetFragment
+	}
+}
+
+mutation UpdateAlgSet($id: String!, $input: AlgSetUpdateInput!) {
+	updateAlgSet(id: $id, input: $input) {
+		...AlgSetHeadFragment
+	}
+}
+
+mutation DeleteAlgSet($id: String!) {
+	deleteAlgSet(id: $id)
+}
+
+mutation ResetAlgSetCode($id: String!) {
+	resetAlgSetCode(id: $id) {
+		...AlgSetHeadFragment
+	}
+}
+
+mutation AddAlgSetItems($set_id: String!, $items: [AlgSetItemInput!]!) {
+	addAlgSetItems(set_id: $set_id, items: $items) {
+		...AlgSetFragment
+	}
+}
+
+mutation UpdateAlgSetItem($item_id: String!, $algorithm: String!) {
+	updateAlgSetItem(item_id: $item_id, algorithm: $algorithm) {
+		...AlgSetItemFragment
+	}
+}
+
+mutation RemoveAlgSetItems($set_id: String!, $item_ids: [String!]!) {
+	removeAlgSetItems(set_id: $set_id, item_ids: $item_ids) {
+		...AlgSetFragment
+	}
+}
+
+mutation ReorderAlgSetItems($set_id: String!, $item_ids: [String!]!) {
+	reorderAlgSetItems(set_id: $set_id, item_ids: $item_ids) {
+		...AlgSetFragment
+	}
+}
+
+mutation SaveAlgSet($set_id: String!) {
+	saveAlgSet(set_id: $set_id)
+}
+
+mutation UnsaveAlgSet($set_id: String!) {
+	unsaveAlgSet(set_id: $set_id)
+}
+
+mutation ReportAlgSet($set_id: String!, $reason: String!, $note: String) {
+	reportAlgSet(set_id: $set_id, reason: $reason, note: $note)
+}
+
+mutation AdminSetAlgSetHidden($set_id: String!, $hidden: Boolean!, $reason: String) {
+	adminSetAlgSetHidden(set_id: $set_id, hidden: $hidden, reason: $reason) {
+		...AlgSetHeadFragment
+	}
+}

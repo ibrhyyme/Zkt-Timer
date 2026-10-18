@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { TwistyPlayer } from 'cubing/twisty';
 import { recolorPuzzle, stickerPaletteFromFaceColors } from '../../timer/smart_cube/cube_view/cube_palette';
 import { useCubePalette } from '../../../util/cube_colors/useCubePalette';
+import { SWIPE_THROUGH_ATTRIBUTE } from '../../timer/helpers/module_carousel';
 
 interface Props {
     puzzle: string;
@@ -54,6 +55,9 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
             hintFacelets: visualization === '2D' ? 'none' : 'floating',
             backView: 'none',
         });
+        // A 2D view is a still picture with no drag of its own, so on the phone a swipe
+        // over it may turn the module page (module_carousel.ts). The 3D cube keeps its drag.
+        if (visualization === '2D') player.setAttribute(SWIPE_THROUGH_ATTRIBUTE, '');
         containerRef.current.appendChild(player);
         playerRef.current = player;
 

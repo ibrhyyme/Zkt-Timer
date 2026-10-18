@@ -19,7 +19,8 @@ import { useWindowListener } from '../../../util/hooks/useListener';
 import block from '../../../styles/bem';
 import AccountDropdown from '../nav/account_dropdown/AccountDropdown';
 import { useMe } from '../../../util/hooks/useMe';
-import { NAV_LINKS, NavLinkProps } from '../nav/nav_links';
+import { NAV_LINKS, NavLinkProps, visibleNavLinks } from '../nav/nav_links';
+import { useBattleLaunch } from '../../battle/useBattleLaunch';
 import Button from '../../common/button/Button';
 import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
@@ -36,8 +37,8 @@ interface HeaderNavLinkProps extends NavLinkProps {
 	hovered?: boolean;
 	// Icon only, no label. Set by HeaderNav when the labelled strip cannot fit.
 	compact?: boolean;
-	onHoverStart?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-	onHoverEnd?: () => void;
+	onHoverStart?: (e: React.PointerEvent<HTMLAnchorElement>) => void;
+	onHoverEnd?: (e: React.PointerEvent<HTMLAnchorElement>) => void;
 }
 
 function HeaderNavLink(props: HeaderNavLinkProps) {
@@ -57,24 +58,24 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		'transition-all',
 		'focus:outline-none',
 		'focus-visible:ring-2',
-		'focus-visible:ring-indigo-400/70',
-		'hover:-translate-y-[1px]',
-		'active:translate-y-0',
+		'focus-visible:ring-primary',
 		'relative',
 		'z-[1]',
 	];
 
 	if (selected || hovered) {
 		linkClasses.push(
-			'text-white',
+			'text-tmo-primary',
 			'border-transparent',
 		);
 	} else {
 		linkClasses.push(
 			'text-text/90',
-			'hover:text-text',
+			// Hover tint only where a real hover exists: on a touch screen `:hover` latches
+			// onto the last tapped tab and stays there until the next tap elsewhere.
+			'[@media(hover:hover)]:hover:text-text',
 			'bg-text/5',
-			'hover:bg-text/10',
+			'[@media(hover:hover)]:hover:bg-text/10',
 			'border-text/10'
 		);
 	}
@@ -92,8 +93,8 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 			// it away from screen readers, so name the link itself while compact.
 			title={compact ? label : undefined}
 			aria-label={compact ? label : undefined}
-			onMouseEnter={onHoverStart}
-			onMouseLeave={onHoverEnd}
+			onPointerEnter={onHoverStart}
+			onPointerLeave={onHoverEnd}
 		>
 			<span className="text-lg">{icon}</span>
 			<span>{label}</span>
@@ -116,6 +117,8 @@ export default function HeaderNav(props: Props = {}) {
 
 	const match = useRouteMatch();
 	const me = useMe();
+	// The Sıralama tab appears only once Online Battle is public (nav_links launchOnly).
+	const rankingsLaunched = useBattleLaunch()?.launched === true;
 
 	const mobileMode = useGeneral('mobile_mode');
 	// Pill nav state
@@ -151,47 +154,69 @@ export default function HeaderNav(props: Props = {}) {
 		pathname = match.path;
 	}
 
-	// Measure a given element for the pill position
-	const measureElement = useCallback((el: HTMLElement) => {
-		setPillPos({
-			left: el.offsetLeft,
-			top: el.offsetTop,
-			width: el.offsetWidth,
-			height: el.offsetHeight,
-			ready: true,
-		});
+	// Hover state for the sliding pill. Mouse only, read from pointer events.
+	//
+	// It used to listen to mouseenter/mouseleave. A tap on a touch screen fires a
+	// compatibility mouseenter and no mouseleave until the next tap lands somewhere
+	// else, so on a tablet the tapped tab stayed "hovered" and kept the pill.
+	// Pointer events say which device it was, and a touch pointer has no hover.
+	const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+	const hoveredElRef = useRef<HTMLElement | null>(null);
+
+	const handleHoverStart = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
+		if (e.pointerType !== 'mouse') return;
+		hoveredElRef.current = e.currentTarget;
+		setHoveredLink(e.currentTarget.getAttribute('href') || '');
 	}, []);
 
-	// Measure active nav link for sliding pill
-	const measureActive = useCallback(() => {
-		if (!navRef.current) return;
-		const activeEl = navRef.current.querySelector('[data-active]') as HTMLElement;
-		if (activeEl) {
-			measureElement(activeEl);
-		} else {
-			setPillPos((prev) => ({ ...prev, ready: false }));
-		}
-	}, [measureElement]);
-
-	// Hover handlers
-	const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-
-	const handleHoverStart = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-		const el = e.currentTarget;
-		setHoveredLink(el.getAttribute('href') || '');
-		measureElement(el);
-	}, [measureElement]);
-
-	const handleHoverEnd = useCallback(() => {
+	const handleHoverEnd = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
+		if (e.pointerType !== 'mouse') return;
+		hoveredElRef.current = null;
 		setHoveredLink(null);
-		measureActive();
-	}, [measureActive]);
+	}, []);
 
+	// A route change always starts from the active tab.
 	useEffect(() => {
-		measureActive();
-		window.addEventListener('resize', measureActive);
-		return () => window.removeEventListener('resize', measureActive);
-	}, [pathname, measureActive]);
+		hoveredElRef.current = null;
+		setHoveredLink(null);
+	}, [pathname]);
+
+	// Put the pill under the hovered tab, or the active one.
+	//
+	// Measured in a layout effect that re-runs whenever the strip's layout can
+	// change (route, hover, compact switch, language, sign-in). It used to be
+	// measured once in a passive effect on mount. That effect is flushed before
+	// the compact re-render that measureFit's layout effect schedules, so on any
+	// screen narrow enough for the icon-only strip (every tablet) the pill took the
+	// width of the LABELLED tab and then sat across Timer and Battle until a mouse
+	// hover re-measured it. Touch never hovers, so it stayed there.
+	const measurePill = useCallback(() => {
+		const nav = navRef.current;
+		if (!nav) return;
+		const hovered = hoveredElRef.current;
+		const target =
+			hovered && nav.contains(hovered) ? hovered : (nav.querySelector('[data-active]') as HTMLElement | null);
+		if (!target) {
+			setPillPos((prev) => (prev.ready ? { ...prev, ready: false } : prev));
+			return;
+		}
+		const next = {
+			left: target.offsetLeft,
+			top: target.offsetTop,
+			width: target.offsetWidth,
+			height: target.offsetHeight,
+			ready: true,
+		};
+		setPillPos((prev) =>
+			prev.ready &&
+			prev.left === next.left &&
+			prev.top === next.top &&
+			prev.width === next.width &&
+			prev.height === next.height
+				? prev
+				: next
+		);
+	}, []);
 
 	// Decide whether the labelled strip still fits.
 	//
@@ -292,14 +317,35 @@ export default function HeaderNav(props: Props = {}) {
 			window.removeEventListener('resize', remeasure);
 			if (observer) observer.disconnect();
 		};
-	}, [measureFit, compact, mobileMode, !!me, i18n.language]);
+	}, [measureFit, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
+
+	// After measureFit on purpose: layout effects run in declaration order, so the
+	// pill is measured against the strip in its settled compact state.
+	useIsomorphicLayoutEffect(() => {
+		measurePill();
+	}, [measurePill, pathname, hoveredLink, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
+
+	// Anything else that moves the tabs (window resize, the 14/15px rem switch, a
+	// late web font) changes the strip's size, so watch the strip itself.
+	useEffect(() => {
+		window.addEventListener('resize', measurePill);
+		let observer: ResizeObserver | null = null;
+		if (typeof ResizeObserver !== 'undefined' && navRef.current) {
+			observer = new ResizeObserver(() => measurePill());
+			observer.observe(navRef.current);
+		}
+		return () => {
+			window.removeEventListener('resize', measurePill);
+			if (observer) observer.disconnect();
+		};
+	}, [measurePill, mobileMode]);
 
 	let notifications = <InboxPanel />;
 	if (!me) {
 		notifications = null;
 	}
 
-	const navLinks = NAV_LINKS.filter((link) => !link.mobileOnly).map((link) => (
+	const navLinks = visibleNavLinks(NAV_LINKS, rankingsLaunched).filter((link) => !link.mobileOnly).map((link) => (
 		<HeaderNavLink
 			{...link}
 			key={link.name}

@@ -29,3 +29,14 @@ export class SessionInput {
 	@Field()
 	order: number;
 }
+
+// One (cube_type, scramble_subset) bucket for splitSession. A null subset is the cube
+// type's default bucket.
+@InputType()
+export class SessionBucketInput {
+	@Field()
+	cube_type: string;
+
+	@Field({nullable: true})
+	scramble_subset?: string;
+}

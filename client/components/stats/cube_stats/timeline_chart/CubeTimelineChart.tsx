@@ -1,4 +1,5 @@
 import React, {useContext, useMemo} from 'react';
+import {formatInteger} from '../../../../util/locale_format';
 import {useTranslation} from 'react-i18next';
 import './CubeTimelineChart.scss';
 import block from '../../../../styles/bem';
@@ -13,7 +14,7 @@ import {getTimeString} from '../../../../util/time';
 const b = block('cube-timeline');
 
 export default function CubeTimelineChart() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const {filterOptions} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
 
@@ -57,7 +58,7 @@ export default function CubeTimelineChart() {
 				</div>
 				<div className={b('stat')}>
 					<span className={b('stat-label')}>{t('stats.cube_chart.total')}</span>
-					<span className={b('stat-val')}>{totalCount.toLocaleString()}</span>
+					<span className={b('stat-val')}>{formatInteger(totalCount, i18n.language)}</span>
 				</div>
 			</div>
 		</div>

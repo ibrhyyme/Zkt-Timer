@@ -11,6 +11,16 @@ interface SubStats {
 	plusTwoPercent: number;
 }
 
+/**
+ * Share of `count` in `total` on the 0-100 scale, one decimal, rounded (formatPercent drops a
+ * trailing zero): 22 +2s out of 13K solves read "0.2%", not "0%", and 243 out of 12 452
+ * (1.95%) read "2%". Flooring everything above 1% printed that last one as "1%".
+ */
+export function solveSharePercent(count: number, total: number): number {
+	if (!total) return 0;
+	return Math.round((count / total) * 1000) / 10;
+}
+
 export function getSubStats(filter: FilterSolvesOptions): SubStats {
 	const solves = fetchSolves(
 		{
@@ -43,15 +53,8 @@ export function getSubStats(filter: FilterSolvesOptions): SubStats {
 		plus_two: true,
 	});
 
-	// Sub-1% values keep one decimal instead of flooring to a misleading "0%"
-	// (e.g. 22 +2s out of 13K solves should read "0.2%", not "0%").
-	function toPercent(count: number): number {
-		const pct = (count / solves.length) * 100;
-		return pct > 0 && pct < 1 ? Math.round(pct * 10) / 10 : Math.floor(pct);
-	}
-
-	const dnfPercent = toPercent(dnfs.length);
-	const plusTwoPercent = toPercent(plusTwos.length);
+	const dnfPercent = solveSharePercent(dnfs.length, solves.length);
+	const plusTwoPercent = solveSharePercent(plusTwos.length, solves.length);
 
 	return {
 		firstSolve: solves[0],

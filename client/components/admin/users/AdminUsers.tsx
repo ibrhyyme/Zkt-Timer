@@ -7,7 +7,6 @@ import {gql} from '@apollo/client';
 import dayjs from 'dayjs';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import 'dayjs/locale/tr';
 import {useDispatch} from 'react-redux';
 import {openModal} from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
@@ -15,8 +14,9 @@ import {useTranslation} from 'react-i18next';
 import SendFilteredEmailModal from './SendFilteredEmailModal';
 import {ArrowDown, ArrowsDownUp, ArrowUp, EnvelopeSimple} from 'phosphor-react';
 
+// No dayjs.locale() here: the locale is global and follows the app language (util/dates.ts).
+// Setting it when this module loads turned every date and month name in the app Turkish.
 dayjs.extend(relativeTime);
-dayjs.locale('tr');
 
 interface UserAccountData {
 	id: string;

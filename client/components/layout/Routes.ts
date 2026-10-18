@@ -14,6 +14,7 @@ import Messages from '../messages/Messages';
 import Profile, { prefetchProfileData } from '../profile/Profile';
 import Admin from '../admin/Admin';
 import SolvePage, { prefetchSolveData, solveSsrMeta } from '../solve_page/SolvePage';
+import { prefetchAlgSetMeta, algSetSsrMeta } from '../trainer/sets/ssr';
 import NotificationPreferences from '../account/notification_preferences/NotificationPreferences';
 import SocialSettings from '../account/social/SocialSettings';
 
@@ -32,6 +33,9 @@ import Appearance from '../settings/appearance/Appearance';
 import CubeColors from '../settings/colors/CubeColors';
 import DataSettings from '../settings/data/DataSettings';
 import LanguageSettings from '../settings/language/LanguageSettings';
+import MyCubes from '../settings/cubes/MyCubes';
+import CubeProfile from '../settings/cubes/CubeProfile';
+import MagnetCalibrate from '../magnet/calibrate/MagnetCalibrate';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
 import WcaLoginCallback from '../oauth/WcaLoginCallback';
@@ -61,14 +65,14 @@ import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
 import SmartCubeTelemetryPanel from '../admin/smart_cube_telemetry/SmartCubeTelemetryPanel';
 import MagnetTelemetryPanel from '../admin/magnet_telemetry/MagnetTelemetryPanel';
+import AdminBattleMatches from '../admin/battle/AdminBattleMatches';
 import AdminMedia from '../admin/media/AdminMedia';
-import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
-import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
-import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
 import Battle from '../battle/Battle';
+import BattleLanding from '../battle/BattleLanding';
+import OnlineBattle from '../battle/online/OnlineBattle';
 import MySchedule from '../community/my_schedule/MySchedule';
 import Rankings from '../rankings/Rankings';
 
@@ -108,7 +112,7 @@ export interface PageContext extends PageOptions {
 	 * Shared React key for routes that render the same component across multiple paths.
 	 * When set, the <Switch>-rendered <Route> keeps a stable identity across intra-group
 	 * navigation, so the component tree is NOT remounted (state preserved). Used by the
-	 * trainer routes so e.g. /trainer/standard -> /trainer/standard/train does not reset state.
+	 * trainer routes so e.g. /trainer/algorithms -> /trainer/algorithms/train does not reset state.
 	 */
 	groupKey?: string;
 }
@@ -155,14 +159,21 @@ function routeRedirect(path: string, redirect: string): RedirectPath {
 
 /**
  * Trainer routes all render <Trainer> and must share a single mount group so that
- * navigating between modes/sub-views (e.g. /trainer/standard -> /trainer/standard/train)
+ * navigating between modes/sub-views (e.g. /trainer/algorithms -> /trainer/algorithms/train)
  * does NOT remount the tree and wipe TrainerProvider state. The shared groupKey gives the
  * <Switch>-rendered <Route> a stable React key across these paths.
  */
 // Open by default: the trainer works entirely on local data, and a visitor who
 // cannot try it has no way to judge it.
-function trainerRoute(path: string, restricted = false): PageContext {
-	const r = route(path, null, App, Trainer, restricted);
+// `prefetchData` + `ssrMeta` are for the shared set page: its link preview is the only part of
+// the trainer the server renders (the trainer body waits for `app_loaded`).
+function trainerRoute(
+	path: string,
+	restricted = false,
+	prefetchData: PageOptions['prefetchData'] = null,
+	ssrMeta: SsrMetaFn = null
+): PageContext {
+	const r = route(path, null, App, Trainer, restricted, false, false, false, false, prefetchData, ssrMeta);
 	r.groupKey = 'trainer-shell';
 	return r;
 }
@@ -198,6 +209,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/settings', App, SettingsPage, TimerSettings, false),
 	route('/settings/timer', App, SettingsPage, TimerSettings, false),
 	route('/settings/input', App, SettingsPage, InputSettings, false),
+	// My Cubes needs an account (cubes live on the server); a visitor is sent to log in.
+	route('/settings/cubes', App, SettingsPage, MyCubes),
+	route('/settings/cubes/:id', App, SettingsPage, CubeProfile),
 	route('/settings/smart-cube', App, SettingsPage, SmartCubeSettings, false),
 	route('/settings/scramble', App, SettingsPage, ScrambleSettings, false),
 	route('/settings/appearance', App, SettingsPage, Appearance, false),
@@ -231,10 +245,20 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// Trainer — deep-linkable (her derinlik explicit, exact match; hepsi child=Trainer).
 	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.
-	trainerRoute('/trainer/standard/train'),
-	trainerRoute('/trainer/standard'),
-	trainerRoute('/trainer/smart/train'),
-	trainerRoute('/trainer/smart'),
+	// Algorithm Trainer (Standard and Smart Cube in one, the study mode is `?mode=smart`).
+	// The old /trainer/standard* and /trainer/smart* addresses are routeRedirect rows below.
+	trainerRoute('/trainer/algorithms/train'),
+	trainerRoute('/trainer/algorithms'),
+	// The Trainers page (Algorithm Trainer, PLL Recognition, Cross and XCross).
+	trainerRoute('/trainer/modes'),
+	// Algorithm Sets, a section of their own next to the trainers: My Sets, Community Sets and
+	// one set's page. The old /trainer/algorithms/sets and /community tabs are redirect rows below.
+	// Open to visitors: a public or link-shared set is readable signed out (the access rule is
+	// the server's), only studying and saving ask for an account (inside the page).
+	trainerRoute('/trainer/sets'),
+	trainerRoute('/trainer/community'),
+	trainerRoute('/trainer/sets/:code/add'),
+	trainerRoute('/trainer/sets/:code', false, [prefetchAlgSetMeta], algSetSsrMeta),
 	trainerRoute('/trainer/recognition/setup'),
 	trainerRoute('/trainer/recognition/train'),
 	trainerRoute('/trainer/recognition/results'),
@@ -278,20 +302,19 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/competitions/:competitionId', App, Community, MySchedule, false),
 	route('/competitions', App, Community, MySchedule, false),
 
-	// ZKT Unofficial Competitions (public for SEO)
-	route('/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
-	route('/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
-	// Projector — fullscreen venue display (standalone, no nav)
-	route('/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
-	route('/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
-	route('/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),
-	route('/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail, false),
-
 	// Rankings
 	route('/ranks', null, App, Rankings, false),
 
-	// Battle (mobile only)
-	route('/battle', null, App, Battle, false, false, false, false, true),
+	// Battle (ranking-battle 5.1). /battle is the two-card landing once Online Battle is open
+	// to the user, and the offline battle itself until then. No shared groupKey: moving from
+	// the landing into a mode is meant to mount it fresh.
+	route('/battle', null, App, BattleLanding, false, false, false, false, true),
+	route('/battle/offline', null, App, Battle, false, false, false, false, true),
+	// Queue, match and result. The page gates sign-in itself (account panel) and is null on the server.
+	route('/battle/online', null, App, OnlineBattle, false, false, false, true, true),
+
+	// Magnet calibration of a cube on this phone (`?cube=<id>`). Full page, account required.
+	route('/magnet/calibrate', null, App, MagnetCalibrate),
 
 	// Friendly Rooms
 	// Same as /stats: the page opens and explains, RoomsList gates its own content.
@@ -311,6 +334,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/media', App, Admin, AdminMedia, true, false, true),
 	route('/admin/smart-telemetry', App, Admin, SmartCubeTelemetryPanel, true, false, true),
 	route('/admin/magnet-telemetry', App, Admin, MagnetTelemetryPanel, true, false, true),
+	route('/admin/online-battle', App, Admin, AdminBattleMatches, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
@@ -337,14 +361,28 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/community/competitions/:competitionId/wca-live', '/competitions/:competitionId/wca-live'),
 	routeRedirect('/community/competitions/:competitionId', '/competitions/:competitionId'),
 	routeRedirect('/community/competitions', '/competitions'),
-	// Legacy /community/zkt-* links -> new /zkt-* (param-preserving 301 via SSR).
-	routeRedirect('/community/zkt-competitions/:competitionId/competitors/:userId', '/zkt-competitions/:competitionId/competitors/:userId'),
-	routeRedirect('/community/zkt-competitions/:competitionId/activities/:groupId', '/zkt-competitions/:competitionId/activities/:groupId'),
-	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', '/zkt-competitions/:competitionId/live/:eventId/:roundNumber'),
-	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId', '/zkt-competitions/:competitionId/live/:eventId'),
-	routeRedirect('/community/zkt-competitions/:competitionId/live', '/zkt-competitions/:competitionId/live'),
-	routeRedirect('/community/zkt-competitions/:competitionId', '/zkt-competitions/:competitionId'),
+	// The old standalone ZKT view (E-107). A ZKT competition lives on the shared page as
+	// /competitions/zkt-<slug>; links already sent in notifications land there. Its
+	// :competitionId is the bare slug, its competitor id the registration number (the
+	// WCIF registrantId). A federation group id has no counterpart, so an activity link
+	// opens the competition.
+	...['/zkt-competitions', '/community/zkt-competitions'].flatMap((base) => [
+		routeRedirect(`${base}/:competitionId/competitors/:userId`, '/competitions/zkt-:competitionId/persons/:userId'),
+		routeRedirect(`${base}/:competitionId/activities/:groupId`, '/competitions/zkt-:competitionId'),
+		routeRedirect(`${base}/:competitionId/live/:eventId/:roundNumber`, '/competitions/zkt-:competitionId/wca-live/:eventId/:roundNumber'),
+		routeRedirect(`${base}/:competitionId/live/:eventId`, '/competitions/zkt-:competitionId/wca-live/:eventId'),
+		routeRedirect(`${base}/:competitionId/live`, '/competitions/zkt-:competitionId/wca-live'),
+		routeRedirect(`${base}/:competitionId`, '/competitions/zkt-:competitionId'),
+	]),
 	routeRedirect('/community/friends', '/competitions'),
 	routeRedirect('/community', '/competitions'),
 	routeRedirect('/admin', '/admin/dashboard'),
+	// Standard and Smart Cube became one Algorithm Trainer. The incoming query is kept
+	// (`?cat=pll` survives), the target's `mode` wins (shared/redirect_query.ts).
+	routeRedirect('/trainer/standard/train', '/trainer/algorithms/train'),
+	routeRedirect('/trainer/standard', '/trainer/algorithms'),
+	routeRedirect('/trainer/smart/train', '/trainer/algorithms/train?mode=smart'),
+	routeRedirect('/trainer/smart', '/trainer/algorithms?mode=smart'),
+	routeRedirect('/trainer/algorithms/sets', '/trainer/sets'),
+	routeRedirect('/trainer/algorithms/community', '/trainer/community'),
 ];

@@ -11,7 +11,6 @@ import {initWcaRecordRadarCronJob} from './cron_wca_records';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {initZktBackfillCronJob} from './cron_zkt_backfill';
 import {initMessageRetentionCronJob} from './cron_message_retention';
-import {syncAllWorldRecords} from './WorldRecordSyncService';
 import {freezeOldArchives} from './CompetitionArchiveService';
 import {getBucketEventKey} from '../../shared/solve';
 
@@ -36,8 +35,6 @@ export function initCronJobs() {
 	initWcaRecordRadarCronJob();
 	initWcaBackfillCronJob();
 	initZktBackfillCronJob();
-	initWorldRecordSyncCronJob();
-	initRankingRecalculationCronJob();
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();
@@ -135,45 +132,6 @@ function initCompetitionFollowCleanupCronJob() {
 		'America/Los_Angeles',
 	);
 	logger.debug('Initiated cron job for competition follow cleanup.', {running: job.running});
-}
-
-function initWorldRecordSyncCronJob() {
-	// Haftada bir pazar 04:00 — WR'lari Robin WCA REST API'dan cek, DB'ye yaz
-	const job = new CronJob(
-		'0 0 4 * * 0',
-		async () => {
-			try {
-				logger.info('[WRSync] Weekly world record sync starting');
-				await syncAllWorldRecords();
-			} catch (e) {
-				logger.error('[WRSync] Cron run failed', {error: e});
-			}
-		},
-		null,
-		true,
-		'America/Los_Angeles'
-	);
-	logger.debug('Initiated cron job for world record sync.', {running: job.running});
-}
-
-function initRankingRecalculationCronJob() {
-	// Her gece 03:00 — tum WCA bagli kullanicilarin Kinch+SoR skorlarini yeniden hesapla
-	const job = new CronJob(
-		'0 0 3 * * *',
-		async () => {
-			try {
-				const {recalculateAllRankings} = require('../models/ranking');
-				logger.info('[Rankings] Daily recalculation starting');
-				await recalculateAllRankings();
-			} catch (e) {
-				logger.error('[Rankings] Daily recalculation failed', {error: e});
-			}
-		},
-		null,
-		true,
-		'America/Los_Angeles'
-	);
-	logger.debug('Initiated cron job for daily ranking recalculation.', {running: job.running});
 }
 
 function initSiteMapGenerationCronJob() {

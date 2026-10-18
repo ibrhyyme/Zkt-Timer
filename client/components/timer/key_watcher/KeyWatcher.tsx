@@ -29,7 +29,9 @@ import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/up
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { useMagnetStart } from '../../../util/magnet-start/useMagnetStart';
+import { useMagnetTimerOwnsInput } from '../../../util/magnet-start/useMagnetTimer';
 import { magnetService } from '../../../util/magnet-start/service';
+import { useLegacyMagnetNotice } from '../time_display/magnet/LegacyMagnetNotice';
 import { magnetDebugLog } from '../../../util/magnet-start/debug_log';
 import { magnetTelemetry } from '../../../util/magnet-start/telemetry';
 import { TOUCH_GUARD_AFTER_MAGNET_MS } from '../../../util/magnet-start/config';
@@ -38,6 +40,15 @@ import {
 	magnetOwnsTouchStart,
 	touchGuardedAfterMagnet,
 } from '../../../util/magnet-start/touch_guard';
+import {
+	canBeginHoldStop,
+	holdStopMoved,
+	holdStopPressedAt,
+	holdStopRemainingMs,
+	holdStopTimestamp,
+} from '../../../util/magnet-start/hold_stop';
+import { beginHoldStopPress, clearHoldStopPress } from '../../../util/magnet-start/hold_stop_store';
+import { markMagnetHoldHintSeen } from '../../../util/magnet-start/settings';
 import { isUiReversed, orientDelta } from '../../../util/reversed-ui';
 import { classifyTouchTarget } from '../helpers/touch_target';
 import { isCancelSwipe } from '../helpers/touch_gesture';
@@ -109,14 +120,25 @@ export default function KeyWatcher(props: Props) {
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const multiPhaseCount = useSettings('multi_phase_count');
 
-	// Slam-to-stop: native-only extra stop trigger for the touch timer
+	// Slam-to-stop: native-only stop trigger (touch timer option, always on for the Magnet Timer)
 	useSlamToStop(context);
-	// Magnet lift-to-start: native-only start trigger for the touch timer (admin field test)
+	// Magnet Timer: lifting the cube starts inspection or the solve (native app, Pro)
 	useMagnetStart(context);
+	// While the Magnet Timer drives the timer, touch and Space neither start nor stop it.
+	const magnetOwnsInput = useMagnetTimerOwnsInput();
+	// Members who had the old lift-to-start switch on get told once where it went.
+	useLegacyMagnetNotice(!inModal && !context.matchMode);
 
 	// While the timer is on screen, header pickers closing do not hand focus back to their
 	// trigger, so the next Space starts a solve instead of reopening the picker.
 	useEffect(() => claimSpaceForTimer(), []);
+
+	// A hold to stop never outlives its solve (stopped by the drop meanwhile), the Magnet
+	// Timer owning the input, or the page.
+	useEffect(() => {
+		if (!timeStartedAt || !magnetOwnsInput) cancelHoldStop();
+	}, [timeStartedAt, magnetOwnsInput]);
+	useEffect(() => () => cancelHoldStop(), []);
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);
@@ -133,6 +155,23 @@ export default function KeyWatcher(props: Props) {
 
 	const touchStartX = React.useRef<number | null>(null);
 	const touchStartY = React.useRef<number | null>(null);
+
+	// Magnet Timer only: where a finger landed during inspection, for the swipe up that
+	// abandons it (the one touch gesture that input keeps).
+	const magnetSwipeStartRef = React.useRef<{ x: number; y: number } | null>(null);
+
+	// Magnet Timer only: the still one-finger press that stops a running solve after
+	// HOLD_STOP_MS, the escape for a drop the slam detector missed (magnet-start/hold_stop.ts).
+	const holdStopRef = React.useRef<{
+		identifier: number;
+		x: number;
+		y: number;
+		pressedAt: number;
+		timeout: ReturnType<typeof setTimeout>;
+	} | null>(null);
+	// The hold completes in a timeout, after renders the press did not see.
+	const contextRef = React.useRef(context);
+	contextRef.current = context;
 
 	// Set when a hold is dropped mid-gesture (moved too far, or the OS cancelled it), so
 	// the release that follows can't still start a solve.
@@ -158,6 +197,7 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('blur', () => {
 		stopKeyHeldRef.current = false;
 		touchStopGuardRef.current = false;
+		cancelHoldStop();
 
 		// A Space release waiting out the remote-input grace window. Once the window is
 		// gone, whatever the remote tool sends next says nothing about the key, so drop
@@ -199,6 +239,11 @@ export default function KeyWatcher(props: Props) {
 		// Capture touch event timestamp BEFORE DOM traversal — for mobile timing accuracy
 		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+
+		if (magnetOwnsInput) {
+			magnetTouchStart(e, eventTs);
+			return;
+		}
 
 		if (!touchDrivesTimer(e.target)) {
 			return;
@@ -253,6 +298,9 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function touchEnd(e) {
+		// Hold to stop (Magnet Timer): a finger lifting before the hold completed drops it.
+		cancelHoldStop();
+
 		// A finger is still down — this is the first thumb of a two-thumb start lifting,
 		// so the hold stays armed and the LAST release is the one that counts. The bails
 		// below are the opposite case: no finger left, so they must disarm. Leaving them
@@ -264,6 +312,11 @@ export default function KeyWatcher(props: Props) {
 		// the next press may prime again. Cleared before the bails below, which would
 		// otherwise leave it set and swallow the next start.
 		touchStopGuardRef.current = false;
+
+		if (magnetOwnsInput) {
+			magnetTouchEnd(e);
+			return;
+		}
 
 		// Same rule as touchStart: the notch zones only guard against starting.
 		if (!getTimerStore('timeStartedAt') && inEdgeDeadZone(e.changedTouches?.[0])) {
@@ -288,6 +341,109 @@ export default function KeyWatcher(props: Props) {
 		}
 
 		keyupSpace(e, true, eventTs);
+	}
+
+	/**
+	 * The Magnet Timer owns the start and the stop: a touch starts nothing and stops nothing
+	 * (the hand placing or grabbing the cube brushes the screen all the time). The only touch
+	 * gesture kept is the swipe up that abandons an inspection, the same one the touch timer
+	 * has, so a lift that started an inspection by accident is not forced into a DNF.
+	 * Buttons (the hint's re-learn button among them) are left to their own click.
+	 * While a solve runs, a still one-finger press held for a second stops it (hold to stop).
+	 */
+	function magnetTouchStart(e, eventTs: number) {
+		magnetSwipeStartRef.current = null;
+		// Any new finger ends a hold in progress: a second finger is not a still press.
+		cancelHoldStop();
+		disarmPriming();
+		if (getTimerStore('timeStartedAt')) {
+			beginHoldStop(e, eventTs);
+			return;
+		}
+		const touch = e.touches?.[0];
+		if (!touch || !getTimerStore('inInspection')) return;
+		if (classifyTouchTarget(e.target).blocked) return;
+		// The hand that just lifted the cube brushes the screen: not a swipe.
+		if (touchGuardedAfterMagnet(getLastMagnetActionAt(), Date.now(), TOUCH_GUARD_AFTER_MAGNET_MS)) return;
+		magnetSwipeStartRef.current = { x: touch.clientX, y: touch.clientY };
+	}
+
+	function magnetTouchEnd(e) {
+		const start = magnetSwipeStartRef.current;
+		magnetSwipeStartRef.current = null;
+		const end = e.changedTouches?.[0];
+		if (!start || !end || !getTimerStore('inInspection')) return;
+		// In the reader's frame: with the page rotated for reversed use, physically down is up.
+		const [dx, dy] = orientDelta(end.clientX - start.x, end.clientY - start.y, isUiReversed());
+		if (isCancelSwipe(dx, dy)) {
+			clearInspectionTimers(true, true);
+		}
+	}
+
+	/**
+	 * Hold to stop, the Magnet Timer's escape for a missed drop: one finger, held still on the
+	 * timer for HOLD_STOP_MS while a solve runs. The solve is recorded as ending when the
+	 * press began, which is closer to the real finish than the end of the hold.
+	 */
+	function beginHoldStop(e, eventTs: number) {
+		const touch = e.touches?.[0];
+		if (!touch) return;
+		const target = classifyTouchTarget(e.target);
+		const allowed = canBeginHoldStop({
+			solving: !!getTimerStore('timeStartedAt'),
+			touchCount: e.touches.length,
+			blocked: target.blocked,
+			insideTimer: target.insideTimer,
+			inEdgeZone: inEdgeDeadZone(touch),
+			guardedAfterMagnet: touchGuardedAfterMagnet(getLastMagnetActionAt(), Date.now(), TOUCH_GUARD_AFTER_MAGNET_MS),
+		});
+		if (!allowed) return;
+
+		const now = Date.now();
+		const pressedAt = holdStopPressedAt(eventTs, now);
+		beginHoldStopPress(pressedAt);
+		holdStopRef.current = {
+			identifier: touch.identifier,
+			x: touch.clientX,
+			y: touch.clientY,
+			pressedAt,
+			timeout: setTimeout(completeHoldStop, holdStopRemainingMs(pressedAt, now)),
+		};
+	}
+
+	function completeHoldStop() {
+		const hold = holdStopRef.current;
+		holdStopRef.current = null;
+		clearHoldStopPress();
+		const startedAt = getTimerStore('timeStartedAt');
+		if (!hold || !startedAt) return;
+
+		magnetDebugLog.record('hold_stop', { held_ms: Date.now() - hold.pressedAt });
+		// The user found the escape, so the line that teaches it has done its job.
+		markMagnetHoldHintSeen();
+		// endTimer gives the stop haptic, same as a drop or a tap stop.
+		endTimer(contextRef.current, undefined, undefined, holdStopTimestamp(hold.pressedAt, startedAt.getTime()));
+	}
+
+	function holdStopTouchMove(e) {
+		const hold = holdStopRef.current;
+		if (!hold) return;
+		const touches = e.touches || [];
+		for (let i = 0; i < touches.length; i++) {
+			const touch = touches[i];
+			if (touch.identifier !== hold.identifier) continue;
+			if (holdStopMoved(hold, touch.clientX, touch.clientY)) cancelHoldStop();
+			return;
+		}
+	}
+
+	/** Drops a hold to stop in progress. Safe to call any time. */
+	function cancelHoldStop() {
+		const hold = holdStopRef.current;
+		if (!hold) return;
+		holdStopRef.current = null;
+		clearTimeout(hold.timeout);
+		clearHoldStopPress();
 	}
 
 	/**
@@ -324,6 +480,7 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function touchMove(e) {
+		holdStopTouchMove(e);
 		if (touchStartX.current === null || touchStartY.current === null) return;
 		if (!getTimerStore('spaceTimerStarted') && !getTimerStore('inInspection')) return;
 
@@ -394,6 +551,7 @@ export default function KeyWatcher(props: Props) {
 	 * screen, leaving the timer green until some unrelated release started a solve.
 	 */
 	function touchCancel() {
+		cancelHoldStop();
 		cancelPriming();
 
 		// Nothing says a finger of the stopping gesture is still down after the OS took
@@ -481,7 +639,9 @@ export default function KeyWatcher(props: Props) {
 		// The virtual cube handles Space itself, in both the idle and the armed case:
 		// there it applies the scramble and arms rather than priming a hold, and it
 		// never stops the timer. So this handler must never see it.
-		if (ganTimerOn || stackMatOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || virtualCubeSelected(context) || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
+		// The Magnet Timer is started by lifting the cube and stopped by dropping it; a Space
+		// press (Bluetooth keyboard) must not do either.
+		if (magnetOwnsInput || ganTimerOn || stackMatOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || virtualCubeSelected(context) || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
 			return;
 		}
 
@@ -650,7 +810,7 @@ export default function KeyWatcher(props: Props) {
 
 		// Modes where this handler can never start a solve: a hold left over from before
 		// the mode changed has to be cleared, not left glowing.
-		if (ganTimerOn || stackMatOn || manualEntry || virtualCubeSelected(context)) {
+		if (magnetOwnsInput || ganTimerOn || stackMatOn || manualEntry || virtualCubeSelected(context)) {
 			disarmPriming();
 			return;
 		}

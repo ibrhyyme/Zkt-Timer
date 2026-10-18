@@ -1,31 +1,33 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-modal-header {
-	width: calc(100% - 3rem);
+	// Leaves room for the 40px close button pinned top-right.
+	width: calc(100% - #{$zt-control-h-md + $zt-space-3});
+	min-height: $zt-control-h-md;
 	color: rgb(var(--text-color));
-	margin-bottom: 1.5rem;
-	padding-bottom: 0.75rem;
-	border-bottom: 1px solid rgba(var(--text-color), 0.1);
+	margin-bottom: $zt-space-5;
 
 	h2 {
 		color: inherit;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-family: inherit;
 		font-weight: 700;
-		font-size: 1.875rem; // text-3xl
-		letter-spacing: -0.025em; // tracking-tight
+		font-size: 1.375rem;
+		letter-spacing: -0.01em;
 		margin: 0;
-		line-height: 1.2;
+		line-height: 1.25;
+		// Centres the first line on the close button beside it; a long title wraps
+		// with normal leading instead of 40px gaps.
+		padding-top: $zt-space-2;
 
 		span {
-			color: rgba(99, 102, 241, 1); // indigo-500
+			color: rgb(var(--primary-color));
 		}
 	}
 
 	p {
-		color: rgba(var(--text-color), 0.6);
-		font-size: 1rem;
+		color: $zt-text-muted;
+		font-size: 0.9375rem;
 		line-height: 1.5;
-		margin: 0.5rem 0 0 0;
-		opacity: 0.9;
+		margin: $zt-space-1 0 0 0;
 	}
 }

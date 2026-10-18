@@ -276,21 +276,38 @@ class Cube {
 // ─── Algorithm cleanup (from generate-ll-patterns.mjs) ───
 
 function expandNotation(input) {
+	// SQ1 notation uses different format (/ -3,0 / 3,3 /)
+	if (input.includes('/')) {
+		return input.replace(/\s+/g, ' ').trim();
+	}
+
 	let output = input
+		.replace(/[\ue000-\uf8ff]/g, '')
 		.replace(/["´`']/g, "'")
 		.replace(/\[/g, '(')
 		.replace(/\]/g, ')')
 		.replace(/XYZ/g, 'xyz');
-	output = output.replace(/[^RLFBUDMESrlfbudxyz2()']/g, '');
+
+	// Wide and layer moves ("Rw", "2R2", "3Rw'", "2-3Rw") become one slot each, restored at the end.
+	// A layer prefix only counts at the start of a move ("U2 2R2" is not "U22 R2").
+	const slots = [];
+	const toSlot = (move) => {
+		slots.push(move);
+		return String.fromCharCode(0xe000 + slots.length - 1);
+	};
+	output = output.replace(/(^|[\s(])(\d+(?:-\d+)?(?:[RLFBUD]w|[RLFBUDrlfbud]))/g, (_m, before, move) => before + toSlot(move));
+	output = output.replace(/[RLFBUD]w/g, toSlot);
+
+	output = output.replace(/[^RLFBUDMESrlfbudxyz2-9()'\ue000-\uf8ff]/g, '');
 	output = output.replace(/\(/g, ' (');
 	output = output.replace(/\)(?!\s)/g, ') ');
 	output = output.replace(/'(?![\s)])/g, "' ");
-	output = output.replace(/2(?![\s')])/g, '2 ');
-	output = output.replace(/([RLFBUDMESrlfbudxyz])(?![\s)'2])/g, '$1 ');
-	output = output.replace(/(\s)(?=2)/g, '');
-	output = output.replace(/'2/g, "2'");
+	output = output.replace(/([2-9])(?![\s')])/g, '$1 ');
+	output = output.replace(/([RLFBUDMESrlfbudxyz\ue000-\uf8ff])(?![\s)'2-9])/g, '$1 ');
+	output = output.replace(/(\s)(?=[2-9])/g, '');
+	output = output.replace(/'([2-9])/g, "$1'");
 	output = output.replace(/\s+/g, ' ');
-	return output.trim();
+	return output.trim().replace(/[\ue000-\uf8ff]/g, (slot) => slots[slot.charCodeAt(0) - 0xe000]);
 }
 
 function cleanAlgorithm(alg) {

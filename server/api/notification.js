@@ -41,7 +41,10 @@ export const mutateActions = {
 
 		const notif = await getNotificationById(id);
 
-		if (!notif) {
+		// Someone else's notification answers exactly like a missing one: the mutation
+		// returns the row, so without the owner check any account could read (and
+		// mark) another user's notification by id.
+		if (!notif || notif.user_id !== user.id) {
 			return new GraphQLError(404, 'Notification not found');
 		}
 
@@ -58,7 +61,7 @@ export const mutateActions = {
 
 		const notif = await getNotificationById(id);
 
-		if (!notif) {
+		if (!notif || notif.user_id !== user.id) {
 			return new GraphQLError(404, 'Notification not found');
 		}
 

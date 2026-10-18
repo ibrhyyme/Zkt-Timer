@@ -3,6 +3,8 @@ export interface AlgorithmEntry {
 	algorithm: string;
 	alternatives?: string[];
 	setup?: string;
+	/** Library cases: how many alternatives the served library has (the texts may need signing in). */
+	alternativeCount?: number;
 }
 
 export interface AlgorithmSubset {
@@ -23,6 +25,8 @@ export interface CheckedAlgorithm {
 }
 
 export type TrainerMode = 'standard' | 'smart' | 'recognition' | 'efficiency' | 'ollcp';
+/** The two ways to study in the Algorithm Trainer. Same values as TrainerMode, so every `mode === 'smart'` check keeps working. */
+export type StudyMode = Extract<TrainerMode, 'standard' | 'smart'>;
 export type TimerState = 'IDLE' | 'READY' | 'RUNNING' | 'STOPPED';
 export type LearnedStatus = 0 | 1 | 2; // 0=not learned, 1=learning, 2=learned
 
@@ -65,9 +69,35 @@ export interface TrainerOptions {
 	backView: TrainerBackView;
 	topFace: CubeFace;
 	frontFace: CubeFace;
+	/** Last study mode picked on the mode switch; synced with the rest (Setting.trainer_options). */
+	lastMode: StudyMode;
 }
 
-export type TrainerView = 'landing' | 'selection' | 'training';
+/**
+ * - landing: trainer hub (two cards: Trainers, Algorithm Sets)
+ * - modes: the Trainers page (Algorithm Trainer, PLL Recognition, Cross and XCross)
+ * - selection: the Algorithm Trainer's category picker
+ * - training: study screen (category selection or a set)
+ * - sets: My Sets, community: Community Sets (the Algorithm Sets section)
+ * - set: one set's page (/trainer/sets/:code), set-add: its algorithm picker (/trainer/sets/:code/add)
+ */
+export type TrainerView = 'landing' | 'modes' | 'selection' | 'training' | 'sets' | 'set' | 'set-add' | 'community';
+
+/** The set being studied. `items` holds every row as a card; the queue holds the ones the current mode can run. */
+export interface ActiveStudySet {
+	id: string;
+	code: string;
+	name: string;
+	owner_name: string;
+	is_owner: boolean;
+	items: CheckedAlgorithm[];
+}
+
+export interface StartSetStudyPayload {
+	set: Omit<ActiveStudySet, 'items'>;
+	/** Every row of the set, in set order, already converted with toCheckedAlgorithm. */
+	items: CheckedAlgorithm[];
+}
 
 export interface TrainerSessionState {
 	// View & Mode
@@ -80,6 +110,12 @@ export interface TrainerSessionState {
 	checkedAlgorithms: CheckedAlgorithm[];
 	algorithmQueue: CheckedAlgorithm[];
 	currentAlgorithm: CheckedAlgorithm | null;
+
+	// Set study (trainer-sets 6.1). activeSet is set by START_SET_STUDY and cleared when the
+	// study ends (any view but training, a category change, another entry mode).
+	activeSet: ActiveStudySet | null;
+	/** Code of a set being loaded for a cold /trainer/algorithms/train?set=<code> open. */
+	pendingSetCode: string | null;
 
 	// Training State
 	timerState: TimerState;
@@ -116,6 +152,7 @@ export type TrainerAction =
 	| {type: 'SET_SUBSETS'; payload: string[]}
 	| {type: 'SET_CHECKED_ALGORITHMS'; payload: CheckedAlgorithm[]}
 	| {type: 'ADD_CHECKED_ALGORITHM'; payload: CheckedAlgorithm}
+	/** payload: card key `category::name` (checkedKey), not the algorithm text */
 	| {type: 'REMOVE_CHECKED_ALGORITHM'; payload: string}
 	| {type: 'SET_CURRENT_ALGORITHM'; payload: CheckedAlgorithm | null}
 	| {type: 'SET_ALGORITHM_QUEUE'; payload: CheckedAlgorithm[]}
@@ -138,4 +175,11 @@ export type TrainerAction =
 	| {type: 'SWAP_ALGORITHM'; payload: {oldAlg: string; newAlg: string}}
 	| {type: 'SMART_DISCONNECT'}
 	| {type: 'SET_CAMERA_PAD'; payload: boolean}
-	| {type: 'SET_MODE'; payload: TrainerMode};
+	| {type: 'SET_MODE'; payload: TrainerMode}
+	// Set study + mode switch (trainer-sets 2.3, 6.1, 6.5)
+	/** Changes only the study mode (no view or queue change). remember=false skips writing lastMode. */
+	| {type: 'SET_STUDY_MODE'; payload: StudyMode; remember?: boolean}
+	| {type: 'START_SET_STUDY'; payload: StartSetStudyPayload}
+	/** Replaces the cards of the running set study (mode filter), keeping the current card when it is still in. */
+	| {type: 'SET_STUDY_ROWS'; payload: CheckedAlgorithm[]}
+	| {type: 'SET_PENDING_SET'; payload: string | null};

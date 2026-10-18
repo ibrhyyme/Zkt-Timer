@@ -8,6 +8,7 @@ import {ErrorCode} from '../constants/errors';
 import {v4 as uuid} from 'uuid';
 import {UserAccount} from '../schemas/UserAccount.schema';
 import {getPrisma} from '../database';
+import {isOlderTrainerOptions} from '../util/trainer_options_guard';
 
 
 export async function getSettingsByUserId(userId: string) {
@@ -75,10 +76,17 @@ export class SettingResolver {
 		let setting;
 
 		for (const key of keys) {
+			// An older trainer settings copy (a racing upload from another device) never
+			// replaces a newer one. See util/trainer_options_guard.ts.
+			if (key === 'trainer_options') {
+				const current = await getSettingsByUserId(user.id);
+				if (isOlderTrainerOptions(input[key], current?.trainer_options)) continue;
+			}
 			setting = await setSetting(user.id, key, input[key]);
 		}
 
-		return setting;
+		// Every key skipped: still answer with the row (the field is non-null).
+		return setting ?? (await getSettingsByUserId(user.id));
 	}
 
 	@Authorized([Role.LOGGED_IN])

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { magnetService } from '../../../util/magnet-start/service';
 import { magnetDebugLog, MagnetLogEntry } from '../../../util/magnet-start/debug_log';
 import { useMagnetStatus } from '../../../util/magnet-start/status_store';
-import { useSlamStop } from '../../../util/slam-stop/settings';
 import { detectorConfigFor } from '../../../util/magnet-start/config';
 import type { DetectorPhase, MagnetHint } from '../../../util/magnet-start/types';
 
@@ -58,7 +57,6 @@ function formatEntry(e: MagnetLogEntry): string {
 export default function MagnetPanel() {
 	const { t } = useTranslation();
 	const status = useMagnetStatus();
-	const slam = useSlamStop();
 	const [live, setLive] = useState<Live>({ delta: null, phase: 'unknown', hint: 'none', rateHz: null });
 	const [entries, setEntries] = useState<MagnetLogEntry[]>(() => magnetDebugLog.getEntries().slice(-RECENT_EVENTS));
 	const [windowCount, setWindowCount] = useState(() => magnetDebugLog.getWindowCount());
@@ -149,7 +147,8 @@ export default function MagnetPanel() {
 
 			<p className="text-sm text-text leading-snug">{t('quick_controls.magnet_placement')}</p>
 			<p className="text-sm text-text leading-snug">{t('quick_controls.magnet_test_mode')}</p>
-			{!slam.enabled && <p className="text-sm font-medium text-text leading-snug">{t('quick_controls.magnet_slam_off')}</p>}
+			{/* No "Drop to Stop is off" line any more: this panel only renders for the Magnet
+			    Timer, where dropping the cube always stops and touch never does. */}
 
 			<div className="flex flex-wrap gap-2">
 				<button

@@ -7,6 +7,10 @@ import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEf
 import {TimerContext} from '../../timer/Timer';
 import {solveCrossAsync, isCrossSolverAvailable} from '../../../util/cross-solver/worker-manager';
 import {SolverResult, SolverType, STEP_SOLVER_TYPES, CUBE_ORIENTATIONS} from '../../../util/cross-solver/types';
+import {CaretDown} from 'phosphor-react';
+import TileMenu from '../../timer/tiles/TileMenu';
+import {useCubePalette} from '../../../util/cube_colors/useCubePalette';
+import {NXN_FACES} from '../../../util/cube_colors/palette';
 
 const b = block('cross-solver');
 
@@ -51,15 +55,16 @@ const ALL_SOLVERS: SolverTab[] = [
 	{key: 'skbl1', label: 'Skewb Face', puzzles: ['skewb']},
 ];
 
-const FACE_COLORS: Record<string, string> = {
-	D: '#ffff00', U: '#ffffff', L: '#ff8c00', R: '#ff0000', F: '#00ff00', B: '#0088ff',
-};
+// Puzzles drawn in the NxN colour scheme, where a face letter names a sticker colour.
+// Pyraminx and Square-1 use other schemes, so their letters get no swatch.
+const NXN_SCHEME_PUZZLES = new Set(['333', '222', 'skewb']);
 
 export default function CrossSolverModule() {
 	const {t} = useTranslation();
 	const context = useContext(TimerContext);
 	const {scramble, cubeType, scrambleSubset} = context;
 	const mobileMode = useGeneral('mobile_mode');
+	const palette = useCubePalette();
 
 	const [solverType, setSolverType] = useState<SolverType>('cross');
 	const [orientation, setOrientation] = useState('z2');
@@ -80,7 +85,18 @@ export default function CrossSolverModule() {
 	);
 
 	const hasAnySolver = availableSolvers.length > 0;
+	const currentSolverLabel = (availableSolvers.find((s) => s.key === solverType) || availableSolvers[0])?.label;
 	const needsOrientation = STEP_SOLVER_TYPES.includes(solverType);
+	// A face solver labels each row by the face it starts from (D, D(LR), LU, URF), and the
+	// row shows that face's sticker colour as a swatch. A step solver labels rows by step
+	// (Cross, F2L-1, DR): no swatch, or "F2L-1" took the F face's colour. The letter itself
+	// stays in the text colour: drawn in the face colour, U (white) and D (yellow) vanished
+	// on the light theme (E-51).
+	const faceSwatches = !needsOrientation && NXN_SCHEME_PUZZLES.has(resolvedPuzzle);
+	const swatchColor = (label: string): string | null => {
+		const index = NXN_FACES.indexOf(label.charAt(0) as (typeof NXN_FACES)[number]);
+		return index === -1 ? null : palette.nxn[index];
+	};
 
 	useEffect(() => {
 		if (availableSolvers.length > 0 && !availableSolvers.find((s) => s.key === solverType)) {
@@ -114,15 +130,13 @@ export default function CrossSolverModule() {
 			});
 	}, [scramble, solverType, orientation, hasAnySolver, needsOrientation]);
 
-	// Desktop only: long solutions (e.g. EOCross) can wrap and overflow the module cell.
-	// Shrink the result text step by step until everything fits, instead of scrolling.
+	// Long solutions (e.g. EOCross) can wrap and overflow the module. Shrink the result
+	// text step by step until everything fits, instead of scrolling. This used to be
+	// desktop only, and the phone's small slot showed tiny fixed-size rows with a scroll
+	// bar; now the rows start large and fill the slot on both (feedback 1.9-d).
 	useIsomorphicLayoutEffect(() => {
 		const el = resultsRef.current;
 		if (!el) return;
-		if (mobileMode) {
-			el.style.fontSize = '';
-			return;
-		}
 
 		const fit = () => {
 			el.style.fontSize = '';
@@ -157,26 +171,37 @@ export default function CrossSolverModule() {
 
 	return (
 		<div className={b({desktop: !mobileMode})}>
+			{/* A header, not a form: the solver's name is the title and opens the list of
+			    solvers, the same menu the module titles use. Two native <select> boxes
+			    used to sit here and read like a spreadsheet listbox (feedback 1.9-c). */}
 			<div className={b('toolbar')}>
-				<select
-					className={b('select')}
-					value={solverType}
-					onChange={(e) => setSolverType(e.target.value as SolverType)}
+				<TileMenu
+					options={availableSolvers.map((st) => ({
+						key: st.key,
+						label: st.label,
+						selected: st.key === solverType,
+						onSelect: () => setSolverType(st.key),
+					}))}
+					title={t('cross_solver.solver_label')}
+					className={b('picker')}
 				>
-					{availableSolvers.map((st) => (
-						<option key={st.key} value={st.key}>{st.label}</option>
-					))}
-				</select>
+					<span className={b('picker-label')}>{currentSolverLabel}</span>
+					<CaretDown weight="bold" className={b('picker-caret')} />
+				</TileMenu>
 				{needsOrientation && (
-					<select
-						className={b('select', {small: true})}
-						value={orientation}
-						onChange={(e) => setOrientation(e.target.value)}
+					<TileMenu
+						options={CUBE_ORIENTATIONS.map((ori) => ({
+							key: ori || 'none',
+							label: ori || t('cross_solver.no_rotation'),
+							selected: ori === orientation,
+							onSelect: () => setOrientation(ori),
+						}))}
+						title={t('cross_solver.orientation_label')}
+						className={b('picker', {secondary: true})}
 					>
-						{CUBE_ORIENTATIONS.map((ori) => (
-							<option key={ori} value={ori}>{ori || '(none)'}</option>
-						))}
-					</select>
+						<span className={b('picker-label')}>{orientation || t('cross_solver.no_rotation')}</span>
+						<CaretDown weight="bold" className={b('picker-caret')} />
+					</TileMenu>
 				)}
 			</div>
 
@@ -185,17 +210,17 @@ export default function CrossSolverModule() {
 				{error && <div className={b('error')}>{error}</div>}
 				{!loading && !error && results && results.map((r, i) => (
 					<div key={i} className={b('row', {best: r.moveCount === minMoveCount && r.moveCount > 0})}>
-						<span
-							className={b('face')}
-							style={{color: FACE_COLORS[r.face.charAt(0)] || 'inherit'}}
-						>
+						<span className={b('face')}>
+							{faceSwatches && swatchColor(r.face) && (
+								<span className={b('swatch')} style={{background: swatchColor(r.face)}} aria-hidden="true" />
+							)}
 							{r.face}:
 						</span>
 						{r.rotation && <span className={b('rot')}>{r.rotation}</span>}
 						<span className={b('moves')}>
 							{r.solution.length > 0
 								? r.solution.map((m, j) => <span key={j} className={b('move')}>{m}</span>)
-								: '(skip)'}
+								: t('cross_solver.already_solved')}
 						</span>
 					</div>
 				))}

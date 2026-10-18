@@ -21,5 +21,9 @@
 		> * {
 			width: 100%;
 		}
+
+		&--smart {
+			max-width: 1000px;
+		}
 	}
 }

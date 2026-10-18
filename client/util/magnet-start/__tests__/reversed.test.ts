@@ -2,10 +2,9 @@ import { magnetReversedEligible, ReversedEligibilityInput } from '../reversed_el
 
 const ok: ReversedEligibilityInput = {
 	allowed: true,
-	enabled: true,
 	reversedSetting: true,
 	caps: { version: 1, available: true, uncalibrated: true },
-	timerType: 'keyboard',
+	timerType: 'magnet',
 	manualEntry: false,
 	mobileLayout: true,
 	inModal: false,
@@ -15,7 +14,7 @@ const ok: ReversedEligibilityInput = {
 };
 
 describe('magnetReversedEligible', () => {
-	it('turns the page for an admin with lift to start on the touch timer', () => {
+	it('turns the page for a member on the Magnet Timer', () => {
 		expect(magnetReversedEligible(ok)).toBe(true);
 	});
 
@@ -25,7 +24,7 @@ describe('magnetReversedEligible', () => {
 
 	it.each([
 		['not allowed (non-admin)', { allowed: false }],
-		['magnet start off', { enabled: false }],
+		['touch timer (magnet is its own input now)', { timerType: 'keyboard' }],
 		['setting off', { reversedSetting: false }],
 		['plugin unavailable (web, old binary)', { caps: null }],
 		['smart cube timer', { timerType: 'smart' }],

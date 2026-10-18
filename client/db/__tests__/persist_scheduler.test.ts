@@ -14,12 +14,13 @@ import {
 	SOLVING_MAX_DEFER_MS,
 } from '../persist-scheduler';
 
-function harness(opts: {wantsHash?: boolean} = {}) {
+function harness(opts: {wantsHash?: boolean; queueIdle?: boolean} = {}) {
 	let now = 0;
 	let nextId = 1;
 	let timers: {id: number; at: number; fn: () => void}[] = [];
 	const state = {solving: false, wantsHash: opts.wantsHash ?? true};
 
+	const idle: (() => void)[] = [];
 	const save = jest.fn(() => Promise.resolve());
 	const saveAndHash = jest.fn(() => Promise.resolve());
 
@@ -37,7 +38,7 @@ function harness(opts: {wantsHash?: boolean} = {}) {
 		clearTimer: (id) => {
 			timers = timers.filter((t) => t.id !== id);
 		},
-		runIdle: (fn) => fn(),
+		runIdle: (fn) => (opts.queueIdle ? idle.push(fn) : fn()),
 	};
 
 	async function settle() {
@@ -58,7 +59,13 @@ function harness(opts: {wantsHash?: boolean} = {}) {
 		await settle();
 	}
 
-	return {scheduler: createPersistScheduler(deps), save, saveAndHash, state, advance, settle};
+	/** Runs what waited for an idle moment (only with queueIdle). */
+	async function runIdle() {
+		while (idle.length) idle.shift()!();
+		await settle();
+	}
+
+	return {scheduler: createPersistScheduler(deps), save, saveAndHash, state, advance, settle, runIdle};
 }
 
 describe('local save', () => {
@@ -128,6 +135,37 @@ describe('offline hash', () => {
 		h.scheduler.request({destructive: true});
 		await h.settle();
 		expect(h.saveAndHash).toHaveBeenCalledTimes(1);
+	});
+
+	it('waits for the deletion to be painted, then goes out without a timer', async () => {
+		const h = harness({queueIdle: true});
+		h.scheduler.request({destructive: true});
+		await h.settle();
+		expect(h.saveAndHash).not.toHaveBeenCalled();
+
+		await h.runIdle();
+		expect(h.saveAndHash).toHaveBeenCalledTimes(1);
+		await h.advance(HASH_QUIET_MS * 2);
+		expect(h.saveAndHash).toHaveBeenCalledTimes(1);
+	});
+
+	it('is written once when the page is hidden before the idle moment', async () => {
+		const h = harness({queueIdle: true});
+		const done = h.scheduler.request({destructive: true});
+		await h.scheduler.flush();
+		expect(h.saveAndHash).toHaveBeenCalledTimes(1);
+
+		await h.runIdle();
+		await done;
+		expect(h.saveAndHash).toHaveBeenCalledTimes(1);
+	});
+
+	it('is dropped by cancel before the idle moment', async () => {
+		const h = harness({queueIdle: true});
+		h.scheduler.request({destructive: true});
+		h.scheduler.cancel();
+		await h.runIdle();
+		expect(h.saveAndHash).not.toHaveBeenCalled();
 	});
 
 	it('is sent on flush when there are unannounced changes', async () => {

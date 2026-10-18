@@ -149,7 +149,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, topCol
 			onValueChange={handleValueChange}
 			groups={groups}
 			triggerLabel={triggerLabel}
-			ariaLabel="Scramble Subset"
+			ariaLabel={t('cube_picker.subset_label')}
 			maxHeight={400}
 			className="subset-picker-trigger"
 		/>

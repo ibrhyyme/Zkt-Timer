@@ -10,7 +10,6 @@ import ActivityDetail from './ActivityDetail';
 import PersonalBests from './PersonalBests';
 import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
 import RecordRadar from './RecordRadar';
-import {resourceUri} from '../../../util/storage';
 
 // Code splitting: WCA Live tab should load only when used
 const WcaLiveTab = React.lazy(() => import('./wca_live/WcaLiveTab'));
@@ -101,15 +100,9 @@ function MyScheduleInner() {
 							{t('my_schedule.back')}
 						</button>
 					)}
-					<Suspense fallback={
-						<div className={b('wca-loading')}>
-							<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
-							<div className={b('wca-loading-bar')}>
-								<div className={b('wca-loading-bar-fill')} />
-							</div>
-							<span className={b('wca-loading-text')}>{t('my_schedule.loading')}</span>
-						</div>
-					}>
+					{/* The bundle is not split, so the lazy tab resolves within the same
+					    tick; a loading screen here only ever flashed for one frame. */}
+					<Suspense fallback={null}>
 						<WcaLiveTab eventId={eventId} roundNumber={roundNumber} />
 					</Suspense>
 				</>

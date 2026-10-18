@@ -26,9 +26,9 @@ describe('normalizeSolveListColor', () => {
 });
 
 describe('solve list colour fallbacks', () => {
-	it('fall back to the colours the list always used', () => {
+	it('fall back to the text colour for a time and the primary colour for a PB', () => {
 		expect(SOLVE_LIST_COLOR_THEME_FALLBACK).toEqual({
-			solve_time_color: 'secondary_color',
+			solve_time_color: 'text_color',
 			solve_pb_color: 'primary_color',
 		});
 		expect(SOLVE_LIST_COLOR_VARS.solve_time_color).toBe('--solve-time-color');
@@ -42,7 +42,7 @@ describe('solveListColorContrast', () => {
 
 	it('does not flag the default colours on either built-in theme', () => {
 		for (const theme of [dark, light]) {
-			expect(solveListColorContrast(theme.secondary_color, theme.module_color)).toBeGreaterThanOrEqual(SOLVE_LIST_MIN_CONTRAST);
+			expect(solveListColorContrast(theme.text_color, theme.module_color)).toBeGreaterThanOrEqual(SOLVE_LIST_MIN_CONTRAST);
 			expect(solveListColorContrast(theme.primary_color, theme.module_color)).toBeGreaterThanOrEqual(SOLVE_LIST_MIN_CONTRAST);
 		}
 	});

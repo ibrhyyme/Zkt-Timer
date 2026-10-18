@@ -148,6 +148,83 @@ export type AdminActiveUsersResult = {
   total_active_users?: Maybe<Scalars['Int']>;
 };
 
+export type AdminBattleMatchPage = {
+  __typename?: 'AdminBattleMatchPage';
+  hasMore?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<AdminBattleMatchRow>>>;
+  total?: Maybe<Scalars['Int']>;
+};
+
+export type AdminBattleMatchRow = {
+  __typename?: 'AdminBattleMatchRow';
+  end_reason?: Maybe<Scalars['String']>;
+  ended_at?: Maybe<Scalars['DateTime']>;
+  flags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  id?: Maybe<Scalars['String']>;
+  player_a?: Maybe<BattlePlayer>;
+  player_b?: Maybe<BattlePlayer>;
+  puzzle?: Maybe<Scalars['String']>;
+  rated?: Maybe<Scalars['Boolean']>;
+  rounds_a?: Maybe<Scalars['Int']>;
+  rounds_b?: Maybe<Scalars['Int']>;
+  status?: Maybe<Scalars['String']>;
+  voided_at?: Maybe<Scalars['DateTime']>;
+  winner?: Maybe<Scalars['String']>;
+};
+
+export type AdminCubeCalibrationRow = {
+  __typename?: 'AdminCubeCalibrationRow';
+  algo_version?: Maybe<Scalars['Int']>;
+  app_version?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  cube_brand?: Maybe<Scalars['String']>;
+  cube_id?: Maybe<Scalars['String']>;
+  cube_name?: Maybe<Scalars['String']>;
+  current_far_max_ut?: Maybe<Scalars['Float']>;
+  current_near_min_ut?: Maybe<Scalars['Float']>;
+  current_quality?: Maybe<Scalars['String']>;
+  device_model?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  far_max_ut?: Maybe<Scalars['Float']>;
+  id?: Maybe<Scalars['String']>;
+  measured_at?: Maybe<Scalars['DateTime']>;
+  near_min_ut?: Maybe<Scalars['Float']>;
+  noise_ut?: Maybe<Scalars['Float']>;
+  noisy?: Maybe<Scalars['Boolean']>;
+  os_version?: Maybe<Scalars['String']>;
+  peak_ut?: Maybe<Scalars['Float']>;
+  platform?: Maybe<Scalars['String']>;
+  puzzle?: Maybe<Scalars['String']>;
+  puzzle_name?: Maybe<Scalars['String']>;
+  quality?: Maybe<Scalars['String']>;
+  rate_hz?: Maybe<Scalars['Float']>;
+  rest_ut?: Maybe<Scalars['Float']>;
+  sample_count?: Maybe<Scalars['Int']>;
+  sensor_name?: Maybe<Scalars['String']>;
+  sweep_ms?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  user_id?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+};
+
+export type AdminCubeCalibrationSummary = {
+  __typename?: 'AdminCubeCalibrationSummary';
+  calibrations?: Maybe<Scalars['Int']>;
+  device_model?: Maybe<Scalars['String']>;
+  distinct_users?: Maybe<Scalars['Int']>;
+  median_noise_ut?: Maybe<Scalars['Float']>;
+  median_peak_ut?: Maybe<Scalars['Float']>;
+  median_rest_ut?: Maybe<Scalars['Float']>;
+  p10_rest_ut?: Maybe<Scalars['Float']>;
+  platform?: Maybe<Scalars['String']>;
+  puzzle?: Maybe<Scalars['String']>;
+  telemetry_lifts?: Maybe<Scalars['Int']>;
+  telemetry_median_near_ut?: Maybe<Scalars['Float']>;
+  telemetry_placements?: Maybe<Scalars['Int']>;
+  telemetry_rejects?: Maybe<Scalars['Int']>;
+  weak_ratio?: Maybe<Scalars['Float']>;
+};
+
 export type AdminDashboardStats = {
   __typename?: 'AdminDashboardStats';
   app_version?: Maybe<Scalars['String']>;
@@ -219,6 +296,84 @@ export type AlgorithmOverrideInput = {
   rotate?: InputMaybe<Scalars['Int']>;
   scrambles?: InputMaybe<Scalars['String']>;
   solution?: InputMaybe<Scalars['String']>;
+};
+
+export type AlgSet = {
+  __typename?: 'AlgSet';
+  categories?: Maybe<Array<Maybe<Scalars['String']>>>;
+  code?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  description?: Maybe<Scalars['String']>;
+  hidden?: Maybe<Scalars['Boolean']>;
+  id?: Maybe<Scalars['String']>;
+  is_owner?: Maybe<Scalars['Boolean']>;
+  is_saved?: Maybe<Scalars['Boolean']>;
+  item_count?: Maybe<Scalars['Int']>;
+  items?: Maybe<Array<Maybe<AlgSetItem>>>;
+  name?: Maybe<Scalars['String']>;
+  owner?: Maybe<AlgSetOwner>;
+  preview?: Maybe<Array<Maybe<AlgSetItem>>>;
+  published_at?: Maybe<Scalars['DateTime']>;
+  puzzles?: Maybe<Array<Maybe<Scalars['String']>>>;
+  save_count?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  visibility?: Maybe<Scalars['String']>;
+};
+
+export type AlgSetCreateInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  visibility?: InputMaybe<Scalars['String']>;
+};
+
+export type AlgSetItem = {
+  __typename?: 'AlgSetItem';
+  algorithm?: Maybe<Scalars['String']>;
+  case_name?: Maybe<Scalars['String']>;
+  category?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  position?: Maybe<Scalars['Int']>;
+  puzzle?: Maybe<Scalars['String']>;
+  subset?: Maybe<Scalars['String']>;
+};
+
+export type AlgSetItemInput = {
+  algorithm?: InputMaybe<Scalars['String']>;
+  case_name?: InputMaybe<Scalars['String']>;
+  category?: InputMaybe<Scalars['String']>;
+};
+
+export type AlgSetOwner = {
+  __typename?: 'AlgSetOwner';
+  avatar_path?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+  verified?: Maybe<Scalars['Boolean']>;
+};
+
+export type AlgSetSummary = {
+  __typename?: 'AlgSetSummary';
+  categories?: Maybe<Array<Maybe<Scalars['String']>>>;
+  code?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  description?: Maybe<Scalars['String']>;
+  hidden?: Maybe<Scalars['Boolean']>;
+  id?: Maybe<Scalars['String']>;
+  item_count?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  owner?: Maybe<AlgSetOwner>;
+  preview?: Maybe<Array<Maybe<AlgSetItem>>>;
+  published_at?: Maybe<Scalars['DateTime']>;
+  puzzles?: Maybe<Array<Maybe<Scalars['String']>>>;
+  save_count?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  visibility?: Maybe<Scalars['String']>;
+};
+
+export type AlgSetUpdateInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  visibility?: InputMaybe<Scalars['String']>;
 };
 
 export type Announcement = {
@@ -296,10 +451,10 @@ export type BanLog = {
   __typename?: 'BanLog';
   active?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
-  banned_user?: Maybe<UserAccountForAdmin>;
+  banned_user?: Maybe<PublicUserAccount>;
   banned_user_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
-  created_by?: Maybe<UserAccountForAdmin>;
+  created_by?: Maybe<PublicUserAccount>;
   created_by_id?: Maybe<Scalars['String']>;
   forever?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
@@ -312,6 +467,99 @@ export type BanUserInput = {
   minutes?: InputMaybe<Scalars['Int']>;
   reason?: InputMaybe<Scalars['String']>;
   user_id?: InputMaybe<Scalars['String']>;
+};
+
+export type BattleLeaderboardPage = {
+  __typename?: 'BattleLeaderboardPage';
+  page?: Maybe<Scalars['Int']>;
+  page_size?: Maybe<Scalars['Int']>;
+  rows?: Maybe<Array<Maybe<BattleLeaderboardRow>>>;
+  total_count?: Maybe<Scalars['Int']>;
+};
+
+export type BattleLeaderboardRow = {
+  __typename?: 'BattleLeaderboardRow';
+  draws?: Maybe<Scalars['Int']>;
+  games?: Maybe<Scalars['Int']>;
+  losses?: Maybe<Scalars['Int']>;
+  pfp_image_url?: Maybe<Scalars['String']>;
+  provisional?: Maybe<Scalars['Boolean']>;
+  rank?: Maybe<Scalars['Int']>;
+  rating?: Maybe<Scalars['Int']>;
+  user_id?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+  wins?: Maybe<Scalars['Int']>;
+};
+
+export type BattleMatchDetail = {
+  __typename?: 'BattleMatchDetail';
+  end_reason?: Maybe<Scalars['String']>;
+  ended_at?: Maybe<Scalars['DateTime']>;
+  flags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  id?: Maybe<Scalars['String']>;
+  is_rematch?: Maybe<Scalars['Boolean']>;
+  player_a?: Maybe<BattlePlayer>;
+  player_b?: Maybe<BattlePlayer>;
+  puzzle?: Maybe<Scalars['String']>;
+  rated?: Maybe<Scalars['Boolean']>;
+  rating_a_after?: Maybe<Scalars['Int']>;
+  rating_a_before?: Maybe<Scalars['Int']>;
+  rating_b_after?: Maybe<Scalars['Int']>;
+  rating_b_before?: Maybe<Scalars['Int']>;
+  rounds?: Maybe<Array<Maybe<BattleRoundDetail>>>;
+  rounds_a?: Maybe<Scalars['Int']>;
+  rounds_b?: Maybe<Scalars['Int']>;
+  started_at?: Maybe<Scalars['DateTime']>;
+  status?: Maybe<Scalars['String']>;
+  viewer_side?: Maybe<Scalars['String']>;
+  voided_at?: Maybe<Scalars['DateTime']>;
+  winner?: Maybe<Scalars['String']>;
+};
+
+export type BattleMatchHistoryPage = {
+  __typename?: 'BattleMatchHistoryPage';
+  hasMore?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<BattleMatchSummary>>>;
+  total?: Maybe<Scalars['Int']>;
+};
+
+export type BattleMatchSummary = {
+  __typename?: 'BattleMatchSummary';
+  delta?: Maybe<Scalars['Int']>;
+  end_reason?: Maybe<Scalars['String']>;
+  ended_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  is_rematch?: Maybe<Scalars['Boolean']>;
+  opponent?: Maybe<BattlePlayer>;
+  puzzle?: Maybe<Scalars['String']>;
+  rated?: Maybe<Scalars['Boolean']>;
+  rating_after?: Maybe<Scalars['Int']>;
+  rating_before?: Maybe<Scalars['Int']>;
+  result?: Maybe<Scalars['String']>;
+  score_against?: Maybe<Scalars['Int']>;
+  score_for?: Maybe<Scalars['Int']>;
+};
+
+export type BattlePlayer = {
+  __typename?: 'BattlePlayer';
+  id?: Maybe<Scalars['String']>;
+  pfp_image_url?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
+};
+
+export type BattleRoundDetail = {
+  __typename?: 'BattleRoundDetail';
+  a_flags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  a_moves?: Maybe<Scalars['String']>;
+  a_penalty?: Maybe<Scalars['String']>;
+  a_time_ms?: Maybe<Scalars['Int']>;
+  b_flags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  b_moves?: Maybe<Scalars['String']>;
+  b_penalty?: Maybe<Scalars['String']>;
+  b_time_ms?: Maybe<Scalars['Int']>;
+  index?: Maybe<Scalars['Int']>;
+  scramble?: Maybe<Scalars['String']>;
+  winner?: Maybe<Scalars['String']>;
 };
 
 export type BlockedUser = {
@@ -351,6 +599,13 @@ export type CaseStat = {
   caseType?: Maybe<Scalars['String']>;
   count?: Maybe<Scalars['Int']>;
   lastSeenAt?: Maybe<Scalars['Float']>;
+};
+
+export type CommunityAlgSetPage = {
+  __typename?: 'CommunityAlgSetPage';
+  has_more?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<AlgSetSummary>>>;
+  total?: Maybe<Scalars['Int']>;
 };
 
 export type CompetitionFollow = {
@@ -399,6 +654,92 @@ export type CreatePromoCodeInput = {
   duration_minutes?: InputMaybe<Scalars['Int']>;
   max_uses?: InputMaybe<Scalars['Int']>;
   membership_type?: InputMaybe<Scalars['String']>;
+};
+
+export type Cube = {
+  __typename?: 'Cube';
+  archived_at?: Maybe<Scalars['DateTime']>;
+  ble_device_id?: Maybe<Scalars['String']>;
+  ble_name?: Maybe<Scalars['String']>;
+  brand?: Maybe<Scalars['String']>;
+  calibrations?: Maybe<Array<Maybe<CubeCalibration>>>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  first_used_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  is_smart?: Maybe<Scalars['Boolean']>;
+  last_used_at?: Maybe<Scalars['DateTime']>;
+  legacy_smart_device_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  name?: Maybe<Scalars['String']>;
+  puzzle?: Maybe<Scalars['String']>;
+  solve_count?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type CubeCalibration = {
+  __typename?: 'CubeCalibration';
+  algo_version?: Maybe<Scalars['Int']>;
+  app_version?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  cube_id?: Maybe<Scalars['String']>;
+  device_model?: Maybe<Scalars['String']>;
+  far_max_ut?: Maybe<Scalars['Float']>;
+  id?: Maybe<Scalars['String']>;
+  measured_at?: Maybe<Scalars['DateTime']>;
+  near_min_ut?: Maybe<Scalars['Float']>;
+  noise_ut?: Maybe<Scalars['Float']>;
+  os_version?: Maybe<Scalars['String']>;
+  peak_ut?: Maybe<Scalars['Float']>;
+  platform?: Maybe<Scalars['String']>;
+  quality?: Maybe<Scalars['String']>;
+  rate_hz?: Maybe<Scalars['Float']>;
+  rest_ut?: Maybe<Scalars['Float']>;
+  sample_count?: Maybe<Scalars['Int']>;
+  sensor_name?: Maybe<Scalars['String']>;
+  sweep_ms?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type CubeCalibrationInput = {
+  algo_version?: InputMaybe<Scalars['Int']>;
+  app_version?: InputMaybe<Scalars['String']>;
+  cube_id?: InputMaybe<Scalars['String']>;
+  device_model?: InputMaybe<Scalars['String']>;
+  far_max_ut?: InputMaybe<Scalars['Float']>;
+  measured_at?: InputMaybe<Scalars['DateTime']>;
+  near_min_ut?: InputMaybe<Scalars['Float']>;
+  noise_ut?: InputMaybe<Scalars['Float']>;
+  os_version?: InputMaybe<Scalars['String']>;
+  peak_ut?: InputMaybe<Scalars['Float']>;
+  platform?: InputMaybe<Scalars['String']>;
+  quality?: InputMaybe<Scalars['String']>;
+  rate_hz?: InputMaybe<Scalars['Float']>;
+  rest_ut?: InputMaybe<Scalars['Float']>;
+  sample_count?: InputMaybe<Scalars['Int']>;
+  sensor_name?: InputMaybe<Scalars['String']>;
+  sweep_ms?: InputMaybe<Scalars['Int']>;
+};
+
+export type CubeInput = {
+  brand?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  is_smart?: InputMaybe<Scalars['Boolean']>;
+  make_main?: InputMaybe<Scalars['Boolean']>;
+  name?: InputMaybe<Scalars['String']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  set_at?: InputMaybe<Scalars['DateTime']>;
+};
+
+export type CubeMain = {
+  __typename?: 'CubeMain';
+  cube_id?: Maybe<Scalars['String']>;
+  puzzle?: Maybe<Scalars['String']>;
+  set_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type CubeUpdateInput = {
+  brand?: InputMaybe<Scalars['String']>;
+  is_smart?: InputMaybe<Scalars['Boolean']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type CustomCubeType = {
@@ -557,7 +898,6 @@ export type IInternalUserAccount = {
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
-  password?: Maybe<Scalars['String']>;
   pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
@@ -593,11 +933,9 @@ export type InboxSummary = {
 export type Integration = {
   __typename?: 'Integration';
   auth_expires_at?: Maybe<Scalars['BigInt']>;
-  auth_token?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
   id?: Maybe<Scalars['String']>;
   last_synced_at?: Maybe<Scalars['DateTime']>;
-  refresh_token?: Maybe<Scalars['String']>;
   revoked_at?: Maybe<Scalars['DateTime']>;
   service_name?: Maybe<IntegrationType>;
   user?: Maybe<PublicUserAccount>;
@@ -666,7 +1004,6 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
-  password?: Maybe<Scalars['String']>;
   pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
@@ -810,11 +1147,13 @@ export type LandingStats = {
 export type MagnetTelemetryInput = {
   app_version?: InputMaybe<Scalars['String']>;
   approach_ms?: InputMaybe<Scalars['Int']>;
+  cube_puzzle?: InputMaybe<Scalars['String']>;
   delta_ut?: InputMaybe<Scalars['Float']>;
   detail?: InputMaybe<Scalars['String']>;
   device_model?: InputMaybe<Scalars['String']>;
   event_type?: InputMaybe<Scalars['String']>;
   latency_ms?: InputMaybe<Scalars['Int']>;
+  near_min_ut?: InputMaybe<Scalars['Float']>;
   os_version?: InputMaybe<Scalars['String']>;
   platform?: InputMaybe<Scalars['String']>;
   rate_hz?: InputMaybe<Scalars['Float']>;
@@ -836,6 +1175,7 @@ export type MagnetTelemetryRow = {
   app_version?: Maybe<Scalars['String']>;
   approach_ms?: Maybe<Scalars['Int']>;
   created_at?: Maybe<Scalars['DateTime']>;
+  cube_puzzle?: Maybe<Scalars['String']>;
   delta_ut?: Maybe<Scalars['Float']>;
   detail?: Maybe<Scalars['String']>;
   device_model?: Maybe<Scalars['String']>;
@@ -843,6 +1183,7 @@ export type MagnetTelemetryRow = {
   has_samples?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   latency_ms?: Maybe<Scalars['Int']>;
+  near_min_ut?: Maybe<Scalars['Float']>;
   os_version?: Maybe<Scalars['String']>;
   platform?: Maybe<Scalars['String']>;
   rate_hz?: Maybe<Scalars['Float']>;
@@ -855,11 +1196,13 @@ export type MagnetTelemetryRow = {
 
 export type MagnetTelemetrySummary = {
   __typename?: 'MagnetTelemetrySummary';
+  cube_puzzle?: Maybe<Scalars['String']>;
   device_model?: Maybe<Scalars['String']>;
   distinct_users?: Maybe<Scalars['Int']>;
   lifts?: Maybe<Scalars['Int']>;
   median_approach_ms?: Maybe<Scalars['Int']>;
   median_latency_ms?: Maybe<Scalars['Int']>;
+  median_near_min_ut?: Maybe<Scalars['Float']>;
   median_near_ut?: Maybe<Scalars['Float']>;
   median_sigma?: Maybe<Scalars['Float']>;
   min_near_ut?: Maybe<Scalars['Float']>;
@@ -877,8 +1220,10 @@ export type MagnetTelemetrySummary = {
 
 export type MediaAsset = {
   __typename?: 'MediaAsset';
+  background_target?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
   id?: Maybe<Scalars['String']>;
+  is_video?: Maybe<Scalars['Boolean']>;
   kind?: Maybe<MediaAssetKind>;
   size_bytes?: Maybe<Scalars['Int']>;
   storage_path?: Maybe<Scalars['String']>;
@@ -965,12 +1310,15 @@ export type MethodStepsBackfillResult = {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptConversationRequest?: Maybe<Scalars['Boolean']>;
+  addAlgSetItems?: Maybe<AlgSet>;
   addBadgeToUser?: Maybe<Badge>;
   addNewSmartDevice?: Maybe<SmartDevice>;
   addSupportTicketMessage?: Maybe<SupportTicketMessage>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
+  adminSetAlgSetHidden?: Maybe<AlgSet>;
+  adminVoidBattleMatch?: Maybe<VoidBattleMatchResult>;
   archiveConversation?: Maybe<Scalars['Boolean']>;
   authenticateUser: PublicUserAccount;
   authenticateWithWca?: Maybe<WcaOAuthResult>;
@@ -989,8 +1337,10 @@ export type Mutation = {
   completeWcaSignup?: Maybe<PublicUserAccount>;
   completeZktSignup?: Maybe<PublicUserAccount>;
   confirmEmailChange?: Maybe<PublicUserAccount>;
+  createAlgSet?: Maybe<AlgSet>;
   createAnnouncement?: Maybe<Announcement>;
   createBadgeType?: Maybe<BadgeType>;
+  createCube?: Maybe<Cube>;
   createCustomCubeType?: Maybe<CustomCubeType>;
   createCustomTrainer?: Maybe<CustomTrainer>;
   createIntegration?: Maybe<Integration>;
@@ -998,15 +1348,17 @@ export type Mutation = {
   createSession?: Maybe<Session>;
   createSolve?: Maybe<Solve>;
   createSupportTicket?: Maybe<SupportTicket>;
-  createTrainerAlternative?: Maybe<TrainerAlternative>;
   createUserAccount?: Maybe<PublicUserAccount>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
+  deleteAlgSet?: Maybe<Scalars['Boolean']>;
   deleteAllNotifications?: Maybe<Scalars['Int']>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
   deleteAllTrainingSolves?: Maybe<Scalars['Void']>;
   deleteAnnouncement?: Maybe<Scalars['Boolean']>;
   deleteBadgeType?: Maybe<BadgeType>;
+  deleteCube?: Maybe<Scalars['Boolean']>;
+  deleteCubeCalibration?: Maybe<Scalars['Boolean']>;
   deleteCustomCubeType?: Maybe<CustomCubeType>;
   deleteCustomTrainer?: Maybe<CustomTrainer>;
   deleteIntegration?: Maybe<Integration>;
@@ -1026,6 +1378,7 @@ export type Mutation = {
   deleteUserAccount?: Maybe<PublicUserAccount>;
   editBadgeType?: Maybe<BadgeType>;
   editMessage?: Maybe<Message>;
+  ensureSmartCube?: Maybe<Cube>;
   fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   followCompetitor?: Maybe<CompetitionFollow>;
   linkRevenueCatUser?: Maybe<Scalars['Boolean']>;
@@ -1039,46 +1392,56 @@ export type Mutation = {
   publishTopAverages?: Maybe<TopAverage>;
   publishTopSolve?: Maybe<TopSolve>;
   publishWcaRecord?: Maybe<WcaRecord>;
-  recalculateAllRankings?: Maybe<Scalars['Boolean']>;
   recordActivityHeartbeat?: Maybe<ActivityHeartbeatResult>;
   recordMagnetTelemetry?: Maybe<MagnetTelemetryResult>;
   recordOllcpAttempt?: Maybe<OllcpStatType>;
+  recordProfileView: Scalars['Boolean'];
   recordSmartCubeTelemetry?: Maybe<SmartCubeTelemetryResult>;
+  recordSolveView: Scalars['Boolean'];
   redeemPromoCode?: Maybe<RedeemPromoCodeResult>;
   registerPushToken?: Maybe<PushTokenResult>;
   reindexArchivedCompsToES?: Maybe<ReindexEsResult>;
   reindexLLCaseKeys?: Maybe<ReindexLlResult>;
   reindexSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
+  removeAlgSetItems?: Maybe<AlgSet>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
   reopenSupportTicket?: Maybe<SupportTicket>;
+  reorderAlgSetItems?: Maybe<AlgSet>;
   reorderSessions?: Maybe<Scalars['Void']>;
+  reportAlgSet?: Maybe<Scalars['Boolean']>;
   reportConversation?: Maybe<Scalars['Boolean']>;
   reportProfile?: Maybe<Report>;
   resendEmailVerificationCode?: Maybe<Scalars['Void']>;
+  resetAlgSetCode?: Maybe<AlgSet>;
   resetSettings?: Maybe<Setting>;
   resolveMessageReport?: Maybe<Scalars['Boolean']>;
   resolveReports?: Maybe<Scalars['Float']>;
   resolveSupportTicket?: Maybe<SupportTicket>;
+  saveAlgSet?: Maybe<Scalars['Boolean']>;
+  saveCubeCalibration?: Maybe<CubeCalibration>;
   saveRecordWatch?: Maybe<RecordWatch>;
   sendBulkEmail?: Maybe<BulkEmailResult>;
   sendForgotPasswordCode?: Maybe<Scalars['Void']>;
   sendMessage?: Maybe<Message>;
   sendTestRecordNotification?: Maybe<Scalars['Boolean']>;
   setConversationMuted?: Maybe<Scalars['Boolean']>;
+  setCubeArchived?: Maybe<Cube>;
   setDailyGoal?: Maybe<DailyGoalType>;
   setDailyGoalCountRoomSolves?: Maybe<DailyGoalReminderResult>;
   setDailyGoalReminder?: Maybe<DailyGoalReminderResult>;
+  setMainCube?: Maybe<CubeMain>;
   setMessageReaction?: Maybe<Scalars['Boolean']>;
   setModStatus?: Maybe<UserAccount>;
   setPremiumStatus?: Maybe<UserAccount>;
   setProStatus?: Maybe<UserAccount>;
   setRecordWatchEnabled?: Maybe<RecordWatch>;
   setSetting?: Maybe<Setting>;
-  setTimerBackgroundHex: TimerBackground;
+  setTimerBackgroundMobileSame: TimerBackground;
   setTyping?: Maybe<Scalars['Boolean']>;
   setUserPassword?: Maybe<PublicUserAccount>;
   setVerifiedStatus?: Maybe<UserAccount>;
+  splitSession?: Maybe<Session>;
   testWcaNotification?: Maybe<Scalars['Boolean']>;
   togglePromoCodeActive?: Maybe<PromoCode>;
   translateAnnouncementContent?: Maybe<TranslateAnnouncementResult>;
@@ -1087,10 +1450,14 @@ export type Mutation = {
   unfollowCompetitor?: Maybe<Scalars['Boolean']>;
   unpublishWcaRecord?: Maybe<WcaRecord>;
   unregisterPushToken?: Maybe<PushTokenResult>;
+  unsaveAlgSet?: Maybe<Scalars['Boolean']>;
   unsendMessage?: Maybe<Scalars['Boolean']>;
   unsubEmails?: Maybe<Scalars['Boolean']>;
   updateAlgorithmOverride?: Maybe<AlgorithmOverride>;
+  updateAlgSet?: Maybe<AlgSet>;
+  updateAlgSetItem?: Maybe<AlgSetItem>;
   updateAnnouncement?: Maybe<Announcement>;
+  updateCube?: Maybe<Cube>;
   updateCustomTrainer?: Maybe<CustomTrainer>;
   updateForgotPassword?: Maybe<PublicUserAccount>;
   updateNotificationPreferences?: Maybe<NotificationPreference>;
@@ -1114,6 +1481,12 @@ export type Mutation = {
 
 export type MutationAcceptConversationRequestArgs = {
   conversationId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAddAlgSetItemsArgs = {
+  items?: InputMaybe<Array<InputMaybe<AlgSetItemInput>>>;
+  set_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1150,6 +1523,18 @@ export type MutationAdminSendPushToUserArgs = {
   body?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAdminSetAlgSetHiddenArgs = {
+  hidden?: InputMaybe<Scalars['Boolean']>;
+  reason?: InputMaybe<Scalars['String']>;
+  set_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAdminVoidBattleMatchArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1244,6 +1629,11 @@ export type MutationConfirmEmailChangeArgs = {
 };
 
 
+export type MutationCreateAlgSetArgs = {
+  input?: InputMaybe<AlgSetCreateInput>;
+};
+
+
 export type MutationCreateAnnouncementArgs = {
   input?: InputMaybe<CreateAnnouncementInput>;
 };
@@ -1251,6 +1641,11 @@ export type MutationCreateAnnouncementArgs = {
 
 export type MutationCreateBadgeTypeArgs = {
   input?: InputMaybe<BadgeTypeInput>;
+};
+
+
+export type MutationCreateCubeArgs = {
+  input?: InputMaybe<CubeInput>;
 };
 
 
@@ -1290,11 +1685,6 @@ export type MutationCreateSupportTicketArgs = {
 };
 
 
-export type MutationCreateTrainerAlternativeArgs = {
-  input?: InputMaybe<TrainerAlternativeCreateInput>;
-};
-
-
 export type MutationCreateUserAccountArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
@@ -1312,6 +1702,11 @@ export type MutationDeleteAlgorithmOverrideArgs = {
 };
 
 
+export type MutationDeleteAlgSetArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationDeleteAllSolvesInSessionArgs = {
   sessionId?: InputMaybe<Scalars['String']>;
 };
@@ -1324,6 +1719,16 @@ export type MutationDeleteAnnouncementArgs = {
 
 export type MutationDeleteBadgeTypeArgs = {
   id: Scalars['String'];
+};
+
+
+export type MutationDeleteCubeArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteCubeCalibrationArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1388,6 +1793,11 @@ export type MutationDeleteSolvesByCubeTypeArgs = {
 };
 
 
+export type MutationDeleteTimerBackgroundArgs = {
+  target?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationDeleteTopAverageArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -1412,6 +1822,12 @@ export type MutationEditBadgeTypeArgs = {
 export type MutationEditMessageArgs = {
   body?: InputMaybe<Scalars['String']>;
   messageId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationEnsureSmartCubeArgs = {
+  ble_device_id?: InputMaybe<Scalars['String']>;
+  ble_name?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1482,8 +1898,18 @@ export type MutationRecordOllcpAttemptArgs = {
 };
 
 
+export type MutationRecordProfileViewArgs = {
+  username: Scalars['String'];
+};
+
+
 export type MutationRecordSmartCubeTelemetryArgs = {
   events?: InputMaybe<Array<InputMaybe<SmartCubeTelemetryInput>>>;
+};
+
+
+export type MutationRecordSolveViewArgs = {
+  shareCode: Scalars['String'];
 };
 
 
@@ -1494,6 +1920,12 @@ export type MutationRedeemPromoCodeArgs = {
 
 export type MutationRegisterPushTokenArgs = {
   input?: InputMaybe<RegisterPushTokenInput>;
+};
+
+
+export type MutationRemoveAlgSetItemsArgs = {
+  item_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  set_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1514,8 +1946,21 @@ export type MutationReopenSupportTicketArgs = {
 };
 
 
+export type MutationReorderAlgSetItemsArgs = {
+  item_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  set_id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationReorderSessionsArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationReportAlgSetArgs = {
+  note?: InputMaybe<Scalars['String']>;
+  reason?: InputMaybe<Scalars['String']>;
+  set_id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1537,6 +1982,11 @@ export type MutationResendEmailVerificationCodeArgs = {
 };
 
 
+export type MutationResetAlgSetCodeArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationResolveMessageReportArgs = {
   action?: InputMaybe<ReportStatus>;
   note?: InputMaybe<Scalars['String']>;
@@ -1551,6 +2001,16 @@ export type MutationResolveReportsArgs = {
 
 export type MutationResolveSupportTicketArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSaveAlgSetArgs = {
+  set_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSaveCubeCalibrationArgs = {
+  input?: InputMaybe<CubeCalibrationInput>;
 };
 
 
@@ -1591,6 +2051,12 @@ export type MutationSetConversationMutedArgs = {
 };
 
 
+export type MutationSetCubeArchivedArgs = {
+  archived?: InputMaybe<Scalars['Boolean']>;
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationSetDailyGoalArgs = {
   input?: InputMaybe<SetDailyGoalInput>;
 };
@@ -1603,6 +2069,13 @@ export type MutationSetDailyGoalCountRoomSolvesArgs = {
 
 export type MutationSetDailyGoalReminderArgs = {
   enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSetMainCubeArgs = {
+  cube_id?: InputMaybe<Scalars['String']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  set_at?: InputMaybe<Scalars['DateTime']>;
 };
 
 
@@ -1643,8 +2116,8 @@ export type MutationSetSettingArgs = {
 };
 
 
-export type MutationSetTimerBackgroundHexArgs = {
-  hex?: InputMaybe<Scalars['String']>;
+export type MutationSetTimerBackgroundMobileSameArgs = {
+  same: Scalars['Boolean'];
 };
 
 
@@ -1662,6 +2135,13 @@ export type MutationSetUserPasswordArgs = {
 export type MutationSetVerifiedStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
   verified?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSplitSessionArgs = {
+  buckets?: InputMaybe<Array<InputMaybe<SessionBucketInput>>>;
+  name?: InputMaybe<Scalars['String']>;
+  sessionId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1707,6 +2187,11 @@ export type MutationUnregisterPushTokenArgs = {
 };
 
 
+export type MutationUnsaveAlgSetArgs = {
+  set_id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationUnsendMessageArgs = {
   messageId?: InputMaybe<Scalars['String']>;
 };
@@ -1723,9 +2208,27 @@ export type MutationUpdateAlgorithmOverrideArgs = {
 };
 
 
+export type MutationUpdateAlgSetArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<AlgSetUpdateInput>;
+};
+
+
+export type MutationUpdateAlgSetItemArgs = {
+  algorithm?: InputMaybe<Scalars['String']>;
+  item_id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationUpdateAnnouncementArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<UpdateAnnouncementInput>;
+};
+
+
+export type MutationUpdateCubeArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<CubeUpdateInput>;
 };
 
 
@@ -1829,6 +2332,7 @@ export type MutationUploadProfilePictureArgs = {
 
 export type MutationUploadTimerBackgroundArgs = {
   file?: InputMaybe<Scalars['Upload']>;
+  target?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1836,6 +2340,31 @@ export type MutationVerifyEmailCodeArgs = {
   code: Scalars['String'];
   email: Scalars['String'];
   language?: InputMaybe<Scalars['String']>;
+};
+
+export type MyAlgSets = {
+  __typename?: 'MyAlgSets';
+  own?: Maybe<Array<Maybe<AlgSetSummary>>>;
+  saved?: Maybe<Array<Maybe<SavedAlgSet>>>;
+};
+
+export type MyBattleRating = {
+  __typename?: 'MyBattleRating';
+  draws?: Maybe<Scalars['Int']>;
+  games?: Maybe<Scalars['Int']>;
+  losses?: Maybe<Scalars['Int']>;
+  peak_rating?: Maybe<Scalars['Int']>;
+  provisional?: Maybe<Scalars['Boolean']>;
+  puzzle?: Maybe<Scalars['String']>;
+  rank?: Maybe<Scalars['Int']>;
+  rating?: Maybe<Scalars['Int']>;
+  wins?: Maybe<Scalars['Int']>;
+};
+
+export type MyCubeState = {
+  __typename?: 'MyCubeState';
+  cubes?: Maybe<Array<Maybe<Cube>>>;
+  mains?: Maybe<Array<Maybe<CubeMain>>>;
 };
 
 export type Notification = {
@@ -2061,16 +2590,24 @@ export type PushTokenResult = {
 export type Query = {
   __typename?: 'Query';
   adminActiveUsers?: Maybe<AdminActiveUsersResult>;
+  adminCubeCalibrations?: Maybe<Array<Maybe<AdminCubeCalibrationRow>>>;
+  adminCubeCalibrationSummary?: Maybe<Array<Maybe<AdminCubeCalibrationSummary>>>;
   adminDashboardStats?: Maybe<AdminDashboardStats>;
   adminExportUserData?: Maybe<Scalars['String']>;
+  adminFlaggedBattleMatches?: Maybe<AdminBattleMatchPage>;
   adminMyPushTokens?: Maybe<Array<Maybe<PushTokenInfo>>>;
   adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
   adminUserDailyActivity?: Maybe<UserDailyActivityResult>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
+  algSet?: Maybe<AlgSet>;
   badgeTypes?: Maybe<Array<Maybe<BadgeType>>>;
+  battleLeaderboard?: Maybe<BattleLeaderboardPage>;
+  battleMatch?: Maybe<BattleMatchDetail>;
+  battleMatchHistory?: Maybe<BattleMatchHistoryPage>;
   blockedUsers?: Maybe<Array<Maybe<BlockedUser>>>;
   caseStats?: Maybe<Array<Maybe<CaseStat>>>;
+  communityAlgSets?: Maybe<CommunityAlgSetPage>;
   conversations?: Maybe<ConversationList>;
   customCubeTypes?: Maybe<Array<Maybe<CustomCubeType>>>;
   customTrainer?: Maybe<CustomTrainer>;
@@ -2100,7 +2637,10 @@ export type Query = {
   messageReports?: Maybe<MessageReportList>;
   messages?: Maybe<MessageList>;
   methodStepsReindexStatus?: Maybe<MethodStepsBackfillResult>;
+  myAlgSets?: Maybe<MyAlgSets>;
+  myBattleRating?: Maybe<MyBattleRating>;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
+  myCubeState?: Maybe<MyCubeState>;
   myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
   myRecordWatches?: Maybe<Array<Maybe<RecordWatch>>>;
   myRoomSolveEntries?: Maybe<Array<Maybe<RoomSolveEntry>>>;
@@ -2118,7 +2658,6 @@ export type Query = {
   profile: Profile;
   publicWcaProfile?: Maybe<PublicWcaProfile>;
   publicZktProfile?: Maybe<PublicZktProfile>;
-  rankings?: Maybe<RankingsPage>;
   recoverMySolves?: Maybe<Array<Maybe<Solve>>>;
   reports?: Maybe<Array<Maybe<ReportSummary>>>;
   sessions?: Maybe<Array<Maybe<Session>>>;
@@ -2140,7 +2679,10 @@ export type Query = {
   topAverages?: Maybe<Array<Maybe<TopAverage>>>;
   topSolves?: Maybe<Array<Maybe<TopSolve>>>;
   trainerAlternatives?: Maybe<Array<Maybe<TrainerAlternative>>>;
+  trainerLibrary?: Maybe<TrainerLibrary>;
+  trainerLibraryAlternatives?: Maybe<TrainerLibraryAlternatives>;
   unreadNotificationCount?: Maybe<Scalars['Int']>;
+  userBattleRating?: Maybe<MyBattleRating>;
   userSearch?: Maybe<PaginatedUserAccounts>;
   wcaCompetitionDetail?: Maybe<WcaCompetitionDetail>;
   wcaCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
@@ -2154,6 +2696,7 @@ export type Query = {
   wcaSearchCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
   wcaStats?: Maybe<WcaStats>;
   youtubeSearch?: Maybe<Array<Maybe<YouTubeVideoResult>>>;
+  zktPersonBests?: Maybe<Array<ZktEventPb>>;
   zktPublicCompetition?: Maybe<ZktPublicCompetitionDetail>;
   zktPublicCompetitions?: Maybe<ZktPublicCompetitionList>;
   zktPublicCompetitor?: Maybe<ZktPublicCompetitorDetail>;
@@ -2169,8 +2712,28 @@ export type QueryAdminActiveUsersArgs = {
 };
 
 
+export type QueryAdminCubeCalibrationsArgs = {
+  deviceModel?: InputMaybe<Scalars['String']>;
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  platform?: InputMaybe<Scalars['String']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  username?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryAdminCubeCalibrationSummaryArgs = {
+  days?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryAdminExportUserDataArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryAdminFlaggedBattleMatchesArgs = {
+  page?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -2193,12 +2756,45 @@ export type QueryAdminUserSearchArgs = {
 };
 
 
+export type QueryAlgSetArgs = {
+  code?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryBattleLeaderboardArgs = {
+  page?: InputMaybe<Scalars['Int']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryBattleMatchArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryBattleMatchHistoryArgs = {
+  page?: InputMaybe<Scalars['Int']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryCaseStatsArgs = {
   cubeType?: InputMaybe<Scalars['String']>;
   lastN?: InputMaybe<Scalars['Int']>;
   sessionId?: InputMaybe<Scalars['String']>;
   subset?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryCommunityAlgSetsArgs = {
+  category?: InputMaybe<Scalars['String']>;
+  page?: InputMaybe<Scalars['Int']>;
+  page_size?: InputMaybe<Scalars['Int']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  q?: InputMaybe<Scalars['String']>;
+  sort?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2299,6 +2895,11 @@ export type QueryMessagesArgs = {
 };
 
 
+export type QueryMyBattleRatingArgs = {
+  puzzle?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryMyCompetitionFollowsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
 };
@@ -2326,13 +2927,6 @@ export type QueryPublicWcaProfileArgs = {
 
 export type QueryPublicZktProfileArgs = {
   userId?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryRankingsArgs = {
-  mode?: InputMaybe<Scalars['String']>;
-  page?: InputMaybe<Scalars['Int']>;
-  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2417,6 +3011,22 @@ export type QueryTrainerAlternativesArgs = {
 };
 
 
+export type QueryTrainerLibraryArgs = {
+  knownVersion?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryTrainerLibraryAlternativesArgs = {
+  category?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryUserBattleRatingArgs = {
+  puzzle?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryUserSearchArgs = {
   pageArgs?: InputMaybe<PaginationArgsInput>;
 };
@@ -2467,6 +3077,11 @@ export type QueryYoutubeSearchArgs = {
 };
 
 
+export type QueryZktPersonBestsArgs = {
+  zktId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryZktPublicCompetitionArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -2494,29 +3109,6 @@ export type QueryZktPublicGroupAssignmentsArgs = {
 export type QueryZktPublicRoundResultsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
   roundId?: InputMaybe<Scalars['String']>;
-};
-
-export type RankedUser = {
-  __typename?: 'RankedUser';
-  country_iso2?: Maybe<Scalars['String']>;
-  is_pro?: Maybe<Scalars['Boolean']>;
-  pfp_image_url?: Maybe<Scalars['String']>;
-  rank?: Maybe<Scalars['Int']>;
-  score?: Maybe<Scalars['Float']>;
-  user_id?: Maybe<Scalars['String']>;
-  username?: Maybe<Scalars['String']>;
-  wca_competition_count?: Maybe<Scalars['Int']>;
-  wca_id?: Maybe<Scalars['String']>;
-  wca_medal_bronze?: Maybe<Scalars['Int']>;
-  wca_medal_gold?: Maybe<Scalars['Int']>;
-  wca_medal_silver?: Maybe<Scalars['Int']>;
-};
-
-export type RankingsPage = {
-  __typename?: 'RankingsPage';
-  page?: Maybe<Scalars['Int']>;
-  rows?: Maybe<Array<Maybe<RankedUser>>>;
-  total_count?: Maybe<Scalars['Int']>;
 };
 
 export type RecordWatch = {
@@ -2574,6 +3166,8 @@ export type ReplyPreviewSender = {
 
 export type Report = {
   __typename?: 'Report';
+  alg_set?: Maybe<ReportAlgSet>;
+  alg_set_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
   created_by?: Maybe<PublicUserAccount>;
   created_by_id?: Maybe<Scalars['String']>;
@@ -2582,6 +3176,16 @@ export type Report = {
   reported_user?: Maybe<PublicUserAccount>;
   reported_user_id?: Maybe<Scalars['String']>;
   resolved_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type ReportAlgSet = {
+  __typename?: 'ReportAlgSet';
+  code?: Maybe<Scalars['String']>;
+  hidden?: Maybe<Scalars['Boolean']>;
+  hidden_reason?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  visibility?: Maybe<Scalars['String']>;
 };
 
 export type ReportSnapshotMessage = {
@@ -2616,6 +3220,14 @@ export type RoomSolveEntry = {
   cube_type?: Maybe<Scalars['String']>;
 };
 
+export type SavedAlgSet = {
+  __typename?: 'SavedAlgSet';
+  saved_at?: Maybe<Scalars['DateTime']>;
+  set?: Maybe<AlgSetSummary>;
+  set_id?: Maybe<Scalars['String']>;
+  unavailable?: Maybe<Scalars['Boolean']>;
+};
+
 export type SaveRecordWatchInput = {
   events?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   region?: InputMaybe<Scalars['String']>;
@@ -2636,6 +3248,11 @@ export type Session = {
   name?: Maybe<Scalars['String']>;
   order?: Maybe<Scalars['Float']>;
   user_id?: Maybe<Scalars['String']>;
+};
+
+export type SessionBucketInput = {
+  cube_type?: InputMaybe<Scalars['String']>;
+  scramble_subset?: InputMaybe<Scalars['String']>;
 };
 
 export type SessionInput = {
@@ -2680,6 +3297,7 @@ export type Setting = {
   timer_decimal_points?: Maybe<Scalars['Int']>;
   timer_scramble_size_user_default?: Maybe<Scalars['Int']>;
   timer_time_size_user_default?: Maybe<Scalars['Int']>;
+  trainer_options?: Maybe<Scalars['String']>;
   use_2d_scramble_visual?: Maybe<Scalars['Boolean']>;
   use_space_with_smart_cube?: Maybe<Scalars['Boolean']>;
   user_id?: Maybe<Scalars['String']>;
@@ -2712,6 +3330,7 @@ export type SettingInput = {
   timer_decimal_points?: InputMaybe<Scalars['Int']>;
   timer_scramble_size_user_default?: InputMaybe<Scalars['Int']>;
   timer_time_size_user_default?: InputMaybe<Scalars['Int']>;
+  trainer_options?: InputMaybe<Scalars['String']>;
   use_2d_scramble_visual?: InputMaybe<Scalars['Boolean']>;
   use_space_with_smart_cube?: InputMaybe<Scalars['Boolean']>;
   zero_out_time_after_solve?: InputMaybe<Scalars['Boolean']>;
@@ -2728,6 +3347,7 @@ export type SiteConfig = {
   maintenance_mode?: Maybe<Scalars['Boolean']>;
   messaging_enabled?: Maybe<Scalars['Boolean']>;
   method_steps_version?: Maybe<Scalars['Int']>;
+  online_battle_enabled?: Maybe<Scalars['Boolean']>;
   presence_enabled?: Maybe<Scalars['Boolean']>;
   pro_enabled?: Maybe<Scalars['Boolean']>;
   rooms_enabled?: Maybe<Scalars['Boolean']>;
@@ -2828,6 +3448,8 @@ export type Solve = {
   __typename?: 'Solve';
   bulk?: Maybe<Scalars['Boolean']>;
   created_at?: Maybe<Scalars['DateTime']>;
+  cube?: Maybe<SolveCube>;
+  cube_id?: Maybe<Scalars['String']>;
   cube_type?: Maybe<Scalars['String']>;
   dnf?: Maybe<Scalars['Boolean']>;
   ended_at?: Maybe<Scalars['BigInt']>;
@@ -2860,9 +3482,19 @@ export type Solve = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type SolveCube = {
+  __typename?: 'SolveCube';
+  brand?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  is_smart?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  puzzle?: Maybe<Scalars['String']>;
+};
+
 export type SolveInput = {
   analysis_method?: InputMaybe<Scalars['String']>;
   bulk?: InputMaybe<Scalars['Boolean']>;
+  cube_id?: InputMaybe<Scalars['String']>;
   cube_type?: InputMaybe<Scalars['String']>;
   dnf?: InputMaybe<Scalars['Boolean']>;
   ended_at?: InputMaybe<Scalars['BigInt']>;
@@ -3031,6 +3663,9 @@ export type TimerBackground = {
   hex?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   media_type?: Maybe<Scalars['String']>;
+  mobile_media_type?: Maybe<Scalars['String']>;
+  mobile_same_as_desktop?: Maybe<Scalars['Boolean']>;
+  mobile_storage_path?: Maybe<Scalars['String']>;
   storage_path?: Maybe<Scalars['String']>;
   url?: Maybe<Scalars['String']>;
   user?: Maybe<PublicUserAccount>;
@@ -3093,14 +3728,10 @@ export type TrainerAlternative = {
   user_id?: Maybe<Scalars['String']>;
 };
 
-export type TrainerAlternativeCreateInput = {
-  algorithm: Scalars['String'];
-  case_name: Scalars['String'];
-  category: Scalars['String'];
-  ll_pattern?: InputMaybe<Scalars['String']>;
-  original_input: Scalars['String'];
-  setup?: InputMaybe<Scalars['String']>;
-  subset: Scalars['String'];
+export type TrainerCaseAlternatives = {
+  __typename?: 'TrainerCaseAlternatives';
+  alternatives?: Maybe<Array<Maybe<Scalars['String']>>>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type TrainerFavorite = {
@@ -3109,6 +3740,39 @@ export type TrainerFavorite = {
   cube_key?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   user_id?: Maybe<Scalars['String']>;
+};
+
+export type TrainerLibrary = {
+  __typename?: 'TrainerLibrary';
+  categories?: Maybe<Array<TrainerLibraryCategory>>;
+  version?: Maybe<Scalars['String']>;
+};
+
+export type TrainerLibraryAlternatives = {
+  __typename?: 'TrainerLibraryAlternatives';
+  cases?: Maybe<Array<Maybe<TrainerCaseAlternatives>>>;
+  category?: Maybe<Scalars['String']>;
+  version?: Maybe<Scalars['String']>;
+};
+
+export type TrainerLibraryCategory = {
+  __typename?: 'TrainerLibraryCategory';
+  category?: Maybe<Scalars['String']>;
+  subsets?: Maybe<Array<Maybe<TrainerLibrarySubset>>>;
+};
+
+export type TrainerLibraryEntry = {
+  __typename?: 'TrainerLibraryEntry';
+  algorithm?: Maybe<Scalars['String']>;
+  alternativeCount?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+  setup?: Maybe<Scalars['String']>;
+};
+
+export type TrainerLibrarySubset = {
+  __typename?: 'TrainerLibrarySubset';
+  algorithms?: Maybe<Array<Maybe<TrainerLibraryEntry>>>;
+  subset?: Maybe<Scalars['String']>;
 };
 
 export type TranslateAnnouncementResult = {
@@ -3151,6 +3815,7 @@ export type UpdateSiteConfigInput = {
   magnet_telemetry_enabled?: InputMaybe<Scalars['Boolean']>;
   maintenance_mode?: InputMaybe<Scalars['Boolean']>;
   messaging_enabled?: InputMaybe<Scalars['Boolean']>;
+  online_battle_enabled?: InputMaybe<Scalars['Boolean']>;
   presence_enabled?: InputMaybe<Scalars['Boolean']>;
   pro_enabled?: InputMaybe<Scalars['Boolean']>;
   rooms_enabled?: InputMaybe<Scalars['Boolean']>;
@@ -3281,6 +3946,14 @@ export type UserPageActivityRow = {
   path?: Maybe<Scalars['String']>;
 };
 
+export type VoidBattleMatchResult = {
+  __typename?: 'VoidBattleMatchResult';
+  changed?: Maybe<Scalars['Boolean']>;
+  match_id?: Maybe<Scalars['String']>;
+  reverted_a?: Maybe<Scalars['Boolean']>;
+  reverted_b?: Maybe<Scalars['Boolean']>;
+};
+
 export type WcaAccount = {
   __typename?: 'WcaAccount';
   country_iso2?: Maybe<Scalars['String']>;
@@ -3366,6 +4039,7 @@ export type WcaCompetitorAssignment = {
   __typename?: 'WcaCompetitorAssignment';
   activityCode?: Maybe<Scalars['String']>;
   assignmentCode?: Maybe<Scalars['String']>;
+  chance?: Maybe<Scalars['Int']>;
   endTime?: Maybe<Scalars['String']>;
   eventName?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
@@ -3386,6 +4060,7 @@ export type WcaEventDetail = {
 export type WcaGroup = {
   __typename?: 'WcaGroup';
   activityCode?: Maybe<Scalars['String']>;
+  chance?: Maybe<Scalars['Int']>;
   competitors?: Maybe<Array<Maybe<WcaGroupCompetitor>>>;
   endTime?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
@@ -3410,6 +4085,16 @@ export type WcaLiveAdvancementCondition = {
 export type WcaLiveAttempt = {
   __typename?: 'WcaLiveAttempt';
   result?: Maybe<Scalars['Int']>;
+};
+
+export type WcaLiveChance = {
+  __typename?: 'WcaLiveChance';
+  attempts?: Maybe<Array<Maybe<WcaLiveAttempt>>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  chance?: Maybe<Scalars['Int']>;
+  counting?: Maybe<Scalars['Boolean']>;
+  noShow?: Maybe<Scalars['Boolean']>;
 };
 
 export type WcaLiveCompetitionOverview = {
@@ -3521,6 +4206,7 @@ export type WcaLiveResult = {
   average?: Maybe<Scalars['Int']>;
   averageRecordTag?: Maybe<Scalars['String']>;
   best?: Maybe<Scalars['Int']>;
+  chances?: Maybe<Array<WcaLiveChance>>;
   personCountryIso2?: Maybe<Scalars['String']>;
   personLiveId?: Maybe<Scalars['String']>;
   personName?: Maybe<Scalars['String']>;
@@ -3536,6 +4222,7 @@ export type WcaLiveRoundInfo = {
   cutoff?: Maybe<WcaLiveCutoff>;
   dayIndex?: Maybe<Scalars['Int']>;
   dayLabel?: Maybe<Scalars['String']>;
+  dualChance?: Maybe<Scalars['Boolean']>;
   finished?: Maybe<Scalars['Boolean']>;
   format?: Maybe<WcaLiveFormat>;
   isFinal?: Maybe<Scalars['Boolean']>;
@@ -3562,6 +4249,7 @@ export type WcaLiveRoundMapping = {
 export type WcaLiveRoundResults = {
   __typename?: 'WcaLiveRoundResults';
   active?: Maybe<Scalars['Boolean']>;
+  dualChance?: Maybe<Scalars['Boolean']>;
   finished?: Maybe<Scalars['Boolean']>;
   numberOfAttempts?: Maybe<Scalars['Int']>;
   results?: Maybe<Array<Maybe<WcaLiveResult>>>;
@@ -3574,10 +4262,13 @@ export type WcaLiveScheduleActivity = {
   __typename?: 'WcaLiveScheduleActivity';
   activityCode?: Maybe<Scalars['String']>;
   activityId?: Maybe<Scalars['Int']>;
+  chance?: Maybe<Scalars['Int']>;
   dayIndex?: Maybe<Scalars['Int']>;
   dayLabel?: Maybe<Scalars['String']>;
   endTime?: Maybe<Scalars['String']>;
+  isFinal?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
   startTime?: Maybe<Scalars['String']>;
 };
 
@@ -3699,6 +4390,7 @@ export type WcaRound = {
   advancementType?: Maybe<Scalars['String']>;
   cutoff?: Maybe<Scalars['Int']>;
   cutoffAttempts?: Maybe<Scalars['Int']>;
+  dualChance?: Maybe<Scalars['Boolean']>;
   format?: Maybe<Scalars['String']>;
   groups?: Maybe<Array<Maybe<WcaGroup>>>;
   roundNumber?: Maybe<Scalars['Int']>;
@@ -3709,6 +4401,7 @@ export type WcaScheduleAssignment = {
   __typename?: 'WcaScheduleAssignment';
   activityCode?: Maybe<Scalars['String']>;
   assignmentCode?: Maybe<Scalars['String']>;
+  chance?: Maybe<Scalars['Int']>;
   endTime?: Maybe<Scalars['String']>;
   eventName?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
@@ -3799,11 +4492,22 @@ export type ZktPublicAttemptResult = {
   attempts?: Maybe<Array<Maybe<Scalars['Int']>>>;
   average?: Maybe<Scalars['Int']>;
   best?: Maybe<Scalars['Int']>;
+  chances?: Maybe<Array<ZktPublicChance>>;
   clinched?: Maybe<Scalars['Boolean']>;
   competitor?: Maybe<ZktPublicCompetitor>;
   questionable?: Maybe<Scalars['Boolean']>;
   ranking?: Maybe<Scalars['Int']>;
   recordTags?: Maybe<ZktPublicRecordTags>;
+};
+
+export type ZktPublicChance = {
+  __typename?: 'ZktPublicChance';
+  attempts?: Maybe<Array<Maybe<Scalars['Int']>>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  chance?: Maybe<Scalars['Int']>;
+  counting?: Maybe<Scalars['Boolean']>;
+  noShow?: Maybe<Scalars['Boolean']>;
 };
 
 export type ZktPublicCompetitionDay = {
@@ -3904,6 +4608,7 @@ export type ZktPublicDetailRound = {
   cutoffCs?: Maybe<Scalars['Int']>;
   dayIndex?: Maybe<Scalars['Int']>;
   dayLabel?: Maybe<Scalars['String']>;
+  dualChance?: Maybe<Scalars['Boolean']>;
   endTime?: Maybe<Scalars['String']>;
   format?: Maybe<Scalars['String']>;
   groups?: Maybe<Array<Maybe<ZktPublicRoundGroup>>>;
@@ -4053,6 +4758,7 @@ export type ZktPublicRoundResults = {
   advancementType?: Maybe<Scalars['String']>;
   cutoffAttempts?: Maybe<Scalars['Int']>;
   cutoffCs?: Maybe<Scalars['Int']>;
+  dualChance?: Maybe<Scalars['Boolean']>;
   eventId?: Maybe<Scalars['String']>;
   eventName?: Maybe<Scalars['String']>;
   format?: Maybe<Scalars['String']>;
@@ -4074,6 +4780,7 @@ export type ZktPublicScheduleEntry = {
 
 export type ZktPublicScheduleItemRow = {
   __typename?: 'ZktPublicScheduleItemRow';
+  chance?: Maybe<Scalars['Int']>;
   dayLabel?: Maybe<Scalars['String']>;
   endTime?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
@@ -4099,7 +4806,289 @@ export type AdminProUsersQueryVariables = Exact<{
 
 export type AdminProUsersQuery = { __typename?: 'Query', adminUserSearch?: { __typename?: 'PaginatedUserAccountsForAdmin', hasMore?: boolean | null, total?: number | null, items?: Array<{ __typename?: 'UserAccountForAdmin', id?: string | null, username?: string | null, email?: string | null, created_at?: any | null, is_pro?: boolean | null, pro_expires_at?: any | null, iap_platform?: string | null, iap_product_id?: string | null, iap_cancellation_at?: any | null, iap_billing_issue_at?: any | null, iap_paused_until?: any | null, revenuecat_user_id?: string | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', storage_path?: string | null } | null } | null } | null> | null } | null };
 
-export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
+export type AlgSetItemFragmentFragment = { __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null };
+
+export type AlgSetOwnerFragmentFragment = { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null };
+
+export type AlgSetSummaryFragmentFragment = { __typename?: 'AlgSetSummary', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null };
+
+export type AlgSetHeadFragmentFragment = { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null };
+
+export type AlgSetFragmentFragment = { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null };
+
+export type MyAlgSetsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyAlgSetsQuery = { __typename?: 'Query', myAlgSets?: { __typename?: 'MyAlgSets', own?: Array<{ __typename?: 'AlgSetSummary', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null> | null, saved?: Array<{ __typename?: 'SavedAlgSet', set_id?: string | null, saved_at?: any | null, unavailable?: boolean | null, set?: { __typename?: 'AlgSetSummary', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null } | null> | null } | null };
+
+export type AlgSetQueryVariables = Exact<{
+  code: Scalars['String'];
+}>;
+
+
+export type AlgSetQuery = { __typename?: 'Query', algSet?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type AlgSetMetaQueryVariables = Exact<{
+  code: Scalars['String'];
+}>;
+
+
+export type AlgSetMetaQuery = { __typename?: 'Query', algSet?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type CommunityAlgSetsQueryVariables = Exact<{
+  q?: InputMaybe<Scalars['String']>;
+  sort?: InputMaybe<Scalars['String']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  category?: InputMaybe<Scalars['String']>;
+  page?: InputMaybe<Scalars['Int']>;
+  page_size?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type CommunityAlgSetsQuery = { __typename?: 'Query', communityAlgSets?: { __typename?: 'CommunityAlgSetPage', total?: number | null, has_more?: boolean | null, items?: Array<{ __typename?: 'AlgSetSummary', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null> | null } | null };
+
+export type CreateAlgSetMutationVariables = Exact<{
+  input: AlgSetCreateInput;
+}>;
+
+
+export type CreateAlgSetMutation = { __typename?: 'Mutation', createAlgSet?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type UpdateAlgSetMutationVariables = Exact<{
+  id: Scalars['String'];
+  input: AlgSetUpdateInput;
+}>;
+
+
+export type UpdateAlgSetMutation = { __typename?: 'Mutation', updateAlgSet?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type DeleteAlgSetMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DeleteAlgSetMutation = { __typename?: 'Mutation', deleteAlgSet?: boolean | null };
+
+export type ResetAlgSetCodeMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type ResetAlgSetCodeMutation = { __typename?: 'Mutation', resetAlgSetCode?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type AddAlgSetItemsMutationVariables = Exact<{
+  set_id: Scalars['String'];
+  items: Array<AlgSetItemInput> | AlgSetItemInput;
+}>;
+
+
+export type AddAlgSetItemsMutation = { __typename?: 'Mutation', addAlgSetItems?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type UpdateAlgSetItemMutationVariables = Exact<{
+  item_id: Scalars['String'];
+  algorithm: Scalars['String'];
+}>;
+
+
+export type UpdateAlgSetItemMutation = { __typename?: 'Mutation', updateAlgSetItem?: { __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null };
+
+export type RemoveAlgSetItemsMutationVariables = Exact<{
+  set_id: Scalars['String'];
+  item_ids: Array<Scalars['String']> | Scalars['String'];
+}>;
+
+
+export type RemoveAlgSetItemsMutation = { __typename?: 'Mutation', removeAlgSetItems?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type ReorderAlgSetItemsMutationVariables = Exact<{
+  set_id: Scalars['String'];
+  item_ids: Array<Scalars['String']> | Scalars['String'];
+}>;
+
+
+export type ReorderAlgSetItemsMutation = { __typename?: 'Mutation', reorderAlgSetItems?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, items?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type SaveAlgSetMutationVariables = Exact<{
+  set_id: Scalars['String'];
+}>;
+
+
+export type SaveAlgSetMutation = { __typename?: 'Mutation', saveAlgSet?: boolean | null };
+
+export type UnsaveAlgSetMutationVariables = Exact<{
+  set_id: Scalars['String'];
+}>;
+
+
+export type UnsaveAlgSetMutation = { __typename?: 'Mutation', unsaveAlgSet?: boolean | null };
+
+export type ReportAlgSetMutationVariables = Exact<{
+  set_id: Scalars['String'];
+  reason: Scalars['String'];
+  note?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type ReportAlgSetMutation = { __typename?: 'Mutation', reportAlgSet?: boolean | null };
+
+export type AdminSetAlgSetHiddenMutationVariables = Exact<{
+  set_id: Scalars['String'];
+  hidden: Scalars['Boolean'];
+  reason?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type AdminSetAlgSetHiddenMutation = { __typename?: 'Mutation', adminSetAlgSetHidden?: { __typename?: 'AlgSet', id?: string | null, code?: string | null, name?: string | null, description?: string | null, visibility?: string | null, item_count?: number | null, save_count?: number | null, categories?: Array<string | null> | null, puzzles?: Array<string | null> | null, published_at?: any | null, updated_at?: any | null, created_at?: any | null, hidden?: boolean | null, is_owner?: boolean | null, is_saved?: boolean | null, preview?: Array<{ __typename?: 'AlgSetItem', id?: string | null, category?: string | null, case_name?: string | null, subset?: string | null, puzzle?: string | null, algorithm?: string | null, position?: number | null } | null> | null, owner?: { __typename?: 'AlgSetOwner', id?: string | null, username?: string | null, verified?: boolean | null, avatar_path?: string | null } | null } | null };
+
+export type BattlePlayerFragmentFragment = { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null };
+
+export type BattleLeaderboardRowFragmentFragment = { __typename?: 'BattleLeaderboardRow', rank?: number | null, user_id?: string | null, username?: string | null, pfp_image_url?: string | null, rating?: number | null, provisional?: boolean | null, games?: number | null, wins?: number | null, losses?: number | null, draws?: number | null };
+
+export type BattleLeaderboardQueryVariables = Exact<{
+  puzzle?: InputMaybe<Scalars['String']>;
+  page?: InputMaybe<Scalars['Int']>;
+  search?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type BattleLeaderboardQuery = { __typename?: 'Query', battleLeaderboard?: { __typename?: 'BattleLeaderboardPage', total_count?: number | null, page?: number | null, page_size?: number | null, rows?: Array<{ __typename?: 'BattleLeaderboardRow', rank?: number | null, user_id?: string | null, username?: string | null, pfp_image_url?: string | null, rating?: number | null, provisional?: boolean | null, games?: number | null, wins?: number | null, losses?: number | null, draws?: number | null } | null> | null } | null };
+
+export type MyBattleRatingQueryVariables = Exact<{
+  puzzle?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type MyBattleRatingQuery = { __typename?: 'Query', myBattleRating?: { __typename?: 'MyBattleRating', puzzle?: string | null, rating?: number | null, provisional?: boolean | null, games?: number | null, wins?: number | null, losses?: number | null, draws?: number | null, peak_rating?: number | null, rank?: number | null } | null };
+
+export type UserBattleRatingQueryVariables = Exact<{
+  userId: Scalars['String'];
+  puzzle?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type UserBattleRatingQuery = { __typename?: 'Query', userBattleRating?: { __typename?: 'MyBattleRating', puzzle?: string | null, rating?: number | null, provisional?: boolean | null, games?: number | null, rank?: number | null } | null };
+
+export type BattleMatchHistoryQueryVariables = Exact<{
+  userId: Scalars['String'];
+  page?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type BattleMatchHistoryQuery = { __typename?: 'Query', battleMatchHistory?: { __typename?: 'BattleMatchHistoryPage', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'BattleMatchSummary', id?: string | null, puzzle?: string | null, ended_at?: any | null, result?: string | null, score_for?: number | null, score_against?: number | null, rated?: boolean | null, is_rematch?: boolean | null, end_reason?: string | null, rating_before?: number | null, rating_after?: number | null, delta?: number | null, opponent?: { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null } | null } | null> | null } | null };
+
+export type BattleMatchQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type BattleMatchQuery = { __typename?: 'Query', battleMatch?: { __typename?: 'BattleMatchDetail', id?: string | null, puzzle?: string | null, status?: string | null, end_reason?: string | null, rated?: boolean | null, is_rematch?: boolean | null, winner?: string | null, rounds_a?: number | null, rounds_b?: number | null, rating_a_before?: number | null, rating_a_after?: number | null, rating_b_before?: number | null, rating_b_after?: number | null, started_at?: any | null, ended_at?: any | null, voided_at?: any | null, flags?: Array<string | null> | null, viewer_side?: string | null, player_a?: { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null } | null, player_b?: { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null } | null, rounds?: Array<{ __typename?: 'BattleRoundDetail', index?: number | null, scramble?: string | null, winner?: string | null, a_time_ms?: number | null, a_penalty?: string | null, b_time_ms?: number | null, b_penalty?: string | null, a_flags?: Array<string | null> | null, b_flags?: Array<string | null> | null, a_moves?: string | null, b_moves?: string | null } | null> | null } | null };
+
+export type AdminFlaggedBattleMatchesQueryVariables = Exact<{
+  page?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type AdminFlaggedBattleMatchesQuery = { __typename?: 'Query', adminFlaggedBattleMatches?: { __typename?: 'AdminBattleMatchPage', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'AdminBattleMatchRow', id?: string | null, puzzle?: string | null, status?: string | null, end_reason?: string | null, rated?: boolean | null, winner?: string | null, rounds_a?: number | null, rounds_b?: number | null, ended_at?: any | null, voided_at?: any | null, flags?: Array<string | null> | null, player_a?: { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null } | null, player_b?: { __typename?: 'BattlePlayer', id?: string | null, username?: string | null, pfp_image_url?: string | null } | null } | null> | null } | null };
+
+export type AdminVoidBattleMatchMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type AdminVoidBattleMatchMutation = { __typename?: 'Mutation', adminVoidBattleMatch?: { __typename?: 'VoidBattleMatchResult', match_id?: string | null, changed?: boolean | null, reverted_a?: boolean | null, reverted_b?: boolean | null } | null };
+
+export type CubeCalibrationFragmentFragment = { __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null };
+
+export type CubeFragmentFragment = { __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null };
+
+export type CubeMainFragmentFragment = { __typename?: 'CubeMain', puzzle?: string | null, cube_id?: string | null, set_at?: any | null };
+
+export type MyCubeStateQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyCubeStateQuery = { __typename?: 'Query', myCubeState?: { __typename?: 'MyCubeState', cubes?: Array<{ __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null> | null, mains?: Array<{ __typename?: 'CubeMain', puzzle?: string | null, cube_id?: string | null, set_at?: any | null } | null> | null } | null };
+
+export type CreateCubeMutationVariables = Exact<{
+  input: CubeInput;
+}>;
+
+
+export type CreateCubeMutation = { __typename?: 'Mutation', createCube?: { __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null };
+
+export type UpdateCubeMutationVariables = Exact<{
+  id: Scalars['String'];
+  input: CubeUpdateInput;
+}>;
+
+
+export type UpdateCubeMutation = { __typename?: 'Mutation', updateCube?: { __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null };
+
+export type SetCubeArchivedMutationVariables = Exact<{
+  id: Scalars['String'];
+  archived: Scalars['Boolean'];
+}>;
+
+
+export type SetCubeArchivedMutation = { __typename?: 'Mutation', setCubeArchived?: { __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null };
+
+export type DeleteCubeMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DeleteCubeMutation = { __typename?: 'Mutation', deleteCube?: boolean | null };
+
+export type SetMainCubeMutationVariables = Exact<{
+  puzzle: Scalars['String'];
+  cube_id?: InputMaybe<Scalars['String']>;
+  set_at: Scalars['DateTime'];
+}>;
+
+
+export type SetMainCubeMutation = { __typename?: 'Mutation', setMainCube?: { __typename?: 'CubeMain', puzzle?: string | null, cube_id?: string | null, set_at?: any | null } | null };
+
+export type EnsureSmartCubeMutationVariables = Exact<{
+  ble_device_id: Scalars['String'];
+  ble_name?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type EnsureSmartCubeMutation = { __typename?: 'Mutation', ensureSmartCube?: { __typename?: 'Cube', id?: string | null, puzzle?: string | null, name?: string | null, brand?: string | null, is_smart?: boolean | null, ble_device_id?: string | null, ble_name?: string | null, legacy_smart_device_ids?: Array<string | null> | null, archived_at?: any | null, created_at?: any | null, updated_at?: any | null, solve_count?: number | null, first_used_at?: any | null, last_used_at?: any | null, calibrations?: Array<{ __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null } | null };
+
+export type SaveCubeCalibrationMutationVariables = Exact<{
+  input: CubeCalibrationInput;
+}>;
+
+
+export type SaveCubeCalibrationMutation = { __typename?: 'Mutation', saveCubeCalibration?: { __typename?: 'CubeCalibration', id?: string | null, cube_id?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null };
+
+export type DeleteCubeCalibrationMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DeleteCubeCalibrationMutation = { __typename?: 'Mutation', deleteCubeCalibration?: boolean | null };
+
+export type AdminCubeCalibrationsQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']>;
+  offset?: InputMaybe<Scalars['Int']>;
+  username?: InputMaybe<Scalars['String']>;
+  puzzle?: InputMaybe<Scalars['String']>;
+  platform?: InputMaybe<Scalars['String']>;
+  deviceModel?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type AdminCubeCalibrationsQuery = { __typename?: 'Query', adminCubeCalibrations?: Array<{ __typename?: 'AdminCubeCalibrationRow', id?: string | null, user_id?: string | null, username?: string | null, email?: string | null, cube_id?: string | null, cube_name?: string | null, cube_brand?: string | null, puzzle?: string | null, puzzle_name?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, app_version?: string | null, sensor_name?: string | null, peak_ut?: number | null, rest_ut?: number | null, noise_ut?: number | null, near_min_ut?: number | null, far_max_ut?: number | null, quality?: string | null, current_near_min_ut?: number | null, current_far_max_ut?: number | null, current_quality?: string | null, noisy?: boolean | null, sample_count?: number | null, sweep_ms?: number | null, rate_hz?: number | null, algo_version?: number | null, measured_at?: any | null, created_at?: any | null, updated_at?: any | null } | null> | null };
+
+export type AdminCubeCalibrationSummaryQueryVariables = Exact<{
+  days?: InputMaybe<Scalars['Int']>;
+}>;
+
+
+export type AdminCubeCalibrationSummaryQuery = { __typename?: 'Query', adminCubeCalibrationSummary?: Array<{ __typename?: 'AdminCubeCalibrationSummary', puzzle?: string | null, platform?: string | null, device_model?: string | null, calibrations?: number | null, distinct_users?: number | null, median_rest_ut?: number | null, p10_rest_ut?: number | null, median_peak_ut?: number | null, median_noise_ut?: number | null, weak_ratio?: number | null, telemetry_placements?: number | null, telemetry_median_near_ut?: number | null, telemetry_lifts?: number | null, telemetry_rejects?: number | null } | null> | null };
+
+export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, cube_id?: string | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
 
 export type StatsFragmentFragment = { __typename?: 'Stats', profile_views?: number | null, solve_views?: number | null };
 
@@ -4113,7 +5102,7 @@ export type TrainerAlgorithmFragmentFragment = { __typename?: 'TrainerAlgorithm'
 
 export type SessionFragmentFragment = { __typename?: 'Session', id?: string | null, name?: string | null, created_at?: any | null, order?: number | null };
 
-export type SolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null };
+export type SolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null };
 
 export type CustomCubeTypeFragmentFragment = { __typename?: 'CustomCubeType', id?: string | null, user_id?: string | null, name?: string | null, created_at?: any | null, scramble?: string | null, private?: boolean | null };
 
@@ -4139,19 +5128,19 @@ type UserAccountFragment_UserAccountForAdmin_Fragment = { __typename?: 'UserAcco
 
 export type UserAccountFragmentFragment = UserAccountFragment_InternalUserAccount_Fragment | UserAccountFragment_UserAccount_Fragment | UserAccountFragment_UserAccountForAdmin_Fragment;
 
-export type SolveWithUserFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null };
+export type SolveWithUserFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, cube?: { __typename?: 'SolveCube', id?: string | null, name?: string | null, brand?: string | null, puzzle?: string | null, is_smart?: boolean | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null };
 
 export type NotificationPreferenceFragmentFragment = { __typename?: 'NotificationPreference', marketing_emails?: boolean | null, support_ticket_reply?: boolean | null, zkt_competition_announced?: boolean | null, competition_groups_published?: boolean | null, competition_schedule_changed?: boolean | null, competition_results_official?: boolean | null };
 
 export type NotificationFragmentFragment = { __typename?: 'Notification', id?: string | null, user_id?: string | null, notification_type?: string | null, notification_category_name?: string | null, triggering_user_id?: string | null, in_app_message?: string | null, read_at?: any | null, message?: string | null, icon?: string | null, link?: string | null, link_text?: string | null, subject?: string | null, created_at?: any | null, triggering_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
 
-export type TopSolveFragmentFragment = { __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+export type TopSolveFragmentFragment = { __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
 
-export type TopAverageFragmentFragment = { __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+export type TopAverageFragmentFragment = { __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
 
-export type ProfileFragmentFragment = { __typename?: 'Profile', id?: string | null, bio?: string | null, three_method?: string | null, three_goal?: string | null, main_three_cube?: string | null, favorite_event?: string | null, youtube_link?: string | null, twitter_link?: string | null, user_id?: string | null, reddit_link?: string | null, twitch_link?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, top_solves?: Array<{ __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, top_averages?: Array<{ __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, header_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null, pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null };
+export type ProfileFragmentFragment = { __typename?: 'Profile', id?: string | null, bio?: string | null, three_method?: string | null, three_goal?: string | null, main_three_cube?: string | null, favorite_event?: string | null, youtube_link?: string | null, twitter_link?: string | null, user_id?: string | null, reddit_link?: string | null, twitch_link?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, top_solves?: Array<{ __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, top_averages?: Array<{ __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, header_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null, pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null };
 
-export type ReportFragmentFragment = { __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+export type ReportFragmentFragment = { __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, alg_set_id?: string | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, alg_set?: { __typename?: 'ReportAlgSet', id?: string | null, code?: string | null, name?: string | null, visibility?: string | null, hidden?: boolean | null, hidden_reason?: string | null } | null };
 
 export type IntegrationFragmentFragment = { __typename?: 'Integration', id?: string | null, auth_expires_at?: any | null, service_name?: IntegrationType | null, created_at?: any | null };
 
@@ -4159,13 +5148,13 @@ export type CustomTrainerFragmentFragment = { __typename?: 'CustomTrainer', id?:
 
 export type PublicCustomTrainerRecordFragmentFragment = { __typename?: 'CustomTrainer', user_id?: string | null, like_count?: number | null, id?: string | null, solution?: string | null, scrambles?: string | null, colors?: string | null, description?: string | null, alt_solutions?: string | null, group_name?: string | null, algo_type?: string | null, three_d?: boolean | null, cube_type?: string | null, name?: string | null, key?: string | null, copy_of_id?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, copy_of?: { __typename?: 'CustomTrainer', user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null } | null } | null };
 
-export type TimerBackgroundFragmentFragment = { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, id?: string | null, url?: string | null };
+export type TimerBackgroundFragmentFragment = { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, mobile_storage_path?: string | null, mobile_media_type?: string | null, mobile_same_as_desktop?: boolean | null, id?: string | null, url?: string | null };
 
-type UserForMeFragment_InternalUserAccount_Fragment = { __typename?: 'InternalUserAccount', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserForMeFragment_InternalUserAccount_Fragment = { __typename?: 'InternalUserAccount', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, mobile_storage_path?: string | null, mobile_media_type?: string | null, mobile_same_as_desktop?: boolean | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
-type UserForMeFragment_UserAccount_Fragment = { __typename?: 'UserAccount', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserForMeFragment_UserAccount_Fragment = { __typename?: 'UserAccount', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, mobile_storage_path?: string | null, mobile_media_type?: string | null, mobile_same_as_desktop?: boolean | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
-type UserForMeFragment_UserAccountForAdmin_Fragment = { __typename?: 'UserAccountForAdmin', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserForMeFragment_UserAccountForAdmin_Fragment = { __typename?: 'UserAccountForAdmin', email?: string | null, first_name?: string | null, last_name?: string | null, pending_email?: string | null, email_verified?: boolean | null, has_password?: boolean | null, join_country?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, timer_background?: { __typename?: 'TimerBackground', created_at?: any | null, hex?: string | null, storage_path?: string | null, media_type?: string | null, mobile_storage_path?: string | null, mobile_media_type?: string | null, mobile_same_as_desktop?: boolean | null, id?: string | null, url?: string | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
 export type UserForMeFragmentFragment = UserForMeFragment_InternalUserAccount_Fragment | UserForMeFragment_UserAccount_Fragment | UserForMeFragment_UserAccountForAdmin_Fragment;
 
@@ -4173,9 +5162,9 @@ export type UserAccountSolvesSummaryFragmentFragment = { __typename?: 'UserAccou
 
 export type UserAccountSummaryFragmentFragment = { __typename?: 'UserAccountSummary', solves?: number | null, reports_for?: number | null, reports_created?: number | null, profile_views?: number | null, bans?: number | null, timer_solves?: Array<{ __typename?: 'UserAccountSolvesSummary', count?: number | null, average?: number | null, min_time?: number | null, max_time?: number | null, sum?: number | null, cube_type?: string | null, scramble_subset?: string | null } | null> | null };
 
-export type UserForAdminFragmentFragment = { __typename?: 'UserAccountForAdmin', email?: string | null, join_country?: string | null, join_ip?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, reports_for?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, settings?: { __typename?: 'Setting', id?: string | null, user_id?: string | null, focus_mode?: boolean | null, freeze_time?: number | null, inspection?: boolean | null, manual_entry?: boolean | null, inspection_delay?: number | null, session_id?: string | null, inverse_time_list?: boolean | null, hide_time_when_solving?: boolean | null, nav_collapsed?: boolean | null, timer_decimal_points?: number | null, pb_confetti?: boolean | null, play_inspection_sound?: boolean | null, zero_out_time_after_solve?: boolean | null, confirm_delete_solve?: boolean | null, use_space_with_smart_cube?: boolean | null, use_2d_scramble_visual?: boolean | null, require_period_in_manual_time_entry?: boolean | null, cube_type?: string | null, scramble_subset?: string | null, scramble_top_color?: string | null, custom_cube_types?: Array<{ __typename?: 'CustomCubeType', id?: string | null, user_id?: string | null, name?: string | null, created_at?: any | null, scramble?: string | null, private?: boolean | null } | null> | null } | null, notification_preferences?: { __typename?: 'NotificationPreference', marketing_emails?: boolean | null, support_ticket_reply?: boolean | null, zkt_competition_announced?: boolean | null, competition_groups_published?: boolean | null, competition_schedule_changed?: boolean | null, competition_results_official?: boolean | null } | null, summary?: { __typename?: 'UserAccountSummary', solves?: number | null, reports_for?: number | null, reports_created?: number | null, profile_views?: number | null, bans?: number | null, timer_solves?: Array<{ __typename?: 'UserAccountSolvesSummary', count?: number | null, average?: number | null, min_time?: number | null, max_time?: number | null, sum?: number | null, cube_type?: string | null, scramble_subset?: string | null } | null> | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+export type UserForAdminFragmentFragment = { __typename?: 'UserAccountForAdmin', email?: string | null, join_country?: string | null, join_ip?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, reports_for?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, alg_set_id?: string | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, alg_set?: { __typename?: 'ReportAlgSet', id?: string | null, code?: string | null, name?: string | null, visibility?: string | null, hidden?: boolean | null, hidden_reason?: string | null } | null } | null> | null, settings?: { __typename?: 'Setting', id?: string | null, user_id?: string | null, focus_mode?: boolean | null, freeze_time?: number | null, inspection?: boolean | null, manual_entry?: boolean | null, inspection_delay?: number | null, session_id?: string | null, inverse_time_list?: boolean | null, hide_time_when_solving?: boolean | null, nav_collapsed?: boolean | null, timer_decimal_points?: number | null, pb_confetti?: boolean | null, play_inspection_sound?: boolean | null, zero_out_time_after_solve?: boolean | null, confirm_delete_solve?: boolean | null, use_space_with_smart_cube?: boolean | null, use_2d_scramble_visual?: boolean | null, require_period_in_manual_time_entry?: boolean | null, cube_type?: string | null, scramble_subset?: string | null, scramble_top_color?: string | null, custom_cube_types?: Array<{ __typename?: 'CustomCubeType', id?: string | null, user_id?: string | null, name?: string | null, created_at?: any | null, scramble?: string | null, private?: boolean | null } | null> | null } | null, notification_preferences?: { __typename?: 'NotificationPreference', marketing_emails?: boolean | null, support_ticket_reply?: boolean | null, zkt_competition_announced?: boolean | null, competition_groups_published?: boolean | null, competition_schedule_changed?: boolean | null, competition_results_official?: boolean | null } | null, summary?: { __typename?: 'UserAccountSummary', solves?: number | null, reports_for?: number | null, reports_created?: number | null, profile_views?: number | null, bans?: number | null, timer_solves?: Array<{ __typename?: 'UserAccountSolvesSummary', count?: number | null, average?: number | null, min_time?: number | null, max_time?: number | null, sum?: number | null, cube_type?: string | null, scramble_subset?: string | null } | null> | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
-export type ReportSummaryFragmentFragment = { __typename?: 'ReportSummary', last_report?: any | null, first_report?: any | null, count?: number | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reports?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+export type ReportSummaryFragmentFragment = { __typename?: 'ReportSummary', last_report?: any | null, first_report?: any | null, count?: number | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reports?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, alg_set_id?: string | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, alg_set?: { __typename?: 'ReportAlgSet', id?: string | null, code?: string | null, name?: string | null, visibility?: string | null, hidden?: boolean | null, hidden_reason?: string | null } | null } | null> | null };
 
 export type DmSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, dnf?: boolean | null, plus_two?: boolean | null, cube_type?: string | null, scramble_subset?: string | null, scramble?: string | null, share_code?: string | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, created_at?: any | null };
 
@@ -4223,7 +5212,7 @@ export type UpdateSiteConfigMutationVariables = Exact<{
 }>;
 
 
-export type UpdateSiteConfigMutation = { __typename?: 'Mutation', updateSiteConfig?: { __typename?: 'SiteConfig', id?: string | null, maintenance_mode?: boolean | null, trainer_enabled?: boolean | null, community_enabled?: boolean | null, leaderboards_enabled?: boolean | null, rooms_enabled?: boolean | null, battle_enabled?: boolean | null, messaging_enabled?: boolean | null, presence_enabled?: boolean | null, pro_enabled?: boolean | null, wca_backfill_enabled?: boolean | null, zkt_backfill_enabled?: boolean | null, smart_telemetry_enabled?: boolean | null, magnet_telemetry_enabled?: boolean | null, updated_at?: any | null, featureOverrides?: Array<{ __typename?: 'FeatureOverrideEntry', feature?: string | null, mode?: string | null, users?: Array<{ __typename?: 'FeatureOverrideUser', id?: string | null, username?: string | null } | null> | null } | null> | null } | null };
+export type UpdateSiteConfigMutation = { __typename?: 'Mutation', updateSiteConfig?: { __typename?: 'SiteConfig', id?: string | null, maintenance_mode?: boolean | null, trainer_enabled?: boolean | null, community_enabled?: boolean | null, leaderboards_enabled?: boolean | null, rooms_enabled?: boolean | null, battle_enabled?: boolean | null, messaging_enabled?: boolean | null, presence_enabled?: boolean | null, pro_enabled?: boolean | null, wca_backfill_enabled?: boolean | null, zkt_backfill_enabled?: boolean | null, smart_telemetry_enabled?: boolean | null, magnet_telemetry_enabled?: boolean | null, online_battle_enabled?: boolean | null, updated_at?: any | null, featureOverrides?: Array<{ __typename?: 'FeatureOverrideEntry', feature?: string | null, mode?: string | null, users?: Array<{ __typename?: 'FeatureOverrideUser', id?: string | null, username?: string | null } | null> | null } | null> | null } | null };
 
 export type MergeSessionsMutationVariables = Exact<{
   oldSessionId?: InputMaybe<Scalars['String']>;
@@ -4232,6 +5221,15 @@ export type MergeSessionsMutationVariables = Exact<{
 
 
 export type MergeSessionsMutation = { __typename?: 'Mutation', mergeSessions?: { __typename?: 'Session', id?: string | null, name?: string | null, created_at?: any | null, order?: number | null } | null };
+
+export type SplitSessionMutationVariables = Exact<{
+  sessionId: Scalars['String'];
+  buckets: Array<SessionBucketInput> | SessionBucketInput;
+  name: Scalars['String'];
+}>;
+
+
+export type SplitSessionMutation = { __typename?: 'Mutation', splitSession?: { __typename?: 'Session', id?: string | null, name?: string | null, created_at?: any | null, order?: number | null } | null };
 
 export type CreateSessionMutationVariables = Exact<{
   input?: InputMaybe<SessionInput>;
@@ -4305,13 +5303,6 @@ export type TranslateAnnouncementContentMutationVariables = Exact<{
 
 
 export type TranslateAnnouncementContentMutation = { __typename?: 'Mutation', translateAnnouncementContent?: { __typename?: 'TranslateAnnouncementResult', title?: { __typename?: 'TranslatedText', en?: string | null, es?: string | null, ru?: string | null, zh?: string | null } | null, content?: { __typename?: 'TranslatedText', en?: string | null, es?: string | null, ru?: string | null, zh?: string | null } | null } | null };
-
-export type CreateTrainerAlternativeMutationVariables = Exact<{
-  input: TrainerAlternativeCreateInput;
-}>;
-
-
-export type CreateTrainerAlternativeMutation = { __typename?: 'Mutation', createTrainerAlternative?: { __typename?: 'TrainerAlternative', id?: string | null, algorithm?: string | null, original_input?: string | null, setup?: string | null, ll_pattern?: string | null } | null };
 
 export type AdminDeleteTrainerAlternativeMutationVariables = Exact<{
   id: Scalars['String'];
@@ -4479,6 +5470,20 @@ export type RecordMagnetTelemetryMutationVariables = Exact<{
 
 export type RecordMagnetTelemetryMutation = { __typename?: 'Mutation', recordMagnetTelemetry?: { __typename?: 'MagnetTelemetryResult', accepted?: number | null, enabled?: boolean | null } | null };
 
+export type RecordProfileViewMutationVariables = Exact<{
+  username: Scalars['String'];
+}>;
+
+
+export type RecordProfileViewMutation = { __typename?: 'Mutation', recordProfileView: boolean };
+
+export type RecordSolveViewMutationVariables = Exact<{
+  shareCode: Scalars['String'];
+}>;
+
+
+export type RecordSolveViewMutation = { __typename?: 'Mutation', recordSolveView: boolean };
+
 export type AdminSupportTicketsQueryVariables = Exact<{
   resolved?: InputMaybe<Scalars['Boolean']>;
 }>;
@@ -4503,10 +5508,15 @@ export type GetIapStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetIapStatusQuery = { __typename?: 'Query', getIapStatus?: { __typename?: 'IapStatus', is_pro?: boolean | null, pro_expires_at?: any | null, iap_platform?: string | null, iap_product_id?: string | null, iap_cancellation_at?: any | null, iap_billing_issue_at?: any | null, iap_paused_until?: any | null, is_iap_pro?: boolean | null, can_purchase?: boolean | null } | null };
 
+export type TrainerOptionsSettingQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TrainerOptionsSettingQuery = { __typename?: 'Query', settings?: { __typename?: 'Setting', id?: string | null, trainer_options?: string | null } | null };
+
 export type SiteConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SiteConfigQuery = { __typename?: 'Query', siteConfig?: { __typename?: 'SiteConfig', id?: string | null, maintenance_mode?: boolean | null, trainer_enabled?: boolean | null, community_enabled?: boolean | null, leaderboards_enabled?: boolean | null, rooms_enabled?: boolean | null, battle_enabled?: boolean | null, messaging_enabled?: boolean | null, presence_enabled?: boolean | null, pro_enabled?: boolean | null, wca_backfill_enabled?: boolean | null, zkt_backfill_enabled?: boolean | null, smart_telemetry_enabled?: boolean | null, magnet_telemetry_enabled?: boolean | null, method_steps_version?: number | null, updated_at?: any | null, featureOverrides?: Array<{ __typename?: 'FeatureOverrideEntry', feature?: string | null, mode?: string | null, users?: Array<{ __typename?: 'FeatureOverrideUser', id?: string | null, username?: string | null } | null> | null } | null> | null } | null };
+export type SiteConfigQuery = { __typename?: 'Query', siteConfig?: { __typename?: 'SiteConfig', id?: string | null, maintenance_mode?: boolean | null, trainer_enabled?: boolean | null, community_enabled?: boolean | null, leaderboards_enabled?: boolean | null, rooms_enabled?: boolean | null, battle_enabled?: boolean | null, messaging_enabled?: boolean | null, presence_enabled?: boolean | null, pro_enabled?: boolean | null, wca_backfill_enabled?: boolean | null, zkt_backfill_enabled?: boolean | null, smart_telemetry_enabled?: boolean | null, magnet_telemetry_enabled?: boolean | null, online_battle_enabled?: boolean | null, method_steps_version?: number | null, updated_at?: any | null, featureOverrides?: Array<{ __typename?: 'FeatureOverrideEntry', feature?: string | null, mode?: string | null, users?: Array<{ __typename?: 'FeatureOverrideUser', id?: string | null, username?: string | null } | null> | null } | null> | null } | null };
 
 export type OnlineStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4535,14 +5545,14 @@ export type SolveByShareCodeQueryVariables = Exact<{
 }>;
 
 
-export type SolveByShareCodeQuery = { __typename?: 'Query', solveByShareCode?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null };
+export type SolveByShareCodeQuery = { __typename?: 'Query', solveByShareCode?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, cube?: { __typename?: 'SolveCube', id?: string | null, name?: string | null, brand?: string | null, puzzle?: string | null, is_smart?: boolean | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null };
 
 export type ProfileQueryVariables = Exact<{
   username?: InputMaybe<Scalars['String']>;
 }>;
 
 
-export type ProfileQuery = { __typename?: 'Query', profile: { __typename?: 'Profile', id?: string | null, bio?: string | null, three_method?: string | null, three_goal?: string | null, main_three_cube?: string | null, favorite_event?: string | null, youtube_link?: string | null, twitter_link?: string | null, user_id?: string | null, reddit_link?: string | null, twitch_link?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, top_solves?: Array<{ __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, top_averages?: Array<{ __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, smart_device?: { __typename?: 'SmartDevice', id?: string | null, name?: string | null, internal_name?: string | null, device_id?: string | null, created_at?: any | null } | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, header_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null, pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } };
+export type ProfileQuery = { __typename?: 'Query', profile: { __typename?: 'Profile', id?: string | null, bio?: string | null, three_method?: string | null, three_goal?: string | null, main_three_cube?: string | null, favorite_event?: string | null, youtube_link?: string | null, twitter_link?: string | null, user_id?: string | null, reddit_link?: string | null, twitch_link?: string | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, top_solves?: Array<{ __typename?: 'TopSolve', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, top_averages?: Array<{ __typename?: 'TopAverage', id?: string | null, time?: number | null, cube_type?: string | null, scramble_subset?: string | null, created_at?: any | null, solve_1?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_2?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_3?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_4?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, solve_5?: { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, user_id?: string | null, scramble?: string | null, session_id?: string | null, started_at?: any | null, ended_at?: any | null, dnf?: boolean | null, plus_two?: boolean | null, notes?: string | null, created_at?: any | null, is_smart_cube?: boolean | null, is_virtual_cube?: boolean | null, smart_turn_count?: number | null, share_code?: string | null, smart_turns?: string | null, smart_put_down_time?: number | null, inspection_time?: number | null, phase_splits?: string | null, cube_id?: string | null, solve_method_steps?: Array<{ __typename?: 'SolveMethodStep', id?: string | null, turn_count?: number | null, turns?: string | null, total_time?: number | null, tps?: number | null, recognition_time?: number | null, oll_case_key?: string | null, pll_case_key?: string | null, case_key?: string | null, case_set?: string | null, skipped?: boolean | null, parent_name?: string | null, method_name?: string | null, step_index?: number | null, step_name?: string | null, created_at?: any | null } | null> | null } | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null, wca_country_iso2?: string | null, zkt_country_iso2?: string | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, header_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null, pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } };
 
 export type UserSearchQueryVariables = Exact<{
   pageArgs?: InputMaybe<PaginationArgsInput>;
@@ -4562,11 +5572,6 @@ export type GetActiveAnnouncementsQueryVariables = Exact<{ [key: string]: never;
 
 
 export type GetActiveAnnouncementsQuery = { __typename?: 'Query', getActiveAnnouncements?: Array<{ __typename?: 'Announcement', id?: string | null, title?: string | null, content?: string | null, category?: string | null, priority?: number | null, imageUrl?: string | null, targetUrl?: string | null, createdAt?: any | null, hasViewed?: boolean | null, showInApp?: boolean | null } | null> | null };
-
-export type GetUnreadAnnouncementCountQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetUnreadAnnouncementCountQuery = { __typename?: 'Query', getUnreadAnnouncementCount?: { __typename?: 'UnreadAnnouncementCount', count?: number | null } | null };
 
 export type GetAllAnnouncementsQueryVariables = Exact<{
   filter?: InputMaybe<AnnouncementFilterInput>;
@@ -4590,6 +5595,20 @@ export type TrainerAlternativesQueryVariables = Exact<{
 
 
 export type TrainerAlternativesQuery = { __typename?: 'Query', trainerAlternatives?: Array<{ __typename?: 'TrainerAlternative', id?: string | null, algorithm?: string | null, original_input?: string | null, setup?: string | null, ll_pattern?: string | null, created_at?: any | null } | null> | null };
+
+export type TrainerLibraryQueryVariables = Exact<{
+  knownVersion?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type TrainerLibraryQuery = { __typename?: 'Query', trainerLibrary?: { __typename?: 'TrainerLibrary', version?: string | null, categories?: Array<{ __typename?: 'TrainerLibraryCategory', category?: string | null, subsets?: Array<{ __typename?: 'TrainerLibrarySubset', subset?: string | null, algorithms?: Array<{ __typename?: 'TrainerLibraryEntry', name?: string | null, algorithm?: string | null, setup?: string | null, alternativeCount?: number | null } | null> | null } | null> | null }> | null } | null };
+
+export type TrainerLibraryAlternativesQueryVariables = Exact<{
+  category: Scalars['String'];
+}>;
+
+
+export type TrainerLibraryAlternativesQuery = { __typename?: 'Query', trainerLibraryAlternatives?: { __typename?: 'TrainerLibraryAlternatives', version?: string | null, category?: string | null, cases?: Array<{ __typename?: 'TrainerCaseAlternatives', name?: string | null, alternatives?: Array<string | null> | null } | null> | null } | null };
 
 export type WcaCompetitionsQueryVariables = Exact<{
   filter?: InputMaybe<WcaCompetitionFilterInput>;
@@ -4615,21 +5634,21 @@ export type WcaCompetitionDetailQueryVariables = Exact<{
 }>;
 
 
-export type WcaCompetitionDetailQuery = { __typename?: 'Query', wcaCompetitionDetail?: { __typename?: 'WcaCompetitionDetail', competitionId?: string | null, competitionName?: string | null, myWcaId?: string | null, myRegistrantId?: number | null, myRegistrationStatus?: string | null, myRegisteredEvents?: Array<string | null> | null, myDayLabel?: string | null, wcaLiveCompId?: string | null, days?: Array<{ __typename?: 'WcaCompetitionDay', position?: number | null, label?: string | null, date?: string | null, named?: boolean | null }> | null, competitors?: Array<{ __typename?: 'WcaCompetitor', name?: string | null, wcaId?: string | null, zktId?: string | null, country?: string | null, avatar?: string | null, registrantId?: number | null, wcaUserId?: number | null, registeredEvents?: Array<string | null> | null, dayLabel?: string | null, assignments?: Array<{ __typename?: 'WcaCompetitorAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, stationNumber?: number | null, roomName?: string | null } | null> | null, personalBests?: Array<{ __typename?: 'WcaPersonalBest', eventId?: string | null, type?: string | null, best?: number | null, worldRanking?: number | null, continentalRanking?: number | null, nationalRanking?: number | null } | null> | null } | null> | null, events?: Array<{ __typename?: 'WcaEventDetail', eventId?: string | null, eventName?: string | null, dayLabel?: string | null, rounds?: Array<{ __typename?: 'WcaRound', roundNumber?: number | null, format?: string | null, timeLimit?: number | null, cutoff?: number | null, cutoffAttempts?: number | null, advancementType?: string | null, advancementLevel?: number | null, groups?: Array<{ __typename?: 'WcaGroup', groupNumber?: number | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null, competitors?: Array<{ __typename?: 'WcaGroupCompetitor', name?: string | null, wcaId?: string | null, registrantId?: number | null, assignmentCode?: string | null, seedResult?: number | null } | null> | null } | null> | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaScheduleDay', date?: string | null, assignments?: Array<{ __typename?: 'WcaScheduleAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, roomName?: string | null, roomColor?: string | null, venueName?: string | null, stationNumber?: number | null } | null> | null } | null> | null, allPersonalBests?: Array<{ __typename?: 'WcaRankingRow', name?: string | null, wcaId?: string | null, registrantId?: number | null, eventId?: string | null, single?: number | null, average?: number | null, singleWorldRank?: number | null, averageWorldRank?: number | null } | null> | null, wcaLiveCompetitors?: Array<{ __typename?: 'WcaLiveCompetitor', wcaId?: string | null, liveId?: string | null, name?: string | null } | null> | null, wcaLiveRoundMap?: Array<{ __typename?: 'WcaLiveRoundMapping', activityCode?: string | null, liveRoundId?: string | null } | null> | null, info?: { __typename?: 'WcaCompetitionInfo', wcaUrl?: string | null, venues?: Array<{ __typename?: 'WcaVenueInfo', name?: string | null, address?: string | null, city?: string | null } | null> | null, organizers?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null, delegates?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null } | null } | null };
+export type WcaCompetitionDetailQuery = { __typename?: 'Query', wcaCompetitionDetail?: { __typename?: 'WcaCompetitionDetail', competitionId?: string | null, competitionName?: string | null, myWcaId?: string | null, myRegistrantId?: number | null, myRegistrationStatus?: string | null, myRegisteredEvents?: Array<string | null> | null, myDayLabel?: string | null, wcaLiveCompId?: string | null, days?: Array<{ __typename?: 'WcaCompetitionDay', position?: number | null, label?: string | null, date?: string | null, named?: boolean | null }> | null, competitors?: Array<{ __typename?: 'WcaCompetitor', name?: string | null, wcaId?: string | null, zktId?: string | null, country?: string | null, avatar?: string | null, registrantId?: number | null, wcaUserId?: number | null, registeredEvents?: Array<string | null> | null, dayLabel?: string | null, assignments?: Array<{ __typename?: 'WcaCompetitorAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, stationNumber?: number | null, roomName?: string | null, chance?: number | null } | null> | null, personalBests?: Array<{ __typename?: 'WcaPersonalBest', eventId?: string | null, type?: string | null, best?: number | null, worldRanking?: number | null, continentalRanking?: number | null, nationalRanking?: number | null } | null> | null } | null> | null, events?: Array<{ __typename?: 'WcaEventDetail', eventId?: string | null, eventName?: string | null, dayLabel?: string | null, rounds?: Array<{ __typename?: 'WcaRound', roundNumber?: number | null, format?: string | null, timeLimit?: number | null, cutoff?: number | null, cutoffAttempts?: number | null, advancementType?: string | null, advancementLevel?: number | null, dualChance?: boolean | null, groups?: Array<{ __typename?: 'WcaGroup', groupNumber?: number | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null, chance?: number | null, competitors?: Array<{ __typename?: 'WcaGroupCompetitor', name?: string | null, wcaId?: string | null, registrantId?: number | null, assignmentCode?: string | null, seedResult?: number | null } | null> | null } | null> | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaScheduleDay', date?: string | null, assignments?: Array<{ __typename?: 'WcaScheduleAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, roomName?: string | null, roomColor?: string | null, venueName?: string | null, stationNumber?: number | null, chance?: number | null } | null> | null } | null> | null, allPersonalBests?: Array<{ __typename?: 'WcaRankingRow', name?: string | null, wcaId?: string | null, registrantId?: number | null, eventId?: string | null, single?: number | null, average?: number | null, singleWorldRank?: number | null, averageWorldRank?: number | null } | null> | null, wcaLiveCompetitors?: Array<{ __typename?: 'WcaLiveCompetitor', wcaId?: string | null, liveId?: string | null, name?: string | null } | null> | null, wcaLiveRoundMap?: Array<{ __typename?: 'WcaLiveRoundMapping', activityCode?: string | null, liveRoundId?: string | null } | null> | null, info?: { __typename?: 'WcaCompetitionInfo', wcaUrl?: string | null, venues?: Array<{ __typename?: 'WcaVenueInfo', name?: string | null, address?: string | null, city?: string | null } | null> | null, organizers?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null, delegates?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null } | null } | null };
 
 export type WcaLiveCompetitionOverviewQueryVariables = Exact<{
   input: WcaLiveOverviewInput;
 }>;
 
 
-export type WcaLiveCompetitionOverviewQuery = { __typename?: 'Query', wcaLiveCompetitionOverview?: { __typename?: 'WcaLiveCompetitionOverview', compId?: string | null, name?: string | null, events?: Array<{ __typename?: 'WcaLiveEventInfo', eventId?: string | null, eventName?: string | null, rounds?: Array<{ __typename?: 'WcaLiveRoundInfo', liveRoundId?: string | null, number?: number | null, name?: string | null, open?: boolean | null, finished?: boolean | null, active?: boolean | null, numEntered?: number | null, numResults?: number | null, dayIndex?: number | null, dayLabel?: string | null, isFinal?: boolean | null, format?: { __typename?: 'WcaLiveFormat', numberOfAttempts?: number | null, sortBy?: string | null } | null, timeLimit?: { __typename?: 'WcaLiveTimeLimit', centiseconds?: number | null, cumulativeRoundWcifIds?: Array<string | null> | null } | null, cutoff?: { __typename?: 'WcaLiveCutoff', attemptResult?: number | null, numberOfAttempts?: number | null } | null, advancementCondition?: { __typename?: 'WcaLiveAdvancementCondition', type?: string | null, level?: number | null } | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaLiveScheduleVenue', name?: string | null, rooms?: Array<{ __typename?: 'WcaLiveScheduleRoom', name?: string | null, color?: string | null, activities?: Array<{ __typename?: 'WcaLiveScheduleActivity', activityId?: number | null, name?: string | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null, dayIndex?: number | null, dayLabel?: string | null } | null> | null } | null> | null } | null> | null, records?: Array<{ __typename?: 'WcaLiveRecord', type?: string | null, tag?: string | null, eventId?: string | null, eventName?: string | null, attemptResult?: number | null, personName?: string | null, personCountryIso2?: string | null, roundNumber?: number | null } | null> | null, podiums?: Array<{ __typename?: 'WcaLivePodium', eventId?: string | null, eventName?: string | null, sortBy?: string | null, entries?: Array<{ __typename?: 'WcaLivePodiumEntry', ranking?: number | null, personName?: string | null, personCountryIso2?: string | null, best?: number | null, average?: number | null, singleRecordTag?: string | null, averageRecordTag?: string | null } | null> | null } | null> | null } | null };
+export type WcaLiveCompetitionOverviewQuery = { __typename?: 'Query', wcaLiveCompetitionOverview?: { __typename?: 'WcaLiveCompetitionOverview', compId?: string | null, name?: string | null, events?: Array<{ __typename?: 'WcaLiveEventInfo', eventId?: string | null, eventName?: string | null, rounds?: Array<{ __typename?: 'WcaLiveRoundInfo', liveRoundId?: string | null, number?: number | null, name?: string | null, open?: boolean | null, finished?: boolean | null, active?: boolean | null, numEntered?: number | null, numResults?: number | null, dayIndex?: number | null, dayLabel?: string | null, isFinal?: boolean | null, dualChance?: boolean | null, format?: { __typename?: 'WcaLiveFormat', numberOfAttempts?: number | null, sortBy?: string | null } | null, timeLimit?: { __typename?: 'WcaLiveTimeLimit', centiseconds?: number | null, cumulativeRoundWcifIds?: Array<string | null> | null } | null, cutoff?: { __typename?: 'WcaLiveCutoff', attemptResult?: number | null, numberOfAttempts?: number | null } | null, advancementCondition?: { __typename?: 'WcaLiveAdvancementCondition', type?: string | null, level?: number | null } | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaLiveScheduleVenue', name?: string | null, rooms?: Array<{ __typename?: 'WcaLiveScheduleRoom', name?: string | null, color?: string | null, activities?: Array<{ __typename?: 'WcaLiveScheduleActivity', activityId?: number | null, name?: string | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null, dayIndex?: number | null, dayLabel?: string | null, roundNumber?: number | null, isFinal?: boolean | null, chance?: number | null } | null> | null } | null> | null } | null> | null, records?: Array<{ __typename?: 'WcaLiveRecord', type?: string | null, tag?: string | null, eventId?: string | null, eventName?: string | null, attemptResult?: number | null, personName?: string | null, personCountryIso2?: string | null, roundNumber?: number | null } | null> | null, podiums?: Array<{ __typename?: 'WcaLivePodium', eventId?: string | null, eventName?: string | null, sortBy?: string | null, entries?: Array<{ __typename?: 'WcaLivePodiumEntry', ranking?: number | null, personName?: string | null, personCountryIso2?: string | null, best?: number | null, average?: number | null, singleRecordTag?: string | null, averageRecordTag?: string | null } | null> | null } | null> | null } | null };
 
 export type WcaLiveRoundResultsQueryVariables = Exact<{
   input: WcaLiveRoundInput;
 }>;
 
 
-export type WcaLiveRoundResultsQuery = { __typename?: 'Query', wcaLiveRoundResults?: { __typename?: 'WcaLiveRoundResults', roundActivityCode?: string | null, roundName?: string | null, active?: boolean | null, finished?: boolean | null, numberOfAttempts?: number | null, sortBy?: string | null, results?: Array<{ __typename?: 'WcaLiveResult', ranking?: number | null, best?: number | null, average?: number | null, personName?: string | null, personWcaId?: string | null, personCountryIso2?: string | null, personLiveId?: string | null, singleRecordTag?: string | null, averageRecordTag?: string | null, advancing?: boolean | null, advancingQuestionable?: boolean | null, attempts?: Array<{ __typename?: 'WcaLiveAttempt', result?: number | null } | null> | null } | null> | null } | null };
+export type WcaLiveRoundResultsQuery = { __typename?: 'Query', wcaLiveRoundResults?: { __typename?: 'WcaLiveRoundResults', roundActivityCode?: string | null, roundName?: string | null, active?: boolean | null, finished?: boolean | null, numberOfAttempts?: number | null, sortBy?: string | null, dualChance?: boolean | null, results?: Array<{ __typename?: 'WcaLiveResult', ranking?: number | null, best?: number | null, average?: number | null, personName?: string | null, personWcaId?: string | null, personCountryIso2?: string | null, personLiveId?: string | null, singleRecordTag?: string | null, averageRecordTag?: string | null, advancing?: boolean | null, advancingQuestionable?: boolean | null, attempts?: Array<{ __typename?: 'WcaLiveAttempt', result?: number | null } | null> | null, chances?: Array<{ __typename?: 'WcaLiveChance', chance?: number | null, best?: number | null, average?: number | null, noShow?: boolean | null, counting?: boolean | null, attempts?: Array<{ __typename?: 'WcaLiveAttempt', result?: number | null } | null> | null }> | null } | null> | null } | null };
 
 export type WcaLiveCompetitorResultsQueryVariables = Exact<{
   input: WcaLiveCompetitorInput;
@@ -4646,15 +5665,6 @@ export type AdminTrainerAlternativesQueryVariables = Exact<{
 
 
 export type AdminTrainerAlternativesQuery = { __typename?: 'Query', adminTrainerAlternatives?: { __typename?: 'PaginatedTrainerAlternatives', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'TrainerAlternative', id?: string | null, category?: string | null, subset?: string | null, case_name?: string | null, algorithm?: string | null, original_input?: string | null, user_id?: string | null, created_at?: any | null } | null> | null } | null };
-
-export type RankingsQueryVariables = Exact<{
-  mode: Scalars['String'];
-  page: Scalars['Int'];
-  search?: InputMaybe<Scalars['String']>;
-}>;
-
-
-export type RankingsQuery = { __typename?: 'Query', rankings?: { __typename?: 'RankingsPage', total_count?: number | null, page?: number | null, rows?: Array<{ __typename?: 'RankedUser', rank?: number | null, user_id?: string | null, username?: string | null, is_pro?: boolean | null, wca_id?: string | null, country_iso2?: string | null, score?: number | null, wca_competition_count?: number | null, wca_medal_gold?: number | null, wca_medal_silver?: number | null, wca_medal_bronze?: number | null, pfp_image_url?: string | null } | null> | null } | null };
 
 export type LandingStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4752,7 +5762,7 @@ export type MagnetTelemetrySummaryQueryVariables = Exact<{
 }>;
 
 
-export type MagnetTelemetrySummaryQuery = { __typename?: 'Query', magnetTelemetrySummary?: Array<{ __typename?: 'MagnetTelemetrySummary', platform?: string | null, device_model?: string | null, sensor_name?: string | null, distinct_users?: number | null, placements?: number | null, min_near_ut?: number | null, median_near_ut?: number | null, lifts?: number | null, started?: number | null, refused?: number | null, median_latency_ms?: number | null, p95_latency_ms?: number | null, median_approach_ms?: number | null, rejects?: number | null, unsupported?: number | null, unknown_hints?: number | null, median_sigma?: number | null, rate_hz?: number | null } | null> | null };
+export type MagnetTelemetrySummaryQuery = { __typename?: 'Query', magnetTelemetrySummary?: Array<{ __typename?: 'MagnetTelemetrySummary', platform?: string | null, device_model?: string | null, cube_puzzle?: string | null, median_near_min_ut?: number | null, sensor_name?: string | null, distinct_users?: number | null, placements?: number | null, min_near_ut?: number | null, median_near_ut?: number | null, lifts?: number | null, started?: number | null, refused?: number | null, median_latency_ms?: number | null, p95_latency_ms?: number | null, median_approach_ms?: number | null, rejects?: number | null, unsupported?: number | null, unknown_hints?: number | null, median_sigma?: number | null, rate_hz?: number | null } | null> | null };
 
 export type MagnetTelemetryRowsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']>;
@@ -4764,7 +5774,7 @@ export type MagnetTelemetryRowsQueryVariables = Exact<{
 }>;
 
 
-export type MagnetTelemetryRowsQuery = { __typename?: 'Query', magnetTelemetryRows?: Array<{ __typename?: 'MagnetTelemetryRow', id?: string | null, username?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, sensor_name?: string | null, event_type?: string | null, detail?: string | null, delta_ut?: number | null, latency_ms?: number | null, rest_ms?: number | null, approach_ms?: number | null, sigma?: number | null, rate_hz?: number | null, reversed?: boolean | null, has_samples?: boolean | null, app_version?: string | null, created_at?: any | null } | null> | null };
+export type MagnetTelemetryRowsQuery = { __typename?: 'Query', magnetTelemetryRows?: Array<{ __typename?: 'MagnetTelemetryRow', id?: string | null, username?: string | null, platform?: string | null, device_model?: string | null, os_version?: string | null, sensor_name?: string | null, event_type?: string | null, detail?: string | null, delta_ut?: number | null, latency_ms?: number | null, rest_ms?: number | null, approach_ms?: number | null, sigma?: number | null, rate_hz?: number | null, reversed?: boolean | null, has_samples?: boolean | null, app_version?: string | null, cube_puzzle?: string | null, near_min_ut?: number | null, created_at?: any | null } | null> | null };
 
 export type MagnetTelemetrySamplesQueryVariables = Exact<{
   id: Scalars['String'];
@@ -4785,7 +5795,24 @@ export type SmartCubeTelemetryRowsQueryVariables = Exact<{
 
 export type SmartCubeTelemetryRowsQuery = { __typename?: 'Query', smartCubeTelemetryRows?: Array<{ __typename?: 'SmartCubeTelemetryRow', id?: string | null, username?: string | null, device_name?: string | null, cube_type?: string | null, surface?: string | null, event_type?: string | null, detection_source?: string | null, detection_lag_ms?: number | null, time_ms?: number | null, turn_count?: number | null, battery_level?: number | null, time_correction_ms?: number | null, is_native?: boolean | null, app_version?: string | null, created_at?: any | null } | null> | null };
 
-export const MiniSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MiniSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_name"}},{"kind":"Field","name":{"kind":"Name","value":"bulk"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"from_timer"}},{"kind":"Field","name":{"kind":"Name","value":"training_session_id"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"is_virtual_cube"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}}]}}]} as unknown as DocumentNode<MiniSolveFragmentFragment, unknown>;
+export type ZktPersonBestsQueryVariables = Exact<{
+  zktId: Scalars['String'];
+}>;
+
+
+export type ZktPersonBestsQuery = { __typename?: 'Query', zktPersonBests?: Array<{ __typename?: 'ZktEventPb', event_id?: string | null, single?: string | null, average?: string | null }> | null };
+
+export const AlgSetItemFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetItemFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetItem"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"case_name"}},{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"position"}}]}}]} as unknown as DocumentNode<AlgSetItemFragmentFragment, unknown>;
+export const AlgSetOwnerFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetOwnerFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetOwner"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"verified"}},{"kind":"Field","name":{"kind":"Name","value":"avatar_path"}}]}}]} as unknown as DocumentNode<AlgSetOwnerFragmentFragment, unknown>;
+export const AlgSetSummaryFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetSummaryFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetSummary"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"item_count"}},{"kind":"Field","name":{"kind":"Name","value":"save_count"}},{"kind":"Field","name":{"kind":"Name","value":"categories"}},{"kind":"Field","name":{"kind":"Name","value":"puzzles"}},{"kind":"Field","name":{"kind":"Name","value":"preview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetItemFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetOwnerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"published_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"hidden"}}]}}]} as unknown as DocumentNode<AlgSetSummaryFragmentFragment, unknown>;
+export const AlgSetHeadFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetHeadFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSet"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"item_count"}},{"kind":"Field","name":{"kind":"Name","value":"save_count"}},{"kind":"Field","name":{"kind":"Name","value":"categories"}},{"kind":"Field","name":{"kind":"Name","value":"puzzles"}},{"kind":"Field","name":{"kind":"Name","value":"preview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetItemFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetOwnerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"published_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"hidden"}},{"kind":"Field","name":{"kind":"Name","value":"is_owner"}},{"kind":"Field","name":{"kind":"Name","value":"is_saved"}}]}}]} as unknown as DocumentNode<AlgSetHeadFragmentFragment, unknown>;
+export const AlgSetFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSet"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetHeadFragment"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetItemFragment"}}]}}]}}]} as unknown as DocumentNode<AlgSetFragmentFragment, unknown>;
+export const BattlePlayerFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BattlePlayerFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BattlePlayer"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"pfp_image_url"}}]}}]} as unknown as DocumentNode<BattlePlayerFragmentFragment, unknown>;
+export const BattleLeaderboardRowFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BattleLeaderboardRowFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BattleLeaderboardRow"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rank"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"pfp_image_url"}},{"kind":"Field","name":{"kind":"Name","value":"rating"}},{"kind":"Field","name":{"kind":"Name","value":"provisional"}},{"kind":"Field","name":{"kind":"Name","value":"games"}},{"kind":"Field","name":{"kind":"Name","value":"wins"}},{"kind":"Field","name":{"kind":"Name","value":"losses"}},{"kind":"Field","name":{"kind":"Name","value":"draws"}}]}}]} as unknown as DocumentNode<BattleLeaderboardRowFragmentFragment, unknown>;
+export const CubeCalibrationFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CubeCalibrationFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CubeCalibration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"cube_id"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"os_version"}},{"kind":"Field","name":{"kind":"Name","value":"app_version"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"peak_ut"}},{"kind":"Field","name":{"kind":"Name","value":"rest_ut"}},{"kind":"Field","name":{"kind":"Name","value":"noise_ut"}},{"kind":"Field","name":{"kind":"Name","value":"near_min_ut"}},{"kind":"Field","name":{"kind":"Name","value":"far_max_ut"}},{"kind":"Field","name":{"kind":"Name","value":"quality"}},{"kind":"Field","name":{"kind":"Name","value":"sample_count"}},{"kind":"Field","name":{"kind":"Name","value":"sweep_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}},{"kind":"Field","name":{"kind":"Name","value":"algo_version"}},{"kind":"Field","name":{"kind":"Name","value":"measured_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]} as unknown as DocumentNode<CubeCalibrationFragmentFragment, unknown>;
+export const CubeFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CubeFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Cube"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"brand"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart"}},{"kind":"Field","name":{"kind":"Name","value":"ble_device_id"}},{"kind":"Field","name":{"kind":"Name","value":"ble_name"}},{"kind":"Field","name":{"kind":"Name","value":"legacy_smart_device_ids"}},{"kind":"Field","name":{"kind":"Name","value":"archived_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"solve_count"}},{"kind":"Field","name":{"kind":"Name","value":"first_used_at"}},{"kind":"Field","name":{"kind":"Name","value":"last_used_at"}},{"kind":"Field","name":{"kind":"Name","value":"calibrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeCalibrationFragment"}}]}}]}}]} as unknown as DocumentNode<CubeFragmentFragment, unknown>;
+export const CubeMainFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CubeMainFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CubeMain"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"cube_id"}},{"kind":"Field","name":{"kind":"Name","value":"set_at"}}]}}]} as unknown as DocumentNode<CubeMainFragmentFragment, unknown>;
+export const MiniSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MiniSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_name"}},{"kind":"Field","name":{"kind":"Name","value":"bulk"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"from_timer"}},{"kind":"Field","name":{"kind":"Name","value":"training_session_id"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"is_virtual_cube"}},{"kind":"Field","name":{"kind":"Name","value":"cube_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}}]}}]} as unknown as DocumentNode<MiniSolveFragmentFragment, unknown>;
 export const StatsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Stats"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"solve_views"}}]}}]} as unknown as DocumentNode<StatsFragmentFragment, unknown>;
 export const StatsModuleBlockFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsModuleBlockFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StatsModuleBlock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"statType"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"session"}},{"kind":"Field","name":{"kind":"Name","value":"colorName"}},{"kind":"Field","name":{"kind":"Name","value":"averageCount"}}]}}]} as unknown as DocumentNode<StatsModuleBlockFragmentFragment, unknown>;
 export const AlgorithmOverrideFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgorithmOverrideFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgorithmOverride"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cube_key"}},{"kind":"Field","name":{"kind":"Name","value":"rotate"}},{"kind":"Field","name":{"kind":"Name","value":"solution"}}]}}]} as unknown as DocumentNode<AlgorithmOverrideFragmentFragment, unknown>;
@@ -4795,8 +5822,8 @@ export const SessionFragmentFragmentDoc = {"kind":"Document","definitions":[{"ki
 export const ImageFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ImageFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]} as unknown as DocumentNode<ImageFragmentFragment, unknown>;
 export const PublicUserFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PublicUserFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IPublicUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"verified"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"banned_forever"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"is_premium"}},{"kind":"Field","name":{"kind":"Name","value":"banned_until"}},{"kind":"Field","name":{"kind":"Name","value":"admin"}},{"kind":"Field","name":{"kind":"Name","value":"mod"}},{"kind":"Field","name":{"kind":"Name","value":"integrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"service_name"}},{"kind":"Field","name":{"kind":"Name","value":"wca_country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_country_iso2"}}]}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ImageFragment"}}]}}]}}]}}]} as unknown as DocumentNode<PublicUserFragmentFragment, unknown>;
 export const UserAccountFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAccountFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"pending_email"}},{"kind":"Field","name":{"kind":"Name","value":"email_verified"}},{"kind":"Field","name":{"kind":"Name","value":"offline_hash"}}]}}]} as unknown as DocumentNode<UserAccountFragmentFragment, unknown>;
-export const SolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"is_virtual_cube"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"share_code"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turns"}},{"kind":"Field","name":{"kind":"Name","value":"smart_put_down_time"}},{"kind":"Field","name":{"kind":"Name","value":"inspection_time"}},{"kind":"Field","name":{"kind":"Name","value":"phase_splits"}},{"kind":"Field","name":{"kind":"Name","value":"smart_device"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"internal_name"}},{"kind":"Field","name":{"kind":"Name","value":"device_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_method_steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"turns"}},{"kind":"Field","name":{"kind":"Name","value":"total_time"}},{"kind":"Field","name":{"kind":"Name","value":"tps"}},{"kind":"Field","name":{"kind":"Name","value":"recognition_time"}},{"kind":"Field","name":{"kind":"Name","value":"oll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"pll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"case_key"}},{"kind":"Field","name":{"kind":"Name","value":"case_set"}},{"kind":"Field","name":{"kind":"Name","value":"skipped"}},{"kind":"Field","name":{"kind":"Name","value":"parent_name"}},{"kind":"Field","name":{"kind":"Name","value":"method_name"}},{"kind":"Field","name":{"kind":"Name","value":"step_index"}},{"kind":"Field","name":{"kind":"Name","value":"step_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<SolveFragmentFragment, unknown>;
-export const SolveWithUserFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveWithUserFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<SolveWithUserFragmentFragment, unknown>;
+export const SolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"is_virtual_cube"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"share_code"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turns"}},{"kind":"Field","name":{"kind":"Name","value":"smart_put_down_time"}},{"kind":"Field","name":{"kind":"Name","value":"inspection_time"}},{"kind":"Field","name":{"kind":"Name","value":"phase_splits"}},{"kind":"Field","name":{"kind":"Name","value":"cube_id"}},{"kind":"Field","name":{"kind":"Name","value":"solve_method_steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"turns"}},{"kind":"Field","name":{"kind":"Name","value":"total_time"}},{"kind":"Field","name":{"kind":"Name","value":"tps"}},{"kind":"Field","name":{"kind":"Name","value":"recognition_time"}},{"kind":"Field","name":{"kind":"Name","value":"oll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"pll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"case_key"}},{"kind":"Field","name":{"kind":"Name","value":"case_set"}},{"kind":"Field","name":{"kind":"Name","value":"skipped"}},{"kind":"Field","name":{"kind":"Name","value":"parent_name"}},{"kind":"Field","name":{"kind":"Name","value":"method_name"}},{"kind":"Field","name":{"kind":"Name","value":"step_index"}},{"kind":"Field","name":{"kind":"Name","value":"step_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<SolveFragmentFragment, unknown>;
+export const SolveWithUserFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveWithUserFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}},{"kind":"Field","name":{"kind":"Name","value":"cube"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"brand"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart"}}]}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<SolveWithUserFragmentFragment, unknown>;
 export const NotificationFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Notification"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"notification_type"}},{"kind":"Field","name":{"kind":"Name","value":"notification_category_name"}},{"kind":"Field","name":{"kind":"Name","value":"triggering_user_id"}},{"kind":"Field","name":{"kind":"Name","value":"in_app_message"}},{"kind":"Field","name":{"kind":"Name","value":"read_at"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"icon"}},{"kind":"Field","name":{"kind":"Name","value":"link"}},{"kind":"Field","name":{"kind":"Name","value":"link_text"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"triggering_user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<NotificationFragmentFragment, unknown>;
 export const TopSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TopSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TopSolve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"solve"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<TopSolveFragmentFragment, unknown>;
 export const TopAverageFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TopAverageFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TopAverage"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"solve_1"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_2"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_3"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_4"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_5"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<TopAverageFragmentFragment, unknown>;
@@ -4804,9 +5831,9 @@ export const ProfileFragmentFragmentDoc = {"kind":"Document","definitions":[{"ki
 export const IntegrationFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"IntegrationFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Integration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"auth_expires_at"}},{"kind":"Field","name":{"kind":"Name","value":"service_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]} as unknown as DocumentNode<IntegrationFragmentFragment, unknown>;
 export const CustomTrainerFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CustomTrainerFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomTrainer"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"solution"}},{"kind":"Field","name":{"kind":"Name","value":"scrambles"}},{"kind":"Field","name":{"kind":"Name","value":"colors"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"alt_solutions"}},{"kind":"Field","name":{"kind":"Name","value":"group_name"}},{"kind":"Field","name":{"kind":"Name","value":"algo_type"}},{"kind":"Field","name":{"kind":"Name","value":"three_d"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"copy_of_id"}},{"kind":"Field","name":{"kind":"Name","value":"copy_of"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}}]}}]} as unknown as DocumentNode<CustomTrainerFragmentFragment, unknown>;
 export const PublicCustomTrainerRecordFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PublicCustomTrainerRecordFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomTrainer"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CustomTrainerFragment"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"like_count"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ImageFragment"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PublicCustomTrainerRecordFragmentFragment, unknown>;
-export const TimerBackgroundFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TimerBackgroundFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TimerBackground"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"hex"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"media_type"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]} as unknown as DocumentNode<TimerBackgroundFragmentFragment, unknown>;
+export const TimerBackgroundFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TimerBackgroundFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TimerBackground"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"hex"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"media_type"}},{"kind":"Field","name":{"kind":"Name","value":"mobile_storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"mobile_media_type"}},{"kind":"Field","name":{"kind":"Name","value":"mobile_same_as_desktop"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]} as unknown as DocumentNode<TimerBackgroundFragmentFragment, unknown>;
 export const UserForMeFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserForMeFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"first_name"}},{"kind":"Field","name":{"kind":"Name","value":"last_name"}},{"kind":"Field","name":{"kind":"Name","value":"pending_email"}},{"kind":"Field","name":{"kind":"Name","value":"email_verified"}},{"kind":"Field","name":{"kind":"Name","value":"has_password"}},{"kind":"Field","name":{"kind":"Name","value":"join_country"}},{"kind":"Field","name":{"kind":"Name","value":"timer_background"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TimerBackgroundFragment"}}]}},{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]} as unknown as DocumentNode<UserForMeFragmentFragment, unknown>;
-export const ReportFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ReportFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Report"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"reported_user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"reported_user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ReportFragmentFragment, unknown>;
+export const ReportFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ReportFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Report"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"reported_user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"reported_user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"alg_set_id"}},{"kind":"Field","name":{"kind":"Name","value":"alg_set"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"hidden"}},{"kind":"Field","name":{"kind":"Name","value":"hidden_reason"}}]}}]}}]} as unknown as DocumentNode<ReportFragmentFragment, unknown>;
 export const CustomCubeTypeFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CustomCubeTypeFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CustomCubeType"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"private"}}]}}]} as unknown as DocumentNode<CustomCubeTypeFragmentFragment, unknown>;
 export const SettingsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SettingsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Setting"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"focus_mode"}},{"kind":"Field","name":{"kind":"Name","value":"freeze_time"}},{"kind":"Field","name":{"kind":"Name","value":"inspection"}},{"kind":"Field","name":{"kind":"Name","value":"manual_entry"}},{"kind":"Field","name":{"kind":"Name","value":"inspection_delay"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"inverse_time_list"}},{"kind":"Field","name":{"kind":"Name","value":"hide_time_when_solving"}},{"kind":"Field","name":{"kind":"Name","value":"nav_collapsed"}},{"kind":"Field","name":{"kind":"Name","value":"timer_decimal_points"}},{"kind":"Field","name":{"kind":"Name","value":"pb_confetti"}},{"kind":"Field","name":{"kind":"Name","value":"play_inspection_sound"}},{"kind":"Field","name":{"kind":"Name","value":"zero_out_time_after_solve"}},{"kind":"Field","name":{"kind":"Name","value":"confirm_delete_solve"}},{"kind":"Field","name":{"kind":"Name","value":"use_space_with_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"use_2d_scramble_visual"}},{"kind":"Field","name":{"kind":"Name","value":"require_period_in_manual_time_entry"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_top_color"}},{"kind":"Field","name":{"kind":"Name","value":"custom_cube_types"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CustomCubeTypeFragment"}}]}}]}}]} as unknown as DocumentNode<SettingsFragmentFragment, unknown>;
 export const NotificationPreferenceFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NotificationPreferenceFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotificationPreference"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"marketing_emails"}},{"kind":"Field","name":{"kind":"Name","value":"support_ticket_reply"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_competition_announced"}},{"kind":"Field","name":{"kind":"Name","value":"competition_groups_published"}},{"kind":"Field","name":{"kind":"Name","value":"competition_schedule_changed"}},{"kind":"Field","name":{"kind":"Name","value":"competition_results_official"}}]}}]} as unknown as DocumentNode<NotificationPreferenceFragmentFragment, unknown>;
@@ -4818,13 +5845,48 @@ export const DmSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"ki
 export const MessageFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MessageFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Message"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"conversation_id"}},{"kind":"Field","name":{"kind":"Name","value":"sender_id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"edited_at"}},{"kind":"Field","name":{"kind":"Name","value":"reactions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"emoji"}}]}},{"kind":"Field","name":{"kind":"Name","value":"reply_to"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sender_id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"deleted_at"}},{"kind":"Field","name":{"kind":"Name","value":"solve_id"}},{"kind":"Field","name":{"kind":"Name","value":"sender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"DmSolveFragment"}}]}}]}}]} as unknown as DocumentNode<MessageFragmentFragment, unknown>;
 export const ConversationViewFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ConversationViewFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ConversationView"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"unread_count"}},{"kind":"Field","name":{"kind":"Name","value":"accepted"}},{"kind":"Field","name":{"kind":"Name","value":"muted"}},{"kind":"Field","name":{"kind":"Name","value":"last_message_at"}},{"kind":"Field","name":{"kind":"Name","value":"other_user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"last_message"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MessageFragment"}}]}}]}}]} as unknown as DocumentNode<ConversationViewFragmentFragment, unknown>;
 export const AdminProUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminProUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationArgsInput"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminUserSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pageArgs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}}},{"kind":"Argument","name":{"kind":"Name","value":"filters"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_pro"},"value":{"kind":"BooleanValue","value":true}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"pro_expires_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_platform"}},{"kind":"Field","name":{"kind":"Name","value":"iap_product_id"}},{"kind":"Field","name":{"kind":"Name","value":"iap_cancellation_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_billing_issue_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_paused_until"}},{"kind":"Field","name":{"kind":"Name","value":"revenuecat_user_id"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<AdminProUsersQuery, AdminProUsersQueryVariables>;
+export const MyAlgSetsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyAlgSets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myAlgSets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"own"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetSummaryFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"saved"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"set_id"}},{"kind":"Field","name":{"kind":"Name","value":"saved_at"}},{"kind":"Field","name":{"kind":"Name","value":"unavailable"}},{"kind":"Field","name":{"kind":"Name","value":"set"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetSummaryFragment"}}]}}]}}]}}]}},...AlgSetSummaryFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MyAlgSetsQuery, MyAlgSetsQueryVariables>;
+export const AlgSetDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"code"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"algSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"code"},"value":{"kind":"Variable","name":{"kind":"Name","value":"code"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetFragment"}}]}}]}},...AlgSetFragmentFragmentDoc.definitions,...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AlgSetQuery, AlgSetQueryVariables>;
+export const AlgSetMetaDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AlgSetMeta"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"code"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"algSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"code"},"value":{"kind":"Variable","name":{"kind":"Name","value":"code"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetHeadFragment"}}]}}]}},...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AlgSetMetaQuery, AlgSetMetaQueryVariables>;
+export const CommunityAlgSetsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CommunityAlgSets"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"q"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sort"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page_size"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"communityAlgSets"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"q"},"value":{"kind":"Variable","name":{"kind":"Name","value":"q"}}},{"kind":"Argument","name":{"kind":"Name","value":"sort"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sort"}}},{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}},{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"page_size"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page_size"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetSummaryFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"has_more"}}]}}]}},...AlgSetSummaryFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CommunityAlgSetsQuery, CommunityAlgSetsQueryVariables>;
+export const CreateAlgSetDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetFragment"}}]}}]}},...AlgSetFragmentFragmentDoc.definitions,...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateAlgSetMutation, CreateAlgSetMutationVariables>;
+export const UpdateAlgSetDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetUpdateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetHeadFragment"}}]}}]}},...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateAlgSetMutation, UpdateAlgSetMutationVariables>;
+export const DeleteAlgSetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteAlgSetMutation, DeleteAlgSetMutationVariables>;
+export const ResetAlgSetCodeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResetAlgSetCode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resetAlgSetCode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetHeadFragment"}}]}}]}},...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ResetAlgSetCodeMutation, ResetAlgSetCodeMutationVariables>;
+export const AddAlgSetItemsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddAlgSetItems"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"items"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetItemInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addAlgSetItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"items"},"value":{"kind":"Variable","name":{"kind":"Name","value":"items"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetFragment"}}]}}]}},...AlgSetFragmentFragmentDoc.definitions,...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AddAlgSetItemsMutation, AddAlgSetItemsMutationVariables>;
+export const UpdateAlgSetItemDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateAlgSetItem"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"item_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"algorithm"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateAlgSetItem"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"item_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"item_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"algorithm"},"value":{"kind":"Variable","name":{"kind":"Name","value":"algorithm"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetItemFragment"}}]}}]}},...AlgSetItemFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateAlgSetItemMutation, UpdateAlgSetItemMutationVariables>;
+export const RemoveAlgSetItemsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveAlgSetItems"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"item_ids"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeAlgSetItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"item_ids"},"value":{"kind":"Variable","name":{"kind":"Name","value":"item_ids"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetFragment"}}]}}]}},...AlgSetFragmentFragmentDoc.definitions,...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<RemoveAlgSetItemsMutation, RemoveAlgSetItemsMutationVariables>;
+export const ReorderAlgSetItemsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ReorderAlgSetItems"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"item_ids"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reorderAlgSetItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"item_ids"},"value":{"kind":"Variable","name":{"kind":"Name","value":"item_ids"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetFragment"}}]}}]}},...AlgSetFragmentFragmentDoc.definitions,...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ReorderAlgSetItemsMutation, ReorderAlgSetItemsMutationVariables>;
+export const SaveAlgSetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SaveAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"saveAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}}]}]}}]} as unknown as DocumentNode<SaveAlgSetMutation, SaveAlgSetMutationVariables>;
+export const UnsaveAlgSetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UnsaveAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unsaveAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}}]}]}}]} as unknown as DocumentNode<UnsaveAlgSetMutation, UnsaveAlgSetMutationVariables>;
+export const ReportAlgSetDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ReportAlgSet"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"reason"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"note"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"reportAlgSet"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"reason"},"value":{"kind":"Variable","name":{"kind":"Name","value":"reason"}}},{"kind":"Argument","name":{"kind":"Name","value":"note"},"value":{"kind":"Variable","name":{"kind":"Name","value":"note"}}}]}]}}]} as unknown as DocumentNode<ReportAlgSetMutation, ReportAlgSetMutationVariables>;
+export const AdminSetAlgSetHiddenDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AdminSetAlgSetHidden"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"hidden"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"reason"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminSetAlgSetHidden"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"set_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"hidden"},"value":{"kind":"Variable","name":{"kind":"Name","value":"hidden"}}},{"kind":"Argument","name":{"kind":"Name","value":"reason"},"value":{"kind":"Variable","name":{"kind":"Name","value":"reason"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetHeadFragment"}}]}}]}},...AlgSetHeadFragmentFragmentDoc.definitions,...AlgSetItemFragmentFragmentDoc.definitions,...AlgSetOwnerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AdminSetAlgSetHiddenMutation, AdminSetAlgSetHiddenMutationVariables>;
+export const BattleLeaderboardDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"battleLeaderboard"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"battleLeaderboard"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rows"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattleLeaderboardRowFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total_count"}},{"kind":"Field","name":{"kind":"Name","value":"page"}},{"kind":"Field","name":{"kind":"Name","value":"page_size"}}]}}]}},...BattleLeaderboardRowFragmentFragmentDoc.definitions]} as unknown as DocumentNode<BattleLeaderboardQuery, BattleLeaderboardQueryVariables>;
+export const MyBattleRatingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"myBattleRating"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myBattleRating"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"rating"}},{"kind":"Field","name":{"kind":"Name","value":"provisional"}},{"kind":"Field","name":{"kind":"Name","value":"games"}},{"kind":"Field","name":{"kind":"Name","value":"wins"}},{"kind":"Field","name":{"kind":"Name","value":"losses"}},{"kind":"Field","name":{"kind":"Name","value":"draws"}},{"kind":"Field","name":{"kind":"Name","value":"peak_rating"}},{"kind":"Field","name":{"kind":"Name","value":"rank"}}]}}]}}]} as unknown as DocumentNode<MyBattleRatingQuery, MyBattleRatingQueryVariables>;
+export const UserBattleRatingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"userBattleRating"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userBattleRating"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}},{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"rating"}},{"kind":"Field","name":{"kind":"Name","value":"provisional"}},{"kind":"Field","name":{"kind":"Name","value":"games"}},{"kind":"Field","name":{"kind":"Name","value":"rank"}}]}}]}}]} as unknown as DocumentNode<UserBattleRatingQuery, UserBattleRatingQueryVariables>;
+export const BattleMatchHistoryDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"battleMatchHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"battleMatchHistory"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"result"}},{"kind":"Field","name":{"kind":"Name","value":"score_for"}},{"kind":"Field","name":{"kind":"Name","value":"score_against"}},{"kind":"Field","name":{"kind":"Name","value":"rated"}},{"kind":"Field","name":{"kind":"Name","value":"is_rematch"}},{"kind":"Field","name":{"kind":"Name","value":"end_reason"}},{"kind":"Field","name":{"kind":"Name","value":"rating_before"}},{"kind":"Field","name":{"kind":"Name","value":"rating_after"}},{"kind":"Field","name":{"kind":"Name","value":"delta"}},{"kind":"Field","name":{"kind":"Name","value":"opponent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattlePlayerFragment"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}},...BattlePlayerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<BattleMatchHistoryQuery, BattleMatchHistoryQueryVariables>;
+export const BattleMatchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"battleMatch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"battleMatch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"end_reason"}},{"kind":"Field","name":{"kind":"Name","value":"rated"}},{"kind":"Field","name":{"kind":"Name","value":"is_rematch"}},{"kind":"Field","name":{"kind":"Name","value":"winner"}},{"kind":"Field","name":{"kind":"Name","value":"rounds_a"}},{"kind":"Field","name":{"kind":"Name","value":"rounds_b"}},{"kind":"Field","name":{"kind":"Name","value":"rating_a_before"}},{"kind":"Field","name":{"kind":"Name","value":"rating_a_after"}},{"kind":"Field","name":{"kind":"Name","value":"rating_b_before"}},{"kind":"Field","name":{"kind":"Name","value":"rating_b_after"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"voided_at"}},{"kind":"Field","name":{"kind":"Name","value":"flags"}},{"kind":"Field","name":{"kind":"Name","value":"viewer_side"}},{"kind":"Field","name":{"kind":"Name","value":"player_a"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattlePlayerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"player_b"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattlePlayerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"index"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"winner"}},{"kind":"Field","name":{"kind":"Name","value":"a_time_ms"}},{"kind":"Field","name":{"kind":"Name","value":"a_penalty"}},{"kind":"Field","name":{"kind":"Name","value":"b_time_ms"}},{"kind":"Field","name":{"kind":"Name","value":"b_penalty"}},{"kind":"Field","name":{"kind":"Name","value":"a_flags"}},{"kind":"Field","name":{"kind":"Name","value":"b_flags"}},{"kind":"Field","name":{"kind":"Name","value":"a_moves"}},{"kind":"Field","name":{"kind":"Name","value":"b_moves"}}]}}]}}]}},...BattlePlayerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<BattleMatchQuery, BattleMatchQueryVariables>;
+export const AdminFlaggedBattleMatchesDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"adminFlaggedBattleMatches"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminFlaggedBattleMatches"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"end_reason"}},{"kind":"Field","name":{"kind":"Name","value":"rated"}},{"kind":"Field","name":{"kind":"Name","value":"winner"}},{"kind":"Field","name":{"kind":"Name","value":"rounds_a"}},{"kind":"Field","name":{"kind":"Name","value":"rounds_b"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"voided_at"}},{"kind":"Field","name":{"kind":"Name","value":"flags"}},{"kind":"Field","name":{"kind":"Name","value":"player_a"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattlePlayerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"player_b"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BattlePlayerFragment"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}},...BattlePlayerFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AdminFlaggedBattleMatchesQuery, AdminFlaggedBattleMatchesQueryVariables>;
+export const AdminVoidBattleMatchDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"adminVoidBattleMatch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminVoidBattleMatch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"match_id"}},{"kind":"Field","name":{"kind":"Name","value":"changed"}},{"kind":"Field","name":{"kind":"Name","value":"reverted_a"}},{"kind":"Field","name":{"kind":"Name","value":"reverted_b"}}]}}]}}]} as unknown as DocumentNode<AdminVoidBattleMatchMutation, AdminVoidBattleMatchMutationVariables>;
+export const MyCubeStateDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MyCubeState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCubeState"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cubes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"mains"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeMainFragment"}}]}}]}}]}},...CubeFragmentFragmentDoc.definitions,...CubeCalibrationFragmentFragmentDoc.definitions,...CubeMainFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MyCubeStateQuery, MyCubeStateQueryVariables>;
+export const CreateCubeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCube"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CubeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCube"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeFragment"}}]}}]}},...CubeFragmentFragmentDoc.definitions,...CubeCalibrationFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateCubeMutation, CreateCubeMutationVariables>;
+export const UpdateCubeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateCube"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CubeUpdateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateCube"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeFragment"}}]}}]}},...CubeFragmentFragmentDoc.definitions,...CubeCalibrationFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateCubeMutation, UpdateCubeMutationVariables>;
+export const SetCubeArchivedDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetCubeArchived"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"archived"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setCubeArchived"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"archived"},"value":{"kind":"Variable","name":{"kind":"Name","value":"archived"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeFragment"}}]}}]}},...CubeFragmentFragmentDoc.definitions,...CubeCalibrationFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SetCubeArchivedMutation, SetCubeArchivedMutationVariables>;
+export const DeleteCubeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteCube"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteCube"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteCubeMutation, DeleteCubeMutationVariables>;
+export const SetMainCubeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetMainCube"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"cube_id"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"set_at"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setMainCube"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}},{"kind":"Argument","name":{"kind":"Name","value":"cube_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"cube_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"set_at"},"value":{"kind":"Variable","name":{"kind":"Name","value":"set_at"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeMainFragment"}}]}}]}},...CubeMainFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SetMainCubeMutation, SetMainCubeMutationVariables>;
+export const EnsureSmartCubeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EnsureSmartCube"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ble_device_id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ble_name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ensureSmartCube"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ble_device_id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ble_device_id"}}},{"kind":"Argument","name":{"kind":"Name","value":"ble_name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ble_name"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeFragment"}}]}}]}},...CubeFragmentFragmentDoc.definitions,...CubeCalibrationFragmentFragmentDoc.definitions]} as unknown as DocumentNode<EnsureSmartCubeMutation, EnsureSmartCubeMutationVariables>;
+export const SaveCubeCalibrationDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SaveCubeCalibration"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CubeCalibrationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"saveCubeCalibration"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CubeCalibrationFragment"}}]}}]}},...CubeCalibrationFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SaveCubeCalibrationMutation, SaveCubeCalibrationMutationVariables>;
+export const DeleteCubeCalibrationDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteCubeCalibration"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteCubeCalibration"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteCubeCalibrationMutation, DeleteCubeCalibrationMutationVariables>;
+export const AdminCubeCalibrationsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminCubeCalibrations"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminCubeCalibrations"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}},{"kind":"Argument","name":{"kind":"Name","value":"puzzle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"puzzle"}}},{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"deviceModel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"cube_id"}},{"kind":"Field","name":{"kind":"Name","value":"cube_name"}},{"kind":"Field","name":{"kind":"Name","value":"cube_brand"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle_name"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"os_version"}},{"kind":"Field","name":{"kind":"Name","value":"app_version"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"peak_ut"}},{"kind":"Field","name":{"kind":"Name","value":"rest_ut"}},{"kind":"Field","name":{"kind":"Name","value":"noise_ut"}},{"kind":"Field","name":{"kind":"Name","value":"near_min_ut"}},{"kind":"Field","name":{"kind":"Name","value":"far_max_ut"}},{"kind":"Field","name":{"kind":"Name","value":"quality"}},{"kind":"Field","name":{"kind":"Name","value":"current_near_min_ut"}},{"kind":"Field","name":{"kind":"Name","value":"current_far_max_ut"}},{"kind":"Field","name":{"kind":"Name","value":"current_quality"}},{"kind":"Field","name":{"kind":"Name","value":"noisy"}},{"kind":"Field","name":{"kind":"Name","value":"sample_count"}},{"kind":"Field","name":{"kind":"Name","value":"sweep_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}},{"kind":"Field","name":{"kind":"Name","value":"algo_version"}},{"kind":"Field","name":{"kind":"Name","value":"measured_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<AdminCubeCalibrationsQuery, AdminCubeCalibrationsQueryVariables>;
+export const AdminCubeCalibrationSummaryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminCubeCalibrationSummary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminCubeCalibrationSummary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"calibrations"}},{"kind":"Field","name":{"kind":"Name","value":"distinct_users"}},{"kind":"Field","name":{"kind":"Name","value":"median_rest_ut"}},{"kind":"Field","name":{"kind":"Name","value":"p10_rest_ut"}},{"kind":"Field","name":{"kind":"Name","value":"median_peak_ut"}},{"kind":"Field","name":{"kind":"Name","value":"median_noise_ut"}},{"kind":"Field","name":{"kind":"Name","value":"weak_ratio"}},{"kind":"Field","name":{"kind":"Name","value":"telemetry_placements"}},{"kind":"Field","name":{"kind":"Name","value":"telemetry_median_near_ut"}},{"kind":"Field","name":{"kind":"Name","value":"telemetry_lifts"}},{"kind":"Field","name":{"kind":"Name","value":"telemetry_rejects"}}]}}]}}]} as unknown as DocumentNode<AdminCubeCalibrationSummaryQuery, AdminCubeCalibrationSummaryQueryVariables>;
 export const LinkRevenueCatUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"linkRevenueCatUser"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"linkRevenueCatUser"}}]}}]} as unknown as DocumentNode<LinkRevenueCatUserMutation, LinkRevenueCatUserMutationVariables>;
 export const CreateSupportTicketDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSupportTicket"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SupportTicketInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSupportTicket"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<CreateSupportTicketMutation, CreateSupportTicketMutationVariables>;
 export const ResolveSupportTicketDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResolveSupportTicket"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resolveSupportTicket"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}}]}}]}}]} as unknown as DocumentNode<ResolveSupportTicketMutation, ResolveSupportTicketMutationVariables>;
 export const AddSupportTicketMessageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddSupportTicketMessage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ticketId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"body"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"attachments"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Upload"}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addSupportTicketMessage"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ticketId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ticketId"}}},{"kind":"Argument","name":{"kind":"Name","value":"body"},"value":{"kind":"Variable","name":{"kind":"Name","value":"body"}}},{"kind":"Argument","name":{"kind":"Name","value":"attachments"},"value":{"kind":"Variable","name":{"kind":"Name","value":"attachments"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"is_admin"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"attachments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"mime_type"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"size_bytes"}},{"kind":"Field","name":{"kind":"Name","value":"original_name"}}]}}]}}]}}]} as unknown as DocumentNode<AddSupportTicketMessageMutation, AddSupportTicketMessageMutationVariables>;
 export const UpdateLocaleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateLocale"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setSetting"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<UpdateLocaleMutation, UpdateLocaleMutationVariables>;
-export const UpdateSiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSiteConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSiteConfigInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSiteConfig"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"messaging_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"presence_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"wca_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"smart_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"magnet_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<UpdateSiteConfigMutation, UpdateSiteConfigMutationVariables>;
+export const UpdateSiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSiteConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSiteConfigInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSiteConfig"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"messaging_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"presence_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"wca_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"smart_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"magnet_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"online_battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<UpdateSiteConfigMutation, UpdateSiteConfigMutationVariables>;
 export const MergeSessionsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"mergeSessions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mergeSessions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"oldSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"newSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MergeSessionsMutation, MergeSessionsMutationVariables>;
+export const SplitSessionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"splitSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"buckets"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SessionBucketInput"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"splitSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"buckets"},"value":{"kind":"Variable","name":{"kind":"Name","value":"buckets"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SplitSessionMutation, SplitSessionMutationVariables>;
 export const CreateSessionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"SessionInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateSessionMutation, CreateSessionMutationVariables>;
 export const UpdateSessionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"SessionInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateSessionMutation, UpdateSessionMutationVariables>;
 export const DeleteSessionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<DeleteSessionMutation, DeleteSessionMutationVariables>;
@@ -4835,7 +5897,6 @@ export const UpdateAnnouncementDocument = {"kind":"Document","definitions":[{"ki
 export const MarkAnnouncementAsViewedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"markAnnouncementAsViewed"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"announcementId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"markAnnouncementAsViewed"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"announcementId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"announcementId"}}}]}]}}]} as unknown as DocumentNode<MarkAnnouncementAsViewedMutation, MarkAnnouncementAsViewedMutationVariables>;
 export const DeleteAnnouncementDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteAnnouncement"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteAnnouncement"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteAnnouncementMutation, DeleteAnnouncementMutationVariables>;
 export const TranslateAnnouncementContentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"translateAnnouncementContent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"title"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"content"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"translateAnnouncementContent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"title"},"value":{"kind":"Variable","name":{"kind":"Name","value":"title"}}},{"kind":"Argument","name":{"kind":"Name","value":"content"},"value":{"kind":"Variable","name":{"kind":"Name","value":"content"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"title"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"en"}},{"kind":"Field","name":{"kind":"Name","value":"es"}},{"kind":"Field","name":{"kind":"Name","value":"ru"}},{"kind":"Field","name":{"kind":"Name","value":"zh"}}]}},{"kind":"Field","name":{"kind":"Name","value":"content"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"en"}},{"kind":"Field","name":{"kind":"Name","value":"es"}},{"kind":"Field","name":{"kind":"Name","value":"ru"}},{"kind":"Field","name":{"kind":"Name","value":"zh"}}]}}]}}]}}]} as unknown as DocumentNode<TranslateAnnouncementContentMutation, TranslateAnnouncementContentMutationVariables>;
-export const CreateTrainerAlternativeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createTrainerAlternative"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TrainerAlternativeCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createTrainerAlternative"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"setup"}},{"kind":"Field","name":{"kind":"Name","value":"ll_pattern"}}]}}]}}]} as unknown as DocumentNode<CreateTrainerAlternativeMutation, CreateTrainerAlternativeMutationVariables>;
 export const AdminDeleteTrainerAlternativeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"adminDeleteTrainerAlternative"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminDeleteTrainerAlternative"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<AdminDeleteTrainerAlternativeMutation, AdminDeleteTrainerAlternativeMutationVariables>;
 export const BackfillWcaIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"filled"}},{"kind":"Field","name":{"kind":"Name","value":"tokenFailed"}},{"kind":"Field","name":{"kind":"Name","value":"noWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"recordsTotal"}},{"kind":"Field","name":{"kind":"Name","value":"recordsFilled"}},{"kind":"Field","name":{"kind":"Name","value":"recordsError"}}]}}]}}]} as unknown as DocumentNode<BackfillWcaIdsMutation, BackfillWcaIdsMutationVariables>;
 export const BackfillZktIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"backfillZktIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backfillZktIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"filled"}},{"kind":"Field","name":{"kind":"Name","value":"stillNull"}},{"kind":"Field","name":{"kind":"Name","value":"conflict"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<BackfillZktIdsMutation, BackfillZktIdsMutationVariables>;
@@ -4859,11 +5920,14 @@ export const UnblockUserDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const UpdateSocialPreferenceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSocialPreference"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSocialPreferenceInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSocialPreference"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dm_policy"}},{"kind":"Field","name":{"kind":"Name","value":"searchable"}},{"kind":"Field","name":{"kind":"Name","value":"dm_push"}},{"kind":"Field","name":{"kind":"Name","value":"read_receipts"}},{"kind":"Field","name":{"kind":"Name","value":"typing_indicator"}},{"kind":"Field","name":{"kind":"Name","value":"online_status"}}]}}]}}]} as unknown as DocumentNode<UpdateSocialPreferenceMutation, UpdateSocialPreferenceMutationVariables>;
 export const RecordSmartCubeTelemetryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RecordSmartCubeTelemetry"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"events"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SmartCubeTelemetryInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordSmartCubeTelemetry"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"events"},"value":{"kind":"Variable","name":{"kind":"Name","value":"events"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accepted"}}]}}]}}]} as unknown as DocumentNode<RecordSmartCubeTelemetryMutation, RecordSmartCubeTelemetryMutationVariables>;
 export const RecordMagnetTelemetryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RecordMagnetTelemetry"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"events"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"MagnetTelemetryInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordMagnetTelemetry"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"events"},"value":{"kind":"Variable","name":{"kind":"Name","value":"events"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accepted"}},{"kind":"Field","name":{"kind":"Name","value":"enabled"}}]}}]}}]} as unknown as DocumentNode<RecordMagnetTelemetryMutation, RecordMagnetTelemetryMutationVariables>;
+export const RecordProfileViewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"recordProfileView"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordProfileView"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}}]}]}}]} as unknown as DocumentNode<RecordProfileViewMutation, RecordProfileViewMutationVariables>;
+export const RecordSolveViewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"recordSolveView"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordSolveView"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"shareCode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}}}]}]}}]} as unknown as DocumentNode<RecordSolveViewMutation, RecordSolveViewMutationVariables>;
 export const AdminSupportTicketsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminSupportTickets"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resolved"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportTickets"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"resolved"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resolved"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"messages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"is_admin"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"sender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"attachments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"mime_type"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"size_bytes"}},{"kind":"Field","name":{"kind":"Name","value":"original_name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<AdminSupportTicketsQuery, AdminSupportTicketsQueryVariables>;
 export const MySupportTicketsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MySupportTickets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mySupportTickets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"messages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"is_admin"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"sender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"attachments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"mime_type"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"size_bytes"}},{"kind":"Field","name":{"kind":"Name","value":"original_name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<MySupportTicketsQuery, MySupportTicketsQueryVariables>;
 export const SupportTicketDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SupportTicketDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"supportTicket"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"subject"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"resolved_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"messages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"body"}},{"kind":"Field","name":{"kind":"Name","value":"is_admin"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"sender"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"attachments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}},{"kind":"Field","name":{"kind":"Name","value":"mime_type"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"size_bytes"}},{"kind":"Field","name":{"kind":"Name","value":"original_name"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SupportTicketDetailQuery, SupportTicketDetailQueryVariables>;
 export const GetIapStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getIapStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getIapStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"pro_expires_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_platform"}},{"kind":"Field","name":{"kind":"Name","value":"iap_product_id"}},{"kind":"Field","name":{"kind":"Name","value":"iap_cancellation_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_billing_issue_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_paused_until"}},{"kind":"Field","name":{"kind":"Name","value":"is_iap_pro"}},{"kind":"Field","name":{"kind":"Name","value":"can_purchase"}}]}}]}}]} as unknown as DocumentNode<GetIapStatusQuery, GetIapStatusQueryVariables>;
-export const SiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"messaging_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"presence_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"wca_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"smart_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"magnet_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"method_steps_version"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<SiteConfigQuery, SiteConfigQueryVariables>;
+export const TrainerOptionsSettingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TrainerOptionsSetting"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"settings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_options"}}]}}]}}]} as unknown as DocumentNode<TrainerOptionsSettingQuery, TrainerOptionsSettingQueryVariables>;
+export const SiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"messaging_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"presence_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"wca_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"zkt_backfill_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"smart_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"magnet_telemetry_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"online_battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"method_steps_version"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<SiteConfigQuery, SiteConfigQueryVariables>;
 export const OnlineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalSockets"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueUsers"}},{"kind":"Field","name":{"kind":"Name","value":"anonymous"}}]}}]}}]} as unknown as DocumentNode<OnlineStatsQuery, OnlineStatsQueryVariables>;
 export const WcaStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalUsers"}},{"kind":"Field","name":{"kind":"Name","value":"wcaConnected"}},{"kind":"Field","name":{"kind":"Name","value":"wcaWithId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaWithoutId"}}]}}]}}]} as unknown as DocumentNode<WcaStatsQuery, WcaStatsQueryVariables>;
 export const IpInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ipInfo"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ip"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ipInfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ip"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ip"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"countryCode"}},{"kind":"Field","name":{"kind":"Name","value":"regionName"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"isp"}},{"kind":"Field","name":{"kind":"Name","value":"org"}},{"kind":"Field","name":{"kind":"Name","value":"proxy"}},{"kind":"Field","name":{"kind":"Name","value":"mobile"}},{"kind":"Field","name":{"kind":"Name","value":"hosting"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}}]}}]}}]} as unknown as DocumentNode<IpInfoQuery, IpInfoQueryVariables>;
@@ -4873,19 +5937,19 @@ export const ProfileDocument = {"kind":"Document", "definitions":[{"kind":"Opera
 export const UserSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"userSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationArgsInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pageArgs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UserSearchQuery, UserSearchQueryVariables>;
 export const AdminUserSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"adminUserSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationArgsInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminUserSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pageArgs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserAccountFragment"}}]}}]}}]}},...UserAccountFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AdminUserSearchQuery, AdminUserSearchQueryVariables>;
 export const GetActiveAnnouncementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getActiveAnnouncements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getActiveAnnouncements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"targetUrl"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"hasViewed"}},{"kind":"Field","name":{"kind":"Name","value":"showInApp"}}]}}]}}]} as unknown as DocumentNode<GetActiveAnnouncementsQuery, GetActiveAnnouncementsQueryVariables>;
-export const GetUnreadAnnouncementCountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getUnreadAnnouncementCount"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getUnreadAnnouncementCount"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"count"}}]}}]}}]} as unknown as DocumentNode<GetUnreadAnnouncementCountQuery, GetUnreadAnnouncementCountQueryVariables>;
 export const GetAllAnnouncementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllAnnouncements"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"AnnouncementFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllAnnouncements"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"targetUrl"}},{"kind":"Field","name":{"kind":"Name","value":"translations"}},{"kind":"Field","name":{"kind":"Name","value":"isDraft"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"showInApp"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"publishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"viewCount"}},{"kind":"Field","name":{"kind":"Name","value":"pushSentAt"}},{"kind":"Field","name":{"kind":"Name","value":"pushSuccessCount"}},{"kind":"Field","name":{"kind":"Name","value":"pushTargetCount"}}]}}]}}]} as unknown as DocumentNode<GetAllAnnouncementsQuery, GetAllAnnouncementsQueryVariables>;
 export const GetMyAnnouncementHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMyAnnouncementHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMyAnnouncementHistory"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"targetUrl"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GetMyAnnouncementHistoryQuery, GetMyAnnouncementHistoryQueryVariables>;
 export const TrainerAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"trainerAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"caseName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trainerAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"caseName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"caseName"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"setup"}},{"kind":"Field","name":{"kind":"Name","value":"ll_pattern"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<TrainerAlternativesQuery, TrainerAlternativesQueryVariables>;
+export const TrainerLibraryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"trainerLibrary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"knownVersion"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trainerLibrary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"knownVersion"},"value":{"kind":"Variable","name":{"kind":"Name","value":"knownVersion"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"categories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"subsets"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"algorithms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"setup"}},{"kind":"Field","name":{"kind":"Name","value":"alternativeCount"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<TrainerLibraryQuery, TrainerLibraryQueryVariables>;
+export const TrainerLibraryAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"trainerLibraryAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trainerLibraryAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"cases"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"alternatives"}}]}}]}}]}}]} as unknown as DocumentNode<TrainerLibraryAlternativesQuery, TrainerLibraryAlternativesQueryVariables>;
 export const WcaCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaCompetitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaCompetitionFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaCompetitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"venue"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"date_range"}},{"kind":"Field","name":{"kind":"Name","value":"event_ids"}},{"kind":"Field","name":{"kind":"Name","value":"latitude_degrees"}},{"kind":"Field","name":{"kind":"Name","value":"longitude_degrees"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"competitor_limit"}}]}}]}}]} as unknown as DocumentNode<WcaCompetitionsQuery, WcaCompetitionsQueryVariables>;
 export const WcaSearchCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaSearchCompetitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaSearchCompetitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"event_ids"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<WcaSearchCompetitionsQuery, WcaSearchCompetitionsQueryVariables>;
 export const MyWcaCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"myWcaCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myWcaCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"event_ids"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<MyWcaCompetitionsQuery, MyWcaCompetitionsQueryVariables>;
-export const WcaCompetitionDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaCompetitionDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaScheduleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaCompetitionDetail"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"competitionId"}},{"kind":"Field","name":{"kind":"Name","value":"competitionName"}},{"kind":"Field","name":{"kind":"Name","value":"myWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"myRegistrantId"}},{"kind":"Field","name":{"kind":"Name","value":"myRegistrationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"myRegisteredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"days"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"position"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"named"}}]}},{"kind":"Field","name":{"kind":"Name","value":"myDayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"zktId"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaUserId"}},{"kind":"Field","name":{"kind":"Name","value":"registeredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"personalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"worldRanking"}},{"kind":"Field","name":{"kind":"Name","value":"continentalRanking"}},{"kind":"Field","name":{"kind":"Name","value":"nationalRanking"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"timeLimit"}},{"kind":"Field","name":{"kind":"Name","value":"cutoff"}},{"kind":"Field","name":{"kind":"Name","value":"cutoffAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"advancementType"}},{"kind":"Field","name":{"kind":"Name","value":"advancementLevel"}},{"kind":"Field","name":{"kind":"Name","value":"groups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"seedResult"}}]}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}},{"kind":"Field","name":{"kind":"Name","value":"roomColor"}},{"kind":"Field","name":{"kind":"Name","value":"venueName"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"allPersonalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"single"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"singleWorldRank"}},{"kind":"Field","name":{"kind":"Name","value":"averageWorldRank"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"liveId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveRoundMap"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"liveRoundId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"info"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"venues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"city"}}]}},{"kind":"Field","name":{"kind":"Name","value":"organizers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaUrl"}}]}}]}}]}}]} as unknown as DocumentNode<WcaCompetitionDetailQuery, WcaCompetitionDetailQueryVariables>;
-export const WcaLiveCompetitionOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveCompetitionOverview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveOverviewInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitionOverview"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"compId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"liveRoundId"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"finished"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"numEntered"}},{"kind":"Field","name":{"kind":"Name","value":"numResults"}},{"kind":"Field","name":{"kind":"Name","value":"format"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}}]}},{"kind":"Field","name":{"kind":"Name","value":"timeLimit"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"centiseconds"}},{"kind":"Field","name":{"kind":"Name","value":"cumulativeRoundWcifIds"}}]}},{"kind":"Field","name":{"kind":"Name","value":"cutoff"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"attemptResult"}},{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}}]}},{"kind":"Field","name":{"kind":"Name","value":"advancementCondition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"level"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dayIndex"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"isFinal"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"rooms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"activities"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"dayIndex"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"records"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"attemptResult"}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}}]}},{"kind":"Field","name":{"kind":"Name","value":"podiums"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}}]}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveCompetitionOverviewQuery, WcaLiveCompetitionOverviewQueryVariables>;
-export const WcaLiveRoundResultsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveRoundResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveRoundInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveRoundResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roundActivityCode"}},{"kind":"Field","name":{"kind":"Name","value":"roundName"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"finished"}},{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}}]}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"personLiveId"}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"advancing"}},{"kind":"Field","name":{"kind":"Name","value":"advancingQuestionable"}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveRoundResultsQuery, WcaLiveRoundResultsQueryVariables>;
+export const WcaCompetitionDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaCompetitionDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaScheduleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaCompetitionDetail"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"competitionId"}},{"kind":"Field","name":{"kind":"Name","value":"competitionName"}},{"kind":"Field","name":{"kind":"Name","value":"myWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"myRegistrantId"}},{"kind":"Field","name":{"kind":"Name","value":"myRegistrationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"myRegisteredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"days"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"position"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"named"}}]}},{"kind":"Field","name":{"kind":"Name","value":"myDayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"zktId"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaUserId"}},{"kind":"Field","name":{"kind":"Name","value":"registeredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}},{"kind":"Field","name":{"kind":"Name","value":"chance"}}]}},{"kind":"Field","name":{"kind":"Name","value":"personalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"worldRanking"}},{"kind":"Field","name":{"kind":"Name","value":"continentalRanking"}},{"kind":"Field","name":{"kind":"Name","value":"nationalRanking"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"timeLimit"}},{"kind":"Field","name":{"kind":"Name","value":"cutoff"}},{"kind":"Field","name":{"kind":"Name","value":"cutoffAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"advancementType"}},{"kind":"Field","name":{"kind":"Name","value":"advancementLevel"}},{"kind":"Field","name":{"kind":"Name","value":"dualChance"}},{"kind":"Field","name":{"kind":"Name","value":"groups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"chance"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"seedResult"}}]}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}},{"kind":"Field","name":{"kind":"Name","value":"roomColor"}},{"kind":"Field","name":{"kind":"Name","value":"venueName"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}},{"kind":"Field","name":{"kind":"Name","value":"chance"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"allPersonalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"single"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"singleWorldRank"}},{"kind":"Field","name":{"kind":"Name","value":"averageWorldRank"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"liveId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveRoundMap"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"liveRoundId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"info"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"venues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"city"}}]}},{"kind":"Field","name":{"kind":"Name","value":"organizers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaUrl"}}]}}]}}]}}]} as unknown as DocumentNode<WcaCompetitionDetailQuery, WcaCompetitionDetailQueryVariables>;
+export const WcaLiveCompetitionOverviewDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveCompetitionOverview"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveOverviewInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitionOverview"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"compId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"liveRoundId"}},{"kind":"Field","name":{"kind":"Name","value":"number"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"open"}},{"kind":"Field","name":{"kind":"Name","value":"finished"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"numEntered"}},{"kind":"Field","name":{"kind":"Name","value":"numResults"}},{"kind":"Field","name":{"kind":"Name","value":"format"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}}]}},{"kind":"Field","name":{"kind":"Name","value":"timeLimit"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"centiseconds"}},{"kind":"Field","name":{"kind":"Name","value":"cumulativeRoundWcifIds"}}]}},{"kind":"Field","name":{"kind":"Name","value":"cutoff"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"attemptResult"}},{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}}]}},{"kind":"Field","name":{"kind":"Name","value":"advancementCondition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"level"}}]}},{"kind":"Field","name":{"kind":"Name","value":"dayIndex"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"isFinal"}},{"kind":"Field","name":{"kind":"Name","value":"dualChance"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"rooms"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"activities"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityId"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"dayIndex"}},{"kind":"Field","name":{"kind":"Name","value":"dayLabel"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"isFinal"}},{"kind":"Field","name":{"kind":"Name","value":"chance"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"records"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"attemptResult"}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}}]}},{"kind":"Field","name":{"kind":"Name","value":"podiums"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}}]}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveCompetitionOverviewQuery, WcaLiveCompetitionOverviewQueryVariables>;
+export const WcaLiveRoundResultsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveRoundResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveRoundInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveRoundResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roundActivityCode"}},{"kind":"Field","name":{"kind":"Name","value":"roundName"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"finished"}},{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"dualChance"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}}]}},{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"personLiveId"}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"advancing"}},{"kind":"Field","name":{"kind":"Name","value":"advancingQuestionable"}},{"kind":"Field","name":{"kind":"Name","value":"chances"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chance"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}}]}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"noShow"}},{"kind":"Field","name":{"kind":"Name","value":"counting"}}]}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveRoundResultsQuery, WcaLiveRoundResultsQueryVariables>;
 export const WcaLiveCompetitorResultsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveCompetitorResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveCompetitorInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitorResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"roundName"}},{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}}]}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"advancing"}},{"kind":"Field","name":{"kind":"Name","value":"advancingQuestionable"}},{"kind":"Field","name":{"kind":"Name","value":"format"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}}]}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveCompetitorResultsQuery, WcaLiveCompetitorResultsQueryVariables>;
 export const AdminTrainerAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"adminTrainerAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminTrainerAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"case_name"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}}]} as unknown as DocumentNode<AdminTrainerAlternativesQuery, AdminTrainerAlternativesQueryVariables>;
-export const RankingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"rankings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"mode"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rankings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"mode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"mode"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rows"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rank"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"wca_id"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"wca_competition_count"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_gold"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_silver"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_bronze"}},{"kind":"Field","name":{"kind":"Name","value":"pfp_image_url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total_count"}},{"kind":"Field","name":{"kind":"Name","value":"page"}}]}}]}}]} as unknown as DocumentNode<RankingsQuery, RankingsQueryVariables>;
 export const LandingStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"landingStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"landingStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upcoming_wca_competition_count"}},{"kind":"Field","name":{"kind":"Name","value":"total_competitor_capacity"}},{"kind":"Field","name":{"kind":"Name","value":"supported_event_count"}},{"kind":"Field","name":{"kind":"Name","value":"supported_language_count"}},{"kind":"Field","name":{"kind":"Name","value":"cuber_count"}},{"kind":"Field","name":{"kind":"Name","value":"solve_count"}}]}}]}}]} as unknown as DocumentNode<LandingStatsQuery, LandingStatsQueryVariables>;
 export const MyCompetitionFollowsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"myCompetitionFollows"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCompetitionFollows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_registrant_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_wca_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<MyCompetitionFollowsQuery, MyCompetitionFollowsQueryVariables>;
 export const CaseStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"caseStats"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"cubeType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"subset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lastN"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"caseStats"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"cubeType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"cubeType"}}},{"kind":"Argument","name":{"kind":"Name","value":"subset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"subset"}}},{"kind":"Argument","name":{"kind":"Name","value":"sessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"lastN"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lastN"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"caseKey"}},{"kind":"Field","name":{"kind":"Name","value":"caseName"}},{"kind":"Field","name":{"kind":"Name","value":"caseType"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"averageTime"}},{"kind":"Field","name":{"kind":"Name","value":"bestTime"}},{"kind":"Field","name":{"kind":"Name","value":"avgRecognition"}},{"kind":"Field","name":{"kind":"Name","value":"avgExecution"}},{"kind":"Field","name":{"kind":"Name","value":"avgTps"}},{"kind":"Field","name":{"kind":"Name","value":"avgTurns"}},{"kind":"Field","name":{"kind":"Name","value":"lastSeenAt"}}]}}]}}]} as unknown as DocumentNode<CaseStatsQuery, CaseStatsQueryVariables>;
@@ -4899,7 +5963,8 @@ export const SocialPreferenceDocument = {"kind":"Document","definitions":[{"kind
 export const BlockedUsersDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"blockedUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"blockedUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<BlockedUsersQuery, BlockedUsersQueryVariables>;
 export const MessageRecipientSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"messageRecipientSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"messageRecipientSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MessageRecipientSearchQuery, MessageRecipientSearchQueryVariables>;
 export const SmartCubeTelemetrySummaryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SmartCubeTelemetrySummary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"smartCubeTelemetrySummary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"device_name"}},{"kind":"Field","name":{"kind":"Name","value":"solves"}},{"kind":"Field","name":{"kind":"Name","value":"distinct_users"}},{"kind":"Field","name":{"kind":"Name","value":"via_tracker"}},{"kind":"Field","name":{"kind":"Name","value":"via_grace"}},{"kind":"Field","name":{"kind":"Name","value":"via_poll"}},{"kind":"Field","name":{"kind":"Name","value":"out_of_sync_events"}},{"kind":"Field","name":{"kind":"Name","value":"late_scramble_events"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_realign_events"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_reset_events"}},{"kind":"Field","name":{"kind":"Name","value":"median_lag_ms"}},{"kind":"Field","name":{"kind":"Name","value":"p95_lag_ms"}},{"kind":"Field","name":{"kind":"Name","value":"avg_battery_clean"}},{"kind":"Field","name":{"kind":"Name","value":"avg_battery_recovered"}},{"kind":"Field","name":{"kind":"Name","value":"median_time_correction_ms"}}]}}]}}]} as unknown as DocumentNode<SmartCubeTelemetrySummaryQuery, SmartCubeTelemetrySummaryQueryVariables>;
-export const MagnetTelemetrySummaryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MagnetTelemetrySummary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"magnetTelemetrySummary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"distinct_users"}},{"kind":"Field","name":{"kind":"Name","value":"placements"}},{"kind":"Field","name":{"kind":"Name","value":"min_near_ut"}},{"kind":"Field","name":{"kind":"Name","value":"median_near_ut"}},{"kind":"Field","name":{"kind":"Name","value":"lifts"}},{"kind":"Field","name":{"kind":"Name","value":"started"}},{"kind":"Field","name":{"kind":"Name","value":"refused"}},{"kind":"Field","name":{"kind":"Name","value":"median_latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"p95_latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"median_approach_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rejects"}},{"kind":"Field","name":{"kind":"Name","value":"unsupported"}},{"kind":"Field","name":{"kind":"Name","value":"unknown_hints"}},{"kind":"Field","name":{"kind":"Name","value":"median_sigma"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}}]}}]}}]} as unknown as DocumentNode<MagnetTelemetrySummaryQuery, MagnetTelemetrySummaryQueryVariables>;
-export const MagnetTelemetryRowsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MagnetTelemetryRows"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"magnetTelemetryRows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}},{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}},{"kind":"Argument","name":{"kind":"Name","value":"deviceModel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}}},{"kind":"Argument","name":{"kind":"Name","value":"newestFirst"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"os_version"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"delta_ut"}},{"kind":"Field","name":{"kind":"Name","value":"latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rest_ms"}},{"kind":"Field","name":{"kind":"Name","value":"approach_ms"}},{"kind":"Field","name":{"kind":"Name","value":"sigma"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"has_samples"}},{"kind":"Field","name":{"kind":"Name","value":"app_version"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<MagnetTelemetryRowsQuery, MagnetTelemetryRowsQueryVariables>;
+export const MagnetTelemetrySummaryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MagnetTelemetrySummary"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"days"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"magnetTelemetrySummary"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"days"},"value":{"kind":"Variable","name":{"kind":"Name","value":"days"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"cube_puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"median_near_min_ut"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"distinct_users"}},{"kind":"Field","name":{"kind":"Name","value":"placements"}},{"kind":"Field","name":{"kind":"Name","value":"min_near_ut"}},{"kind":"Field","name":{"kind":"Name","value":"median_near_ut"}},{"kind":"Field","name":{"kind":"Name","value":"lifts"}},{"kind":"Field","name":{"kind":"Name","value":"started"}},{"kind":"Field","name":{"kind":"Name","value":"refused"}},{"kind":"Field","name":{"kind":"Name","value":"median_latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"p95_latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"median_approach_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rejects"}},{"kind":"Field","name":{"kind":"Name","value":"unsupported"}},{"kind":"Field","name":{"kind":"Name","value":"unknown_hints"}},{"kind":"Field","name":{"kind":"Name","value":"median_sigma"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}}]}}]}}]} as unknown as DocumentNode<MagnetTelemetrySummaryQuery, MagnetTelemetrySummaryQueryVariables>;
+export const MagnetTelemetryRowsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MagnetTelemetryRows"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"magnetTelemetryRows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}},{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}},{"kind":"Argument","name":{"kind":"Name","value":"deviceModel"},"value":{"kind":"Variable","name":{"kind":"Name","value":"deviceModel"}}},{"kind":"Argument","name":{"kind":"Name","value":"newestFirst"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"device_model"}},{"kind":"Field","name":{"kind":"Name","value":"os_version"}},{"kind":"Field","name":{"kind":"Name","value":"sensor_name"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"delta_ut"}},{"kind":"Field","name":{"kind":"Name","value":"latency_ms"}},{"kind":"Field","name":{"kind":"Name","value":"rest_ms"}},{"kind":"Field","name":{"kind":"Name","value":"approach_ms"}},{"kind":"Field","name":{"kind":"Name","value":"sigma"}},{"kind":"Field","name":{"kind":"Name","value":"rate_hz"}},{"kind":"Field","name":{"kind":"Name","value":"reversed"}},{"kind":"Field","name":{"kind":"Name","value":"has_samples"}},{"kind":"Field","name":{"kind":"Name","value":"app_version"}},{"kind":"Field","name":{"kind":"Name","value":"cube_puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"near_min_ut"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<MagnetTelemetryRowsQuery, MagnetTelemetryRowsQueryVariables>;
 export const MagnetTelemetrySamplesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MagnetTelemetrySamples"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"magnetTelemetrySamples"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<MagnetTelemetrySamplesQuery, MagnetTelemetrySamplesQueryVariables>;
 export const SmartCubeTelemetryRowsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SmartCubeTelemetryRows"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"cubeType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"smartCubeTelemetryRows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"cubeType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"cubeType"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}},{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}},{"kind":"Argument","name":{"kind":"Name","value":"eventType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventType"}}},{"kind":"Argument","name":{"kind":"Name","value":"newestFirst"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newestFirst"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"device_name"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"surface"}},{"kind":"Field","name":{"kind":"Name","value":"event_type"}},{"kind":"Field","name":{"kind":"Name","value":"detection_source"}},{"kind":"Field","name":{"kind":"Name","value":"detection_lag_ms"}},{"kind":"Field","name":{"kind":"Name","value":"time_ms"}},{"kind":"Field","name":{"kind":"Name","value":"turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"battery_level"}},{"kind":"Field","name":{"kind":"Name","value":"time_correction_ms"}},{"kind":"Field","name":{"kind":"Name","value":"is_native"}},{"kind":"Field","name":{"kind":"Name","value":"app_version"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<SmartCubeTelemetryRowsQuery, SmartCubeTelemetryRowsQueryVariables>;
+export const ZktPersonBestsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktPersonBests"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"zktId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktPersonBests"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"zktId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"zktId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"event_id"}},{"kind":"Field","name":{"kind":"Name","value":"single"}},{"kind":"Field","name":{"kind":"Name","value":"average"}}]}}]}}]} as unknown as DocumentNode<ZktPersonBestsQuery, ZktPersonBestsQueryVariables>;

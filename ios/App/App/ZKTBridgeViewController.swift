@@ -17,6 +17,15 @@ class ZKTBridgeViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(MagnetDetectorPlugin())
         bridge?.registerPluginInstance(NativeCalendarPlugin())
 
+        // The page itself never rubber-bands (feedback 2.0). The web layer asks for the
+        // same with `overscroll-behavior: none` on html/body, but WebKit only honours that
+        // from iOS 16 and this app still runs on 15. Only the document's own scroll view
+        // is touched here: inner scroll areas (lists, sheets) are separate child scroll
+        // views in WKWebView and keep their normal bounce.
+        webView?.scrollView.bounces = false
+        webView?.scrollView.alwaysBounceVertical = false
+        webView?.scrollView.alwaysBounceHorizontal = false
+
         // Back gesture toggle: Capacitor posts this notification on every decidePolicyFor.
         // We do NOT override WKNavigationDelegate, because Capacitor's WebViewDelegationHandler
         // manages webView.isOpaque restore — overriding it produces a black screen.

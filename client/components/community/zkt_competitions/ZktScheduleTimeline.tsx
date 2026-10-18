@@ -129,10 +129,12 @@ export default function ZktScheduleTimeline({rows, locale, timezone, labels}: Pr
 				const opts = timezone ? {timeZone: timezone} : {};
 				return {
 					key,
+					// "10 Eki", not "10/10": Chrome formats a two-digit day and month as
+					// dd/MM even in Turkish, which reads as a US date.
 					heading: date.toLocaleDateString(locale, {
 						...opts,
-						day: '2-digit',
-						month: '2-digit',
+						day: 'numeric',
+						month: 'short',
 					}),
 					subHeading: date.toLocaleDateString(locale, {...opts, weekday: 'short'}),
 					placed: assignLanes(items),

@@ -4,13 +4,6 @@
 	width: 100%;
 	position: relative;
 
-	// The section's cube-face colour becomes the accent for everything the page draws
-	// — group markers, active toggles, the selected option, slider fills — so moving
-	// between sections changes the room you're standing in rather than just the text.
-	// Rebinding the accent variable itself is what reaches the Tailwind-styled rows
-	// (`bg-primary`, `text-primary`) without touching each one.
-	--primary-color: var(--active-tone, 36, 107, 253);
-
 	// Same shape as the help page's search field. Shares the layout's centred track
 	// below so the field lines up with the nav column rather than floating off the
 	// page's left edge on a wide monitor.
@@ -94,25 +87,9 @@
 		color: rgb(var(--text-color));
 	}
 
+	// The shared bare BackButton, pulled left so the caret lines up with the title edge.
 	&__back {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 38px;
-		height: 38px;
-		border-radius: 10px;
-		background: rgba(var(--text-color), 0.06);
-		color: rgb(var(--text-color));
-
-		svg {
-			width: 17px;
-			height: 17px;
-		}
-
-		&:hover {
-			background: rgba(var(--text-color), 0.1);
-		}
+		margin-left: -$zt-space-2;
 	}
 
 	// ------------------------------------------------------------------

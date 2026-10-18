@@ -36,6 +36,19 @@
         // White when in dark mode, black when in light mode
         --theme-color-opposite: 255, 255, 255;
 
+        ///// MODULE SURFACE (timer modules, mobile action row, desktop tiles) /////
+        // Built from the theme's own module colour, so light and dark themes and every
+        // custom palette get a card that matches them. Strong enough to read over a
+        // timer background image, still letting a hint of it through. Never use a
+        // backdrop-filter blur for this: it re-blurs every frame behind a video
+        // background, which is the costly case on low-end Android WebViews.
+        // Declared on :root, where themes.ts writes --module-color/--text-color.
+        --zt-surface: rgba(var(--module-color), 0.85);
+        // Anything that floats over other content (desktop floating modules): opaque,
+        // so the scramble or another module behind it never shows through the text.
+        --zt-surface-float: rgb(var(--module-color));
+        --zt-surface-border: rgba(var(--text-color), 0.08);
+
         ///// ZKT AUTH SCENE (login + signup + wca-callback) /////
         --auth-accent: 167, 139, 250;
         --auth-module-elevated: 22, 26, 40;
@@ -61,7 +74,7 @@
 @import 'react_table';
 @import 'defaults';
 @import 'pattern.scss';
-@import '../../node_modules/react-color-palette/lib/css/styles.css';
+@import '../../node_modules/react-color-palette/dist/css/rcp.css';
 
 h1 {
     font-size: 3rem;
@@ -77,12 +90,36 @@ h1 {
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
 } */
 
-/* PWA Standalone Display Mode - Yaylanma efektini koru */
-@media (display-mode: standalone) {
-    body {
-        /* overscroll-behavior: none; bu özellik kaldırıldı, native his geri geldi */
-        overscroll-behavior-y: auto;
-    }
+/*
+ * App feel on every platform (owner decision, feedback 2.0): the page itself never
+ * rubber-bands, zooms or drifts sideways. Inner scroll areas still scroll; only the
+ * root stops behaving like a web page. The installed PWA used to opt back into the
+ * bounce here, which is exactly the "whole page drags" the owner keeps reporting.
+ * Guarded by client/styles/__tests__/app_feel.test.ts.
+ */
+html,
+body {
+    overscroll-behavior: none;
+}
+
+html {
+    // No double-tap zoom anywhere. Low specificity on purpose (`:where`): any
+    // component that sets its own touch-action (start surfaces use `none`, drag
+    // handles `pan-y`) still wins, and `manipulation` keeps panning and pinch for
+    // the elements that relied on the default. Pinch on iOS Safari is blocked in
+    // util/viewport-lock.ts, everywhere else by the viewport meta.
+    touch-action: manipulation;
+}
+
+:where(body *) {
+    touch-action: manipulation;
+}
+
+body {
+    // `clip`, not `hidden`: hidden would turn body into a scroll container and
+    // break position: sticky in every page. Anything wider than the screen is
+    // cut instead of letting the page pan sideways on iOS.
+    overflow-x: clip;
 }
 
 /* Hide scrollbar globally but allow scrolling */

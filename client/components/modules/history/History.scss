@@ -41,7 +41,61 @@
 		}
 	}
 
+	// The solves grid (History.tsx). The list scrolls on both axes on the desktop, so a
+	// wide set of average columns can be reached in a narrow module; the header row
+	// sticks to the top while the rows scroll under it.
+	&--grid {
+		padding: 0;
+	}
+
+	&--grid &__list {
+		overflow: auto;
+		// Vertical only. A sideways swipe on a touch screen that the list cannot take
+		// has to reach the page, whose own `overscroll-behavior: none` blocks the
+		// browser's swipe-to-go-back. Contained here, it set off that back gesture on
+		// a tablet instead.
+		overscroll-behavior: auto contain;
+	}
+
+	&--mobile &__list {
+		overflow-x: hidden;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+		touch-action: pan-y;
+	}
+
 	&__head {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(5.2em, 1.2fr));
+		min-width: max-content;
 		width: 100%;
+		height: 28px;
+		box-sizing: border-box;
+		border-bottom: 1px solid rgba(var(--text-color), 0.18);
+		// Opaque (shared surface token, styles/index.scss), because the rows scroll under it.
+		background: var(--zt-surface-float, rgb(var(--module-color)));
+	}
+
+	// Desktop only (the phone draws no header): time and average headings sit centred over
+	// their centred numbers, the number column stays right-aligned.
+	&__head-cell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0 8px;
+		box-sizing: border-box;
+		border-left: 1px solid rgba(var(--text-color), 0.08);
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+
+		&--index {
+			justify-content: flex-end;
+			border-left: none;
+		}
 	}
 }

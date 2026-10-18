@@ -65,7 +65,7 @@ export const PRO_FEATURES: readonly ProFeature[] = [
 	// Gate: client SmartSolveLayout `showProOverlay` (plus PhaseAnalysis, PhaseSplits,
 	// SessionStepsTable, ReplayPlayer), server CaseStats.resolver.ts @Authorized([LOGGED_IN, PRO]).
 	feature('smart_cube_analysis', ChartBar),
-	// Gate: client TrainerLanding `smartLocked` and TrainingArea `useSmartCube`.
+	// Gate: client hub/StudyModeSwitch (Smart side opens this modal) and TrainingArea `useSmartCube`.
 	feature('trainer_smart_cube', Lightning),
 	// Gate: client AlgorithmSelector `handlePdfExport` -> openProOnlyModal('trainer_pdf').
 	feature('trainer_pdf', FilePdf),

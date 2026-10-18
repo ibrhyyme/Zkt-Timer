@@ -50,6 +50,9 @@
 
 	&__actions {
 		display: flex;
+		// The two buttons plus padding come to ~377px; on a 360px phone they used to run
+		// off the edge and widen the page. Wrapping puts the second one underneath.
+		flex-wrap: wrap;
 		gap: 15px;
 		justify-content: center;
 		margin-top: 20px;

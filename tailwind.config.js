@@ -49,6 +49,21 @@ module.exports = {
 			boxShadow: {
 				md: '0 2px 15px rgba(0, 0, 0, 0.1)',
 			},
+			// Mirrors $zt-radius-* in client/styles/tokens.scss: three corner sizes for the
+			// whole app. Tailwind's seven defaults (2px to 24px) are folded onto them so the
+			// existing `rounded-*` classes in TSX land on the same shape as the SCSS side.
+			// sm = chip/badge, md = button/input/row, lg = card/modal.
+			borderRadius: {
+				none: '0',
+				sm: '6px',
+				DEFAULT: '6px',
+				md: '10px',
+				lg: '10px',
+				xl: '14px',
+				'2xl': '14px',
+				'3xl': '14px',
+				full: '9999px',
+			},
 			fontFamily: {
 				label: ['Source Sans Pro', 'sans-serif'],
 				roboto: ['Roboto', 'sans-serif'],

@@ -103,17 +103,58 @@ export function clampDockHeight(height: number): number {
  * bar: its lower edge hits the viewport, the box stops, and the pointer walks off the
  * grip. So the rule is a window manager's: the top edge (where the grip is) stays on
  * screen, a strip stays visible horizontally, and overflow past the bottom is allowed.
+ *
+ * `topInset` is the bottom edge of whatever is fixed over the top of the page (the site
+ * header bar). The free layer sits under that bar, so "on screen" has to mean below it:
+ * measured from the viewport edge alone, a tile dropped onto the bar kept its header,
+ * grip and close button underneath the bar, where nothing could reach them, and the
+ * module was stuck there for good.
  */
-export function clampFloatBox(box: TileBox, viewport: { width: number; height: number }): TileBox {
+export function clampFloatBox(
+	box: TileBox,
+	viewport: { width: number; height: number },
+	topInset = 0
+): TileBox {
 	const w = Math.max(TILE_LIMITS.floatMinW, Math.round(box.w));
 	const h = Math.max(TILE_LIMITS.floatMinH, Math.round(box.h));
+	const minY = Math.max(FLOAT_GRIP_ROOM, Math.round(Number.isFinite(topInset) ? topInset : 0));
 
 	return {
 		w,
 		h,
 		x: Math.round(clampNumber(box.x, FLOAT_KEEP_X - w, Math.max(FLOAT_KEEP_X - w, viewport.width - FLOAT_KEEP_X))),
-		y: Math.round(clampNumber(box.y, FLOAT_GRIP_ROOM, Math.max(FLOAT_GRIP_ROOM, viewport.height - FLOAT_KEEP_BOTTOM))),
+		y: Math.round(clampNumber(box.y, minY, Math.max(minY, viewport.height - FLOAT_KEEP_BOTTOM))),
 	};
+}
+
+/** The area floating tiles must stay inside: the viewport, minus the fixed bar on top. */
+export interface FloatFrame {
+	width: number;
+	height: number;
+	topInset: number;
+}
+
+/**
+ * Where a stored floating tile is actually drawn.
+ *
+ * Stored boxes are clamped at the moment they are written, but against the window and
+ * the rules of that moment. A layout saved before the top bar was taken into account,
+ * or on a larger window, can sit under the bar or off screen, so every stored box goes
+ * through the same clamp again when it is drawn. Display only: the stored value is left
+ * alone, so a window made small for a minute does not permanently shove the user's
+ * arrangement around. The next drag saves the corrected position.
+ */
+export function floatBoxOnScreen(config: TileConfig | undefined, frame: FloatFrame): TileBox {
+	return clampFloatBox(
+		{
+			x: typeof config?.x === 'number' ? config.x : 0,
+			y: typeof config?.y === 'number' ? config.y : 0,
+			w: typeof config?.w === 'number' ? config.w : TILE_LIMITS.floatDefaultW,
+			h: typeof config?.h === 'number' ? config.h : TILE_LIMITS.floatDefaultH,
+		},
+		frame,
+		frame.topInset
+	);
 }
 
 /** Tiles of one dock, in their stored order. */

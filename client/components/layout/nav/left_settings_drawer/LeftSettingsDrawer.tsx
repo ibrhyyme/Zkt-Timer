@@ -18,6 +18,7 @@ interface Props {
 	hideSmartCubeFeatures?: boolean;
 	hideMobileModules?: boolean;
 	hideSlamStop?: boolean;
+	puzzle?: {cubeType: string; scrambleSubset?: string | null};
 }
 
 export default function LeftSettingsDrawer(props: Props) {

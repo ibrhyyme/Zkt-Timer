@@ -4,6 +4,51 @@ import {UserAccount} from '../schemas/UserAccount.schema';
 import {Integration} from '../schemas/Integration.schema';
 import {IntegrationType} from '../../shared/integration';
 
+/**
+ * The columns behind the GraphQL Integration type, i.e. everything except the
+ * OAuth credentials (auth_token, refresh_token) and the ranking internals. Use
+ * this whenever an integration is loaded alongside a user that may be shown to
+ * someone else, so the tokens never leave the database on a read path that has
+ * no use for them. Code that needs the tokens (refresh, WCA / ZKT API calls)
+ * loads the row by owner through getIntegration and friends.
+ */
+export const publicIntegrationSelect = {
+	id: true,
+	user_id: true,
+	service_name: true,
+	auth_expires_at: true,
+	wca_id: true,
+	wca_user_id: true,
+	wca_name: true,
+	wca_avatar_url: true,
+	wca_country_iso2: true,
+	wca_competition_count: true,
+	wca_medal_gold: true,
+	wca_medal_silver: true,
+	wca_medal_bronze: true,
+	wca_record_nr: true,
+	wca_record_cr: true,
+	wca_record_wr: true,
+	wca_show_competitions: true,
+	wca_show_medals: true,
+	wca_show_records: true,
+	wca_show_rank: true,
+	wca_show_results: true,
+	zkt_user_id: true,
+	zkt_id: true,
+	zkt_member_no: true,
+	zkt_name: true,
+	zkt_avatar_url: true,
+	zkt_country_iso2: true,
+	zkt_show_competitions: true,
+	zkt_show_medals: true,
+	zkt_show_records: true,
+	zkt_show_pbs: true,
+	revoked_at: true,
+	last_synced_at: true,
+	created_at: true,
+} as const;
+
 export function createIntegration(user: UserAccount, serviceName, authToken, refreshToken, authExpiresAt) {
 	return getPrisma().integration.create({
 		data: {

@@ -25,6 +25,90 @@ const advTypeOf = (t: string | null | undefined): string => (t === 'PERCENT' ? '
 const roundName = (n: number): string => `${n}. Tur`;
 
 /**
+ * Dual Chance (ZKT "Çift Şans") is a round option, not a WCA dual round: the
+ * round number and format stay the same, every competitor does the format twice
+ * and the better chance counts. Groups carry no chance field; with 2N groups the
+ * federation numbers 1..N as chance 1 and N+1..2N as chance 2, so the chance is
+ * derived from the group number and the round's group count.
+ */
+export function chanceOfGroup(groupNumber: number | null | undefined, totalGroups: number): 1 | 2 | null {
+	if (!groupNumber || totalGroups < 2) return null;
+	return groupNumber <= totalGroups / 2 ? 1 : 2;
+}
+
+/**
+ * Dual Chance rounds of a federation competition detail, keyed by the WCIF round
+ * code ("333-r1") with the round's group count. A day-split event has two rounds
+ * under one code; if either is a Dual Chance round its group count is the one kept.
+ */
+export function zktDualChanceRounds(d: any): Map<string, number> {
+	const out = new Map<string, number>();
+	for (const ev of d?.events || []) {
+		for (const r of ev.rounds || []) {
+			if (r?.dualChance !== true) continue;
+			out.set(`${ev.eventId}-r${r.roundNumber}`, (r.groups || []).length);
+		}
+	}
+	return out;
+}
+
+const GROUP_CODE = /^(.+-r\d+)-g(\d+)$/;
+
+/**
+ * Mark the Dual Chance rounds on a CompetitionDetail built from WCIF. The WCIF
+ * itself only shows them as two "…, Şans 1 / Şans 2" activities under one round
+ * code, so the flag comes from the federation detail (`fed`). Without it (the
+ * federation unreachable and nothing cached) the page simply shows no chance
+ * labels, which is what it showed before.
+ */
+export function applyZktDualChance(detail: any, fed: any): void {
+	const dual = zktDualChanceRounds(fed);
+	if (!detail || dual.size === 0) return;
+
+	const chanceOfCode = (activityCode: string | null | undefined): number | null => {
+		const m = GROUP_CODE.exec(activityCode || '');
+		if (!m || !dual.has(m[1])) return null;
+		return chanceOfGroup(parseInt(m[2], 10), dual.get(m[1])!);
+	};
+
+	for (const ev of detail.events || []) {
+		for (const r of ev.rounds || []) {
+			const key = `${ev.eventId}-r${r.roundNumber}`;
+			if (!dual.has(key)) continue;
+			r.dualChance = true;
+			for (const g of r.groups || []) {
+				g.chance = chanceOfGroup(g.groupNumber, dual.get(key)!);
+			}
+		}
+	}
+	for (const c of detail.competitors || []) {
+		for (const a of c.assignments || []) {
+			const chance = chanceOfCode(a.activityCode);
+			if (chance) a.chance = chance;
+		}
+	}
+	for (const day of detail.schedule || []) {
+		for (const a of day.assignments || []) {
+			const chance = chanceOfCode(a.activityCode);
+			if (chance) a.chance = chance;
+		}
+	}
+}
+
+/** One Dual Chance round result's chances, WCA Live shaped. */
+function chancesOf(res: any): any[] | undefined {
+	if (!Array.isArray(res?.chances)) return undefined;
+	return res.chances.map((c: any) => ({
+		chance: c.chance,
+		attempts: (c.attempts || []).map((a: number) => ({result: a})),
+		best: c.best ?? 0,
+		average: c.average ?? 0,
+		noShow: !!c.noShow,
+		counting: !!c.counting,
+	}));
+}
+
+/**
  * Wire the WCA Live fields onto a CompetitionDetail built from federation WCIF.
  * `roundMap` (activityCode → ZKT roundId) rides in the WCIF's ZKT extension;
  * competitors are keyed by the competition-local registrantId (== the WCIF
@@ -142,6 +226,7 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 			dayIndex: r.dayIndex ?? 0,
 			dayLabel: r.dayLabel ?? undefined,
 			isFinal: r.isFinal ?? undefined,
+			dualChance: r.dualChance === true ? true : undefined,
 			open: r.status === 'OPEN',
 			finished: r.status === 'FINISHED',
 			active: r.status === 'ACTIVE',
@@ -201,16 +286,30 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 		return byRoom.get(name)!;
 	};
 
-	// "Skewb — 1. Tur". The bare event name left the reader with two identical
-	// "Skewb" blocks and no way to tell round 1 from the final.
-	const activityLabel = (ev: any, r: any) => {
-		const event = ev.eventName || WcaApiService.getEventName(ev.eventId);
-		return `${event} — ${r.isFinal ? 'Final' : roundName(r.roundNumber)}`;
+	// "Skewb 1. Tur". The bare event name left the reader with two identical
+	// "Skewb" blocks and no way to tell round 1 from the final. This Turkish label
+	// is the fallback for older clients; current ones build their own from the
+	// structured fields next to it, in the viewer's language.
+	const activityLabel = (ev: any, r: any, chance: number | null) => {
+		const known = WcaApiService.getEventName(ev.eventId);
+		const event = known !== ev.eventId ? known : ev.eventName || ev.eventId;
+		const label = `${event} ${r.isFinal ? 'Final' : roundName(r.roundNumber)}`;
+		return chance ? `${label}, Şans ${chance}` : label;
 	};
+	const roundFields = (ev: any, r: any, chance: number | null) => ({
+		name: activityLabel(ev, r, chance),
+		activityCode: `${ev.eventId}-r${r.roundNumber}`,
+		roundNumber: r.roundNumber,
+		isFinal: r.isFinal ?? undefined,
+		chance: chance ?? undefined,
+		dayIndex: r.dayIndex ?? 0,
+		dayLabel: r.dayLabel ?? undefined,
+	});
 
 	for (const ev of d.events || []) {
 		for (const r of ev.rounds || []) {
-			const timed = (r.groups || []).filter((g: any) => g.startTime);
+			const groups = r.groups || [];
+			const timed = groups.filter((g: any) => g.startTime);
 			if (timed.length === 0) {
 				// No timed groups, but the organizer may have placed the ROUND on the
 				// calendar. That is how the second day of a day-split event is usually
@@ -219,40 +318,37 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 				if (!r.startTime) continue;
 				roomBucket(r.roomId ?? null).activities.push({
 					activityId: activityId++,
-					name: activityLabel(ev, r),
-					activityCode: `${ev.eventId}-r${r.roundNumber}`,
+					...roundFields(ev, r, null),
 					startTime: r.startTime,
 					endTime: r.endTime || r.startTime,
-					dayIndex: r.dayIndex ?? 0,
-					dayLabel: r.dayLabel ?? undefined,
 				});
 				continue;
 			}
 			// One block per room the round actually runs in: a round split across two
-			// stages is two sessions, not one spanning both.
-			const perRoom = new Map<string, {start: string; end: string; roomId: string | null}>();
+			// stages is two sessions, not one spanning both. A Dual Chance round is
+			// also two sessions, one per chance; a single block from the first
+			// chance-1 group to the last chance-2 group would cover whatever the
+			// organizer scheduled between them.
+			const dual = r.dualChance === true;
+			const perBlock = new Map<string, {start: string; end: string; roomId: string | null; chance: number | null}>();
 			for (const g of timed) {
 				const roomId = g.roomId ?? null;
-				const key = roomId ?? '';
+				const chance = dual ? chanceOfGroup(g.groupNumber, groups.length) : null;
+				const key = `${roomId ?? ''}|${chance ?? ''}`;
 				const end = g.endTime || g.startTime;
-				const cur = perRoom.get(key);
-				if (!cur) perRoom.set(key, {start: g.startTime, end, roomId});
+				const cur = perBlock.get(key);
+				if (!cur) perBlock.set(key, {start: g.startTime, end, roomId, chance});
 				else {
 					if (g.startTime < cur.start) cur.start = g.startTime;
 					if (end > cur.end) cur.end = end;
 				}
 			}
-			for (const [, span] of perRoom) {
+			for (const [, span] of perBlock) {
 				roomBucket(span.roomId).activities.push({
 					activityId: activityId++,
-					name: activityLabel(ev, r),
-					// The day is part of the code: without it a day-split event emits
-					// two activities both called "333-r1".
-					activityCode: `${ev.eventId}-r${r.roundNumber}`,
+					...roundFields(ev, r, span.chance),
 					startTime: span.start,
 					endTime: span.end,
-					dayIndex: r.dayIndex ?? 0,
-					dayLabel: r.dayLabel ?? undefined,
 				});
 			}
 		}
@@ -289,6 +385,7 @@ export function zktRoundToWcaLiveResults(r: any): any {
 		finished: r.status === 'FINISHED',
 		numberOfAttempts: attemptsOf(r.format),
 		sortBy: sortByOf(r.format),
+		dualChance: r.dualChance === true ? true : undefined,
 		results: (r.results || []).map((res: any) => ({
 			ranking: res.ranking ?? undefined,
 			best: res.best ?? 0,
@@ -303,6 +400,7 @@ export function zktRoundToWcaLiveResults(r: any): any {
 			// Federation already computes advancement: clinched = green, questionable = orange.
 			advancing: !!res.advancing,
 			advancingQuestionable: !!res.questionable,
+			chances: chancesOf(res),
 		})),
 	};
 }

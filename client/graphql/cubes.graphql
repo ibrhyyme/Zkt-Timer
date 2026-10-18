@@ -1,0 +1,177 @@
+# My Cubes and magnet calibration (server/resolvers/Cube.resolver.ts).
+# Design: .feedback/designs/magnet-cubes.md section 3.
+
+fragment CubeCalibrationFragment on CubeCalibration {
+	id
+	cube_id
+	platform
+	device_model
+	os_version
+	app_version
+	sensor_name
+	peak_ut
+	rest_ut
+	noise_ut
+	near_min_ut
+	far_max_ut
+	quality
+	sample_count
+	sweep_ms
+	rate_hz
+	algo_version
+	measured_at
+	created_at
+	updated_at
+}
+
+fragment CubeFragment on Cube {
+	id
+	puzzle
+	name
+	brand
+	is_smart
+	ble_device_id
+	ble_name
+	legacy_smart_device_ids
+	archived_at
+	created_at
+	updated_at
+	solve_count
+	first_used_at
+	last_used_at
+	calibrations {
+		...CubeCalibrationFragment
+	}
+}
+
+fragment CubeMainFragment on CubeMain {
+	puzzle
+	cube_id
+	set_at
+}
+
+query MyCubeState {
+	myCubeState {
+		cubes {
+			...CubeFragment
+		}
+		mains {
+			...CubeMainFragment
+		}
+	}
+}
+
+mutation CreateCube($input: CubeInput!) {
+	createCube(input: $input) {
+		...CubeFragment
+	}
+}
+
+mutation UpdateCube($id: String!, $input: CubeUpdateInput!) {
+	updateCube(id: $id, input: $input) {
+		...CubeFragment
+	}
+}
+
+mutation SetCubeArchived($id: String!, $archived: Boolean!) {
+	setCubeArchived(id: $id, archived: $archived) {
+		...CubeFragment
+	}
+}
+
+mutation DeleteCube($id: String!) {
+	deleteCube(id: $id)
+}
+
+mutation SetMainCube($puzzle: String!, $cube_id: String, $set_at: DateTime!) {
+	setMainCube(puzzle: $puzzle, cube_id: $cube_id, set_at: $set_at) {
+		...CubeMainFragment
+	}
+}
+
+mutation EnsureSmartCube($ble_device_id: String!, $ble_name: String) {
+	ensureSmartCube(ble_device_id: $ble_device_id, ble_name: $ble_name) {
+		...CubeFragment
+	}
+}
+
+mutation SaveCubeCalibration($input: CubeCalibrationInput!) {
+	saveCubeCalibration(input: $input) {
+		...CubeCalibrationFragment
+	}
+}
+
+mutation DeleteCubeCalibration($id: String!) {
+	deleteCubeCalibration(id: $id)
+}
+
+# Admin (T8): /admin/magnet-telemetry, calibrations tab.
+
+query AdminCubeCalibrations(
+	$limit: Int
+	$offset: Int
+	$username: String
+	$puzzle: String
+	$platform: String
+	$deviceModel: String
+) {
+	adminCubeCalibrations(
+		limit: $limit
+		offset: $offset
+		username: $username
+		puzzle: $puzzle
+		platform: $platform
+		deviceModel: $deviceModel
+	) {
+		id
+		user_id
+		username
+		email
+		cube_id
+		cube_name
+		cube_brand
+		puzzle
+		puzzle_name
+		platform
+		device_model
+		os_version
+		app_version
+		sensor_name
+		peak_ut
+		rest_ut
+		noise_ut
+		near_min_ut
+		far_max_ut
+		quality
+		current_near_min_ut
+		current_far_max_ut
+		current_quality
+		noisy
+		sample_count
+		sweep_ms
+		rate_hz
+		algo_version
+		measured_at
+		created_at
+		updated_at
+	}
+}
+
+query AdminCubeCalibrationSummary($days: Int) {
+	adminCubeCalibrationSummary(days: $days) {
+		puzzle
+		platform
+		device_model
+		calibrations
+		distinct_users
+		median_rest_ut
+		p10_rest_ut
+		median_peak_ut
+		median_noise_ut
+		weak_ratio
+		telemetry_placements
+		telemetry_median_near_ut
+		telemetry_lifts
+		telemetry_rejects
+	}
+}

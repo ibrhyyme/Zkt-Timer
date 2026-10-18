@@ -2,20 +2,24 @@ import {useState, useCallback, useEffect} from 'react';
 import {useTrainerDb} from '../../../util/hooks/useTrainerDb';
 import {emitEvent} from '../../../util/event_handler';
 import {algToId, expandNotation} from '../../../util/trainer/algorithm_engine';
+// The selector and the set queue share one stored-text to trained-text transform (B-10).
+import {trainerAlgText} from '../../../util/trainer/set_queue';
+import {migrateAlgIdsOnce} from '../../../util/trainer/migrate_alg_ids';
+import {fetchLibraryCategory, fetchLibraryMains, isLibraryComplete} from '../../../util/trainer/trainer_library';
 import type {AlgorithmEntry, AlgorithmSubset, LearnedStatus, TrainerSolveRecord} from '../types';
 
 const STORAGE_KEY = 'trainer_savedAlgorithms';
 const PREFIX = 'trainer_';
 
-// Lazy-loaded default algorithms (fetched from /public/ instead of bundled)
-let defaultAlgsCache: Record<string, AlgorithmSubset[]> | null = null;
-
-export async function fetchDefaultAlgs(): Promise<Record<string, AlgorithmSubset[]>> {
-	if (defaultAlgsCache) return defaultAlgsCache;
-	const res = await fetch('/public/trainer/default-algs.json');
-	defaultAlgsCache = await res.json();
-	return defaultAlgsCache!;
+/**
+ * The library's main algorithm and setup per case (no alternatives). For a case's alternatives
+ * use fetchLibraryCategory (client/util/trainer/trainer_library.ts).
+ */
+export function fetchDefaultAlgs(): Promise<Record<string, AlgorithmSubset[]>> {
+	return fetchLibraryMains();
 }
+
+export {fetchLibraryCategory};
 
 function getSavedAlgorithms(): Record<string, AlgorithmSubset[]> {
 	try {
@@ -23,6 +27,25 @@ function getSavedAlgorithms(): Record<string, AlgorithmSubset[]> {
 	} catch {
 		return {};
 	}
+}
+
+/**
+ * This device's algorithm text per case, keyed `category::name`, as written (not expanded).
+ * The set picker's default variant (trainer-sets 5.4): the algorithm the user already runs.
+ */
+export function readSavedAlgorithmTexts(): Map<string, string> {
+	const out = new Map<string, string>();
+	const saved = getSavedAlgorithms();
+	for (const category of Object.keys(saved)) {
+		const subsets = saved[category];
+		if (!Array.isArray(subsets)) continue;
+		for (const sub of subsets) {
+			for (const alg of sub?.algorithms || []) {
+				if (alg?.name && typeof alg.algorithm === 'string') out.set(`${category}::${alg.name}`, alg.algorithm);
+			}
+		}
+	}
+	return out;
 }
 
 function setSavedAlgorithms(data: Record<string, AlgorithmSubset[]>) {
@@ -33,10 +56,12 @@ function setSavedAlgorithms(data: Record<string, AlgorithmSubset[]>) {
 /**
  * Initialize localStorage with default algorithms if empty.
  * Merges any missing categories from defaults into saved data.
- * Fetches default algorithms lazily from /public/ on first call.
  */
 export async function initializeDefaultAlgorithms() {
 	const defaultAlgs = await fetchDefaultAlgs();
+	// Once per device: stats of texts whose key changed with the expandNotation fix (B-1). The
+	// old texts are library mains or sit in the saved copy, so the mains are enough here.
+	migrateAlgIdsOnce(defaultAlgs);
 	const existing = localStorage.getItem(STORAGE_KEY);
 	if (!existing) {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultAlgs));
@@ -54,11 +79,14 @@ export async function initializeDefaultAlgorithms() {
 		}
 	}
 
-	// Clean up categories removed from defaults
-	for (const category of Object.keys(saved)) {
-		if (!defaultAlgs[category]) {
-			delete saved[category];
-			changed = true;
+	// Clean up categories removed from defaults. Only against the server's library: the public
+	// fallback (offline, first native launch) lacks the newer categories.
+	if (isLibraryComplete()) {
+		for (const category of Object.keys(saved)) {
+			if (!defaultAlgs[category]) {
+				delete saved[category];
+				changed = true;
+			}
 		}
 	}
 
@@ -348,19 +376,6 @@ export function getCustomAlternatives(category: string, subset: string, name: st
 	}
 }
 
-export function addCustomAlternative(category: string, subset: string, name: string, algorithm: string) {
-	const data = JSON.parse(localStorage.getItem(CUSTOM_ALTS_KEY) || '{}');
-	const altKey = makeCustomAltKey(category, subset, name);
-	if (!data[altKey]) data[altKey] = [];
-
-	const expanded = expandNotation(algorithm);
-	if (data[altKey].some((a: string) => expandNotation(a) === expanded)) return;
-
-	data[altKey].push(algorithm);
-	localStorage.setItem(CUSTOM_ALTS_KEY, JSON.stringify(data));
-	emitEvent('trainerDbUpdatedEvent');
-}
-
 export function deleteCustomAlternative(category: string, subset: string, name: string, algorithm: string) {
 	const data = JSON.parse(localStorage.getItem(CUSTOM_ALTS_KEY) || '{}');
 	const altKey = makeCustomAltKey(category, subset, name);
@@ -413,7 +428,7 @@ export function useAlgorithmData() {
 					result.push(
 						...data.algorithms.map((a) => ({
 							...a,
-							algorithm: expandNotation(a.algorithm),
+							algorithm: trainerAlgText(a.algorithm),
 						}))
 					);
 				}
@@ -436,7 +451,7 @@ export function useAlgorithmData() {
 						subset,
 						algorithms: data.algorithms.map((a) => ({
 							...a,
-							algorithm: expandNotation(a.algorithm),
+							algorithm: trainerAlgText(a.algorithm),
 						})),
 					};
 				})

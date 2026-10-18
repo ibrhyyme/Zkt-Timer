@@ -31,6 +31,28 @@
 		margin-top: 0.3rem;
 	}
 
+	&__types {
+		display: inline-flex;
+	}
+
+	// Rendered into <body> at a fixed position computed from the chip (Session.tsx), so the
+	// scrolling session list cannot clip it. Opaque, so nothing underneath shows through.
+	&__types-hint {
+		position: fixed;
+		z-index: 900;
+		box-sizing: border-box;
+		padding: 0.5rem 0.65rem;
+		border-radius: 0.5rem;
+		background-color: rgb(var(--background-color));
+		border: 1px solid rgba(var(--primary-color), 0.5);
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+		color: rgb(var(--text-color));
+		font-size: 0.8rem;
+		font-weight: 500;
+		line-height: 1.35;
+		white-space: normal;
+	}
+
 	&__summary-item {
 		display: inline-flex !important;
 		align-items: baseline;
@@ -47,6 +69,24 @@
 			font-weight: 500;
 			font-size: 0.75rem;
 			opacity: 0.75;
+		}
+
+		// "3 tür": a small chip so a mixed session stands out in the list. A button, so
+		// it carries the reset a button needs to look like the other summary items.
+		&--types {
+			padding: 0 0.4rem;
+			border: 0;
+			border-radius: 0.4rem;
+			background-color: rgba(var(--primary-color), 0.16);
+			color: rgb(var(--primary-color)) !important;
+			font-family: inherit;
+			line-height: inherit;
+			cursor: pointer;
+		}
+
+		// The type the best and mean below belong to, when the session holds several (K-13)
+		&--top-type {
+			font-weight: 700;
 		}
 	}
 
@@ -80,6 +120,34 @@
 	&--multi-selected {
 		border: 4px dashed rgb(var(--error-color)) !important;
 		opacity: 0.85;
+	}
+
+	// Bulk delete mode: room for the check mark in the top right corner
+	&--selecting &__info {
+		padding-right: 1.75rem;
+	}
+
+	&__check {
+		position: absolute;
+		top: 0.6rem;
+		right: 0.6rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.4rem;
+		height: 1.4rem;
+		box-sizing: border-box;
+		border-radius: 50%;
+		border: 2px solid rgb(var(--text-color));
+		font-size: 0.85rem;
+
+		// The error colour is not themed, so white on it reads in every theme (as on the
+		// danger button)
+		&--on {
+			border-color: rgb(var(--error-color));
+			background-color: rgb(var(--error-color));
+			color: white;
+		}
 	}
 
 	&--sortable-helper {

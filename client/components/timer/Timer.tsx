@@ -18,10 +18,12 @@ import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { useSettings } from '../../util/hooks/useSettings';
 import TimerVideoBackground from './timer_background/TimerVideoBackground';
+import { resolveTimerBackground } from '../../../shared/timer_background';
 import { is3x3CubeType } from './helpers/util';
 import { useNormalizeTimerType } from './helpers/timer_type_support';
 import { virtualCubeSupports } from '../../util/virtual_cube/size';
 import { useVirtualCubeSize } from '../../util/virtual_cube/useVirtualCubeSize';
+import { useTimeRowFit } from './helpers/useTimeRowFit';
 import VirtualCube from './virtual_cube/VirtualCube';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
@@ -167,11 +169,10 @@ export default function Timer(props: TimerProps) {
 	// subtree, so only a body-level class can reach it) — makes the whole screen feel
 	// covered instead of the image starting below the nav bar. Mobile is handled
 	// separately by the timer's own in-subtree header, so scope this to desktop.
-	// Per-platform switch: settings live in the desktop_prefs / mobile_prefs blob, so one
-	// setting already means "on here, off there" without a second key. That is what lets a
-	// user keep a live wallpaper on the desktop and off on the phone.
-	const backgroundEnabled = useSettings('timer_background_enabled');
-	const hasBackgroundImage = !!me?.timer_background?.storage_path && backgroundEnabled;
+	// Desktop and mobile layouts each read their own slot of the account's background row;
+	// the mobile layout follows the desktop slot until "use the same on mobile" is off.
+	const backgroundMedia = resolveTimerBackground(me?.timer_background, mobileMode ? 'mobile' : 'desktop');
+	const hasBackgroundImage = !!backgroundMedia;
 	useEffect(() => {
 		const immersive = hasBackgroundImage && !mobileMode;
 		document.body.classList.toggle('timer-immersive-bg', immersive);
@@ -194,9 +195,19 @@ export default function Timer(props: TimerProps) {
 	const virtualFocus = virtualActive && (!!context.virtualArmed || !!context.timeStartedAt);
 	const virtualCubeSize = useVirtualCubeSize(mobileMode, virtualFocus);
 
+	// Desktop: how the digits and the cube or connect control beside them fit the centre
+	// column. Held still during a solve, and while the virtual cube is armed (it leaves the
+	// row for the middle of the screen then).
+	const timeRowRef = useRef<HTMLDivElement>(null);
+	const timeRowFit = useTimeRowFit(
+		timeRowRef,
+		!!context.timeStartedAt || virtualFocus,
+		`${timerType}|${smartActive}|${virtualActive}|${mobileMode}|${loading}`
+	);
+
 	let virtualCubeVisual: ReactNode = null;
 	if (virtualActive) {
-		virtualCubeVisual = <VirtualCube />;
+		virtualCubeVisual = <VirtualCube stacked={!mobileMode && timeRowFit.stacked} />;
 	}
 
 	if (loading) {
@@ -209,9 +220,12 @@ export default function Timer(props: TimerProps) {
 			<div className={b('main-center')}>
 				<TimerScramble />
 				<div
+					ref={timeRowRef}
 					className={b('main-time', {
 						smart: smartActive,
 						virtual: virtualActive,
+						stacked: timeRowFit.stacked,
+						folded: timeRowFit.folded,
 					})}
 					// The layout places the digits against the cube's left edge, so it
 					// needs the cube's actual size. Same number the cube renders at,
@@ -238,57 +252,65 @@ export default function Timer(props: TimerProps) {
 				{/* Scramble area - text only, click to copy */}
 				<MobileTimerScramble />
 
-				{/* Notification zone — only render when notification exists (don't waste space) */}
-				{timerStore.notification && (
-					<div className={b('notification-zone')}>
-						{timerStore.notification}
-					</div>
-				)}
+				{/* The time area. It owns the free height (shared with the scramble above), so
+				    nothing below it moves when its content changes. */}
+				<div className={b('mobile-stage', { smart: smartActive, manual: manualEntry })}>
+					{/* PB badge: an overlay on top of the time area, never in the flow. It used to
+					    sit in a 44px in-flow zone that appeared with the badge and went away at the
+					    next start, so the time dropped and jumped back on every PB (feedback 2.1-a).
+					    It stays non-interactive (`pointer-events: none` on .zt-timer-notif). */}
+					{timerStore.notification && (
+						<div className={b('notification-zone')}>
+							{timerStore.notification}
+						</div>
+					)}
 
-				{/* Smart cube: LEFT=narrow analysis portal, RIGHT=cube+timer stuck together */}
-				{smartActive ? (
-					<div className={b('mobile-smart-grid')}>
-						<div className={b('mobile-smart-grid-left')}>
-							<div id="mobile-smart-phases-container"></div>
-						</div>
-						<div className={b('mobile-smart-grid-right')}>
-							<div className={b('mobile-smart-grid-cube')}>
-								{smartCubeVisual}
+					{/* Smart cube: LEFT=narrow analysis portal, RIGHT=cube+timer stuck together */}
+					{smartActive ? (
+						<div className={b('mobile-smart-grid')}>
+							<div className={b('mobile-smart-grid-left')}>
+								<div id="mobile-smart-phases-container"></div>
 							</div>
-							<div className={`${b('mobile-smart-grid-time')} ${b('main', { mobile: true })}`}>
-								<TimeDisplay />
+							<div className={b('mobile-smart-grid-right')}>
+								<div className={b('mobile-smart-grid-cube')}>
+									{smartCubeVisual}
+								</div>
+								<div className={`${b('mobile-smart-grid-time')} ${b('main', { mobile: true })}`}>
+									<TimeDisplay />
+								</div>
 							</div>
 						</div>
-					</div>
-				) : virtualActive ? (
-					/* Virtual cube uses the SAME wrapper the desktop layout does, and
-					   carries the same size variable. One set of rules then covers both
-					   platforms — mounting it somewhere else meant none of the virtual
-					   cube's layout rules matched on mobile at all. */
-					<div
-						className={`${b('main-time', { virtual: true })} ${b('main', { mobile: true })}`}
-						style={{ '--zt-vc-size': `${virtualCubeSize}px` } as React.CSSProperties}
-					>
-						<TimeDisplay />
-						{virtualCubeVisual}
-					</div>
-				) : (
-					/* Normal mode - timer full width */
-					<div className={`${b('mobile-timer', { manual: manualEntry })} ${b('main', { mobile: true })}`}>
-						<TimeDisplay />
-					</div>
-				)}
+					) : virtualActive ? (
+						/* Virtual cube uses the SAME wrapper the desktop layout does, and
+						   carries the same size variable. One set of rules then covers both
+						   platforms — mounting it somewhere else meant none of the virtual
+						   cube's layout rules matched on mobile at all. */
+						<div
+							className={`${b('main-time', { virtual: true })} ${b('main', { mobile: true })}`}
+							style={{ '--zt-vc-size': `${virtualCubeSize}px` } as React.CSSProperties}
+						>
+							<TimeDisplay />
+							{virtualCubeVisual}
+						</div>
+					) : (
+						/* Normal mode - timer full width */
+						<div className={`${b('mobile-timer', { manual: manualEntry })} ${b('main', { mobile: true })}`}>
+							<TimeDisplay />
+						</div>
+					)}
+				</div>
 
 				{/* Smart cube NOT active - portal in old spot (timer_type=smart but not 3x3 or manual entry) */}
 				{mobileMode && timerType === 'smart' && !smartActive && (
 					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
 				)}
 
-				{/* Control bar */}
-				<TimerControls />
-
-				{/* Daily goal progress bar */}
+				{/* Daily goal first, then the action row right on top of the modules
+				    (feedback 1.8-d/e): the row is a card of its own and belongs with them. */}
 				<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} compact />
+
+				{/* +2 / DNF / lock / previous / next */}
+				<TimerControls />
 
 				{/* Middle panel - Last solves and Scramble visual */}
 				<Dashboard />
@@ -334,12 +356,9 @@ export default function Timer(props: TimerProps) {
 	}
 
 	let background: ReactNode = null;
-	const backgroundPath = backgroundEnabled ? me?.timer_background?.storage_path : null;
-
-	if (backgroundPath) {
-		const backgroundUrl = getStorageURL(backgroundPath);
-		// Null media_type is an image: rows written before video backgrounds existed.
-		background = me?.timer_background?.media_type === 'video' ? (
+	if (backgroundMedia) {
+		const backgroundUrl = getStorageURL(backgroundMedia.storage_path);
+		background = backgroundMedia.is_video ? (
 			<TimerVideoBackground
 				src={backgroundUrl}
 				paused={!!context.timeStartedAt}

@@ -92,7 +92,8 @@ export default function EditRoomDropdown({
 	const getTypeName = (type: string) => {
 		switch (type) {
 			case 'keyboard': return t('rooms.keyboard');
-			case 'stackmat': return 'StackMat';
+			// The wired engine: allowing it allows StackMat and the QiYi wired timer alike.
+			case 'stackmat': return t('quick_controls.wired_timer');
 			case 'gantimer': return 'GAN Timer';
 			case 'qiyitimer': return t('rooms.qiyi_timer');
 			case 'smart': return t('rooms.smart_cube');

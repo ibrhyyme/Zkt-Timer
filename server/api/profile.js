@@ -8,6 +8,8 @@ import {createProfileView} from '../models/profile_view';
 import {createReport, REPORT_TYPE_PROFILE, userHasPendingReportsForRecordId} from '../models/report';
 import {ErrorCode} from '../constants/errors';
 import {safeExternalUrl} from '../../shared/util/url';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
 
 // XSS koruma: profil URL alanlari (social link'ler vs.) sadece http/https olmali.
 // javascript:, data: gibi protokoller silently null'a cevrilir.
@@ -33,6 +35,7 @@ export const gqlMutation = `
 	uploadProfileHeader(file: Upload): Image!
 	uploadProfilePicture(file: Upload): Image!
 	updateProfile(input: ProfileInput): Profile!
+	recordProfileView(username: String!): Boolean!
 `;
 
 export const queryActions = {
@@ -55,15 +58,37 @@ export const queryActions = {
 		profile.top_solves = result[1];
 		profile.top_averages = result[2];
 
-		if (user?.id !== profileUser.id) {
-			await createProfileView(profile, profileUser, user);
-		}
-
+		// No view is recorded here (see recordProfileView): this query also serves the SSR
+		// prefetch, which reaches the API without the visitor's cookie.
 		return profile;
 	},
 };
 
 export const mutateActions = {
+	// The profile page calls this once it has mounted, with the visitor's own session. Counting
+	// inside the profile query recorded the SSR prefetch, which carries no cookie: the owner
+	// reloading their own profile was counted as an anonymous visitor, and so was every link
+	// preview bot. Over the limit the view is skipped, never an error the page would show.
+	recordProfileView: async (_, {username}, {user, req}) => {
+		const ip = req ? extractIp(req) : null;
+		if (ip) {
+			const limit = await checkRateLimit(`profile_view:ip:${ip}`, 60, 60);
+			if (!limit.allowed) {
+				return false;
+			}
+		}
+
+		const found = await getUserByUsername(username);
+		const profileUser = found?.[0];
+		if (!profileUser || user?.id === profileUser.id) {
+			return false;
+		}
+
+		const profile = await getOrCreateUserProfile(profileUser);
+		await createProfileView(profile, profileUser, user);
+		return true;
+	},
+
 	updateProfile: async (_, {input}, {user}) => {
 		checkLoggedIn(user);
 

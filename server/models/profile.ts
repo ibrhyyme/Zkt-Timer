@@ -1,5 +1,6 @@
 import {getPrisma} from '../database';
 import {publicUserInclude} from './user_account';
+import {publicIntegrationSelect} from './integration';
 
 export function getUserProfile(user) {
 	return getPrisma().profile.findUnique({
@@ -24,7 +25,7 @@ export function getProfileById(id) {
 			pfp_image: true,
 			user: {
 				include: {
-					integrations: true,
+					integrations: {select: publicIntegrationSelect},
 					badges: {
 						include: {
 							badge_type: true,

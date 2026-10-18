@@ -11,6 +11,9 @@ import { fetchSolves } from '../../../db/solves/query';
 import { toastError, toastSuccess } from '../../../util/toast';
 import { clearOfflineData } from '../../layout/offline';
 import LoggedInOnly from '../../common/logged_in_only/LoggedInOnly';
+import { getCubeState } from '../../../lib/cubes/store';
+import { refreshCubes } from '../../../lib/cubes/sync';
+import { exportCubeList } from './import_data/parse_data/zkttimer_cubes';
 
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {
@@ -69,9 +72,15 @@ export default function DataSettings() {
 			from_timer: true,
 		}).map((s) => removeTypename({ ...s }, true));
 
+		// Cubes travel with the solves (design 4.6): import maps each solve's cube_id through
+		// this list onto the target account. refreshCubes never throws and is throttled.
+		await refreshCubes();
+		const cubes = exportCubeList(getCubeState().cubes);
+
 		const data = JSON.stringify({
 			sessions,
 			solves,
+			cubes,
 		});
 
 		const filename = `zkttimer_data_${new Date().toLocaleString().replace(/,\s|\s|\/|:|_/g, '_')}.txt`;

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BattleProvider, useBattle, BattleSolve } from './BattleContext';
+import { BattleProvider, useBattle, BattleSolve, displayPlayerName } from './BattleContext';
 import { BattleCubesProvider } from './smart/BattleCubesProvider';
 import BattleTimer from './BattleTimer';
 import BattleMenu from './BattleMenu';
@@ -10,6 +10,7 @@ import block from '../../styles/bem';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import BottomSheetNav from '../layout/nav/bottom_sheet_nav/BottomSheetNav';
 import './Battle.scss';
+import { BATTLE_POINTER_QUERIES, BattleLayout, pickBattleLayout, readPointerTraits } from './battle_layout';
 
 const b = block('battle');
 
@@ -28,8 +29,48 @@ const CUBE_TYPES = [
 	{ id: 'minx', name: 'Megaminx' },
 ];
 
+/**
+ * Facing halves for a device lying between the players, side by side for a screen both look at
+ * from the same side (3.0-i). Decided by the primary pointer (K-11), not the width, so a tablet
+ * turned sideways stays facing and a touchscreen laptop goes side by side. Re-read whenever
+ * either pointer query flips (a 2-in-1 folded into tablet mode, a mouse becoming primary).
+ *
+ * Only ever rendered in the browser (Battle returns null without a window), so reading
+ * matchMedia in the initial state cannot diverge from a server render.
+ */
+function useBattleLayout(): BattleLayout {
+	const [layout, setLayout] = useState<BattleLayout>(() => pickBattleLayout(readPointerTraits(window)));
+
+	useEffect(() => {
+		const update = () => setLayout(pickBattleLayout(readPointerTraits(window)));
+		const queries: MediaQueryList[] = [];
+		for (const media of BATTLE_POINTER_QUERIES) {
+			try {
+				const query = window.matchMedia(media);
+				// Safari before 14 only has the deprecated addListener
+				if (query.addEventListener) query.addEventListener('change', update);
+				else query.addListener?.(update);
+				queries.push(query);
+			} catch (e) {
+				// No matchMedia: the first read stands
+			}
+		}
+		// Catch a change between the first render and this effect
+		update();
+		return () => {
+			for (const query of queries) {
+				if (query.removeEventListener) query.removeEventListener('change', update);
+				else query.removeListener?.(update);
+			}
+		};
+	}, []);
+
+	return layout;
+}
+
 function BattleInner() {
 	const { t } = useTranslation();
+	const layout = useBattleLayout();
 	const { state, dispatch } = useBattle();
 	const { rounds, currentRound, settings, winStreak } = state;
 	const [cubeDropdownOpen, setCubeDropdownOpen] = useState(false);
@@ -72,9 +113,9 @@ function BattleInner() {
 	const currentCubeName = CUBE_TYPES.find((ct) => ct.id === settings.cubeType)?.name || settings.cubeType;
 
 	return (
-		<div className={b()}>
+		<div className={b({ side: layout === 'side' })}>
 			<h1 className="sr-only">{t('seo.battle_title')}</h1>
-			<BattleTimer player={1} onSolve={handleSolve1} />
+			<BattleTimer player={1} onSolve={handleSolve1} layout={layout} />
 
 			{/* Toolbar */}
 			<div className={b('toolbar')}>
@@ -117,13 +158,13 @@ function BattleInner() {
 				</div>
 				{settings.showWinStreak && winStreak.count >= 2 && (
 					<span className={b('toolbar-streak')}>
-						{winStreak.player === 1 ? settings.player1Name : settings.player2Name} {t('battle.streak')}:{' '}
+						{displayPlayerName(winStreak.player === 1 ? settings.player1Name : settings.player2Name, t)} {t('battle.streak')}:{' '}
 						{winStreak.count}
 					</span>
 				)}
 			</div>
 
-			<BattleTimer player={2} onSolve={handleSolve2} />
+			<BattleTimer player={2} onSolve={handleSolve2} layout={layout} />
 
 			<BattleMenu />
 			<BattleHistory />

@@ -11,7 +11,17 @@ import {getSmartCubeManager} from '../../../util/smart_cube/connection_manager';
 import {toastError} from '../../../util/toast';
 import BleScanningModal from '../../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import TrainerSettingsModal from '../options/TrainerSettingsModal';
-import TrainerModeHeader from '../common/TrainerModeHeader';
+import TrainerModeHeader, {kindCrumb, trainersCrumb} from '../common/TrainerModeHeader';
+import type {TrainerCrumb} from '../common/TrainerModeHeader';
+import HeaderStudySwitch from '../hub/HeaderStudySwitch';
+import '../panels/training_area/SetStudy.scss';
+import {useHistory, useLocation} from 'react-router-dom';
+import {buildSetPath, parseSetPath} from '../../../util/trainer/url/trainer_url';
+import {peekCachedAlgSet} from '../../../lib/alg_sets/loader';
+import {useMySets} from '../../../lib/alg_sets/store';
+import {useMe} from '../../../util/hooks/useMe';
+import {readAlgSetCache} from '../../../lib/alg_sets/cache';
+import type {MyAlgSetsData} from '../../../lib/alg_sets/types';
 import type {TrainerOptions} from '../types';
 import {
 	Eye,
@@ -26,10 +36,23 @@ import {
 
 const bh = block('trainer-header');
 
+/** Name of an own or saved set by its code, from a My Sets list. */
+function listedSetName(list: MyAlgSetsData | null | undefined, code: string): string | null {
+	if (!list) return null;
+	const own = list.own.find((set) => set.code === code);
+	if (own) return own.name;
+	return list.saved.find((entry) => entry.set?.code === code)?.set?.name || null;
+}
+
 export default function TrainerToolbar() {
 	const {t} = useTranslation();
 	const reduxDispatch = useDispatch();
 	const {state, dispatch} = useTrainerContext();
+	const history = useHistory();
+	const location = useLocation();
+	// My Sets list (re-renders when it changes), for the set crumbs.
+	const mySets = useMySets();
+	const me = useMe();
 	// The link is app-wide now, so a cube connected on the timer is already live here and
 	// leaving the trainer leaves it alone.
 	const manager = getSmartCubeManager();
@@ -166,7 +189,11 @@ export default function TrainerToolbar() {
 			dispatch({type: 'SET_OPTIONS', payload: {[key]: value} as Partial<TrainerOptions>});
 		};
 		reduxDispatch(openModal(
-			<TrainerSettingsModal initialOptions={state.options} onOptionChange={onOptionChange} />,
+			<TrainerSettingsModal
+				initialOptions={state.options}
+				onOptionChange={onOptionChange}
+				smartMode={state.mode === 'smart'}
+			/>,
 			{
 				title: t('trainer.settings'),
 				width: 560,
@@ -174,13 +201,79 @@ export default function TrainerToolbar() {
 				closeButtonText: t('solve_info.done'),
 			}
 		));
-	}, [reduxDispatch, t, state.options, dispatch]);
+	}, [reduxDispatch, t, state.options, state.mode, dispatch]);
 
-	// TrainerToolbar yalnizca standard/smart icin render edilir (TrainerContent).
+	// TrainerToolbar is drawn for the Algorithm Trainer and the Algorithm Sets pages only (TrainerContent).
 	if (state.mode !== 'standard' && state.mode !== 'smart') return null;
 
-	const backToRoot = state.view === 'selection';
-	const onBack = () => dispatch({type: 'SET_VIEW', payload: backToRoot ? 'landing' : 'selection'});
+	const view = state.view;
+	// A set study (or a set link still loading) belongs to the set: back goes to its page
+	// (trainer-sets 6.1). Leaving the training view clears activeSet in the reducer.
+	const studySetCode = view === 'training' ? state.activeSet?.code || state.pendingSetCode : null;
+	const setsSection = view === 'sets' || view === 'community' || view === 'set' || view === 'set-add' || !!studySetCode;
+	const routeSet = view === 'set' || view === 'set-add' ? parseSetPath(location.pathname) : null;
+	const setCode = studySetCode || routeSet?.code || null;
+	// Own and saved sets live in My Sets; any other set was opened from Community Sets or a shared
+	// link. Known from the My Sets list (in memory, else the device copy, no request) or the set's
+	// own device copy.
+	const myListName = setCode
+		? listedSetName(mySets.data, setCode) ||
+		  (mySets.data ? null : listedSetName(readAlgSetCache(me?.id).list, setCode))
+		: null;
+	const mine = !!myListName || (!!setCode && !!peekCachedAlgSet(setCode));
+	const setName =
+		(studySetCode ? state.activeSet?.name : null) ||
+		myListName ||
+		(setCode ? peekCachedAlgSet(setCode)?.name : null) ||
+		t('trainer.hub.set_crumb');
+
+	const toHub = () => dispatch({type: 'SET_VIEW', payload: 'landing'});
+	const toModes = () => dispatch({type: 'SET_VIEW', payload: 'modes'});
+	const toSelection = () => dispatch({type: 'SET_VIEW', payload: 'selection'});
+	const toMySets = () => dispatch({type: 'SET_VIEW', payload: 'sets'});
+	const toCommunity = () => dispatch({type: 'SET_VIEW', payload: 'community'});
+	const toSetPage = () => {
+		if (setCode) history.push(buildSetPath(setCode));
+	};
+
+	let trail: TrainerCrumb[];
+	let onBack: () => void;
+	const setsCrumb = kindCrumb(t, 'sets', toMySets);
+	switch (view) {
+		case 'sets':
+			trail = [{label: t('trainer.title'), onClick: toHub}, kindCrumb(t, 'sets')];
+			onBack = toHub;
+			break;
+		case 'community':
+			trail = [setsCrumb, {label: t('trainer.hub.community_title')}];
+			onBack = toMySets;
+			break;
+		case 'set':
+			trail = mine
+				? [setsCrumb, {label: setName}]
+				: [setsCrumb, {label: t('trainer.hub.community_title'), onClick: toCommunity}, {label: setName}];
+			onBack = mine ? toMySets : toCommunity;
+			break;
+		case 'set-add':
+			trail = [setsCrumb, {label: setName, onClick: toSetPage}, {label: t('trainer.sets.add_algorithms')}];
+			onBack = routeSet ? toSetPage : toMySets;
+			break;
+		case 'training': {
+			if (studySetCode) {
+				trail = [setsCrumb, {label: setName}];
+				onBack = toSetPage;
+				break;
+			}
+			const category = state.currentAlgorithm?.category || state.selectedCategory;
+			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode, toSelection)];
+			if (category) trail.push({label: category});
+			onBack = toSelection;
+			break;
+		}
+		default:
+			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode)];
+			onBack = toModes;
+	}
 
 	const actions = (
 		<>
@@ -244,11 +337,22 @@ export default function TrainerToolbar() {
 				</button>
 			)}
 
-			<button className={bh('btn')} onClick={handleOpenSettings} title={t('trainer.settings')}>
-				<GearSix size={20} />
-			</button>
+			{/* Trainer settings belong to studying; the set lists have nothing to set. */}
+			{view !== 'sets' && view !== 'community' ? (
+				<button className={bh('btn')} onClick={handleOpenSettings} title={t('trainer.settings')}>
+					<GearSix size={20} />
+				</button>
+			) : null}
 		</>
 	);
 
-	return <TrainerModeHeader mode={state.mode} backToRoot={backToRoot} onBack={onBack} actions={actions} />;
+	return (
+		<TrainerModeHeader
+			kind={setsSection ? 'sets' : state.mode}
+			trail={trail}
+			onBack={onBack}
+			center={<HeaderStudySwitch />}
+			actions={actions}
+		/>
+	);
 }

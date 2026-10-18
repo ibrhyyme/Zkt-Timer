@@ -35,8 +35,15 @@ export function mergeDailyCounts(...maps: (Map<string, number> | undefined)[]): 
  * A session filter is NOT honoured — room solves have no session and the deleted tally
  * does not record one — so callers scoped to a single session decide for themselves
  * whether to ask at all.
+ *
+ * A cube filter (filter.cube_id, design magnet-cubes 8.3) gets nothing: room solves carry no
+ * cube and the deleted tally does not record one, so adding them would count other cubes' days.
  */
 export function getExtraDailyCounts(filter: FilterSolvesOptions): Map<string, number> | undefined {
+	if (filter.cube_id) {
+		return undefined;
+	}
+
 	const storage = getDailyGoalStorage();
 	if (!storage.count_room_solves && !storage.count_deleted_solves) {
 		return undefined;

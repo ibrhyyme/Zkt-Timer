@@ -1,13 +1,14 @@
 // The single owner of the native magnetometer stream and of the detector.
 //
 // Consumers acquire the stream instead of starting it: the timer hook holds it while the
-// timer is idle or in inspection, the settings panel holds it in test mode. The native
+// timer is idle or in inspection, the settings panel holds it in test mode, the calibration
+// page in calibrate mode (both: nothing starts, nothing goes to the telemetry study). The native
 // stream runs while anyone holds it and the page is visible; start/stop calls are
 // serialised so a fast acquire/release/acquire always ends in one running stream.
 // (Slam-to-stop's owner-token model does not fit here: the hook is active whenever the
 // timer is idle, so a panel taking the stream would leave the hook with nothing.)
 import { onVisibilityChange, isAppVisible } from '../app-visibility';
-import { ARM_FAR_MS, RESUME_TRUST_MS, detectorConfigFor } from './config';
+import { ARM_FAR_MS, MOVING_AFTER_MS, MOVING_MAX_DELTA_UT, RESUME_TRUST_MS, detectorConfigFor } from './config';
 import { isArmed } from './controller';
 import { magnetDebugLog } from './debug_log';
 import { MagnetDetector, distVV } from './detector';
@@ -28,11 +29,30 @@ import {
 	DetectorSnapshot,
 	MagnetCapabilities,
 	MagnetPlatform,
+	MagnetSample,
 	MagnetSamplesPayload,
 	Vec3,
 } from './types';
 
-export type AcquireKind = 'solve' | 'test';
+export type AcquireKind = 'solve' | 'test' | 'calibrate';
+
+/**
+ * The cube the detector runs with (design 4.7): its thresholds on this phone model, derived
+ * from the raw calibration with the current formula (cube_profile.ts). null: no cube, the
+ * detector runs on the BASE thresholds (admin bench only; the timer never starts without one).
+ */
+export interface DetectorProfile {
+	cubeId: string;
+	puzzle: string;
+	nearMin: number;
+	farMax: number;
+}
+
+function sameDetectorProfile(a: DetectorProfile | null, b: DetectorProfile | null): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	return a.cubeId === b.cubeId && a.puzzle === b.puzzle && a.nearMin === b.nearMin && a.farMax === b.farMax;
+}
 
 export type LiftEvent = Extract<DetectorEvent, { type: 'lift' }>;
 
@@ -47,6 +67,7 @@ export interface ServiceBatch {
 	resting: boolean;
 	/** Samples before this epoch-ms instant belong to an earlier stream. */
 	resumeAt: number;
+	/** Test or calibrate mode: a lift must not start anything. */
 	testMode: boolean;
 }
 
@@ -66,13 +87,16 @@ const FAR_PERSIST_INTERVAL_MS = 10_000;
 const RESIZE_RESET_RATIO = 0.1;
 
 class MagnetService {
-	private counts: Record<AcquireKind, number> = { solve: 0, test: 0 };
+	private counts: Record<AcquireKind, number> = { solve: 0, test: 0, calibrate: 0 };
 	private running = false;
 	private chain: Promise<void> = Promise.resolve();
 
 	private caps: MagnetCapabilities | null = null;
 	private platform: MagnetPlatform | null = null;
 	private detector: MagnetDetector | null = null;
+	/** Profile the detector was built with, and the one asked for (applied when the cube is away). */
+	private profile: DetectorProfile | null = null;
+	private wantedProfile: DetectorProfile | null = null;
 
 	private resumeAt = 0;
 	private disarmedAt = 0;
@@ -89,6 +113,7 @@ class MagnetService {
 
 	private batchListeners = new Set<(batch: ServiceBatch) => void>();
 	private liveListeners = new Set<(live: LiveReading) => void>();
+	private sampleListeners = new Set<(samples: MagnetSample[]) => void>();
 
 	/** Holds the stream. The returned function releases it (idempotent). */
 	acquire(kind: AcquireKind): () => void {
@@ -104,8 +129,13 @@ class MagnetService {
 		};
 	}
 
+	/** Test (admin bench) or calibrate mode: lifts start nothing and the study gets nothing. */
 	isTestMode(): boolean {
-		return this.counts.test > 0;
+		return this.counts.test + this.counts.calibrate > 0;
+	}
+
+	isCalibrating(): boolean {
+		return this.counts.calibrate > 0;
 	}
 
 	isRunning(): boolean {
@@ -124,6 +154,33 @@ class MagnetService {
 		return () => {
 			this.liveListeners.delete(listener);
 		};
+	}
+
+	/**
+	 * The raw samples of every batch, in time order and without the ones from before a
+	 * restart (the calibration meter, calibration.ts).
+	 */
+	subscribeSamples(listener: (samples: MagnetSample[]) => void): () => void {
+		this.sampleListeners.add(listener);
+		return () => {
+			this.sampleListeners.delete(listener);
+		};
+	}
+
+	/**
+	 * Runs the detector with this cube's thresholds (useMagnetStart, design 4.7). The far
+	 * baseline is kept: it belongs to the phone, not the cube. While the cube rests at the
+	 * phone, is being lifted or hovers in the "closer" band the change waits for it to go
+	 * away: a new detector would drop the placement and read a static near field as an
+	 * unknown baseline. The caller does not call during inspection.
+	 */
+	setCubeProfile(profile: DetectorProfile | null): void {
+		this.wantedProfile = profile ? { ...profile } : null;
+		this.applyProfileIfIdle();
+	}
+
+	getCubeProfile(): DetectorProfile | null {
+		return this.profile;
 	}
 
 	/**
@@ -204,7 +261,7 @@ class MagnetService {
 	}
 
 	private wanted(): boolean {
-		return this.counts.solve + this.counts.test > 0 && isAppVisible();
+		return this.counts.solve + this.counts.test + this.counts.calibrate > 0 && isAppVisible();
 	}
 
 	private scheduleReconcile(): void {
@@ -225,6 +282,7 @@ class MagnetService {
 					return;
 				}
 				this.ensureDetector();
+				this.applyProfileIfIdle();
 				magnetTelemetry.begin(this.platform, caps);
 				const trustFar = this.takeSolvePause();
 				this.detector.reset({ trustFar });
@@ -236,7 +294,7 @@ class MagnetService {
 				const ok = await startMagnetStream();
 				this.running = ok;
 				magnetDebugLog.record(ok ? 'stream_start' : 'stream_start_failed', trustFar ? { trustFar } : undefined);
-				setMagnetStatus({ active: ok, phase: 'unknown', hint: 'none' });
+				setMagnetStatus({ active: ok, phase: 'unknown', hint: 'none', moving: false });
 				if (!ok) return;
 			} else {
 				this.running = false;
@@ -244,7 +302,15 @@ class MagnetService {
 				this.persistFar(true);
 				magnetDebugLog.flushPending();
 				magnetDebugLog.record('stream_stop');
-				setMagnetStatus({ active: false, stage: 'off', green: false, orange: false, phase: 'unknown', hint: 'none' });
+				setMagnetStatus({
+					active: false,
+					stage: 'off',
+					green: false,
+					orange: false,
+					phase: 'unknown',
+					hint: 'none',
+					moving: false,
+				});
 			}
 		}
 	}
@@ -261,8 +327,40 @@ class MagnetService {
 		this.platform = magnetPlatform() ?? 'android';
 		magnetDebugLog.setPlatform(this.platform);
 		const far = getStoredFar(this.platform);
-		this.detector = new MagnetDetector(detectorConfigFor(this.platform), far);
+		this.detector = new MagnetDetector(this.detectorConfig(), far);
 		this.lastPersistedFar = far;
+	}
+
+	private detectorConfig() {
+		const p = this.profile;
+		return detectorConfigFor(this.platform ?? 'android', p ? { nearMin: p.nearMin, farMax: p.farMax } : undefined);
+	}
+
+	private applyProfileIfIdle(): void {
+		if (sameDetectorProfile(this.wantedProfile, this.profile)) return;
+		if (this.running && this.detector) {
+			const snap = this.detector.snapshot();
+			if (snap.phase === 'near' || snap.phase === 'lifting' || snap.hint === 'closer') return;
+		}
+		this.profile = this.wantedProfile;
+		magnetTelemetry.setProfile(this.profile ? this.profile.puzzle : null, this.profile ? this.profile.nearMin : null);
+		magnetDebugLog.record(
+			'profile',
+			this.profile
+				? { puzzle: this.profile.puzzle, nearMin: +this.profile.nearMin.toFixed(1), farMax: +this.profile.farMax.toFixed(1) }
+				: { cube: null }
+		);
+		// Not built yet: ensureDetector builds it with this profile.
+		if (!this.detector) return;
+		const far = this.detector.getFar();
+		this.detector = new MagnetDetector(this.detectorConfig(), far);
+		if (this.running) {
+			// The new detector proves the reading again (and measures the rate again); a placement
+			// it sees from now on arms only after the cube was away long enough.
+			this.armed = false;
+			this.resting = false;
+			this.disarmedAt = Date.now();
+		}
 	}
 
 	private onPayload = (payload: MagnetSamplesPayload): void => {
@@ -272,6 +370,7 @@ class MagnetService {
 		if (!samples.length) return;
 
 		magnetDebugLog.addSamples(samples);
+		this.sampleListeners.forEach((listener) => listener(samples));
 		const events = this.detector.push(samples);
 		const lifts: ServiceBatch['lifts'] = [];
 
@@ -299,7 +398,7 @@ class MagnetService {
 			this.armed = false;
 			this.resting = false;
 		}
-		setMagnetStatus({ phase: snapshot.phase, hint: snapshot.hint });
+		setMagnetStatus({ phase: snapshot.phase, hint: snapshot.hint, moving: isMoving(snapshot) });
 		this.persistFar(false);
 		// The admin panel's test mode is a bench, not the field: it stays out of the study.
 		if (!this.isTestMode()) this.feedTelemetry(events, snapshot);
@@ -316,6 +415,7 @@ class MagnetService {
 		};
 		this.batchListeners.forEach((listener) => listener(batch));
 		this.emitLive(snapshot);
+		this.applyProfileIfIdle();
 	};
 
 	private emitLive(snapshot?: DetectorSnapshot): void {
@@ -469,6 +569,18 @@ class MagnetService {
 			}
 		});
 	}
+}
+
+/**
+ * The phone seems to be in the hand (design 6.4): no steady plateau for MOVING_AFTER_MS. Not
+ * while the cube is at the phone (a cube played with or still settling next to the phone is
+ * not a moving phone: near, lifting, or a field no turn of the phone can make) and not on a
+ * sensor too slow to judge.
+ */
+export function isMoving(snapshot: DetectorSnapshot): boolean {
+	if (snapshot.phase === 'near' || snapshot.phase === 'lifting' || snapshot.phase === 'unsupported') return false;
+	if (snapshot.delta !== null && snapshot.delta >= MOVING_MAX_DELTA_UT) return false;
+	return snapshot.unsteadyMs !== null && snapshot.unsteadyMs >= MOVING_AFTER_MS;
 }
 
 export const magnetService = new MagnetService();

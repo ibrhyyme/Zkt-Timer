@@ -8,8 +8,9 @@
 import React, {useState} from 'react';
 import './SettingsPage.scss';
 import {useTranslation} from 'react-i18next';
-import {Link, useLocation} from 'react-router-dom';
-import {CaretLeft, MagnifyingGlass} from 'phosphor-react';
+import {useLocation} from 'react-router-dom';
+import {MagnifyingGlass} from 'phosphor-react';
+import {BackButton} from '../../common/icon_button/IconButton';
 import SettingsNav, {useSettingsTabs} from './SettingsNav';
 import SettingsSearchResults from './SettingsSearchResults';
 import PageTitle from '../../common/page_title/PageTitle';
@@ -36,15 +37,8 @@ export default function SettingsPage(props: Props) {
 	const isIndex = pathname === '/settings';
 	const activeTab = tabs.find((tab) => tab.link === pathname);
 
-	// The section's cube-face colour lights the page behind the content, so moving
-	// between sections changes the room you're standing in rather than just the text.
-	const activeTone = activeTab ? activeTab.tone : tabs[0].tone;
-
 	return (
-		<div
-			className={b({index: isIndex && !trimmedQuery})}
-			style={{'--active-tone': activeTone} as React.CSSProperties}
-		>
+		<div className={b({index: isIndex && !trimmedQuery})}>
 			<PageTitle pageName={t('settings.page_title')} />
 
 			<div className={b('search')}>
@@ -74,13 +68,11 @@ export default function SettingsPage(props: Props) {
 							    already shows both where you are and how to get back. */}
 							{activeTab ? (
 								<div className={b('section-header')}>
-									<Link
+									<BackButton
 										to="/settings"
 										className={b('back')}
-										aria-label={t('settings.back_to_settings')}
-									>
-										<CaretLeft weight="bold" />
-									</Link>
+										label={t('settings.back_to_settings')}
+									/>
 									<h2 className={b('section-title')}>{activeTab.label}</h2>
 								</div>
 							) : null}

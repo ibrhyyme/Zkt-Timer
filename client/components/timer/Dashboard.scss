@@ -3,7 +3,12 @@
 .zt-timer-dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    // Second row: the page dots under each slot (MobileModuleSlot, feedback 1.8-j). Taken
+    // out of the slots' height, not added to it, so nothing above moves; and inside the
+    // dashboard rather than hung below it, where it would make the mobile layout scroll.
+    grid-template-rows: minmax(0, 1fr) 10px;
     gap: 0.5rem;
+    row-gap: 3px;
     padding: 0 0.75rem;
     width: 100%;
     min-height: 160px;
@@ -11,9 +16,18 @@
 
     &--mobile {
         grid-template-columns: 1fr 1fr;
+        // The dots row is 16px here: a swipe along it pages the module (owner,
+        // 2026-10-13), and 10px was too thin to land a thumb on. The 6px came from the
+        // dashboard's height, not from the slots, so the modules keep their 147px.
+        grid-template-rows: minmax(0, 1fr) 16px;
         gap: 0.5rem;
+        row-gap: 3px;
         padding: 0 0.5rem;
-        height: calc(200px - 1.5cm);
-        flex: 0 0 calc(200px - 1.5cm);
+        // Said once. This used to read calc(200px - 1.5cm) (~143px), which the base
+        // min-height above silently overrode, so every phone drew the dashboard at 160px
+        // (feedback E-17). 166 since the dots row grew; the time area above gives it up.
+        min-height: 0;
+        height: 166px;
+        flex: 0 0 166px;
     }
 }

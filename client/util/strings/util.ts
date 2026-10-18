@@ -1,7 +1,3 @@
-export function numberWithCommas(x) {
-	return String(x).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
 export function titleCase(x) {
 	const parts = x.split(' ');
 	for (let i = 0; i < parts.length; i += 1) {

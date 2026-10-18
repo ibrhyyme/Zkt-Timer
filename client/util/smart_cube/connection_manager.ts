@@ -13,6 +13,9 @@ import { setSmartCubeDriverSink, SmartCubeDriverSink } from './driver_sink';
 import { toastError } from '../toast';
 import i18n from '../../i18n/i18n';
 import type { SmartTurn } from '../smart_scramble';
+import { getCubeState } from '../../lib/cubes/store';
+import { ensureSmartCubeOnline, isCubeConnectivityError } from '../../lib/cubes/sync';
+import { smartCubeByBleId } from '../../lib/cubes/active_cube';
 
 /**
  * App-level owner of the smart cube Bluetooth link.
@@ -39,7 +42,7 @@ export interface SmartCubeSnapshot {
 	scanError: string | null;
 	/** True while an unexpected drop is being retried against the same device. */
 	reconnecting: boolean;
-	/** SmartDevice row id, written onto saved solves. Falls back to the BLE id offline. */
+	/** BLE device id of the connected cube. Its My Cubes entry is found by this id. */
 	deviceId: string;
 	/** Advertised cube name, for "already connected as X" messages. */
 	deviceName: string | null;
@@ -148,6 +151,8 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 	/** True while a picker-free handshake is running, so a drop inside it is not scheduled twice. */
 	private reconnectInFlight = false;
+	/** Waits for the network to register a cube that connected offline; see registerCube. */
+	private registerRetry: (() => void) | null = null;
 
 	private attachments = new Set<SmartCubeAttachOptions>();
 	private moveListeners = new Set<Listener<SmartCubeMoveBatch>>();
@@ -403,15 +408,9 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		this.retainedDevice = this.conn?.device || this.retainedDevice;
 		this.deviceName = server?.device?.name || this.retainedDevice?.name || null;
 
-		let dev: any;
-		try {
-			const exists = await cube.smartCubeInDb(server);
-			dev = exists || (await cube.addSmartCubeToDb(server.device.name, server.device.id));
-		} catch (error) {
-			console.error('Smart Cube DB Error (continuing offline):', error);
-			// Offline fallback: the BLE id stands in for the row id so solves still record a device.
-			dev = { id: server?.device?.id, name: server?.device?.name, device_id: server?.device?.id };
-		}
+		// The BLE id is all the link keeps. Solves are stamped with the My Cubes entry found by it
+		// at save time (timer/helpers/cube_stamp.ts), so nothing here waits on the network.
+		const bleId: string = server?.device?.id || '';
 
 		const store = getStore();
 		if (!background && store && store.getState()?.general?.modals?.length > 0) {
@@ -427,7 +426,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		this.reconnecting = false;
 		this.reconnectAttempt = 0;
 		this.scanError = null;
-		this.deviceId = dev?.id || '';
+		this.deviceId = bleId;
 
 		setTimerParams({
 			smartCubeConnecting: false,
@@ -438,7 +437,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		setSmartCubeParams({
 			smartCubeConnected: true,
 			smartReconnecting: false,
-			smartDeviceId: this.deviceId,
+			smartBleDeviceId: this.deviceId,
 			smartDeviceName: this.deviceName,
 		});
 
@@ -459,6 +458,48 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		// interval right after alertConnected resolves, which the call above cannot see yet.
 		setTimeout(() => this.applyPowerState(), 0);
 		this.publishConnection();
+		this.registerCube(bleId, this.deviceName);
+	}
+
+	/**
+	 * Makes sure the connected cube is in My Cubes (ensureSmartCube, design magnet-cubes 3.2).
+	 *
+	 * No request when the local copy already knows this BLE id, which is every connection
+	 * after the first one. Fire and forget: the link is already up. Offline, the solves of
+	 * this session stay unstamped until the connection comes back, then the cube is
+	 * registered and the following solves are stamped (design 4.4). Visitors have no cubes.
+	 */
+	private registerCube(bleId: string, name: string | null): void {
+		this.clearRegisterRetry();
+		if (!bleId) return;
+		try {
+			const state = getCubeState();
+			if (!state.userId || smartCubeByBleId(state, bleId)) return;
+		} catch (e) {
+			return;
+		}
+
+		ensureSmartCubeOnline(bleId, name).catch((error) => {
+			if (!isCubeConnectivityError(error)) {
+				console.warn('[smart-cube] could not register the cube in My Cubes:', error);
+				return;
+			}
+			if (typeof window === 'undefined') return;
+			// Once the network is back, try again for the cube that is still connected.
+			const retry = () => {
+				this.registerRetry = null;
+				if (this.connected && this.deviceId === bleId) this.registerCube(bleId, this.deviceName);
+			};
+			this.registerRetry = retry;
+			window.addEventListener('online', retry, { once: true });
+		});
+	}
+
+	private clearRegisterRetry(): void {
+		if (this.registerRetry && typeof window !== 'undefined') {
+			window.removeEventListener('online', this.registerRetry);
+		}
+		this.registerRetry = null;
 	}
 
 	/**
@@ -646,6 +687,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		this.reconnectAttempt = 0;
 		this.scanError = null;
 		this.deviceId = '';
+		this.clearRegisterRetry();
 		this.deviceName = null;
 		this.batteryLevel = null;
 		this.gyroSupported = false;
@@ -666,7 +708,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		setSmartCubeParams({
 			smartCubeConnected: false,
 			smartReconnecting: false,
-			smartDeviceId: '',
+			smartBleDeviceId: '',
 			smartDeviceName: null,
 			smartCubeBatteryLevel: null,
 			smartGyroSupported: false,

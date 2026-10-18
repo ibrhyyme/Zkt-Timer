@@ -21,6 +21,12 @@ export interface DeltaPlanInput {
 	pendingDeleteIds: Set<string>;
 	/** Deleted on this device. On the server again only because another device re-sent it. */
 	tombstoned: Set<string>;
+	/**
+	 * Solves started on this device moments ago. Their create can be in flight: no longer
+	 * queued, not yet in the server's id list. The delta sync runs behind an open app, so a
+	 * solve can finish while the id list is on its way.
+	 */
+	recentIds?: Set<string>;
 }
 
 export interface DeltaPlan {
@@ -30,7 +36,7 @@ export interface DeltaPlan {
 }
 
 export function planDeltaSync(input: DeltaPlanInput): DeltaPlan {
-	const {serverIds, localIds, pendingCreateIds, pendingDeleteIds, tombstoned} = input;
+	const {serverIds, localIds, pendingCreateIds, pendingDeleteIds, tombstoned, recentIds} = input;
 
 	const toFetch: string[] = [];
 	const resurrected: string[] = [];
@@ -45,7 +51,7 @@ export function planDeltaSync(input: DeltaPlanInput): DeltaPlan {
 
 	const toRemove: string[] = [];
 	for (const id of localIds) {
-		if (!serverIds.has(id) && !pendingCreateIds.has(id)) {
+		if (!serverIds.has(id) && !pendingCreateIds.has(id) && !recentIds?.has(id)) {
 			toRemove.push(id);
 		}
 	}

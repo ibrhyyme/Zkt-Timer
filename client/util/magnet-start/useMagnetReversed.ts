@@ -13,15 +13,14 @@ export function useMagnetReversed(opts: {
 	streamer: boolean;
 }): boolean {
 	const me = useMe();
-	const { enabled, reversed } = useMagnetStartSettings();
+	const { reversed } = useMagnetStartSettings();
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const allowed = canUseMagnetStart(me);
-	const caps = useMagnetAvailability(allowed && enabled);
+	const caps = useMagnetAvailability(allowed && timerType === 'magnet');
 
 	return magnetReversedEligible({
 		allowed,
-		enabled,
 		reversedSetting: reversed,
 		caps,
 		timerType,

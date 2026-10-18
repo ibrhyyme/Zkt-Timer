@@ -30,9 +30,12 @@ export function setPollerIOGetter(fn: () => any) {
  */
 async function fetchRoundData(liveRoundId: string, competitionId: string): Promise<any | null> {
 	if (isZktCompetitionId(competitionId)) {
+		// Fresh for just under one poll interval, so each tick asks for a new
+		// value unless a resolver read already fetched one moments ago.
 		const raw = await ZktFederationService.fetchRoundResultsFresh(
 			zktSlugOf(competitionId),
-			liveRoundId
+			liveRoundId,
+			POLL_INTERVAL_MS - 1000
 		);
 		return raw ? zktRoundToWcaLiveResults(raw) : null;
 	}
@@ -48,8 +51,8 @@ async function pollRound(liveRoundId: string, competitionId: string) {
 		const newHash = data ? JSON.stringify(data.results) : '';
 		if (newHash !== sub.lastHash) {
 			sub.lastHash = newHash;
-			// The ZKT branch already wrote the fresh payload to its own federation
-			// cache key (the one its resolver reads), so only the WCA branch needs
+			// The ZKT branch read through the federation cache key its resolver
+			// reads, so that key is already current; only the WCA branch needs
 			// this write.
 			if (!isZktCompetitionId(competitionId)) {
 				const cacheKey = createRedisKey(

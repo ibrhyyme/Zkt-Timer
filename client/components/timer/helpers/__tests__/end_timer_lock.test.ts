@@ -47,6 +47,7 @@ import { endTimer, startTimer } from '../events';
 import { saveSolve } from '../save';
 import { setTimerParams } from '../params';
 import { clearInspectionTimers } from '../timers';
+import { consumePreGeneratedScramble, preGenerateScramble, resetScramble } from '../scramble';
 
 const STARTED_AT = 10_000;
 const STOPPED_AT = 20_000;
@@ -89,10 +90,21 @@ function stop(...args: Parameters<typeof endTimer>) {
 	}
 }
 
+/** Runs the deferred stop work and what it defers in turn: the save follows the scramble a paint later. */
 function runDeferredSave() {
-	const queued = deferred;
-	deferred = [];
-	queued.forEach((fn) => fn());
+	const spy = jest.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void) => {
+		deferred.push(fn);
+		return 0;
+	}) as any);
+	try {
+		while (deferred.length) {
+			const queued = deferred;
+			deferred = [];
+			queued.forEach((fn) => fn());
+		}
+	} finally {
+		spy.mockRestore();
+	}
 }
 
 /** How many stops got as far as resetting the timer, i.e. were not refused by the lock. */
@@ -193,12 +205,70 @@ describe('endTimer lock', () => {
 	});
 });
 
+describe('next scramble before the save', () => {
+	/** Runs only the step endTimer deferred, not what that step defers in turn. */
+	function runFirstStep() {
+		const queued = deferred;
+		deferred = [];
+		const spy = jest.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void) => {
+			deferred.push(fn);
+			return 0;
+		}) as any);
+		try {
+			queued.forEach((fn) => fn());
+		} finally {
+			spy.mockRestore();
+		}
+	}
+
+	it('shows the pre-generated scramble a step before the save re-renders the modules', () => {
+		(consumePreGeneratedScramble as jest.Mock).mockReturnValueOnce("F R U' R'");
+		stop(timerContext());
+
+		runFirstStep();
+		expect(mockStore.scramble).toBe("F R U' R'");
+		expect(saveSolve).not.toHaveBeenCalled();
+
+		runDeferredSave();
+		expect(saveSolve).toHaveBeenCalledTimes(1);
+		// The solve keeps the scramble it was done with.
+		expect((saveSolve as jest.Mock).mock.calls[0][2]).toBe("R U R' U'");
+	});
+
+	it('still saves the solve when the next scramble cannot be made', () => {
+		(resetScramble as jest.Mock).mockImplementationOnce(() => {
+			throw new Error('no scramble');
+		});
+		stop(timerContext());
+
+		expect(() => runFirstStep()).toThrow('no scramble');
+		runDeferredSave();
+		expect(saveSolve).toHaveBeenCalledTimes(1);
+
+		seedStore();
+		stop(timerContext());
+		expect(stopsTaken()).toBe(2);
+	});
+});
+
 describe('startTimer with a release instant', () => {
 	// The remote-input grace window starts the solve 40 ms after the key came up and
 	// hands startTimer the instant it did, so the wait never lands in the recorded time.
 	it('starts from a recent instant rather than now', () => {
 		startTimer(undefined, STOPPED_AT - 40);
 		expect(mockStore.timeStartedAt).toEqual(new Date(STOPPED_AT - 40));
+	});
+
+	it('pre-generates for the subset the stop will ask for, also before one was picked this session', () => {
+		Object.assign(mockSettings, { cube_type: 'wca', scramble_subset: '333' });
+		delete mockStore.scrambleSubset;
+		startTimer();
+		expect(preGenerateScramble).toHaveBeenLastCalledWith('wca', '333', null);
+
+		// A subset picked on the page is in the store, and wins like it does in the context.
+		mockStore.scrambleSubset = '222';
+		startTimer();
+		expect(preGenerateScramble).toHaveBeenLastCalledWith('wca', '222', null);
 	});
 
 	it('falls back to now for an instant too old to trust', () => {

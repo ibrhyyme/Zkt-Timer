@@ -9,6 +9,7 @@ import {ErrorCode} from '../constants/errors';
 import {publicUserInclude} from '../models/user_account';
 import {deleteObject} from '../services/storage';
 import {logger} from '../services/logger';
+import {getTimerBackgroundSlot, isTimerBackgroundRowEmpty} from '../../shared/timer_background';
 
 const DEFAULT_PAGE_SIZE = 24;
 const MAX_PAGE_SIZE = 96;
@@ -16,6 +17,8 @@ const MAX_PAGE_SIZE = 96;
 // Only these prefixes may ever be deleted through this panel. storage_path always comes
 // from the database, but a stored value is still validated before it reaches the disk.
 const DELETABLE_PREFIXES = ['images/', 'timer_backgrounds/'];
+// Admin media ids are row ids; a row's mobile background file is listed as `<row id>:mobile`.
+const MOBILE_BACKGROUND_ID_SUFFIX = ':mobile';
 
 function assertSafeStoragePath(storagePath: string) {
 	const normalized = path.posix.normalize(storagePath.replace(/\\/g, '/'));
@@ -81,15 +84,21 @@ export class AdminMediaResolver {
 			imageWhere.OR = [{profile_pfp_image: {isNot: null}}, {profile_header_image: {isNot: null}}];
 		}
 
+		// A row can hold two files: the desktop background and, since the desktop / mobile
+		// split, a separate mobile one. Each file is listed as its own asset.
 		const backgroundWhere: any = {
-			storage_path: {not: null},
+			OR: [{storage_path: {not: null}}, {mobile_storage_path: {not: null}}],
+			...searchFilter,
+		};
+		const mobileBackgroundWhere: any = {
+			mobile_storage_path: {not: null},
 			...searchFilter,
 		};
 
 		// Both tables are read up to skip+limit so a merged page stays correctly ordered.
 		const take = (pageIndex + 1) * pageSize;
 
-		const [images, backgrounds, imageCount, backgroundCount] = await Promise.all([
+		const [images, backgrounds, imageCount, backgroundCount, mobileBackgroundCount] = await Promise.all([
 			wantsImages
 				? prisma.image.findMany({
 						where: imageWhere,
@@ -111,7 +120,10 @@ export class AdminMediaResolver {
 				  })
 				: Promise.resolve([]),
 			wantsImages ? prisma.image.count({where: imageWhere}) : Promise.resolve(0),
-			wantsBackgrounds ? prisma.timerBackground.count({where: backgroundWhere}) : Promise.resolve(0),
+			wantsBackgrounds
+				? prisma.timerBackground.count({where: {storage_path: {not: null}, ...searchFilter}})
+				: Promise.resolve(0),
+			wantsBackgrounds ? prisma.timerBackground.count({where: mobileBackgroundWhere}) : Promise.resolve(0),
 		]);
 
 		const merged: MediaAsset[] = [
@@ -119,16 +131,38 @@ export class AdminMediaResolver {
 				id: image.id,
 				kind: image.profile_pfp_image ? MediaAssetKind.PROFILE_PICTURE : MediaAssetKind.PROFILE_HEADER,
 				storage_path: image.storage_path,
+				is_video: false,
 				created_at: image.created_at,
 				user: image.user,
 			})),
-			...(backgrounds as any[]).map((background) => ({
-				id: background.id,
-				kind: MediaAssetKind.TIMER_BACKGROUND,
-				storage_path: background.storage_path,
-				created_at: background.created_at,
-				user: background.user,
-			})),
+			...(backgrounds as any[]).flatMap((background) => [
+				...(background.storage_path
+					? [
+							{
+								id: background.id,
+								kind: MediaAssetKind.TIMER_BACKGROUND,
+								storage_path: background.storage_path,
+								is_video: getTimerBackgroundSlot(background, 'desktop').is_video,
+								background_target: 'desktop',
+								created_at: background.created_at,
+								user: background.user,
+							},
+					  ]
+					: []),
+				...(background.mobile_storage_path
+					? [
+							{
+								id: `${background.id}${MOBILE_BACKGROUND_ID_SUFFIX}`,
+								kind: MediaAssetKind.TIMER_BACKGROUND,
+								storage_path: background.mobile_storage_path,
+								is_video: getTimerBackgroundSlot(background, 'mobile').is_video,
+								background_target: 'mobile',
+								created_at: background.created_at,
+								user: background.user,
+							},
+					  ]
+					: []),
+			]),
 		].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
 		const slice = merged.slice(pageIndex * pageSize, pageIndex * pageSize + pageSize);
@@ -136,7 +170,7 @@ export class AdminMediaResolver {
 		// stat() only runs for the rows actually being returned.
 		const items = slice.map((asset) => ({...asset, size_bytes: fileSize(asset.storage_path)}));
 
-		return {items: items as any, total: imageCount + backgroundCount};
+		return {items: items as any, total: imageCount + backgroundCount + mobileBackgroundCount};
 	}
 
 	/**
@@ -153,17 +187,29 @@ export class AdminMediaResolver {
 		const {prisma, user} = context;
 
 		if (kind === MediaAssetKind.TIMER_BACKGROUND) {
-			const background = await prisma.timerBackground.findUnique({where: {id}});
+			const isMobile = id.endsWith(MOBILE_BACKGROUND_ID_SUFFIX);
+			const rowId = isMobile ? id.slice(0, -MOBILE_BACKGROUND_ID_SUFFIX.length) : id;
+			const background = await prisma.timerBackground.findUnique({where: {id: rowId}});
 			if (!background) {
 				throw new GraphQLError(ErrorCode.NOT_FOUND, 'Dosya bulunamadi');
 			}
-			if (background.storage_path) {
-				assertSafeStoragePath(background.storage_path);
-				await deleteObject(background.storage_path).catch((e) =>
-					logger.error('[AdminMedia] File delete failed', {path: background.storage_path, error: e?.message})
+			const target = isMobile ? 'mobile' : 'desktop';
+			const slot = getTimerBackgroundSlot(background, target);
+			if (slot) {
+				assertSafeStoragePath(slot.storage_path);
+				await deleteObject(slot.storage_path).catch((e) =>
+					logger.error('[AdminMedia] File delete failed', {path: slot.storage_path, error: e?.message})
 				);
 			}
-			await prisma.timerBackground.delete({where: {id}});
+			// Only the one file goes; the other slot (and the mobile switch) stays with the user.
+			const cleared = isMobile
+				? {mobile_storage_path: null, mobile_media_type: null}
+				: {storage_path: null, media_type: null};
+			if (isTimerBackgroundRowEmpty({...background, ...cleared})) {
+				await prisma.timerBackground.delete({where: {id: rowId}});
+			} else {
+				await prisma.timerBackground.update({where: {id: rowId}, data: cleared});
+			}
 			logger.info('[AdminMedia] Timer background deleted', {id, by: user.id});
 			return true;
 		}

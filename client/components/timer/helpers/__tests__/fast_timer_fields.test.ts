@@ -127,7 +127,7 @@ describe('what the solve engine and inspection write per move or tick', () => {
 describe('connection state is out of reach of Timer entirely', () => {
 	it.each([
 		['a facelets report', smartCubeFaceletsAction(SCRAMBLED)],
-		['the cube connecting', setSmartCubeParamsAction({ smartCubeConnected: true, smartDeviceId: 'x' })],
+		['the cube connecting', setSmartCubeParamsAction({ smartCubeConnected: true, smartBleDeviceId: 'x' })],
 	])('%s changes the smart cube slice and leaves the timer slice untouched', (_, action) => {
 		const prevTimer = initial();
 		const prevSmart = initialSmart();
@@ -140,12 +140,12 @@ describe('connection state is out of reach of Timer entirely', () => {
 	it('survives RESET_TIMER_PARAMS, which is the whole reason it moved', () => {
 		const connected = smartCube(
 			initialSmart(),
-			setSmartCubeParamsAction({ smartCubeConnected: true, smartDeviceId: 'cube-1' })
+			setSmartCubeParamsAction({ smartCubeConnected: true, smartBleDeviceId: 'ble-1' })
 		);
 		const afterReset = smartCube(connected, { type: 'RESET_TIMER_PARAMS' });
 
 		expect(afterReset.smartCubeConnected).toBe(true);
-		expect(afterReset.smartDeviceId).toBe('cube-1');
+		expect(afterReset.smartBleDeviceId).toBe('ble-1');
 	});
 });
 

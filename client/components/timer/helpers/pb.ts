@@ -8,6 +8,18 @@ import { displayTimerAlert } from './notification';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { getSetting } from '../../../db/settings/query';
 import { hapticNotification, requestInAppReview } from '../../../util/native-plugins';
+import i18n from '../../../i18n/i18n';
+
+export type PbKind = 'single' | 'average' | 'single_and_average';
+
+/** Translation key of the badge text for each PB event (timer_pb.* in the locale files). */
+export function pbMessageKey(kind: PbKind): string {
+	return `timer_pb.${kind}`;
+}
+
+function pbMessage(kind: PbKind, cube: string): string {
+	return i18n.t(pbMessageKey(kind), { cube });
+}
 
 let lastConfetti: Date = null;
 
@@ -56,7 +68,7 @@ export function listenForPbEvents(context: ITimerContext) {
 		({ cubeType: ct, scrambleSubset }) => {
 			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
-			pbEventCallback(`Yeni ${name} Single PB!`, name);
+			pbEventCallback(pbMessage('single', name), name);
 		},
 		[context.cubeType]
 	);
@@ -66,7 +78,7 @@ export function listenForPbEvents(context: ITimerContext) {
 		({ cubeType: ct, scrambleSubset }) => {
 			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
-			pbEventCallback(`Yeni ${name} Average of 5 PB!`, name);
+			pbEventCallback(pbMessage('average', name), name);
 		},
 		[context.cubeType]
 	);
@@ -76,7 +88,7 @@ export function listenForPbEvents(context: ITimerContext) {
 		({ cubeType: ct, scrambleSubset }) => {
 			if (ignore) return;
 			const name = getPbDisplayName(ct, scrambleSubset);
-			pbEventCallback(`Yeni ${name} Single ve Average of 5 PB!`, name);
+			pbEventCallback(pbMessage('single_and_average', name), name);
 		},
 		[context.cubeType]
 	);

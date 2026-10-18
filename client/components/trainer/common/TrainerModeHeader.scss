@@ -1,102 +1,152 @@
 @import '../../../styles/config';
 
-// Ortak slim trainer baslik cercevesi (4 mod). Standart'in kompaktligini baz alir —
-// yeni dikey alan eklemez. Mod ikon renkleri landing kartlariyla ayni (bilincli accent).
+// Shared trainer header (every trainer page): a breadcrumb bar on the page background with a
+// hairline under it, no box. Hierarchy comes from type (size and weight), never from a faded
+// colour. Accent colours from TrainerAccents.scss colour the icon only: a tinted fill never
+// carries text or an icon in its own hue.
 .#{$namespace}-trainer-header {
-	// Sticky: hangi scroll container'da olursa olsun ust'e yapisir (recognition/efficiency
-	// kendi root'unda scroll ediyor → header da kayardi; standard/smart'ta zaten sabit flex
-	// item oldugu icin no-op). 4 modda da tutarli: baslik + geri her zaman erisilebilir.
+	// Sticky: stays on top in whichever container scrolls (recognition and efficiency scroll their
+	// own root; in the Algorithm Trainer it is a fixed flex item already).
 	position: sticky;
 	top: 0;
 	z-index: 20;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 0.5rem;
-	padding: 0.5rem 0.75rem;
+	gap: 0.75rem;
+	min-height: 56px;
+	padding: 0.5rem 1rem 0.5rem 0.6rem;
 	border-bottom: 1px solid rgba(var(--text-color), 0.08);
-	background: rgba(var(--module-color), 0.7);
-	backdrop-filter: blur(10px);
+	background: rgb(var(--background-color));
 	flex-shrink: 0;
 
+	// Three columns from a large phone up: the center slot sits in the true middle, so a button
+	// appearing on the right (Smart Cube "Connect cube") never moves the study mode switch.
+	@include bp-up($bp-sm) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	}
+
 	&__left {
+		grid-column: 1;
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.35rem;
 		min-width: 0;
+		flex: 1 1 auto;
 	}
 
+	// Round, borderless back button.
 	&__back {
+		width: 38px;
+		height: 38px;
 		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.7rem;
-		border-radius: 20px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgba(var(--text-color), 0.04);
-		color: rgb(var(--text-color));
-		font-weight: 600;
-		font-size: 0.85rem;
-		cursor: pointer;
-		flex-shrink: 0;
-		transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-
-		&:hover {
-			background: rgba(var(--text-color), 0.1);
-			border-color: rgba(var(--text-color), 0.25);
-		}
-		&:active {
-			transform: scale(0.97);
-		}
-		span {
-			line-height: 1;
-		}
-	}
-
-	// Renkli mod ikonu (landing kartiyla ayni renk = surekliligi)
-	&__icon {
-		width: 30px;
-		height: 30px;
-		border-radius: 9px;
-		display: flex;
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
+		border: none;
+		border-radius: 50%;
+		background: transparent;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: background 0.15s ease;
 
-		&--blue {
-			background: rgba(36, 107, 253, 0.15);
-			color: #5b8df7;
+		&:hover {
+			background: rgba(var(--text-color), 0.08);
 		}
-		&--purple {
-			background: rgba(124, 58, 237, 0.15);
-			color: #a78bfa;
+		&:active {
+			background: rgba(var(--text-color), 0.14);
 		}
-		&--green {
-			background: rgba(34, 197, 94, 0.15);
-			color: #4ade80;
-		}
-		&--orange {
-			background: rgba(249, 115, 22, 0.15);
-			color: #fb923c;
-		}
-		&--red {
-			background: rgba(239, 68, 68, 0.15);
-			color: #f87171;
+		&:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 1px;
 		}
 	}
 
-	&__title {
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-weight: 700;
-		font-size: 1.05rem;
+	&__trail {
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
+		min-width: 0;
+	}
+
+	&__sep {
+		display: inline-flex;
+		flex-shrink: 0;
+		margin: 0 0.1rem;
 		color: rgb(var(--text-color));
+		opacity: 0.45; // a separator glyph, not text
+	}
+
+	&__crumb {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-width: 0;
+		color: rgb(var(--text-color));
+		font-family: inherit;
 		white-space: nowrap;
+
+		&--link {
+			flex-shrink: 0;
+			padding: 0.3rem 0.45rem;
+			border: none;
+			border-radius: 8px;
+			background: transparent;
+			font-size: 0.9rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: background 0.15s ease;
+
+			&:hover {
+				background: rgba(var(--text-color), 0.07);
+			}
+			&:focus-visible {
+				outline: 2px solid rgb(var(--primary-color));
+				outline-offset: 1px;
+			}
+		}
+
+		&--current {
+			padding: 0.3rem 0.45rem;
+			font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-size: 1.08rem;
+			font-weight: 700;
+			letter-spacing: -0.01em;
+		}
+	}
+
+	&__crumb-text {
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
-	// Orta slot — sol ile aksiyonlar arasi bosluga oturur (moda ozel; efficiency type picker).
+	// The trainer's coloured icon, no tile behind it.
+	&__icon {
+		display: inline-flex;
+		flex-shrink: 0;
+
+		&--blue {
+			color: rgb(var(--trainer-accent-blue));
+		}
+		&--purple {
+			color: rgb(var(--trainer-accent-purple));
+		}
+		&--green {
+			color: rgb(var(--trainer-accent-green));
+		}
+		&--orange {
+			color: rgb(var(--trainer-accent-orange));
+		}
+		&--red {
+			color: rgb(var(--trainer-accent-red));
+		}
+	}
+
+	// Center slot, mode specific (study mode switch, efficiency type picker).
 	&__center {
+		grid-column: 2;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -105,66 +155,72 @@
 	}
 
 	&__actions {
+		grid-column: 3;
+		justify-self: end;
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		flex-shrink: 0;
+		justify-content: flex-end;
+		gap: 0.25rem;
+		flex: 0 0 auto;
 	}
 
-	// Ortak aksiyon ikon-butonu (tum modlar bu class'i kullanir)
+	// Shared borderless icon button (every trainer uses this class).
 	&__btn {
-		width: 36px;
-		height: 36px;
+		width: 38px;
+		height: 38px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 9px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgba(var(--text-color), 0.04);
+		border: none;
+		border-radius: 10px;
+		background: transparent;
 		color: rgb(var(--text-color));
 		cursor: pointer;
-		transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+		transition: background 0.15s ease;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.1);
-			border-color: rgba(var(--text-color), 0.25);
-			transform: scale(1.05);
+			background: rgba(var(--text-color), 0.08);
 		}
 		&:active {
-			transform: scale(0.96);
+			background: rgba(var(--text-color), 0.14);
+		}
+		&:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 1px;
 		}
 		&:disabled {
-			opacity: 0.5;
+			opacity: 0.45;
 			cursor: not-allowed;
-			transform: none;
+			background: transparent;
 		}
+		// Toggled on (camera pad, a selected view): a raised neutral surface, the icon keeps the
+		// text colour.
 		&--active {
-			background: rgba(var(--primary-color), 0.15);
-			border-color: rgb(var(--primary-color));
-			color: rgb(var(--primary-color));
+			background: rgba(var(--text-color), 0.12);
+			box-shadow: inset 0 0 0 1px rgba(var(--text-color), 0.18);
 		}
 	}
 
-	// Etiketli CTA pill (ollcp "Çalış" gibi) — dolu, ikon + metin + sayaç rozeti
+	// Labelled filled action (OLLCP "Study"): accent fill, contrasting text.
 	&__cta {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.45rem 0.85rem;
+		min-height: 38px;
+		padding: 0 0.9rem;
 		border-radius: 10px;
 		border: none;
-		background: rgb(var(--error-color));
-		color: #fff;
+		background: rgb(var(--trainer-accent-red));
+		color: rgb(var(--trainer-accent-on));
 		cursor: pointer;
+		font-family: inherit;
 		font-size: 0.85rem;
 		font-weight: 700;
 		white-space: nowrap;
-		box-shadow: 0 4px 14px rgba(var(--error-color), 0.35);
-		transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+		transition: filter 0.15s ease, transform 0.1s ease;
 
 		&:hover {
 			filter: brightness(1.08);
-			box-shadow: 0 6px 18px rgba(var(--error-color), 0.45);
 		}
 		&:active {
 			transform: scale(0.97);
@@ -172,7 +228,6 @@
 		&:disabled {
 			opacity: 0.5;
 			cursor: not-allowed;
-			box-shadow: none;
 			transform: none;
 		}
 	}
@@ -184,44 +239,41 @@
 		height: 18px;
 		padding: 0 5px;
 		border-radius: 9px;
-		background: rgba(255, 255, 255, 0.25);
+		background: rgb(var(--trainer-accent-on));
+		color: rgb(var(--trainer-accent-red));
 		font-size: 0.72rem;
 		font-weight: 800;
 		line-height: 1;
 	}
 
-	// BLE bagla butonu (smart) — etiketli pill
+	// Smart cube connect button: filled, contrasting text.
 	&__ble {
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
-		padding: 0.45rem 0.9rem;
+		min-height: 38px;
+		padding: 0 0.95rem;
 		border-radius: 10px;
 		border: none;
-		background: rgb(var(--primary-color)); // dolu mavi → net "buton" hissi
-		color: #fff; // ikon (currentColor) + yazi beyaz
+		// Same primary as the active study mode button next to it.
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 		cursor: pointer;
-		font-size: 0.82rem;
+		font-family: inherit;
+		font-size: 0.85rem;
 		font-weight: 700;
 		white-space: nowrap;
-		box-shadow: 0 4px 14px rgba(var(--primary-color), 0.35);
-		transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+		transition: filter 0.15s ease, transform 0.1s ease;
 
 		&:hover {
 			filter: brightness(1.08);
-			box-shadow: 0 6px 18px rgba(var(--primary-color), 0.45);
 		}
 		&:active {
 			transform: scale(0.97);
 		}
-		// Bagli → kirmizi "Baglantiyi Kes" (yine dolu + beyaz, tutarli)
+		// Connected: red "Disconnect".
 		&--connected {
 			background: rgb(var(--error-color));
-			box-shadow: 0 4px 14px rgba(var(--error-color), 0.35);
-
-			&:hover {
-				box-shadow: 0 6px 18px rgba(var(--error-color), 0.45);
-			}
 		}
 		&--busy {
 			opacity: 0.8;
@@ -243,25 +295,37 @@
 		animation: trainer-header-spin 0.7s linear infinite;
 	}
 
+	// Phone: back button and the current page only.
 	@include bp-down($bp-sm) {
-		padding: 0.4rem 0.5rem;
-		gap: 0.35rem;
+		min-height: 52px;
+		padding: 0.4rem 0.6rem 0.4rem 0.35rem;
+		gap: 0.4rem;
 
-		&__back {
-			padding: 0.4rem 0.5rem;
-			span {
-				display: none;
-			}
-		}
-		&__title {
+		// The trainer's icon gives way to its name on a phone.
+		&__crumb--link,
+		&__sep,
+		&__icon {
 			display: none;
 		}
-		&__btn {
-			width: 34px;
-			height: 34px;
+		&__crumb--current {
+			font-size: 1rem;
+			padding-left: 0.1rem;
+			padding-right: 0;
 		}
-		// "Küpü Bağla" mobilde de görünür (masaüstü gibi); yalnız bağlıyken
-		// (kalabalık training header) pill ikon-only kalır.
+		&__ble {
+			gap: 0.35rem;
+			padding: 0 0.7rem;
+			font-size: 0.8rem;
+		}
+		&__btn {
+			width: 36px;
+			height: 36px;
+		}
+		&__actions {
+			gap: 0.15rem;
+		}
+		// "Connect cube" keeps its label on a phone; only once connected (a busy training header)
+		// it shrinks to the icon.
 		&__ble--connected &__ble-label {
 			display: none;
 		}

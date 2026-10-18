@@ -76,6 +76,15 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 	align-items: center;
 	width: 100%;
 	position: relative;
+	// Above the digits. The big time <h1> is `position: relative; z-index: 1` and sits
+	// right under the action row (+2, DNF, lock, copy, reset). With `line-height: 1`
+	// its box is exactly one em tall, but the browser hit-tests the text by the font's
+	// content area (ascent + descent), which is taller, so the digits claimed the lower
+	// part of every action button: the buttons only reacted about half a centimetre
+	// above where they were drawn, and a tap on them on a tablet landed on the timer.
+	// 3 also clears the smart and virtual cubes next to the digits (z-index 2), whose
+	// canvases are pulled up into the same row by their negative margins.
+	z-index: 3;
 	transition: opacity 0.1s ease-in-out;
 
 	// Kilit aktif banner
@@ -122,23 +131,42 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		z-index: 35;
 	}
 
+	// A solve is running: the row keeps its height so the digits below stay put.
+	// visibility (not opacity) also takes the buttons out of clicks and the tab order.
+	&__nav--hidden,
+	&__locked-banner--hidden {
+		visibility: hidden;
+	}
+
 	&__nav-btn {
 		display: flex;
 		align-items: center;
 		gap: 4px;
 		background: transparent;
 		border: none;
-		color: rgba(var(--text-color), 0.5);
-		font-size: 0.85rem;
+		// Full text colour and a larger size (owner, 2026-10-13: the buttons were too
+		// small). They were 13px at half opacity, which read as disabled.
+		color: rgb(var(--text-color));
+		font-size: 0.95rem;
+		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
 		padding: 4px 8px;
 		border-radius: 4px;
 		transition: all 0.15s ease-in-out;
 
-		&:hover:not(:disabled) {
-			color: rgba(var(--text-color), 0.9);
-			background: rgba(var(--text-color), 0.08);
+		svg {
+			width: 1.15em;
+			height: 1.15em;
+		}
+
+		// Only where a real hover exists. On a tablet `:hover` stays on the tapped button
+		// until the next tap somewhere else, so Önceki/Sonraki looked stuck pressed.
+		@media (hover: hover) {
+			&:hover:not(:disabled) {
+				color: rgba(var(--text-color), 0.9);
+				background: rgba(var(--text-color), 0.08);
+			}
 		}
 
 		&:disabled,
@@ -185,10 +213,11 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		// Megaminx or 7x7 scramble overruns the line long before that.
 		flex-wrap: wrap;
 
-		// The picker bar is an absolutely-positioned overlay whose left cluster
-		// occupies ~410px. This box is centred, so the clearance it needs grows as
-		// the viewport shrinks and no fixed padding can express it. Narrowing the
-		// box keeps it clear of the cluster at any width.
+		// Written when the picker bar was an absolutely-positioned overlay whose left
+		// cluster took ~410px of this row. From $bp-lg up the bar is in the flow now
+		// (HeaderControl.scss), so the scramble already starts below it and this cap no
+		// longer clears anything; it only narrows long scrambles on wide screens. Kept
+		// as is because removing it changes how long scrambles wrap (owner's call).
 		@media (min-width: 1250px) {
 			max-width: min(1200px, calc(100vw - 820px));
 		}
@@ -228,6 +257,10 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 			color: inherit !important;
 			font-family: inherit;
 			line-height: inherit;
+			// Positioned so the z-index applies: at rest the textarea sits behind __body, so a
+			// click reaches __body's handler (copy / next scramble) and not the disabled field.
+			// It used to inherit `position: relative` from the root block class it carried.
+			position: relative;
 			z-index: -100;
 		}
 
@@ -431,7 +464,8 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		}
 	}
 
-	&--edit {
+	// The scramble textarea while editing (TimerScramble.tsx `b('input', {edit})`).
+	&__input--edit {
 		border: 2px solid rgba(var(--text-color), 0.2) !important;
 		z-index: 100 !important;
 	}
@@ -447,6 +481,17 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 
 		>*:not(:last-child) {
 			margin-right: 10px;
+		}
+
+		// Same boxes, larger glyphs: the icons were 13px and +2/DNF 13px text
+		// (owner, 2026-10-13).
+		.zt-common-button {
+			font-size: 1rem;
+
+			svg {
+				width: 1.25em;
+				height: 1.25em;
+			}
 		}
 	}
 

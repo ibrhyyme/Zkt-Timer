@@ -14,6 +14,7 @@ fragment MiniSolveFragment on Solve {
 	plus_two
 	is_smart_cube
 	is_virtual_cube
+	cube_id
 	created_at
 	started_at
 	ended_at
@@ -84,13 +85,7 @@ fragment SolveFragment on Solve {
 	smart_put_down_time
 	inspection_time
 	phase_splits
-	smart_device {
-		id
-		name
-		internal_name
-		device_id
-		created_at
-	}
+	cube_id
 	solve_method_steps {
 		id
 		turn_count
@@ -188,6 +183,13 @@ fragment UserAccountFragment on IUserAccount {
 
 fragment SolveWithUserFragment on Solve {
 	...SolveFragment
+	cube {
+		id
+		name
+		brand
+		puzzle
+		is_smart
+	}
 	user {
 		...PublicUserFragment
 	}
@@ -303,6 +305,15 @@ fragment ReportFragment on Report {
 	reported_user {
 		...PublicUserFragment
 	}
+	alg_set_id
+	alg_set {
+		id
+		code
+		name
+		visibility
+		hidden
+		hidden_reason
+	}
 }
 
 fragment IntegrationFragment on Integration {
@@ -354,6 +365,9 @@ fragment TimerBackgroundFragment on TimerBackground {
 	hex
 	storage_path
 	media_type
+	mobile_storage_path
+	mobile_media_type
+	mobile_same_as_desktop
 	id
 	url
 }

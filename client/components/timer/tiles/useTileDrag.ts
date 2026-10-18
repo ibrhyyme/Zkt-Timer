@@ -10,6 +10,7 @@ import {
 	TileDock,
 	ZoneRect,
 } from './layout';
+import { measureTopInset } from './dom_env';
 
 // Pointer handling for the module tiles.
 //
@@ -97,6 +98,24 @@ const MOVING_CLASS_LINGER_MS = 420;
  */
 const LOST_POINTER_UP_TOLERANCE = 40;
 
+/**
+ * Swallows the click the browser sends after a drag is released.
+ *
+ * The whole card is a drag handle now, so a drag can start on a list row or a stat that
+ * has its own click handler, and releasing over the same element would fire that click.
+ * The click follows pointerup within the same input event, so a capture listener added
+ * on pointerup and removed on the next task sees it, and nothing later.
+ */
+function swallowNextClick() {
+	if (typeof window === 'undefined') return;
+	const swallow = (event: MouseEvent) => {
+		event.stopPropagation();
+		event.preventDefault();
+	};
+	window.addEventListener('click', swallow, true);
+	setTimeout(() => window.removeEventListener('click', swallow, true), 0);
+}
+
 function tileElement(id: TimerModuleType): HTMLElement | null {
 	if (typeof document === 'undefined') return null;
 	return document.querySelector<HTMLElement>(`[data-tile-id="${id}"]`);
@@ -166,6 +185,7 @@ export function useTileDrag(options: Options) {
 			if (current.lifted) {
 				scheduleMovingClassRemoval();
 				setDrag(null);
+				swallowNextClick();
 			}
 
 			if (!commit || !current.lifted) return;
@@ -178,7 +198,8 @@ export function useTileDrag(options: Options) {
 				return;
 			}
 
-			// Dropped away from every zone: it stays exactly where it was let go.
+			// Dropped away from every zone: it stays where it was let go, but never with its
+			// header under the site's top bar.
 			latest.current.onFloat(
 				current.id,
 				clampFloatBox(
@@ -188,7 +209,8 @@ export function useTileDrag(options: Options) {
 						w: current.width,
 						h: current.height,
 					},
-					{ width: window.innerWidth, height: window.innerHeight }
+					{ width: window.innerWidth, height: window.innerHeight },
+					measureTopInset()
 				)
 			);
 		},

@@ -32,6 +32,8 @@ export interface SiteConfigData {
 	smart_telemetry_enabled: boolean;
 	/** Missing on a config cached before the column existed; read as false. */
 	magnet_telemetry_enabled?: boolean;
+	/** Missing on a config cached before the column existed; read as false. */
+	online_battle_enabled?: boolean;
 	/** Missing on a config cached before the column existed; read as 0. */
 	method_steps_version?: number;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
@@ -53,6 +55,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	zkt_backfill_enabled: true,
 	smart_telemetry_enabled: false,
 	magnet_telemetry_enabled: false,
+	online_battle_enabled: false,
 	method_steps_version: 0,
 	feature_overrides: {},
 };
@@ -75,6 +78,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			zkt_backfill_enabled: false,
 			smart_telemetry_enabled: false,
 			magnet_telemetry_enabled: false,
+			online_battle_enabled: false,
 			feature_overrides: {},
 			featureOverrides: [],
 			updated_at: new Date(),
@@ -172,4 +176,25 @@ export async function updateSiteConfig(
 		feature_overrides: rawOverrides,
 		featureOverrides,
 	} as SiteConfigData;
+}
+
+/**
+ * The config as one viewer may see it. The per-feature access lists
+ * (featureOverrides[].users) are admin data: who is a beta tester, who is let into a
+ * switched-off page. Admins get them whole; everyone else only learns whether they
+ * themselves are on a list, which is all FeatureGuard checks
+ * (override.users.some(u => u.id === me.id)).
+ */
+export function siteConfigForViewer(
+	full: SiteConfigData,
+	viewer: {id?: string; admin?: boolean} | null | undefined
+): SiteConfigData {
+	if (!full || viewer?.admin) return full;
+	return {
+		...full,
+		featureOverrides: (full.featureOverrides || []).map((entry) => ({
+			...entry,
+			users: viewer?.id ? (entry.users || []).filter((u) => u?.id === viewer.id) : [],
+		})),
+	};
 }

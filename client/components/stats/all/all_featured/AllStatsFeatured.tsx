@@ -7,7 +7,7 @@ import {fetchAllCubeTypesSolved} from '../../../../db/solves/query';
 import {getCubeTypeBucketLabel} from '../../../../util/cubes/util';
 import {getTotalSolveCount, getTotalSolveTime} from '../../../../db/solves/stats/count';
 import NumberBlock from '../../common/number_block/NumberBlock';
-import {getTimeString} from '../../../../util/time';
+import {formatDurationText} from '../../../../util/locale_format';
 import StatsGrid from '../../common/stats_grid/StatsGrid';
 
 export default function AllStatsFeatured() {
@@ -16,9 +16,11 @@ export default function AllStatsFeatured() {
 
 	const solveUpdate = useSolveDb();
 
+	// Same season and cube filter as the total next to it: "3 events" over the whole history
+	// beside the total of one season contradicted each other.
 	const cubeTypes = useMemo(() => {
-		return fetchAllCubeTypesSolved();
-	}, [context.filterOptions, solveUpdate]);
+		return fetchAllCubeTypesSolved(false, context.scope);
+	}, [context.scope.session_id, context.scope.cube_id, solveUpdate]);
 
 	let topCubeLabel = null;
 	if (cubeTypes.length) {
@@ -40,7 +42,7 @@ export default function AllStatsFeatured() {
 				colSpan={1}
 				icon={<Timer weight="bold" />}
 				title={t('stats_page.cubing_time')}
-				value={getTimeString(timeSpentCubing)}
+				value={formatDurationText(timeSpentCubing, t)}
 				animateSeconds={timeSpentCubing}
 				color="#23C586"
 			/>

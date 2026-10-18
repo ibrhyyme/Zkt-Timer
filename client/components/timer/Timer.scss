@@ -243,6 +243,15 @@ body.timer-immersive-bg {
 		user-select: none;
 		touch-action: none; // Same reason as __touch-overlay: this is a start surface.
 
+		// Desktop: content taller than the area used to be cut at both ends, and the cut at
+		// the top took the Previous / Next row with it (behind the picker bar). The scramble
+		// shrinks to avoid that (helpers/fit_scramble.ts); if even its smallest size is too
+		// tall, the top stays in view and the overflow goes to the bottom. Browsers without
+		// `safe` keep the plain centring above.
+		&:not(#{&}--mobile) {
+			align-items: safe center;
+		}
+
 		&-center {
 			width: 100%;
 			display: flex;
@@ -308,6 +317,43 @@ body.timer-immersive-bg {
 					flex: 0 0 auto;
 					position: relative;
 					z-index: 2;
+				}
+			}
+
+			// Too narrow for the digits and the cube or connect control beside them: a
+			// tablet in landscape or a small laptop between two module rails. Decided by
+			// measuring (helpers/useTimeRowFit.ts), not by the window width, because the
+			// rails are the user's to resize or empty.
+			//
+			// Folded: the smart cube shrinks and its connect column goes under it, the
+			// pair stays one row. Stacked (below): the smart cube shrinks too, so the
+			// taller stack still fits a 768 px high screen.
+			&--folded,
+			&--stacked {
+				> .#{$namespace}-smart-cube:not(.#{$namespace}-smart-cube--mobile) .#{$namespace}-smart-cube__cube {
+					// 0.3 against the 0.4 of SmartCube.scss: FOLDED_CUBE_SCALE in
+					// helpers/time_row_fit.ts, keep the two in step.
+					zoom: 0.3;
+				}
+			}
+
+			&--folded > .#{$namespace}-smart-cube:not(.#{$namespace}-smart-cube--mobile) {
+				flex-direction: column;
+			}
+
+			// Stacked: the cube or connect control goes under the digits.
+			&--stacked {
+				flex-direction: column;
+				row-gap: 0.75rem;
+
+				// A hardware timer's connect control sits inside the time display.
+				> .#{$namespace}-time-display--hardwareConnect {
+					flex-direction: column;
+					row-gap: 0.75rem;
+
+					> .#{$namespace}-timer-bottom-info {
+						margin-top: 0;
+					}
 				}
 			}
 		}
@@ -378,6 +424,11 @@ body.timer-immersive-bg {
 		top: 2rem;
 		transform: translate(0, -100%);
 		z-index: 10000;
+		// Read-only alert (the PB tag). It is a full-width box over the top of the
+		// scramble, exactly where Previous / Next sit, and after its fade-out it used to
+		// stay in the DOM at opacity 0 until the next solve started, silently eating
+		// every click and tap on those two buttons.
+		pointer-events: none;
 		opacity: 0;
 		animation: fadeIn 0.3s;
 		animation-fill-mode: forwards;
@@ -627,7 +678,14 @@ body.timer-immersive-bg {
 
 		// On very small screens, allow scroll as last resort (silent on normal devices)
 		overflow-y: auto;
-		overscroll-behavior: contain;
+		// Never sideways: with overflow-y auto the x axis would turn auto too, and a
+		// scaled time or a wide module then lets the whole layout drift left and right
+		// under a finger on iOS (feedback 2.0-b).
+		overflow-x: hidden;
+		// `none`, not `contain`: contain only stops chaining to the root and keeps this
+		// box's own rubber band, so on a short iPhone where the last-resort scroll kicks
+		// in the whole timer still dragged and bounced under a finger (feedback 2.0-a).
+		overscroll-behavior: none;
 		-webkit-overflow-scrolling: touch;
 		gap: 0.5rem;
 
@@ -649,13 +707,59 @@ body.timer-immersive-bg {
 		}
 	}
 
-	&__notification-zone {
-		flex: 0 0 44px;
-		height: 44px;
+	// The time area of the mobile layout (Timer.tsx). It and the scramble above share
+	// the free height; everything under it (goal bar, action row, modules) has a fixed
+	// size, so nothing there moves when the time area's content changes.
+	&__mobile-stage {
+		position: relative;
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		flex-direction: column;
+		flex: 1 1 0%;
 		width: 100%;
+
+		// The cube needs the room more than a two-line scramble does.
+		&--smart {
+			flex-grow: 3;
+		}
+
+		// Manual entry packs to the top, as before the stage existed: the keyboard
+		// covers the bottom of the screen and the input must stay above it.
+		&--manual {
+			flex: 0 0 auto;
+		}
+
+		// The plain time box (touch, keyboard, hardware timers) inside the stage. It also
+		// carries `__main`, whose mobile rule above was written for the old layout, where
+		// it was the top-level box under the header: 60px of top padding, a fixed
+		// min-height and a scroll box. Here that made it taller than the stage on a short
+		// phone with the goal bar on, and the overflow (the diff under the time, with the
+		// time display's own z-index) landed on Previous / Next and took their taps
+		// (feedback 1.8-b). It also clipped the digits' running scale (2.1-b).
+		//
+		// Now it is centred in the stage and as tall as its content at the least, so the
+		// stage cannot shrink below it either (flex `min-height: auto` with visible
+		// overflow). On a phone too short for everything, the scramble gives way first
+		// (it shares the free height and has its own floor), and only then does the
+		// layout scroll, which is its existing last resort. Nothing overlaps.
+		> #{$self}__mobile-timer:not(#{$self}__mobile-timer--manual) {
+			flex: 1 1 auto;
+			min-height: auto;
+			padding: 1vh 0;
+			overflow: visible;
+		}
+	}
+
+	// PB badge over the top of the time area. Out of flow, so showing and clearing it
+	// never moves the time (feedback 2.1-a). Above the smart cube (grid z-index 50).
+	&__notification-zone {
+		position: absolute;
+		top: 0.25rem;
+		left: 0;
+		right: 0;
+		z-index: 60;
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
 	}
 
 	&__mobile-scramble-fallback {
@@ -939,6 +1043,102 @@ body.timer-immersive-bg {
 		padding: 0 !important; // zt-timer__main mobile padding-top: 60px override
 		margin: 0 !important;  // zt-timer__main--mobile margin-bottom: 20px override
 		touch-action: none;
+	}
+
+	// Smart cube grid: fit the space, never overflow it (feedback 1.8-b).
+	//
+	// The rules above cap the grid at 32vh and let what does not fit spill out of it
+	// (overflow: visible, z-index 50). On a short phone with the goal bar showing, cube +
+	// status + digits + diff ran ~100px past that cap and the spill landed on the action
+	// row: the diff covered Previous / Next, and the grid's z-index took their taps. The
+	// spill also counted as scrollable height, so the layout itself could be dragged.
+	//
+	// Here the grid takes the time area's height instead, and only the 3D cube gives way:
+	// it is drawn inside a size container and shrinks to whatever is left after the
+	// status row, the digits and the diff, which keep their full size. The cube never
+	// grows past the size SmartCube renders it at. Without container queries (iOS < 16,
+	// very old Android WebViews) the old rules above stay in force.
+	@supports (container-type: size) {
+		&__mobile-smart-grid {
+			flex: 1 1 auto;
+			max-height: none;
+			margin-bottom: 0;
+			grid-template-rows: minmax(0, 1fr);
+		}
+
+		&__mobile-smart-grid-left {
+			max-height: none;
+			// Its content (connect button, phase ladder) must not make the grid taller;
+			// it fills the row and clips, as it did under the old 32vh cap.
+			contain: size;
+		}
+
+		&__mobile-smart-grid-right {
+			align-self: stretch;
+			min-height: 0;
+
+			// The digits and the diff keep their natural height. This box also carries
+			// `__main`, whose mobile rule (`flex: 1`, a scroll container) would split the
+			// column with the cube and let the digits be squeezed and clipped.
+			> #{$self}__mobile-smart-grid-time {
+				flex: 0 0 auto;
+				overflow: visible;
+			}
+		}
+
+		&__mobile-smart-grid-cube {
+			flex: 1 1 0;
+			min-height: 0;
+			max-height: none;
+			flex-direction: column;
+
+			.zt-smart-cube {
+				flex: 1 1 0;
+				min-height: 0;
+				width: 100%;
+				justify-content: center;
+			}
+
+			.zt-smart-cube__wrapper {
+				flex: 1 1 0;
+				min-height: 0;
+				width: 100%;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 0;
+			}
+
+			.zt-smart-cube__cube:not(.zt-smart-cube__cube--hidden) {
+				flex: 1 1 0;
+				min-height: 0;
+				width: 100%;
+				container-type: size;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+
+				// SmartCubeView: an unclassed root div, then the player box that carries
+				// the render size inline. The player follows its box (ResizeObserver).
+				> div {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					width: 100%;
+					height: 100%;
+				}
+
+				> div > div {
+					max-width: min(100cqw, 100cqh);
+					max-height: min(100cqw, 100cqh);
+				}
+			}
+
+			.zt-smart-cube__status {
+				flex: 0 0 auto;
+			}
+		}
 	}
 }
 

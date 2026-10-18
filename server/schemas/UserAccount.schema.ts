@@ -212,7 +212,9 @@ class IUserAccountForAdmin extends IUserAccount {
 
 @InterfaceType({ implements: IUserAccountForAdmin })
 class IInternalUserAccount extends IUserAccountForAdmin {
-	@Field({ nullable: true })
+	// The bcrypt hash. Server-only, never a @Field: no GraphQL type may carry it,
+	// even one no query currently returns. Guarded by
+	// server/__tests__/graphql_secret_fields.test.ts.
 	password?: string;
 }
 

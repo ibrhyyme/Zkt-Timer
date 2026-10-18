@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { closeModal } from '../../actions/general';
 import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
 import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
+import SolveCubeTag from './solve_cube/SolveCubeTag';
 import { getSolveDb } from '../../db/solves/init';
 import { emitEvent } from '../../util/event_handler';
 import { toastError } from '../../util/toast';
@@ -25,8 +26,21 @@ import { useTranslation } from 'react-i18next';
 import { canReadSync } from '../../lib/sync-gate';
 import { isNetworkError } from '../../util/network-error';
 import { isSolvePendingSync } from '../../util/offline-queue';
+import { ensureLocalStepRows, queuedAnalysisMethod } from '../../db/solves/local-analysis';
 
 const b = block('solve-info');
+
+/**
+ * The local row, with its breakdown worked out on the device when the server's has not
+ * arrived yet (a smart cube solve timed without a connection). Without it every tab of the
+ * smart solve card was empty offline. See db/solves/local-analysis.ts.
+ */
+async function fetchLocalSolveWithSteps(id: string): Promise<Solve | null> {
+	const local = fetchSolve(id);
+	if (!local) return null;
+	const method = await queuedAnalysisMethod(id);
+	return ensureLocalStepRows(id, method) || local;
+}
 
 export interface SolveLayoutProps {
 	solve: Solve;
@@ -49,7 +63,8 @@ export interface SolveLayoutProps {
 	isSystemDnf: boolean;
 	plusTwo: boolean;
 	dnf: boolean;
-	smartDevice: any;
+	/** The cube the solve was made with (SolveCubeTag), null when there is nothing to show. */
+	cubeTag: React.ReactNode;
 }
 
 interface Props extends IModalProps {
@@ -84,12 +99,13 @@ export default function SolveInfo(props: Props) {
 
 		// Basic user: do not fetch from server, show directly from local storage
 		if (!canReadSync()) {
-			const localSolve = fetchSolve(id);
-			if (localSolve) {
-				setDbSolve(localSolve);
-				setSolve(localSolve);
-			}
-			setLoading(false);
+			void fetchLocalSolveWithSteps(id).then((localSolve) => {
+				if (localSolve) {
+					setDbSolve(localSolve);
+					setSolve(localSolve);
+				}
+				setLoading(false);
+			});
 			return;
 		}
 
@@ -127,7 +143,7 @@ export default function SolveInfo(props: Props) {
 				(err?.graphQLErrors || []).some((e: any) => e?.extensions?.code === 'NOT_FOUND');
 
 			if (!isNotFoundVerdict) {
-				const localSolve = fetchSolve(id);
+				const localSolve = await fetchLocalSolveWithSteps(id);
 				if (localSolve) {
 					setDbSolve(localSolve);
 					setSolve(localSolve);
@@ -146,7 +162,7 @@ export default function SolveInfo(props: Props) {
 			// of it the instant the modal loaded, before the queue ever got a chance to
 			// send it.
 			if (await isSolvePendingSync(id)) {
-				const localSolve = fetchSolve(id);
+				const localSolve = await fetchLocalSolveWithSteps(id);
 				if (localSolve) {
 					setDbSolve(localSolve);
 					setSolve(localSolve);
@@ -182,9 +198,9 @@ export default function SolveInfo(props: Props) {
 		// Get next solve BEFORE deleting
 		const adjacentSolve = fetchAdjacentSolve(solveToDelete);
 
-		// Pass confirmed: true because we're already in a modal
-		// Opening nested modal would cause issues
-		await deleteSolveDb(solveToDelete, true);
+		// Honours confirm_delete_solve: the confirm modal stacks over this card. Cancelled,
+		// the card stays on the same solve.
+		if (!(await deleteSolveDb(solveToDelete))) return;
 
 		// If there's a next solve, navigate to it
 		if (adjacentSolve) {
@@ -202,6 +218,16 @@ export default function SolveInfo(props: Props) {
 		updateSolveDb(dbSolve, {
 			[name]: value,
 		});
+	}
+
+	/** "Saved with the wrong cube": moves the solve to another cube of its puzzle (design 4.3). */
+	function changeCube(cubeId: string | null) {
+		if (!dbSolve) return;
+		updateSolveDb(dbSolve, { cube_id: cubeId });
+		// updateSolveDb replaced the stored document; keep editing the fresh one.
+		const fresh = fetchSolve(dbSolve.id);
+		if (fresh) setDbSolve(fresh);
+		setSolve((prev) => (prev ? { ...prev, cube_id: cubeId } : prev));
 	}
 
 	function toggleEditMode() {
@@ -240,7 +266,17 @@ export default function SolveInfo(props: Props) {
 	const cubeType = solve.cube_type;
 	const endedAt = new Date(Number(solve.ended_at));
 	const isSmartCube = solve.is_smart_cube;
-	const smartDevice = solve.smart_device;
+	// Only the owner's local row can be relabelled; the server stores it through updateSolve.
+	const cubeEditable = !!dbSolve && !disabled && !!me && (!effSolve.user_id || effSolve.user_id === me.id);
+	const cubeTag = (
+		<SolveCubeTag
+			solve={effSolve}
+			serverSolve={solve}
+			smart={!!isSmartCube}
+			editable={cubeEditable}
+			onChange={changeCube}
+		/>
+	);
 	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0;
 
 	const time = getTimeString(effSolve.time);
@@ -269,7 +305,7 @@ export default function SolveInfo(props: Props) {
 		isSystemDnf,
 		plusTwo: !!plusTwo,
 		dnf: !!dnf,
-		smartDevice,
+		cubeTag,
 	};
 
 	if (isSmartCube) {

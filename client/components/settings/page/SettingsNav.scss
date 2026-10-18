@@ -16,7 +16,7 @@
 		align-items: center;
 		gap: 12px;
 		padding: 10px 12px;
-		border-radius: 9px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.95rem;
 		font-weight: 500;
@@ -27,22 +27,23 @@
 			background: rgba(var(--text-color), 0.05);
 		}
 
-		// The row itself marks the current section (weight plus the sliding highlight);
-		// the sticker never dims, because a cube face has one colour and it is that colour.
+		// The current section: weight, the sliding highlight and the accent icon.
 		&--active {
 			font-weight: 700;
+
+			.#{$namespace}-settings-nav__item-icon {
+				color: rgb(var(--primary-color));
+			}
 		}
 	}
 
-	// The section's own icon, in the section's colour: shape and colour together
-	// identify the row faster than either alone. Full strength on every theme —
-	// fading it turned the icons pastel on the light background.
+	// Outline icon in the text colour. A colour per section read as decoration.
 	&__item-icon {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-		color: rgb(var(--tab-tone));
+		color: rgb(var(--text-color));
 
 		svg {
 			width: 19px;
@@ -54,8 +55,8 @@
 	&__item-highlight {
 		position: absolute;
 		inset: 0;
-		border-radius: 9px;
-		background: rgba(var(--tab-tone), 0.12);
+		border-radius: $zt-radius-md;
+		background: $zt-control-bg-hover;
 		z-index: 0;
 		pointer-events: none;
 	}

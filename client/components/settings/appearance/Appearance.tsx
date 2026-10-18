@@ -3,14 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../../util/time';
 import Button from '../../common/button/Button';
 import { useTiles } from '../../timer/tiles/useTiles';
-import TimerBackground from './timer_background/TimerBackground';
+import TimerBackground, { useTimerBackgroundMobileSame } from './timer_background/TimerBackground';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import ThemeOptions from './theme_options/ThemeOptions';
+import SettingRow from '../setting/row/SettingRow';
 import SolveListColors from './solve_list_colors/SolveListColors';
 import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { useMe } from '../../../util/hooks/useMe';
+import { isPro } from '../../../lib/pro';
 import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import {
@@ -50,8 +52,8 @@ export default function Appearance() {
 	const highlightPbs = useSettings('highlight_pbs');
 	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
-	const backgroundEnabled = useSettings('timer_background_enabled');
 	const me = useMe();
+	const [backgroundMobileSame, toggleBackgroundMobileSame] = useTimerBackgroundMobileSame();
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
@@ -71,7 +73,15 @@ export default function Appearance() {
 				// unreachable from the search box.
 				searchText={THEME_SEARCH_TEXT}
 			>
-				<ThemeOptions />
+				{/* A visitor wears the fixed theme (util/themes/theme_lock.ts, E-106): the choice
+				    belongs to an account. */}
+				{me ? (
+					<ThemeOptions />
+				) : (
+					<SettingRow title={t('theme_options.themes_title')} description={t('theme_options.login_to_choose')}>
+						<Button text={t('nav.login')} to="/login" />
+					</SettingRow>
+				)}
 			</TimerSettingsGroup>
 
 			{/* Düzen */}
@@ -89,22 +99,31 @@ export default function Appearance() {
 				>
 					<Button gray text={t('timer_tiles.reset_layout')} onClick={resetLayout} />
 				</TimerSettingsAction>
+				{/* Desktop and mobile each have a background slot, stored on the account so
+				    every device of a kind shows the same one. The phone follows the desktop
+				    slot until "use the same on mobile" is switched off. */}
 				<TimerSettingsAction
 					label={t('appearance.timer_background')}
 					description={t('appearance.timer_background_desc')}
+					stackOnMobile
 				>
-					<TimerBackground />
+					<TimerBackground target="desktop" />
 				</TimerSettingsAction>
-				{/* Per platform, because settings are stored per platform: a live wallpaper
-				    can stay on at a desk and off on a phone. Only shown once there is a
-				    background to switch off. */}
 				<TimerSettingsToggle
-					label={t('appearance.timer_background_enabled')}
-					description={t('appearance.timer_background_enabled_desc')}
-					hidden={!me?.timer_background?.storage_path}
-					isActive={backgroundEnabled}
-					onClick={() => toggleSetting('timer_background_enabled')}
+					label={t('appearance.timer_background_mobile_same')}
+					description={t('appearance.timer_background_mobile_same_desc')}
+					hidden={!isPro(me)}
+					isActive={backgroundMobileSame}
+					onClick={toggleBackgroundMobileSame}
 				/>
+				<TimerSettingsAction
+					label={t('appearance.timer_background_mobile')}
+					description={t('appearance.timer_background_mobile_desc')}
+					hidden={!isPro(me) || backgroundMobileSame}
+					stackOnMobile
+				>
+					<TimerBackground target="mobile" />
+				</TimerSettingsAction>
 			</TimerSettingsGroup>
 
 			{/* Yazı Tipi */}

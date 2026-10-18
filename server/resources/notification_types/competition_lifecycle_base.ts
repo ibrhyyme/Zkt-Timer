@@ -1,7 +1,6 @@
 import Notification from './notification';
 import {NotificationInput} from '../../@types/interfaces/server.interface';
 import {createI18nInstance} from '../../i18n_server';
-import {zktSlugOf} from '../../services/ZktWcaAdapter';
 import {WcaApiService} from '../../services/WcaApiService';
 import {parseActivityCode} from '../../services/WcifTransformer';
 import {formatCompTime, LifecycleSource, ResultType, TimelineEntry} from '../../services/CompetitionLifecycle';
@@ -21,21 +20,21 @@ export interface LifecycleMeta {
 	locale?: string;
 }
 
-/** The competition page. ZKT routes key on the bare slug, so the prefix comes off. */
-export function lifecycleCompetitionPath(source: LifecycleSource, competitionId: string): string {
-	return source === 'zkt' ? `/zkt-competitions/${zktSlugOf(competitionId)}` : `/competitions/${competitionId}`;
+/**
+ * The competition page. WCA and ZKT share it: a ZKT competition is `/competitions/zkt-<slug>`,
+ * the same page the competition list opens (the old /zkt-competitions view only redirects here).
+ */
+export function lifecycleCompetitionPath(competitionId: string): string {
+	return `/competitions/${competitionId}`;
 }
 
 /**
- * The person's own page on that competition: their groups and duties. The ZKT
- * competitor route accepts the registration number, which is what the ZKT WCIF
- * publishes as registrantId.
+ * The person's own page on that competition: their groups and duties. For ZKT the
+ * registrantId is the registration number, which is what the ZKT WCIF publishes.
  */
-export function lifecyclePersonPath(source: LifecycleSource, competitionId: string, registrantId?: number | null): string {
-	if (registrantId == null) return lifecycleCompetitionPath(source, competitionId);
-	return source === 'zkt'
-		? `/zkt-competitions/${zktSlugOf(competitionId)}/competitors/${registrantId}`
-		: `/competitions/${competitionId}/persons/${registrantId}`;
+export function lifecyclePersonPath(competitionId: string, registrantId?: number | null): string {
+	if (registrantId == null) return lifecycleCompetitionPath(competitionId);
+	return `/competitions/${competitionId}/persons/${registrantId}`;
 }
 
 /**

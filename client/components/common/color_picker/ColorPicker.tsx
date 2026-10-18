@@ -1,16 +1,19 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ColorPicker as ColorPalette, toColor, useColor} from 'react-color-palette';
+import {ColorPicker as ColorPalette, ColorService, IColor} from 'react-color-palette';
 import './ColorPicker.scss';
 import block from '../../../styles/bem';
-import {Color} from 'react-color-palette/lib/interfaces/Color.interface';
 import {useToggle} from '../../../util/hooks/useToggle';
 import {useWindowClickAwayListener} from '../../../util/hooks/useListener';
 import Button from '../button/Button';
-import {useTheme} from '../../../util/hooks/useTheme';
 import {colorStringsEqual, getAnyColorStringAsRawRgbString, getAnyColorStringAsRgb} from '../../../util/themes/theme_util';
 
 const b = block('common-color-picker');
+
+// The palette works in an opaque colour model; every setting stored here is plain "r, g, b".
+function toPaletteColor(input: string): IColor {
+	return ColorService.convert('rgb', {...getAnyColorStringAsRgb(input), a: 1});
+}
 
 interface Props {
 	openUp?: boolean;
@@ -30,9 +33,8 @@ export default function ColorPicker(props: Props) {
 	const selectedColorHex = props.selectedColorHex || '#000000';
 
 	const controlled = isOpen !== undefined;
-	const backgroundTheme = useTheme('background_color');
 	const [showPickerInternal, toggleShowPickerInternal] = useToggle(false);
-	const [color, setColor] = useColor('rgb', getAnyColorStringAsRgb(selectedColorHex));
+	const [color, setColor] = useState<IColor>(() => toPaletteColor(selectedColorHex));
 
 	const showPicker = controlled ? isOpen : showPickerInternal;
 
@@ -45,8 +47,7 @@ export default function ColorPicker(props: Props) {
 	}
 
 	useEffect(() => {
-		const newColor = toColor('rgb', getAnyColorStringAsRgb(selectedColorHex));
-		setColor(newColor);
+		setColor(toPaletteColor(selectedColorHex));
 	}, [selectedColorHex]);
 
 	useWindowClickAwayListener(b(), () => {
@@ -56,7 +57,7 @@ export default function ColorPicker(props: Props) {
 		}
 	});
 
-	function colorChange(c: Color) {
+	function colorChange(c: IColor) {
 		setColor(c);
 		onChange(getAnyColorStringAsRawRgbString(c));
 	}
@@ -70,7 +71,7 @@ export default function ColorPicker(props: Props) {
 				warning
 				flat
 				onClick={() => {
-					const newColor = toColor('rgb', getAnyColorStringAsRgb(resetToRgb));
+					const newColor = toPaletteColor(resetToRgb);
 					setColor(newColor);
 					onChange(getAnyColorStringAsRawRgbString(newColor));
 				}}
@@ -91,14 +92,15 @@ export default function ColorPicker(props: Props) {
 			</button>
 			{resetButton}
 			<div className={b('palette', {hidden: !showPicker, up: openUp, left: openLeft})}>
+				{/* 7.x, not 6.x: 6.x only listened to the mouse, so on a phone neither the
+				    saturation square nor the hue bar followed a finger. Width comes from the
+				    palette box in ColorPicker.scss, the light/dark colours from there too. */}
 				<ColorPalette
-					width={350}
 					height={150}
 					color={color}
 					onChange={colorChange}
-					hideRGB
-					dark={backgroundTheme.isDark}
-					hideHSV
+					hideAlpha
+					hideInput={['rgb', 'hsv']}
 				/>
 				<div style={{padding: '8px', textAlign: 'center'}}>
 					<Button

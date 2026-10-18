@@ -1,4 +1,6 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
+import {formatInteger} from '../../../../util/locale_format';
 import block from '../../../../styles/bem';
 import {fetchSolves, FilterSolvesOptions} from '../../../../db/solves/query';
 import {getSinglePB} from '../../../../db/solves/stats/solves/single/single_pb';
@@ -15,22 +17,28 @@ interface Props {
 	cubeType: string;
 	scrambleSubset: string | null;
 	count: number;
+	/** Season and cube filter of the page, null for all */
+	sessionId: string | null;
+	cubeId: string | null;
 	color: string;
 	onClick?: () => void;
 }
 
 export default function PuzzleCard(props: Props) {
-	const {cubeType, scrambleSubset, count, color, onClick} = props;
+	const {cubeType, scrambleSubset, count, sessionId, cubeId, color, onClick} = props;
 	const solveUpdate = useSolveDb();
+	const {i18n} = useTranslation();
 
-	const filter: FilterSolvesOptions = useMemo(
-		() => ({
+	const filter: FilterSolvesOptions = useMemo(() => {
+		const f: FilterSolvesOptions = {
 			from_timer: true,
 			cube_type: cubeType,
 			scramble_subset: scrambleSubset ?? null,
-		}),
-		[cubeType, scrambleSubset]
-	);
+		};
+		if (sessionId) f.session_id = sessionId;
+		if (cubeId) f.cube_id = cubeId;
+		return f;
+	}, [cubeType, scrambleSubset, sessionId, cubeId]);
 
 	const pb = useMemo(() => getSinglePB(filter), [filter, solveUpdate]);
 	const ao12 = useMemo(() => getCurrentAverage(filter, 12), [filter, solveUpdate]);
@@ -65,7 +73,7 @@ export default function PuzzleCard(props: Props) {
 		<button type="button" className={b()} onClick={onClick}>
 			<div className={b('head')}>
 				<span className={b('name')} style={{color}}>{label}</span>
-				<span className={b('count')}>{count.toLocaleString()}</span>
+				<span className={b('count')}>{formatInteger(count, i18n.language)}</span>
 			</div>
 			{sparkPoints ? (
 				<div className={b('spark')}>

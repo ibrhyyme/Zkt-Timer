@@ -50,25 +50,9 @@
 		color: rgb(var(--text-color));
 	}
 
+	// The shared bare BackButton, pulled left so the caret lines up with the title edge.
 	&__back {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		width: 38px;
-		height: 38px;
-		border-radius: 10px;
-		background: rgba(var(--text-color), 0.06);
-		color: rgb(var(--text-color));
-
-		svg {
-			width: 17px;
-			height: 17px;
-		}
-
-		&:hover {
-			background: rgba(var(--text-color), 0.1);
-		}
+		margin-left: -$zt-space-2;
 	}
 
 	// The Pro page reuses this shell but lays itself out full width.

@@ -169,7 +169,7 @@ describe('arming and dwell', () => {
 
 describe('startBlockReason', () => {
 	const ok: StartGuardInput = {
-		timerType: 'keyboard',
+		timerType: 'magnet',
 		manualEntry: false,
 		modalCount: 0,
 		inModal: false,
@@ -183,13 +183,14 @@ describe('startBlockReason', () => {
 		testMode: false,
 	};
 
-	it('lets the plain touch timer through', () => {
+	it('lets the Magnet Timer through', () => {
 		expect(startBlockReason(ok)).toBeNull();
 	});
 
 	it.each([
 		['test_mode', { testMode: true }],
 		['hidden', { visible: false }],
+		['timer_type', { timerType: 'keyboard' }],
 		['timer_type', { timerType: 'smart' }],
 		['timer_type', { timerType: 'stackmat' }],
 		['timer_type', { timerType: 'virtual' }],

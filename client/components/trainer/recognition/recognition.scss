@@ -246,10 +246,10 @@
 		}
 		&:active { transform: scale(0.96); }
 
+		// On: the primary colour marks the edge, the icon keeps the text colour on a neutral fill.
 		&--active {
-			background: rgba(var(--primary-color), 0.15);
+			background: rgba(var(--text-color), 0.12);
 			border-color: rgb(var(--primary-color));
-			color: rgb(var(--primary-color));
 		}
 
 		@include bp-down($bp-sm) {
@@ -1066,7 +1066,7 @@
 	&__quest-combo-badge {
 		margin-left: 6px;
 		background: rgba(var(--primary-color), 0.18);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		padding: 2px 7px;
 		border-radius: 4px;
 		font-size: 0.7rem;
@@ -1351,7 +1351,7 @@
 		padding: 8px 14px;
 		border-radius: 10px;
 		background: rgba(var(--success-color), 0.12);
-		color: rgb(var(--success-color));
+		color: rgb(var(--text-color));
 		font-weight: 700;
 		font-size: 0.9rem;
 	}
@@ -1371,7 +1371,7 @@
 		opacity: 0.7;
 	}
 	&__eval-stats-quest-mastered {
-		color: rgb(var(--success-color));
+		color: rgb(var(--text-color));
 		font-weight: 700;
 		padding: 6px 12px;
 		background: rgba(var(--success-color), 0.12);
@@ -1380,7 +1380,7 @@
 		align-self: center;
 	}
 	&__eval-stats-quest-need {
-		color: rgb(var(--warning-color));
+		color: rgb(var(--text-color));
 		font-weight: 600;
 		padding: 6px 12px;
 		background: rgba(var(--warning-color), 0.12);
@@ -1746,7 +1746,7 @@
 		height: 22px;
 		border-radius: 50%;
 		background: rgba(var(--error-color), 0.18);
-		color: rgb(var(--error-color));
+		color: rgb(var(--text-color));
 		font-weight: 900;
 		font-size: 0.85rem;
 		letter-spacing: 0;
@@ -1784,7 +1784,7 @@
 		padding: 10px 18px !important;
 		border: 1.5px solid rgba(var(--primary-color), 0.45) !important;
 		background: rgba(var(--primary-color), 0.06) !important;
-		color: rgb(var(--primary-color)) !important;
+		color: rgb(var(--text-color)) !important;
 		font-weight: 600 !important;
 		font-size: 0.92rem !important;
 		transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease !important;

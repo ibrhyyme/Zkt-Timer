@@ -188,6 +188,14 @@ export class ZktPublicDetailRound {
 	@Field({nullable: true})
 	roomId?: string;
 
+	/**
+	 * Dual Chance round: each competitor does the format twice, the better chance
+	 * counts. Groups carry no chance field; groups 1..N are chance 1 and N+1..2N
+	 * chance 2 (the federation guarantees that numbering).
+	 */
+	@Field({nullable: true})
+	dualChance?: boolean;
+
 	@Field(() => [ZktPublicRoundGroup])
 	groups: ZktPublicRoundGroup[];
 }
@@ -481,6 +489,30 @@ export class ZktPublicCompetitionList {
 	pageSize: number;
 }
 
+/** One chance of a Dual Chance round result. */
+@ObjectType()
+export class ZktPublicChance {
+	@Field(() => Int)
+	chance: number;
+
+	@Field(() => [Int])
+	attempts: number[];
+
+	@Field(() => Int, {nullable: true})
+	best?: number;
+
+	@Field(() => Int, {nullable: true})
+	average?: number;
+
+	/** Did not show up for this chance: DNS, not DNF. */
+	@Field()
+	noShow: boolean;
+
+	/** The better chance; the row's own attempts and average are this one's. */
+	@Field()
+	counting: boolean;
+}
+
 @ObjectType()
 export class ZktPublicAttemptResult {
 	@Field(() => ZktPublicCompetitor)
@@ -509,6 +541,13 @@ export class ZktPublicAttemptResult {
 
 	@Field()
 	questionable: boolean;
+
+	/**
+	 * Dual Chance round only. A chance the competitor never entered is absent;
+	 * `best` above is the best single across both chances.
+	 */
+	@Field(() => [ZktPublicChance], {nullable: true})
+	chances?: ZktPublicChance[];
 }
 
 @ObjectType()
@@ -545,6 +584,9 @@ export class ZktPublicRoundResults {
 
 	@Field(() => Int, {nullable: true})
 	advancementLevel?: number;
+
+	@Field({nullable: true})
+	dualChance?: boolean;
 
 	@Field(() => [ZktPublicAttemptResult])
 	results: ZktPublicAttemptResult[];
@@ -643,6 +685,10 @@ export class ZktPublicScheduleItemRow {
 	 */
 	@Field({nullable: true})
 	dayLabel?: string;
+
+	/** Dual Chance round: which chance this row is (1 or 2); null otherwise. */
+	@Field(() => Int, {nullable: true})
+	chance?: number;
 
 	@Field(() => ZktPublicMiniRound)
 	round: ZktPublicMiniRound;

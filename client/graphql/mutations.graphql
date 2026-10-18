@@ -54,6 +54,7 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 		zkt_backfill_enabled
 		smart_telemetry_enabled
 		magnet_telemetry_enabled
+		online_battle_enabled
 		featureOverrides {
 			feature
 			mode
@@ -68,6 +69,12 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 
 mutation mergeSessions($oldSessionId: String, $newSessionId: String) {
 	mergeSessions(oldSessionId: $oldSessionId, newSessionId: $newSessionId) {
+		...SessionFragment
+	}
+}
+
+mutation splitSession($sessionId: String!, $buckets: [SessionBucketInput!]!, $name: String!) {
+	splitSession(sessionId: $sessionId, buckets: $buckets, name: $name) {
 		...SessionFragment
 	}
 }
@@ -140,16 +147,6 @@ mutation translateAnnouncementContent($title: String!, $content: String!) {
 			ru
 			zh
 		}
-	}
-}
-
-mutation createTrainerAlternative($input: TrainerAlternativeCreateInput!) {
-	createTrainerAlternative(input: $input) {
-		id
-		algorithm
-		original_input
-		setup
-		ll_pattern
 	}
 }
 
@@ -285,4 +282,12 @@ mutation RecordMagnetTelemetry($events: [MagnetTelemetryInput!]!) {
 		accepted
 		enabled
 	}
+}
+
+mutation recordProfileView($username: String!) {
+	recordProfileView(username: $username)
+}
+
+mutation recordSolveView($shareCode: String!) {
+	recordSolveView(shareCode: $shareCode)
 }

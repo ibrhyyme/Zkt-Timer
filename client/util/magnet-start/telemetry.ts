@@ -16,6 +16,7 @@ import { RecordMagnetTelemetryDocument } from '../../@types/generated/graphql';
 import { getLastKnownSiteConfig } from '../hooks/useSiteConfig';
 import { isUiReversed } from '../reversed-ui';
 import type { CapturedWindow } from './debug_log';
+import { magnetDeviceIdentity } from './device_model';
 import type { MagnetCapabilities, MagnetHint, MagnetPlatform } from './types';
 
 export type MagnetTelemetryEventType =
@@ -40,7 +41,11 @@ export interface MagnetTelemetryEvent {
 }
 
 interface QueuedRow {
-	row: MagnetTelemetryEvent & { reversed: boolean };
+	/**
+	 * cube_puzzle / near_min_ut: the cube the detector ran with when the row was recorded, so
+	 * the admin summary does not mix a 2x2's placements with a 3x3's (design 2.5).
+	 */
+	row: MagnetTelemetryEvent & { reversed: boolean; cube_puzzle: string | null; near_min_ut: number | null };
 	at: number;
 	/** Waiting for the raw window cut around this event (debug_log key). */
 	sampleKey?: string;
@@ -71,6 +76,8 @@ let closedForSession = false;
 
 let platform: MagnetPlatform | null = null;
 let sensorName: string | null = null;
+let cubePuzzle: string | null = null;
+let nearMinUt: number | null = null;
 let deviceReported = false;
 let sessionSamples = 0;
 const sessionCounts: Partial<Record<MagnetTelemetryEventType, number>> = {};
@@ -135,20 +142,20 @@ function enqueue(queued: QueuedRow): void {
 }
 
 async function commonFields() {
-	let device: { manufacturer?: string; model?: string; osVersion?: string; otaBundle?: string } = {};
+	const rowPlatform = platform || 'android';
+	let device = { deviceModel: null as string | null, osVersion: null as string | null, appVersion: null as string | null };
 	try {
-		const { getDeviceInfo } = await import('../device-info');
-		device = await getDeviceInfo();
+		// The calibration key of this phone, so telemetry and calibrations line up per model.
+		device = await magnetDeviceIdentity(rowPlatform);
 	} catch (e) {
 		// A row without a model is still a row.
 	}
-	const assetVersion = typeof window !== 'undefined' ? (window as any).__ASSET_VERSION__ : undefined;
 	return {
-		platform: platform || 'android',
-		device_model: [device.manufacturer, device.model].filter(Boolean).join(' ') || 'unknown',
+		platform: rowPlatform,
+		device_model: device.deviceModel || 'unknown',
 		os_version: device.osVersion || undefined,
 		sensor_name: sensorName || undefined,
-		app_version: device.otaBundle || assetVersion || undefined,
+		app_version: device.appVersion || undefined,
 	};
 }
 
@@ -194,6 +201,12 @@ export const magnetTelemetry = {
 		noneAt = null;
 	},
 
+	/** The cube the detector runs with now (service setCubeProfile); null without one. */
+	setProfile(puzzle: string | null, nearMin: number | null): void {
+		cubePuzzle = puzzle;
+		nearMinUt = nearMin === null ? null : Math.round(nearMin * 10) / 10;
+	},
+
 	/** Once per app session, when the sensor's delivery rate has been measured. */
 	reportDevice(rateHz: number | null, sigma: number | null): void {
 		if (deviceReported || rateHz === null) return;
@@ -214,7 +227,10 @@ export const magnetTelemetry = {
 			sessionCounts[event.event_type] = used + 1;
 		}
 
-		const queued: QueuedRow = { row: { ...event, reversed: isUiReversed() }, at: Date.now() };
+		const queued: QueuedRow = {
+			row: { ...event, reversed: isUiReversed(), cube_puzzle: cubePuzzle, near_min_ut: nearMinUt },
+			at: Date.now(),
+		};
 		if (sample?.want) {
 			const waiting = buffer.filter((q) => q.sampleKey).length;
 			if (sessionSamples + waiting < MAX_SESSION_SAMPLES) {
@@ -315,6 +331,8 @@ export function resetMagnetTelemetryForTests(): void {
 	closedForSession = false;
 	platform = null;
 	sensorName = null;
+	cubePuzzle = null;
+	nearMinUt = null;
 	deviceReported = false;
 	sessionSamples = 0;
 	for (const key of Object.keys(sessionCounts)) delete sessionCounts[key as MagnetTelemetryEventType];

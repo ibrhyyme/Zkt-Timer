@@ -1,4 +1,4 @@
-// Shared types for magnet lift-to-start ("Kaldırınca Başlat").
+// Shared types for the Magnet Timer (lift to start, formerly "Kaldırınca Başlat").
 //
 // The native MagnetDetector plugin only streams raw magnetometer samples; every
 // decision (plateaus, near/far, lift onset) is made in TypeScript so it can be
@@ -80,6 +80,11 @@ export interface DetectorSnapshot {
 	rateHz: number | null;
 	/** Restarted after a solve with F vouched for, and no far or near plateau found yet. */
 	resumePending: boolean;
+	/**
+	 * Time since the last steady plateau (or since the reading restarted), ms; null before
+	 * the first sample. Grows without bound while the phone is held in the hand.
+	 */
+	unsteadyMs: number | null;
 }
 
 /** Wire format of one native `samples` event: flat [t, x, y, z, t, x, y, z, ...]. */

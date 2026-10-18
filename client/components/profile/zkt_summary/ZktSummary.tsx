@@ -2,8 +2,7 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {Trophy, Medal, Crown} from 'phosphor-react';
 import block from '../../../styles/bem';
-import {resourceUri} from '../../../util/storage';
-import {useTheme} from '../../../util/hooks/useTheme';
+import {useZktBadge} from '../../../util/hooks/useZktBadge';
 import {getZktOrigin} from '../../../../shared/integration';
 import './ZktSummary.scss';
 
@@ -37,7 +36,7 @@ interface Props {
  */
 export default function ZktSummary({profile}: Props) {
 	const {t} = useTranslation();
-	const isDarkTheme = useTheme('module_color')?.isDark !== false;
+	const zktBadge = useZktBadge();
 
 	if (!profile) return null;
 
@@ -57,10 +56,9 @@ export default function ZktSummary({profile}: Props) {
 	return (
 		<div className={b()}>
 			<div className={b('header')}>
-				{/* Two files, one per theme: the ZKT artwork carries lettering that
-				    has to invert with the surface. Same pair the header logo uses. */}
+				{/* The federation badge, not the Zkt Timer mark: this card shows ZKT records. */}
 				<img
-					src={resourceUri(isDarkTheme ? '/images/zkt-logo.png' : '/images/zkt-logo-white.png')}
+					src={zktBadge}
 					alt="Zeka Küpü Türkiye"
 					className={b('logo')}
 				/>

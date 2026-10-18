@@ -14,6 +14,8 @@ import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { invalidSolveTimeFields, solveFingerprint, SOLVE_SESSION_MISSING_I18N_KEY } from '../../shared/solve';
 import { isPro, isProEnabled } from '../lib/pro';
+import { resolveOwnedLinks } from '../util/solve_links';
+import { SYNC_SOLVE_SCALARS } from '../util/solve/sync_select';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -63,25 +65,8 @@ export class SolveResolver {
 				user_id: context.user.id,
 			},
 			select: {
-				id: true,
-				time: true,
-				raw_time: true,
-				cube_type: true,
-				scramble_subset: true,
-				session_id: true,
-				trainer_name: true,
-				bulk: true,
-				from_timer: true,
-				training_session_id: true,
-				dnf: true,
-				plus_two: true,
-				scramble: true,
-				is_smart_cube: true,
-				is_virtual_cube: true,
-				created_at: true,
-				started_at: true,
-				ended_at: true,
-				phase_splits: true,
+				// Shared by the three sync reads (server/util/solve/sync_select.ts)
+				...SYNC_SOLVE_SCALARS,
 				// step_index is a single counter across the whole solve (cross, f2l parent,
 				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
 				// no guaranteed order, and the client showed OLL/PLL before F2L.
@@ -125,25 +110,8 @@ export class SolveResolver {
 				user_id: context.user.id,
 			},
 			select: {
-				id: true,
-				time: true,
-				raw_time: true,
-				cube_type: true,
-				scramble_subset: true,
-				session_id: true,
-				trainer_name: true,
-				bulk: true,
-				from_timer: true,
-				training_session_id: true,
-				dnf: true,
-				plus_two: true,
-				scramble: true,
-				is_smart_cube: true,
-				is_virtual_cube: true,
-				created_at: true,
-				started_at: true,
-				ended_at: true,
-				phase_splits: true,
+				// Shared by the three sync reads (server/util/solve/sync_select.ts)
+				...SYNC_SOLVE_SCALARS,
 				// step_index is a single counter across the whole solve (cross, f2l parent,
 				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
 				// no guaranteed order, and the client showed OLL/PLL before F2L.
@@ -176,25 +144,8 @@ export class SolveResolver {
 				id: { in: ids },
 			},
 			select: {
-				id: true,
-				time: true,
-				raw_time: true,
-				cube_type: true,
-				scramble_subset: true,
-				session_id: true,
-				trainer_name: true,
-				bulk: true,
-				from_timer: true,
-				training_session_id: true,
-				dnf: true,
-				plus_two: true,
-				scramble: true,
-				is_smart_cube: true,
-				is_virtual_cube: true,
-				created_at: true,
-				started_at: true,
-				ended_at: true,
-				phase_splits: true,
+				// Shared by the three sync reads (server/util/solve/sync_select.ts)
+				...SYNC_SOLVE_SCALARS,
 				// step_index is a single counter across the whole solve (cross, f2l parent,
 				// each F2L sub-step, oll, pll) — without this the DB returns the relation in
 				// no guaranteed order, and the client showed OLL/PLL before F2L.
@@ -271,6 +222,14 @@ export class SolveResolver {
 				});
 			}
 		}
+
+		// A smart cube that connected without a connection sends its BLE identifier here, not
+		// the device row's id, and nothing checked whose device a value named. Stored as is it
+		// failed the foreign key, which the offline queue retried for ever. Corrected in place,
+		// never refused (server/util/solve/smart_device_link.ts). The physical cube link
+		// (cube_id) is checked in the same pass: the caller's cube of this puzzle, or null
+		// (server/util/solve_links.ts).
+		await resolveOwnedLinks(context.prisma, user.id, [input], 'createSolve');
 
 		let createdSolve;
 		try {
@@ -459,6 +418,15 @@ export class SolveResolver {
 		accepted.forEach((s) => {
 			if (!s.id) s.id = generateUUID();
 		});
+
+		// The device link is corrected before the insert, not checked by it. createMany is a
+		// single statement, so one row naming a device row that is not there (the BLE
+		// identifier a cube connected offline records, an empty value, another account's
+		// device) failed the foreign key for the whole chunk, and the launch backfill sent the
+		// same chunk again on every start. One query for the whole batch.
+		// cube_id has no foreign key, but the same pass keeps it to the caller's own cubes of
+		// the right puzzle (server/util/solve_links.ts). One more query, not one per row.
+		await resolveOwnedLinks(context.prisma, user.id, accepted, 'bulkCreateSolves');
 
 		// Use existing model function
 		await bulkCreateSolves(user, accepted);

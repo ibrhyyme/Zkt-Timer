@@ -1,4 +1,5 @@
 import React, {ReactNode, useContext, useMemo} from 'react';
+import {formatInteger} from '../../../../util/locale_format';
 import {useTranslation} from 'react-i18next';
 import './CubeStatHero.scss';
 import block from '../../../../styles/bem';
@@ -19,7 +20,7 @@ interface Props {
 
 export default function CubeStatHero(props: Props) {
 	const {children} = props;
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const {filterOptions} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
 
@@ -76,7 +77,7 @@ export default function CubeStatHero(props: Props) {
 						<div className={b('meta')}>
 							{totalSolves > 0 && (
 								<span className={b('pill')}>
-									{t('stats.cube_hero.solves_count', {value: totalSolves.toLocaleString()})}
+									{t('stats.cube_hero.solves_count', {value: formatInteger(totalSolves, i18n.language)})}
 								</span>
 							)}
 							{avgAo12?.time != null && (

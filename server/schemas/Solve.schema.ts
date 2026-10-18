@@ -4,6 +4,7 @@ import { PublicUserAccount } from './UserAccount.schema';
 import { SolveMethodStep } from './SolveStepMethod.schema';
 import { SolveView } from './SolveView.schema';
 import { SmartDevice } from './SmartDevice.schema';
+import { SolveCube } from './Cube.schema';
 
 @InputType()
 export class SolveInput {
@@ -63,6 +64,13 @@ export class SolveInput {
 
 	@Field()
 	smart_device_id?: string;
+
+	/**
+	 * Physical cube (Cube.id) the solve was made with. Unknown, foreign or wrong-puzzle ids are
+	 * stored as null, never refused (server/util/solve_links.ts).
+	 */
+	@Field({ nullable: true })
+	cube_id?: string;
 
 	@Field(() => Int)
 	smart_turn_count?: number;
@@ -157,6 +165,9 @@ export class Solve {
 	@Field()
 	smart_device_id: string;
 
+	@Field({ nullable: true })
+	cube_id?: string;
+
 	@Field(() => Int)
 	smart_turn_count: number;
 
@@ -187,6 +198,14 @@ export class Solve {
 
 	@Field(() => SmartDevice, { nullable: true })
 	smart_device?: SmartDevice;
+
+	/**
+	 * The cube's name and kind for a single solve view (share code, someone else's solve).
+	 * Resolved per solve (SolveCubeResolver), so list fragments must not ask for it; a user's
+	 * own solves name their cube from the local cube list.
+	 */
+	@Field(() => SolveCube, { nullable: true })
+	cube?: SolveCube;
 
 	@Field(() => PublicUserAccount)
 	user?: PublicUserAccount;

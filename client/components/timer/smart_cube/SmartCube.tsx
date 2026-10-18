@@ -9,7 +9,6 @@ import { setTimerParams } from '../helpers/params';
 import { Bluetooth, Gear } from 'phosphor-react';
 
 import { openModal, closeModal } from '../../../actions/general';
-import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
 import { initSmartSolver } from '../../../util/smart_scramble';
@@ -38,7 +37,7 @@ import { resetScramble } from '../helpers/scramble';
 import { saveSolve } from '../helpers/save';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro } from '../../../lib/pro';
-import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
+import { smartTurnsForSave } from './smart_turns_payload';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
@@ -211,7 +210,6 @@ export default function SmartCube() {
 	// Connection-owned fields live in their own slice so RESET_TIMER_PARAMS on unmount
 	// cannot wipe them (see reducers/smart_cube.ts).
 	const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
-	const smartDeviceId = useSmartCubeStore('smartDeviceId');
 	const smartCubeBatteryLevel = useSmartCubeStore('smartCubeBatteryLevel');
 	const smartGyroSupported = useSmartCubeStore('smartGyroSupported');
 	const smartCurrentState = useSmartCubeStore('smartCurrentState');
@@ -603,17 +601,7 @@ export default function SmartCube() {
 			// Subtracting with timeStartedAt.getTime() can produce huge offsets due to
 			// BLE clock vs JS clock drift. Always use first move as 0 baseline → 4-byte/move
 			// average offset, no extra work for parser.
-			let smartTurnsToSave: string | null = null;
-			if (userIsPro) {
-				const baseMs = correctedMoves.length > 0 ? correctedMoves[0].completedAt : 0;
-				smartTurnsToSave = serializeSmartTurnsCompact(
-					correctedMoves.map((m: any) => ({
-						turn: m.turn,
-						completedAt: m.completedAt - baseMs,
-					})),
-					0
-				);
-			}
+			const smartTurnsToSave = smartTurnsForSave(correctedMoves, userIsPro);
 
 			// cstimer-grade HTM move count: consecutive parallel plane same face repeated
 			// moves count as 1 (R R = R2 = 1, R U R = 2). Comes from the engine so the rooms
@@ -624,7 +612,7 @@ export default function SmartCube() {
 
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
-				smart_device_id: smartDeviceId,
+				// Stamps the connected cube (helpers/cube_stamp.ts) instead of the main.
 				is_smart_cube: true,
 				smart_turn_count: htmCount,
 				smart_turns: smartTurnsToSave,
@@ -741,6 +729,11 @@ export default function SmartCube() {
 		if (!timeStartedAt) return;
 		const now = new Date();
 
+		// Same turns payload as the normal stop (feedback E-2): the moves on the corrected
+		// timeline, compact format, Pro only, and the same HTM count. This path used to
+		// send the raw JSON objects for every user.
+		const abortedMoves = cubeTimestampLinearFit(smartTurns, timeStartedAt.getTime()).correctedMoves;
+
 		// Pass time=0 so raw_time=0, which locks the DNF (cannot be toggled off)
 		saveSolve(
 			context,
@@ -752,9 +745,8 @@ export default function SmartCube() {
 			false,
 			{
 				is_smart_cube: true,
-				smart_device_id: smartDeviceId,
-				smart_turn_count: smartTurns.length,
-				smart_turns: JSON.stringify(smartTurns),
+				smart_turn_count: countHTM(abortedMoves.map((m) => m.turn)),
+				smart_turns: smartTurnsForSave(abortedMoves, userIsPro),
 				// Raw setting, not the display method: 'auto' must reach the server so it
 				// can infer the method from the solve rather than assuming CFOP.
 				analysis_method: solveMethod || 'auto',
@@ -897,10 +889,6 @@ export default function SmartCube() {
 		void manager.disconnect();
 	}
 
-	function toggleManageSmartCubes() {
-		dispatch(openModal(<ManageSmartCubes />, { title: t('smart_cube.manage_smart_cubes') }));
-	}
-
 	async function markCubeAsSolved() {
 		// The cube keeps its own state in firmware. Without telling it to reset, it
 		// keeps reporting the stale (scrambled) facelets and overwrites everything we
@@ -949,8 +937,9 @@ export default function SmartCube() {
 	// every move to feed the engine. Building the element only when what it shows changes
 	// lets React skip the menu on moves. The handlers go through a ref, so a click still
 	// runs the latest render's closures.
-	const menuActionsRef = useRef({ markCubeAsSolved, resetGyro, disconnectBluetooth, toggleManageSmartCubes });
-	menuActionsRef.current = { markCubeAsSolved, resetGyro, disconnectBluetooth, toggleManageSmartCubes };
+	const menuActionsRef = useRef({ markCubeAsSolved, resetGyro, disconnectBluetooth });
+	menuActionsRef.current = { markCubeAsSolved, resetGyro, disconnectBluetooth };
+	const signedIn = !!me;
 	const solveRunning = !!timeStartedAt;
 	const dropdown = useMemo(() => (
 		<Dropdown
@@ -976,10 +965,17 @@ export default function SmartCube() {
 					disabled: solveRunning,
 					onClick: () => menuActionsRef.current.disconnectBluetooth(),
 				},
-				{ text: t('smart_cube.manage_smart_cubes'), disabled: solveRunning, onClick: () => menuActionsRef.current.toggleManageSmartCubes() },
+				// My Cubes replaced the old "manage smart cubes" modal (EK-a). No link mid-solve:
+				// leaving the page would abandon the solve.
+				{
+					text: t('smart_cube.my_cubes'),
+					hidden: !signedIn,
+					disabled: solveRunning,
+					link: solveRunning ? undefined : '/settings/cubes',
+				},
 			]}
 		/>
-	), [t, mobileMode, smartCubeConnected, smartGyroSupported, solveRunning]);
+	), [t, mobileMode, smartCubeConnected, smartGyroSupported, solveRunning, signedIn]);
 
 	let battery = <Battery level={smartCubeBatteryLevel} />;
 	let emblem;

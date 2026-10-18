@@ -1,5 +1,8 @@
 import { gql } from '@apollo/client';
 
+// What every sync read brings to this device (delta sync, reconciliation, Basic restore).
+// Each scalar here must also be in the server's select, SYNC_SOLVE_SCALARS in
+// server/util/solve/sync_select.ts, or it arrives as null; sync_solve_select.test.ts checks it.
 export const MICRO_SOLVE_FRAGMENT = gql`
 	fragment MicroSolveFragment on Solve {
 		id
@@ -17,9 +20,12 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 		scramble
 		is_smart_cube
 		is_virtual_cube
+		smart_device_id
+		cube_id
 		created_at
 		started_at
 		ended_at
+		phase_splits
 		solve_method_steps {
 			step_name
 			total_time
@@ -54,6 +60,7 @@ export const MINI_SOLVE_FRAGMENT = gql`
 		plus_two
 		is_smart_cube
 		is_virtual_cube
+		cube_id
 		created_at
 		started_at
 		ended_at
@@ -112,13 +119,7 @@ export const SOLVE_FRAGMENT = gql`
 		smart_put_down_time
 		inspection_time
 		phase_splits
-		smart_device {
-			id
-			name
-			internal_name
-			device_id
-			created_at
-		}
+		cube_id
 		solve_method_steps {
 			id
 			turn_count
@@ -177,6 +178,7 @@ export const SETTING_FRAGMENT = gql`
 		scramble_top_color
 		desktop_prefs
 		mobile_prefs
+		trainer_options
 		custom_cube_types {
 			...CustomCubeTypeFragment
 		}
@@ -227,6 +229,15 @@ export const SOLVE_WITH_USER_FRAGMENT = gql`
 
 	fragment SolveWithUserFragment on Solve {
 		...SolveFragment
+		# Single solve views only: Solve.cube is resolved per solve (Cube.resolver.ts), so list
+		# fragments leave it out. A user's own solves name their cube from the local cube list.
+		cube {
+			id
+			name
+			brand
+			puzzle
+			is_smart
+		}
 		user {
 			...PublicUserFragment
 		}
@@ -369,6 +380,15 @@ export const REPORT_FRAGMENT = gql`
 		reported_user {
 			...PublicUserFragment
 		}
+		alg_set_id
+		alg_set {
+			id
+			code
+			name
+			visibility
+			hidden
+			hidden_reason
+		}
 	}
 `;
 
@@ -387,6 +407,9 @@ export const TIMER_BACKGROUND_FRAGMENT = gql`
 		hex
 		storage_path
 		media_type
+		mobile_storage_path
+		mobile_media_type
+		mobile_same_as_desktop
 		id
 		url
 	}

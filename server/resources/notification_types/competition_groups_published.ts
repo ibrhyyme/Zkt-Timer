@@ -43,6 +43,6 @@ export default class CompetitionGroupsPublishedNotification extends CompetitionL
 	}
 
 	relativeLink() {
-		return lifecyclePersonPath(this.meta.source, this.meta.competitionId, this.meta.registrantId);
+		return lifecyclePersonPath(this.meta.competitionId, this.meta.registrantId);
 	}
 }

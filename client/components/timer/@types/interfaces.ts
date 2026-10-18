@@ -142,8 +142,12 @@ export interface SmartCubeStore {
 	smartCubeConnected?: boolean;
 	/** True while an unexpected drop is being retried (cube powered off, out of range). */
 	smartReconnecting?: boolean;
-	/** SmartDevice row id, written onto saved solves. Falls back to the BLE id offline. */
-	smartDeviceId?: string;
+	/**
+	 * BLE device id of the connected cube. The registered cube (My Cubes) is looked up by it
+	 * when a solve is stamped (timer/helpers/cube_stamp.ts), so a cube registered after the
+	 * connection, or only known offline, still resolves.
+	 */
+	smartBleDeviceId?: string;
 	/** Advertised name of the connected cube, for "already connected as X" messages. */
 	smartDeviceName?: string | null;
 	smartCubeBatteryLevel?: number | null;

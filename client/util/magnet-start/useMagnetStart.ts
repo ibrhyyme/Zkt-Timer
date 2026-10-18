@@ -1,13 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
-import { useMe } from '../hooks/useMe';
-import { useSettings } from '../hooks/useSettings';
+import { useCubes } from '../../lib/cubes/store';
+import { saveCubeCalibrationLocal } from '../../lib/cubes/sync';
 import { getSetting, getSettings } from '../../db/settings/query';
 import { getStore } from '../../components/store';
 import { getCubeTypeInfoById } from '../cubes/util';
 import { isAppVisible } from '../app-visibility';
 import { hapticImpact } from '../native-plugins';
-import { canUseMagnetStart } from '../../lib/magnet-start-access';
 import { ITimerContext } from '../../components/timer/Timer';
 import { setTimerParams } from '../../components/timer/helpers/params';
 import { START_TIMEOUT, stopTimer } from '../../components/timer/helpers/timers';
@@ -15,12 +14,16 @@ import { getTimerStore } from '../store/getTimer';
 import { getInspectionStartedAt, startInspection, startTimer } from '../../components/timer/helpers/events';
 import { HAPTIC_MUTE_MS, MIN_DWELL_MS } from './config';
 import { computeReadiness, decideOnLift, dwellMsFor, MagnetAction, TimerSide } from './controller';
+import { resolveMagnetProfile, sameMagnetProfile } from './cube_profile';
 import { magnetDebugLog } from './debug_log';
+import { fallbackCalibrationCopies, magnetDeviceIdentity, MagnetDeviceIdentity, storedFallbackModel } from './device_model';
+import { usePrefetchMagnetProbe } from './availability';
+import { magnetPlatform } from './plugin';
 import { magnetService, ServiceBatch } from './service';
-import { markMagnetIntroDone, useMagnetStartSettings } from './settings';
+import { markMagnetIntroDone } from './settings';
 import { startBlockReason } from './start_guard';
-import { setMagnetStatus } from './status_store';
-import { useMagnetAvailability } from './availability';
+import { getMagnetProfile, setMagnetStatus } from './status_store';
+import { useMagnetTimerOwnsInput } from './useMagnetTimer';
 import { magnetTelemetry } from './telemetry';
 import { markMagnetAction, shouldCancelHoldOnPlacement } from './touch_guard';
 
@@ -86,29 +89,27 @@ function runAction(action: MagnetAction, ctx: ITimerContext): void {
 }
 
 /**
- * Magnet lift-to-start for the touch timer: lifting a magnetic cube off the phone's
- * magnetometer hot spot starts inspection or the solve; slam-to-stop (or a tap) stops it.
+ * The Magnet Timer (timer_type 'magnet'): lifting a magnetic cube off the phone's
+ * magnetometer hot spot starts inspection or the solve; slam-to-stop stops it. Touch does
+ * neither in this input (KeyWatcher).
  * Mounted in KeyWatcher, so it only ever runs on the /timer page. Idle and inspection
  * only: the stream pauses while a solve runs, which also resets the detector for the next
  * attempt.
  */
 export function useMagnetStart(context: ITimerContext) {
-	const me = useMe();
-	const { enabled } = useMagnetStartSettings();
-	const timerType = useSettings('timer_type');
-	const manualEntry = useSettings('manual_entry');
-
-	// Checked when arming, not only when showing the toggle: the switch lives in
-	// localStorage and outlives the permission (mirrors useSlamToStop's proAllowed).
-	const allowed = canUseMagnetStart(me);
-	const caps = useMagnetAvailability(allowed && enabled);
+	// Pro, the sensor probe and the selected input, checked when arming, not only in the
+	// picker: the selection is a synced setting and outlives a subscription.
+	const ownsInput = useMagnetTimerOwnsInput();
+	// Any app user: the left drawer's grid then opens with its Magnet tile already decided.
+	usePrefetchMagnetProbe(!context.matchMode);
 	const solving = !!context.timeStartedAt;
+	const inInspection = !!context.inInspection;
+	const profileReady = useMagnetCubeProfile(context, ownsInput, inInspection);
+	// No calibrated cube on this phone: the stream stays off and nothing can start; the guide
+	// under the digits shows what is missing (owner decision: calibration is mandatory).
 	const active =
-		!!caps &&
-		allowed &&
-		enabled &&
-		timerType === 'keyboard' &&
-		!manualEntry &&
+		ownsInput &&
+		profileReady &&
 		!context.inModal &&
 		!context.matchMode &&
 		!solving;
@@ -200,7 +201,6 @@ export function useMagnetStart(context: ITimerContext) {
 
 	// An inspection that ends without a solve (swipe cancel, Escape, DNF) leaves the cube
 	// wherever it is; the next idle start needs it taken away first.
-	const inInspection = !!context.inInspection;
 	const prevInInspection = useRef(inInspection);
 	useEffect(() => {
 		if (prevInInspection.current && !inInspection && !context.timeStartedAt && active) {
@@ -208,4 +208,79 @@ export function useMagnetStart(context: ITimerContext) {
 		}
 		prevInInspection.current = inInspection;
 	}, [inInspection]);
+}
+
+/**
+ * The cube the Magnet Timer runs with (design 4.7): the main cube of the timer's puzzle and its
+ * calibration on this phone model, turned into detector thresholds. Publishes the result to the
+ * status store (the guide reads why nothing can start) and to the service. Returns whether a
+ * calibrated cube is in place.
+ *
+ * Never changed during inspection: a new detector would forget the placement the solve is
+ * about to start from. The change lands when the inspection ends.
+ */
+function useMagnetCubeProfile(context: ITimerContext, ownsInput: boolean, inInspection: boolean): boolean {
+	const cubes = useCubes();
+	const platform = ownsInput ? magnetPlatform() : null;
+	const [identity, setIdentity] = useState<MagnetDeviceIdentity | null | undefined>(undefined);
+	const [ready, setReady] = useState(false);
+
+	useEffect(() => {
+		if (!platform) return;
+		let alive = true;
+		magnetDeviceIdentity(platform)
+			.then((id) => {
+				if (alive) setIdentity(id);
+			})
+			.catch(() => {
+				if (alive) setIdentity(null);
+			});
+		return () => {
+			alive = false;
+		};
+	}, [platform]);
+
+	// A binary with the Device plugin replaced the screen fallback key: carry this phone's
+	// calibrations over to the real model key once (device_model.ts). Idempotent.
+	useEffect(() => {
+		if (!platform || !identity || identity.isFallback || !identity.deviceModel) return;
+		const fallback = storedFallbackModel(platform);
+		if (!fallback) return;
+		for (const row of fallbackCalibrationCopies(cubes, platform, fallback, identity.deviceModel)) {
+			saveCubeCalibrationLocal(row);
+		}
+	}, [platform, identity, cubes]);
+
+	const deviceModel = identity === undefined ? undefined : identity ? identity.deviceModel : null;
+	const profile = useMemo(
+		() =>
+			ownsInput
+				? resolveMagnetProfile({
+					state: cubes,
+					bucket: { cube_type: context.cubeType, scramble_subset: context.scrambleSubset },
+					platform,
+					deviceModel,
+				})
+				: null,
+		[ownsInput, cubes, context.cubeType, context.scrambleSubset, platform, deviceModel]
+	);
+
+	useEffect(() => {
+		if (inInspection) return;
+		if (!sameMagnetProfile(getMagnetProfile(), profile)) setMagnetStatus({ profile });
+		const isReady = !!profile && profile.status === 'ready';
+		magnetService.setCubeProfile(
+			isReady
+				? {
+					cubeId: profile.cubeId as string,
+					puzzle: profile.puzzle as string,
+					nearMin: profile.nearMin as number,
+					farMax: profile.farMax as number,
+				}
+				: null
+		);
+		setReady(isReady);
+	}, [profile, inInspection]);
+
+	return ready;
 }

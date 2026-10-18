@@ -12,12 +12,17 @@ import TrainerSmartCube from './TrainerSmartCube';
 import AlternativesPicker from '../stats_panel/AlternativesPicker';
 import TrainerTimeChart from '../stats_panel/TrainerTimeChart';
 import {useTranslation} from 'react-i18next';
-import {CaretLeft, CaretRight, CaretDown, CaretUp} from 'phosphor-react';
+import {CaretLeft, CaretRight, CaretDown, CaretUp, X} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../../lib/pro';
 import {useWakeLock} from '../../../../util/hooks/useWakeLock';
+import {distinctCategoryCount, smartSkipSummary} from '../../../../util/trainer/set_queue';
+import './SetStudy.scss';
 
 const b = block('trainer');
+
+/** Sets whose Smart Cube filter notice was closed in this app session (trainer-sets 6.5). */
+const smartSkipDismissed = new Set<string>();
 
 export default function TrainingArea() {
 	const {t} = useTranslation();
@@ -129,40 +134,6 @@ export default function TrainingArea() {
 		return records.map((r) => getEffectiveTime(r)).filter((t): t is number => t !== null);
 	}, [currentAlgorithm, dbVersion]);
 
-	if (!currentAlgorithm) {
-		return (
-			<div className={b('training-area')}>
-				<div className={b('training-empty')}>
-					<p>{t('trainer.select_algorithms_hint')}</p>
-				</div>
-			</div>
-		);
-	}
-
-	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
-	const useSmartCube = state.smartConnected && is3x3 && (!isProEnabled() || isPro(me));
-
-	// Etkin top/front face — whiteOnBottom aktifse D/F preset'i uygulanir
-	const effectiveOrientation = getEffectiveOrientation({
-		topFace: options.topFace,
-		frontFace: options.frontFace,
-		whiteOnBottom: options.whiteOnBottom,
-	});
-	const cubeViewerTopFace = effectiveOrientation.topFace;
-	const cubeViewerFrontFace = isLLCategory(currentAlgorithm.category)
-		? getDefaultFrontFace(cubeViewerTopFace)
-		: effectiveOrientation.frontFace;
-
-	// Random AUF acikken gosterilecek alg + LL pattern override.
-	// aufState yalniz mevcut karta aitse gecerli (kart degisiminde eski AUF gosterilmez).
-	const aufActive =
-		options.randomizeAUF &&
-		aufState != null &&
-		aufState.baseAlg === currentAlgorithm.algorithm &&
-		aufState.category === currentAlgorithm.category;
-	const displayAlg = aufActive ? aufState!.alg : currentAlgorithm.algorithm;
-	const llPatternOverride = aufActive ? aufState!.pattern : null;
-
 	// Mobilde training-area'nin herhangi bir yerine dokunarak timer baslatma/durdurma
 	const handleAreaTouch = useCallback((e: React.MouseEvent) => {
 		if (window.innerWidth > 768) return;
@@ -208,6 +179,98 @@ export default function TrainingArea() {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [hasMultipleAlgorithms, state.timerState, dispatch, currentAlgorithm]);
 
+	// ── Set study (trainer-sets 6.1, 6.4, 6.5) ──
+	const activeSet = state.activeSet;
+	const setItems = activeSet?.items;
+	// Smart Cube mode runs only the 3x3 rows of a set; the rest wait for Standard (filterForMode).
+	const smartSkip = useMemo(
+		() => (setItems && state.mode === 'smart' ? smartSkipSummary(setItems) : null),
+		[setItems, state.mode]
+	);
+	// A category tag above the case name only when the set mixes categories.
+	const mixedCategories = useMemo(() => (setItems ? distinctCategoryCount(setItems) > 1 : false), [setItems]);
+	const [skipNoticeHidden, setSkipNoticeHidden] = useState(() => !!activeSet && smartSkipDismissed.has(activeSet.id));
+	useEffect(() => {
+		setSkipNoticeHidden(!!activeSet && smartSkipDismissed.has(activeSet.id));
+	}, [activeSet?.id]);
+	const dismissSkipNotice = useCallback(
+		(e: React.MouseEvent) => {
+			e.stopPropagation();
+			if (activeSet) smartSkipDismissed.add(activeSet.id);
+			setSkipNoticeHidden(true);
+		},
+		[activeSet]
+	);
+	const studyStandard = useCallback(() => {
+		dispatch({type: 'SET_STUDY_MODE', payload: 'standard'});
+	}, [dispatch]);
+
+	// Cold /trainer/algorithms/train?set=<code>: the set is still loading (useTrainerUrlSync).
+	if (state.pendingSetCode && !activeSet) {
+		return (
+			<div className={b('training-area')}>
+				<div className={b('set-state')} role="status">
+					<div className={b('set-state-spinner')} aria-hidden="true" />
+					<p className={b('set-state-title')}>{t('trainer.sets.loading')}</p>
+				</div>
+			</div>
+		);
+	}
+
+	// Smart Cube mode on a set with no 3x3 row: nothing to run here, offer Standard.
+	if (activeSet && smartSkip && smartSkip.count > 0 && smartSkip.count === activeSet.items.length) {
+		return (
+			<div className={b('training-area')}>
+				<div className={b('set-state')}>
+					<p className={b('set-state-title')}>{t('trainer.sets.smart_none')}</p>
+					<button type="button" className={b('set-state-btn')} onClick={studyStandard}>
+						{t('trainer.sets.study_standard')}
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	if (!currentAlgorithm) {
+		return (
+			<div className={b('training-area')}>
+				<div className={b('training-empty')}>
+					<p>{t('trainer.select_algorithms_hint')}</p>
+				</div>
+			</div>
+		);
+	}
+
+	const showSkipNotice = !!smartSkip && smartSkip.count > 0 && !skipNoticeHidden;
+	const categoryTag =
+		mixedCategories && options.showCaseName ? (
+			<span className={b('set-category-tag')}>{currentAlgorithm.category}</span>
+		) : null;
+
+	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
+	const useSmartCube = state.smartConnected && is3x3 && (!isProEnabled() || isPro(me));
+
+	// Etkin top/front face — whiteOnBottom aktifse D/F preset'i uygulanir
+	const effectiveOrientation = getEffectiveOrientation({
+		topFace: options.topFace,
+		frontFace: options.frontFace,
+		whiteOnBottom: options.whiteOnBottom,
+	});
+	const cubeViewerTopFace = effectiveOrientation.topFace;
+	const cubeViewerFrontFace = isLLCategory(currentAlgorithm.category)
+		? getDefaultFrontFace(cubeViewerTopFace)
+		: effectiveOrientation.frontFace;
+
+	// Random AUF acikken gosterilecek alg + LL pattern override.
+	// aufState yalniz mevcut karta aitse gecerli (kart degisiminde eski AUF gosterilmez).
+	const aufActive =
+		options.randomizeAUF &&
+		aufState != null &&
+		aufState.baseAlg === currentAlgorithm.algorithm &&
+		aufState.category === currentAlgorithm.category;
+	const displayAlg = aufActive ? aufState!.alg : currentAlgorithm.algorithm;
+	const llPatternOverride = aufActive ? aufState!.pattern : null;
+
 	return (
 		<div className={b('training-area')} onClick={handleAreaTouch}>
 			{/* Onceki/Sonraki navigasyon butonlari */}
@@ -222,12 +285,34 @@ export default function TrainingArea() {
 				</>
 			)}
 
+			{/* Set in Smart Cube mode: which rows wait for Standard (dismissable, once per session) */}
+			{showSkipNotice && (
+				<div className={b('set-notice')} role="note" onClick={(e) => e.stopPropagation()}>
+					<span>
+						{t('trainer.sets.smart_skipped', {
+							count: smartSkip!.count,
+							puzzles: smartSkip!.cubeTypes.join(', '),
+						})}
+					</span>
+					<button
+						type="button"
+						className={b('set-notice-close')}
+						onClick={dismissSkipNotice}
+						aria-label={t('trainer.sets.dismiss')}
+						title={t('trainer.sets.dismiss')}
+					>
+						<X size={16} weight="bold" />
+					</button>
+				</div>
+			)}
+
 			{/* Mobilde: kompakt alg ismi + alternatifler dropdown */}
 			{options.showCaseName && (
 				<div className={b('mobile-alg-header')} onClick={(e) => {
 					e.stopPropagation();
 					setShowMobileAlts((v) => !v);
 				}}>
+					{categoryTag}
 					<span className={b('mobile-alg-name')}>{currentAlgorithm.name}</span>
 					{showMobileAlts ? <CaretUp size={14} weight="bold" /> : <CaretDown size={14} weight="bold" />}
 				</div>
@@ -251,6 +336,7 @@ export default function TrainingArea() {
 					</div>
 					{options.showCaseName && (
 						<div className={b('training-info-meta')}>
+							{categoryTag}
 							<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
 						</div>
 					)}

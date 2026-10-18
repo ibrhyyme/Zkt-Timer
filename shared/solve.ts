@@ -134,6 +134,8 @@ export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	delete solve.solve_method_steps;
 	delete solve.solve_views;
 	delete solve.smart_device;
+	// Relation object (Solve.cube field resolver); the column is cube_id.
+	delete solve.cube;
 	// GraphQL-only: tells the resolver which method to break the solve down with
 	// (server/resolvers/Solve.resolver.ts), never a column on the Solve table itself.
 	delete (solve as any).analysis_method;

@@ -1,0 +1,258 @@
+@import '../../../../styles/config';
+
+// Magnet Timer guide under the digits (MagnetGuide.tsx, design magnet-cubes 5.6). The card
+// class is in touch_target.ts BLOCKED_CLASSES: no touch on it ever reaches the timer.
+.#{$namespace}-magnet-guide {
+	width: 100%;
+	max-width: 420px;
+	padding: 0 16px;
+	text-align: center;
+	color: rgb(var(--text-color));
+
+	&__line {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	&__sub {
+		margin-top: 4px;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.35;
+	}
+
+	&__card {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+		padding: 14px 16px;
+		border-radius: 14px;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		text-align: left;
+	}
+
+	&__card-text {
+		margin: 0;
+		font-size: 0.95rem;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	&__card-note {
+		margin: 0;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.4;
+	}
+
+	// Primary filled action, at least 44 px tall (a thumb on a phone lying on a table).
+	&__action {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 18px;
+		border: none;
+		border-radius: 10px;
+		background-color: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+		font-size: 0.95rem;
+		font-weight: 700;
+		cursor: pointer;
+
+		&:disabled {
+			cursor: default;
+			opacity: 0.6;
+		}
+	}
+
+	// "Hangi küple çözüyorsun?": one tap makes a cube the main.
+	&__cubes {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		max-height: 220px;
+		overflow-y: auto;
+	}
+
+	&__cube {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		min-height: 44px;
+		padding: 8px 12px;
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background-color: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.6);
+		}
+	}
+
+	&__cube-brand {
+		font-size: 0.8rem;
+		font-weight: 500;
+	}
+
+	// #7 "Telefonu masaya koy": the phone drawing settles onto a table line.
+	&__phone {
+		position: relative;
+		display: inline-block;
+		width: 18px;
+		height: 22px;
+		flex: 0 0 auto;
+
+		svg {
+			position: absolute;
+			left: 1px;
+			top: 0;
+			animation: zt-magnet-guide-phone-down 1.6s $ease-standard infinite;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			height: 2px;
+			border-radius: 1px;
+			background-color: rgb(var(--text-color));
+		}
+
+		@include reduced-motion {
+			svg {
+				animation: none;
+				top: 4px;
+			}
+		}
+	}
+}
+
+@keyframes zt-magnet-guide-phone-down {
+	0% {
+		transform: translateY(-4px) rotate(-18deg);
+	}
+	60%,
+	100% {
+		transform: translateY(4px) rotate(0deg);
+	}
+}
+
+// Live field bar (MagnetLiveBar.tsx, 5.8). Takes the same height whenever the Magnet Timer
+// runs on a calibrated cube, solve included, so the digits never move when it hides.
+.#{$namespace}-magnet-live-bar {
+	width: min(60%, 240px);
+	height: 6px;
+	margin: 6px 0 8px;
+	pointer-events: none;
+
+	@include bp-down($bp-md) {
+		margin: 4px 0 6px;
+	}
+
+	&__track {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		border-radius: 3px;
+		overflow: hidden;
+		background-color: rgba(var(--text-color), 0.15);
+	}
+
+	&--idle &__track {
+		visibility: hidden;
+	}
+
+	// Written straight to the DOM per packet (scaleX), never through React state.
+	&__fill {
+		position: absolute;
+		inset: 0;
+		background-color: rgb(var(--text-color));
+		transform: scaleX(0);
+		transform-origin: left center;
+		transition: transform 60ms linear, background-color 150ms ease;
+		will-change: transform;
+
+		@include reduced-motion {
+			transition: none;
+		}
+	}
+
+	// The colour follows the digits (status store), not the fill: the line crossing alone is
+	// not "ready", the steady dwell after it is.
+	&--orange &__fill {
+		background-color: $primaryOrange;
+	}
+
+	&--green &__fill {
+		background-color: $primaryGreen;
+	}
+
+	// The detector's near threshold: past it a steady cube turns orange, then green.
+	&__target {
+		position: absolute;
+		top: -2px;
+		bottom: -2px;
+		width: 2px;
+		margin-left: -1px;
+		background-color: rgb(var(--text-color));
+	}
+}
+
+// The cube the next solve is stamped with (TimerCubeLabel.tsx, 5.5). In touch_target.ts
+// BLOCKED_CLASSES so a tap on its padding never primes the timer.
+.#{$namespace}-timer-cube-label {
+	display: flex;
+	justify-content: center;
+	margin-top: 4px;
+
+	&--hidden {
+		visibility: hidden;
+	}
+
+	&__button {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		max-width: 240px;
+		min-height: 32px;
+		padding: 4px 12px;
+		border-radius: 999px;
+		border: 1px solid rgba(var(--text-color), 0.14);
+		background-color: rgba(var(--text-color), 0.05);
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			border-color: rgba(var(--text-color), 0.3);
+		}
+	}
+
+	&__icon {
+		flex: 0 0 auto;
+	}
+
+	&__name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}

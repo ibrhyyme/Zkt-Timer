@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {b, formatResult} from '../shared';
+import {b, formatResult, localEventName} from '../shared';
 
 interface Props {
 	records: any[];
@@ -46,7 +46,9 @@ export default function WcaLiveRecords({records, competitionId}: Props) {
 							</span>
 							<div className={b('wca-live-record-info')}>
 								<span className={b('wca-live-record-text')}>
-									{rec.eventName} {rec.type} of <strong>{formatResult(rec.attemptResult, rec.eventId, rec.type === 'average')}</strong>
+									{localEventName(t, rec.eventId, rec.eventName)}{' '}
+									{t(rec.type === 'average' ? 'zkt_comp.average' : 'zkt_comp.best')}:{' '}
+									<strong>{formatResult(rec.attemptResult, rec.eventId, rec.type === 'average')}</strong>
 								</span>
 								<span className={b('wca-live-record-person')}>
 									{rec.personName}

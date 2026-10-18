@@ -10,79 +10,27 @@ import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
 import { timerOwnsSpaceKey } from '../helpers/space_target';
 import { useTranslation } from 'react-i18next';
 import * as Select from '@radix-ui/react-select';
-import {
-	Bluetooth,
-	CaretDown,
-	Check,
-	Crown,
-	Cube,
-	Keyboard,
-	Lock,
-	Microphone,
-	PencilSimple,
-} from 'phosphor-react';
-import { setSetting, setSettings } from '../../../db/settings/update';
-import { useSettings } from '../../../util/hooks/useSettings';
-import { useGeneral } from '../../../util/hooks/useGeneral';
-import { useMe } from '../../../util/hooks/useMe';
-import { useDispatch } from 'react-redux';
-import { openModal } from '../../../actions/general';
-import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
-import { AllSettings } from '../../../db/settings/query';
-import {
-	normalizeAllowedTimerTypes,
-	timerTypeSupportsBucket,
-	timerTypeUnsupportedReason,
-} from '../helpers/timer_type_support';
-import { PRO_GATED_TIMER_TYPES } from '../helpers/pro_timer_types';
-import { isPro } from '../../../lib/pro';
+import { CaretDown, Check, Crown, Lock } from 'phosphor-react';
+import { useTimerChoices } from '../helpers/useTimerChoices';
 import block from '../../../styles/bem';
 import './TimerTypePicker.scss';
 
 const b = block('timer-type-picker');
 
-type TypeKey = AllSettings['timer_type'] | 'manual';
-
-type TimerOption = {
-	typeKey: TypeKey;
-	// Full label shown inside panel
-	label: string;
-	// Compact label shown on trigger (to save space)
-	shortLabel: string;
-	icon: React.ReactNode;
-	isActive: boolean;
-	disabled: boolean;
-	proGated: boolean;
-	notAllowed: boolean;
-	smartUnsupported: boolean;
-	/** i18n key explaining why the puzzle rules this input out, null when it does not. */
-	unsupportedReason: string | null;
-};
-
 interface Props {
 	allowedTimerTypes?: string[];
 	requireProForSmart?: boolean;
+	/** Friendly room: the room's puzzle decides which inputs fit (see useTimerChoices). */
+	puzzle?: { cubeType: string; scrambleSubset?: string | null };
 }
 
-export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, requireProForSmart }: Props) {
-	// Rooms created before StackMat and QYtoys merged still store 'qiyiwired'.
-	const allowedTimerTypes = normalizeAllowedTimerTypes(rawAllowed);
+export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart, puzzle }: Props) {
 	const { t } = useTranslation();
-	const dispatch = useDispatch();
-	const me = useMe();
+	// Order, names, icons and locks come from one place shared with the mobile grid
+	// (helpers/useTimerChoices.tsx, helpers/timer_type_catalog.ts).
+	const { options, choose } = useTimerChoices({ layout: 'dropdown', allowedTimerTypes, requireProForSmart, puzzle });
 
-	const timerType = useSettings('timer_type');
-	const manualEntry = useSettings('manual_entry');
-	const cubeType = useSettings('cube_type');
-	const scrambleSubset = useSettings('scramble_subset');
-	const mobileMode = useGeneral('mobile_mode');
-
-	const isProGated = !!requireProForSmart && !isPro(me);
-	// Which inputs the current puzzle supports. One table, in timer_type_support.ts.
-	const smartSupported = timerTypeSupportsBucket('smart', cubeType, scrambleSubset);
-	const virtualSupported = timerTypeSupportsBucket('virtual', cubeType, scrambleSubset);
-
-	// Open control — scroll selected item to center of panel.
+	// Open control: scroll selected item to center of panel.
 	// useExclusiveDropdown: opening this closes any other header dropdown.
 	const [open, setOpen] = useExclusiveDropdown();
 	const viewportRef = useRef<HTMLDivElement>(null);
@@ -100,126 +48,15 @@ export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, require
 		return () => cancelAnimationFrame(raf);
 	}, [open]);
 
-	// One write: both keys live in the same platform prefs blob, which the server
-	// overwrites rather than merges, so two calls race and the loser's value comes
-	// back on the next sync.
-	function selectTimerType(newTimerType: AllSettings['timer_type']) {
-		setSettings({manual_entry: false, timer_type: newTimerType});
-	}
-
-	function openStackMatPicker() {
-		const { title, description } = getAudioPickerModalProps(t);
-		dispatch(openModal(
-			<StackMatPicker />,
-			{
-				width: 400,
-				compact: true,
-				title,
-				description,
-				closeButtonText: t('solve_info.done'),
-			},
-		));
-	}
-
-	function toggleManualEntry() {
-		// Turning manual entry on also forces the keyboard input; both go out together
-		// for the same reason as selectTimerType above.
-		if (!manualEntry) {
-			setSettings({timer_type: 'keyboard', manual_entry: true});
-		} else {
-			setSetting('manual_entry', false);
-		}
-	}
-
-	// Radix Select onValueChange handler — value is our TypeKey
-	function handleValueChange(value: string) {
-		const opt = options.find((o) => o.typeKey === value);
-		if (!opt || opt.disabled) return;
-
-		switch (opt.typeKey) {
-			case 'stackmat':
-				openStackMatPicker();
-				break;
-			case 'manual':
-				toggleManualEntry();
-				break;
-			default:
-				selectTimerType(opt.typeKey as AllSettings['timer_type']);
-		}
-	}
-
-	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'notAllowed' | 'smartUnsupported' | 'unsupportedReason'>[] = [
-		{
-			typeKey: 'keyboard',
-			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
-			shortLabel: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
-			icon: <Keyboard weight="bold" size={16} />,
-			isActive: timerType === 'keyboard' && !manualEntry,
-		},
-		{
-			typeKey: 'virtual',
-			label: t('quick_controls.virtual_cube'),
-			shortLabel: t('quick_controls.virtual_cube_short'),
-			icon: <Cube weight="bold" size={16} />,
-			isActive: timerType === 'virtual' && !manualEntry && virtualSupported,
-		},
-		{
-			typeKey: 'stackmat',
-			label: t('quick_controls.wired_timer'),
-			shortLabel: 'StackMat',
-			icon: <Microphone weight="bold" size={16} />,
-			isActive: timerType === 'stackmat' && !manualEntry,
-		},
-		{
-			typeKey: 'smart',
-			label: t('quick_controls.smart_cube'),
-			shortLabel: 'Smart',
-			icon: <Cube weight="bold" size={16} />,
-			isActive: timerType === 'smart' && !manualEntry && smartSupported,
-		},
-		{
-			typeKey: 'gantimer',
-			label: t('quick_controls.gan_smart_timer'),
-			shortLabel: 'GAN',
-			icon: <Bluetooth weight="bold" size={16} />,
-			isActive: timerType === 'gantimer' && !manualEntry,
-		},
-		{
-			typeKey: 'qiyitimer',
-			label: t('quick_controls.qiyi_smart_timer'),
-			shortLabel: 'QiYi',
-			icon: <Bluetooth weight="bold" size={16} />,
-			isActive: timerType === 'qiyitimer' && !manualEntry,
-		},
-		{
-			typeKey: 'manual',
-			label: t('quick_controls.manual_entry'),
-			shortLabel: t('quick_controls.manual_entry'),
-			icon: <PencilSimple weight="bold" size={16} />,
-			isActive: manualEntry,
-		},
-	];
-
-	const options: TimerOption[] = baseOptions.map((opt) => {
-		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
-		const notAllowed = !!allowedTimerTypes && !allowedTimerTypes.includes(opt.typeKey);
-		// 'manual' is a mode, not a timer_type, so it is never puzzle-restricted.
-		const unsupportedReason =
-			opt.typeKey === 'manual'
-				? null
-				: timerTypeUnsupportedReason(opt.typeKey, cubeType, scrambleSubset);
-		const smartUnsupported = !!unsupportedReason;
-		const disabled = proGated || notAllowed || smartUnsupported;
-		return { ...opt, disabled, proGated, notAllowed, smartUnsupported, unsupportedReason };
-	});
-
 	const currentOption = options.find((opt) => opt.isActive) ?? options[0];
 
 	return (
-		<Select.Root value={currentOption.typeKey} onValueChange={handleValueChange} open={open} onOpenChange={setOpen}>
+		<Select.Root value={currentOption.key} onValueChange={(v) => choose(v as typeof currentOption.key)} open={open} onOpenChange={setOpen}>
 			<Select.Trigger className={b('trigger')} aria-label="Timer Type">
-				<span className={b('trigger-icon')}>{currentOption.icon}</span>
-				<span className={b('trigger-label')}>{currentOption.shortLabel}</span>
+				<span className={b('trigger-icon')}>{currentOption.icon(16)}</span>
+				{/* The same name as in the list and on mobile (it used to say "Smart" here and
+				    "Akıllı Küp" in the list). */}
+				<span className={b('trigger-label')}>{currentOption.label}</span>
 				<Select.Icon className={b('trigger-caret')}>
 					<CaretDown weight="bold" size={12} />
 				</Select.Icon>
@@ -241,19 +78,21 @@ export default function TimerTypePicker({ allowedTimerTypes: rawAllowed, require
 					<Select.Viewport ref={viewportRef}>
 						{options.map((opt) => (
 							<Select.Item
-								key={opt.typeKey}
-								value={opt.typeKey}
+								key={opt.key}
+								value={opt.key}
+								// A Magnet Timer Pro lock stays selectable: choose() opens the Pro dialog.
 								disabled={opt.disabled}
 								className={b('option', {
 									active: opt.isActive,
-									disabled: opt.disabled,
+									disabled: opt.disabled || opt.proGated,
 								})}
 							>
-								<span className={b('option-icon')}>{opt.icon}</span>
+								<span className={b('option-icon')}>{opt.icon(16)}</span>
 								<Select.ItemText>
 									<span className={b('option-label')}>{opt.label}</span>
 								</Select.ItemText>
 								<span className={b('option-badges')}>
+									{opt.beta && <span className={b('badge', { beta: true })}>{t('quick_controls.beta')}</span>}
 									{opt.proGated && (
 										<span className={b('badge', { pro: true })}>
 											<Crown size={10} weight="fill" />

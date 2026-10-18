@@ -1,41 +1,48 @@
 import {checkLoggedIn} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {
-	deleteTimerBackground,
-	getTimerBackground,
-	uploadTimerBackgroundWithFile,
+	clearTimerBackgroundSlot,
+	setTimerBackgroundMobileSame,
+	setTimerBackgroundSlot,
+	storeTimerBackgroundFile,
 	MAX_BACKGROUND_VIDEO_MB,
 } from '../models/timer_background';
+import {parseTimerBackgroundTarget} from '../../shared/timer_background';
 import {ErrorCode} from '../constants/errors';
 import {logger} from '../services/logger';
 import {isProEnabled, isPro} from '../lib/pro';
 
+// `target` is "desktop" or "mobile". Omitted means desktop, which is what clients built
+// before the desktop / mobile split send.
 export const gqlMutation = `
-	deleteTimerBackground: TimerBackground!
-	uploadTimerBackground(file: Upload): TimerBackground!
-	setTimerBackgroundHex(hex: String): TimerBackground!
+	deleteTimerBackground(target: String): TimerBackground!
+	uploadTimerBackground(file: Upload, target: String): TimerBackground!
+	setTimerBackgroundMobileSame(same: Boolean!): TimerBackground!
 `;
 
-export const mutateActions = {
-	deleteTimerBackground: async (_, params, {user}) => {
-		checkLoggedIn(user);
-		if (isProEnabled() && !isPro(user)) {
-			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
-		}
+function assertCanUseBackground(user) {
+	checkLoggedIn(user);
+	if (isProEnabled() && !isPro(user)) {
+		throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
+	}
+}
 
-		const background = await getTimerBackground(user);
+export const mutateActions = {
+	deleteTimerBackground: async (_, {target}, {user}) => {
+		assertCanUseBackground(user);
+
+		const background = await clearTimerBackgroundSlot(user, parseTimerBackgroundTarget(target));
 		if (!background) {
 			throw new GraphQLError(400, 'No background to delete');
 		}
-
-		await deleteTimerBackground(background);
 		return background;
 	},
-	uploadTimerBackground: async (_, {file}, {user}) => {
-		checkLoggedIn(user);
-		if (isProEnabled() && !isPro(user)) {
-			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
-		}
+	setTimerBackgroundMobileSame: async (_, {same}, {user}) => {
+		assertCanUseBackground(user);
+		return setTimerBackgroundMobileSame(user, !!same);
+	},
+	uploadTimerBackground: async (_, {file, target}, {user}) => {
+		assertCanUseBackground(user);
 
 		if (!file) {
 			throw new GraphQLError(400, 'File must be specified');
@@ -43,14 +50,9 @@ export const mutateActions = {
 
 		const {createReadStream, filename} = await file;
 
-		const background = await getTimerBackground(user);
-
-		if (background) {
-			await deleteTimerBackground(background);
-		}
-
+		let stored;
 		try {
-			await uploadTimerBackgroundWithFile(user, filename, createReadStream);
+			stored = await storeTimerBackgroundFile(filename, createReadStream);
 		} catch (e) {
 			logger.warn('Failed to upload timer background', {
 				error: e,
@@ -66,6 +68,6 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.SERVER, e.message);
 		}
 
-		return await getTimerBackground(user);
+		return setTimerBackgroundSlot(user, parseTimerBackgroundTarget(target), stored);
 	},
 };

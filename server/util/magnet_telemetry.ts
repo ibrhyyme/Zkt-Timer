@@ -43,6 +43,10 @@ export interface MagnetTelemetryEventLike {
 	/** JSON-encoded window in the test-fixture format. */
 	samples?: string | null;
 	app_version?: string | null;
+	/** Puzzle key of the cube in use (shared/cube_puzzle.ts). */
+	cube_puzzle?: string | null;
+	/** The "ready" threshold the detector ran with, calibrated or default. */
+	near_min_ut?: number | null;
 }
 
 export interface MagnetTelemetryRowData {
@@ -62,6 +66,8 @@ export interface MagnetTelemetryRowData {
 	reversed: boolean;
 	samples?: SampleWindow;
 	app_version: string | null;
+	cube_puzzle: string | null;
+	near_min_ut: number | null;
 }
 
 /** The stored subset of a captured window (client/util/magnet-start/debug_log.ts). */
@@ -90,6 +96,16 @@ function num(value: unknown, max: number): number | null {
 function int(value: unknown, max: number): number | null {
 	const n = num(value, max);
 	return n === null ? null : Math.round(n);
+}
+
+/**
+ * A puzzle key as the client names it: a built-in key ('333', 'pyram') or a custom cube type
+ * id (uuid). Only id characters, bounded; not checked against the user's types (a label for
+ * grouping, never a reference).
+ */
+function puzzleKey(value: unknown): string | null {
+	const key = text(value, 64);
+	return key && /^[A-Za-z0-9_-]+$/.test(key) ? key : null;
 }
 
 function finiteArray(value: unknown, length: number): number[] | null {
@@ -162,6 +178,8 @@ export function sanitizeMagnetTelemetry(
 			reversed: e.reversed === true,
 			...(samples ? {samples} : {}),
 			app_version: text(e.app_version, 32),
+			cube_puzzle: puzzleKey(e.cube_puzzle),
+			near_min_ut: num(e.near_min_ut, 20000),
 		});
 	}
 	return rows;

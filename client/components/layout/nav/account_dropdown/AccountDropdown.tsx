@@ -42,6 +42,13 @@ export default function AccountDropdown() {
 		return () => window.removeEventListener('timerInteractionStart', close);
 	}, [open]);
 
+	// Reversed use (util/reversed-ui.ts): on the 180° rotated timer the popover opens in
+	// physical coordinates, so it is placed on the reader's side and its list is turned.
+	// Above the early return: `me` arrives after mount on native (no SSR), and a hook below
+	// the return then throws "Rendered more hooks than during the previous render".
+	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [reversed, setReversed] = useState(false);
+
 	if (!me) {
 		return null;
 	}
@@ -103,10 +110,6 @@ export default function AccountDropdown() {
 		onClick: logOut,
 	});
 
-	// Reversed use (util/reversed-ui.ts): on the 180° rotated timer the popover opens in
-	// physical coordinates, so it is placed on the reader's side and its list is turned.
-	const triggerRef = useRef<HTMLButtonElement>(null);
-	const [reversed, setReversed] = useState(false);
 	function handleOpenChange(next: boolean) {
 		if (next) setReversed(inReversedFrame(triggerRef.current));
 		setOpen(next);

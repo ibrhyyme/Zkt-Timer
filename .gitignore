@@ -28,6 +28,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# private data, served from the server, never committed
+/data/
+
 # caches
 .cache/
 .eslintcache
@@ -89,3 +92,5 @@ CLAUDE.md
 # Next.js common (usually safe)
 .vercel/
 out/
+# Local bug/feature feedback screenshots and backlog
+.feedback/

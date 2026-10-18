@@ -27,6 +27,9 @@
 		min-height: 150px;
 		width: 100%;
 		position: relative;
+		// Room for the absolutely placed "mark as resolved" button so it never covers the last row's set button.
+		padding-bottom: 48px;
+		box-sizing: border-box;
 	}
 
 	&__top-info {
@@ -53,6 +56,54 @@
 	&__reason {
 		padding: 0;
 		margin: 0;
+	}
+
+	&__note {
+		margin: 4px 0 0;
+		padding: 0;
+		font-size: 0.9rem;
+		color: rgb(var(--text-color));
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	// Trainer set report: set name, link, visibility, hide state and the hide / show button.
+	&__alg-set {
+		margin: 8px 0;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
+	}
+
+	&__alg-set-info {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+	}
+
+	&__alg-set-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__alg-set-link {
+		font-weight: 600;
+		color: rgb(var(--primary-color));
+		overflow-wrap: anywhere;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__alg-set-hint {
+		margin: 0;
+		padding: 0;
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
 	}
 
 	&__reporter {

@@ -206,7 +206,7 @@ async function broadcast(row: Row, stage: ZktAnnouncementStage) {
 			type: NotificationType.ZKT_COMPETITION_ANNOUNCED,
 			stage,
 			competitionId: `zkt-${row.slug}`,
-			link: `/zkt-competitions/${row.slug}`,
+			link: `/competitions/zkt-${row.slug}`,
 		},
 	});
 	logger.info('[ZktAnnounce] broadcast', {competitionId: row.competition_id, stage, ...result});

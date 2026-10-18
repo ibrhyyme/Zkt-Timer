@@ -21,6 +21,10 @@ import { getCubeTypeBucketLabel } from '../../../../../util/cubes/util';
 import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
 import { fetchServerSolveFingerprints } from './chunked_import';
 import { solveFingerprint, toStoredSubset } from '../../../../../../shared/solve';
+import { getCustomCubeTypes } from '../../../../../util/cubes/util';
+import { getCubeState, useCubes } from '../../../../../lib/cubes/store';
+import { createCubeOnline, refreshCubes, setCubeArchivedOnline } from '../../../../../lib/cubes/sync';
+import { linkSolvesToCubes, planCubeImport } from '../parse_data/zkttimer_cubes';
 
 // Import only registers WCA events (cube_type='wca' + this subset).
 // Method-based cube_type's (333cfop/roux/mehta/zz, 444yau, other, wca parent) are not shown.
@@ -71,9 +75,78 @@ export default function ReviewImport() {
 	// would re-upload the wrong rows.
 	const importedSolvesRef = React.useRef<SolveInput[] | null>(null);
 
+	// The file's cubes are matched against this account's list (Zkt Timer exports only).
+	const cubeState = useCubes();
+	const hasFileCubes = !!context.importableData?.fileCubes?.length;
+	React.useEffect(() => {
+		if (hasFileCubes) void refreshCubes({ force: true });
+	}, [hasFileCubes]);
+
 	const data = context.importableData;
 	if (!data) {
 		return null;
+	}
+
+	function customTypeIds(): Set<string> {
+		return new Set(getCustomCubeTypes().map((ct) => ct.id));
+	}
+
+	const cubesToCreate = data.fileCubes?.length
+		? planCubeImport(data.fileCubes, data.solves, cubeState.cubes, customTypeIds()).toCreate.length
+		: 0;
+
+	/**
+	 * Maps the file's cubes onto this account (design 4.6): existing cubes are reused, missing
+	 * ones are created, and every solve gets this account's cube id or null. Runs at import
+	 * time, not while parsing, because the review screen can still change a session's cube type.
+	 * A cube that cannot be created only costs its solves their link, never the import.
+	 */
+	async function mapFileCubes(solves: SolveInput[]): Promise<SolveInput[]> {
+		// A stale list would create a cube a previous attempt already made.
+		const fresh = await refreshCubes({ force: true });
+		const targetCubes = getCubeState().cubes;
+		const plan = planCubeImport(data.fileCubes, data.solves, targetCubes, customTypeIds());
+
+		const idMap: Record<string, { id: string; puzzle: string }> = {};
+		const targetById = new Map(targetCubes.map((cube) => [cube.id, cube]));
+		for (const [fileId, targetId] of Object.entries(plan.matched)) {
+			const target = targetById.get(targetId);
+			if (target) idMap[fileId] = { id: target.id, puzzle: target.puzzle };
+		}
+
+		let failed = 0;
+		for (const entry of plan.toCreate) {
+			if (!fresh) {
+				failed++;
+				continue;
+			}
+			try {
+				const cube = await createCubeOnline({
+					puzzle: entry.puzzle,
+					name: entry.name,
+					brand: entry.brand || undefined,
+					is_smart: entry.is_smart,
+				});
+				if (!cube) {
+					failed++;
+					continue;
+				}
+				if (entry.archive) {
+					try {
+						await setCubeArchivedOnline(cube.id, true);
+					} catch (e) {
+						console.error('[Import] Could not archive imported cube:', e);
+					}
+				}
+				for (const fileId of entry.fileIds) idMap[fileId] = { id: cube.id, puzzle: cube.puzzle };
+			} catch (e) {
+				console.error('[Import] Cube not created:', e);
+				failed++;
+			}
+		}
+
+		if (failed > 0) toastWarning(t('data_settings.import_cubes_failed', { count: failed }));
+		return linkSolvesToCubes(solves, idMap);
 	}
 
 	async function importData() {
@@ -105,6 +178,10 @@ export default function ReviewImport() {
 				context.setImporting(false);
 				toastWarning(t('data_settings.import_nothing_new'));
 				return;
+			}
+
+			if (data.fileCubes?.length) {
+				solvesToImport = await mapFileCubes(solvesToImport);
 			}
 
 			importedSolvesRef.current = solvesToImport;
@@ -464,6 +541,11 @@ export default function ReviewImport() {
 					<h4>
 						{t('data_settings.sessions_count', { count: data.sessions.length })}
 					</h4>
+					{cubesToCreate > 0 && (
+						<h4>
+							{t('data_settings.cubes_to_create', { count: cubesToCreate })}
+						</h4>
+					)}
 					{!!data.skippedSolveCount && (
 						<div className={b('skipped')}>
 							<strong>{t('data_settings.skipped_count', { count: data.skippedSolveCount })}</strong>

@@ -11,6 +11,7 @@ import {getSinglePB} from '../../../../db/solves/stats/solves/single/single_pb';
 import {getTotalSolveCount, getTotalSolveTime} from '../../../../db/solves/stats/count';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {getTimeString} from '../../../../util/time';
+import {formatDurationText, formatShortDate} from '../../../../util/locale_format';
 import {useDispatch} from 'react-redux';
 import {openModal} from '../../../../actions/general';
 import SolveInfo from '../../../solve_info/SolveInfo';
@@ -19,7 +20,7 @@ import {Solve} from '../../../../../server/schemas/Solve.schema';
 const b = block('stats-featured');
 
 export default function CubeStatsFeatured() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const dispatch = useDispatch();
 	const context = useContext(StatsContext);
 
@@ -64,7 +65,7 @@ export default function CubeStatsFeatured() {
 								<li>
 									<CalendarBlank />
 									<div>
-										<p>{pbDate.toLocaleDateString()}</p>
+										<p>{formatShortDate(pbDate, i18n.language)}</p>
 										<span>({getDateFromNow(pbDate)})</span>
 									</div>
 								</li>
@@ -90,7 +91,7 @@ export default function CubeStatsFeatured() {
 			<NumberBlock
 				icon={<Timer weight="bold" />}
 				title={t('stats_page.cubing_time')}
-				value={getTimeString(timeSpentCubing)}
+				value={formatDurationText(timeSpentCubing, t)}
 				animateSeconds={timeSpentCubing}
 				color="#6D7D90"
 			/>

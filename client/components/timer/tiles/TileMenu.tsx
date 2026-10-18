@@ -86,7 +86,10 @@ export default function TileMenu({ options, align = 'left', title, className, ch
 
 		place();
 
-		function onPointerDown(event: MouseEvent) {
+		// Pointerdown, not mousedown: a module drag calls preventDefault on pointerdown,
+		// which suppresses the compatibility mousedown, so an open menu used to stay open
+		// while another module was dragged away underneath it.
+		function onPointerDown(event: PointerEvent) {
 			const target = event.target as Node;
 			if (triggerRef.current?.contains(target)) return;
 			if ((target as HTMLElement).closest?.(`.${b()}`)) return;
@@ -104,13 +107,13 @@ export default function TileMenu({ options, align = 'left', title, className, ch
 			setOpen(false);
 		}
 
-		document.addEventListener('mousedown', onPointerDown, true);
+		document.addEventListener('pointerdown', onPointerDown, true);
 		document.addEventListener('keydown', onKey);
 		window.addEventListener('resize', onReflow);
 		window.addEventListener('scroll', onReflow, true);
 
 		return () => {
-			document.removeEventListener('mousedown', onPointerDown, true);
+			document.removeEventListener('pointerdown', onPointerDown, true);
 			document.removeEventListener('keydown', onKey);
 			window.removeEventListener('resize', onReflow);
 			window.removeEventListener('scroll', onReflow, true);

@@ -13,15 +13,16 @@ import {
 } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import {StatsContext} from '../../Stats';
-import NumberBlock from '../number_block/NumberBlock';
+import NumberBlock, {NEUTRAL_STAT_COLOR} from '../number_block/NumberBlock';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {getSolveStreak} from '../../../../db/solves/stats/streak';
 import {getSubStats} from '../../../../db/solves/stats/sub_stats';
-import dayjs from 'dayjs';
+import {getAvgSolvesPerSession} from '../../../../db/solves/stats/extras';
+import {formatInteger, formatPercent, formatShortDate} from '../../../../util/locale_format';
 
 const b = block('sub-stats');
 
-const NEUTRAL = '#6D7D90';
+const NEUTRAL = NEUTRAL_STAT_COLOR;
 const MINT = '#23C586';
 const BLUE = '#54ACE4';
 const ROSE = '#EF4358';
@@ -31,7 +32,8 @@ interface Props {
 }
 
 export default function SubStats(props: Props) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
+	const language = i18n.language;
 
 	const context = useContext(StatsContext);
 	const {filterOptions, stats} = context;
@@ -48,13 +50,12 @@ export default function SubStats(props: Props) {
 
 	let firstSolveTime = '-';
 	if (subStats.firstSolve) {
-		firstSolveTime = dayjs(subStats.firstSolve?.started_at).format('MM/DD/YY');
+		firstSolveTime = formatShortDate(subStats.firstSolve?.started_at, language);
 	}
 
-	let avgSolvesPerSession = '-';
-	if (streak.avgSolvesPerSession >= 0) {
-		avgSolvesPerSession = String(streak.avgSolvesPerSession);
-	}
+	// Per season, the same number as "Active sessions" under Time & Focus (it used to be per
+	// run of consecutive active days)
+	const avgSolvesPerSession = useMemo(() => getAvgSolvesPerSession(filterOptions), [filterOptions, solveUpdate]);
 
 	return (
 		<div className={b()}>
@@ -63,7 +64,7 @@ export default function SubStats(props: Props) {
 				center
 				icon={<CaretDoubleRight weight="bold" />}
 				title={t('stats_page.solve_streak')}
-				value={`${streak.currentStreak} ${t('stats_page.days')}`}
+				value={t('stats_page.duration_days', {count: streak.currentStreak})}
 				color={streak.currentStreak > 0 ? MINT : NEUTRAL}
 			/>
 			<NumberBlock
@@ -71,7 +72,7 @@ export default function SubStats(props: Props) {
 				center
 				icon={<CaretDoubleUp weight="bold" />}
 				title={t('stats_page.highest_streak')}
-				value={`${streak.highestStreak} ${t('stats_page.days')}`}
+				value={t('stats_page.duration_days', {count: streak.highestStreak})}
 				color={BLUE}
 			/>
 			<NumberBlock
@@ -79,7 +80,7 @@ export default function SubStats(props: Props) {
 				center
 				icon={<WarningOctagon weight="bold" />}
 				title={t('stats.sub_stats.dnfs')}
-				value={`${subStats.dnfCount} (${subStats.dnfPercent}%)`}
+				value={`${formatInteger(subStats.dnfCount, language)} (${formatPercent(Number(subStats.dnfPercent), language)})`}
 				color={subStats.dnfCount > 0 ? ROSE : NEUTRAL}
 			/>
 			<NumberBlock
@@ -87,7 +88,7 @@ export default function SubStats(props: Props) {
 				center
 				icon={<Warning weight="bold" />}
 				title={t('stats.sub_stats.plus_twos')}
-				value={`${subStats.plusTwoCount} (${subStats.plusTwoPercent}%)`}
+				value={`${formatInteger(subStats.plusTwoCount, language)} (${formatPercent(Number(subStats.plusTwoPercent), language)})`}
 				color={subStats.plusTwoCount > 0 ? AMBER : NEUTRAL}
 			/>
 			<NumberBlock
@@ -95,7 +96,7 @@ export default function SubStats(props: Props) {
 				center
 				icon={<Calculator weight="bold" />}
 				title={t('stats_page.avg_solves_per_session')}
-				value={avgSolvesPerSession}
+				value={String(avgSolvesPerSession)}
 				color={NEUTRAL}
 			/>
 			<NumberBlock

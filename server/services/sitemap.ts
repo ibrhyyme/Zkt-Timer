@@ -5,6 +5,8 @@ import { PageContext, routes } from '../../client/components/layout/Routes';
 import { uploadObject } from './storage';
 import { logger } from './logger';
 import { getPrisma } from '../database';
+import { getSiteConfig } from '../models/site_config';
+import { isOnlineBattleLaunched, sitemapLaunchExclusions } from '../../client/components/battle/battle_landing_modes';
 
 const SITEMAP_REDIS_KEY = createRedisKey(RedisNamespace.SITEMAP);
 const SITEMAP_SCHEMAS_DIR = __dirname + '/sitemap_schemas';
@@ -122,8 +124,19 @@ function getSiteMapFilePath(fileName: string) {
 	return `${SITEMAP_SCHEMAS_DIR}/${fileName}`;
 }
 
+// The Online Battle leaderboard joins the sitemap on its own once the flag is on (ranking-battle
+// 7.4); the next scheduled generation picks it up, no deploy needed. A failed read keeps it out.
+async function readOnlineBattleLaunched(): Promise<boolean> {
+	try {
+		return isOnlineBattleLaunched(await getSiteConfig());
+	} catch (e) {
+		logger.warn('Sitemap could not read the site config, Online Battle pages left out', { error: e?.message || e });
+		return false;
+	}
+}
+
 async function uploadDefaultSiteMapUrls() {
-	const urls = getDefaultSiteMapUrls();
+	const urls = getDefaultSiteMapUrls(await readOnlineBattleLaunched());
 	const fileName = `sitemap_site.xml`;
 	const dataToWrite = getSiteMapXmlFromSchemaUrlList(urls);
 	fs.writeFileSync(getSiteMapFilePath(fileName), dataToWrite);
@@ -191,7 +204,7 @@ function getPriorityForPath(path: string): number | null {
 	return highPriorityPaths[path] ?? null;
 }
 
-function getDefaultSiteMapUrls() {
+export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 	const baseUri = process.env.BASE_URI;
 	const urls: SiteMapUrl[] = [];
 	const today = new Date().toISOString().split('T')[0];
@@ -213,6 +226,13 @@ function getDefaultSiteMapUrls() {
 		'/messages',
 		// ZKT competitions are private — never expose to Google in any form
 		'/zkt-competitions',
+		// Trainer sets: My Sets and the study screen are per user; single set pages are
+		// noindex for now (user-written names, trainer-sets.md Q4). '/trainer/sets' also covers
+		// My Sets. The Community Sets list (/trainer/community) stays in.
+		'/trainer/algorithms/train',
+		'/trainer/sets',
+		// /battle/online always; /ranks and /battle/offline until Online Battle is public
+		...sitemapLaunchExclusions(onlineBattleLaunched),
 	];
 
 	for (let i = 0; i < routes.length; i += 1) {

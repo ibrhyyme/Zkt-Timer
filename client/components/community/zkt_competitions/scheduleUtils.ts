@@ -1,5 +1,3 @@
-import {getEventName} from './shared';
-
 export interface ScheduleRow {
 	id: string;
 	title: string;
@@ -22,16 +20,6 @@ export interface ScheduleRow {
 	/** Stage this block runs in; null when the organizer defined no rooms. */
 	roomName?: string | null;
 	roomColor?: string | null;
-}
-
-/**
- * The venue's zone, which is what every time in the schedule has to be read in.
- * Undefined when the federation has not published one (older deployment), in
- * which case every helper below falls back to the reader's own zone — the
- * behaviour this file had before rooms and zones existed.
- */
-export function compTimezone(detail: any): string | undefined {
-	return typeof detail?.timezone === 'string' && detail.timezone ? detail.timezone : undefined;
 }
 
 /** Wall-clock parts of an instant in `tz` (reader's zone when tz is absent). */
@@ -61,124 +49,6 @@ export function dateKeyInTz(iso: string, tz?: string): string {
 export function hourFloatInTz(iso: string, tz?: string): number {
 	const p = wallParts(iso, tz);
 	return p.h + p.min / 60;
-}
-
-/**
- * Merge custom schedule items with round rows derived from group times into a
- * single chronological list. Round rows span min(group start) → max(group end).
- * Rows without any time sort to the end (so untimed rounds still show up).
- */
-export function buildScheduleRows(
-	detail: any,
-	roundLabel: (n: number) => string,
-	/** Name of a chain's last round; without it a final reads as "Tur 3". */
-	finalLabel?: string
-): ScheduleRow[] {
-	const rows: ScheduleRow[] = [];
-	const tz = compTimezone(detail);
-	// Rooms are only present once the organizer defined stages; every lookup
-	// below degrades to null, which reads as "one hall" everywhere downstream.
-	const roomById = new Map<string, {name: string; color: string}>(
-		(detail.rooms || []).map((r: any) => [r.id, {name: r.name, color: r.color}])
-	);
-	const room = (id?: string | null) => (id ? roomById.get(id) ?? null : null);
-
-	for (const item of detail.schedule || []) {
-		const rm = room(item.roomId);
-		rows.push({
-			id: item.id,
-			title: item.title,
-			start: item.startTime || null,
-			end: item.endTime || null,
-			isRound: false,
-			roomName: rm?.name ?? null,
-			roomColor: rm?.color ?? null,
-		});
-	}
-
-	for (const ev of detail.events || []) {
-		for (const r of ev.rounds || []) {
-			const timed = (r.groups || []).filter((g: any) => g.startTime);
-			// A round of a day-split competition runs on BOTH days: its groups sit on
-			// different dates. Collapsing them into one min→max row produced a block
-			// spanning "Saturday 09:00 – Sunday 11:00", a session that never happens.
-			// One row per calendar day instead, exactly like the federation's own
-			// schedule builder.
-			//
-			// The room is part of the bucket key too, which the federation's builder
-			// does not do: a round run on two stages at once has groups in both, and
-			// keying by day alone collapses them into one block labelled with
-			// whichever room happened to come first. A single-hall competition has
-			// one room (or none) and buckets exactly as it did before.
-			const byDayRoom = new Map<
-				string,
-				{start: string; end: string | null; dayLabel: string | null; roomId: string | null}
-			>();
-			for (const g of timed) {
-				const roomId = g.roomId ?? null;
-				const key = `${dateKeyInTz(g.startTime, tz)}|${roomId ?? ''}`;
-				const end = g.endTime || g.startTime;
-				const cur = byDayRoom.get(key);
-				if (!cur) {
-					byDayRoom.set(key, {start: g.startTime, end, dayLabel: g.dayLabel ?? null, roomId});
-				} else {
-					if (g.startTime < cur.start) cur.start = g.startTime;
-					if (cur.end === null || end > cur.end) cur.end = end;
-				}
-			}
-
-			// A chain's last round is a final wherever it runs; the day comes from the
-			// round for a SEPARATE chain and from the group block otherwise.
-			const name = `${getEventName(ev.eventId)} — ${
-				r.isFinal && finalLabel ? finalLabel : roundLabel(r.roundNumber)
-			}`;
-
-			if (byDayRoom.size === 0) {
-				// No timed groups. The organizer may still have placed the ROUND on
-				// the calendar — that is how the second day of a day-split event is
-				// usually laid out, since groups only get times once assignments are
-				// made. Reading only the groups made those rounds vanish.
-				const rm = room(r.roomId);
-				rows.push({
-					id: r.roundId,
-					title: name,
-					start: r.startTime || null,
-					end: r.endTime || null,
-					isRound: true,
-					eventId: ev.eventId,
-					roundNumber: r.roundNumber,
-					dayLabel: r.dayLabel ?? null,
-					dayName: r.dayLabel ?? null,
-					roomName: rm?.name ?? null,
-					roomColor: rm?.color ?? null,
-				});
-				continue;
-			}
-			for (const [key, d] of byDayRoom) {
-				const rm = room(d.roomId);
-				rows.push({
-					id: byDayRoom.size > 1 ? `${r.roundId}-${key}` : r.roundId,
-					title: name,
-					start: d.start,
-					end: d.end,
-					isRound: true,
-					eventId: ev.eventId,
-					roundNumber: r.roundNumber,
-					dayLabel: r.dayLabel ?? null,
-					dayName: d.dayLabel ?? r.dayLabel ?? null,
-					roomName: rm?.name ?? null,
-					roomColor: rm?.color ?? null,
-				});
-			}
-		}
-	}
-
-	return rows.sort((a, b) => {
-		if (a.start === null && b.start === null) return 0;
-		if (a.start === null) return 1;
-		if (b.start === null) return -1;
-		return a.start.localeCompare(b.start);
-	});
 }
 
 /**

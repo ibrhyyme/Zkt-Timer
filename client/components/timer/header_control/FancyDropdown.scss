@@ -246,44 +246,18 @@
 		z-index: 1;
 		animation: fancy-dropdown-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
-		// Sol yan stripe (gizli baslangic — hover/active'de buyur)
-		&::before {
-			content: '';
-			position: absolute;
-			left: 4px;
-			top: 50%;
-			width: 3px;
-			height: 0;
-			background: rgb(var(--primary-color));
-			border-radius: 2px;
-			transform: translateY(-50%);
-			transition:
-				height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-				background 0.15s ease;
-		}
-
-		// Hover (Radix data-highlighted): sol stripe partial + text rengi acilir, background YOK
+		// Hover / keyboard highlight: a soft tint of the whole row, same as the timer
+		// type picker. The old partial left stripe read as a stray vertical line.
 		&[data-highlighted] {
-			background: transparent;
+			background: rgba(var(--text-color), 0.08);
 			color: rgb(var(--text-color));
 			outline: none;
-			transform: translateX(2px);
-
-			&::before {
-				height: 10px;
-				background: rgba(var(--text-color), 0.4);
-			}
 		}
 
 		// Active (Radix data-state='checked'): solid mavi arkaplan + beyaz text + check icon
 		&[data-state='checked'] {
 			background: rgb(var(--primary-color));
 			color: #fff;
-
-			&::before {
-				// Solid bg ile sol stripe redundant
-				height: 0;
-			}
 
 			.#{$namespace}-fancy-dropdown__option-icon {
 				color: #fff;
@@ -293,11 +267,6 @@
 			&[data-highlighted] {
 				background: rgb(var(--primary-color));
 				color: #fff;
-				transform: none;
-
-				&::before {
-					height: 0;
-				}
 			}
 		}
 

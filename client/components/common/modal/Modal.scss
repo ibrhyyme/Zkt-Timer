@@ -1,5 +1,8 @@
 @import '../../../styles/config';
 
+// Every modal in the app renders inside this frame (openModal wraps the body in it),
+// so the backdrop, the corner, the padding and the close button are decided here once.
+// A modal body styles its own content, never the frame.
 .#{$namespace}-modal {
 	$self: &;
 
@@ -9,14 +12,14 @@
 	opacity: 0;
 	width: 100vw;
 	height: 100vh;
-	background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
-	backdrop-filter: blur(8px);
+	// Flat dim, no blur: see $zt-overlay.
+	background: $zt-overlay;
 	will-change: opacity;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 1rem;
-	transition: all 0.2s ease-in-out;
+	padding: $zt-space-4;
+	transition: opacity 180ms ease;
 	// It's over 9000!
 	z-index: 100000;
 
@@ -28,7 +31,7 @@
 		opacity: 1;
 
 		#{$self}__center {
-			transform: translateY(0) scale(1);
+			transform: translateY(0);
 		}
 	}
 
@@ -37,9 +40,8 @@
 
 		p {
 			color: rgb(var(--text-color));
-			margin-bottom: 30px;
-			line-height: 1.4rem;
-			opacity: 0.9;
+			margin-bottom: $zt-space-5;
+			line-height: 1.5;
 		}
 
 		b {
@@ -60,85 +62,62 @@
 
 	&__description {
 		font-size: 1rem;
-		color: rgba(var(--text-color), 0.8);
-		margin: 15px 0;
-		opacity: 0.9;
-		line-height: 1.4rem;
+		color: $zt-text-muted;
+		margin: $zt-space-3 0;
+		line-height: 1.5;
 	}
 
 	&__center {
+		@include zt-float;
+
 		width: 90%;
 		max-width: 700px;
 		max-height: 90vh;
 		max-height: 90dvh;
 		overflow-y: auto;
 		overflow-x: hidden;
-		padding: 1.5rem;
-		background: rgb(var(--background-color)) !important;
-		border: 1px solid rgba(var(--text-color), 0.08) !important;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-		will-change: transform, opacity;
-		border-radius: 24px;
-		transition: all 0.3s ease-in-out;
+		padding: $zt-space-5;
+		will-change: transform;
+		transition: transform 220ms $ease-out-snap;
 		position: relative;
-		transform: translateY(20px) scale(0.95);
+		transform: translateY(12px);
 		box-sizing: border-box;
 
-		// When noPadding is used, make wrapper transparent so child can define its own styling
+		// noPadding: the body draws its own surface (solve card, history), so the frame
+		// steps back entirely.
 		&[style*="padding: 0"] {
-			background: transparent !important;
-			border: none !important;
-			box-shadow: none !important;
-			backdrop-filter: none !important;
-		}
-	}
-
-	&__close-button {
-		position: absolute;
-		top: 1.5rem;
-		right: 1.5rem;
-		width: 36px;
-		height: 36px;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background: rgba(var(--button-color), 0.7);
-		color: rgb(var(--text-color));
-		border: 1px solid rgba(var(--text-color), 0.2);
-		border-radius: 12px;
-		backdrop-filter: blur(4px);
-		will-change: transform;
-		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-		transition: all 0.2s ease-in-out;
-		z-index: 10000;
-		font-size: 1.125rem;
-		cursor: pointer;
-
-		&:hover {
-			background: rgba(var(--button-color), 0.9);
-			color: rgb(var(--text-color));
-			border-color: rgba(var(--text-color), 0.3);
-			transform: translateY(-1px) scale(1.05);
-			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-		}
-
-		&:active {
-			transform: translateY(0) scale(1);
-			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-		}
-
-		&--text {
-			width: auto;
-			height: auto;
-			padding: 6px 16px;
-			font-size: 0.9rem;
-			font-weight: 600;
-			font-family: 'Source Sans Pro', sans-serif;
-			border-radius: 8px;
-			color: rgb(var(--primary-color));
 			background: transparent;
 			border: none;
 			box-shadow: none;
+		}
+	}
+
+	// Top-right, the same 40px CloseButton every modal uses.
+	&__close-button {
+		position: absolute;
+		top: $zt-space-4;
+		right: $zt-space-4;
+		z-index: 10000;
+
+		// "Done" instead of the X: a text action in the accent colour.
+		&--text {
+			@include zt-focus-ring;
+
+			height: $zt-control-h-sm;
+			padding: 0 $zt-space-3;
+			font: inherit;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			border-radius: $zt-radius-md;
+			color: rgb(var(--primary-color));
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			transition: background $zt-transition;
+
+			&:hover {
+				background: $zt-control-bg;
+			}
 		}
 	}
 
@@ -167,7 +146,7 @@
 			height: auto !important;
 			max-height: 92vh;
 			max-height: 92dvh;
-			border-radius: 28px 28px 0 0 !important;
+			border-radius: $zt-radius-lg $zt-radius-lg 0 0 !important;
 			padding: 0 !important;
 			background: transparent !important;
 			border: none !important;
@@ -182,48 +161,47 @@
 		}
 
 		@include bp-down($bp-md) {
-			align-items: flex-end !important;
-
 			#{$self}__center {
-				width: 100% !important;
 				max-width: 100% !important;
-				height: auto !important;
 				max-height: 90vh;
 				max-height: 90dvh;
-				border-radius: 28px 28px 0 0 !important;
-				transform: translateY(100%);
-			}
-
-			&#{$self}--active #{$self}__center {
-				transform: translateY(0);
 			}
 		}
 	}
 
-	// Mobile responsive
+	@include reduced-motion {
+		transition: none;
+
+		#{$self}__center {
+			transition: none;
+			transform: none;
+		}
+	}
+
+	// Phones: a modal is a full screen with the close button pinned top-right.
 	@include bp-down($bp-md) {
 		padding: 0;
 		align-items: flex-start;
 
-		// Compact: mobilde de kucuk centered modal
+		// Compact: a small centred card even on a phone (confirmations).
 		&--compact {
-			padding: 1rem;
+			padding: $zt-space-4;
 			align-items: center;
 
 			#{$self}__center {
-				width: 90%;
+				width: 100%;
 				max-width: 400px;
 				height: auto !important;
 				max-height: 85vh;
 				max-height: 85dvh;
-				border-radius: 24px !important;
+				border-radius: $zt-radius-lg !important;
 				overflow-y: auto;
 			}
 
 			#{$self}__close-button {
 				position: absolute;
-				top: 1rem;
-				right: 1rem;
+				top: $zt-space-3;
+				right: $zt-space-3;
 				float: none;
 			}
 		}
@@ -235,36 +213,37 @@
 			height: 100dvh;
 			max-height: 100vh;
 			max-height: 100dvh;
-			padding: clamp(1rem, 3vw, 1.5rem);
+			padding: $zt-space-4;
 			border-radius: 0;
+			border: none;
+			box-shadow: none;
 			overflow-y: auto;
 			overflow-x: hidden;
-			transform: translateY(0) scale(1);
+			transform: none;
 			touch-action: pan-y;
-			will-change: transform, opacity;
 
-			// Scrollable content
-			>* {
+			> * {
 				max-width: 100%;
 			}
 		}
 
 		&__description {
-			font-size: clamp(0.875rem, 2.5vw, 1rem);
+			font-size: 0.9375rem;
 		}
 
-		// Close button mobilde ustte sagda sabit
 		#{$self}__close-button {
+			// Sticky offset counts from the padded edge already; 0 keeps it level with
+			// the title's first line.
 			position: sticky;
-			top: 1rem;
+			top: 0;
+			right: auto;
 			float: right;
 			z-index: 1000;
 
-			// Text variant mobilde absolute kalsin, content'e karismaz
 			&--text {
 				position: absolute;
-				top: 1rem;
-				right: 1rem;
+				top: $zt-space-3;
+				right: $zt-space-3;
 				float: none;
 			}
 		}

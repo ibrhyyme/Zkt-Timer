@@ -232,10 +232,14 @@ function previewOf(body: string, hasSolve: boolean): string {
  *
  * The Prisma row must never be broadcast as-is, for two independent reasons.
  *
- * Privacy: `sender.integrations` is a full Integration row, which holds the sender's
- * WCA OAuth `auth_token` and `refresh_token`. GraphQL never exposes those because the
- * schema only declares the three public fields, but a socket emit has no schema in
- * front of it and would hand the recipient the sender's credentials.
+ * Privacy: a socket emit has no schema in front of it, so whatever columns the row
+ * carries reach the recipient verbatim. The sender is loaded through
+ * `publicUserInclude`, whose `publicIntegrationSelect` leaves out the WCA/ZKT
+ * `auth_token` and `refresh_token`, but that select also holds ranking scores,
+ * visibility switches and sync stamps the client never asked for, and any future
+ * include change (a bare `integrations: true`) would put the sender's OAuth
+ * credentials on the wire. The GraphQL `Integration` type no longer declares the
+ * token fields at all; only this explicit pick protects the socket path.
  *
  * Encoding: room broadcasts travel through the Redis adapter, which serialises with
  * msgpack (notepack). notepack handles Date fine but throws "Could not encode" on

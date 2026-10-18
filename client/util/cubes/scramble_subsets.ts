@@ -10,12 +10,12 @@ export interface ScrambleSubset {
 export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
     // ==================== WCA (all WCA events) ====================
     'wca': [
-        { id: '333', label: '3x3x3' },
-        { id: '222', label: '2x2x2' },
-        { id: '444', label: '4x4x4' },
-        { id: '555', label: '5x5x5' },
-        { id: '666', label: '6x6x6' },
-        { id: '777', label: '7x7x7' },
+        { id: '333', label: '3x3' },
+        { id: '222', label: '2x2' },
+        { id: '444', label: '4x4' },
+        { id: '555', label: '5x5' },
+        { id: '666', label: '6x6' },
+        { id: '777', label: '7x7' },
         { id: 'clock', label: 'Clock' },
         { id: 'minx', label: 'Megaminx' },
         { id: 'pyram', label: 'Pyraminx' },

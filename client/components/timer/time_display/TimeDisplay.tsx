@@ -22,7 +22,10 @@ import QiyiTimer from './qiyitimer/QiyiTimer';
 import SolveDiff from './SolveDiff';
 import MultiPhaseIndicator from './multi_phase/MultiPhaseIndicator';
 import OfflineModeIndicator from './OfflineModeIndicator';
-import MagnetHint from './magnet/MagnetHint';
+import MagnetGuide from './magnet/MagnetGuide';
+import MagnetLiveBar from './magnet/MagnetLiveBar';
+import TimerCubeLabel from './cube_label/TimerCubeLabel';
+import HoldStopProgress from './magnet/HoldStopProgress';
 import { useMagnetStatus } from '../../../util/magnet-start/status_store';
 
 const b = block('time-display');
@@ -103,6 +106,18 @@ export default function TimeDisplay() {
 	const magnet = useMagnetStatus();
 	const magnetGreen = magnet.green && !timeStartedAt;
 	const magnetOrange = magnet.orange && !timeStartedAt;
+	// The Magnet Timer owns the input (Pro, sensor, selection): useMagnetStart publishes a cube
+	// profile only then. The guide, the live bar and the label below all key off it.
+	const magnetOwns = timerType === 'magnet' && !!magnet.profile && !context.inModal && !matchMode;
+
+	// True from a stop until the next start: the reduced-motion stop cue (TimeDisplay.scss)
+	// plays once when the class appears. Derived during render, so the class lands in the
+	// same commit as the frozen time and adds no render of its own.
+	const wasSolvingRef = useRef(false);
+	const landedRef = useRef(false);
+	if (solving) landedRef.current = false;
+	else if (wasSolvingRef.current) landedRef.current = true;
+	wasSolvingRef.current = !!solving;
 
 	useEffect(() => {
 		if (timerCounter.current && !solving) {
@@ -298,8 +313,11 @@ export default function TimeDisplay() {
 		bottomInfo = <GanTimer />;
 	} else if (qiyiTimerOn) {
 		bottomInfo = <QiyiTimer />;
-	} else if (magnet.active && timerType === 'keyboard' && !timeStartedAt) {
-		bottomInfo = <MagnetHint />;
+	} else if (magnetOwns && !timeStartedAt) {
+		// The Magnet Timer's own input (timer_type 'magnet'); the touch timer has no magnet.
+		// Shown also while the stream is off: without a calibrated cube nothing can start and
+		// the guide says what is missing (magnet-cubes 5.6).
+		bottomInfo = <MagnetGuide canAct={!inInspection} />;
 	} else if (smartCubeSelected(context) && !mobileMode) {
 		if (context.smartNeedsCubeReset) {
 			bottomInfo = (
@@ -335,10 +353,19 @@ export default function TimeDisplay() {
 						// since they all funnel through startTimer()/endTimer() in
 						// helpers/events.ts, which is what flips this flag.
 						running: solving,
+						// Reduced motion only: a short colour cue on the stop (no movement).
+						landed: landedRef.current,
 					})}
 				>
 					{timeStr}
 				</h1>
+
+				{/* Magnet Timer: live field bar while idle and inspecting (keeps its height
+				    during the solve, so the digits do not move). */}
+				{magnetOwns && <MagnetLiveBar idle={!timeStartedAt} />}
+
+				{/* Magnet Timer: fills while a finger is held still to stop the solve. */}
+				{timerType === 'magnet' && timeStartedAt && <HoldStopProgress />}
 
 				{/* Diff underneath timer, close to it */}
 				<div style={{ marginTop: mobileMode ? '-5px' : '0' }}>
@@ -346,6 +373,19 @@ export default function TimeDisplay() {
 				</div>
 
 				<MultiPhaseIndicator />
+
+				{/* The cube the next solve is stamped with (magnet-cubes 5.5). Not in rooms and
+				    matches (no stamp there), not for the smart cube (its own panel names the
+				    connected cube) nor the virtual cube (no physical cube). The Magnet Timer shows
+				    it once a calibrated cube runs; before that the guide card names the cube. */}
+				{!context.onSolve &&
+					!matchMode &&
+					!context.inModal &&
+					!smartCubeSelected(context) &&
+					!virtualCubeSelected(context) &&
+					(timerType !== 'magnet' || !magnet.profile || magnet.profile.status === 'ready') && (
+					<TimerCubeLabel magnetOwnsInput={magnetOwns} visible={!timeStartedAt && !inInspection} />
+				)}
 
 				{/* Mobile smart cube: SmartStats artık SOL kolonda LiveAnalysisOverlay altinda render ediliyor (SmartCube.tsx portal). */}
 			</div>

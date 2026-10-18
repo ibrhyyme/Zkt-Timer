@@ -27,7 +27,7 @@ export default function SolveListColors({label, description, showPb}: Props) {
 	const {t} = useTranslation();
 	const solveTimeColor = useSettings('solve_time_color');
 	const solvePbColor = useSettings('solve_pb_color');
-	const secondaryColor = useSettings('secondary_color');
+	const textColor = useSettings('text_color');
 	const primaryColor = useSettings('primary_color');
 	const moduleColor = useSettings('module_color');
 
@@ -37,7 +37,7 @@ export default function SolveListColors({label, description, showPb}: Props) {
 	};
 	// What the list falls back to while a colour is unset (see HistorySolveRow.scss)
 	const theme: Record<SolveListColorKey, string | null> = {
-		solve_time_color: normalizeSolveListColor(secondaryColor),
+		solve_time_color: normalizeSolveListColor(textColor),
 		solve_pb_color: normalizeSolveListColor(primaryColor),
 	};
 

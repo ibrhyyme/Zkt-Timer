@@ -2,15 +2,15 @@ import {Resolver, Query, Mutation, Arg, Ctx, Authorized} from 'type-graphql';
 import {SiteConfig, UpdateSiteConfigInput} from '../schemas/SiteConfig.schema';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
-import {getSiteConfig, updateSiteConfig} from '../models/site_config';
+import {getSiteConfig, siteConfigForViewer, updateSiteConfig} from '../models/site_config';
 
 @Resolver()
 export class SiteConfigResolver {
 	// Public — login bile gerekmez. Tum client'lar her sayfada cagrir.
+	// Access lists are filtered per viewer (siteConfigForViewer); SSR seeds the same view.
 	@Query(() => SiteConfig)
-	async siteConfig(): Promise<SiteConfig> {
-		const config = await getSiteConfig();
-		return config as SiteConfig;
+	async siteConfig(@Ctx() ctx?: GraphQLContext): Promise<SiteConfig> {
+		return siteConfigForViewer(await getSiteConfig(), ctx?.user) as SiteConfig;
 	}
 
 	// Sadece admin

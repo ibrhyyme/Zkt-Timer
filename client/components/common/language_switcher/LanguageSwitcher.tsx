@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlagSvg, FlagCode } from './flag-icons.generated';
 import FancyDropdown, { FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
-import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import { useMutation, gql } from '@apollo/client';
 
@@ -23,7 +22,7 @@ interface Props {
 }
 
 // i18n language code → ISO country code (for flag). en → us (global preference), zh → cn.
-const LANG_OPTIONS: { code: string; flag: FlagCode; label: string }[] = [
+export const LANG_OPTIONS: { code: string; flag: FlagCode; label: string }[] = [
 	{ code: 'tr', flag: 'tr', label: 'Türkçe' },
 	{ code: 'en', flag: 'us', label: 'English' },
 	{ code: 'es', flag: 'es', label: 'Español' },
@@ -35,7 +34,7 @@ const FLAG_SIZE = 18;
 
 // Fixed-size circular wrapper around the inline flag <svg>. The svg fills 100%
 // and `overflow:hidden + border-radius:50%` clips it to a circle.
-function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: number }) {
+export function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: number }) {
 	return (
 		<span
 			style={{
@@ -57,13 +56,12 @@ function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: number })
 
 export default function LanguageSwitcher(props: Props = {}) {
 	const {align = 'end'} = props;
-	const { i18n } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const me = useSelector((state: any) => state.account.me);
 	const [updateLocale] = useMutation(UPDATE_LOCALE);
 
 	function changeLanguage(lng: string) {
 		i18n.changeLanguage(lng);
-		dayjs.locale(lng);
 		if (me?.id) {
 			updateLocale({ variables: { locale: lng } }).catch(() => {});
 		}
@@ -83,7 +81,7 @@ export default function LanguageSwitcher(props: Props = {}) {
 			onValueChange={changeLanguage}
 			options={options}
 			triggerIcon={<FlagIcon code={currentLang.flag} />}
-			ariaLabel="Language"
+			ariaLabel={t('nav.language')}
 			align={align}
 			triggerMinWidth={56}
 		/>

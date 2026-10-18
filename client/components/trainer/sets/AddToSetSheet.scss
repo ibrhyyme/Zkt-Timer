@@ -1,0 +1,30 @@
+@import '../../../styles/config';
+
+// "Add to set" sheet (trainer-sets T12): the set list scrolls inside the modal, so a user with
+// many sets still sees the error line under it.
+.#{$namespace}-alg-sets__action-sheet--scroll {
+	max-height: 55vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+}
+
+// "Add to set" button in the algorithm detail window: icon beside the text, 44px touch target.
+.#{$namespace}-trainer__alg-detail-btn--set {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 44px;
+}
+
+// "Add to set" next to "Select all" and "PDF" on the selection screen: same size, with an icon.
+.#{$namespace}-trainer__selector-action-btn--set {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+
+	svg {
+		flex-shrink: 0;
+	}
+}

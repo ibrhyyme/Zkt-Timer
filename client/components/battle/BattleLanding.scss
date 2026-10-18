@@ -1,0 +1,29 @@
+@import '../../styles/config';
+
+// /battle landing (ranking-battle 5.2): the trainer hub's own cards (trainer/landing/LandingCard),
+// laid out by the trainer hub classes. This root only carries the accent colours
+// (trainer/common/TrainerAccents.scss) and the live lines in the Online card's footer.
+// The route has noPadding (the offline battle it falls back to fills the screen), so the
+// trainer landing classes bring the padding.
+.#{$namespace}-battle-landing {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: 100%;
+
+	&__line {
+		margin: 0;
+
+		&--strong {
+			font-size: 15px;
+			font-weight: 700;
+		}
+	}
+
+	// The "?" of a provisional rating: the card's accent on the page background, never on a fill.
+	&__provisional {
+		margin-left: 4px;
+		font-weight: 800;
+		color: rgb(var(--mode-accent));
+	}
+}

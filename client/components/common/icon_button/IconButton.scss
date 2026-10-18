@@ -1,0 +1,60 @@
+@import '../../../styles/config';
+
+.#{$namespace}-icon-button {
+	@include zt-control;
+
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: $zt-control-h-md;
+	height: $zt-control-h-md;
+	padding: 0;
+	cursor: pointer;
+	text-decoration: none;
+
+	svg {
+		width: 18px;
+		height: 18px;
+	}
+
+	&--size-sm {
+		width: $zt-control-h-sm;
+		height: $zt-control-h-sm;
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	// Bare glyph: no fill, no border, ever. Close and back use this. A filled rounded
+	// box behind the X was the single most disliked detail in the old modals (owner,
+	// 2026-10-19), so hover only darkens the icon; the 40px hit area stays invisible.
+	&--variant-ghost {
+		background: transparent;
+		border-color: transparent;
+		color: $zt-text-muted;
+
+		&:hover:not(:disabled),
+		&:active:not(:disabled) {
+			background: transparent;
+			border-color: transparent;
+			color: rgb(var(--text-color));
+		}
+
+		svg {
+			width: 22px;
+			height: 22px;
+		}
+	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+
+	@include reduced-motion {
+		transition: none;
+	}
+}

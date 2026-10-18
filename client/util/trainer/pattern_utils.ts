@@ -241,6 +241,23 @@ export function fixOrientation(pattern: KPattern): KPattern {
 			}
 		}
 	}
+	// One axis reaches only 10 of the 24 orientations. An algorithm that turns the cube about
+	// two axes (OLL 39 "f' r U r' U' r' F r S" after its r U r' F) ends up in one of the other
+	// 14, and without this its expected states kept rotated centers, so the smart cube trainer
+	// could never match them. Two rotations reach all 24.
+	const ROTATIONS = ['x', "x'", 'x2', 'y', "y'", 'y2', 'z', "z'", 'z2'];
+	for (const first of ROTATIONS) {
+		const once = pattern.applyAlg(first);
+		for (const second of ROTATIONS) {
+			const result = once.applyAlg(second);
+			if (
+				JSON.stringify(result.patternData['CENTERS'].pieces) ===
+				JSON.stringify([0, 1, 2, 3, 4, 5])
+			) {
+				return result;
+			}
+		}
+	}
 	// Fail-loud instead of silent error — this condition is nearly impossible for 3x3 KPattern
 	// but if caught once, user/developer should be aware
 	console.warn('[trainer] fixOrientation: could not reach canonical center position, returning original pattern');
@@ -289,80 +306,4 @@ export async function generateLLPattern(algorithm: string): Promise<string | nul
 	} catch {
 		return null;
 	}
-}
-
-/**
- * Rotate a 21-char LL pattern by U CW (90 degrees).
- * Top face: standard 3x3 CW rotation.
- * Sides: newF=oldL, newR=reverse(oldF), newB=oldR, newL=reverse(oldB).
- * The alternating reversal comes from LL_FACELET_INDICES using different
- * ordering directions per face (F/L normal, R/B reversed Kociemba order).
- */
-export function rotateLLPatternCW(pattern: string): string {
-	const top = [6, 3, 0, 7, 4, 1, 8, 5, 2].map(i => pattern[i]).join('');
-	const F = pattern.slice(9, 12);
-	const R = pattern.slice(12, 15);
-	const B = pattern.slice(15, 18);
-	const L = pattern.slice(18, 21);
-
-	const newF = L;
-	const newR = F[2] + F[1] + F[0];
-	const newB = R;
-	const newL = B[2] + B[1] + B[0];
-
-	return top + newF + newR + newB + newL;
-}
-
-/**
- * Validate whether a candidate algorithm solves the same case as the original.
- * Pre-AUF: pattern rotation (4x CW) is checked.
- * Post-AUF: candidate algorithm with U/U2/U' appended generates 4 variations.
- * Total 16 combinations (4 post-AUF x 4 pre-AUF rotation) provides full AUF coverage.
- * OLL/2-Look OLL: orientation mask comparison (U vs non-U).
- * PLL/ZBLL/COLL/CMLL/OLLCP/other: full 21-char pattern comparison.
- */
-export async function validateSameCase(
-	originalAlg: string,
-	candidateAlg: string,
-	category: string
-): Promise<{valid: boolean; error?: string}> {
-	// Original + 4 post-AUF variations of candidate generated in parallel
-	const [origPattern, ...candPatterns] = await Promise.all([
-		generateLLPattern(originalAlg),
-		generateLLPattern(candidateAlg),
-		generateLLPattern(candidateAlg + ' U'),
-		generateLLPattern(candidateAlg + ' U2'),
-		generateLLPattern(candidateAlg + " U'"),
-	]);
-
-	if (!origPattern) return {valid: false, error: 'original_parse_error'};
-	if (candPatterns.every(p => p === null)) return {valid: false, error: 'candidate_parse_error'};
-
-	const lower = category.toLowerCase();
-	const isOLL = (lower === 'oll' || lower === '2-look oll');
-	const compare = isOLL ? compareOLLMasks : compareFullPatterns;
-
-	for (const candPattern of candPatterns) {
-		if (!candPattern) continue;
-
-		// Try 4 pre-AUF rotations
-		let rotated = candPattern;
-		for (let i = 0; i < 4; i++) {
-			if (compare(origPattern, rotated)) return {valid: true};
-			rotated = rotateLLPatternCW(rotated);
-		}
-	}
-
-	return {valid: false, error: 'different_case'};
-}
-
-function compareFullPatterns(a: string, b: string): boolean {
-	return a === b;
-}
-
-function compareOLLMasks(a: string, b: string): boolean {
-	for (let i = 0; i < 21; i++) {
-		if ((a[i] === 'U') !== (b[i] === 'U')) return false;
-	}
-	return true;
 }

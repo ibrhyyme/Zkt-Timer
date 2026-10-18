@@ -1,5 +1,8 @@
 import tinycolor from 'tinycolor2';
+import {useLocation} from 'react-router-dom';
 import {useSettings} from './useSettings';
+import {useMe} from './useMe';
+import {isThemeColorKey, isThemeLocked, LOCKED_THEME_COLORS} from '../themes/theme_lock';
 import {getAnyColorStringAsRgbString} from '../themes/theme_util';
 import colorPalette, {ColorName} from '../../../shared/colors';
 
@@ -24,7 +27,11 @@ export function useTheme(val: AppThemeOptions): AppTheme {
 		return null;
 	}
 
-	const color = useSettings(val);
+	const setting = useSettings(val);
+	// Same rule as the CSS variables (layout/themes.ts): where the theme is locked, the
+	// colour on screen is the fixed one, not the user's setting (E-106).
+	const locked = isThemeLocked(useLocation().pathname, !!useMe());
+	const color = locked && isThemeColorKey(val) ? LOCKED_THEME_COLORS[val] : setting;
 	const rgbString = getAnyColorStringAsRgbString(color);
 	const tc = tinycolor(rgbString);
 	const isDark = tc.isDark();

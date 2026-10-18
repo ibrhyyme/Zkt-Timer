@@ -42,7 +42,9 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 	const cubeName = getCubeTypeBucketLabel(cubeType, scrambleSubset) || getCubeTypeInfoById(cubeType)?.name || cubeType;
 
 	return (
-		<div className={`zt-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
+		// Compact is the phone timer: px-2 is the 0.5rem side margin of the action row and
+		// the module cards under it, so the three line up edge to edge.
+		<div className={`zt-daily-goal-progress w-full ${compact ? 'px-2 py-1' : 'px-4 py-2'}`}>
 			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-button rounded-full overflow-hidden border border-text/[0.06]`}>
 				{/* Fill bar */}
 				<div

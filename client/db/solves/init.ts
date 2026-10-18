@@ -24,8 +24,12 @@ export function initSolvesCollection(forceRefresh = false) {
 	if (!getSolveDb()) {
 		db.addCollection<Solve>('solves', {
 			unique: ['id'],
-			indices: ['session_id', 'started_at', 'is_smart_cube', 'time', 'cube_type', 'trainer_name', 'from_timer'],
+			indices: ['session_id', 'started_at', 'is_smart_cube', 'time', 'cube_type', 'trainer_name', 'from_timer', 'cube_id'],
 		});
+	} else {
+		// A collection loaded from disk keeps the indices it was created with. The Cube filter
+		// (cube_id) came later; ensureIndex builds it once and is a no-op after that.
+		getSolveDb().ensureIndex('cube_id');
 	}
 
 	db.removeCollection('solve_cache');

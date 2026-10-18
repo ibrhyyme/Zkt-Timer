@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useRef } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {useTranslation} from 'react-i18next';
 import './TimerScramble.scss';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple } from 'phosphor-react';
@@ -20,8 +20,18 @@ import { useSmartCubeStore } from '../../../../util/hooks/useSmartCubeStore';
 import { setSetting } from '../../../../db/settings/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
 import { useLatestSolve } from '../../../../util/hooks/useLatestSolve';
+import useIsomorphicLayoutEffect from '../../../../util/hooks/useIsomorphicLayoutEffect';
+import {
+	countMoves,
+	DESKTOP_SCRAMBLE_MIN_PX,
+	fitReferenceText,
+	SCRAMBLE_LINE_HEIGHT_RATIO,
+	scrambleLinesBudget,
+} from '../../helpers/fit_scramble';
+import { findFitFontSize, FitTextSpacing } from '../../../../util/text-fit';
 
 const b = block('timer-scramble');
+const timerBlock = block('timer');
 
 export default function TimerScramble() {
 	const {t} = useTranslation();
@@ -117,6 +127,105 @@ export default function TimerScramble() {
 		}
 	}
 
+	// Desktop: the scramble shrinks from the user's size when the timer area is too short for
+	// it (helpers/fit_scramble.ts). Never above the user's size.
+	const bodyRef = useRef<HTMLDivElement>(null);
+	const [fittedSize, setFittedSize] = useState<number | null>(null);
+	const scrambleSize = !mobileMode && fittedSize !== null ? Math.min(fittedSize, timerScrambleSize) : timerScrambleSize;
+
+	const userSizeRef = useRef(timerScrambleSize);
+	userSizeRef.current = timerScrambleSize;
+	const scrambleTextRef = useRef('');
+	scrambleTextRef.current = context.scramble || '';
+	// The most moves seen for this puzzle, so a shorter scramble does not get a bigger size
+	// than the one before it (fitReferenceText). Starts over when the puzzle changes.
+	const mostMovesRef = useRef({ bucket: '', moves: 0 });
+	const bucket = `${cubeType}|${context.scrambleSubset || ''}`;
+	if (mostMovesRef.current.bucket !== bucket) mostMovesRef.current = { bucket, moves: 0 };
+	mostMovesRef.current.moves = Math.max(mostMovesRef.current.moves, countMoves(context.scramble || ''));
+	// Held while a solve runs (the scramble is hidden but keeps its place) and while it is
+	// being typed into (a refit per keystroke would make the text jump).
+	const holdFitRef = useRef(false);
+	holdFitRef.current = !!timeStartedAt || !!editScramble;
+
+	const fitScramble = useCallback(() => {
+		const body = bodyRef.current;
+		const text = scrambleTextRef.current;
+		if (mobileMode || !body || !text || holdFitRef.current) return;
+
+		// The area that clips (`__main`, overflow hidden), the content it centres, and the
+		// block holding the scramble's lines: the field or the Megaminx lines inside the body,
+		// or the body itself for the smart scramble, whose moves sit straight in it.
+		const area = body.closest<HTMLElement>(`.${timerBlock('main')}`);
+		const content = body.closest<HTMLElement>(`.${timerBlock('main-center')}`);
+		const first = body.firstElementChild as HTMLElement | null;
+		const lines =
+			first && (first.tagName === 'TEXTAREA' || first.classList.contains(`${b('megaminx-lines')}`)) ? first : body;
+		if (!area || !content || area.clientHeight === 0) return;
+
+		const px = (value: string) => parseFloat(value) || 0;
+		const style = getComputedStyle(lines);
+		const isField = lines.tagName === 'TEXTAREA';
+		const chromeX = isField ? px(style.paddingLeft) + px(style.paddingRight) + px(style.borderLeftWidth) + px(style.borderRightWidth) : 0;
+		const chromeY = isField ? px(style.paddingTop) + px(style.paddingBottom) + px(style.borderTopWidth) + px(style.borderBottomWidth) : 0;
+
+		// The smart moves are items of a wrapping flex row: its gaps stand in for spaces.
+		const spacing: FitTextSpacing = {};
+		if (style.display === 'flex' || style.display === 'inline-flex') {
+			const first = lines.firstElementChild;
+			spacing.rowGap = px(style.rowGap);
+			spacing.itemGap = px(style.columnGap) + (first ? px(getComputedStyle(first).marginRight) : 0);
+		}
+
+		const budget = scrambleLinesBudget(area.clientHeight, content.offsetHeight, lines.offsetHeight, chromeY);
+		const { fontSize } = findFitFontSize(
+			fitReferenceText(text, mostMovesRef.current.moves),
+			style.fontFamily,
+			style.fontWeight,
+			userSizeRef.current,
+			Math.min(DESKTOP_SCRAMBLE_MIN_PX, userSizeRef.current),
+			SCRAMBLE_LINE_HEIGHT_RATIO,
+			lines.offsetWidth - chromeX,
+			budget,
+			spacing
+		);
+		setFittedSize(fontSize);
+	}, [mobileMode]);
+
+	useIsomorphicLayoutEffect(() => {
+		fitScramble();
+	}, [fitScramble, scramble, timerScrambleSize, editScramble, isSmart, hideScramble, !!timeStartedAt, scrambleLocked, !!notification, isSmartScrambling]);
+
+	// The area changes height with the window, the module rails and bars, the digits and
+	// the cube beside them; the content with everything in it; the body when what it holds
+	// changes (the smart moves replacing the field). The body remounts with every scramble,
+	// so this subscribes again then.
+	useEffect(() => {
+		const body = bodyRef.current;
+		if (mobileMode || !body || typeof ResizeObserver === 'undefined') return undefined;
+		const area = body.closest(`.${timerBlock('main')}`);
+		const content = body.closest(`.${timerBlock('main-center')}`);
+		if (!area || !content) return undefined;
+
+		const observer = new ResizeObserver(() => fitScramble());
+		observer.observe(area);
+		observer.observe(content);
+		observer.observe(body);
+
+		// Roboto Mono loads late; until it does, the canvas measures the fallback font.
+		let cancelled = false;
+		const fonts = typeof document !== 'undefined' ? document.fonts : undefined;
+		fonts?.ready.then(() => {
+			if (!cancelled) fitScramble();
+		});
+		fonts?.addEventListener('loadingdone', fitScramble);
+		return () => {
+			cancelled = true;
+			observer.disconnect();
+			fonts?.removeEventListener('loadingdone', fitScramble);
+		};
+	}, [fitScramble, mobileMode, scramble, editScramble, isSmart]);
+
 	// Navigation button disabled states
 	const canGoNext = !scrambleLocked && !timeStartedAt && !isSmartScrambling;
 
@@ -145,13 +254,19 @@ export default function TimerScramble() {
 	} else {
 		scrambleBody = (
 			<TextareaAutosize
+				// The field sizes its height when its text changes, not when the font does, so
+				// a fitted size (see fitScramble) left it at the old height. Remounting on the
+				// size measures it again. The size is held while editing, so focus is not lost.
+				key={scrambleSize}
 				onChange={handleScrambleChange}
 				value={scramble}
 				disabled={!editScramble}
 				minRows={1}
 				placeholder={hideScramble ? '' : 'scramble'}
 				ref={scrambleInput}
-				className={b({ edit: editScramble })}
+				// Its own element class. It used to carry the root block class (`b({edit})`), so the
+				// root's flex column, width and z-index all applied to the textarea as well.
+				className={b('input', { edit: editScramble })}
 			/>
 		);
 	}
@@ -172,14 +287,16 @@ export default function TimerScramble() {
 	return (
 		<div className={b()}>
 			{notification}
-			{/* Scramble navigation buttons - show when timer not running and not in match mode */}
-			{scrambleLocked && !timeStartedAt && !matchMode && (
-				<div className={b('locked-banner')}>
+			{/* The locked banner and the navigation row stay in the flow during a solve, only
+			    hidden: unmounting them shortened the block and the centred digits jumped up on
+			    every start (seen under reduced motion). Not in match mode. */}
+			{scrambleLocked && !matchMode && (
+				<div className={b('locked-banner', { hidden: !!timeStartedAt })} aria-hidden={timeStartedAt ? true : undefined}>
 					{t('timer_scramble.scramble_locked')}
 				</div>
 			)}
-			{!timeStartedAt && !matchMode && !isSmartScrambling && (
-				<div className={b('nav')}>
+			{!matchMode && !isSmartScrambling && (
+				<div className={b('nav', { hidden: !!timeStartedAt })} aria-hidden={timeStartedAt ? true : undefined}>
 					<button
 						className={b('nav-btn', { disabled: !canGoPrevious })}
 						onClick={handlePreviousScramble}
@@ -208,13 +325,14 @@ export default function TimerScramble() {
 				// keying by that would remount (and drop focus/cursor from) the
 				// textarea on every character typed.
 				key={editScramble ? 'edit' : scramble}
+				ref={bodyRef}
 				className={b('body', {
 					smart: isSmart,
 					megaminx: isMegaminx,
 				})}
 				style={{
-					fontSize: timerScrambleSize + 'px',
-					lineHeight: timerScrambleSize * 1.6 + 'px',
+					fontSize: scrambleSize + 'px',
+					lineHeight: scrambleSize * SCRAMBLE_LINE_HEIGHT_RATIO + 'px',
 					fontFamily: scrambleMonospace ? "'Roboto Mono', monospace" : 'inherit',
 					textAlign: scrambleAlignment,
 					cursor: scrambleClickAction !== 'none' && !editScramble && !isSmart ? 'pointer' : undefined,

@@ -15,6 +15,7 @@ import TwistyTimerInstructions from './instructions/TwistyTimerInstructions';
 import CubeTimeInstructions from './instructions/CubeTimeInstructions';
 import { ImportProgress, ChunkedImportResult } from './review_import/chunked_import';
 import { ImportDataType, IMPORT_TYPE_NAMES } from './import_sources';
+import type { ExportedCube } from './parse_data/zkttimer_cubes';
 
 const b = block('import-data');
 
@@ -29,6 +30,9 @@ export interface ImportableData {
 	// Atlanan solve'lar — parser'in tanimadigi cube_type yuzunden import disi birakilan kayitlar.
 	skippedSolveCount?: number;
 	skippedCubeTypes?: Record<string, number>;
+	// Zkt Timer exports only: the file's cubes. Solves carry the file's cube ids until
+	// ReviewImport maps them onto this account (parse_data/zkttimer_cubes.ts).
+	fileCubes?: ExportedCube[];
 }
 
 export interface IImportDataContext {

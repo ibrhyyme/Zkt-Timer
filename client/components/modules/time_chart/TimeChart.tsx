@@ -16,6 +16,7 @@ import jsonStr from 'json-stable-stringify';
 import {useSolveDb} from '../../../util/hooks/useSolveDb';
 import block from '../../../styles/bem';
 import {useTheme} from '../../../util/hooks/useTheme';
+import {pickTimeAxisTicks} from '../../../util/chart_axis';
 
 const b = block('time-chart');
 
@@ -70,6 +71,10 @@ export default function TimeChart(props: Props) {
 					xScale.range([0, parent.width]);
 					yScale.range([parent.height, 0]);
 
+					// Rounding half-second ticks to whole seconds printed "13, 13, 12, 12" (2.7-f):
+					// keep only ticks whose labels differ, with the decimals their step needs.
+					const yAxis = pickTimeAxisTicks(yScale.ticks(Math.max(2, Math.floor(parent.height / 40))));
+
 					return (
 						<svg width={parent.width} height={parent.height}>
 							<filter id="dropshadow" height="150%">
@@ -96,7 +101,8 @@ export default function TimeChart(props: Props) {
 									fontWeight: 400,
 									textAnchor: 'middle',
 								})}
-								tickFormat={(d) => getTimeString(d as number, (d as number) > 10 ? 0 : undefined)}
+								tickValues={yAxis.values}
+								tickFormat={(d) => getTimeString(d as number, yAxis.decimals)}
 								left={-17}
 								top={10}
 								strokeWidth={0}

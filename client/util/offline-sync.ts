@@ -36,9 +36,11 @@ import {
     createFlushScheduler,
     FlushTrigger,
     isForcingTrigger,
+    nextHaltRetryMs,
     ReplayOutcome,
     runReplayLoop,
     selectRunnable,
+    syncResultMessage,
 } from './offline-replay';
 import i18n from '../i18n/i18n';
 
@@ -404,6 +406,43 @@ async function scheduleRetry(): Promise<void> {
     }, delay);
 }
 
+let haltTimer: ReturnType<typeof setTimeout> | null = null;
+let haltStreak = 0;
+
+/**
+ * The run stopped on the connection while the device still reports a network (see
+ * nextHaltRetryMs). Without this, nothing started the next run until the app was left and
+ * reopened: the solves stayed on this phone while another device showed them missing.
+ */
+function armHaltRetry(madeProgress: boolean): void {
+    // A retry is already on the clock: keep it. Every solve saved during an outage asks for
+    // a sync, and letting each failed probe push the delay out would leave the queue waiting
+    // the full five minutes once data is back. Only a timed retry that fails again grows it.
+    if (haltTimer && !madeProgress) return;
+    if (haltTimer) clearTimeout(haltTimer);
+    haltStreak = madeProgress ? 1 : haltStreak + 1;
+    haltTimer = setTimeout(() => {
+        haltTimer = null;
+        void requestQueueFlush('retry');
+    }, nextHaltRetryMs(haltStreak));
+}
+
+function clearHaltRetry(): void {
+    if (haltTimer) {
+        clearTimeout(haltTimer);
+        haltTimer = null;
+    }
+    haltStreak = 0;
+}
+
+/** Distinct solves of this account still waiting in the queue (their own live save excluded). */
+async function countRemainingSolves(): Promise<number> {
+    const meId = currentUserId();
+    const inFlight = getInFlightIds();
+    const all = await getAllQueued();
+    return countSolves(all.filter((m) => !inFlight.has(m.id) && (!m.userId || !meId || m.userId === meId)));
+}
+
 async function runFlush(trigger: FlushTrigger): Promise<FlushResult> {
     if (typeof window === 'undefined' || !canWriteSync()) {
         return NOTHING_DONE;
@@ -443,6 +482,9 @@ async function runFlush(trigger: FlushTrigger): Promise<FlushResult> {
 
     // Gerçekten sunucuya erişilebildiğini doğrula
     if (!(await isReallyOnline())) {
+        // "Connected" with no data getting through: no network event will announce the
+        // moment it comes back, so try again on our own.
+        armHaltRetry(false);
         return NOTHING_DONE;
     }
 
@@ -451,7 +493,12 @@ async function runFlush(trigger: FlushTrigger): Promise<FlushResult> {
     // The progress toast waits a moment: a run that finishes quickly only shows its result,
     // and one that stops at once (expired session, dead connection) shows nothing at all.
     const solveCount = countSolves(runnable);
-    const announce = solveCount > 0 && (trigger === 'manual' || runnable.some((m) => !m.retryCount));
+    // A timed retry stays quiet until it has a result: during a long outage it runs every
+    // few minutes, and each one saying "syncing" and then "could not finish" is noise.
+    const announce =
+        solveCount > 0 &&
+        trigger !== 'retry' &&
+        (trigger === 'manual' || runnable.some((m) => !m.retryCount));
     let progressShown = false;
     const progressTimer = announce
         ? setTimeout(() => {
@@ -468,8 +515,19 @@ async function runFlush(trigger: FlushTrigger): Promise<FlushResult> {
 
     if (progressTimer) clearTimeout(progressTimer);
     const syncedSolves = countSolves(loop.done);
-    if (syncedSolves > 0) {
-        toastSettle(SYNC_TOAST_ID, 'success', i18n.t('offline.sync_done', { count: syncedSolves }));
+
+    if (loop.halted) {
+        armHaltRetry(loop.done.length > 0);
+    } else {
+        clearHaltRetry();
+    }
+
+    // "Synced" only once the server has confirmed every solve still waiting here. A run that
+    // sent some and then lost the connection says how many are left instead.
+    const message = syncResultMessage(syncedSolves, await countRemainingSolves(), progressShown);
+    if (message) {
+        const type = message.key === 'offline.sync_done' ? 'success' : 'warning';
+        toastSettle(SYNC_TOAST_ID, type, i18n.t(message.key, message.params));
     } else if (progressShown) {
         toastDismissId(SYNC_TOAST_ID);
     }

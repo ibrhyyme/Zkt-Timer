@@ -23,24 +23,36 @@ import {loadLLPatterns} from '../../util/trainer/ll_patterns';
 import {loadPuzzlePatterns} from '../../util/trainer/puzzle_patterns';
 import {loadIsometricPatterns} from '../../util/trainer/isometric_patterns';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import {useGeneral} from '../../util/hooks/useGeneral';
+import StudyModeSwitch from './hub/StudyModeSwitch';
+import {accountRequiredKey, isPublicTrainerView, studySwitchPlacement} from './hub/hub_rules';
+import {MySets, CommunitySets, AlgSetPage, SetPicker, CommunityBanner} from './sets';
+import './common/TrainerAccents.scss';
+import './hub/TrainerHub.scss';
 
 const b = block('trainer');
+const bh = block('trainer-hub');
 
 function TrainerContent() {
 	const {state} = useTrainerContext();
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	// URL ↔ reducer synchronization (mode + standard/smart view). Replaces old manual pushState/popstate
 	// hack; back/forward, deep-link, refresh and mobile swipe-back now work correctly.
 	useTrainerUrlSync();
 
-	if (state.view === 'landing') {
+	if (state.view === 'landing' || state.view === 'modes') {
 		return <TrainerLanding />;
 	}
 
-	// The landing stays open to everyone (it is an SEO surface), but a training
+	const otherTrainer = state.mode === 'recognition' || state.mode === 'efficiency' || state.mode === 'ollcp';
+
+	// The hub and the Trainers page stay open to everyone (an SEO surface), but a training
 	// session records attempts against an account, so this is where the line is.
-	if (!me) {
+	// The Community Sets list and a shared set's page stay open too (trainer-sets 2.4); the rest
+	// says what it needs inside the shell, and My Sets keeps its Community Sets entry for visitors.
+	if (!me && otherTrainer) {
 		return <AccountRequired descriptionKey="account_required.trainer" />;
 	}
 
@@ -59,7 +71,19 @@ function TrainerContent() {
 		return <OllcpRoot />;
 	}
 
+	// ── Algorithm Trainer (Standard / Smart Cube) ──
+	const locked = !me && !isPublicTrainerView(state.view);
+	const accountRequired = <AccountRequired descriptionKey={accountRequiredKey(state.view)} />;
+
 	if (state.view === 'training') {
+		if (locked) {
+			return (
+				<>
+					<TrainerToolbar />
+					<div className={bh('scroll')}>{accountRequired}</div>
+				</>
+			);
+		}
 		return (
 			<>
 				<TrainerToolbar />
@@ -75,12 +99,70 @@ function TrainerContent() {
 		);
 	}
 
+	// Algorithm Sets: My Sets (with the Community Sets entry on top, visitors included) and
+	// Community Sets. Each scrolls in its own container (the page body is locked below).
+	if (state.view === 'sets') {
+		return (
+			<>
+				<TrainerToolbar />
+				<div className={bh('scroll')}>
+					<CommunityBanner />
+					{locked ? accountRequired : <MySets />}
+				</div>
+			</>
+		);
+	}
+
+	if (state.view === 'community') {
+		return (
+			<>
+				<TrainerToolbar />
+				<div className={bh('scroll')}>
+					<CommunitySets />
+				</div>
+			</>
+		);
+	}
+
+	// A set's page (open to visitors, read only) and its algorithm picker (owner only; the
+	// picker owns its layout and scrolling, it has a selection bar at the bottom).
+	if (state.view === 'set') {
+		return (
+			<>
+				<TrainerToolbar />
+				<div className={bh('scroll')}>
+					<AlgSetPage />
+				</div>
+			</>
+		);
+	}
+
+	if (state.view === 'set-add') {
+		return (
+			<>
+				<TrainerToolbar />
+				{locked ? <div className={bh('scroll')}>{accountRequired}</div> : <div className={bh('pane')}><SetPicker /></div>}
+			</>
+		);
+	}
+
+	// Algorithm selector
+	const switchRow = !locked && studySwitchPlacement(state.view, mobileMode) === 'row';
 	return (
 		<>
 			<TrainerToolbar />
-			<div className={b('selection-layout')}>
-				<AlgorithmSelector />
-			</div>
+			{switchRow ? (
+				<div className={bh('switch-row')}>
+					<StudyModeSwitch block />
+				</div>
+			) : null}
+			{locked ? (
+				<div className={bh('scroll')}>{accountRequired}</div>
+			) : (
+				<div className={b('selection-layout')}>
+					<AlgorithmSelector />
+				</div>
+			)}
 		</>
 	);
 }

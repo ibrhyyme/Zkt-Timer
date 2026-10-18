@@ -2,6 +2,7 @@ import Notification from './notification';
 import {NotificationInput} from '../../@types/interfaces/server.interface';
 import {NotificationType} from '../../@types/enums';
 import {createI18nInstance} from '../../i18n_server';
+import {isZktCompetitionId} from '../../services/ZktWcaAdapter';
 
 interface WcaRoundFinishedMeta {
 	competitionId: string;
@@ -90,8 +91,11 @@ export default class WcaRoundFinishedNotification extends Notification {
 		return this.t('notif_link_text');
 	}
 
+	// A ZKT competition runs through the same live-results and countdown
+	// pipeline, so the federation comes from the competition id. A fixed
+	// 'WCA' put ZKT results under a WCA heading in the inbox.
 	categoryName() {
-		return 'WCA';
+		return isZktCompetitionId(this.meta.competitionId) ? 'ZKT' : 'WCA';
 	}
 
 	customData(): object {

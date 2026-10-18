@@ -15,11 +15,11 @@ import { ITimerContext } from '../Timer';
 import { SolveInput } from '../../../../server/schemas/Solve.schema';
 import { getSettings, getSetting } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
-import { getSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
 import { smartCubeSelected } from './util';
 import { hapticImpact } from '../../../util/native-plugins';
+import { afterNextPaint } from '../../../util/after-paint';
 import { getStore } from '../../store';
 import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
@@ -109,10 +109,15 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 		timeStartedAt,
 	});
 
-	// Pre-generate next scramble in background during solve
+	// Pre-generate next scramble in background during solve. The subset is read the way the
+	// timer context reads it (Timer.tsx: the store's value over the setting), which is what
+	// the stop compares it with. The store only holds a subset once one is picked in this
+	// session, so reading the store alone gave null after every page load, and for any
+	// cube type with a subset (every WCA event, PLL, OLL...) the scramble made here was
+	// never used: each stop made a new one in the worker and it reached the screen late.
 	const cubeType = getSetting('cube_type');
 	if (cubeType) {
-		const scrambleSubset = getTimerStore('scrambleSubset');
+		const scrambleSubset = getTimerStore('scrambleSubset') ?? getSetting('scramble_subset');
 		const scrambleTopColor = getSetting('scramble_top_color');
 		preGenerateScramble(cubeType, scrambleSubset, scrambleTopColor);
 	}
@@ -235,9 +240,9 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
 	});
 
-	// What the stop still owes once the display is frozen: the next scramble and the save.
-	const finishStop = () => {
-		// If pre-generated scramble exists, swap immediately; otherwise generate synchronously
+	// What the stop still owes once the display is frozen: the next scramble, then the save.
+	const nextScramble = () => {
+		// If pre-generated scramble exists, swap immediately; otherwise generate it in the worker
 		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
 		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
 			setTimerParams({
@@ -248,7 +253,9 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		} else {
 			resetScramble(context);
 		}
+	};
 
+	const finishStop = () => {
 		const overridesCombined = { ...overrides };
 
 		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
@@ -258,9 +265,8 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 			const startTime = timeStartedAt.getTime();
 			const solutionTurns = keyboardStartedSolveTurns(smartTurns, startTime);
 
+			// is_smart_cube makes saveSolve stamp the connected cube (cube_stamp.ts), not the main.
 			overridesCombined.is_smart_cube = true;
-			// Connection-owned, so it comes from the smart cube slice rather than the context.
-			overridesCombined.smart_device_id = getSmartCubeStore('smartDeviceId');
 			overridesCombined.smart_turn_count = countHTM(solutionTurns.map((t: any) => t.turn));
 			// Same as the cube-driven path: 'auto' lets the server infer the method.
 			overridesCombined.analysis_method = getSetting('smart_cube_method') || 'auto';
@@ -322,20 +328,36 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now, false, false, overridesCombined);
 	};
 
-	// Batched for the same reason as endTimer: the scramble swap, the local save and the
-	// session counter would otherwise render one after another. saveSolve still runs in
-	// this tick; only the renders it causes are merged.
+	// Two steps, each batched for the same reason as endTimer. The new scramble goes first, in
+	// a render of its own, and reaches the screen before the save: the save re-renders the
+	// modules (solve list, averages, charts), and with the scramble in that same render the
+	// next scramble showed up only once all of them were done, about half a second after the
+	// stop on a phone (owner, 2026-10-13). afterNextPaint never waits for a hidden page.
 	//
-	// The lock comes off in a finally. If the work above throws (a save that fails, a
-	// scramble that cannot be generated) the error still surfaces, but a lock left set
-	// would refuse every later stop until the page was reloaded.
-	setTimeout(() => unstable_batchedUpdates(() => {
+	// The lock comes off once the save has run, in a finally. If the work throws (a save that
+	// fails, a scramble that cannot be generated) the error still surfaces, but a lock left
+	// set would refuse every later stop until the page was reloaded. A scramble that fails
+	// does not cost the solve: the save is scheduled before its error is rethrown.
+	setTimeout(() => {
+		let scrambleError: unknown = null;
 		try {
-			finishStop();
-		} finally {
-			endLocked = false;
+			unstable_batchedUpdates(nextScramble);
+		} catch (e) {
+			scrambleError = e;
 		}
-	}), 10);
+
+		afterNextPaint(() => unstable_batchedUpdates(() => {
+			try {
+				finishStop();
+			} finally {
+				endLocked = false;
+			}
+		}));
+
+		if (scrambleError) {
+			throw scrambleError;
+		}
+	}, 10);
 }
 
 export function resetTimerParams(context: ITimerContext, skipScramble?: boolean) {

@@ -30,8 +30,10 @@ import {
 	zktCompetitorToWcaLive,
 	zktRecordsToWcaLive,
 	zktRecordsToRecentFeed,
+	applyZktDualChance,
 } from '../services/ZktWcaAdapter';
 import {checkRateLimit} from '../services/rate_limit';
+import {federationUnavailableError} from '../util/federation_error';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 
@@ -97,10 +99,16 @@ export class WcaScheduleResolver {
 		@Ctx() ctx: GraphQLContext
 	): Promise<WcaCompetitionDetail | null> {
 		// Login-gated, but a logged-in user could spam random competitionIds, each
-		// triggering a WCA API fetch (cache miss). Throttle per user.
-		const detailLimit = await checkRateLimit(`wca_detail:user:${ctx.user.id}`, 30, 60);
+		// triggering an upstream fetch (cache miss): WCA's API, or the ZKT
+		// federation, whose per-IP allowance every viewer shares. Throttle per user.
+		// Normal browsing stays far below this since the client stopped refetching
+		// on every mount and prefetch (CompetitionLoader.tsx); the client also
+		// treats RATE_LIMITED as "wait and retry", never as a dead end.
+		const detailLimit = await checkRateLimit(`wca_detail:user:${ctx.user.id}`, 40, 60);
 		if (!detailLimit.allowed) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla istek. Lutfen biraz bekleyin.');
+			throw new GraphQLError(ErrorCode.RATE_LIMITED, 'Çok fazla istek. Lütfen biraz bekleyin.', {
+				i18nKey: 'my_schedule.rate_limited',
+			});
 		}
 
 		const integration = await getIntegration(ctx.user, 'wca');
@@ -260,8 +268,14 @@ export class WcaScheduleResolver {
 				// Records live on their own federation endpoint; fetch alongside the
 				// detail so the overview arrives complete in one round trip. A record
 				// fetch failure must not blank the whole overview.
+				// A federation outage with nothing cached is not "this competition
+				// has no live results": it is surfaced as UPSTREAM_UNAVAILABLE so the
+				// tab keeps what it shows and retries, instead of claiming the
+				// competition is not on ZKT Live.
 				const [d, recordsPayload] = await Promise.all([
-					ZktFederationService.fetchCompetitionDetail(slug),
+					ZktFederationService.fetchCompetitionDetail(slug).catch((err: any) => {
+						throw federationUnavailableError(err, {competitionId: input.competitionId, surface: 'overview'});
+					}),
 					ZktFederationService.fetchCompetitionRecords(slug).catch(() => null),
 				]);
 				if (!d) return null;
@@ -281,6 +295,8 @@ export class WcaScheduleResolver {
 				WCA_LIVE_OVERVIEW_TTL
 			);
 		} catch (err: any) {
+			// Deliberate errors (federation unavailable) go to the client as they are.
+			if (err instanceof GraphQLError) throw err;
 			logger.warn('[WcaLive] overview failed', {
 				competitionId: input.competitionId,
 				error: err?.message || String(err),
@@ -415,9 +431,24 @@ export class WcaScheduleResolver {
 	): Promise<WcaCompetitionDetail | null> {
 		const slug = zktSlugOf(competitionId);
 
-		const finishWith = (wcif: any, liveOverride?: any): WcaCompetitionDetail | null => {
+		// Which rounds are Dual Chance is not in WCIF (it only shows two "Şans"
+		// activities under one round code); the federation detail carries the flag.
+		// It is the same cached key the live overview reads, so usually no extra
+		// federation call. Capped so a slow federation never holds up a page that
+		// would otherwise come straight from the archive: without it the rounds just
+		// show no chance labels.
+		const fedDetail: Promise<any> = Promise.race([
+			ZktFederationService.fetchCompetitionDetail(slug).catch(() => null),
+			new Promise((resolve) => {
+				const timer = setTimeout(() => resolve(null), 3000);
+				(timer as any).unref?.();
+			}),
+		]);
+
+		const finishWith = async (wcif: any, liveOverride?: any): Promise<WcaCompetitionDetail | null> => {
 			const detail = buildCompetitionDetail(wcif, wcaId, wcaUserId, zkt);
 			if (!detail) return null;
+			applyZktDualChance(detail, await fedDetail);
 			detail.competitionId = competitionId; // keep the prefixed id for sub-routes
 			if (liveOverride) {
 				detail.wcaLiveCompId = liveOverride.compId;
@@ -488,9 +519,11 @@ export class WcaScheduleResolver {
 		}
 
 		let wcif: any = null;
+		let fetchError: unknown = null;
 		try {
 			wcif = await ZktFederationService.fetchWcif(slug);
 		} catch (err: any) {
+			fetchError = err;
 			logger.warn('[Zkt] WCIF fetch failed', {competitionId, err: err?.message});
 		}
 
@@ -500,6 +533,12 @@ export class WcaScheduleResolver {
 			if (archive) {
 				return finishWith(archive.wcif_data as any, (archive.live_data as any)?.wcaLiveData);
 			}
+			// null means the federation answered 404 (not public or no such
+			// competition), and the page says the schedule is not available. A
+			// failed fetch is a different thing: returning null for it is what made
+			// the page claim "Schedule data is not available for this competition
+			// yet" on competition day, when the federation was only refusing us.
+			if (fetchError) throw federationUnavailableError(fetchError, {competitionId, surface: 'wcif'});
 			return null;
 		}
 

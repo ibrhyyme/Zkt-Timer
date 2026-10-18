@@ -1,5 +1,20 @@
 @import '../../../../styles/config';
 
+// Mobile timer: the prompt sits in the scramble's place, just under the header
+// pickers. After an abort the scramble is empty until the cube is solved again, and
+// during a solve it is hidden, so this spot never covers the 3D cube, the time or
+// the action row (feedback 2.3-c; at 25% from the top it sat on the cube). Same
+// offsets as `.zt-timer__mobile-layout` (Timer.scss), the box it lines up with.
+@mixin mobile-scramble-slot {
+	@include bp-down($bp-lg) {
+		top: calc(56px + #{sa(top)} + 0.25rem);
+
+		@media (max-height: 745px) {
+			top: calc(45px + #{sa(top)} + 0.25rem);
+		}
+	}
+}
+
 .#{$namespace}-abort-solve-overlay {
 	&__button-container {
 		position: fixed;
@@ -8,6 +23,8 @@
 		transform: translateX(-50%);
 		z-index: 10000;
 		animation: abortFadeIn 0.3s ease-in;
+
+		@include mobile-scramble-slot;
 	}
 
 	&__dialog-overlay {
@@ -40,7 +57,6 @@
 
 	&__dialog-description {
 		font-size: 0.9rem;
-		opacity: 0.8;
 		margin: 0 0 20px 0;
 	}
 
@@ -56,22 +72,36 @@
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 10000;
-		background: rgba(var(--module-color), 0.95);
+		// Opaque: at 95% the time and the cube behind it read through the text.
+		background: var(--zt-surface-float);
+		border: 1px solid var(--zt-surface-border);
 		color: rgb(var(--text-color));
-		padding: 14px 20px;
+		padding: 12px 16px;
 		border-radius: 10px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 12px;
-		max-width: 90vw;
+		box-sizing: border-box;
+		// A box pinned at left: 50% only gets the right half of the screen to size
+		// itself in, so the sentence was squeezed to a word per line (feedback 2.3-b).
+		// max-content asks for one line; the cap wraps it at the screen edge instead.
+		width: max-content;
+		max-width: min(30rem, calc(100vw - 2rem));
 		animation: abortFadeIn 0.3s ease-in;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+		@include mobile-scramble-slot;
+
+		.zt-common-button {
+			flex: 0 0 auto;
+		}
 	}
 
 	&__mismatch-text {
 		font-size: 0.95rem;
 		font-weight: 600;
+		min-width: 0;
 	}
 }
 

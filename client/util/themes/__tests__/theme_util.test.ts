@@ -43,7 +43,8 @@ describe('getAnyColorStringAsRawRgbString', () => {
 	});
 
 	it('accepts a react-color-palette Color object', () => {
-		expect(getAnyColorStringAsRawRgbString({hex: '#ffffff', rgb: {r: 255, g: 255, b: 255}, hsv: {h: 0, s: 0, v: 100}})).toBe('255, 255, 255');
+		const white = {hex: '#ffffff', rgb: {r: 255, g: 255, b: 255, a: 1}, hsv: {h: 0, s: 0, v: 100, a: 1}};
+		expect(getAnyColorStringAsRawRgbString(white)).toBe('255, 255, 255');
 	});
 });
 

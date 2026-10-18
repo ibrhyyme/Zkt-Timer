@@ -1,6 +1,6 @@
 # Zkt Timer
 
-> Zkt Timer is an advanced online Rubik's cube timer and speedcubing platform with live WCA competition tracking, real-time race rooms, algorithm trainer, smart cube BLE integration, and global leaderboards. Available on web, iOS, and Android via PWA and native apps.
+> Zkt Timer is an advanced online Rubik's cube timer and speedcubing platform with live WCA competition tracking, real-time race rooms, algorithm trainer, and smart cube BLE integration. Available on web, iOS, and Android via PWA and native apps.
 
 ## Core capabilities
 
@@ -22,9 +22,11 @@
 - [Trainer](https://zktimer.app/trainer): Algorithm trainer for OLL, PLL, F2L, ZBLL
 - [Live Rooms](https://zktimer.app/rooms): Real-time multiplayer race rooms
 - [WCA Competitions](https://zktimer.app/community/competitions): All WCA Rubik's cube competitions worldwide with live results
-- [Global Leaderboards](https://zktimer.app/ranks): Top solves and averages from all users
 - [Pro](https://zktimer.app/pro): Premium membership features
-- [Battle](https://zktimer.app/battle): 1v1 battle mode (mobile)
+- [Battle](https://zktimer.app/battle): 1v1 battle for two players on one device (phone, tablet or desktop), with regular or smart cubes
+<!-- launch:online_battle -->
+- [Online Battle leaderboard](https://zktimer.app/ranks): Ratings from rated 1v1 Online Battle matches, played with smart cubes against whoever is searching at that moment
+<!-- /launch:online_battle -->
 - [Sign Up](https://zktimer.app/signup): Create an account
 - [Sitemap](https://zktimer.app/sitemap.xml): Full list of indexed URLs
 

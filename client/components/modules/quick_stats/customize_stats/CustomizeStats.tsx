@@ -107,6 +107,7 @@ export default function CustomizeStats(props: Props) {
 						filterOptions={filterOptions}
 						rowSpan={rowSpan}
 						colSpan={colSpan}
+						preview
 					/>
 				</div>
 			</button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cube, Bluetooth, Timer, ArrowCounterClockwise, ArrowsClockwise, PaperPlaneRight } from 'phosphor-react';
+import { Cube, Timer, ArrowCounterClockwise, ArrowsClockwise, PaperPlaneRight } from 'phosphor-react';
 import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
 import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import SolutionInfo from '../solution_info/SolutionInfo';
@@ -29,7 +29,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 		solve, effSolve, user, disabled, editMode, mobileMode,
 		toggleEditMode, togglePlusTwo, toggleDnf, deleteSolve,
 		handleChange, handleDone,
-		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf, smartDevice,
+		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf, cubeTag,
 	} = props;
 
 	const { t } = useTranslation();
@@ -47,7 +47,8 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
 
 	let shareLink = null;
-	if (typeof window !== 'undefined' && !showProOverlay) {
+	// No code on an old solve opened by someone other than its owner (see NormalSolveLayout).
+	if (typeof window !== 'undefined' && !showProOverlay && solve.share_code) {
 		shareLink = (
 			<CopyText
 				buttonProps={{ text: t('solve_info.share_link') }}
@@ -144,13 +145,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 				<div className={bs('header-info')}>
 					<Avatar small user={user} hideBadges profile={user?.profile} />
 					<div className={b('sub-actions')}>
-						<Tag
-							icon={<Bluetooth />}
-							text={smartDevice?.name}
-							title="Smart cube"
-							large
-							backgroundColor="blue"
-						/>
+						{cubeTag}
 						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo.name} />
 						{plusTwoButton}
 						{dnfButton}

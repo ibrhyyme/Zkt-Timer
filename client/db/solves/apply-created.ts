@@ -13,6 +13,7 @@ import { emitEvent } from '../../util/event_handler';
 export const CREATED_SOLVE_SELECTION = `
 	id
 	is_smart_cube
+	smart_device_id
 	solve_method_steps {
 		id
 		step_name
@@ -53,6 +54,13 @@ export function applyCreatedSolve(solveId: string, created: any): boolean {
 	// from the stored row): leave the local ones alone instead of wiping them.
 	if (Array.isArray(created.solve_method_steps)) {
 		existing.solve_method_steps = created.solve_method_steps;
+	}
+	// The device link as the server stored it. A cube connected without a connection records
+	// its BLE identifier, which the server swaps for the device row it belongs to or clears
+	// (server/util/solve/smart_device_link.ts). Taking the answer keeps this row the same as
+	// the copy other devices pull, so anything matching solves by device sees one id.
+	if (created.smart_device_id !== undefined && (created.smart_device_id ?? null) !== (existing.smart_device_id ?? null)) {
+		existing.smart_device_id = created.smart_device_id;
 	}
 	db.update(existing);
 	emitEvent('solveDbUpdatedEvent', existing);

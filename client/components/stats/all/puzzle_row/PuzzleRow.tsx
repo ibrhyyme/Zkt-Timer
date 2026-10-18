@@ -1,10 +1,10 @@
-import React, {useMemo} from 'react';
-import {useHistory} from 'react-router-dom';
+import React, {useContext, useMemo} from 'react';
 import './PuzzleRow.scss';
 import block from '../../../../styles/bem';
 import {fetchAllCubeTypesSolved} from '../../../../db/solves/query';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import PuzzleCard from './PuzzleCard';
+import {StatsContext} from '../../Stats';
 
 const b = block('puzzle-row');
 
@@ -20,18 +20,17 @@ const PALETTE = [
 ];
 
 export default function PuzzleRow() {
-	const history = useHistory();
 	const solveUpdate = useSolveDb();
+	const {scope, openBucket} = useContext(StatsContext);
+	// The season and cube filter above the page apply here too, as they do to every other
+	// part of the "All" view; a card used to count and time the whole history regardless.
+	const sessionId = scope.session_id ?? null;
+	const cubeId = scope.cube_id ?? null;
 
-	const cubeTypes = useMemo(() => fetchAllCubeTypesSolved(), [solveUpdate]);
+	const cubeTypes = useMemo(() => fetchAllCubeTypesSolved(false, scope), [solveUpdate, sessionId, cubeId]);
 
 	if (!cubeTypes.length) {
 		return null;
-	}
-
-	function navigate(cubeType: string, subset: string | null) {
-		const subsetParam = subset != null ? `&subset=${subset}` : '';
-		history.push(`/stats?cubeType=${cubeType}${subsetParam}`);
 	}
 
 	return (
@@ -42,8 +41,10 @@ export default function PuzzleRow() {
 					cubeType={ct.cube_type}
 					scrambleSubset={ct.scramble_subset}
 					count={ct.count}
+					sessionId={sessionId}
+					cubeId={cubeId}
 					color={PALETTE[i % PALETTE.length]}
-					onClick={() => navigate(ct.cube_type, ct.scramble_subset)}
+					onClick={() => openBucket(ct.cube_type, ct.scramble_subset)}
 				/>
 			))}
 		</div>

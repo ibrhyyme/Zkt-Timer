@@ -7,7 +7,7 @@ import Empty from '../common/empty/Empty';
 import { SortAscending, SortDescending, Share, Funnel, ListChecks, Trash, X, CheckSquare, Timer } from 'phosphor-react';
 import SolveListRow from './solve_row/SolveListRow';
 import Loading from '../common/loading/Loading';
-import { numberWithCommas } from '../../util/strings/util';
+import { formatInteger } from '../../util/locale_format';
 import { fetchAllCubeTypesSolved, fetchSolveCount, fetchSolves, FilterSolvesOptions, fetchSolve } from '../../db/solves/query'; // Added fetchSolve
 import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
@@ -28,15 +28,24 @@ import { Solve } from '../../../server/schemas/Solve.schema';
 import ResultCount from '../common/result_count/ResultCount';
 import { deleteMultipleSolvesDb } from '../../db/solves/update'; // Import delete logic
 import { convertTimeStringToSeconds } from '../../util/time';
+import { useLocation } from 'react-router-dom';
+import { puzzleOfBucket } from '../../../shared/cube_puzzle';
+import { canReadSync } from '../../lib/sync-gate';
+import CubeFilterPicker from './cube_filter/CubeFilterPicker';
+import { useCubeFilter } from './cube_filter/useCubeFilter';
+import { cubeFitsPuzzle } from './cube_filter/cube_filter_options';
 
 
 const PAGE_SIZE = 25;
 const ALL_CUBES_MARKER = '__all_cubes__';
+// Opening link of the Cube filter (cube profile: "Bu küpün çözümleri"). Read once on mount;
+// after that the choice lives in this page's state, as every other filter here does.
+const CUBE_QUERY_PARAM = 'cube';
 
 const b = block('solves-list');
 
 export default function SolvesList() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
 
@@ -51,6 +60,17 @@ export default function SolvesList() {
 	const [filters, setFilters] = useState<FilterSolvesOptions>({});
 	const updateCount = useSolveDb();
 
+	// useLocation, not window.location: same value on the server and in the first client frame
+	const { search } = useLocation();
+	const [cubeFilterId, setCubeFilterId] = useState<string | null>(() => new URLSearchParams(search).get(CUBE_QUERY_PARAM));
+	const isAllCubes = cubeType === ALL_CUBES_MARKER;
+	const cubeFilter = useCubeFilter({
+		requestedId: cubeFilterId,
+		puzzle: isAllCubes ? null : puzzleOfBucket(cubeType, toStoredSubset(scrambleSubset)),
+		allMode: isAllCubes,
+	});
+	const selectedCubeId = cubeFilter.cube?.id ?? null;
+
 	// Selection State
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
 	const [selectedSolves, setSelectedSolves] = useState<Set<string>>(new Set());
@@ -64,10 +84,16 @@ export default function SolvesList() {
 
 	// Was a hard-coded English string with an English plural rule, shown as-is in
 	// all five languages. i18next picks the plural form per locale.
-	const solveCountText = t('solves_page.solve_count', {
+	const baseSolveCountText = t('solves_page.solve_count', {
 		count: totalResults,
-		countText: numberWithCommas(totalResults),
+		// Grouped in the app's language: "12.450" in Turkish, not the US "12,450" (2.7-d)
+		countText: formatInteger(totalResults, i18n.language),
 	});
+	// Basic users keep their history on the device, so a cube's count here can differ from its
+	// profile's server count; same wording as the profile (magnet-cubes 8.1).
+	const solveCountText = selectedCubeId && !canReadSync()
+		? `${baseSolveCountText} (${t('cubes.profile_local_note')})`
+		: baseSolveCountText;
 
 	useEffect(() => {
 		const list = fetchSolvesWithFilter();
@@ -77,14 +103,14 @@ export default function SolvesList() {
 		setTotalResults(() => results);
 		setMoreResults(() => moreResults);
 		setSolves(() => list);
-	}, [updateCount, cubeType, scrambleSubset, jsonStr(filters), page, sortBy, sortInverse]);
+	}, [updateCount, cubeType, scrambleSubset, jsonStr(filters), page, sortBy, sortInverse, selectedCubeId]);
 
 	// Reset selection when filters change or mode closed
 	useEffect(() => {
 		if (!isSelectionMode) {
 			setSelectedSolves(new Set());
 		}
-	}, [isSelectionMode, cubeType, scrambleSubset, jsonStr(filters)]);
+	}, [isSelectionMode, cubeType, scrambleSubset, jsonStr(filters), selectedCubeId]);
 
 	// Close time filter on outside click
 	useEffect(() => {
@@ -127,6 +153,9 @@ export default function SolvesList() {
 		if (cubeType !== ALL_CUBES_MARKER) {
 			final.cube_type = cubeType;
 			final.scramble_subset = toStoredSubset(scrambleSubset);
+		}
+		if (selectedCubeId) {
+			final.cube_id = selectedCubeId;
 		}
 		return final;
 	}
@@ -211,26 +240,42 @@ export default function SolvesList() {
 		return getSubsetsForBuckets(cubeType, allBuckets);
 	}, [cubeType, allBuckets]);
 
+	/** A chosen cube of another puzzle goes back to "Tüm küpler" when the type changes (8.2). */
+	function dropCubeIfMismatched(nextCubeType: string, nextSubset: string | null) {
+		const cube = cubeFilter.findCube(cubeFilterId);
+		if (!cube) return;
+		if (!cubeFitsPuzzle(cube, puzzleOfBucket(nextCubeType, toStoredSubset(nextSubset)), false)) {
+			setCubeFilterId(null);
+		}
+	}
+
 	function changeCubeType(ct: CubeType) {
 		setPage(0);
 		setCubeType(ct.id);
 		// Auto-select first bucket subset for new cube_type
 		const subs = getSubsetsForBuckets(ct.id, allBuckets);
-		setScrambleSubset(subs[0]?.id ?? null);
+		const nextSubset = subs[0]?.id ?? null;
+		setScrambleSubset(nextSubset);
+		dropCubeIfMismatched(ct.id, nextSubset);
 	}
 
 	function changeSubset(subset: string | null) {
 		setPage(0);
 		setScrambleSubset(subset);
+		dropCubeIfMismatched(cubeType, subset);
 	}
 
 	function selectAllCubes() {
 		setPage(0);
 		setCubeType(ALL_CUBES_MARKER);
 		setScrambleSubset(null);
+		// "Tümü" keeps the cube: all of its buckets together, as its profile counts them
 	}
 
-	const isAllCubes = cubeType === ALL_CUBES_MARKER;
+	function changeCubeFilter(cubeId: string | null) {
+		setPage(0);
+		setCubeFilterId(cubeId);
+	}
 
 	function changeSortBy(value: keyof Solve) {
 		setSortBy(value);
@@ -402,6 +447,14 @@ export default function SolvesList() {
 										subsets={subsetsForCurrentCube}
 										selectedSubset={scrambleSubset}
 										onChange={changeSubset}
+									/>
+								)}
+								{cubeFilter.visible && (
+									<CubeFilterPicker
+										groups={cubeFilter.groups}
+										value={selectedCubeId}
+										valueName={cubeFilter.cube?.name ?? null}
+										onChange={changeCubeFilter}
 									/>
 								)}
 								<Dropdown

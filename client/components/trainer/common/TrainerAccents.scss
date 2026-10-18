@@ -1,0 +1,30 @@
+@import '../../../styles/config';
+
+// Trainer accent colours (trainer-sets 2.1). One source for the hub cards, the mobile
+// coverflow, the mode header and the study mode switch, so a colour changes in one place.
+// RGB triplets like the theme variables: use rgb(var(--trainer-accent-blue)) or
+// rgba(var(--trainer-accent-blue), 0.15).
+//
+// Declared on the trainer root (every trainer view renders inside .zt-trainer). A light
+// theme gets darker shades: the dark theme's 400 tones fall below a readable contrast on
+// a white module. --trainer-accent-on is the text colour on a filled accent button.
+// The Battle hub draws the same cards (battle/BattleLanding.tsx), so its root carries them too.
+.#{$namespace}-trainer,
+.#{$namespace}-battle-landing {
+	--trainer-accent-blue: 91, 141, 247;
+	--trainer-accent-purple: 167, 139, 250;
+	--trainer-accent-green: 74, 222, 128;
+	--trainer-accent-orange: 251, 146, 60;
+	--trainer-accent-red: 248, 113, 113;
+	--trainer-accent-on: 14, 16, 21;
+}
+
+.theme-light .#{$namespace}-trainer,
+.theme-light .#{$namespace}-battle-landing {
+	--trainer-accent-blue: 37, 99, 235;
+	--trainer-accent-purple: 124, 58, 237;
+	--trainer-accent-green: 22, 163, 74;
+	--trainer-accent-orange: 234, 88, 12;
+	--trainer-accent-red: 220, 38, 38;
+	--trainer-accent-on: 255, 255, 255;
+}

@@ -24,6 +24,14 @@ export class MediaAsset {
 	@Field()
 	storage_path: string;
 
+	/** An MP4 timer background. It has to be shown with <video>; an <img> renders it broken. */
+	@Field()
+	is_video: boolean;
+
+	/** "desktop" or "mobile" for a timer background (one row can hold both), null otherwise. */
+	@Field({nullable: true})
+	background_target?: string;
+
 	@Field()
 	created_at: Date;
 

@@ -99,6 +99,16 @@ describe('classifyTouchTarget', () => {
 		expect(info.blocked).toBe(true);
 	});
 
+	it('blocks the Magnet Timer guide card and the cube label, padding included', () => {
+		const mainTime = ['zt-timer', 'zt-timer__wrapper', 'zt-timer__main', 'zt-timer__main-time', 'zt-time-display'];
+		const card = classifyTouchTarget(chain(...mainTime, 'zt-timer-bottom-info', 'zt-magnet-guide', 'zt-magnet-guide__card'));
+		const label = classifyTouchTarget(chain(...mainTime, 'zt-timer-cube-label'));
+
+		expect(card.blocked).toBe(true);
+		expect(card.onStartSurface).toBe(false);
+		expect(label.blocked).toBe(true);
+	});
+
 	it('reports elements outside the timer as outside', () => {
 		const info = classifyTouchTarget(chain('zt-header-nav', 'zt-header-nav__link'));
 

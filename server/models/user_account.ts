@@ -16,6 +16,7 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {logger} from '../services/logger';
 import {getActiveBanLogsByUserId} from './ban_log';
+import {publicIntegrationSelect} from './integration';
 
 export const publicUserInclude = {
 	select: {
@@ -28,7 +29,8 @@ export const publicUserInclude = {
 		is_pro: true,
 		banned_forever: true,
 		banned_until: true,
-		integrations: true,
+		// Never the OAuth tokens: this include feeds anonymous read paths.
+		integrations: {select: publicIntegrationSelect},
 		profile: {
 			include: {
 				pfp_image: true,
@@ -54,6 +56,18 @@ export function sanitizeUsers(users: InternalUserAccount[], forPublic = false): 
 		// User's password should never go to the front-end
 		delete user.password;
 		delete user.join_ip;
+
+		// Nor the OAuth credentials. The result is not only handed to GraphQL (which
+		// filters by schema): server/models/store.ts dispatches it as `me` into the
+		// SSR Redux state, which is serialized verbatim into window.__STORE__ and the
+		// service worker's cached HTML. Copies, so the caller's row keeps its tokens.
+		if (Array.isArray(user.integrations)) {
+			user.integrations = user.integrations.map((integration) => {
+				if (!integration) return integration;
+				const {auth_token, refresh_token, ...rest} = integration;
+				return rest as typeof integration;
+			});
+		}
 
 		if (forPublic) {
 			return <PublicUserAccount>{

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useBattle } from './BattleContext';
+import { useBattle, displayPlayerName } from './BattleContext';
 import { getTimeString } from '../../util/time';
 import { X, ShareNetwork } from 'phosphor-react';
 import block from '../../styles/bem';
@@ -24,16 +24,19 @@ export default function BattleHistory() {
 
 	const selectedRoundData = selectedRound !== null ? rounds[selectedRound] : null;
 
+	const player1Name = displayPlayerName(settings.player1Name, t);
+	const player2Name = displayPlayerName(settings.player2Name, t);
+
 	const getWinnerName = (winner?: 1 | 2 | 'tie') => {
-		if (winner === 1) return settings.player1Name;
-		if (winner === 2) return settings.player2Name;
+		if (winner === 1) return player1Name;
+		if (winner === 2) return player2Name;
 		return t('battle.tie');
 	};
 
 	function shareBattleResult() {
 		const p1 = state.player1Score;
 		const p2 = state.player2Score;
-		const text = `🎮 Battle on Zkt Timer: ${settings.player1Name} ${p1} - ${p2} ${settings.player2Name}`;
+		const text = `🎮 ${t('battle.share_text', { player1: player1Name, player2: player2Name, score1: p1, score2: p2 })}`;
 		shareContent({
 			title: 'Zkt Timer Battle',
 			text,
@@ -58,8 +61,8 @@ export default function BattleHistory() {
 			{/* Header row */}
 			<div className={b('history-header-row')}>
 				<div className={b('history-col', { num: true })}>#</div>
-				<div className={b('history-col', { time: true })}>{settings.player1Name}</div>
-				<div className={b('history-col', { time: true })}>{settings.player2Name}</div>
+				<div className={b('history-col', { time: true })}>{player1Name}</div>
+				<div className={b('history-col', { time: true })}>{player2Name}</div>
 				<div className={b('history-col', { winner: true })}>{t('battle.winner')}</div>
 			</div>
 
@@ -116,7 +119,7 @@ export default function BattleHistory() {
 									loser: selectedRoundData.winner === 2,
 								})}
 							>
-								<div className={b('round-detail-player-name')}>{settings.player1Name}</div>
+								<div className={b('round-detail-player-name')}>{player1Name}</div>
 								<div className={b('round-detail-player-time')}>
 									{formatSolveTime(selectedRoundData.player1Solve)}
 								</div>
@@ -127,7 +130,7 @@ export default function BattleHistory() {
 									loser: selectedRoundData.winner === 1,
 								})}
 							>
-								<div className={b('round-detail-player-name')}>{settings.player2Name}</div>
+								<div className={b('round-detail-player-name')}>{player2Name}</div>
 								<div className={b('round-detail-player-time')}>
 									{formatSolveTime(selectedRoundData.player2Solve)}
 								</div>

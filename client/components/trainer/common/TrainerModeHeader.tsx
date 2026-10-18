@@ -1,15 +1,22 @@
 /**
- * TrainerModeHeader — 4 trainer modunun (standard/smart/recognition/efficiency) paylastigi
- * ortak slim baslik cercevesi. Cerceve hep ayni; icerik (mod ikonu/rengi/adi + aksiyonlar)
- * moda gore degisir. Mod ikonu+rengi landing kartlariyla ayni → "tikladigin kart bu" surekliligi.
+ * TrainerModeHeader: the header every trainer page shares (the Trainers page's trainers and the
+ * Algorithm Sets section). A breadcrumb bar: a round back button, then the path from the hub to
+ * this page ("Trainers / Algorithm Trainer / PLL"). Earlier crumbs are links, the last one is the
+ * current page in bold. On a phone only the last crumb shows next to the back button.
  *
- * Sol: geri pill (mod kokunde "Antrenor" → landing; alt-view'da "Geri" → mod koku) + renkli
- * mod ikonu + mod adi. Sag: moda ozel aksiyonlar (ortak __btn stili).
+ * The crumb carrying `icon` gets the coloured icon of the hub card the user tapped, so the colour
+ * carries over ("this is the card"). Accent colours are CSS variables from TrainerAccents.scss.
+ * The bar itself has no box: page background and a hairline, the type carries it.
+ *
+ * Center: a slot (study mode switch, efficiency type picker). Right: actions (borderless icon
+ * buttons, `__btn`; filled `__cta` / `__ble` for the one primary action).
  */
 import React, {ReactNode} from 'react';
-import {Timer, BluetoothConnected, Lightning, Eye, Target, ArrowLeft} from 'phosphor-react';
+import {Timer, Lightning, Eye, Target, CaretLeft, CaretRight, Stack} from 'phosphor-react';
+import type {TFunction} from 'i18next';
 import {useTranslation} from 'react-i18next';
 import block from '../../../styles/bem';
+import './TrainerAccents.scss';
 import './TrainerModeHeader.scss';
 import type {TrainerMode} from '../types';
 
@@ -17,44 +24,89 @@ const b = block('trainer-header');
 
 type AccentColor = 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
-const MODE_META: Record<TrainerMode, {icon: ReactNode; color: AccentColor; titleKey: string}> = {
-	standard: {icon: <Timer size={18} weight="duotone" />, color: 'blue', titleKey: 'trainer.landing_standard_title'},
-	smart: {icon: <BluetoothConnected size={18} weight="duotone" />, color: 'purple', titleKey: 'trainer.landing_smart_title'},
-	efficiency: {icon: <Lightning size={18} weight="duotone" />, color: 'green', titleKey: 'trainer.landing_efficiency_title'},
-	recognition: {icon: <Eye size={18} weight="duotone" />, color: 'orange', titleKey: 'trainer.landing_recognition_title'},
-	ollcp: {icon: <Target size={18} weight="duotone" />, color: 'red', titleKey: 'trainer.landing_ollcp_title'},
+/** A trainer, or the Algorithm Sets section. */
+export type TrainerHeaderKind = TrainerMode | 'sets';
+
+const KIND_META: Record<TrainerHeaderKind, {Icon: typeof Timer; color: AccentColor; titleKey: string}> = {
+	standard: {Icon: Timer, color: 'blue', titleKey: 'trainer.mode_header.algorithms'},
+	smart: {Icon: Timer, color: 'blue', titleKey: 'trainer.mode_header.algorithms'},
+	efficiency: {Icon: Lightning, color: 'green', titleKey: 'trainer.landing_efficiency_title'},
+	recognition: {Icon: Eye, color: 'orange', titleKey: 'trainer.landing_recognition_title'},
+	ollcp: {Icon: Target, color: 'red', titleKey: 'trainer.landing_ollcp_title'},
+	sets: {Icon: Stack, color: 'purple', titleKey: 'trainer.hub.sets_title'},
 };
 
+export interface TrainerCrumb {
+	label: string;
+	/** Earlier crumbs are links; the last one is the current page and ignores this. */
+	onClick?: () => void;
+	/** Draw the trainer's coloured icon before this crumb. */
+	icon?: boolean;
+}
+
+/** "Trainers" crumb, back to the Trainers page. */
+export function trainersCrumb(t: TFunction, onClick: () => void): TrainerCrumb {
+	return {label: t('trainer.hub.trainers_title'), onClick};
+}
+
+/** The trainer's (or the sets section's) own crumb, with its icon. */
+export function kindCrumb(t: TFunction, kind: TrainerHeaderKind, onClick?: () => void): TrainerCrumb {
+	return {label: t(KIND_META[kind].titleKey), onClick, icon: true};
+}
+
 interface Props {
-	mode: TrainerMode;
+	/** Whose icon a crumb with `icon` gets; none on the hub pages. */
+	kind?: TrainerHeaderKind;
 	onBack: () => void;
-	/** true → geri "Antrenor" (landing'e); false → "Geri" (mod koku) */
-	backToRoot: boolean;
-	/** Sol ile aksiyonlar arasi orta slot (moda ozel, or. efficiency type picker). */
+	/** Path from the hub to this page; the last crumb is the current page. */
+	trail: TrainerCrumb[];
+	/** Slot between the trail and the actions (study mode switch, efficiency type picker). */
 	center?: ReactNode;
 	actions?: ReactNode;
 }
 
 export default function TrainerModeHeader(props: Props) {
-	const {mode, onBack, backToRoot, center, actions} = props;
+	const {kind, onBack, trail, center, actions} = props;
 	const {t} = useTranslation();
-	const meta = MODE_META[mode];
+	const meta = kind ? KIND_META[kind] : null;
+	const last = trail.length - 1;
 
 	return (
 		<div className={b()}>
 			<div className={b('left')}>
-				<button type="button" className={b('back')} onClick={onBack}>
-					<ArrowLeft size={16} weight="bold" />
-					<span>
-						{backToRoot
-							? t('trainer.header_to_landing', {defaultValue: 'Trainer'})
-							: t('trainer.back', {defaultValue: 'Geri'})}
-					</span>
+				<button type="button" className={b('back')} onClick={onBack} aria-label={t('trainer.back')}>
+					<CaretLeft size={18} weight="bold" />
 				</button>
-				<span className={b('icon', {[meta.color]: true})} aria-hidden="true">
-					{meta.icon}
-				</span>
-				<span className={b('title')}>{t(meta.titleKey)}</span>
+				<nav className={b('trail')} aria-label={t('trainer.hub.breadcrumb')}>
+					{trail.map((crumb, i) => {
+						const current = i === last;
+						const icon = crumb.icon && meta ? (
+							<span className={b('icon', {[meta.color]: true})} aria-hidden="true">
+								<meta.Icon size={current ? 18 : 15} weight="duotone" />
+							</span>
+						) : null;
+						return (
+							<React.Fragment key={i}>
+								{i > 0 ? (
+									<span className={b('sep')} aria-hidden="true">
+										<CaretRight size={12} weight="bold" />
+									</span>
+								) : null}
+								{current ? (
+									<span className={b('crumb', {current: true})} aria-current="page" title={crumb.label}>
+										{icon}
+										<span className={b('crumb-text')}>{crumb.label}</span>
+									</span>
+								) : (
+									<button type="button" className={b('crumb', {link: true})} onClick={crumb.onClick}>
+										{icon}
+										<span className={b('crumb-text')}>{crumb.label}</span>
+									</button>
+								)}
+							</React.Fragment>
+						);
+					})}
+				</nav>
 			</div>
 			{center ? <div className={b('center')}>{center}</div> : null}
 			{actions ? <div className={b('actions')}>{actions}</div> : null}

@@ -4,6 +4,7 @@ import block from '../../../../styles/bem';
 import {SUPPORTED_SMART_CUBE_BRANDS} from '../../../timer/smart_cube/bluetooth/supported_cubes';
 import {STICKER, Face} from '../landing-data';
 import NotationHeading from '../notation_heading/NotationHeading';
+import {useBattleLaunch} from '../../../battle/useBattleLaunch';
 import './InsideSection.scss';
 
 const b = block('welcome-inside');
@@ -71,7 +72,7 @@ const GROUPS: Group[] = [
 	{
 		id: 'together',
 		face: 'B',
-		items: [{key: 'rooms'}, {key: 'battle'}, {key: 'messages'}, {key: 'profile'}, {key: 'rankings'}],
+		items: [{key: 'rooms'}, {key: 'battle'}, {key: 'messages'}, {key: 'profile'}],
 	},
 	{
 		id: 'competitions',
@@ -102,6 +103,9 @@ function brandList(lang: string): string {
 export default function InsideSection() {
 	const {t, i18n} = useTranslation();
 	const vars = {brands: brandList(i18n.language || 'en')};
+	// The battle line tells about Online Battle only once it is public (ranking-battle 7.4).
+	const launched = useBattleLaunch()?.launched === true;
+	const itemKey = (key: string) => (launched && key === 'battle' ? 'battle_online' : key);
 
 	return (
 		<section className={b()}>
@@ -125,7 +129,7 @@ export default function InsideSection() {
 							<ul className={b('items')}>
 								{group.items.map((item) => (
 									<li key={item.key} className={b('item')}>
-										<span>{t(`welcome_inside.${group.id}.${item.key}`, vars)}</span>
+										<span>{t(`welcome_inside.${group.id}.${itemKey(item.key)}`, vars)}</span>
 										{item.pro && <span className={b('pro')}>Pro</span>}
 									</li>
 								))}

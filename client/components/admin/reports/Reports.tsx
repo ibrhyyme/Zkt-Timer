@@ -55,7 +55,7 @@ export default function Reports() {
 }
 
 function ReportsList() {
-	const {data, loading} = useQuery<{reports: ReportSummarySchema[]}>(REPORTS_QUERY, {
+	const {data, loading, refetch} = useQuery<{reports: ReportSummarySchema[]}>(REPORTS_QUERY, {
 		fetchPolicy: 'no-cache',
 	});
 
@@ -73,7 +73,7 @@ function ReportsList() {
 		);
 	}
 
-	const reports = data.reports.map((report) => <ReportSummary reportSummary={report} key={report.last_report} />);
+	const reports = data.reports.map((report) => <ReportSummary reportSummary={report} key={report.last_report} onChanged={() => refetch()} />);
 
 	return <div>{reports}</div>;
 }

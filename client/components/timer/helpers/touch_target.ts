@@ -27,6 +27,10 @@ const BLOCKED_CLASSES = [
 	'zt-mobile-timer-scramble__expanded-text',
 	'zt-mobile-timer-scramble__expanded-copy',
 	'zt-mobile-timer-scramble__expanded-close',
+	// Magnet Timer guide cards (add a cube, calibrate, re-learn the baseline) and the cube
+	// label under the digits: a tap on them, padding included, never primes the timer.
+	'zt-magnet-guide',
+	'zt-timer-cube-label',
 ];
 
 // The timer's own touch surface. A press may only PRIME the timer from here.

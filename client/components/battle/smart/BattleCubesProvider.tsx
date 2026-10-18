@@ -142,6 +142,11 @@ export function BattleCubesProvider({ children }: { children: React.ReactNode })
 		return assignRef.current[1] === slot ? 1 : 2;
 	}, []);
 
+	/** Last state each link reported, so the moment a link comes up can be told apart. */
+	const lastSlotStateRef = useRef<Record<CubeSlot, BattleCubeStatus['state']>>({ a: 'idle', b: 'idle' });
+	/** Set below; read through a ref because links are built before it exists. */
+	const onLinkUpRef = useRef<(slot: CubeSlot) => void>(() => { /* set below */ });
+
 	const getLink = useCallback(
 		(slot: CubeSlot): BattleCubeLink => {
 			const existing = linksRef.current[slot];
@@ -152,7 +157,16 @@ export function BattleCubesProvider({ children }: { children: React.ReactNode })
 				// Resolved at call time, never captured: after a side switch this same cube
 				// belongs to the other player and its events have to follow.
 				onEvent: (event) => handlersRef.current[playerOfSlot(slot)]?.(event),
-				onStatus: (next) => setSlotStatus((prev) => ({ ...prev, [slot]: next })),
+				onStatus: (next) => {
+					const was = lastSlotStateRef.current[slot];
+					lastSlotStateRef.current[slot] = next.state;
+					setSlotStatus((prev) => ({ ...prev, [slot]: next }));
+					// Deferred so the link finishes its own handshake bookkeeping first, the
+					// order the old post-connect path ran in.
+					if (next.state === 'connected' && was !== 'connected') {
+						setTimeout(() => onLinkUpRef.current(slot), 0);
+					}
+				},
 				onStream: (turns, facelets) => setSlotStream((prev) => ({ ...prev, [slot]: { turns, facelets } })),
 				moveOrderFix: moveOrderFixRef.current,
 			});
@@ -172,43 +186,55 @@ export function BattleCubesProvider({ children }: { children: React.ReactNode })
 	}, [dispatch]);
 
 	/**
-	 * Run a connect attempt and settle the UI around it.
+	 * A link just reported its cube up: settle the picker and the round around it.
 	 *
-	 * Shared with the picker's Retry button, which runs a second attempt on the same link
-	 * without going back through the modal. Handled here rather than at each call site
-	 * because a retry that succeeded used to leave the cube pointed at no scramble.
+	 * Driven by the link's status, not by the end of connect(). GAN, QiYi and WeiLong drivers
+	 * report "connected" only once the first packet decrypts, which is often AFTER connect()
+	 * has already returned. Deciding at the end of connect() then read "not connected" and left
+	 * the picker open over a cube that came up a moment later; whether it closed depended on
+	 * which of the two happened first.
+	 */
+	onLinkUpRef.current = (slot: CubeSlot) => {
+		const link = linksRef.current[slot];
+		if (!link?.connected) return;
+
+		// Undo a duplicate pairing.
+		//
+		// On web the exclusion list cannot prevent this: every scan mints a new `web_N` id for
+		// the same physical cube, and Chrome's picker cannot be filtered. The stable identity
+		// only exists after the handshake, so the check has to be here. Leaving it would put
+		// both players on one cube: every turn lands on both links, the timers run as one, and
+		// the two drivers fight over the same GATT write ("GATT operation already in
+		// progress"), which drops the connection.
+		const identity = link.getStatus().persistentId;
+		const clash =
+			identity &&
+			(['a', 'b'] as CubeSlot[]).some(
+				(s) => linksRef.current[s] && linksRef.current[s] !== link && linksRef.current[s].getStatus().persistentId === identity
+			);
+		if (clash) {
+			void link.disconnect();
+			closeScanModal();
+			toastError(t('battle.cube_already_in_play'));
+			return;
+		}
+
+		// A cube that joins mid-battle starts from the round in progress, not from the
+		// scramble that was current when the picker opened.
+		link.setScramble(scrambleRef.current);
+		closeScanModal();
+	};
+
+	/**
+	 * Run a connect attempt. Shared with the picker's Retry button, which runs a second
+	 * attempt on the same link without going back through the modal. Success is handled by
+	 * onLinkUpRef above; only what the picker cannot explain is handled here.
 	 */
 	const runConnect = useCallback(
 		async (link: BattleCubeLink, excludeDeviceIds: string[] = []) => {
 			const result = await link.connect(excludeDeviceIds);
 
-			if (result.ok) {
-				// Undo a duplicate pairing.
-				//
-				// On web the exclusion list above cannot prevent this: every scan mints a new
-				// `web_N` id for the same physical cube, and Chrome's picker cannot be filtered.
-				// The stable identity only exists after the handshake, so the check has to be
-				// here. Leaving it would put both players on one cube: every turn lands on both
-				// links, the timers run as one, and the two drivers fight over the same GATT
-				// write ("GATT operation already in progress"), which drops the connection.
-				const identity = link.getStatus().persistentId;
-				const clash =
-					identity &&
-					(['a', 'b'] as CubeSlot[]).some(
-						(s) => linksRef.current[s] && linksRef.current[s] !== link && linksRef.current[s].getStatus().persistentId === identity
-					);
-				if (clash) {
-					void link.disconnect();
-					closeScanModal();
-					toastError(t('battle.cube_already_in_play'));
-					return;
-				}
-
-				// A cube that joins mid-battle starts from the round in progress, not from the
-				// scramble that was current when the picker opened.
-				link.setScramble(scrambleRef.current);
-				closeScanModal();
-			} else if (result.reason === 'scan_busy') {
+			if (result.reason === 'scan_busy') {
 				// A failed handshake otherwise leaves the picker open on its error state so the
 				// player can retry from there. Only what the picker cannot explain gets a toast.
 				closeScanModal();

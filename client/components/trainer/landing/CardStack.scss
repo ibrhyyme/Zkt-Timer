@@ -1,0 +1,79 @@
+@import '../../../styles/config';
+
+// Phone card stack (hub and Trainers page). The cards themselves are the desktop cards
+// (TrainerLanding.scss `landing-card`); this file only lays them out and makes them opaque, so a
+// covering card hides the one under it instead of showing through.
+.#{$namespace}-trainer-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	width: 100%;
+	max-width: 560px;
+	margin: 0 auto;
+
+	&--overlap {
+		gap: 0;
+	}
+
+	// Opaque: the card's own faint gradient over the page background.
+	&__card.#{$namespace}-trainer__landing-card {
+		padding: 22px 22px 24px;
+		border-radius: 20px;
+		background:
+			linear-gradient(165deg, rgba(var(--text-color), 0.06), rgba(var(--text-color), 0.02)),
+			rgb(var(--background-color));
+		backdrop-filter: none;
+		border-color: rgba(var(--text-color), 0.1);
+		-webkit-tap-highlight-color: transparent;
+
+		// No lift on a touch screen: a tap would leave the card raised.
+		&:hover {
+			transform: none;
+			box-shadow: none;
+		}
+
+		.#{$namespace}-trainer__landing-card-eyebrow-row {
+			margin-bottom: 14px;
+		}
+
+		.#{$namespace}-trainer__landing-card-desc {
+			margin-bottom: 18px;
+		}
+
+		.#{$namespace}-trainer__landing-card-groups {
+			margin-bottom: 20px;
+		}
+	}
+
+	// A covered card: its head only, with room at the bottom for the next card's edge.
+	&__card.#{$namespace}-trainer__landing-card--collapsed {
+		padding-bottom: 34px;
+
+		.#{$namespace}-trainer__landing-card-desc {
+			margin-bottom: 0;
+		}
+
+		.#{$namespace}-trainer__landing-card-watermark {
+			display: none;
+		}
+	}
+
+	// Each later card covers the bottom edge of the one above it; a top shadow and the card's
+	// accent line keep the edge visible.
+	&--overlap &__card + &__card {
+		margin-top: -22px;
+		box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.35);
+
+		&:hover {
+			box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.35);
+		}
+	}
+
+	&--overlap &__card {
+		border-top: 2px solid rgb(var(--mode-accent));
+	}
+}
+
+.theme-light .#{$namespace}-trainer-stack--overlap .#{$namespace}-trainer-stack__card + .#{$namespace}-trainer-stack__card {
+	box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.12);
+}

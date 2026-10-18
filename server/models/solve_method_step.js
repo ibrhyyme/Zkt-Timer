@@ -1,5 +1,6 @@
 import { getPrisma } from '../database';
 import { generateUUID } from '../../shared/code';
+import { methodStepRowsFromSteps } from '../../shared/util/solve/solve_steps';
 
 export function deleteSolveMethodSteps(solve) {
 	return getPrisma().solveMethodStep.deleteMany({
@@ -9,45 +10,10 @@ export function deleteSolveMethodSteps(solve) {
 	});
 }
 
+// One row builder for the server and the device (shared/util/solve/solve_steps.ts), so a
+// breakdown the phone computes without a connection has exactly the stored shape.
 function buildSolveMethodStepRows(solve, steps) {
-	const data = [];
-
-	// getSolveSteps tags its output with the method it ran, so the rows record
-	// which ladder produced them instead of assuming CFOP.
-	const methodName = steps.__method || 'cfop';
-
-	for (const step of Object.keys(steps)) {
-		if (step === '__method') {
-			continue;
-		}
-
-		const method = steps[step];
-
-		if (!method) {
-			continue;
-		}
-
-		data.push({
-			id: generateUUID(),
-			solve_id: solve.id,
-			turn_count: method.turnCount || 0,
-			turns: method.turnsString,
-			total_time: method.time,
-			parent_name: method.parentName,
-			tps: method.tps,
-			skipped: method.skipped,
-			recognition_time: method.recognitionTime,
-			oll_case_key: method.ollCaseKey || null,
-			pll_case_key: method.pllCaseKey || null,
-			case_key: method.caseKey || null,
-			case_set: method.caseSet || null,
-			method_name: methodName,
-			step_index: method.index,
-			step_name: step,
-		});
-	}
-
-	return data;
+	return methodStepRowsFromSteps(solve.id, steps, () => generateUUID());
 }
 
 export async function createSolveMethodSteps(solve, steps) {

@@ -12,6 +12,7 @@ import {
 	Timer,
 	Keyboard,
 	Cube,
+	Bluetooth,
 	Shuffle,
 	PaintBrush,
 	Palette,
@@ -26,23 +27,10 @@ export interface SettingsTab {
 	id: string;
 	link: string;
 	label: string;
-	// Each section carries a cube-face colour, worn by its own icon. After a couple of
-	// visits the shape and the colour together are what you aim for, which makes the
-	// list scannable without reading every label.
-	tone: string;
+	// One outline icon in the text colour per row; the current row takes the accent.
+	// A different colour per section read as decoration, not as wayfinding.
 	icon: React.ReactNode;
 }
-
-const TONE = {
-	blue: '36, 107, 253',
-	green: '45, 189, 97',
-	violet: '167, 139, 255',
-	yellow: '245, 183, 0',
-	orange: '238, 106, 38',
-	cyan: '0, 176, 209',
-	red: '226, 51, 67',
-	pink: '226, 87, 166',
-};
 
 // The first entry is also what `/settings` renders on desktop.
 export function useSettingsTabs(): SettingsTab[] {
@@ -53,57 +41,56 @@ export function useSettingsTabs(): SettingsTab[] {
 			id: 'timer',
 			link: '/settings/timer',
 			label: t('settings.tab_timer'),
-			tone: TONE.blue,
-			icon: <Timer weight="fill" />,
+			icon: <Timer />,
 		},
 		{
 			id: 'input',
 			link: '/settings/input',
 			label: t('settings.tab_input'),
-			tone: TONE.green,
-			icon: <Keyboard weight="fill" />,
+			icon: <Keyboard />,
+		},
+		{
+			id: 'cubes',
+			link: '/settings/cubes',
+			label: t('cubes.tab'),
+			icon: <Cube />,
 		},
 		{
 			id: 'smart-cube',
 			link: '/settings/smart-cube',
 			label: t('settings.tab_smart_cube'),
-			tone: TONE.violet,
-			icon: <Cube weight="fill" />,
+			// Bluetooth, not a cube: My Cubes right above carries the cube.
+			icon: <Bluetooth />,
 		},
 		{
 			id: 'scramble',
 			link: '/settings/scramble',
 			label: t('settings.tab_scramble'),
-			tone: TONE.yellow,
-			icon: <Shuffle weight="fill" />,
+			icon: <Shuffle />,
 		},
 		{
 			id: 'appearance',
 			link: '/settings/appearance',
 			label: t('settings.tab_appearance'),
-			tone: TONE.orange,
-			icon: <PaintBrush weight="fill" />,
+			icon: <PaintBrush />,
 		},
 		{
 			id: 'colors',
 			link: '/settings/colors',
 			label: t('settings.tab_colors'),
-			tone: TONE.pink,
-			icon: <Palette weight="fill" />,
+			icon: <Palette />,
 		},
 		{
 			id: 'data',
 			link: '/settings/data',
 			label: t('settings.tab_data'),
-			tone: TONE.red,
-			icon: <Database weight="fill" />,
+			icon: <Database />,
 		},
 		{
 			id: 'language',
 			link: '/settings/language',
 			label: t('settings.tab_language'),
-			tone: TONE.cyan,
-			icon: <Translate weight="fill" />,
+			icon: <Translate />,
 		},
 	];
 }
@@ -113,7 +100,11 @@ export default function SettingsNav() {
 	const {pathname} = useLocation();
 
 	// `/settings` renders the first section on desktop, so treat it as that tab.
-	const current = pathname === '/settings' ? tabs[0].link : pathname;
+	// A section's sub-pages (a cube profile under /settings/cubes) keep the section lit.
+	const current =
+		pathname === '/settings'
+			? tabs[0].link
+			: tabs.find((tab) => pathname.startsWith(tab.link + '/'))?.link || pathname;
 
 	return (
 		<nav className={b()}>
@@ -124,7 +115,6 @@ export default function SettingsNav() {
 						key={tab.id}
 						to={tab.link}
 						className={b('item', {active})}
-						style={{'--tab-tone': tab.tone} as React.CSSProperties}
 						aria-current={active ? 'page' : undefined}
 					>
 						{/* Shared layoutId means the highlight travels between rows instead of

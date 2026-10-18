@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useContext, useEffect } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'phosphor-react';
 import block from '../../../styles/bem';
@@ -14,11 +14,14 @@ import {
 	clampDockHeight,
 	clampFloatBox,
 	clampRailWidth,
+	FloatFrame,
+	floatBoxOnScreen,
 	PLACEABLE_MODULES,
 	TILE_LIMITS,
 	TileBox,
 	TileDock,
 } from './layout';
+import { measureFloatFrame, measureTopInset } from './dom_env';
 import './TimerTiles.scss';
 
 const b = block('timer-tiles');
@@ -47,6 +50,25 @@ export default function TimerTiles({ stageRef, children }: Props) {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 	const tiles = useTiles();
+
+	// The area floating tiles are drawn inside: the window below the site's top bar.
+	// Re-read on resize so a tile stored for a bigger window, or stored under the bar
+	// before that was prevented, is drawn where it can be reached again.
+	const [floatFrame, setFloatFrame] = useState<FloatFrame>(measureFloatFrame);
+	useEffect(() => {
+		const update = () =>
+			setFloatFrame((previous) => {
+				const next = measureFloatFrame();
+				return previous.width === next.width &&
+					previous.height === next.height &&
+					previous.topInset === next.topInset
+					? previous
+					: next;
+			});
+		update();
+		window.addEventListener('resize', update);
+		return () => window.removeEventListener('resize', update);
+	}, []);
 
 	// No rearranging during a solve. The tiles are faded out and pointer-inert then, and
 	// a drag begun just before the timer started would otherwise survive into it.
@@ -139,11 +161,15 @@ export default function TimerTiles({ stageRef, children }: Props) {
 			const config = id ? tiles.tiles[id] : null;
 			if (!id || !config) return;
 
+			// From where the tile is drawn, not the raw stored value, which may be one the
+			// display clamp had to move.
+			const drawn = floatBoxOnScreen(config, floatFrame);
 			tiles.floatTileAt(
 				id,
 				clampFloatBox(
-					{ x: config.x || 0, y: config.y || 0, w: width, h: height },
-					{ width: window.innerWidth, height: window.innerHeight }
+					{ x: drawn.x, y: drawn.y, w: width, h: height },
+					{ width: window.innerWidth, height: window.innerHeight },
+					measureTopInset()
 				)
 			);
 		},
@@ -163,15 +189,15 @@ export default function TimerTiles({ stageRef, children }: Props) {
 
 	const renderTile = (id: TimerModuleType, dock: TileDock) => {
 		const config = tiles.tiles[id];
-		const style =
-			dock === 'float'
-				? {
-						left: `${config?.x ?? 0}px`,
-						top: `${config?.y ?? 0}px`,
-						width: `${config?.w ?? TILE_LIMITS.floatDefaultW}px`,
-						height: `${config?.h ?? TILE_LIMITS.floatDefaultH}px`,
-				  }
-				: undefined;
+		const box = dock === 'float' ? floatBoxOnScreen(config, floatFrame) : null;
+		const style = box
+			? {
+					left: `${box.x}px`,
+					top: `${box.y}px`,
+					width: `${box.w}px`,
+					height: `${box.h}px`,
+			  }
+			: undefined;
 
 		return (
 			<TimerTile

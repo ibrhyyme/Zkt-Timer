@@ -4,6 +4,8 @@ import './StatsFilterControls.scss';
 import block from '../../../../styles/bem';
 import FancyDropdown, { FancyDropdownOption } from '../../../timer/header_control/FancyDropdown';
 import { IDropdownOption } from '../../../common/inputs/dropdown/dropdown_option/DropdownOption';
+import CubeFilterPicker from '../../../solves/cube_filter/CubeFilterPicker';
+import { CubeFilterGroup } from '../../../solves/cube_filter/cube_filter_options';
 
 const b = block('stats-filter-controls');
 
@@ -13,12 +15,23 @@ export interface FilterChip {
 	visible: boolean;
 }
 
+/** The physical Cube filter (design magnet-cubes 8.2): its own popover, not a FilterChip. */
+export interface PhysicalCubeChip {
+	groups: CubeFilterGroup[];
+	value: string | null;
+	valueName: string | null;
+	onChange: (cubeId: string | null) => void;
+	/** Shown after the chip, e.g. "Solves on this device" while read sync is off (8.1). */
+	note?: string | null;
+}
+
 interface Props {
 	allMode: boolean;
 	allLabel: string;
 	onAllClick: () => void;
 	cubeChip: FilterChip | null;
 	subsetChip: FilterChip | null;
+	physicalCubeChip?: PhysicalCubeChip | null;
 	sessionChip: FilterChip | null;
 	lastNChip?: FilterChip | null;
 }
@@ -73,7 +86,7 @@ function Separator() {
 }
 
 export default function StatsFilterControls(props: Props) {
-	const { allMode, allLabel, onAllClick, cubeChip, subsetChip, sessionChip, lastNChip } = props;
+	const { allMode, allLabel, onAllClick, cubeChip, subsetChip, physicalCubeChip, sessionChip, lastNChip } = props;
 
 	return (
 		<div className={b()}>
@@ -94,6 +107,21 @@ export default function StatsFilterControls(props: Props) {
 				<>
 					<Separator />
 					<ChipDropdown chip={subsetChip} active={!allMode} />
+				</>
+			)}
+			{physicalCubeChip && (
+				<>
+					<Separator />
+					<CubeFilterPicker
+						groups={physicalCubeChip.groups}
+						value={physicalCubeChip.value}
+						valueName={physicalCubeChip.valueName}
+						onChange={physicalCubeChip.onChange}
+						triggerClassName={b('chip', { active: !!physicalCubeChip.value })}
+						labelClassName={b('chip-label')}
+						caretClassName={b('chip-caret')}
+					/>
+					{physicalCubeChip.note && <span className={b('note')}>{physicalCubeChip.note}</span>}
 				</>
 			)}
 			{sessionChip?.visible && (

@@ -1,8 +1,14 @@
-import React, {useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
+import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
+import CubeCalibrationsTab from './CubeCalibrationsTab';
+import {isBuiltinPuzzleKey} from '../../../../shared/cube_puzzle';
+import {CUBE_TYPES} from '../../../util/cubes/cube_types';
+import {buildCsv, CSV_MIME} from '../../../util/csv';
+import {saveFile} from '../../../util/save-file';
 import {
 	MagnetTelemetrySummaryDocument,
 	MagnetTelemetryRowsDocument,
@@ -24,30 +30,81 @@ const EVENT_TYPES = ['device', 'near', 'lift', 'reject', 'unsupported', 'hint', 
 /** How many rows the on-screen table holds. Past this, the CSV export is the tool. */
 const ROW_LIMIT = 200;
 
-// Below this the weakest placement on a phone sits close to the 150 uT threshold.
-const NEAR_MARGIN_UT = 200;
+// Today's ready line, used for groups recorded before the study carried the line in use.
+const DEFAULT_NEAR_MIN_UT = 150;
+
+// Below this multiple of the ready line the weakest placement sits close to it (200 uT on 150).
+const NEAR_MARGIN_RATIO = 4 / 3;
+
+type PanelTab = 'study' | 'calibrations';
+
+const TAB_PARAM = 'tab';
+
+function readTabParam(): PanelTab {
+	if (typeof window === 'undefined') return 'study';
+	return new URLSearchParams(window.location.search).get(TAB_PARAM) === 'calibrations' ? 'calibrations' : 'study';
+}
 
 function percent(part: number, whole: number): number {
 	return whole > 0 ? Math.round((part / whole) * 100) : 0;
 }
 
-function saveText(text: string, name: string, type: string): void {
-	const blob = new Blob([text], {type});
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = name;
-	a.click();
-	URL.revokeObjectURL(url);
+/**
+ * Admin page for the Magnet Timer: the field study and the stored cube calibrations (design
+ * 3.4), one admin entry with two tabs. The open tab is kept in ?tab= so a refresh or a shared
+ * link lands on the same table.
+ */
+export default function MagnetTelemetryPanel() {
+	const {t} = useTranslation();
+	// Server render and first client render agree on the default; the URL is read after mount.
+	const [tab, setTab] = useState<PanelTab>('study');
+
+	useEffect(() => {
+		setTab(readTabParam());
+	}, []);
+
+	const tabs = useMemo(
+		() => [
+			{id: 'study', value: t('admin_cube_calibrations.tab_study')},
+			{id: 'calibrations', value: t('admin_cube_calibrations.tab_calibrations')},
+		],
+		[t]
+	);
+
+	function changeTab(id: string) {
+		const next: PanelTab = id === 'calibrations' ? 'calibrations' : 'study';
+		setTab(next);
+		try {
+			const url = new URL(window.location.href);
+			if (next === 'study') url.searchParams.delete(TAB_PARAM);
+			else url.searchParams.set(TAB_PARAM, next);
+			window.history.replaceState(window.history.state, '', url.toString());
+		} catch (e) {
+			// The tab still switches; only the URL stays behind.
+		}
+	}
+
+	return (
+		<div className={b()}>
+			<HorizontalNav tabs={tabs} tabId={tab} onChange={changeTab} />
+			{tab === 'calibrations' ? <CubeCalibrationsTab /> : <StudyTab />}
+		</div>
+	);
+}
+
+function puzzleName(key: string | null | undefined, customLabel: string): string {
+	if (!key) return '-';
+	if (isBuiltinPuzzleKey(key)) return CUBE_TYPES[key]?.name || key;
+	return customLabel;
 }
 
 /**
- * Field study readout for magnet lift-to-start: per phone model, does a placed cube clear
- * the 150 uT threshold with margin, how fast are lifts confirmed, how often are lifts
+ * Field study readout for magnet lift-to-start: per phone model and puzzle, does a placed cube clear
+ * the ready line with margin, how fast are lifts confirmed, how often are lifts
  * refused or rejected, and which phones cannot deliver 40 Hz. Raw windows download in the
  * test-fixture format, ready for client/util/magnet-start/__tests__/fixtures.
  */
-export default function MagnetTelemetryPanel() {
+function StudyTab() {
 	const {t} = useTranslation();
 	const [days, setDays] = useState(7);
 	const client = useApolloClient();
@@ -80,6 +137,13 @@ export default function MagnetTelemetryPanel() {
 		fetchPolicy: 'cache-and-network',
 	});
 	const rows = rowsQuery.data?.magnetTelemetryRows || [];
+
+	// The summary has a row per (phone model, puzzle); the filter lists each model once.
+	const modelOptions = useMemo(
+		() => [...new Set(summary.map((s: any) => s.device_model).filter(Boolean))].sort() as string[],
+		[summary]
+	);
+	const customPuzzle = t('admin_cube_calibrations.custom_puzzle');
 
 	function applyFilters(next: Partial<typeof filters> = {}) {
 		setFilters({...filters, username: usernameInput.trim(), ...next});
@@ -128,15 +192,10 @@ export default function MagnetTelemetryPanel() {
 		const headers = [
 			'created_at', 'username', 'platform', 'device_model', 'os_version', 'sensor_name', 'event_type', 'detail',
 			'delta_ut', 'latency_ms', 'rest_ms', 'approach_ms', 'sigma', 'rate_hz', 'reversed', 'has_samples', 'app_version',
+			'cube_puzzle', 'near_min_ut',
 		];
-		const escape = (v: any) => {
-			if (v === null || v === undefined) return '';
-			const s = String(v);
-			// Quote anything a spreadsheet would otherwise split or mangle.
-			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-		};
-		const body = all.map((r: any) => headers.map((h) => escape(r[h])).join(',')).join('\n');
-		saveText(`${headers.join(',')}\n${body}`, `magnet-telemetry-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8');
+		const csv = buildCsv(headers, all.map((r: any) => headers.map((h) => r[h])));
+		void saveFile(csv, `magnet-telemetry-${new Date().toISOString().slice(0, 10)}.csv`, CSV_MIME);
 	}
 
 	async function downloadSamples(row: any) {
@@ -151,7 +210,7 @@ export default function MagnetTelemetryPanel() {
 			if (json) {
 				const model = String(row.device_model || 'phone').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
 				const stamp = new Date(row.created_at).toISOString().replace(/[:.]/g, '-').slice(0, 19);
-				saveText(json, `magnet-${row.platform}-${model}-${row.event_type}-${stamp}.json`, 'application/json');
+				await saveFile(json, `magnet-${row.platform}-${model}-${row.event_type}-${stamp}.json`, 'application/json');
 			}
 		} finally {
 			setDownloading(null);
@@ -166,7 +225,7 @@ export default function MagnetTelemetryPanel() {
 	const fmt = (v: any, unit = '') => (v === null || v === undefined ? '-' : `${v}${unit}`);
 
 	return (
-		<div className={b()}>
+		<>
 			<div className={b('header')}>
 				<h2 className={b('title')}>{t('magnet_telemetry.title')}</h2>
 				<div className={b('actions')}>
@@ -201,6 +260,8 @@ export default function MagnetTelemetryPanel() {
 						<thead>
 							<tr>
 								<th>{t('magnet_telemetry.col_device')}</th>
+								<th>{t('admin_cube_calibrations.col_puzzle')}</th>
+								<th>{t('admin_cube_calibrations.col_ready_line')}</th>
 								<th>{t('magnet_telemetry.col_sensor')}</th>
 								<th>{t('magnet_telemetry.col_users')}</th>
 								<th>{t('magnet_telemetry.col_placements')}</th>
@@ -217,9 +278,12 @@ export default function MagnetTelemetryPanel() {
 						<tbody>
 							{summary.map((s: any) => {
 								const refusedPct = percent(s.refused, s.lifts);
+								// Rows from before the study carried the line in use ran on today's default.
+								const readyLine = s.median_near_min_ut > 0 ? s.median_near_min_ut : DEFAULT_NEAR_MIN_UT;
+								const nearTight = s.placements > 0 && s.min_near_ut < readyLine * NEAR_MARGIN_RATIO;
 								return (
 									<tr
-										key={`${s.platform}-${s.device_model}`}
+										key={`${s.platform}-${s.device_model}-${s.cube_puzzle || ''}`}
 										className={b('row', {warn: s.unsupported > 0 || refusedPct >= 10})}
 									>
 										<td className={b('device')}>
@@ -232,12 +296,14 @@ export default function MagnetTelemetryPanel() {
 											</button>
 											<span className={b('platform')}>{s.platform}</span>
 										</td>
+										<td>{puzzleName(s.cube_puzzle, customPuzzle)}</td>
+										<td>{s.median_near_min_ut > 0 ? `${s.median_near_min_ut} µT` : '-'}</td>
 										<td>{s.sensor_name || '-'}</td>
 										<td>{s.distinct_users}</td>
 										<td>{s.placements}</td>
 										{/* The weakest placement is the one that decides whether the threshold
 										    holds on this phone; the median shows the usual margin. */}
-										<td className={b('cell', {warn: s.placements > 0 && s.min_near_ut < NEAR_MARGIN_UT})}>
+										<td className={b('cell', {warn: nearTight})}>
 											{s.placements > 0 ? `${s.min_near_ut} / ${s.median_near_ut} µT` : '-'}
 										</td>
 										<td className={b('cell', {warn: refusedPct >= 10})}>
@@ -297,8 +363,8 @@ export default function MagnetTelemetryPanel() {
 						aria-label={t('magnet_telemetry.filter_device')}
 					>
 						<option value="">{t('magnet_telemetry.filter_all_devices')}</option>
-						{summary.map((s: any) => (
-							<option key={`${s.platform}-${s.device_model}`} value={s.device_model}>{s.device_model}</option>
+						{modelOptions.map((model) => (
+							<option key={model} value={model}>{model}</option>
 						))}
 					</select>
 					<Button gray onClick={() => applyFilters()}>{t('magnet_telemetry.search')}</Button>
@@ -317,6 +383,7 @@ export default function MagnetTelemetryPanel() {
 									<th>{t('magnet_telemetry.col_user')}</th>
 									<th>{t('magnet_telemetry.col_device')}</th>
 									<th>{t('magnet_telemetry.col_event')}</th>
+									<th>{t('admin_cube_calibrations.col_puzzle')}</th>
 									<th>{t('magnet_telemetry.col_detail')}</th>
 									<th>µT</th>
 									<th>{t('magnet_telemetry.col_latency_short')}</th>
@@ -342,6 +409,7 @@ export default function MagnetTelemetryPanel() {
 										<td>{r.username || '-'}</td>
 										<td className={b('device')}>{r.device_model}</td>
 										<td>{r.event_type}</td>
+										<td>{r.cube_puzzle ? puzzleName(r.cube_puzzle, customPuzzle) : '-'}</td>
 										<td>{r.detail || '-'}</td>
 										<td>{fmt(r.delta_ut)}</td>
 										<td>{fmt(r.latency_ms, ' ms')}</td>
@@ -372,6 +440,6 @@ export default function MagnetTelemetryPanel() {
 					</div>
 				)}
 			</div>
-		</div>
+		</>
 	);
 }

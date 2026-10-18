@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple, Trash } from 'phosphor-react';
 import Button from '../common/button/Button';
@@ -14,6 +14,7 @@ import { setTimerParam } from './helpers/params';
 import { resetScramble } from './helpers/scramble';
 import { useScrambleHistory } from './helpers/scramble_navigation';
 import { smartCubeSelected } from './helpers/util';
+import { useNavLabelFit } from './helpers/useNavLabelFit';
 import { setSetting } from '../../db/settings/update';
 import block from '../../styles/bem';
 import { hapticNotification } from '../../util/native-plugins';
@@ -22,11 +23,14 @@ import './TimerControls.scss';
 const b = block('timer-controls');
 
 export default function TimerControls() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const context = useContext(TimerContext);
     const mobileMode = useGeneral('mobile_mode');
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
+    const rowRef = useRef<HTMLDivElement>(null);
+    // Önceki / Sonraki carry their labels wherever the phone's row has room for them.
+    const navLabels = useNavLabelFit(rowRef, !!mobileMode, i18n.language);
 
     const { scramble, scrambleLocked, editScramble, timeStartedAt } = context;
     // Connection state lives in its own slice now (reducers/smart_cube.ts), so it is not
@@ -104,7 +108,7 @@ export default function TimerControls() {
     const canGoNext = !scrambleLocked && !disableControls && !isSmartScrambling;
 
     return (
-        <div className={b({ mobile: mobileMode })}>
+        <div ref={rowRef} className={b({ mobile: mobileMode })}>
             {/* Sol grup: Edit, +2, DNF, Delete, Lock, Refresh */}
             <div className={b('left')}>
                 {!mobileMode && (
@@ -118,23 +122,28 @@ export default function TimerControls() {
                         text={t('timer_modules.edit')}
                     />
                 )}
-                {latestSolve && !context.inModal && (
+                {/* +2 and DNF stay in the row before the first solve, disabled, so the row
+                    keeps the same shape and the lock does not jump left and back
+                    (feedback 1.8-l). */}
+                {!context.inModal && (
                     <>
                         <Button
                             onClick={handlePlusTwo}
                             title={t('timer_modules.plus_two_penalty')}
                             transparent
-                            warning={latestSolve.plus_two}
+                            disabled={!latestSolve}
+                            warning={!!latestSolve?.plus_two}
                             text="+2"
                         />
                         <Button
                             onClick={handleDNF}
                             title="DNF"
                             transparent
-                            danger={latestSolve.dnf}
+                            disabled={!latestSolve}
+                            danger={!!latestSolve?.dnf}
                             text="DNF"
                         />
-                        {!mobileMode && (
+                        {!mobileMode && latestSolve && (
                             <Button
                                 onClick={handleDelete}
                                 title={t('timer_modules.delete_last_solve')}
@@ -169,8 +178,9 @@ export default function TimerControls() {
                     disabled={!canGoPrevious}
                     title={t('timer_modules.previous_scramble')}
                     transparent
+                    iconFirst
                     icon={<CaretLeft weight="bold" />}
-                    text={!mobileMode ? t('common.previous') : undefined}
+                    text={navLabels ? t('timer_scramble.previous') : undefined}
                 />
                 <Button
                     onClick={handleNextScramble}
@@ -178,7 +188,7 @@ export default function TimerControls() {
                     title={t('timer_modules.next_scramble')}
                     transparent
                     icon={<CaretRight weight="bold" />}
-                    text={!mobileMode ? t('common.next') : undefined}
+                    text={navLabels ? t('timer_scramble.next') : undefined}
                 />
             </div>
         </div>

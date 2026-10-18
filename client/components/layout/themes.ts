@@ -3,6 +3,8 @@ import tinycolor from 'tinycolor2';
 import {AllSettings, getSetting} from '../../db/settings/query';
 import {getAnyColorStringAsRawRgbString, getAnyColorStringAsRgbString} from '../../util/themes/theme_util';
 import {normalizeSolveListColor, SOLVE_LIST_COLOR_KEYS, SOLVE_LIST_COLOR_VARS} from '../../util/themes/solve_list_colors';
+import {isFixedThemePath, isThemeColorKey, isThemeLocked, LOCKED_THEME_COLORS} from '../../util/themes/theme_lock';
+import {getStore} from '../store';
 
 const userDefinedColorsVar: Partial<Record<string, string>> = {
 	primary_color: '--primary-color',
@@ -76,14 +78,23 @@ function saveThemeSnapshot(isLight: boolean) {
 	}
 }
 
+/** The colour actually worn: the user's setting, or the fixed dark theme where it is locked (E-106). */
+function effectiveColor(key: keyof AllSettings, locked: boolean): string {
+	if (locked && isThemeColorKey(key)) return LOCKED_THEME_COLORS[key];
+	return getSetting(key) as string;
+}
+
 export function updateThemeColors() {
 	getHtmlTag().classList.add('app-html');
 
 	const colorKeys = Object.keys(userDefinedColorsVar) as (keyof AllSettings)[];
+	const pathname = window.location.pathname;
+	const signedIn = !!getStore()?.getState()?.account?.me;
+	const locked = isThemeLocked(pathname, signedIn);
 
 	// Always apply theme-light/dark class unconditionally — the <head> inline script may
 	// have pre-filled CSS variables so the color !== currentPc check below can skip this.
-	const bgColor = getSetting('background_color') as string;
+	const bgColor = effectiveColor('background_color', locked);
 	let isLight = false;
 	if (bgColor && bgColor !== 'undefined') {
 		const bgTc = tinycolor(getAnyColorStringAsRgbString(bgColor));
@@ -98,7 +109,7 @@ export function updateThemeColors() {
 	}
 
 	for (const key of colorKeys) {
-		const color = getSetting(key) as string;
+		const color = effectiveColor(key, locked);
 
 		if (!color || color === 'undefined') {
 			continue; // Something probably went wrong. Skip otherwise we get runtime errors.
@@ -114,7 +125,9 @@ export function updateThemeColors() {
 
 	applySolveListColors();
 
-	saveThemeSnapshot(isLight);
+	// A signed-in user on a fixed page keeps their own snapshot, so the next page they open
+	// paints their theme from the first frame. A visitor's snapshot is the locked one.
+	if (!(signedIn && isFixedThemePath(pathname))) saveThemeSnapshot(isLight);
 }
 
 // Live-preview a single theme colour while a picker is being dragged, WITHOUT touching the

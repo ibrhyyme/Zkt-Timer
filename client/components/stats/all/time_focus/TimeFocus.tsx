@@ -1,4 +1,5 @@
 import React, {useContext, useMemo} from 'react';
+import {formatDurationText, formatInteger} from '../../../../util/locale_format';
 import {useTranslation} from 'react-i18next';
 import dayjs from 'dayjs';
 import './TimeFocus.scss';
@@ -7,13 +8,13 @@ import {StatsContext} from '../../Stats';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {getTotalSolveTime} from '../../../../db/solves/stats/count';
 import {getSolveCountByHour} from '../../../../db/solves/stats/hourly';
-import {getSessionCount, getBestDayOfWeek} from '../../../../db/solves/stats/extras';
+import {getSessionCount, getBestDayOfWeek, getAvgSolvesPerSession} from '../../../../db/solves/stats/extras';
 import {getTimeString} from '../../../../util/time';
 
 const b = block('time-focus');
 
 export default function TimeFocus() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const {filterOptions} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
 
@@ -30,16 +31,14 @@ export default function TimeFocus() {
 		? dayjs().day(bestDow.bestDayIdx).format('dddd')
 		: null;
 
-	const avgSolvesPerSession = sessions > 0 && hourly.total > 0
-		? Math.round(hourly.total / sessions)
-		: 0;
+	const avgSolvesPerSession = useMemo(() => getAvgSolvesPerSession(filterOptions), [filterOptions, solveUpdate]);
 
 	return (
 		<div className={b()}>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.total_time')}</span>
-				<span className={b('value')}>{getTimeString(totalTime)}</span>
-				<span className={b('sub')}>{t('stats.focus.total_solves_count', {value: hourly.total.toLocaleString()})}</span>
+				<span className={b('value')}>{formatDurationText(totalTime, t)}</span>
+				<span className={b('sub')}>{t('stats.focus.total_solves_count', {value: formatInteger(hourly.total, i18n.language)})}</span>
 			</div>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.peak_hour')}</span>
@@ -48,7 +47,7 @@ export default function TimeFocus() {
 				</span>
 				<span className={b('sub')}>
 					{peakHourLabel
-						? t('stats.focus.peak_hour_sub', {value: hourly.peakCount.toLocaleString()})
+						? t('stats.focus.peak_hour_sub', {value: formatInteger(hourly.peakCount, i18n.language)})
 						: t('stats.focus.peak_hour_empty')}
 				</span>
 			</div>
@@ -65,10 +64,10 @@ export default function TimeFocus() {
 			</div>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.sessions')}</span>
-				<span className={b('value')}>{sessions.toLocaleString()}</span>
+				<span className={b('value')}>{formatInteger(sessions, i18n.language)}</span>
 				<span className={b('sub')}>
 					{avgSolvesPerSession > 0
-						? t('stats.focus.sessions_sub', {avg: avgSolvesPerSession})
+						? t('stats.focus.sessions_sub', {avg: formatInteger(avgSolvesPerSession, i18n.language)})
 						: '—'}
 				</span>
 			</div>

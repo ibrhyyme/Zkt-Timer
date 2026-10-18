@@ -10,13 +10,11 @@ import CreateNewSession from '../../sessions/new_session/CreateNewSession';
 import { openModal } from '../../../actions/general';
 import BottomSheetNav from '../../layout/nav/bottom_sheet_nav/BottomSheetNav';
 import LeftSettingsDrawer from '../../layout/nav/left_settings_drawer/LeftSettingsDrawer';
-import { TimerContext } from '../Timer';
+import { ITimerContext, TimerContext } from '../Timer';
 import { toggleSetting } from '../../../db/settings/update';
 import { useDispatch } from 'react-redux';
 import { useGeneral } from '../../../util/hooks/useGeneral';
-import { smartCubeSelected } from '../helpers/util';
 import block from '../../../styles/bem';
-import { TIMER_INPUT_TYPE_KEYS } from '../../settings/hardware/timer_input_types';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
@@ -34,19 +32,36 @@ import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFa
 
 const b = block('timer-header-control');
 
+/**
+ * Reads the three fields the header needs from the timer context and hands them to a
+ * memoised body. The context changes on every timer step (press, start, stop, new scramble,
+ * save), and the header re-rendered with it each time: about 350 of the ~480 components a
+ * stop re-rendered on a phone were the pickers (the cube type list alone mounts some 240),
+ * the nav and settings drawers and the account menu, none of which depend on the timer.
+ * Everything else the body shows comes from its own hooks.
+ */
 export default function HeaderControl() {
+	const { cubeType, matchMode, headerOptions } = useContext(TimerContext);
+	return <HeaderControlBody cubeType={cubeType} matchMode={matchMode} headerOptions={headerOptions} />;
+}
+
+interface HeaderControlBodyProps {
+	cubeType: ITimerContext['cubeType'];
+	matchMode: ITimerContext['matchMode'];
+	headerOptions: ITimerContext['headerOptions'];
+}
+
+const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderControlBodyProps) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	const me = useMe();
-	const context = useContext(TimerContext);
-	const { cubeType, matchMode } = context;
-	const headerOptions = context.headerOptions || {};
+	const { cubeType, matchMode } = props;
+	const headerOptions = props.headerOptions || {};
 
 
 	const mobileMode = useGeneral('mobile_mode');
 	const inspection = useSettings('inspection');
-	const timerType = useSettings('timer_type');
 
 	function toggleCreateNewSession() {
 		dispatch(openModal(<CreateNewSession />, {
@@ -137,13 +152,6 @@ export default function HeaderControl() {
 		CHANGE_CUBE_OTHER: () => changeCubeType('other'),
 	};
 
-	const timerTypeName = t(TIMER_INPUT_TYPE_KEYS[timerType]);
-
-	let manualDisabled = false;
-	if (smartCubeSelected(context)) {
-		manualDisabled = true;
-	}
-
 	const currentScrambleSubset = useSettings('scramble_subset');
 	const showCrossColorPicker = isTopColorAvailable(cubeType, currentScrambleSubset);
 	const currentTopColor: TopColorFace | null = isTopColorFace(scrambleTopColorSetting)
@@ -221,4 +229,4 @@ export default function HeaderControl() {
 			</div>
 		</GlobalHotKeys>
 	);
-}
+});

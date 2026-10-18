@@ -1,0 +1,175 @@
+@import '../../../styles/config';
+
+// Algorithm Trainer shell (trainer-sets 2.2, 2.3): study mode switch, the scroll container of
+// a page's content. Theme variables only; accent colours from common/TrainerAccents.scss
+// (blue = Algorithm Trainer / Standard, purple = Smart Cube). A colour never sits as text on a
+// tint of itself: the active side is a raised neutral surface, only the icon carries the hue.
+
+// ── Study mode switch ──
+// Two separate buttons, styled after the Stats page's All / Smart Cube toggle
+// (stats/cube_stats/view_toggle): icon tile + label on the module surface; the active one is
+// filled with the primary colour and its text, icon and tile take --theme-primary-opposite.
+.#{$namespace}-trainer-mode-switch {
+	display: inline-flex;
+	align-items: stretch;
+	gap: 8px;
+	flex-shrink: 0;
+
+	&--block {
+		display: flex;
+		width: 100%;
+	}
+
+	&--disabled {
+		opacity: 0.6;
+	}
+
+	&__side {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		min-height: 42px;
+		padding: 5px 16px 5px 5px;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 12px;
+		background: linear-gradient(180deg, rgba(var(--module-color), 0.95), rgba(var(--module-color), 0.85));
+		box-shadow: inset 0 1px 0 rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.9rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+		&:hover:not(:disabled) {
+			border-color: rgba(var(--text-color), 0.22);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+		}
+
+		&--active,
+		&--active:hover:not(:disabled) {
+			background: linear-gradient(180deg, rgba(var(--primary-color), 1), rgba(var(--primary-color), 0.82));
+			border-color: rgba(var(--primary-color), 0.6);
+			box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(var(--text-color), 0.08);
+			color: rgb(var(--theme-primary-opposite));
+		}
+	}
+
+	&__side-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		background: rgba(var(--text-color), 0.1);
+		transition: background 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	&__side--active &__side-icon {
+		background: rgba(var(--theme-primary-opposite), 0.18);
+		box-shadow: inset 0 0 0 1px rgba(var(--theme-primary-opposite), 0.25);
+	}
+
+	&--block &__side {
+		flex: 1 1 0;
+		min-width: 0;
+		justify-content: center;
+		padding-right: 12px;
+	}
+
+	&__side-label {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__pro {
+		display: inline-block;
+		padding: 1px 5px;
+		border-radius: 5px;
+		font-size: 0.68rem;
+		font-weight: 800;
+		letter-spacing: 0.04em;
+		background: rgb(var(--trainer-accent-purple));
+		color: rgb(var(--trainer-accent-on));
+	}
+
+	// Mobile training header: one chip that flips the mode.
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-height: 36px;
+		padding: 0 0.7rem;
+		border-radius: 18px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.8rem;
+		font-weight: 700;
+		white-space: nowrap;
+		cursor: pointer;
+
+		// Smart: the icon carries the purple, the label stays the text colour.
+		&--smart {
+			border-color: rgba(var(--trainer-accent-purple), 0.55);
+
+			svg {
+				color: rgb(var(--trainer-accent-purple));
+			}
+		}
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgb(var(--trainer-accent-blue));
+			outline-offset: 1px;
+		}
+	}
+}
+
+// ── Shell ──
+.#{$namespace}-trainer-hub {
+	// Mobile: the full switch on its own row under the tabs (Algorithms tab only).
+	&__switch-row {
+		flex-shrink: 0;
+		padding: 0.6rem 0.75rem 0;
+	}
+
+	// A tab's (or the set page's) own scroll container: the trainer page body does not scroll
+	// (Trainer.tsx locks it), so lists scroll here. Same rule as the 2.0 page scroll work.
+	&__scroll {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		padding-bottom: env(safe-area-inset-bottom, 0px);
+	}
+
+	// A screen that owns its layout and scrolling (the algorithm picker with its bottom bar).
+	&__pane {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+}

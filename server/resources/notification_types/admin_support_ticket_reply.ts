@@ -17,15 +17,15 @@ export default class AdminSupportTicketReplyNotification extends Notification {
 	}
 
 	subject() {
-		return `${this.input.triggeringUser.username} destek talebine yanit yazdi`;
+		return `${this.input.triggeringUser.username} destek talebine yanıt yazdı`;
 	}
 
 	inAppMessage() {
-		return `${this.input.triggeringUser.username}: "${this.ticketSubject}" — yeni mesaj`;
+		return `${this.input.triggeringUser.username}: "${this.ticketSubject}", yeni mesaj`;
 	}
 
 	message() {
-		return `${this.input.triggeringUser.username} kullanicisi "${this.ticketSubject}" konulu destek talebine yanit yazdi.`;
+		return `${this.input.triggeringUser.username} kullanıcısı "${this.ticketSubject}" konulu destek talebine yanıt yazdı.`;
 	}
 
 	icon() {
@@ -38,7 +38,7 @@ export default class AdminSupportTicketReplyNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Destek taleplerini goruntule';
+		return 'Destek taleplerini görüntüle';
 	}
 
 	categoryName() {

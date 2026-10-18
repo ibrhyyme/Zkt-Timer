@@ -177,7 +177,7 @@
 		&--imminent {
 			background: rgba(238, 106, 38, 0.16);
 			border-color: rgba(238, 106, 38, 0.4);
-			color: #ee6a26;
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -446,20 +446,20 @@
 			color: rgba(var(--text-color), 0.85);
 		}
 		&--announced {
-			background: rgba(66, 165, 245, 0.18);
-			color: #42a5f5;
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
 		}
 		&--registration_open {
-			background: rgba(45, 189, 97, 0.18);
-			color: #2dbd61;
+			background: rgb(45, 189, 97);
+			color: $status-fill-text-dark;
 		}
 		&--registration_closed {
-			background: rgba(238, 106, 38, 0.18);
-			color: #ee6a26;
+			background: rgb(238, 106, 38);
+			color: $status-fill-text-dark;
 		}
 		&--ongoing {
-			background: rgba(238, 106, 38, 0.22);
-			color: #ee6a26;
+			background: rgb(238, 106, 38);
+			color: $status-fill-text-dark;
 			animation: zkt-pulse 1.4s ease-in-out infinite;
 		}
 		&--finished {
@@ -467,8 +467,8 @@
 			color: rgba(var(--text-color), 0.8);
 		}
 		&--published {
-			background: rgba(var(--primary-color), 0.18);
-			color: rgb(var(--primary-color));
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 
@@ -484,8 +484,8 @@
 		font-weight: 700;
 		padding: 2px 8px;
 		border-radius: 4px;
-		background: rgba(var(--primary-color), 0.16);
-		color: rgb(var(--primary-color));
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 		white-space: nowrap;
 		flex-shrink: 0;
 	}
@@ -604,6 +604,19 @@
 		word-break: break-word;
 	}
 
+	// The page also retries by itself; this is for someone who does not want to wait.
+	&__info-banner-retry {
+		align-self: flex-start;
+		padding: 0.35rem 0.75rem;
+		border: 1px solid rgba(var(--text-color), 0.18);
+		border-radius: 0.4rem;
+		background: rgba(var(--text-color), 0.1);
+		color: rgb(var(--text-color));
+		font-size: 0.82rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
 	// Detail header
 	&__detail-header {
 		margin-bottom: 1rem;
@@ -636,13 +649,13 @@
 		border-radius: 0.25rem;
 
 		&--type-accepted {
-			background: rgba(80, 180, 80, 0.15);
-			color: rgb(80, 180, 80);
+			background: rgb(80, 180, 80);
+			color: $status-fill-text-dark;
 		}
 
 		&--type-pending {
-			background: rgba(220, 180, 50, 0.15);
-			color: rgb(220, 180, 50);
+			background: rgb(220, 180, 50);
+			color: $status-fill-text-dark;
 		}
 	}
 
@@ -708,8 +721,8 @@
 	}
 
 	&__tab--active &__tab-count {
-		background: rgba(var(--primary-color), 0.2);
-		color: rgb(var(--primary-color));
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 	}
 
 	// WCA banner
@@ -1013,7 +1026,7 @@
 		&--active {
 			border-color: rgb(var(--primary-color));
 			background: rgba(var(--primary-color), 0.15);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -1417,7 +1430,7 @@
 		&--active {
 			border-color: rgb(var(--primary-color));
 			background: rgba(var(--primary-color), 0.14);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -1436,8 +1449,8 @@
 		font-size: 0.7rem;
 		font-weight: 700;
 		white-space: nowrap;
-		color: rgb(var(--primary-color));
-		background: rgba(var(--primary-color), 0.12);
+		color: rgb(var(--theme-primary-opposite));
+		background: rgb(var(--primary-color));
 	}
 
 	&__competitor-number {
@@ -1475,8 +1488,23 @@
 		font-weight: 600;
 		padding: 1px 6px;
 		border-radius: 4px;
-		background: rgba(var(--primary-color), 0.2);
-		color: rgb(var(--primary-color));
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+	}
+
+	// ZKT Dual Chance: which chance a group belongs to.
+	&__chance-tag {
+		display: inline-block;
+		margin-left: 0.4rem;
+		padding: 1px 6px;
+		border-radius: 4px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		line-height: 1.4;
+		white-space: nowrap;
+		vertical-align: middle;
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 	}
 
 	&__competitor-id {
@@ -1739,23 +1767,23 @@
 		white-space: nowrap;
 
 		&--type-primary {
-			background: rgba(34, 197, 94, 0.15);
-			color: rgb(34, 197, 94);
+			background: rgb(34, 197, 94);
+			color: $status-fill-text-dark;
 		}
 
 		&--type-orange {
-			background: rgba(249, 115, 22, 0.15);
-			color: rgb(249, 115, 22);
+			background: rgb(249, 115, 22);
+			color: $status-fill-text-dark;
 		}
 
 		&--type-purple {
-			background: rgba(234, 179, 8, 0.15);
-			color: rgb(234, 179, 8);
+			background: rgb(234, 179, 8);
+			color: $status-fill-text-dark;
 		}
 
 		&--type-blue {
-			background: rgba(59, 130, 246, 0.15);
-			color: rgb(59, 130, 246);
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
 		}
 
 		&--type-gray {
@@ -2509,6 +2537,13 @@
 		color: rgb(var(--text-color));
 	}
 
+	// ZKT id in place of the WCA id link.
+	&__pb-zkt-id {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
 	&__pb-wca-id {
 		font-size: 0.85rem;
 		color: rgba(var(--text-color), 0.5);
@@ -2967,6 +3002,11 @@
 		color: rgb(var(--text-color));
 		background: rgba(var(--text-color), 0.06);
 		border-radius: 0.3rem;
+
+		&--accent {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+		}
 	}
 
 	&__wca-live-progress {
@@ -3057,12 +3097,12 @@
 		&--active {
 			border-color: rgb(var(--primary-color));
 			background: rgba(var(--primary-color), 0.09);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 			font-weight: 700;
 
-			// The raw primary is too dim to read on a dark ground.
+			// The label stays in the text colour: blue text on a blue tint was
+			// hard to read in every theme. Only the outline is lifted on dark.
 			.theme-dark & {
-				color: #6ea8ff;
 				border-color: rgba(var(--primary-color), 0.85);
 			}
 		}
@@ -3111,19 +3151,19 @@
 		color: #888;
 
 		&--done {
-			background: rgba(59, 130, 246, 0.18);
-			color: #3b82f6;
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
 		}
 
 		&--live {
-			background: rgba(239, 68, 68, 0.18);
-			color: #ef4444;
+			background: #ef4444;
+			color: $status-fill-text-light;
 			animation: zt-live-pulse 1.5s ease-in-out infinite;
 		}
 
 		&--open {
-			background: rgba(34, 197, 94, 0.18);
-			color: #22c55e;
+			background: #22c55e;
+			color: $status-fill-text-dark;
 		}
 
 		&--upcoming {
@@ -3321,6 +3361,23 @@
 		&--strong {
 			font-weight: 700;
 		}
+
+		// Dual Chance: the counting chance stands out by weight only; the colour
+		// stays the same so the other one is still easy to read. Set on the inner
+		// span, which the base reset gives a weight of its own.
+		&--chance-counting .zt-my-schedule__wca-live-time-inner {
+			font-weight: 800;
+		}
+
+		&--chance-other .zt-my-schedule__wca-live-time-inner {
+			font-weight: 400;
+		}
+	}
+
+	&__wca-live-dual-note {
+		margin: -0.5rem 0 1rem;
+		font-size: 0.8rem;
+		color: rgb(var(--text-color));
 	}
 
 	&__wca-live-time-inner {
@@ -3441,6 +3498,11 @@
 
 		&--full {
 			grid-column: 1 / -1;
+		}
+
+		// Dual Chance: the chance that counts.
+		&--counting {
+			border-color: rgba(var(--primary-color), 0.6);
 		}
 	}
 

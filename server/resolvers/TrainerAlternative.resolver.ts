@@ -1,13 +1,10 @@
 import {Arg, Authorized, Ctx, Int, Mutation, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
-import {
-	PaginatedTrainerAlternatives,
-	TrainerAlternative,
-	TrainerAlternativeCreateInput,
-} from '../schemas/TrainerAlternative.schema';
-import {GraphQLError} from 'graphql';
+import {PaginatedTrainerAlternatives, TrainerAlternative} from '../schemas/TrainerAlternative.schema';
 
+// The shared pool of user-added alternatives. Adding was closed when the served library grew to
+// thousands of alternatives; the rows already added are still listed and admins can delete them.
 @Resolver()
 export class TrainerAlternativeResolver {
 	@Authorized([Role.LOGGED_IN])
@@ -26,34 +23,6 @@ export class TrainerAlternativeResolver {
 			},
 			orderBy: {
 				created_at: 'asc',
-			},
-		});
-	}
-
-	@Authorized([Role.LOGGED_IN])
-	@Mutation(() => TrainerAlternative)
-	async createTrainerAlternative(
-		@Ctx() context: GraphQLContext,
-		@Arg('input') input: TrainerAlternativeCreateInput
-	) {
-		const {prisma, user} = context;
-
-		const existing = await prisma.trainerAlternative.findFirst({
-			where: {
-				category: input.category,
-				case_name: input.case_name,
-				algorithm: input.algorithm,
-			},
-		});
-
-		if (existing) {
-			throw new GraphQLError('ALGORITHM_ALREADY_EXISTS');
-		}
-
-		return prisma.trainerAlternative.create({
-			data: {
-				...input,
-				user_id: user.id,
 			},
 		});
 	}

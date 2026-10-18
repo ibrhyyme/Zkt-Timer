@@ -3,7 +3,7 @@ import './SolvePage.scss';
 import {setSsrValue} from '../../actions/ssr';
 import {gql} from '@apollo/client';
 import {SOLVE_WITH_USER_FRAGMENT} from '../../util/graphql/fragments';
-import {gqlQuery} from '../api';
+import {gqlMutateTyped, gqlQueryTyped} from '../api';
 import SolveInfo from '../solve_info/SolveInfo';
 import Header from '../layout/header/Header';
 import Empty from '../common/empty/Empty';
@@ -17,9 +17,10 @@ import {useHistory, useRouteMatch} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import block from '../../styles/bem';
 import {Solve} from '../../../server/schemas/Solve.schema';
-import {QuerySolveByShareCodeArgs} from '../../@types/generated/graphql';
+import {QuerySolveByShareCodeArgs, RecordSolveViewDocument} from '../../@types/generated/graphql';
 import {resourceUri} from '../../util/storage';
 import {SsrMetaFn} from '../layout/Routes';
+import {extractIp} from '../../../server/util/request';
 
 const b = block('solve-page');
 
@@ -29,7 +30,14 @@ const b = block('solve-page');
 // resourceUri already carries the /public base, so the path must NOT repeat it.
 const SOLVE_SHARE_IMAGE = resourceUri('/images/og/solve-share.jpg');
 
-async function fetchSolveData(shareCode: string) {
+/**
+ * @param visitorIp Server render only. The prefetch reaches the API from localhost, so
+ * without it every visitor of every shared link counted against one `solve_share:ip`
+ * bucket (60 a minute) and a busy link rendered "not found". Carried in the header the
+ * server already reads the client IP from (extractIp), so each visitor counts against
+ * their own bucket and the route stays throttled against code guessing.
+ */
+async function fetchSolveData(shareCode: string, visitorIp?: string) {
 	const query = gql`
 		${SOLVE_WITH_USER_FRAGMENT}
 		query Query($shareCode: String) {
@@ -39,12 +47,13 @@ async function fetchSolveData(shareCode: string) {
 		}
 	`;
 
-	const res = await gqlQuery<{solveByShareCode: any}>(
+	const res = await gqlQueryTyped<{solveByShareCode: any}, QuerySolveByShareCodeArgs>(
 		query,
+		{shareCode},
 		{
-			shareCode,
-		} as any,
-		'no-cache'
+			fetchPolicy: 'no-cache',
+			context: visitorIp ? {headers: {'cf-connecting-ip': visitorIp}} : undefined,
+		}
 	);
 
 	return res.data.solveByShareCode;
@@ -55,7 +64,7 @@ export async function prefetchSolveData(store: Store<any>, req: Request) {
 	// Invalid/unknown share codes (and rate-limit/NOT_FOUND) must not crash SSR —
 	// dispatch null so the page renders a "not found" state instead of a 500.
 	try {
-		const solve = await fetchSolveData(shareCode);
+		const solve = await fetchSolveData(shareCode, extractIp(req) || undefined);
 		return store.dispatch(setSsrValue(shareCode, solve ?? null));
 	} catch {
 		return store.dispatch(setSsrValue(shareCode, null));
@@ -117,6 +126,15 @@ export default function SolvePage() {
 			.finally(() => setFetching(false));
 	}, [shareCode, solve, setSolve]);
 
+	// The view is counted from the browser, with the visitor's own session (the server skips
+	// the owner). solveByShareCode no longer counts it: on a full page load that query runs in
+	// the SSR prefetch, without the visitor's cookie.
+	const solveId = solve?.id ?? null;
+	useEffect(() => {
+		if (!solveId || !shareCode) return;
+		gqlMutateTyped(RecordSolveViewDocument, {shareCode}).catch(() => {});
+	}, [solveId, shareCode]);
+
 	if (!solve && fetching) {
 		return (
 			<div className={b()}>
@@ -151,7 +169,9 @@ export default function SolvePage() {
 				description={t('solve_page.share_description', shareVars)}
 				featuredImage={SOLVE_SHARE_IMAGE}
 			/>
-			<div className={b('body')}>
+			{/* A smart cube solve gets the wide card, as in the app's modal (SolveInfo.scss
+			    gives that modal 1000px): squeezed to 600px its Solution tab cut the moves. */}
+			<div className={b('body', {smart: !!solve.is_smart_cube})}>
 				{/* Embedded rather than shown in a modal, so Done has to be told what
 				    "done" means here: go back where you came from, which for a solve
 				    shared in a chat is that conversation. Landing here from a shared

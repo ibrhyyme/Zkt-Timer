@@ -28,7 +28,11 @@ export default function AllStats(props: Props) {
 	const solveUpdate = useSolveDb();
 	const {filterOptions} = useContext(StatsContext);
 
-	const hasSolves = useMemo(() => fetchSolveCount({from_timer: true}) > 0, [solveUpdate]);
+	// Within the season and cube filter: an empty season shows no empty puzzle and chart sections
+	const hasSolves = useMemo(
+		() => fetchSolveCount(filterOptions) > 0,
+		[solveUpdate, filterOptions.session_id, filterOptions.cube_id]
+	);
 
 	return (
 		<div className={b()}>

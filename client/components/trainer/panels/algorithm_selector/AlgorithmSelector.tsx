@@ -3,8 +3,8 @@ import {useDispatch as useReduxDispatch} from 'react-redux';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import Checkbox from '../../../common/checkbox/Checkbox';
-import {useAlgorithmData, getBestTime, getLearnedStatus, fetchDefaultAlgs, getCustomAlternatives} from '../../hooks/useAlgorithmData';
-import {algToId, expandNotation, getAdjacentFaces, getDefaultFrontFace, isCubeShapePuzzle, isLLCategory, isIsometricCategory, isTopFaceOnlyCategory} from '../../../../util/trainer/algorithm_engine';
+import {useAlgorithmData, getBestTime, getLearnedStatus, fetchLibraryCategory, getCustomAlternatives} from '../../hooks/useAlgorithmData';
+import {algToId, getAdjacentFaces, getDefaultFrontFace, isCubeShapePuzzle, isLLCategory, isIsometricCategory, isTopFaceOnlyCategory} from '../../../../util/trainer/algorithm_engine';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {usePuzzlePatternsReady} from '../../../../util/trainer/puzzle_patterns';
 import {useIsometricPatternsReady} from '../../../../util/trainer/isometric_patterns';
@@ -12,36 +12,25 @@ import {openModal} from '../../../../actions/general';
 import AlgorithmCard from './AlgorithmCard';
 import type {CheckedAlgorithm, CubeFace} from '../../types';
 import {useTranslation} from 'react-i18next';
-import {CaretDown, Play, Info, X} from 'phosphor-react';
+import {CaretDown, Play, Info, X, DownloadSimple, Plus} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro} from '../../../../lib/pro';
 import {openProOnlyModal} from '../../../common/pro_only/openProOnlyModal';
+import {algSetCaseKey, cubeTypeOfCategory, CUBE_TYPE_ORDER} from '../../../../../shared/trainer/alg_sets';
+import {checkedKey} from '../../../../util/trainer/set_queue';
+import {isHiddenSubset, subsetLabel} from '../../../../util/trainer/subset_label';
+import {openAddToSet} from '../../sets/AddToSetSheet';
+import {toAddItems} from '../../sets/add_items';
 
 const b = block('trainer');
 
-// Explicit overrides for categories that don't follow prefix convention
-const CATEGORY_CUBE_TYPE: Record<string, string> = {
-	'Sarah Intermediate': 'Skewb',
-	'Sarah Advanced': 'Skewb',
-	'CMLL': '3x3 Roux',
-	'2-Look CMLL': '3x3 Roux',
-	'OH-CMLL': '3x3 Roux',
-	'L6E-EO': '3x3 Roux',
-	'L6E-EOLR': '3x3 Roux',
-};
-
-const CUBE_TYPE_ORDER = ['3x3', '3x3 Roux', '2x2', '4x4', 'Pyraminx', 'Skewb', 'Square-1'];
-
 const F2L_SLOTS = ['Front Right', 'Front Left', 'Back Right', 'Back Left'];
 
-function getCubeType(category: string): string {
-	if (CATEGORY_CUBE_TYPE[category]) return CATEGORY_CUBE_TYPE[category];
-	if (category.startsWith('2x2 ')) return '2x2';
-	if (category.startsWith('4x4 ')) return '4x4';
-	if (category.startsWith('Pyraminx ')) return 'Pyraminx';
-	if (category.startsWith('SQ1 ')) return 'Square-1';
-	return '3x3';
-}
+// Puzzle of a category (shared with the set screens and the server: shared/trainer/alg_sets.ts).
+const getCubeType = cubeTypeOfCategory;
+
+// A smart cube is a 3x3: Smart Cube mode lists only these puzzles.
+const SMART_CUBE_TYPES: readonly string[] = ['3x3', '3x3 Roux'];
 
 function getCategoryDisplayName(category: string): string {
 	const prefixes = ['2x2 ', '4x4 ', 'Pyraminx ', 'SQ1 '];
@@ -72,10 +61,10 @@ export default function AlgorithmSelector() {
 	// Derive cube types and filtered categories
 	const cubeTypes = useMemo(() => {
 		const available = new Set(categories.map(getCubeType));
-		const types = CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
+		const types: string[] = CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
 		// In smart mode, only 3x3 and 3x3 Roux (Bluetooth only works with 3x3 cubes)
 		if (state.mode === 'smart') {
-			return types.filter((ct) => ct === '3x3' || ct === '3x3 Roux');
+			return types.filter((ct) => SMART_CUBE_TYPES.includes(ct));
 		}
 		return types;
 	}, [categories, state.mode]);
@@ -99,10 +88,28 @@ export default function AlgorithmSelector() {
 		}
 	}, [categories, selectedCategory, dispatch]);
 
+	// Switching to Smart Cube mode on a category a smart cube cannot run (2x2, Pyraminx...):
+	// move to the first 3x3 category instead of showing an empty puzzle list (trainer-sets 2.3).
+	useEffect(() => {
+		if (state.mode !== 'smart' || !selectedCategory || categories.length === 0) return;
+		if (SMART_CUBE_TYPES.includes(getCubeType(selectedCategory))) return;
+		const first3x3 = categories.find((cat) => SMART_CUBE_TYPES.includes(getCubeType(cat)));
+		if (first3x3) dispatch({type: 'SET_CATEGORY', payload: first3x3});
+	}, [state.mode, selectedCategory, categories, dispatch]);
+
 	const subsets = useMemo(() => {
 		if (!selectedCategory) return [];
 		return getSubsets(selectedCategory);
 	}, [selectedCategory, getSubsets]);
+
+	// A one-group category ("Default") has no group to pick: its checkbox is not drawn, so the
+	// group is selected for the user and the cards show right away.
+	const visibleSubsets = useMemo(() => subsets.filter((s) => !isHiddenSubset(s)), [subsets]);
+	useEffect(() => {
+		if (subsets.length > 0 && visibleSubsets.length === 0 && selectedSubsets.length === 0) {
+			dispatch({type: 'SET_SUBSETS', payload: subsets});
+		}
+	}, [subsets, visibleSubsets, selectedSubsets, dispatch]);
 
 	const algorithmsWithSubset = useMemo(() => {
 		if (!selectedCategory || selectedSubsets.length === 0) return [];
@@ -119,9 +126,14 @@ export default function AlgorithmSelector() {
 			.filter((group) => group.algorithms.length > 0);
 	}, [algorithmsWithSubset, slotFilter, isF2L]);
 
+	// Checked cards by `category::name`: algorithm text is not unique across categories.
 	const checkedAlgSet = useMemo(
-		() => new Set(checkedAlgorithms.map((a) => a.algorithm)),
+		() => new Set(checkedAlgorithms.map(checkedKey)),
 		[checkedAlgorithms]
+	);
+	const isChecked = useCallback(
+		(name: string) => checkedAlgSet.has(algSetCaseKey(selectedCategory, name)),
+		[checkedAlgSet, selectedCategory]
 	);
 
 	// selectLearning: when enabled, select learning-status (status=1) algorithms, when disabled, clear selection
@@ -206,19 +218,20 @@ export default function AlgorithmSelector() {
 					name,
 					bestTime,
 					category: selectedCategory,
-					subset: '',
+					// The card's group, so a PDF of the checked cards keeps its alternatives.
+					subset: algorithmsWithSubset.find((g) => g.algorithms.some((a) => a.name === name))?.subset || '',
 				};
 				dispatch({type: 'ADD_CHECKED_ALGORITHM', payload: checkedAlg});
 			} else {
-				dispatch({type: 'REMOVE_CHECKED_ALGORITHM', payload: algorithm});
+				dispatch({type: 'REMOVE_CHECKED_ALGORITHM', payload: algSetCaseKey(selectedCategory, name)});
 			}
 		},
-		[selectedCategory, dispatch]
+		[selectedCategory, algorithmsWithSubset, dispatch]
 	);
 
 	const handleAlgDetail = useCallback(
 		(algorithm: string, name: string, category: string, subset: string) => {
-			import('./AlgorithmDetailModal').then(({default: AlgorithmDetailModal}) => {
+			import('./AlgorithmDetailModal').then(({default: AlgorithmDetailModal, ALG_DETAIL_MODAL_WIDTH}) => {
 				reduxDispatch(
 					openModal(
 						<AlgorithmDetailModal
@@ -229,7 +242,7 @@ export default function AlgorithmSelector() {
 							topFace={state.options.topFace}
 							frontFace={effectiveFrontFace}
 						/>,
-						{width: 500, title: name, closeButtonText: t('solve_info.done')}
+						{width: ALG_DETAIL_MODAL_WIDTH, title: name, closeButtonText: t('solve_info.done')}
 					)
 				);
 			});
@@ -246,7 +259,7 @@ export default function AlgorithmSelector() {
 		const allAlgs: CheckedAlgorithm[] = [];
 		for (const group of filteredAlgorithmsWithSubset) {
 			for (const alg of group.algorithms) {
-				if (!checkedAlgSet.has(alg.algorithm)) {
+				if (!isChecked(alg.name)) {
 					allAlgs.push({
 						algorithm: alg.algorithm,
 						name: alg.name,
@@ -261,7 +274,7 @@ export default function AlgorithmSelector() {
 			type: 'SET_CHECKED_ALGORITHMS',
 			payload: [...checkedAlgorithms, ...allAlgs],
 		});
-	}, [filteredAlgorithmsWithSubset, checkedAlgorithms, checkedAlgSet, selectedCategory, dispatch, options.selectLearning]);
+	}, [filteredAlgorithmsWithSubset, checkedAlgorithms, isChecked, selectedCategory, dispatch, options.selectLearning]);
 
 	const handleDeselectAllAlgs = useCallback(() => {
 		if (options.selectLearning) {
@@ -272,17 +285,17 @@ export default function AlgorithmSelector() {
 			const visibleAlgs = new Set<string>();
 			for (const group of filteredAlgorithmsWithSubset) {
 				for (const alg of group.algorithms) {
-					visibleAlgs.add(alg.algorithm);
+					visibleAlgs.add(algSetCaseKey(selectedCategory, alg.name));
 				}
 			}
 			dispatch({
 				type: 'SET_CHECKED_ALGORITHMS',
-				payload: checkedAlgorithms.filter((a) => !visibleAlgs.has(a.algorithm)),
+				payload: checkedAlgorithms.filter((a) => !visibleAlgs.has(checkedKey(a))),
 			});
 		} else {
 			dispatch({type: 'SET_CHECKED_ALGORITHMS', payload: []});
 		}
-	}, [dispatch, isF2L, slotFilter, filteredAlgorithmsWithSubset, checkedAlgorithms, options.selectLearning]);
+	}, [dispatch, isF2L, slotFilter, filteredAlgorithmsWithSubset, checkedAlgorithms, options.selectLearning, selectedCategory]);
 
 	const handlePdfExport = useCallback(async () => {
 		if (!isPro(me)) {
@@ -302,8 +315,7 @@ export default function AlgorithmSelector() {
 		setPdfLoading(true);
 		try {
 			// Load default alternatives
-			const defaultAlgs = await fetchDefaultAlgs();
-			const categoryData = defaultAlgs[selectedCategory] || [];
+			const categoryData = await fetchLibraryCategory(selectedCategory);
 
 			// Merge default + custom alternatives for each algorithm
 			const algsToExport = baseAlgs.map((alg) => {
@@ -358,7 +370,7 @@ export default function AlgorithmSelector() {
 	const allSubsetsSelected = subsets.length > 0 && subsets.every((s) => selectedSubsets.includes(s));
 
 	const allAlgsSelected = filteredAlgorithmsWithSubset.length > 0 &&
-		filteredAlgorithmsWithSubset.every((g) => g.algorithms.every((a) => checkedAlgSet.has(a.algorithm)));
+		filteredAlgorithmsWithSubset.every((g) => g.algorithms.every((a) => isChecked(a.name)));
 
 	return (
 		<div className={b('selector')}>
@@ -490,7 +502,7 @@ export default function AlgorithmSelector() {
 			</div>
 
 			{/* Subset Checkboxes */}
-			{subsets.length > 0 && (
+			{visibleSubsets.length > 0 && (
 				<div className={b('selector-section')}>
 					<div className={b('selector-label-row')}>
 						<label className={b('selector-label')}>{t('trainer.subsets')}</label>
@@ -504,10 +516,10 @@ export default function AlgorithmSelector() {
 						</div>
 					</div>
 					<div className={b('selector-subsets')}>
-						{subsets.map((subset) => (
+						{visibleSubsets.map((subset) => (
 							<Checkbox
 								key={subset}
-								text={subset}
+								text={subsetLabel(t, subset)}
 								name={subset}
 								checked={selectedSubsets.includes(subset)}
 								onChange={handleSubsetToggle}
@@ -535,6 +547,16 @@ export default function AlgorithmSelector() {
 									{t('trainer.start_training')} ({checkedAlgorithms.length})
 								</button>
 							)}
+							{me && checkedAlgorithms.length > 0 && (
+								<button
+									type="button"
+									className={b('selector-action-btn', {set: true})}
+									onClick={() => openAddToSet(reduxDispatch, t, toAddItems(checkedAlgorithms))}
+								>
+									<Plus size={13} weight="bold" aria-hidden="true" />
+									{t('trainer.sets.add_to.button')}
+								</button>
+							)}
 							<button
 								className={b('selector-action-btn')}
 								onClick={allAlgsSelected ? handleDeselectAllAlgs : handleSelectAllAlgs}
@@ -546,8 +568,9 @@ export default function AlgorithmSelector() {
 								onClick={handlePdfExport}
 								disabled={pdfLoading}
 								title={t('trainer.export_pdf')}
+								aria-label={t('trainer.export_pdf')}
 							>
-								<img src="/images/logos/pdf-svgrepo-com.svg" alt="PDF" width={14} height={14} />
+								<DownloadSimple size={13} weight="bold" aria-hidden="true" />
 								{pdfLoading ? '...' : 'PDF'}
 							</button>
 						</div>
@@ -556,12 +579,12 @@ export default function AlgorithmSelector() {
 						{filteredAlgorithmsWithSubset.map((group) =>
 							group.algorithms.map((alg) => (
 								<AlgorithmCard
-									key={alg.algorithm}
+									key={alg.name}
 									name={alg.name}
 									algorithm={alg.algorithm}
 									category={selectedCategory}
 									subset={group.subset}
-									checked={checkedAlgSet.has(alg.algorithm)}
+									checked={isChecked(alg.name)}
 									onToggle={handleAlgToggle}
 									onDetail={handleAlgDetail}
 									topFace={options.topFace}

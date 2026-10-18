@@ -40,8 +40,18 @@ import {sequenceMatchStatus} from '../../../timer/time_display/timer_scramble/sm
 import {HOME_TILT_DEG, HOME_TURN_DEG} from '../../../timer/smart_cube/cube_view/view_defaults';
 import {recolorPuzzle} from '../../../timer/smart_cube/cube_view/cube_palette';
 import {getSmartCubeManager} from '../../../../util/smart_cube/connection_manager';
+import {SmartAlgTracker, CubeStateOps} from '../../../../util/trainer/smart_alg_tracker';
 
 const b = block('trainer');
+
+// The move matching rules live in util/trainer/smart_alg_tracker.ts (tested in node). Here they
+// run on cubing.js KPatterns: centers are ignored and orientation fixed, which is what makes
+// wide moves, slices and rotations match the plain face turns the cube reports.
+const KPATTERN_OPS: CubeStateOps<KPattern> = {
+	apply: (state, move) => state.applyMove(move),
+	normalize: fixOrientation,
+	same: isIdenticalIgnoringCenters,
+};
 
 export default function TrainerSmartCube() {
 	const {state, dispatch} = useTrainerContext();
@@ -80,19 +90,16 @@ export default function TrainerSmartCube() {
 	const netRotationQuatRef = useRef<THREE.Quaternion>(new THREE.Quaternion());
 	const pendingNetRotRef = useRef<THREE.Quaternion | null>(null);
 
-	// KPattern matching refs
-	const myKpatternRef = useRef<KPattern | null>(null);
-	const patternStatesRef = useRef<KPattern[]>([]);
-	const currentMoveIndexRef = useRef<number>(-1);
-	const badAlgRef = useRef<string[]>([]);
-	const lastMovesRef = useRef<{move: string}[]>([]);
+	// KPattern matching: tracked cube state, expected states, matched index, pending moves.
+	const trackerRef = useRef<SmartAlgTracker<KPattern> | null>(null);
+	if (trackerRef.current === null) trackerRef.current = new SmartAlgTracker<KPattern>(KPATTERN_OPS);
+	// The pending moves are a turn in progress (first quarter of a U2, one face of an M).
+	const [pendingPartial, setPendingPartial] = useState(false);
 	// Did at least one wrong move happen during solve (for auto-learn + fail counter)
 	const solveHasMistakeRef = useRef<boolean>(false);
-	// algMoves stable reference — for patternStates rebuild on FACELETS update
-	const algMovesRef = useRef<string[]>([]);
 	// True from algorithm load / reset until the first physical move. While true, FACELETS may
-	// sync myKpattern (idle baseline / manual setup positioning). Once a move is processed it
-	// flips false and FACELETS stops touching myKpattern — otherwise a FACELETS reporting the
+	// sync the tracked cube state (idle baseline / manual setup positioning). Once a move is processed
+	// it flips false and FACELETS stops touching it — otherwise a FACELETS reporting the
 	// intermediate state of a multi-move turn (e.g. the single-M of an M2 = R' L) would re-anchor
 	// patternStates mid-sequence and desync the match permanently.
 	const awaitingBaselineRef = useRef<boolean>(true);
@@ -105,8 +112,6 @@ export default function TrainerSmartCube() {
 	// State refs (stale closure prevention)
 	const smartPhaseRef = useRef(state.smartPhase);
 	smartPhaseRef.current = state.smartPhase;
-	const userAlgRef = useRef(state.userAlg);
-	userAlgRef.current = state.userAlg;
 	const currentAlgorithmRef = useRef(currentAlgorithm);
 	currentAlgorithmRef.current = currentAlgorithm;
 	const isMoveMaskedRef = useRef(state.isMoveMasked);
@@ -173,41 +178,12 @@ export default function TrainerSmartCube() {
 		}, 150);
 	}, [dispatch, stopTimerInterval]);
 
-	// -- BadAlg recovery (CubeDex port) --
-	const handleBadAlg = useCallback(() => {
-		const badAlg = badAlgRef.current;
-		const lastMoves = lastMovesRef.current;
-		const userAlg = userAlgRef.current;
-		const idx = currentMoveIndexRef.current;
-
-		// Case 1: Undo first correct move
-		if (idx === 0 && badAlg.length === 1 &&
-			lastMoves[lastMoves.length - 1]?.move === getInverseMove(userAlg[idx]?.replace(/[()]/g, '') || '')) {
-			currentMoveIndexRef.current = -1;
-			badAlgRef.current.pop();
-		}
-		// Case 2: Inverse of last wrong move
-		else if (badAlg.length >= 2 &&
-			lastMoves[lastMoves.length - 1]?.move === getInverseMove(badAlg[badAlg.length - 2])) {
-			badAlgRef.current.pop();
-			badAlgRef.current.pop();
-		}
-		// Case 3: 4 same moves (full rotation)
-		else if (badAlg.length > 3 && lastMoves.length > 3 &&
-			lastMoves[lastMoves.length - 1].move === lastMoves[lastMoves.length - 2].move &&
-			lastMoves[lastMoves.length - 2].move === lastMoves[lastMoves.length - 3].move &&
-			lastMoves[lastMoves.length - 3].move === lastMoves[lastMoves.length - 4].move) {
-			badAlgRef.current.splice(-4, 4);
-		}
-
-		dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: Math.max(0, currentMoveIndexRef.current + 1)});
-	}, [dispatch]);
-
-	// -- Core move processing (KPattern matching) --
+	// -- Core move processing (KPattern matching, see SmartAlgTracker) --
 	const processMove = useCallback((smartTurn: SmartTurn) => {
 		const move = smartTurn.turn;
-		if (!myKpatternRef.current || patternStatesRef.current.length === 0) return;
-		// User is physically turning → myKpattern is move-driven from here on.
+		const tracker = trackerRef.current;
+		if (!tracker || !tracker.isReady()) return;
+		// User is physically turning → the tracked state is move-driven from here on.
 		// FACELETS must not overwrite it mid-sequence (see alertCubeState).
 		awaitingBaselineRef.current = false;
 
@@ -216,127 +192,54 @@ export default function TrainerSmartCube() {
 			(twistyPlayerRef.current as any).experimentalAddMove(move, {cancel: false});
 		}
 
-		// Update KPattern
-		myKpatternRef.current = myKpatternRef.current.applyMove(move);
-		lastMovesRef.current.push({move});
-		if (lastMovesRef.current.length > 256) {
-			lastMovesRef.current = lastMovesRef.current.slice(-256);
-		}
+		// Null after the algorithm was completed: the move is applied so the next algorithm
+		// starts from the right state, but not judged against the old one.
+		const result = tracker.push(move, isMoveMaskedRef.current);
+		if (!result) return;
 
-		// Solved detection helper — compare with algorithm's TARGET state.
-		// patternStates' last element = initialState.applyAlg(algMoves) = physical target state.
-		// Can be called regardless of phase (ready or solving).
-		const checkSolvedFallback = (): boolean => {
-			if (!myKpatternRef.current) return false;
-			const targetState = patternStatesRef.current[patternStatesRef.current.length - 1];
-			if (!targetState) return false;
-			const fixedMy = fixOrientation(myKpatternRef.current);
-			if (isIdenticalIgnoringCenters(fixedMy, targetState)) {
-				handleSolveComplete();
-				return true;
-			}
-			return false;
-		};
-
-		// Mask mode — no per-move matching, only solved detection
-		if (isMoveMaskedRef.current) {
-			checkSolvedFallback();
-			return;
-		}
-
-		// KPattern matching — fixOrientation must be applied to both sides.
-		const patterns = patternStatesRef.current;
-		const fixedMyKpattern = fixOrientation(myKpatternRef.current);
-		let matchIdx = -1;
-		for (let i = 0; i < patterns.length; i++) {
-			if (isIdenticalIgnoringCenters(fixedMyKpattern, patterns[i])) {
-				// Auto-skip trailing rotations (fixOrientation produces same state)
-				matchIdx = i;
-				while (matchIdx + 1 < patterns.length &&
-					isIdenticalIgnoringCenters(patterns[i], patterns[matchIdx + 1])) {
-					matchIdx++;
-				}
-				break;
-			}
-		}
-
-		// Phase='ready': try to match; if match, transition to solving, else it's setup move
-		// (not added to badAlg). This way, while user is setting up cube,
-		// engine doesn't report "wrong move".
-		if (smartPhaseRef.current === 'ready') {
-			if (matchIdx >= 0) {
-				// Started applying algorithm
-				currentMoveIndexRef.current = matchIdx;
-				badAlgRef.current = [];
-				dispatch({type: 'SMART_SET_PHASE', payload: 'solving'});
-				dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: matchIdx + 1});
-				dispatch({type: 'SET_BAD_ALG', payload: []});
-				solutionMovesRef.current = [smartTurn];
-				startTimerInterval();
-				if (matchIdx === patterns.length - 1) {
-					handleSolveComplete();
-				}
-			} else {
-				// Setup move or own method — only solved detection
-				checkSolvedFallback();
-			}
-			return;
-		}
-
-		// Phase='solving': normal matching flow
-		solutionMovesRef.current.push(smartTurn);
-
-		if (matchIdx >= 0) {
-			currentMoveIndexRef.current = matchIdx;
-			badAlgRef.current = [];
-			dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: matchIdx + 1});
-			dispatch({type: 'SET_BAD_ALG', payload: []});
-			if (matchIdx === patterns.length - 1) {
-				handleSolveComplete();
-			}
+		// The attempt starts on the first physical move, right or wrong. A wrong first move
+		// used to be taken for a setup move and ignored, which left the expectations anchored
+		// before it, so nothing after it matched either (2.8-c).
+		if (result.started) {
+			solutionMovesRef.current = [smartTurn];
+			dispatch({type: 'SMART_SET_PHASE', payload: 'solving'});
+			startTimerInterval();
 		} else {
-			badAlgRef.current.push(move);
+			solutionMovesRef.current.push(smartTurn);
+		}
+
+		if (result.mistake) {
 			solveHasMistakeRef.current = true;
 			// Flashing error indicator (if user enabled error indicator setting)
 			if (optionsRef.current.flashingError) {
 				setFlashKey((k) => k + 1);
 			}
-			handleBadAlg();
-			dispatch({type: 'SET_BAD_ALG', payload: [...badAlgRef.current]});
-
-			// Wrong algorithm tolerance: at least 1 correct move must be matched —
-			// wrong+correct back to solved creates false positive.
-			if (currentMoveIndexRef.current > 0) {
-				checkSolvedFallback();
-			}
 		}
-	}, [dispatch, startTimerInterval, handleSolveComplete, handleBadAlg]);
+
+		// Mask mode — no per-move matching, only solved detection
+		if (result.verdict !== 'masked') {
+			dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: result.matchedCount});
+			dispatch({type: 'SET_BAD_ALG', payload: result.bad});
+			setPendingPartial(result.partial);
+		}
+
+		if (result.completed) {
+			handleSolveComplete();
+		}
+	}, [dispatch, startTimerInterval, handleSolveComplete]);
 
 	// -- patternStates rebuilder (also called on FACELETS update) --
-	// Builds patternStates from current myKpatternRef value + algMovesRef.
-	// When user is setting up cube, FACELETS arrives, myKpattern is updated,
-	// and we call this to keep patternStates' initialState current.
+	// Re-anchors the tracker's expected states on its current cube state.
+	// When user is setting up cube, FACELETS arrives, the tracked state is updated,
+	// and we call this to keep the expected states' initial state current.
 	const rebuildPatternStates = useCallback(async () => {
 		await ensureCubingReady();
 		await ensureKPuzzleReady();
 		const kpuzzle = getKPuzzle();
-		if (!kpuzzle) return;
-		const algMoves = algMovesRef.current;
-		if (algMoves.length === 0) return;
-
-		const initialState = myKpatternRef.current ?? kpuzzle.defaultPattern();
-		myKpatternRef.current = initialState;
-
-		const pStates: KPattern[] = [];
-		const apStates: KPattern[] = [];
-		algMoves.forEach((move, index) => {
-			const cleanMove = move.replace(/[()]/g, '');
-			const prev = index === 0 ? initialState : apStates[index - 1];
-			const applied = prev.applyMove(cleanMove);
-			apStates[index] = applied;
-			pStates[index] = fixOrientation(applied);
-		});
-		patternStatesRef.current = pStates;
+		const tracker = trackerRef.current;
+		if (!kpuzzle || !tracker || !tracker.hasAlgorithm()) return;
+		if (!tracker.getCurrent()) tracker.setCurrent(kpuzzle.defaultPattern());
+		tracker.rebuild();
 	}, []);
 
 	// -- Gyro subscription helper --
@@ -414,11 +317,11 @@ export default function TrainerSmartCube() {
 			if (!awaitingBaselineRef.current) return;
 
 			// Idle / setup positioning: reflect physical cube state.
-			myKpatternRef.current = pattern;
+			trackerRef.current?.setCurrent(pattern);
 
 			// While awaiting the first move in 'ready', rebuild patternStates so the initialState
 			// tracks the physical cube (supports manually setting the cube up before starting).
-			if (smartPhaseRef.current === 'ready' && algMovesRef.current.length > 0) {
+			if (smartPhaseRef.current === 'ready' && trackerRef.current?.hasAlgorithm()) {
 				rebuildPatternStates();
 			}
 		});
@@ -553,13 +456,6 @@ export default function TrainerSmartCube() {
 				currentAlgorithm.category,
 				options.randomizeAUF
 			);
-			algMovesRef.current = algMoves;
-
-			// myKpatternRef reflects physical cube via FACELETS callback when BLE is connected;
-			// if null, assume solved. patternStates is built from this initialState by applying algorithm.
-			if (!myKpatternRef.current) {
-				myKpatternRef.current = kpuzzle.defaultPattern();
-			}
 
 			// Net rotation-aware gyro reset:
 			// Save previous algorithm's net rotation, then null basis.
@@ -568,17 +464,16 @@ export default function TrainerSmartCube() {
 			pendingNetRotRef.current = netRotationQuatRef.current.clone();
 			gyroBasisRef.current = null;
 
-			// Build patternStates (using rebuild helper)
-			await rebuildPatternStates();
+			// Expected states from the current cube state (reflects the physical cube via FACELETS
+			// when BLE is connected; solved if nothing is known yet), progress cleared.
+			trackerRef.current?.load(algMoves, kpuzzle.defaultPattern());
 
 			// Calculate and save net rotation for this algorithm.
 			// Will be used to adjust gyro basis on next algorithm transition.
 			netRotationQuatRef.current = calculateNetRotationQuat(algMoves);
 
-			currentMoveIndexRef.current = -1;
-			badAlgRef.current = [];
-			lastMovesRef.current = [];
 			solutionMovesRef.current = [];
+			setPendingPartial(false);
 			solveHasMistakeRef.current = false;
 			// New algorithm → allow FACELETS baseline sync until the first physical move.
 			awaitingBaselineRef.current = true;
@@ -628,7 +523,7 @@ export default function TrainerSmartCube() {
 		};
 
 		setupPatterns();
-	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch, rebuildPatternStates]);
+	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch]);
 
 	// Clean up timer on unmount or external phase change (manual stop)
 	useEffect(() => {
@@ -645,30 +540,12 @@ export default function TrainerSmartCube() {
 	// slice (M,E,S), and rotation (x,y,z) moves are physically performed but
 	// come across BLE as different face turns. Therefore, at display level,
 	// we show half/intermediate moves as partial, not as error.
-	const matchedIdx = state.matchedMoveCount - 1;
-	const nextExpected = state.userAlg[matchedIdx + 1]?.replace(/[()]/g, '') || '';
-
-	const isHalfMatch = (() => {
-		if (state.badAlg.length === 0 || !nextExpected || nextExpected.length <= 1) return false;
-
-		const badCount = state.badAlg.length;
-		const expectedBase = nextExpected[0];
-
-		// Is there wide/slice/rotation in preceding moves or expected move?
-		const precedingMoves = state.userAlg.slice(0, matchedIdx + 1).join(' ');
-		const hasSliceOrWide = /[MESudlrbfxyz]/.test(precedingMoves) || /[MESudlrbfxyz]/.test(nextExpected);
-
-		// Case 1: Single bad move + first letter match (R2→R, r2→R, U2→U, case-insensitive)
-		if (badCount === 1 && state.badAlg[0][0].toUpperCase() === expectedBase.toUpperCase()) return true;
-
-		// Case 2: Single bad move + algorithm has wide/slice/rotation move
-		if (badCount === 1 && hasSliceOrWide) return true;
-
-		// Case 3: 2-3 bad moves + M/E/S expected move (slice moves produce 2-3 face turns)
-		if ((badCount === 2 || badCount === 3) && 'MES'.includes(expectedBase)) return true;
-
-		return false;
-	})();
+	// Decided by the tracker on cube states, the same verdict that counts and flashes a mistake,
+	// so it also holds after rotations and wide moves, where the reported face letter differs
+	// from the written one. The letter based guesses that used to sit here showed real mistakes
+	// as "half" with no fix text (R done for R', or any single wrong move in an algorithm with a
+	// wide, slice or rotation move) while the same move flashed red and was counted.
+	const isHalfMatch = state.badAlg.length > 0 && pendingPartial;
 
 	// -- Correction moves display --
 	const correctionText = (state.badAlg.length > 0 && !isHalfMatch)
@@ -692,7 +569,7 @@ export default function TrainerSmartCube() {
 	const handleResetState = useCallback(async () => {
 		const kpuzzle = getKPuzzle();
 		if (kpuzzle) {
-			myKpatternRef.current = kpuzzle.defaultPattern();
+			trackerRef.current?.setCurrent(kpuzzle.defaultPattern());
 		}
 		// TwistyPlayer visual reset
 		if (twistyPlayerRef.current) {
@@ -704,9 +581,8 @@ export default function TrainerSmartCube() {
 			const CubeJS = (await import('cubejs')).default;
 			cube._trackerCube = new CubeJS();
 		}
-		currentMoveIndexRef.current = -1;
-		badAlgRef.current = [];
-		lastMovesRef.current = [];
+		trackerRef.current?.resetProgress();
+		setPendingPartial(false);
 		solutionMovesRef.current = [];
 		solveHasMistakeRef.current = false;
 		// Reset → allow FACELETS baseline sync until the first physical move.

@@ -71,6 +71,8 @@ export function getCubeTypeName(id: string): string {
 		return null;
 	}
 
+	// The built-in catch-all is the only fixed cube type whose name is a word, not a puzzle name.
+	if (id === 'other') return i18next.t('cube_picker.other');
 	return getCubeTypeInfoById(id).name;
 }
 

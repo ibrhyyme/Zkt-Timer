@@ -17,6 +17,7 @@ import {
 	OAuthCallbackPath,
 } from '../../../../util/oauth-native';
 import {useMe} from '../../../../util/hooks/useMe';
+import {useZktBadge} from '../../../../util/hooks/useZktBadge';
 
 const b = block('integration');
 
@@ -58,6 +59,9 @@ export default function IntegrationService(props: Props) {
 
 	const service = LINKED_SERVICES[integrationType];
 	const integration = data?.integration;
+	// The ZKT badge's lettering follows the theme; the shared entry only knows the dark-surface file.
+	const zktBadge = useZktBadge();
+	const logoSrc = service.id === 'zkt' ? zktBadge : service.logoSrc;
 
 	const serviceUri = useMemo(() => {
 		return getServiceUri(service);
@@ -135,7 +139,7 @@ export default function IntegrationService(props: Props) {
 	return (
 		<div className={b()}>
 			<div className={b('name')}>
-				<img alt={`Logo for ${service.name}`} src={service.logoSrc} />
+				<img alt={`Logo for ${service.name}`} src={logoSrc} />
 				<h4>{service.name}</h4>
 			</div>
 			<div className={b('description')}>
@@ -171,7 +175,7 @@ export default function IntegrationService(props: Props) {
 						gap: '16px',
 					}}
 				>
-					<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
+					<img src={logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
 					<span className="text-text/80" style={{fontSize: '0.9rem'}}>
 						{t('integration.wca_connecting')}
 					</span>
@@ -210,7 +214,7 @@ export default function IntegrationService(props: Props) {
 							border: '1px solid rgba(var(--text-color), 0.08)',
 						}}
 					>
-						<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
+						<img src={logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
 						<h3 className="text-text" style={{margin: 0, fontSize: '1.05rem', fontWeight: 600, textAlign: 'center'}}>
 							{t('integration.disconnect_title', {name: service.name})}
 						</h3>

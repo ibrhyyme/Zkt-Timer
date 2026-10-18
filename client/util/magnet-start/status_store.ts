@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { MagnetStage } from './controller';
+import type { MagnetCubeProfile } from './cube_profile';
 import type { DetectorPhase, MagnetHint } from './types';
 
 /**
@@ -15,6 +16,18 @@ export interface MagnetStatus {
 	orange: boolean;
 	phase: DetectorPhase;
 	hint: MagnetHint;
+	/**
+	 * The phone seems to be in the hand (no steady plateau for MOVING_AFTER_MS while the cube
+	 * is not at the phone). Guide #7 "put the phone on the table"; the calibration page's
+	 * "phone steady" light.
+	 */
+	moving: boolean;
+	/**
+	 * The cube the Magnet Timer runs with on this phone, or why there is none (guide #2-#5).
+	 * Replaced only when a field changes (sameMagnetProfile), so the reference is stable.
+	 * null while the Magnet Timer is not the selected input.
+	 */
+	profile: MagnetCubeProfile | null;
 }
 
 const INITIAL: MagnetStatus = {
@@ -24,6 +37,8 @@ const INITIAL: MagnetStatus = {
 	orange: false,
 	phase: 'unknown',
 	hint: 'none',
+	moving: false,
+	profile: null,
 };
 
 let status: MagnetStatus = INITIAL;
@@ -48,6 +63,10 @@ export function setMagnetStatus(partial: Partial<MagnetStatus>): void {
 
 export function resetMagnetStatus(): void {
 	setMagnetStatus(INITIAL);
+}
+
+export function getMagnetProfile(): MagnetCubeProfile | null {
+	return status.profile;
 }
 
 export function subscribeMagnetStatus(listener: () => void): () => void {

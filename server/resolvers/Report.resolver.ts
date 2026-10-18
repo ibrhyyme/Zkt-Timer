@@ -8,6 +8,7 @@ import {getUserById, publicUserInclude} from '../models/user_account';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
 import {logger} from '../services/logger';
+import {ALG_SET_MODERATION} from '../../shared/trainer/alg_sets';
 
 const MAX_REPORT_REASON_LENGTH = 1000;
 
@@ -21,11 +22,21 @@ async function getUnresolvedReports(context: GraphQLContext) {
 		include: {
 			created_by: publicUserInclude,
 			reported_user: publicUserInclude,
+			// Trainer set reports (trainer-sets 3.6): the admin row shows the set name, link and hide state.
+			alg_set: {
+				select: {id: true, code: true, name: true, visibility: true, hidden_at: true, hidden_reason: true},
+			},
 		},
 		orderBy: {
 			created_at: 'asc',
 		},
 	});
+
+	for (const report of reports as any[]) {
+		if (report.alg_set) {
+			report.alg_set = {...report.alg_set, hidden: !!report.alg_set.hidden_at};
+		}
+	}
 
 	// Create report summary
 	const userMap: Record<string, ReportSummary> = {};
@@ -113,6 +124,11 @@ export class ReportResolver {
 		}
 		if (reason.length > MAX_REPORT_REASON_LENGTH) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, `Report reason must be at most ${MAX_REPORT_REASON_LENGTH} characters`);
+		}
+		// The admin screen reads this prefix as a trainer set report (reportAlgSet writes it);
+		// a profile report must not pose as one.
+		if (reason.trim().startsWith(ALG_SET_MODERATION.REPORT_REASON_PREFIX)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Report reason is invalid');
 		}
 
 		const user = await getUserById(userId);

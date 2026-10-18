@@ -4,7 +4,6 @@ import type { MagnetCapabilities } from './types';
 
 export interface ReversedEligibilityInput {
 	allowed: boolean;
-	enabled: boolean;
 	reversedSetting: boolean;
 	/** undefined while the native probe runs, null when the plugin is unavailable. */
 	caps: MagnetCapabilities | null | undefined;
@@ -18,7 +17,7 @@ export interface ReversedEligibilityInput {
 }
 
 /**
- * Reversed use only makes sense with magnet lift-to-start on the touch timer, and only in
+ * Reversed use only makes sense with the Magnet Timer, and only in
  * the mobile layout (width < 1024, which counts an unfolded foldable). A running solve is
  * deliberately not a condition: the screen must never flip mid-solve. A probe still in
  * flight counts as available so the page does not flash upright on mount.
@@ -26,10 +25,9 @@ export interface ReversedEligibilityInput {
 export function magnetReversedEligible(i: ReversedEligibilityInput): boolean {
 	return (
 		i.allowed &&
-		i.enabled &&
 		i.reversedSetting &&
 		i.caps !== null &&
-		i.timerType === 'keyboard' &&
+		i.timerType === 'magnet' &&
 		!i.manualEntry &&
 		i.mobileLayout &&
 		!i.inModal &&

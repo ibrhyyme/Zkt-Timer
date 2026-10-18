@@ -4,7 +4,7 @@ import {PublicWcaProfile} from '../schemas/PublicWcaProfile.schema';
 import {InternalUserAccount} from '../schemas/UserAccount.schema';
 import {Integration} from '../schemas/Integration.schema';
 import {WcaApiService, WcaPerson} from '../services/WcaApiService';
-import {recalculateUserRanking} from './ranking';
+import {publicIntegrationSelect} from './integration';
 
 const prisma = new PrismaClient();
 
@@ -75,7 +75,7 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 				where: { id: existingRecord.id },
 				data: recordData,
 				include: {
-					integration: true,
+					integration: {select: publicIntegrationSelect},
 					user: true
 				}
 			});
@@ -87,20 +87,13 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 					created_at: new Date()
 				},
 				include: {
-					integration: true,
+					integration: {select: publicIntegrationSelect},
 					user: true
 				}
 			});
 		}
 
 		records.push(record as WcaRecord);
-	}
-
-	// Recalculate Kinch + SoR scores after WCA data refresh
-	try {
-		await recalculateUserRanking(user.id);
-	} catch (err) {
-		console.error(`[Rankings] Failed to recalculate ranking for user ${user.id}:`, err);
 	}
 
 	return records;
@@ -113,7 +106,7 @@ export async function getWcaRecords(userId: string): Promise<WcaRecord[]> {
 	return prisma.wcaRecord.findMany({
 		where: { user_id: userId },
 		include: {
-			integration: true,
+			integration: {select: publicIntegrationSelect},
 			user: true
 		},
 		orderBy: {
@@ -132,7 +125,7 @@ export async function getPublishedWcaRecords(userId: string): Promise<WcaRecord[
 			published: true
 		},
 		include: {
-			integration: true,
+			integration: {select: publicIntegrationSelect},
 			user: true
 		},
 		orderBy: {
@@ -232,7 +225,7 @@ export async function publishWcaRecord(recordId: string, userId: string): Promis
 		where: { id: recordId },
 		data: { published: true },
 		include: {
-			integration: true,
+			integration: {select: publicIntegrationSelect},
 			user: true
 		}
 	}) as Promise<WcaRecord>;
@@ -258,7 +251,7 @@ export async function unpublishWcaRecord(recordId: string, userId: string): Prom
 		where: { id: recordId },
 		data: { published: false },
 		include: {
-			integration: true,
+			integration: {select: publicIntegrationSelect},
 			user: true
 		}
 	}) as Promise<WcaRecord>;
@@ -271,7 +264,7 @@ export async function getWcaRecordById(recordId: string): Promise<WcaRecord | nu
 	return prisma.wcaRecord.findUnique({
 		where: { id: recordId },
 		include: {
-			integration: true,
+			integration: {select: publicIntegrationSelect},
 			user: true
 		}
 	}) as Promise<WcaRecord | null>;

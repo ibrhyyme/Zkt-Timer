@@ -142,6 +142,15 @@ query getIapStatus {
 	}
 }
 
+# Algorithm trainer settings only, read fresh when the trainer opens so a change made on
+# another device shows without restarting the app. See client/util/trainer/trainer_options_sync.ts.
+query TrainerOptionsSetting {
+	settings {
+		id
+		trainer_options
+	}
+}
+
 query siteConfig {
 	siteConfig {
 		id
@@ -158,6 +167,7 @@ query siteConfig {
 		zkt_backfill_enabled
 		smart_telemetry_enabled
 		magnet_telemetry_enabled
+		online_battle_enabled
 		method_steps_version
 		featureOverrides {
 			feature
@@ -260,12 +270,6 @@ query getActiveAnnouncements {
 	}
 }
 
-query getUnreadAnnouncementCount {
-	getUnreadAnnouncementCount {
-		count
-	}
-}
-
 query getAllAnnouncements($filter: AnnouncementFilterInput) {
 	getAllAnnouncements(filter: $filter) {
 		id
@@ -309,6 +313,35 @@ query trainerAlternatives($category: String!, $caseName: String!) {
 		setup
 		ll_pattern
 		created_at
+	}
+}
+
+query trainerLibrary($knownVersion: String) {
+	trainerLibrary(knownVersion: $knownVersion) {
+		version
+		categories {
+			category
+			subsets {
+				subset
+				algorithms {
+					name
+					algorithm
+					setup
+					alternativeCount
+				}
+			}
+		}
+	}
+}
+
+query trainerLibraryAlternatives($category: String!) {
+	trainerLibraryAlternatives(category: $category) {
+		version
+		category
+		cases {
+			name
+			alternatives
+		}
 	}
 }
 
@@ -391,6 +424,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 				endTime
 				stationNumber
 				roomName
+				chance
 			}
 			personalBests {
 				eventId
@@ -413,11 +447,13 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 				cutoffAttempts
 				advancementType
 				advancementLevel
+				dualChance
 				groups {
 					groupNumber
 					activityCode
 					startTime
 					endTime
+					chance
 					competitors {
 						name
 						wcaId
@@ -442,6 +478,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 				roomColor
 				venueName
 				stationNumber
+				chance
 			}
 		}
 		allPersonalBests {
@@ -522,6 +559,7 @@ query wcaLiveCompetitionOverview($input: WcaLiveOverviewInput!) {
 				dayIndex
 				dayLabel
 				isFinal
+				dualChance
 			}
 		}
 		schedule {
@@ -537,6 +575,9 @@ query wcaLiveCompetitionOverview($input: WcaLiveOverviewInput!) {
 					endTime
 					dayIndex
 					dayLabel
+					roundNumber
+					isFinal
+					chance
 				}
 			}
 		}
@@ -575,6 +616,7 @@ query wcaLiveRoundResults($input: WcaLiveRoundInput!) {
 		finished
 		numberOfAttempts
 		sortBy
+		dualChance
 		results {
 			ranking
 			best
@@ -590,6 +632,16 @@ query wcaLiveRoundResults($input: WcaLiveRoundInput!) {
 			averageRecordTag
 			advancing
 			advancingQuestionable
+			chances {
+				chance
+				attempts {
+					result
+				}
+				best
+				average
+				noShow
+				counting
+			}
 		}
 	}
 }
@@ -636,27 +688,6 @@ query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
 		}
 		total
 		hasMore
-	}
-}
-
-query rankings($mode: String!, $page: Int!, $search: String) {
-	rankings(mode: $mode, page: $page, search: $search) {
-		rows {
-			rank
-			user_id
-			username
-			is_pro
-			wca_id
-			country_iso2
-			score
-			wca_competition_count
-			wca_medal_gold
-			wca_medal_silver
-			wca_medal_bronze
-			pfp_image_url
-		}
-		total_count
-		page
 	}
 }
 
@@ -829,6 +860,8 @@ query MagnetTelemetrySummary($days: Int) {
 	magnetTelemetrySummary(days: $days) {
 		platform
 		device_model
+		cube_puzzle
+		median_near_min_ut
 		sensor_name
 		distinct_users
 		placements
@@ -867,6 +900,8 @@ query MagnetTelemetryRows($limit: Int, $offset: Int, $username: String, $eventTy
 		reversed
 		has_samples
 		app_version
+		cube_puzzle
+		near_min_ut
 		created_at
 	}
 }
@@ -892,5 +927,13 @@ query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int, $user
 		is_native
 		app_version
 		created_at
+	}
+}
+
+query zktPersonBests($zktId: String!) {
+	zktPersonBests(zktId: $zktId) {
+		event_id
+		single
+		average
 	}
 }

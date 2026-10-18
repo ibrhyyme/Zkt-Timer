@@ -81,10 +81,10 @@ export default class CompetitionResultsOfficialNotification extends CompetitionL
 	relativeLink() {
 		const {source, competitionId, registrantId} = this.meta;
 		if (source === 'zkt' || registrantId == null) {
-			// The ZKT competitor page carries the person's results.
+			// A ZKT person's page on the competition carries their results.
 			return source === 'zkt'
-				? lifecyclePersonPath(source, competitionId, registrantId)
-				: lifecycleCompetitionPath(source, competitionId);
+				? lifecyclePersonPath(competitionId, registrantId)
+				: lifecycleCompetitionPath(competitionId);
 		}
 		return `/competitions/${competitionId}/persons/${registrantId}/results`;
 	}

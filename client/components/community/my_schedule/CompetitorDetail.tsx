@@ -6,7 +6,7 @@ import {useCompetitionData} from './CompetitionLoader';
 import FollowBellButton from './FollowBellButton';
 import {
 	b, I18N_LOCALE_MAP, ROLE_COLORS, formatTime, formatDayHeader, getRoleLabel,
-	EventIcon, countryFlag, WcaIdLink,
+	EventIcon, countryFlag, WcaIdLink, localEventName, parseActivityCodeParts, ChanceTag,
 } from './shared';
 import {useNow} from '../../../util/hooks/useNow';
 
@@ -35,6 +35,18 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 
 	const wcaLiveCompId = detail.wcaLiveCompId;
 	const wcaLiveCompetitors = detail.wcaLiveCompetitors || [];
+	const isZkt = !!detail.competitionId?.startsWith('zkt-');
+	// A ZKT competitor's records live on their federation profile, keyed by the
+	// ZKT id, which the federation assigns with the first published result. Their
+	// live entry carries the registration number as its id.
+	const recordsKey: string | null = isZkt ? selected.zktId || null : selected.wcaId || null;
+	const liveEntry = isZkt
+		? wcaLiveCompetitors.find((c: any) => c.liveId === String(selected.registrantId))
+		: selected.wcaId
+			? wcaLiveCompetitors.find((c: any) => c.wcaId === selected.wcaId)
+			: null;
+	// Before the first group starts there are no results to open.
+	const resultsOpen = !isZkt || competitionStarted(detail, selected);
 	const myWcaId = detail.myWcaId;
 	const myRegistrantId = detail.myRegistrantId;
 	const isMe =
@@ -65,6 +77,9 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 					</h3>
 					<div className={b('competitor-meta')}>
 						{selected.wcaId && <WcaIdLink wcaId={selected.wcaId} size="md" />}
+						{!selected.wcaId && selected.zktId && (
+							<span className={b('competitor-country-code')}>{selected.zktId}</span>
+						)}
 						{selected.country && (
 							<span className={b('competitor-country-code')}>{selected.country}</span>
 						)}
@@ -92,26 +107,24 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 
 			{/* Action buttons */}
 			<div className={b('competitor-actions')}>
-				{selected.wcaId && (
+				{recordsKey && (
 					<button
 						className={b('wca-profile-btn')}
-						onClick={() => history.push(`/competitions/${detail.competitionId}/personal-bests/${selected.wcaId}`)}
+						onClick={() =>
+							history.push(`/competitions/${detail.competitionId}/personal-bests/${encodeURIComponent(recordsKey)}`)
+						}
 					>
 						{t('my_schedule.view_personal_records')}
 					</button>
 				)}
-				{wcaLiveCompId && selected.wcaId && (() => {
-					const live = wcaLiveCompetitors.find((c: any) => c.wcaId === selected.wcaId);
-					if (!live) return null;
-					return (
-						<button
-							className={b('wca-results-btn')}
-							onClick={() => history.push(`/competitions/${detail.competitionId}/persons/${registrantId}/results`)}
-						>
-							{t('my_schedule.view_complete_results')}
-						</button>
-					);
-				})()}
+				{wcaLiveCompId && liveEntry && resultsOpen && (
+					<button
+						className={b('wca-results-btn')}
+						onClick={() => history.push(`/competitions/${detail.competitionId}/persons/${registrantId}/results`)}
+					>
+						{t('my_schedule.view_complete_results')}
+					</button>
+				)}
 			</div>
 
 			{/* Disclaimer */}
@@ -135,6 +148,23 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 			)}
 		</div>
 	);
+}
+
+/**
+ * Has the competition started? The earliest time known from its groups and the
+ * person's own assignments. With no time at all (groups not drawn yet) it has
+ * not: a results button there only opened an empty page.
+ */
+function competitionStarted(detail: any, person: any): boolean {
+	const times: string[] = [];
+	for (const ev of detail?.events || []) {
+		for (const r of ev.rounds || []) {
+			for (const g of r.groups || []) if (g.startTime) times.push(g.startTime);
+		}
+	}
+	for (const a of person?.assignments || []) if (a.startTime) times.push(a.startTime);
+	const first = Math.min(...times.map((x) => Date.parse(x)).filter((x) => !Number.isNaN(x)));
+	return Number.isFinite(first) && Date.now() >= first;
 }
 
 // --- Competitor Day Accordion ---
@@ -242,7 +272,10 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 												onClick={() => history.push(`/competitions/${competitionId}/activities/${a.activityCode}`)}
 											>
 												<td>
-													{a.eventName}
+													{(() => {
+														const eventId = parseActivityCodeParts(a.activityCode)?.eventId;
+														return eventId ? localEventName(t, eventId, a.eventName) : a.eventName;
+													})()}
 													{a.roundNumber > 0 && ` R${a.roundNumber}`}
 												</td>
 												<td>{a.startTime ? formatTime(a.startTime, locale) : '-'}</td>
@@ -251,7 +284,10 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 														{getRoleLabel(a.assignmentCode, t)}
 													</span>
 												</td>
-												<td className={b('group-num')}>{a.groupNumber || '-'}</td>
+												<td className={b('group-num')}>
+													{a.groupNumber || '-'}
+													<ChanceTag chance={a.chance} t={t} />
+												</td>
 												<td>{a.stationNumber ? a.stationNumber : (a.roomName || '-')}</td>
 											</tr>
 										))}

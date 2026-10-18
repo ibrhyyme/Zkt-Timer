@@ -83,6 +83,9 @@ model UserAccount {
   sessions                      Session[]
   settings                      Setting?
   smart_device                  SmartDevice[]
+  cubes                         Cube[]
+  cube_mains                    CubeMain[]
+  cube_calibrations             CubeCalibration[]
   smart_cube_telemetry          SmartCubeTelemetry[]
   magnet_telemetry              MagnetTelemetry[]
   solves                        Solve[]
@@ -93,6 +96,8 @@ model UserAccount {
   top_solves                    TopSolve[]
   trainer_favorite              TrainerFavorite[]
   trainer_alternatives          TrainerAlternative[]
+  alg_sets                      AlgSet[]
+  alg_set_saves                 AlgSetSave[]
   user_feature_state            UserFeatureState?
   wca_records                   WcaRecord[]
 
@@ -142,6 +147,11 @@ model UserAccount {
   message_reports_received      MessageReport[]           @relation("message_report_reported")
   message_reports_reviewed      MessageReport[]           @relation("message_report_reviewer")
   message_reactions             MessageReaction[]
+
+  // Online Battle (ranking-battle design 4.10)
+  battle_ratings                BattleRating[]
+  battle_matches_a              BattleMatch[]             @relation("battle_match_a")
+  battle_matches_b              BattleMatch[]             @relation("battle_match_b")
 
   @@map("user_account")
 }
@@ -317,6 +327,10 @@ model SiteConfig {
   /// Field study of magnet lift-to-start across phone models (MagnetTelemetry). Off by
   /// default, switched on for a study and off again: a row per placement and lift.
   magnet_telemetry_enabled Boolean @default(false)
+  /// Online Battle (ranked smart cube matches). Off by default: admins and the users on
+  /// this flag's feature_overrides list can play while it is off, so it is tried live
+  /// before everyone sees it. The Leaderboard nav entry stays hidden until it is on.
+  online_battle_enabled Boolean @default(false)
   /// Bumped by the smart cube method steps reindex when it finishes. Devices only ever
   /// fetch solves they do not have yet, so without this a reindex that repaired a solve's
   /// breakdown on the server never reached the copy the device's stats read from.
@@ -438,6 +452,11 @@ model Solve {
   smart_turns          String?
   smart_turn_count     Int?
   smart_device_id      String?
+  /// Physical cube the solve was made with (Cube.id). Plain column, no foreign key on purpose:
+  /// the solve table is large, and a stale id from the offline queue must never fail a write.
+  /// Integrity is kept by the write paths (server/util/solve_links.ts): an unknown id, another
+  /// account's cube or a cube of a different puzzle is stored as null.
+  cube_id              String?
   share_code           String?           @unique
   from_timer           Boolean           @default(true)
   // Manual multi-phase splits: "<method>:<ms>,<ms>,..." cumulative from timer start.
@@ -469,6 +488,9 @@ model Solve {
   @@index([trainer_name])
   @@index([user_id])
   @@index([user_id, created_at])
+  // Name must stay Prisma's default (solve_cube_id_idx): the owner may build it ahead of the
+  // deploy with CREATE INDEX CONCURRENTLY so db push finds nothing to do on the big table.
+  @@index([cube_id])
   @@map("solve")
 }
 
@@ -498,6 +520,97 @@ model SmartDevice {
 
   @@index([user_id])
   @@map("smart_device")
+}
+
+/// A physical puzzle the user owns ("My Cubes"). Belongs to exactly one puzzle key
+/// (shared/cube_puzzle.ts): a 3x3 cube is offered only in 3x3 buckets. Collections, if they
+/// come, are a separate join table; this model does not change for them.
+model Cube {
+  id                      String            @id @default(uuid())
+  user_id                 String
+  user                    UserAccount       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  /// '333', '222', ..., 'fto', or a CustomCubeType id. Never changes after creation.
+  puzzle                  String
+  name                    String
+  brand                   String?
+  is_smart                Boolean           @default(false)
+  /// BLE device id of a smart cube (what SmartDevice.device_id held). Matches the cube on connect.
+  ble_device_id           String?
+  /// Advertised BLE name at registration, e.g. "GANi3_F568". Kept for matching across reinstalls.
+  ble_name                String?
+  /// SmartDevice rows this cube was migrated from. Maps old solve.smart_device_id values.
+  legacy_smart_device_ids String[]          @default([])
+  archived_at             DateTime?
+  created_at              DateTime          @default(now())
+  updated_at              DateTime          @updatedAt
+
+  mains                   CubeMain[]
+  calibrations            CubeCalibration[]
+
+  @@unique([user_id, ble_device_id])
+  @@index([user_id, puzzle])
+  @@map("cube")
+}
+
+/// The cube a user solves with for one puzzle. One row per (user, puzzle).
+model CubeMain {
+  user_id String
+  puzzle  String
+  cube_id String
+  /// Client time of the choice; the newer choice wins across devices (offline changes included).
+  set_at  DateTime
+  user    UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cube    Cube        @relation(fields: [cube_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, puzzle])
+  @@index([cube_id])
+  @@map("cube_main")
+}
+
+/// Magnet calibration of one cube on one phone model. Raw measurements are the source of
+/// truth; the thresholds are what the formula of `algo_version` produced at the time
+/// (shared/magnet_calibration.ts).
+model CubeCalibration {
+  id           String      @id @default(uuid())
+  cube_id      String
+  user_id      String
+  cube         Cube        @relation(fields: [cube_id], references: [id], onDelete: Cascade)
+  user         UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  /// ios | android
+  platform     String
+  /// "Apple iPhone16,1", "samsung SM-F956B" (same helper as MagnetTelemetry).
+  device_model String
+  os_version   String?
+  /// OTA bundle or asset version.
+  app_version  String?
+  sensor_name  String?
+
+  /// Robust maximum |B - F| during the sweep.
+  peak_ut      Float
+  /// |R - F| of the cube resting where the user will rest it.
+  rest_ut      Float?
+  /// rms of the far plateau (phone still, cube away).
+  noise_ut     Float
+  /// Derived: enter-near threshold (the green line).
+  near_min_ut  Float
+  /// Derived: leave-near / far band (hysteresis).
+  far_max_ut   Float
+  /// ok | weak
+  quality      String
+  sample_count Int
+  sweep_ms     Int
+  rate_hz      Float
+  algo_version Int         @default(1)
+  /// Client time of the measurement; a newer upload replaces an older one, never the reverse.
+  measured_at  DateTime
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+
+  @@unique([cube_id, platform, device_model])
+  @@index([user_id])
+  @@index([device_model])
+  @@map("cube_calibration")
 }
 
 /// One row per smart cube solve (plus anomaly rows), recorded only while
@@ -593,6 +706,12 @@ model MagnetTelemetry {
   /// `window`: that is a reserved word in Postgres and every raw query would need quoting.
   samples     Json?
 
+  /// Puzzle key of the cube in use (shared/cube_puzzle.ts), so per-model summaries do not mix
+  /// a 2x2 with a 3x3. Null on rows recorded before cubes existed.
+  cube_puzzle String?
+  /// The "ready" threshold the detector ran with (calibrated or default).
+  near_min_ut Float?
+
   app_version String?
   created_at  DateTime @default(now())
 
@@ -663,6 +782,12 @@ model TimerBackground {
   /// "image" or "video". Null on rows written before video backgrounds existed, which are
   /// all images; readers treat null as "image" rather than backfilling.
   media_type   String?
+  /// The row's storage_path/media_type are the DESKTOP background. Mobile has its own
+  /// pair, used only when mobile_same_as_desktop is false. The default true is the
+  /// migration: rows from before the split keep showing the same picture on phones.
+  mobile_storage_path    String?
+  mobile_media_type      String?
+  mobile_same_as_desktop Boolean @default(true)
   created_at   DateTime    @default(now())
   user         UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -677,9 +802,17 @@ model Report {
   created_by_id    String
   reported_user_id String
   resolved_at      DateTime?
+  /// Set the report is about (trainer algorithm sets). Null for profile reports; emptied when the set is deleted.
+  alg_set_id       String?
   created_by       UserAccount @relation("report_created_by", fields: [created_by_id], references: [id], onDelete: Cascade)
   reported_user    UserAccount @relation("report_for", fields: [reported_user_id], references: [id], onDelete: Cascade)
+  alg_set          AlgSet?     @relation(fields: [alg_set_id], references: [id], onDelete: SetNull)
+  /// Online Battle match the report came from ("Report opponent" on the result screen).
+  battle_match_id  String?
+  battle_match     BattleMatch? @relation(fields: [battle_match_id], references: [id], onDelete: SetNull)
 
+  @@index([alg_set_id])
+  @@index([battle_match_id])
   @@map("report")
 }
 
@@ -917,6 +1050,75 @@ model TrainerAlternative {
   @@map("trainer_alternative")
 }
 
+/// Trainer algorithm set: a free list of cases, each with the algorithm its owner chose.
+/// Design .feedback/designs/trainer-sets.md section 3. Independent of learned flags and stats.
+model AlgSet {
+  id            String       @id @default(uuid())
+  /// Short share code used in every URL (/trainer/sets/<code>). 10 chars base62.
+  code          String       @unique
+  user_id       String
+  name          String
+  description   String?
+  /// private | link | public. String, not a DB enum, so a later level is an additive change.
+  visibility    String       @default("private")
+  item_count    Int          @default(0)
+  save_count    Int          @default(0)
+  /// Sorted distinct item categories and puzzles, wrapped in commas (",OLL,PLL,", ",333,") so a
+  /// filter is one `contains ',OLL,'`; used for list badges and filters.
+  categories    String       @default("")
+  puzzles       String       @default("")
+  /// First time the set became public; "new" sort key.
+  published_at  DateTime?
+  /// Moderation. A hidden set is listed nowhere and opens only for its owner and staff.
+  hidden_at     DateTime?
+  hidden_reason String?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  user          UserAccount  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  items         AlgSetItem[]
+  saves         AlgSetSave[]
+  reports       Report[]
+
+  @@index([user_id])
+  @@index([visibility, published_at])
+  @@index([visibility, save_count])
+  @@map("alg_set")
+}
+
+model AlgSetItem {
+  id         String   @id @default(uuid())
+  set_id     String
+  /// default-algs.json category key ("OLL") and case name, unique inside the category ("OLL 45").
+  category   String
+  case_name  String
+  /// Filled by the server from default-algs.json, never trusted from the client.
+  subset     String
+  puzzle     String
+  /// The algorithm the set owner chose for this case, stored as the matching source writes it.
+  algorithm  String
+  position   Int
+  created_at DateTime @default(now())
+  set        AlgSet   @relation(fields: [set_id], references: [id], onDelete: Cascade)
+
+  @@unique([set_id, category, case_name])
+  @@index([set_id, position])
+  @@map("alg_set_item")
+}
+
+/// Someone else's set kept in "My sets": a live link, not a copy (design 3.4).
+model AlgSetSave {
+  id         String      @id @default(uuid())
+  user_id    String
+  set_id     String
+  created_at DateTime    @default(now())
+  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  set        AlgSet      @relation(fields: [set_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, set_id])
+  @@index([set_id])
+  @@map("alg_set_save")
+}
+
 model AlgorithmOverride {
   id         String      @id @default(uuid())
   user_id    String
@@ -967,6 +1169,7 @@ model Setting {
   scramble_top_color                  String? // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default U/beyaz)
   desktop_prefs                       String? // JSON blob — platform-specific appearance+behavior prefs (desktop)
   mobile_prefs                        String? // JSON blob — platform-specific appearance+behavior prefs (mobile)
+  trainer_options                     String? // JSON blob, algorithm trainer settings shared by every device ({v, ts, options})
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -1764,4 +1967,100 @@ model SocialPreference {
   user UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("social_preference")
+}
+
+// ── Online Battle (ranking-battle design 4.10) ──────────────────────────────
+// Ranked smart cube matches. The old competitive match tables (match, match_lobby,
+// elo_rating, elo_log ...) are not reused: new names carry the battle_ prefix.
+
+/// A player's Glicko-2 rating for one puzzle. Created by the player's first rated match
+/// (win or lose), which is also when they appear on the leaderboard.
+model BattleRating {
+  id            String    @id @default(uuid())
+  user_id       String
+  puzzle        String    @default("333")
+  rating        Float     @default(1500)
+  rd            Float     @default(350)
+  volatility    Float     @default(0.06)
+  games         Int       @default(0)
+  wins          Int       @default(0)
+  losses        Int       @default(0)
+  draws         Int       @default(0)
+  peak_rating   Float     @default(1500)
+  /// When RD was last brought up to date. Idle days grow RD from here at the next match.
+  last_match_at DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  user          UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, puzzle])
+  @@index([puzzle, rating])
+  @@map("battle_rating")
+}
+
+/// One finished (or voided) match. Players are SetNull on account deletion so the match
+/// stays in the opponent's history as a deleted account.
+model BattleMatch {
+  id              String    @id @default(uuid())
+  puzzle          String    @default("333")
+  /// FINISHED | VOID
+  status          String
+  /// NORMAL | FORFEIT | DISCONNECT | ABANDON | SERVER_RESTART
+  end_reason      String
+  rated           Boolean
+  is_rematch      Boolean   @default(false)
+  player_a_id     String?
+  player_b_id     String?
+  /// A | B | DRAW, null for a void match without a result
+  winner          String?
+  rounds_a        Int       @default(0)
+  rounds_b        Int       @default(0)
+  /// Glicko state each player entered the match with (idle RD growth applied). Null when unrated.
+  rating_a_before Float?
+  rating_a_after  Float?
+  rating_b_before Float?
+  rating_b_after  Float?
+  rd_a_before     Float?
+  rd_b_before     Float?
+  /// Kept so an admin void can put the rating row back exactly.
+  vol_a_before    Float?
+  vol_b_before    Float?
+  flags           String[]  @default([])
+  started_at      DateTime
+  ended_at        DateTime  @default(now())
+  /// Set when an admin voided a finished match.
+  voided_at       DateTime?
+  voided_by_id    String?
+  player_a        UserAccount? @relation("battle_match_a", fields: [player_a_id], references: [id], onDelete: SetNull)
+  player_b        UserAccount? @relation("battle_match_b", fields: [player_b_id], references: [id], onDelete: SetNull)
+  rounds          BattleRound[]
+  reports         Report[]
+
+  @@index([player_a_id, ended_at])
+  @@index([player_b_id, ended_at])
+  @@index([ended_at])
+  @@map("battle_match")
+}
+
+/// One round of a match, with both move logs for later review.
+model BattleRound {
+  id          String   @id @default(uuid())
+  match_id    String
+  index       Int
+  scramble    String
+  a_time_ms   Int?
+  /// PLUS_TWO | DNF
+  a_penalty   String?
+  b_time_ms   Int?
+  b_penalty   String?
+  /// A | B | DRAW
+  winner      String
+  a_moves     Json?
+  b_moves     Json?
+  a_flags     String[] @default([])
+  b_flags     String[] @default([])
+  match       BattleMatch @relation(fields: [match_id], references: [id], onDelete: Cascade)
+
+  @@unique([match_id, index])
+  @@map("battle_round")
 }

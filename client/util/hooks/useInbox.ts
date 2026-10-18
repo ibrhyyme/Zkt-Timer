@@ -28,6 +28,13 @@ let cached: Summary = EMPTY;
 const subscribers = new Set<(s: Summary) => void>();
 let inFlight: Promise<void> | null = null;
 
+// Whose summary `cached` is and when it last came from the server. The nav remounts on
+// every route change (map_route.tsx gives each route its own key), and the socket keeps
+// the summary correct in between, so a remount inside this window does not ask again.
+const SUMMARY_MAX_AGE_MS = 60 * 1000;
+let cachedUserId: string | null = null;
+let fetchedAt = 0;
+
 function publish(next: Summary) {
 	cached = next;
 	subscribers.forEach((cb) => cb(next));
@@ -39,7 +46,10 @@ export function refreshInbox(): Promise<void> {
 	inFlight = gqlQueryTyped(InboxSummaryDocument, {}, {fetchPolicy: 'no-cache'})
 		.then((res) => {
 			const data = res?.data?.inboxSummary;
-			if (data) publish(data);
+			if (data) {
+				fetchedAt = Date.now();
+				publish(data);
+			}
 		})
 		.catch(() => {})
 		.finally(() => {
@@ -68,12 +78,22 @@ export function useInbox(): Summary {
 
 	useEffect(() => {
 		if (!me) {
+			cachedUserId = null;
+			fetchedAt = 0;
 			publish(EMPTY);
 			return;
 		}
 
 		subscribers.add(setSummary);
-		void refreshInbox();
+		if (cachedUserId !== me.id || Date.now() - fetchedAt > SUMMARY_MAX_AGE_MS) {
+			if (cachedUserId !== me.id) {
+				// Another account's counts must not show while the new answer is on its way.
+				cachedUserId = me.id;
+				fetchedAt = 0;
+				publish(EMPTY);
+			}
+			void refreshInbox();
+		}
 
 		const socket = socketClient();
 		const onChange = () => void refreshInbox();
@@ -203,6 +223,29 @@ export function useTypingIndicator(conversationId?: string): boolean {
 	return typing;
 }
 
+// Last known presence per user, shared by every list and kept across remounts: the inbox
+// panel remounts on every route change and asked for the same people each time. Socket
+// transitions update it while any list is mounted; the age limit covers the stretches
+// when none is and those events were missed.
+const PRESENCE_MAX_AGE_MS = 60 * 1000;
+const presenceCache = new Map<string, {online: boolean; ts: number}>();
+
+function knownPresence(ids: string[]): Set<string> | null {
+	const now = Date.now();
+	const online = new Set<string>();
+	for (const id of ids) {
+		const entry = presenceCache.get(id);
+		if (!entry || now - entry.ts > PRESENCE_MAX_AGE_MS) return null;
+		if (entry.online) online.add(id);
+	}
+	return online;
+}
+
+function rememberPresence(ids: string[], online: Set<string>) {
+	const ts = Date.now();
+	for (const id of ids) presenceCache.set(id, {online: online.has(id), ts});
+}
+
 /**
  * Who among `userIds` is online right now.
  *
@@ -214,7 +257,7 @@ export function useTypingIndicator(conversationId?: string): boolean {
  * someone who switched their own dot off, and the client never learns why.
  */
 export function useDmPresence(userIds: string[]): Set<string> {
-	const [online, setOnline] = useState<Set<string>>(new Set());
+	const [online, setOnline] = useState<Set<string>>(() => knownPresence(userIds) ?? new Set());
 	const fresh = useSiteConfig();
 	// Falls back to the last known value, stale or not. On a cold page load the fresh
 	// config has not arrived yet, and without this the request the switch exists to
@@ -241,17 +284,22 @@ export function useDmPresence(userIds: string[]): Set<string> {
 		const load = async () => {
 			try {
 				const res = await gqlQueryTyped(DmPresenceDocument, {userIds: ids}, {fetchPolicy: 'no-cache'});
-				if (!cancelled) setOnline(new Set((res?.data?.dmPresence as string[]) || []));
+				const next = new Set((res?.data?.dmPresence as string[]) || []);
+				rememberPresence(ids, next);
+				if (!cancelled) setOnline(next);
 			} catch {
 				if (!cancelled) setOnline(new Set());
 			}
 		};
 
-		void load();
+		const known = knownPresence(ids);
+		if (known) setOnline(known);
+		else void load();
 
 		const socket = socketClient();
 		const onPresence = (payload: {user_id: string; online: boolean}) => {
 			if (!payload?.user_id || !ids.includes(payload.user_id)) return;
+			presenceCache.set(payload.user_id, {online: payload.online, ts: Date.now()});
 			setOnline((prev) => {
 				const next = new Set(prev);
 				if (payload.online) next.add(payload.user_id);

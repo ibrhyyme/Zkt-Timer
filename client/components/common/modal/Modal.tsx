@@ -2,8 +2,8 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import CSS from 'csstype';
 import { useDispatch } from 'react-redux';
 import './Modal.scss';
-import { X } from 'phosphor-react';
 import { closeModal } from '../../../actions/general';
+import { CloseButton } from '../icon_button/IconButton';
 import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
 import { useSwipeBack } from '../../../util/hooks/useSwipeBack';
@@ -12,6 +12,14 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { isAndroidNative } from '../../../util/platform';
 
 const b = block('modal');
+
+// Open modals, oldest first. Escape closes only the newest one: modals stack (a solve card
+// over the solves list, a confirm over a form) and one key press is one step back.
+const openModals: symbol[] = [];
+
+// A list, menu or picker open inside the modal takes Escape first (Radix closes its own),
+// the modal waits for the next press.
+const OPEN_POPUP_SELECTOR = '[data-radix-popper-content-wrapper], [role="listbox"], [role="menu"]';
 
 export interface IModalProps {
 	onComplete?: (data?: any) => void;
@@ -83,6 +91,33 @@ export default function Modal(props: IModalProps) {
 		}
 	}
 
+	// Escape closes the modal the way its close button does. Not for a modal that turned the
+	// casual ways out off (no close button, or a backdrop that does not close it).
+	const escapeClosableRef = useRef(false);
+	escapeClosableRef.current = !hideCloseButton && !disableBackdropClick;
+	const clickCloseRef = useRef(clickClose);
+	clickCloseRef.current = clickClose;
+
+	// Mounted once: the place in the stack is the order the modals opened in.
+	useEffect(() => {
+		const token = Symbol('modal');
+		openModals.push(token);
+
+		function onKeyDown(event: KeyboardEvent) {
+			if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+			if (!escapeClosableRef.current || openModals[openModals.length - 1] !== token) return;
+			if (document.querySelector(OPEN_POPUP_SELECTOR)) return;
+			clickCloseRef.current();
+		}
+
+		document.addEventListener('keydown', onKeyDown);
+		return () => {
+			document.removeEventListener('keydown', onKeyDown);
+			const index = openModals.indexOf(token);
+			if (index !== -1) openModals.splice(index, 1);
+		};
+	}, []);
+
 	const { translateX: swipeX, progress: swipeProgress, phase: swipePhase } = useSwipeBack({
 		containerRef: modalRef,
 		onSwipeBack: clickClose,
@@ -138,14 +173,7 @@ export default function Modal(props: IModalProps) {
 			{closeButtonText}
 		</button>
 	) : (
-		<button
-			className={b('close-button')}
-			type="button"
-			onClick={clickClose}
-			aria-label="Kapat"
-		>
-			<X size={18} />
-		</button>
+		<CloseButton className={b('close-button')} onClick={clickClose} />
 	);
 
 	if (hideCloseButton) {
@@ -155,8 +183,10 @@ export default function Modal(props: IModalProps) {
 	return (
 		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet })} style={style} onClick={handleBackdropClick}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
-				{!isBottomSheet && <ModalHeader title={title} description={description} />}
+				{/* Close before the header: on phones it floats right and stays sticky, and a
+				    float only sits beside the content that follows it. */}
 				{!isBottomSheet && closeButton}
+				{!isBottomSheet && <ModalHeader title={title} description={description} />}
 				{React.isValidElement(children) && typeof (children as any).type !== 'string'
 					? React.cloneElement(children as any, {
 						onClose: clickClose,

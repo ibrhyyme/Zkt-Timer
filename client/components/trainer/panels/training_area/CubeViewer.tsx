@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import block from '../../../../styles/bem';
 import { getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, isLLCategory as isLLCategoryFn, isIsometricCategory as isIsometricCategoryFn, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
-import { getLLPattern, isLLPatternsLoaded } from '../../../../util/trainer/ll_patterns';
+import { getLLPattern, isLLPatternsLoaded, useLLPattern } from '../../../../util/trainer/ll_patterns';
 import { getIsometricPattern, isIsometricPatternsLoaded } from '../../../../util/trainer/isometric_patterns';
 import { getPuzzlePattern, isPuzzlePatternsLoaded } from '../../../../util/trainer/puzzle_patterns';
 import { getRemappedMask } from '../../../../util/trainer/stickering_remap';
@@ -45,7 +45,10 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 
 	// LL pattern (3x3) — override varsa (AUF'lu runtime pattern) onu kullan, yoksa JSON lookup
 	const llPatternsLoaded = isLLPatternsLoaded();
-	const llPattern = isLL ? (llPatternOverride ?? getLLPattern(algorithm)) : null;
+	const fileLLPattern = isLL ? (llPatternOverride ?? getLLPattern(algorithm)) : null;
+	// A case the pattern file lacks (newer categories) gets its pattern generated on the device.
+	const generatedLL = useLLPattern(algorithm, isLL && !fileLLPattern);
+	const llPattern = fileLLPattern ?? generatedLL.pattern;
 
 	// Puzzle pattern (2x2, 4x4, pyraminx, skewb, sq1)
 	const is2DPuzzle = is2DPatternCategory(category);
@@ -57,7 +60,7 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 	const use3D = isIsometric
 		? (isometricPatternsLoaded ? !isometricPattern : false)
 		: isLL
-			? (llPatternsLoaded ? !llPattern : false)
+			? (llPatternsLoaded ? !llPattern && !generatedLL.pending : false)
 			: is2DPuzzle
 				? (puzzlePatternsLoaded ? !puzzlePattern : false)
 				: true;

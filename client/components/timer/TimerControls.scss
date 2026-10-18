@@ -7,9 +7,22 @@
     padding: 0.5rem 1rem;
     gap: 0.5rem;
 
+    // Mobile: its own one-line card right above the modules, on the same surface
+    // as the module cards (tokens in styles/index.scss), so it reads over a timer
+    // background image (feedback 1.8-e/f). Side margin matches the dashboard's.
     &--mobile {
-        padding: 0.25rem 0.5rem;
+        flex: 0 0 auto;
+        margin: 0 0.5rem;
+        padding: 0 0.25rem;
         gap: 0.25rem;
+        background: var(--zt-surface);
+        border: 1px solid var(--zt-surface-border);
+        border-radius: 8px;
+    }
+
+    &--mobile &__left {
+        flex-wrap: nowrap;
+        min-width: 0;
     }
 
     &__left,
@@ -27,14 +40,20 @@
         flex-shrink: 0;
     }
 
-    // Prev/Next are icon-only "transparent" buttons on mobile (Button.scss's base
-    // height is 38px, under the ~44px touch-target guideline) sitting right below
-    // the smart cube grid, which can crowd them (see .mobile-smart-grid). Padding
-    // grows the tappable box; the icon itself stays the same visual size, and since
-    // the "transparent" theme has no visible fill, the bigger box does not look any
-    // bigger on screen.
-    &--mobile &__right .zt-common-button {
-        min-width: 44px;
-        min-height: 44px;
+    // Mobile: the row is one line exactly as tall as its buttons (36px; it was 45 when
+    // Önceki/Sonraki had 44px boxes), and the icons and labels are larger than the shared
+    // Button's 13px so they read at arm's length (owner, 2026-10-13: "the row is too tall,
+    // the buttons too small"). Each box fills the row's height, so the whole row stays the
+    // touch target. Önceki/Sonraki show their labels when the row has room for them
+    // (helpers/nav_label_fit.ts). Padding is 8px so Turkish still fits a 360px phone.
+    &--mobile .zt-common-button {
+        height: 36px;
+        padding: 0 8px;
+        font-size: 1rem;
+
+        svg {
+            width: 1.25em;
+            height: 1.25em;
+        }
     }
 }

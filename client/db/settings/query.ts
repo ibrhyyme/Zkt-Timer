@@ -5,6 +5,9 @@ import { APP_THEME_PRESETS } from '../../util/themes/theme_consts';
 import { MultiPhaseMethod } from '../../../shared/util/solve/multiphase';
 import { TILE_LIMITS } from '../../components/timer/tiles/layout';
 import type { TileMap } from '../../components/timer/tiles/layout';
+import { effectiveTimerType } from '../../components/timer/helpers/timer_type_catalog';
+import type { WiredBrand } from '../../components/timer/helpers/timer_type_catalog';
+import { getDeviceProfile } from '../../util/device-profile';
 import {
 	DEFAULT_NXN_COLORS,
 	DEFAULT_SQ1_COLORS,
@@ -47,7 +50,15 @@ export interface AllSettings {
 
 	// Local
 	haptic_feedback: boolean;
-	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual';
+	// 'magnet' is the Magnet Timer (native app only). What a stored value means on the current
+	// device is decided on read by timer_type_catalog.ts effectiveTimerType.
+	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual' | 'magnet';
+	/**
+	 * Which wired timer the desktop dropdown shows as checked. Both run on the StackMat engine
+	 * (timer_type 'stackmat'); the brand only picks the label. A platform setting (prefs blob),
+	 * so no schema change.
+	 */
+	wired_timer_brand: WiredBrand;
 	/**
 	 * Hold a keyboard Space release back for a moment, so a remote desktop or streaming
 	 * tool that forwards a held key's auto-repeat as keyup + keydown pairs cannot start
@@ -90,14 +101,6 @@ export interface AllSettings {
 	timer_time_size: number;
 	timer_scramble_size: number;
 	/**
-	 * Show the Pro timer background (image or live wallpaper) on this platform.
-	 *
-	 * A platform setting on purpose, not a global one: the whole point is that a live
-	 * wallpaper can be on at a desk and off on a phone, where it costs battery, and the
-	 * desktop_prefs / mobile_prefs split already gives that for free.
-	 */
-	timer_background_enabled: boolean;
-	/**
 	 * Sticker colours, one array per puzzle family, in the face order documented in
 	 * `util/cube_colors/palette.ts`. Every drawing surface reads these; the settings screen
 	 * under Colours is the only thing that writes them.
@@ -118,6 +121,12 @@ export interface AllSettings {
 	button_color: string;
 	timer_modules: TimerModuleType[];
 	mobile_timer_modules: TimerModuleType[];
+	/**
+	 * Average columns of the desktop solves grid, as window sizes ([5, 12] = ao5, ao12).
+	 * Platform setting (prefs blob), so no schema change. Read through
+	 * sanitizeHistoryColumns (modules/history/history_columns.ts).
+	 */
+	history_columns: number[];
 
 	hide_mobile_timer_footer: boolean;
 	timer_avg_main: string;
@@ -177,6 +186,14 @@ export interface AllSettings {
 	timer_scramble_size_user_default: number | null;
 	timer_time_size_user_default: number | null;
 	smart_cube_size_user_default: number | null;
+
+	/**
+	 * Algorithm trainer settings (Standard and Smart Cube modes) as one JSON blob, see
+	 * client/util/trainer/trainer_options_sync.ts. A GLOBAL setting with its own column, so a
+	 * toggle switched off on the desktop is off on the phone too. Null until the user first
+	 * changes a trainer setting.
+	 */
+	trainer_options: string | null;
 }
 
 const defaultSettings: AllSettings = {
@@ -205,6 +222,7 @@ const defaultSettings: AllSettings = {
 
 	haptic_feedback: true,
 	timer_type: 'keyboard',
+	wired_timer_brand: 'stackmat',
 	remote_input_compat: false,
 	timer_module_count: 3,
 	timer_layout: 'bottom',
@@ -228,10 +246,10 @@ const defaultSettings: AllSettings = {
 		TimerModuleType.HISTORY,
 		TimerModuleType.SCRAMBLE,
 	],
+	history_columns: [5, 12],
 
 	// Face orders are documented in util/cube_colors/palette.ts. Sourced from there rather
 	// than retyped, so a default only ever changes in one place.
-	timer_background_enabled: true,
 	cube_face_colors: DEFAULT_NXN_COLORS,
 	sq1_face_colors: DEFAULT_SQ1_COLORS,
 	clock_colors: DEFAULT_CLOCK_COLORS,
@@ -294,6 +312,8 @@ const defaultSettings: AllSettings = {
 	timer_scramble_size_user_default: null,
 	timer_time_size_user_default: null,
 	smart_cube_size_user_default: null,
+
+	trainer_options: null,
 };
 
 // Responsive default values for mobile devices
@@ -331,7 +351,12 @@ export function getDefaultSettings() {
 	return defaultSettings;
 }
 
-export function getSettings(): AllSettings {
+/**
+ * @param raw skip the per-device reading of timer_type (effectiveTimerType). Only the sync
+ *   layer passes it: the prefs blob must carry the stored value, or a tablet would overwrite
+ *   the desktop's wired timer and mobile web the app's Magnet Timer with 'keyboard'.
+ */
+export function getSettings(raw = false): AllSettings {
 	const settingsDb = getSettingsDb();
 	const settings: Partial<AllSettings> = {};
 
@@ -354,6 +379,12 @@ export function getSettings(): AllSettings {
 	// a stored QYtoys selection keeps working rather than falling back to keyboard.
 	if (settings.timer_type === ('qiyiwired' as AllSettings['timer_type'])) {
 		settings.timer_type = 'stackmat';
+		// A QYtoys selection from before the merge: keep showing it as the QiYi wired timer.
+		if (!settings.wired_timer_brand) settings.wired_timer_brand = 'qiyi';
+	}
+
+	if (!raw && settings.timer_type) {
+		settings.timer_type = effectiveTimerType(settings.timer_type, getDeviceProfile());
 	}
 
 	return settings as AllSettings;
@@ -375,6 +406,12 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 		id: key,
 	});
 
+	if (!result && key === 'wired_timer_brand') {
+		// A QYtoys selection from before the merge carries no brand: show it as the QiYi wired timer.
+		const stored: SettingValue = settingsDb.findOne({ id: 'timer_type' });
+		if (stored?.value === 'qiyiwired') return 'qiyi' as AllSettings[T];
+	}
+
 	if (!result) {
 		return defaultValue;
 	}
@@ -387,7 +424,12 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 
 	// Migration: 'qiyiwired' merged into 'stackmat' (same protocol, same device id).
 	if (key === 'timer_type' && result.value === 'qiyiwired') {
-		return 'stackmat' as AllSettings[T];
+		return effectiveTimerType('stackmat', getDeviceProfile()) as AllSettings[T];
+	}
+
+	// What the stored input means on this device (read only, never written back).
+	if (key === 'timer_type') {
+		return effectiveTimerType(result.value as AllSettings['timer_type'], getDeviceProfile()) as AllSettings[T];
 	}
 
 	return result?.value;
@@ -413,6 +455,7 @@ export const GLOBAL_SETTING_KEYS = new Set<keyof AllSettings>([
 	'scramble_subset',
 	'scramble_top_color',
 	'custom_cube_types',
+	'trainer_options',
 ]);
 
 // Device-local transient state — never synced to the server.
@@ -441,7 +484,8 @@ export function getPlatformPrefsKey(): 'desktop_prefs' | 'mobile_prefs' {
 // Collect the current values of all PLATFORM settings from LokiJS into a plain
 // object, ready to be JSON-stringified into desktop_prefs / mobile_prefs.
 export function collectPlatformPrefs(): Record<string, any> {
-	const all = getSettings();
+	// Raw: the stored timer_type, not what it means on this device (see getSettings).
+	const all = getSettings(true);
 	const prefs: Record<string, any> = {};
 	for (const key of Object.keys(all)) {
 		if (isPlatformSetting(key as keyof AllSettings)) {

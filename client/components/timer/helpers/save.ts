@@ -6,6 +6,23 @@ import { setTimerParam } from './params';
 import { Solve, SolveInput } from '../../../../server/schemas/Solve.schema';
 import { requestInAppReview } from '../../../util/native-plugins';
 import { normalizeWcaEventBucket } from '../../../../shared/solve';
+import { getCubeState, noteCubeSolve } from '../../../lib/cubes/store';
+import { getSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
+import { cubeIdForSolve, CubeStampSolve } from './cube_stamp';
+
+/**
+ * The physical cube a solve saved now is made with (design magnet-cubes 4.3): the connected
+ * smart cube for a smart solve, otherwise the main cube of the bucket's puzzle. Works offline
+ * from the local copy of My Cubes. null when there is none.
+ */
+export function activeCubeIdForSave(solve: CubeStampSolve): string | null {
+	try {
+		return cubeIdForSolve(solve, getCubeState(), getSmartCubeStore('smartBleDeviceId'));
+	} catch (e) {
+		// A stamp is never worth losing the solve over.
+		return null;
+	}
+}
 
 export function saveSolve(
 	context: ITimerContext,
@@ -47,10 +64,16 @@ export function saveSolve(
 		...overrides,
 	} as Solve;
 
+	// Room solves (onSolve) carry no cube (K-3). An explicit cube_id from the caller wins.
+	if (!onSolve && solveObject.cube_id === undefined) {
+		solveObject.cube_id = activeCubeIdForSave(solveObject);
+	}
+
 	if (onSolve) {
 		onSolve(solveObject);
 	} else {
 		createSolveDb(solveObject);
+		noteCubeSolve(solveObject.cube_id);
 	}
 
 	const newCount = context.sessionSolveCount + 1;

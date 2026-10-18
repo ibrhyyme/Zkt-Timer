@@ -14,8 +14,8 @@ const METHOD_LABEL: Record<RegistrationMethod, string> = {
 
 const METHOD_ACCOUNT_LABEL: Record<RegistrationMethod, string> = {
 	local: 'e-posta',
-	wca: 'WCA hesabi',
-	zkt: 'ZKT hesabi',
+	wca: 'WCA hesabı',
+	zkt: 'ZKT hesabı',
 };
 
 export default class NewUserSignupNotification extends Notification {
@@ -34,25 +34,25 @@ export default class NewUserSignupNotification extends Notification {
 
 	subject() {
 		if (this.pending) {
-			return `Kayit beklemede: ${this.input.triggeringUser.username}`;
+			return `Kayıt beklemede: ${this.input.triggeringUser.username}`;
 		}
-		return `Yeni uye: ${this.input.triggeringUser.username}`;
+		return `Yeni üye: ${this.input.triggeringUser.username}`;
 	}
 
 	inAppMessage() {
 		const method = METHOD_LABEL[this.registrationMethod] ?? METHOD_LABEL.local;
 		if (this.pending) {
-			return `${this.input.triggeringUser.username} kayit oldu, dogrulama bekleniyor (${method})`;
+			return `${this.input.triggeringUser.username} kayıt oldu, doğrulama bekleniyor (${method})`;
 		}
-		return `${this.input.triggeringUser.username} yeni uye oldu (${method})`;
+		return `${this.input.triggeringUser.username} yeni üye oldu (${method})`;
 	}
 
 	message() {
 		const method = METHOD_ACCOUNT_LABEL[this.registrationMethod] ?? METHOD_ACCOUNT_LABEL.local;
 		if (this.pending) {
-			return `${this.input.triggeringUser.username} kullanicisi ${method} ile kayit oldu, e-posta dogrulaması bekleniyor.`;
+			return `${this.input.triggeringUser.username} kullanıcısı ${method} ile kayıt oldu, e-posta doğrulaması bekleniyor.`;
 		}
-		return `${this.input.triggeringUser.username} kullanicisi ${method} ile Zkt Timer'a kayit oldu.`;
+		return `${this.input.triggeringUser.username} kullanıcısı ${method} ile Zkt Timer'a kayıt oldu.`;
 	}
 
 	icon() {
@@ -64,7 +64,7 @@ export default class NewUserSignupNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Kullanicilari goruntule';
+		return 'Kullanıcıları görüntüle';
 	}
 
 	categoryName() {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { gql } from '@apollo/client/core';
 import { gqlMutate } from '../../components/api';
-import { getSolveDb } from './init';
+import { getSolveCacheDb, getSolveDb } from './init';
 import { emitEvent } from '../../util/event_handler';
 import { clearSolveStatCache, clearSolveStatCacheForSession } from './stats/solves/caching';
 import { getStore } from '../../components/store';
@@ -21,13 +21,18 @@ import { toastInfo } from '../../util/toast';
 import i18n from '../../i18n/i18n';
 import { pickFields, SOLVE_INPUT_FIELDS, toCreateSolveInput, toSolveInput } from './solve-input';
 import { applyCreatedSolve, CREATED_SOLVE_SELECTION } from './apply-created';
-import { classifyReplayError } from '../../util/offline-replay';
+import { classifyReplayError, raceTimeout, SaveTimeoutError } from '../../util/offline-replay';
 import { requestQueueFlush } from '../../util/offline-sync';
 import { canWriteSync } from '../../lib/sync-gate';
 import { syncAnonSolveCount } from '../../util/anon-mode';
 import { addSolveTombstones } from '../../util/solve-tombstones';
 import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
 import { stripLokiJsMetadata } from '../lokijs';
+import { scheduleLocalStepRows } from './local-analysis';
+
+// A live save with no answer by then goes back to the queue (see raceTimeout). Same budget
+// the queue gives each replayed record.
+const LIVE_SAVE_TIMEOUT_MS = 20_000;
 
 let offlineToastShown = false;
 let queuedToastShown = false;
@@ -101,56 +106,89 @@ export async function createSolveDb(solveInput: Solve) {
 			{ inFlight: true }
 		);
 
-		try {
-			const result = await gqlMutate(query, { input: toCreateSolveInput(input, analysisMethod) });
+		const request = gqlMutate(query, { input: toCreateSolveInput(input, analysisMethod) });
+		const onCreated = async (result: any) => {
 			const queueId = await queued;
 			releaseInFlight(queueId);
 			if (queueId) {
 				await removeFromQueue(queueId);
 			}
 
-			if (applyCreatedSolve(solve.id, (result as any)?.data?.createSolve)) {
+			if (applyCreatedSolve(solve.id, result?.data?.createSolve)) {
 				// The steps arrive after the solve was scheduled for saving; on a slow
 				// connection after that save ran. Without this they lived only in memory.
 				void requestPersist();
 			}
+		};
+
+		try {
+			await onCreated(await raceTimeout(request, LIVE_SAVE_TIMEOUT_MS));
 		} catch (e) {
+			if (e instanceof SaveTimeoutError) {
+				// Given up waiting, not cancelled: if the answer still comes, take it. Sending
+				// the queued copy as well is harmless (a repeated create is answered as a success).
+				request.then(onCreated).catch(() => {});
+			}
+			// The server's breakdown is not coming now: work it out on the device so the
+			// solve card is complete offline. The server's answer replaces it on sync.
+			scheduleLocalStepRows(solve.id, analysisMethod);
 			// Already queued above: releasing it hands it to the next sync
 			releaseInFlight(await queued);
-			if (classifyReplayError('createSolve', e) === 'session_missing') {
+			const kind = classifyReplayError('createSolve', e);
+			if (kind === 'session_missing') {
 				// The session has not reached the server yet (opened without a connection,
 				// or a local default session). The queue sends the session first, then the
 				// solve; no reason to make the user wait for the next reconnect for that.
 				void requestQueueFlush('retry');
 			} else {
 				reportSaveFailure(e);
+				if (kind === 'halt') {
+					// Hand it to the queue now. With the network reported up but no data
+					// getting through, no network event will ever fire for it; the queue
+					// keeps re-trying on a timer until the server takes it.
+					void requestQueueFlush('retry');
+				}
 			}
 		}
+	} else {
+		// Signed out: nothing ever answers with a breakdown (a virtual cube solve, which is
+		// analysed for everyone, used to stay blank here for good).
+		scheduleLocalStepRows(solve.id, analysisMethod);
 	}
 }
 
-export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
+/**
+ * Resolves to whether the solve was removed. With `confirm_delete_solve` on it waits for
+ * the user's answer in the confirm modal, so a caller can act on the outcome (the solve
+ * card moves on to the next solve only after a real delete).
+ */
+export async function deleteSolveDb(solve: Solve, confirmed: boolean = false): Promise<boolean> {
 	const store = getStore();
 
 	const confirmDelete = getSetting('confirm_delete_solve');
 	if (confirmDelete && !confirmed) {
-		store.dispatch(
-			openModal(
-				<ConfirmModal
-					buttonText="Çözümü sil"
-					hideInput
-					triggerAction={() => deleteSolveDb(solve, true)}
-				/>,
-				{
-					title: 'Çözümü sil',
-					description: 'Bu çözümü silmek istediğinizden emin misiniz?',
-					closeButtonText: 'Bitti',
-					compact: true,
-					width: 420,
-				}
-			)
-		);
-		return;
+		return new Promise<boolean>((resolve) => {
+			store.dispatch(
+				openModal(
+					<ConfirmModal
+						buttonText={i18n.t('common.delete_solve')}
+						hideInput
+						triggerAction={async () => {
+							resolve(await deleteSolveDb(solve, true));
+						}}
+					/>,
+					{
+						title: i18n.t('common.delete_solve'),
+						description: i18n.t('common.delete_solve_confirm'),
+						closeButtonText: i18n.t('solve_info.done'),
+						compact: true,
+						width: 420,
+						// Backdrop, Escape, swipe back and the close button all land here
+						onClose: () => resolve(false),
+					}
+				)
+			);
+		});
 	}
 
 	const solveDb = getSolveDb();
@@ -161,7 +199,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 	// it: LokiJS locates the document by the `$loki` the copy happens to carry.
 	const stored = solveDb.findOne({ id: solve.id });
 	if (!stored) {
-		return;
+		return false;
 	}
 
 	// Taken before the removal, which strips LokiJS' own fields off the document. It is
@@ -181,6 +219,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 	refreshBucketLastSolve(solve);
 
 	void sendSolveDeleteToServer(solve.id);
+	return true;
 }
 
 /**
@@ -224,6 +263,8 @@ async function sendSolveDeleteToServer(id: string) {
 }
 
 export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, updateLocalDb = true) {
+	// Read before the update: the solve card may hand over the stored document itself.
+	const previousCubeId = solve.cube_id ?? null;
 	updateSolveTime(solve);
 	const solveDb = getSolveDb();
 
@@ -232,6 +273,10 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 			...solve,
 			...input,
 		});
+
+		if ('cube_id' in input && (input.cube_id ?? null) !== previousCubeId) {
+			clearCubeFilteredStats([previousCubeId, input.cube_id]);
+		}
 
 		postProcessDbUpdate(solve, false);
 	}
@@ -254,7 +299,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		const queued = addToQueue('updateSolve', variables, { inFlight: true });
 
 		try {
-			await gqlMutate(query, variables);
+			await raceTimeout(gqlMutate(query, variables), LIVE_SAVE_TIMEOUT_MS);
 			const queueId = await queued;
 			releaseInFlight(queueId);
 			if (queueId) {
@@ -263,8 +308,28 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		} catch (e) {
 			releaseInFlight(await queued);
 			reportSaveFailure(e);
+			if (classifyReplayError('updateSolve', e) === 'halt') {
+				// Same as a failed create: the queue re-tries it on its own timer.
+				void requestQueueFlush('retry');
+			}
 		}
 	}
+}
+
+/**
+ * Drops every cached stat filtered by one of these cubes (design magnet-cubes 8.3 b).
+ *
+ * A solve moved from cube A to cube B leaves both cubes' filtered PBs and averages wrong,
+ * and the bucket-based checks in postProcessDbUpdate cannot see it: a single PB cached for
+ * A is skipped because the solve no longer matches A's filter, and B's current average
+ * does not list the solve yet. Relabelling is rare, so clearing both cubes outright is cheap.
+ */
+export function clearCubeFilteredStats(cubeIds: ReadonlyArray<string | null | undefined>) {
+	const ids = new Set(cubeIds.filter((id): id is string => !!id));
+	if (!ids.size) return;
+	const cacheDb = getSolveCacheDb();
+	if (!cacheDb) return;
+	cacheDb.removeWhere((stat) => ids.has((stat.filterOptions as { cube_id?: string } | undefined)?.cube_id));
 }
 
 /**
@@ -325,14 +390,14 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		store.dispatch(
 			openModal(
 				<ConfirmModal
-					buttonText="Tümünü Sil"
+					buttonText={i18n.t('common.delete_all')}
 					hideInput
 					triggerAction={() => deleteAllSolvesInSessionDb(sessionId, true)}
 				/>,
 				{
-					title: 'Sezonu Temizle',
-					description: 'Bu sezondaki TÜM çözümleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-					closeButtonText: 'Bitti',
+					title: i18n.t('common.clear_season'),
+					description: i18n.t('common.clear_season_confirm'),
+					closeButtonText: i18n.t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}
@@ -380,14 +445,14 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 		store.dispatch(
 			openModal(
 				<ConfirmModal
-					buttonText="Seçilenleri Sil"
+					buttonText={i18n.t('common.delete_selected')}
 					hideInput
 					triggerAction={() => deleteMultipleSolvesDb(solves, true)}
 				/>,
 				{
-					title: 'Çözümleri Sil',
-					description: `Seçilen ${solves.length} çözümü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`,
-					closeButtonText: 'Bitti',
+					title: i18n.t('common.delete_solves'),
+					description: i18n.t('common.delete_solves_confirm', { count: solves.length }),
+					closeButtonText: i18n.t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}

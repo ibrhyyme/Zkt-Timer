@@ -1,6 +1,8 @@
-import {useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
+import {ReactReduxContext} from 'react-redux';
 import {gqlQueryTyped} from '../../components/api';
 import {SiteConfigDocument, SiteConfigQuery} from '../../@types/generated/graphql';
+import {SITE_CONFIG_SSR_KEY} from '../../../shared/site_config_ssr';
 
 export type SiteConfigData = SiteConfigQuery['siteConfig'];
 
@@ -10,8 +12,13 @@ let cachedConfig: {data: SiteConfigData; ts: number} | null = null;
 const subscribers = new Set<(data: SiteConfigData | null) => void>();
 
 // Last-known-good snapshot in localStorage: an offline boot must not leave every
-// FeatureGuard'ed page blank just because the config query can't run. Seeded at
-// module load with the original timestamp, so online TTL/freshness is unchanged.
+// FeatureGuard'ed page blank just because the config query can't run.
+//
+// It is an offline fallback only and never counts as fresh. It used to seed
+// `cachedConfig` with its original timestamp, so a reload within 30 s of the last fetch
+// took the snapshot as current and skipped the request: a flag switched off in between
+// (someone taken off an access list) stayed on screen over the server-rendered page
+// until the next poll.
 function readSnapshot(): {data: SiteConfigData; ts: number} | null {
 	try {
 		const raw = localStorage.getItem(SNAPSHOT_KEY);
@@ -32,20 +39,37 @@ function writeSnapshot(snap: {data: SiteConfigData; ts: number}): void {
 	}
 }
 
-if (typeof window !== 'undefined') {
-	cachedConfig = readSnapshot();
+const bootSnapshot: {data: SiteConfigData; ts: number} | null = typeof window !== 'undefined' ? readSnapshot() : null;
+
+// The config the server rendered this page with (server/services/site_config_ssr.ts). It
+// was read at request time, so on the client it counts as a fresh fetch: adopting it lets
+// the first frame match the server's markup and spares the request a page load used to
+// wait for. Adopted once; App remounts per route but the store, and with it the seed, does
+// not change after hydration.
+let ssrSeedAdopted = false;
+function adoptSsrSeed(seed: SiteConfigData | null | undefined): void {
+	if (ssrSeedAdopted || !seed || typeof window === 'undefined') return;
+	ssrSeedAdopted = true;
+	if (!cachedConfig) cachedConfig = {data: seed, ts: Date.now()};
+}
+
+function readSsrSeed(store: any): SiteConfigData | null {
+	try {
+		return store?.getState?.()?.ssr?.[SITE_CONFIG_SSR_KEY] ?? null;
+	} catch (e) {
+		return null;
+	}
 }
 
 function getCached(): SiteConfigData | null {
-	if (!cachedConfig) return null;
-	if (Date.now() - cachedConfig.ts > SITE_CONFIG_TTL) {
-		// Expired: offline, stale flags beat blank pages; online, force a refetch.
-		if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-			return cachedConfig.data;
-		}
-		return null;
+	if (cachedConfig && Date.now() - cachedConfig.ts <= SITE_CONFIG_TTL) {
+		return cachedConfig.data;
 	}
-	return cachedConfig.data;
+	// Missing or expired: offline, stale flags beat blank pages; online, force a refetch.
+	if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+		return (cachedConfig ?? bootSnapshot)?.data ?? null;
+	}
+	return null;
 }
 
 // Single in-flight request shared by initial loads, focus refreshes and the poller —
@@ -78,7 +102,7 @@ function requestConfig(): Promise<void> {
  * which respects the TTL and refetches.
  */
 export function getLastKnownSiteConfig(): SiteConfigData | null {
-	return cachedConfig?.data ?? null;
+	return (cachedConfig ?? bootSnapshot)?.data ?? null;
 }
 
 export function refreshSiteConfig() {
@@ -155,7 +179,16 @@ function detachGlobalPolling() {
 }
 
 export function useSiteConfig(): SiteConfigData | null {
-	const [config, setConfig] = useState<SiteConfigData | null>(() => getCached());
+	// Context rather than useSelector: the seed never changes after hydration, and the hook
+	// must keep working where no store is mounted.
+	const reduxContext = useContext(ReactReduxContext);
+	const [config, setConfig] = useState<SiteConfigData | null>(() => {
+		const seed = readSsrSeed(reduxContext?.store);
+		// Server: module state is shared by every request, so only the per-request seed counts.
+		if (typeof window === 'undefined') return seed;
+		adoptSsrSeed(seed);
+		return getCached();
+	});
 
 	useEffect(() => {
 		// Subscribe to global cache changes

@@ -5,10 +5,13 @@ import { fetchSessions } from '../../../../../db/sessions/query';
 import { parseZktTimerLegacyData } from './zkttimer_legacy';
 import { Solve } from '../../../../../../server/schemas/Solve.schema';
 import { normalizeBucketForImport } from './normalize-bucket';
+import { readExportedCubes } from './zkttimer_cubes';
 
 interface ZktTimerExportSchema {
 	solves: Solve[];
 	sessions: Session[];
+	/** My Cubes of the exporting account (exports made after cubes existed). */
+	cubes?: unknown;
 }
 
 export function parseZktTimerData(txt: string, context: IImportDataContext): ImportableData {
@@ -43,11 +46,13 @@ export function parseZktTimerData(txt: string, context: IImportDataContext): Imp
 		sessions.push(newSession);
 	}
 
-	const result = getUpdatedSolves(importedData.solves, oldNewSessionMap);
+	const fileCubes = readExportedCubes(importedData.cubes);
+	const result = getUpdatedSolves(importedData.solves, oldNewSessionMap, new Set(fileCubes.map((c) => c.id)));
 
 	return {
 		sessions,
 		solves: result.solves,
+		fileCubes: fileCubes.length ? fileCubes : undefined,
 		skippedSolveCount: result.skippedCount || undefined,
 		skippedCubeTypes: Object.keys(result.skippedTypes).length ? result.skippedTypes : undefined,
 	};
@@ -57,6 +62,8 @@ export function parseZktTimerData(txt: string, context: IImportDataContext): Imp
 // Bunun disindaki her sey (Prisma-only kolonlar: custom_scramble; relations: solve_method_steps,
 // top_solve, solve_views, smart_device, user; FK riski: smart_device_id, training_session_id;
 // server-managed: id, user_id, share_code, created_at, bulk, from_timer; Loki: $loki, meta) drop edilir.
+// cube_id: the FILE's cube id at this point. ReviewImport maps it onto the target account
+// (zkttimer_cubes.ts linkSolvesToCubes) before anything is sent; unmapped ids become null.
 const IMPORTABLE_SOLVE_FIELDS = [
 	'time',
 	'raw_time',
@@ -77,6 +84,7 @@ const IMPORTABLE_SOLVE_FIELDS = [
 	'smart_pick_up_time',
 	'inspection_time',
 	'phase_splits',
+	'cube_id',
 ] as const;
 
 function pickImportableFields(solve: Solve): Solve {
@@ -88,7 +96,7 @@ function pickImportableFields(solve: Solve): Solve {
 	return out as Solve;
 }
 
-function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, string>) {
+function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, string>, fileCubeIds: ReadonlySet<string>) {
 	const newSolves: Solve[] = [];
 	let skippedCount = 0;
 	const skippedTypes: Record<string, number> = {};
@@ -102,6 +110,10 @@ function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, stri
 		}
 
 		const solve = pickImportableFields(rawSolve);
+		// Only an id the file describes can be mapped; anything else never leaves this parser.
+		if (solve.cube_id !== undefined && !(solve.cube_id && fileCubeIds.has(solve.cube_id))) {
+			delete solve.cube_id;
+		}
 
 		if (trainerName) {
 			delete solve.session_id;

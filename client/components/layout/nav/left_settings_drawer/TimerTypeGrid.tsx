@@ -1,110 +1,62 @@
-// Sol drawer Timer Tab — 7 timer turu icin 2-col kareli grid (sag drawer ile ayni
-// gorsel pattern). Aktif kart yesil solid bg + beyaz text/ikon.
+// Left drawer Timer tab: the timer inputs as a 2-column grid of 8 cells (7 inputs + Quick
+// Settings), the same visual pattern as the right drawer. The active card is solid green.
 //
-// Logic [TimerTypePicker.tsx](../../timer/header_control/TimerTypePicker.tsx) ile 1:1
-// (selectTimerType / openStackMatPicker / toggleManualEntry), sadece UI grid.
+// Order, names, icons and locks come from helpers/useTimerChoices.tsx, shared with the
+// desktop dropdown (TimerTypePicker), so the two can no longer list the inputs differently.
 //
-// Drawer kapanmasi icin kart tikladiktan sonra window.dispatchEvent('timerInteractionStart')
-// — EdgeDrawer bu event'i zaten dinliyor (timer baslarsa kapanir). Sol drawer'da
-// "secim yapildi → kapan" sinyali olarak ayni event'i kullaniyoruz.
+// A card tap dispatches 'timerInteractionStart': EdgeDrawer already closes on it (a timer
+// start closes it too), so the drawer reads it as "a choice was made".
 
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useDispatch} from 'react-redux';
 import {Link} from 'react-router-dom';
-import {
-	Bluetooth,
-	CaretLeft,
-	Crown,
-	Cube,
-	Gear,
-	Keyboard,
-	Lock,
-	Microphone,
-	PencilSimple,
-} from 'phosphor-react';
-import {setSetting, setSettings} from '../../../../db/settings/update';
-import {useSettings} from '../../../../util/hooks/useSettings';
-import {useGeneral} from '../../../../util/hooks/useGeneral';
-import {useMe} from '../../../../util/hooks/useMe';
-import {openModal} from '../../../../actions/general';
-import StackMatPicker, { getAudioPickerModalProps } from '../../../settings/stackmat_picker/StackMatPicker';
-import {AllSettings} from '../../../../db/settings/query';
-import {
-	normalizeAllowedTimerTypes,
-	timerTypeSupportsBucket,
-	timerTypeUnsupportedReason,
-} from '../../../timer/helpers/timer_type_support';
-import {PRO_GATED_TIMER_TYPES} from '../../../timer/helpers/pro_timer_types';
-import {isPro} from '../../../../lib/pro';
+import {CaretLeft, Crown, Gear, Lock} from 'phosphor-react';
+import {useTimerChoices, TimerChoiceOption} from '../../../timer/helpers/useTimerChoices';
 import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
 import GoalsTab from '../../../quick-controls/tabs/GoalsTab';
 import block from '../../../../styles/bem';
 import './TimerTypeGrid.scss';
 
-// Sag drawer ile ayni BEM class'larini reuse — yesil aktif renk EdgeDrawer.scss'te
-// side-aware kuralla otomatik geliyor (.drawer--left __item--active = success-color).
+// Same BEM classes as the right drawer: the green active colour comes from EdgeDrawer.scss
+// (.drawer--left __item--active = success-color).
 const itemBlock = block('edge-drawer');
 const b = block('timer-type-grid');
-
-type TypeKey = AllSettings['timer_type'] | 'manual';
-
-interface TimerOption {
-	typeKey: TypeKey;
-	label: string;
-	icon: React.ReactNode;
-	isActive: boolean;
-	disabled: boolean;
-	proGated: boolean;
-	smartUnsupported: boolean;
-	notAllowed: boolean;
-	/** Bulmacanin bu girdiyi neden desteklemedigini anlatan i18n anahtari. */
-	unsupportedReason: string | null;
-}
 
 const ICON_SIZE = 24;
 
 interface Props {
-	// Oda modu: izin verilen timer turleri (host belirler). undefined ise tum turler acik.
+	// Room: the input types the host allows. undefined: every input is open.
 	allowedTimerTypes?: string[];
-	// Oda modu: smart cube + GAN/QiYi timer icin Pro abonelik gerekli.
+	// Room: smart cube and the GAN/QiYi timers need Pro.
 	requireProForSmart?: boolean;
-	// ExtrasTab'a forward — multi-phase + recognition split satirlari gizli.
+	// Forwarded to ExtrasTab: multi-phase and recognition split rows hidden.
 	hideSmartCubeFeatures?: boolean;
-	// ExtrasTab'a forward — mobile module slot'lari gizli.
+	// Forwarded to ExtrasTab (no longer read there).
 	hideMobileModules?: boolean;
-	// ExtrasTab'a forward — slam-to-stop satiri gizli (oda akisi KeyWatcher kullanmaz).
+	// Forwarded to ExtrasTab: slam-to-stop hidden (the room does not stop through KeyWatcher).
 	hideSlamStop?: boolean;
-}
-
-interface TimerOptionExt extends TimerOption {
-	notAllowed: boolean;
+	// Room: the room's puzzle decides which inputs fit (see useTimerChoices).
+	puzzle?: {cubeType: string; scrambleSubset?: string | null};
 }
 
 export default function TimerTypeGrid({
-	allowedTimerTypes: rawAllowed,
+	allowedTimerTypes,
 	requireProForSmart,
 	hideSmartCubeFeatures,
 	hideMobileModules,
 	hideSlamStop,
+	puzzle,
 }: Props) {
 	const {t} = useTranslation();
-	const dispatch = useDispatch();
-	const me = useMe();
 
-	// StackMat ve QYtoys birlesmeden once acilmis odalar hala 'qiyiwired' saklıyor.
-	const allowedTimerTypes = normalizeAllowedTimerTypes(rawAllowed);
-
-	// Drawer ic-icine gecisli sayfa: 'grid' = 8-kart, 'extras' = ExtrasTab/GoalsTab paneli
+	// 'grid' = the 8 cards, 'extras' = the Quick Settings / Goals panel inside the drawer.
 	const [view, setView] = useState<'grid' | 'extras'>('grid');
-	// Extras view ic-sekme: 'extras' = Hizli Ayarlar (ExtrasTab), 'goals' = Hedefler (GoalsTab).
-	// Masaustu SettingsDropdown'daki Extras/Hedefler tab switcher'in mobil karsiligi.
+	// Inner tab of the extras view: Quick Settings (ExtrasTab) or Goals (GoalsTab).
 	const [extrasTab, setExtrasTab] = useState<'extras' | 'goals'>('extras');
 
-	// Drawer kapanirsa view'i sifirla (kullanici tekrar acsa once grid gozuksun).
-	// Extras ic-sekmeyi de 'extras'a al — tekrar acildiginda Hizli Ayarlar'da baslasin.
-	// Iki sinyal: (a) timerInteractionStart — kart seciminden/timer baslangicindan,
-	// (b) edgeDrawerClosed — backdrop tikla / swipe close / EdgeDrawer setOpen(false).
+	// Drawer closed: next time it opens on the grid and on Quick Settings. Two signals:
+	// timerInteractionStart (a card tap or a timer start) and edgeDrawerClosed (backdrop,
+	// swipe, EdgeDrawer setOpen(false)).
 	useEffect(() => {
 		const reset = () => {
 			setView('grid');
@@ -118,130 +70,15 @@ export default function TimerTypeGrid({
 		};
 	}, []);
 
-	const timerType = useSettings('timer_type');
-	const manualEntry = useSettings('manual_entry');
-	const cubeType = useSettings('cube_type');
-	const scrambleSubset = useSettings('scramble_subset');
-	const mobileMode = useGeneral('mobile_mode');
+	const {options, choose} = useTimerChoices({layout: 'grid', allowedTimerTypes, requireProForSmart, puzzle});
 
-	// Hangi girdiyi hangi bulmaca destekliyor: tek tablo, timer_type_support.ts.
-	const smartSupported = timerTypeSupportsBucket('smart', cubeType, scrambleSubset);
-	const virtualSupported = timerTypeSupportsBucket('virtual', cubeType, scrambleSubset);
-	const userIsPro = isPro(me);
-
-	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'smartUnsupported' | 'notAllowed' | 'unsupportedReason'>[] = [
-		{
-			typeKey: 'keyboard',
-			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
-			icon: <Keyboard weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'keyboard' && !manualEntry,
-		},
-		{
-			typeKey: 'manual',
-			label: t('quick_controls.manual_entry'),
-			icon: <PencilSimple weight="bold" size={ICON_SIZE} />,
-			isActive: manualEntry,
-		},
-		{
-			typeKey: 'virtual',
-			label: t('quick_controls.virtual_cube'),
-			icon: <Cube weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'virtual' && !manualEntry && virtualSupported,
-		},
-		{
-			typeKey: 'smart',
-			label: t('quick_controls.smart_cube'),
-			icon: <Cube weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'smart' && !manualEntry && smartSupported,
-		},
-		{
-			typeKey: 'gantimer',
-			// "GAN Akilli Timer" kart icin uzun — sag drawer label boyutuna kompakt
-			label: 'GAN Timer',
-			icon: <Bluetooth weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'gantimer' && !manualEntry,
-		},
-		{
-			typeKey: 'qiyitimer',
-			label: 'QiYi Timer',
-			icon: <Bluetooth weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'qiyitimer' && !manualEntry,
-		},
-		{
-			typeKey: 'stackmat',
-			label: t('quick_controls.wired_timer'),
-			icon: <Microphone weight="bold" size={ICON_SIZE} />,
-			isActive: timerType === 'stackmat' && !manualEntry,
-		},
-	];
-
-	// Pro-gating: timer sayfasi (oda DEGIL) prop'suz cagrilir → `requireProForSmart` undefined/false,
-	// Pro badge gostermez. Oda modunda (requireProForSmart=true) Pro olmayan kullanici icin
-	// smart/gantimer/qiyitimer kartlari disable + Crown badge.
-	const isProGated = !!requireProForSmart && !userIsPro;
-
-	const options: TimerOption[] = baseOptions.map((opt) => {
-		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
-		// 'manual' bir mod, timer_type degil — bulmaca kisitina tabi degil.
-		const unsupportedReason =
-			opt.typeKey === 'manual'
-				? null
-				: timerTypeUnsupportedReason(opt.typeKey, cubeType, scrambleSubset);
-		const smartUnsupported = !!unsupportedReason;
-		// Oda host'unun izin verdigi timer turleri disindaki kartlar disable + kirmizi Lock badge.
-		// `allowedTimerTypes` undefined/null veya bos array ise filter atlanir (tum kartlar acik).
-		const notAllowed =
-			!!allowedTimerTypes && allowedTimerTypes.length > 0 && !allowedTimerTypes.includes(opt.typeKey);
-		const disabled = proGated || smartUnsupported || notAllowed;
-		return {...opt, disabled, proGated, smartUnsupported, notAllowed, unsupportedReason};
-	});
-
-	// One write: both keys live in the same platform prefs blob, which the server
-	// overwrites rather than merges, so two calls race and the loser's value comes
-	// back on the next sync.
-	function selectTimerType(newTimerType: AllSettings['timer_type']) {
-		setSettings({manual_entry: false, timer_type: newTimerType});
-	}
-
-	function openStackMatPicker() {
-		const { title, description } = getAudioPickerModalProps(t);
-		dispatch(openModal(
-			<StackMatPicker />,
-			{
-				width: 400,
-				compact: true,
-				title,
-				description,
-				closeButtonText: t('solve_info.done'),
-			},
-		));
-	}
-
-	function toggleManualEntry() {
-		// Turning manual entry on also forces the keyboard input; both go out together
-		// for the same reason as selectTimerType above.
-		if (!manualEntry) {
-			setSettings({timer_type: 'keyboard', manual_entry: true});
-		} else {
-			setSetting('manual_entry', false);
-		}
-	}
-
-	function handleSelect(opt: TimerOption) {
+	function handleSelect(opt: TimerChoiceOption) {
+		// A Pro-locked Magnet Timer is tappable: choose() opens the Pro dialog and the drawer
+		// stays where it is underneath it.
+		const applied = choose(opt.key);
+		if (!applied && opt.proGated) return;
 		if (opt.disabled) return;
-
-		switch (opt.typeKey) {
-			case 'stackmat':
-				openStackMatPicker();
-				break;
-			case 'manual':
-				toggleManualEntry();
-				break;
-			default:
-				selectTimerType(opt.typeKey as AllSettings['timer_type']);
-		}
-
-		// Drawer'i kapat — EdgeDrawer timerInteractionStart event'inde setOpen(false) yapiyor.
+		// Close the drawer (EdgeDrawer closes on timerInteractionStart).
 		window.dispatchEvent(new Event('timerInteractionStart'));
 	}
 
@@ -252,14 +89,17 @@ export default function TimerTypeGrid({
 	if (view === 'extras') {
 		return (
 			<>
+				{/* A small back button in the top-left corner and the two tabs on one line next to
+				    it. The full-size back button used to push the tabs right until "Hızlı Ayarlar"
+				    broke into two lines. */}
 				<header className={b('extras-header')}>
 					<button
 						type="button"
 						className={b('extras-back')}
 						onClick={() => setView('grid')}
-						aria-label="Geri"
+						aria-label={t('quick_controls.back')}
 					>
-						<CaretLeft weight="bold" size={18} />
+						<CaretLeft weight="bold" size={14} />
 					</button>
 					<div className={b('extras-tabs')}>
 						<button
@@ -306,12 +146,12 @@ export default function TimerTypeGrid({
 		);
 	}
 
-	// === GRID VIEW (8 kart: 7 timer turu + Hizli Ayarlar) ===
+	// === GRID VIEW (8 cells: 7 inputs + Quick Settings) ===
 	return (
 		<>
 			{options.map((opt) => (
 				<button
-					key={opt.typeKey}
+					key={opt.key}
 					type="button"
 					className={[
 						itemBlock('item', {active: opt.isActive}),
@@ -320,8 +160,10 @@ export default function TimerTypeGrid({
 					onClick={() => handleSelect(opt)}
 					disabled={opt.disabled}
 				>
-					<div className={itemBlock('item-icon')}>{opt.icon}</div>
+					<div className={itemBlock('item-icon')}>{opt.icon(ICON_SIZE)}</div>
 					<span className={itemBlock('item-label')}>{opt.label}</span>
+
+					{opt.beta && <span className={b('beta')}>{t('quick_controls.beta')}</span>}
 
 					{opt.proGated && (
 						<span className={b('badge', {pro: true})} aria-label="Pro">
@@ -348,7 +190,7 @@ export default function TimerTypeGrid({
 				</button>
 			))}
 
-			{/* 8. kare — Hizli Ayarlar. Drawer ic-icine gecisli (view='extras' state'i) */}
+			{/* 8th cell: Quick Settings, opened inside the drawer (view 'extras'). */}
 			<button
 				type="button"
 				className={[itemBlock('item'), b('card'), b('settings-trigger')].join(' ')}

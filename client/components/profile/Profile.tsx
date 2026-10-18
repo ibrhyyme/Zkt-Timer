@@ -5,7 +5,7 @@ import './Profile.scss';
 import { CircleWavyCheck, Plus, YoutubeLogo, TwitchLogo, ShareNetwork } from 'phosphor-react';
 import { shareContent } from '../../util/native-plugins';
 import { gql } from '@apollo/client';
-import { gqlMutate, gqlQuery } from '../api';
+import { gqlMutate, gqlMutateTyped, gqlQuery } from '../api';
 import { PROFILE_FRAGMENT } from '../../util/graphql/fragments';
 import PbCard from './pb_card/PbCard';
 import PFP from './pfp/PFP';
@@ -17,13 +17,14 @@ import WCA from './wca/WCA';
 import Avatar from '../common/avatar/Avatar';
 import { getStorageURL, resourceUri } from '../../util/storage';
 import { getApiBase } from '../../util/api-base';
-import { Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve } from '../../@types/generated/graphql';
+import { Image, Profile as ProfileSchema, PublicUserAccount, RecordProfileViewDocument, TopAverage, TopSolve } from '../../@types/generated/graphql';
 import { safeExternalUrl } from '../../../shared/util/url';
 import { useRouteMatch } from 'react-router-dom';
 import { useSsr } from '../../util/hooks/useSsr';
 import block from '../../styles/bem';
 import { useMe } from '../../util/hooks/useMe';
 import { useGeneral } from '../../util/hooks/useGeneral';
+import { useZktBadge } from '../../util/hooks/useZktBadge';
 import { getMe } from '../../actions/account';
 import AvatarDropdown from '../common/avatar/avatar_dropdown/AvatarDropdown';
 import { openModal } from '../../actions/general';
@@ -36,6 +37,7 @@ import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import WcaSummary from './wca_summary/WcaSummary';
 import ZktSummary from './zkt_summary/ZktSummary';
+import BattleRatingLine from './battle_rating/BattleRatingLine';
 import ZktPbCard from './zkt_pb_card/ZktPbCard';
 import ManageZktData from './manage_zkt_data/ManageZktData';
 import WcaResults from './wca_results/WcaResults';
@@ -204,6 +206,7 @@ function ProfileContent() {
 
 	const me = useMe();
 	const mobileMode = useGeneral('mobile_mode');
+	const zktBadge = useZktBadge();
 	const [ssrProfile, setSsrProfile] = useSsr<IProfileData>(matchUsername);
 	const [loading, setLoading] = useState(!ssrProfile);
 	const [profileData, setProfileData] = useState<IProfileData>(ssrProfile);
@@ -247,6 +250,14 @@ function ProfileContent() {
 			loadWcaRecords();
 			loadZktProfile();
 		}
+	}, [user?.id]);
+
+	// The view is counted from the browser, with the visitor's own session (the server skips
+	// the owner). The profile query no longer counts it: on a full page load that query runs
+	// in the SSR prefetch, without the visitor's cookie.
+	useEffect(() => {
+		if (!user?.username) return;
+		gqlMutateTyped(RecordProfileViewDocument, {username: user.username}).catch(() => {});
 	}, [user?.id]);
 
 	async function loadZktProfile() {
@@ -559,7 +570,7 @@ function ProfileContent() {
 							onClick={() => setRecordsTab('zkt')}
 						>
 							<img
-								src={resourceUri('/images/logos/zkt_logo.png')}
+								src={zktBadge}
 								alt="ZKT"
 								className={b('tab-wca-logo')}
 							/>
@@ -770,6 +781,9 @@ function ProfileContent() {
 
 					{/* ZKT Summary Card — same shape, other federation */}
 					{zktProfile && <ZktSummary profile={zktProfile} />}
+
+					{/* Online Battle rating line, only for a player with a leaderboard place */}
+					{user.id && <BattleRatingLine userId={user.id} />}
 
 					{/* Stats Bar */}
 					<div className={b('stats-bar', { mobile: mobileMode })}>

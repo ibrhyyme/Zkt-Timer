@@ -6,7 +6,7 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Link} from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import {X} from 'phosphor-react';
 import './AnonBanner.scss';
 import block from '../../../styles/bem';
@@ -23,6 +23,10 @@ const DISMISSED_AT_KEY = 'zkt_anon_banner_dismissed_at';
 // at stake.
 const REMIND_AFTER_SOLVES = 10;
 
+// Pages that show someone else's solve or profile. "Your solves are on this device"
+// means nothing to a visitor who arrived from a shared link.
+const FOREIGN_CONTENT_PATHS = ['/solve/', '/user/'];
+
 function readDismissedAt(): number {
 	try {
 		const raw = getLocalStorage(DISMISSED_AT_KEY);
@@ -37,6 +41,7 @@ function readDismissedAt(): number {
 export default function AnonBanner() {
 	const {t} = useTranslation();
 	const me = useMe();
+	const {pathname} = useLocation();
 
 	const [count, setCount] = useState(0);
 	const [dismissedAt, setDismissedAt] = useState(-1);
@@ -53,7 +58,8 @@ export default function AnonBanner() {
 	});
 
 	const dismissed = dismissedAt >= 0 && count < dismissedAt + REMIND_AFTER_SOLVES;
-	const visible = !me && !dismissed;
+	const onForeignContent = FOREIGN_CONTENT_PATHS.some((p) => pathname.startsWith(p));
+	const visible = !me && !dismissed && !onForeignContent;
 
 	// Publish the strip's height so the pages that size themselves against the viewport
 	// can subtract it. The timer is a full-height layout (`100vh - nav`), and without

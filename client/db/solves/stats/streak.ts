@@ -1,4 +1,3 @@
-import {mean} from 'lodash';
 import dayjs from 'dayjs';
 import {fetchSolves, FilterSolvesOptions} from '../query';
 
@@ -10,7 +9,6 @@ interface SolveStreak {
 	highestStreakSolves: number;
 	highestStartDate: Date;
 	highestEndDate: Date;
-	avgSolvesPerSession: number;
 }
 
 export function getSolveStreak(
@@ -76,8 +74,6 @@ export function getSolveStreak(
 	let tempStreakStart = new Date(start);
 	let tempStreakEnd = new Date(end);
 
-	const solvesPerSession = [];
-
 	while (end.getTime() > firstSolveTime) {
 		const dayCount = dayCounts.get(dayjs(start).format('YYYY-M-D')) || 0;
 		tempStreakSolves += dayCount;
@@ -110,10 +106,6 @@ export function getSolveStreak(
 				highestEndDate = new Date(tempStreakEnd);
 			}
 
-			if (tempStreak > 0) {
-				solvesPerSession.push(tempStreakSolves);
-			}
-
 			tempStreak = 0;
 			tempStreakSolves = 0;
 			tempStreakStart = null;
@@ -132,6 +124,5 @@ export function getSolveStreak(
 		highestStreakSolves,
 		highestStartDate,
 		highestEndDate,
-		avgSolvesPerSession: solvesPerSession.length ? Math.floor(mean(solvesPerSession)) : 0,
 	};
 }

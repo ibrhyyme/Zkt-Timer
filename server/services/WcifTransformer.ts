@@ -120,6 +120,8 @@ export interface ScheduleAssignment {
 	roomColor: string | null;
 	venueName: string;
 	stationNumber: number | null;
+	/** ZKT Dual Chance round only (set by applyZktDualChance). */
+	chance?: number | null;
 }
 
 export interface ScheduleDay {
@@ -139,6 +141,8 @@ export interface CompetitorAssignment {
 	endTime: string | null;
 	stationNumber: number | null;
 	roomName: string | null;
+	/** ZKT Dual Chance round only (set by applyZktDualChance). */
+	chance?: number | null;
 }
 
 
@@ -187,6 +191,8 @@ export interface GroupEntry {
 	competitors: GroupCompetitor[];
 	startTime: string | null;
 	endTime: string | null;
+	/** ZKT Dual Chance round only (set by applyZktDualChance). */
+	chance?: number | null;
 }
 
 export interface RoundEntry {
@@ -197,6 +203,8 @@ export interface RoundEntry {
 	cutoffAttempts: number | null;
 	advancementType: string | null;
 	advancementLevel: number | null;
+	/** ZKT Dual Chance round (set by applyZktDualChance). */
+	dualChance?: boolean;
 	groups: GroupEntry[];
 }
 
@@ -463,7 +471,12 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 		}
 	}
 
-	// Find group activities from schedule
+	// Find group activities from schedule. One round can sit under several
+	// top-level activities with the same code: a round run on two stages has one
+	// per room, and a ZKT Dual Chance round has one per chance ("3x3x3, Şans 1" /
+	// "Şans 2"). Their groups are collected together; keeping only the last one
+	// dropped every group of the others, so a Dual Chance round listed only its
+	// chance 2 groups.
 	const groupActivities = new Map<string, {activity: ActivityInfo; children: ActivityInfo[]}>();
 
 	for (const venue of wcifData.schedule?.venues || []) {
@@ -477,10 +490,15 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 						return info;
 					}).filter(Boolean);
 
-					groupActivities.set(key, {
-						activity: activityMap.get(activity.id),
-						children,
-					});
+					const existing = groupActivities.get(key);
+					if (existing) {
+						existing.children.push(...children);
+					} else {
+						groupActivities.set(key, {
+							activity: activityMap.get(activity.id),
+							children,
+						});
+					}
 				}
 			}
 		}
@@ -550,6 +568,17 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 							seedResult: seedMap?.get(p.registrantId) || null,
 						}))
 						.sort((a, b) => a.name.localeCompare(b.name));
+
+					// The same group can run in two rooms at once (stations split
+					// across stages); it is still one group.
+					const same = groups.find((g) => g.groupNumber === parsed.groupNumber);
+					if (same) {
+						same.competitors.push(...competitors);
+						same.competitors.sort((a, b) => a.name.localeCompare(b.name));
+						if (child.startTime && (!same.startTime || child.startTime < same.startTime)) same.startTime = child.startTime;
+						if (child.endTime && (!same.endTime || child.endTime > same.endTime)) same.endTime = child.endTime;
+						continue;
+					}
 
 					groups.push({
 						groupNumber: parsed.groupNumber,

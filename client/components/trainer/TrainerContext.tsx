@@ -1,4 +1,4 @@
-import React, {createContext, useContext, useReducer, useEffect, ReactNode} from 'react';
+import React, {createContext, useContext, useReducer, useEffect, useRef, useCallback, ReactNode} from 'react';
 import {useLocation} from 'react-router-dom';
 import type {
 	TrainerSessionState,
@@ -7,45 +7,97 @@ import type {
 	TrainerOptions,
 	TrainerMode,
 	TrainerView,
-	CheckedAlgorithm,
-	SmartPhase,
 } from './types';
-import {algToId} from '../../util/trainer/algorithm_engine';
-import {parseTrainerPath} from '../../util/trainer/url/trainer_url';
-import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
+import {parseTrainerPath, parseTrainerSearch, trainerViewForPath} from '../../util/trainer/url/trainer_url';
+import {createTrainerState, trainerReducer} from './trainer_reducer';
+import {filterForMode, checkedKey} from '../../util/trainer/set_queue';
+import {parseStudyModeParam, resolveStudyMode, smartModeAllowed} from '../../util/trainer/study_mode';
+import {isPro, isProEnabled} from '../../lib/pro';
 import {getSmartCubeManager} from '../../util/smart_cube/connection_manager';
+import {getMe} from '../store';
+import {getSetting} from '../../db/settings/query';
+import {getSettingsDb} from '../../db/settings/init';
+import {setSetting} from '../../db/settings/update';
+import {setLocalSettingValue} from '../../db/settings/local';
+import {gqlQueryTyped} from '../api';
+import {TrainerOptionsSettingDocument} from '../../@types/generated/graphql';
+import {
+	DEFAULT_TRAINER_OPTIONS,
+	LEGACY_TRAINER_OPTIONS_KEY,
+	parseTrainerOptionsBlob,
+	resolveTrainerOptions,
+	sameTrainerOptions,
+	serializeTrainerOptions,
+	trainerOptionsDeviceKey,
+} from '../../util/trainer/trainer_options_sync';
 
-const DEFAULT_OPTIONS: TrainerOptions = {
-	randomOrder: true,
-	prioritizeSlow: false,
-	prioritizeFailed: false,
-	selectLearning: false,
-	randomizeAUF: true,
-	autoLearnEnabled: true,
-	autoLearnThreshold: 5,
-	cubeSize: 280,
-	wakeLockEnabled: true,
-	flashingError: true,
-	showCaseName: true,
-	whiteOnBottom: false,
-	showAllBleDevices: false,
-	backView: 'none',
-	topFace: 'U',
-	frontFace: 'F',
-};
+// Trainer settings persist in two places (see util/trainer/trainer_options_sync.ts): a device
+// copy in localStorage and the GLOBAL `trainer_options` setting on the server, shared by every
+// device. The newer copy wins.
+
+function readDeviceCopy(): string | null {
+	if (typeof window === 'undefined') return null;
+	try {
+		return (
+			localStorage.getItem(trainerOptionsDeviceKey(getMe()?.id)) ??
+			// Before server sync the trainer kept one unversioned copy here. Read it so an
+			// existing user's settings carry over (and get uploaded) instead of resetting.
+			localStorage.getItem(LEGACY_TRAINER_OPTIONS_KEY)
+		);
+	} catch {
+		return null;
+	}
+}
+
+function writeDeviceCopy(blob: string) {
+	try {
+		localStorage.setItem(trainerOptionsDeviceKey(getMe()?.id), blob);
+	} catch {
+		// Storage full or blocked: the server copy still carries the change.
+	}
+}
+
+function readServerCopy(): string | null {
+	try {
+		return getSetting('trainer_options');
+	} catch {
+		return null;
+	}
+}
+
+// Stores a blob that came FROM the server in the local settings store without writing it back.
+function storeServerCopyLocally(blob: string) {
+	try {
+		const row = getSettingsDb()?.findOne({id: 'trainer_options'});
+		if (row) {
+			row.value = blob;
+			getSettingsDb().update(row);
+		}
+		setLocalSettingValue('trainer_options', blob);
+	} catch {
+		// The device copy written alongside is enough to keep the value.
+	}
+}
+
+async function fetchServerCopy(): Promise<string | null | undefined> {
+	try {
+		const res = await gqlQueryTyped(TrainerOptionsSettingDocument, {}, {fetchPolicy: 'no-cache'});
+		return res.data?.settings?.trainer_options ?? null;
+	} catch {
+		// Offline: keep what this device has. undefined means "unknown", not "empty".
+		return undefined;
+	}
+}
 
 function loadOptions(): TrainerOptions {
 	// SSR guard: /trainer landing is public and server-rendered; localStorage is
 	// undefined there. loadMode() already guards — keep this consistent.
-	if (typeof window === 'undefined') return DEFAULT_OPTIONS;
-	try {
-		const raw = localStorage.getItem('trainer_options');
-		if (raw) return {...DEFAULT_OPTIONS, ...JSON.parse(raw)};
-	} catch {
-		// ignore
-	}
-	return DEFAULT_OPTIONS;
+	if (typeof window === 'undefined') return {...DEFAULT_TRAINER_OPTIONS};
+	return resolveTrainerOptions(readDeviceCopy(), readServerCopy()).options;
 }
+
+// Slider drags fire a change per step; the server gets the value once the hand stops.
+const SERVER_PUSH_DELAY_MS = 800;
 
 function loadMode(): TrainerMode | null {
 	if (typeof window === 'undefined') return null;
@@ -58,353 +110,58 @@ function loadMode(): TrainerMode | null {
 	return null;
 }
 
-const SMART_DEFAULTS = {
-	smartConnected: false,
-	smartConnecting: false,
-	smartScanning: false,
-	smartScanError: null as string | null,
-	smartBattery: null as number | null,
-	smartPhase: 'idle' as SmartPhase,
-	matchedMoveCount: 0,
-	totalExpectedMoves: 0,
-	badAlg: [] as string[],
-	showCameraPad: false,
-};
-
 const savedMode = loadMode();
 
-const initialState: TrainerSessionState = {
-	view: savedMode ? 'selection' : 'landing',
+// Context default only (a consumer outside the provider); the provider builds its own from the URL.
+const initialState: TrainerSessionState = createTrainerState(loadOptions(), {
 	mode: savedMode,
-	selectedCategory: '',
-	selectedSubsets: [],
-	checkedAlgorithms: [],
-	algorithmQueue: [],
-	currentAlgorithm: null,
-	timerState: 'IDLE',
-	currentTimerValue: 0,
-	userAlg: [],
-	originalUserAlg: [],
-	isMoveMasked: false,
-	options: loadOptions(),
-	...SMART_DEFAULTS,
-};
+	view: savedMode ? 'selection' : 'landing',
+});
+
+function smartAllowedForMe(): boolean {
+	return smartModeAllowed(isProEnabled(), isPro(getMe() || undefined));
+}
 
 /**
- * Derives initial mode/view from URL path so a deep-linked mount lands directly in the
- * correct view (CLIENT-only first-mount optimization — the trainer is gated behind
- * app_loaded + FeatureGuard and never server-renders, so this is not an SSR/hydration concern).
- * Deep-link to a mode: on cold start, selection/alg not set, starts from 'selection'
- * (training/sub-view handled by URL sync hook + sub-contexts). bare/unknown path
- * → landing (mode picker); the last-used mode is intentionally NOT restored — /trainer
- * always shows the mode-picker, matching the nav button's expectation.
+ * Derives initial mode/view from the URL so a deep-linked mount lands directly in the correct
+ * view (CLIENT-only first-mount optimization: the trainer is gated behind app_loaded +
+ * FeatureGuard and never server-renders, so this is not an SSR/hydration concern).
+ *
+ * - Algorithm Trainer and set paths (`/trainer/algorithms...`, `/trainer/sets...`, `/trainer/community`, legacy
+ *   `/trainer/standard|smart`): the study mode comes from `?mode=`, else the remembered
+ *   `lastMode`, and Smart falls back to Standard when locked (2.3).
+ * - A cold `/trainer/algorithms/train?set=<code>` opens on the set loading state (6.1).
+ * - Other entries (recognition, efficiency, ollcp) start from their own root view.
+ * - `/trainer/modes`: the Trainers page. Bare/unknown path: the hub. The last-used mode is
+ *   intentionally NOT restored there.
  */
-function resolveInitialNav(pathname: string): {mode: TrainerMode | null; view: TrainerView} {
-	const {mode} = parseTrainerPath(pathname);
-	if (mode) return {mode, view: 'selection'};
-	return {mode: null, view: 'landing'};
+function resolveInitialNav(
+	pathname: string,
+	search: string,
+	options: TrainerOptions
+): {mode: TrainerMode | null; view: TrainerView; pendingSetCode: string | null} {
+	const parsed = parseTrainerPath(pathname);
+	if (parsed.entry === 'algorithms' || parsed.entry === 'sets' || parsed.entry === 'community') {
+		const requested = parseStudyModeParam(search) ?? (parsed.legacyMode || null);
+		const mode = resolveStudyMode(requested, options.lastMode, smartAllowedForMe());
+		const view = trainerViewForPath(parsed);
+		if (view === 'training') {
+			const code = parseTrainerSearch(search).set;
+			if (code) return {mode, view: 'training', pendingSetCode: code};
+			// No set and no selection survives a reload: start from the selector (the URL hook
+			// then rewrites the address, as before).
+			return {mode, view: 'selection', pendingSetCode: null};
+		}
+		return {mode, view: view || 'selection', pendingSetCode: null};
+	}
+	if (parsed.mode) return {mode: parsed.mode, view: 'selection', pendingSetCode: null};
+	if (parsed.entry === 'modes') return {mode: null, view: 'modes', pendingSetCode: null};
+	return {mode: null, view: 'landing', pendingSetCode: null};
 }
 
-function makeInitialState(pathname: string): TrainerSessionState {
-	const {mode, view} = resolveInitialNav(pathname);
-	return {...initialState, mode, view, options: loadOptions()};
-}
-
-function buildQueue(algorithms: CheckedAlgorithm[], options: TrainerOptions): CheckedAlgorithm[] {
-	let queue = [...algorithms];
-
-	// Prioritize Failed (primary) + Prioritize Slow (tie-break) combined in single sort
-	if (options.prioritizeFailed || options.prioritizeSlow) {
-		queue.sort((a, b) => {
-			if (options.prioritizeFailed) {
-				const failDiff =
-					getFailCount(algToId(b.algorithm)) - getFailCount(algToId(a.algorithm));
-				if (failDiff !== 0) return failDiff;
-			}
-			if (options.prioritizeSlow) {
-				const aTime = getBestTime(algToId(a.algorithm)) ?? Infinity;
-				const bTime = getBestTime(algToId(b.algorithm)) ?? Infinity;
-				return bTime - aTime;
-			}
-			return 0;
-		});
-	}
-
-	// Random Order: shuffle (overrides sort-based prioritization)
-	if (options.randomOrder) {
-		for (let i = queue.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[queue[i], queue[j]] = [queue[j], queue[i]];
-		}
-	}
-
-	return queue;
-}
-
-const SMART_RESET = {
-	smartPhase: 'idle' as SmartPhase,
-	matchedMoveCount: 0,
-	totalExpectedMoves: 0,
-	badAlg: [] as string[],
-};
-
-function trainerReducer(state: TrainerSessionState, action: TrainerAction): TrainerSessionState {
-	switch (action.type) {
-		case 'SET_CATEGORY':
-			return {
-				...state,
-				selectedCategory: action.payload,
-				selectedSubsets: [],
-				checkedAlgorithms: [],
-				algorithmQueue: [],
-				currentAlgorithm: null,
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-			};
-
-		case 'SET_SUBSETS':
-			return {...state, selectedSubsets: action.payload};
-
-		case 'SET_CHECKED_ALGORITHMS': {
-			const queue = buildQueue(action.payload, state.options);
-			return {
-				...state,
-				checkedAlgorithms: action.payload,
-				algorithmQueue: queue,
-				currentAlgorithm: queue[0] || null,
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-			};
-		}
-
-		case 'ADD_CHECKED_ALGORITHM': {
-			const updated = [...state.checkedAlgorithms, action.payload];
-			const queue = buildQueue(updated, state.options);
-			return {
-				...state,
-				checkedAlgorithms: updated,
-				algorithmQueue: queue,
-				currentAlgorithm: state.currentAlgorithm || queue[0] || null,
-			};
-		}
-
-		case 'REMOVE_CHECKED_ALGORITHM': {
-			const updated = state.checkedAlgorithms.filter((a) => a.algorithm !== action.payload);
-			const queue = buildQueue(updated, state.options);
-			const current =
-				state.currentAlgorithm?.algorithm === action.payload
-					? queue[0] || null
-					: state.currentAlgorithm;
-			return {
-				...state,
-				checkedAlgorithms: updated,
-				algorithmQueue: queue,
-				currentAlgorithm: current,
-			};
-		}
-
-		case 'SET_CURRENT_ALGORITHM':
-			return {
-				...state,
-				currentAlgorithm: action.payload,
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-				...SMART_RESET,
-			};
-
-		case 'SET_ALGORITHM_QUEUE':
-			return {...state, algorithmQueue: action.payload};
-
-		case 'SET_TIMER_STATE':
-			return {...state, timerState: action.payload};
-
-		case 'SET_TIMER_VALUE':
-			return {...state, currentTimerValue: action.payload};
-
-		case 'SET_USER_ALG':
-			return {...state, userAlg: action.payload};
-
-		case 'SET_ORIGINAL_USER_ALG':
-			return {...state, originalUserAlg: action.payload};
-
-		case 'SET_MOVE_MASKED':
-			return {...state, isMoveMasked: action.payload};
-
-		case 'SET_MODE':
-			localStorage.setItem('trainer_mode', action.payload);
-			return {
-				...state,
-				mode: action.payload,
-				view: 'selection',
-			};
-
-		case 'SET_VIEW':
-			if (action.payload === 'landing') {
-				try { localStorage.removeItem('trainer_mode'); } catch {}
-				return {
-					...state,
-					view: 'landing',
-					mode: null,
-					selectedCategory: '',
-					selectedSubsets: [],
-					currentAlgorithm: null,
-					checkedAlgorithms: [],
-					algorithmQueue: [],
-					timerState: 'IDLE',
-					currentTimerValue: 0,
-					userAlg: [],
-					originalUserAlg: [],
-					badAlg: [],
-					...SMART_RESET,
-				};
-			}
-			if (action.payload === 'selection') {
-				return {
-					...state,
-					view: 'selection',
-					currentAlgorithm: null,
-					checkedAlgorithms: [],
-					algorithmQueue: [],
-					timerState: 'IDLE',
-					currentTimerValue: 0,
-					userAlg: [],
-					originalUserAlg: [],
-					badAlg: [],
-					...SMART_RESET,
-				};
-			}
-			return {...state, view: action.payload};
-
-		case 'SET_OPTIONS': {
-			const newOptions = {...state.options, ...action.payload};
-			localStorage.setItem('trainer_options', JSON.stringify(newOptions));
-			const newQueue = buildQueue(state.checkedAlgorithms, newOptions);
-			return {...state, options: newOptions, algorithmQueue: newQueue};
-		}
-
-		case 'RESET_TRAINING':
-			return {
-				...state,
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-			};
-
-		case 'SWAP_ALGORITHM': {
-			const {oldAlg, newAlg} = action.payload;
-			return {
-				...state,
-				currentAlgorithm: state.currentAlgorithm?.algorithm === oldAlg
-					? {...state.currentAlgorithm, algorithm: newAlg}
-					: state.currentAlgorithm,
-				checkedAlgorithms: state.checkedAlgorithms.map((a) =>
-					a.algorithm === oldAlg ? {...a, algorithm: newAlg} : a
-				),
-				algorithmQueue: state.algorithmQueue.map((a) =>
-					a.algorithm === oldAlg ? {...a, algorithm: newAlg} : a
-				),
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-				...SMART_RESET,
-			};
-		}
-
-		case 'ADVANCE_ALGORITHM': {
-			// Single card: repeat same algorithm (no queue rebuild, no cycling risk)
-			// Create new reference with spread — needed to trigger smart cube useEffect
-			if (state.algorithmQueue.length <= 1) {
-				return {
-					...state,
-					currentAlgorithm: state.currentAlgorithm ? {...state.currentAlgorithm} : null,
-					timerState: 'IDLE',
-					currentTimerValue: 0,
-					...SMART_RESET,
-				};
-			}
-
-			const currentIdx = state.algorithmQueue.findIndex(
-				(a) => a.algorithm === state.currentAlgorithm?.algorithm
-			);
-			let nextIdx = currentIdx + 1;
-			if (nextIdx >= state.algorithmQueue.length) {
-				// Rebuild queue
-				const queue = buildQueue(state.checkedAlgorithms, state.options);
-				return {
-					...state,
-					algorithmQueue: queue,
-					currentAlgorithm: queue[0] ? {...queue[0]} : null,
-					timerState: 'IDLE',
-					currentTimerValue: 0,
-					...SMART_RESET,
-				};
-			}
-			return {
-				...state,
-				currentAlgorithm: {...state.algorithmQueue[nextIdx]},
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-				...SMART_RESET,
-			};
-		}
-
-		case 'PREVIOUS_ALGORITHM': {
-			const prevIdx = state.algorithmQueue.findIndex(
-				(a) => a.algorithm === state.currentAlgorithm?.algorithm
-			);
-			if (prevIdx <= 0) {
-				// At queue start, wrap to end
-				const last = state.algorithmQueue[state.algorithmQueue.length - 1];
-				return {
-					...state,
-					currentAlgorithm: last ? {...last} : null,
-					timerState: 'IDLE',
-					currentTimerValue: 0,
-					...SMART_RESET,
-				};
-			}
-			return {
-				...state,
-				currentAlgorithm: {...state.algorithmQueue[prevIdx - 1]},
-				timerState: 'IDLE',
-				currentTimerValue: 0,
-				...SMART_RESET,
-			};
-		}
-
-		// Smart Cube Actions
-		case 'SMART_CONNECTION':
-			return {
-				...state,
-				...(action.payload.scanning !== undefined && {smartScanning: action.payload.scanning}),
-				...(action.payload.connecting !== undefined && {smartConnecting: action.payload.connecting}),
-				...(action.payload.connected !== undefined && {smartConnected: action.payload.connected}),
-				...(action.payload.scanError !== undefined && {smartScanError: action.payload.scanError}),
-				...(action.payload.battery !== undefined && {smartBattery: action.payload.battery}),
-			};
-
-		case 'SMART_SET_PHASE':
-			return {...state, smartPhase: action.payload};
-
-		case 'SET_MATCHED_MOVE_COUNT':
-			return {...state, matchedMoveCount: action.payload};
-
-		case 'SET_TOTAL_EXPECTED_MOVES':
-			return {...state, totalExpectedMoves: action.payload};
-
-		case 'SET_BAD_ALG':
-			return {...state, badAlg: action.payload};
-
-		case 'SMART_DISCONNECT':
-			return {
-				...state,
-				...SMART_DEFAULTS,
-			};
-
-		case 'SET_CAMERA_PAD':
-			return {...state, showCameraPad: action.payload};
-
-		default:
-			return state;
-	}
+function makeInitialState(location: {pathname: string; search: string}): TrainerSessionState {
+	const options = loadOptions();
+	return createTrainerState(options, resolveInitialNav(location.pathname, location.search, options));
 }
 
 const TrainerContext = createContext<TrainerContextType>({
@@ -425,7 +182,116 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 	// (client-only first-mount optimization; trainer is gated behind app_loaded/FeatureGuard and
 	// never server-renders — not an SSR/hydration concern).
 	const location = useLocation();
-	const [state, dispatch] = useReducer(trainerReducer, location.pathname, makeInitialState);
+	const [state, dispatch] = useReducer(trainerReducer, location, makeInitialState);
+
+	// --- Trainer settings persistence ---
+	// The options last written to (or read from) storage, with their change time. A state change
+	// that matches it is a load, not an edit, and is not written back.
+	const syncedRef = useRef<{options: TrainerOptions; ts: number} | null>(null);
+	const pendingBlobRef = useRef<string | null>(null);
+	const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const flushServerPush = useCallback(() => {
+		if (pushTimerRef.current !== null) {
+			clearTimeout(pushTimerRef.current);
+			pushTimerRef.current = null;
+		}
+		const blob = pendingBlobRef.current;
+		pendingBlobRef.current = null;
+		// setSetting updates the local settings store and, for a logged-in user, the server.
+		// Offline it fails quietly; the newer device copy re-uploads it on the next visit.
+		if (blob) setSetting('trainer_options', blob);
+	}, []);
+
+	const scheduleServerPush = useCallback((blob: string) => {
+		pendingBlobRef.current = blob;
+		if (pushTimerRef.current !== null) clearTimeout(pushTimerRef.current);
+		pushTimerRef.current = setTimeout(flushServerPush, SERVER_PUSH_DELAY_MS);
+	}, [flushServerPush]);
+
+	// Mount: remember what was loaded, upload a device copy the server has not seen, then read
+	// the server fresh, since another device may have changed the settings after this app booted.
+	useEffect(() => {
+		const resolved = resolveTrainerOptions(readDeviceCopy(), readServerCopy());
+		syncedRef.current = {options: state.options, ts: resolved.ts};
+		const loggedIn = !!getMe();
+		if (resolved.pushLocal) {
+			const blob = serializeTrainerOptions(resolved.options, resolved.ts);
+			writeDeviceCopy(blob);
+			// Logged in: the upload waits for the fresh server read below. The settings store
+			// may be days old (the app only reads settings at boot), so uploading now could
+			// replace a newer value another device wrote meanwhile if that read is slower than
+			// the push delay.
+			if (!loggedIn) scheduleServerPush(blob);
+		}
+
+		if (!loggedIn) return;
+		let cancelled = false;
+		fetchServerCopy().then((remoteRaw) => {
+			if (cancelled || remoteRaw === undefined) return;
+			const synced = syncedRef.current;
+			if (!synced) return;
+			const remote = parseTrainerOptionsBlob(remoteRaw);
+			if (remote && remote.ts > synced.ts) {
+				// Nothing older than the server copy may be uploaded after this point.
+				if (pushTimerRef.current !== null) clearTimeout(pushTimerRef.current);
+				pushTimerRef.current = null;
+				pendingBlobRef.current = null;
+				syncedRef.current = {options: remote.options, ts: remote.ts};
+				const blob = serializeTrainerOptions(remote.options, remote.ts);
+				writeDeviceCopy(blob);
+				storeServerCopyLocally(blob);
+				dispatch({type: 'SET_OPTIONS', payload: remote.options});
+			} else if (
+				// ts 0 is a legacy device copy (pre sync); it is uploaded only when the server has none.
+				(synced.ts > 0 || resolved.pushLocal) &&
+				(!remote || (synced.ts > remote.ts && !sameTrainerOptions(synced.options, remote.options)))
+			) {
+				scheduleServerPush(serializeTrainerOptions(synced.options, synced.ts));
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+		// Mount only: state.options here is the value makeInitialState just loaded.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Every edit (settings modal, selection screen orientation, select all) lands here.
+	useEffect(() => {
+		const synced = syncedRef.current;
+		if (!synced || sameTrainerOptions(state.options, synced.options)) return;
+		const ts = Date.now();
+		syncedRef.current = {options: state.options, ts};
+		const blob = serializeTrainerOptions(state.options, ts);
+		writeDeviceCopy(blob);
+		scheduleServerPush(blob);
+	}, [state.options, scheduleServerPush]);
+
+	// Set study: the cards follow the study mode (trainer-sets 6.5). Smart Cube runs only the 3x3
+	// rows; switching back to Standard brings the others back. The rule is filterForMode; the
+	// mode switch itself (SET_STUDY_MODE) leaves the queue alone.
+	useEffect(() => {
+		const set = state.activeSet;
+		if (!set) return;
+		const cards = filterForMode(set.items, state.mode);
+		const current = state.checkedAlgorithms;
+		const same =
+			cards.length === current.length && cards.every((card, i) => checkedKey(card) === checkedKey(current[i]));
+		if (!same) dispatch({type: 'SET_STUDY_ROWS', payload: cards});
+	}, [state.mode, state.activeSet, state.checkedAlgorithms]);
+
+	// Leaving the trainer or backgrounding the app sends a waiting change right away.
+	useEffect(() => {
+		const onVisibility = () => {
+			if (document.visibilityState === 'hidden') flushServerPush();
+		};
+		document.addEventListener('visibilitychange', onVisibility);
+		return () => {
+			document.removeEventListener('visibilitychange', onVisibility);
+			flushServerPush();
+		};
+	}, [flushServerPush]);
 
 	// The trainer no longer owns a Connect instance. Every surface shares the app-level
 	// manager, so a cube paired on the timer is already live when the trainer opens, and

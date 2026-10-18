@@ -39,9 +39,9 @@ export type StartBlockReason =
 export function startBlockReason(g: StartGuardInput): StartBlockReason | null {
 	if (g.testMode) return 'test_mode';
 	if (!g.visible) return 'hidden';
-	// 'keyboard' is the touch/keyboard timer. Every other type (smart cube, virtual cube,
-	// StackMat, GAN, QiYi) owns its own start.
-	if (g.timerType !== 'keyboard') return 'timer_type';
+	// Only the Magnet Timer is started by the magnet. Every other type (touch, smart cube,
+	// virtual cube, StackMat, GAN, QiYi) owns its own start.
+	if (g.timerType !== 'magnet') return 'timer_type';
 	if (g.manualEntry) return 'manual_entry';
 	if (g.inModal) return 'in_modal';
 	if (g.matchMode) return 'match_mode';

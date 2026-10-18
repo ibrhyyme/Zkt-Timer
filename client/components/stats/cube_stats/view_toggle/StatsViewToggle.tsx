@@ -1,4 +1,5 @@
 import React from 'react';
+import {formatInteger} from '../../../../util/locale_format';
 import {useTranslation} from 'react-i18next';
 import {Timer, Cube, Bluetooth} from 'phosphor-react';
 import './StatsViewToggle.scss';
@@ -15,12 +16,9 @@ interface Props {
 	smartCount: number;
 }
 
-function formatCount(n: number): string {
-	return n.toLocaleString();
-}
-
 export default function StatsViewToggle({view, onChange, allCount, smartCount}: Props) {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
+	const formatCount = (n: number) => formatInteger(n, i18n.language);
 
 	return (
 		<div className={b()} data-mode={view}>

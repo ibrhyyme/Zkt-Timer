@@ -21,11 +21,11 @@ export default class SupportTicketReplyNotification extends Notification {
 	}
 
 	inAppMessage() {
-		return `"${this.ticketSubject}" konulu talebine yanit yazildi`;
+		return `"${this.ticketSubject}" konulu talebine yanıt yazıldı`;
 	}
 
 	message() {
-		return `Destek talebine bir yanit yazildi: "${this.ticketSubject}"`;
+		return `Destek talebine bir yanıt yazıldı: "${this.ticketSubject}"`;
 	}
 
 	icon() {
@@ -39,7 +39,7 @@ export default class SupportTicketReplyNotification extends Notification {
 	}
 
 	linkText() {
-		return 'Destek taleplerini gor';
+		return 'Destek taleplerini gör';
 	}
 
 	categoryName() {

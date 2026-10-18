@@ -7,12 +7,25 @@
 	overflow-x: hidden;
 	width: 100%;
 	max-width: 100vw;
-	height: calc(100dvh - var(--nav-h));
+	// The page content around the shell has the wrapper padding (and the safe areas) on top and
+	// bottom, and signed out the anon banner sits above it: all of it comes off the height, or the
+	// page grows past the screen and the shell's bottom bar (the set picker's "Add") falls off.
+	--trainer-shell-gap: calc(
+		2 * var(--wrapper-padding) + var(--safe-area-inset-top) + var(--safe-area-inset-bottom) + var(--anon-banner-h, 0px)
+	);
+	height: calc(100dvh - var(--nav-h) - var(--trainer-shell-gap));
 	touch-action: pan-y;
 	overscroll-behavior: contain;
 
+	@include bp-down($bp-lg) {
+		--trainer-shell-gap: calc(
+			2 * var(--wrapper-padding-mobile) + var(--safe-area-inset-top) + var(--safe-area-inset-bottom) +
+				var(--anon-banner-h, 0px)
+		);
+	}
+
 	@include bp-down($bp-md) {
-		height: 100dvh;
+		height: calc(100dvh - var(--trainer-shell-gap));
 	}
 
 	// ==================== Layout ====================
@@ -28,7 +41,9 @@
 
 	&__training-layout {
 		display: grid;
-		grid-template-columns: 1fr 280px;
+		// minmax(0, ...): a plain 1fr never gets narrower than its content, so a large cube
+		// size or a long move list would widen the center and push the stats panel off screen.
+		grid-template-columns: minmax(0, 1fr) 280px;
 		gap: 1rem;
 		padding: 0.75rem;
 		flex: 1;
@@ -50,214 +65,6 @@
 		&--right {
 			@include dark-glass(0.4, 8px, 0.05);
 			border-radius: 12px;
-		}
-	}
-
-	// ==================== Toolbar ====================
-	&__toolbar {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid rgba(var(--text-color), 0.05);
-	}
-
-	&__toolbar-left,
-	&__toolbar-right {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	&__toolbar-btn {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 36px;
-		height: 36px;
-		border-radius: 8px;
-		border: none;
-		background: rgba(var(--button-color), 0.3);
-		color: rgb(var(--text-color));
-		cursor: pointer;
-		transition: background 0.2s;
-
-		&:hover {
-			background: rgba(var(--button-color), 0.6);
-		}
-
-		&--active {
-			background: rgba(var(--primary-color), 0.3);
-			color: rgb(var(--primary-color));
-
-			&:hover {
-				background: rgba(var(--primary-color), 0.5);
-			}
-		}
-	}
-
-	&__toolbar-ble {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.85rem;
-		border-radius: 8px;
-		border: 1px solid rgba(var(--primary-color), 0.3);
-		background: rgba(var(--primary-color), 0.12);
-		color: rgb(var(--primary-color));
-		cursor: pointer;
-		font-size: 0.82rem;
-		font-weight: 600;
-		transition: all 0.2s;
-
-		&:hover {
-			background: rgba(var(--primary-color), 0.22);
-			border-color: rgba(var(--primary-color), 0.5);
-		}
-
-		&--connected {
-			border-color: rgba(var(--error-color), 0.3);
-			background: rgba(var(--error-color), 0.12);
-			color: rgb(var(--error-color));
-
-			&:hover {
-				background: rgba(var(--error-color), 0.22);
-				border-color: rgba(var(--error-color), 0.5);
-			}
-		}
-
-		&--busy {
-			opacity: 0.7;
-			cursor: wait;
-		}
-
-		&:disabled {
-			cursor: wait;
-		}
-	}
-
-	&__toolbar-ble-label {
-		white-space: nowrap;
-	}
-
-	&__toolbar-back {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.75rem;
-		border-radius: 8px;
-		border: none;
-		background: rgba(var(--button-color), 0.3);
-		color: rgb(var(--text-color));
-		cursor: pointer;
-		font-size: 0.85rem;
-		font-weight: 500;
-		transition: background 0.2s;
-
-		&:hover {
-			background: rgba(var(--button-color), 0.6);
-		}
-	}
-
-	&__toolbar-battery {
-		display: flex;
-		align-items: center;
-		gap: 0.2rem;
-		font-size: 0.75rem;
-		font-family: monospace;
-		color: rgba(var(--text-color), 0.6);
-	}
-
-	&__connect-btn {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.75rem;
-		border-radius: 8px;
-		border: none;
-		background: rgba(36, 107, 253, 0.15);
-		color: rgb(36, 107, 253);
-		cursor: pointer;
-		font-size: 0.8rem;
-		font-weight: 500;
-		transition: background 0.2s;
-		white-space: nowrap;
-
-		&:hover {
-			background: rgba(36, 107, 253, 0.3);
-		}
-
-		&--scanning,
-		&--connecting {
-			color: orange;
-		}
-
-		&--connected {
-			background: rgba(var(--primary-color), 0.2);
-			color: rgb(var(--primary-color));
-
-			&:hover {
-				background: rgba(var(--primary-color), 0.4);
-			}
-		}
-	}
-
-	&__connect-info {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		position: relative;
-	}
-
-	&__connect-dots {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 28px;
-		height: 28px;
-		border-radius: 50%;
-		border: none;
-		background: rgba(var(--button-color), 0.3);
-		color: rgb(var(--text-color));
-		cursor: pointer;
-		transition: background 0.2s;
-
-		&:hover {
-			background: rgba(var(--button-color), 0.6);
-		}
-	}
-
-	&__connect-dropdown {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		margin-top: 4px;
-		background: rgba(var(--module-color), 0.95);
-		backdrop-filter: blur(10px);
-		border-radius: 8px;
-		border: 1px solid rgba(var(--text-color), 0.1);
-		padding: 0.25rem 0;
-		min-width: 160px;
-		z-index: 100;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	}
-
-	&__connect-dropdown-item {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		width: 100%;
-		padding: 0.5rem 0.75rem;
-		border: none;
-		background: none;
-		color: rgb(var(--text-color));
-		font-size: 0.8rem;
-		cursor: pointer;
-		white-space: nowrap;
-		text-align: left;
-
-		&:hover {
-			background: rgba(var(--button-color), 0.4);
 		}
 	}
 
@@ -316,7 +123,7 @@
 
 	&__selector-action-btn {
 		font-size: 0.75rem;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		background: rgba(var(--primary-color), 0.08);
 		border: 1px solid rgba(var(--primary-color), 0.15);
 		cursor: pointer;
@@ -329,25 +136,20 @@
 			border-color: rgba(var(--primary-color), 0.3);
 		}
 
+		// Same size and colors as the buttons next to it, with a small download icon.
+		// It used to load an image file that holds the letters "PDF" itself; in the app bundle
+		// that path did not exist, so a broken image and its "PDF" alt text sat next to the
+		// "PDF" label.
 		&--pdf {
-			display: flex;
+			display: inline-flex;
 			align-items: center;
 			gap: 4px;
-			color: #fff;
-			background: rgba(235, 87, 87, 0.85);
-			border-color: rgba(235, 87, 87, 0.9);
 
-			img {
-				filter: brightness(0) invert(1);
-			}
-
-			&:hover {
-				background: rgba(235, 87, 87, 1);
-				border-color: rgba(235, 87, 87, 1);
+			svg {
+				flex-shrink: 0;
 			}
 
 			&:disabled {
-				opacity: 0.5;
 				cursor: wait;
 			}
 		}
@@ -668,11 +470,6 @@
 		background: rgba(var(--background-color), 0.4);
 		border-radius: 10px;
 
-		twisty-player {
-			transform: scale(0.5);
-			transform-origin: center center;
-		}
-
 		> svg {
 			max-width: 100%;
 			max-height: 100px;
@@ -744,12 +541,41 @@
 		flex-direction: column;
 		gap: 14px;
 		padding: 18px;
+
+		// Wide: the picture and the chosen algorithm on the left, the algorithm list on the right.
+		@include bp-up($bp-md) {
+			display: grid;
+			grid-template-columns: 320px minmax(0, 1fr);
+			align-items: start;
+			gap: 22px;
+			padding: 22px;
+		}
+	}
+
+	&__alg-detail-side,
+	&__alg-detail-algs {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		min-width: 0;
+	}
+
+	&__alg-detail-side {
+		@include bp-up($bp-md) {
+			position: sticky;
+			top: 0;
+		}
 	}
 
 	&__alg-detail-viewer {
 		align-self: center;
 		width: 200px;
 		height: 200px;
+
+		@include bp-up($bp-md) {
+			width: 260px;
+			height: 260px;
+		}
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -776,7 +602,7 @@
 		padding: 4px 10px;
 		border-radius: 999px;
 		background: rgba(var(--primary-color), 0.15);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		font-weight: 600;
 		letter-spacing: 0.02em;
 	}
@@ -888,6 +714,26 @@
 		max-height: 200px;
 		overflow-y: auto;
 		padding-right: 2px;
+
+		// The list is the right column's content: long lists (PLL has 90) scroll inside it.
+		@include bp-up($bp-md) {
+			max-height: min(62vh, 560px);
+		}
+	}
+
+	&__alg-detail-locked {
+		align-self: flex-start;
+		background: none;
+		border: none;
+		padding: 4px 0;
+		cursor: pointer;
+		font-size: 0.82rem;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 
 	&__alg-detail-alt-item {
@@ -946,7 +792,7 @@
 		&--primary {
 			background: rgb(var(--primary-color));
 			border-color: rgb(var(--primary-color));
-			color: white;
+			color: rgb(var(--theme-primary-opposite));
 
 			&:hover {
 				background: rgb(var(--primary-color));
@@ -954,13 +800,14 @@
 			}
 		}
 
+		// Danger: the red edge says it, the text keeps the text colour.
 		&--danger {
-			color: #ef5350;
-			border-color: rgba(239, 83, 80, 0.3);
-			background: rgba(239, 83, 80, 0.06);
+			color: rgb(var(--text-color));
+			border-color: rgba(var(--error-color), 0.55);
+			background: rgba(var(--error-color), 0.06);
 
 			&:hover {
-				background: rgba(239, 83, 80, 0.12);
+				background: rgba(var(--error-color), 0.14);
 			}
 		}
 	}
@@ -991,14 +838,13 @@
 		border-radius: 10px;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		background: rgb(var(--button-color));
-		color: rgba(var(--text-color), 0.65);
+		color: rgb(var(--text-color));
 		cursor: pointer;
 		transition: all 0.15s;
 
 		&:hover {
-			background: rgba(239, 83, 80, 0.12);
-			border-color: rgba(239, 83, 80, 0.3);
-			color: #ef5350;
+			background: rgba(var(--error-color), 0.14);
+			border-color: rgba(var(--error-color), 0.55);
 		}
 	}
 
@@ -1053,14 +899,15 @@
 		padding: 8px 12px;
 		border-radius: 8px;
 
+		// Status on a tint of its colour; the text keeps the text colour.
 		&--error {
-			color: #ef5350;
-			background: rgba(239, 83, 80, 0.1);
+			color: rgb(var(--text-color));
+			background: rgba(var(--error-color), 0.14);
 		}
 
 		&--success {
-			color: rgb(var(--secondary-color));
-			background: rgba(var(--secondary-color), 0.1);
+			color: rgb(var(--text-color));
+			background: rgba(var(--secondary-color), 0.12);
 		}
 	}
 
@@ -1170,10 +1017,11 @@
 	}
 
 	&__training-setup {
-		align-self: flex-end;
+		// Centered on the same axis as the cube, the algorithm and the timer below it.
+		align-self: center;
 		margin-bottom: 1rem;
-		max-width: 60%;
-		text-align: right;
+		max-width: 90%;
+		text-align: center;
 
 		code {
 			font-family: 'JetBrains Mono', monospace;
@@ -1870,14 +1718,16 @@
 			gap: 10px;
 		}
 
+		// Two columns on a phone: a one column list of short names made the page needlessly long.
 		&__selector-subsets {
 			columns: auto;
-			display: flex;
-			flex-direction: column;
-			gap: 0.25rem;
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.45rem 0.75rem;
 			-webkit-overflow-scrolling: touch;
 
 			> * {
+				min-width: 0;
 				padding-bottom: 0;
 			}
 		}
@@ -1890,10 +1740,6 @@
 
 		&__alg-card-preview {
 			height: 90px;
-
-			twisty-player {
-				transform: scale(0.42);
-			}
 
 			> svg,
 			> div {
@@ -2205,8 +2051,7 @@
 		vertical-align: middle;
 
 		&:hover {
-			background: rgba(var(--primary-color), 0.3);
-			color: rgb(var(--primary-color));
+			background: rgba(var(--text-color), 0.2);
 		}
 
 		&--active {

@@ -1,4 +1,6 @@
 import { clearQueue } from '../offline-queue';
+import { clearAllAlgSetCaches } from '../../lib/alg_sets/cache';
+import { clearCompetitionCaches } from '../../components/community/competition-cache';
 
 /**
  * Local state that belongs to the signed-in account and must not outlive it on this device.
@@ -17,6 +19,13 @@ export async function clearAccountCaches(): Promise<void> {
 	} catch (e) {
 		console.error('[logout] queue could not be cleared', e);
 	}
+
+	// Offline copies of the account's algorithm sets (trainer-sets 9.3).
+	clearAllAlgSetCaches();
+
+	// Last-seen competitions: the viewer's registrations and their own place in
+	// each competition.
+	await clearCompetitionCaches();
 
 	await purgeCachedPages();
 }

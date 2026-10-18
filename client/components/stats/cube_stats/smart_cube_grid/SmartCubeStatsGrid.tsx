@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { formatInteger } from '../../../../util/locale_format';
 import { useTranslation } from 'react-i18next';
 import './SmartCubeStatsGrid.scss';
 import block from '../../../../styles/bem';
@@ -61,7 +62,7 @@ function renderValue(cell: StatCell): React.ReactNode {
 }
 
 export default function SmartCubeStatsGrid({ filterOptions, lastN }: Props) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const solveUpdate = useSolveDb();
 
 	const smartFilter: FilterSolvesOptions = useMemo(
@@ -150,7 +151,7 @@ export default function SmartCubeStatsGrid({ filterOptions, lastN }: Props) {
 	}
 
 	const timeFormatter = (v: number) => getTimeString(v);
-	const intFormatter = (v: number) => Math.round(v).toLocaleString();
+	const intFormatter = (v: number) => formatInteger(Math.round(v), i18n.language);
 	const numFormatter = (v: number) => v.toFixed(2);
 
 	const stats: StatCell[] = [

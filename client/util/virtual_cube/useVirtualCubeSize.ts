@@ -18,12 +18,21 @@ import { useSettings } from '../hooks/useSettings';
  * Shared by the cube itself and by the timer layout, which needs the same number
  * to place the digits beside it. Two copies of this arithmetic would drift.
  */
+/**
+ * Desktop, idle, with the cube under the digits instead of beside them (a narrow centre
+ * column, timer/helpers/time_row_fit.ts): the two now share the height, so the cube takes
+ * a smaller part of it. At 0.3 a 768 px high screen cut its bottom row off, at 0.22 still
+ * a few pixels under a three-line scramble.
+ */
+const STACKED_HEIGHT_SHARE = 0.2;
+
 export function computeVirtualCubeSize(
 	userSize: number,
 	viewportW: number,
 	viewportH: number,
 	mobile: boolean,
-	focus: boolean
+	focus: boolean,
+	stacked = false
 ): number {
 	const size = userSize || 400;
 
@@ -51,14 +60,15 @@ export function computeVirtualCubeSize(
 	return Math.floor(
 		mobile
 			? Math.min(size * 0.85, viewportH * 0.26, viewportW * 0.62)
-			: Math.min(size * 0.5, viewportH * 0.3, viewportW * 0.18)
+			: Math.min(size * 0.5, viewportH * (stacked ? STACKED_HEIGHT_SHARE : 0.3), viewportW * 0.18)
 	);
 }
 
 /**
  * @param focus true while the cube is armed or a solve is running.
+ * @param stacked true while the desktop row puts the cube under the digits.
  */
-export function useVirtualCubeSize(mobile: boolean, focus = false): number {
+export function useVirtualCubeSize(mobile: boolean, focus = false, stacked = false): number {
 	const userSize = useSettings('virtual_cube_size');
 
 	const [viewport, setViewport] = useState(() => ({
@@ -77,6 +87,7 @@ export function useVirtualCubeSize(mobile: boolean, focus = false): number {
 		viewport.w,
 		viewport.h,
 		mobile,
-		focus
+		focus,
+		stacked
 	);
 }

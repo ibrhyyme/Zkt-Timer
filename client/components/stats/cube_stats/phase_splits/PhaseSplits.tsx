@@ -9,13 +9,14 @@ import {isPro, isProEnabled} from '../../../../lib/pro';
 import ProBlurOverlay from '../../../common/pro_blur_overlay/ProBlurOverlay';
 import {getAveragePhaseSplits} from '../../../../db/solves/stats/phase_splits';
 import {getTimeString} from '../../../../util/time';
+import {formatPercent} from '../../../../util/locale_format';
 import {useSettings} from '../../../../util/hooks/useSettings';
 import {resolveAnalysisMethod} from '../../../../util/solve/live_analysis_core';
 
 const b = block('phase-splits');
 
 export default function PhaseSplits() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const me = useMe();
 	const {filterOptions, smartLastN} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
@@ -81,7 +82,7 @@ export default function PhaseSplits() {
 								{phase.sampleCount > 0 ? (
 									<>
 										{getTimeString(phase.avg)}
-										<small> · {totalPct.toFixed(0)}%</small>
+										<small> · {formatPercent(totalPct, i18n.language, 0)}</small>
 									</>
 								) : (
 									'—'

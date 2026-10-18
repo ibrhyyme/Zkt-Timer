@@ -363,15 +363,25 @@ interface TimerSettingsActionProps {
 	label: string;
 	description?: string;
 	hidden?: boolean;
+	/**
+	 * Below lg the control sits under the text at full width instead of beside it. For a
+	 * wide control (the background picker is a 200px preview plus a hint) that would
+	 * otherwise squeeze the label to one word per line on a phone and push the hint off
+	 * the screen. lg, not md: from 768px the settings nav takes a column of its own, and
+	 * a portrait tablet left the label about 100px wide.
+	 */
+	stackOnMobile?: boolean;
 	children: React.ReactNode;
 }
 
-export function TimerSettingsAction({ label, description, hidden, children }: TimerSettingsActionProps) {
+export function TimerSettingsAction({ label, description, hidden, stackOnMobile, children }: TimerSettingsActionProps) {
 	if (hidden) return null;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-			<div className="flex flex-col mr-4">
+		<div
+			className={`group flex ${stackOnMobile ? 'flex-col items-start lg:flex-row lg:items-center lg:justify-between' : 'items-center justify-between'} py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200`}
+		>
+			<div className={`flex flex-col ${stackOnMobile ? 'lg:mr-4' : 'mr-4'}`}>
 				<span className="font-medium text-text transition-colors">
 					{label}
 				</span>
@@ -379,7 +389,7 @@ export function TimerSettingsAction({ label, description, hidden, children }: Ti
 					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
-			<div className="shrink-0">
+			<div className={stackOnMobile ? 'mt-3 lg:mt-0 lg:shrink-0' : 'shrink-0'}>
 				{children}
 			</div>
 		</div>

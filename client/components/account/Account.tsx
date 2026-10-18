@@ -1,8 +1,8 @@
 import React from 'react';
 import './Account.scss';
 import {useTranslation} from 'react-i18next';
-import {Link, useLocation} from 'react-router-dom';
-import {CaretLeft} from 'phosphor-react';
+import {useLocation} from 'react-router-dom';
+import {BackButton} from '../common/icon_button/IconButton';
 import AccountNav, {useAccountTabs} from './AccountNav';
 import PageTitle from '../common/page_title/PageTitle';
 import block from '../../styles/bem';
@@ -26,15 +26,8 @@ export default function Account(props: Props) {
 	const isIndex = pathname === '/account';
 	const activeTab = tabs.find((tab) => tab.link === pathname);
 
-	// The section's cube-face colour lights the page behind the content, so moving
-	// between sections changes the room you're standing in rather than just the text.
-	const activeTone = activeTab ? activeTab.tone : tabs[0].tone;
-
 	return (
-		<div
-			className={b({index: isIndex})}
-			style={{'--active-tone': activeTone} as React.CSSProperties}
-		>
+		<div className={b({index: isIndex})}>
 			<PageTitle pageName={t('account_nav.page_title')} />
 
 			<div className={b('layout')}>
@@ -45,13 +38,11 @@ export default function Account(props: Props) {
 					    shows both where you are and how to get back. */}
 					{activeTab ? (
 						<div className={b('section-header')}>
-							<Link
+							<BackButton
 								to="/account"
 								className={b('back')}
-								aria-label={t('account_nav.back_to_account')}
-							>
-								<CaretLeft weight="bold" />
-							</Link>
+								label={t('account_nav.back_to_account')}
+							/>
 							<h2 className={b('section-title')}>{activeTab.label}</h2>
 						</div>
 					) : null}

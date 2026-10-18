@@ -301,7 +301,32 @@ export class SmartSolveEngine {
 		// After the tracker, not before: resetDeviationTracking anchors to tracker.applied,
 		// which the calls above just brought in sync with this.turns.
 		this.resetDeviationTracking();
-		this.setOutOfSync(false);
+
+		// A new scramble is no reason to forget that the cube cannot be placed. Battle installs
+		// the round's scramble AFTER the cube connected, so a cube whose firmware state had
+		// drifted (turned while asleep: it reports D2 while sitting solved in the hand) raised
+		// the warning on connect, lost it here, and the player got an undo hint for every
+		// correct move instead of "mark as solved". The timer page never hit this only because
+		// its scramble is in place before the cube connects.
+		if (this.cannotPlaceForScramble()) {
+			this.setUndo(null);
+			this.setOutOfSync(true);
+		} else {
+			this.setOutOfSync(false);
+		}
+	}
+
+	/**
+	 * The cube's last report is neither solved, nor the target, nor any point on the current
+	 * scramble's path, so no scramble can be matched from it.
+	 *
+	 * Only a real report counts: with no facelets yet the tracker assumed solved, which is
+	 * the right default until the cube says otherwise.
+	 */
+	private cannotPlaceForScramble(): boolean {
+		if (this.phase !== 'scrambling' || !this.facelets || !isValidFacelets(this.facelets)) return false;
+		if (this.physicallySolved || this.facelets === this.targetFacelets) return false;
+		return this.findPrefixHit(this.facelets, false) == null;
 	}
 
 	/**

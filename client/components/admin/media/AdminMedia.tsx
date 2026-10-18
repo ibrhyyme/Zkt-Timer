@@ -29,6 +29,9 @@ interface MediaAsset {
 	id: string;
 	kind: Kind;
 	storage_path: string;
+	is_video: boolean;
+	/** Set on timer backgrounds only: one user can have a desktop and a mobile one. */
+	background_target?: 'desktop' | 'mobile' | null;
 	created_at: string;
 	size_bytes?: number | null;
 	user?: {id: string; username: string} | null;
@@ -42,6 +45,8 @@ const MEDIA_ASSETS = gql`
 				id
 				kind
 				storage_path
+				is_video
+				background_target
 				created_at
 				size_bytes
 				user {
@@ -111,6 +116,12 @@ export default function AdminMedia() {
 		TIMER_BACKGROUND: t('admin_media.filter_background'),
 	};
 
+	function kindLabel(asset: MediaAsset): string {
+		if (asset.background_target === 'mobile') return t('admin_media.background_mobile');
+		if (asset.background_target === 'desktop') return t('admin_media.background_desktop');
+		return KIND_LABELS[asset.kind];
+	}
+
 	async function handleDelete(asset: MediaAsset) {
 		try {
 			await deleteAsset({variables: {id: asset.id, kind: asset.kind}});
@@ -167,6 +178,7 @@ export default function AdminMedia() {
 						// The server reports null size when the row outlived its file, which is
 						// more reliable than waiting for the <img> to fail.
 						const fileOnDisk = asset.size_bytes != null;
+						const isBackground = asset.kind === 'TIMER_BACKGROUND';
 						return (
 							<div key={`${asset.kind}-${asset.id}`} className={b('card')}>
 								<button
@@ -177,14 +189,26 @@ export default function AdminMedia() {
 									aria-label={t('admin_media.preview')}
 								>
 									{url && fileOnDisk ? (
-										<img src={url} alt="" loading="lazy" className={b('thumb-image')} />
+										asset.is_video ? (
+											// Not playing: a grid of videos would decode them all at once. The
+											// #t fragment makes Safari paint a first frame instead of a black box.
+											<video
+												src={`${url}#t=0.1`}
+												muted
+												playsInline
+												preload="metadata"
+												className={b('thumb-image')}
+											/>
+										) : (
+											<img src={url} alt="" loading="lazy" className={b('thumb-image')} />
+										)
 									) : (
 										<span className={b('thumb-missing')}>{t('admin_media.file_missing')}</span>
 									)}
 								</button>
 
 								<div className={b('meta')}>
-									<span className={b('kind')}>{KIND_LABELS[asset.kind]}</span>
+									<span className={b('kind')}>{kindLabel(asset)}</span>
 									{asset.user?.username ? (
 										<Link className={b('user')} to={`/user/${asset.user.username}`}>
 											{asset.user.username}
@@ -204,10 +228,17 @@ export default function AdminMedia() {
 									icon={<Trash weight="bold" />}
 									text={t('admin_media.delete')}
 									confirmModalProps={{
-										title: t('admin_media.delete_confirm_title'),
-										description: t('admin_media.delete_confirm_description', {
-											username: asset.user?.username || '',
-										}),
+										// A background is not on the profile and may be a video, so the
+										// profile picture wording would be wrong on both counts.
+										title: isBackground
+											? t('admin_media.delete_background_confirm_title')
+											: t('admin_media.delete_confirm_title'),
+										description: t(
+											isBackground
+												? 'admin_media.delete_background_confirm_description'
+												: 'admin_media.delete_confirm_description',
+											{username: asset.user?.username || ''}
+										),
 										buttonText: t('admin_media.delete'),
 										buttonProps: {warning: true},
 										hideInput: true,
@@ -248,7 +279,21 @@ export default function AdminMedia() {
 					>
 						<X weight="bold" />
 					</button>
-					<img className={b('lightbox-image')} src={getStorageURL(preview.storage_path)} alt="" />
+					{preview.is_video ? (
+						// Clicks on the controls must not reach the backdrop, which closes the lightbox.
+						<video
+							className={b('lightbox-image')}
+							src={getStorageURL(preview.storage_path)}
+							controls
+							autoPlay
+							muted
+							loop
+							playsInline
+							onClick={(e) => e.stopPropagation()}
+						/>
+					) : (
+						<img className={b('lightbox-image')} src={getStorageURL(preview.storage_path)} alt="" />
+					)}
 				</div>
 			)}
 		</div>

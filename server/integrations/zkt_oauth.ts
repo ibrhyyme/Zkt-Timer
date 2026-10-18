@@ -67,7 +67,12 @@ async function postToken(body: URLSearchParams): Promise<ZktTokenSet> {
 			status: error?.response?.status,
 			detail,
 		});
-		throw new Error(detail || 'ZKT token exchange failed');
+		// Status and RFC error code ride along so a caller can tell a dead grant
+		// (invalid_grant) from a bad client secret or a federation outage.
+		const err: any = new Error(detail || 'ZKT token exchange failed');
+		err.status = error?.response?.status;
+		err.oauthError = typeof error?.response?.data?.error === 'string' ? error.response.data.error : undefined;
+		throw err;
 	}
 }
 
@@ -182,6 +187,22 @@ export async function syncZktProfileToIntegration(integration: any, profile: Zkt
 }
 
 /**
+ * Spend the integration's refresh token for a new pair and store it. Throws on
+ * failure (with `status` / `oauthError` from postToken) and leaves the row as
+ * it was; deciding what a failure means is the caller's job. The federation
+ * rotates on refresh, so the previous access and refresh token die here.
+ */
+export async function rotateZktIntegrationTokens(integration: any): Promise<ZktTokenSet> {
+	const tokens = await refreshZktToken(integration.refresh_token);
+	await updateIntegration(integration, {
+		auth_token: tokens.accessToken,
+		refresh_token: tokens.refreshToken ?? integration.refresh_token,
+		auth_expires_at: tokens.expiresAt,
+	});
+	return tokens;
+}
+
+/**
  * A valid access token for this integration, refreshing it when it has run out.
  *
  * Returns null instead of throwing when the grant is gone (member revoked it on
@@ -199,12 +220,7 @@ export async function getValidZktAccessToken(integration: any): Promise<string |
 	if (!integration.refresh_token) return null;
 
 	try {
-		const tokens = await refreshZktToken(integration.refresh_token);
-		await updateIntegration(integration, {
-			auth_token: tokens.accessToken,
-			refresh_token: tokens.refreshToken ?? integration.refresh_token,
-			auth_expires_at: tokens.expiresAt,
-		});
+		const tokens = await rotateZktIntegrationTokens(integration);
 		return tokens.accessToken;
 	} catch (error: any) {
 		logger.warn('[ZktOAuth] refresh failed, marking integration revoked', {

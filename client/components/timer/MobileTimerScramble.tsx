@@ -200,9 +200,12 @@ export default function MobileTimerScramble() {
         );
     }
 
-    // After abort, hide when scramble is empty (don't overlap mismatch banner)
+    // After an abort the scramble is empty until the cube is solved again. The box
+    // stays, empty: it holds a share of the free height, and dropping it slid the cube,
+    // the time and everything below up the screen until the next scramble arrived
+    // (feedback 2.3-a). The mismatch banner says what to do (AbortSolveOverlay).
     if (isSmart && !scramble) {
-        return null;
+        return <div className={b({ smart: true })} ref={containerRef} aria-hidden="true" />;
     }
 
     const expandedOverlay = expanded && scramble && typeof document !== 'undefined'

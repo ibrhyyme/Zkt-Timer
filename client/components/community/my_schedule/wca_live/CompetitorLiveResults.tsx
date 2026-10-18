@@ -2,11 +2,12 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowLeft, ArrowClockwise, Warning, Info} from 'phosphor-react';
-import {b, formatResult, formatAttempts, formatTimeAgo, countryFlag, EventIcon, RecordTag, WcaIdLink} from '../shared';
+import {b, formatResult, formatAttempts, formatTimeAgo, countryFlag, EventIcon, RecordTag, WcaIdLink, localEventName, liveRoundLabel} from '../shared';
 import {useCompetitionData} from '../CompetitionLoader';
 import {useCompetitorLiveResults} from '../useLiveResults';
 import {useIsMobile} from '../../../../util/hooks/useIsMobile';
 import ResultModal, {ResultModalRow} from './ResultModal';
+import {useDelayedFlag} from '../useDelayedFlag';
 
 interface Props {
 	registrantId: number;
@@ -27,6 +28,12 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 
 	const liveCompetitor = useMemo(() => {
 		if (!detail?.wcaLiveCompetitors) return null;
+		// On a ZKT competition the live id is the registration number, and names
+		// are not unique enough to be the key.
+		if (detail.competitionId?.startsWith('zkt-') && selected) {
+			const byRegistrant = detail.wcaLiveCompetitors.find((c: any) => c.liveId === String(selected.registrantId));
+			if (byRegistrant) return byRegistrant;
+		}
 		if (selected?.wcaId) {
 			const byWcaId = detail.wcaLiveCompetitors.find((c: any) => c.wcaId === selected.wcaId);
 			if (byWcaId) return byWcaId;
@@ -45,6 +52,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 		personLiveId,
 		!!personLiveId && !!competitionId
 	);
+	const showSkeleton = useDelayedFlag(loading && !data);
 
 	// "Tick" — last updated metnini her 30s yenile
 	const [, forceTick] = useState(0);
@@ -59,12 +67,12 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 		const groups = new Map<string, {eventId: string; eventName: string; entries: any[]}>();
 		for (const r of data.results) {
 			if (!groups.has(r.eventId)) {
-				groups.set(r.eventId, {eventId: r.eventId, eventName: r.eventName, entries: []});
+				groups.set(r.eventId, {eventId: r.eventId, eventName: localEventName(t, r.eventId, r.eventName), entries: []});
 			}
 			groups.get(r.eventId)!.entries.push(r);
 		}
 		return Array.from(groups.values());
-	}, [data]);
+	}, [data, t]);
 
 	if (!selected) {
 		return (
@@ -96,11 +104,15 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 		return numAttempts > 1 && !BLD_EVENTS.includes(eventId);
 	}
 
+	// A ZKT round is named in the viewer's language; a WCA one keeps WCA Live's name.
+	const roundLabel = (entry: any) =>
+		liveRoundLabel(t, {number: entry.roundNumber, name: entry.roundName}, competitionId.startsWith('zkt-'));
+
 	function handleRowClick(entry: any) {
 		const numAttempts = entry.format?.numberOfAttempts || (entry.attempts?.length || 0);
 		const formattedAttempts = formatAttempts(entry.attempts || [], numAttempts, entry.eventId);
 		setModalRow({
-			title: `${entry.eventName} — ${entry.roundName}`,
+			title: `${localEventName(t, entry.eventId, entry.eventName)} · ${roundLabel(entry)}`,
 			ranking: entry.ranking,
 			best: entry.best,
 			average: entry.average,
@@ -163,7 +175,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 			)}
 
 			{/* Loading skeleton */}
-			{loading && !data && (
+			{showSkeleton && (
 				<div className={b('wca-live-skeleton')}>
 					{Array.from({length: 6}).map((_, i) => (
 						<div key={i} className={b('wca-live-skeleton-row')} />
@@ -227,7 +239,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 												}}
 											>
 												<td className={b('wca-live-person')}>
-													<span className={b('wca-live-person-name')}>{entry.roundName}</span>
+													<span className={b('wca-live-person-name')}>{roundLabel(entry)}</span>
 												</td>
 												<td className={b('wca-live-rank')}>{entry.ranking ?? '-'}</td>
 												{showAvgCol && (

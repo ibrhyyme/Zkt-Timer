@@ -2,12 +2,13 @@ import React, {useState, useEffect, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {expandNotation} from '../../../../util/trainer/algorithm_engine';
-import {fetchDefaultAlgs, saveAlgorithm, getCustomAlternatives} from '../../hooks/useAlgorithmData';
+import {fetchLibraryCategory, saveAlgorithm, getCustomAlternatives} from '../../hooks/useAlgorithmData';
 import {useTranslation} from 'react-i18next';
 import {Check} from 'phosphor-react';
 import {gqlQueryTyped} from '../../../api';
 import {useMe} from '../../../../util/hooks/useMe';
 import {TrainerAlternativesDocument} from '../../../../@types/generated/graphql';
+import {findLibraryCase, mergeCaseAlternatives} from '../../../../util/trainer/case_alternatives';
 
 const b = block('trainer');
 
@@ -26,34 +27,16 @@ export default function AlternativesPicker() {
 		}
 
 		const loadAlts = async () => {
-			const defaults = await fetchDefaultAlgs();
-			const categoryData = defaults[currentAlgorithm.category];
-			if (!categoryData) {
+			const categoryData = await fetchLibraryCategory(currentAlgorithm.category);
+			const found = findLibraryCase({[currentAlgorithm.category]: categoryData}, currentAlgorithm.category, currentAlgorithm.name);
+			if (!found || !found.entry.algorithm) {
 				setAlternatives([]);
 				return;
 			}
 
-			let primaryAlg = '';
-			let defaultAlts: string[] = [];
-			let subset = '';
-			for (const sub of categoryData) {
-				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
-				if (entry) {
-					primaryAlg = entry.algorithm;
-					defaultAlts = (entry as any).alternatives || [];
-					subset = sub.subset;
-					break;
-				}
-			}
+			const customAlts = getCustomAlternatives(currentAlgorithm.category, found.subset, currentAlgorithm.name);
 
-			if (!primaryAlg) {
-				setAlternatives([]);
-				return;
-			}
-
-			const customAlts = getCustomAlternatives(currentAlgorithm.category, subset, currentAlgorithm.name);
-
-			// DB'den global alternatifleri cek
+			// Shared pool (TrainerAlternative), signed in only
 			let dbAlts: string[] = [];
 			if (me) {
 				try {
@@ -67,30 +50,15 @@ export default function AlternativesPicker() {
 				} catch {}
 			}
 
-			// Merge: primary + defaults + DB + localStorage custom, dedup
-			const combined = [primaryAlg, ...defaultAlts];
-			const seen = new Set(combined.map((a) => expandNotation(a)));
+			// One merge rule with the set screens: primary + library + pool + guest, deduplicated
+			const combined = mergeCaseAlternatives({
+				primary: found.entry.algorithm,
+				library: found.entry.alternatives || [],
+				pool: dbAlts,
+				guest: customAlts,
+			});
 
-			for (const alt of dbAlts) {
-				const exp = expandNotation(alt);
-				if (!seen.has(exp)) {
-					combined.push(alt);
-					seen.add(exp);
-				}
-			}
-			for (const alt of customAlts) {
-				const exp = expandNotation(alt);
-				if (!seen.has(exp)) {
-					combined.push(alt);
-					seen.add(exp);
-				}
-			}
-
-			if (combined.length > 1) {
-				setAlternatives(combined);
-			} else {
-				setAlternatives([]);
-			}
+			setAlternatives(combined.length > 1 ? combined : []);
 		};
 
 		loadAlts();

@@ -60,7 +60,7 @@ export default function ZktPbCard({pb}: Props) {
 			</div>
 
 			<div className={b('record-section')}>
-				<div className={b('record-type')}>Average</div>
+				<div className={b('record-type')}>{t('profile.average')}</div>
 				{pb.average ? (
 					<div className={b('time-container')}>
 						<span className={b('time-value')}>{pb.average}</span>
@@ -71,7 +71,7 @@ export default function ZktPbCard({pb}: Props) {
 			</div>
 
 			<div className={b('record-section')}>
-				<div className={b('record-type')}>Single</div>
+				<div className={b('record-type')}>{t('profile.single')}</div>
 				{pb.single ? (
 					<div className={b('time-container')}>
 						<span className={b('time-value')}>{pb.single}</span>

@@ -2,10 +2,11 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory, useLocation} from 'react-router-dom';
 import {ArrowClockwise, Warning} from 'phosphor-react';
-import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMedal, RecordTag, EventIcon} from '../shared';
+import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMedal, RecordTag, EventIcon, localEventName, liveRoundLabel} from '../shared';
 import {useLiveRoundResults} from '../useLiveResults';
 import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
+import {useDelayedFlag} from '../useDelayedFlag';
 
 interface Props {
 	event: any;
@@ -19,6 +20,10 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	const history = useHistory();
 	const {detail} = useCompetitionData();
 	const [modalRow, setModalRow] = useState<any | null>(null);
+	const isZkt = competitionId.startsWith('zkt-');
+	// The tab and the heading used to name the same round differently ("Final"
+	// on the tab, "3. Tur" in the heading); both read from here now.
+	const roundLabel = (round: any) => liveRoundLabel(t, round, isZkt);
 
 	// Competitor → registrantId mapping (for redirecting to competition results page)
 	const findRegistrantId = useMemo(() => {
@@ -133,6 +138,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 
 	const liveRoundId = selectedRound?.liveRoundId || null;
 	const {data: roundResults, loading, lastUpdated, lastError, refresh, isActive} = useLiveRoundResults(competitionId, liveRoundId, !!liveRoundId);
+	const showSkeleton = useDelayedFlag(loading && !roundResults);
 
 	// "Tick" — refresh "last updated" text every 30s
 	const [, forceTick] = useState(0);
@@ -200,6 +206,11 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	const sortBy = roundResults?.sortBy || selectedRound.format?.sortBy || 'best';
 	const isBldEvent = ['333bf', '444bf', '555bf', '333mbf'].includes(event.eventId);
 	const showAverage = numAttempts > 1 && !isBldEvent;
+	// ZKT Dual Chance: every competitor does the format twice and the better
+	// chance counts. The two chances take the average column's place; the row's
+	// own attempts are the counting chance's, and the best single spans both.
+	const dualChance = !!(roundResults?.dualChance ?? selectedRound.dualChance);
+	const chanceIsAverage = sortBy === 'average' && showAverage;
 
 	function formatTimeLimitLabel(): string | null {
 		if (!selectedRound.timeLimit) return null;
@@ -242,6 +253,24 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 
 	const allResults = roundResults?.results || [];
 	const isFinished = selectedRound.finished;
+	const showChances = dualChance && allResults.some((r: any) => (r.chances?.length || 0) > 0);
+	// On a phone four time columns leave a name its first word; with both
+	// chances on screen the best single moves to the row's detail sheet.
+	const showBest = !(isMobile && showChances);
+
+	/**
+	 * One chance of a row. A chance the competitor never entered is not in the
+	 * list: once the round is over that is a no-show (DNS), before that it simply
+	 * has not happened yet.
+	 */
+	function chanceOf(r: any, n: number) {
+		const c = (r.chances || []).find((x: any) => x.chance === n) || null;
+		const missing = !c || c.noShow;
+		const value = missing
+			? (c?.noShow || isFinished ? 'DNS' : formatResult(0, event.eventId, chanceIsAverage))
+			: formatResult(chanceIsAverage ? c.average : c.best, event.eventId, chanceIsAverage);
+		return {c, value, counting: !!c?.counting && !c?.noShow};
+	}
 
 	// Scoring progress. The live results are the freshest count of who has been
 	// scored, so prefer them over the overview's snapshot; the field size only
@@ -255,8 +284,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 			<div className={b('wca-live-event-header')}>
 				<EventIcon eventId={event.eventId} size={28} />
 				<h3 className={b('wca-live-event-title')}>
-					{event.eventName}
-					{selectedRound && <span className={b('wca-live-event-subtitle')}> — {selectedRound.name}</span>}
+					{localEventName(t, event.eventId, event.eventName)}
+					{selectedRound && <span className={b('wca-live-event-subtitle')}> · {roundLabel(selectedRound)}</span>}
 				</h3>
 				<button
 					className={b('wca-live-refresh-btn', {spinning: loading})}
@@ -298,11 +327,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 							className={b('wca-live-round-tab', {active: isSelected})}
 							onClick={() => history.push(roundPath(round))}
 						>
-							<span className={b('wca-live-round-name')}>
-								{/* The federation names a round by its number; a chain's last
-								    round is a final and reads better as one. */}
-								{round.isFinal ? t('zkt_comp.round_final') : round.name}
-							</span>
+							<span className={b('wca-live-round-name')}>{roundLabel(round)}</span>
 							<span className={b('wca-live-status-badge', {[getRoundStatusModifier(round)]: true})}>
 								{getRoundStatusLabel(round)}
 							</span>
@@ -319,6 +344,9 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 							{numAttempts === 1 ? 'Bo1' : sortBy === 'average' ? `Ao${numAttempts}` : `Mo${numAttempts}`}
 						</span>
 					)}
+					{dualChance && (
+						<span className={b('wca-live-round-info-item', {accent: true})}>{t('zkt_comp.dual_chance')}</span>
+					)}
 					{formatTimeLimitLabel() && (
 						<span className={b('wca-live-round-info-item')}>{formatTimeLimitLabel()}</span>
 					)}
@@ -330,6 +358,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 					)}
 				</div>
 			)}
+			{dualChance && <div className={b('wca-live-dual-note')}>{t('zkt_comp.dual_chance_note')}</div>}
 
 			{/* Entry progress — how much of the round has been scored so far. Only
 			    meaningful while the round is still being scored, so it disappears
@@ -368,7 +397,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 			)}
 
 			{/* Loading skeleton */}
-			{loading && !roundResults && (
+			{showSkeleton && (
 				<div className={b('wca-live-skeleton')}>
 					{Array.from({length: 6}).map((_, i) => (
 						<div key={i} className={b('wca-live-skeleton-row')} />
@@ -396,8 +425,15 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 									<th className={b('wca-live-th-rank')}>#</th>
 									{!isMobile && <th className={b('wca-live-th-country')}>{t('my_schedule.col_country')}</th>}
 									<th className={b('wca-live-th-name')}>{t('my_schedule.col_name')}</th>
-									{showAverage && <th>{t('my_schedule.col_average')}</th>}
-									<th>{t('my_schedule.col_best')}</th>
+									{showChances ? (
+										<>
+											<th>{t('zkt_comp.chance_n', {n: 1})}</th>
+											<th>{t('zkt_comp.chance_n', {n: 2})}</th>
+										</>
+									) : (
+										showAverage && <th>{t('my_schedule.col_average')}</th>
+									)}
+									{showBest && <th>{t('my_schedule.col_best')}</th>}
 									{!isMobile && Array.from({length: numAttempts}).map((_, i) => (
 										<th key={i} className={b('wca-live-th-attempt')}>{i + 1}</th>
 									))}
@@ -425,7 +461,24 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 											})}
 											onClick={() => {
 												if (isMobile) {
-													setModalRow({...r, attempts, numAttempts, eventId: event.eventId, personRegistrantId: findRegistrantId(r.personWcaId, r.personName)});
+													setModalRow({
+														...r,
+														attempts,
+														numAttempts,
+														eventId: event.eventId,
+														personRegistrantId: findRegistrantId(r.personWcaId, r.personName),
+														chanceRows: showChances
+															? [1, 2].map((n) => {
+																const {c, value, counting} = chanceOf(r, n);
+																return {
+																	label: t('zkt_comp.chance_n', {n}),
+																	value,
+																	counting,
+																	attempts: c && !c.noShow ? formatAttempts(c.attempts || [], numAttempts, event.eventId) : [],
+																};
+															})
+															: undefined,
+													});
 												} else {
 													handlePersonClick(r.personWcaId, r.personName);
 												}
@@ -445,20 +498,35 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												<span className={b('wca-live-person-name')}>{r.personName}</span>
 												{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
 											</td>
-											{showAverage && (
-												<td className={b('wca-live-time', {strong: true})}>
+											{showChances
+												? [1, 2].map((n) => {
+													const {value, counting} = chanceOf(r, n);
+													return (
+														<td key={n} className={b('wca-live-time', {'chance-counting': counting, 'chance-other': !counting})}>
+															<span className={b('wca-live-time-inner')}>
+																{value}
+																{/* An average record belongs to the average that set it. */}
+																{counting && chanceIsAverage && <RecordTag tag={r.averageRecordTag} />}
+															</span>
+														</td>
+													);
+												})
+												: showAverage && (
+													<td className={b('wca-live-time', {strong: true})}>
+														<span className={b('wca-live-time-inner')}>
+															{formatResult(r.average, event.eventId, true)}
+															<RecordTag tag={r.averageRecordTag} />
+														</span>
+													</td>
+												)}
+											{showBest && (
+												<td className={b('wca-live-time')}>
 													<span className={b('wca-live-time-inner')}>
-														{formatResult(r.average, event.eventId, true)}
-														<RecordTag tag={r.averageRecordTag} />
+														{formatResult(r.best, event.eventId, false)}
+														<RecordTag tag={r.singleRecordTag} />
 													</span>
 												</td>
 											)}
-											<td className={b('wca-live-time')}>
-												<span className={b('wca-live-time-inner')}>
-													{formatResult(r.best, event.eventId, false)}
-													<RecordTag tag={r.singleRecordTag} />
-												</span>
-											</td>
 											{!isMobile && attempts.map((a, i) => (
 												<td key={i} className={b('wca-live-attempt')}>{a}</td>
 											))}
@@ -490,6 +558,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 						singleRecordTag: modalRow.singleRecordTag,
 						personWcaId: modalRow.personWcaId,
 						personRegistrantId: modalRow.personRegistrantId,
+						chances: modalRow.chanceRows,
 					}}
 					competitionId={competitionId}
 					onClose={() => setModalRow(null)}

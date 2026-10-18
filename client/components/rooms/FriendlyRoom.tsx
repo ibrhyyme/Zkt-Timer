@@ -230,7 +230,11 @@ function FriendlyRoomContent() {
     // Settings
     const manualEntry = useSettings('manual_entry');
     const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
-    const timerType = useSettings('timer_type');
+    // The Magnet Timer has no room path (the room runs RoomTimerOverlay, not KeyWatcher), so
+    // it reads as the touch timer here. Read only: the user's Magnet choice is kept for the
+    // timer page instead of being rewritten by the allow-list effect below.
+    const storedTimerType = useSettings('timer_type');
+    const timerType = storedTimerType === 'magnet' ? 'keyboard' : storedTimerType;
     const inspection = useSettings('inspection');
     const inspectionDelay = useSettings('inspection_delay');
     const timerDecimalPoints = useSettings('timer_decimal_points');
@@ -307,6 +311,13 @@ function FriendlyRoomContent() {
     // never handled here at all.
     useNormalizeTimerType(room?.cube_type, (room as any)?.scramble_subset ?? null, () =>
         disconnectSmartCube()
+    );
+
+    // The input pickers judge support against the room's puzzle, not the timer page's.
+    const roomSubset: string | null = (room as any)?.scramble_subset ?? null;
+    const roomPuzzle = useMemo(
+        () => (room?.cube_type ? {cubeType: room.cube_type, scrambleSubset: roomSubset} : undefined),
+        [room?.cube_type, roomSubset]
     );
 
     // When timer type changes from smart cube to another type, disconnect Bluetooth
@@ -770,6 +781,18 @@ function FriendlyRoomContent() {
     // Each signal gets its own effect so a change in one does not replay the others.
     useEffect(() => {
         engineRef.current?.setScramble(room?.current_scramble || '');
+
+        // A new round can arrive mid-solve (the host moved on, or reset the room). The engine
+        // drops the attempt in setScramble, so the page has to drop it too: leaving
+        // smartTiming on with the tick interval cleared froze the overlay on 0.00 for good,
+        // since the SOLVE_COMPLETE that ends it can no longer come. A finished but unsaved
+        // solve goes as well (saving would file it under the new round), so say so.
+        if (smartTiming || smartReviewing) {
+            addRoomNotification('INFO', t('rooms.solve_cancelled_new_scramble'));
+        }
+        setSmartTiming(false);
+        setSmartTimerStartedAt(null);
+        setSmartScrambleCompletedAt(null);
 
         setSmartReviewing(false);
         setSmartFinalTime(0);
@@ -1917,6 +1940,7 @@ function FriendlyRoomContent() {
                         <TimerTypePicker
                             allowedTimerTypes={room.allowed_timer_types}
                             requireProForSmart
+                            puzzle={roomPuzzle}
                         />
 
                         {/* Bluetooth Connect Button for GAN Timer — glassmorphism */}
@@ -2607,6 +2631,7 @@ function FriendlyRoomContent() {
                 <LeftSettingsDrawer
                     allowedTimerTypes={room.allowed_timer_types}
                     requireProForSmart
+                    puzzle={roomPuzzle}
                     hideSmartCubeFeatures
                     hideMobileModules
                     hideSlamStop

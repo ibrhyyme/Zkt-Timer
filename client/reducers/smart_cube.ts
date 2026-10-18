@@ -15,7 +15,7 @@ export const DEFAULT_SOLVED_FACELETS = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLL
 const initialState: SmartCubeStore = {
 	smartCubeConnected: false,
 	smartReconnecting: false,
-	smartDeviceId: '',
+	smartBleDeviceId: '',
 	smartDeviceName: null,
 	smartCubeBatteryLevel: null,
 	smartGyroSupported: false,

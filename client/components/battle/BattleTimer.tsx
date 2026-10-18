@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { getTimeString } from '../../util/time';
-import { useBattle, BattleSolve, BattleRound } from './BattleContext';
+import { useBattle, BattleSolve, BattleRound, displayPlayerName } from './BattleContext';
 import { useBattleCubes } from './smart/BattleCubesProvider';
 import { SmartEngineEvent } from '../../util/smart_cube';
 import type { MatchStatus } from '../../util/smart_cube/solve_engine';
@@ -9,6 +9,7 @@ import SmartCubeView, { SmartCubeViewHandle } from '../timer/smart_cube/cube_vie
 import { useSettings } from '../../util/hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import block from '../../styles/bem';
+import { BATTLE_KEYS, BattleLayout, battleKeyPlayer, isTypingTarget } from './battle_layout';
 
 const b = block('battle');
 
@@ -17,9 +18,11 @@ type TimerStatus = 'RESTING' | 'PRIMING' | 'TIMING' | 'DONE';
 interface BattleTimerProps {
 	player: 1 | 2;
 	onSolve: (solve: BattleSolve) => void;
+	/** facing: one half upside down for a device lying flat; side: both upright (desktop, 3.0-i) */
+	layout?: BattleLayout;
 }
 
-export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
+export default function BattleTimer({ player, onSolve, layout = 'facing' }: BattleTimerProps) {
 	const { t } = useTranslation();
 	const { state, dispatch } = useBattle();
 	const { status: cubeStatus, stream: cubeStream, connect: connectCube, disconnect: disconnectCube, markSolved, subscribeGyro, registerHandler } = useBattleCubes();
@@ -68,12 +71,31 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		setStatus(newStatus);
 	}, []);
 
+	// Read by the reset effect below without making the cube state one of its triggers.
+	const smartActiveRef = useRef(false);
+	smartActiveRef.current = cubeStatus[player].state === 'connected';
+	const lastScrambleRef = useRef(currentScramble);
+
 	// Reset when round changes or scramble refreshes (cube type change, RESET,
 	// CHANGE_SCRAMBLE — all generate new currentScramble). currentRound alone isn't sufficient
 	// because after RESET on first round, currentRound is still 0, so effect won't trigger.
 	useEffect(() => {
 		// Timer already running — don't touch (started from handler or from the cube)
 		if (statusRef.current === 'TIMING') return;
+
+		const scrambleChanged = lastScrambleRef.current !== currentScramble;
+		lastScrambleRef.current = currentScramble;
+
+		// The other player's first move opens the round without changing the scramble. With a
+		// cube each player starts on their own first move, and this one may still be scrambling
+		// or already sitting on the finished scramble. Their engine keeps tracking either way, so
+		// wiping the half here sent a ready player back to "scramble the cube" while the cube
+		// was armed, and erased a scrambling player's progress.
+		if (!scrambleChanged && smartActiveRef.current) {
+			// PLAYER_START cleared both ready flags when it opened the round
+			if (statusRef.current === 'PRIMING') dispatch({ type: 'PLAYER_READY', player });
+			return;
+		}
 
 		setDisplayTime(0);
 		setPenalty('none');
@@ -347,6 +369,73 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		pressEnd();
 	}, [pressEnd]);
 
+	/**
+	 * Keyboard play for the side by side desktop layout (3.0-i): two people cannot share one
+	 * mouse, so each player gets a key on their own side of the keyboard (battle_layout.ts).
+	 * Held and released like a stackmat to start, pressed to stop: the same pressStart and
+	 * pressEnd the finger and the mouse drive, so the ready rules, the cube lock-out and the
+	 * penalties behave exactly as they do with touch.
+	 *
+	 * Bound only in the side layout. A tablet with a keyboard keeps its touch layout and its
+	 * screen shows no key, so a key it does not advertise must not start anything either.
+	 */
+	const keyHeldRef = useRef(false);
+	const pressStartRef = useRef(pressStart);
+	pressStartRef.current = pressStart;
+	const pressEndRef = useRef(pressEnd);
+	pressEndRef.current = pressEnd;
+
+	useEffect(() => {
+		if (layout !== 'side' || typeof window === 'undefined') return undefined;
+
+		// A hold that never gets its keyup (window switched away, a menu opened over the half)
+		// must not leave the half sitting on "ready" or start a solve nobody released.
+		const cancelHold = () => {
+			if (!keyHeldRef.current) return;
+			keyHeldRef.current = false;
+			touchActiveRef.current = false;
+			if (statusRef.current === 'PRIMING') {
+				updateStatus('RESTING');
+				dispatch({ type: 'PLAYER_UNREADY', player });
+			}
+		};
+
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (battleKeyPlayer(e) !== player) return;
+			if (isTypingTarget(e.target)) return;
+			const s = stateRef.current;
+			if (s.menuOpen || s.historyOpen) return;
+			e.preventDefault();
+			if (e.repeat || keyHeldRef.current) return;
+			keyHeldRef.current = true;
+			pressStartRef.current();
+		};
+
+		const onKeyUp = (e: KeyboardEvent) => {
+			// Modifiers ignored on the way up: a Ctrl pressed mid-hold must still release it
+			if (battleKeyPlayer({ key: e.key, code: e.code }) !== player) return;
+			if (!keyHeldRef.current) return;
+			e.preventDefault();
+			const s = stateRef.current;
+			if (s.menuOpen || s.historyOpen) {
+				cancelHold();
+				return;
+			}
+			keyHeldRef.current = false;
+			pressEndRef.current();
+		};
+
+		window.addEventListener('keydown', onKeyDown);
+		window.addEventListener('keyup', onKeyUp);
+		window.addEventListener('blur', cancelHold);
+		return () => {
+			window.removeEventListener('keydown', onKeyDown);
+			window.removeEventListener('keyup', onKeyUp);
+			window.removeEventListener('blur', cancelHold);
+			keyHeldRef.current = false;
+		};
+	}, [layout, player, dispatch, updateStatus]);
+
 	const applyPenalty = useCallback(
 		(type: 'plus2' | 'dnf') => {
 			if (status !== 'DONE' && !alreadySolved) return;
@@ -452,13 +541,26 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	// --- Stats ---
 	const playerStats = useMemo(() => getPlayerStats(rounds, player), [rounds, player]);
 
+	// --- Layout ---
+	const sideLayout = layout === 'side';
+	// Only the facing layout turns a half over: on a desktop both players sit on the same side
+	const upsideDown = !sideLayout && player === 1;
+	const playerKey = BATTLE_KEYS[player];
+	// The key cap stays on screen between solves so each player always sees which key is theirs;
+	// a running solve keeps the half for the time alone, as it does for every other control.
+	const showKeyCap = sideLayout && !smartActive && status !== 'TIMING';
+
 	// --- Time text ---
 	const isIdle = status === 'RESTING' && !alreadySolved;
 	let timeText: string;
 	if (isIdle) {
 		// With a cube on the line the player scrambles instead of tapping, so the prompt has
 		// to say so, otherwise the screen tells them to do the one thing that now does nothing.
-		timeText = smartActive ? t('battle.scramble_cube') : t('battle.tap_to_start');
+		timeText = smartActive
+			? t('battle.scramble_cube')
+			: sideLayout
+				? t('battle.key_to_start', { key: playerKey.label })
+				: t('battle.tap_to_start');
 	} else if (status === 'PRIMING') {
 		timeText = smartActive ? t('battle.cube_ready') : '0.00';
 	} else if (status === 'TIMING' && !settings.showTimeWhenSolving) {
@@ -473,13 +575,15 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 	// --- Modifier ---
 	const timerMod: Record<string, boolean> = {
-		rotated: player === 1,
+		rotated: upsideDown,
 		// Which screen edge this half touches, so the stylesheet can keep it clear of the notch
 		// and the home indicator. The sheet used to work this out with :first-child and
 		// :nth-child(3), which match nothing: the screen-reader heading is the block's first
 		// child, so the halves are the second and the fourth element.
-		top: player === 1,
-		bottom: player === 2,
+		top: !sideLayout && player === 1,
+		bottom: !sideLayout && player === 2,
+		'side-left': sideLayout && player === 1,
+		'side-right': sideLayout && player === 2,
 		priming: status === 'PRIMING',
 		timing: status === 'TIMING',
 		done: status === 'DONE' || (alreadySolved && status === 'RESTING'),
@@ -497,9 +601,20 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const isLosing =
 		player === 1 ? player1Score < player2Score : player2Score < player1Score;
 
-	// roundActive: someone started but both didn't finish together — show timer only
-	const showPenalties = !roundActive && (status === 'DONE' || (alreadySolved && status === 'RESTING'));
-	const showScoreBadge = settings.showScore && !roundActive;
+	/**
+	 * roundActive: someone started but both didn't finish together — show timer only.
+	 *
+	 * With a cube that rule is per half. Each player starts on their own first move, so the
+	 * other player starting says nothing about this one: a player still scrambling keeps the
+	 * scramble, the correction and the cube controls until they start or finish themselves.
+	 * Hiding them on the opponent's start left the slower scrambler with no scramble to finish,
+	 * stuck on a round they could never start.
+	 */
+	const stillToStart = smartActive && status !== 'TIMING' && !alreadySolved;
+	const halfBusy = roundActive && !stillToStart;
+
+	const showPenalties = !halfBusy && (status === 'DONE' || (alreadySolved && status === 'RESTING'));
+	const showScoreBadge = settings.showScore && !halfBusy;
 	/**
 	 * The streak used to carry a !showPenalties guard as well, because it sat in the top-right
 	 * corner and the penalty buttons claim that corner. The guard made it unreachable: a round
@@ -509,9 +624,9 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	 * longer competes for the corner and the guard is gone.
 	 */
 	const showStreakBadge =
-		settings.showWinStreak && !roundActive && winStreak.count >= 2 && winStreak.player === player;
+		settings.showWinStreak && !halfBusy && winStreak.count >= 2 && winStreak.player === player;
 	// The cube button stays out of the way while a solve is running.
-	const showCubeButton = status !== 'TIMING' && !roundActive;
+	const showCubeButton = status !== 'TIMING' && !halfBusy;
 
 	/**
 	 * Scramble done, waiting to start: the screen already says "Hazır" where the time goes, so
@@ -636,8 +751,8 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				<div
 					className={b('cube-preview', {
 						hidden: !showCubePreview,
-						left: player === 1,
-						right: player === 2,
+						left: upsideDown,
+						right: !upsideDown,
 					})}
 				>
 					<SmartCubeView
@@ -707,10 +822,17 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				</div>
 			)}
 
+			{/* This player's key (side by side desktop layout) */}
+			{showKeyCap && (
+				<kbd className={b('key')} title={t('battle.key_hint', { key: playerKey.label })} lang="en">
+					{playerKey.label}
+				</kbd>
+			)}
+
 			{/* Player name */}
 			{settings.showPlayerNames && (
 				<div className={b('player-name')}>
-					{player === 1 ? settings.player1Name : settings.player2Name}
+					{displayPlayerName(player === 1 ? settings.player1Name : settings.player2Name, t)}
 				</div>
 			)}
 
@@ -719,13 +841,13 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 			{/* Scramble — hide when round is active (someone solving). With a cube connected
 			    this area doubles as the correction display: see scrambleBody above. */}
-			{settings.showScramble && !roundActive && status !== 'TIMING' && !readyWithCube && (
+			{settings.showScramble && !halfBusy && status !== 'TIMING' && !readyWithCube && (
 				<div className={b('scramble')}>{scrambleBody}</div>
 			)}
 
 			{/* Stats */}
-			{settings.showStatistics && !roundActive && playerStats && (
-				<div className={b('stats', { left: player === 2, right: player === 1 })}>
+			{settings.showStatistics && !halfBusy && playerStats && (
+				<div className={b('stats', { left: !upsideDown, right: upsideDown })}>
 					{playerStats.best !== null && (
 						<div>
 							{t('battle.best')}: {getTimeString(playerStats.best)}

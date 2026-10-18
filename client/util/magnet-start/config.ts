@@ -90,9 +90,29 @@ export const PLATFORM_MIN_UT: Record<MagnetPlatform, number> = {
 	android: 10,
 };
 
+/**
+ * Detector settings. Every cube runs with the nearMin / farMax derived from its own
+ * calibration on this phone model (cube_profile.ts, shared/magnet_calibration.ts); BASE's
+ * 150 / 80 are the caps of that formula and what the admin bench runs without a cube. There
+ * is deliberately no per-puzzle or per-model default that would let a cube run uncalibrated:
+ * the owner made calibration mandatory for every cube, 3x3 included (2026-10-05).
+ */
 export function detectorConfigFor(platform: MagnetPlatform, overrides?: Partial<DetectorConfig>): DetectorConfig {
 	return { ...BASE, platformMin: PLATFORM_MIN_UT[platform], ...overrides };
 }
+
+/**
+ * "Phone in the hand" (design 6.4): no steady plateau for this long while the cube is not
+ * resting at the phone. A phone on the table finds one every few hundred ms.
+ */
+export const MOVING_AFTER_MS = 1500;
+/**
+ * Above this |B - F| the unsteady reading is a magnet at the phone, not a turning phone. The
+ * earth field is at most ~65 uT, so turning the phone moves |B - F| by at most ~130 uT; a cube
+ * being placed and settling at the hot spot reads several hundred (recorded iPhone placement:
+ * 2.3 s unsteady at 460-500 uT before the near plateau).
+ */
+export const MOVING_MAX_DELTA_UT = 150;
 
 // Controller timing
 /** Minimum time the cube must rest before READY; freeze_time extends it. */

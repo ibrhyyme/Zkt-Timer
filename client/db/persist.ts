@@ -3,6 +3,7 @@ import { saveLokiDb, updateOfflineHash } from '../components/layout/offline';
 import { canReadSync } from '../lib/sync-gate';
 import { getStore } from '../components/store';
 import { onVisibilityChange } from '../util/app-visibility';
+import { afterNextPaint } from '../util/after-paint';
 
 // The one way a data change gets written to IndexedDB (and, for Pro, announced to other
 // devices through the offline hash). Timing rules and the reasons for them are in
@@ -16,7 +17,9 @@ function runIdle(fn: () => void) {
 	if (typeof ric === 'function') {
 		ric(fn, {timeout: 1000});
 	} else {
-		setTimeout(fn, 0);
+		// Safari and the iOS app have no requestIdleCallback. A bare zero timeout could run
+		// before the frame that shows the change, holding it for the length of the write.
+		afterNextPaint(fn);
 	}
 }
 

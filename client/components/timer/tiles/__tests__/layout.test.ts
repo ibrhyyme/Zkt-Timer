@@ -7,6 +7,7 @@ import {
 	clampRailWidth,
 	computeZoneRects,
 	dropIndexInZone,
+	floatBoxOnScreen,
 	floatTile,
 	hitTestZone,
 	moveTile,
@@ -197,6 +198,47 @@ describe('clampFloatBox', () => {
 		const box = clampFloatBox({ x: 10, y: 10, w: 10, h: 10 }, VIEWPORT);
 		expect(box.w).toBe(TILE_LIMITS.floatMinW);
 		expect(box.h).toBe(TILE_LIMITS.floatMinH);
+	});
+
+	it('keeps the header below the fixed top bar when one is given', () => {
+		// Dropped onto the bar: the header (grip, close button) would sit under it.
+		expect(clampFloatBox({ x: 400, y: 20, w: 380, h: 300 }, VIEWPORT, 80).y).toBe(80);
+		expect(clampFloatBox({ x: 400, y: -300, w: 380, h: 300 }, VIEWPORT, 80).y).toBe(80);
+		// Already below the bar: untouched.
+		expect(clampFloatBox({ x: 400, y: 200, w: 380, h: 300 }, VIEWPORT, 80).y).toBe(200);
+	});
+
+	it('never lets the top bar push the minimum above the bottom limit', () => {
+		const box = clampFloatBox({ x: 400, y: 5000, w: 380, h: 300 }, { width: 1600, height: 100 }, 80);
+		expect(box.y).toBe(80);
+	});
+
+	it('ignores a top inset that is not a number', () => {
+		expect(clampFloatBox({ x: 400, y: -50, w: 380, h: 300 }, VIEWPORT, NaN).y).toBe(14);
+	});
+});
+
+describe('floatBoxOnScreen', () => {
+	const frame = { ...VIEWPORT, topInset: 80 };
+
+	it('brings a tile stored under the top bar back below it', () => {
+		const box = floatBoxOnScreen({ dock: 'float', order: 0, x: 300, y: 10, w: 380, h: 280 }, frame);
+		expect(box).toEqual({ x: 300, y: 80, w: 380, h: 280 });
+	});
+
+	it('brings a tile stored for a wider window back on screen', () => {
+		const box = floatBoxOnScreen({ dock: 'float', order: 0, x: 3000, y: 300, w: 380, h: 280 }, frame);
+		expect(box.x).toBe(VIEWPORT.width - 90);
+	});
+
+	it('leaves a tile that is already reachable where it is', () => {
+		const config = { dock: 'float' as const, order: 0, x: 500, y: 400, w: 420, h: 300 };
+		expect(floatBoxOnScreen(config, frame)).toEqual({ x: 500, y: 400, w: 420, h: 300 });
+	});
+
+	it('falls back to the default size for a box with missing fields', () => {
+		const box = floatBoxOnScreen({ dock: 'float', order: 0, x: null, y: null, w: null, h: null }, frame);
+		expect(box).toEqual({ x: 0, y: 80, w: TILE_LIMITS.floatDefaultW, h: TILE_LIMITS.floatDefaultH });
 	});
 });
 

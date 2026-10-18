@@ -47,6 +47,14 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 }
 
 let probePromise: Promise<MagnetCapabilities | null> | null = null;
+// The settled probe, readable synchronously: a picker mounted after it settled starts with
+// the answer instead of drawing one frame without the Magnet tile.
+let probeResult: MagnetCapabilities | null | undefined;
+
+/** undefined until the probe settles (or before it was ever asked), then its result. */
+export function peekMagnetProbe(): MagnetCapabilities | null | undefined {
+	return probeResult;
+}
 
 /**
  * The real gate, once per session. An app binary built before this plugin existed has
@@ -72,7 +80,10 @@ export function probeMagnetDetector(): Promise<MagnetCapabilities | null> {
 				// Old binary without the plugin. Expected, not an error worth logging.
 				return null;
 			}
-		})();
+		})().then((result) => {
+			probeResult = result;
+			return result;
+		});
 	}
 	return probePromise;
 }

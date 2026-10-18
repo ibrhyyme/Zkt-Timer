@@ -1,411 +1,376 @@
-import React, {useState, useEffect} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {useHistory, useLocation} from 'react-router-dom';
-import {MagnifyingGlass, Trophy, Medal, Crown, Info} from 'phosphor-react';
-import {gqlQuery, gqlQueryTyped} from '../api';
-import {RankingsDocument} from '../../@types/generated/graphql';
-import gql from 'graphql-tag';
-import {useMe} from '../../util/hooks/useMe';
-import {resourceUri, getStorageURL} from '../../util/storage';
-import {LINKED_SERVICES} from '../../../shared/integration';
-import {oauthRedirectUri, openOAuthAuthorize, markNativeOAuthState} from '../../util/oauth-native';
-import {countryFlag} from '../community/my_schedule/shared';
+import {MagnifyingGlass, Trophy} from 'phosphor-react';
 import PageTitle from '../common/page_title/PageTitle';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
+import Button from '../common/button/Button';
+import LoadingIcon from '../common/LoadingIcon';
 import block from '../../styles/bem';
+import {gqlQueryTyped} from '../api';
+import {
+	BattleLeaderboardDocument,
+	BattleLeaderboardRowFragmentFragment,
+	MyBattleRatingDocument,
+	MyBattleRatingQuery,
+} from '../../@types/generated/graphql';
+import {useMe} from '../../util/hooks/useMe';
+import {BATTLE_PUZZLE, LEADERBOARD_PAGE_SIZE} from '../../../shared/battle/config';
+import {useBattleLaunch} from '../battle/useBattleLaunch';
+import {ONLINE_BATTLE_PATH} from '../battle/battle_landing_modes';
+import {avatarSrc} from '../battle/online/OpponentBar';
+import {
+	SEARCH_DEBOUNCE_MS,
+	SEARCH_MAX_LENGTH,
+	appendLeaderboardRows,
+	hasMoreRows,
+	normalizeSearch,
+	pickRankingsView,
+	winRatePercent,
+} from './rankings_view';
 import './Rankings.scss';
 
 const b = block('rankings');
 
-type RankingMode = 'kinch' | 'sor_single' | 'sor_average';
+type LeaderboardRow = BattleLeaderboardRowFragmentFragment;
+type MyRating = NonNullable<MyBattleRatingQuery['myBattleRating']>;
 
-interface RankedUser {
-	rank: number;
-	user_id: string;
-	username: string;
-	is_pro: boolean;
-	wca_id: string;
-	country_iso2: string;
-	score: number;
-	wca_competition_count?: number;
-	wca_medal_gold?: number;
-	wca_medal_silver?: number;
-	wca_medal_bronze?: number;
-	pfp_image_url?: string;
-}
-
-const MODES: {key: RankingMode; label: string}[] = [
-	{key: 'kinch', label: 'ranks.kinch'},
-	{key: 'sor_single', label: 'ranks.sor_single'},
-	{key: 'sor_average', label: 'ranks.sor_average'},
-];
-
+/**
+ * /ranks: the Online Battle leaderboard (ranking-battle 5.6). The order comes from the
+ * cautious rating (rating - 2 x uncertainty, server side), the number shown is the rating
+ * itself, so a provisional "?" player can sit below someone with a lower number.
+ *
+ * Until Online Battle is open to this viewer (site flag off, not an admin) the page keeps the
+ * empty state R1 put here; it is out of the menu and the index until launch (B5).
+ */
 export default function Rankings() {
+	const {t} = useTranslation();
+	const view = pickRankingsView(useBattleLaunch());
+
 	return (
-		<OfflineGuard>
-			<RankingsContent />
-		</OfflineGuard>
+		<FeatureGuard feature="leaderboards_enabled" pageNameKey="nav.ranks">
+			<div className={b()}>
+				<PageTitle pageName={t('ranks.title')} />
+
+				<div className={b('inner')}>
+					{/* The page's own heading on a desktop; a phone shows the title in its top bar. */}
+					<header className={b('head')}>
+						<h1 className={b('title')}>{t('ranks.title')}</h1>
+						{/* The subtitle explains the list order, so it goes with the list. */}
+						{view === 'board' && <p className={b('subtitle')}>{t('ranks.subtitle')}</p>}
+					</header>
+					{view === 'board' ? (
+						<OfflineGuard>
+							<RankingsBoard />
+						</OfflineGuard>
+					) : (
+						<ComingSoon />
+					)}
+				</div>
+			</div>
+		</FeatureGuard>
 	);
 }
 
-function RankingsContent() {
+function ComingSoon() {
 	const {t} = useTranslation();
-	const me = useMe();
-	const history = useHistory();
-	const location = useLocation();
 
-	const params = new URLSearchParams(location.search);
-	const initialMode = (params.get('mode') as RankingMode) || 'kinch';
-	const initialPage = parseInt(params.get('page') || '0', 10);
+	return (
+		<div className={b('coming-soon')}>
+			<Trophy className={b('coming-soon-icon')} size={40} weight="duotone" />
+			<p className={b('coming-soon-body')}>{t('ranks.coming_soon_body')}</p>
+			<Button primary text={t('ranks.coming_soon_cta')} to="/battle" />
+		</div>
+	);
+}
 
-	const [mode, setMode] = useState<RankingMode>(initialMode);
-	const [page, setPage] = useState(initialPage);
-	const [search, setSearch] = useState('');
-	const [searchDebounced, setSearchDebounced] = useState('');
-	const [rows, setRows] = useState<RankedUser[]>([]);
-	const [totalCount, setTotalCount] = useState(0);
-	const [loading, setLoading] = useState(true);
-	const [hasWca, setHasWca] = useState<boolean | null>(null);
-	const [showInfo, setShowInfo] = useState(false);
+/** The signed-in player's own rating; asked once per visit, never on the server. */
+function useMyRating(signedIn: boolean): {rating: MyRating | null; loaded: boolean} {
+	const [state, setState] = useState<{rating: MyRating | null; loaded: boolean}>({rating: null, loaded: false});
 
-	// WCA bagli mi kontrol et
 	useEffect(() => {
-		if (!me) {
-			setHasWca(false);
+		if (!signedIn) {
+			setState({rating: null, loaded: true});
 			return;
 		}
-		(async () => {
-			try {
-				const res = await gqlQuery(
-					gql`query CheckWca($type: IntegrationType!) { integration(integrationType: $type) { wca_id } }`,
-					{type: 'wca'}
-				);
-				setHasWca(!!res.data?.integration?.wca_id);
-			} catch {
-				setHasWca(false);
-			}
-		})();
-	}, [me]);
+		let alive = true;
+		gqlQueryTyped(MyBattleRatingDocument, {puzzle: BATTLE_PUZZLE}, {fetchPolicy: 'no-cache'})
+			.then((res) => {
+				if (alive) setState({rating: res?.data?.myBattleRating || null, loaded: true});
+			})
+			.catch(() => {
+				if (alive) setState({rating: null, loaded: true});
+			});
+		return () => {
+			alive = false;
+		};
+	}, [signedIn]);
+
+	return state;
+}
+
+type BoardStatus = 'loading' | 'ready' | 'error';
+
+function RankingsBoard() {
+	const {t} = useTranslation();
+	const me = useMe();
+	const myRating = useMyRating(!!me);
+
+	const [searchInput, setSearchInput] = useState('');
+	const [search, setSearch] = useState('');
+	const [rows, setRows] = useState<LeaderboardRow[]>([]);
+	const [pagesLoaded, setPagesLoaded] = useState(0);
+	const [total, setTotal] = useState(0);
+	const [pageSize, setPageSize] = useState(LEADERBOARD_PAGE_SIZE);
+	const [status, setStatus] = useState<BoardStatus>('loading');
+	const [loadingMore, setLoadingMore] = useState(false);
+	const [hintFor, setHintFor] = useState<string | null>(null);
+	// Only the newest request may write; a slow page for an old search term is dropped.
+	const requestRef = useRef(0);
 
 	useEffect(() => {
-		const timer = setTimeout(() => setSearchDebounced(search), 300);
-		return () => clearTimeout(timer);
-	}, [search]);
+		const id = setTimeout(() => setSearch(normalizeSearch(searchInput)), SEARCH_DEBOUNCE_MS);
+		return () => clearTimeout(id);
+	}, [searchInput]);
+
+	const loadPage = useCallback(async (page: number, term: string) => {
+		const request = ++requestRef.current;
+		if (page === 0) setStatus('loading');
+		else setLoadingMore(true);
+
+		try {
+			const res = await gqlQueryTyped(
+				BattleLeaderboardDocument,
+				{puzzle: BATTLE_PUZZLE, page, search: term || null},
+				{fetchPolicy: 'no-cache'}
+			);
+			if (request !== requestRef.current) return;
+			const data = res?.data?.battleLeaderboard;
+			const next = (data?.rows || []).filter(Boolean) as LeaderboardRow[];
+			setRows((prev) => (page === 0 ? next : appendLeaderboardRows(prev, next)));
+			setPagesLoaded(page + 1);
+			setTotal(data?.total_count || 0);
+			setPageSize(data?.page_size || LEADERBOARD_PAGE_SIZE);
+			setStatus('ready');
+		} catch (e) {
+			if (request !== requestRef.current) return;
+			// A failed "more" keeps the rows already shown; only a failed first page is an error.
+			if (page === 0) setStatus('error');
+		} finally {
+			if (request === requestRef.current) setLoadingMore(false);
+		}
+	}, []);
 
 	useEffect(() => {
-		const p = new URLSearchParams();
-		p.set('mode', mode);
-		if (page > 0) p.set('page', String(page));
-		history.replace({search: p.toString()});
-	}, [mode, page]);
+		setHintFor(null);
+		loadPage(0, search);
+	}, [search, loadPage]);
 
-	useEffect(() => {
-		let cancelled = false;
-		setLoading(true);
-
-		(async () => {
-			try {
-				const res = await gqlQueryTyped(RankingsDocument, {
-					mode,
-					page: searchDebounced ? 0 : page,
-					search: searchDebounced || null,
-				});
-				if (cancelled) return;
-				const data = res.data?.rankings;
-				if (data) {
-					setRows(data.rows as RankedUser[]);
-					setTotalCount(data.total_count);
-				}
-			} catch (err) {
-				console.error('[Rankings] Fetch error:', err);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-
-		return () => { cancelled = true; };
-	}, [mode, page, searchDebounced]);
-
-	const totalPages = Math.ceil(totalCount / 50);
-	const isKinch = mode === 'kinch';
-
-	function formatScore(score: number): string {
-		if (isKinch) return score.toFixed(2);
-		return score.toLocaleString('en-US');
+	function toggleHint(key: string) {
+		setHintFor((cur) => (cur === key ? null : key));
 	}
 
-	function handleWcaLink() {
-		const service = LINKED_SERVICES.wca;
-		const wcaParams = new URLSearchParams({
-			client_id: service.clientId,
-			response_type: service.responseType,
-			scope: service.scope.join(' '),
-			redirect_uri: oauthRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
-			state: markNativeOAuthState('/ranks'),
-		});
-		openOAuthAuthorize(`${service.authEndpoint}?${wcaParams.toString()}`);
-	}
+	const canLoadMore = status === 'ready' && hasMoreRows(pagesLoaded, pageSize, total);
 
-	function getUserInitial(username: string): string {
-		return (username || '?').charAt(0).toUpperCase();
-	}
-
-	function renderCard(row: RankedUser) {
-		const totalMedals = (row.wca_medal_gold || 0) + (row.wca_medal_silver || 0) + (row.wca_medal_bronze || 0);
-
-		return (
-			<div
-				key={row.user_id}
-				className={b('card', {
-					gold: row.rank === 1,
-					silver: row.rank === 2,
-					bronze: row.rank === 3,
-				})}
-				onClick={() => history.push(`/user/${row.username}`)}
-			>
-				{/* Rank */}
-				<div className={b('card-rank')}>
-					<span className={b('rank-num', {
-						gold: row.rank === 1,
-						silver: row.rank === 2,
-						bronze: row.rank === 3,
-					})}>
-						{row.rank}
-					</span>
-				</div>
-
-				{/* Avatar */}
-				<div className={b('card-avatar', {pro: row.is_pro})}>
-					{row.pfp_image_url ? (
-						<img
-							src={getStorageURL(row.pfp_image_url)}
-							alt={row.username}
-							className={b('avatar-img')}
-						/>
-					) : (
-						<div className={b('avatar-fallback')}>
-							{getUserInitial(row.username)}
-						</div>
-					)}
-				</div>
-
-				{/* Info */}
-				<div className={b('card-info')}>
-					<div className={b('card-name-row')}>
-						<span className={b('flag')}>{countryFlag(row.country_iso2)}</span>
-						<span className={b('username')}>{row.username}</span>
-						{row.is_pro && <span className={b('pro-badge')}>PRO</span>}
-					</div>
-					<span className={b('wca-id')}>{row.wca_id}</span>
-					{/* Stats row */}
-					<div className={b('card-stats')}>
-						{row.wca_competition_count > 0 && (
-							<span className={b('stat')}>
-								<Trophy size={12} weight="fill" />
-								{row.wca_competition_count}
-							</span>
-						)}
-						{row.wca_medal_gold > 0 && (
-							<span className={b('stat', {gold: true})}>
-								<Crown size={12} weight="fill" />
-								{row.wca_medal_gold}
-							</span>
-						)}
-						{row.wca_medal_silver > 0 && (
-							<span className={b('stat', {silver: true})}>
-								<Medal size={12} weight="fill" />
-								{row.wca_medal_silver}
-							</span>
-						)}
-						{row.wca_medal_bronze > 0 && (
-							<span className={b('stat', {bronze: true})}>
-								<Medal size={12} weight="fill" />
-								{row.wca_medal_bronze}
-							</span>
-						)}
-					</div>
-				</div>
-
-				{/* Score */}
-				<div className={b('card-score')}>
-					<span className={b('score-value')}>{formatScore(row.score)}</span>
-					<span className={b('score-label')}>
-						{isKinch ? t('ranks.score') : t('ranks.sum')}
-					</span>
-				</div>
+	let list: React.ReactNode;
+	if (status === 'loading') {
+		list = (
+			<div className={b('state')}>
+				<LoadingIcon />
 			</div>
+		);
+	} else if (status === 'error') {
+		list = (
+			<div className={b('state')}>
+				<p className={b('state-text')}>{t('ranks.load_error')}</p>
+				<Button text={t('ranks.retry')} onClick={() => loadPage(0, search)} />
+			</div>
+		);
+	} else if (!rows.length) {
+		list = (
+			<div className={b('state')}>
+				<p className={b('state-text')}>{search ? t('ranks.no_results') : t('ranks.empty')}</p>
+			</div>
+		);
+	} else {
+		list = (
+			<ol className={b('list')}>
+				{rows.map((row) => (
+					<LeaderboardItem
+						key={row.user_id}
+						row={row}
+						isMe={!!me && row.user_id === me.id}
+						hintOpen={hintFor === row.user_id}
+						onToggleHint={() => toggleHint(row.user_id)}
+					/>
+				))}
+			</ol>
 		);
 	}
 
 	return (
-		<FeatureGuard feature="leaderboards_enabled" pageNameKey="nav.ranks">
-		<div className={b()}>
-			<PageTitle pageName={t('ranks.title')} />
+		<div className={b('board')}>
+			<MyCard
+				signedIn={!!me}
+				rating={myRating.rating}
+				loaded={myRating.loaded}
+				hintOpen={hintFor === 'me'}
+				onToggleHint={() => toggleHint('me')}
+			/>
 
-			<div className={b('inner')}>
-				{/* WCA Banner — sadece WCA bagli degilse goster */}
-				{me && hasWca === false && (
-					<div className={b('wca-banner')}>
-						<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-banner-logo')} />
-						<div className={b('wca-banner-body')}>
-							<h3 className={b('wca-banner-title')}>{t('ranks.link_wca_title')}</h3>
-							<p className={b('wca-banner-desc')}>{t('ranks.link_wca_desc')}</p>
-							<button className={b('wca-banner-btn')} onClick={handleWcaLink}>
-								{t('ranks.link_wca_button')}
-							</button>
-						</div>
-					</div>
-				)}
-				{!me && (
-					<div className={b('wca-banner')}>
-						<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-banner-logo')} />
-						<div className={b('wca-banner-body')}>
-							<h3 className={b('wca-banner-title')}>{t('ranks.login_title')}</h3>
-							<p className={b('wca-banner-desc')}>{t('ranks.login_desc')}</p>
-							<button className={b('wca-banner-btn')} onClick={handleWcaLink}>
-								{t('ranks.login_button')}
-							</button>
-						</div>
-					</div>
-				)}
-
-				{/* Tabs */}
-				<div className={b('tabs')}>
-					{MODES.map((m) => (
-						<button
-							key={m.key}
-							className={b('tab', {active: mode === m.key})}
-							onClick={() => { setMode(m.key); setPage(0); }}
-						>
-							{t(m.label)}
-						</button>
-					))}
-					<button
-						className={b('info-toggle', {active: showInfo})}
-						onClick={() => setShowInfo(!showInfo)}
-						aria-label="Info"
-					>
-						<Info size={18} weight={showInfo ? 'fill' : 'bold'} />
-					</button>
-				</div>
-
-				{/* Info Card */}
-				{showInfo && (
-					<div className={b('info-card')}>
-						{isKinch ? (
-							<>
-								<h3 className={b('info-title')}>{t('ranks.info_kinch_title')}</h3>
-								<p className={b('info-text')}>{t('ranks.info_kinch_desc')}</p>
-								<p className={b('info-text')}>{t('ranks.info_kinch_mbld')}</p>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_special_title')}</h4>
-								<p className={b('info-text')}>{t('ranks.info_kinch_special_desc')}</p>
-								<ul className={b('info-list')}>
-									{t('ranks.info_kinch_special_list').split(', ').map((item) => (
-										<li key={item}>{item} single & average</li>
-									))}
-								</ul>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_meaning_title')}</h4>
-								<p className={b('info-text')}>{t('ranks.info_kinch_meaning_desc')}</p>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_why_title')}</h4>
-								<p className={b('info-text')}>{t('ranks.info_kinch_why_desc')}</p>
-								<ul className={b('info-list')}>
-									<li>{t('ranks.info_kinch_why_1')}</li>
-									<li>{t('ranks.info_kinch_why_2')}</li>
-									<li>{t('ranks.info_kinch_why_3')}</li>
-									<li>{t('ranks.info_kinch_why_4')}</li>
-								</ul>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_alt_title')}</h4>
-								<p className={b('info-text', {dim: true})}>{t('ranks.info_alt_kinch')}</p>
-							</>
-						) : (
-							<>
-								<h3 className={b('info-title')}>{t('ranks.info_sor_title')}</h3>
-								<p className={b('info-text')}>{t('ranks.info_sor_desc')}</p>
-								<p className={b('info-text', {dim: true})}>
-									{mode === 'sor_single' ? t('ranks.info_sor_single_note') : t('ranks.info_sor_average_note')}
-								</p>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_sor_meaning_title')}</h4>
-								<p className={b('info-text')}>{t('ranks.info_sor_meaning_desc')}</p>
-
-								<h4 className={b('info-subtitle')}>{t('ranks.info_alt_title')}</h4>
-								<p className={b('info-text', {dim: true})}>{t('ranks.info_alt_sor')}</p>
-							</>
-						)}
-					</div>
-				)}
-
-				{/* Search */}
-				<div className={b('search-box')}>
-					<MagnifyingGlass size={18} weight="bold" />
+			<div className={b('toolbar')}>
+				<label className={b('search')}>
+					<MagnifyingGlass className={b('search-icon')} weight="bold" aria-hidden="true" />
 					<input
-						type="text"
+						type="search"
 						className={b('search-input')}
+						value={searchInput}
+						maxLength={SEARCH_MAX_LENGTH}
 						placeholder={t('ranks.search_placeholder')}
-						value={search}
-						maxLength={100}
-						onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+						aria-label={t('ranks.search_placeholder')}
+						onChange={(e) => setSearchInput(e.target.value)}
 					/>
-				</div>
-
-				{/* Content */}
-				<div className={b('content')}>
-					{loading ? (
-						<div className={b('state')}>
-							<div className={b('spinner')} />
-						</div>
-					) : rows.length === 0 ? (
-						<div className={b('state')}>
-							<p className={b('empty-text')}>{t('ranks.no_results')}</p>
-						</div>
-					) : (
-						<>
-							<div className={b('card-list')}>
-								{rows.map(renderCard)}
-							</div>
-
-							{!searchDebounced && totalPages > 1 && (
-								<div className={b('pagination')}>
-									<button
-										className={b('page-btn')}
-										disabled={page === 0}
-										onClick={() => setPage(Math.max(0, page - 1))}
-									>
-										&#9664;
-									</button>
-									{Array.from({length: Math.min(5, totalPages)}, (_, i) => {
-										const startPage = Math.max(0, Math.min(page - 2, totalPages - 5));
-										const pageNum = startPage + i;
-										if (pageNum >= totalPages) return null;
-										return (
-											<button
-												key={pageNum}
-												className={b('page-btn', {active: pageNum === page})}
-												onClick={() => setPage(pageNum)}
-											>
-												{pageNum + 1}
-											</button>
-										);
-									})}
-									<button
-										className={b('page-btn')}
-										disabled={page >= totalPages - 1}
-										onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-									>
-										&#9654;
-									</button>
-								</div>
-							)}
-						</>
-					)}
-				</div>
+				</label>
+				<span className={b('puzzle')}>3x3</span>
 			</div>
+
+			{status === 'ready' && rows.length > 0 && (
+				<div className={b('cols')} aria-hidden="true">
+					<span>#</span>
+					<span>{t('ranks.col_player')}</span>
+					<span className={b('cols-end')} lang="en">
+						{t('ranks.col_rating')}
+					</span>
+					<span className={b('cols-end')}>{t('ranks.col_games')}</span>
+					<span className={b('cols-end')}>{t('ranks.col_win')}</span>
+				</div>
+			)}
+
+			{list}
+
+			{canLoadMore && (
+				<div className={b('more')}>
+					<Button text={t('ranks.load_more')} loading={loadingMore} onClick={() => loadPage(pagesLoaded, search)} />
+				</div>
+			)}
 		</div>
-		</FeatureGuard>
+	);
+}
+
+interface MyCardProps {
+	signedIn: boolean;
+	rating: MyRating | null;
+	loaded: boolean;
+	hintOpen: boolean;
+	onToggleHint: () => void;
+}
+
+/** Own standing on top, or the way into the first match (3.0-g: one match puts you on the list). */
+function MyCard({signedIn, rating, loaded, hintOpen, onToggleHint}: MyCardProps) {
+	const {t} = useTranslation();
+
+	if (signedIn && !loaded) return null;
+
+	if (!rating || !rating.games) {
+		return (
+			<div className={b('me', {cta: true})}>
+				<p className={b('me-cta')}>{t('ranks.first_match_cta')}</p>
+				<Button primary text={t('ranks.play_online')} to={ONLINE_BATTLE_PATH} />
+			</div>
+		);
+	}
+
+	const rate = winRatePercent(rating.wins, rating.games);
+	const stats: [string, string][] = [
+		[t('ranks.col_rank'), rating.rank != null ? `#${rating.rank}` : '-'],
+		[t('ranks.col_games'), String(rating.games || 0)],
+		[t('ranks.col_win'), rate != null ? t('ranks.win_rate', {value: rate}) : '-'],
+	];
+
+	// Own standing: the rating large in mono, rank, games and win rate as labelled figures.
+	return (
+		<div className={b('me')}>
+			<div className={b('me-main')}>
+				<span className={b('label')}>{t('ranks.you')}</span>
+				<span className={b('me-rating')}>
+					<RatingValue rating={rating.rating} provisional={!!rating.provisional} onToggleHint={onToggleHint} hintOpen={hintOpen} />
+				</span>
+			</div>
+			<dl className={b('me-stats')}>
+				{stats.map(([label, value]) => (
+					<div key={label} className={b('me-stat')}>
+						<dt className={b('label')}>{label}</dt>
+						<dd className={b('me-stat-value')}>{value}</dd>
+					</div>
+				))}
+			</dl>
+			{hintOpen && <p className={b('hint', {me: true})}>{t('ranks.provisional_hint')}</p>}
+		</div>
+	);
+}
+
+interface RatingValueProps {
+	rating: number | null | undefined;
+	provisional: boolean;
+	hintOpen: boolean;
+	onToggleHint: () => void;
+}
+
+function RatingValue({rating, provisional, hintOpen, onToggleHint}: RatingValueProps) {
+	const {t} = useTranslation();
+
+	return (
+		<span className={b('rating')}>
+			{rating ?? ''}
+			{provisional && (
+				<button
+					type="button"
+					className={b('provisional')}
+					aria-label={t('ranks.provisional')}
+					title={t('ranks.provisional')}
+					aria-expanded={hintOpen}
+					onClick={onToggleHint}
+				>
+					?
+				</button>
+			)}
+		</span>
+	);
+}
+
+interface LeaderboardItemProps {
+	row: LeaderboardRow;
+	isMe: boolean;
+	hintOpen: boolean;
+	onToggleHint: () => void;
+}
+
+function LeaderboardItem({row, isMe, hintOpen, onToggleHint}: LeaderboardItemProps) {
+	const {t} = useTranslation();
+	const src = avatarSrc(row.pfp_image_url);
+	const name = row.username || '';
+	const rate = winRatePercent(row.wins, row.games);
+
+	return (
+		<li className={b('row', {me: isMe})}>
+			<span className={b('rank')}>{row.rank}</span>
+			<Link className={b('player')} to={`/user/${encodeURIComponent(name)}`}>
+				<span className={b('avatar')} aria-hidden="true">
+					{src ? <img src={src} alt="" loading="lazy" /> : name.charAt(0).toUpperCase()}
+				</span>
+				<span className={b('name')}>{name}</span>
+			</Link>
+			<RatingValue rating={row.rating} provisional={!!row.provisional} hintOpen={hintOpen} onToggleHint={onToggleHint} />
+			{/* Two columns on a desktop (games, win rate); one line under the name on a phone. */}
+			<span className={b('meta')}>
+				<span className={b('games')}>
+					<span className={b('games-full')}>{t('ranks.games', {count: row.games || 0})}</span>
+					<span className={b('games-num')}>{row.games || 0}</span>
+				</span>
+				<span className={b('win')}>{rate != null ? t('ranks.win_rate', {value: rate}) : '-'}</span>
+			</span>
+			{hintOpen && <p className={b('hint', {row: true})}>{t('ranks.provisional_hint')}</p>}
+		</li>
 	);
 }

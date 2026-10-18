@@ -11,6 +11,10 @@
 
     &--mobile {
         padding: 0.75rem 0.5rem;
+        // The page dots sit right above this bar (16px row, Dashboard.scss); a full
+        // 0.75rem on top as well left 31px of nothing between the modules and the
+        // averages (owner, 2026-10-13). 0.2rem keeps the band's edge off the cards.
+        padding-top: 0.2rem;
         padding-bottom: max(0.75rem, #{sa(bottom)});
         background: rgba(var(--background-color), 0.3);
         margin-bottom: 0;
@@ -28,14 +32,20 @@
         align-items: center;
         justify-content: center;
         padding: 0.6rem 0.2rem;
-        background: rgba(var(--text-color), 0.03);
+        // Same card surface as the modules and the action row above it (tokens in
+        // styles/index.scss), so the averages stay readable over a timer background
+        // image in both themes (feedback 1.8-f). Was text colour at 3%.
+        background: var(--zt-surface);
         border-radius: 8px;
         transition: transform 0.2s ease, background 0.2s ease;
-        border: 1px solid rgba(var(--text-color), 0.02);
+        border: 1px solid var(--zt-surface-border);
 
-        &:hover {
-            background: rgba(var(--text-color), 0.07);
-            transform: translateY(-2px);
+        // Mouse only: on a phone a tap left the card lifted and see-through.
+        @media (hover: hover) {
+            &:hover {
+                border-color: rgba(var(--text-color), 0.16);
+                transform: translateY(-2px);
+            }
         }
     }
 
@@ -44,7 +54,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: rgba(var(--text-color), 0.4);
+        color: rgba(var(--text-color), 0.7);
         margin-bottom: 0.3rem;
     }
 

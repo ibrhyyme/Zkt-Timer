@@ -126,6 +126,34 @@
 				font-size: 0.88rem;
 				font-weight: 500;
 			}
+
+			// Short phone (E-50): one line each, and the two hints stack in the gap
+			// between the timer digits and the button row instead of covering them.
+			// Offsets measured at 375x667 and 360x740: the stack (2 x 24px + 2px) fits
+			// that gap at both heights only when it starts 2px above the notch centre.
+			@media (max-height: $bp-short-phone-height) and (orientation: portrait) {
+				padding: 4px 10px;
+				border-radius: 8px;
+				white-space: nowrap;
+
+				&--right {
+					bottom: auto;
+					top: calc(50% - 2px);
+				}
+
+				&--left {
+					top: calc(50% + 24px);
+				}
+
+				span {
+					font-size: 0.75rem;
+					line-height: 1.2;
+				}
+
+				.#{$namespace}-edge-drawer__notch-tooltip-sub {
+					display: none;
+				}
+			}
 		}
 	}
 

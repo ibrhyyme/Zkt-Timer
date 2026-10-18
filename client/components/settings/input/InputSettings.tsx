@@ -11,8 +11,7 @@ import CubeTypes from '../cube_types/CubeTypes';
 import { openModal } from '../../../actions/general';
 import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
-import { useGeneral } from '../../../util/hooks/useGeneral';
-import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
+import { getDefaultSetting } from '../../../db/settings/query';
 import InfoWarningModal from '../../common/info_warning_modal/InfoWarningModal';
 import {
 	TimerSettingsGroup,
@@ -23,9 +22,8 @@ import {
 	TimerSettingsSlider,
 } from '../timer/TimerSettingsRow';
 import { VIRTUAL_PROGRESS_METHODS } from '../../../../shared/util/solve/virtual_progress';
-import { timerTypeSupportsBucket } from '../../timer/helpers/timer_type_support';
 import { KEYBOARD_LAYOUTS } from '../../../util/virtual_cube/key_mapping';
-import { TIMER_INPUT_TYPE_KEYS, TIMER_INPUT_TYPES } from '../hardware/timer_input_types';
+import { useTimerChoices } from '../../timer/helpers/useTimerChoices';
 import { isNative } from '../../../util/platform';
 
 /**
@@ -48,12 +46,12 @@ const VIRTUAL_CUBE_SPEEDS: { value: number; label: string }[] = [
 export default function InputSettings() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const mobileMode = useGeneral('mobile_mode');
+	// The same list, names and rules as the header dropdown and the mobile grid: wired only on
+	// desktop web, Magnet Timer only in the app (Pro), unsupported puzzles left out.
+	const { options: inputChoices, active: activeInput, choose: chooseInput } = useTimerChoices({ layout: 'dropdown' });
 
 	// Input
 	const timerType = useSettings('timer_type');
-	const cubeType = useSettings('cube_type');
-	const scrambleSubset = useSettings('scramble_subset');
 	const remoteInputCompat = useSettings('remote_input_compat');
 
 	// StackMat
@@ -154,13 +152,6 @@ export default function InputSettings() {
 		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
 	}
 
-	function getTimerTypeName(tt: string) {
-		if (tt === 'keyboard' && mobileMode) {
-			return t('timer_settings.input_touch');
-		}
-		return t(TIMER_INPUT_TYPE_KEYS[tt]);
-	}
-
 	return (
 		<div className="space-y-2">
 			{/* Input */}
@@ -168,17 +159,20 @@ export default function InputSettings() {
 				<TimerSettingsSelect
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
-					value={timerType}
+					// Manual entry is a mode with its own switch, so it is not one of these rows;
+					// with it on, the row shows the input underneath.
+					value={activeInput === 'manual' ? 'keyboard' : activeInput}
 					// Inputs the current puzzle cannot drive are not offered. Without this
 					// the settings screen was the one place that could still set an
-					// unsupported input, which the timer would then immediately reset.
-					options={TIMER_INPUT_TYPES.filter((c) =>
-						timerTypeSupportsBucket(c, cubeType, scrambleSubset)
-					).map((c) => ({
-						label: getTimerTypeName(c),
-						value: c,
-					}))}
-					onChange={(v) => setSetting('timer_type', v as AllSettings['timer_type'])}
+					// unsupported input, which the timer would then immediately reset. A Pro
+					// lock stays listed: choosing it opens the Pro dialog.
+					options={inputChoices
+						.filter((c) => c.key !== 'manual' && !c.disabled)
+						.map((c) => ({
+							label: c.proGated ? `${c.label} (Pro)` : c.label,
+							value: c.key,
+						}))}
+					onChange={(v) => chooseInput(v as typeof activeInput)}
 				/>
 				<TimerSettingsToggle
 					label={t('timer_settings.remote_input_compat')}
@@ -267,7 +261,9 @@ export default function InputSettings() {
 
 			{/* StackMat */}
 			<TimerSettingsGroup id="input-stackmat" label={t('timer_settings.category_stackmat')}>
-				<TimerSettingsAction label={t('timer_settings.mic_access')}>
+				{/* Both StackMat rows carry a sentence (the mic status, "Usually named USB Audio
+				    Device") that cannot shrink beside the label; on a phone it widened the page. */}
+				<TimerSettingsAction label={t('timer_settings.mic_access')} stackOnMobile>
 					<MicAccess />
 				</TimerSettingsAction>
 				<TimerSettingsToggle
@@ -287,7 +283,7 @@ export default function InputSettings() {
 					formatValue={(v) => `${v}s`}
 					onChange={(v) => setSetting('stackmat_auto_inspection', v)}
 				/>
-				<TimerSettingsAction label={t('timer_settings.stackmat_select_device')}>
+				<TimerSettingsAction label={t('timer_settings.stackmat_select_device')} stackOnMobile>
 					<button
 						type="button"
 						onClick={openStackMatPickerModal}

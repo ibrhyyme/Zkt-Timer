@@ -109,10 +109,10 @@
 		&:active {
 			transform: scale(0.96);
 		}
+		// On: the primary colour marks the edge, the icon keeps the text colour on a neutral fill.
 		&--active {
-			background: rgba(var(--primary-color), 0.15);
+			background: rgba(var(--text-color), 0.12);
 			border-color: rgb(var(--primary-color));
-			color: rgb(var(--primary-color));
 		}
 	}
 

@@ -14,9 +14,11 @@ export function getSmartDevices(user) {
 		where: {
 			user_id: user.id,
 		},
+		// Old clients read only solves.length (and ask for `solves { id }`); loading every
+		// column of every solve just to count them was the slowest part of this query.
 		include: {
-			solves: true
-		}
+			solves: {select: {id: true}},
+		},
 	});
 }
 

@@ -107,6 +107,8 @@ export class MagnetTelemetryResolver {
 					rate_hz: true,
 					reversed: true,
 					app_version: true,
+					cube_puzzle: true,
+					near_min_ut: true,
 					created_at: true,
 					user: { select: { username: true } },
 				},
@@ -139,6 +141,8 @@ export class MagnetTelemetryResolver {
 				reversed: r.reversed,
 				has_samples: sampled.has(r.id),
 				app_version: r.app_version || undefined,
+				cube_puzzle: r.cube_puzzle || undefined,
+				near_min_ut: r.near_min_ut ?? undefined,
 				created_at: r.created_at,
 			}));
 		} catch (error) {
@@ -173,8 +177,9 @@ export class MagnetTelemetryResolver {
 	}
 
 	/**
-	 * Rollup per phone model, computed in SQL rather than pulled into memory: a study can
-	 * outgrow anything an admin page should hold.
+	 * Rollup per phone model and puzzle, computed in SQL rather than pulled into memory: a study
+	 * can outgrow anything an admin page should hold. Grouped by puzzle too, so a 2x2's weak
+	 * placements do not drag down a phone's 3x3 numbers.
 	 */
 	@Authorized([Role.ADMIN])
 	@Query(() => [MagnetTelemetrySummary])
@@ -193,6 +198,9 @@ export class MagnetTelemetryResolver {
 				SELECT
 					platform,
 					device_model,
+					cube_puzzle,
+					COALESCE(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY near_min_ut)
+						FILTER (WHERE near_min_ut IS NOT NULL), 0)                                           AS median_near_min_ut,
 					MAX(sensor_name)                                                                         AS sensor_name,
 					COUNT(DISTINCT user_id)                                                                  AS distinct_users,
 					COUNT(*) FILTER (WHERE event_type = 'near' AND detail IS NULL)                           AS placements,
@@ -216,7 +224,7 @@ export class MagnetTelemetryResolver {
 					COALESCE(MAX(rate_hz) FILTER (WHERE event_type IN ('device', 'unsupported')), 0)         AS rate_hz
 				FROM magnet_telemetry
 				WHERE created_at > NOW() - ($1 || ' days')::interval
-				GROUP BY platform, device_model
+				GROUP BY platform, device_model, cube_puzzle
 				ORDER BY placements DESC, lifts DESC
 				`,
 				String(windowDays)
@@ -226,6 +234,8 @@ export class MagnetTelemetryResolver {
 			return rows.map((r) => ({
 				platform: r.platform,
 				device_model: r.device_model,
+				cube_puzzle: r.cube_puzzle || undefined,
+				median_near_min_ut: round1(r.median_near_min_ut),
 				sensor_name: r.sensor_name || undefined,
 				distinct_users: Number(r.distinct_users || 0),
 				placements: Number(r.placements || 0),

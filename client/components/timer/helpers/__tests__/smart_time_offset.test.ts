@@ -120,7 +120,7 @@ describe('endTimer with a smart cube time offset', () => {
 			scrambleSubset: null,
 			scramble: "R U R' U'",
 			timeStartedAt: new Date(STARTED_AT),
-			smartDeviceId: 'cube-1',
+			smartBleDeviceId: 'ble-1',
 			solvesFilter: {},
 		};
 	}
@@ -140,10 +140,21 @@ describe('endTimer with a smart cube time offset', () => {
 		}
 	}
 
+	/** Runs the deferred stop work and what it defers in turn: the save follows the scramble a paint later. */
 	function runDeferredSave() {
-		const queued = deferred;
-		deferred = [];
-		queued.forEach((fn) => fn());
+		const spy = jest.spyOn(global, 'setTimeout').mockImplementation(((fn: () => void) => {
+			deferred.push(fn);
+			return 0;
+		}) as any);
+		try {
+			while (deferred.length) {
+				const queued = deferred;
+				deferred = [];
+				queued.forEach((fn) => fn());
+			}
+		} finally {
+			spy.mockRestore();
+		}
 	}
 
 	beforeAll(() => {

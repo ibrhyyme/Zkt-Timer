@@ -1,7 +1,8 @@
 import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
-import {Session, SessionInput} from '../schemas/Session.schema';
+import {Session, SessionBucketInput, SessionInput} from '../schemas/Session.schema';
+import {normalizeSplitBuckets, orderAfterSource, validateSplitBuckets} from '../../shared/session_split';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import uniqid from 'uniqid';
@@ -118,6 +119,59 @@ async function mergeAndDeleteSession(context: GraphQLContext, oldSession: Sessio
 			},
 		}),
 	]);
+}
+
+// Moves the solves of the chosen buckets out of `source` into a new session placed right
+// after it. Create and move run in one $transaction: a failure in between can neither leave
+// an empty new session behind nor move solves into a session that does not exist.
+async function splitSessionInto(
+	context: GraphQLContext,
+	source: Session,
+	buckets: {cube_type: string; scramble_subset: string | null}[],
+	name: string
+) {
+	const {prisma, user} = context;
+	const newId = uniqid('se-');
+
+	// A null subset is the cube type's default bucket. Rows from before toStoredSubset may
+	// still carry '' for it, so both spellings match.
+	const bucketConditions = buckets.map((bucket) =>
+		bucket.scramble_subset === null
+			? {cube_type: bucket.cube_type, OR: [{scramble_subset: null}, {scramble_subset: ''}]}
+			: {cube_type: bucket.cube_type, scramble_subset: bucket.scramble_subset}
+	);
+
+	await prisma.$transaction([
+		prisma.session.create({
+			data: {
+				id: newId,
+				name,
+				order: source.order + 1,
+				user_id: user.id,
+			},
+		}),
+		prisma.solve.updateMany({
+			where: {
+				user_id: user.id,
+				session_id: source.id,
+				OR: bucketConditions,
+			},
+			data: {
+				session_id: newId,
+			},
+		}),
+	]);
+
+	const sessions = await getSessionsByUser(user);
+	const byId = new Map(sessions.map((s) => [s.id, s]));
+	const ordered = orderAfterSource(
+		sessions.map((s) => s.id),
+		source.id,
+		newId
+	).map((id) => byId.get(id));
+	const updated = await updateOrderOfSessions(ordered);
+
+	return updated.find((s) => s.id === newId);
 }
 
 async function getSessionsByIds(user: UserAccount, ids: string[]) {
@@ -280,6 +334,35 @@ export class SessionResolver {
 		await updateOrderOfSessionsForUser(user);
 
 		return newSession;
+	}
+
+	// "Split session": the reverse of merge. The solves of the chosen (cube_type,
+	// scramble_subset) buckets move into a new session named by the client.
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Session)
+	async splitSession(
+		@Ctx() context: GraphQLContext,
+		@Arg('sessionId') sessionId: string,
+		@Arg('buckets', () => [SessionBucketInput]) buckets: SessionBucketInput[],
+		@Arg('name') name: string
+	) {
+		const trimmedName = typeof name === 'string' ? name.trim() : '';
+		if (!trimmedName) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Session name is required');
+		}
+		validateSessionName({name: trimmedName} as SessionInput);
+
+		const invalid = validateSplitBuckets(buckets);
+		if (invalid) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, invalid);
+		}
+
+		const source = await getSessionById(sessionId);
+		if (!source || source.user_id !== context.user.id) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID');
+		}
+
+		return splitSessionInto(context, source, normalizeSplitBuckets(buckets), trimmedName);
 	}
 
 	@Authorized([Role.LOGGED_IN])

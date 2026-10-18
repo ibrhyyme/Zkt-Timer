@@ -9,6 +9,7 @@ import block from '../../../styles/bem';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import BarGraph from '../bar_graph/BarGraph';
 import dummyData from './dummy_data';
+import {useTranslation} from 'react-i18next';
 
 const b = block('time-distro');
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function TimeDistro(props: Props) {
+	const {t} = useTranslation();
 	const [bucketCount, setBucketCount] = useState(DEFAULT_BUCKET_SIZE);
 
 	const {filterOptions, dummy} = props;
@@ -44,12 +46,12 @@ export default function TimeDistro(props: Props) {
 			<BarGraph data={data} dummy={isDummy}>
 				<div className={b('buckets')}>
 					<Dropdown
-						text={`${bucketCount} Columns`}
+						text={t('stats_page.distro_columns', {count: bucketCount})}
 						icon={<CaretDown />}
 						dropdownMaxHeight={150}
 						options={buckets.map((bucket) => ({
 							value: bucket,
-							text: `${bucket} columns`,
+							text: t('stats_page.distro_columns', {count: bucket}),
 							disabled: bucket === bucketCount,
 							onClick: () => setBucketCount(bucket),
 						}))}

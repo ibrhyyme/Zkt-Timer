@@ -14,7 +14,7 @@ import EfficiencyTypePicker from './components/EfficiencyTypePicker';
 import {Gear} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useTrainerContext} from '../TrainerContext';
-import TrainerModeHeader from '../common/TrainerModeHeader';
+import TrainerModeHeader, {kindCrumb, trainersCrumb} from '../common/TrainerModeHeader';
 import type {EfficiencyView} from './types';
 
 const b = block('trainer-efficiency');
@@ -29,14 +29,17 @@ function EfficiencyToolbar() {
 		if (state.view !== 'trainer') {
 			setEfficiencyView('trainer');
 		} else {
-			trainerDispatch({type: 'SET_VIEW', payload: 'landing'});
+			trainerDispatch({type: 'SET_VIEW', payload: 'modes'});
 		}
 	};
 
 	return (
 		<TrainerModeHeader
-			mode="efficiency"
-			backToRoot={state.view === 'trainer'}
+			kind="efficiency"
+			trail={[
+				trainersCrumb(t, () => trainerDispatch({type: 'SET_VIEW', payload: 'modes'})),
+				kindCrumb(t, 'efficiency'),
+			]}
 			onBack={onBack}
 			center={
 				state.view === 'trainer' ? (

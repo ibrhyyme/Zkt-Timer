@@ -18,7 +18,7 @@ import GlossaryView from './views/GlossaryView';
 import {Gear, ClockClockwise, House, BookOpen} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useTrainerContext} from '../TrainerContext';
-import TrainerModeHeader from '../common/TrainerModeHeader';
+import TrainerModeHeader, {kindCrumb, trainersCrumb} from '../common/TrainerModeHeader';
 import type {RecognitionView} from './types';
 
 const b = block('trainer-recognition');
@@ -52,7 +52,7 @@ function RecognitionToolbar() {
 
 	const onBack = () => {
 		if (state.view === 'home') {
-			trainerDispatch({type: 'SET_VIEW', payload: 'landing'});
+			trainerDispatch({type: 'SET_VIEW', payload: 'modes'});
 		} else {
 			// Home'a donerken aktif quest adimini temizle — quest step'in "aktif"
 			// kalmamasi icin (eski inline "Yolculuga Don" butonunun davranisi buraya tasindi).
@@ -65,8 +65,11 @@ function RecognitionToolbar() {
 
 	return (
 		<TrainerModeHeader
-			mode="recognition"
-			backToRoot={state.view === 'home'}
+			kind="recognition"
+			trail={[
+				trainersCrumb(t, () => trainerDispatch({type: 'SET_VIEW', payload: 'modes'})),
+				kindCrumb(t, 'recognition'),
+			]}
 			onBack={onBack}
 			actions={
 				<>

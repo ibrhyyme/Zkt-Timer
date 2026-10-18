@@ -3,8 +3,9 @@
 body,
 html {
 	background-color: rgb(var(--background-color));
-	overscroll-behavior: contain;
-	-webkit-overflow-scrolling: touch;
+	// Root scroll behaviour (no bounce, no zoom, no sideways drift) is owned by
+	// styles/index.scss. `contain` here used to compete with its `none`: whichever
+	// stylesheet landed last in the bundle decided whether the page rubber-banded.
 }
 
 .zt {

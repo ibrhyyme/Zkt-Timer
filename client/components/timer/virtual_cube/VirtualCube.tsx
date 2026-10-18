@@ -63,7 +63,12 @@ interface RecordedMove {
 	completedAt: number;
 }
 
-export default function VirtualCube() {
+interface Props {
+	/** The desktop row puts the cube under the digits (narrow centre column): a smaller idle cube. */
+	stacked?: boolean;
+}
+
+export default function VirtualCube({ stacked = false }: Props = {}) {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 	const contextRef = useRef<ITimerContext>(context);
@@ -86,7 +91,7 @@ export default function VirtualCube() {
 
 	// Armed or solving: the chrome is hidden and the cube owns the screen.
 	const focusMode = !!context.virtualArmed || !!context.timeStartedAt;
-	const effectiveSize = useVirtualCubeSize(mobileMode, focusMode);
+	const effectiveSize = useVirtualCubeSize(mobileMode, focusMode, stacked);
 
 	// Turning the cube before the scramble is applied means rearranging a solved
 	// cube for no reason, and Space throws it away again a moment later. The

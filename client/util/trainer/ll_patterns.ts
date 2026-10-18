@@ -31,14 +31,57 @@ function getCustomPatterns(): Record<string, string> {
 	}
 }
 
-export function saveCustomPattern(algorithm: string, pattern: string) {
-	const patterns = getCustomPatterns();
-	patterns[algorithm] = pattern;
-	localStorage.setItem(CUSTOM_PATTERNS_KEY, JSON.stringify(patterns));
-}
+// Patterns made on this device for cases the file does not have (the newer library categories).
+// null marks a text the generator could not read: those cases fall back to the 3D view.
+const generated = new Map<string, string | null>();
+const generating = new Map<string, Promise<string | null>>();
 
 export function getLLPattern(algorithm: string): string | null {
-	return cache?.[algorithm] ?? getCustomPatterns()[algorithm] ?? null;
+	return cache?.[algorithm] ?? generated.get(algorithm) ?? getCustomPatterns()[algorithm] ?? null;
+}
+
+/** The pattern of `algorithm`, generated with cubing.js when the file lacks it. Kept for the session. */
+export function ensureLLPattern(algorithm: string): Promise<string | null> {
+	const known = getLLPattern(algorithm);
+	if (known) return Promise.resolve(known);
+	if (generated.has(algorithm)) return Promise.resolve(null);
+	let pending = generating.get(algorithm);
+	if (!pending) {
+		pending = import('./pattern_utils')
+			.then(({generateLLPattern}) => generateLLPattern(algorithm))
+			.catch(() => null)
+			.then((pattern) => {
+				generated.set(algorithm, pattern);
+				generating.delete(algorithm);
+				return pattern;
+			});
+		generating.set(algorithm, pending);
+	}
+	return pending;
+}
+
+/**
+ * The LL pattern of a case for a view. `pending` while a missing pattern is being generated
+ * (the view shows an empty box, never a 3D player it would throw away a moment later).
+ */
+export function useLLPattern(algorithm: string, enabled: boolean): {pattern: string | null; pending: boolean} {
+	const loaded = cache !== null;
+	const pattern = enabled ? getLLPattern(algorithm) : null;
+	const needed = enabled && loaded && !pattern && !generated.has(algorithm);
+	const [, setTick] = useState(0);
+
+	useEffect(() => {
+		if (!needed) return;
+		let alive = true;
+		ensureLLPattern(algorithm).then(() => {
+			if (alive) setTick((n) => n + 1);
+		});
+		return () => {
+			alive = false;
+		};
+	}, [needed, algorithm]);
+
+	return {pattern, pending: enabled && (!loaded || needed)};
 }
 
 export function isLLPatternsLoaded(): boolean {

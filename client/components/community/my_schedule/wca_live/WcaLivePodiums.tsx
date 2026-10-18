@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {b, formatResult, countryFlag, EventIcon, RecordTag} from '../shared';
+import {b, formatResult, countryFlag, EventIcon, RecordTag, localEventName} from '../shared';
 
 interface Props {
 	podiums: any[];
@@ -34,7 +34,7 @@ export default function WcaLivePodiums({podiums, competitionId}: Props) {
 						>
 							<div className={b('wca-live-podium-header')}>
 								<EventIcon eventId={podium.eventId} size={18} />
-								<span className={b('wca-live-podium-event-name')}>{podium.eventName}</span>
+								<span className={b('wca-live-podium-event-name')}>{localEventName(t, podium.eventId, podium.eventName)}</span>
 							</div>
 							<div className={b('wca-live-podium-entries')}>
 								{podium.entries.map((entry: any) => {

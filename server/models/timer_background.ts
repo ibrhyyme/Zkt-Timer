@@ -3,30 +3,15 @@ import {getPrisma} from '../database';
 import {generateRandomCode} from '../../shared/code';
 import {deleteObject, uploadObject} from '../services/storage';
 import {getImageBufferFromFileStream} from '../util/image';
+import {
+	TimerBackgroundTarget,
+	getTimerBackgroundSlot,
+	isTimerBackgroundRowEmpty,
+} from '../../shared/timer_background';
 
 export function getTimerBackground(user) {
 	return getPrisma().timerBackground.findUnique({
 		where: {
-			user_id: user.id,
-		},
-	});
-}
-
-export async function deleteTimerBackground(background) {
-	await deleteObject(background.storage_path);
-
-	return getPrisma().timerBackground.delete({
-		where: {
-			id: background.id,
-		},
-	});
-}
-
-export function uploadTimerBackgroundWithHex(user, hex) {
-	return getPrisma().timerBackground.create({
-		data: {
-			id: uuid(),
-			hex,
 			user_id: user.id,
 		},
 	});
@@ -69,7 +54,11 @@ async function readStreamToBuffer(createReadStream, maxBytes: number): Promise<B
 	return Buffer.concat(chunks);
 }
 
-export async function uploadTimerBackgroundWithFile(user, fileName, fileStream) {
+/** Stores an uploaded image or video and returns where it went. Writes no row. */
+export async function storeTimerBackgroundFile(
+	fileName: string,
+	fileStream
+): Promise<{storage_path: string; media_type: 'image' | 'video'}> {
 	const fileType = fileName.split('.').pop().toLowerCase();
 	const name = `${generateRandomCode(10)}.${fileType}`;
 	const path = `timer_backgrounds/${name}`;
@@ -86,12 +75,73 @@ export async function uploadTimerBackgroundWithFile(user, fileName, fileStream) 
 
 	await uploadObject(uploadBuffer, path);
 
-	return getPrisma().timerBackground.create({
-		data: {
-			id: uuid(),
-			storage_path: path,
-			media_type: isVideo ? 'video' : 'image',
-			user_id: user.id,
-		},
+	return {storage_path: path, media_type: isVideo ? 'video' : 'image'};
+}
+
+function slotFields(target: TimerBackgroundTarget, media: {storage_path: string; media_type: string} | null) {
+	return target === 'mobile'
+		? {mobile_storage_path: media?.storage_path ?? null, mobile_media_type: media?.media_type ?? null}
+		: {storage_path: media?.storage_path ?? null, media_type: media?.media_type ?? null};
+}
+
+/**
+ * Puts a stored file into one slot (desktop or mobile) of the user's row, creating the
+ * row if needed, and only then removes the file it replaced. The old order (delete the
+ * row, then upload) left the user with no background at all when the upload failed, and
+ * would now also have thrown away the other slot.
+ */
+export async function setTimerBackgroundSlot(
+	user,
+	target: TimerBackgroundTarget,
+	media: {storage_path: string; media_type: string}
+) {
+	const existing = await getTimerBackground(user);
+	const replaced = getTimerBackgroundSlot(existing, target);
+
+	const row = await getPrisma().timerBackground.upsert({
+		where: {user_id: user.id},
+		create: {id: uuid(), user_id: user.id, ...slotFields(target, media)},
+		update: slotFields(target, media),
 	});
+
+	if (replaced && replaced.storage_path !== media.storage_path) {
+		await deleteObject(replaced.storage_path).catch(() => {});
+	}
+	return row;
+}
+
+/**
+ * Empties one slot. The row goes away once it holds nothing worth keeping, which is the
+ * old "delete my background" behaviour for anyone who never touched the mobile switch.
+ */
+export async function clearTimerBackgroundSlot(user, target: TimerBackgroundTarget) {
+	const existing = await getTimerBackground(user);
+	if (!existing) return null;
+
+	const removed = getTimerBackgroundSlot(existing, target);
+	if (removed) {
+		await deleteObject(removed.storage_path).catch(() => {});
+	}
+
+	const next = {...existing, ...slotFields(target, null)};
+	if (isTimerBackgroundRowEmpty(next)) {
+		await getPrisma().timerBackground.delete({where: {id: existing.id}});
+	} else {
+		await getPrisma().timerBackground.update({where: {id: existing.id}, data: slotFields(target, null)});
+	}
+	return existing;
+}
+
+/** "Use the same on mobile". Creates the row when switching off before any upload. */
+export async function setTimerBackgroundMobileSame(user, same: boolean) {
+	const row = await getPrisma().timerBackground.upsert({
+		where: {user_id: user.id},
+		create: {id: uuid(), user_id: user.id, mobile_same_as_desktop: same},
+		update: {mobile_same_as_desktop: same},
+	});
+
+	if (isTimerBackgroundRowEmpty(row)) {
+		await getPrisma().timerBackground.delete({where: {id: row.id}});
+	}
+	return row;
 }

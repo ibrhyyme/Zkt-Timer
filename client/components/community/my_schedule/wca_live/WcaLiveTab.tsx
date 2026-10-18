@@ -5,12 +5,13 @@ import {Info, Warning, ArrowClockwise} from 'phosphor-react';
 import i18n from '../../../../i18n/i18n';
 import {useCompetitionData} from '../CompetitionLoader';
 import {useWcaLiveOverview} from '../useLiveResults';
-import {b, EventIcon} from '../shared';
+import {b, EventIcon, localEventName, liveRoundLabel} from '../shared';
 import {useIsMobile} from '../../../../util/hooks/useIsMobile';
 import WcaLiveEventDetail from './WcaLiveEventDetail';
 import WcaLiveSchedule from './WcaLiveSchedule';
 import WcaLiveRecords from './WcaLiveRecords';
 import WcaLivePodiums from './WcaLivePodiums';
+import {useDelayedFlag} from '../useDelayedFlag';
 
 interface Props {
 	eventId: string | null;
@@ -60,12 +61,13 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 	// Same components serve both federations; only the wording differs.
 	const isZkt = !!detail?.competitionId?.startsWith('zkt-');
 	const unavailableKey = isZkt ? 'my_schedule.zkt_live_unavailable' : 'my_schedule.wca_live_unavailable';
-	const {data: overview, loading, lastUpdated, refresh} = useWcaLiveOverview(detail?.competitionId || '', enabled);
+	const {data: overview, loading, lastUpdated, refresh, failed} = useWcaLiveOverview(detail?.competitionId || '', enabled);
 
 	const selectedEvent = useMemo(() => {
 		if (!overview || !eventId || !overview.events) return null;
 		return overview.events.find((e: any) => e?.eventId === eventId) || null;
 	}, [overview, eventId]);
+	const showLoading = useDelayedFlag(loading && !overview);
 
 	if (!enabled) {
 		return (
@@ -77,10 +79,26 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 	}
 
 	if (loading && !overview) {
-		return <div className={b('wca-live-loading')}>{t('my_schedule.loading')}</div>;
+		return showLoading ? <div className={b('wca-live-loading')}>{t('my_schedule.loading')}</div> : null;
 	}
 
 	if (!overview) {
+		// A failed request is not "this competition is not on ZKT Live". Saying so
+		// on competition day, while the federation was only busy, sent people away
+		// from a page that came back a minute later. The hook retries by itself.
+		if (failed) {
+			return (
+				<div className={b('info-banner', {error: true})}>
+					<Info size={18} />
+					<div className={b('info-banner-body')}>
+						<span>{t('my_schedule.live_unavailable_retrying')}</span>
+						<button className={b('info-banner-retry')} onClick={refresh}>
+							{t('my_schedule.retry')}
+						</button>
+					</div>
+				</div>
+			);
+		}
 		return (
 			<div className={b('info-banner')}>
 				<Info size={18} />
@@ -119,7 +137,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 						<option value="">{t('my_schedule.wca_live_select_event')}</option>
 						{overview.events.map((event) => (
 							<option key={event.eventId} value={event.eventId}>
-								{event.eventName}
+								{localEventName(t, event.eventId, event.eventName)}
 							</option>
 						))}
 					</select>
@@ -128,15 +146,16 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 				<div className={b('wca-live-event-chips')}>
 					{overview.events.map((event) => {
 						const isActive = event.eventId === eventId;
+						const name = localEventName(t, event.eventId, event.eventName);
 						return (
 							<button
 								key={event.eventId}
 								className={b('wca-live-event-chip', {active: isActive})}
 								onClick={() => handleEventClick(event.eventId)}
-								title={event.eventName}
+								title={name}
 							>
 								<EventIcon eventId={event.eventId} size={18} />
-								<span className={b('wca-live-event-chip-label')}>{event.eventName}</span>
+								<span className={b('wca-live-event-chip-label')}>{name}</span>
 							</button>
 						);
 					})}
@@ -169,7 +188,12 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 						for (const ev of overview.events || []) {
 							for (const r of ev.rounds || []) {
 								if (r.active) {
-									activeRounds.push({eventId: ev.eventId, eventName: ev.eventName, roundName: r.name, roundNumber: r.number});
+									activeRounds.push({
+										eventId: ev.eventId,
+										eventName: localEventName(t, ev.eventId, ev.eventName),
+										roundName: liveRoundLabel(t, r, isZkt),
+										roundNumber: r.number,
+									});
 								}
 							}
 						}

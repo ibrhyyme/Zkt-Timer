@@ -27,8 +27,8 @@
 		}
 
 		&--active {
-			border-color: rgb(var(--active-tone, var(--primary-color)));
-			background-color: rgba(var(--active-tone, var(--primary-color)), 0.12);
+			border-color: rgb(var(--primary-color));
+			background-color: rgba(var(--primary-color), 0.12);
 		}
 	}
 

@@ -6,6 +6,7 @@ import {Link} from 'react-router-dom';
 import {useInput} from '../../../util/hooks/useInput';
 import {UserAccount} from '../../../@types/generated/graphql';
 import {resourceUri} from '../../../util/storage';
+import {ZKT_BADGE_ON_DARK} from '../../../util/hooks/useZktBadge';
 import block from '../../../styles/bem';
 import {clearPendingSignupToken, readPendingSignupToken} from '../../../util/auth/pending-signup';
 import {getGqlErrorMessage} from '../../../util/gql-error';
@@ -104,9 +105,10 @@ export default function ZktSignup() {
 		}
 	}
 
+	// The auth scene is dark in every theme, so always the white-lettered badge.
 	const logo = (
 		<img
-			src={resourceUri('/images/logos/zkt_logo.png')}
+			src={resourceUri(ZKT_BADGE_ON_DARK)}
 			alt="Zeka Küpü Türkiye"
 			style={{width: '48px', height: '48px', opacity: 0.95}}
 		/>

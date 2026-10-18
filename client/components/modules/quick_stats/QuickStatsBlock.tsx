@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FilterSolvesOptions } from '../../../db/solves/query';
 import { StatsModuleBlock } from '../../../../server/schemas/StatsModule.schema';
 import { getStatsBlockDescription, getStatsBlockValueFromFilter } from './util';
+import { getStatLabel } from './stat_label';
 import { useColor } from '../../../util/hooks/useTheme';
 import { useMe } from '../../../util/hooks/useMe';
 import jsonStr from 'json-stable-stringify';
@@ -19,10 +21,16 @@ interface Props {
 	statOptions: StatsModuleBlock;
 	rowSpan: number;
 	colSpan: number;
+	/**
+	 * Drawn inside another control (the Customize Stats grid wraps each block in its own
+	 * button): the value is not a button of its own, since a button inside a button is
+	 * invalid HTML and React warns about it.
+	 */
+	preview?: boolean;
 }
 
 export default function QuickStatsBlock(props: Props) {
-	const { rowSpan, filterOptions, colSpan, statOptions } = props;
+	const { rowSpan, filterOptions, colSpan, statOptions, preview } = props;
 
 	const dispatch = useDispatch();
 	const sessionId = useSettings('session_id');
@@ -136,11 +144,11 @@ export default function QuickStatsBlock(props: Props) {
 
 	return (
 		<div className={blockClasses.join(' ')} ref={statsBlockDiv}>
-			<div className="flex flex-row">
+			<div className="flex flex-row min-w-0">
 				<StatDescription statOptions={statOptions} />
 			</div>
 			<div className="relative w-full h-full flex items-start justify-center">
-				{isSessionMean ? (
+				{isSessionMean || preview ? (
 					<div className={buttonClasses.join(' ')} style={buttonStyle}>
 						{statValue}
 					</div>
@@ -160,31 +168,21 @@ interface DescProps {
 
 function StatDescription(props: DescProps) {
 	const { statOptions } = props;
+	const { t } = useTranslation();
 
 	if (!statOptions) {
 		return null;
 	}
 
-	const { statType, averageCount, sortBy, session } = statOptions;
+	const { key, params } = getStatLabel(statOptions);
+	const text = t(key, params);
 
-	const text = [];
-	if (session) {
-		text.push('ses.');
-	}
-
-	if (statType === 'average') {
-		if (averageCount) {
-			text.push('ao' + String(averageCount));
-		} else {
-			text.push('avg');
-		}
-	}
-
-	if (sortBy === 'best') {
-		text.push('pb');
-	} else if (sortBy === 'worst') {
-		text.push('worst');
-	}
-
-	return <span className="text-[0.8rem] px-0.5 text-text/70">{text.join(' ')}</span>;
+	// Full contrast: the caption names the number under it, and a faded caption reads
+	// as disabled. Long captions ("Session best ao100") end in an ellipsis in a narrow
+	// block, with the whole text on hover.
+	return (
+		<span className="text-[0.8rem] font-medium px-0.5 text-text truncate" title={text}>
+			{text}
+		</span>
+	);
 }

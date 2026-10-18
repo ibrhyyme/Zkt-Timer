@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import Helmet from 'react-helmet';
 import { resourceUri } from '../../../util/storage';
+import { useBattleLaunch } from '../../battle/useBattleLaunch';
+import { battleCanonicalPath, isLaunchNoIndexPath } from '../../battle/battle_landing_modes';
 // process.env variables are defined by esbuild, no need to import process
 
 interface Props {
@@ -45,7 +47,7 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/timer') return t('seo.timer_keywords', fallback);
 	if (currentPath === '/trainer' || currentPath.startsWith('/trainer')) return t('seo.trainer_keywords', fallback);
 	if (currentPath.startsWith('/rooms')) return t('seo.rooms_keywords', fallback);
-	if (currentPath === '/battle') return t('seo.battle_keywords', fallback);
+	if (currentPath === '/battle' || currentPath.startsWith('/battle/')) return t('seo.battle_keywords', fallback);
 	if (currentPath === '/ranks' || currentPath === '/community/leaderboards') return t('seo.leaderboards_keywords', fallback);
 	if (currentPath === '/stats') return t('seo.stats_keywords', fallback);
 	if (currentPath === '/solves') return t('seo.solves_keywords', fallback);
@@ -54,7 +56,6 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/competitions/records') return t('seo.wca_records_keywords', fallback);
 	if (currentPath.startsWith('/competitions/zkt-')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath.startsWith('/competitions')) return t('seo.wca_competitions_keywords', fallback);
-	if (currentPath.startsWith('/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
 	if (
 		currentPath === '/login' ||
 		currentPath === '/signup' ||
@@ -69,7 +70,8 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 }
 
 // JSON-LD Schema for Google Sitelinks
-export const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string, t: TFunction, lang: string) => {
+// `rankingsLaunched`: the Online Battle leaderboard is public, so /ranks joins the sitelinks (ranking-battle 7.4).
+export const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string, t: TFunction, lang: string, rankingsLaunched = false) => {
 	const inLanguage = LANG_CODE_MAP[lang] || 'en-US';
 
 	// WebSite schema - enables sitelinks search box
@@ -220,25 +222,27 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 4,
-				'name': t('seo.nav_leaderboards_name'),
-				'description': t('seo.nav_leaderboards_desc'),
-				'url': `${SITE_URL}/ranks`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 5,
 				'name': t('seo.nav_trainer_name'),
 				'description': t('seo.nav_trainer_desc'),
 				'url': `${SITE_URL}/trainer`
 			},
+			...(rankingsLaunched
+				? [
+						{
+							'@type': 'SiteNavigationElement',
+							'name': t('seo.nav_leaderboards_name'),
+							'description': t('seo.nav_leaderboards_desc'),
+							'url': `${SITE_URL}/ranks`
+						}
+					]
+				: []),
 			{
 				'@type': 'SiteNavigationElement',
-				'position': 6,
 				'name': t('seo.nav_signup_name'),
 				'description': t('seo.nav_signup_desc'),
 				'url': `${SITE_URL}/signup`
 			}
-		]
+		].map((item, i) => ({ ...item, position: i + 1 }))
 	};
 
 	// CollectionPage schema for competitions list page
@@ -275,7 +279,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 			{
 				'@type': 'ListItem',
 				'position': 2,
-				'name': finalTitle.replace(' - Zkt Timer', ''),
+				'name': finalTitle.replace(/ [-|] Zkt Timer$/, ''),
 				'item': `${SITE_URL}${currentPath}`
 			}
 		]
@@ -305,7 +309,9 @@ export default function Header(props: Props) {
 	const { t, i18n } = useTranslation();
 	const lang = i18n.language || 'en';
 	const currentPath = props.path || '';
-	const fullUrl = `https://zktimer.app${currentPath}`;
+	// Online Battle launch (null until known): /ranks indexing, the /battle copy, canonical.
+	const launched = useBattleLaunch()?.launched ?? null;
+	const fullUrl = `https://zktimer.app${battleCanonicalPath(currentPath, launched)}`;
 
 	// Page-specific default SEO metadata
 	let pageTitle = props.title;
@@ -343,6 +349,13 @@ export default function Header(props: Props) {
 			const username = sanitizedUsername || t('seo.user_fallback');
 			pageTitle = t('seo.user_profile_title', { username });
 			pageDesc = t('seo.user_profile_description', { username });
+		} else if (currentPath === '/trainer/community') {
+			pageTitle = t('seo.trainer_community_title');
+			pageDesc = t('seo.trainer_community_description');
+		} else if (currentPath.startsWith('/trainer/algorithms') || currentPath.startsWith('/trainer/sets')) {
+			// A set page's own title and description come from its SSR meta (trainer/sets/ssr.ts).
+			pageTitle = t('seo.trainer_algorithms_title');
+			pageDesc = t('seo.trainer_algorithms_description');
 		} else if (currentPath.startsWith('/trainer')) {
 			pageTitle = t('seo.trainer_title');
 			pageDesc = t('seo.trainer_description');
@@ -381,22 +394,16 @@ export default function Header(props: Props) {
 		} else if (currentPath.startsWith('/competitions/')) {
 			pageTitle = t('seo.wca_competition_detail_title');
 			pageDesc = t('seo.wca_competition_detail_description');
-		} else if (/^\/zkt-competitions\/[^/]+\/live/.test(currentPath)) {
-			pageTitle = t('seo.zkt_live_title');
-			pageDesc = t('seo.zkt_live_description');
-		} else if (/^\/zkt-competitions\/[^/]+\/competitors/.test(currentPath)) {
-			pageTitle = t('seo.zkt_competitor_title');
-			pageDesc = t('seo.zkt_competitor_description');
-		} else if (/^\/zkt-competitions\/[^/]+\/activities/.test(currentPath)) {
-			pageTitle = t('seo.zkt_activity_title');
-			pageDesc = t('seo.zkt_activity_description');
-		} else if (currentPath.startsWith('/zkt-competitions/')) {
-			pageTitle = t('seo.zkt_competition_detail_title');
-			pageDesc = t('seo.zkt_competition_detail_description');
 		} else if (currentPath === '/pro' || currentPath === '/account/pro') {
 			pageTitle = t('seo.pro_title');
 			pageDesc = t('seo.pro_description');
-		} else if (currentPath === '/battle') {
+		} else if (currentPath === '/battle' && launched === true) {
+			pageTitle = t('seo.battle_launch_title');
+			pageDesc = t('seo.battle_launch_description');
+		} else if (currentPath === '/battle/online') {
+			pageTitle = t('seo.battle_online_title');
+			pageDesc = t('seo.battle_online_description');
+		} else if (currentPath === '/battle' || currentPath === '/battle/offline') {
 			pageTitle = t('seo.battle_title');
 			pageDesc = t('seo.battle_description');
 		} else if (currentPath === '/terms') {
@@ -424,7 +431,6 @@ export default function Header(props: Props) {
 		'/verify-email', '/wca-signup', '/zkt-signup',
 		// Private conversations — never a search result.
 		'/messages',
-		'/zkt-competitions',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 	// Main competition page (`/competitions/:id`) and list remain indexable.
@@ -439,13 +445,20 @@ export default function Header(props: Props) {
 		/^\/competitions\/[^/]+\/persons/,
 		/^\/competitions\/[^/]+\/activities/,
 		/^\/competitions\/[^/]+\/personal-bests/,
+		// Trainer sets: single set pages carry user-written names and stay out of search for
+		// now (trainer-sets.md Q4, link previews still work); My Sets and the study screen are
+		// per user. /trainer/algorithms and the Community Sets list stay indexable.
+		/^\/trainer\/sets(\/|$)/,
+		/^\/trainer\/algorithms\/train(\/|$)/,
 	];
 	const shouldNoIndex =
 		noIndexPaths.some((p) => currentPath.startsWith(p)) ||
-		noIndexPatterns.some((re) => re.test(currentPath));
+		noIndexPatterns.some((re) => re.test(currentPath)) ||
+		// /battle/online always; /ranks until the Online Battle leaderboard is public.
+		isLaunchNoIndexPath(currentPath, launched);
 
 	// Structured Data
-	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema, collectionPageSchema, iosAppSchema, androidAppSchema } = getStructuredData(currentPath, finalTitle, finalDesc, t, lang);
+	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema, collectionPageSchema, iosAppSchema, androidAppSchema } = getStructuredData(currentPath, finalTitle, finalDesc, t, lang, launched === true);
 	const pageKeywords = getPageKeywords(currentPath, t);
 
 	return (

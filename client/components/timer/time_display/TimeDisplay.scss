@@ -27,7 +27,8 @@
 		// transform is the new running-state grow/shrink below — separate property,
 		// separate (asymmetric) duration/easing, so it gets its own transition entry
 		// rather than a shared "all".
-		transition: font-size 0.15s ease, transform $motion-shrink $ease-out-snap;
+		// Leaving running (the stop) lands with a small dip under 1 (tokens.scss).
+		transition: font-size 0.15s ease, transform $motion-land $ease-out-land;
 		transform: scale(1);
 		transform-origin: center;
 
@@ -67,7 +68,53 @@
 			transform: scale(1);
 			transition: none;
 			will-change: auto;
+			// Start cue without movement: the digits come up from a dim flash. Opacity only,
+			// so it runs on the compositor and never touches the text the interval writes.
+			animation: zt-time-cue-start $motion-grow $ease-standard;
 		}
+
+		// Stop cue without movement: the digits flash the theme's primary colour and settle
+		// back to the text colour. The class only appears on the stop edge (TimeDisplay.tsx
+		// `landed`), so it plays once per solve, never on mount. The green/orange states use
+		// !important and win over it, which is right: they mean the next solve is armed.
+		h1#{&}--landed {
+			animation: zt-time-cue-stop $motion-land * 2 $ease-standard;
+		}
+	}
+
+	// Magnet Timer hold to stop (HoldStopProgress.tsx). Zero height in the flow so the
+	// digits never move; the track hangs just under them. The fill is a progress readout,
+	// not decoration, so it also runs under reduced motion: without it a user would not
+	// know the hold is counting.
+	&__hold {
+		position: relative;
+		width: min(60%, 220px);
+		height: 0;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	&__hold-track {
+		position: absolute;
+		top: 6px;
+		left: 0;
+		right: 0;
+		height: 4px;
+		border-radius: 2px;
+		overflow: hidden;
+		background-color: rgba(var(--text-color), 0.15);
+	}
+
+	&__hold-fill {
+		display: block;
+		width: 100%;
+		height: 100%;
+		background-color: rgb(var(--primary-color));
+		transform: scaleX(0);
+		transform-origin: left center;
+		animation-name: zt-time-hold-fill;
+		animation-timing-function: linear;
+		animation-fill-mode: forwards;
 	}
 
 	h3 {
@@ -133,6 +180,33 @@
 	&--focused {
 		height: 100vh;
 		padding-top: 0 !important;
+	}
+}
+
+@keyframes zt-time-cue-start {
+	from {
+		opacity: 0.35;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes zt-time-cue-stop {
+	from {
+		color: rgb(var(--primary-color));
+	}
+	to {
+		color: rgb(var(--text-color));
+	}
+}
+
+@keyframes zt-time-hold-fill {
+	from {
+		transform: scaleX(0);
+	}
+	to {
+		transform: scaleX(1);
 	}
 }
 

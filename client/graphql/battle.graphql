@@ -1,0 +1,157 @@
+# Online Battle reads and admin actions (server/resolvers/Battle.resolver.ts).
+# Design: .feedback/designs/ranking-battle.md section 4.12. Live play is Socket.IO.
+
+fragment BattlePlayerFragment on BattlePlayer {
+	id
+	username
+	pfp_image_url
+}
+
+fragment BattleLeaderboardRowFragment on BattleLeaderboardRow {
+	rank
+	user_id
+	username
+	pfp_image_url
+	rating
+	provisional
+	games
+	wins
+	losses
+	draws
+}
+
+query battleLeaderboard($puzzle: String, $page: Int, $search: String) {
+	battleLeaderboard(puzzle: $puzzle, page: $page, search: $search) {
+		rows {
+			...BattleLeaderboardRowFragment
+		}
+		total_count
+		page
+		page_size
+	}
+}
+
+query myBattleRating($puzzle: String) {
+	myBattleRating(puzzle: $puzzle) {
+		puzzle
+		rating
+		provisional
+		games
+		wins
+		losses
+		draws
+		peak_rating
+		rank
+	}
+}
+
+query userBattleRating($userId: String!, $puzzle: String) {
+	userBattleRating(userId: $userId, puzzle: $puzzle) {
+		puzzle
+		rating
+		provisional
+		games
+		rank
+	}
+}
+
+query battleMatchHistory($userId: String!, $page: Int) {
+	battleMatchHistory(userId: $userId, page: $page) {
+		items {
+			id
+			puzzle
+			ended_at
+			result
+			score_for
+			score_against
+			rated
+			is_rematch
+			end_reason
+			rating_before
+			rating_after
+			delta
+			opponent {
+				...BattlePlayerFragment
+			}
+		}
+		total
+		hasMore
+	}
+}
+
+query battleMatch($id: String!) {
+	battleMatch(id: $id) {
+		id
+		puzzle
+		status
+		end_reason
+		rated
+		is_rematch
+		winner
+		rounds_a
+		rounds_b
+		rating_a_before
+		rating_a_after
+		rating_b_before
+		rating_b_after
+		started_at
+		ended_at
+		voided_at
+		flags
+		viewer_side
+		player_a {
+			...BattlePlayerFragment
+		}
+		player_b {
+			...BattlePlayerFragment
+		}
+		rounds {
+			index
+			scramble
+			winner
+			a_time_ms
+			a_penalty
+			b_time_ms
+			b_penalty
+			a_flags
+			b_flags
+			a_moves
+			b_moves
+		}
+	}
+}
+
+query adminFlaggedBattleMatches($page: Int) {
+	adminFlaggedBattleMatches(page: $page) {
+		items {
+			id
+			puzzle
+			status
+			end_reason
+			rated
+			winner
+			rounds_a
+			rounds_b
+			ended_at
+			voided_at
+			flags
+			player_a {
+				...BattlePlayerFragment
+			}
+			player_b {
+				...BattlePlayerFragment
+			}
+		}
+		total
+		hasMore
+	}
+}
+
+mutation adminVoidBattleMatch($id: String!) {
+	adminVoidBattleMatch(id: $id) {
+		match_id
+		changed
+		reverted_a
+		reverted_b
+	}
+}
