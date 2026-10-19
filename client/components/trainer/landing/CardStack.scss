@@ -45,6 +45,58 @@
 		}
 	}
 
+	// Hub stack (Battle, trainer hub): every card is fully open, and at the desktop card's
+	// spacing two of them did not fit one under the other on a small phone. Tighter padding
+	// and type, same content.
+	&:not(&--overlap) {
+		gap: 10px;
+	}
+
+	&:not(&--overlap) &__card.#{$namespace}-trainer__landing-card {
+		padding: 16px 16px 18px;
+		border-radius: 16px;
+
+		.#{$namespace}-trainer__landing-card-eyebrow-row {
+			margin-bottom: 10px;
+		}
+
+		.#{$namespace}-trainer__landing-card-name {
+			font-size: 1.2rem;
+			margin-bottom: 6px;
+		}
+
+		.#{$namespace}-trainer__landing-card-desc {
+			font-size: 0.82rem;
+			line-height: 1.4;
+			margin-bottom: 12px;
+		}
+
+		.#{$namespace}-trainer__landing-card-groups {
+			margin-bottom: 12px;
+		}
+
+		.#{$namespace}-trainer__landing-card-group-label {
+			margin-bottom: 6px;
+		}
+
+		.#{$namespace}-trainer__landing-card-feature {
+			padding: 3px 0;
+		}
+
+		.#{$namespace}-trainer__landing-card-footer {
+			margin-bottom: 10px;
+		}
+
+		.#{$namespace}-trainer__landing-card-cta {
+			padding: 11px 16px;
+		}
+
+		.#{$namespace}-trainer__landing-card-watermark svg {
+			width: 110px;
+			height: 110px;
+		}
+	}
+
 	// A covered card: its head only, with room at the bottom for the next card's edge.
 	&__card.#{$namespace}-trainer__landing-card--collapsed {
 		padding-bottom: 34px;

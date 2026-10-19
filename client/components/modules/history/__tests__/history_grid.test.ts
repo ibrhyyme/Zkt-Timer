@@ -1,4 +1,10 @@
-import { formatSolveNumber, historyGridTemplate, SOLVE_NUMBER_GROUP, solveNumberColumnCh } from '../history_grid';
+import {
+	formatSolveNumber,
+	historyGridTemplate,
+	SOLVE_NUMBER_GROUP,
+	solveNumberColumnCh,
+	solveNumberGroupSeparator,
+} from '../history_grid';
 
 describe('formatSolveNumber', () => {
 	it('leaves numbers up to four digits alone', () => {
@@ -7,10 +13,27 @@ describe('formatSolveNumber', () => {
 		expect(formatSolveNumber(9999)).toBe('9999');
 	});
 
-	it('groups five digits and more with a narrow space, never a dot', () => {
-		expect(formatSolveNumber(12007)).toBe(`12${SOLVE_NUMBER_GROUP}007`);
-		expect(formatSolveNumber(1234567)).toBe(`1${SOLVE_NUMBER_GROUP}234${SOLVE_NUMBER_GROUP}567`);
-		expect(formatSolveNumber(12007)).not.toContain('.');
+	it('groups five digits and more, with a dot by default', () => {
+		expect(formatSolveNumber(12647)).toBe('12.647');
+		expect(formatSolveNumber(1234567)).toBe('1.234.567');
+		expect(formatSolveNumber(12007)).not.toMatch(/\.$/);
+	});
+
+	it('takes the separator it is given', () => {
+		expect(formatSolveNumber(12007, ',')).toBe('12,007');
+		expect(formatSolveNumber(12007, SOLVE_NUMBER_GROUP)).toBe(`12${SOLVE_NUMBER_GROUP}007`);
+	});
+});
+
+describe('solveNumberGroupSeparator', () => {
+	it('follows the UI language, with the Turkish fallback', () => {
+		expect(solveNumberGroupSeparator('tr')).toBe('.');
+		expect(solveNumberGroupSeparator('es')).toBe('.');
+		expect(solveNumberGroupSeparator('en')).toBe(',');
+		expect(solveNumberGroupSeparator('en-US')).toBe(',');
+		expect(solveNumberGroupSeparator('zh')).toBe(',');
+		expect(solveNumberGroupSeparator('ru')).toBe(SOLVE_NUMBER_GROUP);
+		expect(solveNumberGroupSeparator(undefined)).toBe('.');
 	});
 });
 
@@ -20,7 +43,7 @@ describe('solveNumberColumnCh', () => {
 		expect(solveNumberColumnCh(9)).toBe(2);
 		expect(solveNumberColumnCh(130)).toBe(3);
 		expect(solveNumberColumnCh(9999)).toBe(4);
-		// "12 007": five digits plus half a digit for the narrow space
+		// "12.007": five digits plus half a digit for the separator
 		expect(solveNumberColumnCh(12007)).toBe(5.5);
 	});
 });

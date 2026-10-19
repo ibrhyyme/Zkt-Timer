@@ -10,7 +10,7 @@ import SolveInfo from '../../../solve_info/SolveInfo';
 import { deleteSolveDb } from '../../../../db/solves/update';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
-import { formatSolveNumber } from '../history_grid';
+import { formatSolveNumber, solveNumberGroupSeparator } from '../history_grid';
 
 const b = block('history-solve-row');
 
@@ -42,7 +42,7 @@ interface Props {
  */
 function HistorySolveRow(props: Props) {
 	const { index, solve, disabled, isPb, highlightMode, isNewestArrival, averages, bestAverages, onOpenAverage } = props;
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const mobileMode = useGeneral('mobile_mode');
 
 	const dispatch = useDispatch();
@@ -84,7 +84,7 @@ function HistorySolveRow(props: Props) {
 			onClick={openSolve}
 			onKeyDown={onRowKeyDown}
 		>
-			<span className={b('cell', { index: true })}>{formatSolveNumber(index + 1)}</span>
+			<span className={b('cell', { index: true })}>{formatSolveNumber(index + 1, solveNumberGroupSeparator(i18n.language))}</span>
 
 			<span className={b('cell', { time: true })} title={timeTitle}>
 				<span className={b('time', { plusTwo, dnf, pbColor, pbBold })}>

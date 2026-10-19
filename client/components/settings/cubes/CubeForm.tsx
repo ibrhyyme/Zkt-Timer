@@ -17,6 +17,7 @@ import {
 } from './cube_labels';
 import { cubeErrorMessage } from './cube_errors';
 import { useKeyboardInset } from '../../../util/hooks/useKeyboardInset';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 const b = block('cube-form');
 
@@ -44,6 +45,8 @@ export default function CubeForm(props: CubeFormProps) {
 	const editing = !!cube;
 	// The sheet sits on the bottom edge; an overlaying keyboard would cover the fields.
 	const keyboardInset = useKeyboardInset();
+	// A phone gets the tall buttons: the default height read as too small to tap in the sheet.
+	const mobileMode = useGeneral('mobile_mode');
 
 	const customTypes = useMemo(() => getCustomCubeTypes(), []);
 	const puzzleOptions = useMemo(() => formPuzzleOptions(customTypes), [customTypes]);
@@ -189,8 +192,8 @@ export default function CubeForm(props: CubeFormProps) {
 			) : null}
 
 			<div className={b('actions')}>
-				<Button type="button" text={t('cubes.form_cancel')} gray onClick={close} disabled={saving} />
-				<Button type="submit" text={t('cubes.form_save')} primary loading={saving} />
+				<Button type="button" text={t('cubes.form_cancel')} gray large={!!mobileMode} onClick={close} disabled={saving} />
+				<Button type="submit" text={t('cubes.form_save')} primary large={!!mobileMode} loading={saving} />
 			</div>
 		</form>
 	);

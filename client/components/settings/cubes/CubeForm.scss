@@ -86,12 +86,47 @@
 		background: rgba(var(--text-color), 0.04);
 		cursor: pointer;
 
+		// The global reset sets `appearance: none` on every input, which leaves a native
+		// checkbox with nothing to draw, so the box and its tick are drawn here.
 		input {
+			position: relative;
 			flex-shrink: 0;
-			width: 18px;
-			height: 18px;
-			margin-top: 2px;
-			accent-color: rgb(var(--primary-color));
+			width: 20px;
+			height: 20px;
+			margin: 1px 0 0;
+			padding: 0;
+			border-radius: 6px;
+			border: 2px solid rgba(var(--text-color), 0.45);
+			background: transparent;
+			cursor: pointer;
+			transition: background-color 0.15s ease, border-color 0.15s ease;
+
+			&::after {
+				content: '';
+				position: absolute;
+				left: 5px;
+				top: 1px;
+				width: 6px;
+				height: 11px;
+				border: solid rgb(var(--theme-primary-opposite));
+				border-width: 0 2.5px 2.5px 0;
+				transform: rotate(45deg);
+				opacity: 0;
+			}
+
+			&:checked {
+				border-color: rgb(var(--primary-color));
+				background: rgb(var(--primary-color));
+
+				&::after {
+					opacity: 1;
+				}
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgba(var(--primary-color), 0.6);
+				outline-offset: 2px;
+			}
 		}
 	}
 
@@ -141,9 +176,16 @@
 		display: block;
 	}
 
+	// Button renders inside its own wrapper div, so the wrapper is what has to grow;
+	// `flex: 1` on the button alone left both at their text width.
 	.#{$namespace}-cube-form__actions:not(.#{$namespace}-cube-form__actions--stacked) {
-		button {
+		> * {
 			flex: 1;
+			min-width: 0;
+		}
+
+		button {
+			width: 100%;
 		}
 	}
 }

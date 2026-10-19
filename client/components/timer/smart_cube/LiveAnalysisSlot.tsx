@@ -106,9 +106,16 @@ export default function LiveAnalysisSlot() {
 			// needs naturalWidth*s + statsWidth*s + gap, and that must fit. Treating it as
 			// a flat margin let a wide card scale past the point where the numbers still
 			// fitted, and the ladder overflowed sideways.
-			const stats = target.querySelector<HTMLElement>('.zt-smart-stats');
-			const besideTheLadder = getComputedStyle(target).flexDirection === 'row';
-			const statsWidth = stats && besideTheLadder ? stats.getBoundingClientRect().width : 0;
+			// The right column holds the totals and the per-phase breakdown under them; it is
+			// as wide as the wider of the two.
+			const sideColumn = [
+				target.querySelector<HTMLElement>('.zt-smart-stats'),
+				target.querySelector<HTMLElement>(`.${ladderBlock('breakdown')}`),
+			];
+			const besideTheLadder = getComputedStyle(target).gridTemplateColumns.trim().split(/\s+/).length > 1;
+			const statsWidth = besideTheLadder
+				? Math.max(0, ...sideColumn.map((el) => (el ? el.getBoundingClientRect().width : 0)))
+				: 0;
 			const gap = besideTheLadder ? SIDE_GAP_PX : 0;
 
 			const widthScale = ((rowWidth - gap) * 0.99) / (naturalWidth + statsWidth);

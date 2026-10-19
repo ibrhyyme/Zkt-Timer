@@ -2,19 +2,30 @@
  * Formatting for the solves grid's number column.
  *
  * The list used to print `(index + 1).toLocaleString()` plus a period, so in Turkish
- * solve 12007 read "12.007." right next to a time like "12.88": two dotted numbers in a
- * row, and the number overflowed its fixed 40px cell into the time (feedback 1.9-e).
- * The grid gives the number its own column sized to the longest number in the list, and
- * groups thousands with a narrow no-break space, which no locale reads as a decimal mark.
+ * solve 12007 read "12.007." right next to a time like "12.88", and the number overflowed
+ * its fixed 40px cell into the time (feedback 1.9-e). The grid now gives the number its
+ * own column sized to the longest number in the list, with no trailing period.
+ *
+ * Thousands are grouped with the separator of the UI language: "12.647" in Turkish. A
+ * narrow no-break space was tried first, and at this font size it read as no separator
+ * at all ("12647").
  */
 
-/** U+202F NARROW NO-BREAK SPACE: groups digits without looking like a decimal point. */
+/** U+202F NARROW NO-BREAK SPACE: the group separator where the language uses a space. */
 export const SOLVE_NUMBER_GROUP = ' ';
 
-export function formatSolveNumber(n: number): string {
+/** Thousands separator for a UI language (i18n code). Unknown codes follow the Turkish fallback. */
+export function solveNumberGroupSeparator(language?: string | null): string {
+	const lang = (language || 'tr').toLowerCase().split('-')[0];
+	if (lang === 'en' || lang === 'zh') return ',';
+	if (lang === 'ru') return SOLVE_NUMBER_GROUP;
+	return '.';
+}
+
+export function formatSolveNumber(n: number, separator: string = '.'): string {
 	const digits = String(Math.max(0, Math.floor(n)));
 	if (digits.length <= 4) return digits; // "1204" reads fine, cstimer does the same
-	return digits.replace(/\B(?=(\d{3})+(?!\d))/g, SOLVE_NUMBER_GROUP);
+	return digits.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 }
 
 /**
@@ -24,7 +35,7 @@ export function formatSolveNumber(n: number): string {
  */
 export function solveNumberColumnCh(count: number): number {
 	const text = formatSolveNumber(Math.max(1, count));
-	// A narrow space is roughly half a digit wide.
+	// A dot, a comma and a narrow space are each roughly half a digit wide.
 	const groups = text.length - String(Math.max(1, Math.floor(count))).length;
 	const digits = text.length - groups;
 	return Math.max(2, digits + groups * 0.5);

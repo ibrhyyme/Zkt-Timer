@@ -16,22 +16,58 @@
 	container-name: live-analysis;
 
 	&__target {
-		display: flex;
 		// The ladder is tall and narrow, so the move count and TPS go beside it rather
 		// than under it: stacked, they ate the height the ladder needed to grow into and
-		// left the right half of the card empty.
-		flex-direction: row;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 10px;
+		// left the right half of the card empty. The right column holds the totals and,
+		// under them, each phase's own moves and TPS; the ladder spans both rows.
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		// The flexible second row takes the ladder's extra height, so the totals row stays
+		// as tall as the totals and the breakdown sits right under them.
+		grid-template-rows: auto 1fr;
+		align-items: start;
+		column-gap: 10px;
 		min-height: 0;
 
 		// Sized by the measured scale in LiveAnalysisSlot, not by a fixed value. The ladder
 		// is namespaced like every block; bare .live-analysis selectors never matched it.
 		.#{$namespace}-live-analysis {
-			flex: 1 1 auto;
+			grid-column: 1;
+			grid-row: 1 / span 2;
 			min-width: 0;
 			margin-bottom: 0;
+		}
+
+		.#{$namespace}-live-analysis__breakdown {
+			grid-column: 2;
+			grid-row: 2;
+			display: grid;
+			grid-template-columns: auto auto auto;
+			justify-content: end;
+			column-gap: 0.7em;
+			row-gap: 0.2em;
+			margin-top: 0.6em;
+			font-size: calc(10px * var(--zt-live-scale, 1));
+			line-height: 1.2;
+			white-space: nowrap;
+			color: rgb(var(--text-color));
+		}
+
+		.#{$namespace}-live-analysis__breakdown-row {
+			display: contents;
+		}
+
+		.#{$namespace}-live-analysis__breakdown-name {
+			font-weight: 700;
+		}
+
+		.#{$namespace}-live-analysis__breakdown-value {
+			font-weight: 600;
+			text-align: right;
+		}
+
+		.#{$namespace}-live-analysis__breakdown-unit {
+			color: rgb(var(--primary-color));
 		}
 
 		.#{$namespace}-live-analysis__row {
@@ -39,7 +75,8 @@
 		}
 
 		.#{$namespace}-smart-stats {
-			flex: 0 0 auto;
+			grid-column: 2;
+			grid-row: 1;
 			display: flex;
 			flex-direction: column;
 			align-items: flex-end;
@@ -72,17 +109,35 @@
 	}
 
 	// A narrow card has no room for two columns, so they stack again.
+	// The totals come before the breakdown, though the breakdown is earlier in the DOM.
 	@container (max-width: 260px) {
 		&__target {
-			flex-direction: column;
-			align-items: stretch;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: none;
+		}
+
+		&__target > * {
+			grid-column: 1;
+			grid-row: auto;
 		}
 
 		&__target .#{$namespace}-smart-stats {
+			order: 1;
 			flex-direction: row;
 			justify-content: flex-start;
 			gap: 10px;
 		}
+
+		&__target .#{$namespace}-live-analysis__breakdown {
+			order: 2;
+			justify-content: start;
+		}
+	}
+
+	// Totals alone (no ladder for this puzzle): they start at the left, as before.
+	&__target > .#{$namespace}-smart-stats:only-child {
+		grid-column: 1 / -1;
+		justify-self: start;
 	}
 
 	// Gone the moment anything is rendered into the target above it.

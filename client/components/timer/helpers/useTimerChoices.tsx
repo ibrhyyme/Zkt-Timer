@@ -10,7 +10,6 @@ import {
 	Microphone,
 	Monitor,
 	PencilSimple,
-	Plug,
 } from 'phosphor-react';
 import { setSetting, setSettings } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -132,7 +131,8 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 		gantimer: (s) => <Bluetooth weight="bold" size={s} />,
 		qiyitimer: (s) => <Bluetooth weight="bold" size={s} />,
 		stackmat: (s) => <Microphone weight="bold" size={s} />,
-		qiyiwired: (s) => <Plug weight="bold" size={s} />,
+		// Read through the audio input like StackMat, so it carries the same microphone.
+		qiyiwired: (s) => <Microphone weight="bold" size={s} />,
 	};
 
 	const options: TimerChoiceOption[] = offered.map((key) => {

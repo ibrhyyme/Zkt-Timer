@@ -14,6 +14,19 @@ const b = block('live-analysis');
 
 const F2L_PAIRS = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4'];
 
+// Roux and ZZ rows carry the engine's step id as their label; the per-phase breakdown
+// needs a name a reader recognises.
+const STEP_SHORT_NAMES: Record<string, string> = {
+    fb: 'FB',
+    sb: 'SB',
+    cmll: 'CMLL',
+    lse: 'LSE',
+    eoline: 'EOLine',
+    block_1: 'Block 1',
+    block_2: 'Block 2',
+    ll: 'LL',
+};
+
 // Row id -> the engine steps it covers. A combined row (F2L in the four-step ladder, CF and
 // OP in the two-step one) covers several: it used to borrow a single step's flags, so one
 // skipped fourth pair marked the whole F2L row as a skip and dropped its time from the sum.
@@ -373,6 +386,8 @@ export default function LiveAnalysisOverlay({
         p.moves = steps.length && steps.every((step: any) => step.moveCount)
             ? steps.reduce((acc: number, step: any) => acc + step.moveCount.htm, 0)
             : undefined;
+        // The label is overwritten with '=' / '+' further down; the breakdown keeps the name.
+        p.name = STEP_SHORT_NAMES[p.id] || p.label;
     });
 
     // Update history with currently DONE phases (Using ref from top scope)
@@ -414,7 +429,13 @@ export default function LiveAnalysisOverlay({
     });
     let cumulative = 0;
 
-    return (
+    // Module only (desktop): each phase's own moves and TPS, under the solve's totals.
+    // The full-screen display and the phone have no room for a second column.
+    const breakdownRows = compact
+        ? renderableRows.filter(p => !p.skipped && p.moves > 0)
+        : [];
+
+    const ladder = (
         <div className={b()}>
             <div className={b('table')} style={mobile ? {
                 display: 'grid',
@@ -474,10 +495,12 @@ export default function LiveAnalysisOverlay({
 
                     // Move count beside the phase time, sized relative to the row so it
                     // follows the module's scale. A phase that took no moves shows nothing.
-                    const movesTag = !p.skipped && p.moves > 0 ? (
+                    // Not on the phone: the narrow two-column grid has no room for it, and
+                    // the longer rows pushed the ladder past the edge of the screen.
+                    const movesTag = !mobile && !p.skipped && p.moves > 0 ? (
                         <span
                             className={b('moves')}
-                            style={{ fontSize: mobile ? '0.6em' : '0.45em', fontWeight: 600, color: '#fff', marginLeft: '0.4em' }}
+                            style={{ fontSize: '0.45em', fontWeight: 600, color: '#fff', marginLeft: '0.4em' }}
                         >
                             {p.moves} {tr('smart_cube.turns_label')}
                         </span>
@@ -564,5 +587,27 @@ export default function LiveAnalysisOverlay({
                 })}
             </div>
         </div>
+    );
+
+    if (!breakdownRows.length) return ladder;
+
+    return (
+        <>
+            {ladder}
+            <div className={b('breakdown')}>
+                {breakdownRows.map(p => (
+                    <div key={p.id} className={b('breakdown-row')}>
+                        <span className={b('breakdown-name')}>{p.name}</span>
+                        <span className={b('breakdown-value')}>
+                            {p.moves} <span className={b('breakdown-unit')}>{tr('smart_cube.turns_label')}</span>
+                        </span>
+                        <span className={b('breakdown-value')}>
+                            {p.time > 0 ? (p.moves / p.time).toFixed(2) : '-'}{' '}
+                            <span className={b('breakdown-unit')}>{tr('smart_cube.tps_label')}</span>
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </>
     );
 }

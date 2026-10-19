@@ -287,6 +287,14 @@ body.timer-immersive-bg {
 					flex: 0 0 auto;
 					position: relative;
 					z-index: 2;
+
+					// The gear menu opens upward, over the scramble and its action row
+					// (TimerScramble, z-index 3). At 2 the open menu was drawn under them
+					// and the items it overlapped took no clicks, so the cube's slot rises
+					// above them for as long as the menu is open.
+					&:has(.#{$namespace}-common-dropdown__body) {
+						z-index: 4;
+					}
 				}
 			}
 
