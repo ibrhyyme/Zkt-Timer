@@ -36,14 +36,24 @@ export const QUEUE_IDLE_CHECK_SEC = 600;
 /** After this long in the queue the screen says nobody is searching right now. */
 export const QUEUE_QUIET_NOTICE_SEC = 180;
 
-// Match format (design 4.5)
-export const ROUNDS_TO_WIN = 2;
-export const MAX_ROUNDS = 5;
-export const SCRAMBLE_TIMEOUT_SEC = 90;
+// Match format (design 4.5; owner decision 2026-10-20: first to three, 20 s scramble, 60 s cutoff)
+export const ROUNDS_TO_WIN = 3;
+/** First to three with draws replayed: up to five decisive rounds plus two draws. */
+export const MAX_ROUNDS = 7;
+/** Scrambling past this costs +2, on top of an inspection +2. */
+export const SCRAMBLE_SEC = 20;
+/** Scramble still not done at this point: DNF. */
+export const SCRAMBLE_TIMEOUT_SEC = 40;
+/**
+ * The server times the scramble from goAt to the arrival of scramble_done, which also
+ * carries the client's settle delay and the network. The client's own measure is accepted
+ * when it lies within this much under the server's; a forged one gains at most this.
+ */
+export const SCRAMBLE_CLOCK_SLACK_MS = 1000;
 export const COUNTDOWN_SEC = 3;
 export const INSPECTION_SEC = 15;
 export const INSPECTION_DNF_SEC = 17;
-export const SOLVE_CUTOFF_SEC = 120;
+export const SOLVE_CUTOFF_SEC = 60;
 export const PLUS_TWO_MS = 2000;
 export const ROUND_RESULT_SEC = 4;
 export const REMATCH_WINDOW_SEC = 15;

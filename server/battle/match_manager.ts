@@ -65,7 +65,14 @@ import {
 	prepareForMatch,
 	previewDeltas,
 } from '../../shared/battle/glicko2';
-import {forfeitWinner, isPairRated, matchProgress, roundWinner} from '../../shared/battle/rules';
+import {
+	acceptedScrambleMs,
+	forfeitWinner,
+	isPairRated,
+	matchProgress,
+	roundWinner,
+	scramblePenalty,
+} from '../../shared/battle/rules';
 import {
 	BattleDnfReason,
 	BattleEndReason,
@@ -178,6 +185,8 @@ interface SideRound {
 	phase: SidePhase;
 	scrambleDoneAt: number | null;
 	lastScrambleCubeTs: [number | null, number | null] | null;
+	/** +2 for a scramble over 20 s; absent on a match saved before the rule. */
+	scramblePenalty?: BattlePenalty | null;
 	solveStartAt: number | null;
 	clientInspectionMs: number | null;
 	progress: ReportedProgress[];
@@ -257,6 +266,7 @@ function newSideRound(): SideRound {
 		phase: 'scrambling',
 		scrambleDoneAt: null,
 		lastScrambleCubeTs: null,
+		scramblePenalty: null,
 		solveStartAt: null,
 		clientInspectionMs: null,
 		progress: [],
@@ -863,6 +873,7 @@ export class BattleMatchManager {
 			s.phase = 'inspecting';
 			s.scrambleDoneAt = now;
 			s.lastScrambleCubeTs = sanitizeTsPair(p.lastScrambleCubeTs);
+			s.scramblePenalty = scramblePenalty(acceptedScrambleMs(now - r.goAt, finiteOrNull(p.scrambleMs)));
 			this.schedule(match, `solve_${side}`, now + SOLVE_WINDOW_MS, (m) => this.onSolveWindowEnd(m, r.round, side));
 			this.schedule(match, `insp_${side}`, now + INSPECTION_WINDOW_MS, (m) => this.onInspectionWindowEnd(m, r.round, side));
 			this.sendOpponentState(match, r, side);
@@ -927,6 +938,7 @@ export class BattleMatchManager {
 					timeCorrectionMs: finiteOrNull(p.timeCorrectionMs) ?? 0,
 					lastScrambleCubeTs: s.lastScrambleCubeTs,
 					clientInspectionMs: s.clientInspectionMs,
+					scramblePenalty: s.scramblePenalty ?? null,
 					progress: s.progress,
 					scrambleDoneServerAt: s.scrambleDoneAt,
 					solveDoneServerAt: this.now(),

@@ -3196,7 +3196,7 @@
     "battle_launch_title": "对战：Online 与 Offline Battle | Zkt Timer",
     "battle_launch_description": "用智能魔方与此刻正在寻找对手的玩家进行 Online Battle，或在同一设备上与朋友进行 Offline Battle。",
     "battle_online_title": "Online Battle | Zkt Timer",
-    "battle_online_description": "使用智能魔方的计分 1v1 比赛。双方还原同一个打乱，先赢两局者获胜，分数计入排名。"
+    "battle_online_description": "使用智能魔方的计分 1v1 比赛。双方还原同一个打乱，先赢三局者获胜，分数计入排名。"
   },
   "quick_controls": {
     "timer": "计时器",
@@ -4457,11 +4457,8 @@
     "opponent_found": "已找到对手",
     "preview": "胜 +{{win}}，负 −{{loss}}",
     "round": "第 {{n}} 轮",
-    "inspect": "观察",
-    "inspection_dnf": "观察超过 17 秒",
-    "scramble_your_cube": "打乱你的魔方",
+    "inspection_dnf": "观察超过 {{seconds}} 秒",
     "scramble_hint_first": "打乱正确后，观察会自动开始。",
-    "scramble_time_left": "打乱剩余 {{seconds}} 秒",
     "round_won": "本轮获胜",
     "round_lost": "本轮失利",
     "round_draw": "平局，本轮重赛",
@@ -4507,12 +4504,12 @@
     },
     "dnf_reason": {
       "client": "还原未完成",
-      "inspection": "观察超过 17 秒",
-      "cutoff": "超过 120 秒限制",
+      "inspection": "观察超过 {{inspection}} 秒",
+      "cutoff": "超过 {{cutoff}} 秒限制",
       "replay_not_solved": "转动记录无法还原魔方",
       "no_cube_clock": "缺少魔方时钟",
       "wallclock": "时间与服务器测量不符",
-      "scramble_timeout": "90 秒内未完成打乱",
+      "scramble_timeout": "{{scramble}} 秒内未完成打乱",
       "timeout": "时间到",
       "disconnect": "连接已断开"
     },
@@ -4542,19 +4539,38 @@
       "win_short": "胜",
       "loss_short": "负",
       "draw_short": "平",
-      "how_title": "玩法",
-      "how_1": "找到对手后，两边屏幕同时开始 3-2-1 倒数。",
-      "how_2": "在你的魔方上打乱。转错时会显示纠正步骤。",
-      "how_3": "第一步开始计时，复原魔方后停止。先赢两局者获胜。",
       "ranks_link": "查看排名",
       "cube_hint": "GAN、QiYi 或 WeiLong V10 AI",
       "connecting": "正在连接"
     },
     "result": {
-      "rounds_title": "回合"
+      "rounds_title": "回合",
+      "match_over": "比赛结束 · 共 {{count}} 局"
     },
     "reconnect_cube": "重新连接魔方",
-    "cube_mismatch": "魔方与打乱不一致。请先复原魔方，再重新打乱。如果手中的魔方已经复原，请点击下方按钮。"
+    "cube_mismatch": "魔方与打乱不一致。请先复原魔方，再重新打乱。如果手中的魔方已经复原，请点击下方按钮。",
+    "opponent": "对手",
+    "first_to": "先赢 {{n}} 局",
+    "scramble_penalty": "打乱 +2",
+    "inspection_penalty": "观察 +2",
+    "scramble_dnf_in": "{{seconds}} 秒内未完成即 DNF",
+    "phase": {
+      "scramble": "打乱",
+      "inspect": "观察",
+      "solve": "还原 · 限时 {{seconds}} 秒"
+    },
+    "rules": {
+      "title": "规则",
+      "scramble": "打乱",
+      "inspection": "观察",
+      "cutoff": "还原限时",
+      "match": "比赛",
+      "seconds": "{{seconds}} 秒",
+      "late_note": "超时 +2，{{seconds}} 秒内未完成即 DNF。",
+      "cutoff_note": "罚时计入成绩；超过限时即 DNF。",
+      "match_note": "平局的一局会用新的打乱重赛。",
+      "stack_note": "罚时会累加：打乱 +2 加观察 +2 共 +4。"
+    }
   },
   "battle_landing": {
     "online_title": "Online Battle",
@@ -4569,7 +4585,7 @@
     "first_match": "打完第一场比赛即可进入排名",
     "subtitle": "在线寻找对手，或在同一设备上面对面对战。",
     "online_f1": "与积分相近的对手匹配",
-    "online_f2": "三局两胜，双方打乱相同",
+    "online_f2": "先赢三局者获胜，双方打乱相同",
     "online_f3": "每场比赛都会改变你的积分和排名",
     "online_f4": "需要 GAN、QiYi 或 WeiLong V10 AI 智能魔方",
     "offline_f1": "手机和平板上面对面，电脑上并排",
@@ -5399,14 +5415,14 @@
       "online-battle": {
         "title": "Online Battle",
         "body": [
-          "在 Online Battle 中，你用智能魔方与同一时间正在寻找对手的另一位玩家对战。双方还原同一个打乱，先赢两局的一方赢得比赛。",
+          "在 Online Battle 中，你用智能魔方与同一时间正在寻找对手的另一位玩家对战。双方还原同一个打乱，先赢三局的一方赢得比赛。",
           "时间由魔方自身的时钟计算，因此网络延迟不会影响结果。每场比赛后你的分数都会变化并计入排名。",
           "需要登录并验证邮箱。目前只支持 3x3。"
         ],
         "steps": [
           "在对战页面点击 Online Battle 卡片，并连接你的智能魔方。",
           "点击“寻找对手”。匹配成功后会显示赢或输时分数的变化。",
-          "把屏幕上的打乱应用到魔方上。打乱完成后开始观察；第一步转动开始计时，魔方还原后停止。",
+          "在 20 秒内把屏幕上的打乱应用到魔方上，超时 +2。之后开始 15 秒观察；第一步转动开始计时，魔方还原后停止。还原限时 60 秒。",
           "比赛结束后可以申请再战，或寻找新的对手。"
         ],
         "notes": [

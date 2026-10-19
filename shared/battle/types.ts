@@ -11,7 +11,8 @@ export type BattleSide = 'A' | 'B';
 /** Round or match outcome. */
 export type BattleWinner = 'A' | 'B' | 'DRAW';
 
-export type BattlePenalty = 'PLUS_TWO' | 'DNF';
+/** PLUS_FOUR: a late scramble and a late inspection, each +2. */
+export type BattlePenalty = 'PLUS_TWO' | 'PLUS_FOUR' | 'DNF';
 
 /** battle_match.status */
 export type BattleMatchStatus = 'FINISHED' | 'VOID';
@@ -62,7 +63,7 @@ export type BattleDnfReason =
 	| 'client'
 	/** Inspection over 17 s. */
 	| 'inspection'
-	/** Over the 120 s cutoff. */
+	/** Over the 60 s cutoff (penalties included). */
 	| 'cutoff'
 	/** Check 2: replaying the move log does not solve the cube. */
 	| 'replay_not_solved'
@@ -70,7 +71,7 @@ export type BattleDnfReason =
 	| 'no_cube_clock'
 	/** Check 5: claimed inspection + time is more than 3 s over the server's interval. */
 	| 'wallclock'
-	/** Scramble not finished within 90 s. */
+	/** Scramble not finished within 40 s. */
 	| 'scramble_timeout'
 	/** Solve not finished in time, or the player was disconnected. */
 	| 'timeout'

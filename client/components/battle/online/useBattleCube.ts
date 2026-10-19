@@ -15,7 +15,7 @@ import type {SmartCubeViewHandle} from '../../timer/smart_cube/cube_view/SmartCu
 import {isNative} from '../../../util/platform';
 import {toastError} from '../../../util/toast';
 import {expectedProgress} from '../../../../shared/battle/verify';
-import {inspectionPenalty} from '../../../../shared/battle/rules';
+import {addPenalties, inspectionPenalty, scramblePenalty as scrambleCall} from '../../../../shared/battle/rules';
 import type {
 	BattleProgressStep,
 	ProgressPayload,
@@ -49,6 +49,8 @@ export interface BattleCubeRound {
 	matchId: string;
 	round: number;
 	scramble: string;
+	/** goAt on this device's clock: the scramble is timed from here. */
+	goAtLocal: number;
 }
 
 export interface BattleCubeSink {
@@ -151,6 +153,8 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 	const [outOfSync, setOutOfSync] = useState(false);
 	/** Local clock: scramble complete (inspection runs from here). */
 	const [scrambleDoneAt, setScrambleDoneAt] = useState<number | null>(null);
+	/** +2 when the scramble took over 20 s; the server makes the final call. */
+	const [scramblePenalty, setScramblePenalty] = useState<BattlePenalty | null>(null);
 	/** Move clock of the first solve move. */
 	const [solveStartedAt, setSolveStartedAt] = useState<number | null>(null);
 	const [solve, setSolve] = useState<BattleCubeSolve | null>(null);
@@ -167,6 +171,7 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 
 	const moveLogRef = useRef<LoggedMove[]>([]);
 	const inspectionMsRef = useRef(0);
+	const scrambleMsRef = useRef<number | null>(null);
 	const solveStartIndexRef = useRef(0);
 	const solveStartedAtRef = useRef<number | null>(null);
 	const sentStepsRef = useRef<Set<BattleProgressStep>>(new Set());
@@ -204,6 +209,7 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 			round: r.round,
 			facelets: manager.getSnapshot().facelets,
 			lastScrambleCubeTs: lastScrambleStamps(moveLogRef.current, solveStartedAtRef.current),
+			scrambleMs: scrambleMsRef.current ?? undefined,
 		});
 	}, [manager]);
 
@@ -227,6 +233,8 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 				if (!r) return;
 				setUndoMoves(null);
 				setScrambleDoneAt(event.at);
+				scrambleMsRef.current = Math.max(0, Math.round(event.at - r.goAtLocal));
+				setScramblePenalty(scrambleCall(scrambleMsRef.current));
 				setPhase('inspecting');
 				phaseRef.current = 'inspecting';
 				scrambleDoneSentRef.current = false;
@@ -275,8 +283,10 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 					sentStepsRef.current.add(p.step);
 					sinkRef.current.progress({matchId: r.matchId, round: r.round, step: p.step, atMs: p.atMs});
 				}
+				// The wire carries the inspection call only; the server adds its own scramble call.
 				const penalty = inspectionPenalty(inspectionMsRef.current);
-				setSolve({timeMs: result.timeMs, penalty});
+				const scrambleMs = scrambleMsRef.current;
+				setSolve({timeMs: result.timeMs, penalty: addPenalties(scrambleMs == null ? null : scrambleCall(scrambleMs), penalty)});
 				setPhase('done');
 				phaseRef.current = 'done';
 				sinkRef.current.solveDone({
@@ -324,6 +334,8 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 		setMatchStatus([]);
 		setUndoMoves(null);
 		setScrambleDoneAt(null);
+		scrambleMsRef.current = null;
+		setScramblePenalty(null);
 		setSolveStartedAt(null);
 		setSolve(null);
 		engineRef.current?.suspend();
@@ -532,6 +544,8 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 		solveStartedAtRef.current = null;
 		sentStepsRef.current = new Set();
 		setScrambleDoneAt(null);
+		scrambleMsRef.current = null;
+		setScramblePenalty(null);
 		setSolveStartedAt(null);
 		setSolve(null);
 		setMatchStatus([]);
@@ -561,6 +575,7 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 		undoMoves,
 		outOfSync,
 		scrambleDoneAt,
+		scramblePenalty,
 		solveStartedAt,
 		solve,
 	};

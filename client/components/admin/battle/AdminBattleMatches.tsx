@@ -11,6 +11,7 @@ import Empty from '../../common/empty/Empty';
 import Input from '../../common/inputs/input/Input';
 import {getFullFormattedDate} from '../../../util/dates';
 import {getTimeString} from '../../../util/time';
+import {formatBattleTime} from '../../battle/online/OpponentBar';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {getGqlErrorMessage} from '../../../util/gql-error';
 import {useSiteConfig} from '../../../util/hooks/useSiteConfig';
@@ -44,8 +45,7 @@ function formatSolve(timeMs: number | null | undefined, penalty: string | null |
 		return timeMs != null ? `DNF (${getTimeString(timeMs / 1000, 2)})` : 'DNF';
 	}
 	if (timeMs == null) return '-';
-	if (penalty === 'PLUS_TWO') return `${getTimeString((timeMs + 2000) / 1000, 2)}+`;
-	return getTimeString(timeMs / 1000, 2);
+	return formatBattleTime(timeMs, penalty === 'PLUS_TWO' || penalty === 'PLUS_FOUR' ? penalty : null);
 }
 
 function FlagChips({flags}: {flags: Array<string | null | undefined> | null | undefined}) {

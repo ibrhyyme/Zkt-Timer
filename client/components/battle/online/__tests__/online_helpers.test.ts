@@ -84,6 +84,7 @@ describe('OpponentBar helpers', () => {
 		expect(formatBattleTime(12840, 'DNF')).toBe('DNF');
 		expect(formatBattleTime(12840, null)).toBe('12.84');
 		expect(formatBattleTime(12840, 'PLUS_TWO')).toBe('14.84+');
+		expect(formatBattleTime(12840, 'PLUS_FOUR')).toBe('16.84++');
 	});
 
 	it('passes full avatar URLs through', () => {

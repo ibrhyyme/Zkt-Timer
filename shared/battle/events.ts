@@ -105,6 +105,11 @@ export interface ScrambleDonePayload {
 	 * when the cube did not stamp them.
 	 */
 	lastScrambleCubeTs: [number | null, number | null];
+	/**
+	 * goAt to scramble complete on the device's synced clock. The server keeps it only within
+	 * SCRAMBLE_CLOCK_SLACK_MS of its own interval (`acceptedScrambleMs`). Older clients omit it.
+	 */
+	scrambleMs?: number;
 }
 
 export interface SolveStartPayload {

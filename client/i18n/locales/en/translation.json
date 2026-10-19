@@ -3228,7 +3228,7 @@
     "battle_launch_title": "Battle: Online and Offline Battle | Zkt Timer",
     "battle_launch_description": "Play Online Battle with your smart cube against whoever is searching right now, or an Offline Battle with a friend on one device.",
     "battle_online_title": "Online Battle | Zkt Timer",
-    "battle_online_description": "Rated 1v1 matches with smart cubes. Both players solve the same scramble, the first to win two rounds wins, and the rating goes on the leaderboard."
+    "battle_online_description": "Rated 1v1 matches with smart cubes. Both players solve the same scramble, the first to win three rounds wins, and the rating goes on the leaderboard."
   },
   "quick_controls": {
     "timer": "Timer",
@@ -4489,11 +4489,8 @@
     "opponent_found": "Opponent found",
     "preview": "Win +{{win}}, lose −{{loss}}",
     "round": "Round {{n}}",
-    "inspect": "Inspect",
-    "inspection_dnf": "Inspection went over 17 seconds",
-    "scramble_your_cube": "Scramble your cube",
+    "inspection_dnf": "Inspection went over {{seconds}} seconds",
     "scramble_hint_first": "Inspection starts on its own once the scramble is right.",
-    "scramble_time_left": "{{seconds}} s left to scramble",
     "round_won": "You won the round",
     "round_lost": "You lost the round",
     "round_draw": "Draw, round replayed",
@@ -4539,12 +4536,12 @@
     },
     "dnf_reason": {
       "client": "Solve not completed",
-      "inspection": "Inspection went over 17 seconds",
-      "cutoff": "Went over the 120 second limit",
+      "inspection": "Inspection went over {{inspection}} seconds",
+      "cutoff": "Went over the {{cutoff}} second limit",
       "replay_not_solved": "The move log doesn't solve the cube",
       "no_cube_clock": "Cube clock missing",
       "wallclock": "Time doesn't match what the server measured",
-      "scramble_timeout": "Scramble not finished in 90 seconds",
+      "scramble_timeout": "Scramble not finished in {{scramble}} seconds",
       "timeout": "Time ran out",
       "disconnect": "Disconnected"
     },
@@ -4574,19 +4571,38 @@
       "win_short": "W",
       "loss_short": "L",
       "draw_short": "D",
-      "how_title": "How it works",
-      "how_1": "When an opponent is found, 3-2-1 starts on both screens at once.",
-      "how_2": "Scramble on your cube. A wrong move shows a correction.",
-      "how_3": "Your first move starts your time and solving the cube stops it. First to win two rounds takes the match.",
       "ranks_link": "See rankings",
       "cube_hint": "GAN, QiYi or WeiLong V10 AI",
       "connecting": "Connecting"
     },
     "result": {
-      "rounds_title": "Rounds"
+      "rounds_title": "Rounds",
+      "match_over": "Match over · rounds: {{count}}"
     },
     "reconnect_cube": "Reconnect cube",
-    "cube_mismatch": "Your cube does not match the scramble. Solve it, then start the scramble again. If it is already solved in your hand, press the button below."
+    "cube_mismatch": "Your cube does not match the scramble. Solve it, then start the scramble again. If it is already solved in your hand, press the button below.",
+    "opponent": "Opponent",
+    "first_to": "First to {{n}}",
+    "scramble_penalty": "Scramble +2",
+    "inspection_penalty": "Inspection +2",
+    "scramble_dnf_in": "DNF unless done in {{seconds}} s",
+    "phase": {
+      "scramble": "Scramble",
+      "inspect": "Inspect",
+      "solve": "Solve · limit {{seconds}} s"
+    },
+    "rules": {
+      "title": "Rules",
+      "scramble": "Scramble",
+      "inspection": "Inspection",
+      "cutoff": "Solve limit",
+      "match": "Match",
+      "seconds": "{{seconds}} s",
+      "late_note": "Going over is +2; not done in {{seconds}} seconds is a DNF.",
+      "cutoff_note": "Penalties count toward the time; a solve over the limit is a DNF.",
+      "match_note": "A drawn round is replayed with a new scramble.",
+      "stack_note": "Penalties add up: +2 for the scramble and +2 for inspection make +4."
+    }
   },
   "battle_landing": {
     "online_title": "Online Battle",
@@ -4601,7 +4617,7 @@
     "first_match": "Get ranked with your first match",
     "subtitle": "Find an opponent online, or face off on one device.",
     "online_f1": "Matched with a player near your rating",
-    "online_f2": "Best of three, same scramble for both",
+    "online_f2": "First to three rounds, same scramble for both",
     "online_f3": "Every match moves your rating and rank",
     "online_f4": "Needs a GAN, QiYi or WeiLong V10 AI smart cube",
     "offline_f1": "Facing each other on a phone or tablet, side by side on a computer",
@@ -5433,14 +5449,14 @@
       "online-battle": {
         "title": "Online Battle",
         "body": [
-          "In Online Battle you play with your smart cube against another player who is searching at the same moment. You both solve the same scramble, and the first to win two rounds wins the match.",
+          "In Online Battle you play with your smart cube against another player who is searching at the same moment. You both solve the same scramble, and the first to win three rounds wins the match.",
           "Time comes from the cube's own clock, so internet lag does not affect the result. After each match your rating changes and goes on the leaderboard.",
           "You need to be signed in with a verified email. Only 3x3 for now."
         ],
         "steps": [
           "On the Battle page, tap the Online Battle card and connect your smart cube.",
           "Press Find opponent. Once matched, you see how much your rating changes if you win or lose.",
-          "Apply the scramble on screen to your cube. Inspection starts when the scramble is done; your first move starts the time and solving the cube stops it.",
+          "Apply the scramble on screen to your cube within 20 seconds; going over costs +2. Then 15 seconds of inspection start; your first move starts the time and solving the cube stops it. The solve limit is 60 seconds.",
           "When the match ends, ask for a rematch or look for a new opponent."
         ],
         "notes": [

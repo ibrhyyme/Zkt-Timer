@@ -3,13 +3,16 @@ import {useTranslation} from 'react-i18next';
 import {Flag, MagnifyingGlass, SignOut} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
-import {PROVISIONAL_TYPICAL_GAMES} from '../../../../shared/battle/config';
+import {INSPECTION_DNF_SEC, PROVISIONAL_TYPICAL_GAMES, SCRAMBLE_TIMEOUT_SEC, SOLVE_CUTOFF_SEC} from '../../../../shared/battle/config';
 import type {BattlePlayerInfo, MatchResultPayload, RematchStatePayload} from '../../../../shared/battle/events';
 import type {BattleEndReason, BattleSide} from '../../../../shared/battle/types';
 import {avatarSrc, formatBattleTime} from './OpponentBar';
 import {otherSide, outcomeFor, RoundOutcome, sideScore, sideSolve} from './battle_state';
 
 const b = block('online-battle');
+
+/** The limits the DNF reasons name, so a rule change never leaves a stale number on screen. */
+export const DNF_REASON_PARAMS = {cutoff: SOLVE_CUTOFF_SEC, scramble: SCRAMBLE_TIMEOUT_SEC, inspection: INSPECTION_DNF_SEC};
 
 /** Longest report text the dialog accepts. */
 export const REPORT_REASON_MAX = 300;
@@ -69,23 +72,25 @@ interface Props {
 	onReport(reason: string): void;
 }
 
-/** One side of the scoreboard: picture, name, rating; a green sticker marks the winner. */
+/** One player under the score: picture, name and rating; the winner's name carries a green sticker. */
 function Side({name, avatar, rating, winner, end}: {name: string; avatar: string | null; rating: number | null; winner: boolean; end?: boolean}) {
 	const src = avatarSrc(avatar);
 	return (
 		<div className={b('vs-side', {end: !!end})}>
-			<span className={b('q-avatar', {lg: true})} aria-hidden="true">
+			<span className={b('avatar')} aria-hidden="true">
 				{src ? <img src={src} alt="" /> : <span>{(name || '?').charAt(0).toUpperCase()}</span>}
 			</span>
-			<span className={b('vs-name')}>
-				{winner && <span className={b('sticker', {green: true})} aria-hidden="true" />}
-				<span className={b('vs-name-text')}>{name}</span>
-			</span>
-			{rating != null && (
-				<span className={b('vs-rating')} lang="en">
-					{rating}
+			<span className={b('vs-text')}>
+				<span className={b('vs-name')}>
+					{winner && <span className={b('sticker', {green: true})} aria-hidden="true" />}
+					<span className={b('vs-name-text')}>{name}</span>
 				</span>
-			)}
+				{rating != null && (
+					<span className={b('vs-rating')} lang="en">
+						{rating}
+					</span>
+				)}
+			</span>
 		</div>
 	);
 }
@@ -93,9 +98,10 @@ function Side({name, avatar, rating, winner, end}: {name: string; avatar: string
 /**
  * Match result, rating change and the rematch window (design 5.5).
  *
- * The two players face each other across the score, the rounds and the rating each get a
- * card, and the rematch is the one filled button. No crown, no glow, no coloured headline:
- * the outcome is the sticker in front of the headline, the numbers are mono.
+ * Read top down by weight: the outcome and the final score in display type, the rating change
+ * as the one coloured number, then the rounds. One surface split by hairlines, not a stack of
+ * equal cards; on a desktop the rounds take the right-hand column. The rematch is the one
+ * filled button, the rest are quiet.
  *
  * The opponent's side shows the rating they came in with: the result carries only this
  * player's change, and Glicko-2 is not zero-sum, so their new number cannot be derived here.
@@ -145,30 +151,70 @@ export default function ResultScreen(props: Props) {
 		setReason('');
 	};
 
+	const deltaText =
+		rated && result.delta != null
+			? `${result.delta > 0 ? '+' : result.delta < 0 ? '−' : '±'}${Math.abs(result.delta)}`
+			: null;
+
 	return (
 		<div className={b('result')}>
 			<header className={b('result-head')}>
-				<h2 className={b('result-title')}>
-					<span
-						className={b('sticker', {big: true, green: outcome === 'won', red: outcome === 'lost'})}
-						aria-hidden="true"
-					/>
-					{headline}
-				</h2>
-				{endKey && <p className={b('result-reason')}>{t(endKey)}</p>}
+				<div className={b('result-outcome')}>
+					<span className={b('eyebrow', {[outcome]: true})}>
+						<span className={b('sticker', {green: outcome === 'won', red: outcome === 'lost'})} aria-hidden="true" />
+						{t('online_battle.result.match_over', {count: result.rounds.length})}
+					</span>
+					<h2 className={b('result-title')}>{headline}</h2>
+					{endKey && <p className={b('result-reason')}>{t(endKey)}</p>}
+				</div>
+				<div className={b('result-score')} lang="en">
+					{sideScore(score, side)}
+					<span className={b('board-colon')}>:</span>
+					{sideScore(score, opp)}
+				</div>
 			</header>
 
-			<section className={b('q-card')}>
-				<div className={b('vs')}>
-					<Side name={myName} avatar={myAvatar} rating={rated ? result.ratingAfter : myRating} winner={outcome === 'won'} />
-					<div className={b('vs-score')} lang="en">
-						{sideScore(score, side)}–{sideScore(score, opp)}
+			<div className={b('vs')}>
+				<Side name={myName} avatar={myAvatar} rating={rated ? result.ratingAfter : myRating} winner={outcome === 'won'} />
+				<Side end name={opponent.username} avatar={opponent.avatar} rating={opponent.rating} winner={outcome === 'lost'} />
+			</div>
+
+			<section className={b('result-rating')}>
+				{/* lang="en": "Rating" is an English loanword in Turkish; uppercased under lang="tr" it
+				    came out as "RATİNG" with a dotted capital I. */}
+				<h3 className={b('eyebrow')} lang="en">
+					{t('online_battle.rating')}
+				</h3>
+				{rated && deltaText ? (
+					<div className={b('rating-change')}>
+						<span className={b('rating-numbers')} lang="en">
+							{result.ratingBefore} → {result.ratingAfter}
+						</span>
+						<span
+							className={b('rating-delta', {up: (result.delta ?? 0) > 0, down: (result.delta ?? 0) < 0})}
+							lang="en"
+						>
+							{deltaText}
+						</span>
 					</div>
-					<Side end name={opponent.username} avatar={opponent.avatar} rating={opponent.rating} winner={outcome === 'lost'} />
-				</div>
+				) : (
+					<div className={b('rating-change')}>{t('online_battle.unrated_match')}</div>
+				)}
+				{result.provisional && (
+					<div className={b('form')}>
+						<span className={b('stickers')} aria-hidden="true">
+							{Array.from({length: PROVISIONAL_TYPICAL_GAMES}, (_, i) => (
+								<span key={i} className={b('sticker', {blue: i < provisionalGames})} />
+							))}
+						</span>
+						<span className={b('eyebrow')}>
+							{t('online_battle.provisional_progress', {games: provisionalGames, total: PROVISIONAL_TYPICAL_GAMES})}
+						</span>
+					</div>
+				)}
 			</section>
 
-			<section className={b('q-card')}>
+			<section className={b('result-rounds')}>
 				<h3 className={b('eyebrow')}>{t('online_battle.result.rounds_title')}</h3>
 				{/* Names as written: an uppercased username is a different name (ibrhyme -> İBRHYME). */}
 				<div className={b('round-row', {head: true})}>
@@ -194,44 +240,11 @@ export default function ResultScreen(props: Props) {
 								{roundOutcome === 'lost' && <span className={b('sticker', {green: true})} aria-hidden="true" />}
 							</span>
 							{mine.dnfReason && mine.penalty === 'DNF' && (
-								<span className={b('dnf-reason')}>{t(`online_battle.dnf_reason.${mine.dnfReason}`)}</span>
+								<span className={b('dnf-reason')}>{t(`online_battle.dnf_reason.${mine.dnfReason}`, DNF_REASON_PARAMS)}</span>
 							)}
 						</div>
 					);
 				})}
-			</section>
-
-			<section className={b('q-card')}>
-				{/* lang="en": "Rating" is an English loanword in Turkish; uppercased under lang="tr" it
-				    came out as "RATİNG" with a dotted capital I. */}
-				<h3 className={b('eyebrow')} lang="en">
-					{t('online_battle.rating')}
-				</h3>
-				{rated ? (
-					<div className={b('rating-change')}>
-						<span className={b('rating-numbers')} lang="en">
-							{result.ratingBefore} → {result.ratingAfter}
-						</span>
-						<span className={b('rating-delta')} lang="en">
-							{result.delta > 0 ? '+' : result.delta < 0 ? '−' : '±'}
-							{Math.abs(result.delta)}
-						</span>
-					</div>
-				) : (
-					<div className={b('rating-change')}>{t('online_battle.unrated_match')}</div>
-				)}
-				{result.provisional && (
-					<div className={b('form')}>
-						<span className={b('stickers')} aria-hidden="true">
-							{Array.from({length: PROVISIONAL_TYPICAL_GAMES}, (_, i) => (
-								<span key={i} className={b('sticker', {blue: i < provisionalGames})} />
-							))}
-						</span>
-						<span className={b('eyebrow')}>
-							{t('online_battle.provisional_progress', {games: provisionalGames, total: PROVISIONAL_TYPICAL_GAMES})}
-						</span>
-					</div>
-				)}
 			</section>
 
 			<div className={b('result-actions')}>
@@ -248,20 +261,24 @@ export default function ResultScreen(props: Props) {
 				<div className={b('result-row')}>
 					<Button
 						fullWidth
-						outline
+						gray
 						iconFirst
 						icon={<MagnifyingGlass weight="bold" />}
 						text={t('online_battle.new_opponent')}
 						onClick={props.onNewOpponent}
 					/>
-					<Button fullWidth outline iconFirst icon={<SignOut weight="bold" />} text={t('online_battle.exit')} onClick={props.onExit} />
+					<Button fullWidth transparent iconFirst icon={<SignOut weight="bold" />} text={t('online_battle.exit')} onClick={props.onExit} />
 				</div>
+				<Button
+					small
+					transparent
+					iconFirst
+					icon={<Flag weight="bold" />}
+					disabled={reported}
+					text={reported ? t('online_battle.reported') : t('online_battle.report_opponent')}
+					onClick={() => setReportOpen(true)}
+				/>
 			</div>
-
-			<button type="button" className={b('report-link')} disabled={reported} onClick={() => setReportOpen(true)}>
-				<Flag weight="bold" aria-hidden="true" />
-				{reported ? t('online_battle.reported') : t('online_battle.report_opponent')}
-			</button>
 
 			{reportOpen && (
 				<div className={b('dialog-backdrop')}>
@@ -276,7 +293,7 @@ export default function ResultScreen(props: Props) {
 							onChange={(e) => setReason(e.target.value)}
 						/>
 						<div className={b('dialog-actions')}>
-							<Button outline text={t('online_battle.cancel')} onClick={() => setReportOpen(false)} />
+							<Button gray text={t('online_battle.cancel')} onClick={() => setReportOpen(false)} />
 							<Button danger text={t('online_battle.report_send')} disabled={!reason.trim()} onClick={sendReport} />
 						</div>
 					</div>

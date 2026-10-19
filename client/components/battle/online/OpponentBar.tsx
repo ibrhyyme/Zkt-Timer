@@ -4,6 +4,7 @@ import block from '../../../styles/bem';
 import {getTimeString} from '../../../util/time';
 import {getStorageURL} from '../../../util/storage';
 import {ROUNDS_TO_WIN} from '../../../../shared/battle/config';
+import {penaltyMs, plusTwoCount} from '../../../../shared/battle/rules';
 import {BATTLE_PROGRESS_STEPS, BattleProgressStep, OpponentStatePayload} from '../../../../shared/battle/events';
 import type {BattlePenalty} from '../../../../shared/battle/types';
 
@@ -19,44 +20,22 @@ export function avatarSrc(avatar: string | null | undefined): string | null {
 	return getStorageURL(avatar);
 }
 
-/** Formats a battle time: "12.84", "14.03+", "DNF". */
+/** Formats a battle time with its penalty in: "12.84", "14.84+" (+2), "16.84++" (+4), "DNF". */
 export function formatBattleTime(timeMs: number | null | undefined, penalty: BattlePenalty | null | undefined): string {
 	if (penalty === 'DNF' || timeMs == null) return 'DNF';
-	const base = getTimeString(timeMs / 1000, 2);
-	return penalty === 'PLUS_TWO' ? `${getTimeString((timeMs + 2000) / 1000, 2)}+` : base;
+	return getTimeString((timeMs + penaltyMs(penalty)) / 1000, 2) + '+'.repeat(plusTwoCount(penalty));
 }
 
-interface PlayerLineProps {
-	name: string;
-	avatar?: string | null;
-	rating: number;
-	provisional: boolean;
-	score: number;
-	self?: boolean;
-}
-
-/** Avatar, name, rating and the round dots of one player. */
-export function PlayerLine({name, avatar, rating, provisional, score, self}: PlayerLineProps) {
-	const {t} = useTranslation();
-	const src = avatarSrc(avatar);
-	const dots = [];
+/** Rounds won as cube stickers, one per round needed to take the match. */
+export function Pips({score}: {score: number}) {
+	const pips = [];
 	for (let i = 0; i < ROUNDS_TO_WIN; i++) {
-		dots.push(<span key={i} className={b('dot', {won: i < score})} />);
+		pips.push(<span key={i} className={b('pip', {won: i < score})} />);
 	}
 	return (
-		<div className={b('player', {self: !!self})}>
-			<span className={b('avatar')}>
-				{src ? <img src={src} alt="" /> : <span>{(name || '?').charAt(0).toUpperCase()}</span>}
-			</span>
-			<span className={b('player-name')}>{name}</span>
-			<span className={b('player-rating')} title={provisional ? t('online_battle.provisional') : undefined}>
-				{rating}
-				{provisional && <span className={b('provisional')}>?</span>}
-			</span>
-			<span className={b('dots')} aria-label={String(score)}>
-				{dots}
-			</span>
-		</div>
+		<span className={b('pips')} aria-label={String(score)}>
+			{pips}
+		</span>
 	);
 }
 
@@ -91,11 +70,6 @@ export function PhaseBar({step, finished}: {step?: BattleProgressStep | null; fi
 }
 
 interface OpponentBarProps {
-	name: string;
-	avatar: string | null;
-	rating: number;
-	provisional: boolean;
-	score: number;
 	state: OpponentStatePayload | null;
 	/** Local clock of the opponent's solve start, for the live time. */
 	solvingSinceLocal: number | null;
@@ -105,7 +79,11 @@ interface OpponentBarProps {
 	graceLeftSec: number | null;
 }
 
-/** The opponent: who, how far, and what they are doing right now (design 5.4). */
+/**
+ * The opponent's lane (design 5.4): what they are doing, their time and how far they got.
+ * Who they are sits on the scoreboard above. A compact strip on a phone, the right-hand
+ * column on a desktop.
+ */
 export default function OpponentBar(props: OpponentBarProps) {
 	const {t} = useTranslation();
 	const {state, solvingSinceLocal, now, connected, graceLeftSec} = props;
@@ -128,22 +106,18 @@ export default function OpponentBar(props: OpponentBarProps) {
 	} else if (state?.phase === 'finished') {
 		status = t('online_battle.opponent_finished');
 		if (state.timeMs !== undefined) time = formatBattleTime(state.timeMs, state.penalty);
+	} else {
+		status = t('online_battle.opponent_scrambling');
 	}
 
 	return (
-		<div className={b('opponent', {offline: !connected})}>
-			<PlayerLine
-				name={props.name}
-				avatar={props.avatar}
-				rating={props.rating}
-				provisional={props.provisional}
-				score={props.score}
-			/>
+		<div className={b('opponent', {offline: !connected, [state?.phase || 'scrambling']: connected})}>
+			<span className={b('eyebrow')}>{t('online_battle.opponent')}</span>
+			<span className={b('opponent-status')}>{status}</span>
+			<span className={b('opponent-time')} lang="en">
+				{time || ' '}
+			</span>
 			<PhaseBar step={state?.step} finished={state?.phase === 'finished'} />
-			<div className={b('opponent-status')}>
-				<span>{status || ' '}</span>
-				{time && <span className={b('opponent-time')}>{time}</span>}
-			</div>
 		</div>
 	);
 }

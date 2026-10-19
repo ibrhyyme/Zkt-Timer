@@ -7,7 +7,16 @@ import Button from '../../common/button/Button';
 import {gqlQueryTyped} from '../../api';
 import {BattleMatchHistoryDocument, MyBattleRatingDocument} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
-import {BATTLE_PUZZLE, QUEUE_QUIET_NOTICE_SEC} from '../../../../shared/battle/config';
+import {
+	BATTLE_PUZZLE,
+	INSPECTION_DNF_SEC,
+	INSPECTION_SEC,
+	QUEUE_QUIET_NOTICE_SEC,
+	ROUNDS_TO_WIN,
+	SCRAMBLE_SEC,
+	SCRAMBLE_TIMEOUT_SEC,
+	SOLVE_CUTOFF_SEC,
+} from '../../../../shared/battle/config';
 import type {QueueStatePayload} from '../../../../shared/battle/events';
 import type {BattleCubeInfo} from '../../../../shared/battle/events';
 import {avatarSrc} from './OpponentBar';
@@ -31,11 +40,20 @@ interface Props {
 	onSearch(): void;
 	onStop(): void;
 	onStillHere(): void;
+	/** Development preview: this profile instead of the signed-in user's. */
+	preview?: QueuePreviewProfile;
+}
+
+export interface QueuePreviewProfile {
+	name: string;
+	avatar: string | null;
+	rating: QueueRating | null;
+	recent: RecentMatch[];
 }
 
 type MatchResult = 'WIN' | 'LOSS' | 'DRAW';
 
-interface QueueRating {
+export interface QueueRating {
 	rating: number;
 	provisional: boolean;
 	games: number;
@@ -46,7 +64,7 @@ interface QueueRating {
 	rank: number | null;
 }
 
-interface RecentMatch {
+export interface RecentMatch {
 	id: string;
 	result: MatchResult;
 	scoreFor: number;
@@ -64,6 +82,13 @@ const RECENT_SIZE = 5;
 function formatWait(sec: number): string {
 	const s = Math.max(0, Math.floor(sec));
 	return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/** Rating change of a past match: "+11", "−9", "±0". */
+export function formatDelta(delta: number | null | undefined): string {
+	if (delta == null) return '';
+	const d = Math.round(delta);
+	return d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : '±0';
 }
 
 function toResult(value: string | null | undefined): MatchResult {
@@ -142,10 +167,11 @@ function Avatar({name, src, size}: {name: string; src: string | null; size: 'lg'
  * Phone: one column in that order, scrolling. Desktop: the search on the left, the cards
  * beside it. No effects: hierarchy from Archivo and Roboto Mono, state from cube stickers.
  */
-export default function QueueScreen({searching, queue, cube, onSearch, onStop, onStillHere}: Props) {
+export default function QueueScreen({searching, queue, cube, onSearch, onStop, onStillHere, preview}: Props) {
 	const {t} = useTranslation();
 	const me = useMe();
-	const {rating, recent, loaded} = useQueueProfile(me?.id || null);
+	const profile = useQueueProfile(preview ? null : me?.id || null);
+	const {rating, recent, loaded} = preview ? {...preview, loaded: true} : profile;
 	const startedAtRef = useRef<number | null>(null);
 	const [now, setNow] = useState(() => Date.now());
 
@@ -180,8 +206,8 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 	const waitedSec = searching && startedAtRef.current != null ? (now - startedAtRef.current) / 1000 : 0;
 	const count = queue?.searchingCount ?? 0;
 	const supported = !!cube.info?.hasClock;
-	const name = me?.username || '';
-	const myAvatar = me?.profile?.pfp_image?.storage_path || null;
+	const name = preview ? preview.name : me?.username || '';
+	const myAvatar = preview ? preview.avatar : me?.profile?.pfp_image?.storage_path || null;
 
 	// ── The action ──
 	// One status line in display type, the clock in mono while searching, one button. The
@@ -199,7 +225,7 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 				: count > 0
 					? t('online_battle.searching_count', {count})
 					: null;
-		action = <Button large fullWidth outline text={t('online_battle.stop_searching')} onClick={onStop} />;
+		action = <Button large fullWidth gray text={t('online_battle.stop_searching')} onClick={onStop} />;
 	} else if (!cube.connected) {
 		status = cube.reconnecting ? t('online_battle.cube_reconnecting') : t('online_battle.cube_not_connected');
 		sub = t('online_battle.queue.cube_hint');
@@ -343,7 +369,7 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 							{m.scoreFor}–{m.scoreAgainst}
 						</span>
 						<span className={b('recent-delta')} lang="en">
-							{m.delta == null ? '' : m.delta > 0 ? `+${Math.round(m.delta)}` : `−${Math.abs(Math.round(m.delta))}`}
+							{formatDelta(m.delta)}
 						</span>
 					</li>
 				))}
@@ -351,20 +377,43 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 		</section>
 	) : null;
 
-	// ── How a match runs ──
+	// ── The rules, with their numbers from shared/battle/config ──
+	// Real numbers instead of prose: a rule change in config shows here without a text edit.
+	const rules: {key: string; value: string; note: string}[] = [
+		{
+			key: 'scramble',
+			value: t('online_battle.rules.seconds', {seconds: SCRAMBLE_SEC}),
+			note: t('online_battle.rules.late_note', {seconds: SCRAMBLE_TIMEOUT_SEC}),
+		},
+		{
+			key: 'inspection',
+			value: t('online_battle.rules.seconds', {seconds: INSPECTION_SEC}),
+			note: t('online_battle.rules.late_note', {seconds: INSPECTION_DNF_SEC}),
+		},
+		{
+			key: 'cutoff',
+			value: t('online_battle.rules.seconds', {seconds: SOLVE_CUTOFF_SEC}),
+			note: t('online_battle.rules.cutoff_note'),
+		},
+		{
+			key: 'match',
+			value: t('online_battle.first_to', {n: ROUNDS_TO_WIN}),
+			note: t('online_battle.rules.match_note'),
+		},
+	];
 	const howCard = (
 		<section className={b('q-card')}>
-			<h2 className={b('eyebrow')}>{t('online_battle.queue.how_title')}</h2>
-			<ol className={b('how')}>
-				{(['how_1', 'how_2', 'how_3'] as const).map((key, i) => (
-					<li key={key} className={b('how-step')}>
-						<span className={b('how-num')} lang="en">
-							{String(i + 1).padStart(2, '0')}
-						</span>
-						<span>{t(`online_battle.queue.${key}`)}</span>
-					</li>
+			<h2 className={b('eyebrow')}>{t('online_battle.rules.title')}</h2>
+			<dl className={b('rules')}>
+				{rules.map((r) => (
+					<div key={r.key} className={b('rule')}>
+						<dt className={b('rule-name')}>{t(`online_battle.rules.${r.key}`)}</dt>
+						<dd className={b('rule-value')}>{r.value}</dd>
+						<dd className={b('rule-note')}>{r.note}</dd>
+					</div>
 				))}
-			</ol>
+			</dl>
+			<p className={b('rules-foot')}>{t('online_battle.rules.stack_note')}</p>
 		</section>
 	);
 
@@ -380,7 +429,7 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 					<div className={b('dialog')} role="dialog">
 						<p className={b('dialog-text')}>{t('online_battle.still_here_title')}</p>
 						<div className={b('dialog-actions')}>
-							<Button outline text={t('online_battle.stop_searching')} onClick={onStop} />
+							<Button gray text={t('online_battle.stop_searching')} onClick={onStop} />
 							<Button primary text={t('online_battle.still_here_yes')} onClick={onStillHere} />
 						</div>
 					</div>

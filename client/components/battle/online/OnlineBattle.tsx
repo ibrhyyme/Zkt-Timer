@@ -19,6 +19,7 @@ import {REMATCH_WINDOW_SEC} from '../../../../shared/battle/config';
 import {BATTLE_ERROR_KEYS} from '../../../../shared/battle/events';
 import {useBattleSocket} from './useBattleSocket';
 import {BattleCubeRound, useBattleCube} from './useBattleCube';
+import OnlineBattlePreview, {isPreviewState} from './OnlineBattlePreview';
 import {outcomeFor, OnlineBattleState} from './battle_state';
 import QueueScreen from './QueueScreen';
 import MatchScreen from './MatchScreen';
@@ -54,6 +55,11 @@ interface PendingLeave {
  */
 export default function OnlineBattle() {
 	if (typeof window === 'undefined') return null;
+
+	if (process.env.NODE_ENV !== 'production') {
+		const preview = new URLSearchParams(window.location.search).get('preview');
+		if (isPreviewState(preview)) return <OnlineBattlePreview state={preview} />;
+	}
 
 	return (
 		<FeatureGuard feature="online_battle_enabled" pageNameKey="online_battle.title">
@@ -106,7 +112,10 @@ function OnlineBattleInner() {
 	const current = stage === 'match' && match ? match.current : null;
 	const roundKey = current ? `${current.matchId}:${current.round}` : '';
 	const cubeRound = useMemo<BattleCubeRound | null>(
-		() => (current ? {matchId: current.matchId, round: current.round, scramble: current.scramble} : null),
+		() =>
+			current
+				? {matchId: current.matchId, round: current.round, scramble: current.scramble, goAtLocal: toLocal(current.goAt)}
+				: null,
 		[roundKey]
 	);
 
@@ -336,7 +345,7 @@ function OnlineBattleInner() {
 							{beforeStart ? t('online_battle.leave_confirm_before_start') : t('online_battle.leave_confirm')}
 						</p>
 						<div className={b('dialog-actions')}>
-							<Button outline text={t('online_battle.cancel')} onClick={() => setConfirm(null)} />
+							<Button gray text={t('online_battle.cancel')} onClick={() => setConfirm(null)} />
 							<Button
 								danger
 								text={confirm.leave ? t('online_battle.leave') : t('online_battle.give_up')}

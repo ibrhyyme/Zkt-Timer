@@ -1,15 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {ArrowsClockwise, BatteryMedium, CheckSquare} from 'phosphor-react';
+import {ArrowsClockwise, BatteryMedium, CheckSquare, Flag} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import {getTimeString} from '../../../util/time';
 import ScrambleMoveList from '../../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
 import SmartCubeView, {SmartCubeViewHandle} from '../../timer/smart_cube/cube_view/SmartCubeView';
-import {INSPECTION_DNF_SEC, INSPECTION_SEC} from '../../../../shared/battle/config';
+import {
+	INSPECTION_DNF_SEC,
+	INSPECTION_SEC,
+	ROUNDS_TO_WIN,
+	SCRAMBLE_SEC,
+	SCRAMBLE_TIMEOUT_SEC,
+	SOLVE_CUTOFF_SEC,
+} from '../../../../shared/battle/config';
 import {inspectionPenalty} from '../../../../shared/battle/rules';
 import type {MatchStatus} from '../../../util/smart_cube/solve_engine';
-import OpponentBar, {PlayerLine, formatBattleTime} from './OpponentBar';
+import type {BattlePenalty} from '../../../../shared/battle/types';
+import OpponentBar, {Pips, avatarSrc, formatBattleTime} from './OpponentBar';
 import {OnlineMatchView, otherSide, outcomeFor, sideScore, sideSolve} from './battle_state';
 import type {BattleCubePhase, BattleCubeSolve} from './useBattleCube';
 
@@ -28,6 +36,8 @@ export interface MatchCubeView {
 	undoMoves: string[] | null;
 	outOfSync: boolean;
 	scrambleDoneAt: number | null;
+	/** +2 for a scramble over 20 s, the device's call. */
+	scramblePenalty: BattlePenalty | null;
 	solveStartedAt: number | null;
 	solve: BattleCubeSolve | null;
 	markSolved(): void;
@@ -71,8 +81,8 @@ function useCubeSize(): number {
 		typeof window === 'undefined'
 			? 120
 			: window.innerWidth >= 1024
-				? Math.round(Math.max(120, Math.min(window.innerHeight * 0.26, 230)))
-				: Math.round(Math.max(80, Math.min(window.innerWidth * 0.34, window.innerHeight * 0.17, 150)));
+				? Math.round(Math.max(120, Math.min(window.innerHeight * 0.24, 210)))
+				: Math.round(Math.max(72, Math.min(window.innerWidth * 0.42, window.innerHeight * 0.21, 190)));
 	const [size, setSize] = useState(read);
 	useEffect(() => {
 		const onResize = () => setSize(read());
@@ -82,10 +92,66 @@ function useCubeSize(): number {
 	return size;
 }
 
+/** ok: inside the free window. warn: the +2 window, or the last seconds before the cutoff. over: DNF. */
+export type ClockZone = 'ok' | 'warn' | 'over';
+
+export interface PhaseClock {
+	/** Share of the current window still left, 0..1: the bar under the phase row. */
+	left: number;
+	zone: ClockZone;
+	/** Whole seconds left in the current window. */
+	seconds: number;
+}
+
 /**
- * One round on the player's own phone (design 5.4): the opponent on top, the scramble and
- * the big time in the middle, the player and "Give up" at the bottom. Side by side on a
- * desktop. Never scrolls.
+ * The clock of a limited phase: the free window first, then the +2 window, then DNF. Pure,
+ * so the scramble (20 s, +2 up to 40 s) and the inspection (15 s, +2 up to 17 s) share it.
+ */
+export function phaseClock(elapsedMs: number, freeSec: number, limitSec: number): PhaseClock {
+	const free = freeSec * 1000;
+	const limit = limitSec * 1000;
+	const e = Math.max(0, elapsedMs);
+	if (e <= free) return {left: 1 - e / free, zone: 'ok', seconds: Math.max(1, Math.ceil((free - e) / 1000))};
+	if (e <= limit) return {left: 1 - (e - free) / (limit - free), zone: 'warn', seconds: Math.ceil((limit - e) / 1000)};
+	return {left: 0, zone: 'over', seconds: 0};
+}
+
+/** The cutoff as a draining bar while solving; the last 10 s are a warning. */
+export function solveClock(elapsedMs: number): PhaseClock {
+	const limit = SOLVE_CUTOFF_SEC * 1000;
+	const e = Math.max(0, elapsedMs);
+	const leftMs = limit - e;
+	return {
+		left: Math.max(0, leftMs / limit),
+		zone: leftMs <= 0 ? 'over' : leftMs <= 10_000 ? 'warn' : 'ok',
+		seconds: Math.max(0, Math.ceil(leftMs / 1000)),
+	};
+}
+
+/** One side of the scoreboard: picture, name, rating and the rounds won. */
+function BoardSide(props: {name: string; avatar: string | null; rating: number; provisional: boolean; score: number; end?: boolean}) {
+	const {t} = useTranslation();
+	const src = avatarSrc(props.avatar);
+	return (
+		<div className={b('board-side', {end: !!props.end})}>
+			<span className={b('avatar')} aria-hidden="true">
+				{src ? <img src={src} alt="" /> : <span>{(props.name || '?').charAt(0).toUpperCase()}</span>}
+			</span>
+			<span className={b('board-name')}>{props.name}</span>
+			<span className={b('board-rating')} lang="en" title={props.provisional ? t('online_battle.provisional') : undefined}>
+				{props.rating}
+				{props.provisional && <span className={b('provisional')}>?</span>}
+			</span>
+			<Pips score={props.score} />
+		</div>
+	);
+}
+
+/**
+ * One round on the player's own phone (design 5.4): the scoreboard with both players facing
+ * each other, the opponent's lane, then this player's stage (the phase with its draining
+ * clock, the scramble, the big time, the cube) and a row of quiet tools. On a desktop the
+ * stage and the opponent sit side by side. Never scrolls.
  */
 export default function MatchScreen({match, myName, myAvatar, cube, toLocal, firstMatch, useBlueMatch, onGiveUp}: Props) {
 	const {t} = useTranslation();
@@ -99,14 +165,19 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 
 	const roundOver = !!(match.lastRoundResult && current && match.lastRoundResult.round === current.round);
 	const goAtLocal = current ? toLocal(current.goAt) : null;
-	const scrambleDeadlineLocal = current ? toLocal(current.scrambleDeadline) : null;
 
-	// ── The middle of the screen ──
+	// ── This player's stage ──
+	let phaseLabel: string | null = null;
+	let phaseValue: string | null = null;
+	let clock: PhaseClock | null = null;
 	let headline: string | null = null;
 	let bigTime: string | null = null;
 	let bigMod: string | null = null;
 	let showScramble = false;
 	let note: string | null = null;
+	const penalties: string[] = [];
+
+	if (cube.scramblePenalty === 'PLUS_TWO' && !roundOver) penalties.push(t('online_battle.scramble_penalty'));
 
 	if (!current) {
 		const startsIn = Math.ceil((toLocal(matched.startsAt) - now) / 1000);
@@ -134,25 +205,32 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 		bigMod = 'count';
 	} else if (cube.phase === 'inspecting') {
 		const elapsed = cube.scrambleDoneAt != null ? now - cube.scrambleDoneAt : 0;
+		clock = phaseClock(elapsed, INSPECTION_SEC, INSPECTION_DNF_SEC);
+		phaseLabel = t('online_battle.phase.inspect');
 		const penalty = inspectionPenalty(elapsed);
-		headline = t('online_battle.inspect');
 		if (penalty === 'DNF') bigTime = 'DNF';
 		else if (penalty === 'PLUS_TWO') bigTime = '+2';
-		else bigTime = String(Math.max(1, Math.ceil(INSPECTION_SEC - elapsed / 1000)));
-		bigMod = penalty ? 'late' : 'inspect';
-		showScramble = false;
-		if (elapsed > INSPECTION_DNF_SEC * 1000) note = t('online_battle.inspection_dnf');
+		else bigTime = String(clock.seconds);
+		bigMod = penalty === 'DNF' ? 'late' : penalty ? 'plus2' : 'inspect';
+		if (penalty === 'DNF') note = t('online_battle.inspection_dnf', {seconds: INSPECTION_DNF_SEC});
 	} else if (cube.phase === 'solving') {
-		bigTime = getTimeString(Math.max(0, now - (cube.solveStartedAt || now)) / 1000, 1);
+		const elapsed = Math.max(0, now - (cube.solveStartedAt || now));
+		clock = solveClock(elapsed);
+		phaseLabel = t('online_battle.phase.solve', {seconds: SOLVE_CUTOFF_SEC});
+		bigTime = getTimeString(elapsed / 1000, 1);
 		bigMod = 'running';
+		if (cube.scrambleDoneAt != null && cube.solveStartedAt != null) {
+			if (inspectionPenalty(cube.solveStartedAt - cube.scrambleDoneAt) === 'PLUS_TWO') {
+				penalties.push(t('online_battle.inspection_penalty'));
+			}
+		}
 	} else if (cube.phase === 'done') {
 		if (cube.solve) {
 			bigTime = formatBattleTime(cube.solve.timeMs, cube.solve.penalty);
 			bigMod = 'final';
 		}
-		// What the opponent is actually doing. This always said "solving", so it read "Opponent
-		// solving" right above a panel saying the opponent was still inspecting. No state yet
-		// means the opponent has not finished scrambling.
+		// What the opponent is actually doing. No state yet means the opponent has not
+		// finished scrambling.
 		const oppPhase = opponent?.phase;
 		headline =
 			oppPhase === 'finished'
@@ -163,12 +241,18 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 						? t('online_battle.opponent_inspecting')
 						: t('online_battle.opponent_scrambling');
 	} else {
-		headline = t('online_battle.scramble_your_cube');
+		// Scrambling: the moves are the hero; the phase row counts the free 20 s down, then
+		// the +2 window up to the DNF at 40 s.
 		showScramble = true;
-		if (firstMatch) note = t('online_battle.scramble_hint_first');
-		if (scrambleDeadlineLocal != null) {
-			const left = Math.ceil((scrambleDeadlineLocal - now) / 1000);
-			if (left <= 20 && left >= 0) note = t('online_battle.scramble_time_left', {seconds: left});
+		const elapsed = goAtLocal != null ? now - goAtLocal : 0;
+		clock = phaseClock(elapsed, SCRAMBLE_SEC, SCRAMBLE_TIMEOUT_SEC);
+		phaseLabel = t('online_battle.phase.scramble');
+		phaseValue = clock.zone === 'ok' ? String(clock.seconds) : clock.zone === 'warn' ? '+2' : 'DNF';
+		if (clock.zone === 'warn') {
+			if (!penalties.length) penalties.push(t('online_battle.scramble_penalty'));
+			note = t('online_battle.scramble_dnf_in', {seconds: clock.seconds});
+		} else if (firstMatch) {
+			note = t('online_battle.scramble_hint_first');
 		}
 	}
 
@@ -186,9 +270,7 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 					    (dropped mid-scramble, came back mixed up) and one whose firmware drifted
 					    while it sits solved in the hand. The text gives the way out of both. */}
 					<span>{cube.outOfSync ? t('online_battle.cube_mismatch') : t('battle.cube_just_solve')}</span>
-					{cube.outOfSync && (
-						<Button small outline text={t('smart_cube.mark_as_solved')} onClick={() => cube.markSolved()} />
-					)}
+					{cube.outOfSync && <Button small gray text={t('smart_cube.mark_as_solved')} onClick={() => cube.markSolved()} />}
 				</div>
 			);
 		} else if (scrambling && cube.undoMoves && cube.undoMoves.length) {
@@ -218,100 +300,134 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 
 	return (
 		<div className={b('match')}>
-			<div className={b('match-head')}>
-				<span className={b('match-round')}>{current ? t('online_battle.round', {n: current.round}) : ' '}</span>
-				<span className={b('match-score')}>
-					{myScore} - {oppScore}
-				</span>
-				{!matched.rated && <span className={b('tag')}>{t('online_battle.unrated_match')}</span>}
-			</div>
-
-			<div className={b('match-opponent')}>
-				<OpponentBar
+			<header className={b('board')}>
+				<BoardSide
+					name={myName}
+					avatar={myAvatar}
+					rating={matched.you.rating}
+					provisional={matched.you.provisional}
+					score={myScore}
+				/>
+				<div className={b('board-center')}>
+					<span className={b('eyebrow')}>{t('online_battle.round', {n: current ? current.round : 1})}</span>
+					<span className={b('board-score')} lang="en">
+						{myScore}
+						<span className={b('board-colon')}>:</span>
+						{oppScore}
+					</span>
+					<span className={b('board-rule')}>
+						{matched.rated ? t('online_battle.first_to', {n: ROUNDS_TO_WIN}) : t('online_battle.unrated_match')}
+					</span>
+				</div>
+				<BoardSide
+					end
 					name={matched.opponent.username}
 					avatar={matched.opponent.avatar}
 					rating={matched.opponent.rating}
 					provisional={matched.opponent.provisional}
 					score={oppScore}
+				/>
+			</header>
+
+			<section className={b('match-opponent')} aria-label={t('online_battle.opponent')}>
+				<OpponentBar
 					state={opponent}
 					solvingSinceLocal={opponent?.solvingSince != null ? toLocal(opponent.solvingSince) : null}
 					now={now}
 					connected={match.opponentConnected}
 					graceLeftSec={graceLeftSec}
 				/>
-			</div>
+			</section>
 
-			<div className={b('match-self')}>
-				<div className={b('scramble')}>{scrambleBody}</div>
-				<div className={b('headline')}>{headline || ' '}</div>
-				<div className={b('big-time', bigMod ? {[bigMod]: true} : {})}>{bigTime || ' '}</div>
-				<div className={b('note')}>{note || ' '}</div>
+			<section className={b('stage-self')}>
+				{phaseLabel && clock && (
+					<div className={b('phase-row', {[clock.zone]: true})}>
+						<span className={b('phase-name')}>{phaseLabel}</span>
+						{penalties.length > 0 && (
+							<span className={b('penalties')}>
+								{penalties.map((p) => (
+									<span key={p} className={b('penalty')}>
+										{p}
+									</span>
+								))}
+							</span>
+						)}
+						{phaseValue && (
+							<span className={b('phase-value')} lang="en">
+								{phaseValue}
+							</span>
+						)}
+						<span className={b('phase-meter')} aria-hidden="true">
+							<span className={b('phase-meter-fill')} style={{transform: `scaleX(${clock.left})`}} />
+						</span>
+					</div>
+				)}
+				{showScramble && <div className={b('scramble')}>{scrambleBody}</div>}
+				{headline && <div className={b('headline')}>{headline}</div>}
+				{bigTime && <div className={b('big-time', bigMod ? {[bigMod]: true} : {})}>{bigTime}</div>}
+				{note && <div className={b('note')}>{note}</div>}
 				{!current && matched.preview && (
-					<div className={b('preview')}>
-						{t('online_battle.preview', {win: matched.preview.win, loss: Math.abs(matched.preview.loss)})}
+					<div className={b('preview')} lang="en">
+						<span className={b('preview-win')}>+{matched.preview.win}</span>
+						<span className={b('preview-loss')}>−{Math.abs(matched.preview.loss)}</span>
 					</div>
 				)}
 
-				{/* The player's own cube: the 3D mirror and what to do with it. Kept mounted
-				    while the link is down, so it comes back where it was. */}
-				<div className={b('my-cube')}>
-					<div className={b('my-cube-view', {off: !cube.connected})}>
-						<SmartCubeView ref={cube.viewRef} connected={cube.connected} size={cubeSize} keepVisualOnClear />
-					</div>
-					<div className={b('cube-tools')}>
-						{cube.connected ? (
-							<>
-								{cube.battery != null && (
-									<span className={b('cube-battery')} lang="en">
-										<BatteryMedium /> {cube.battery}%
-									</span>
-								)}
-								{cube.gyroSupported && (
-									<button type="button" className={b('cube-tool')} onClick={() => cube.resetGyro()}>
-										<ArrowsClockwise weight="bold" />
-										{t('smart_cube.reset_gyro')}
-									</button>
-								)}
-								{/* Not while the cube is meant to be scrambled or solving: the cube's
-								    state is right then, and resetting it would break the round. */}
-								{/* Hidden while the mismatch alert above offers the same button: one
-								    action, one place. */}
-								{cube.phase !== 'inspecting' && cube.phase !== 'solving' && !(cube.phase === 'scrambling' && cube.outOfSync) && (
-									<button type="button" className={b('cube-tool')} onClick={() => cube.markSolved()}>
-										<CheckSquare weight="bold" />
-										{t('smart_cube.mark_as_solved')}
-									</button>
-								)}
-							</>
-						) : (
-							<>
-								{cubeWarning && <span className={b('cube-warning')}>{cubeWarning}</span>}
-								{!cube.reconnecting && (
-									<Button
-										small
-										primary
-										loading={cube.connecting}
-										text={t('online_battle.reconnect_cube')}
-										onClick={() => cube.connect()}
-									/>
-								)}
-							</>
-						)}
-					</div>
+				{/* The player's own cube. Kept mounted while the link is down, so it comes back
+				    where it was. */}
+				<div className={b('my-cube-view', {off: !cube.connected})}>
+					<SmartCubeView ref={cube.viewRef} connected={cube.connected} size={cubeSize} keepVisualOnClear />
 				</div>
-			</div>
+				{cubeWarning && <div className={b('cube-warning')}>{cubeWarning}</div>}
+			</section>
 
-			<div className={b('match-foot')}>
-				<PlayerLine
-					name={myName}
-					avatar={myAvatar}
-					rating={matched.you.rating}
-					provisional={matched.you.provisional}
-					score={myScore}
-					self
-				/>
-				<Button small outline text={t('online_battle.give_up')} onClick={onGiveUp} />
-			</div>
+			<footer className={b('tools')}>
+				{cube.connected ? (
+					<>
+						{cube.battery != null && (
+							<span className={b('cube-battery')} lang="en">
+								<BatteryMedium weight="bold" />
+								{cube.battery}%
+							</span>
+						)}
+						{cube.gyroSupported && (
+							<Button
+								small
+								transparent
+								iconFirst
+								icon={<ArrowsClockwise weight="bold" />}
+								text={t('smart_cube.reset_gyro')}
+								onClick={() => cube.resetGyro()}
+							/>
+						)}
+						{/* Not while the cube is meant to be scrambled or solving: the cube's
+						    state is right then, and resetting it would break the round. Hidden
+						    while the mismatch alert offers the same button: one action, one place. */}
+						{cube.phase !== 'inspecting' && cube.phase !== 'solving' && !(cube.phase === 'scrambling' && cube.outOfSync) && (
+							<Button
+								small
+								transparent
+								iconFirst
+								icon={<CheckSquare weight="bold" />}
+								text={t('smart_cube.mark_as_solved')}
+								onClick={() => cube.markSolved()}
+							/>
+						)}
+					</>
+				) : (
+					!cube.reconnecting && (
+						<Button
+							small
+							primary
+							loading={cube.connecting}
+							text={t('online_battle.reconnect_cube')}
+							onClick={() => cube.connect()}
+						/>
+					)
+				)}
+				<span className={b('tools-gap')} />
+				<Button small transparent iconFirst icon={<Flag weight="bold" />} text={t('online_battle.give_up')} onClick={onGiveUp} />
+			</footer>
 		</div>
 	);
 }

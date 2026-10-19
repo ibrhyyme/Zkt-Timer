@@ -16,6 +16,8 @@ import {
 	QUEUE_WINDOW_BASE,
 	QUEUE_WINDOW_PER_SEC,
 	ROUNDS_TO_WIN,
+	SCRAMBLE_CLOCK_SLACK_MS,
+	SCRAMBLE_SEC,
 	SOLVE_CUTOFF_SEC,
 } from './config';
 import { BattlePenalty, BattleRoundSolve, BattleWinner } from './types';
@@ -29,22 +31,57 @@ export function inspectionPenalty(inspectionMs: number): BattlePenalty | null {
 	return null;
 }
 
-/** The heavier of two penalties (DNF > +2 > none). */
+/** Scramble: up to 20 s fine, longer +2. The DNF at the hard deadline is the server's timer. */
+export function scramblePenalty(scrambleMs: number): BattlePenalty | null {
+	return scrambleMs > SCRAMBLE_SEC * 1000 ? 'PLUS_TWO' : null;
+}
+
+/**
+ * Scramble time that counts: the client's own measure (goAt to scramble complete), unless
+ * it claims more than the slack under the server's goAt-to-arrival interval. Without a
+ * client measure, the server's interval minus the slack.
+ */
+export function acceptedScrambleMs(serverMs: number, clientMs: number | null | undefined): number {
+	const floor = Math.max(0, serverMs - SCRAMBLE_CLOCK_SLACK_MS);
+	if (clientMs == null || !Number.isFinite(clientMs)) return floor;
+	return Math.min(serverMs, Math.max(floor, clientMs));
+}
+
+/** Milliseconds a penalty adds to the time; 0 for none and for DNF. */
+export function penaltyMs(penalty: BattlePenalty | null | undefined): number {
+	if (penalty === 'PLUS_TWO') return PLUS_TWO_MS;
+	if (penalty === 'PLUS_FOUR') return 2 * PLUS_TWO_MS;
+	return 0;
+}
+
+/** How many +2s a penalty holds; a battle time shows one "+" for each. */
+export function plusTwoCount(penalty: BattlePenalty | null | undefined): number {
+	return penaltyMs(penalty) / PLUS_TWO_MS;
+}
+
+/** The heavier of two calls on the same thing, e.g. the device's and the cube clock's inspection. */
 export function worsePenalty(a: BattlePenalty | null | undefined, b: BattlePenalty | null | undefined): BattlePenalty | null {
 	if (a === 'DNF' || b === 'DNF') return 'DNF';
-	if (a === 'PLUS_TWO' || b === 'PLUS_TWO') return 'PLUS_TWO';
-	return null;
+	const ms = Math.max(penaltyMs(a), penaltyMs(b));
+	return ms > PLUS_TWO_MS ? 'PLUS_FOUR' : ms > 0 ? 'PLUS_TWO' : null;
 }
 
-/** Time compared between players: raw + 2 s for +2, null for DNF or no time. */
+/** Penalties from separate causes (scramble, inspection) stack: +2 and +2 is +4, DNF wins. */
+export function addPenalties(a: BattlePenalty | null | undefined, b: BattlePenalty | null | undefined): BattlePenalty | null {
+	if (a === 'DNF' || b === 'DNF') return 'DNF';
+	const ms = penaltyMs(a) + penaltyMs(b);
+	return ms > PLUS_TWO_MS ? 'PLUS_FOUR' : ms > 0 ? 'PLUS_TWO' : null;
+}
+
+/** Time compared between players: raw plus the penalty, null for DNF or no time. */
 export function effectiveTimeMs(solve: BattleRoundSolve | null | undefined): number | null {
 	if (!solve || solve.penalty === 'DNF' || solve.timeMs == null) return null;
-	return solve.timeMs + (solve.penalty === 'PLUS_TWO' ? PLUS_TWO_MS : 0);
+	return solve.timeMs + penaltyMs(solve.penalty);
 }
 
-/** Over the 120 s cutoff (the +2 counts). */
+/** Over the 60 s cutoff (penalties count). */
 export function isOverCutoff(timeMs: number, penalty: BattlePenalty | null): boolean {
-	return timeMs + (penalty === 'PLUS_TWO' ? PLUS_TWO_MS : 0) > SOLVE_CUTOFF_SEC * 1000;
+	return timeMs + penaltyMs(penalty) > SOLVE_CUTOFF_SEC * 1000;
 }
 
 // ── Round level ─────────────────────────────────────────────────────────────
@@ -78,9 +115,9 @@ export interface MatchProgress {
 }
 
 /**
- * Best of three: the first to two round wins takes the match. Drawn rounds are replayed,
- * at most five rounds in total; if five rounds pass and nobody reached two wins the match
- * is a draw (design 4.5, rated as 0.5), whatever the score.
+ * Best of five: the first to three round wins takes the match. Drawn rounds are replayed,
+ * at most seven rounds in total; if seven rounds pass and nobody reached three wins the
+ * match is a draw (design 4.5, rated as 0.5), whatever the score.
  */
 export function matchProgress(roundWinners: BattleWinner[]): MatchProgress {
 	let a = 0;

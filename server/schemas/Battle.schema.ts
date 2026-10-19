@@ -162,7 +162,7 @@ export class BattleRoundDetail {
 	@Field(() => Int, {nullable: true})
 	a_time_ms?: number;
 
-	/** PLUS_TWO | DNF */
+	/** PLUS_TWO | PLUS_FOUR | DNF */
 	@Field({nullable: true})
 	a_penalty?: string;
 

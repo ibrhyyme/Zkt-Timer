@@ -1,19 +1,52 @@
 @import '../../../styles/config';
 
-// Online Battle (/battle/online): queue, match and result on one fixed screen.
+// Online Battle (/battle/online): queue, match and result.
 //
-// The screen never scrolls and never rubber-bands on iOS (design 5.4): the root is fixed to the
-// viewport, the match fits by shrinking type instead of overflowing. Colours come from the theme
-// variables only; character comes from type (Archivo headings, monospace times), no effects.
+// Design language (ui-design skill): flat surfaces, hairlines instead of boxes, one accent (the
+// user's --primary-color), Archivo for words, Roboto Mono for every number. Shape, spacing and
+// surfaces come from the $zt-* tokens; type from the one scale below. Colour only where it means
+// something: a won or lost round, a penalty window, the rating change.
+//
+// The match never scrolls and never rubber-bands on iOS (design 5.4): the root is fixed to the
+// viewport and the match fits by sizing its numbers to the viewport.
 
-$radius-card: 13px;
-$radius-ctrl: 9px;
-$radius-pill: 999px;
-$gap-tight: 6px;
-$gap: 12px;
-$gap-wide: 20px;
-$side: 16px;
+$display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+// Type scale. rem is 14px under 1500px and 15px above (reset.scss).
+$fs-xs: 0.8125rem;
+$fs-sm: 0.875rem;
+$fs-md: 1rem;
+$fs-lg: 1.25rem;
+$fs-xl: 1.75rem;
+$fs-2xl: 2.5rem;
+$fs-3xl: 3.5rem;
+
+$hairline: 1px solid $zt-divider;
+
+@mixin display($size) {
+	font-family: $display;
+	font-size: $size;
+	font-weight: 800;
+	font-stretch: 125%;
+	line-height: 1.05;
+	letter-spacing: -0.01em;
+}
+
+@mixin number($size, $weight: 700) {
+	font-family: $mono;
+	font-size: $size;
+	font-weight: $weight;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+@mixin ellipsis {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 
 .#{$namespace}-online-battle {
 	position: fixed;
@@ -39,9 +72,13 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		max-width: 1100px;
+		max-width: 1120px;
 		margin: 0 auto;
-		padding: 0 $side;
+		padding: 0 $zt-space-4;
+
+		@include bp-up($bp-lg) {
+			padding: 0 $zt-space-6;
+		}
 	}
 
 	&__gate {
@@ -50,134 +87,50 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		padding: $side;
+		padding: $zt-space-4;
 		background: rgb(var(--background-color));
 		color: rgb(var(--text-color));
 	}
 
-	// A plain mono label ("unrated match"), no pill. Not uppercased: Turkish casing turns the
-	// loanword in "Rating'siz" into "RATİNG'SİZ".
-	&__tag {
-		display: inline-flex;
-		align-items: center;
-		font-family: $mono;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.04em;
-	}
-
 	&__notice {
+		@include zt-card($zt-space-4);
 		display: flex;
 		flex-direction: column;
-		gap: $gap-tight;
+		gap: $zt-space-2;
 		max-width: 440px;
 		margin: 0 auto;
-		padding: $gap $side;
-		border-radius: $radius-card;
-		background: rgb(var(--module-color));
-		font-size: 14px;
+		font-size: $fs-sm;
 		line-height: 1.45;
 
 		strong {
-			font-size: 16px;
+			font-size: $fs-md;
 		}
 	}
 
-	// ── Queue ──
-	// The search, the player's card, recent matches, how a match runs. No effects: no glow,
-	// no shadow, no gradient. Hierarchy comes from Archivo's wide heavy cut and Roboto Mono for
-	// every number; state comes from flat cube stickers. One column on a phone (it scrolls,
-	// unlike the match); on a desktop the search sits on the left and the cards beside it.
-	&__queue {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		overflow-x: hidden;
-		overscroll-behavior: contain;
-		-webkit-overflow-scrolling: touch;
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-areas: 'stage' 'me' 'recent' 'how';
-		align-content: start;
-		gap: $gap;
-		width: 100%;
-		max-width: 1040px;
-		margin: 0 auto;
-		padding: $gap 0 calc(#{$gap-wide} + 24px);
+	// ── Shared pieces ──
 
-		// Desktop: one boxed panel instead of loose pieces on a wide canvas. The search on the
-		// left, a hairline, the cards on the right as sections of the same surface (no boxes
-		// inside the box). Sized to its content and centred in the screen; the empty last row
-		// takes the search column's extra height.
-		@include bp-up($bp-lg) {
-			flex: 0 1 auto;
-			margin: auto;
-			max-height: 100%;
-			grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
-			grid-template-rows: auto auto auto 1fr;
-			grid-template-areas: 'stage me' 'stage recent' 'stage how' 'stage .';
-			gap: 0;
-			padding: 0;
-			border: 1px solid rgba(var(--text-color), 0.08);
-			border-radius: 20px;
-			background: rgba(var(--text-color), 0.025);
-
-			.#{$namespace}-online-battle__q-card {
-				padding: 24px 28px;
-				border: none;
-				border-radius: 0;
-				background: transparent;
-			}
-
-			.#{$namespace}-online-battle__q-recent,
-			.#{$namespace}-online-battle__q-how {
-				border-top: 1px solid rgba(var(--text-color), 0.08);
-			}
-		}
-	}
-
-	&__q-stage {
-		grid-area: stage;
-		display: flex;
-		align-items: center;
-
-		@include bp-up($bp-lg) {
-			align-self: stretch;
-			min-height: 460px;
-			padding: 48px;
-			border-right: 1px solid rgba(var(--text-color), 0.08);
-		}
-	}
-	&__q-me {
-		grid-area: me;
-	}
-	&__q-recent {
-		grid-area: recent;
-	}
-	&__q-how {
-		grid-area: how;
-		align-self: start;
-	}
-
-	// Small caps label in mono: section titles, units, stat names.
+	// Small caps label in mono: section titles, units, phase names.
 	&__eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: $zt-space-2;
 		margin: 0;
 		font-family: $mono;
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.12em;
+		font-size: $fs-xs;
+		font-weight: 700;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
 
-	// A cube sticker: the one coloured mark on these screens. Flat, full colour, never faded
-	// (a faded sticker turns pastel on a white page).
+	// A cube sticker: the flat coloured mark of these screens. Full colour, never faded (a faded
+	// sticker turns pastel on a white page).
 	&__sticker {
 		flex-shrink: 0;
 		display: inline-block;
-		width: 13px;
-		height: 13px;
+		width: 12px;
+		height: 12px;
 		border-radius: 3px;
-		background: rgba(var(--text-color), 0.22);
+		background: $zt-control-border-hover;
 
 		&--green {
 			background: rgb(var(--success-color));
@@ -195,18 +148,147 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 
 	&__stickers {
 		display: inline-flex;
-		gap: 4px;
+		gap: $zt-space-1;
 	}
 
-	// ── The search ──
+	// A picture, or the initial on the accent fill.
+	&__avatar,
+	&__q-avatar {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: $zt-radius-full;
+		overflow: hidden;
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+		font-size: $fs-sm;
+		font-weight: 800;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+	}
+
+	&__q-avatar--lg {
+		width: 40px;
+		height: 40px;
+		font-size: $fs-md;
+	}
+
+	&__provisional {
+		margin-left: 2px;
+		font-weight: 800;
+		color: rgb(var(--warning-color));
+	}
+
+	// Rounds won, one sticker per round the match needs.
+	&__pips {
+		display: inline-flex;
+		gap: $zt-space-1;
+	}
+
+	&__pip {
+		width: 10px;
+		height: 10px;
+		border-radius: 3px;
+		background: $zt-control-border-hover;
+
+		&--won {
+			background: rgb(var(--success-color));
+		}
+	}
+
+	// ── Queue ──
+	// The search, the player's card, recent matches and the rules. One column on a phone (it
+	// scrolls, unlike the match); on a desktop one panel, the search on the left.
+	&__queue {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas: 'stage' 'me' 'how' 'recent';
+		align-content: start;
+		gap: $zt-space-3;
+		width: 100%;
+		max-width: 1040px;
+		margin: 0 auto;
+		padding: $zt-space-3 0 $zt-space-7;
+
+		@include bp-up($bp-lg) {
+			flex: 0 1 auto;
+			margin: auto;
+			max-height: 100%;
+			// The search over the rules on the left, the player over the recent matches on
+			// the right: two columns of about the same height that fit a laptop screen.
+			grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+			grid-template-rows: auto 1fr;
+			grid-template-areas: 'stage me' 'how recent';
+			gap: 0;
+			padding: 0;
+			border: 1px solid $zt-card-border;
+			border-radius: $zt-radius-lg;
+			background: $zt-card-bg;
+
+			.#{$namespace}-online-battle__q-card {
+				padding: $zt-space-5 $zt-space-6;
+				border: none;
+				border-radius: 0;
+				background: transparent;
+			}
+
+			.#{$namespace}-online-battle__q-how,
+			.#{$namespace}-online-battle__q-recent {
+				align-self: stretch;
+				border-top: $hairline;
+			}
+
+			.#{$namespace}-online-battle__q-how {
+				border-right: $hairline;
+			}
+		}
+	}
+
+	&__q-stage {
+		grid-area: stage;
+		display: flex;
+		align-items: center;
+
+		@include bp-up($bp-lg) {
+			align-self: stretch;
+			padding: $zt-space-6;
+			border-right: $hairline;
+		}
+	}
+	&__q-me {
+		grid-area: me;
+	}
+	&__q-recent {
+		grid-area: recent;
+	}
+	&__q-how {
+		grid-area: how;
+		align-self: start;
+	}
+
+	// The search
 	&__stage {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 14px;
+		gap: $zt-space-4;
 		width: 100%;
 		max-width: 440px;
-		padding: 28px 4px 8px;
+		padding: $zt-space-5 0 $zt-space-2;
 
 		@include bp-up($bp-lg) {
 			padding: 0;
@@ -215,29 +297,21 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 
 	&__stage-title {
 		margin: 0;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-size: 32px;
-		font-weight: 800;
-		font-stretch: 125%;
-		line-height: 1.05;
-		letter-spacing: -0.01em;
+		@include display($fs-2xl);
 
 		@include bp-up($bp-lg) {
-			font-size: 44px;
+			font-size: $fs-3xl;
 		}
 	}
 
 	&__stage-clock {
-		font-family: $mono;
-		font-size: 64px;
-		font-weight: 700;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
+		@include number(4.5rem);
+		letter-spacing: -0.02em;
 	}
 
 	&__stage-sub {
 		margin: 0;
-		font-size: 15px;
+		font-size: $fs-md;
 		font-weight: 500;
 		line-height: 1.45;
 	}
@@ -245,153 +319,107 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 	&__stage-action {
 		width: 100%;
 		max-width: 360px;
-		margin-top: 6px;
 	}
 
 	&__cube-row {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: $zt-space-2;
 		min-width: 0;
-		font-size: 14px;
+		font-size: $fs-sm;
 		font-weight: 600;
 	}
 
 	&__cube-name {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		@include ellipsis;
 	}
 
 	&__cube-battery {
-		font-family: $mono;
-		font-size: 13px;
-		font-weight: 600;
-	}
-
-	// ── Cards ──
-	&__q-card {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-		padding: 20px;
-		border-radius: 14px;
-		background: rgb(var(--module-color));
-		border: 1px solid rgba(var(--text-color), 0.08);
-	}
-
-	// A picture, or the initial in white on the primary fill.
-	&__q-avatar {
-		flex-shrink: 0;
 		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		border-radius: 50%;
-		overflow: hidden;
-		background: rgb(var(--primary-color));
-		color: #fff;
-		font-weight: 800;
+		gap: $zt-space-1;
+		@include number($fs-sm, 600);
 
-		img {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
+		svg {
+			font-size: 1.15em;
 		}
+	}
 
-		&--lg {
-			width: 36px;
-			height: 36px;
-			font-size: 15px;
-		}
-
-		&--sm {
-			width: 24px;
-			height: 24px;
-			font-size: 11px;
-		}
+	// Cards
+	&__q-card {
+		@include zt-card;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-4;
 	}
 
 	&__me-head {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: $zt-space-3;
 		min-width: 0;
 	}
 
 	&__me-name {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-size: 17px;
+		@include ellipsis;
+		font-family: $display;
+		font-size: $fs-lg;
 		font-weight: 800;
 		font-stretch: 112%;
 	}
 
 	&__me-rank {
 		margin-left: auto;
-		font-family: $mono;
-		font-size: 15px;
-		font-weight: 700;
+		@include number($fs-md);
 	}
 
 	&__me-rating {
 		display: flex;
 		align-items: baseline;
-		gap: 10px;
+		gap: $zt-space-3;
 	}
 
 	&__me-rating-value {
-		font-family: $mono;
-		font-size: 52px;
-		font-weight: 700;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
+		@include number($fs-3xl);
 		letter-spacing: -0.02em;
 	}
 
 	&__me-stats {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: 8px;
+		gap: $zt-space-2;
 		margin: 0;
-		padding-top: 14px;
-		border-top: 1px solid rgba(var(--text-color), 0.08);
+		padding-top: $zt-space-4;
+		border-top: $hairline;
 	}
 
 	&__me-stat {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: $zt-space-1;
 		min-width: 0;
 
 		dt {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			letter-spacing: 0.06em;
+			@include ellipsis;
+			font-size: 0.6875rem;
+			letter-spacing: 0.02em;
 		}
 	}
 
 	&__me-stat-value {
 		margin: 0;
-		font-family: $mono;
-		font-size: 20px;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
+		@include number($fs-lg);
 	}
 
 	&__me-first {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
-		font-size: 14px;
+		gap: $zt-space-1;
+		font-size: $fs-sm;
 		line-height: 1.45;
 
 		strong {
-			font-size: 16px;
+			font-size: $fs-md;
 		}
 	}
 
@@ -399,26 +427,29 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: $gap;
+		gap: $zt-space-3;
 	}
 
 	&__me-link {
 		align-self: flex-start;
 		display: inline-flex;
 		align-items: center;
-		gap: 6px;
-		font-size: 13px;
+		gap: $zt-space-1;
+		border-radius: $zt-radius-sm;
+		font-size: $fs-sm;
 		font-weight: 700;
 		color: rgb(var(--primary-color));
 		text-decoration: none;
+		@include zt-focus-ring;
 
 		&:hover {
 			color: rgb(var(--primary-color));
 			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 	}
 
-	// ── Recent matches ──
+	// Recent matches
 	&__recent {
 		display: flex;
 		flex-direction: column;
@@ -429,59 +460,83 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 
 	&__recent-row {
 		display: grid;
-		grid-template-columns: 13px minmax(0, 1fr) auto 48px;
+		grid-template-columns: 12px minmax(0, 1fr) auto 48px;
 		align-items: center;
-		gap: 12px;
-		padding: 9px 0;
-		font-size: 14px;
+		gap: $zt-space-3;
+		padding: $zt-space-2 0;
+		font-size: $fs-sm;
 
 		& + & {
-			border-top: 1px solid rgba(var(--text-color), 0.06);
+			border-top: $hairline;
 		}
 	}
 
 	&__recent-name {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		@include ellipsis;
 		font-weight: 600;
 	}
 
 	&__recent-score,
 	&__recent-delta {
-		font-family: $mono;
-		font-weight: 700;
-		font-variant-numeric: tabular-nums;
+		@include number($fs-sm);
 	}
 
 	&__recent-delta {
 		text-align: right;
 	}
 
-	// ── How a match runs ──
-	&__how {
+	// The rules, as numbers: the name, the limit in mono, what happens past it.
+	&__rules {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		margin: 0;
-		padding: 0;
-		list-style: none;
 	}
 
-	&__how-step {
+	&__rule {
 		display: grid;
-		grid-template-columns: 24px minmax(0, 1fr);
-		gap: 10px;
-		font-size: 14px;
-		line-height: 1.45;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: 'name value' 'note note';
+		align-items: baseline;
+		gap: 2px $zt-space-3;
+		padding: $zt-space-3 0;
+
+		& + & {
+			border-top: $hairline;
+		}
+
+		&:first-child {
+			padding-top: 0;
+		}
 	}
 
-	&__how-num {
-		font-family: $mono;
-		font-size: 13px;
+	&__rule-name {
+		grid-area: name;
+		font-size: $fs-md;
 		font-weight: 700;
-		line-height: 1.6;
+	}
+
+	&__rule-value {
+		grid-area: value;
+		margin: 0;
+		@include number($fs-lg);
+	}
+
+	&__rule-note {
+		grid-area: note;
+		margin: 0;
+		font-size: $fs-sm;
+		line-height: 1.4;
+		color: $zt-text-muted;
+	}
+
+	&__rules-foot {
+		margin: 0;
+		padding: $zt-space-3;
+		border-radius: $zt-radius-md;
+		background: $zt-control-bg;
+		font-size: $fs-sm;
+		font-weight: 600;
+		line-height: 1.45;
 	}
 
 	// ── Dialogs ──
@@ -492,22 +547,21 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: $side;
-		background: rgba(0, 0, 0, 0.55);
+		padding: $zt-space-4;
+		background: $zt-overlay;
 	}
 
 	&__dialog {
+		@include zt-float;
 		width: 100%;
 		max-width: 380px;
-		padding: $gap-wide;
-		border-radius: $radius-card;
-		background: rgb(var(--module-color));
+		padding: $zt-space-5;
 		color: rgb(var(--text-color));
 	}
 
 	&__dialog-text {
-		margin: 0 0 $gap;
-		font-size: 17px;
+		margin: 0 0 $zt-space-4;
+		font-size: $fs-md;
 		font-weight: 700;
 		line-height: 1.4;
 	}
@@ -516,112 +570,138 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		justify-content: flex-end;
 		flex-wrap: wrap;
-		gap: $gap-tight;
+		gap: $zt-space-2;
 	}
 
 	&__report-input {
+		@include zt-control;
 		width: 100%;
-		margin-bottom: $gap;
-		padding: 10px 12px;
-		border-radius: $radius-ctrl;
-		border: 1px solid rgba(var(--text-color), 0.2);
-		background: rgb(var(--background-color));
-		color: rgb(var(--text-color));
+		margin-bottom: $zt-space-4;
+		padding: $zt-space-2 $zt-space-3;
 		font: inherit;
-		font-size: 15px;
+		font-size: $fs-md;
 		resize: none;
 	}
 
-	// ── Players ──
-	&__player {
-		display: flex;
+	// ── Match: the scoreboard ──
+	// Both players facing each other across the score. The one place the match shows who.
+	&__board {
+		grid-area: board;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 		align-items: center;
-		gap: 10px;
-		min-width: 0;
-	}
+		gap: $zt-space-3;
+		padding: $zt-space-3 0;
+		border-bottom: $hairline;
 
-	&__avatar {
-		flex-shrink: 0;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 34px;
-		height: 34px;
-		border-radius: 50%;
-		overflow: hidden;
-		background: rgb(var(--primary-color));
-		color: rgb(var(--theme-primary-opposite, var(--text-color)));
-		font-weight: 800;
-		font-size: 15px;
-		vertical-align: middle;
-
-		img {
-			display: block;
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
+		@include bp-up($bp-lg) {
+			gap: $zt-space-6;
+			padding: $zt-space-5 0;
 		}
 	}
 
-	&__player-name {
+	&__board-side {
+		display: grid;
+		grid-template-columns: auto auto minmax(0, 1fr);
+		grid-template-areas: 'avatar name name' 'avatar rating pips';
+		align-items: center;
+		gap: 2px $zt-space-2;
 		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 16px;
+
+		.#{$namespace}-online-battle__avatar {
+			grid-area: avatar;
+		}
+
+		.#{$namespace}-online-battle__pips {
+			grid-area: pips;
+			justify-self: start;
+		}
+
+		&--end {
+			grid-template-columns: minmax(0, 1fr) auto auto;
+			grid-template-areas: 'name name avatar' 'pips rating avatar';
+			text-align: right;
+
+			.#{$namespace}-online-battle__pips {
+				justify-self: end;
+			}
+		}
+
+		@include bp-up($bp-lg) {
+			column-gap: $zt-space-3;
+
+			.#{$namespace}-online-battle__avatar {
+				width: 44px;
+				height: 44px;
+				font-size: $fs-lg;
+			}
+		}
+	}
+
+	&__board-name {
+		grid-area: name;
+		@include ellipsis;
+		font-size: $fs-md;
 		font-weight: 700;
-	}
 
-	&__player-rating {
-		font-family: $mono;
-		font-size: 15px;
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-	}
-
-	&__provisional {
-		margin-left: 2px;
-		font-weight: 800;
-		color: rgb(var(--warning-color));
-	}
-
-	&__dots {
-		display: inline-flex;
-		gap: 5px;
-		margin-left: auto;
-	}
-
-	// Rounds won, as cube stickers: green for a won round, neutral otherwise.
-	&__dot {
-		width: 13px;
-		height: 13px;
-		border-radius: 3px;
-		background: rgba(var(--text-color), 0.22);
-
-		&--won {
-			background: rgb(var(--success-color));
+		@include bp-up($bp-lg) {
+			font-size: $fs-lg;
 		}
 	}
 
-	// ── Opponent phase bar ──
-	// Mono label over a thin track per CFOP step; F2L's track has its four pairs. Flat fill,
-	// no boxes, no text on the fill.
+	&__board-rating {
+		grid-area: rating;
+		@include number($fs-sm, 600);
+	}
+
+	&__board-center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $zt-space-1;
+	}
+
+	&__board-score {
+		@include number($fs-2xl);
+		letter-spacing: -0.02em;
+
+		@include bp-up($bp-lg) {
+			font-size: 4rem;
+		}
+	}
+
+	&__board-colon {
+		margin: 0 0.12em;
+		color: $zt-text-muted;
+	}
+
+	&__board-rule {
+		font-family: $mono;
+		font-size: $fs-xs;
+		font-weight: 600;
+		white-space: nowrap;
+		color: $zt-text-muted;
+	}
+
+	// ── Match: the opponent's lane ──
+	// A strip on a phone: what they are doing, their time, how far. The right-hand column on a
+	// desktop, where the same parts stack and the time gets room.
 	&__phases {
 		display: grid;
 		grid-template-columns: 1fr 2fr 1fr 1fr;
-		gap: 8px;
+		gap: $zt-space-2;
 	}
 
 	&__phase {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: $zt-space-1;
 		min-width: 0;
 	}
 
 	&__phase-label {
 		font-family: $mono;
-		font-size: 11px;
+		font-size: 0.6875rem;
 		font-weight: 700;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
@@ -636,45 +716,80 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		flex: 1;
 		height: 6px;
 		border-radius: 2px;
-		background: rgba(var(--text-color), 0.14);
+		background: $zt-control-bg-active;
 
 		&--done {
 			background: rgb(var(--primary-color));
 		}
 	}
 
-	&__opponent {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: $gap;
-		border-radius: $radius-card;
-		background: rgb(var(--module-color));
+	&__match-opponent {
+		grid-area: opp;
+		min-width: 0;
+		padding: $zt-space-3 0;
+		border-bottom: $hairline;
 
-		&--offline {
-			outline: 2px solid rgb(var(--warning-color));
+		@include bp-up($bp-lg) {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			padding: $zt-space-6;
+			border-bottom: none;
+			border-left: $hairline;
+		}
+	}
+
+	&__opponent {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: 'label status time' 'phases phases phases';
+		align-items: center;
+		gap: $zt-space-2 $zt-space-3;
+
+		> .#{$namespace}-online-battle__eyebrow {
+			grid-area: label;
+		}
+
+		> .#{$namespace}-online-battle__phases {
+			grid-area: phases;
+		}
+
+		&--offline .#{$namespace}-online-battle__opponent-status {
+			color: rgb(var(--warning-color));
+		}
+
+		@include bp-up($bp-lg) {
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-areas: 'label' 'status' 'time' 'phases';
+			gap: $zt-space-3;
+
+			> .#{$namespace}-online-battle__phases {
+				margin-top: $zt-space-4;
+			}
 		}
 	}
 
 	&__opponent-status {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: $gap;
-		min-height: 28px;
-		font-size: 15px;
+		grid-area: status;
+		@include ellipsis;
+		font-size: $fs-sm;
 		font-weight: 700;
+
+		@include bp-up($bp-lg) {
+			font-size: $fs-lg;
+		}
 	}
 
 	&__opponent-time {
-		font-family: $mono;
-		font-size: 28px;
-		font-weight: 700;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
+		grid-area: time;
+		@include number($fs-xl);
+
+		@include bp-up($bp-lg) {
+			font-size: 4.5rem;
+		}
 	}
 
-	// ── Match ──
+	// ── Match: the layout ──
 	&__match {
 		flex: 1;
 		min-height: 0;
@@ -682,87 +797,119 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: auto auto minmax(0, 1fr) auto;
 		grid-template-areas:
-			'head'
-			'opponent'
+			'board'
+			'opp'
 			'self'
-			'foot';
-		gap: $gap;
-		padding: $gap 0;
+			'tools';
 
 		@include bp-up($bp-lg) {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
 			grid-template-rows: auto minmax(0, 1fr) auto;
 			grid-template-areas:
-				'head head'
-				'self opponent'
-				'foot foot';
-			gap: $gap-wide;
-			padding: $gap-wide 0;
+				'board board'
+				'self opp'
+				'tools tools';
 		}
 	}
 
-	&__match-head {
-		grid-area: head;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: $gap;
-		font-weight: 700;
-	}
-
-	&__match-round {
-		font-family: $mono;
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-	}
-
-	&__match-score {
-		font-family: $mono;
-		font-size: 20px;
-		font-weight: 800;
-	}
-
-	&__match-opponent {
-		grid-area: opponent;
-		min-width: 0;
-
-		@include bp-up($bp-lg) {
-			display: flex;
-			flex-direction: column;
-
-			> * {
-				flex: 1;
-				justify-content: center;
-			}
-		}
-	}
-
-	&__match-self {
+	// ── Match: this player's stage ──
+	&__stage-self {
 		grid-area: self;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: $gap-tight;
+		gap: $zt-space-3;
+		padding: $zt-space-3 0;
 		text-align: center;
 
 		@include bp-up($bp-lg) {
-			padding: $gap-wide;
-			border-radius: $radius-card;
-			background: rgb(var(--module-color));
+			padding: $zt-space-6 $zt-space-6 $zt-space-6 0;
+		}
+	}
+
+	// The phase with its clock: name, penalties so far, the value, and a meter that drains over
+	// the free window, then over the +2 window in the warning colour.
+	&__phase-row {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-areas: 'name penalty value' 'meter meter meter';
+		align-items: center;
+		gap: $zt-space-2 $zt-space-3;
+		width: 100%;
+		max-width: 560px;
+		text-align: left;
+
+		&--warn {
+			--phase-color: var(--warning-color);
+		}
+		&--over {
+			--phase-color: var(--error-color);
+		}
+	}
+
+	&__phase-name {
+		grid-area: name;
+		font-family: $mono;
+		font-size: $fs-sm;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	// Penalties already taken: warning-coloured mono, no fill behind them.
+	&__penalties {
+		grid-area: penalty;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0 $zt-space-3;
+		min-width: 0;
+	}
+
+	&__penalty {
+		font-family: $mono;
+		font-size: $fs-xs;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+		color: rgb(var(--warning-color));
+	}
+
+	&__phase-value {
+		grid-area: value;
+		@include number($fs-xl);
+		color: rgb(var(--phase-color, var(--text-color)));
+	}
+
+	&__phase-meter {
+		grid-area: meter;
+		display: block;
+		height: 4px;
+		border-radius: $zt-radius-full;
+		overflow: hidden;
+		background: $zt-control-bg-active;
+	}
+
+	&__phase-meter-fill {
+		display: block;
+		height: 100%;
+		transform-origin: left center;
+		background: rgb(var(--phase-color, var(--primary-color)));
+		transition: transform 100ms linear;
+
+		@include reduced-motion {
+			transition: none;
 		}
 	}
 
 	&__scramble {
 		width: 100%;
-		min-height: 1.4em;
+		max-width: 560px;
 		font-family: $mono;
-		font-size: clamp(16px, 4.6vw, 22px);
+		font-size: clamp(1.125rem, 5.2vw, 1.75rem);
 		font-weight: 600;
-		line-height: 1.45;
+		line-height: 1.5;
 		word-spacing: 0.15em;
 		overflow-wrap: anywhere;
 	}
@@ -771,9 +918,10 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: $gap-tight;
+		gap: $zt-space-2;
 		font-family: inherit;
-		font-size: 15px;
+		font-size: $fs-md;
+		font-weight: 600;
 		color: rgb(var(--warning-color));
 	}
 
@@ -783,30 +931,29 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 	}
 
 	&__headline {
-		min-height: 24px;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-size: 22px;
-		font-weight: 800;
-		font-stretch: 125%;
-		letter-spacing: -0.01em;
+		@include display($fs-lg);
+
+		@include bp-up($bp-lg) {
+			font-size: $fs-xl;
+		}
 	}
 
 	&__big-time {
-		font-family: $mono;
-		font-size: min(19vw, 14vh, 128px);
-		font-weight: 700;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
+		@include number(min(27vw, 15vh, 9rem));
+		letter-spacing: -0.02em;
 
 		@include bp-up($bp-lg) {
-			font-size: min(9vw, 16vh, 140px);
+			font-size: min(10vw, 17vh, 9.5rem);
 		}
 
 		// Colour only where it means something: late (+2, DNF), a lost round, a won round.
-		// The countdown and the inspection clock stay in the text colour.
 		&--late,
 		&--lost {
 			color: rgb(var(--error-color));
+		}
+
+		&--plus2 {
+			color: rgb(var(--warning-color));
 		}
 
 		&--won {
@@ -815,27 +962,29 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 	}
 
 	&__note,
-	&__preview,
 	&__cube-warning {
-		min-height: 20px;
-		font-size: 15px;
+		font-size: $fs-sm;
 		font-weight: 600;
-	}
-
-	&__preview {
-		font-family: $mono;
+		line-height: 1.4;
 	}
 
 	&__cube-warning {
 		color: rgb(var(--warning-color));
 	}
 
-	// The player's own cube on the match screen: the 3D mirror and a row of tools under it.
-	&__my-cube {
+	// "If you win / if you lose" before the first round, as two signed numbers.
+	&__preview {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: $gap-tight;
+		gap: $zt-space-5;
+		@include number($fs-xl);
+	}
+
+	&__preview-win {
+		color: rgb(var(--success-color));
+	}
+
+	&__preview-loss {
+		color: rgb(var(--error-color));
 	}
 
 	&__my-cube-view {
@@ -847,161 +996,128 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		}
 	}
 
-	&__cube-tools {
+	// ── Match: the tools ──
+	// Quiet buttons on one line under a hairline; giving up sits apart on the right.
+	&__tools {
+		grid-area: tools;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		justify-content: center;
-		gap: 6px 10px;
-		min-height: 32px;
+		gap: $zt-space-1 $zt-space-2;
+		padding: $zt-space-2 0;
+		border-top: $hairline;
 	}
 
-	&__cube-tool {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 6px 10px;
-		border-radius: $radius-ctrl;
-		border: 1px solid rgba(var(--text-color), 0.14);
-		background: transparent;
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 13px;
-		font-weight: 700;
-		cursor: pointer;
-
-		svg {
-			font-size: 15px;
-		}
-
-		&:hover {
-			background: rgba(var(--text-color), 0.08);
-		}
-	}
-
-	&__match-foot {
-		grid-area: foot;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $gap;
-		padding: $gap;
-		border-radius: $radius-card;
-		background: rgb(var(--module-color));
-
-		> :first-child {
-			flex: 1;
-		}
+	&__tools-gap {
+		flex: 1;
 	}
 
 	// ── Result ──
-	// The headline in display type with the outcome as a sticker in front of it, the scoreboard,
-	// the rounds and the rating in flat cards, the rematch as the one filled button. Numbers in
-	// mono. Scrolls on a short phone rather than clipping.
+	// Read by weight: the outcome and the score in display type, the rating change as the one
+	// coloured number, then the rounds. One surface split by hairlines; on a desktop the rounds
+	// take the right-hand column.
 	&__result {
 		flex: 1;
 		min-height: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		gap: $gap;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto auto auto 1fr;
+		grid-template-areas: 'head' 'vs' 'rating' 'rounds' 'actions';
 		width: 100%;
-		max-width: 480px;
+		max-width: 520px;
 		margin: 0 auto;
-		padding: $gap-wide 0;
+		padding: $zt-space-5 0 $zt-space-4;
 		overflow-y: auto;
 		overscroll-behavior: contain;
 
-		// Desktop: the whole result in one boxed panel, its parts split by hairlines, instead of
-		// a narrow column floating in an empty window.
 		@include bp-up($bp-lg) {
 			flex: 0 1 auto;
 			margin: auto;
-			max-width: 560px;
+			max-width: 960px;
 			max-height: 100%;
-			gap: 0;
-			padding: 28px 32px 20px;
-			border: 1px solid rgba(var(--text-color), 0.08);
-			border-radius: 20px;
-			background: rgba(var(--text-color), 0.025);
-
-			> .#{$namespace}-online-battle__q-card {
-				padding: 20px 0;
-				border: none;
-				border-top: 1px solid rgba(var(--text-color), 0.08);
-				border-radius: 0;
-				background: transparent;
-			}
-
-			> .#{$namespace}-online-battle__result-head {
-				padding: 0 0 20px;
-			}
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: auto auto auto 1fr;
+			grid-template-areas: 'head rounds' 'vs rounds' 'rating rounds' 'actions rounds';
+			column-gap: $zt-space-6;
+			@include zt-card($zt-space-6);
 		}
 	}
 
 	&__result-head {
+		grid-area: head;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: end;
+		gap: $zt-space-3;
+		padding-bottom: $zt-space-4;
+	}
+
+	&__result-outcome {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding: 8px 4px 4px;
+		gap: $zt-space-2;
+		min-width: 0;
 	}
 
 	&__result-title {
-		display: flex;
-		align-items: center;
-		gap: 14px;
 		margin: 0;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-size: 40px;
-		font-weight: 800;
-		font-stretch: 125%;
-		line-height: 1.05;
-		letter-spacing: -0.01em;
-	}
+		@include display($fs-2xl);
 
-	&__sticker--big {
-		width: 22px;
-		height: 22px;
-		border-radius: 5px;
+		@include bp-up($bp-lg) {
+			font-size: $fs-3xl;
+		}
 	}
 
 	&__result-reason {
 		margin: 0;
-		font-size: 15px;
+		font-size: $fs-sm;
 		font-weight: 600;
 	}
 
-	// ── Scoreboard ──
+	&__result-score {
+		@include number($fs-3xl);
+		letter-spacing: -0.03em;
+
+		@include bp-up($bp-lg) {
+			font-size: 5rem;
+		}
+	}
+
 	&__vs {
+		grid-area: vs;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-		align-items: center;
-		gap: $gap;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: $zt-space-3;
+		padding: $zt-space-4 0;
+		border-top: $hairline;
 	}
 
 	&__vs-side {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 6px;
+		align-items: center;
+		gap: $zt-space-2;
 		min-width: 0;
 
 		&--end {
-			align-items: flex-end;
+			flex-direction: row-reverse;
 			text-align: right;
 		}
+	}
+
+	&__vs-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
 	}
 
 	&__vs-name {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		max-width: 100%;
+		gap: $zt-space-2;
 		min-width: 0;
-		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		font-size: 15px;
-		font-weight: 800;
-		font-stretch: 112%;
+		font-size: $fs-md;
+		font-weight: 700;
 	}
 
 	&__vs-side--end &__vs-name {
@@ -1009,58 +1125,85 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 	}
 
 	&__vs-name-text {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		@include ellipsis;
 	}
 
 	&__vs-rating {
-		font-family: $mono;
-		font-size: 14px;
-		font-weight: 600;
+		@include number($fs-sm, 600);
 	}
 
-	&__vs-score {
-		font-family: $mono;
-		font-size: 48px;
+	&__result-rating {
+		grid-area: rating;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+		padding: $zt-space-4 0;
+		border-top: $hairline;
+	}
+
+	&__rating-change {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $zt-space-3;
+		font-size: $fs-md;
 		font-weight: 700;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
 	}
 
-	// ── Rounds ──
+	&__rating-numbers {
+		@include number($fs-lg, 600);
+	}
+
+	&__rating-delta {
+		@include number($fs-2xl);
+
+		&--up {
+			color: rgb(var(--success-color));
+		}
+
+		&--down {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&__result-rounds {
+		grid-area: rounds;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		padding: $zt-space-4 0;
+		border-top: $hairline;
+
+		@include bp-up($bp-lg) {
+			padding: 0 0 0 $zt-space-6;
+			border-top: none;
+			border-left: $hairline;
+		}
+	}
+
 	&__round-row {
 		display: grid;
-		grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr);
 		align-items: center;
-		gap: 4px $gap;
-		padding: 8px 0;
-		font-size: 15px;
+		gap: $zt-space-1 $zt-space-3;
+		padding: $zt-space-2 0;
+		font-size: $fs-md;
 
 		& + & {
-			border-top: 1px solid rgba(var(--text-color), 0.06);
+			border-top: $hairline;
 		}
 
 		&--head {
 			padding-top: 0;
-
-			> :last-child {
-				overflow: hidden;
-				text-overflow: ellipsis;
-				white-space: nowrap;
-			}
 		}
 	}
 
 	// Column names over the round times. Not the uppercase eyebrow: one of them is a username.
 	&__round-who {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 12px;
+		@include ellipsis;
+		font-size: $fs-xs;
 		font-weight: 700;
+		color: $zt-text-muted;
 
 		&--end {
 			text-align: right;
@@ -1068,17 +1211,15 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 	}
 
 	&__round-label {
-		font-family: $mono;
-		font-size: 13px;
-		font-weight: 700;
+		@include number($fs-sm);
+		color: $zt-text-muted;
 	}
 
 	&__round-time {
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
-		font-family: $mono;
-		font-variant-numeric: tabular-nums;
+		gap: $zt-space-2;
+		@include number($fs-md, 500);
 
 		&--win {
 			font-weight: 800;
@@ -1091,100 +1232,41 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 
 	&__dnf-reason {
 		grid-column: 2 / -1;
-		font-size: 12px;
+		font-size: $fs-xs;
 		font-weight: 600;
+		color: rgb(var(--error-color));
 	}
 
-	// ── Rating ──
-	&__rating-change {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: $gap;
-		font-size: 16px;
-		font-weight: 700;
-	}
-
-	&__rating-numbers {
-		font-family: $mono;
-		font-size: 20px;
-		font-weight: 600;
-	}
-
-	&__rating-delta {
-		font-family: $mono;
-		font-size: 34px;
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	// At the foot of the screen on a phone, where the thumb is; right under the cards on a
-	// desktop, where the foot of a tall window left a gap the size of the cards themselves.
+	// At the foot of the screen on a phone, where the thumb is.
 	&__result-actions {
+		grid-area: actions;
 		display: flex;
 		flex-direction: column;
-		gap: $gap-tight;
-		width: 100%;
-		margin-top: auto;
-		padding-top: $gap-tight;
+		align-items: stretch;
+		gap: $zt-space-2;
+		padding-top: $zt-space-4;
+		border-top: $hairline;
 
-		@include bp-up($bp-lg) {
-			margin-top: $gap;
+		align-self: end;
+
+		> :last-child {
+			align-self: center;
 		}
 	}
 
 	&__rematch-asked {
 		text-align: center;
-		font-size: 14px;
+		font-size: $fs-sm;
 		font-weight: 700;
 	}
 
 	&__result-row {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: $gap-tight;
+		gap: $zt-space-2;
 
 		> * {
 			width: 100%;
-		}
-	}
-
-	// A quiet action, but a button: icon, padding, a hover fill. It used to be underlined
-	// text that did not look pressable at all.
-	&__report-link {
-		align-self: center;
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 14px;
-		border-radius: $radius-ctrl;
-		background: none;
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 13px;
-		font-weight: 700;
-		cursor: pointer;
-		transition: background 0.15s ease;
-
-		svg {
-			font-size: 15px;
-		}
-
-		&:hover:not(:disabled) {
-			background: rgba(var(--text-color), 0.07);
-		}
-
-		&:active:not(:disabled) {
-			background: rgba(var(--text-color), 0.12);
-		}
-
-		&:focus-visible {
-			outline: 2px solid rgb(var(--primary-color));
-			outline-offset: 2px;
-		}
-
-		&:disabled {
-			cursor: default;
 		}
 	}
 
@@ -1195,31 +1277,39 @@ $mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: $gap-wide;
+		gap: $zt-space-5;
 		text-align: center;
 	}
 
 	&__cancelled-text {
 		margin: 0;
 		max-width: 360px;
-		font-size: 18px;
+		font-size: $fs-lg;
 		font-weight: 700;
 		line-height: 1.4;
 	}
 
-	// Short screens (a phone in landscape): everything tighter, nothing scrolls.
+	// Short screens (a phone in landscape): tighter, nothing scrolls.
 	@media (max-height: $bp-short-height) {
-		&__match {
-			gap: $gap-tight;
-			padding: $gap-tight 0;
+		&__board {
+			padding: $zt-space-2 0;
+		}
+
+		&__board-score {
+			font-size: $fs-xl;
+		}
+
+		&__stage-self {
+			gap: $zt-space-2;
+			padding: $zt-space-2 0;
 		}
 
 		&__headline {
-			font-size: 16px;
+			font-size: $fs-md;
 		}
 
 		&__big-time {
-			font-size: min(12vw, 18vh, 96px);
+			font-size: min(12vw, 18vh, 6rem);
 		}
 	}
 }

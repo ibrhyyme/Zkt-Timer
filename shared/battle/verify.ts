@@ -39,7 +39,7 @@ import {
 	WALLCLOCK_TOLERANCE_MS,
 } from './config';
 import { BATTLE_PROGRESS_STEPS, BattleProgressStep } from './events';
-import { inspectionPenalty, isOverCutoff, worsePenalty } from './rules';
+import { addPenalties, inspectionPenalty, isOverCutoff, worsePenalty } from './rules';
 import {
 	BattleDnfReason,
 	BattleFlag,
@@ -418,6 +418,8 @@ export interface VerifySolveInput {
 	lastScrambleCubeTs?: [number | null, number | null] | null;
 	/** From battle:solve_start (the engine's own inspection). */
 	clientInspectionMs?: number | null;
+	/** The server's call on the scramble time (+2 past 20 s), stacked on the inspection call. */
+	scramblePenalty?: BattlePenalty | null;
 	/** battle:progress events of this round. */
 	progress?: ReportedProgress[] | null;
 	/** Server clock when scramble_done and solve_done arrived. Without both, check 5 is skipped (client preview). */
@@ -426,7 +428,7 @@ export interface VerifySolveInput {
 }
 
 export interface VerifiedSolve {
-	/** Raw time that stands (no +2 added). Kept on a DNF for display. */
+	/** Raw time that stands (no penalty added). Kept on a DNF for display. */
 	timeMs: number;
 	penalty: BattlePenalty | null;
 	dnfReason: BattleDnfReason | null;
@@ -442,7 +444,7 @@ export interface VerifiedSolve {
  *
  * DNF cases: the client's own DNF, check 2 (log does not solve the cube), check 3 (no
  * usable cube clock), check 5 (more than 3 s over real time), inspection over 17 s, over
- * the 120 s cutoff. Everything else only adds flags.
+ * the 60 s cutoff. Everything else only adds flags.
  */
 export function verifySolve(input: VerifySolveInput): VerifiedSolve {
 	const flags: BattleFlag[] = [];
@@ -492,7 +494,8 @@ export function verifySolve(input: VerifySolveInput): VerifiedSolve {
 		else if (verdict === 'flag') addFlags(['wallclock_short']);
 	}
 
-	let penalty = worsePenalty(input.clientPenalty === 'PLUS_TWO' ? 'PLUS_TWO' : null, inspectionCall);
+	const inspectionPenaltyCall = worsePenalty(input.clientPenalty === 'PLUS_TWO' ? 'PLUS_TWO' : null, inspectionCall);
+	let penalty = addPenalties(input.scramblePenalty === 'PLUS_TWO' ? 'PLUS_TWO' : null, inspectionPenaltyCall);
 	if (!dnfReason && isOverCutoff(time.timeMs, penalty)) setDnf('cutoff');
 	if (dnfReason) penalty = 'DNF';
 

@@ -1,5 +1,7 @@
 import {
 	abandonCooldownSec,
+	acceptedScrambleMs,
+	addPenalties,
 	effectiveTimeMs,
 	forfeitWinner,
 	inspectionPenalty,
@@ -8,7 +10,9 @@ import {
 	matchProgress,
 	pairKey,
 	queueWindow,
+	plusTwoCount,
 	roundWinner,
+	scramblePenalty,
 	withinQueueWindow,
 	worsePenalty,
 } from '../rules';
@@ -22,22 +26,56 @@ describe('inspection and penalties', () => {
 		expect(inspectionPenalty(17001)).toBe('DNF');
 	});
 
-	it('keeps the heavier penalty', () => {
+	it('scramble: 20 s fine, longer +2', () => {
+		expect(scramblePenalty(0)).toBeNull();
+		expect(scramblePenalty(20000)).toBeNull();
+		expect(scramblePenalty(20001)).toBe('PLUS_TWO');
+		expect(scramblePenalty(39000)).toBe('PLUS_TWO');
+	});
+
+	it('takes the client scramble time only within 1 s under the server interval', () => {
+		// Honest: the server interval also holds the settle delay and the network.
+		expect(acceptedScrambleMs(20400, 19800)).toBe(19800);
+		// Forged low: no more than the slack is gained.
+		expect(acceptedScrambleMs(25000, 3000)).toBe(24000);
+		// Claimed longer than the server could have seen: capped at the server interval.
+		expect(acceptedScrambleMs(12000, 15000)).toBe(12000);
+		// Old client without a measure.
+		expect(acceptedScrambleMs(21500, null)).toBe(20500);
+		expect(acceptedScrambleMs(400, undefined)).toBe(0);
+	});
+
+	it('keeps the heavier of two calls on the same thing', () => {
 		expect(worsePenalty(null, null)).toBeNull();
 		expect(worsePenalty('PLUS_TWO', null)).toBe('PLUS_TWO');
+		expect(worsePenalty('PLUS_TWO', 'PLUS_TWO')).toBe('PLUS_TWO');
 		expect(worsePenalty('PLUS_TWO', 'DNF')).toBe('DNF');
 	});
 
-	it('adds 2 s for +2 and has no time for DNF', () => {
+	it('stacks penalties from separate causes', () => {
+		expect(addPenalties(null, null)).toBeNull();
+		expect(addPenalties('PLUS_TWO', null)).toBe('PLUS_TWO');
+		expect(addPenalties(null, 'PLUS_TWO')).toBe('PLUS_TWO');
+		expect(addPenalties('PLUS_TWO', 'PLUS_TWO')).toBe('PLUS_FOUR');
+		expect(addPenalties('PLUS_TWO', 'DNF')).toBe('DNF');
+		expect(plusTwoCount('PLUS_FOUR')).toBe(2);
+		expect(plusTwoCount('DNF')).toBe(0);
+	});
+
+	it('adds the penalty to the time and has no time for DNF', () => {
 		expect(effectiveTimeMs({ timeMs: 10000, penalty: null })).toBe(10000);
 		expect(effectiveTimeMs({ timeMs: 10000, penalty: 'PLUS_TWO' })).toBe(12000);
+		expect(effectiveTimeMs({ timeMs: 10000, penalty: 'PLUS_FOUR' })).toBe(14000);
 		expect(effectiveTimeMs({ timeMs: 10000, penalty: 'DNF' })).toBeNull();
 		expect(effectiveTimeMs({ timeMs: null, penalty: null })).toBeNull();
 	});
 
-	it('applies the 120 s cutoff with the +2 included', () => {
-		expect(isOverCutoff(120000, null)).toBe(false);
-		expect(isOverCutoff(119000, 'PLUS_TWO')).toBe(true);
+	it('applies the 60 s cutoff with the penalties included', () => {
+		expect(isOverCutoff(60000, null)).toBe(false);
+		expect(isOverCutoff(60001, null)).toBe(true);
+		expect(isOverCutoff(59000, 'PLUS_TWO')).toBe(true);
+		expect(isOverCutoff(56000, 'PLUS_FOUR')).toBe(false);
+		expect(isOverCutoff(56001, 'PLUS_FOUR')).toBe(true);
 	});
 });
 
@@ -47,8 +85,10 @@ describe('roundWinner', () => {
 		expect(roundWinner({ timeMs: 9900, penalty: null }, { timeMs: 9500, penalty: null })).toBe('B');
 	});
 
-	it('compares +2 times', () => {
+	it('compares times with penalties', () => {
 		expect(roundWinner({ timeMs: 9000, penalty: 'PLUS_TWO' }, { timeMs: 10500, penalty: null })).toBe('B');
+		expect(roundWinner({ timeMs: 9000, penalty: 'PLUS_FOUR' }, { timeMs: 12500, penalty: null })).toBe('B');
+		expect(roundWinner({ timeMs: 9000, penalty: 'PLUS_FOUR' }, { timeMs: 10500, penalty: 'PLUS_TWO' })).toBe('B');
 	});
 
 	it('DNF loses to any time, two DNFs draw', () => {
@@ -64,24 +104,26 @@ describe('roundWinner', () => {
 });
 
 describe('matchProgress', () => {
-	it('two round wins take the match', () => {
-		expect(matchProgress(['A', 'A'])).toMatchObject({ finished: true, winner: 'A', score: { a: 2, b: 0 } });
-		expect(matchProgress(['A', 'B', 'B'])).toMatchObject({ finished: true, winner: 'B', score: { a: 1, b: 2 } });
+	it('three round wins take the match', () => {
+		expect(matchProgress(['A', 'A'])).toMatchObject({ finished: false, score: { a: 2, b: 0 } });
+		expect(matchProgress(['A', 'A', 'A'])).toMatchObject({ finished: true, winner: 'A', score: { a: 3, b: 0 } });
+		expect(matchProgress(['A', 'B', 'B', 'A', 'B'])).toMatchObject({ finished: true, winner: 'B', score: { a: 2, b: 3 } });
 	});
 
 	it('drawn rounds are replayed and do not score', () => {
-		expect(matchProgress(['DRAW', 'A', 'DRAW'])).toMatchObject({ finished: false, roundsPlayed: 3, score: { a: 1, b: 0 } });
-		expect(matchProgress(['DRAW', 'A', 'DRAW', 'A'])).toMatchObject({ finished: true, winner: 'A' });
+		expect(matchProgress(['DRAW', 'A', 'DRAW', 'A'])).toMatchObject({ finished: false, roundsPlayed: 4, score: { a: 2, b: 0 } });
+		expect(matchProgress(['DRAW', 'A', 'DRAW', 'A', 'A'])).toMatchObject({ finished: true, winner: 'A' });
 	});
 
-	it('five rounds without a second win end in a draw', () => {
-		expect(matchProgress(['DRAW', 'DRAW', 'DRAW', 'DRAW', 'DRAW'])).toMatchObject({ finished: true, winner: 'DRAW' });
-		expect(matchProgress(['A', 'B', 'DRAW', 'DRAW', 'DRAW'])).toMatchObject({ finished: true, winner: 'DRAW' });
-		expect(matchProgress(['A', 'DRAW', 'DRAW', 'DRAW', 'DRAW'])).toMatchObject({ finished: true, winner: 'DRAW' });
+	it('seven rounds without a third win end in a draw', () => {
+		expect(matchProgress(Array(7).fill('DRAW'))).toMatchObject({ finished: true, winner: 'DRAW', roundsPlayed: 7 });
+		expect(matchProgress(['A', 'B', 'A', 'B', 'DRAW', 'DRAW', 'DRAW'])).toMatchObject({ finished: true, winner: 'DRAW' });
+		expect(matchProgress(['A', 'A', 'DRAW', 'DRAW', 'DRAW', 'DRAW', 'DRAW'])).toMatchObject({ finished: true, winner: 'DRAW' });
+		expect(matchProgress(['A', 'B', 'A', 'B', 'DRAW', 'DRAW'])).toMatchObject({ finished: false });
 	});
 
 	it('ignores rounds after the match ended', () => {
-		expect(matchProgress(['A', 'A', 'B'])).toMatchObject({ roundsPlayed: 2, winner: 'A' });
+		expect(matchProgress(['A', 'A', 'A', 'B'])).toMatchObject({ roundsPlayed: 3, winner: 'A' });
 	});
 
 	it('is open with no rounds yet', () => {

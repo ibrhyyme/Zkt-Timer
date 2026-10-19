@@ -2049,7 +2049,7 @@ model BattleRound {
   index       Int
   scramble    String
   a_time_ms   Int?
-  /// PLUS_TWO | DNF
+  /// PLUS_TWO | PLUS_FOUR | DNF
   a_penalty   String?
   b_time_ms   Int?
   b_penalty   String?

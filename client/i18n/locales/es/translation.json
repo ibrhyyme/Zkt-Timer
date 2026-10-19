@@ -3228,7 +3228,7 @@
     "battle_launch_title": "Batalla: Online y Offline Battle | Zkt Timer",
     "battle_launch_description": "Juega Online Battle con tu cubo inteligente contra quien esté buscando rival ahora mismo, o una Offline Battle con un amigo en un mismo dispositivo.",
     "battle_online_title": "Online Battle | Zkt Timer",
-    "battle_online_description": "Partidas 1v1 puntuadas con cubos inteligentes. Los dos resuelven la misma mezcla, gana quien se lleva dos rondas primero y la puntuación entra en la clasificación."
+    "battle_online_description": "Partidas 1v1 puntuadas con cubos inteligentes. Los dos resuelven la misma mezcla, gana quien se lleva tres rondas primero y la puntuación entra en la clasificación."
   },
   "quick_controls": {
     "timer": "Timer",
@@ -4489,11 +4489,8 @@
     "opponent_found": "Rival encontrado",
     "preview": "Si ganas +{{win}}, si pierdes −{{loss}}",
     "round": "Ronda {{n}}",
-    "inspect": "Inspecciona",
-    "inspection_dnf": "La inspección pasó de 17 segundos",
-    "scramble_your_cube": "Mezcla tu cubo",
+    "inspection_dnf": "La inspección pasó de {{seconds}} segundos",
     "scramble_hint_first": "La inspección empieza sola cuando la mezcla es correcta.",
-    "scramble_time_left": "Quedan {{seconds}} s para mezclar",
     "round_won": "Ganaste la ronda",
     "round_lost": "Perdiste la ronda",
     "round_draw": "Empate, se repite la ronda",
@@ -4539,12 +4536,12 @@
     },
     "dnf_reason": {
       "client": "Resolución no completada",
-      "inspection": "La inspección pasó de 17 segundos",
-      "cutoff": "Se pasó del límite de 120 segundos",
+      "inspection": "La inspección pasó de {{inspection}} segundos",
+      "cutoff": "Se pasó del límite de {{cutoff}} segundos",
       "replay_not_solved": "El registro de movimientos no resuelve el cubo",
       "no_cube_clock": "Falta el reloj del cubo",
       "wallclock": "El tiempo no coincide con lo que midió el servidor",
-      "scramble_timeout": "La mezcla no terminó en 90 segundos",
+      "scramble_timeout": "La mezcla no terminó en {{scramble}} segundos",
       "timeout": "Se acabó el tiempo",
       "disconnect": "Desconectado"
     },
@@ -4574,19 +4571,38 @@
       "win_short": "V",
       "loss_short": "D",
       "draw_short": "E",
-      "how_title": "Cómo se juega",
-      "how_1": "Cuando aparece un rival, el 3-2-1 empieza a la vez en las dos pantallas.",
-      "how_2": "Mezcla en tu cubo. Si te equivocas de movimiento, verás la corrección.",
-      "how_3": "Tu primer movimiento inicia el tiempo y al resolver el cubo se detiene. Gana quien se lleve dos rondas.",
       "ranks_link": "Ver clasificación",
       "cube_hint": "GAN, QiYi o WeiLong V10 AI",
       "connecting": "Conectando"
     },
     "result": {
-      "rounds_title": "Rondas"
+      "rounds_title": "Rondas",
+      "match_over": "Partida terminada · rondas: {{count}}"
     },
     "reconnect_cube": "Volver a conectar el cubo",
-    "cube_mismatch": "Tu cubo no coincide con la mezcla. Resuélvelo y vuelve a empezar la mezcla. Si ya está resuelto en tu mano, pulsa el botón de abajo."
+    "cube_mismatch": "Tu cubo no coincide con la mezcla. Resuélvelo y vuelve a empezar la mezcla. Si ya está resuelto en tu mano, pulsa el botón de abajo.",
+    "opponent": "Rival",
+    "first_to": "Gana quien llegue a {{n}}",
+    "scramble_penalty": "Mezcla +2",
+    "inspection_penalty": "Inspección +2",
+    "scramble_dnf_in": "DNF si no terminas en {{seconds}} s",
+    "phase": {
+      "scramble": "Mezcla",
+      "inspect": "Inspección",
+      "solve": "Resolución · límite {{seconds}} s"
+    },
+    "rules": {
+      "title": "Reglas",
+      "scramble": "Mezcla",
+      "inspection": "Inspección",
+      "cutoff": "Límite de resolución",
+      "match": "Partida",
+      "seconds": "{{seconds}} s",
+      "late_note": "Si te pasas, +2; si no terminas en {{seconds}} segundos, DNF.",
+      "cutoff_note": "Las penalizaciones cuentan en el tiempo; si pasas del límite, DNF.",
+      "match_note": "Una ronda empatada se repite con una mezcla nueva.",
+      "stack_note": "Las penalizaciones se suman: +2 en la mezcla y +2 en la inspección dan +4."
+    }
   },
   "battle_landing": {
     "online_title": "Online Battle",
@@ -4601,7 +4617,7 @@
     "first_match": "Entra en la clasificación con tu primera partida",
     "subtitle": "Busca un rival en línea o enfréntate en un mismo dispositivo.",
     "online_f1": "Rival con una puntuación cercana a la tuya",
-    "online_f2": "Al mejor de tres, la misma mezcla para los dos",
+    "online_f2": "Gana quien se lleve tres rondas, la misma mezcla para los dos",
     "online_f3": "Cada partida cambia tu puntuación y tu puesto",
     "online_f4": "Necesitas un cubo inteligente GAN, QiYi o WeiLong V10 AI",
     "offline_f1": "Frente a frente en móvil o tableta, lado a lado en el ordenador",
@@ -5434,14 +5450,14 @@
       "online-battle": {
         "title": "Online Battle",
         "body": [
-          "En Online Battle juegas con tu cubo inteligente contra otro jugador que busca rival en ese momento. Los dos resolvéis la misma mezcla y gana la partida quien se lleve dos rondas primero.",
+          "En Online Battle juegas con tu cubo inteligente contra otro jugador que busca rival en ese momento. Los dos resolvéis la misma mezcla y gana la partida quien se lleve tres rondas primero.",
           "El tiempo se mide con el reloj del propio cubo, así que el retraso de internet no afecta al resultado. Tras cada partida tu puntuación cambia y entra en la clasificación.",
           "Necesitas haber iniciado sesión y tener el correo verificado. Por ahora solo 3x3."
         ],
         "steps": [
           "En la página de Batalla, toca la tarjeta Online Battle y conecta tu cubo inteligente.",
           "Pulsa Buscar rival. Al emparejarte verás cuánto cambia tu puntuación si ganas o si pierdes.",
-          "Aplica a tu cubo la mezcla de la pantalla. Al terminar la mezcla empieza la inspección; tu primer movimiento inicia el tiempo y al resolver el cubo se detiene.",
+          "Aplica a tu cubo la mezcla de la pantalla en 20 segundos; si te pasas, +2. Después empiezan 15 segundos de inspección; tu primer movimiento inicia el tiempo y al resolver el cubo se detiene. El límite de resolución es de 60 segundos.",
           "Al terminar la partida puedes pedir la revancha o buscar un rival nuevo."
         ],
         "notes": [

@@ -3211,7 +3211,7 @@
     "battle_launch_title": "Battle: Online ve Offline Battle | Zkt Timer",
     "battle_launch_description": "Smart küpünle o an rakip arayan biriyle Online Battle oyna ya da aynı cihazda arkadaşınla Offline Battle yap.",
     "battle_online_title": "Online Battle | Zkt Timer",
-    "battle_online_description": "Smart küple 1v1 maç. İki oyuncu aynı karıştırmayı çözer, iki turu ilk alan kazanır, rating Sıralama'ya yazılır."
+    "battle_online_description": "Smart küple 1v1 maç. İki oyuncu aynı karıştırmayı çözer, üç turu ilk alan kazanır, rating Sıralama'ya yazılır."
   },
   "quick_controls": {
     "timer": "Timer",
@@ -4470,11 +4470,8 @@
     "opponent_found": "Rakip bulundu",
     "preview": "Kazanırsan +{{win}}, kaybedersen −{{loss}}",
     "round": "Tur {{n}}",
-    "inspect": "İncele",
-    "inspection_dnf": "İnceleme 17 saniyeyi geçti",
-    "scramble_your_cube": "Küpünü karıştır",
+    "inspection_dnf": "İnceleme {{seconds}} saniyeyi geçti",
     "scramble_hint_first": "Doğru karıştırınca inceleme kendiliğinden başlar.",
-    "scramble_time_left": "Karıştırmak için {{seconds}} sn kaldı",
     "round_won": "Turu kazandın",
     "round_lost": "Turu kaybettin",
     "round_draw": "Berabere, tur tekrar",
@@ -4520,12 +4517,12 @@
     },
     "dnf_reason": {
       "client": "Çözüm tamamlanmadı",
-      "inspection": "İnceleme 17 saniyeyi geçti",
-      "cutoff": "120 saniye sınırı aşıldı",
+      "inspection": "İnceleme {{inspection}} saniyeyi geçti",
+      "cutoff": "{{cutoff}} saniye sınırı aşıldı",
       "replay_not_solved": "Hamle kaydı küpü çözmüyor",
       "no_cube_clock": "Küp saati eksik",
       "wallclock": "Süre sunucunun ölçtüğüyle uyuşmuyor",
-      "scramble_timeout": "Karıştırma 90 saniyede bitmedi",
+      "scramble_timeout": "Karıştırma {{scramble}} saniyede bitmedi",
       "timeout": "Süre doldu",
       "disconnect": "Bağlantı koptu"
     },
@@ -4555,19 +4552,38 @@
       "win_short": "G",
       "loss_short": "Y",
       "draw_short": "B",
-      "how_title": "Nasıl oynanır",
-      "how_1": "Rakip bulununca iki ekranda aynı anda 3-2-1 başlar.",
-      "how_2": "Karıştırmayı küpünde yap. Yanlış hamlede düzeltme çıkar.",
-      "how_3": "İlk hamlen süreni başlatır, küp çözülünce durur. Üç turdan ikisini alan kazanır.",
       "ranks_link": "Sıralamayı gör",
       "cube_hint": "GAN, QiYi ya da WeiLong V10 AI",
       "connecting": "Bağlanıyor"
     },
     "result": {
-      "rounds_title": "Turlar"
+      "rounds_title": "Turlar",
+      "match_over": "Maç bitti · {{count}} tur"
     },
     "reconnect_cube": "Küpü yeniden bağla",
-    "cube_mismatch": "Küp karıştırmayla eşleşmiyor. Küpü çöz, sonra karıştırmayı baştan yap. Küp elinde çözülmüşse aşağıdaki butona bas."
+    "cube_mismatch": "Küp karıştırmayla eşleşmiyor. Küpü çöz, sonra karıştırmayı baştan yap. Küp elinde çözülmüşse aşağıdaki butona bas.",
+    "opponent": "Rakip",
+    "first_to": "İlk {{n}} kazanır",
+    "scramble_penalty": "Karıştırma +2",
+    "inspection_penalty": "İnceleme +2",
+    "scramble_dnf_in": "{{seconds}} sn içinde bitmezse DNF",
+    "phase": {
+      "scramble": "Karıştır",
+      "inspect": "İncele",
+      "solve": "Çözüm · sınır {{seconds}} sn"
+    },
+    "rules": {
+      "title": "Kurallar",
+      "scramble": "Karıştırma",
+      "inspection": "İnceleme",
+      "cutoff": "Çözüm sınırı",
+      "match": "Maç",
+      "seconds": "{{seconds}} sn",
+      "late_note": "Aşarsan +2, {{seconds}} saniyede bitmezse DNF.",
+      "cutoff_note": "Cezalar süreye eklenir; sınırı geçen çözüm DNF olur.",
+      "match_note": "Berabere biten tur yeni karıştırmayla tekrar oynanır.",
+      "stack_note": "Cezalar toplanır: karıştırmada +2 ve incelemede +2 alan +4 ceza alır."
+    }
   },
   "battle_landing": {
     "online_title": "Online Battle",
@@ -4582,7 +4598,7 @@
     "first_match": "İlk maçınla sıralamaya gir",
     "subtitle": "Online'da rakip bul ya da aynı cihazda karşılıklı oyna.",
     "online_f1": "Rating'ine yakın bir rakiple eşleş",
-    "online_f2": "Üç turdan iki, ikinize aynı karıştırma",
+    "online_f2": "İlk 3 turu alan kazanır, ikinize aynı karıştırma",
     "online_f3": "Her maç rating'ini ve sıranı değiştirir",
     "online_f4": "GAN, QiYi ya da WeiLong V10 AI smart küp gerekir",
     "offline_f1": "Telefon ve tablette karşılıklı, bilgisayarda yan yana",
@@ -5414,14 +5430,14 @@
       "online-battle": {
         "title": "Online Battle",
         "body": [
-          "Online Battle'da smart küpünle, o an rakip arayan başka bir oyuncuyla eşleşirsin. İkiniz de aynı karıştırmayı çözersiniz, iki turu ilk alan maçı kazanır.",
+          "Online Battle'da smart küpünle, o an rakip arayan başka bir oyuncuyla eşleşirsin. İkiniz de aynı karıştırmayı çözersiniz, üç turu ilk alan maçı kazanır.",
           "Süre küpün kendi saatinden ölçülür, bu yüzden internet gecikmesi sonucu etkilemez. Her maçtan sonra rating'in değişir ve Sıralama'ya yazılır.",
           "Online Battle için giriş yapmış ve e-postanı doğrulamış olman gerekir. Şimdilik sadece 3x3 oynanır."
         ],
         "steps": [
           "Battle sayfasında Online Battle kartına dokun ve smart küpünü bağla.",
           "Rakip ara düğmesine bas. Eşleşince kazanır ya da kaybedersen rating'inin ne kadar değişeceğini görürsün.",
-          "Ekrandaki karıştırmayı küpüne uygula. Karıştırma bitince inceleme başlar; ilk hamlende süre başlar, küp çözülünce durur.",
+          "Ekrandaki karıştırmayı 20 saniye içinde küpüne uygula, aşarsan +2 alırsın. Karıştırma bitince 15 saniyelik inceleme başlar; ilk hamlende süre başlar, küp çözülünce durur. Çözüm sınırı 60 saniye.",
           "Maç bitince rövanş isteyebilir ya da yeni bir rakip arayabilirsin."
         ],
         "notes": [
