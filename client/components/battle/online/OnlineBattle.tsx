@@ -17,13 +17,16 @@ import {toastError} from '../../../util/toast';
 import {allowScreenSleep, hapticImpact, hapticNotification, keepScreenAwake} from '../../../util/native-plugins';
 import {REMATCH_WINDOW_SEC} from '../../../../shared/battle/config';
 import {BATTLE_ERROR_KEYS} from '../../../../shared/battle/events';
+import type {BattleHeadToHead} from '../../../../shared/battle/types';
 import {useBattleSocket} from './useBattleSocket';
 import {BattleCubeRound, useBattleCube} from './useBattleCube';
 import OnlineBattlePreview, {isPreviewState} from './OnlineBattlePreview';
-import {outcomeFor, OnlineBattleState} from './battle_state';
+import {outcomeFor, OnlineBattleState, pendingChallengeCode} from './battle_state';
 import QueueScreen from './QueueScreen';
 import MatchScreen from './MatchScreen';
 import ResultScreen from './ResultScreen';
+import DuelWaitScreen from './DuelWaitScreen';
+import DuelInviteScreen, {DuelInvite} from './DuelInviteScreen';
 import './OnlineBattle.scss';
 
 const b = block('online-battle');
@@ -44,6 +47,27 @@ interface PendingLeave {
 	search: string;
 	hash: string;
 	action: string;
+}
+
+/** The invite /duel/<code> shows, loaded by DuelPage. */
+export interface DuelPageInvite {
+	code: string;
+	invite: DuelInvite | null;
+	loading: boolean;
+	headToHead: BattleHeadToHead | null;
+	reload(): void;
+}
+
+/** An error about the invite itself (used, expired, not for you...), not about the player. */
+export function isChallengeError(i18nKey: string): boolean {
+	return Object.entries(BATTLE_ERROR_KEYS).some(([name, key]) => name.startsWith('challenge') && key === i18nKey);
+}
+
+/** `?challenge=<username>` from a profile's "Challenge" button. */
+export function challengeTargetFromSearch(search: string): string | null {
+	const value = new URLSearchParams(search).get('challenge');
+	const name = (value || '').trim();
+	return name ? name.slice(0, 64) : null;
 }
 
 /**
@@ -69,6 +93,7 @@ export default function OnlineBattle() {
 		</FeatureGuard>
 	);
 }
+
 
 function OnlineBattleGate() {
 	const {t} = useTranslation();
@@ -96,10 +121,21 @@ function OnlineBattleGate() {
 		);
 	}
 
-	return <OnlineBattleInner />;
+	return <OnlineBattleInner duelTarget={challengeTargetFromSearch(window.location.search)} />;
 }
 
-function OnlineBattleInner() {
+interface InnerProps {
+	/** /battle/online?challenge=<username>: the queue screen offers to challenge this player. */
+	duelTarget?: string | null;
+	/** /duel/<code>: the invite page takes the queue screen's place. */
+	duel?: DuelPageInvite;
+}
+
+/**
+ * Queue, duel invites, match and result. /battle/online and /duel/<code> both run it; the
+ * signed-in, verified-email gates are the caller's.
+ */
+export function OnlineBattleInner({duelTarget = null, duel}: InnerProps) {
 	const {t} = useTranslation();
 	const history = useHistory();
 	const me = useMe();
@@ -137,7 +173,7 @@ function OnlineBattleInner() {
 	const cube = useBattleCube(cubeRound, !!current && openKey === roundKey, live, actions);
 
 	// ── Device: screen on, haptics, sound ──
-	const active = stage === 'match' || stage === 'searching';
+	const active = stage === 'match' || stage === 'searching' || stage === 'challenge' || stage === 'accepting';
 	useWakeLock(active);
 	useEffect(() => {
 		if (!active) return;
@@ -179,12 +215,21 @@ function OnlineBattleInner() {
 		void hapticNotification(outcomeFor(result.winner, side) === 'lost' ? 'warning' : 'success');
 	}, [result]);
 
+	// Back on the invite page after its duel (or a refused accept): it shows the invite as it is now.
+	const prevStageRef = useRef(stage);
+	useEffect(() => {
+		if (duel && stage === 'idle' && prevStageRef.current !== 'idle' && prevStageRef.current !== 'accepting') duel.reload();
+		prevStageRef.current = stage;
+	}, [stage]);
+
 	// ── Errors from the server ──
 	useEffect(() => {
 		if (!state.error) return;
 		toastError(t(state.error.i18nKey, state.error.params || {}));
 		// The server kept this player scrambling: the local round must go back there too.
 		if (state.error.i18nKey === BATTLE_ERROR_KEYS.scrambleMismatch) cube.rejectScramble();
+		// An accept the server refused: the invite page shows the invite as it is now.
+		if (duel && isChallengeError(state.error.i18nKey)) duel.reload();
 		actions.clearError();
 	}, [state.error]);
 
@@ -220,13 +265,22 @@ function OnlineBattleInner() {
 		if (!inMatch) setConfirm(null);
 	}, [inMatch]);
 
-	// A search left running is stopped when the page goes away.
-	useEffect(() => () => actions.leaveQueueOnExit(), []);
+	// A search left running is stopped when the page goes away, an open invite dies with it.
+	useEffect(
+		() => () => {
+			actions.leaveQueueOnExit();
+			actions.leaveChallengeOnExit();
+		},
+		[]
+	);
 
-	// The cube went away while searching: a match would start without it.
+	// The cube went away while searching or waiting on an invite: a match would start without it.
+	const invitePending = !!pendingChallengeCode(state);
 	useEffect(() => {
-		if (stage === 'searching' && !cube.connected && !cube.reconnecting) actions.leaveQueue();
-	}, [stage, cube.connected, cube.reconnecting]);
+		if (cube.connected || cube.reconnecting) return;
+		if (stage === 'searching') actions.leaveQueue();
+		else if (invitePending) actions.leaveChallenge();
+	}, [stage, invitePending, cube.connected, cube.reconnecting]);
 
 	const confirmLeave = () => {
 		const s = stateRef.current;
@@ -256,10 +310,23 @@ function OnlineBattleInner() {
 		actions.joinQueue(cube.info);
 	}, [cube.info, actions.joinQueue]);
 
+	/** A duel invite: a link, or to `duelTarget` when the page came from a profile. */
+	const startChallenge = useCallback(() => {
+		if (!cube.info?.hasClock) return;
+		actions.createChallenge(cube.info, duelTarget);
+	}, [cube.info, duelTarget, actions.createChallenge]);
+
+	/** Back to the plain queue screen: a profile challenge's name leaves the address. */
+	const clearDuelTarget = () => {
+		if (duelTarget) history.replace('/battle/online');
+	};
+
 	const newOpponent = () => {
 		if (match) actions.rematch(match.matchId, false);
 		actions.dismiss();
-		startSearch();
+		// The invite page is done; a new opponent is searched where the queue lives.
+		if (duel) history.push('/battle/online');
+		else startSearch();
 	};
 
 	const exit = () => {
@@ -295,6 +362,7 @@ function OnlineBattleInner() {
 				rematch={state.rematch}
 				rematchDeadlineLocal={rematchDeadlineLocal}
 				reported={reported.has(match.matchId)}
+				challenge={match.matched.challenge}
 				onRematch={() => actions.rematch(match.matchId, true)}
 				onNewOpponent={newOpponent}
 				onExit={exit}
@@ -311,6 +379,46 @@ function OnlineBattleInner() {
 				<Button large primary text={t('online_battle.ok')} onClick={actions.dismiss} />
 			</div>
 		);
+	} else if (stage === 'challenge') {
+		body = (
+			<DuelWaitScreen
+				challenge={state.challenge}
+				myName={me?.username || ''}
+				cube={cube}
+				toLocal={toLocal}
+				onCancel={() => {
+					actions.leaveChallenge();
+					clearDuelTarget();
+				}}
+				onNewInvite={() => {
+					actions.leaveChallenge();
+					startChallenge();
+				}}
+				onBack={() => {
+					actions.leaveChallenge();
+					clearDuelTarget();
+				}}
+			/>
+		);
+	} else if (duel) {
+		body = (
+			<DuelInviteScreen
+				invite={duel.invite}
+				loading={duel.loading}
+				headToHead={duel.headToHead}
+				signedIn
+				emailVerified
+				accepting={stage === 'accepting'}
+				cube={cube}
+				onAccept={() => {
+					if (cube.info?.hasClock) actions.acceptChallenge(duel.code, cube.info);
+				}}
+				onGoBattle={() => history.push('/battle/online')}
+				onSignIn={() => undefined}
+				onSignUp={() => undefined}
+				onVerifyEmail={() => undefined}
+			/>
+		);
 	} else {
 		body = (
 			<QueueScreen
@@ -320,6 +428,9 @@ function OnlineBattleInner() {
 				onSearch={startSearch}
 				onStop={actions.leaveQueue}
 				onStillHere={actions.stillHere}
+				duelTarget={duelTarget}
+				onChallenge={startChallenge}
+				onClearTarget={clearDuelTarget}
 			/>
 		);
 	}
@@ -332,7 +443,12 @@ function OnlineBattleInner() {
 			{!inMatch && (
 				<TrainerModeHeader
 					onBack={() => history.push('/battle')}
-					trail={[{label: t('nav.battle'), onClick: () => history.push('/battle')}, {label: t('online_battle.title')}]}
+					trail={[
+						{label: t('nav.battle'), onClick: () => history.push('/battle')},
+						duel
+							? {label: t('online_battle.duel.page_title')}
+							: {label: t('online_battle.title')},
+					]}
 				/>
 			)}
 

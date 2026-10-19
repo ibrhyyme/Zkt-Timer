@@ -103,6 +103,19 @@ export interface GlickoRating {
 	volatility: number;
 }
 
+/** How a match came about: the queue, or a duel invite (never rated). */
+export type BattleMatchMode = 'queue' | 'challenge';
+
+/** battle_challenge.status */
+export type BattleChallengeStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'CANCELLED';
+
+/** Matches between two players from one player's side. */
+export interface BattleHeadToHead {
+	wins: number;
+	losses: number;
+	draws: number;
+}
+
 export interface BattleRatingDelta {
 	win: number;
 	draw: number;

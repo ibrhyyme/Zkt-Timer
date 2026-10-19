@@ -1,8 +1,9 @@
 /**
  * Per-user Online Battle bookkeeping in Redis (design ranking-battle.md 4.2, 4.3, 4.6).
  *
- * - Session: a user is in at most one queue or one match at a time, from one socket
- *   (`cd:battle:session#<userId>`). Two tabs must not play two matches on one rating.
+ * - Session: a user is in at most one queue, one open duel invite or one match at a time,
+ *   from one socket (`cd:battle:session#<userId>`). Two tabs must not play two matches on
+ *   one rating.
  * - Abandon cooldown: leaving inside the "opponent found" screen costs 1 min, then 5 min,
  *   then 15 min of queue time that day.
  * - Recent opponent: the last opponent is skipped for 2 minutes while someone else waits.
@@ -11,7 +12,7 @@
  */
 
 import {RedisNamespace} from '../services/redis';
-import {QUEUE_SAME_OPPONENT_COOLDOWN_SEC} from '../../shared/battle/config';
+import {CHALLENGE_HOST_GRACE_SEC, CHALLENGE_TTL_SEC, QUEUE_SAME_OPPONENT_COOLDOWN_SEC} from '../../shared/battle/config';
 import {BattleCancelReason} from '../../shared/battle/events';
 import {abandonCooldownSec} from '../../shared/battle/rules';
 import {battleKey, battleKeyPattern, BattleStore} from './store';
@@ -20,17 +21,21 @@ import {battleKey, battleKeyPattern, BattleStore} from './store';
 export const MATCH_SESSION_TTL_SEC = 30 * 60;
 /** Session TTL while queued; refreshed when the player answers "still here". */
 export const QUEUE_SESSION_TTL_SEC = 15 * 60;
+/** Session TTL of an open duel invite: its whole life plus the host's reconnect grace. */
+export const CHALLENGE_SESSION_TTL_SEC = CHALLENGE_TTL_SEC + CHALLENGE_HOST_GRACE_SEC;
 /** Match snapshots and tombstones expire after this (design 4.8: 30 min). */
 export const MATCH_SNAPSHOT_TTL_SEC = 30 * 60;
 /** "Same day" for repeated abandons. */
 const ABANDON_WINDOW_SEC = 24 * 60 * 60;
 
-export type BattleSessionKind = 'queue' | 'match';
+export type BattleSessionKind = 'queue' | 'match' | 'challenge';
 
 export interface BattleSession {
 	kind: BattleSessionKind;
 	socketId: string;
 	matchId?: string;
+	/** kind 'challenge': the invite's code. */
+	code?: string;
 	since: number;
 }
 
@@ -50,7 +55,12 @@ export async function getBattleSession(store: BattleStore, userId: string): Prom
 }
 
 export async function setBattleSession(store: BattleStore, userId: string, session: BattleSession): Promise<void> {
-	const ttl = session.kind === 'match' ? MATCH_SESSION_TTL_SEC : QUEUE_SESSION_TTL_SEC;
+	const ttl =
+		session.kind === 'match'
+			? MATCH_SESSION_TTL_SEC
+			: session.kind === 'challenge'
+				? CHALLENGE_SESSION_TTL_SEC
+				: QUEUE_SESSION_TTL_SEC;
 	await store.set(sessionKey(userId), JSON.stringify(session), ttl);
 }
 
@@ -61,7 +71,7 @@ export async function setBattleSession(store: BattleStore, userId: string, sessi
 export async function clearBattleSession(
 	store: BattleStore,
 	userId: string,
-	expect?: {socketId?: string; matchId?: string; kind?: BattleSessionKind}
+	expect?: {socketId?: string; matchId?: string; code?: string; kind?: BattleSessionKind}
 ): Promise<void> {
 	if (expect) {
 		const current = await getBattleSession(store, userId);
@@ -69,6 +79,7 @@ export async function clearBattleSession(
 		if (expect.kind && current.kind !== expect.kind) return;
 		if (expect.socketId && current.socketId !== expect.socketId) return;
 		if (expect.matchId && current.matchId !== expect.matchId) return;
+		if (expect.code && current.code !== expect.code) return;
 	}
 	await store.del(sessionKey(userId));
 }

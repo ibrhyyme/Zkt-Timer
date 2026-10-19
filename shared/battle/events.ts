@@ -15,8 +15,10 @@
 
 import { BattlePuzzle } from './config';
 import {
+	BattleChallengeStatus,
 	BattleDnfReason,
 	BattleEndReason,
+	BattleHeadToHead,
 	BattleMove,
 	BattlePenalty,
 	BattleRatingDelta,
@@ -44,6 +46,13 @@ export enum BattleClientEvent {
 	GIVE_UP = 'battle:give_up',
 	REMATCH = 'battle:rematch',
 	REPORT = 'battle:report',
+	/** Opens a duel invite (link, or a profile challenge with toUsername). Answer: CHALLENGE_STATE. */
+	CHALLENGE_CREATE = 'battle:challenge_create',
+	CHALLENGE_CANCEL = 'battle:challenge_cancel',
+	/** The inviter's new socket after a reconnect takes the invite back. */
+	CHALLENGE_RESUME = 'battle:challenge_resume',
+	/** The invited player accepts; the server starts the duel (MATCHED to both). */
+	CHALLENGE_ACCEPT = 'battle:challenge_accept',
 }
 
 export enum BattleServerEvent {
@@ -59,6 +68,8 @@ export enum BattleServerEvent {
 	MATCH_STATE = 'battle:match_state',
 	CANCELLED = 'battle:cancelled',
 	ERROR = 'battle:error',
+	/** The inviter's own invite: open, or why it ended. */
+	CHALLENGE_STATE = 'battle:challenge_state',
 }
 
 /** Socket.IO room of one match: both players' sockets join it. */
@@ -167,6 +178,23 @@ export interface ReportPayload {
 	reason: string;
 }
 
+export interface ChallengeCreatePayload {
+	puzzle: BattlePuzzle;
+	cube: BattleCubeInfo;
+	/** A profile challenge: only this user may accept, and they get a notification. */
+	toUsername?: string;
+}
+
+export interface ChallengeCodePayload {
+	code: string;
+}
+
+export interface ChallengeAcceptPayload {
+	code: string;
+	puzzle: BattlePuzzle;
+	cube: BattleCubeInfo;
+}
+
 // ── Server -> client payloads ────────────────────────────────────────────────
 
 export interface QueueStatePayload {
@@ -191,9 +219,11 @@ export interface BattlePlayerInfo {
 
 export interface MatchedPayload {
 	matchId: string;
-	/** False for rematches past the daily pair limit. */
+	/** False for rematches past the daily pair limit and for every duel. */
 	rated: boolean;
 	isRematch: boolean;
+	/** A duel from an invite: unrated, its rematch stays a duel. */
+	challenge: boolean;
 	/** Which side this player is in round results. */
 	side: BattleSide;
 	you: { rating: number; provisional: boolean; games: number };
@@ -256,6 +286,9 @@ export interface MatchResultPayload {
 	/** Games played including this one, for "Provisional (6/10)". */
 	games: number;
 	rounds: RoundResultPayload[];
+	challenge: boolean;
+	/** Duels only: every counted match of the pair (HEAD_TO_HEAD_SCOPE), this one included. */
+	headToHead: BattleHeadToHead | null;
 }
 
 export interface RematchStatePayload {
@@ -305,6 +338,15 @@ export interface CancelledPayload {
 	reason: BattleCancelReason;
 }
 
+export interface ChallengeStatePayload {
+	code: string;
+	status: BattleChallengeStatus;
+	/** Server clock. */
+	expiresAt: number;
+	/** A profile challenge's addressee, null for a link anyone may use. */
+	to: {id: string; username: string} | null;
+}
+
 export interface BattleErrorPayload {
 	/** Translation key (online_battle.errors.*), same pattern as GraphQL errors. */
 	i18nKey: string;
@@ -327,4 +369,22 @@ export const BATTLE_ERROR_KEYS = {
 	scrambleMismatch: 'online_battle.errors.scramble_mismatch',
 	matchNotFound: 'online_battle.errors.match_not_found',
 	generic: 'online_battle.errors.generic',
+	inQueue: 'online_battle.errors.in_queue',
+	/** Queue join while the user's own duel invite is open. */
+	challengeOpen: 'online_battle.errors.challenge_open',
+	challengeNotFound: 'online_battle.errors.challenge_not_found',
+	challengeExpired: 'online_battle.errors.challenge_expired',
+	challengeUsed: 'online_battle.errors.challenge_used',
+	challengeCancelled: 'online_battle.errors.challenge_cancelled',
+	challengeOwn: 'online_battle.errors.challenge_own',
+	challengeNotForYou: 'online_battle.errors.challenge_not_for_you',
+	/** The inviter's connection dropped; they may be back within seconds. */
+	challengeHostAway: 'online_battle.errors.challenge_host_away',
+	/** params: { minutes } */
+	challengeLimit: 'online_battle.errors.challenge_limit',
+	/** params: { minutes } */
+	challengeTargetCooldown: 'online_battle.errors.challenge_target_cooldown',
+	challengeTargetLimit: 'online_battle.errors.challenge_target_limit',
+	challengeTargetNotFound: 'online_battle.errors.challenge_target_not_found',
+	challengeSelf: 'online_battle.errors.challenge_self',
 } as const;

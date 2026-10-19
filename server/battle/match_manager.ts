@@ -10,6 +10,10 @@
  *            player from their own scramble_done -> solve (120 s) -> round result 4 s
  *   best of three, drawn rounds replayed, at most 5 rounds -> match result -> rematch 15 s
  *
+ * A duel (mode 'challenge', from an invite) runs the same flow. It is never rated, so it
+ * never reads or uses up the daily pair limit, its rematch is a duel again, and leaving
+ * before the first scramble cancels it without a queue cooldown.
+ *
  * Process model (design 4.8): the MVP runs one Node process. The authoritative state and
  * the phase timers live in this process; every change is mirrored to Redis
  * (`cd:battle:match#<id>`, 30 min TTL) so a restart can void the matches it interrupted
@@ -77,6 +81,8 @@ import {
 	BattleDnfReason,
 	BattleEndReason,
 	BattleFlag,
+	BattleHeadToHead,
+	BattleMatchMode,
 	BattleMatchStatus,
 	BattleMove,
 	BattlePenalty,
@@ -159,7 +165,18 @@ export interface MatchManagerDeps {
 	 * first, at most HISTORY_SAMPLE_SIZE), in ms.
 	 */
 	loadSolveHistoryMs(userId: string): Promise<number[]>;
+	/**
+	 * Head-to-head of two players from the first one's side (HEAD_TO_HEAD_SCOPE), read for a
+	 * duel's result screen after the match is written. Without it the duel result has none.
+	 */
+	countHeadToHead?(userIdA: string, userIdB: string): Promise<BattleHeadToHead>;
 	log?: BattleLogger;
+}
+
+export interface CreateMatchOptions {
+	isRematch?: boolean;
+	/** Default 'queue'. 'challenge': a duel, never rated. */
+	mode?: BattleMatchMode;
 }
 
 export interface PairPlayerInput {
@@ -237,6 +254,8 @@ export interface MatchPlayer {
 export interface MatchState {
 	id: string;
 	puzzle: string;
+	/** Absent on a snapshot written before duels: a queue match. */
+	mode?: BattleMatchMode;
 	rated: boolean;
 	isRematch: boolean;
 	startedAt: number;
@@ -294,6 +313,10 @@ export function sanitizeMoves(raw: unknown): BattleMove[] {
 function sanitizeTsPair(raw: unknown): [number | null, number | null] | null {
 	if (!Array.isArray(raw)) return null;
 	return [finiteOrNull(raw[0]), finiteOrNull(raw[1])];
+}
+
+export function isChallengeMatch(match: Pick<MatchState, 'mode'>): boolean {
+	return match.mode === 'challenge';
 }
 
 function solveView(r: SideResult | null): RoundSolveView {
@@ -486,6 +509,7 @@ export class BattleMatchManager {
 			matchId: match.id,
 			rated: match.rated,
 			isRematch: match.isRematch,
+			challenge: isChallengeMatch(match),
 			side,
 			you: {rating: displayRating(me.prepared.rating), provisional: isProvisional(me.prepared.rd), games: me.games},
 			opponent: {
@@ -582,11 +606,11 @@ export class BattleMatchManager {
 	// ── Creating a match ──
 
 	/**
-	 * Pairs two players (from the queue, or a rematch). Reads both stored ratings once and
-	 * prepares them for this match (idle RD growth up to now); the preview and the final
-	 * update both use these prepared states.
+	 * Pairs two players (from the queue, a duel invite, or a rematch). Reads both stored
+	 * ratings once and prepares them for this match (idle RD growth up to now); the preview
+	 * and the final update both use these prepared states. A duel only shows the ratings.
 	 */
-	async createMatch(pa: PairPlayerInput, pb: PairPlayerInput, opts: {isRematch?: boolean} = {}): Promise<MatchState> {
+	async createMatch(pa: PairPlayerInput, pb: PairPlayerInput, opts: CreateMatchOptions = {}): Promise<MatchState> {
 		if (pa.userId === pb.userId) throw new Error('battle: a player cannot be paired with themselves');
 		for (const p of [pa, pb]) {
 			const existing = this.matchForUser(p.userId);
@@ -595,19 +619,21 @@ export class BattleMatchManager {
 		}
 
 		const now = this.now();
+		const mode: BattleMatchMode = opts.mode === 'challenge' ? 'challenge' : 'queue';
 		const [storedA, storedB, profA, profB, pairCount] = await Promise.all([
 			this.deps.getStoredRating(pa.userId),
 			this.deps.getStoredRating(pb.userId),
 			this.deps.loadProfile(pa.userId),
 			this.deps.loadProfile(pb.userId),
-			this.deps.countPairRatedMatches(pa.userId, pb.userId, new Date(now - DAY_MS)),
+			// A duel is never rated: the pair limit is neither read nor used up.
+			mode === 'challenge' ? 0 : this.deps.countPairRatedMatches(pa.userId, pb.userId, new Date(now - DAY_MS)),
 		]);
 
 		const prep = (s: StoredBattleRating | null) =>
 			prepareForMatch(s ? {rating: s.rating, rd: s.rd, volatility: s.volatility} : null, s?.last_match_at ?? null, now);
 		const preparedA = prep(storedA);
 		const preparedB = prep(storedB);
-		const rated = isPairRated(pairCount);
+		const rated = mode === 'queue' && isPairRated(pairCount);
 
 		const mkPlayer = (
 			input: PairPlayerInput,
@@ -635,6 +661,7 @@ export class BattleMatchManager {
 		const match: MatchState = {
 			id: this.deps.newId(),
 			puzzle: BATTLE_PUZZLE,
+			mode,
 			rated,
 			isRematch: !!opts.isRematch,
 			startedAt: now,
@@ -995,7 +1022,7 @@ export class BattleMatchManager {
 				const b: PairPlayerInput = {userId: match.b.userId, socketId: match.b.socketId, ip: match.b.ip};
 				await this.close(match);
 				try {
-					await this.createMatch(a, b, {isRematch: true});
+					await this.createMatch(a, b, {isRematch: true, mode: match.mode});
 				} catch (e) {
 					// Both pressed rematch and got nothing: tell them so the screen can move on.
 					this.deps.log?.error('[battle] rematch could not start', {matchId: match.id, error: (e as Error)?.message});
@@ -1161,13 +1188,14 @@ export class BattleMatchManager {
 
 	/**
 	 * Ends a match before its first scramble was shown: unrated, not written (there is
-	 * nothing to keep), the leavers get a queue cooldown.
+	 * nothing to keep), the leavers get a queue cooldown. Not after a duel: leaving a
+	 * friend's invite costs nobody in the queue anything.
 	 */
 	private async cancel(match: MatchState, leavers: BattleSide[], reason: BattleCancelReason): Promise<void> {
 		if (match.ended) return;
 		match.ended = {status: 'VOID', endReason: 'ABANDON', winner: null};
 		this.clearTimers(match.id);
-		for (const side of leavers) {
+		for (const side of isChallengeMatch(match) ? [] : leavers) {
 			try {
 				await recordAbandon(this.deps.store, this.bySide(match, side).userId);
 			} catch (e) {
@@ -1192,6 +1220,7 @@ export class BattleMatchManager {
 			endReason,
 			rated: match.rated && status === 'FINISHED',
 			isRematch: match.isRematch,
+			isChallenge: isChallengeMatch(match),
 			a: {userId: match.a.userId, prepared: match.a.prepared},
 			b: {userId: match.b.userId, prepared: match.b.prepared},
 			winner,
@@ -1255,6 +1284,16 @@ export class BattleMatchManager {
 		}
 
 		const rounds = this.roundResults(match);
+		const challenge = isChallengeMatch(match);
+		// Duel result screen: "7-4 against Ahmet". Read after the write so this match counts.
+		let headToHeadA: BattleHeadToHead | null = null;
+		if (challenge && persisted && this.deps.countHeadToHead) {
+			try {
+				headToHeadA = await this.deps.countHeadToHead(match.a.userId, match.b.userId);
+			} catch (e) {
+				this.deps.log?.warn('[battle] head-to-head read failed', {matchId: match.id, error: (e as Error)?.message});
+			}
+		}
 		const resultFor = (side: BattleSide): MatchResultPayload => {
 			const p = this.bySide(match, side);
 			const res = persisted ? (side === 'A' ? persisted.a : persisted.b) : null;
@@ -1270,20 +1309,28 @@ export class BattleMatchManager {
 				provisional: res ? res.provisional : isProvisional(p.prepared.rd),
 				games: res ? res.games : p.games,
 				rounds,
+				challenge,
+				headToHead:
+					headToHeadA && side === 'B'
+						? {wins: headToHeadA.losses, losses: headToHeadA.wins, draws: headToHeadA.draws}
+						: headToHeadA,
 			};
 		};
 		match.results = {A: resultFor('A'), B: resultFor('B')};
 		this.send(match.a, BattleServerEvent.MATCH_RESULT, match.results.A);
 		this.send(match.b, BattleServerEvent.MATCH_RESULT, match.results.B);
 
-		// Rematch window (design 4.5): rated while the pair is under its daily limit.
+		// Rematch window (design 4.5): rated while the pair is under its daily limit. A duel's
+		// rematch is a duel again.
 		let pairCount = 0;
-		try {
-			pairCount = await this.deps.countPairRatedMatches(match.a.userId, match.b.userId, new Date(now - DAY_MS));
-		} catch (e) {
-			this.deps.log?.warn('[battle] pair count failed', {error: (e as Error)?.message});
+		if (!challenge) {
+			try {
+				pairCount = await this.deps.countPairRatedMatches(match.a.userId, match.b.userId, new Date(now - DAY_MS));
+			} catch (e) {
+				this.deps.log?.warn('[battle] pair count failed', {error: (e as Error)?.message});
+			}
 		}
-		match.rematchRated = isPairRated(pairCount);
+		match.rematchRated = !challenge && isPairRated(pairCount);
 		match.rematchDeadline = now + REMATCH_WINDOW_SEC * 1000;
 		for (const side of ['A', 'B'] as BattleSide[]) {
 			const p = this.bySide(match, side);
@@ -1379,6 +1426,7 @@ export async function voidInterruptedMatches(
 				endReason: 'SERVER_RESTART',
 				rated: false,
 				isRematch: !!match.isRematch,
+				isChallenge: isChallengeMatch(match),
 				a: {userId: match.a.userId, prepared: match.a.prepared},
 				b: {userId: match.b.userId, prepared: match.b.prepared},
 				winner: null,

@@ -66,6 +66,7 @@ query battleMatchHistory($userId: String!, $page: Int) {
 			score_against
 			rated
 			is_rematch
+			is_challenge
 			end_reason
 			rating_before
 			rating_after
@@ -87,6 +88,7 @@ query battleMatch($id: String!) {
 		end_reason
 		rated
 		is_rematch
+		is_challenge
 		winner
 		rounds_a
 		rounds_b
@@ -129,6 +131,7 @@ query adminFlaggedBattleMatches($page: Int) {
 			status
 			end_reason
 			rated
+			is_challenge
 			winner
 			rounds_a
 			rounds_b
@@ -144,6 +147,29 @@ query adminFlaggedBattleMatches($page: Int) {
 		}
 		total
 		hasMore
+	}
+}
+
+# Duel invite page (/duel/<code>) and its SSR link preview.
+query battleChallenge($code: String!) {
+	battleChallenge(code: $code) {
+		code
+		status
+		expires_at
+		restricted
+		own
+		for_you
+		from {
+			...BattlePlayerFragment
+		}
+	}
+}
+
+query battleHeadToHead($userId: String!) {
+	battleHeadToHead(userId: $userId) {
+		wins
+		losses
+		draws
 	}
 }
 

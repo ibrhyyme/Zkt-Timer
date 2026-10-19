@@ -22,6 +22,8 @@ export enum NotificationType {
 	COMPETITION_GROUPS_PUBLISHED = 'competition_groups_published',
 	COMPETITION_SCHEDULE_CHANGED = 'competition_schedule_changed',
 	COMPETITION_RESULTS_OFFICIAL = 'competition_results_official',
+	// Online Battle duel challenge from a profile. Also a NotificationPreference column.
+	BATTLE_CHALLENGE = 'battle_challenge',
 }
 
 export enum MetricLogType {

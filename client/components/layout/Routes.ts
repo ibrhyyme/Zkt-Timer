@@ -73,6 +73,8 @@ import ProPage from '../pro_page/ProPage';
 import Battle from '../battle/Battle';
 import BattleLanding from '../battle/BattleLanding';
 import OnlineBattle from '../battle/online/OnlineBattle';
+import DuelPage from '../battle/online/DuelPage';
+import { prefetchDuelMeta, duelSsrMeta } from '../battle/online/duel_ssr';
 import MySchedule from '../community/my_schedule/MySchedule';
 import Rankings from '../rankings/Rankings';
 import LinksPage from '../links/LinksPage';
@@ -316,6 +318,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/battle/offline', null, App, Battle, false, false, false, false, true),
 	// Queue, match and result. The page gates sign-in itself (account panel) and is null on the server.
 	route('/battle/online', null, App, OnlineBattle, false, false, false, true, true),
+	// Duel invite (Online Battle without rating). Open to visitors so the invited player sees who
+	// invites them; the page gates accepting itself. SSR only renders the link preview's head tags.
+	route('/duel/:code', null, App, DuelPage, false, false, false, true, true, [prefetchDuelMeta], duelSsrMeta),
 
 	// Magnet calibration of a cube on this phone (`?cube=<id>`). Full page, account required.
 	route('/magnet/calibrate', null, App, MagnetCalibrate),

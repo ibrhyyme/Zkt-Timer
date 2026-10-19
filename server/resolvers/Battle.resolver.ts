@@ -5,6 +5,7 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getSiteConfig} from '../models/site_config';
 import {
+	getBattleHeadToHead,
 	getBattleLeaderboard,
 	getBattleMatchDetail,
 	getBattleMatchHistory,
@@ -14,8 +15,11 @@ import {
 	isOnlineBattleOpen,
 	voidBattleMatch,
 } from '../models/battle';
+import {getBattleChallengeInfo} from '../models/battle_challenge';
 import {
 	AdminBattleMatchPage,
+	BattleChallengeInfo,
+	BattleHeadToHead,
 	BattleLeaderboardPage,
 	BattleMatchDetail,
 	BattleMatchHistoryPage,
@@ -116,6 +120,26 @@ export class BattleResolver {
 			return {items: [], total: 0, hasMore: false};
 		}
 		return (await getBattleMatchHistory(userId, safePage)) as BattleMatchHistoryPage;
+	}
+
+	/**
+	 * A duel invite for /duel/<code> and its link preview ("<name> challenges you to a duel").
+	 * Public: the code is the secret, and the page opens for visitors so they see who invites
+	 * them before signing in. Null for an unknown code, and while Online Battle is closed to
+	 * the viewer (the SSR preview asks without a session, so it shows once the flag is on).
+	 */
+	@Query(() => BattleChallengeInfo, {nullable: true})
+	async battleChallenge(@Arg('code') code: string, @Ctx() ctx: GraphQLContext): Promise<BattleChallengeInfo | null> {
+		if (!code || !(await battleOpenFor(ctx))) return null;
+		return (await getBattleChallengeInfo(code, ctx?.user?.id || null)) as BattleChallengeInfo | null;
+	}
+
+	/** The viewer's score against another player: the duel invite page and the profile line. */
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => BattleHeadToHead, {nullable: true})
+	async battleHeadToHead(@Arg('userId') userId: string, @Ctx() ctx: GraphQLContext): Promise<BattleHeadToHead | null> {
+		if (!userId || userId === ctx.user.id || !(await battleOpenFor(ctx))) return null;
+		return getBattleHeadToHead(ctx.user.id, userId, BATTLE_PUZZLE);
 	}
 
 	@Authorized([Role.LOGGED_IN])

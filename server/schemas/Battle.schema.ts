@@ -127,6 +127,10 @@ export class BattleMatchSummary {
 	@Field()
 	is_rematch: boolean;
 
+	/** A duel from an invite: never rated, shown with a "Duel" label. */
+	@Field()
+	is_challenge: boolean;
+
 	/** NORMAL | FORFEIT | DISCONNECT | ABANDON | SERVER_RESTART */
 	@Field()
 	end_reason: string;
@@ -208,6 +212,9 @@ export class BattleMatchDetail {
 	@Field()
 	is_rematch: boolean;
 
+	@Field()
+	is_challenge: boolean;
+
 	@Field({nullable: true})
 	winner?: string;
 
@@ -273,6 +280,9 @@ export class AdminBattleMatchRow {
 	@Field()
 	rated: boolean;
 
+	@Field()
+	is_challenge: boolean;
+
 	@Field({nullable: true})
 	winner?: string;
 
@@ -317,4 +327,46 @@ export class VoidBattleMatchResult {
 
 	@Field()
 	reverted_b: boolean;
+}
+
+/** Matches between the viewer and another player, from the viewer's side (HEAD_TO_HEAD_SCOPE). */
+@ObjectType()
+export class BattleHeadToHead {
+	@Field(() => Int)
+	wins: number;
+
+	@Field(() => Int)
+	losses: number;
+
+	@Field(() => Int)
+	draws: number;
+}
+
+/** A duel invite as /duel/<code> and its link preview show it. */
+@ObjectType()
+export class BattleChallengeInfo {
+	@Field()
+	code: string;
+
+	/** PENDING | ACCEPTED | EXPIRED | CANCELLED (a PENDING invite past its time reads EXPIRED). */
+	@Field()
+	status: string;
+
+	@Field()
+	expires_at: Date;
+
+	@Field(() => BattlePlayer)
+	from: BattlePlayer;
+
+	/** A profile challenge: only its addressee may accept. The addressee is never named. */
+	@Field()
+	restricted: boolean;
+
+	/** The viewer opened their own invite. */
+	@Field()
+	own: boolean;
+
+	/** Restricted and the viewer is the addressee. */
+	@Field()
+	for_you: boolean;
 }

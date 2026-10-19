@@ -27,6 +27,10 @@ export class NotificationPreference {
 	@Field()
 	competition_results_official: boolean;
 
+	// Push opt-out for Online Battle duel challenges.
+	@Field()
+	battle_challenge: boolean;
+
 	@Field()
 	created_at: Date;
 }

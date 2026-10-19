@@ -4,7 +4,7 @@
     "details": [
       {
         "appID": "R6CCJB68TQ.com.zktimer.app",
-        "paths": ["/oauth/wca/login", "/oauth/wca", "/trainer/sets/*"]
+        "paths": ["/oauth/wca/login", "/oauth/wca", "/trainer/sets/*", "/duel/*"]
       }
     ]
   }

@@ -53,6 +53,9 @@ Disallow: /organizer/
 # Trainer landing (/trainer) public; alt modlar (standard/smart/recognition/efficiency) login arkasinda
 Disallow: /trainer/
 
+# Online Battle duello davetleri: tek kullanimlik, 15 dakikalik linkler (onizleme SSR meta ile calisir)
+Disallow: /duel/
+
 # Yarisma alt sayfalari - Engelle (sınırsız URL, thin content riski; WCA Live ile ayni strateji)
 Disallow: /competitions/*/personal-bests/
 Disallow: /competitions/*/persons/

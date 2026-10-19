@@ -184,6 +184,7 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 		headline = t('online_battle.opponent_found');
 		bigTime = startsIn > 0 ? String(startsIn) : null;
 		bigMod = 'count';
+		if (matched.challenge) note = t('online_battle.duel.found_note');
 	} else if (roundOver && match.lastRoundResult) {
 		const result = match.lastRoundResult;
 		const outcome = outcomeFor(result.winner, side);
@@ -316,7 +317,11 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 						{oppScore}
 					</span>
 					<span className={b('board-rule')}>
-						{matched.rated ? t('online_battle.first_to', {n: ROUNDS_TO_WIN}) : t('online_battle.unrated_match')}
+						{matched.challenge
+							? t('online_battle.duel.board_rule', {n: ROUNDS_TO_WIN})
+							: matched.rated
+								? t('online_battle.first_to', {n: ROUNDS_TO_WIN})
+								: t('online_battle.unrated_match')}
 					</span>
 				</div>
 				<BoardSide

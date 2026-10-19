@@ -27,6 +27,11 @@
                 <data android:scheme="https"
                       android:host="zktimer.app"
                       android:pathPrefix="/oauth/wca" />
+                <!-- Online Battle duel invites (/duel/<code>). Takes effect with the next store
+                     build; until then Android opens these links in the browser. -->
+                <data android:scheme="https"
+                      android:host="zktimer.app"
+                      android:pathPrefix="/duel/" />
             </intent-filter>
             <!-- Custom scheme deep link: OAuth relay + native-migrate bridge return path
                  (Faz 2 local bundle). External browser redirects to zkttimer://... which

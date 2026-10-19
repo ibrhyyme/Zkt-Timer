@@ -38,6 +38,7 @@ import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import WcaSummary from './wca_summary/WcaSummary';
 import ZktSummary from './zkt_summary/ZktSummary';
 import BattleRatingLine from './battle_rating/BattleRatingLine';
+import DuelChallengeLine from './battle_rating/DuelChallengeLine';
 import ZktPbCard from './zkt_pb_card/ZktPbCard';
 import ManageZktData from './manage_zkt_data/ManageZktData';
 import WcaResults from './wca_results/WcaResults';
@@ -784,6 +785,9 @@ function ProfileContent() {
 
 					{/* Online Battle rating line, only for a player with a leaderboard place */}
 					{user.id && <BattleRatingLine userId={user.id} />}
+
+					{/* Head-to-head and "Challenge" (Online Battle duel), on someone else's profile */}
+					{user.id && !myProfile && <DuelChallengeLine userId={user.id} username={user.username} />}
 
 					{/* Stats Bar */}
 					<div className={b('stats-bar', { mobile: mobileMode })}>

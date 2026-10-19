@@ -3,7 +3,8 @@
  *
  * `listenForBattleEvents(client)` sits next to listenForFriendlyRoomEvents in
  * server/services/socket.ts; `initBattleRealtime()` runs once when the socket server starts
- * (startup cleanup, then the matcher loop).
+ * (startup cleanup, then the matcher loop). Duel invites (challenge.ts) use the same socket
+ * and the same runtime.
  *
  * Every event needs a logged-in socket and is rate limited per user under `battle:` keys.
  * Payloads to clients are built by hand in match_manager.ts / matcher.ts; no Prisma row
@@ -11,7 +12,7 @@
  */
 
 import {Socket} from 'socket.io';
-import {randomUUID} from 'crypto';
+import {randomBytes, randomUUID} from 'crypto';
 import {getSocketIO} from '../services/socket';
 import {getUserFromClient} from '../services/socket_util';
 import {checkRateLimit} from '../services/rate_limit';
@@ -22,10 +23,16 @@ import {
 	appendBattleFlags,
 	countPairRatedMatches,
 	createBattleReport,
+	getBattleHeadToHead,
 	getStoredBattleRating,
 	isOnlineBattleOpen,
 	persistMatch,
 } from '../models/battle';
+import {prismaChallengeRepo} from '../models/battle_challenge';
+import {getUserIdsWithPrefDisabled} from '../models/notification_preference';
+import {sendPushToUser} from '../services/push';
+import BattleChallengeNotification from '../resources/notification_types/battle_challenge';
+import {challengeCodeFromBytes} from '../../shared/battle/challenge';
 import {BATTLE_PUZZLE, HISTORY_SAMPLE_SIZE} from '../../shared/battle/config';
 import {BATTLE_ERROR_KEYS, BattleClientEvent, BattleServerEvent, SearchingCountAck, TimeSyncAck} from '../../shared/battle/events';
 import {generateScramble} from '../../shared/scramble/registry';
@@ -44,6 +51,7 @@ import {
 } from './queue';
 import {BattleMatcher} from './matcher';
 import {BattleMatchManager, voidInterruptedMatches} from './match_manager';
+import {BattleChallengeManager, cancelStaleChallenges} from './challenge';
 
 // ── Runtime (one per process) ────────────────────────────────────────────────
 
@@ -52,6 +60,7 @@ interface BattleRuntime {
 	manager: BattleMatchManager;
 	matcher: BattleMatcher;
 	joinDeps: JoinQueueDeps;
+	challenges: BattleChallengeManager;
 }
 
 let runtime: BattleRuntime | null = null;
@@ -70,6 +79,30 @@ async function loadSolveHistoryMs(userId: string): Promise<number[]> {
 	});
 	// solve.time is in seconds.
 	return rows.map((r) => Math.round(r.time * 1000)).filter((t) => t > 0);
+}
+
+function newChallengeCode(): string {
+	for (;;) {
+		const code = challengeCodeFromBytes(randomBytes(32));
+		if (code) return code;
+	}
+}
+
+/** A profile challenge's notification: in-app row + push, unless the addressee switched the type off. */
+async function notifyChallengeTarget({code, fromUserId, toUserId}: {code: string; fromUserId: string; toUserId: string}) {
+	const prisma = getPrisma();
+	const [optedOut, from, to] = await Promise.all([
+		getUserIdsWithPrefDisabled([toUserId], 'battle_challenge'),
+		prisma.userAccount.findUnique({where: {id: fromUserId}}),
+		prisma.userAccount.findUnique({where: {id: toUserId}, include: {settings: true}}),
+	]);
+	if (optedOut.has(toUserId) || !from || !to) return;
+	const notif = new BattleChallengeNotification(
+		{user: to as any, triggeringUser: from as any, sendEmail: false},
+		{code, fromUsername: from.username || '', locale: to.settings?.locale}
+	);
+	await notif.send();
+	await sendPushToUser(toUserId, notif.subject(), notif.inAppMessage(), notif.pushData());
 }
 
 function getRuntime(): BattleRuntime {
@@ -97,6 +130,7 @@ function getRuntime(): BattleRuntime {
 		persistMatch,
 		appendBattleFlags,
 		loadSolveHistoryMs,
+		countHeadToHead: (userIdA, userIdB) => getBattleHeadToHead(userIdA, userIdB, BATTLE_PUZZLE),
 		log: logger,
 	});
 
@@ -142,7 +176,20 @@ function getRuntime(): BattleRuntime {
 		matches: manager,
 	};
 
-	runtime = {store, manager, matcher, joinDeps};
+	const challenges = new BattleChallengeManager({
+		store,
+		clock,
+		emitToSocket,
+		newCode: newChallengeCode,
+		repo: prismaChallengeRepo,
+		entry: joinDeps,
+		createMatch: (a, b, opts) => manager.createMatch(a, b, opts),
+		notifyTarget: notifyChallengeTarget,
+		log: logger,
+	});
+	joinDeps.challenges = challenges;
+
+	runtime = {store, manager, matcher, joinDeps, challenges};
 	return runtime;
 }
 
@@ -157,7 +204,8 @@ export async function initBattleRealtime(): Promise<void> {
 		await clearQueue(rt.store, BATTLE_PUZZLE);
 		const sessions = await clearAllBattleSessions(rt.store);
 		const voided = await voidInterruptedMatches(rt.store, persistMatch, Date.now(), logger);
-		if (sessions || voided) logger.info('[battle] startup cleanup', {sessions, voided});
+		const invites = await cancelStaleChallenges(prismaChallengeRepo, logger);
+		if (sessions || voided || invites) logger.info('[battle] startup cleanup', {sessions, voided, invites});
 	} catch (e) {
 		logger.error('[battle] startup cleanup failed', {error: (e as Error)?.message});
 	}
@@ -193,6 +241,11 @@ const RULES: Record<BattleClientEvent, EventRule> = {
 	[BattleClientEvent.GIVE_UP]: {max: 10, windowSec: 60, failOpen: true},
 	[BattleClientEvent.REMATCH]: {max: 20, windowSec: 60, failOpen: true},
 	[BattleClientEvent.REPORT]: {max: 5, windowSec: 60 * 60, reportLimit: true},
+	// Bursts only; the hourly invite limit is counted from battle_challenge rows (challenge.ts).
+	[BattleClientEvent.CHALLENGE_CREATE]: {max: 10, windowSec: 60, reportLimit: true},
+	[BattleClientEvent.CHALLENGE_CANCEL]: {max: 20, windowSec: 60, failOpen: true},
+	[BattleClientEvent.CHALLENGE_RESUME]: {max: 20, windowSec: 60, failOpen: true},
+	[BattleClientEvent.CHALLENGE_ACCEPT]: {max: 10, windowSec: 60, reportLimit: true},
 };
 
 /** The address of the player behind Cloudflare / nginx, for the same_ip flag only. */
@@ -233,7 +286,7 @@ export function listenForBattleEvents(client: Socket): void {
 			try {
 				const userId = await userIdOf();
 				if (!userId && !rule.anonymous) {
-					if (event === BattleClientEvent.QUEUE_JOIN) {
+					if (event === BattleClientEvent.QUEUE_JOIN || event === BattleClientEvent.CHALLENGE_CREATE || event === BattleClientEvent.CHALLENGE_ACCEPT) {
 						client.emit(BattleServerEvent.ERROR, {i18nKey: BATTLE_ERROR_KEYS.notLoggedIn});
 					}
 					return;
@@ -248,7 +301,7 @@ export function listenForBattleEvents(client: Socket): void {
 				await handler({userId, rt: getRuntime()}, body && typeof body === 'object' ? body : {}, ack);
 			} catch (e) {
 				logger.error('[battle] socket event failed', {event, error: (e as Error)?.message});
-				if (event === BattleClientEvent.QUEUE_JOIN) {
+				if (event === BattleClientEvent.QUEUE_JOIN || event === BattleClientEvent.CHALLENGE_CREATE || event === BattleClientEvent.CHALLENGE_ACCEPT) {
 					client.emit(BattleServerEvent.ERROR, {i18nKey: BATTLE_ERROR_KEYS.generic});
 				}
 			}
@@ -321,6 +374,22 @@ export function listenForBattleEvents(client: Socket): void {
 		if (ack) ack({ok});
 	});
 
+	on(BattleClientEvent.CHALLENGE_CREATE, async ({userId, rt}, payload) => {
+		await rt.challenges.create(userId as string, client.id, clientIp(client), payload);
+	});
+
+	on(BattleClientEvent.CHALLENGE_CANCEL, async ({userId, rt}, payload) => {
+		await rt.challenges.cancel(userId as string, payload);
+	});
+
+	on(BattleClientEvent.CHALLENGE_RESUME, async ({userId, rt}, payload) => {
+		await rt.challenges.resume(userId as string, client.id, payload);
+	});
+
+	on(BattleClientEvent.CHALLENGE_ACCEPT, async ({userId, rt}, payload) => {
+		await rt.challenges.accept(userId as string, client.id, clientIp(client), payload);
+	});
+
 	client.on('disconnect', () => {
 		void (async () => {
 			const userId = client.data?.userId;
@@ -329,6 +398,8 @@ export function listenForBattleEvents(client: Socket): void {
 				// Queue: out at once, no grace, no penalty (design 4.6).
 				await removeFromQueue(runtime.store, userId, {socketId: client.id});
 				await runtime.manager.handleDisconnect(userId, client.id);
+				// An open invite waits CHALLENGE_HOST_GRACE_SEC for the inviter to reconnect.
+				await runtime.challenges.handleDisconnect(userId, client.id);
 			} catch (e) {
 				logger.warn('[battle] disconnect cleanup failed', {error: (e as Error)?.message});
 			}

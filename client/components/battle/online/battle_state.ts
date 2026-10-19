@@ -2,6 +2,7 @@ import type {
 	BattleCancelReason,
 	BattleErrorPayload,
 	CancelledPayload,
+	ChallengeStatePayload,
 	MatchedPayload,
 	MatchResultPayload,
 	MatchStatePayload,
@@ -32,7 +33,11 @@ export type OnlineStage =
 	/** From battle:matched until battle:match_result. */
 	| 'match'
 	| 'result'
-	| 'cancelled';
+	| 'cancelled'
+	/** The inviter waits on a duel invite (challenge null while it is being opened). */
+	| 'challenge'
+	/** A duel invite was accepted on this screen; the server is starting the duel. */
+	| 'accepting';
 
 export interface OnlineMatchView {
 	matchId: string;
@@ -58,6 +63,8 @@ export interface OnlineBattleState {
 	rematch: RematchStatePayload | null;
 	cancelReason: BattleCancelReason | null;
 	error: BattleErrorPayload | null;
+	/** The inviter's own invite while stage is 'challenge'; kept with its end status once it ends. */
+	challenge: ChallengeStatePayload | null;
 }
 
 export const initialOnlineBattleState: OnlineBattleState = {
@@ -68,6 +75,7 @@ export const initialOnlineBattleState: OnlineBattleState = {
 	rematch: null,
 	cancelReason: null,
 	error: null,
+	challenge: null,
 };
 
 export type OnlineBattleAction =
@@ -85,6 +93,11 @@ export type OnlineBattleAction =
 	| {type: 'cancelled'; payload: CancelledPayload}
 	| {type: 'error'; payload: BattleErrorPayload}
 	| {type: 'clear_error'}
+	| {type: 'challenge_create_sent'}
+	| {type: 'challenge_state'; payload: ChallengeStatePayload}
+	/** The inviter closed the invite screen (cancel, or back after it ended). */
+	| {type: 'challenge_left'}
+	| {type: 'challenge_accept_sent'}
 	/** Leave a cancelled match or a result screen, back to the queue screen. */
 	| {type: 'dismiss'};
 
@@ -138,6 +151,7 @@ export function onlineBattleReducer(state: OnlineBattleState, action: OnlineBatt
 				rematch: null,
 				cancelReason: null,
 				error: null,
+				challenge: null,
 			};
 
 		case 'round_start': {
@@ -206,6 +220,7 @@ export function onlineBattleReducer(state: OnlineBattleState, action: OnlineBatt
 				queue: null,
 				result: null,
 				cancelReason: null,
+				challenge: null,
 				match: {
 					...base,
 					matched: s.matched,
@@ -230,9 +245,10 @@ export function onlineBattleReducer(state: OnlineBattleState, action: OnlineBatt
 		}
 
 		case 'error':
-			// Errors that refuse a queue join put the screen back where the user can act.
-			if (state.stage === 'searching') {
-				return {...state, stage: 'idle', queue: null, error: action.payload};
+			// Errors that refuse a queue join, an invite or an accept put the screen back where
+			// the user can act. An invite that is already open stays open.
+			if (state.stage === 'searching' || state.stage === 'accepting' || (state.stage === 'challenge' && !state.challenge)) {
+				return {...state, stage: 'idle', queue: null, challenge: null, error: action.payload};
 			}
 			return {...state, error: action.payload};
 
@@ -244,6 +260,28 @@ export function onlineBattleReducer(state: OnlineBattleState, action: OnlineBatt
 				return {...initialOnlineBattleState};
 			}
 			return state;
+
+		case 'challenge_create_sent':
+			if (state.stage !== 'idle') return state;
+			return {...state, stage: 'challenge', challenge: null, error: null, cancelReason: null};
+
+		case 'challenge_state': {
+			// Only the inviter's waiting screen listens. An ACCEPTED answer is followed by the
+			// match itself (MATCHED, or MATCH_STATE after a reconnect), which moves the screen.
+			if (state.stage !== 'challenge') return state;
+			const c = action.payload;
+			if (state.challenge && state.challenge.code !== c.code && c.status !== 'PENDING') return state;
+			if (c.status === 'ACCEPTED') return state;
+			return {...state, challenge: c};
+		}
+
+		case 'challenge_left':
+			if (state.stage !== 'challenge') return state;
+			return {...state, stage: 'idle', challenge: null};
+
+		case 'challenge_accept_sent':
+			if (state.stage !== 'idle') return state;
+			return {...state, stage: 'accepting', error: null, cancelReason: null};
 	}
 	return state;
 }
@@ -260,6 +298,11 @@ export function sideScore(score: {a: number; b: number}, side: BattleSide): numb
 
 export function sideSolve(round: RoundResultPayload, side: BattleSide): RoundSolveView {
 	return side === 'A' ? round.a : round.b;
+}
+
+/** The open invite the inviter is waiting on, or null. */
+export function pendingChallengeCode(state: OnlineBattleState): string | null {
+	return state.stage === 'challenge' && state.challenge?.status === 'PENDING' ? state.challenge.code : null;
 }
 
 export type RoundOutcome = 'won' | 'lost' | 'draw';

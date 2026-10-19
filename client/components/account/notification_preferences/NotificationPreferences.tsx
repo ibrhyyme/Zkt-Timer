@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {EnvelopeSimple, Trophy} from 'phosphor-react';
+import {EnvelopeSimple, Sword, Trophy} from 'phosphor-react';
 import Switch from '../../common/switch/Switch';
 import {NOTIFICATION_PREFERENCE_FRAGMENT} from '../../../util/graphql/fragments';
 import {gqlMutate} from '../../api';
@@ -8,6 +8,7 @@ import {gql, useQuery} from '@apollo/client';
 import SettingsCard from '../common/settings_card/SettingsCard';
 import SettingsRow from '../common/settings_row/SettingsRow';
 import {NotificationPreference} from '../../../@types/generated/graphql';
+import {useBattleLaunch} from '../../battle/useBattleLaunch';
 
 const NOTIFICATION_PREFERENCES_QUERY = gql`
 	${NOTIFICATION_PREFERENCE_FRAGMENT}
@@ -20,6 +21,7 @@ const NOTIFICATION_PREFERENCES_QUERY = gql`
 
 export default function NotificationPreferences() {
 	const {t} = useTranslation();
+	const battleOpen = !!useBattleLaunch()?.open;
 	const [prefs, setPrefs] = useState({});
 	const {data} = useQuery<{notificationPreferences: NotificationPreference}>(NOTIFICATION_PREFERENCES_QUERY);
 
@@ -80,6 +82,14 @@ export default function NotificationPreferences() {
 		},
 	];
 
+	// Online Battle: shown only to those who can play it.
+	const battleTypeNames = [
+		{
+			key: 'battle_challenge',
+			label: t('notification_prefs.battle_challenge'),
+		},
+	];
+
 	function renderRows(types: {key: string; label: string}[]) {
 		return types
 			.filter((notifType) => notifType.key in prefs)
@@ -113,6 +123,15 @@ export default function NotificationPreferences() {
 			>
 				{renderRows(competitionTypeNames)}
 			</SettingsCard>
+			{battleOpen && (
+				<SettingsCard
+					title={t('notification_prefs.battle_notifications')}
+					description={t('notification_prefs.battle_notifications_description')}
+					icon={<Sword weight="fill" />}
+				>
+					{renderRows(battleTypeNames)}
+				</SettingsCard>
+			)}
 		</>
 	);
 }

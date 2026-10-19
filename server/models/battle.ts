@@ -9,6 +9,7 @@
  * - Leaderboard and "my rating" queries, ordered by the conservative rating
  *   (rating - 2 * RD, design 4.4 / Q3), banned users left out, pages cached 60 s.
  * - Match history, match detail, the admin flagged list and the admin void.
+ * - Head-to-head of two players (duel result screen and profile).
  * - Small reads the realtime layer (server/battle, B3) needs: a player's stored rating,
  *   the pair's rated match count for the daily limit, the site flag check, reports.
  *
@@ -23,6 +24,7 @@ import {createRedisKey, deleteKeyInRedis, fetchDataFromCache, RedisNamespace} fr
 import {
 	BATTLE_PUZZLE,
 	BATTLE_PUZZLES,
+	HEAD_TO_HEAD_SCOPE,
 	INITIAL_RATING,
 	LEADERBOARD_PAGE_SIZE,
 	LEADERBOARD_RD_FACTOR,
@@ -30,6 +32,7 @@ import {
 import {
 	BattleEndReason,
 	BattleFlag,
+	BattleHeadToHead,
 	BattleMatchStatus,
 	BattleMove,
 	BattlePenalty,
@@ -45,6 +48,7 @@ import {
 	rateMatch,
 	scoreFor,
 } from '../../shared/battle/glicko2';
+import {headToHeadFrom} from '../../shared/battle/challenge';
 
 // ── Site flag ────────────────────────────────────────────────────────────────
 
@@ -137,6 +141,34 @@ export async function countPairRatedMatches(userIdA: string, userIdB: string, si
 	});
 }
 
+/**
+ * Matches between two players from `userId`'s side: finished, not voided, and under
+ * HEAD_TO_HEAD_SCOPE either every match or duels only ("7-4 against Ahmet").
+ */
+export async function getBattleHeadToHead(
+	userId: string,
+	opponentId: string,
+	puzzle: string = BATTLE_PUZZLE
+): Promise<BattleHeadToHead> {
+	const rows = await getPrisma().battleMatch.groupBy({
+		by: ['player_a_id', 'winner'],
+		where: {
+			puzzle,
+			status: 'FINISHED',
+			...(HEAD_TO_HEAD_SCOPE === 'challenge' ? {is_challenge: true} : {}),
+			OR: [
+				{player_a_id: userId, player_b_id: opponentId},
+				{player_a_id: opponentId, player_b_id: userId},
+			],
+		},
+		_count: {_all: true},
+	});
+	return headToHeadFrom(
+		rows.map((r) => ({player_a_id: r.player_a_id, winner: r.winner, count: r._count._all})),
+		userId
+	);
+}
+
 // ── Persisting a match ───────────────────────────────────────────────────────
 
 export interface PersistPlayerInput {
@@ -172,6 +204,8 @@ export interface PersistMatchInput {
 	/** Whether the match counts (pair limit not reached). A VOID match is never rated. */
 	rated: boolean;
 	isRematch?: boolean;
+	/** A duel: written unrated whatever `rated` says. */
+	isChallenge?: boolean;
 	a: PersistPlayerInput;
 	b: PersistPlayerInput;
 	/** Null only for a VOID match without a result. */
@@ -242,7 +276,7 @@ export function planMatchPersistence(
 ): MatchPersistencePlan {
 	const puzzle = input.puzzle || BATTLE_PUZZLE;
 	const endedAt = input.endedAt || new Date();
-	const rated = !!input.rated && input.status === 'FINISHED' && !!input.winner;
+	const rated = !!input.rated && !input.isChallenge && input.status === 'FINISHED' && !!input.winner;
 
 	let roundsA = 0;
 	let roundsB = 0;
@@ -272,6 +306,7 @@ export function planMatchPersistence(
 		end_reason: input.endReason,
 		rated,
 		is_rematch: !!input.isRematch,
+		is_challenge: !!input.isChallenge,
 		player_a_id: input.a.userId,
 		player_b_id: input.b.userId,
 		winner: input.winner,
@@ -688,6 +723,7 @@ interface MatchRowForSummary {
 	end_reason: string;
 	rated: boolean;
 	is_rematch: boolean;
+	is_challenge: boolean;
 	player_a_id: string | null;
 	player_b_id: string | null;
 	winner: string | null;
@@ -713,6 +749,7 @@ export interface BattleMatchSummaryData {
 	score_against: number;
 	rated: boolean;
 	is_rematch: boolean;
+	is_challenge: boolean;
 	end_reason: string;
 	rating_before: number | null;
 	rating_after: number | null;
@@ -738,6 +775,7 @@ export function toMatchSummary(match: MatchRowForSummary, userId: string): Battl
 		score_against: mine ? match.rounds_b : match.rounds_a,
 		rated: match.rated,
 		is_rematch: match.is_rematch,
+		is_challenge: !!match.is_challenge,
 		end_reason: match.end_reason,
 		rating_before: before == null ? null : displayRating(before),
 		rating_after: after == null ? null : displayRating(after),
@@ -746,7 +784,11 @@ export function toMatchSummary(match: MatchRowForSummary, userId: string): Battl
 	};
 }
 
-/** A player's rated, finished matches, newest first (profile and own history). */
+/**
+ * A player's finished matches, newest first (profile and own history): the rated ones and
+ * the duels (is_challenge, labelled "Duel" and without a rating change). Unrated queue
+ * matches past the daily pair limit stay out, as before.
+ */
 export async function getBattleMatchHistory(
 	userId: string,
 	page: number,
@@ -757,8 +799,7 @@ export async function getBattleMatchHistory(
 	const where: Prisma.BattleMatchWhereInput = {
 		puzzle,
 		status: 'FINISHED',
-		rated: true,
-		OR: [{player_a_id: userId}, {player_b_id: userId}],
+		AND: [{OR: [{player_a_id: userId}, {player_b_id: userId}]}, {OR: [{rated: true}, {is_challenge: true}]}],
 	};
 	const [rows, total] = await Promise.all([
 		prisma.battleMatch.findMany({
@@ -805,6 +846,7 @@ export interface BattleMatchDetailData {
 	end_reason: string;
 	rated: boolean;
 	is_rematch: boolean;
+	is_challenge: boolean;
 	winner: string | null;
 	rounds_a: number;
 	rounds_b: number;
@@ -863,6 +905,7 @@ export async function getBattleMatchDetail(id: string, viewer: BattleViewer | nu
 		end_reason: match.end_reason,
 		rated: match.rated,
 		is_rematch: match.is_rematch,
+		is_challenge: match.is_challenge,
 		winner: match.winner,
 		rounds_a: match.rounds_a,
 		rounds_b: match.rounds_b,
@@ -903,6 +946,7 @@ export interface AdminBattleMatchRowData {
 	status: string;
 	end_reason: string;
 	rated: boolean;
+	is_challenge: boolean;
 	winner: string | null;
 	rounds_a: number;
 	rounds_b: number;
@@ -948,6 +992,7 @@ export async function getFlaggedBattleMatches(
 			status: m.status,
 			end_reason: m.end_reason,
 			rated: m.rated,
+			is_challenge: m.is_challenge,
 			winner: m.winner,
 			rounds_a: m.rounds_a,
 			rounds_b: m.rounds_b,

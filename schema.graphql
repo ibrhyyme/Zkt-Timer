@@ -367,6 +367,8 @@ type Query {
   myBattleRating(puzzle: String = "333"): MyBattleRating
   userBattleRating(puzzle: String = "333", userId: String): MyBattleRating
   battleMatchHistory(page: Int = 0, userId: String): BattleMatchHistoryPage
+  battleChallenge(code: String): BattleChallengeInfo
+  battleHeadToHead(userId: String): BattleHeadToHead
   battleMatch(id: String): BattleMatchDetail
   adminFlaggedBattleMatches(page: Int = 0): AdminBattleMatchPage
 }
@@ -1017,6 +1019,7 @@ type NotificationPreference {
   competition_groups_published: Boolean
   competition_schedule_changed: Boolean
   competition_results_official: Boolean
+  battle_challenge: Boolean
   created_at: DateTime
 }
 
@@ -2839,6 +2842,7 @@ type BattleMatchSummary {
   score_against: Int
   rated: Boolean
   is_rematch: Boolean
+  is_challenge: Boolean
   end_reason: String
   rating_before: Int
   rating_after: Int
@@ -2873,6 +2877,7 @@ type BattleMatchDetail {
   end_reason: String
   rated: Boolean
   is_rematch: Boolean
+  is_challenge: Boolean
   winner: String
   rounds_a: Int
   rounds_b: Int
@@ -2896,6 +2901,7 @@ type AdminBattleMatchRow {
   status: String
   end_reason: String
   rated: Boolean
+  is_challenge: Boolean
   winner: String
   rounds_a: Int
   rounds_b: Int
@@ -2917,6 +2923,22 @@ type VoidBattleMatchResult {
   changed: Boolean
   reverted_a: Boolean
   reverted_b: Boolean
+}
+
+type BattleHeadToHead {
+  wins: Int
+  losses: Int
+  draws: Int
+}
+
+type BattleChallengeInfo {
+  code: String
+  status: String
+  expires_at: DateTime
+  from: BattlePlayer
+  restricted: Boolean
+  own: Boolean
+  for_you: Boolean
 }
 
 type Notification {

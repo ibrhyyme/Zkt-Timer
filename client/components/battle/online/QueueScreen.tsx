@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {ArrowRight} from 'phosphor-react';
+import {ArrowRight, Sword} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import {gqlQueryTyped} from '../../api';
@@ -9,6 +9,7 @@ import {BattleMatchHistoryDocument, MyBattleRatingDocument} from '../../../@type
 import {useMe} from '../../../util/hooks/useMe';
 import {
 	BATTLE_PUZZLE,
+	CHALLENGE_TTL_SEC,
 	INSPECTION_DNF_SEC,
 	INSPECTION_SEC,
 	QUEUE_QUIET_NOTICE_SEC,
@@ -40,6 +41,12 @@ interface Props {
 	onSearch(): void;
 	onStop(): void;
 	onStillHere(): void;
+	/** A profile's "Challenge": this player's name, the stage offers the challenge instead. */
+	duelTarget?: string | null;
+	/** Opens a duel invite: a link, or the challenge to duelTarget. */
+	onChallenge?(): void;
+	/** Drops duelTarget (back to the plain queue screen). */
+	onClearTarget?(): void;
 	/** Development preview: this profile instead of the signed-in user's. */
 	preview?: QueuePreviewProfile;
 }
@@ -72,6 +79,8 @@ export interface RecentMatch {
 	delta: number | null;
 	opponentName: string;
 	opponentAvatar: string | null;
+	/** A duel: labelled, and left out of the rated form strip. */
+	challenge?: boolean;
 }
 
 /** Matches in the form strip, the "last 10" GAN Cube Station shows on its ranked home. */
@@ -139,6 +148,7 @@ function useQueueProfile(userId: string | null): {rating: QueueRating | null; re
 					delta: m.delta ?? null,
 					opponentName: m.opponent?.username || '?',
 					opponentAvatar: m.opponent?.pfp_image_url || null,
+					challenge: !!m.is_challenge,
 				})),
 				loaded: true,
 			});
@@ -167,7 +177,8 @@ function Avatar({name, src, size}: {name: string; src: string | null; size: 'lg'
  * Phone: one column in that order, scrolling. Desktop: the search on the left, the cards
  * beside it. No effects: hierarchy from Archivo and Roboto Mono, state from cube stickers.
  */
-export default function QueueScreen({searching, queue, cube, onSearch, onStop, onStillHere, preview}: Props) {
+export default function QueueScreen(props: Props) {
+	const {searching, queue, cube, onSearch, onStop, onStillHere, duelTarget = null, preview} = props;
 	const {t} = useTranslation();
 	const me = useMe();
 	const profile = useQueueProfile(preview ? null : me?.id || null);
@@ -243,9 +254,43 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 	} else if (!supported) {
 		status = t('online_battle.cube_not_supported');
 		sub = t('online_battle.supported_cubes');
+	} else if (duelTarget) {
+		status = duelTarget;
+		sub = t('online_battle.duel.target_sub', {minutes: CHALLENGE_TTL_SEC / 60});
+		action = (
+			<Button
+				large
+				fullWidth
+				primary
+				iconFirst
+				icon={<Sword weight="bold" />}
+				text={t('online_battle.duel.send_challenge')}
+				onClick={props.onChallenge}
+			/>
+		);
 	} else {
 		status = t('online_battle.ready_title');
-		action = <Button large fullWidth primary text={t('online_battle.find_opponent')} onClick={onSearch} />;
+		action = (
+			<>
+				<Button large fullWidth primary text={t('online_battle.find_opponent')} onClick={onSearch} />
+				{props.onChallenge && (
+					<>
+						<Button
+							large
+							fullWidth
+							gray
+							iconFirst
+							icon={<Sword weight="bold" />}
+							text={t('online_battle.duel.invite_friend')}
+							onClick={props.onChallenge}
+						/>
+						<p className={b('stage-note')}>
+							{t('online_battle.duel.invite_friend_note', {minutes: CHALLENGE_TTL_SEC / 60})}
+						</p>
+					</>
+				)}
+			</>
+		);
 	}
 
 	const cubeRow = cube.connected ? (
@@ -262,8 +307,15 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 
 	const stage = (
 		<section className={b('stage', {searching})} aria-live="polite">
-			<span className={b('eyebrow')}>3x3 · {t('online_battle.smart_cube_tag')}</span>
-			<h2 className={b('stage-title')}>{status}</h2>
+			{duelTarget ? (
+				<span className={b('eyebrow')}>
+					<span className={b('sticker', {blue: true})} aria-hidden="true" />
+					{t('online_battle.duel.target_eyebrow')}
+				</span>
+			) : (
+				<span className={b('eyebrow')}>3x3 · {t('online_battle.smart_cube_tag')}</span>
+			)}
+			<h2 className={b('stage-title', {name: !!duelTarget && cube.connected && supported})}>{status}</h2>
 			{searching && (
 				<div className={b('stage-clock')} lang="en">
 					{formatWait(waitedSec)}
@@ -272,11 +324,20 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 			{sub && <p className={b('stage-sub')}>{sub}</p>}
 			{action && <div className={b('stage-action')}>{action}</div>}
 			{cubeRow}
+			{duelTarget && props.onClearTarget && (
+				<button type="button" className={b('me-link')} onClick={props.onClearTarget}>
+					{t('online_battle.duel.target_cancel')}
+				</button>
+			)}
 		</section>
 	);
 
 	// ── Player card ──
-	const form = recent.slice(0, FORM_SIZE).reverse();
+	// The form strip is the rated record; duels are only in the recent list.
+	const form = recent
+		.filter((m) => !m.challenge)
+		.slice(0, FORM_SIZE)
+		.reverse();
 	const stats: [string, number][] = rating
 		? [
 				['stat_wins', rating.wins],
@@ -368,9 +429,13 @@ export default function QueueScreen({searching, queue, cube, onSearch, onStop, o
 						<span className={b('recent-score')} lang="en">
 							{m.scoreFor}–{m.scoreAgainst}
 						</span>
-						<span className={b('recent-delta')} lang="en">
-							{formatDelta(m.delta)}
-						</span>
+						{m.challenge ? (
+							<span className={b('recent-tag')}>{t('online_battle.duel.history_tag')}</span>
+						) : (
+							<span className={b('recent-delta')} lang="en">
+								{formatDelta(m.delta)}
+							</span>
+						)}
 					</li>
 				))}
 			</ul>

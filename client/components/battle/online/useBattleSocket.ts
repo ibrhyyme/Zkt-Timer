@@ -5,6 +5,9 @@ import {
 	BattleClientEvent,
 	BattleServerEvent,
 	type BattleCubeInfo,
+	type ChallengeAcceptPayload,
+	type ChallengeCreatePayload,
+	type ChallengeStatePayload,
 	type ProgressPayload,
 	type QueueJoinPayload,
 	type ScrambleDonePayload,
@@ -12,7 +15,7 @@ import {
 	type SolveStartPayload,
 	type TimeSyncAck,
 } from '../../../../shared/battle/events';
-import {initialOnlineBattleState, onlineBattleReducer, OnlineBattleAction} from './battle_state';
+import {initialOnlineBattleState, onlineBattleReducer, OnlineBattleAction, pendingChallengeCode} from './battle_state';
 
 /** How long one time sync sample may take before it is given up. */
 const TIME_SYNC_TIMEOUT_MS = 2000;
@@ -46,6 +49,7 @@ const SERVER_EVENTS: [BattleServerEvent, OnlineBattleAction['type']][] = [
 	[BattleServerEvent.MATCH_STATE, 'match_state'],
 	[BattleServerEvent.CANCELLED, 'cancelled'],
 	[BattleServerEvent.ERROR, 'error'],
+	[BattleServerEvent.CHALLENGE_STATE, 'challenge_state'],
 ];
 
 /**
@@ -58,7 +62,8 @@ const SERVER_EVENTS: [BattleServerEvent, OnlineBattleAction['type']][] = [
  * Reconnects: on every (re)connect the hook asks the server to resume. During a match that
  * returns the full match state; with nothing to resume the server answers `not_found`,
  * which the reducer ignores outside a match. A search that the drop cut off (the server
- * drops a disconnected socket from the queue, design 4.6) is restarted.
+ * drops a disconnected socket from the queue, design 4.6) is restarted, and an open duel
+ * invite is taken back by the new socket (the server keeps it CHALLENGE_HOST_GRACE_SEC).
  */
 export function useBattleSocket(enabled: boolean) {
 	const [state, dispatch] = useReducer(onlineBattleReducer, initialOnlineBattleState);
@@ -68,6 +73,8 @@ export function useBattleSocket(enabled: boolean) {
 	/** The last queue_join payload, for re-joining after a reconnect. */
 	const joinRef = useRef<QueueJoinPayload | null>(null);
 	const syncRunRef = useRef(0);
+	/** An invite was asked for and its code has not arrived yet. */
+	const creatingRef = useRef(false);
 
 	const emit = useCallback((event: BattleClientEvent, payload?: unknown, ack?: (res: any) => void) => {
 		const socket = socketClient();
@@ -106,6 +113,16 @@ export function useBattleSocket(enabled: boolean) {
 
 		const handlers = SERVER_EVENTS.map(([event, type]) => {
 			const handler = (payload: any) => {
+				if (type === 'challenge_state') {
+					creatingRef.current = false;
+					// An invite this screen no longer waits on (cancelled while it was being opened).
+					const c = payload as ChallengeStatePayload;
+					if (c?.status === 'PENDING' && stateRef.current.stage !== 'challenge') {
+						socket.emit(BattleClientEvent.CHALLENGE_CANCEL, {code: c.code});
+						return;
+					}
+				}
+				if (type === 'error' || type === 'matched') creatingRef.current = false;
 				dispatch({type, payload} as OnlineBattleAction);
 				if (type === 'matched' || type === 'match_state') void syncClock();
 			};
@@ -117,6 +134,14 @@ export function useBattleSocket(enabled: boolean) {
 			const current = stateRef.current;
 			if (current.stage === 'searching' && joinRef.current) {
 				socket.emit(BattleClientEvent.QUEUE_JOIN, joinRef.current);
+				return;
+			}
+			const code = pendingChallengeCode(current);
+			if (code) {
+				// The invite comes back to this socket; an accept that raced the drop is a match
+				// by now, which the plain RESUME brings back.
+				socket.emit(BattleClientEvent.CHALLENGE_RESUME, {code});
+				socket.emit(BattleClientEvent.RESUME, {});
 				return;
 			}
 			const matchId = current.stage === 'match' || current.stage === 'result' ? current.match?.matchId : undefined;
@@ -154,10 +179,62 @@ export function useBattleSocket(enabled: boolean) {
 		emit(BattleClientEvent.QUEUE_LEAVE);
 	}, [emit]);
 
+	const createChallenge = useCallback(
+		(cube: BattleCubeInfo, toUsername?: string | null) => {
+			const payload: ChallengeCreatePayload = {puzzle: BATTLE_PUZZLE, cube};
+			if (toUsername) payload.toUsername = toUsername;
+			creatingRef.current = true;
+			dispatch({type: 'challenge_create_sent'});
+			emit(BattleClientEvent.CHALLENGE_CREATE, payload);
+		},
+		[emit]
+	);
+
+	/** Closes the invite screen; an open invite dies with it. */
+	const leaveChallenge = useCallback(() => {
+		const code = pendingChallengeCode(stateRef.current);
+		dispatch({type: 'challenge_left'});
+		if (code) emit(BattleClientEvent.CHALLENGE_CANCEL, {code});
+	}, [emit]);
+
+	/**
+	 * Page unmount: the inviter left, so the invite dies (owner decision). One still being
+	 * opened is cancelled as soon as its code arrives, since this screen's listener is gone.
+	 */
+	const leaveChallengeOnExit = useCallback(() => {
+		const code = pendingChallengeCode(stateRef.current);
+		if (code) {
+			emit(BattleClientEvent.CHALLENGE_CANCEL, {code});
+			return;
+		}
+		const socket = socketClient();
+		if (!creatingRef.current || !socket) return;
+		creatingRef.current = false;
+		const once = (c: ChallengeStatePayload) => {
+			socket.off(BattleServerEvent.CHALLENGE_STATE, once);
+			if (c?.status === 'PENDING') socket.emit(BattleClientEvent.CHALLENGE_CANCEL, {code: c.code});
+		};
+		socket.on(BattleServerEvent.CHALLENGE_STATE, once);
+		setTimeout(() => socket.off(BattleServerEvent.CHALLENGE_STATE, once), 15000);
+	}, [emit]);
+
+	const acceptChallenge = useCallback(
+		(code: string, cube: BattleCubeInfo) => {
+			const payload: ChallengeAcceptPayload = {code, puzzle: BATTLE_PUZZLE, cube};
+			dispatch({type: 'challenge_accept_sent'});
+			emit(BattleClientEvent.CHALLENGE_ACCEPT, payload);
+		},
+		[emit]
+	);
+
 	const actions = {
 		joinQueue,
 		leaveQueue,
 		leaveQueueOnExit,
+		createChallenge,
+		leaveChallenge,
+		leaveChallengeOnExit,
+		acceptChallenge,
 		stillHere: useCallback(() => emit(BattleClientEvent.QUEUE_STILL_HERE), [emit]),
 		scrambleDone: useCallback((p: ScrambleDonePayload) => emit(BattleClientEvent.SCRAMBLE_DONE, p), [emit]),
 		solveStart: useCallback((p: SolveStartPayload) => emit(BattleClientEvent.SOLVE_START, p), [emit]),

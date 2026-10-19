@@ -102,6 +102,24 @@ export const PROGRESS_TOLERANCE_MS = 1000;
 export const PROVISIONAL_JUMP_FLAG = 300;
 export const PROVISIONAL_JUMP_GAMES = 5;
 
+// Duel (owner decision 2026-10-20): an invite link or a profile challenge, never rated,
+// same format as a queue match.
+/** An invite lives this long, and is used once. */
+export const CHALLENGE_TTL_SEC = 15 * 60;
+/** The inviter's socket may drop this long (a reconnect) before the invite dies. */
+export const CHALLENGE_HOST_GRACE_SEC = 20;
+/** Invites one user may create per hour, links and profile challenges together. */
+export const CHALLENGE_CREATE_LIMIT_PER_HOUR = 10;
+/** After a profile challenge the same person did not accept, wait this long before the next. */
+export const CHALLENGE_TARGET_COOLDOWN_SEC = 10 * 60;
+/** Profile challenges to the same person that were not accepted, per 24 h. */
+export const CHALLENGE_TARGET_DAILY_LIMIT = 3;
+/**
+ * Which matches the head-to-head score ("7-4 against Ahmet") counts. 'all': every finished,
+ * not voided match of the pair, duels and rated together (owner default). 'challenge': duels only.
+ */
+export const HEAD_TO_HEAD_SCOPE: 'all' | 'challenge' = 'all';
+
 // Leaderboard (design 4.4, Q3)
 /** Leaderboard order is rating - LEADERBOARD_RD_FACTOR * RD. 0 means raw rating. */
 export const LEADERBOARD_RD_FACTOR = 2;

@@ -36,6 +36,8 @@ function result(partial: Partial<MatchResultPayload>): MatchResultPayload {
 		provisional: false,
 		games: 12,
 		rounds: [],
+		challenge: false,
+		headToHead: null,
 		...partial,
 	};
 }

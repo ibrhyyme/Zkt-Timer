@@ -5,15 +5,16 @@
  * - sorted set `cd:battle:queue#<puzzle>`: member = user id, score = rating
  * - hash `cd:battle:queue_meta#<puzzle>`: user id -> QueueEntry JSON
  *
- * joinQueue runs every server side condition of design 4.3 in one place: the site flag
- * (the client FeatureGuard alone can be bypassed from the console), verified email, bans,
- * the puzzle, a cube with its own clock, one queue or match per user, no friendly room,
+ * checkBattleEntry runs every server side condition of design 4.3 in one place: the site
+ * flag (the client FeatureGuard alone can be bypassed from the console), verified email,
+ * bans, the puzzle, a cube with its own clock, one match per user, no friendly room. The
+ * queue (joinQueue) and the duel invite (challenge.ts) both go through it; the queue adds
  * the abandon cooldown. Pro is never required (S-7).
  */
 
 import {RedisNamespace} from '../services/redis';
 import {BATTLE_PUZZLE, INITIAL_RATING, INITIAL_RD} from '../../shared/battle/config';
-import {BATTLE_ERROR_KEYS, BattleErrorPayload, QueueJoinPayload} from '../../shared/battle/events';
+import {BATTLE_ERROR_KEYS, BattleCubeInfo, BattleErrorPayload, QueueJoinPayload} from '../../shared/battle/events';
 import {battleKey, BattleStore} from './store';
 import {
 	clearBattleSession,
@@ -165,14 +166,26 @@ export interface QueueMatchView {
 	leaveFinished(userId: string): Promise<void>;
 }
 
-export interface JoinQueueDeps {
+/** What the queue needs from the duel invites. */
+export interface QueueChallengeView {
+	/** Code of the invite the user has open and is waiting on, or null. */
+	hostedCode(userId: string): string | null;
+}
+
+/** Everything checkBattleEntry reads. */
+export interface BattleEntryDeps {
 	store: BattleStore;
 	now(): number;
 	getSiteConfig(): Promise<QueueSiteConfig | null>;
 	isOnlineBattleOpen(config: QueueSiteConfig | null, user: {id: string; admin: boolean}): boolean;
 	loadEligibility(userId: string): Promise<BattleEligibility | null>;
-	getStoredRating(userId: string): Promise<{rating: number; rd: number} | null>;
 	matches: QueueMatchView;
+}
+
+export interface JoinQueueDeps extends BattleEntryDeps {
+	getStoredRating(userId: string): Promise<{rating: number; rd: number} | null>;
+	/** Optional: without it an open invite is not checked (tests of the queue alone). */
+	challenges?: QueueChallengeView;
 }
 
 export interface JoinQueueInput {
@@ -188,30 +201,41 @@ function fail(i18nKey: string, params?: Record<string, string | number>): JoinQu
 	return {ok: false, error: params ? {i18nKey, params} : {i18nKey}};
 }
 
-export async function joinQueue(deps: JoinQueueDeps, input: JoinQueueInput): Promise<JoinQueueResult> {
+export interface BattleEntryInput {
+	userId: string;
+	puzzle?: unknown;
+	cube?: Partial<BattleCubeInfo> | null;
+}
+
+/**
+ * Whether a user may start playing now, from the queue or a duel invite: logged in, the site
+ * flag, verified email, no ban, 3x3, a cube with its own clock, not in a friendly room, no
+ * running match. A finished match's rematch window is left on the way; a match session with
+ * no match behind it is dropped. Returns the error to send, or null.
+ */
+export async function checkBattleEntry(deps: BattleEntryDeps, input: BattleEntryInput): Promise<BattleErrorPayload | null> {
 	const {store} = deps;
-	const {userId, socketId} = input;
+	const {userId} = input;
 	const now = deps.now();
 
 	const eligibility = await deps.loadEligibility(userId);
-	if (!eligibility) return fail(BATTLE_ERROR_KEYS.notLoggedIn);
+	if (!eligibility) return {i18nKey: BATTLE_ERROR_KEYS.notLoggedIn};
 
 	const config = await deps.getSiteConfig();
 	if (!deps.isOnlineBattleOpen(config, {id: userId, admin: !!eligibility.admin})) {
-		return fail(BATTLE_ERROR_KEYS.disabled);
+		return {i18nKey: BATTLE_ERROR_KEYS.disabled};
 	}
-	if (!eligibility.email_verified) return fail(BATTLE_ERROR_KEYS.emailNotVerified);
+	if (!eligibility.email_verified) return {i18nKey: BATTLE_ERROR_KEYS.emailNotVerified};
 	const bannedUntil = eligibility.banned_until ? new Date(eligibility.banned_until).getTime() : 0;
-	if (eligibility.banned_forever || bannedUntil > now) return fail(BATTLE_ERROR_KEYS.banned);
+	if (eligibility.banned_forever || bannedUntil > now) return {i18nKey: BATTLE_ERROR_KEYS.banned};
 
-	const payload = input.payload || {};
-	if ((payload.puzzle || BATTLE_PUZZLE) !== BATTLE_PUZZLE) return fail(BATTLE_ERROR_KEYS.puzzleNotSupported);
-	if (!payload.cube || payload.cube.hasClock !== true) return fail(BATTLE_ERROR_KEYS.cubeNotSupported);
+	if ((input.puzzle || BATTLE_PUZZLE) !== BATTLE_PUZZLE) return {i18nKey: BATTLE_ERROR_KEYS.puzzleNotSupported};
+	if (!input.cube || input.cube.hasClock !== true) return {i18nKey: BATTLE_ERROR_KEYS.cubeNotSupported};
 
-	if (await isInFriendlyRoom(store, userId)) return fail(BATTLE_ERROR_KEYS.inFriendlyRoom);
+	if (await isInFriendlyRoom(store, userId)) return {i18nKey: BATTLE_ERROR_KEYS.inFriendlyRoom};
 
 	const matchStatus = deps.matches.matchStatusFor(userId);
-	if (matchStatus === 'live') return fail(BATTLE_ERROR_KEYS.alreadyInMatch);
+	if (matchStatus === 'live') return {i18nKey: BATTLE_ERROR_KEYS.alreadyInMatch};
 	if (matchStatus === 'finished') await deps.matches.leaveFinished(userId);
 
 	const session = await getBattleSession(store, userId);
@@ -220,6 +244,20 @@ export async function joinQueue(deps: JoinQueueDeps, input: JoinQueueInput): Pro
 		// expired), the session is a leftover.
 		await clearBattleSession(store, userId, {kind: 'match'});
 	}
+	return null;
+}
+
+export async function joinQueue(deps: JoinQueueDeps, input: JoinQueueInput): Promise<JoinQueueResult> {
+	const {store} = deps;
+	const {userId, socketId} = input;
+	const now = deps.now();
+
+	const payload = input.payload || {};
+	const refused = await checkBattleEntry(deps, {userId, puzzle: payload.puzzle, cube: payload.cube});
+	if (refused) return {ok: false, error: refused};
+
+	// One thing at a time: an open duel invite waits on this player's cube.
+	if (deps.challenges?.hostedCode(userId)) return fail(BATTLE_ERROR_KEYS.challengeOpen);
 
 	const cooldown = await getQueueCooldownSec(store, userId);
 	if (cooldown > 0) return fail(BATTLE_ERROR_KEYS.queueCooldown, {seconds: cooldown});

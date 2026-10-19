@@ -317,8 +317,24 @@ $hairline: 1px solid $zt-divider;
 	}
 
 	&__stage-action {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
 		width: 100%;
 		max-width: 360px;
+	}
+
+	// A username as the stage title (a profile challenge): never wraps into the next line.
+	&__stage-title--name {
+		@include ellipsis;
+		max-width: 100%;
+	}
+
+	&__stage-note {
+		margin: 0;
+		font-size: $fs-sm;
+		font-weight: 500;
+		line-height: 1.45;
 	}
 
 	&__cube-row {
@@ -483,6 +499,16 @@ $hairline: 1px solid $zt-divider;
 
 	&__recent-delta {
 		text-align: right;
+	}
+
+	// "Duel" where a rated match shows its rating change.
+	&__recent-tag {
+		justify-self: end;
+		font-family: $mono;
+		font-size: 0.6875rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 	}
 
 	// The rules, as numbers: the name, the limit in mono, what happens past it.
@@ -1268,6 +1294,197 @@ $hairline: 1px solid $zt-divider;
 		> * {
 			width: 100%;
 		}
+	}
+
+	// ── Duel invites ──
+	// The inviter's waiting screen and the invite page: one panel, one column at every width,
+	// in the queue's type and surfaces. The rules sentence sits under it.
+	&__duel {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+		width: 100%;
+		max-width: 520px;
+		margin: 0 auto;
+		padding: $zt-space-3 0 $zt-space-7;
+
+		@include bp-up($bp-lg) {
+			flex: 0 1 auto;
+			margin: auto;
+			padding: 0;
+		}
+	}
+
+	&__duel-panel {
+		@include zt-card($zt-space-5);
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: $zt-space-4;
+
+		@include bp-up($bp-lg) {
+			padding: $zt-space-6;
+		}
+	}
+
+	&__duel-clock {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+	}
+
+	&__duel-link {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		padding-top: $zt-space-4;
+		border-top: $hairline;
+	}
+
+	&__duel-link-row {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		min-width: 0;
+	}
+
+	&__duel-link-text {
+		@include ellipsis;
+		flex: 1;
+		padding: $zt-space-2 $zt-space-3;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
+		background: $zt-control-bg;
+		font-family: $mono;
+		font-size: $fs-sm;
+		font-weight: 600;
+		-webkit-user-select: all;
+		user-select: all;
+	}
+
+	&__duel-actions {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	&__duel-host {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		min-width: 0;
+	}
+
+	&__duel-title {
+		min-width: 0;
+		margin: 0;
+		@include display($fs-xl);
+		overflow-wrap: anywhere;
+
+		@include bp-up($bp-lg) {
+			font-size: $fs-2xl;
+		}
+	}
+
+	&__duel-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-1 $zt-space-2;
+		font-size: $fs-sm;
+		font-weight: 700;
+
+		> * + *::before {
+			content: '·';
+			margin-right: $zt-space-2;
+		}
+
+		> [lang='en'] {
+			font-family: $mono;
+			font-variant-numeric: tabular-nums;
+		}
+	}
+
+	&__duel-status {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		margin: 0;
+		font-size: $fs-md;
+		font-weight: 600;
+		line-height: 1.45;
+
+		strong {
+			font-size: $fs-lg;
+			font-weight: 800;
+		}
+
+		span {
+			font-size: $fs-sm;
+			font-weight: 500;
+		}
+	}
+
+	&__duel-h2h {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		padding-top: $zt-space-4;
+		border-top: $hairline;
+	}
+
+	&__duel-rules {
+		margin: 0;
+		padding: 0 $zt-space-1;
+		font-size: $fs-sm;
+		font-weight: 500;
+		line-height: 1.45;
+		text-align: center;
+	}
+
+	// Head-to-head: "You 7 – 4 ahmet", the names facing each other across the score.
+	&__h2h {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+	}
+
+	&__h2h-line {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+		align-items: center;
+		gap: $zt-space-3;
+	}
+
+	&__h2h-name {
+		@include ellipsis;
+		font-size: $fs-md;
+		font-weight: 700;
+
+		&--end {
+			text-align: right;
+		}
+	}
+
+	&__h2h-score {
+		@include number($fs-2xl);
+		letter-spacing: -0.02em;
+	}
+
+	&__h2h-draws {
+		align-self: center;
+		font-size: $fs-xs;
+		font-weight: 600;
+	}
+
+	&__result-note {
+		font-size: $fs-md;
+		font-weight: 600;
 	}
 
 	// ── Cancelled ──

@@ -202,6 +202,7 @@ fragment NotificationPreferenceFragment on NotificationPreference {
 	competition_groups_published
 	competition_schedule_changed
 	competition_results_official
+	battle_challenge
 }
 
 fragment NotificationFragment on Notification {

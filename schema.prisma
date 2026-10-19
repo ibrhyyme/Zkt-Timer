@@ -152,6 +152,8 @@ model UserAccount {
   battle_ratings                BattleRating[]
   battle_matches_a              BattleMatch[]             @relation("battle_match_a")
   battle_matches_b              BattleMatch[]             @relation("battle_match_b")
+  battle_challenges_sent        BattleChallenge[]         @relation("battle_challenge_from")
+  battle_challenges_received    BattleChallenge[]         @relation("battle_challenge_to")
 
   @@map("user_account")
 }
@@ -292,6 +294,8 @@ model NotificationPreference {
   competition_groups_published Boolean @default(true)
   competition_schedule_changed Boolean @default(true)
   competition_results_official Boolean @default(true)
+  // Push opt-out for Online Battle duel invites sent from a profile.
+  battle_challenge             Boolean @default(true)
   user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
@@ -2009,6 +2013,8 @@ model BattleMatch {
   end_reason      String
   rated           Boolean
   is_rematch      Boolean   @default(false)
+  /// A duel (invite link or profile challenge): never rated, outside the daily pair limit.
+  is_challenge    Boolean   @default(false)
   player_a_id     String?
   player_b_id     String?
   /// A | B | DRAW, null for a void match without a result
@@ -2063,4 +2069,32 @@ model BattleRound {
 
   @@unique([match_id, index])
   @@map("battle_round")
+}
+
+/// A duel invite (Online Battle without rating). Single use, 15 minutes. The match it
+/// started is written to battle_match with is_challenge = true; match_id is a plain id
+/// because that row only exists once the match ends.
+model BattleChallenge {
+  id             String       @id @default(uuid())
+  /// Link code: /duel/<code>
+  code           String       @unique
+  from_user_id   String
+  /// Set for a profile challenge (only that user may accept), null for a shared link.
+  to_user_id     String?
+  /// PENDING | ACCEPTED | EXPIRED | CANCELLED
+  status         String       @default("PENDING")
+  expires_at     DateTime
+  /// Who accepted (equals to_user_id for a profile challenge).
+  accepted_by_id String?
+  accepted_at    DateTime?
+  match_id       String?
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+  from_user      UserAccount  @relation("battle_challenge_from", fields: [from_user_id], references: [id], onDelete: Cascade)
+  to_user        UserAccount? @relation("battle_challenge_to", fields: [to_user_id], references: [id], onDelete: Cascade)
+
+  @@index([from_user_id, created_at])
+  @@index([to_user_id, created_at])
+  @@index([status, expires_at])
+  @@map("battle_challenge")
 }

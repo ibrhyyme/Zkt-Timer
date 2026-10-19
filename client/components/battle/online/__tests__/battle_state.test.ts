@@ -5,6 +5,7 @@ import {
 	OnlineBattleState,
 	otherSide,
 	outcomeFor,
+	pendingChallengeCode,
 	sideScore,
 	sideSolve,
 } from '../battle_state';
@@ -21,6 +22,7 @@ function matched(matchId = 'm1', side: 'A' | 'B' = 'A'): MatchedPayload {
 		matchId,
 		rated: true,
 		isRematch: false,
+		challenge: false,
 		side,
 		you: {rating: 1500, provisional: true, games: 0},
 		opponent: {id: 'u2', username: 'ayse_k', avatar: null, rating: 1610, provisional: false},
@@ -127,6 +129,8 @@ describe('onlineBattleReducer: match', () => {
 			provisional: true,
 			games: 1,
 			rounds: [roundResult(1, 'A', {a: 1, b: 0}), roundResult(2, 'A', {a: 2, b: 0})],
+			challenge: false,
+			headToHead: null,
 		};
 		s = run([{type: 'match_result', payload: result}], s);
 		expect(s.stage).toBe('result');
@@ -207,6 +211,82 @@ describe('onlineBattleReducer: cancel', () => {
 			{type: 'cancelled', payload: {matchId: 'old', reason: 'server_restart'}},
 		]);
 		expect(s.stage).toBe('match');
+	});
+});
+
+describe('onlineBattleReducer: duel invites', () => {
+	const pending = {code: 'k7m2xq9pza', status: 'PENDING' as const, expiresAt: 900000, to: null};
+
+	it('opens the waiting screen, fills it with the invite and leaves it on cancel', () => {
+		let s = run([{type: 'challenge_create_sent'}]);
+		expect(s.stage).toBe('challenge');
+		expect(s.challenge).toBeNull();
+		expect(pendingChallengeCode(s)).toBeNull();
+
+		s = run([{type: 'challenge_state', payload: pending}], s);
+		expect(s.challenge).toEqual(pending);
+		expect(pendingChallengeCode(s)).toBe('k7m2xq9pza');
+
+		s = run([{type: 'challenge_left'}], s);
+		expect(s.stage).toBe('idle');
+		expect(s.challenge).toBeNull();
+	});
+
+	it('keeps an ended invite on screen with its status', () => {
+		const s = run([
+			{type: 'challenge_create_sent'},
+			{type: 'challenge_state', payload: pending},
+			{type: 'challenge_state', payload: {...pending, status: 'EXPIRED'}},
+		]);
+		expect(s.stage).toBe('challenge');
+		expect(s.challenge?.status).toBe('EXPIRED');
+		expect(pendingChallengeCode(s)).toBeNull();
+	});
+
+	it('goes back to idle when the server refuses to open the invite', () => {
+		const s = run([
+			{type: 'challenge_create_sent'},
+			{type: 'error', payload: {i18nKey: 'online_battle.errors.challenge_limit', params: {minutes: 12}}},
+		]);
+		expect(s.stage).toBe('idle');
+		expect(s.error?.params).toEqual({minutes: 12});
+	});
+
+	it('an open invite survives an unrelated error', () => {
+		const s = run([
+			{type: 'challenge_create_sent'},
+			{type: 'challenge_state', payload: pending},
+			{type: 'error', payload: {i18nKey: 'online_battle.errors.rate_limited'}},
+		]);
+		expect(s.stage).toBe('challenge');
+		expect(pendingChallengeCode(s)).toBe('k7m2xq9pza');
+	});
+
+	it('moves to the match when someone accepts, and ignores the late ACCEPTED state', () => {
+		let s = run([{type: 'challenge_create_sent'}, {type: 'challenge_state', payload: pending}]);
+		s = run([{type: 'matched', payload: {...matched(), challenge: true, rated: false, preview: null}}], s);
+		expect(s.stage).toBe('match');
+		expect(s.challenge).toBeNull();
+		expect(s.match?.matched.challenge).toBe(true);
+		s = run([{type: 'challenge_state', payload: {...pending, status: 'ACCEPTED'}}], s);
+		expect(s.stage).toBe('match');
+	});
+
+	it('ignores invite states when no invite screen is open', () => {
+		const s = run([{type: 'challenge_state', payload: pending}]);
+		expect(s).toEqual(initialOnlineBattleState);
+	});
+
+	it('accepting: busy until matched, back to the invite page on a refusal', () => {
+		let s = run([{type: 'challenge_accept_sent'}]);
+		expect(s.stage).toBe('accepting');
+		s = run([{type: 'error', payload: {i18nKey: 'online_battle.errors.challenge_used'}}], s);
+		expect(s.stage).toBe('idle');
+		expect(s.error?.i18nKey).toBe('online_battle.errors.challenge_used');
+
+		s = run([{type: 'challenge_accept_sent'}, {type: 'matched', payload: {...matched('m9', 'B'), challenge: true}}]);
+		expect(s.stage).toBe('match');
+		expect(s.match?.matched.side).toBe('B');
 	});
 });
 

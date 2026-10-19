@@ -7,6 +7,7 @@ import {INSPECTION_DNF_SEC, PROVISIONAL_TYPICAL_GAMES, SCRAMBLE_TIMEOUT_SEC, SOL
 import type {BattlePlayerInfo, MatchResultPayload, RematchStatePayload} from '../../../../shared/battle/events';
 import type {BattleEndReason, BattleSide} from '../../../../shared/battle/types';
 import {avatarSrc, formatBattleTime} from './OpponentBar';
+import {HeadToHeadScore} from './DuelInviteScreen';
 import {otherSide, outcomeFor, RoundOutcome, sideScore, sideSolve} from './battle_state';
 
 const b = block('online-battle');
@@ -66,6 +67,8 @@ interface Props {
 	/** Local clock: the rematch window closes. */
 	rematchDeadlineLocal: number;
 	reported: boolean;
+	/** A duel: no rating section, the head-to-head score in its place; the rematch is a duel too. */
+	challenge?: boolean;
 	onRematch(): void;
 	onNewOpponent(): void;
 	onExit(): void;
@@ -108,6 +111,7 @@ function Side({name, avatar, rating, winner, end}: {name: string; avatar: string
  */
 export default function ResultScreen(props: Props) {
 	const {result, side, myName, myAvatar, myRating, opponent, rematch, rematchDeadlineLocal, reported} = props;
+	const challenge = !!(props.challenge || result.challenge);
 	const {t} = useTranslation();
 	const [now, setNow] = useState(() => Date.now());
 	const [reportOpen, setReportOpen] = useState(false);
@@ -136,7 +140,7 @@ export default function ResultScreen(props: Props) {
 	if (rematchState === 'gone') rematchText = t('online_battle.opponent_left_rematch');
 	else if (rematchState === 'waiting') rematchText = t('online_battle.rematch_waiting');
 	else {
-		const label = rematchRated ? t('online_battle.rematch') : t('online_battle.rematch_unrated');
+		const label = rematchRated || challenge ? t('online_battle.rematch') : t('online_battle.rematch_unrated');
 		rematchText = `${label}  0:${String(secondsLeft).padStart(2, '0')}`;
 	}
 
@@ -179,40 +183,53 @@ export default function ResultScreen(props: Props) {
 				<Side end name={opponent.username} avatar={opponent.avatar} rating={opponent.rating} winner={outcome === 'lost'} />
 			</div>
 
-			<section className={b('result-rating')}>
-				{/* lang="en": "Rating" is an English loanword in Turkish; uppercased under lang="tr" it
-				    came out as "RATİNG" with a dotted capital I. */}
-				<h3 className={b('eyebrow')} lang="en">
-					{t('online_battle.rating')}
-				</h3>
-				{rated && deltaText ? (
-					<div className={b('rating-change')}>
-						<span className={b('rating-numbers')} lang="en">
-							{result.ratingBefore} → {result.ratingAfter}
-						</span>
-						<span
-							className={b('rating-delta', {up: (result.delta ?? 0) > 0, down: (result.delta ?? 0) < 0})}
-							lang="en"
-						>
-							{deltaText}
-						</span>
-					</div>
-				) : (
-					<div className={b('rating-change')}>{t('online_battle.unrated_match')}</div>
-				)}
-				{result.provisional && (
-					<div className={b('form')}>
-						<span className={b('stickers')} aria-hidden="true">
-							{Array.from({length: PROVISIONAL_TYPICAL_GAMES}, (_, i) => (
-								<span key={i} className={b('sticker', {blue: i < provisionalGames})} />
-							))}
-						</span>
-						<span className={b('eyebrow')}>
-							{t('online_battle.provisional_progress', {games: provisionalGames, total: PROVISIONAL_TYPICAL_GAMES})}
-						</span>
-					</div>
-				)}
-			</section>
+			{challenge ? (
+				<section className={b('result-rating')}>
+					<h3 className={b('eyebrow')}>
+						<span className={b('sticker', {blue: true})} aria-hidden="true" />
+						{t('online_battle.duel.result_title')}
+					</h3>
+					{result.headToHead && (
+						<HeadToHeadScore you={t('online_battle.you')} opponent={opponent.username} score={result.headToHead} />
+					)}
+					<div className={b('result-note')}>{t('online_battle.duel.result_unrated')}</div>
+				</section>
+			) : (
+				<section className={b('result-rating')}>
+					{/* lang="en": "Rating" is an English loanword in Turkish; uppercased under lang="tr" it
+					    came out as "RATİNG" with a dotted capital I. */}
+					<h3 className={b('eyebrow')} lang="en">
+						{t('online_battle.rating')}
+					</h3>
+					{rated && deltaText ? (
+						<div className={b('rating-change')}>
+							<span className={b('rating-numbers')} lang="en">
+								{result.ratingBefore} → {result.ratingAfter}
+							</span>
+							<span
+								className={b('rating-delta', {up: (result.delta ?? 0) > 0, down: (result.delta ?? 0) < 0})}
+								lang="en"
+							>
+								{deltaText}
+							</span>
+						</div>
+					) : (
+						<div className={b('rating-change')}>{t('online_battle.unrated_match')}</div>
+					)}
+					{result.provisional && (
+						<div className={b('form')}>
+							<span className={b('stickers')} aria-hidden="true">
+								{Array.from({length: PROVISIONAL_TYPICAL_GAMES}, (_, i) => (
+									<span key={i} className={b('sticker', {blue: i < provisionalGames})} />
+								))}
+							</span>
+							<span className={b('eyebrow')}>
+								{t('online_battle.provisional_progress', {games: provisionalGames, total: PROVISIONAL_TYPICAL_GAMES})}
+							</span>
+						</div>
+					)}
+				</section>
+			)}
 
 			<section className={b('result-rounds')}>
 				<h3 className={b('eyebrow')}>{t('online_battle.result.rounds_title')}</h3>
