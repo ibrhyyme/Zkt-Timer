@@ -1,5 +1,6 @@
 import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
-import {GraphQLUpload, FileUpload} from 'graphql-upload';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import {FileUpload} from 'graphql-upload/processRequest.js';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import {SupportTicket, SupportTicketInput} from '../schemas/SupportTicket.schema';

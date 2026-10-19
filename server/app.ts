@@ -35,7 +35,8 @@ import bodyParser from 'body-parser';
 import { customAuthChecker } from './middlewares/auth';
 import { requireCsrfHeader } from './middlewares/csrf';
 import { checkRateLimit } from './services/rate_limit';
-import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
+import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 import { ErrorCode, ErrorMessage } from './constants/errors';
 import { printSchema } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
@@ -528,7 +529,19 @@ if (!isDev) {
 	// file exactly at the cap must still get through to the model's own check, which is the one
 	// that reports a usable error. Raising this alone is not enough in production — nginx's
 	// client_max_body_size sits in front of it and rejects the body first.
-	app.use(graphqlUploadExpress({ maxFileSize: 42 * 1024 * 1024, maxFiles: 4 }));
+	// Multipart is parsed (files spooled to disk) before any resolver checks auth, so an
+	// anonymous request is turned away here, before the parser sees a byte. Every upload
+	// mutation requires a signed-in user anyway.
+	app.use(path, async (req, res, next) => {
+		if (!req.is('multipart/form-data')) return next();
+		try {
+			if (await getMe(req as any)) return next();
+		} catch (err) {
+			return next(err);
+		}
+		res.status(401).json({ errors: [{ message: 'Unauthorized', extensions: { code: 'UNAUTHENTICATED' } }] });
+	});
+	app.use(path, graphqlUploadExpress({ maxFileSize: 42 * 1024 * 1024, maxFiles: 4 }));
 	// cors: false is load-bearing. Apollo v2 otherwise mounts its OWN cors on /graphql
 	// and overwrites our global middleware's header with Allow-Origin: * — which,
 	// combined with credentialed requests from the native shell (capacitor://localhost),

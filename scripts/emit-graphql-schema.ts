@@ -11,7 +11,7 @@ import fs from 'fs';
 import {printSchema} from 'graphql';
 import {buildSchema} from 'type-graphql';
 import {mergeSchemas} from '@graphql-tools/schema';
-import {GraphQLUpload} from 'graphql-upload';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 
 import {baseResolvers, baseScalars} from '../server/graphql';
 import * as resolverList from '../server/resolvers/_resolvers';
