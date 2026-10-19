@@ -431,6 +431,8 @@ export default function Header(props: Props) {
 		'/verify-email', '/wca-signup', '/zkt-signup',
 		// Private conversations — never a search result.
 		'/messages',
+		// Link-in-bio page: reached from a social profile, never from search.
+		'/links',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 	// Main competition page (`/competitions/:id`) and list remain indexable.

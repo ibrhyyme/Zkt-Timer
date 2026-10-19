@@ -5528,6 +5528,16 @@
     "search_placeholder": "Yardımda ara",
     "search_no_results": "\"{{query}}\" için sonuç yok. Başka bir kelime deneyin."
   },
+  "links_page": {
+    "meta_title": "Zkt Timer | Bağlantılar",
+    "tagline": "Profesyonel speedcubing timer",
+    "web": "Web'de kullan",
+    "web_detail": "zktimer.app, doğrudan tarayıcında",
+    "ios": "App Store'dan indir",
+    "ios_detail": "iPhone ve iPad",
+    "android": "Google Play'den indir",
+    "android_detail": "Android telefon ve tabletler"
+  },
   "anon": {
     "banner_text": "Çözümlerin bu cihazda saklanıyor. Hesap açarsan her cihazdan erişirsin.",
     "banner_text_with_count": "Bu cihazda {{count}} çözümün var. Hesap aç, kaybetme.",

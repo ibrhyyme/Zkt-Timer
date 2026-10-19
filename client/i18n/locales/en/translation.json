@@ -5547,6 +5547,16 @@
     "search_placeholder": "Search help",
     "search_no_results": "Nothing matches \"{{query}}\". Try another word."
   },
+  "links_page": {
+    "meta_title": "Zkt Timer | Links",
+    "tagline": "Professional speedcubing timer",
+    "web": "Use on the web",
+    "web_detail": "zktimer.app, right in your browser",
+    "ios": "Download on the App Store",
+    "ios_detail": "iPhone and iPad",
+    "android": "Get it on Google Play",
+    "android_detail": "Android phones and tablets"
+  },
   "anon": {
     "banner_text": "Your solves are saved on this device. Create an account to reach them anywhere.",
     "banner_text_with_count": "You have {{count}} solves on this device. Create an account so you do not lose them.",

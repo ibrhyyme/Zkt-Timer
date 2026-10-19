@@ -5600,6 +5600,16 @@
     "search_placeholder": "Поиск по справке",
     "search_no_results": "По запросу «{{query}}» ничего нет. Попробуйте другое слово."
   },
+  "links_page": {
+    "meta_title": "Zkt Timer | Ссылки",
+    "tagline": "Профессиональный таймер для спидкубинга",
+    "web": "Открыть в браузере",
+    "web_detail": "zktimer.app прямо в браузере",
+    "ios": "Загрузить в App Store",
+    "ios_detail": "iPhone и iPad",
+    "android": "Доступно в Google Play",
+    "android_detail": "Телефоны и планшеты Android"
+  },
   "anon": {
     "banner_text": "Ваши сборки сохраняются на этом устройстве. Создайте аккаунт, чтобы открывать их где угодно.",
     "banner_text_with_count": "На этом устройстве {{count}} сборок. Создайте аккаунт, чтобы не потерять их.",

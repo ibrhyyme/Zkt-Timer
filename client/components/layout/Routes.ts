@@ -75,6 +75,7 @@ import BattleLanding from '../battle/BattleLanding';
 import OnlineBattle from '../battle/online/OnlineBattle';
 import MySchedule from '../community/my_schedule/MySchedule';
 import Rankings from '../rankings/Rankings';
+import LinksPage from '../links/LinksPage';
 
 /**
  * Page-specific tags for the server-rendered <head>.
@@ -233,6 +234,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// real app nav itself instead.
 	route('/help', null, Help, null, false, true),
 	route('/welcome', null, Landing, Welcome, false, true),
+	// Link-in-bio page for the social accounts (web app + both stores). Not in any menu,
+	// noindexed in Header. Own shell like /help, so the buttons are in the SSR HTML.
+	route('/links', null, LinksPage, null, false, true),
 
 	// Public
 	route('/solve/:shareCode', null, App, SolvePage, false, false, false, false, false, [prefetchSolveData], solveSsrMeta),

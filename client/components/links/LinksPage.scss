@@ -1,0 +1,191 @@
+@import '../../styles/config';
+
+// Quiet and exact rather than loud: one narrow column on the fixed dark ground,
+// generous space, hairline borders, a single inverted button for the visitor's own
+// device. The premium feel comes from restraint, so nothing here glows, blurs or
+// carries a gradient (ui-design forbidden list).
+$links-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+.#{$namespace}-links-page {
+	min-height: 100vh;
+	min-height: 100dvh;
+	display: flex;
+	justify-content: center;
+	background: rgb(var(--background-color));
+	color: rgb(var(--text-color));
+
+	&__body {
+		width: 100%;
+		max-width: 400px;
+		display: flex;
+		flex-direction: column;
+		padding: calc(#{$zt-space-8} + #{sa(top)}) $zt-space-5 calc(#{$zt-space-5} + #{sa(bottom)});
+
+		@include bp-down($bp-sm) {
+			padding-top: calc(#{$zt-space-7} + #{sa(top)});
+		}
+	}
+
+	// Pushes the block to the optical centre on tall screens; on short ones the
+	// auto margins collapse and the page simply scrolls.
+	&__head {
+		margin-top: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	&__logo {
+		width: 72px;
+		height: 72px;
+		object-fit: contain;
+		margin-bottom: $zt-space-5;
+	}
+
+	&__name {
+		margin: 0;
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+	}
+
+	&__tagline {
+		margin: $zt-space-3 0 0;
+		font-size: 0.9375rem;
+		line-height: 1.4;
+		letter-spacing: 0.01em;
+		color: $zt-text-muted;
+	}
+
+	&__list {
+		margin: $zt-space-7 0 auto;
+		padding: 0;
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+	}
+
+	&__link {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-4;
+		min-height: 68px;
+		padding: $zt-space-3 $zt-space-5;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-lg;
+		color: rgb(var(--text-color));
+		text-decoration: none;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
+
+		&:hover {
+			background: $zt-control-bg;
+			border-color: $zt-control-border-hover;
+		}
+
+		&:active {
+			background: $zt-control-bg-active;
+		}
+
+		@include zt-focus-ring;
+
+		// The visitor's own device: inverted, text colour as the fill. On the fixed dark
+		// ground that is a white button with dark lettering, the one bright object on the
+		// page, so the eye lands on it first.
+		&--recommended {
+			background: rgb(var(--text-color));
+			border-color: rgb(var(--text-color));
+			color: rgb(var(--background-color));
+
+			&:hover {
+				background: rgba(var(--text-color), 0.88);
+				border-color: rgba(var(--text-color), 0.88);
+			}
+
+			&:active {
+				background: rgba(var(--text-color), 0.76);
+			}
+		}
+	}
+
+	&__link-icon {
+		display: flex;
+		flex-shrink: 0;
+		font-size: 24px;
+	}
+
+	&__link-text {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+	}
+
+	&__link-label {
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.25;
+		letter-spacing: -0.005em;
+	}
+
+	&__link-detail {
+		font-size: 0.8125rem;
+		line-height: 1.3;
+		opacity: 0.72;
+	}
+
+	&__link-arrow {
+		flex-shrink: 0;
+		font-size: 18px;
+		opacity: 0.72;
+	}
+
+	&__foot {
+		margin-top: $zt-space-7;
+		text-align: center;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		color: $zt-text-muted;
+	}
+
+	// A short staggered rise on load. Entrance only: nothing moves on hover.
+	@media (prefers-reduced-motion: no-preference) {
+		&__head,
+		&__item,
+		&__foot {
+			animation: zt-links-rise 520ms $links-ease both;
+		}
+
+		&__item:nth-child(1) {
+			animation-delay: 80ms;
+		}
+
+		&__item:nth-child(2) {
+			animation-delay: 140ms;
+		}
+
+		&__item:nth-child(3) {
+			animation-delay: 200ms;
+		}
+
+		&__foot {
+			animation-delay: 280ms;
+		}
+	}
+}
+
+@keyframes zt-links-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
