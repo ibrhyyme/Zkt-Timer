@@ -35,6 +35,8 @@ export enum RedisNamespace {
 	ZKT_FED_RECENT_RECORDS = 'cd:zktfed:recentrecords',
 	ZKT_FED_MY_COMPS = 'cd:zktfed:mycomps',
 	ZKT_FED_PERSON = 'cd:zktfed:person',
+	// Registration feed poller (cron_zkt_registration_notify.ts): its lock and its cursor.
+	ZKT_FED_REGISTRATIONS = 'cd:zktfed:registrations',
 	// Competition lifecycle notifications: cron locks, discovery gates and the
 	// crons' own caches (never the page's WCIF key, see cron_competition_lifecycle.ts).
 	COMPETITION_LIFECYCLE = 'cd:lifecycle',

@@ -6,6 +6,8 @@ export enum NotificationType {
 	ADMIN_SUPPORT_TICKET = 'admin_support_ticket',
 	SUPPORT_TICKET_REPLY = 'support_ticket_reply',
 	ADMIN_SUPPORT_TICKET_REPLY = 'admin_support_ticket_reply',
+	// A member entered or withdrew from a ZKT competition (federation admins only).
+	ZKT_ADMIN_REGISTRATION = 'zkt_admin_registration',
 	WCA_RESULT_ENTERED = 'wca_result_entered',
 	WCA_ROUND_FINISHED = 'wca_round_finished',
 	WCA_COMPETITION_COUNTDOWN = 'wca_competition_countdown',
