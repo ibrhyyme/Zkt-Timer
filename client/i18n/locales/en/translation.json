@@ -3638,7 +3638,9 @@
     "magnet_moved_body": "Starting the timer by lifting the cube is now its own timer type. It needs Pro and is in beta.",
     "magnet_moved_where_drawer": "To use it, open the timer types from the left notch and choose Magnet Timer.",
     "magnet_moved_where_list": "To use it, choose Magnet Timer in the timer type list.",
-    "magnet_unsupported": "This device's sensor is too slow"
+    "magnet_unsupported": "This device's sensor is too slow",
+    "manual_hint": "Type in your time.",
+    "manual_submit": "Confirm"
   },
   "mobile_scramble": {
     "click_to_copy": "Click to copy",

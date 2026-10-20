@@ -3606,7 +3606,9 @@
     "magnet_moved_body": "抬起魔方开始计时现在是一种独立的计时方式。需要 Pro，目前为测试版。",
     "magnet_moved_where_drawer": "要使用它，请从左侧的凸起打开计时方式，选择 Magnet Timer。",
     "magnet_moved_where_list": "要使用它，请在计时方式列表中选择 Magnet Timer。",
-    "magnet_unsupported": "此设备的传感器速度太慢"
+    "magnet_unsupported": "此设备的传感器速度太慢",
+    "manual_hint": "手动输入你的时间。",
+    "manual_submit": "确认"
   },
   "mobile_scramble": {
     "click_to_copy": "点击复制",

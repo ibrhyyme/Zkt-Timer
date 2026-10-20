@@ -3638,7 +3638,9 @@
     "magnet_moved_body": "Iniciar el tiempo al levantar el cubo ahora es un tipo de cronómetro propio. Requiere Pro y está en beta.",
     "magnet_moved_where_drawer": "Para usarlo, abre los tipos de cronómetro desde la muesca izquierda y elige Magnet Timer.",
     "magnet_moved_where_list": "Para usarlo, elige Magnet Timer en la lista de tipos de cronómetro.",
-    "magnet_unsupported": "El sensor de este dispositivo es demasiado lento"
+    "magnet_unsupported": "El sensor de este dispositivo es demasiado lento",
+    "manual_hint": "Escribe tu tiempo.",
+    "manual_submit": "Confirmar"
   },
   "mobile_scramble": {
     "click_to_copy": "Haz clic para copiar",

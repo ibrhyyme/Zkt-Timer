@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'phosphor-react';
 import Button from '../../../common/button/Button';
 import './Manual.scss';
@@ -21,6 +22,7 @@ import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.sche
 const b = block('manual-time-entry');
 
 export default function Manual() {
+	const { t } = useTranslation();
 	const manualInput = useRef<HTMLInputElement>(null);
 
 	const [manualTime, setManualTime] = useState('');
@@ -212,13 +214,13 @@ export default function Manual() {
 						onClick={submitTime}
 						icon={<Check weight="bold" />}
 						className={b('submit-btn')}
-						title="Onayla"
+						title={t('time_display.manual_submit')}
 					/>
 				)}
 			</div>
 
 			{!hideTime && (
-				<StartInstructions>Zamanı manuel olarak girin.</StartInstructions>
+				<StartInstructions>{t('time_display.manual_hint')}</StartInstructions>
 			)}
 			<SolveDiff />
 

@@ -3621,7 +3621,9 @@
     "magnet_moved_body": "Küpü kaldırarak süre başlatma artık ayrı bir timer türü. Pro üyelik gerekir ve şu an beta aşamasında.",
     "magnet_moved_where_drawer": "Kullanmak için soldaki çentikten timer türlerini aç ve Magnet Timer'ı seç.",
     "magnet_moved_where_list": "Kullanmak için timer türü listesinden Magnet Timer'ı seç.",
-    "magnet_unsupported": "Bu cihazın sensörü yeterince hızlı değil"
+    "magnet_unsupported": "Bu cihazın sensörü yeterince hızlı değil",
+    "manual_hint": "Zamanı manuel olarak girin.",
+    "manual_submit": "Onayla"
   },
   "mobile_scramble": {
     "click_to_copy": "Kopyalamak için tıkla",

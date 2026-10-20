@@ -149,6 +149,23 @@
             }
         }
     }
+
+    // The empty history card ("No solves yet"). Empty's own spacing (30px above a 90px
+    // image, 15px above the text) is taller than the slot on a 390x844 phone (145px),
+    // so the text was cut off at the bottom. Centred and tighter inside the slot only.
+    .zt-empty {
+        height: 100%;
+        justify-content: center;
+
+        img {
+            margin-top: 0;
+            width: 64px;
+        }
+
+        p {
+            margin-top: 8px;
+        }
+    }
 }
 
 // The module that just paged in settles into place (the neighbour's placeholder was
