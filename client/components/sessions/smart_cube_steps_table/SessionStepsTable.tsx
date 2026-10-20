@@ -24,6 +24,8 @@ interface Props {
 	filterOptions?: FilterSolvesOptions;
 	lastN?: number | null;
 	title?: string;
+	/** Leave out the heading where the page already titles the section (Stats page). */
+	hideTitle?: boolean;
 }
 
 interface PhaseAggregate {
@@ -48,7 +50,7 @@ function fmt(val: number | null | undefined, suffix = 's'): string {
 	return getTimeString(val, 2) + suffix;
 }
 
-export default function SessionStepsTable({ sessionId, filterOptions, lastN, title }: Props) {
+export default function SessionStepsTable({ sessionId, filterOptions, lastN, title, hideTitle }: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -71,7 +73,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 	if (showProOverlay) {
 		return (
 			<div className={bSession()}>
-				<h3 className={bSession('title')}>{resolvedTitle}</h3>
+				{hideTitle ? null : <h3 className={bSession('title')}>{resolvedTitle}</h3>}
 				<ProBlurOverlay
 					title={t('pro.upsell.smart_steps.title')}
 					description={t('pro.upsell.smart_steps.description')}
@@ -147,7 +149,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 
 	return (
 		<div className={bSession()}>
-			<h3 className={bSession('title')}>{resolvedTitle}</h3>
+			{hideTitle ? null : <h3 className={bSession('title')}>{resolvedTitle}</h3>}
 			<div className={b()}>
 				<table className={b('table')}>
 					<thead>
