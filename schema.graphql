@@ -2720,6 +2720,7 @@ type SmartCubeTelemetryRow {
   turn_count: Int
   battery_level: Int
   time_correction_ms: Int
+  recovered_moves: Int
   is_native: Boolean
   app_version: String
   created_at: DateTime
@@ -2742,6 +2743,7 @@ type SmartCubeTelemetrySummary {
   avg_battery_clean: Int
   avg_battery_recovered: Int
   median_time_correction_ms: Int
+  avg_recovered_moves: Float
 }
 
 type MagnetTelemetryResult {
@@ -2868,6 +2870,8 @@ type BattleRoundDetail {
   b_flags: [String]
   a_moves: String
   b_moves: String
+  a_dnf_reason: String
+  b_dnf_reason: String
 }
 
 type BattleMatchDetail {
@@ -3284,6 +3288,7 @@ input SmartCubeTelemetryInput {
   turn_count: Int
   battery_level: Int
   time_correction_ms: Int
+  recovered_moves: Int
   is_native: Boolean
   app_version: String
 }

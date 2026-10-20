@@ -189,6 +189,13 @@ export class BattleRoundDetail {
 
 	@Field({nullable: true})
 	b_moves?: string;
+
+	/** Why the side's solve became DNF (BattleDnfReason), null otherwise. */
+	@Field({nullable: true})
+	a_dnf_reason?: string;
+
+	@Field({nullable: true})
+	b_dnf_reason?: string;
 }
 
 @ObjectType()

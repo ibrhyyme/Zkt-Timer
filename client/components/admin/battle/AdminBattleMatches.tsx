@@ -12,6 +12,7 @@ import Input from '../../common/inputs/input/Input';
 import {getFullFormattedDate} from '../../../util/dates';
 import {getTimeString} from '../../../util/time';
 import {formatBattleTime} from '../../battle/online/OpponentBar';
+import {DNF_REASON_PARAMS} from '../../battle/online/ResultScreen';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {getGqlErrorMessage} from '../../../util/gql-error';
 import {useSiteConfig} from '../../../util/hooks/useSiteConfig';
@@ -112,9 +113,17 @@ function MoveLog({json}: {json: string | null | undefined}) {
 
 function RoundCard({round, match}: {round: RoundDetail; match: MatchDetail}) {
 	const {t} = useTranslation();
-	const sides: Array<{side: 'A' | 'B'; player: Player; time: number | null | undefined; penalty: string | null | undefined; flags: any; moves: string | null | undefined}> = [
-		{side: 'A', player: match.player_a, time: round.a_time_ms, penalty: round.a_penalty, flags: round.a_flags, moves: round.a_moves},
-		{side: 'B', player: match.player_b, time: round.b_time_ms, penalty: round.b_penalty, flags: round.b_flags, moves: round.b_moves},
+	const sides: Array<{
+		side: 'A' | 'B';
+		player: Player;
+		time: number | null | undefined;
+		penalty: string | null | undefined;
+		dnfReason: string | null | undefined;
+		flags: any;
+		moves: string | null | undefined;
+	}> = [
+		{side: 'A', player: match.player_a, time: round.a_time_ms, penalty: round.a_penalty, dnfReason: round.a_dnf_reason, flags: round.a_flags, moves: round.a_moves},
+		{side: 'B', player: match.player_b, time: round.b_time_ms, penalty: round.b_penalty, dnfReason: round.b_dnf_reason, flags: round.b_flags, moves: round.b_moves},
 	];
 	return (
 		<div className={b('round')}>
@@ -130,6 +139,9 @@ function RoundCard({round, match}: {round: RoundDetail; match: MatchDetail}) {
 							<PlayerName player={s.player} />
 							<span className={b('time')}>{formatSolve(s.time, s.penalty)}</span>
 						</div>
+						{s.penalty === 'DNF' && s.dnfReason && (
+							<span className={b('dnf-reason')}>{t(`online_battle.dnf_reason.${s.dnfReason}`, DNF_REASON_PARAMS)}</span>
+						)}
 						<FlagChips flags={s.flags} />
 						<MoveLog json={s.moves} />
 					</div>

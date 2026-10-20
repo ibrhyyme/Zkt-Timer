@@ -25,7 +25,7 @@ export function battleCubeBrand(deviceName: string | null | undefined): BattleCu
 	if (lower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) return 'gan';
 	if (name.startsWith('GoCube') || name.startsWith('Rubiks')) return 'particula';
 	if (name.startsWith('MHC')) return 'moyu';
-	if (name.startsWith('WCU_MY3')) return 'moyu32';
+	if (name.startsWith('WCU_MY3') || name.startsWith('^S')) return 'moyu32';
 	if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) return 'qiyi';
 	return 'unknown';
 }

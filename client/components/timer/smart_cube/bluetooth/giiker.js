@@ -69,4 +69,15 @@ export default class Giiker extends SmartCube {
 		const level = await this.giiker.getBatteryLevel();
 		this.alertBatteryLevel(level);
 	};
+
+	// Tell the cube its current position is solved, so its state packets agree with the app.
+	resetCubeState = async () => {
+		try {
+			await this.giiker.resetState();
+			return true;
+		} catch (e) {
+			console.error('[giiker] cube state reset failed:', e?.message);
+			return false;
+		}
+	};
 }

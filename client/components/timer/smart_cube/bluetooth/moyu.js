@@ -3,10 +3,15 @@
 //
 // State tracking: cubejs (used throughout the project) instead of cstimer's mathlib.CubieCube
 // Protocol logic (parseTurn, faceStatus, ts calculation, axis mapping) 1:1 with cstimer.
+//
+// Extended from smartcube-web-bluetooth src/smartcube/protocols/moyu-mhc.ts (Pau Oliva, MIT):
+// the cube's own sticker state, battery and a state reset over MoYu API v1 (moyu_v1_client.js),
+// the gyroscope on 0x1004, and the turn direction read as a signed byte.
 
 import SmartCube from './smart_cube';
 import Cube from 'cubejs';
 import { setTimerParams } from '../../helpers/params';
+import { MoyuV1Client, moyuStickersToFacelets, MOYU_V1_SOLVED_STICKERS } from './moyu_v1_client';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -34,17 +39,26 @@ export default class MoYu extends SmartCube {
 		this.curFacelet = SOLVED_FACELET;
 		this.prevCube = Cube.fromString(SOLVED_FACELET);
 		this.prevMoves = [];
+		// MoYu API v1 request channel; null when the cube does not expose it.
+		this.v1 = null;
 	}
+
+	subscribeGyro = (callback) => this._addGyroListener(callback);
 
 	init = async () => {
 		console.log('[moyu] init started');
 
 		await this.adapter.connect(this.device, () => {
 			console.log('[moyu] disconnect');
+			this.v1?.dispose();
 			this.alertDisconnected();
 		});
 
 		setTimerParams({ smartCubeConnectStep: 'paired' });
+
+		this.v1 = new MoyuV1Client((frame) =>
+			this.adapter.writeCharacteristic(this.device, SERVICE_UUID, CHRCT_UUID_WRITE, frame.buffer)
+		);
 
 		// Start READ, TURN, GYRO notifications
 		await this.adapter.startNotifications(
@@ -75,28 +89,81 @@ export default class MoYu extends SmartCube {
 			},
 		};
 		await this.alertConnected(dummyServer);
+		if (!this._gyroSeen) this.alertGyroSupported(false);
 
-		// Initial state callback
+		// The cube's own state, so a cube that was turned while disconnected is not taken for
+		// solved. cstimer assumed solved here, and the first solve after connecting was then
+		// tracked from a wrong position.
+		await this.readStateFromCube();
+
+		// The real level, not the 100 % placeholder this used to report.
+		await this.updateBattery();
+	};
+
+	async readStateFromCube() {
+		try {
+			const { stickers, angles } = await this.v1.getCubeState();
+			const facelet = moyuStickersToFacelets(stickers);
+			const cube = Cube.fromString(facelet);
+			this.prevCube = cube;
+			this.curFacelet = facelet;
+			// Align the turn counters with the face angles the cube reports.
+			for (let i = 0; i < 6; i++) this.faceStatus[i] = (angles[i] ?? 0) % 9;
+		} catch (e) {
+			// No v1 channel, or an unreadable reply: keep cstimer's assumption.
+			console.warn('[moyu] could not read the cube state, assuming solved:', e?.message);
+			this.prevCube = Cube.fromString(SOLVED_FACELET);
+			this.curFacelet = SOLVED_FACELET;
+		}
 		this.alertCubeState(this.curFacelet);
+	}
 
-		// Battery interval
-		this.alertBatteryLevel(100);
+	// Polled by the connection manager while a page shows the cube.
+	updateBattery = async () => {
+		try {
+			const level = await this.v1.getBatteryPercent();
+			this.alertBatteryLevel(Math.min(100, Math.max(0, Math.round(level))));
+		} catch (e) {
+			// Optional command; a cube without it simply reports no level.
+		}
+	};
+
+	// Tell the cube its current position is solved (MoYu API v1 "set cube state").
+	resetCubeState = async () => {
+		try {
+			await this.v1.setCubeState(MOYU_V1_SOLVED_STICKERS, [0, 0, 0, 0, 0, 0]);
+		} catch (e) {
+			console.error('[moyu] cube state reset failed:', e?.message);
+			return false;
+		}
+		this.faceStatus = [0, 0, 0, 0, 0, 0];
+		this.prevCube = Cube.fromString(SOLVED_FACELET);
+		this.curFacelet = SOLVED_FACELET;
+		this.alertCubeState(SOLVED_FACELET);
+		return true;
 	};
 
 	onReadEvent(value) {
-		console.log('[moyu] read event', value);
+		this.v1?.onReadNotification(value);
 	}
 
+	// Orientation: four little-endian float32 (w, x, y, z) from byte 4, normalised and
+	// mapped onto GAN's frame (y negated), as smartcube-web-bluetooth does.
 	onGyroEvent(value) {
-		console.log('[moyu] gyro event', value);
+		if (!value || value.byteLength < 20) return;
+		const w = value.getFloat32(4, true);
+		const x = value.getFloat32(8, true);
+		const y = -value.getFloat32(12, true);
+		const z = value.getFloat32(16, true);
+		const n = Math.hypot(w, x, y, z) || 1;
+		this._emitGyro({ timestamp: Date.now(), quaternion: { x: x / n, y: y / n, z: z / n, w: w / n } });
 	}
 
 	onTurnEvent(value) {
-		console.log('[moyu] turn event byteLength:', value.byteLength);
 		this.parseTurn(value);
 	}
 
-	// cstimer parseTurn() — 1:1 port
+	// cstimer parseTurn() — 1:1 port, except the direction byte (see below)
 	parseTurn(data) {
 		const locTime = Date.now();
 		if (data.byteLength < 1) {
@@ -106,6 +173,7 @@ export default class MoYu extends SmartCube {
 		if (data.byteLength < 1 + n_moves * 6) {
 			return;
 		}
+		const batch = [];
 		for (let i = 0; i < n_moves; i++) {
 			const offset = 1 + i * 6;
 			let ts = (data.getUint8(offset + 1) << 24)
@@ -114,7 +182,11 @@ export default class MoYu extends SmartCube {
 				| data.getUint8(offset + 2);
 			ts = Math.round(ts / 65536 * 1000);
 			const face = data.getUint8(offset + 4);
-			const dir = Math.round(data.getUint8(offset + 5) / 36);
+			if (face >= 6) continue;
+			// Signed: a counter-clockwise step arrives as a negative byte. cstimer read it
+			// unsigned, which turned -36 into +6 steps and reported the turn the wrong way
+			// round (smartcube-web-bluetooth reads it signed).
+			const dir = Math.round(data.getInt8(offset + 5) / 36);
 			const prevRot = this.faceStatus[face];
 			const curRot = this.faceStatus[face] + dir;
 			this.faceStatus[face] = (curRot + 9) % 9;
@@ -129,7 +201,6 @@ export default class MoYu extends SmartCube {
 			}
 			const moveStr = 'URFDLB'.charAt(axis) + " 2'".charAt(pow);
 			const cubejsMove = moveStr.replace(' ', ''); // " 2'" -> "" / "2" / "'"
-			console.log('[moyu] move', moveStr);
 
 			// State update via cubejs (cstimer's CubeMult+moveCube[m] logic)
 			this.prevCube.move(cubejsMove);
@@ -141,9 +212,15 @@ export default class MoYu extends SmartCube {
 				this.prevMoves = this.prevMoves.slice(0, 8);
 			}
 
-			// Callbacks matching our Redux pipeline
-			this.alertTurnCube(cubejsMove);
-			this.alertCubeState(this.curFacelet);
+			batch.push({ turn: cubejsMove, completedAt: locTime, cubeTimestamp: ts, localTimestamp: locTime });
+		}
+		// Moves and the state they produce travel in one dispatch, as every other driver does.
+		if (batch.length > 0) {
+			this.alertTurnCubeBatch(batch, this.curFacelet);
 		}
 	}
+
+	disconnect = async () => {
+		this.v1?.dispose();
+	};
 }

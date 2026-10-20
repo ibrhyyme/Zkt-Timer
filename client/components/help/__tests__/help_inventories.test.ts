@@ -47,6 +47,7 @@ describe('smart cube brands', () => {
 				'Rubiks',
 				'WCU_MY3',
 				'XMD-TornadoV4-i',
+				'^S',
 				'gan',
 			].sort()
 		);

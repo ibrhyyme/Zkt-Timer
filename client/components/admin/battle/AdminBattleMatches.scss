@@ -389,6 +389,8 @@
 		color: rgb(var(--text-color));
 	}
 
+	// The whole log, not a 220px scroll box: the box gave no sign it scrolled, so the last
+	// rows (where a DNF is usually decided) read as cut off.
 	&__moves-list {
 		display: flex;
 		flex-wrap: wrap;
@@ -396,8 +398,12 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		max-height: 220px;
-		overflow-y: auto;
+	}
+
+	&__dnf-reason {
+		font-size: 0.78rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
 	}
 
 	&__move {

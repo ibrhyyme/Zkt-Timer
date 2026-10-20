@@ -119,6 +119,8 @@ query battleMatch($id: String!) {
 			b_flags
 			a_moves
 			b_moves
+			a_dnf_reason
+			b_dnf_reason
 		}
 	}
 }

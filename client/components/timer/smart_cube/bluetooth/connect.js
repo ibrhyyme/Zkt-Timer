@@ -39,7 +39,8 @@ export function createCubeForDevice(device, adapter) {
 	if (name.startsWith('MHC')) {
 		return { cube: new MoYu(device, adapter), cubeType: 'MoYu MHC' };
 	}
-	if (name.startsWith('WCU_MY3')) {
+	// '^S': an advertising alias some MoYu32 boards use (smartcube-web-bluetooth routes it here).
+	if (name.startsWith('WCU_MY3') || name.startsWith('^S')) {
 		return { cube: new MoYu32(device, adapter), cubeType: 'MoYu WeiLong AI' };
 	}
 	if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) {
@@ -47,6 +48,35 @@ export function createCubeForDevice(device, adapter) {
 	}
 
 	return { cube: null, cubeType: 'unknown' };
+}
+
+const normalizeUuid = (uuid) => (uuid || '').toLowerCase();
+const GAN_SERVICES = [
+	'6e400001-b5a3-f393-e0a9-e50e24dc4179', // Gen2
+	'8653000a-43e6-47b7-9cb0-5fc21d4ae340', // Gen3
+	'00000010-0000-fff7-fff6-fff5fff4fff0', // Gen4
+];
+const GAN_GEN1_SERVICES = ['0000fff0-0000-1000-8000-00805f9b34fb', '0000180a-0000-1000-8000-00805f9b34fb'];
+
+/**
+ * Picks a protocol from the device's GATT services, for a device whose advertised name
+ * matches no prefix (a renamed unit, a model we have no prefix for). Highest score wins,
+ * as in smartcube-web-bluetooth's profile-rank.ts; the scores are that library's.
+ */
+export function createCubeForServices(device, adapter, serviceUuids) {
+	const has = (uuid) => serviceUuids.some((s) => normalizeUuid(s) === normalizeUuid(uuid));
+	const ranked = [
+		{ score: GAN_SERVICES.some(has) ? 120 : 0, build: () => new GAN(device, adapter), cubeType: 'GAN' },
+		{ score: GAN_GEN1_SERVICES.every(has) ? 125 : 0, build: () => new GAN(device, adapter), cubeType: 'GAN' },
+		{ score: has(Giiker.SERVICE_UUID) ? 115 : 0, build: () => new Giiker(device, adapter), cubeType: 'Giiker' },
+		{ score: has(Particula.SERVICE_UUID) ? 110 : 0, build: () => new Particula(device, adapter), cubeType: 'Particula' },
+		{ score: has(MoYu.SERVICE_UUID) ? 110 : 0, build: () => new MoYu(device, adapter), cubeType: 'MoYu MHC' },
+		{ score: has(MoYu32.SERVICE_UUID) ? 110 : 0, build: () => new MoYu32(device, adapter), cubeType: 'MoYu WeiLong AI' },
+		{ score: has(QiYi.SERVICE_UUID) ? 110 : 0, build: () => new QiYi(device, adapter), cubeType: 'QiYi' },
+	];
+	const best = ranked.reduce((a, b) => (b.score > a.score ? b : a));
+	if (best.score <= 0) return { cube: null, cubeType: 'unknown' };
+	return { cube: best.build(), cubeType: best.cubeType };
 }
 
 export default class Connect extends SmartCube {
@@ -91,6 +121,17 @@ export default class Connect extends SmartCube {
 			...MoYu32.opServices,
 			// QiYi Smart Cube + Tornado V4 i
 			...QiYi.opServices,
+			// Giiker: the state service and the control service (battery, reset). Missing from
+			// this list, Chrome refused the driver access to both, so a Giiker could not
+			// connect on the web at all; native does not check this list.
+			...Giiker.opServices,
+			'0000aaaa-0000-1000-8000-00805f9b34fb',
+		],
+		// A GAN or QiYi cube whose name matches no prefix is still listed when its advertisement
+		// carries the brand's company id (smartcube-web-bluetooth's picker does the same).
+		manufacturerDataFilters: [
+			...GAN.cics,
+			...QiYi.cics,
 		],
 		// Company identifier codes whose manufacturer data we need to read for MAC discovery.
 		// Chrome strips advertisement manufacturerData unless its CIC is declared here — without
@@ -103,7 +144,20 @@ export default class Connect extends SmartCube {
 	};
 
 	_initCube = async (device) => {
-		const { cube, cubeType } = createCubeForDevice(device, this.adapter);
+		let { cube, cubeType } = createCubeForDevice(device, this.adapter);
+		if (!cube) {
+			// The name says nothing; the services it exposes may. Connect, look, let go: the
+			// driver's own init connects again from a clean state.
+			try {
+				await this.adapter.connect(device);
+				const services = await this.adapter.getServices(device);
+				({ cube, cubeType } = createCubeForServices(device, this.adapter, services));
+				console.log(`[BLE-CONNECT] unrecognised name "${device.name}", services say: ${cubeType}`);
+			} catch (e) {
+				console.warn('[BLE-CONNECT] service probe failed:', e?.message);
+			}
+			try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
+		}
 
 		console.log(`[BLE-CONNECT] _initCube | type: ${cubeType} | name: ${device.name} | id: ${device.deviceId}`);
 

@@ -130,6 +130,13 @@ const LIBRARIES: Reference[] = [
 		descKey: 'credits.libraries_ganweb',
 	},
 	{
+		project: 'smartcube-web-bluetooth',
+		user: 'Pau Oliva Fora (poliva)',
+		username: 'poliva',
+		link: 'https://github.com/poliva/smartcube-web-bluetooth',
+		descKey: 'credits.libraries_smartcube_web_bluetooth',
+	},
+	{
 		project: 'cubejs',
 		user: '',
 		username: '',

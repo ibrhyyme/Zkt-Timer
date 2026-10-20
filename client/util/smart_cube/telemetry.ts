@@ -31,6 +31,7 @@ interface TelemetryRow {
 	turn_count?: number;
 	battery_level?: number;
 	time_correction_ms?: number;
+	recovered_moves?: number;
 	is_native?: boolean;
 	app_version?: string;
 }
@@ -145,6 +146,8 @@ export function recordEngineEvent(event: SmartEngineEvent, surface: TelemetrySur
 				// BLE event count would make TPS look higher than the app ever reported.
 				turn_count: event.result.htmCount,
 				time_correction_ms: Math.round(event.result.timeCorrectionMs),
+				// Turns that came back from the cube's move history after their packet was lost.
+				recovered_moves: event.result.solutionTurns.filter((t) => t.recovered === true).length,
 			});
 			break;
 

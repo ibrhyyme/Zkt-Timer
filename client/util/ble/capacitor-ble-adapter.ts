@@ -143,16 +143,6 @@ export class CapacitorBleAdapter implements BleAdapter {
 						if (!name) return;
 						if (excludeIds.has(deviceId)) return;
 
-						// acceptAll: bypass name filters (debug feature)
-						const matches = options.acceptAll
-							? true
-							: options.nameFilters.some(
-								(prefix) =>
-									name.startsWith(prefix) ||
-									name.toLowerCase().startsWith(prefix.toLowerCase())
-							);
-						if (!matches) return;
-
 						// Capture/refresh manufacturer data (needed for real MAC address discovery).
 						let mfData: Map<number, DataView> | undefined;
 						const rawMf = (result as any).manufacturerData;
@@ -164,6 +154,17 @@ export class CapacitorBleAdapter implements BleAdapter {
 								}
 							}
 						}
+
+						// acceptAll: bypass name filters (debug feature). A known company id in the
+						// advertisement lists the device too, whatever its name.
+						const matches = options.acceptAll
+							? true
+							: options.nameFilters.some(
+								(prefix) =>
+									name.startsWith(prefix) ||
+									name.toLowerCase().startsWith(prefix.toLowerCase())
+							) || (!!mfData && (options.manufacturerDataFilters || []).some((cic) => mfData!.has(cic)));
+						if (!matches) return;
 
 						const rssi = typeof (result as any).rssi === 'number' ? (result as any).rssi : null;
 						const existing = this.scannedDevices.get(deviceId);

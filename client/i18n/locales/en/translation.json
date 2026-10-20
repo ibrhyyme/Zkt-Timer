@@ -4050,6 +4050,7 @@
     "libraries_desc": "Core cubing libraries used directly in Zkt Timer's infrastructure.",
     "libraries_cubingjs": "The core library used for smart cube state tracking, WCA notation, and KPattern matching. Developed by <strong>Lucas Garron</strong> and the cubing.js contributors.",
     "libraries_ganweb": "The library that provides Bluetooth connection management and gyroscope/motion logic for GAN smart cubes. The Smart Cube module is built on top of this library.",
+    "libraries_smartcube_web_bluetooth": "The maintained successor of gan-web-bluetooth. Many fixes in our GAN, QiYi, MoYu, Giiker and GoCube drivers (reading several GAN moves from one Bluetooth packet, packet validation, gyroscope support, MAC candidates) come from this library, and its real cube recordings are used in our tests.",
     "libraries_cubejs": "A core cube solver library used in various analysis and solve features.",
     "opensource_title": "Open Source",
     "opensource_text": "Zkt Timer is built on top of hundreds of open-source packages, including React, Apollo, Prisma, and Three.js. The full list of dependencies can be found in the <code>package.json</code> file. A heartfelt thanks to everyone who has built and maintained these libraries over the years.",
@@ -5164,7 +5165,8 @@
     "download_all": "Download all as CSV",
     "exporting": "Preparing...",
     "col_battery": "Battery (clean/recovered)",
-    "col_correction": "Time correction"
+    "col_correction": "Time correction",
+    "col_recovered": "Recovered moves (per solve)"
   },
   "magnet_telemetry": {
     "title": "Magnet Timer Study",

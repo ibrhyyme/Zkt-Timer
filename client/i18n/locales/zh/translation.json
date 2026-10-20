@@ -4018,6 +4018,7 @@
     "libraries_desc": "直接用于 Zkt Timer 基础设施的核心速拧库。",
     "libraries_cubingjs": "用于智能魔方状态跟踪、WCA 符号和 KPattern 匹配的核心库。由 <strong>Lucas Garron</strong> 和 cubing.js 贡献者开发。",
     "libraries_ganweb": "提供 GAN 智能魔方的蓝牙连接管理和陀螺仪/运动逻辑的库。智能魔方模块构建在此库之上。",
+    "libraries_smartcube_web_bluetooth": "gan-web-bluetooth 的持续维护版本。我们 GAN、QiYi、MoYu、Giiker 和 GoCube 驱动中的许多修复（从一个蓝牙数据包读取多个 GAN 转动、数据包校验、陀螺仪支持、MAC 候选地址）都来自这个库，它的真实魔方录制数据也用于我们的测试。",
     "libraries_cubejs": "用于各种分析和还原功能的が核心魔方求解库。",
     "opensource_title": "开源",
     "opensource_text": "Zkt Timer 构建在数百个开源软件包之上，包括 React、Apollo、Prisma 和 Three.js。完整的依赖列表可以在 <code>package.json</code> 文件中找到。衷心感谢所有多年来构建和维护这些库的人。",
@@ -5130,7 +5131,8 @@
     "download_all": "下载全部 CSV",
     "exporting": "准备中...",
     "col_battery": "电量（正常/恢复）",
-    "col_correction": "时间校正"
+    "col_correction": "时间校正",
+    "col_recovered": "恢复的转动（每次复原）"
   },
   "magnet_telemetry": {
     "title": "Magnet Timer 实测",

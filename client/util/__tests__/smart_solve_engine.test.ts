@@ -455,12 +455,13 @@ describe('SmartSolveEngine — solve detection', () => {
 		const { engine, events, of } = harness();
 		const start = scrambleAndStart(engine, events);
 
-		// Solving R U F needs F' U' R'. The last face is turned three times (R' R R'), which
-		// nets out to R' on the cube but counts as one HTM move.
+		// Solving R U F needs F' U' R'. The last face is turned three times (R R R), which
+		// nets out to R' on the cube but counts as one HTM move. (R' R R' would not do: the
+		// cube is solved after the first R', and what follows was turned on a solved cube.)
 		engine.pushTurns([
 			turn('R', 1000), turn('U', 1100), turn('F', 1200),
 			turn("F'", start), turn("U'", start + 1000),
-			turn("R'", start + 2000), turn('R', start + 2500), turn("R'", start + 6000),
+			turn('R', start + 2000), turn('R', start + 2500), turn('R', start + 6000),
 		]);
 
 		const done = of('SOLVE_COMPLETE')[0].result;
@@ -927,5 +928,150 @@ describe('SmartSolveEngine — suspend (timer page, after an inspection DNF)', (
 		engine.pushTurns([turn('L', 3000), turn('D', 3100), turn('B', 3200)]);
 
 		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(2);
+	});
+});
+
+describe('SmartSolveEngine — where a solve ends', () => {
+	function scrambleAndStart(engine: SmartSolveEngine, events: SmartEngineEvent[]) {
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), turn('F', 1200)]);
+		const scrambleEnd = (events.find((e) => e.type === 'SCRAMBLE_COMPLETE') as any).at;
+		const start = scrambleEnd + 1000;
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), turn('F', 1200), turn("F'", start)]);
+		return start;
+	}
+	const SCR = [turn('R', 1000), turn('U', 1100), turn('F', 1200)];
+	const flagged = (t: SmartTurn, extra: Record<string, unknown>) => ({ ...t, ...extra }) as SmartTurn;
+
+	// Online Battle round 82153e31/1 (2026-10-20): the solve ended on U2, and a third U turned
+	// 32 ms later reached the engine in the same batch. It was counted, the log replayed one
+	// U away from solved, and the server scored an honest 11.71 as DNF.
+	it('stops the solution at the turn that solved the cube when a later turn shares its batch', () => {
+		const { engine, events, of } = harness();
+		const start = scrambleAndStart(engine, events);
+
+		engine.pushTurns([
+			...SCR, turn("F'", start), turn("U'", start + 1000),
+			turn("R'", start + 2000), turn('U', start + 2032),
+		]);
+
+		const done = of('SOLVE_COMPLETE');
+		expect(done).toHaveLength(1);
+		expect(done[0].result.solutionTurns.map((t) => t.turn)).toEqual(["F'", "U'", "R'"]);
+		expect(done[0].result.endedAt).toBe(start + 2000);
+		// The U happened on a solved cube, so that is where the tracker has to be now.
+		expect(engine.trackerState).toBe(faceletsAfter(['U']));
+	});
+
+	it('replays the real Online Battle log to solved once the post-solve turn is cut', () => {
+		const scramble = "B' L2 F2 L2 D' U2 F2 U' L2 D2 U' F' U F R' U' L' D' B U'";
+		const log =
+			"U@305356 U@305435 R'@305531 F@305655 U'@305816 B'@306013 B'@306106 U'@306760 R@306912 U'@307079 R'@307167 U@307224 R@307302 U'@307354 R'@307444 U@307491 U@307667 R@307766 U'@308001 R'@308095 U@309909 L@310052 U'@310106 L'@310215 R'@310439 U'@310533 R@310613 U'@310747 R'@310838 U@310919 R@311073 U'@311278 F@311602 U'@311642 U'@311867 F'@311963 U@312014 F@312087 U'@? F'@312225 U'@312368 B'@312498 U@312536 U@312724 B@312812 U'@312851 B'@312928 U@312981 B@313075 U'@313109 U'@313299 B'@313357 U@313392 B@313492 U'@314003 F'@314128 U'@314230 F'@314375 L@314444 F@314514 L'@314592 U@314692 F@314771 U'@315367 F@315466 U@315573 F'@315826 U'@315948 F'@316054 L@? F@316138 F@316180 U'@316210 F'@? U'@316420 F@316464 U@? F'@316618 L'@? U@316967 U@317036 U@317068";
+		const { engine, of } = harness();
+		const base = Date.now() + 10_000;
+		let lastC = 305356;
+		const solve: SmartTurn[] = log.split(' ').map((tok) => {
+			const [move, raw] = tok.split('@');
+			const c = raw === '?' ? null : Number(raw);
+			lastC = c ?? lastC + 50;
+			const at = base + (lastC - 305356);
+			return { turn: move, completedAt: at, cubeTimestamp: c, localTimestamp: c == null ? null : at, recovered: c == null } as any;
+		});
+
+		engine.setScramble(scramble);
+		engine.setConnected(true);
+		const scr = scramble.split(' ').map((m, i) => turn(m, 1000 + i));
+		engine.pushTurns(scr);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+
+		// One turn per batch, except the last two U turns, which arrived together.
+		for (let i = 1; i < solve.length - 1; i++) engine.pushTurns([...scr, ...solve.slice(0, i)]);
+		engine.pushTurns([...scr, ...solve]);
+
+		const done = of('SOLVE_COMPLETE');
+		expect(done).toHaveLength(1);
+		const moves = done[0].result.solutionTurns.map((t) => t.turn);
+		expect(moves).toHaveLength(solve.length - 1);
+		const cube = new Cube();
+		cube.move(scramble);
+		for (const m of moves) cube.move(m);
+		expect(cube.isSolved()).toBe(true);
+	});
+
+	it('keeps a turn the cube reported late but already counted, on a recovery path', async () => {
+		const { engine, events, of } = harness({ graceMs: 400, pollMs: 10_000 });
+		const start = scrambleAndStart(engine, events);
+		engine.pushTurns([...SCR, turn("F'", start), turn("U'", start + 1000)]);
+		// The final R' packet was lost; the cube reports solved, and the turn comes back from its
+		// move history afterwards. The driver marks it stale: the solved state already has it.
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		await wait(150);
+		engine.pushTurns([
+			...SCR, turn("F'", start), turn("U'", start + 1000),
+			flagged(turn("R'", Date.now()), { stale: true, recovered: true, cubeTimestamp: null }),
+		]);
+
+		const done = of('SOLVE_COMPLETE');
+		expect(done).toHaveLength(1);
+		expect(done[0].result.solutionTurns.map((t) => t.turn)).toEqual(["F'", "U'", "R'"]);
+	});
+
+	it('leaves out a turn made on the solved cube inside the grace window', async () => {
+		const { engine, events, of } = harness({ graceMs: 400, pollMs: 10_000 });
+		const start = scrambleAndStart(engine, events);
+		engine.pushTurns([...SCR, turn("F'", start), turn("U'", start + 1000)]);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		await wait(150);
+		// A fresh turn, not one the solved state contains: the user moved the cube again.
+		engine.pushTurns([...SCR, turn("F'", start), turn("U'", start + 1000), turn('D', Date.now())]);
+		await wait(400);
+
+		const done = of('SOLVE_COMPLETE');
+		expect(done).toHaveLength(1);
+		expect(done[0].result.source).toBe('facelets-grace');
+		expect(done[0].result.solutionTurns.map((t) => t.turn)).toEqual(["F'", "U'"]);
+		expect(engine.trackerState).toBe(faceletsAfter(['D']));
+	});
+
+	it('does not count a stale turn twice outside a solve', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushFacelets(faceletsAfter(['R']));
+		// The R that state already contains arrives afterwards, marked stale by the driver.
+		engine.pushTurns([flagged(turn('R', 1000), { stale: true })]);
+
+		expect(engine.trackerState).toBe(faceletsAfter(['R']));
+		expect(of('UNDO_MOVES').filter((e) => e.moves)).toHaveLength(0);
+	});
+
+	it('starts the timer on a first solve turn that was recovered from move history', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushTurns(SCR);
+		const scrambleEnd = of('SCRAMBLE_COMPLETE')[0].at;
+
+		// Its packet was lost and it came back with the next turn: recovered, but not stale.
+		engine.pushTurns([...SCR, flagged(turn("F'", scrambleEnd + 800), { recovered: true, cubeTimestamp: null })]);
+
+		expect(of('LATE_SCRAMBLE_MOVE')).toHaveLength(0);
+		expect(of('TIMER_START')).toHaveLength(1);
+	});
+
+	it('treats a stale turn after the scramble as part of the scramble', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.pushTurns([turn('R', 1000), turn('U', 1100)]);
+		engine.pushFacelets(computeTargetFacelets(SCRAMBLE)!);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+
+		const later = of('SCRAMBLE_COMPLETE')[0].at + 2000;
+		engine.pushTurns([turn('R', 1000), turn('U', 1100), flagged(turn('F', later), { stale: true })]);
+
+		expect(of('TIMER_START')).toHaveLength(0);
+		expect(engine.trackerState).toBe(computeTargetFacelets(SCRAMBLE));
 	});
 });

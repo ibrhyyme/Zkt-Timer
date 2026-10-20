@@ -656,6 +656,11 @@ model SmartCubeTelemetry {
   /// verified against real solves rather than assumed to work.
   time_correction_ms Int?
 
+  /// Moves of the solve that came back from the cube's move history after their packet was
+  /// lost (they carry no cube timestamp; the blue "?" moves of the battle admin). Counts GAN
+  /// Gen3/Gen4 only, the protocols that recover this way. Null on rows from older apps.
+  recovered_moves Int?
+
   is_native   Boolean @default(false)
   app_version String?
 
@@ -2065,6 +2070,10 @@ model BattleRound {
   b_moves     Json?
   a_flags     String[] @default([])
   b_flags     String[] @default([])
+  /// Why the side's solve became DNF (BattleDnfReason), null otherwise. Without it the admin
+  /// could not tell a replay failure from an inspection overrun.
+  a_dnf_reason String?
+  b_dnf_reason String?
   match       BattleMatch @relation(fields: [match_id], references: [id], onDelete: Cascade)
 
   @@unique([match_id, index])

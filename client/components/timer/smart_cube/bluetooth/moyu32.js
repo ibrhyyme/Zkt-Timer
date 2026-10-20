@@ -2,6 +2,11 @@
 // Reference: e:/Projects/Zkt-Timer/Reference/cstimer-master/src/js/hardware/moyu32cube.js (392 lines)
 // 100% port: encryption (GAN Gen2/3 schema), MAC discovery, message parsing, time correction
 //
+// Extended from smartcube-web-bluetooth src/smartcube/protocols/moyu32.ts (Pau Oliva, MIT):
+// the doubled start-up burst cheaper V10 AI boards need, the gyroscope, re-anchoring on every
+// state packet, periodic battery reads, name-derived MAC candidates tried before asking the
+// user, and the decrypted-packet sanity check that keeps a wrong MAC from confirming.
+//
 // State tracking: cubejs (used throughout the project) instead of cstimer mathlib.CubieCube
 // AES + LZString project's ./ae128 + ./lz_string (API compatible with cstimer)
 
@@ -35,6 +40,86 @@ const MAC_CACHE_KEY = 'moyu32_cube_mac';
 // never answers with a valid facelet state the MAC is wrong (decryption is garbage),
 // so we tear the connection down instead of faking a "connected" state.
 const HANDSHAKE_TIMEOUT_MS = 7000;
+
+// How long one name-derived MAC candidate gets before the next one is tried.
+const MAC_PROBE_TIMEOUT_MS = 2000;
+
+/** Opcode 172 with byte 2 set: start streaming orientation packets (msgType 171). */
+const ENABLE_GYRO_PAYLOAD = [172, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+/**
+ * MAC addresses a WCU name points to, most likely first. The fourth byte differs per
+ * hardware line; confirmed on real cubes (WCU_MY32_A388 = CF:30:16:00:A3:88,
+ * WCU_MY33_AF9E = CF:30:16:02:AF:9E). From smartcube-web-bluetooth mac-candidates.ts.
+ * The 2x2 (WCU_MY22) is left out: the app has no 2x2 smart cube support.
+ */
+export function moyu32MacCandidatesFromName(deviceName) {
+	const name = (deviceName || '').trim();
+	const lines = [
+		[/^WCU_MY32_([0-9A-Fa-f]{4})$/, ['00', '01', '02']],
+		[/^WCU_MY33_([0-9A-Fa-f]{4})$/, ['02', '01', '00']],
+	];
+	for (const [pattern, mids] of lines) {
+		const m = pattern.exec(name);
+		if (m) {
+			const t = m[1].toUpperCase();
+			return mids.map((mid) => `CF:30:16:${mid}:${t.slice(0, 2)}:${t.slice(2, 4)}`);
+		}
+	}
+	return [];
+}
+
+/**
+ * Does this decrypted payload look like something a MoYu32 cube sends? A wrong MAC decrypts
+ * to noise whose first byte is 163 one time in 256, and that used to be taken as the cube's
+ * first state: the connection was confirmed, the wrong MAC cached, and the noise adopted as
+ * the cube's position. Port of smartcube-web-bluetooth packet-sanity.ts.
+ */
+export function isValidMoyu32Packet(bytes) {
+	if (!bytes || bytes.length < 20) return false;
+	let zeros = 0;
+	let ffs = 0;
+	for (let i = 0; i < 20; i++) {
+		if (bytes[i] === 0) zeros++;
+		else if (bytes[i] === 255) ffs++;
+	}
+	if (zeros > 14 || ffs > 14 || new Set(bytes.slice(0, 20)).size > 18) return false;
+	let bits = '';
+	for (let i = 0; i < bytes.length; i++) bits += (bytes[i] + 256).toString(2).slice(1);
+	if (bits.length < 160) return false;
+	const type = parseInt(bits.slice(0, 8), 2);
+	if (![161, 163, 164, 165, 171].includes(type)) return false;
+	if (type === 164 && parseInt(bits.slice(8, 16), 2) > 100) return false;
+	if (type === 161) {
+		for (let k = 0; k < 8; k++) {
+			const v = parseInt(bits.slice(8 + 8 * k, 16 + 8 * k), 2);
+			if (v !== 0 && (v < 32 || v > 126)) return false;
+		}
+	}
+	if (type === 165) {
+		let codes = 0;
+		for (let j = 0; j < 5; j++) {
+			const v = parseInt(bits.slice(96 + 5 * j, 101 + 5 * j), 2);
+			if (v <= 11) codes++;
+			else if (v < 31) return false;
+		}
+		if (codes === 0) return false;
+		let allZero = true;
+		let allMax = true;
+		for (let r = 0; r < codes; r++) {
+			const v = parseInt(bits.slice(8 + 16 * r, 24 + 16 * r), 2);
+			if (v !== 0) allZero = false;
+			if (v !== 65535) allMax = false;
+		}
+		if (allZero || allMax) return false;
+	}
+	if (type === 163) {
+		const body = bits.slice(8, 152);
+		const ones = (body.match(/1/g) || []).length;
+		if (ones > 0.9 * body.length || body.length - ones > 0.9 * body.length) return false;
+	}
+	return true;
+}
 
 function valuedArray(n, val) {
 	const arr = [];
@@ -78,7 +163,25 @@ export default class MoYu32 extends SmartCube {
 		this._connected = false;
 		this._handshakeTimer = null;
 		this._pendingMac = null;
+		// Orientation packets are only switched on once someone wants them (see subscribeGyro).
+		this._gyroEnabled = false;
 	}
+
+	subscribeGyro = (callback) => this._addGyroListener(callback);
+
+	// Called by the base class whenever a gyro listener comes or goes. The cube has no
+	// documented "off" command, so the stream is switched on with the first listener and left.
+	_onGyroSubscribersChanged = (count) => {
+		if (count === 0 || this._gyroEnabled || !this.decoder || !this._connected) return;
+		this._gyroEnabled = true;
+		this.sendRequest(ENABLE_GYRO_PAYLOAD.slice())
+			.then(() => this.requestCubeStatus())
+			.catch(() => { this._gyroEnabled = false; });
+	};
+
+	// Polled by the connection manager while a page shows the cube (cstimer getBatteryLevel).
+	// Without it the level was read once at connect and never again.
+	updateBattery = () => this.requestCubePower();
 
 	// cstimer getKeyAndIv() — 1:1 port
 	getKeyAndIv(value) {
@@ -171,7 +274,8 @@ export default class MoYu32 extends SmartCube {
 	requestCubeStatus() { return this.sendSimpleRequest(163); }
 	requestCubePower() { return this.sendSimpleRequest(164); }
 
-	// Find MAC address: 0) native deviceId (Android), 1) manufacturer data (auto), 2) device name pattern, 3) prompt
+	// MAC discovery without asking anyone: 0) native deviceId (Android), 1) manufacturer
+	// data, 2) cache. Null when none of them knows. Name candidates and the prompt are init's.
 	async resolveMac() {
 		// 0) Capacitor Android: deviceId IS the BLE MAC address — the most reliable source.
 		// Manufacturer-data scans are unreliable on Android (issue #235), so without this the
@@ -190,10 +294,14 @@ export default class MoYu32 extends SmartCube {
 					if (mfData instanceof DataView) {
 						dataView = new DataView(mfData.buffer.slice(2));
 					} else {
-						for (const id of MOYU32_CIC_LIST) {
-							if (mfData.has(id)) {
+						// Every company id the advertisement carries, not only the 0x__00 ones
+						// cstimer lists: smartcube-web-bluetooth reads whichever is present.
+						const ids = [...MOYU32_CIC_LIST.filter((id) => mfData.has(id)), ...mfData.keys()];
+						for (const id of ids) {
+							const candidate = mfData.get(id);
+							if (candidate && candidate.byteLength >= 6) {
 								console.log('[Moyu32] CIC found: 0x' + id.toString(16).padStart(4, '0'));
-								dataView = mfData.get(id);
+								dataView = candidate;
 								break;
 							}
 						}
@@ -213,24 +321,45 @@ export default class MoYu32 extends SmartCube {
 			}
 		}
 
-		// 2) Device name pattern — WCU_MY32_XXXX
-		let defaultMac = null;
-		const m = /^WCU_MY32_[0-9A-F]{4}$/.exec(this.deviceName);
-		if (m) {
-			defaultMac = 'CF:30:16:00:' + this.deviceName.slice(9, 11) + ':' + this.deviceName.slice(11, 13);
-			console.log('[Moyu32] Default MAC from device name pattern:', defaultMac);
-		}
+		// 2) Cache. Keyed by device: one shared entry per brand meant a second cube of the
+		// same brand always started with the first one's MAC and failed.
+		return readCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device)) || null;
+	}
 
-		// 3) Cache or prompt. Keyed by device: one shared entry per brand meant a second
-		// cube of the same brand always started with the first one's MAC and failed.
-		const cached = readCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device));
-		if (cached) {
-			return cached;
+	/**
+	 * The start-up requests. Some MoYu32 boards (the cheaper V10 AI) only begin sending state
+	 * once they have received this burst twice (smartcube-web-bluetooth 2026-04-17).
+	 */
+	async sendInitBurst() {
+		for (let round = 0; round < 2; round++) {
+			await this.requestCubeInfo();
+			await this.requestCubeStatus();
+			await this.requestCubePower();
 		}
+	}
 
-		// Ask the user via modal. Returns a normalized MAC or null (cancelled).
-		// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
-		return await requestMacFromUser({ defaultMac: defaultMac || readAnyMac(MAC_CACHE_KEY), deviceName: this.deviceName });
+	/**
+	 * Try each MAC the advertised name points to: decrypt with it, send the start-up burst,
+	 * and see whether a plausible state comes back. Returns the MAC that worked, or null.
+	 * Before this the name-derived guess was only the prompt's default, and only for MY32.
+	 */
+	async probeNameCandidates() {
+		for (const mac of moyu32MacCandidatesFromName(this.deviceName)) {
+			this.initDecoder(mac);
+			this.deviceMac = mac;
+			this._pendingMac = mac;
+			try {
+				await this.sendInitBurst();
+			} catch (e) {
+				continue;
+			}
+			const deadline = Date.now() + MAC_PROBE_TIMEOUT_MS;
+			while (!this._connected && Date.now() < deadline) {
+				await new Promise((r) => setTimeout(r, 100));
+			}
+			if (this._connected) return mac;
+		}
+		return null;
 	}
 
 	async init() {
@@ -260,6 +389,18 @@ export default class MoYu32 extends SmartCube {
 		// Get MAC
 		this.deviceMac = await this.resolveMac();
 		if (!this.deviceMac) {
+			// No source knew it: try the addresses the name points to before asking the user.
+			if (await this.probeNameCandidates()) return;
+			// Ask the user via modal. Returns a normalized MAC or null (cancelled).
+			// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
+			this.decoder = null;
+			const candidates = moyu32MacCandidatesFromName(this.deviceName);
+			this.deviceMac = await requestMacFromUser({
+				defaultMac: candidates[0] || readAnyMac(MAC_CACHE_KEY),
+				deviceName: this.deviceName,
+			});
+		}
+		if (!this.deviceMac) {
 			throw new Error('[Moyu32] Could not obtain MAC address, connection not possible');
 		}
 		console.log('[Moyu32] MAC in use:', this.deviceMac);
@@ -267,12 +408,10 @@ export default class MoYu32 extends SmartCube {
 		// Treat the MAC as unverified until the cube answers (see _confirmConnected).
 		this._pendingMac = this.deviceMac;
 
-		// Same initial request order as cstimer: info -> status -> power.
+		// Same initial request order as cstimer: info -> status -> power, sent twice.
 		// We do NOT mark the connection as established here — alertConnected fires
 		// only when the first valid state packet arrives (see initCubeState).
-		await this.requestCubeInfo();
-		await this.requestCubeStatus();
-		await this.requestCubePower();
+		await this.sendInitBurst();
 		this._startHandshakeWatchdog();
 	}
 
@@ -308,6 +447,10 @@ export default class MoYu32 extends SmartCube {
 				id: this.device.deviceId,
 			},
 		});
+		// Gyro-less until orientation packets say otherwise (after subscribeGyro enables them).
+		if (!this._gyroSeen) this.alertGyroSupported(false);
+		// A page may have subscribed before the MAC was proven; switch the stream on now.
+		this._onGyroSubscribersChanged(this._gyroListeners.length);
 	}
 
 	onStateChanged(value) {
@@ -326,10 +469,22 @@ export default class MoYu32 extends SmartCube {
 		this.prevMoveCnt = this.moveCnt;
 	}
 
-	// cstimer parseData() — 1:1 port
+	// cstimer parseData() — 1:1 port, plus gyro and re-anchoring (see the file header)
 	parseData(value) {
 		const locTime = Date.now();
 		let decoded = this.decode(value);
+
+		// Until the cube has proven the MAC, only a state packet that looks like real cube data
+		// counts: anything else decrypted with a wrong key is noise (a bogus battery level, a
+		// bogus orientation), and the first real state is what confirms the connection anyway.
+		if (!this._connected && (decoded[0] !== 163 || !isValidMoyu32Packet(decoded))) {
+			return;
+		}
+
+		if ((decoded[0] | 0) === 171) {
+			this.parseGyroData(decoded, locTime);
+			return;
+		}
 
 		// cstimer's bit-string conversion
 		const bits = [];
@@ -350,11 +505,28 @@ export default class MoYu32 extends SmartCube {
 			const softwareVersion = parseInt(bitStr.slice(72, 80), 2) + '.' + parseInt(bitStr.slice(80, 88), 2);
 			console.log('[Moyu32] HW Version:', hardwareVersion, '| SW Version:', softwareVersion, '| Device:', devName);
 		} else if (msgType === 163) { // state (facelets)
-			if (this.prevMoveCnt === -1) { // initial state only
-				this.moveCnt = parseInt(bitStr.slice(152, 160), 2);
-				this.latestFacelet = this.parseFacelet(bitStr.slice(8, 152));
+			const moveCnt = parseInt(bitStr.slice(152, 160), 2);
+			const facelet = this.parseFacelet(bitStr.slice(8, 152));
+			if (this.prevMoveCnt === -1) { // initial state
+				this.moveCnt = moveCnt;
+				this.latestFacelet = facelet;
 				this.initCubeState();
+				return;
 			}
+			// Every later state re-anchors the tracker and the move counter, as
+			// smartcube-web-bluetooth does. cstimer ignored them, so a burst that lost more
+			// moves than the history holds left the tracker wrong for the rest of the session.
+			let cube;
+			try {
+				cube = Cube.fromString(facelet);
+			} catch (e) {
+				return;
+			}
+			this.moveCnt = moveCnt;
+			this.prevMoveCnt = moveCnt;
+			this.latestFacelet = facelet;
+			this.prevCube = cube;
+			this.alertCubeState(facelet);
 		} else if (msgType === 164) { // battery
 			this.batteryLevel = parseInt(bitStr.slice(8, 16), 2);
 			console.log('[Moyu32] battery:', this.batteryLevel);
@@ -380,7 +552,27 @@ export default class MoYu32 extends SmartCube {
 				this.updateMoveTimes(locTime);
 			}
 		}
-		// msgType 171 = gyro (also disabled in cstimer)
+	}
+
+	/**
+	 * Orientation packet (msgType 171): four little-endian int32 at 1, 5, 9, 13 scaled by
+	 * 2^30, normalised. From smartcube-web-bluetooth moyu32.ts; cstimer had it disabled.
+	 */
+	parseGyroData(decoded, timestamp) {
+		const dv = new DataView(Uint8Array.from(decoded).buffer);
+		const scale = 1073741824;
+		let w = dv.getInt32(1, true) / scale;
+		let x = dv.getInt32(5, true) / scale;
+		let y = dv.getInt32(9, true) / scale;
+		let z = dv.getInt32(13, true) / scale;
+		const len = Math.hypot(w, x, y, z);
+		if (len > 0) {
+			w /= len;
+			x /= len;
+			y /= len;
+			z /= len;
+		}
+		this._emitGyro({ timestamp, quaternion: { x, y, z, w } });
 	}
 
 	// cstimer updateMoveTimes() — 1:1 port + adaptation to our Redux pipeline
@@ -391,6 +583,9 @@ export default class MoYu32 extends SmartCube {
 		}
 		this.prevMoveCnt = this.moveCnt;
 		if (moveDiff > this.prevMoves.length) {
+			// More moves happened than the packet's history holds. The rest cannot be replayed,
+			// so ask for the cube's state and re-anchor on it (see the 163 branch).
+			this.requestCubeStatus().catch(() => {});
 			moveDiff = this.prevMoves.length;
 		}
 		let calcTs = this.deviceTime + this.deviceTimeOffset;

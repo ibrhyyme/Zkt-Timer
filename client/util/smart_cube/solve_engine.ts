@@ -152,6 +152,14 @@ const DEFAULTS = {
 const MOVE_ORDER_FIX_DELAY_MS = 1000;
 
 /**
+ * On a recovery path, how long after the cube first reported itself solved a turn may still
+ * arrive and count as part of the solve. The solving turn's own MOVE packet can trail the
+ * FACELETS packet that already shows its result, but only by a connection event or two;
+ * anything later was turned on a solved cube.
+ */
+const SOLVED_MOVE_IN_FLIGHT_MS = 100;
+
+/**
  * Shares the timer page's runtime flag: set `window.__SMART_DEBUG__ = true` in the console
  * to watch what the engine decides. Off by default, so this costs nothing in production.
  */
@@ -195,6 +203,12 @@ export class SmartSolveEngine {
 	private lastProgressDone = 0;
 
 	private turns: SmartTurn[] = [];
+	/**
+	 * Wall clock when each entry of `turns` reached the engine, same indexing. Only the
+	 * recovery paths read it: there the solution is cut at the moment the cube reported
+	 * itself solved (see solutionTurnsFor).
+	 */
+	private arrivals: number[] = [];
 	/** Index into `turns` where the current scramble attempt begins. */
 	private streamOffset = 0;
 	/** Index into `turns` where the solution begins (set when the scramble completes). */
@@ -378,6 +392,13 @@ export class SmartSolveEngine {
 		const previous = this.turns;
 		this.turns = turns;
 
+		const arrivedAt = Date.now();
+		if (turns.length < previous.length) {
+			this.arrivals = turns.map(() => arrivedAt);
+		} else {
+			for (let i = previous.length; i < turns.length; i++) this.arrivals[i] = arrivedAt;
+		}
+
 		if (turns.length < previous.length) {
 			// Caller cleared or trimmed its stream (timer does this when a scramble ends).
 			this.tracker.streamCleared();
@@ -421,6 +442,13 @@ export class SmartSolveEngine {
 		// skip straight past an intermediate deviation a single wrong turn put the cube in,
 		// crediting or blaming the wrong move for it.
 		while (this.tracker.applied < turns.length) {
+			// Outside a solve the tracker follows the cube's reported state, and a stale turn is
+			// already in that state (SmartTurn.stale): applying it would count it twice. During a
+			// solve the tracker does not follow the cube, so there the turn is applied like any other.
+			if (turns[this.tracker.applied]?.stale === true && this.phase !== 'timing') {
+				this.tracker.acknowledge(this.tracker.applied + 1);
+				continue;
+			}
 			const fresh = this.tracker.applyNew(turns.slice(0, this.tracker.applied + 1));
 			if (!fresh.length) break;
 
@@ -566,7 +594,8 @@ export class SmartSolveEngine {
 		// cube actually IS, not by replaying a move list against what was expected. Move
 		// order, half turns and commuting reorderings all fall out of this for free, since
 		// they land on the identical facelet state regardless of how they were arrived at.
-		this.compressor.processNew(this.turns.slice(this.streamOffset)); // keeps scrambleProgress (display text) current
+		// keeps scrambleProgress (display text) current; stale turns are already in the cube's state
+		this.compressor.processNew(this.turns.slice(this.streamOffset).filter((t) => !t.stale));
 
 		if (this.targetFacelets && this.tracker.matches(this.targetFacelets)) {
 			this.completeScramble('matcher');
@@ -648,7 +677,10 @@ export class SmartSolveEngine {
 	 * would make the hint useless.
 	 */
 	private setUndoForDeviation(): void {
-		const since = this.turns.slice(this.lastGoodHitStreamIndex).map((t) => t.turn);
+		const since = this.turns
+			.slice(this.lastGoodHitStreamIndex)
+			.filter((t) => !t.stale)
+			.map((t) => t.turn);
 		if (!since.length) {
 			this.setUndo(null);
 			return;
@@ -692,12 +724,20 @@ export class SmartSolveEngine {
 		// move is still queued. That move then looks like the first solve move and starts
 		// the timer seconds early. Three independent signals mark such a turn, because
 		// each one alone has a blind spot.
+		//
+		// The third used to be "recovered from move history". But a recovered turn is not
+		// necessarily old: when the first SOLVE turn's packet is lost it comes back the same
+		// way, and was then thrown out as a scramble turn. The tracker kept it while the
+		// solution lost it, so the solve could only end from facelets and its log never
+		// replayed to solved (an Online Battle DNF). The driver now says precisely which
+		// turns the cube's last reported state already contains (`stale`), and only those
+		// are scramble turns.
 		const cubeStillOnTarget = !!this.targetFacelets && this.tracker.matches(this.targetFacelets);
 		const at = moveTime(turn);
 		const predatesScrambleEnd = !!at && at < this.scrambleCompletedAt + this.opts.lateMoveWindowMs;
-		const wasRecovered = turn.recovered === true;
+		const alreadyInState = turn.stale === true;
 
-		if (cubeStillOnTarget || predatesScrambleEnd || wasRecovered) {
+		if (cubeStillOnTarget || predatesScrambleEnd || alreadyInState) {
 			if (this.lateDrops < this.opts.maxLateDrops) {
 				this.lateDrops++;
 				this.emit({ type: 'LATE_SCRAMBLE_MOVE', turn });
@@ -723,14 +763,24 @@ export class SmartSolveEngine {
 
 	private checkSolveFromTracker(): void {
 		if (this.phase !== 'timing') return;
-		if (!this.tracker.isSolved(this.opts.solvedState) && !this.physicallySolved) {
-			// Not solved as far as we can tell. If the cube misreported the order of two
-			// turns that is exactly what this looks like, so give that a chance once the
-			// user stops turning.
-			this.armMoveOrderFix();
+		if (this.tracker.isSolved(this.opts.solvedState)) {
+			this.commitSolve('tracker');
 			return;
 		}
-		this.commitSolve('tracker');
+		if (this.physicallySolved) {
+			// The cube already reported itself solved, yet the turns held do not get there: a
+			// packet was lost on the way. This used to commit as 'tracker' with the new turn in
+			// the solution. A stale turn is one that solved state contains, so it does belong to
+			// the solve; any other turn was made on the solved cube and ends the solve without
+			// being part of it. Either way the finish came from the cube's report.
+			const last = this.turns[this.tracker.applied - 1];
+			this.commitSolve('facelets-grace', last?.stale === true ? this.tracker.applied : this.tracker.applied - 1);
+			return;
+		}
+		// Not solved as far as we can tell. If the cube misreported the order of two
+		// turns that is exactly what this looks like, so give that a chance once the
+		// user stops turning.
+		this.armMoveOrderFix();
 	}
 
 	/**
@@ -800,11 +850,48 @@ export class SmartSolveEngine {
 		}, this.opts.pollMs);
 	}
 
-	private commitSolve(source: SolveCompleteSource): void {
+	/**
+	 * The turns that make up the solve just finished.
+	 *
+	 * The stream can run past the finish. A turn made right after the cube came out solved
+	 * (a U2 flicked a quarter too far, a habit turn) can arrive in the same batch as the
+	 * solving turn, and on the recovery paths it can land inside the grace window. Counting
+	 * it put a turn in the solution the cube never needed: the log then replays one turn
+	 * away from solved, which Online Battle scores as DNF (check 2) and the phase analysis
+	 * reads as a broken solve, and its timestamp lengthened the time.
+	 */
+	private solutionTurnsFor(source: SolveCompleteSource, endIndex?: number): SmartTurn[] {
+		if (endIndex != null) {
+			return this.turns.slice(this.solutionOffset, Math.max(this.solutionOffset, endIndex));
+		}
+		if (source === 'tracker') {
+			// Called from inside pushTurns the moment the tracker reached solved, so the turn
+			// that solved it is the last one applied; anything later in the batch came after.
+			return this.turns.slice(this.solutionOffset, Math.max(this.solutionOffset, this.tracker.applied));
+		}
+		const all = this.turns.slice(this.solutionOffset);
+		if (this.solvedFaceletsAt == null) return all;
+		// Recovery paths: the tracker never reached solved (or the tracker path would have
+		// fired), so the log cannot tell where the solve ended. The cube can: keep what had
+		// arrived when it first reported itself solved, plus the window in which the solving
+		// turn's own packet may trail its facelets packet. A stale turn is in the solved state
+		// the cube reported, so it belongs to the solve however late it was recovered.
+		const cutoff = this.solvedFaceletsAt + SOLVED_MOVE_IN_FLIGHT_MS;
+		let end = 0;
+		for (let i = 0; i < all.length; i++) {
+			const arrived = this.arrivals[this.solutionOffset + i];
+			if (arrived == null || arrived <= cutoff || all[i].stale === true) end = i + 1;
+		}
+		return all.slice(0, end);
+	}
+
+	/** `endIndex`: index into `turns` where the solution stops, when the caller knows it. */
+	private commitSolve(source: SolveCompleteSource, endIndex?: number): void {
 		if (this.phase !== 'timing' || this.timerStartedAt == null) return;
 
 		const startedAt = this.timerStartedAt;
-		const solutionTurns = this.turns.slice(this.solutionOffset);
+		const solutionTurns = this.solutionTurnsFor(source, endIndex);
+		const solutionEnd = this.solutionOffset + solutionTurns.length;
 
 		this.clearTimers();
 		this.phase = 'idle';
@@ -864,8 +951,18 @@ export class SmartSolveEngine {
 		this.solutionOffset = this.turns.length;
 		this.streamOffset = this.turns.length;
 		this.compressor.reset();
+		// The cube was solved after the solution's last turn. Turns past it were made on a
+		// solved cube, so the tracker replays them on top: marking everything consumed as
+		// solved left it a turn behind a cube the user had already moved again.
+		this.tracker.setSolved(solutionEnd);
+		for (let i = solutionEnd; i < this.turns.length; i++) {
+			if (this.turns[i].stale) {
+				this.tracker.acknowledge(i + 1);
+			} else {
+				this.tracker.applyNew(this.turns.slice(0, i + 1));
+			}
+		}
 		this.resetDeviationTracking();
-		this.tracker.setSolved(this.turns.length);
 		this.publishProgress([]);
 		// Consumed: the next attempt must stamp its own finish.
 		this.solvedFaceletsAt = null;

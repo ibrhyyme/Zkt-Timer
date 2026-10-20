@@ -8,6 +8,10 @@ export interface SmartTurn {
 	// Recovered from the cube's move history after a dropped BLE packet: the turn
 	// happened earlier than its timestamp suggests.
 	recovered?: boolean;
+	// Already contained in the last cube state the driver adopted from the cube: its
+	// packet landed after the facelets packet that counted it. Applying it to a tracker
+	// that follows the cube's reported state would count it twice.
+	stale?: boolean;
 }
 
 let solverReady = false;

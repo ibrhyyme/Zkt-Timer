@@ -82,6 +82,16 @@ export const MISSING_CUBE_TS_MAX_RATIO = 0.2;
  * Flagging on the first one put ordinary packet loss on the admin's review list.
  */
 export const MISSING_CUBE_TS_FLAG_RATIO = 0.05;
+/**
+ * Unstamped moves allowed at the start and at the end of a solve before check 3 calls DNF.
+ *
+ * A move the cube re-sends from its history has no cube timestamp, and the first and last
+ * turns are where that happens most: a solve's final U2 is two quarters inside one connection
+ * interval. The time does not need their stamps (the fit places them 50 ms from their stamped
+ * neighbour), and each one can move the result by well under a second, so two at either end
+ * are allowed and flagged rather than scored as DNF. Owner decision 2026-10-20.
+ */
+export const UNSTAMPED_END_MAX_MOVES = 2;
 export const INSPECTION_MISMATCH_MS = 300;
 export const SCRAMBLE_PAUSE_FLAG_MS = 5000;
 export const SUSPICIOUS_MIN_TIME_MS = 5000;

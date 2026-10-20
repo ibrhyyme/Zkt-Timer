@@ -311,10 +311,28 @@ export default class GiikerUtil extends EventEmitter {
 	_onCharacteristicValueChanged = async (value) => {
 		const {state, move} = await this._parseCubeValue(value);
 
+		const before = this._state ? this.stateString : null;
 		this._state = state;
+		const after = this.stateString;
 
-		this.emit('move', {move, facelets: this.stateString});
+		// A packet that repeats the state already held carries no new turn: the cube re-sent
+		// it. Its move field still names the last turn, and passing that on put the same turn
+		// in the stream twice (smartcube-web-bluetooth only reports a move on a state change).
+		this.emit('move', {move: before === after ? '' : move, facelets: after});
 	};
+
+	/**
+	 * Make the cube treat its current position as solved (command 0xA1 on the control
+	 * characteristic, as smartcube-web-bluetooth sends for REQUEST_RESET).
+	 */
+	async resetState() {
+		await this._adapter.writeCharacteristic(
+			this._device,
+			SYSTEM_SERVICE_UUID,
+			SYSTEM_WRITE_UUID,
+			new Uint8Array([0xa1]).buffer
+		);
+	}
 
 	probablyEncrypted(data) {
 		return data[18] === 0xa7;
@@ -338,11 +356,14 @@ export default class GiikerUtil extends EventEmitter {
 	};
 
 	_parseCubeValue = async (value) => {
-		const utin = new Uint8Array(value.buffer);
+		// The view's own window: a DataView can sit at an offset inside a larger buffer.
+		const utin = new Uint8Array(value.buffer, value.byteOffset || 0, value.byteLength ?? value.length);
 
-		if (this.probablyEncrypted(utin)) {
-			value = this.decryptState(utin);
-		}
+		// Decrypted exactly once. The move decoder below used to run the "encrypted?" test
+		// again on the already decrypted bytes, and one packet in 256 decrypts to 0xA7 at
+		// byte 18, which decrypted it a second time into a wrong move.
+		const decrypted = this.probablyEncrypted(utin) ? this.decryptState(utin) : utin;
+		value = decrypted;
 
 		const state = {
 			cornerPositions: [],
@@ -375,7 +396,7 @@ export default class GiikerUtil extends EventEmitter {
 			}
 		}
 
-		const val = await this.decodeState(new Uint8Array(value.buffer));
+		const val = decrypted;
 
 		const giikerState = [];
 		for (let i = 0; i < MESSAGE_LENGTH; i++) {
@@ -386,13 +407,6 @@ export default class GiikerUtil extends EventEmitter {
 		const move = this.giikerMoveToAlgMove(giikerState[32], giikerState[33]);
 
 		return {state, move};
-	};
-
-	decodeState = async (data) => {
-		if (!this.probablyEncrypted(data)) {
-			return data;
-		}
-		return this.decryptState(data);
 	};
 
 	/**

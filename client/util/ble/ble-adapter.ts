@@ -41,6 +41,13 @@ export interface BleRequestDeviceOptions {
 	 */
 	optionalManufacturerData?: number[];
 	/**
+	 * Company identifier codes that list a device on their own, whatever its name: a cube
+	 * whose advertised name matches no prefix (a renamed unit, a new model) is still offered
+	 * when its advertisement carries one of these. Web turns them into requestDevice filters,
+	 * native checks the scanned manufacturer data. Same as smartcube-web-bluetooth's picker.
+	 */
+	manufacturerDataFilters?: number[];
+	/**
 	 * Native only: called whenever the set of matching devices changes during a scan
 	 * (sorted strongest-signal first). The UI shows these and the user selects one via
 	 * BleAdapter.selectScannedDevice. Not called by the web adapter (Chrome picker handles it).

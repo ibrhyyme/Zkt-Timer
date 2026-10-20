@@ -46,6 +46,7 @@ const NAMES = [
 	'Rubiks_Connected',
 	'MHC-0001',
 	'WCU_MY32_ABCD',
+	'^S1234',
 	'QY-QYSC-S-1234',
 	'XMD-TornadoV4-i-55',
 	'SomeOtherCube',

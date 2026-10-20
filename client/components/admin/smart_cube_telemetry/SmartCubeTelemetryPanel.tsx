@@ -118,7 +118,7 @@ export default function SmartCubeTelemetryPanel() {
 
 		const headers = [
 			'created_at', 'username', 'device_name', 'cube_type', 'surface', 'event_type',
-			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'time_correction_ms', 'is_native', 'app_version',
+			'detection_source', 'detection_lag_ms', 'time_ms', 'turn_count', 'battery_level', 'time_correction_ms', 'recovered_moves', 'is_native', 'app_version',
 		];
 
 		const csv = buildCsv(headers, rows.map((r: any) => headers.map((h) => r[h])));
@@ -179,6 +179,7 @@ export default function SmartCubeTelemetryPanel() {
 								<th>{t('smart_telemetry.col_p95')}</th>
 								<th>{t('smart_telemetry.col_battery')}</th>
 								<th>{t('smart_telemetry.col_correction')}</th>
+								<th>{t('smart_telemetry.col_recovered')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -222,6 +223,11 @@ export default function SmartCubeTelemetryPanel() {
 										    means this model's move stream arrives intact. */}
 										<td className={b('cell', {warn: s.median_time_correction_ms > 1500})}>
 											{s.median_time_correction_ms > 0 ? `${s.median_time_correction_ms} ms` : '-'}
+										</td>
+										{/* Moves per solve that came back from the cube's history without a cube
+										    timestamp. The 2026-10-13 closed test saw about one in ninety moves. */}
+										<td className={b('cell', {warn: s.avg_recovered_moves >= 2})}>
+											{s.avg_recovered_moves > 0 ? s.avg_recovered_moves.toFixed(2) : '-'}
 										</td>
 									</tr>
 								);

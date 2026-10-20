@@ -459,6 +459,8 @@ export class BattleCubeLink implements SmartCubeDriverSink {
 			// Pulled back from the cube's move history after a dropped packet, so its
 			// timestamp is the moment of recovery, not the moment of the turn.
 			recovered: m.recovered === true,
+			// Already part of the last cube state the driver adopted (gan.js _isStaleSerial).
+			stale: m.stale === true,
 		})) as SmartTurn[];
 
 		this.turns = [...this.turns, ...formatted];

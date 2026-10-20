@@ -30,6 +30,7 @@ import {
 	LEADERBOARD_RD_FACTOR,
 } from '../../shared/battle/config';
 import {
+	BattleDnfReason,
 	BattleEndReason,
 	BattleFlag,
 	BattleHeadToHead,
@@ -185,6 +186,7 @@ export interface PersistRoundSideInput {
 	penalty: BattlePenalty | null;
 	moves?: BattleMove[] | null;
 	flags?: BattleFlag[] | null;
+	dnfReason?: BattleDnfReason | null;
 }
 
 export interface PersistRoundInput {
@@ -259,6 +261,7 @@ function sideRoundData(side: PersistRoundSideInput, prefix: 'a' | 'b') {
 		[`${prefix}_time_ms`]: side.timeMs == null ? null : Math.round(side.timeMs),
 		[`${prefix}_penalty`]: side.penalty ?? null,
 		[`${prefix}_flags`]: uniqueFlags(side.flags || []),
+		[`${prefix}_dnf_reason`]: side.penalty === 'DNF' ? side.dnfReason ?? null : null,
 	};
 	// A nullable Json column takes Prisma.DbNull, not null; leaving it out stores NULL.
 	if (side.moves) data[`${prefix}_moves`] = side.moves as unknown as Prisma.InputJsonValue;
@@ -837,6 +840,9 @@ export interface BattleRoundDetailData {
 	/** JSON of the move log, admins only. */
 	a_moves: string | null;
 	b_moves: string | null;
+	/** Why the solve became DNF (BattleDnfReason); null when it did not or the round predates the column. */
+	a_dnf_reason: string | null;
+	b_dnf_reason: string | null;
 }
 
 export interface BattleMatchDetailData {
@@ -932,6 +938,9 @@ export async function getBattleMatchDetail(id: string, viewer: BattleViewer | nu
 			b_flags: access.staff ? r.b_flags : [],
 			a_moves: access.moves && r.a_moves != null ? JSON.stringify(r.a_moves) : null,
 			b_moves: access.moves && r.b_moves != null ? JSON.stringify(r.b_moves) : null,
+			// The players saw the reason on their result screen already; nothing new is exposed.
+			a_dnf_reason: r.a_dnf_reason ?? null,
+			b_dnf_reason: r.b_dnf_reason ?? null,
 		})),
 	};
 }

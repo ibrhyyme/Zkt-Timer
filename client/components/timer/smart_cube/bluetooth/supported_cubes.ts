@@ -22,7 +22,7 @@ export const SUPPORTED_SMART_CUBE_BRANDS: {brand: string; prefixes: string[]}[] 
 	{brand: 'Xiaomi', prefixes: ['Mi Smart Magic Cube']},
 	{brand: 'GoCube', prefixes: ['GoCube']},
 	{brand: "Rubik's Connected", prefixes: ['Rubiks']},
-	{brand: 'MoYu', prefixes: ['MHC', 'WCU_MY3']},
+	{brand: 'MoYu', prefixes: ['MHC', 'WCU_MY3', '^S']},
 	{brand: 'QiYi', prefixes: ['QY-QYSC', 'XMD-TornadoV4-i']},
 ];
 

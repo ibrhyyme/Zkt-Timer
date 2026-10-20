@@ -82,6 +82,33 @@ export default class SmartCube {
 		this._target().handleGyroSupported(supported);
 	};
 
+	// Gyro plumbing shared by the drivers that can stream orientation. A driver opts in by
+	// defining `subscribeGyro = (cb) => this._addGyroListener(cb)`: the connection manager
+	// reads the presence of `subscribeGyro` as "this cube may have a gyroscope", so it is not
+	// defined here for everyone. Events carry `{quaternion, velocity?}` in GAN's frame
+	// (+X red, +Y blue, +Z white), which is what the 3D view draws.
+	_gyroListeners = [];
+
+	_addGyroListener = (callback) => {
+		this._gyroListeners.push(callback);
+		this._onGyroSubscribersChanged?.(this._gyroListeners.length);
+		return () => {
+			this._gyroListeners = this._gyroListeners.filter((cb) => cb !== callback);
+			this._onGyroSubscribersChanged?.(this._gyroListeners.length);
+		};
+	};
+
+	_gyroSeen = false;
+
+	_emitGyro = (event) => {
+		if (!this._gyroSeen) {
+			// A cube that streams orientation has a gyroscope, whatever it claimed at connect.
+			this._gyroSeen = true;
+			this.alertGyroSupported(true);
+		}
+		for (const listener of this._gyroListeners) listener(event);
+	};
+
 	// Dead paths kept for the drivers that still reference them: gan.js has its GYRO
 	// dispatch commented out in favour of subscribeGyro, and nothing reads the two Redux
 	// fields below. Left in place rather than removed because they are protocol surface.

@@ -2,6 +2,10 @@
 // Reference: e:/Projects/Zkt-Timer/Reference/cstimer-master/src/js/hardware/qiyicube.js (271 lines)
 // 100% port: AES-128 encryption, CRC16-MODBUS, MAC discovery, hello handshake, history move recovery
 //
+// Extended from smartcube-web-bluetooth src/smartcube/protocols/qiyi.ts (Pau Oliva, MIT):
+// gyroscope packets, all 11 history slots, the cube's own "needs ACK" flag, the sync
+// confirmation packet, and name-derived MAC candidates that are tried before asking the user.
+//
 // State tracking: cubejs instead of cstimer mathlib.CubieCube
 
 import SmartCube from './smart_cube';
@@ -31,6 +35,74 @@ const MAC_CACHE_KEY = 'qiyi_cube_mac';
 // If nothing decrypts within this window the MAC is wrong (or the cube is asleep),
 // so we tear the connection down instead of showing a fake "connected" state.
 const HANDSHAKE_TIMEOUT_MS = 7000;
+
+// How long one name-derived MAC candidate gets to answer before the next one is tried.
+const MAC_PROBE_TIMEOUT_MS = 3000;
+// The hello is repeated this often during a probe: a cube still waking up misses the first.
+const MAC_PROBE_HELLO_INTERVAL_MS = 300;
+
+/**
+ * MAC addresses a QiYi cube's advertised name points to, most likely first. The vendor
+ * prefix differs per line: CC:A2 for the A series, CC:A3 for the S series (some batches use
+ * 00:01 in the middle), CC:A6 for the Tornado V4 i. Confirmed against real captures
+ * (QY-QYSC-S-A0E6 = CC:A3:00:00:A0:E6, XMD-TornadoV4-i-034C = CC:A6:00:00:03:4C).
+ * From smartcube-web-bluetooth src/smartcube/attachment/mac-candidates.ts.
+ */
+export function qiyiMacCandidatesFromName(deviceName) {
+	const name = (deviceName || '').trim();
+	const out = [];
+	const a = /^QY-QYSC-A-([0-9A-Fa-f]{4})$/.exec(name);
+	if (a) out.push(macWithTail('CC:A2:00:00', a[1]));
+	const s = /^QY-QYSC-S-([0-9A-Fa-f]{4})$/.exec(name);
+	if (s) out.push(macWithTail('CC:A3:00:00', s[1]), macWithTail('CC:A3:00:01', s[1]));
+	const xmd = /^XMD-TornadoV4-i-([0-9A-Fa-f]{4})$/.exec(name);
+	if (xmd) out.push(macWithTail('CC:A6:00:00', xmd[1]));
+	// Any other single-letter series: cstimer's original guess.
+	const other = /^QY-QYSC-.-([0-9A-Fa-f]{4})$/.exec(name);
+	if (other && !out.length) out.push(macWithTail('CC:A3:00:00', other[1]));
+	return out;
+}
+
+function macWithTail(head, tail) {
+	const t = tail.toUpperCase();
+	return `${head}:${t.slice(0, 2)}:${t.slice(2, 4)}`;
+}
+
+/**
+ * Every move a state-change packet carries: the primary one plus the 11 history slots
+ * (bytes 36..90, 5 bytes each), oldest first, without empty (all 0xFF) slots or repeats.
+ * cstimer walked the slots backwards and stopped at nine; a burst that lost more than
+ * that came back short. From smartcube-web-bluetooth src/smartcube/protocols/qiyi.ts.
+ */
+export function qiyiStateChangeMoves(msg, headerTs) {
+	const out = [[msg[34], headerTs]];
+	for (let i = 0; i < 11; i++) {
+		const off = 36 + 5 * i;
+		if (off + 5 > msg.length) break;
+		let empty = true;
+		for (let j = 0; j < 5; j++) {
+			if (msg[off + j] !== 0xff) {
+				empty = false;
+				break;
+			}
+		}
+		if (empty) continue;
+		out.push([msg[off + 4], readTimestamp(msg, off)]);
+	}
+	out.sort((x, y) => x[1] - y[1]);
+	const seen = new Set();
+	return out.filter(([code, ts]) => {
+		const key = code + ',' + ts;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+}
+
+/** Big-endian uint32 at `off` (header timestamp at 3, history slots at 36 + 5i). */
+function readTimestamp(msg, off) {
+	return ((msg[off] << 24) | (msg[off + 1] << 16) | (msg[off + 2] << 8) | msg[off + 3]) >>> 0;
+}
 
 // cstimer crc16modbus() — 1:1 port
 function crc16modbus(data) {
@@ -73,6 +145,9 @@ export default class QiYi extends SmartCube {
 		this._handshakeTimer = null;
 		this._pendingMac = null;
 	}
+
+	// Gyro-equipped QiYi cubes (the Tornado V4 i streams it) send quaternion packets.
+	subscribeGyro = (callback) => this._addGyroListener(callback);
 
 	getDecoder() {
 		if (!this.decoder) {
@@ -123,7 +198,8 @@ export default class QiYi extends SmartCube {
 		return this.sendMessage(content);
 	}
 
-	// MAC discovery: 0) native deviceId (Android), 1) manufacturer data, 2) device name pattern, 3) cache, 4) prompt
+	// MAC discovery without asking anyone: 0) native deviceId (Android), 1) manufacturer
+	// data, 2) cache. Null when none of them knows. Name candidates and the prompt are init's.
 	async resolveMac() {
 		// 0) Capacitor Android: deviceId IS the BLE MAC address — the most reliable source.
 		// Manufacturer-data scans are unreliable on Android (issue #235), so without this the
@@ -163,23 +239,35 @@ export default class QiYi extends SmartCube {
 			}
 		}
 
-		// 2) Device name pattern: QY-QYSC-X-XXXX or XMD-TornadoV4-i-X-XXXX
-		let defaultMac = null;
-		const m = /^(QY-QYSC|XMD-TornadoV4-i)-.-[0-9A-F]{4}$/.exec(this.deviceName);
-		if (m) {
-			defaultMac = 'CC:A3:00:00:' + this.deviceName.slice(-4, -2) + ':' + this.deviceName.slice(-2);
-		}
-
-		// 3) Cache. Keyed by device: one shared entry per brand meant a second cube of
+		// 2) Cache. Keyed by device: one shared entry per brand meant a second cube of
 		// the same brand always started with the first one's MAC and failed to connect.
-		const cached = readCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device));
-		if (cached) {
-			return cached;
-		}
+		return readCachedMac(MAC_CACHE_KEY, cubeStorageId(this.device)) || null;
+	}
 
-		// 4) Ask the user via modal. Returns a normalized MAC or null (cancelled).
-		// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
-		return await requestMacFromUser({ defaultMac: defaultMac || readAnyMac(MAC_CACHE_KEY), deviceName: this.deviceName });
+	/**
+	 * Try each MAC the advertised name points to: send the hello with it and wait for a
+	 * packet that passes CRC. The cube only answers a hello that carries its own MAC, so an
+	 * answer proves the candidate. Returns the MAC that worked, or null.
+	 *
+	 * Before this the name-derived guess was only the prompt's default, and for the A series
+	 * and the Tornado V4 i the guess itself was wrong (CC:A3 for every line).
+	 */
+	async probeNameCandidates() {
+		for (const mac of qiyiMacCandidatesFromName(this.deviceName)) {
+			this._pendingMac = mac;
+			this.deviceMac = mac;
+			const deadline = Date.now() + MAC_PROBE_TIMEOUT_MS;
+			while (!this._connected && Date.now() < deadline) {
+				try {
+					await this.sendHello(mac);
+				} catch (e) {
+					// A write that fails is retried on the next round.
+				}
+				await new Promise((r) => setTimeout(r, MAC_PROBE_HELLO_INTERVAL_MS));
+			}
+			if (this._connected) return mac;
+		}
+		return null;
 	}
 
 	async init() {
@@ -205,6 +293,17 @@ export default class QiYi extends SmartCube {
 
 		// Get MAC and send hello
 		this.deviceMac = await this.resolveMac();
+		if (!this.deviceMac) {
+			// No source knew it: try the addresses the name points to before asking the user.
+			if (await this.probeNameCandidates()) return;
+			// Ask the user via modal. Returns a normalized MAC or null (cancelled).
+			// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
+			const candidates = qiyiMacCandidatesFromName(this.deviceName);
+			this.deviceMac = await requestMacFromUser({
+				defaultMac: candidates[0] || readAnyMac(MAC_CACHE_KEY),
+				deviceName: this.deviceName,
+			});
+		}
 		if (!this.deviceMac) {
 			throw new Error('[qiyi] Could not obtain MAC address, connection not possible');
 		}
@@ -249,6 +348,27 @@ export default class QiYi extends SmartCube {
 				id: this.device.deviceId,
 			},
 		});
+		// Not every QiYi has a gyroscope; the first quaternion packet says otherwise.
+		if (!this._gyroSeen) this.alertGyroSupported(false);
+	}
+
+	/**
+	 * Quaternion packet (0xCC 0x10) from a gyro-equipped cube. Its own CRC covers bytes
+	 * 0..13. Components are int16 / 1000; mapped onto GAN's frame (x, -z, y, w) the way
+	 * smartcube-web-bluetooth does, so the 3D view needs no per-brand case.
+	 */
+	handleQuaternionPacket(msg) {
+		if (msg.length < 16) return;
+		if (crc16modbus(msg.slice(0, 14)) !== (msg[14] | (msg[15] << 8))) return;
+		const int16 = (i) => {
+			const v = (msg[i] << 8) | msg[i + 1];
+			return v > 32767 ? v - 65536 : v;
+		};
+		const ax = int16(6) / 1000;
+		const ay = int16(8) / 1000;
+		const az = int16(10) / 1000;
+		const aw = int16(12) / 1000;
+		this._emitGyro({ timestamp: Date.now(), quaternion: { x: ax, y: -az, z: ay, w: aw } });
 	}
 
 	// cstimer onCubeEvent() — 1:1 port
@@ -265,6 +385,10 @@ export default class QiYi extends SmartCube {
 			for (let j = 0; j < 16; j++) {
 				msg[i + j] = block[j];
 			}
+		}
+		if (msg[0] === 0xcc && msg[1] === 0x10) {
+			this.handleQuaternionPacket(msg);
+			return;
 		}
 		const trimmed = msg.slice(0, msg[1]);
 		if (trimmed.length < 3 || crc16modbus(trimmed) !== 0) {
@@ -284,7 +408,7 @@ export default class QiYi extends SmartCube {
 			return;
 		}
 		const opcode = msg[2];
-		const ts = (msg[3] << 24 | msg[4] << 16 | msg[5] << 8 | msg[6]);
+		const ts = readTimestamp(msg, 3);
 
 		if (opcode === 0x2) { // cube hello
 			this.batteryLevel = msg[35];
@@ -294,23 +418,23 @@ export default class QiYi extends SmartCube {
 			this.alertCubeState(newFacelet);
 			this.alertBatteryLevel(this.batteryLevel);
 		} else if (opcode === 0x3) { // state change
-			this.sendMessage(msg.slice(2, 7));
-
-			// History moves recovery — cstimer logic
-			const todoMoves = [[msg[34], ts]];
-			while (todoMoves.length < 10) {
-				const off = 91 - 5 * todoMoves.length;
-				const hisTs = (msg[off] << 24 | msg[off + 1] << 16 | msg[off + 2] << 8 | msg[off + 3]);
-				const hisMv = msg[off + 4];
-				if (hisTs <= this.lastTs) {
-					break;
-				}
-				todoMoves.push([hisMv, hisTs]);
+			// The cube says per packet whether it wants an acknowledgement (byte 91). cstimer
+			// acknowledged every move, a GATT write per turn in the middle of a solve; in real
+			// traffic one packet in thirty asks for it, and the cube carries on without the
+			// rest (smartcube-web-bluetooth captures, QY-QYSC-S and Tornado V4 i).
+			if (msg.length > 91 && msg[91] !== 0) {
+				this.sendMessage(msg.slice(2, 7));
 			}
+
+			// History moves recovery: the primary move plus every history slot newer than the
+			// last move we already have, oldest first.
+			const todoMoves = qiyiStateChangeMoves(msg, ts).filter(
+				([code, moveTs]) => code >= 1 && code <= 12 && moveTs > this.lastTs
+			);
 			// Apply moves in old -> new order
 			const batch = [];
-			let curFacelet;
-			for (let i = todoMoves.length - 1; i >= 0; i--) {
+			let curFacelet = this.prevCube.asString();
+			for (let i = 0; i < todoMoves.length; i++) {
 				const axis = [4, 1, 3, 0, 2, 5][(todoMoves[i][0] - 1) >> 1];
 				const power = [0, 2][todoMoves[i][0] & 1];
 				const moveStr = 'URFDLB'.charAt(axis) + " 2'".charAt(power);
@@ -324,9 +448,12 @@ export default class QiYi extends SmartCube {
 				batch.push({
 					turn: cubejsMove,
 					cubeTimestamp: Math.trunc(todoMoves[i][1] / 1.6),
-					localTimestamp: i === 0 ? locTime : null,
+					localTimestamp: i === todoMoves.length - 1 ? locTime : null,
 					completedAt: locTime,
 				});
+			}
+			if (todoMoves.length > 0) {
+				this.lastTs = todoMoves[todoMoves.length - 1][1];
 			}
 
 			// FACELETS comparison (drift control)
@@ -355,6 +482,15 @@ export default class QiYi extends SmartCube {
 				this.batteryLevel = newBatteryLevel;
 				this.alertBatteryLevel(this.batteryLevel);
 			}
+			return;
+		} else if (opcode === 0x4) { // sync confirmation: the cube now considers itself solved
+			if (msg[1] !== 38) return;
+			this.prevCube = Cube.fromString(SOLVED_FACELET);
+			this.alertCubeState(SOLVED_FACELET);
+		} else {
+			// Unknown opcode: its "timestamp" bytes mean nothing, and moving lastTs on them
+			// would make the next packet's history look older than it is.
+			return;
 		}
 		this.lastTs = ts;
 	}

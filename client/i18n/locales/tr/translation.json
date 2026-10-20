@@ -4033,6 +4033,7 @@
     "libraries_desc": "Zkt Timer'ın altyapısında doğrudan kullanılan temel cubing kütüphaneleri.",
     "libraries_cubingjs": "Smart küp durum takibi, WCA notasyonu ve KPattern eşleştirme için kullanılan temel kütüphanedir. <strong>Lucas Garron</strong> ve cubing.js katkıcıları tarafından geliştirilmektedir.",
     "libraries_ganweb": "GAN smart cube'lar için Bluetooth bağlantı yönetimi ve jiroskop/hareket mantığını sağlayan kütüphanedir. Smart Cube modülünün temelini bu kütüphane oluşturmaktadır.",
+    "libraries_smartcube_web_bluetooth": "gan-web-bluetooth'un bakımı süren devamı. GAN, QiYi, MoYu, Giiker ve GoCube sürücülerimizdeki birçok düzeltme (bir Bluetooth paketindeki birden fazla GAN hamlesini okuma, paket doğrulama, jiroskop desteği, MAC adayları) bu kütüphaneden alındı; gerçek küp kayıtları testlerimizde kullanılıyor.",
     "libraries_cubejs": "Çeşitli analiz ve çözüm özelliklerinde kullanılan temel küp çözücü kütüphanesidir.",
     "opensource_title": "Açık Kaynak",
     "opensource_text": "Zkt Timer; React, Apollo, Prisma, Three.js başta olmak üzere yüzlerce açık kaynak paketin üzerine inşa edilmiştir. Kullanılan tüm bağımlılıkların listesine <code>package.json</code> dosyasından ulaşılabilir. Bu kütüphaneleri uzun yıllar boyunca geliştirip sürdüren herkese ayrıca teşekkür ederim.",
@@ -5145,7 +5146,8 @@
     "download_all": "Tüm veriyi CSV indir",
     "exporting": "Hazırlanıyor...",
     "col_battery": "Pil (temiz/kurtarma)",
-    "col_correction": "Süre düzeltmesi"
+    "col_correction": "Süre düzeltmesi",
+    "col_recovered": "Kurtarılan hamle (çözüm başı)"
   },
   "magnet_telemetry": {
     "title": "Magnet Timer Ölçümü",

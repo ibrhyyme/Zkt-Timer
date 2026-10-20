@@ -1,4 +1,4 @@
-import { ObjectType, Field, InputType, Int } from 'type-graphql';
+import { ObjectType, Field, Float, InputType, Int } from 'type-graphql';
 
 /**
  * A single observation from a smart cube session. Clients batch these and flush
@@ -39,6 +39,10 @@ export class SmartCubeTelemetryInput {
 	/** Ms added because the final move packet was lost; zero on clean solves. */
 	@Field(() => Int, { nullable: true })
 	time_correction_ms?: number;
+
+	/** Moves recovered from the cube's move history (no cube timestamp). */
+	@Field(() => Int, { nullable: true })
+	recovered_moves?: number;
 
 	@Field({ nullable: true })
 	is_native?: boolean;
@@ -94,6 +98,9 @@ export class SmartCubeTelemetryRow {
 
 	@Field(() => Int, { nullable: true })
 	time_correction_ms?: number;
+
+	@Field(() => Int, { nullable: true })
+	recovered_moves?: number;
 
 	@Field()
 	is_native: boolean;
@@ -176,4 +183,11 @@ export class SmartCubeTelemetrySummary {
 	 */
 	@Field(() => Int)
 	median_time_correction_ms: number;
+
+	/**
+	 * Average moves per solve that had to come back from the cube's move history, over the
+	 * solves that report it. The number the Gen4 multi-move fix (2026-10-20) should push down.
+	 */
+	@Field(() => Float)
+	avg_recovered_moves: number;
 }

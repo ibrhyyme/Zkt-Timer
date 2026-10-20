@@ -37,6 +37,9 @@ export class WebBleAdapter implements BleAdapter {
 			for (const service of options.serviceFilters || []) {
 				filters.push({ services: [service] });
 			}
+			for (const companyIdentifier of options.manufacturerDataFilters || []) {
+				filters.push({ manufacturerData: [{ companyIdentifier }] } as BluetoothLEScanFilter);
+			}
 			device = await navigator.bluetooth.requestDevice({
 				filters,
 				optionalServices: options.optionalServices,
@@ -112,9 +115,33 @@ export class WebBleAdapter implements BleAdapter {
 		return char.readValue();
 	}
 
+	/**
+	 * One GATT write at a time per device. Chrome rejects a write issued while the previous
+	 * one is still in flight ("GATT operation already in progress"), and the drivers do issue
+	 * them together: a GAN move-history request racing a facelets request, a QiYi ACK racing
+	 * a hello. The rejected one was simply lost. The native plugin queues on its own.
+	 * From smartcube-web-bluetooth gatt-characteristic-write.ts (Pau Oliva, MIT).
+	 */
+	private writeChains = new Map<string, Promise<void>>();
+
 	async writeCharacteristic(device: BleDevice, serviceUuid: string, characteristicUuid: string, data: ArrayBuffer): Promise<void> {
-		const char = await this.getCharacteristic(device.deviceId, serviceUuid, characteristicUuid);
-		await char.writeValue(data);
+		const previous = this.writeChains.get(device.deviceId) || Promise.resolve();
+		const run = async () => {
+			const char = await this.getCharacteristic(device.deviceId, serviceUuid, characteristicUuid);
+			// writeValue() is deprecated and leaves the write type to the browser. Pick it from
+			// the characteristic's properties, preferring a write with response when both exist.
+			const { write, writeWithoutResponse } = char.properties;
+			if (writeWithoutResponse && !write) {
+				await char.writeValueWithoutResponse(data);
+			} else if (write || writeWithoutResponse) {
+				await char.writeValueWithResponse(data);
+			} else {
+				await char.writeValue(data);
+			}
+		};
+		const next = previous.then(run, run);
+		this.writeChains.set(device.deviceId, next.catch(() => {}));
+		return next;
 	}
 
 	async startNotifications(
@@ -167,24 +194,43 @@ export class WebBleAdapter implements BleAdapter {
 			return null;
 		}
 
+		// The first advertisement often carries an empty manufacturer-data map and the MAC
+		// arrives in a later one. Resolving on the first frame returned that empty map, MAC
+		// discovery failed and the user got the MAC prompt. Frames are merged until one has
+		// data (smartcube-web-bluetooth address-hints.ts, Pau Oliva, MIT).
 		return new Promise((resolve) => {
 			const abortController = new AbortController();
+			const merged = new Map<number, DataView>();
+			let finished = false;
 
-			const onAdvEvent = (evt: any) => {
+			const finish = (value: Map<number, DataView> | null) => {
+				if (finished) return;
+				finished = true;
+				clearTimeout(timer);
 				webDevice.removeEventListener('advertisementreceived', onAdvEvent);
 				abortController.abort();
-				resolve(evt.manufacturerData || null);
+				resolve(value);
 			};
 
-			const onAbort = () => {
-				webDevice.removeEventListener('advertisementreceived', onAdvEvent);
-				abortController.abort();
-				resolve(null);
+			const onAdvEvent = (evt: any) => {
+				const mf = evt.manufacturerData;
+				if (mf instanceof DataView) {
+					// Bluefy hands over the raw payload instead of a map; the drivers handle that shape.
+					finish(mf as unknown as Map<number, DataView>);
+					return;
+				}
+				if (mf && typeof mf.keys === 'function') {
+					for (const id of mf.keys()) {
+						const v: DataView | undefined = mf.get(id);
+						if (v) merged.set(id, new DataView(v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength)));
+					}
+				}
+				if (merged.size > 0) finish(merged);
 			};
 
 			webDevice.addEventListener('advertisementreceived', onAdvEvent);
-			webDevice.watchAdvertisements({ signal: abortController.signal }).catch(onAbort);
-			setTimeout(onAbort, 10000);
+			webDevice.watchAdvertisements({ signal: abortController.signal }).catch(() => finish(null));
+			const timer = setTimeout(() => finish(merged.size > 0 ? merged : null), 10000);
 		});
 	}
 

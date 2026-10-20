@@ -853,6 +853,7 @@ query SmartCubeTelemetrySummary($days: Int) {
 		avg_battery_clean
 		avg_battery_recovered
 		median_time_correction_ms
+		avg_recovered_moves
 	}
 }
 
@@ -924,6 +925,7 @@ query SmartCubeTelemetryRows($limit: Int, $cubeType: String, $offset: Int, $user
 		turn_count
 		battery_level
 		time_correction_ms
+		recovered_moves
 		is_native
 		app_version
 		created_at

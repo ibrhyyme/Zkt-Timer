@@ -141,12 +141,26 @@ describe('check 2: replay', () => {
 describe('check 3: cube clock', () => {
 	const solve = buildSolve();
 
-	it('needs stamps on the first and the last move', () => {
+	// A solve's final U2 is two quarters in one connection interval, the classic place for a
+	// packet to come back from the cube's history without a stamp. That is an honest solve.
+	it('allows up to two recovered (unstamped) moves at either end, and flags them', () => {
+		const n = solve.moves.length;
 		const noFirst = solve.moves.map((m, i) => (i === 0 ? { ...m, c: null } : m));
-		const noLast = solve.moves.map((m, i) => (i === solve.moves.length - 1 ? { ...m, c: null } : m));
-		expect(checkCubeClock(noFirst).ok).toBe(false);
-		expect(checkCubeClock(noLast).ok).toBe(false);
-		expect(verifySolve(honestInput(solve, { moves: noFirst })).dnfReason).toBe('no_cube_clock');
+		const noLastTwo = solve.moves.map((m, i) => (i >= n - 2 ? { ...m, c: null } : m));
+		expect(checkCubeClock(noFirst).ok).toBe(true);
+		expect(checkCubeClock(noLastTwo).ok).toBe(true);
+		const verdict = verifySolve(honestInput(solve, { moves: noLastTwo }));
+		expect(verdict.dnfReason).toBeNull();
+		expect(verdict.flags).toContain('missing_cube_ts');
+	});
+
+	it('still needs a stamp within the first and last three moves', () => {
+		const n = solve.moves.length;
+		const noFirstThree = solve.moves.map((m, i) => (i < 3 ? { ...m, c: null } : m));
+		const noLastThree = solve.moves.map((m, i) => (i >= n - 3 ? { ...m, c: null } : m));
+		expect(checkCubeClock(noFirstThree).ok).toBe(false);
+		expect(checkCubeClock(noLastThree).ok).toBe(false);
+		expect(verifySolve(honestInput(solve, { moves: noFirstThree })).dnfReason).toBe('no_cube_clock');
 	});
 
 	it('allows at most 20% of moves without a stamp', () => {

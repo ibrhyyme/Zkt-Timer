@@ -578,7 +578,13 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	handleMoveBatch(moves: any[], facelets: string | null = null): void {
 		if (!moves || moves.length === 0) return;
 
-		if (this.dropDuringSolvedSilence()) return;
+		if (this.dropDuringSolvedSilence()) {
+			// A stale move is already counted in the solved state the cube reported: it is the
+			// solve's own final turn whose packet landed after the facelets one, not a turn made
+			// after the solve. Dropping it cut the last move out of the solution.
+			moves = moves.filter((m) => m.stale === true);
+			if (moves.length === 0) return;
+		}
 
 		const formatted: SmartTurn[] = moves.map((m) => ({
 			turn: (m.move || m.turn || '').replace(/\s/g, ''),
@@ -588,6 +594,8 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 			// Pulled back from the cube's move history after a dropped packet, so its
 			// timestamp is the moment of recovery, not the moment of the turn.
 			recovered: m.recovered === true,
+			// Already part of the last cube state the driver adopted (gan.js _isStaleSerial).
+			stale: m.stale === true,
 		})) as SmartTurn[];
 
 		if (facelets && isValidFacelets(facelets)) {

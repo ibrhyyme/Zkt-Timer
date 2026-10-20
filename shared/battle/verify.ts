@@ -26,6 +26,7 @@ import {
 	INSPECTION_MISMATCH_MS,
 	MISSING_CUBE_TS_FLAG_RATIO,
 	MISSING_CUBE_TS_MAX_RATIO,
+	UNSTAMPED_END_MAX_MOVES,
 	PROGRESS_TOLERANCE_MS,
 	REPLAY_GAP_MAX_MOVES,
 	SCRAMBLE_PAUSE_FLAG_MS,
@@ -151,31 +152,40 @@ export interface CubeClockCheck {
 	ok: boolean;
 	missing: number;
 	missingRatio: number;
+	/** The first or the last move has no stamp (allowed up to UNSTAMPED_END_MAX_MOVES, flagged). */
+	unstampedEnd: boolean;
 }
 
+const stamped = (m: BattleMove | undefined) => !!m && m.c != null && Number.isFinite(m.c);
+
 /**
- * First and last moves carry a cube timestamp, at most 20% of the moves miss one, and
- * the stamps that exist never go backwards.
+ * At most UNSTAMPED_END_MAX_MOVES unstamped moves at either end, at most 20% of the moves
+ * missing a stamp, and the stamps that exist never go backwards.
  */
 export function checkCubeClock(moves: BattleMove[]): CubeClockCheck {
-	if (!moves.length) return { ok: false, missing: 0, missingRatio: 0 };
+	if (!moves.length) return { ok: false, missing: 0, missingRatio: 0, unstampedEnd: false };
 	let missing = 0;
 	let last: number | null = null;
 	let ordered = true;
 	for (const m of moves) {
-		if (m.c == null || !Number.isFinite(m.c)) {
+		if (!stamped(m)) {
 			missing++;
 			continue;
 		}
-		if (last != null && m.c < last) ordered = false;
-		last = m.c;
+		if (last != null && (m.c as number) < last) ordered = false;
+		last = m.c as number;
 	}
 	const missingRatio = missing / moves.length;
-	const endsStamped = moves[0].c != null && moves[moves.length - 1].c != null;
+	let head = 0;
+	while (head < moves.length && !stamped(moves[head])) head++;
+	let tail = 0;
+	while (tail < moves.length && !stamped(moves[moves.length - 1 - tail])) tail++;
+	const endsUsable = head <= UNSTAMPED_END_MAX_MOVES && tail <= UNSTAMPED_END_MAX_MOVES && head < moves.length;
 	return {
-		ok: ordered && endsStamped && missingRatio <= MISSING_CUBE_TS_MAX_RATIO,
+		ok: ordered && endsUsable && missingRatio <= MISSING_CUBE_TS_MAX_RATIO,
 		missing,
 		missingRatio,
+		unstampedEnd: head > 0 || tail > 0,
 	};
 }
 
@@ -463,7 +473,11 @@ export function verifySolve(input: VerifySolveInput): VerifiedSolve {
 	// Check 3
 	const clock = checkCubeClock(moves);
 	if (!clock.ok) setDnf('no_cube_clock');
-	if (clock.missing > 0 && clock.missingRatio > MISSING_CUBE_TS_FLAG_RATIO) addFlags(['missing_cube_ts']);
+	// An unstamped end is what a forged stamp would look like too, so it is always shown to
+	// the admin, whatever the overall ratio.
+	if (clock.missing > 0 && (clock.unstampedEnd || clock.missingRatio > MISSING_CUBE_TS_FLAG_RATIO)) {
+		addFlags(['missing_cube_ts']);
+	}
 
 	// Check 2
 	const replay = checkReplay(input.scramble, moves, input.source);
