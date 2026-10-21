@@ -40,6 +40,47 @@ export function computeYearlyPricing(
 	return {perMonthString, savingsPercent};
 }
 
+export interface PriceParts {
+	/** Whatever precedes the number, e.g. "$" or "US$". */
+	prefix: string;
+	/** Integer part as a number, so it can be counted up. */
+	integer: number;
+	/** Decimal digits without the separator, "" when there are none. */
+	decimals: string;
+	decimalSep: string;
+	/** Thousands separator to use when re-printing `integer`. */
+	groupSep: string;
+	/** Whatever follows the number, e.g. " ₺" or " €". */
+	suffix: string;
+}
+
+/**
+ * Splits a formatted price ("899,99 ₺", "1.800 ₺", "$19.99", "1.234,56 €") into the
+ * integer the page animates and the pieces printed around it. Store strings follow the
+ * device locale, so the separators are read from the string rather than assumed.
+ */
+export function splitPriceString(raw: string): PriceParts {
+	const numMatch = raw.match(/[\d.,]+/);
+	const numToken = numMatch?.[0] || '0';
+	const numIdx = numMatch?.index ?? 0;
+	const prefix = raw.slice(0, numIdx);
+	const suffix = raw.slice(numIdx + numToken.length);
+
+	// A trailing separator followed by 1-2 digits is the decimal part. Three digits
+	// ("1.800") is a thousands group, not decimals.
+	const decMatch = numToken.match(/[.,](\d{1,2})$/);
+	const decimals = decMatch?.[1] || '';
+	const decimalSep = decMatch?.[0]?.[0] || '';
+	const rawInt = decMatch ? numToken.slice(0, -decMatch[0].length) : numToken;
+	const integer = parseInt(rawInt.replace(/[.,]/g, '') || '0', 10);
+
+	// Keep the string's own grouping when it has one, otherwise use the opposite of the
+	// decimal separator (TR "," -> "."; US "." -> ",").
+	const groupSep = rawInt.match(/[.,]/)?.[0] || (decimalSep === ',' ? '.' : ',');
+
+	return {prefix, integer, decimals, decimalSep, groupSep, suffix};
+}
+
 function formatPerMonth(value: number, currencyCode: string): string {
 	try {
 		return new Intl.NumberFormat(undefined, {style: 'currency', currency: currencyCode}).format(value);

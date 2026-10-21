@@ -6,7 +6,6 @@ import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useLatestSolve } from '../../util/hooks/useLatestSolve';
-import { useHasSmartTurns } from '../../util/hooks/useTimerStore';
 import { useSmartCubeStore } from '../../util/hooks/useSmartCubeStore';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
@@ -37,17 +36,14 @@ export default function TimerControls() {
     // part of the timer context.
     const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
     const isSmart = smartCubeSelected(context);
-    // The turn list is not in TimerContext (see FAST_TIMER_FIELDS); only whether it is
-    // empty matters here, and that does not change on every move.
-    const hasSmartTurns = useHasSmartTurns();
-    // Locking scramble navigation only makes sense once moves have actually been
-    // applied to a connected cube — changing the scramble then would leave the
-    // physical cube and the screen describing different states. With no cube on
-    // the other end there is nothing to contradict, and a stale turn list left
-    // over from an earlier connection must not keep the buttons dead.
-    // The turn list is cleared when the scramble completes, so `smartCanStart` holds the
+    // Locking scramble navigation only makes sense while a connected cube has left the
+    // scramble's starting state: changing the scramble then would leave the physical cube
+    // and the screen describing different states. Turning those moves back unlocks it
+    // (`smartScrambleStarted`, kept by SmartCube from the engine's compressed progress).
+    // With no cube on the other end there is nothing to contradict.
+    // The progress is cleared when the scramble completes, so `smartCanStart` holds the
     // lock through "Ready" and inspection until the timer starts.
-    const isSmartScrambling = isSmart && !!smartCubeConnected && (hasSmartTurns || !!context.smartCanStart) && !timeStartedAt;
+    const isSmartScrambling = isSmart && !!smartCubeConnected && (!!context.smartScrambleStarted || !!context.smartCanStart) && !timeStartedAt;
 
     // Previous / Next history lives in the timer store, shared with the desktop layout, so
     // a tablet rotating across 1024px keeps it.

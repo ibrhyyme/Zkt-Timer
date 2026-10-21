@@ -2,8 +2,7 @@ import React, {useState} from 'react';
 import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
 import {
-	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
-	ArrowRight,
+	Crown, Check, CaretDown, Info, CheckCircle, Warning, ArrowRight, AppleLogo,
 } from 'phosphor-react';
 import CountUp from '../stats/common/count_up/CountUp';
 import {useDispatch} from 'react-redux';
@@ -16,18 +15,20 @@ import {toastError, toastSuccess} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
-import {PRO_FEATURES, ProFeature} from '../../lib/pro_features';
+import {PRO_FEATURE_GROUPS, PRO_FEATURES, ProFeature} from '../../lib/pro_features';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
 import {getApiBase} from '../../util/api-base';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
-import {computeYearlyPricing} from './pricing';
+import {computeYearlyPricing, splitPriceString} from './pricing';
 import {openInAppBrowser} from '../../util/external-link';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
 import {useGeneral} from '../../util/hooks/useGeneral';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import AccountDropdown from '../layout/nav/account_dropdown/AccountDropdown';
+import Button from '../common/button/Button';
+import {APP_STORE_URL, PLAY_STORE_URL} from '../../util/store-links';
 
 const b = block('pro-page');
 
@@ -38,21 +39,19 @@ interface Plan {
 	priceKey: string;
 	detailKey: string;
 	trialKey: string;
-	sublabelKey: string;
 	cycleLabelKey: string;
 	hasTrial: boolean;
 	popular?: boolean;
 	bestValue?: boolean;
 }
 
-// Yearly first — matches design order. planIndex used for sliding thumb.
+// Yearly first: it is the plan most people pick, so it is preselected and on top.
 const PLANS: Plan[] = [
 	{
 		id: 'yearly',
 		priceKey: 'pro_page.plan.yearly_price',
 		detailKey: 'pro_page.plan.yearly_detail',
 		trialKey: 'pro_page.plan.trial',
-		sublabelKey: 'pro_page.plan.yearly_sublabel',
 		cycleLabelKey: 'pro_page.plan.yearly_cycle',
 		hasTrial: true,
 		popular: true,
@@ -62,7 +61,6 @@ const PLANS: Plan[] = [
 		priceKey: 'pro_page.plan.monthly_price',
 		detailKey: 'pro_page.plan.monthly_detail',
 		trialKey: 'pro_page.plan.trial',
-		sublabelKey: 'pro_page.plan.monthly_sublabel',
 		cycleLabelKey: 'pro_page.plan.monthly_cycle',
 		hasTrial: true,
 	},
@@ -71,7 +69,6 @@ const PLANS: Plan[] = [
 		priceKey: 'pro_page.plan.lifetime_price',
 		detailKey: 'pro_page.plan.lifetime_detail',
 		trialKey: 'pro_page.plan.no_trial',
-		sublabelKey: 'pro_page.plan.lifetime_sublabel',
 		cycleLabelKey: 'pro_page.plan.lifetime_cycle',
 		hasTrial: false,
 		bestValue: true,
@@ -79,33 +76,45 @@ const PLANS: Plan[] = [
 ];
 
 // The feature list itself lives in client/lib/pro_features.ts so this page and
-// PlanCompareModal cannot drift apart. Everything below follows its length, including
-// the advertised count and the two-column split.
-const FEATURE_COLUMN_SPLIT = Math.ceil(PRO_FEATURES.length / 2);
+// PlanCompareModal cannot drift apart. The advertised count follows its length.
+// Numbering runs on across groups, so each section knows where it starts.
+const FEATURE_SECTIONS = (() => {
+	let start = 0;
+	return PRO_FEATURE_GROUPS.map((group) => {
+		const items = PRO_FEATURES.filter((feature) => feature.group === group);
+		const section = {group, items, start};
+		start += items.length;
+		return section;
+	});
+})();
 
-const TESTIMONIALS = [
-	{initials: 'EA', name: 'Efe A.', colorA: '#ff7ab6', colorB: '#8b78ff', quoteKey: 'pro_page.testimonials.t1'},
-	{initials: 'MK', name: 'Melis K.', colorA: '#6ee7b7', colorB: '#6366f1', quoteKey: 'pro_page.testimonials.t2'},
-	{initials: 'KS', name: 'Kaan S.', colorA: '#b5ff5a', colorB: '#06b6d4', quoteKey: 'pro_page.testimonials.t3'},
-	{initials: 'SD', name: 'Selin D.', colorA: '#ffd166', colorB: '#ff7ab6', quoteKey: 'pro_page.testimonials.t4'},
-	{initials: 'ÖY', name: 'Ömer Y.', colorA: '#8b78ff', colorB: '#3ef0a0', quoteKey: 'pro_page.testimonials.t5'},
-	{initials: 'AN', name: 'Ayşegül N.', colorA: '#ff7ab6', colorB: '#ffd166', quoteKey: 'pro_page.testimonials.t6'},
-];
+/**
+ * The Google Play mark in its own four colours. Store badges are recognised by their
+ * logos, and Google's is multicoloured; Apple's mark is single colour by its guidelines,
+ * so that one stays a plain glyph.
+ */
+function GooglePlayMark() {
+	return (
+		<svg viewBox="0 0 24 24" aria-hidden focusable="false">
+			<path d="M3.6 2.2 13.4 12l-9.8 9.8c-.4-.2-.6-.7-.6-1.2V3.4c0-.5.2-1 .6-1.2Z" fill="#4285F4" />
+			<path d="M16.8 8.6 13.4 12 3.6 2.2c.3-.2.8-.2 1.2 0l12 6.4Z" fill="#34A853" />
+			<path d="M16.8 15.4 4.8 21.8c-.4.2-.9.2-1.2 0l9.8-9.8 3.4 3.4Z" fill="#EA4335" />
+			<path d="m16.8 8.6 3.6 1.9c1.1.6 1.1 2.4 0 3l-3.6 1.9-3.4-3.4 3.4-3.4Z" fill="#FBBC04" />
+		</svg>
+	);
+}
 
-
-function FeatureRow({feature}: {feature: ProFeature}) {
+function FeatureRow({feature, index}: {feature: ProFeature; index: number}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
-	const Icon = feature.icon;
+	const Icon = feature.icon || Check;
 
 	return (
 		<li className={b('feature', {open})}>
-			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)}>
-				<span className={b('feat-icon')}>
-					{Icon
-						? <Icon weight="fill" />
-						: <Check weight="bold" />
-					}
+			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)} aria-expanded={open}>
+				<span className={b('feature-index')}>{String(index + 1).padStart(2, '0')}</span>
+				<span className={b('feature-icon')}>
+					<Icon weight="duotone" />
 				</span>
 				<span className={b('feature-label')}>
 					{t(feature.titleKey)}
@@ -145,6 +154,7 @@ function ProPageContent() {
 	const native = isNative();
 	const mobileMode = useGeneral('mobile_mode');
 	const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
+	const [promoOpen, setPromoOpen] = useState(false);
 	const [promoCode, setPromoCode] = useState('');
 	const [redeeming, setRedeeming] = useState(false);
 	const [purchasing, setPurchasing] = useState(false);
@@ -170,8 +180,6 @@ function ProPageContent() {
 		: null;
 
 	const activePlan = PLANS.find((p) => p.id === selectedPlan)!;
-	// Index in PLANS array — used for sliding thumb transform
-	const planIndex = PLANS.findIndex((p) => p.id === selectedPlan);
 
 	React.useEffect(() => {
 		if (!native) return;
@@ -186,7 +194,9 @@ function ProPageContent() {
 	}, [isIapPro, currentIapProductId]);
 
 	const selectedPackage = offerings[selectedPlan];
-	const dynamicPrice = selectedPackage?.product?.priceString;
+	// Store prices only exist on native (offerings stays empty on web). Without them
+	// the static i18n prices are shown, with a hint that the store price may differ.
+	const hasStorePrices = PLANS.every((plan) => !!offerings[plan.id]?.product?.priceString);
 
 	// Live per-month price + savings % for the yearly plan, from RevenueCat's actual
 	// product data (native only; offerings stays empty on web). Null when unavailable,
@@ -196,24 +206,21 @@ function ProPageContent() {
 		[offerings]
 	);
 
-	function planSublabel(plan: Plan): string {
-		if (plan.id === 'yearly' && computedYearly) {
-			return t('pro_page.plan.yearly_sublabel_dynamic', {savings: computedYearly.savingsPercent});
-		}
-		return t(plan.sublabelKey);
+	function planPrice(plan: Plan): string {
+		return offerings[plan.id]?.product?.priceString || t(plan.priceKey);
 	}
 
-	function planDetail(): string {
-		if (activePlan.id === 'monthly') {
+	function planDetail(plan: Plan): string {
+		if (plan.id === 'monthly') {
 			const price = offerings.monthly?.product?.priceString;
 			if (price) return t('pro_page.plan.monthly_detail_dynamic', {price});
-		} else if (activePlan.id === 'yearly' && computedYearly) {
+		} else if (plan.id === 'yearly' && computedYearly) {
 			return t('pro_page.plan.yearly_detail_dynamic', {
 				perMonth: computedYearly.perMonthString,
 				savings: computedYearly.savingsPercent,
 			});
 		}
-		return t(activePlan.detailKey);
+		return t(plan.detailKey);
 	}
 
 	async function handleRedeem() {
@@ -273,33 +280,31 @@ function ProPageContent() {
 					</div>
 				)}
 				<div className={b('subscribed-via-card')}>
-					<div className={b('subscribed-via-icon')}>
-						<Crown weight="fill" size={32} />
-					</div>
-					<span className={b('eyebrow')}>
-						<span className={b('eyebrow-dot')} />
-						PRO
+					<span className={b('mark')}>
+						<Crown weight="fill" />
+						Pro
 					</span>
 					<h2 className={b('subscribed-via-title')}>
 						{t('pro_page.subscribed_via_title', {platform: platformLabel})}
 					</h2>
 					{planId && (
-						<div className={b('subscribed-via-plan-badge')}>
-							<span>{t(`pro_page.plan.${planId}_label`)}</span>
+						<dl className={b('subscribed-via-plan')}>
+							<dt>{t(`pro_page.plan.${planId}_label`)}</dt>
 							{expiryLabel && planId !== 'lifetime' && (
-								<span className={b('subscribed-via-expiry')}>
-									{t('pro_page.pro_expires', {date: expiryLabel})}
-								</span>
+								<dd>{t('pro_page.pro_expires', {date: expiryLabel})}</dd>
 							)}
-						</div>
+						</dl>
 					)}
 					<p className={b('subscribed-via-subtitle')}>
 						{t('pro_page.subscribed_via_subtitle', {platform: platformLabel})}
 					</p>
-					<a href="/" className={b('subscribed-via-btn')}>
-						{t('pro_page.subscribed_via_home')}
-						<ArrowRight weight="bold" />
-					</a>
+					<Button
+						to="/"
+						gray
+						noMargin
+						text={t('pro_page.subscribed_via_home')}
+						icon={<ArrowRight weight="bold" />}
+					/>
 				</div>
 			</div>
 		);
@@ -413,144 +418,104 @@ function ProPageContent() {
 
 	const totalFeatures = PRO_FEATURES.length;
 
+	const activePrice = planPrice(activePlan);
+	const price = splitPriceString(activePrice);
+
+	let status: string;
+	if (!userIsPro) status = t('pro_page.basic_hint');
+	else if (expiryLabel) status = t('pro_page.pro_expires', {date: expiryLabel});
+	else status = t('pro_page.pro_active_desc');
+
 	return (
 		<div className={b()}>
 			{mobileMode && (
 				<div className={b('mobile-header')}>
 					<MobileNav />
-					<span className={b('eyebrow')}>
-						<span className={b('eyebrow-dot')} />
-						PRO
-					</span>
 					<AccountDropdown />
 				</div>
 			)}
-			{/* ── HERO ─────────────────────────────────────── */}
-			<section className={b('hero')}>
-				{!mobileMode && (
-					<span className={b('eyebrow')}>
-						<span className={b('eyebrow-dot')} />
-						PRO
+
+			<div className={b('layout')}>
+				<header className={b('intro')}>
+					<span className={b('mark')}>
+						<Crown weight="fill" />
+						Pro
 					</span>
-				)}
-				<h1 className={b('hero-title')}>
-					{t('pro_page.hero_title_1')}<br />
-					<em>{t('pro_page.hero_title_em')}</em>
-				</h1>
-				<p className={b('hero-sub')}>{t('pro_page.hero_sub')}</p>
-			</section>
+					<h1 className={b('title')}>{t('pro_page.intro_title')}</h1>
+					<p className={b('lede')}>{t('pro_page.intro_lede', {count: totalFeatures})}</p>
+				</header>
 
-			{/* ── BILLING PANEL ─────────────────────────────── */}
-			<section className={b('billing-wrap')} id="billing">
-				<div className={b('billing-card')}>
-					<div className={b('billing-grid')}>
-
-						{/* LEFT — plan selection, price, CTA */}
-						<div className={b('billing-left')}>
-							<div className={b('plan-header')}>
-								<span className={b('plan-badge')}>
-									<Crown weight="fill" />
-									PRO
-								</span>
-								<span className={b('plan-badge', {live: true})}>
-									<span className={b('plan-live-dot')} />
-									{t('pro_page.plan_live')}
-								</span>
-							</div>
-
-							<h2 className={b('plan-title')}>
-								Pro <em>{t('pro_page.plan_title_em')}</em>
+				<aside className={b('buy')} id="billing">
+					<div className={b('panel')}>
+						<div className={b('panel-head')}>
+							<h2 className={b('panel-title')}>
+								<Crown weight="fill" />
+								{t('pro_page.hero_title')}
 							</h2>
+							<p className={b('status', {pro: userIsPro})}>{status}</p>
+						</div>
 
-							<p className={b('plan-lede')}>
-								{userIsPro ? t('pro_page.pro_active_desc') : t('pro_page.pro_desc')}
-							</p>
-
-							{userIsPro && expiryLabel && (
-								<p className={b('card-expiry')}>{t('pro_page.pro_expires', {date: expiryLabel})}</p>
-							)}
-
-							{/* Segmented switcher with sliding thumb */}
-							<div className={b('seg')} role="tablist">
-								<div
-									className={b('seg-thumb')}
-									style={{transform: `translateX(${planIndex * 100}%)`}}
-								/>
-								{PLANS.map((plan) => (
-									<button
-										key={plan.id}
-										type="button"
-										role="tab"
-										className={b('seg-btn', {active: selectedPlan === plan.id})}
-										onClick={() => setSelectedPlan(plan.id)}
-									>
-										{plan.popular && (
-											<span className={b('seg-badge')}>{t('pro_page.plan.popular')}</span>
-										)}
-										{plan.bestValue && (
-											<span className={b('seg-badge', {bestValue: true})}>{t('pro_page.plan.best_value')}</span>
-										)}
-										<span className={b('seg-label')}>{t(`pro_page.plan.${plan.id}_label`)}</span>
-										<span className={b('seg-sublabel')}>{planSublabel(plan)}</span>
-									</button>
-								))}
-							</div>
-
-							{/* Price block */}
-							<div className={b('price-block')}>
-								<div className={b('price-row')}>
-									{(() => {
-										const rawPriceStr = dynamicPrice || t(activePlan.priceKey);
-										const numMatch = rawPriceStr.match(/[\d.,]+/);
-										const numToken = numMatch?.[0] || '0';
-										const numIdx = numMatch?.index ?? 0;
-										const pricePrefix = rawPriceStr.slice(0, numIdx);
-										const priceSuffix = rawPriceStr.slice(numIdx + numToken.length);
-										// Son . veya , + 1-2 digit ondalik ayraci. "1.234,56" / "49,99" / "49.99" / "49"
-										const decMatch = numToken.match(/[.,](\d{1,2})$/);
-										const decStr = decMatch?.[1] || '';
-										const decimalSep = decMatch?.[0]?.[0] || '';
-										const rawIntPart = decMatch ? numToken.slice(0, -decMatch[0].length) : numToken;
-										const intPart = rawIntPart.replace(/[.,]/g, '');
-										const intNum = parseInt(intPart || '0', 10);
-										// Grouping separator: tam kisimda hala bir ayrac varsa onu kullan (orn. "1.800"),
-										// yoksa ondalik ayracinin tersini varsay (TR: "," -> "."; US: "." -> ",")
-										const groupSep = /[.,]/.test(rawIntPart)
-											? rawIntPart.match(/[.,]/)![0]
-											: (decimalSep === ',' ? '.' : ',');
-										return (
-											<span className={b('price-main')}>
-												{pricePrefix}
-												<CountUp
-													key={selectedPlan + (dynamicPrice || '')}
-													from={0}
-													to={intNum}
-													duration={0.4}
-													decimals={0}
-													separator={intNum >= 1000 ? groupSep : ''}
-												/>
-												{decStr && `${decimalSep}${decStr}`}
-												{priceSuffix}
+						<div className={b('panel-body')}>
+							<div className={b('plans')} role="radiogroup" aria-label={t('pro_page.hero_title')}>
+								{PLANS.map((plan) => {
+									const active = selectedPlan === plan.id;
+									return (
+										<button
+											key={plan.id}
+											type="button"
+											role="radio"
+											aria-checked={active}
+											className={b('plan', {active})}
+											onClick={() => setSelectedPlan(plan.id)}
+										>
+											<span className={b('plan-radio')} aria-hidden />
+											<span className={b('plan-text')}>
+												<span className={b('plan-name')}>
+													{t(`pro_page.plan.${plan.id}_label`)}
+													{plan.popular && <span className={b('plan-tag', {solid: true})}>{t('pro_page.plan.popular')}</span>}
+													{plan.bestValue && <span className={b('plan-tag')}>{t('pro_page.plan.best_value')}</span>}
+												</span>
+												<span className={b('plan-detail')}>{planDetail(plan)}</span>
 											</span>
-										);
-									})()}
-									{activePlan.id !== 'lifetime' && (
-										<span className={b('price-cycle')}>{t(activePlan.cycleLabelKey)}</span>
-									)}
-								</div>
-								<div className={b('price-detail')}>{planDetail()}</div>
-								{activePlan.hasTrial && (
-									<span className={b('trial-pill')}>
-										<Sparkle weight="fill" />
-										{t(activePlan.trialKey)}
-									</span>
-								)}
-								{!dynamicPrice && (
-									<div className={b('price-region-hint')}>{t('pro_page.plan.region_hint')}</div>
+										</button>
+									);
+								})}
+							</div>
+
+							<div className={b('price')} aria-live="polite">
+								<span className={b('price-amount')}>
+									{price.prefix.trim() && <span className={b('price-currency')}>{price.prefix.trim()}</span>}
+									<CountUp
+										key={selectedPlan + activePrice}
+										from={0}
+										to={price.integer}
+										duration={0.4}
+										decimals={0}
+										separator={price.integer >= 1000 ? price.groupSep : ''}
+									/>
+									{price.decimals && <span className={b('price-decimals')}>{price.decimalSep}{price.decimals}</span>}
+									{price.suffix.trim() && <span className={b('price-currency')}>{price.suffix.trim()}</span>}
+								</span>
+								{activePlan.id !== 'lifetime' && (
+									<span className={b('price-cycle')}>{t(activePlan.cycleLabelKey)}</span>
 								)}
 							</div>
 
-							{/* Notice banners */}
+							<div className={b('terms')}>
+								{activePlan.hasTrial && (
+									<p className={b('terms-line')}>
+										<CheckCircle weight="fill" />
+										<span>{t(activePlan.trialKey)}</span>
+									</p>
+								)}
+								{!hasStorePrices && (
+									<p className={b('terms-line', {muted: true})}>
+										<Info />
+										<span>{t('pro_page.plan.region_hint')}</span>
+									</p>
+								)}
+							</div>
+
 							{iapCancellation && isIapPro && (
 								<div className={b('notice', {warn: true})}>
 									<Warning weight="fill" />
@@ -577,200 +542,144 @@ function ProPageContent() {
 								</div>
 							)}
 
-							{/* CTA area */}
-							{!canPurchase && userIsPro && !isIapPro ? (
-								<div className={b('card-active')}>
-									<CheckCircle weight="fill" />
-									<span>{t('pro_page.iap.granted_pro', {date: expiryLabel || ''})}</span>
-								</div>
-							) : isCurrentPlan ? (
-								<div className={b('card-active')}>
-									<CheckCircle weight="fill" />
-									<span>{t('pro_page.current_plan')}</span>
-								</div>
-							) : native ? (
-								<>
-									<button
-										className={b('cta')}
-										disabled={purchasing || lifetimeBlocked || ownedLifetimeBlocked || downgradeBlocked || isCrossPlatform || !selectedPackage}
-										onClick={handlePurchase}
-									>
-										{!purchasing && <ArrowRight weight="bold" />}
-										{purchaseButtonLabel()}
-									</button>
-									{lifetimeBlocked && (
-										<p className={b('cta-hint')}>
-											<Info weight="fill" />
-											<span>{t('pro_page.iap.lifetime_needs_cancel_hint')}</span>
-										</p>
-									)}
-									{ownedLifetimeBlocked && (
-										<p className={b('cta-hint')}>
-											<Info weight="fill" />
-											<span>{t('pro_page.iap.already_lifetime_hint')}</span>
-										</p>
-									)}
-									{downgradeBlocked && (
-										<p className={b('cta-hint')}>
-											<Info weight="fill" />
-											<span>{t('pro_page.iap.downgrade_blocked_hint', {date: expiryLabel || ''})}</span>
-										</p>
-									)}
-									{isIapPro && !lifetimeBlocked && (
-										<button type="button" className={b('secondary-link')} onClick={handleManage}>
-											{t('pro_page.iap.manage_subscription')}
-										</button>
-									)}
-									<button
-										type="button"
-										className={b('secondary-link')}
-										onClick={handleRestore}
-										disabled={restoring}
-									>
-										{restoring ? t('pro_page.iap.restoring') : t('pro_page.iap.restore')}
-									</button>
-								</>
-							) : (
-								<>
-									<button className={b('cta')} disabled>
-										{t('pro_page.mobile_only_cta')}
-									</button>
-									<p className={b('fine-note')}>
-										<Info weight="fill" />
-										<span>{t('pro_page.mobile_only_hint')}</span>
-									</p>
-								</>
-							)}
-
-							<div className={b('legal-links')}>
-								<button type="button" className={b('legal-link')} onClick={() => openInAppBrowser('https://zktimer.app/terms')}>
-									{t('landing_footer.terms')}
-								</button>
-								<span className={b('legal-sep')}>·</span>
-								<button type="button" className={b('legal-link')} onClick={() => openInAppBrowser('https://zktimer.app/privacy')}>
-									{t('landing_footer.privacy')}
-								</button>
+							<div className={b('actions')}>
+								{!canPurchase && userIsPro && !isIapPro ? (
+									<div className={b('active')}>
+										<CheckCircle weight="fill" />
+										<span>{t('pro_page.iap.granted_pro', {date: expiryLabel || ''})}</span>
+									</div>
+								) : isCurrentPlan ? (
+									<div className={b('active')}>
+										<CheckCircle weight="fill" />
+										<span>{t('pro_page.current_plan')}</span>
+									</div>
+								) : native ? (
+									<>
+										<Button
+											primary
+											large
+											fullWidth
+											noMargin
+											loading={purchasing}
+											disabled={purchasing || lifetimeBlocked || ownedLifetimeBlocked || downgradeBlocked || isCrossPlatform || !selectedPackage}
+											onClick={handlePurchase}
+											text={purchaseButtonLabel()}
+										/>
+										{lifetimeBlocked && (
+											<p className={b('hint')}>
+												<Info />
+												<span>{t('pro_page.iap.lifetime_needs_cancel_hint')}</span>
+											</p>
+										)}
+										{ownedLifetimeBlocked && (
+											<p className={b('hint')}>
+												<Info />
+												<span>{t('pro_page.iap.already_lifetime_hint')}</span>
+											</p>
+										)}
+										{downgradeBlocked && (
+											<p className={b('hint')}>
+												<Info />
+												<span>{t('pro_page.iap.downgrade_blocked_hint', {date: expiryLabel || ''})}</span>
+											</p>
+										)}
+									</>
+								) : (
+									<>
+										<p className={b('store-lead')}>{t('pro_page.mobile_only_hint')}</p>
+										<div className={b('stores')}>
+											<a className={b('store')} href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+												<AppleLogo weight="fill" />
+												App Store
+											</a>
+											<a className={b('store')} href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer">
+												<GooglePlayMark />
+												Google Play
+											</a>
+										</div>
+									</>
+								)}
 							</div>
 						</div>
 
-						{/* RIGHT — feature list */}
-						<div className={b('billing-right')}>
-							<div className={b('features-head')}>
-								<span className={b('features-eyebrow')}>{t('pro_page.features_head_label')}</span>
-								<span className={b('features-count')}>
-									{t('pro_page.features_head_count', {count: totalFeatures})}
-								</span>
-							</div>
-
-							<div className={b('feature-hero-card')}>
-								<div className={b('feature-hero-icon')}>
-									<Check weight="bold" />
-								</div>
-								<div className={b('feature-hero-text')}>
-									<strong>{t('pro_page.all_basic_included')}</strong>
-									<span>{t('pro_page.all_basic_desc')}</span>
-								</div>
-							</div>
-
-							<div className={b('features-list')}>
-								<ul className={b('features-col')}>
-									{PRO_FEATURES.slice(0, FEATURE_COLUMN_SPLIT).map((feature) => (
-										<FeatureRow key={feature.key} feature={feature} />
-									))}
-								</ul>
-								<ul className={b('features-col')}>
-									{PRO_FEATURES.slice(FEATURE_COLUMN_SPLIT).map((feature) => (
-										<FeatureRow key={feature.key} feature={feature} />
-									))}
-								</ul>
-							</div>
+						<div className={b('panel-foot')}>
+							{native && isIapPro && !lifetimeBlocked && (
+								<button type="button" className={b('text-btn')} onClick={handleManage}>
+									{t('pro_page.iap.manage_subscription')}
+								</button>
+							)}
+							{native && (
+								<button type="button" className={b('text-btn')} onClick={handleRestore} disabled={restoring}>
+									{restoring ? t('pro_page.iap.restoring') : t('pro_page.iap.restore')}
+								</button>
+							)}
+							<button type="button" className={b('text-btn')} onClick={() => openInAppBrowser('https://zktimer.app/terms')}>
+								{t('landing_footer.terms')}
+							</button>
+							<button type="button" className={b('text-btn')} onClick={() => openInAppBrowser('https://zktimer.app/privacy')}>
+								{t('landing_footer.privacy')}
+							</button>
 						</div>
 					</div>
-				</div>
 
-			</section>
+					<div className={b('promo', {open: promoOpen})}>
+						{promoOpen ? (
+							<>
+								<label className={b('promo-label')} htmlFor="pro-promo-code">{t('pro_page.promo.title')}</label>
+								<div className={b('promo-form')}>
+									<input
+										id="pro-promo-code"
+										className={b('promo-input')}
+										placeholder={t('pro_page.promo.placeholder')}
+										value={promoCode}
+										autoFocus
+										autoComplete="off"
+										onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+										onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
+									/>
+									<Button
+										gray
+										noMargin
+										loading={redeeming}
+										onClick={handleRedeem}
+										disabled={redeeming || !promoCode.trim()}
+										text={t('pro_page.promo.redeem')}
+									/>
+								</div>
+							</>
+						) : (
+							<button type="button" className={b('text-btn')} onClick={() => setPromoOpen(true)}>
+								{t('pro_page.promo.title')}
+							</button>
+						)}
+					</div>
+				</aside>
 
-			{/* ── STORIES ───────────────────────────────────── */}
-			<section className={b('stories')}>
-				<div className={b('stories-head')}>
-					<span className={b('eyebrow')}>
-						<span className={b('eyebrow-dot')} />
-						{t('pro_page.stories_eyebrow')}
-					</span>
-					<h2 className={b('stories-title')}>
-						{t('pro_page.stories_title_1')} <em>{t('pro_page.stories_title_em')}</em>{t('pro_page.stories_title_2')}
-					</h2>
-					<p className={b('stories-sub')}>{t('pro_page.stories_sub')}</p>
-				</div>
-				<div className={b('stories-grid')}>
-					{TESTIMONIALS.map((testimonial) => (
-						<div key={testimonial.name} className={b('story')}>
-							<p className={b('story-quote')}>{t(testimonial.quoteKey)}</p>
-							<div className={b('story-who')}>
-								<div
-									className={b('story-avatar')}
-									style={{background: `linear-gradient(135deg, ${testimonial.colorA}, ${testimonial.colorB})`}}
-								>
-									{testimonial.initials}
-								</div>
-								<div className={b('story-who-text')}>
-									<div className={b('story-name')}>{testimonial.name}</div>
-								</div>
-							</div>
+				<section className={b('features')}>
+					<div className={b('features-head')}>
+						<h2 className={b('features-title')}>{t('pro_page.features_head_label')}</h2>
+						<span className={b('features-count')}>
+							{t('pro_page.features_head_count', {count: totalFeatures})}
+						</span>
+					</div>
+					<p className={b('features-base')}>
+						<Check weight="bold" />
+						{t('pro_page.basic_included')}
+					</p>
+					{FEATURE_SECTIONS.map((section) => (
+						<div key={section.group} className={b('group')}>
+							<h3 className={b('group-title')}>
+								{t(`pro_page.groups.${section.group}`)}
+								<span className={b('group-count')}>{section.items.length}</span>
+							</h3>
+							<ol className={b('feature-list')} start={section.start + 1}>
+								{section.items.map((feature, i) => (
+									<FeatureRow key={feature.key} feature={feature} index={section.start + i} />
+								))}
+							</ol>
 						</div>
 					))}
-				</div>
-			</section>
-
-			{/* ── FINALE ────────────────────────────────────── */}
-			<section className={b('finale')}>
-				<div className={b('finale-card')}>
-					<span className={b('eyebrow')}>
-						<span className={b('eyebrow-dot')} />
-						{t('pro_page.finale_eyebrow')}
-					</span>
-					<h2 className={b('finale-title')}>
-						{t('pro_page.finale_title_1')} <em>{t('pro_page.finale_title_em')}</em>{t('pro_page.finale_title_2')}
-					</h2>
-					<p className={b('finale-sub')}>{t('pro_page.finale_sub')}</p>
-					<a href="#billing" className={b('finale-cta')}>
-						{t('pro_page.finale_cta')}
-						<ArrowRight weight="bold" />
-					</a>
-					<div className={b('finale-footnote')}>
-						<span><Check weight="bold" />{t('pro_page.finale_no_card')}</span>
-						<span><Check weight="bold" />{t('pro_page.finale_secure')}</span>
-					</div>
-				</div>
-			</section>
-
-			{/* ── PROMO ─────────────────────────────────────── */}
-			{!userIsPro && (
-				<div className={b('basic-hint')}>
-					<span>{t('pro_page.basic_hint')}</span>
-				</div>
-			)}
-
-			<div className={b('promo')}>
-				<Ticket weight="duotone" className={b('promo-icon')} />
-				<h3 className={b('promo-title')}>{t('pro_page.promo.title')}</h3>
-				<p className={b('promo-desc')}>{t('pro_page.promo.desc')}</p>
-				<div className={b('promo-form')}>
-					<input
-						className={b('promo-input')}
-						placeholder={t('pro_page.promo.placeholder')}
-						value={promoCode}
-						onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-						onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
-					/>
-					<button
-						className={b('promo-btn')}
-						onClick={handleRedeem}
-						disabled={redeeming || !promoCode.trim()}
-					>
-						{redeeming ? '...' : t('pro_page.promo.redeem')}
-					</button>
-				</div>
+				</section>
 			</div>
 		</div>
 	);

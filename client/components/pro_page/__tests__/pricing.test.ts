@@ -1,4 +1,4 @@
-import {computeYearlyPricing} from '../pricing';
+import {computeYearlyPricing, splitPriceString} from '../pricing';
 
 describe('computeYearlyPricing', () => {
 	it('computes TRY savings and per-month price from the decided store prices', () => {
@@ -54,5 +54,34 @@ describe('computeYearlyPricing', () => {
 
 		expect(result).not.toBeNull();
 		expect(result!.perMonthString).toBe('1.67 NOT_A_CODE');
+	});
+});
+
+describe('splitPriceString', () => {
+	it('reads Turkish decimals with the lira sign after the number', () => {
+		expect(splitPriceString('899,99 ₺')).toEqual({
+			prefix: '', integer: 899, decimals: '99', decimalSep: ',', groupSep: '.', suffix: ' ₺',
+		});
+	});
+
+	it('treats a three digit tail as a thousands group, not decimals', () => {
+		const parts = splitPriceString('1.800 ₺');
+		expect(parts.integer).toBe(1800);
+		expect(parts.decimals).toBe('');
+		expect(parts.groupSep).toBe('.');
+		expect(parts.suffix).toBe(' ₺');
+	});
+
+	it('reads a US price with the symbol in front', () => {
+		const parts = splitPriceString('$19.99');
+		expect(parts).toMatchObject({prefix: '$', integer: 19, decimals: '99', decimalSep: '.', groupSep: ','});
+	});
+
+	it('keeps the grouping of a European price', () => {
+		expect(splitPriceString('1.234,56 €')).toMatchObject({integer: 1234, decimals: '56', decimalSep: ',', groupSep: '.'});
+	});
+
+	it('handles a price with no separators', () => {
+		expect(splitPriceString('US$49')).toMatchObject({prefix: 'US$', integer: 49, decimals: '', suffix: ''});
 	});
 });

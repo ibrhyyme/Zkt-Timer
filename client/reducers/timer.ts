@@ -12,6 +12,7 @@ const smartState = {
 	smartScanDevices: [],
 	smartCubeConnectStep: null,
 	smartCanStart: false,
+	smartScrambleStarted: false,
 	smartTurns: [],
 	smartGyroQuaternion: null,
 	smartGyroVelocity: null,

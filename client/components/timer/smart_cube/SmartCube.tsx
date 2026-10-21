@@ -270,6 +270,18 @@ export default function SmartCube() {
 	const engineRef = useRef<SmartSolveEngine | null>(null);
 	const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
 
+	// Scramble navigation locks while the cube has left the scramble's starting state. Read
+	// from the engine's compressed progress, not the raw turn list: U2 R2 D2 turned back
+	// leaves twelve raw turns on a cube that is where it started, and the user must be able
+	// to pick another scramble again. Written only when it flips.
+	const scrambleStartedRef = useRef(false);
+	const syncScrambleStarted = (started: boolean) => {
+		if (started === scrambleStartedRef.current) return;
+		scrambleStartedRef.current = started;
+		setTimerParams({ smartScrambleStarted: started });
+	};
+	const engineScrambleStarted = () => (engineRef.current?.scrambleProgress.length ?? 0) > 0;
+
 	if (!engineRef.current) {
 		// Batched so each engine event renders once. Events raised while React flushes the
 		// effects below are batched already, but the engine also fires from its own timers
@@ -469,6 +481,10 @@ export default function SmartCube() {
 				}
 				break;
 		}
+
+		// The engine also fires from its own timers (move-order fix, grace window), which
+		// can change the progress without a new input from the effects below.
+		syncScrambleStarted(engineScrambleStarted());
 	};
 
 	// ── Engine inputs ──
@@ -477,6 +493,7 @@ export default function SmartCube() {
 		// Matching follows the displayed scramble (which may be a correction path); the
 		// facelets target always follows the original.
 		engineRef.current?.setScramble(scramble || '', originalScramble || scramble || '');
+		syncScrambleStarted(engineScrambleStarted());
 	}, [scramble, originalScramble, useSpaceWithSmartCube]);
 
 	useEffect(() => {
@@ -488,16 +505,27 @@ export default function SmartCube() {
 	}, [smartCubeMoveOrderFix]);
 
 	useEffect(() => {
-		if (useSpaceWithSmartCube) return;
+		if (useSpaceWithSmartCube) {
+			// The engine does not follow the scramble in space mode, so any turn on the cube
+			// keeps the lock, as it always has there.
+			syncScrambleStarted(smartTurns.length > 0);
+			return;
+		}
 		engineRef.current?.pushTurns(smartTurns);
+		syncScrambleStarted(engineScrambleStarted());
 	}, [smartTurns, useSpaceWithSmartCube]);
 
 	useEffect(() => {
 		if (useSpaceWithSmartCube || !smartCurrentState) return;
 		engineRef.current?.pushFacelets(smartCurrentState);
+		syncScrambleStarted(engineScrambleStarted());
 	}, [smartStateSeq, useSpaceWithSmartCube]);
 
 	useEffect(() => () => engineRef.current?.dispose(), []);
+
+	// The next mount starts with a fresh ref, so a flag left true here would never be
+	// written false again and the scramble buttons would stay locked.
+	useEffect(() => () => setTimerParams({ smartScrambleStarted: false }), []);
 
 
 	// 3D view, gyro and the move mirror live in <SmartCubeView>, shared with friendly rooms.

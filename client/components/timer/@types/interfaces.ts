@@ -89,6 +89,9 @@ export interface TimerStore {
 	smartScanDevices?: { deviceId: string; name: string; rssi: number | null }[];
 	smartCubeConnectStep?: 'found' | 'paired' | 'reading_service' | 'done' | null;
 	smartCanStart?: boolean;
+	// The cube has left the scramble's starting state: turned and not turned back. Locks
+	// scramble navigation. Changes only when that flips, so it can ride in the context.
+	smartScrambleStarted?: boolean;
 	smartTurns?: any; // TODO fix
 	smartGyroQuaternion?: { x: number; y: number; z: number; w: number } | null;
 	smartGyroVelocity?: { x: number; y: number; z: number } | null;

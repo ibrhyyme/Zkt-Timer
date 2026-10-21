@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {PRO_FEATURES, PRO_FEATURE_KEYS} from '../pro_features';
+import {PRO_FEATURES, PRO_FEATURE_GROUPS, PRO_FEATURE_KEYS} from '../pro_features';
 
 const LOCALES = ['tr', 'en', 'es', 'ru', 'zh'];
 
@@ -33,6 +33,29 @@ describe('pro feature registry', () => {
 			expect(feature.descKey).toBe(`pro_page.features.${feature.key}.desc`);
 		}
 	});
+
+	// The Pro page renders group by group, so a feature in an unknown group would vanish
+	// from the page and an empty group would show a heading over nothing.
+	it('puts every feature in a known group and leaves no group empty', () => {
+		for (const feature of PRO_FEATURES) {
+			expect(PRO_FEATURE_GROUPS).toContain(feature.group);
+		}
+		for (const group of PRO_FEATURE_GROUPS) {
+			expect(PRO_FEATURES.some((f) => f.group === group)).toBe(true);
+		}
+	});
+});
+
+describe('pro feature group labels', () => {
+	for (const lang of LOCALES) {
+		it(`${lang}: labels every group`, () => {
+			const groups = locales[lang].pro_page.groups;
+			for (const group of PRO_FEATURE_GROUPS) {
+				expect(typeof groups?.[group]).toBe('string');
+				expect(groups[group].trim().length).toBeGreaterThan(0);
+			}
+		});
+	}
 });
 
 describe('pro feature translations', () => {

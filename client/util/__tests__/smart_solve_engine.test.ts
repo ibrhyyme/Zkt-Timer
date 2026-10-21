@@ -194,6 +194,56 @@ describe('SmartSolveEngine — scramble phase', () => {
 		expect(afterFix[afterFix.length - 1].moves).toBeNull();
 	});
 
+	// The timer locks Previous / Next while scrambleProgress is non-empty. Turning the moves
+	// back has to empty it, or the user cannot pick another scramble once they started one.
+	it('empties the progress when the scramble moves are turned back', () => {
+		const { engine } = harness();
+		engine.setScramble('U2 R2 D2 F L');
+		engine.setConnected(true);
+
+		// A cube reports a double move as two quarter turns.
+		const forward = ['U', 'U', 'R', 'R', 'D', 'D'];
+		const back = ["D'", "D'", "R'", "R'", "U'", "U'"];
+		const turns: SmartTurn[] = [];
+		let at = 1000;
+		for (const move of forward) {
+			turns.push(turn(move, (at += 100)));
+			engine.pushTurns(turns.slice());
+		}
+		expect(engine.scrambleProgress).toEqual(['U2', 'R2', 'D2']);
+
+		for (const move of back) {
+			turns.push(turn(move, (at += 100)));
+			engine.pushTurns(turns.slice());
+		}
+		expect(engine.scrambleProgress).toEqual([]);
+	});
+
+	it('empties the progress when a wrong first move is turned back', () => {
+		const { engine } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+
+		engine.pushTurns([turn('D', 1000)]);
+		expect(engine.scrambleProgress.length).toBeGreaterThan(0);
+
+		engine.pushTurns([turn('D', 1000), turn("D'", 1100)]);
+		expect(engine.scrambleProgress).toEqual([]);
+	});
+
+	// Moves that cancel without being adjacent (R L R' L') stay in the compressed list, but
+	// the cube's solved report re-anchors the matcher and clears it.
+	it('empties the progress when the cube reports solved after non-adjacent cancelling moves', () => {
+		const { engine } = harness();
+		engine.setScramble('U2 R2 D2 F L');
+		engine.setConnected(true);
+
+		engine.pushTurns([turn('R', 1000), turn('L', 1100), turn("R'", 1200), turn("L'", 1300)]);
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+
+		expect(engine.scrambleProgress).toEqual([]);
+	});
+
 	it('asks the user to solve the cube when too many wrong moves pile up', () => {
 		const { engine, of } = harness();
 		engine.setScramble(SCRAMBLE);

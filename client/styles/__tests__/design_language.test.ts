@@ -13,10 +13,10 @@ const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
 	scssBackdropBlur: 52,
-	scssGradient: 246,
+	scssGradient: 225,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 4,
-	tsxInlineEffect: 8,
+	tsxInlineEffect: 7,
 };
 
 function stripComments(src: string): string {
