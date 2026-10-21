@@ -372,6 +372,30 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		}
 	}
 
+	// Smart scramble done: the friendly room's "READY" word. Doubled class to beat the
+	// (0,1,1) `__body > span` rule, which pins font-size and line-height to inherit.
+	// 2em at line-height 1.2 is shorter than the two-line scramble it replaces, so the
+	// digits below do not move.
+	&__turn#{&}__turn--ready {
+		font-size: 2em;
+		font-weight: 900;
+		letter-spacing: 0.2em;
+		line-height: 1.2;
+		margin-right: 0;
+		animation: scrambleReadyPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+
+	@keyframes scrambleReadyPulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+
+		50% {
+			opacity: 0.5;
+		}
+	}
+
 	// The move you are on. Doubled class so it carries two classes (0,2,0): the
 	// sibling `.zt-timer-scramble__body > span` rule is (0,1,1) and would otherwise
 	// win, dragging its `transition: all 0.1s` over this one.

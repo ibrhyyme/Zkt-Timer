@@ -49,7 +49,7 @@ import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
-import { connectGanTimer, GanTimerConnection } from '../timer/time_display/gantimer/ganTimerConnection';
+import { connectGanTimer, GanTimerConnection, GanTimerState } from '../timer/time_display/gantimer/ganTimerConnection';
 import { connectQiyiTimer, QiyiTimerConnection } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
 import TimerTypePicker from '../timer/header_control/TimerTypePicker';
 import SettingsDropdown from '../quick-controls/SettingsDropdown';
@@ -377,6 +377,13 @@ function FriendlyRoomContent() {
             }
             ganTimerRef.current = conn;
             setGanTimerConnected(true);
+            // Device dropped (out of range, powered off): clear the header button too.
+            conn.events$.subscribe((event) => {
+                if (event.state === GanTimerState.DISCONNECT && ganTimerRef.current === conn) {
+                    ganTimerRef.current = null;
+                    setGanTimerConnected(false);
+                }
+            });
         } catch (err) {
             console.error('GAN Timer connection failed:', err);
             if (isNative()) {
@@ -2621,6 +2628,8 @@ function FriendlyRoomContent() {
                 smartStats={smartStats || undefined}
                 warning={smartWarning}
                 isMobile={isMobile}
+                ganTimerRef={ganTimerRef}
+                ganTimerConnected={ganTimerConnected}
                 qiyiTimerRef={qiyiTimerRef}
                 qiyiTimerConnected={qiyiTimerConnected}
             />

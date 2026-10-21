@@ -58,17 +58,15 @@ interface RoomTimerOverlayProps {
     smartStats?: { turns: number; tps: number };
     warning?: string;
     isMobile?: boolean;
-    // QiYi Timer connection ref'i FriendlyRoom'dan paylasilir (header buton ile
-    // bagliyorsun, overlay event'leri buradan dinler). GAN Timer da ayni patternde
-    // olmali fakat mevcut yapida ayri ref var — QiYi'yi temiz pattern ile ekliyoruz.
+    // GAN / QiYi Timer connection ref'leri FriendlyRoom'dan paylasilir (header buton ile
+    // bagliyorsun, overlay event'leri buradan dinler).
+    ganTimerRef?: React.MutableRefObject<GanTimerConnection | null>;
     qiyiTimerRef?: React.MutableRefObject<QiyiTimerConnection | null>;
-    // Parent'in QiYi connected state'i: useEffect'in re-run icin trigger
+    // Parent'in connected state'leri: useEffect'in re-run icin trigger
     // (ref degisikligi React'i tetiklemez, bu prop tetikler)
+    ganTimerConnected?: boolean;
     qiyiTimerConnected?: boolean;
 }
-
-// Module-scoped GAN Timer connection
-
 
 export default function RoomTimerOverlay({
     isActive,
@@ -89,6 +87,8 @@ export default function RoomTimerOverlay({
     smartStats,
     warning,
     isMobile = false,
+    ganTimerRef: parentGanTimerRef,
+    ganTimerConnected: parentGanTimerConnected = false,
     qiyiTimerRef: parentQiyiTimerRef,
     qiyiTimerConnected: parentQiyiTimerConnected = false,
 }: RoomTimerOverlayProps) {
@@ -115,10 +115,10 @@ export default function RoomTimerOverlay({
     const manualInputRef = useRef<HTMLInputElement>(null);
 
     // Device connection states
-    const [ganTimerConnected, setGanTimerConnected] = useState(false);
-    // QiYi connected state'i parent (FriendlyRoom) yonetiyor — prop ile alinir
+    // GAN / QiYi connected state'i parent (FriendlyRoom) yonetiyor — prop ile alinir
     const [stackmatConnected, setStackmatConnected] = useState(false);
-    const ganTimerRef = useRef<GanTimerConnection | null>(null);
+    const localGanTimerRef = useRef<GanTimerConnection | null>(null);
+    const ganTimerRef = parentGanTimerRef ?? localGanTimerRef;
     // QiYi Timer connection ref'i: parent'tan (FriendlyRoom) prop ile geliyorsa onu kullan,
     // yoksa lokal fallback (overlay icinde direkt baglanma — su an dead code).
     const localQiyiTimerRef = useRef<QiyiTimerConnection | null>(null);
@@ -285,22 +285,22 @@ export default function RoomTimerOverlay({
                 }
                 break;
             case GanTimerState.DISCONNECT:
-                setGanTimerConnected(false);
-                ganTimerRef.current = null;
+                // Parent (FriendlyRoom) DISCONNECT'i kendi listener'inde yakaliyor.
                 break;
         }
     }, [effectiveInspection]);
 
-    // Subscribe to GAN Timer events
+    // Subscribe to GAN Timer events. parentGanTimerConnected dependency'de: parent
+    // connect oldugunda ref dolar ama React'i tetiklemez, bu prop tetikler.
     useEffect(() => {
         if (timerType !== 'gantimer' || !isActive) return;
 
         const conn = ganTimerRef.current;
-        const subscription = conn?.events$.subscribe(handleGanTimerEvent);
-        setGanTimerConnected(!!conn);
+        if (!conn) return;
+        const subscription = conn.events$.subscribe(handleGanTimerEvent);
 
         return () => subscription?.unsubscribe();
-    }, [timerType, isActive, handleGanTimerEvent]);
+    }, [timerType, isActive, handleGanTimerEvent, parentGanTimerConnected]);
 
     // QiYi Timer event handler — GAN ile ayni state machine (state ID'leri identical),
     // INSPECTION case'i ignore edilir (cihaz auto-inspection oda akisiyla uyumsuz).
@@ -661,7 +661,7 @@ export default function RoomTimerOverlay({
 
         holdStartTimeRef.current = performance.now();
         keyIsDown.current = true;
-    }, [alreadySolvedThisRound, timerType, effectiveInspection, stackmatConnected, ganTimerConnected, freezeTime]);
+    }, [alreadySolvedThisRound, timerType, effectiveInspection, stackmatConnected, parentGanTimerConnected, freezeTime]);
 
     const simulateSpaceUp = useCallback((startTs?: number) => {
         if (alreadySolvedThisRound) return;
@@ -729,7 +729,7 @@ export default function RoomTimerOverlay({
             default:
                 break;
         }
-    }, [alreadySolvedThisRound, timerType, effectiveInspection, isManualMode, stackmatConnected, ganTimerConnected, freezeTime]);
+    }, [alreadySolvedThisRound, timerType, effectiveInspection, isManualMode, stackmatConnected, parentGanTimerConnected, freezeTime]);
 
     // Keyboard/touch handlers.
     //

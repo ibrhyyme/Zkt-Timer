@@ -60,9 +60,10 @@ export default function TimerScramble() {
 	const smartCubeConnected = useSmartCubeStore('smartCubeConnected');
 	// See TimerControls: the lock is about contradicting a connected cube, so it
 	// must not fire when no cube is attached (or when a stale turn list survived
-	// an earlier connection).
+	// an earlier connection). `smartCanStart` keeps it through "Ready" and inspection,
+	// after the turn list is cleared on scramble completion.
 	const isSmartScrambling =
-		isSmart && !!smartCubeConnected && hasSmartTurns && !timeStartedAt;
+		isSmart && !!smartCubeConnected && (hasSmartTurns || !!context.smartCanStart) && !timeStartedAt;
 
 	// +2 and DNF for latest solve
 	const latestSolve = useLatestSolve();
@@ -177,6 +178,14 @@ export default function TimerScramble() {
 			spacing.itemGap = px(style.columnGap) + (first ? px(getComputedStyle(first).marginRight) : 0);
 		}
 
+		// The smart body is shrink-wrapped (`--smart`, width auto), so its own width is whatever
+		// it holds: a lone wrong-move hint or "Ready" made it narrow and the full scramble was
+		// then fitted into that, shrinking the hint. Its room is the block's width, capped.
+		const lineWidth =
+			lines === body && body.parentElement
+				? Math.min(body.parentElement.clientWidth, px(style.maxWidth) || Infinity)
+				: lines.offsetWidth;
+
 		const budget = scrambleLinesBudget(area.clientHeight, content.offsetHeight, lines.offsetHeight, chromeY);
 		const { fontSize } = findFitFontSize(
 			fitReferenceText(text, mostMovesRef.current.moves),
@@ -185,7 +194,7 @@ export default function TimerScramble() {
 			userSizeRef.current,
 			Math.min(DESKTOP_SCRAMBLE_MIN_PX, userSizeRef.current),
 			SCRAMBLE_LINE_HEIGHT_RATIO,
-			lines.offsetWidth - chromeX,
+			lineWidth - chromeX,
 			budget,
 			spacing
 		);

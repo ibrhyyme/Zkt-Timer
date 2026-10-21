@@ -45,7 +45,9 @@ export default function TimerControls() {
     // physical cube and the screen describing different states. With no cube on
     // the other end there is nothing to contradict, and a stale turn list left
     // over from an earlier connection must not keep the buttons dead.
-    const isSmartScrambling = isSmart && !!smartCubeConnected && hasSmartTurns && !timeStartedAt;
+    // The turn list is cleared when the scramble completes, so `smartCanStart` holds the
+    // lock through "Ready" and inspection until the timer starts.
+    const isSmartScrambling = isSmart && !!smartCubeConnected && (hasSmartTurns || !!context.smartCanStart) && !timeStartedAt;
 
     // Previous / Next history lives in the timer store, shared with the desktop layout, so
     // a tablet rotating across 1024px keeps it.

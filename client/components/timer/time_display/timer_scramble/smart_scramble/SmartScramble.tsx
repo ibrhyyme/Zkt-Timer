@@ -57,7 +57,7 @@ export default function SmartScramble() {
 	if (smartNeedsCubeReset) {
 		scrambleBody = <span className={b('turn', { orange: true })}>{t('smart_cube.solve_cube_for_scramble')}</span>;
 	} else if (smartCanStart) {
-		scrambleBody = <span className={b('turn', { green: !useBlueMatch, blue: useBlueMatch })}>{t('smart_scramble.ready')}</span>;
+		scrambleBody = <span className={b('turn', { ready: true, green: !useBlueMatch, blue: useBlueMatch })}>{t('rooms.ready')}</span>;
 	}
 
 	return <>{scrambleBody}</>;

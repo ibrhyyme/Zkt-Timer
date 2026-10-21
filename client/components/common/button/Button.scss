@@ -130,10 +130,14 @@
 			background-color: rgba(#{$rgb}, 0.76) !important;
 		}
 
+		// The fill above is declared after `--flat` with the same weight, so it won and a
+		// flat button drew its label on a fill of the same colour. Cleared here (0,2,0).
 		&#{$self}--flat {
+			background-color: transparent !important;
 			color: rgb(#{$rgb});
 
-			&:hover:not(:disabled) {
+			&:hover:not(:disabled),
+			&:active:not(:disabled) {
 				background-color: transparent !important;
 				text-decoration: underline;
 				text-underline-offset: 3px;
