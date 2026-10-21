@@ -1,14 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@apollo/client';
+import { useDispatch } from 'react-redux';
+import { BookmarkSimple } from 'phosphor-react';
 import './CaseStatsModal.scss';
 import block from '../../../../styles/bem';
 import { CaseStatsDocument, CaseStatsQuery, CaseStatsQueryVariables } from '../../../../@types/generated/graphql';
 import LLPatternView from '../../../trainer/panels/LLPatternView';
+import Button from '../../../common/button/Button';
 import PLLArrowView from './PLLArrowView';
 import { pllNameFromCaseName } from './pll_arrow_data';
 import { ensureCasePattern, getCasePattern } from './case_pattern';
+import { caseSetTarget } from './case_set_target';
 import { useLLPatternsReady } from '../../../../util/trainer/ll_patterns';
+import { findLibraryCase } from '../../../../util/trainer/case_alternatives';
+import { fetchDefaultAlgs, readSavedAlgorithmTexts } from '../../../trainer/hooks/useAlgorithmData';
+import { openAddToSet } from '../../../trainer/sets/AddToSetSheet';
+import { toAddItems } from '../../../trainer/sets/add_items';
+import { defaultVariant } from '../../../trainer/sets/picker/picker_model';
+import { algSetCaseKey } from '../../../../../shared/trainer/alg_sets';
+import { toastError } from '../../../../util/toast';
 
 const b = block('case-stats-modal');
 
@@ -79,9 +90,11 @@ function SortArrow({ desc }: { desc: boolean }) {
 
 export default function CaseStatsModal({ type, cubeType, subset, sessionId, lastN }: Props) {
 	const { t } = useTranslation();
+	const dispatch = useDispatch();
 	const [sortKey, setSortKey] = useState<SortKey>('lastSeenAt');
 	const [sortDesc, setSortDesc] = useState(true);
 	const [, setPatternTick] = useState(0);
+	const [savingKey, setSavingKey] = useState<string | null>(null);
 
 	// Load LL pattern data once (trainer infrastructure)
 	useLLPatternsReady();
@@ -140,6 +153,32 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 		setSortDesc(k !== 'caseName');
 	}
 
+	// Opens the trainer's "Add to set" sheet (own sets + "New set") over this modal, with the
+	// algorithm the user runs for the case on this device, else the library one.
+	async function saveToSet(caseKey: string, caseName: string) {
+		if (savingKey) return;
+		const target = caseSetTarget(type, caseKey, caseName);
+		if (!target) {
+			toastError(t('case_stats.save_unavailable'));
+			return;
+		}
+		setSavingKey(caseKey);
+		try {
+			const found = findLibraryCase(await fetchDefaultAlgs(), target.category, target.name);
+			if (!found?.entry?.algorithm) {
+				toastError(t('case_stats.save_unavailable'));
+				return;
+			}
+			const deviceAlg = readSavedAlgorithmTexts().get(algSetCaseKey(target.category, target.name));
+			const algorithm = defaultVariant(found.entry.algorithm, deviceAlg);
+			openAddToSet(dispatch, t, toAddItems([{ category: target.category, name: target.name, algorithm }]));
+		} catch {
+			toastError(t('trainer.sets.load_error'));
+		} finally {
+			setSavingKey(null);
+		}
+	}
+
 	const columns: ColumnDef[] = [
 		{ key: 'count', label: t('case_stats.col_count') },
 		{ key: 'averageTime', label: t('case_stats.col_avg') },
@@ -189,6 +228,7 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 						{sortKey === col.key && <SortArrow desc={sortDesc} />}
 					</button>
 				))}
+				<div className={b('header-save')} aria-hidden="true" />
 			</div>
 
 			{loading && rows.length === 0 ? (
@@ -200,6 +240,15 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 					{rows.map((r) => {
 						const pllKey = type === 'pll' ? pllNameFromCaseName(r.caseName || '') : null;
 						const pattern = type === 'oll' ? getCasePattern(type, r.caseKey || '') : '';
+						const values: Record<string, string> = {
+							count: String(r.count ?? 0),
+							averageTime: `${fmt(r.averageTime)}s`,
+							bestTime: `${fmt(r.bestTime)}s`,
+							avgRecognition: `${fmt(r.avgRecognition)}s`,
+							avgExecution: `${fmt(r.avgExecution)}s`,
+							avgTps: fmt(r.avgTps),
+							avgTurns: fmtInt(r.avgTurns),
+						};
 						return (
 							<div key={r.caseKey} className={b('row')}>
 								<div className={b('row-preview')}>
@@ -220,13 +269,29 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 								<div className={b('row-name')} title={r.caseName || ''}>
 									{shortName(type, r.caseKey || '', r.caseName || '')}
 								</div>
-								<div className={b('row-cell')}>{r.count ?? 0}</div>
-								<div className={b('row-cell')}>{`${fmt(r.averageTime)}s`}</div>
-								<div className={b('row-cell')}>{`${fmt(r.bestTime)}s`}</div>
-								<div className={b('row-cell')}>{`${fmt(r.avgRecognition)}s`}</div>
-								<div className={b('row-cell')}>{`${fmt(r.avgExecution)}s`}</div>
-								<div className={b('row-cell')}>{fmt(r.avgTps)}</div>
-								<div className={b('row-cell')}>{fmtInt(r.avgTurns)}</div>
+								{/* display: contents on desktop (one table row), a labelled grid on phones */}
+								<div className={b('row-stats')}>
+									{columns.map((col) => (
+										<div key={col.key} className={b('row-cell')}>
+											<span className={b('row-label')}>{col.label}</span>
+											<span className={b('row-value')}>{values[col.key]}</span>
+										</div>
+									))}
+								</div>
+								<div className={b('row-save')}>
+									<Button
+										small
+										outline
+										noMargin
+										iconFirst
+										icon={<BookmarkSimple weight="bold" />}
+										text={t('case_stats.save')}
+										title={t('trainer.sets.add_to.title')}
+										loading={savingKey === r.caseKey}
+										disabled={!!savingKey && savingKey !== r.caseKey}
+										onClick={() => saveToSet(r.caseKey || '', r.caseName || '')}
+									/>
+								</div>
 							</div>
 						);
 					})}

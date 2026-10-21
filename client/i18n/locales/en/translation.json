@@ -4852,6 +4852,8 @@
     "col_turns": "Turns",
     "loading": "Loading...",
     "empty_state": "No smart cube OLL/PLL records yet",
+    "save": "Save",
+    "save_unavailable": "This case was not found in the algorithm library",
     "sort_recent": "Most Recent"
   },
   "support_error": {

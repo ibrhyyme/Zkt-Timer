@@ -1,7 +1,8 @@
 @import '../../../../styles/config';
 
-$case-stats-grid: 84px minmax(120px, 1.4fr) repeat(7, minmax(64px, 1fr));
-$case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
+// Last column holds the Save button; fixed so the header's empty cell lines up with every row.
+$case-stats-save-w: 120px;
+$case-stats-grid: 84px minmax(120px, 1.4fr) repeat(7, minmax(64px, 1fr)) $case-stats-save-w;
 
 .#{$namespace}-case-stats-modal {
 	display: flex;
@@ -17,8 +18,9 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		// Negative horizontal margin overrides modal __center's 1.5rem padding:
 		// header aligns to modal's inner edges, like a real table header.
 		margin: 0 -1.5rem;
-		// Horizontal padding exactly matches modal padding; visible content stays in place.
-		padding: 14px 1.5rem;
+		// Modal padding plus the row's own padding and border, so the header grid is exactly as
+		// wide as a row's grid and every column sits over its cells.
+		padding: 14px calc(1.5rem + 19px);
 		position: sticky;
 		// CSS sticky measures from padding-edge. To cover modal __center's 1.5rem
 		// padding-top, use top: -1.5rem; otherwise header sticks under padding-top
@@ -32,7 +34,7 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.5);
 	}
 
-	// header-preview: empty grid cell, no styling needed (TSX div remains)
+	// header-preview, header-save: empty grid cells, no styling needed (TSX divs remain)
 
 	&__header-name-cell {
 		display: flex;
@@ -124,13 +126,11 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		padding: 14px 18px;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 14px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		transition: box-shadow 0.15s, transform 0.15s;
+		border-radius: $zt-radius-lg;
+		transition: border-color 0.15s;
 
 		&:hover {
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-			transform: translateY(-1px);
+			border-color: rgba(var(--text-color), 0.16);
 		}
 	}
 
@@ -160,7 +160,22 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		min-width: 0;
 	}
 
+	// Desktop: the stat cells sit directly in the row grid, one column each.
+	&__row-stats {
+		display: contents;
+	}
+
 	&__row-cell {
+		min-width: 0;
+	}
+
+	// Desktop reads the column from the header; phones show it on the cell.
+	&__row-label {
+		display: none;
+	}
+
+	&__row-value {
+		display: block;
 		font-size: 1.15rem;
 		font-weight: 700;
 		font-family: $defaultFontFamily;
@@ -174,6 +189,12 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		text-overflow: ellipsis;
 	}
 
+	&__row-save {
+		display: flex;
+		justify-content: flex-end;
+		min-width: 0;
+	}
+
 	&__exception {
 		text-align: center;
 		padding: 48px 16px;
@@ -181,39 +202,89 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		font-size: 1rem;
 	}
 
+	// Phones: nine columns do not fit (the right side used to be cut off). Each row becomes a
+	// card, preview + name + Save on top and the seven stats as a labelled 4-column grid
+	// below; the header turns into a horizontally scrolling strip of sort chips.
 	@include bp-down($bp-md) {
 		&__header-row {
-			grid-template-columns: $case-stats-grid-mobile;
-			gap: 8px;
+			display: flex;
+			gap: 4px;
+			overflow-x: auto;
+			scrollbar-width: none;
 			// Modal __center mobile padding: clamp(1rem, 3vw, 1.5rem). Override negative
 			// margin/top with same clamp for dynamic effect; visible padding restored
 			// inside so content aligns with modal's inner edge.
 			margin: 0 calc(-1 * clamp(1rem, 3vw, 1.5rem));
 			padding: 10px clamp(1rem, 3vw, 1.5rem);
 			top: calc(-1 * clamp(1rem, 3vw, 1.5rem));
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
+		}
+
+		&__header-preview,
+		&__header-save {
+			display: none;
+		}
+
+		&__header-name-cell,
+		&__header-cell {
+			flex-shrink: 0;
 		}
 
 		&__header-cell {
-			font-size: 0.6rem;
-			padding: 4px 6px;
+			font-size: 0.65rem;
+			padding: 6px 8px;
 		}
 
 		&__row {
-			grid-template-columns: $case-stats-grid-mobile;
-			gap: 8px;
+			grid-template-columns: 60px minmax(0, 1fr) auto;
+			grid-template-areas:
+				'preview name save'
+				'stats stats stats';
+			gap: 10px 12px;
 			padding: 12px;
 		}
 
 		&__row-preview {
+			grid-area: preview;
 			width: 60px;
 			height: 60px;
 		}
 
 		&__row-name {
-			font-size: 0.85rem;
+			grid-area: name;
+			font-size: 0.95rem;
 		}
 
-		&__row-cell {
+		&__row-save {
+			grid-area: save;
+		}
+
+		&__row-stats {
+			grid-area: stats;
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 10px 8px;
+			padding-top: 10px;
+			border-top: 1px solid rgba(var(--text-color), 0.08);
+		}
+
+		&__row-label {
+			display: block;
+			margin-bottom: 2px;
+			font-size: 0.6rem;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: rgba(var(--text-color), 0.7);
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		&__row-value {
 			font-size: 0.95rem;
 			letter-spacing: -0.02em;
 		}

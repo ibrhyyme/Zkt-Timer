@@ -4833,6 +4833,8 @@
     "col_turns": "Hamle",
     "loading": "Yükleniyor...",
     "empty_state": "Henüz smart cube ile yeterli OLL/PLL kaydı yok",
+    "save": "Kaydet",
+    "save_unavailable": "Bu vaka algoritma kütüphanesinde bulunamadı",
     "sort_recent": "En Son"
   },
   "support_error": {

@@ -4853,6 +4853,8 @@
     "col_turns": "Movs.",
     "loading": "Cargando...",
     "empty_state": "Aún no hay registros OLL/PLL con smart cube",
+    "save": "Guardar",
+    "save_unavailable": "Este caso no se encontró en la biblioteca de algoritmos",
     "sort_recent": "Más reciente"
   },
   "support_error": {

@@ -4819,6 +4819,8 @@
     "col_turns": "步数",
     "loading": "加载中...",
     "empty_state": "尚无智能魔方 OLL/PLL 记录",
+    "save": "保存",
+    "save_unavailable": "算法库中未找到此情形",
     "sort_recent": "最近"
   },
   "support_error": {

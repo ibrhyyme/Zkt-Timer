@@ -4921,6 +4921,8 @@
     "col_turns": "Ходы",
     "loading": "Загрузка...",
     "empty_state": "Пока нет записей OLL/PLL со smart cube",
+    "save": "Сохранить",
+    "save_unavailable": "Этот случай не найден в библиотеке алгоритмов",
     "sort_recent": "Недавние"
   },
   "support_error": {
