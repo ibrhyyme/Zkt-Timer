@@ -203,6 +203,31 @@ export async function rotateZktIntegrationTokens(integration: any): Promise<ZktT
 }
 
 /**
+ * True when the federation has definitely withdrawn this grant: the member
+ * removed Zkt Timer under Hesabım > Bağlantılar on zekakuputurkiye.com.
+ *
+ * Asked with what the row holds: the live access token against userinfo (a
+ * revoked one answers 401), or, once it has expired, the refresh token (a
+ * revoked one answers invalid_grant). Nothing else is an answer. A federation
+ * that is down or slow counts as still linked: dropping a member's link because
+ * the other site had a bad minute would be worse than showing it a little long.
+ */
+export async function isZktGrantWithdrawn(integration: any): Promise<boolean> {
+	const expiresAt = Number(integration?.auth_expires_at || 0);
+	try {
+		if (integration?.auth_token && expiresAt > Date.now() + 60_000) {
+			await fetchZktProfile(integration.auth_token);
+			return false;
+		}
+		if (!integration?.refresh_token) return false;
+		await rotateZktIntegrationTokens(integration);
+		return false;
+	} catch (error: any) {
+		return error?.response?.status === 401 || error?.oauthError === 'invalid_grant';
+	}
+}
+
+/**
  * A valid access token for this integration, refreshing it when it has run out.
  *
  * Returns null instead of throwing when the grant is gone (member revoked it on

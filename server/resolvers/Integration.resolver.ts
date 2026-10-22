@@ -6,6 +6,7 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {IntegrationType} from '../../shared/integration';
 import {getIntegrationGetMe, linkOAuthAccount, revokeIntegration} from '../integrations/oauth';
+import {isZktGrantWithdrawn} from '../integrations/zkt_oauth';
 import {WcaAccount} from '../schemas/WcaAccount.schema';
 import {getIntegration} from '../models/integration';
 import {fetchAndSaveWcaRecords} from '../models/wca_record';
@@ -35,6 +36,20 @@ function deleteIntegrationById(context: GraphQLContext, id: string) {
 	});
 }
 
+/**
+ * The member removed Zkt Timer on the federation: remove the link here too.
+ * Kept only when it is their one way in (no password, no other login), the
+ * same lockout rule deleteIntegration applies: the stored zkt_user_id is what
+ * lets "ZKT ile giriş" find the account, and a new sign-in grants afresh.
+ */
+async function dropWithdrawnZktLink(context: GraphQLContext, integration: {id: string}) {
+	const hasPassword = !!(context.user as any).password;
+	const others = (await getIntegrationsByUserId(context, context.user.id)).filter((i) => i.id !== integration.id);
+	if (!hasPassword && others.length === 0) return integration;
+	await deleteIntegrationById(context, integration.id);
+	return null;
+}
+
 @Resolver()
 export class IntegrationResolver {
 	@Authorized([Role.LOGGED_IN])
@@ -43,7 +58,14 @@ export class IntegrationResolver {
 		@Ctx() context: GraphQLContext,
 		@Arg('integrationType', () => IntegrationTypeSchema) integrationType: IntegrationType
 	) {
-		return getIntegration(context.user, integrationType);
+		const integration = await getIntegration(context.user, integrationType);
+		// A ZKT link can also be removed on the federation's side (Hesabım >
+		// Bağlantılar). This query backs the linked-accounts page, so that is where
+		// the timer finds out and drops its half of the link.
+		if (integrationType === 'zkt' && integration && (await isZktGrantWithdrawn(integration))) {
+			return dropWithdrawnZktLink(context, integration);
+		}
+		return integration;
 	}
 
 	@Authorized([Role.LOGGED_IN])
