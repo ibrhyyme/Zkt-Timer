@@ -18,6 +18,11 @@ interface Props {
 	draggable: boolean;
 	/** Float geometry. Docked tiles are sized by their zone and pass nothing. */
 	style?: React.CSSProperties;
+	/**
+	 * Share of a side rail's height (flex-grow). A number rather than a style object so
+	 * the memo below still holds for docked tiles.
+	 */
+	grow?: number;
 	onDragStart: (event: React.PointerEvent, id: TimerModuleType) => void;
 	onResizeStart?: (event: React.PointerEvent, id: TimerModuleType) => void;
 	onRemove: (id: TimerModuleType) => void;
@@ -37,8 +42,9 @@ interface Props {
  * modules inside must not re-render with it, because one of them is a chart.
  */
 function TimerTile(props: Props) {
-	const { moduleType, dock, draggable, style, onDragStart, onResizeStart, onRemove, onReplace } = props;
+	const { moduleType, dock, draggable, style, grow, onDragStart, onResizeStart, onRemove, onReplace } = props;
 	const { t } = useTranslation();
+	const tileStyle = grow === undefined ? style : { ...style, flexGrow: grow };
 
 	const label = t(MODULE_LABEL_KEYS[moduleType] || 'timer_modules.none');
 	const floating = dock === 'float';
@@ -72,7 +78,7 @@ function TimerTile(props: Props) {
 	return (
 		<div
 			className={b({ dock, float: floating, draggable })}
-			style={style}
+			style={tileStyle}
 			data-tile-id={moduleType}
 			onPointerDown={draggable ? handlePointerDown : undefined}
 		>

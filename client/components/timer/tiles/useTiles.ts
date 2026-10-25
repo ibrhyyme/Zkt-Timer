@@ -12,6 +12,7 @@ import {
 	removeTile,
 	replaceTile,
 	resolveTileMap,
+	setRailSizes,
 	TILE_LIMITS,
 	TileBox,
 	TileDock,
@@ -34,6 +35,8 @@ export interface TilesApi {
 	replaceModule: (from: TimerModuleType, to: TimerModuleType) => void;
 	setRailWidth: (width: number) => void;
 	setDockHeight: (height: number) => void;
+	/** Weights for rail tiles, written by dragging the edge between two of them. */
+	setRailTileSizes: (sizes: Partial<Record<TimerModuleType, number>>) => void;
 	resetLayout: () => void;
 }
 
@@ -123,6 +126,15 @@ export function useTiles(): TilesApi {
 		setSetting('timer_dock_height', clampDockHeight(height));
 	}, []);
 
+	// Part of the layout blob, so the proportions travel with it to every desktop the
+	// account signs in on (timer_tiles is a desktop prefs setting).
+	const setRailTileSizes = useCallback(
+		(sizes: Partial<Record<TimerModuleType, number>>) => {
+			save(setRailSizes(tiles, sizes));
+		},
+		[tiles, save]
+	);
+
 	// Back to "nothing has been dragged": the layout falls through to the legacy
 	// settings again, and the sizes to their defaults. One write, because the three keys
 	// share the platform prefs blob and separate writes would race each other.
@@ -149,6 +161,7 @@ export function useTiles(): TilesApi {
 		replaceModule,
 		setRailWidth,
 		setDockHeight,
+		setRailTileSizes,
 		resetLayout,
 	};
 }

@@ -2,10 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCubeType, setCurrentSession, setScrambleSubset } from '../../db/settings/update';
+import { setCubeType, setScrambleSubset } from '../../db/settings/update';
 import { fetchSessionById, fetchSessions } from '../../db/sessions/query';
+import { setTimerSession } from '../../db/sessions/active';
 import { fetchLastBucketForSession } from '../../db/solves/query';
-import { useSettings } from '../../util/hooks/useSettings';
+import { useActiveSessionId } from '../../util/hooks/useActiveSessionId';
 import { getSetting } from '../../db/settings/query';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { getNewScrambleAsync } from '../timer/helpers/scramble';
@@ -29,7 +30,9 @@ export default function SessionPicker(props: Props) {
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const me = useMe();
-	const sessionId = useSettings('session_id');
+	// The timer's session, which this picker sets for as long as the app is open. The main
+	// session (`session_id`) belongs to the Sessions page (db/sessions/active.ts).
+	const sessionId = useActiveSessionId();
 	const sessionDbChangeCounter = useSessionDb();
 
 	const [selectedSession, setSelectedSession] = useState<Session>();
@@ -42,7 +45,7 @@ export default function SessionPicker(props: Props) {
 	}, [sessionId]);
 
 	function toggleCreateNewSession() {
-		dispatch(openModal(<CreateNewSession />, {
+		dispatch(openModal(<CreateNewSession target="timer" />, {
 			compact: true,
 			width: 420,
 			title: t('sessions.create_new_session_title'),
@@ -85,7 +88,7 @@ export default function SessionPicker(props: Props) {
 
 		if (stateless) return;
 
-		setCurrentSession(session.id);
+		setTimerSession(session.id);
 
 		// Empty session -> fall back to the canonical wca::333 bucket, NOT standalone
 		// 333::null (which is the duplicate "3x3" box and pollutes the global setting,

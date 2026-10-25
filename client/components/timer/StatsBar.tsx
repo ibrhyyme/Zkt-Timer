@@ -3,6 +3,7 @@ import { RootStateOrAny, useSelector, useDispatch } from 'react-redux';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
+import { useActiveSessionId } from '../../util/hooks/useActiveSessionId';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { getStatsBlockValueFromFilter, getStatsBlockDescription } from '../modules/quick_stats/util';
 import { getTimeString } from '../../util/time';
@@ -59,7 +60,7 @@ export default function StatsBar() {
 
     const mobileMode = useGeneral('mobile_mode');
 
-    const sessionId = useSettings('session_id');
+    const sessionId = useActiveSessionId();
     const timerFontFamily = useSettings('timer_font_family');
     const manualEntry = useSettings('manual_entry');
     const keyboardOpen = useKeyboardOpen();

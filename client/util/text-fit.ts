@@ -111,6 +111,27 @@ function simulateWrappedLineCount(
 	return countWrappedLines(text, (token) => ctx.measureText(token).width, separatorWidth, maxWidth);
 }
 
+/**
+ * Height `text` takes at one font size when wrapped to `maxWidth`, or null when there is
+ * no canvas to measure with.
+ */
+export function measureWrappedHeight(
+	text: string,
+	fontFamily: string,
+	fontWeight: string | number,
+	fontSize: number,
+	lineHeightRatio: number,
+	maxWidth: number,
+	spacing: FitTextSpacing = {},
+): number | null {
+	const ctx = getMeasureContext();
+	if (!ctx || !text || maxWidth <= 0) return null;
+
+	const { rowGap = 0, itemGap } = spacing;
+	const lines = simulateWrappedLineCount(ctx, text, `${fontWeight} ${fontSize}px ${fontFamily}`, maxWidth, itemGap);
+	return wrappedBlockHeight(lines, fontSize, lineHeightRatio, rowGap);
+}
+
 export function findFitFontSize(
 	text: string,
 	fontFamily: string,
@@ -122,9 +143,18 @@ export function findFitFontSize(
 	maxHeight: number,
 	spacing: FitTextSpacing = {},
 ): FitTextResult {
+	// A box with a width but no height left at all is the tightest case there is, so the
+	// answer is the smallest size, not the largest. Returning the largest here made the
+	// desktop scramble jump to the user's full size exactly when the timer area was at its
+	// shortest (a tall module bar, a zoomed-in window) and stay there.
+	if (text && maxWidth > 0 && maxHeight <= 0) {
+		return { fontSize: minFontSize, fits: false };
+	}
+
 	const ctx = getMeasureContext();
 
-	if (!ctx || !text || maxWidth <= 0 || maxHeight <= 0) {
+	// Nothing to measure with, or a box that has not been laid out yet.
+	if (!ctx || !text || maxWidth <= 0) {
 		return { fontSize: maxFontSize, fits: true };
 	}
 

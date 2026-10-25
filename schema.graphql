@@ -554,117 +554,6 @@ type SmartDevice {
   user: PublicUserAccount
 }
 
-type CubeCalibration {
-  id: String
-  cube_id: String
-  platform: String
-  device_model: String
-  os_version: String
-  app_version: String
-  sensor_name: String
-  peak_ut: Float
-  rest_ut: Float
-  noise_ut: Float
-  near_min_ut: Float
-  far_max_ut: Float
-  quality: String
-  sample_count: Int
-  sweep_ms: Int
-  rate_hz: Float
-  algo_version: Int
-  measured_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
-}
-
-type Cube {
-  id: String
-  puzzle: String
-  name: String
-  brand: String
-  is_smart: Boolean
-  ble_device_id: String
-  ble_name: String
-  legacy_smart_device_ids: [String]
-  archived_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
-  solve_count: Int
-  first_used_at: DateTime
-  last_used_at: DateTime
-  calibrations: [CubeCalibration]
-}
-
-type CubeMain {
-  puzzle: String
-  cube_id: String
-  set_at: DateTime
-}
-
-type MyCubeState {
-  cubes: [Cube]
-  mains: [CubeMain]
-}
-
-type SolveCube {
-  id: String
-  name: String
-  brand: String
-  puzzle: String
-  is_smart: Boolean
-}
-
-type AdminCubeCalibrationRow {
-  id: String
-  user_id: String
-  username: String
-  email: String
-  cube_id: String
-  cube_name: String
-  cube_brand: String
-  puzzle: String
-  puzzle_name: String
-  platform: String
-  device_model: String
-  os_version: String
-  app_version: String
-  sensor_name: String
-  peak_ut: Float
-  rest_ut: Float
-  noise_ut: Float
-  near_min_ut: Float
-  far_max_ut: Float
-  quality: String
-  current_near_min_ut: Float
-  current_far_max_ut: Float
-  current_quality: String
-  noisy: Boolean
-  sample_count: Int
-  sweep_ms: Int
-  rate_hz: Float
-  algo_version: Int
-  measured_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
-}
-
-type AdminCubeCalibrationSummary {
-  puzzle: String
-  platform: String
-  device_model: String
-  calibrations: Int
-  distinct_users: Int
-  median_rest_ut: Float
-  p10_rest_ut: Float
-  median_peak_ut: Float
-  median_noise_ut: Float
-  weak_ratio: Float
-  telemetry_placements: Int
-  telemetry_median_near_ut: Float
-  telemetry_lifts: Int
-  telemetry_rejects: Int
-}
-
 type Solve {
   id: String
   time: Float
@@ -698,8 +587,8 @@ type Solve {
   solve_method_steps: [SolveMethodStep]
   solve_views: [SolveView]
   smart_device: SmartDevice
-  cube: SolveCube
   user: PublicUserAccount
+  cube: SolveCube
 }
 
 type SolveMethodStep {
@@ -804,13 +693,6 @@ type Integration {
   wca_name: String
   wca_avatar_url: String
   wca_country_iso2: String
-  wca_competition_count: Float
-  wca_medal_gold: Float
-  wca_medal_silver: Float
-  wca_medal_bronze: Float
-  wca_record_nr: Float
-  wca_record_cr: Float
-  wca_record_wr: Float
   wca_show_competitions: Boolean
   wca_show_medals: Boolean
   wca_show_records: Boolean
@@ -830,6 +712,13 @@ type Integration {
   last_synced_at: DateTime
   created_at: DateTime
   user: PublicUserAccount
+  wca_competition_count: Float
+  wca_medal_gold: Float
+  wca_medal_silver: Float
+  wca_medal_bronze: Float
+  wca_record_nr: Float
+  wca_record_cr: Float
+  wca_record_wr: Float
 }
 
 enum IntegrationType {
@@ -943,9 +832,9 @@ type AlgSet {
   updated_at: DateTime
   created_at: DateTime
   hidden: Boolean
-  items: [AlgSetItem]
   is_owner: Boolean
   is_saved: Boolean
+  items: [AlgSetItem]
 }
 
 type SavedAlgSet {
@@ -2797,6 +2686,117 @@ type MagnetTelemetrySummary {
   rate_hz: Float
 }
 
+type CubeCalibration {
+  id: String
+  cube_id: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type Cube {
+  id: String
+  puzzle: String
+  name: String
+  brand: String
+  is_smart: Boolean
+  ble_device_id: String
+  ble_name: String
+  legacy_smart_device_ids: [String]
+  archived_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+  solve_count: Int
+  first_used_at: DateTime
+  last_used_at: DateTime
+  calibrations: [CubeCalibration]
+}
+
+type CubeMain {
+  puzzle: String
+  cube_id: String
+  set_at: DateTime
+}
+
+type MyCubeState {
+  cubes: [Cube]
+  mains: [CubeMain]
+}
+
+type SolveCube {
+  id: String
+  name: String
+  brand: String
+  puzzle: String
+  is_smart: Boolean
+}
+
+type AdminCubeCalibrationRow {
+  id: String
+  user_id: String
+  username: String
+  email: String
+  cube_id: String
+  cube_name: String
+  cube_brand: String
+  puzzle: String
+  puzzle_name: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  current_near_min_ut: Float
+  current_far_max_ut: Float
+  current_quality: String
+  noisy: Boolean
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type AdminCubeCalibrationSummary {
+  puzzle: String
+  platform: String
+  device_model: String
+  calibrations: Int
+  distinct_users: Int
+  median_rest_ut: Float
+  p10_rest_ut: Float
+  median_peak_ut: Float
+  median_noise_ut: Float
+  weak_ratio: Float
+  telemetry_placements: Int
+  telemetry_median_near_ut: Float
+  telemetry_lifts: Int
+  telemetry_rejects: Int
+}
+
 type BattlePlayer {
   id: String
   username: String
@@ -2990,42 +2990,6 @@ type TrainerAlgorithm {
 
 input SmartDeviceInput {
   device_id: String
-}
-
-input CubeInput {
-  id: String
-  puzzle: String
-  name: String
-  brand: String
-  is_smart: Boolean
-  make_main: Boolean
-  set_at: DateTime
-}
-
-input CubeUpdateInput {
-  name: String
-  brand: String
-  is_smart: Boolean
-}
-
-input CubeCalibrationInput {
-  cube_id: String
-  platform: String
-  device_model: String
-  os_version: String
-  app_version: String
-  sensor_name: String
-  peak_ut: Float
-  rest_ut: Float
-  noise_ut: Float
-  near_min_ut: Float
-  far_max_ut: Float
-  quality: String
-  sample_count: Int
-  sweep_ms: Int
-  rate_hz: Float
-  algo_version: Int
-  measured_at: DateTime
 }
 
 input SolveInput {
@@ -3311,6 +3275,42 @@ input MagnetTelemetryInput {
   app_version: String
   cube_puzzle: String
   near_min_ut: Float
+}
+
+input CubeInput {
+  id: String
+  puzzle: String
+  name: String
+  brand: String
+  is_smart: Boolean
+  make_main: Boolean
+  set_at: DateTime
+}
+
+input CubeUpdateInput {
+  name: String
+  brand: String
+  is_smart: Boolean
+}
+
+input CubeCalibrationInput {
+  cube_id: String
+  platform: String
+  device_model: String
+  os_version: String
+  app_version: String
+  sensor_name: String
+  peak_ut: Float
+  rest_ut: Float
+  noise_ut: Float
+  near_min_ut: Float
+  far_max_ut: Float
+  quality: String
+  sample_count: Int
+  sweep_ms: Int
+  rate_hz: Float
+  algo_version: Int
+  measured_at: DateTime
 }
 
 input PaginationArgsInput {

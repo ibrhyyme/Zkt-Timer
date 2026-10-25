@@ -14,7 +14,7 @@ import { FilterSolvesOptions } from '../../../../db/solves/query';
 import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
 import { getStatsBlockValueFromFilter } from '../../quick_stats/util';
 import { useSolveDb } from '../../../../util/hooks/useSolveDb';
-import { useSettings } from '../../../../util/hooks/useSettings';
+import { useActiveSessionId } from '../../../../util/hooks/useActiveSessionId';
 import { useDispatch } from 'react-redux';
 import { closeModal, openModal } from '../../../../actions/general';
 import SolveInfo from '../../../solve_info/SolveInfo';
@@ -85,7 +85,7 @@ export default function HistoryModal(props: Props) {
 		}
 	}, [editingAo]);
 
-	const sessionId = useSettings('session_id');
+	const sessionId = useActiveSessionId();
 	useSolveDb(); // Trigger re-render on DB changes
 
 	// Live data calculation

@@ -10,6 +10,7 @@ import { resetScramble } from '../../helpers/scramble';
 import { saveSolve } from '../../helpers/save';
 import StartInstructions from '../start_instructions/StartInstructions';
 import { useSettings } from '../../../../util/hooks/useSettings';
+import { useActiveSessionId } from '../../../../util/hooks/useActiveSessionId';
 import { useElementListener } from '../../../../util/hooks/useListener';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { isNative, isAndroidNative } from '../../../../util/platform';
@@ -34,7 +35,7 @@ export default function Manual() {
 
 	const mobileMode = useGeneral('mobile_mode');
 	const timerFontFamily = useSettings('timer_font_family');
-	const sessionId = useSettings('session_id');
+	const sessionId = useActiveSessionId();
 
 	useSolveDb();
 

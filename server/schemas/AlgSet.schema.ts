@@ -109,8 +109,12 @@ export class AlgSetSummary {
 
 @ObjectType()
 export class AlgSet extends AlgSetSummary {
-	/** All rows by position. A field resolver: rows are read only when the query asks. */
-	@Field(() => [AlgSetItem])
+	/**
+	 * All rows by position, read only when the query asks. The GraphQL field comes from
+	 * AlgSetResolver.items alone: a @Field here made the production build (babel, legacy
+	 * decorators) answer with the stored value, which is never set, so every set opened
+	 * empty on the live site while its count said otherwise (see Integration.schema.ts).
+	 */
 	items?: AlgSetItem[];
 
 	@Field()

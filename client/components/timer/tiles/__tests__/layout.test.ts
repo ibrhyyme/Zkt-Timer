@@ -12,9 +12,12 @@ import {
 	hitTestZone,
 	moveTile,
 	normalizeTileMap,
+	railSizeOf,
 	removeTile,
 	replaceTile,
 	resolveTileMap,
+	setRailSizes,
+	splitRailSizes,
 	MIN_DOCK_ZONE_WIDTH,
 	TILE_LIMITS,
 	TileMap,
@@ -337,5 +340,73 @@ describe('computeZoneRects', () => {
 	it('resolves a corner to the rail rather than the bar', () => {
 		const zones = computeZoneRects(stage, { railWidth: 340, dockHeight: 300, hasLeft: false, hasRight: false });
 		expect(hitTestZone({ x: 20, y: 880 }, zones)).toBe('left');
+	});
+});
+
+describe('rail tile heights', () => {
+	const rail = (): TileMap =>
+		normalizeTileMap({
+			[TimerModuleType.CROSS_SOLVER]: { dock: 'left', order: 0 },
+			[TimerModuleType.SCRAMBLE]: { dock: 'left', order: 1 },
+			[TimerModuleType.STATS]: { dock: 'left', order: 2 },
+			[TimerModuleType.HISTORY]: { dock: 'bottom', order: 0 },
+		});
+
+	it('gives every tile an even share until an edge is dragged', () => {
+		const map = rail();
+		expect(railSizeOf(map[TimerModuleType.SCRAMBLE])).toBe(1);
+		expect(railSizeOf(undefined)).toBe(1);
+	});
+
+	it('moves height between the two tiles at the edge and keeps their sum', () => {
+		const start = { upperHeight: 300, lowerHeight: 300, upperSize: 1, lowerSize: 1 };
+		const sizes = splitRailSizes(start, 200);
+		expect(sizes.upper).toBeCloseTo(2 / 3, 3);
+		expect(sizes.upper + sizes.lower).toBeCloseTo(2, 3);
+	});
+
+	it('stops each tile at the floor instead of crushing it', () => {
+		const start = { upperHeight: 300, lowerHeight: 300, upperSize: 1, lowerSize: 1 };
+		const shrunk = splitRailSizes(start, 10);
+		expect(shrunk.upper).toBeCloseTo((2 * TILE_LIMITS.railTileMin) / 600, 3);
+		const grown = splitRailSizes(start, 590);
+		expect(grown.lower).toBeCloseTo((2 * TILE_LIMITS.railTileMin) / 600, 3);
+	});
+
+	it('leaves two tiles alone that are both already at the floor', () => {
+		const start = { upperHeight: 140, lowerHeight: 120, upperSize: 0.7, lowerSize: 1.3 };
+		expect(splitRailSizes(start, 200)).toEqual({ upper: 0.7, lower: 1.3 });
+	});
+
+	it('stores weights for rail tiles only', () => {
+		const map = setRailSizes(rail(), {
+			[TimerModuleType.SCRAMBLE]: 0.5,
+			[TimerModuleType.STATS]: 1.5,
+			[TimerModuleType.HISTORY]: 3,
+		});
+		expect(map[TimerModuleType.SCRAMBLE].size).toBe(0.5);
+		expect(map[TimerModuleType.STATS].size).toBe(1.5);
+		expect(map[TimerModuleType.HISTORY].size ?? null).toBeNull();
+		expect(map[TimerModuleType.CROSS_SOLVER].size ?? null).toBeNull();
+	});
+
+	it('survives a round trip through the stored blob and drops nonsense', () => {
+		const stored = JSON.parse(JSON.stringify(setRailSizes(rail(), { [TimerModuleType.SCRAMBLE]: 0.5 })));
+		stored[TimerModuleType.STATS].size = -4;
+		const map = normalizeTileMap(stored);
+		expect(map[TimerModuleType.SCRAMBLE].size).toBe(0.5);
+		expect(map[TimerModuleType.STATS].size).toBeNull();
+	});
+
+	it('keeps a tile its share when it is reordered within its rail, not when it changes zone', () => {
+		const map = setRailSizes(rail(), { [TimerModuleType.SCRAMBLE]: 0.5 });
+		expect(moveTile(map, TimerModuleType.SCRAMBLE, 'left', 0)[TimerModuleType.SCRAMBLE].size).toBe(0.5);
+		expect(moveTile(map, TimerModuleType.SCRAMBLE, 'right', 0)[TimerModuleType.SCRAMBLE].size).toBeNull();
+	});
+
+	it('hands the share to the module that replaces a tile', () => {
+		const map = setRailSizes(rail(), { [TimerModuleType.SCRAMBLE]: 0.5 });
+		const swapped = replaceTile(map, TimerModuleType.SCRAMBLE, TimerModuleType.PHASE_ANALYSIS);
+		expect(swapped[TimerModuleType.PHASE_ANALYSIS].size).toBe(0.5);
 	});
 });

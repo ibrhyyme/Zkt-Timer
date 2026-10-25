@@ -1,12 +1,13 @@
 import React, {useMemo} from 'react';
 import Timer from './Timer';
 import {useSettings} from '../../util/hooks/useSettings';
+import {useActiveSessionId} from '../../util/hooks/useActiveSessionId';
 import {useSolveDb} from '../../util/hooks/useSolveDb';
 
 export default function DefaultTimer() {
 	const cubeType = useSettings('cube_type');
 	const scrambleSubset = useSettings('scramble_subset');
-	const sessionId = useSettings('session_id');
+	const sessionId = useActiveSessionId();
 
 	useSolveDb();
 

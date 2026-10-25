@@ -17,6 +17,9 @@ import {
 	FloatFrame,
 	floatBoxOnScreen,
 	PLACEABLE_MODULES,
+	RailSplitStart,
+	railSizeOf,
+	splitRailSizes,
 	TILE_LIMITS,
 	TileBox,
 	TileDock,
@@ -128,8 +131,12 @@ export default function TimerTiles({ stageRef, children }: Props) {
 		signX: -1,
 	});
 
+	// The bar is drawn shorter than its stored height when the timer column needs the room
+	// (TimerLayout.scss, the column's floor). The drag starts from what is on screen, or
+	// the first stretch of it would move nothing while it ate through the hidden part.
+	const barRef = React.useRef<HTMLDivElement>(null);
 	const startDockResize = useEdgeResize({
-		getStart: () => ({ width: 0, height: tiles.dockHeight }),
+		getStart: () => ({ width: 0, height: barRef.current?.offsetHeight || tiles.dockHeight }),
 		onPreview: ({ height }) => previewDock(height),
 		onCommit: ({ height }) => tiles.setDockHeight(height),
 		signY: -1,
@@ -185,6 +192,54 @@ export default function TimerTiles({ stageRef, children }: Props) {
 		[startFloatResize]
 	);
 
+	// The edge between two modules in a side rail. Dragging it trades height between
+	// those two only, so the top module has just its bottom edge, the bottom one just its
+	// top edge, and the rail never grows past the page. Stored as weights (layout.ts).
+	const splitRef = React.useRef<(RailSplitStart & { upper: TimerModuleType; lower: TimerModuleType }) | null>(null);
+	const tileElement = (id: TimerModuleType) => document.querySelector<HTMLElement>(`[data-tile-id="${id}"]`);
+	const applySplit = (sizes: { upper: number; lower: number }) => {
+		const split = splitRef.current;
+		if (!split) return;
+		const upper = tileElement(split.upper);
+		const lower = tileElement(split.lower);
+		if (upper) upper.style.flexGrow = String(sizes.upper);
+		if (lower) lower.style.flexGrow = String(sizes.lower);
+	};
+	const startSplitResize = useEdgeResize({
+		getStart: () => ({ width: 0, height: splitRef.current?.upperHeight || 0 }),
+		onPreview: ({ height }) => {
+			if (splitRef.current) applySplit(splitRailSizes(splitRef.current, height));
+		},
+		onCommit: ({ height }) => {
+			const split = splitRef.current;
+			splitRef.current = null;
+			if (!split) return;
+			const sizes = splitRailSizes(split, height);
+			tiles.setRailTileSizes({ [split.upper]: sizes.upper, [split.lower]: sizes.lower });
+		},
+		onCancel: () => {
+			const split = splitRef.current;
+			if (split) applySplit({ upper: split.upperSize, lower: split.lowerSize });
+			splitRef.current = null;
+		},
+		signY: 1,
+	});
+
+	const onSplitStart = (event: React.PointerEvent, upper: TimerModuleType, lower: TimerModuleType) => {
+		const upperElement = tileElement(upper);
+		const lowerElement = tileElement(lower);
+		if (!upperElement || !lowerElement) return;
+		splitRef.current = {
+			upper,
+			lower,
+			upperHeight: upperElement.getBoundingClientRect().height,
+			lowerHeight: lowerElement.getBoundingClientRect().height,
+			upperSize: railSizeOf(tiles.tiles[upper]),
+			lowerSize: railSizeOf(tiles.tiles[lower]),
+		};
+		startSplitResize(event);
+	};
+
 	// --- rendering ----------------------------------------------------------------
 
 	const renderTile = (id: TimerModuleType, dock: TileDock) => {
@@ -206,6 +261,7 @@ export default function TimerTiles({ stageRef, children }: Props) {
 				dock={dock}
 				draggable={draggable}
 				style={style}
+				grow={dock === 'left' || dock === 'right' ? railSizeOf(config) : undefined}
 				onDragStart={startDrag}
 				onResizeStart={dock === 'float' ? onFloatResizeStart : undefined}
 				onRemove={tiles.removeModule}
@@ -222,6 +278,25 @@ export default function TimerTiles({ stageRef, children }: Props) {
 	 */
 	const renderZoneTiles = (dock: Exclude<TileDock, 'float'>, modules: TimerModuleType[]) => {
 		const items: ReactNode[] = modules.map((id) => renderTile(id, dock));
+
+		// The edges between rail modules. Not while a module is being moved: the slot
+		// opening between tiles is the only thing that should be there then.
+		if ((dock === 'left' || dock === 'right') && draggable && !drag) {
+			for (let i = modules.length - 1; i > 0; i--) {
+				const upper = modules[i - 1];
+				const lower = modules[i];
+				items.splice(
+					i,
+					0,
+					<span
+						key={`__split-${upper}`}
+						className={b('split')}
+						onPointerDown={(event) => onSplitStart(event, upper, lower)}
+						aria-hidden="true"
+					/>
+				);
+			}
+		}
 
 		if (drag && drag.zone === dock && drag.dropIndex !== null) {
 			const at = Math.min(Math.max(drag.dropIndex, 0), items.length);
@@ -287,7 +362,7 @@ export default function TimerTiles({ stageRef, children }: Props) {
 
 	const bar =
 		tiles.bottom.length || (nothingPlaced && draggable) ? (
-			<div className={b('bar-wrap', { empty: nothingPlaced })}>
+			<div ref={barRef} className={b('bar-wrap', { empty: nothingPlaced })}>
 				{!nothingPlaced && (
 					<span className={b('bar-handle')} onPointerDown={startDockResize} aria-hidden="true" />
 				)}

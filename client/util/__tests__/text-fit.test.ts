@@ -1,4 +1,4 @@
-import { countWrappedLines, wrappedBlockHeight } from '../text-fit';
+import { countWrappedLines, findFitFontSize, wrappedBlockHeight } from '../text-fit';
 
 // The canvas-backed entry point (findFitFontSize) cannot run under jest's node
 // environment, so the two pieces it is built from are tested directly. Between
@@ -33,6 +33,18 @@ describe('wrappedBlockHeight', () => {
 		const withGap = wrappedBlockHeight(2, 17, 1.4, 4.5); // 52.1 — further over
 		expect(withoutGap).toBeGreaterThan(available);
 		expect(withGap).toBeGreaterThan(withoutGap);
+	});
+});
+
+describe('findFitFontSize without any height left', () => {
+	// No canvas is needed for this branch, so it runs here.
+	it('answers the smallest size, not the largest', () => {
+		expect(findFitFontSize("R U R' U'", 'monospace', 400, 30, 14, 1.6, 500, 0)).toEqual({ fontSize: 14, fits: false });
+		expect(findFitFontSize("R U R' U'", 'monospace', 400, 30, 14, 1.6, 500, -20)).toEqual({ fontSize: 14, fits: false });
+	});
+
+	it('keeps the largest size for a box that has not been laid out', () => {
+		expect(findFitFontSize("R U R' U'", 'monospace', 400, 30, 14, 1.6, 0, 0)).toEqual({ fontSize: 30, fits: true });
 	});
 });
 

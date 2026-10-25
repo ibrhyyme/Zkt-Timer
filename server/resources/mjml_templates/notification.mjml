@@ -1,36 +1,54 @@
 <mjml>
-	<mj-body>
-		<mj-section>
-			<mj-column>
-				<mj-image
-					href="https://zktimer.app"
-					width="80px"
-					src="https://zktimer.app/public/images/zkt-logo-dark.png"
-				></mj-image>
+	<mj-head>
+		<mj-title>{{subject}}</mj-title>
+		<mj-attributes>
+			<mj-all font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" />
+			<mj-text font-size="15px" line-height="1.6" color="#3D4250" padding="0" />
+			<mj-section padding="0" />
+			<mj-column padding="0" />
+		</mj-attributes>
+	</mj-head>
+	<mj-body background-color="#F3F4F6" width="560px">
+		<mj-section padding="32px 0 0">
+			<mj-column></mj-column>
+		</mj-section>
 
-				<mj-divider border-color="#444"></mj-divider>
+		<mj-wrapper background-color="#FFFFFF" border="1px solid #E4E6EB" border-radius="12px" padding="0">
 
-				<mj-text font-size="20px" color="#444444" font-family="helvetica">Merhaba {{user.first_name}},</mj-text>
-				<mj-text line-height="27px" font-size="20px" color="#444444" font-family="helvetica"
-					>{{message}}</mj-text
-				>
-				<mj-text
-					font-weight="bold"
-					font-size="20px"
-					color="#246bfd"
-					text-decoration="underline"
-					font-family="helvetica"
-				>
-					<a font-weight="700" href="{{link}}">{{linkText}}</a>
-				</mj-text>
-				<mj-divider border-color="#444"></mj-divider>
+			<!-- HEADER: logo + wordmark -->
+			<mj-section padding="32px 32px 24px">
+				<mj-column>
+					<mj-image src="https://zktimer.app/public/images/zkt-logo.png" alt="ZKT Timer" width="56px" height="56px" padding="0" href="https://zktimer.app" />
+					<mj-text align="center" font-size="15px" font-weight="700" color="#0E1015" letter-spacing="0.2px" padding="10px 0 0">ZKT Timer</mj-text>
+				</mj-column>
+			</mj-section>
 
-				<mj-text font-size="20px" padding-bottom="0" color="#444444" font-family="helvetica"
-					>Sevgiler,<br />
-				</mj-text>
+			<mj-section padding="0 32px">
+				<mj-column>
+					<mj-divider border-width="1px" border-color="#ECEEF2" padding="0" />
+				</mj-column>
+			</mj-section>
 
-				<mj-text font-size="20px" color="#444444" font-family="helvetica">Zkt Timer Ekibi</mj-text>
-			</mj-column>
+			<!-- MESSAGE -->
+			<mj-section padding="28px 32px 0">
+				<mj-column>
+					<mj-text font-weight="700" color="#0E1015">Merhaba {{user.first_name}},</mj-text>
+					<mj-text padding="10px 0 0">{{message}}</mj-text>
+					<mj-button href="{{link}}" align="left" background-color="#0E1015" color="#FFFFFF" font-size="14px" font-weight="700" border-radius="8px" inner-padding="12px 20px" padding="20px 0 0">{{linkText}}</mj-button>
+				</mj-column>
+			</mj-section>
+
+			<!-- SIGNOFF -->
+			<mj-section padding="28px 32px 32px">
+				<mj-column>
+					<mj-text>Sevgiler,<br /><strong style="color:#0E1015">ZKT Timer Ekibi</strong></mj-text>
+				</mj-column>
+			</mj-section>
+
+		</mj-wrapper>
+
+		<mj-section padding="0 0 32px">
+			<mj-column></mj-column>
 		</mj-section>
 	</mj-body>
 </mjml>

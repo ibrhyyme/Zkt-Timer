@@ -7,7 +7,7 @@ import { getStatLabel } from './stat_label';
 import { useColor } from '../../../util/hooks/useTheme';
 import { useMe } from '../../../util/hooks/useMe';
 import jsonStr from 'json-stable-stringify';
-import { useSettings } from '../../../util/hooks/useSettings';
+import { useActiveSessionId } from '../../../util/hooks/useActiveSessionId';
 import { getTimeString } from '../../../util/time';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
@@ -33,7 +33,7 @@ export default function QuickStatsBlock(props: Props) {
 	const { rowSpan, filterOptions, colSpan, statOptions, preview } = props;
 
 	const dispatch = useDispatch();
-	const sessionId = useSettings('session_id');
+	const sessionId = useActiveSessionId();
 	const [fontSize, setFontSize] = useState(25);
 	const me = useMe();
 	const statsBlockDiv = useRef<HTMLDivElement>(null);

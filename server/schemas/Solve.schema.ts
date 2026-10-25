@@ -203,8 +203,10 @@ export class Solve {
 	 * The cube's name and kind for a single solve view (share code, someone else's solve).
 	 * Resolved per solve (SolveCubeResolver), so list fragments must not ask for it; a user's
 	 * own solves name their cube from the local cube list.
+	 *
+	 * Not a @Field: the resolver defines the GraphQL field. A @Field here shadowed it in the
+	 * production build (see the note on Integration's WCA counts).
 	 */
-	@Field(() => SolveCube, { nullable: true })
 	cube?: SolveCube;
 
 	@Field(() => PublicUserAccount)

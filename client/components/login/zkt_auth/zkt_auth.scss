@@ -45,6 +45,28 @@
 		justify-content: center;
 	}
 
+	// A soft keyboard is open (ZktAuthScene). The page becomes its own scroller, one
+	// screen tall, with the keyboard's height of room under the card, so every field can
+	// be scrolled up above the keyboard. The card goes to the top: centred content that
+	// overflows its box loses its top end, which no scroll can reach.
+	&--keyboard {
+		height: 100vh;
+		height: 100dvh;
+		min-height: 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		justify-content: flex-start;
+		padding-bottom: calc(28px + var(--keyboard-h, 0px));
+
+		// Side by side (tablet): the column is the card's height, so it is the cross axis
+		// that goes to the top.
+		@include bp-up($bp-md) {
+			justify-content: center;
+			align-items: flex-start;
+		}
+	}
+
 	input,
 	button {
 		font-family: inherit;

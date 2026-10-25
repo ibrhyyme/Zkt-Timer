@@ -51,25 +51,23 @@ export class Integration {
 	@Field(() => String, { nullable: true })
 	wca_country_iso2?: string;
 
-	@Field(() => Number, { nullable: true })
+	// The counts below are GraphQL fields, but defined by IntegrationVisibilityResolver
+	// (privacy toggles), never by a @Field here. In the production build (babel, legacy
+	// decorators) a @Field on a class property registers a resolver of its own that returns
+	// the stored value, and it replaced the gating one: hidden medals and records went out
+	// to everyone. The guard test (server/__tests__/field_resolver_conflicts.test.ts) holds it.
 	wca_competition_count?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_medal_gold?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_medal_silver?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_medal_bronze?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_record_nr?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_record_cr?: number;
 
-	@Field(() => Number, { nullable: true })
 	wca_record_wr?: number;
 
 	@Field(() => Boolean, { nullable: true })

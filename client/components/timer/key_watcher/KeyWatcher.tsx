@@ -23,6 +23,7 @@ import { isMultiPhaseActive } from '../../../../shared/util/solve/multiphase';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSetting, getSettings } from '../../../db/settings/query';
+import { getActiveSessionId } from '../../../db/sessions/active';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
@@ -938,7 +939,7 @@ export default function KeyWatcher(props: Props) {
 		}
 
 		const settings = getSettings();
-		const sessId = settings.session_id;
+		const sessId = getActiveSessionId();
 
 		// All shortcuts operate on the current bucket's last solve (cube_type +
 		// subset), not the session-global last solve — otherwise switching cube

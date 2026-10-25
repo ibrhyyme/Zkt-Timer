@@ -17,11 +17,18 @@ import {getMe} from '../../components/store';
 import {requestPersist} from '../persist';
 import {emitEvent} from '../../util/event_handler';
 import {setLocalSettingValue} from './local';
+import {clearTimerSession} from '../sessions/active';
 
 export const MOBILE_FONT_SIZE_MULTIPLIER = 0.75;
 export const MIN_MOBILE_FREEZE_TIME = 0.45;
 
+/**
+ * Sets the main session. Only the Sessions page does this on purpose; the timer header's
+ * pick is temporary and lives in db/sessions/active.ts. Setting the main session ends any
+ * temporary pick, so the timer follows the session that was just made main.
+ */
 export function setCurrentSession(id: string) {
+	clearTimerSession();
 	return setSetting('session_id', id);
 }
 

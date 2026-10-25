@@ -4,6 +4,7 @@ import './CreateNewSession.scss';
 import Input from '../../common/inputs/input/Input';
 import {setCurrentSession} from '../../../db/settings/update';
 import {createSessionDb} from '../../../db/sessions/update';
+import {setTimerSession} from '../../../db/sessions/active';
 import {IModalProps} from '../../common/modal/Modal';
 import {toastError} from '../../../util/toast';
 import {useInput} from '../../../util/hooks/useInput';
@@ -12,8 +13,17 @@ import block from '../../../styles/bem';
 
 const b = block('create-new-session');
 
-export default function CreateNewSession(props: IModalProps) {
-	const {onComplete} = props;
+interface Props extends IModalProps {
+	/**
+	 * What the new session becomes. From the Sessions page it is the main session; from
+	 * the timer's picker only the timer's session for now (db/sessions/active.ts), since
+	 * the main session is changed on the Sessions page alone.
+	 */
+	target?: 'main' | 'timer';
+}
+
+export default function CreateNewSession(props: Props) {
+	const {onComplete, target = 'main'} = props;
 	const { t } = useTranslation();
 
 	const [loading, setLoading] = useState(false);
@@ -28,7 +38,11 @@ export default function CreateNewSession(props: IModalProps) {
 
 		try {
 			const session = await createSessionDb({name});
-			setCurrentSession(session.id);
+			if (target === 'timer') {
+				setTimerSession(session.id);
+			} else {
+				setCurrentSession(session.id);
+			}
 
 			onComplete(session);
 		} catch (e) {

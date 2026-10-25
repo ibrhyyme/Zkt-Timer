@@ -50,9 +50,57 @@
 		overflow-y: auto;
 		overflow-x: hidden;
 
+		// The share each module takes is its stored weight (flex-grow, set inline by
+		// TimerTiles); the floor is TILE_LIMITS.railTileMin, which the edge drag stops at.
 		> .#{$namespace}-timer-tile {
 			flex: 1 1 0;
-			min-height: 180px;
+			min-height: 140px;
+		}
+	}
+
+	// The edge between two modules in a rail, dragged to trade height between them. It
+	// sits in the gap the rail already leaves between them and adds no height of its own
+	// (the negative margins cancel its box), drawn as a hairline only under the pointer.
+	&__split {
+		position: relative;
+		z-index: 4;
+		flex: 0 0 auto;
+		height: 10px;
+		margin: -10px 0;
+		cursor: row-resize;
+		// A finger drag on the edge is a resize, not a scroll of the rail.
+		touch-action: none;
+
+		&::after {
+			content: '';
+			position: absolute;
+			left: 14px;
+			right: 14px;
+			top: 4px;
+			height: 2px;
+			border-radius: 1px;
+			background: transparent;
+			transition: background 0.12s ease;
+		}
+
+		&:active::after {
+			background: rgba(var(--primary-color), 0.55);
+		}
+
+		@media (hover: hover) {
+			&:hover::after {
+				background: rgba(var(--primary-color), 0.55);
+			}
+		}
+
+		// A finger needs more than the 10px gap: the box reaches 7px into each tile.
+		@media (pointer: coarse) {
+			height: 24px;
+			margin: -17px 0;
+
+			&::after {
+				top: 11px;
+			}
 		}
 	}
 

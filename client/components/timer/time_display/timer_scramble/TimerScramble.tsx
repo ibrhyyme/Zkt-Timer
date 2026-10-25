@@ -26,8 +26,9 @@ import {
 	fitReferenceText,
 	SCRAMBLE_LINE_HEIGHT_RATIO,
 	scrambleLinesBudget,
+	timerColumnFloor,
 } from '../../helpers/fit_scramble';
-import { findFitFontSize, FitTextSpacing } from '../../../../util/text-fit';
+import { findFitFontSize, FitTextSpacing, measureWrappedHeight } from '../../../../util/text-fit';
 
 const b = block('timer-scramble');
 const timerBlock = block('timer');
@@ -143,6 +144,8 @@ export default function TimerScramble() {
 	// being typed into (a refit per keystroke would make the text jump).
 	const holdFitRef = useRef(false);
 	holdFitRef.current = !!timeStartedAt || !!editScramble;
+	// The timer column the fit last gave a floor to (see fitScramble).
+	const floorColumnRef = useRef<HTMLElement | null>(null);
 
 	const fitScramble = useCallback(() => {
 		const body = bodyRef.current;
@@ -181,13 +184,46 @@ export default function TimerScramble() {
 				? Math.min(body.parentElement.clientWidth, px(style.maxWidth) || Infinity)
 				: lines.offsetWidth;
 
-		const budget = scrambleLinesBudget(area.clientHeight, content.offsetHeight, lines.offsetHeight, chromeY);
+		// Everything is read before anything is written. Outside a React event handler,
+		// React 17 renders synchronously inside setFittedSize, the field remounts at the new
+		// size, and a read after it measured a detached element (and a computed style gone
+		// blank), which set a wrong floor every other time and kept the bar and the
+		// scramble trading places forever.
+		const fontFamily = style.fontFamily;
+		const fontWeight = style.fontWeight;
+		const areaHeight = area.clientHeight;
+		const contentHeight = content.offsetHeight;
+		const linesHeight = lines.offsetHeight;
+		const column = area.closest<HTMLElement>(`.${timerBlock('timer-side')}`);
+		const columnHeight = column ? column.offsetHeight : 0;
+
+		const reference = fitReferenceText(text, mostMovesRef.current.moves);
+		const smallest = Math.min(DESKTOP_SCRAMBLE_MIN_PX, userSizeRef.current);
+
+		// Once the scramble is at its smallest, the module bar is what has to stop: the
+		// column gets a floor of everything in it at that size (TimerLayout.scss).
+		const smallestLines = measureWrappedHeight(
+			reference,
+			fontFamily,
+			fontWeight,
+			smallest,
+			SCRAMBLE_LINE_HEIGHT_RATIO,
+			lineWidth - chromeX,
+			spacing
+		);
+		if (column && smallestLines !== null) {
+			const floor = timerColumnFloor(columnHeight, areaHeight, contentHeight, linesHeight, chromeY, smallestLines);
+			column.style.setProperty('--zt-timer-floor', `${floor}px`);
+			floorColumnRef.current = column;
+		}
+
+		const budget = scrambleLinesBudget(areaHeight, contentHeight, linesHeight, chromeY);
 		const { fontSize } = findFitFontSize(
-			fitReferenceText(text, mostMovesRef.current.moves),
-			style.fontFamily,
-			style.fontWeight,
+			reference,
+			fontFamily,
+			fontWeight,
 			userSizeRef.current,
-			Math.min(DESKTOP_SCRAMBLE_MIN_PX, userSizeRef.current),
+			smallest,
 			SCRAMBLE_LINE_HEIGHT_RATIO,
 			lineWidth - chromeX,
 			budget,
@@ -229,6 +265,16 @@ export default function TimerScramble() {
 			fonts?.removeEventListener('loadingdone', fitScramble);
 		};
 	}, [fitScramble, mobileMode, scramble, editScramble, isSmart]);
+
+	// The floor belongs to this scramble block. Without it (mobile, the in-modal timer) the
+	// column goes back to its plain minimum.
+	useEffect(
+		() => () => {
+			floorColumnRef.current?.style.removeProperty('--zt-timer-floor');
+			floorColumnRef.current = null;
+		},
+		[]
+	);
 
 	// Navigation button disabled states
 	const canGoNext = !scrambleLocked && !timeStartedAt && !isSmartScrambling;

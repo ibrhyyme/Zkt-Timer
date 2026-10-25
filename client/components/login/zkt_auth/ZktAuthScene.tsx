@@ -1,6 +1,7 @@
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import block from '../../../styles/bem';
+import { useKeyboardInset } from '../../../util/hooks/useKeyboardInset';
 import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import AuthCard, { AuthMode } from './AuthCard';
 import AuthCube from './AuthCube';
@@ -16,6 +17,9 @@ import { useChoreography } from './useChoreography';
 import './zkt_auth.scss';
 
 const b = block('zkt-auth');
+
+/** Room kept between the field being typed into and the top of the keyboard. */
+const KEYBOARD_GAP = 16;
 
 interface Props {
 	initialMode: AuthMode;
@@ -46,6 +50,48 @@ export default function ZktAuthScene({
 	const { t } = useTranslation();
 	const [mode, setMode] = useState<AuthMode>(initialMode);
 	const choreography = useChoreography();
+	const rootRef = useRef<HTMLDivElement>(null);
+	const keyboardInset = useKeyboardInset();
+
+	// A soft keyboard is drawn over the bottom of the screen without the page getting any
+	// shorter (iOS always, and the app on both platforms). The card was centred in a
+	// screen-tall page that did not scroll, so on a phone the size of an iPhone 15 the
+	// password field sat entirely under the keyboard and nothing could bring it up. While
+	// the keyboard is open the page scrolls, has the keyboard's height of room under the
+	// card (the `--keyboard` modifier), and the field being typed into is kept in the
+	// strip above the keyboard.
+	useEffect(() => {
+		const root = rootRef.current;
+		if (!root) return undefined;
+		if (keyboardInset <= 0) {
+			root.scrollTop = 0;
+			return undefined;
+		}
+
+		const reveal = (target: EventTarget | null) => {
+			if (!(target instanceof HTMLElement) || !root.contains(target)) return;
+			if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
+			const top = (window.visualViewport?.offsetTop || 0) + KEYBOARD_GAP;
+			const bottom = window.innerHeight - keyboardInset - KEYBOARD_GAP;
+			const rect = target.getBoundingClientRect();
+			if (rect.top >= top && rect.bottom <= bottom) return;
+			// Into the middle of the visible strip, so the field after it shows too.
+			root.scrollBy({ top: rect.top + rect.height / 2 - (top + bottom) / 2, behavior: 'smooth' });
+		};
+
+		// The keyboard just opened: the field that opened it. A frame later, so the room
+		// under the card is laid out before anything is measured.
+		const frame = requestAnimationFrame(() => reveal(document.activeElement));
+		// Moving to the next field keeps the keyboard up, so focus is the signal there.
+		const onFocus = (event: FocusEvent) => {
+			requestAnimationFrame(() => reveal(event.target));
+		};
+		root.addEventListener('focusin', onFocus);
+		return () => {
+			cancelAnimationFrame(frame);
+			root.removeEventListener('focusin', onFocus);
+		};
+	}, [keyboardInset]);
 
 	// `mode` is state because the login/signup tabs flip it from inside. That
 	// makes `initialMode` a first-render-only value, which silently broke every
@@ -144,7 +190,9 @@ export default function ZktAuthScene({
 
 	return (
 		<div
-			className={b()}
+			ref={rootRef}
+			className={b({ keyboard: keyboardInset > 0 })}
+			style={{ '--keyboard-h': `${keyboardInset}px` } as React.CSSProperties}
 			data-mode={mode}
 		>
 			{/* Background — orb ambient layer */}

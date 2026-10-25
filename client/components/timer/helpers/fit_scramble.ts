@@ -59,3 +59,25 @@ export function scrambleLinesBudget(
 	const rest = Math.max(0, contentHeight - scrambleBlockHeight);
 	return Math.max(0, areaHeight - rest - Math.max(0, scrambleBlockChrome));
 }
+
+/**
+ * Shortest the timer column may get: what it holds besides the timer area (the daily
+ * goal bar and its gap), plus the timer area's content with the scramble at its smallest
+ * size. A column shorter than that cuts the digits off however small the scramble is, so
+ * the module bar under it stops growing there instead (TimerLayout.scss, `--zt-timer-floor`).
+ *
+ * Nothing in it depends on the area's own height, which is what keeps the floor from
+ * feeding back into the fit that reads it.
+ */
+export function timerColumnFloor(
+	columnHeight: number,
+	areaHeight: number,
+	contentHeight: number,
+	scrambleBlockHeight: number,
+	scrambleBlockChrome: number,
+	smallestLinesHeight: number
+): number {
+	const around = Math.max(0, columnHeight - areaHeight);
+	const rest = Math.max(0, contentHeight - scrambleBlockHeight);
+	return Math.ceil(around + rest + Math.max(0, scrambleBlockChrome) + Math.max(0, smallestLinesHeight));
+}

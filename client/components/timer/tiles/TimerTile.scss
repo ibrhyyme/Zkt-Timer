@@ -133,6 +133,28 @@
 		padding: 8px 10px 10px;
 		box-sizing: border-box;
 		overflow: hidden;
+
+		// Scramble drawings follow the card's height. A 2D net (and the Square-1, Clock and
+		// FTO drawings) is a canvas of fixed size, so a card dragged shorter than it cut the
+		// bottom off. The wrappers get the card's height and the canvas is fitted inside
+		// it, keeping its proportions (object-fit), centred.
+		.#{$namespace}-scramble-visual,
+		.#{$namespace}-scramble-visual > div,
+		.#{$namespace}-scramble-visual > div > div {
+			height: 100%;
+			min-height: 0;
+		}
+
+		.#{$namespace}-scramble-visual > div > div {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.#{$namespace}-scramble-visual canvas {
+			max-height: 100%;
+			object-fit: contain;
+		}
 	}
 
 	// The tile left behind while its ghost is being dragged.

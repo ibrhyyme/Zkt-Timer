@@ -7,6 +7,8 @@ interface Options {
 	onPreview: (size: { width: number; height: number }) => void;
 	/** Called once, on release. This is the write that persists. */
 	onCommit: (size: { width: number; height: number }) => void;
+	/** The drag was abandoned (pointercancel, the window lost focus): undo the preview. */
+	onCancel?: () => void;
 	/** 1 when dragging right grows the box, -1 when it shrinks it, 0 when the axis is fixed. */
 	signX?: number;
 	signY?: number;
@@ -66,8 +68,12 @@ export function useEdgeResize(options: Options) {
 	}, []);
 
 	const handleCancel = useCallback(() => {
+		const current = session.current;
 		session.current = null;
 		detachRef.current();
+		if (current) {
+			latest.current.onCancel?.();
+		}
 	}, []);
 
 	useEffect(

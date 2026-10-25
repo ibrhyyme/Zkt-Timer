@@ -205,7 +205,10 @@
 			#{$self}__timer-side {
 				flex: 1 1 auto;
 				min-width: 0;
-				min-height: 220px;
+				// `--zt-timer-floor` is the column with its scramble at the smallest size the
+				// fit goes down to (TimerScramble). Past that, a taller module bar would only
+				// cut the digits off, so the bar is the one that stops growing.
+				min-height: max(220px, var(--zt-timer-floor, 0px));
 				// The header is an overlay below this width and a row in flow above it.
 				padding-top: var(--nav-h);
 
