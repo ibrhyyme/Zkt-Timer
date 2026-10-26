@@ -49,7 +49,7 @@ jest.mock('../../../../../util/anon-mode', () => ({ syncAnonSolveCount: jest.fn(
 jest.mock('../../../../../util/solve-tombstones', () => ({ addSolveTombstones: jest.fn() }));
 jest.mock('../../../../../components/daily-goal/helpers/deleted-solves', () => ({ recordDeletedSolves: jest.fn() }));
 jest.mock('../../../../lokijs', () => ({ stripLokiJsMetadata: (row: any) => row }));
-jest.mock('../../../local-analysis', () => ({ scheduleLocalStepRows: jest.fn() }));
+jest.mock('../../../local-analysis', () => ({ localStepRowsForNewSolve: jest.fn(() => null) }));
 
 import { getSinglePB } from '../single/single_pb';
 import { getCurrentAverage } from '../average/average';

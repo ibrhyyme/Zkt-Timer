@@ -86,7 +86,6 @@ export default function Privacy() {
 			</ul>
 			<p>{t('privacy.section_5_footer')}</p>
 			<p>{t('privacy.section_5_international')}</p>
-			<p>{t('privacy.section_5_embeds')}</p>
 
 			<h2>{t('privacy.public_title')}</h2>
 			<p>{t('privacy.public_text')}</p>

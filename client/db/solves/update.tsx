@@ -28,7 +28,7 @@ import { syncAnonSolveCount } from '../../util/anon-mode';
 import { addSolveTombstones } from '../../util/solve-tombstones';
 import { recordDeletedSolves } from '../../components/daily-goal/helpers/deleted-solves';
 import { stripLokiJsMetadata } from '../lokijs';
-import { scheduleLocalStepRows } from './local-analysis';
+import { localStepRowsForNewSolve } from './local-analysis';
 
 // A live save with no answer by then goes back to the queue (see raceTimeout). Same budget
 // the queue gives each replayed record.
@@ -79,6 +79,12 @@ export async function createSolveDb(solveInput: Solve) {
 	const analysisMethod = (solveInput as any)?.analysis_method as string | undefined;
 
 	const solve = sanitizeSolve(solveInput) as Solve;
+	// The device's breakdown goes in with the row, so nothing draws this solve without its
+	// phases. The server's answer replaces it below (applyCreatedSolve).
+	const localSteps = localStepRowsForNewSolve(solve, analysisMethod);
+	if (localSteps) {
+		solve.solve_method_steps = localSteps;
+	}
 	solveDb.insert({
 		...solve,
 	});
@@ -129,9 +135,6 @@ export async function createSolveDb(solveInput: Solve) {
 				// the queued copy as well is harmless (a repeated create is answered as a success).
 				request.then(onCreated).catch(() => {});
 			}
-			// The server's breakdown is not coming now: work it out on the device so the
-			// solve card is complete offline. The server's answer replaces it on sync.
-			scheduleLocalStepRows(solve.id, analysisMethod);
 			// Already queued above: releasing it hands it to the next sync
 			releaseInFlight(await queued);
 			const kind = classifyReplayError('createSolve', e);
@@ -150,10 +153,6 @@ export async function createSolveDb(solveInput: Solve) {
 				}
 			}
 		}
-	} else {
-		// Signed out: nothing ever answers with a breakdown (a virtual cube solve, which is
-		// analysed for everyone, used to stay blank here for good).
-		scheduleLocalStepRows(solve.id, analysisMethod);
 	}
 }
 

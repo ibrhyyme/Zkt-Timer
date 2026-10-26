@@ -18,6 +18,7 @@ import { SmartTurn } from '../smart_scramble';
 import { analyzePhases } from '../../../shared/util/solve/phase_engine';
 import { getMethod } from '../../../shared/util/solve/methods';
 import { SolveMethod, SolvePhase, PhaseTransition, PhaseEngineResult as EngineResult } from '../../../shared/util/solve/types';
+import { caseNameFromKey } from '../../../shared/util/solve/ll_identification';
 
 type PhaseTimes = Record<string, number | undefined>;
 
@@ -240,7 +241,6 @@ export function buildLiveAnalysisResult(
 	for (const c of result.cases || []) caseByPhase[c.phase] = c.case;
 
 	let prevEndSec: number | undefined;
-	let lastCompleted: SolvePhase | null = null;
 
 	for (const id of def.steps) {
 		const t = transitionByPhase[id];
@@ -251,7 +251,6 @@ export function buildLiveAnalysisResult(
 		stepSplits[id] =
 			endSec !== undefined ? Math.max(0, endSec - (prevEndSec ?? 0)) : undefined;
 		prevEndSec = endSec ?? prevEndSec;
-		lastCompleted = id;
 
 		recognition[id] = recognitionMs(t) / 1000;
 		execution[id] = executionMs(t) / 1000;
@@ -270,9 +269,11 @@ export function buildLiveAnalysisResult(
 		};
 	}
 
-	const isSolved = lastCompleted === def.steps[def.steps.length - 1];
-	const nextIdx = lastCompleted ? def.steps.indexOf(lastCompleted) + 1 : 0;
-	const currentStep = isSolved ? null : def.steps[nextIdx] ?? def.steps[0];
+	const { currentStep, currentPhase, isSolved } = ladderPosition(
+		method,
+		(id) => !!transitionByPhase[id],
+		turns.length > 0
+	);
 
 	// ---- CFOP-shaped aliases ----
 	// The CFOP overlay predates the generic map and reads these directly. They are
@@ -298,24 +299,6 @@ export function buildLiveAnalysisResult(
 	const f2lCount = [f2l1T, f2l2T, f2l3T, f2l4T].filter(Boolean).length;
 	const totalSec = (lastMs - startMs) / 1000;
 
-	let currentPhase: LiveAnalysisResult['currentPhase'];
-	if (method === 'cfop' || method === 'cfop2') {
-		if (pllT) currentPhase = 'Solved';
-		else if (ollT) currentPhase = 'PLL';
-		else if (f2l4T) currentPhase = 'OLL';
-		else if (f2l3T) currentPhase = 'F2L (4)';
-		else if (f2l2T) currentPhase = 'F2L (3)';
-		else if (f2l1T) currentPhase = 'F2L (2)';
-		else if (crossT) currentPhase = 'F2L (1)';
-		else currentPhase = turns.length > 0 ? 'Cross' : 'Scramble/Inspection';
-	} else {
-		currentPhase = isSolved
-			? 'Solved'
-			: currentStep
-				? STEP_LABELS[currentStep] || currentStep
-				: 'Scramble/Inspection';
-	}
-
 	return {
 		steps,
 		method,
@@ -329,7 +312,7 @@ export function buildLiveAnalysisResult(
 		f2lCount,
 		ollIdentified: result.ollIdentified?.case,
 		pllIdentified: result.pllIdentified?.case,
-		isSolved: method === 'cfop' || method === 'cfop2' ? !!pllT : isSolved,
+		isSolved,
 		scrambleError: false,
 		times: {
 			cross: seconds(crossT?.timestamp),
@@ -342,6 +325,158 @@ export function buildLiveAnalysisResult(
 			pll: seconds(pllT?.timestamp),
 			pll_cp: seconds(cpT?.timestamp),
 			total: totalSec > 0 ? totalSec : undefined,
+			recognition,
+			execution,
+		},
+	};
+}
+
+/**
+ * Where a ladder stands, given which of the method's steps are done: the step being worked
+ * on, the phase label the overlay keys its rows on, and whether the solve is finished.
+ * One rule for the live result and for a finished solve's stored rows.
+ */
+function ladderPosition(
+	method: SolveMethod,
+	done: (id: SolvePhase) => boolean,
+	started: boolean
+): Pick<LiveAnalysisResult, 'currentStep' | 'currentPhase' | 'isSolved'> {
+	const def = getMethod(method);
+	let lastCompleted: SolvePhase | null = null;
+	for (const id of def.steps) {
+		if (done(id)) lastCompleted = id;
+	}
+	const allDone = lastCompleted === def.steps[def.steps.length - 1];
+	const nextIdx = lastCompleted ? def.steps.indexOf(lastCompleted) + 1 : 0;
+	const currentStep = allDone ? null : def.steps[nextIdx] ?? def.steps[0];
+
+	if (method === 'cfop' || method === 'cfop2') {
+		let currentPhase: LiveAnalysisResult['currentPhase'];
+		if (done('pll')) currentPhase = 'Solved';
+		else if (done('oll')) currentPhase = 'PLL';
+		else if (done('f2l_4')) currentPhase = 'OLL';
+		else if (done('f2l_3')) currentPhase = 'F2L (4)';
+		else if (done('f2l_2')) currentPhase = 'F2L (3)';
+		else if (done('f2l_1')) currentPhase = 'F2L (2)';
+		else if (done('cross')) currentPhase = 'F2L (1)';
+		else currentPhase = started ? 'Cross' : 'Scramble/Inspection';
+		return { currentStep, currentPhase, isSolved: done('pll') };
+	}
+
+	return {
+		currentStep,
+		currentPhase: allDone
+			? 'Solved'
+			: currentStep
+				? STEP_LABELS[currentStep] || currentStep
+				: 'Scramble/Inspection',
+		isSolved: allDone,
+	};
+}
+
+/** A stored step row, as far as the ladder reads it. */
+export interface StoredStepRow {
+	step_name: string;
+	total_time?: number | null;
+	recognition_time?: number | null;
+	turn_count?: number | null;
+	skipped?: boolean | null;
+	case_key?: string | null;
+	case_set?: string | null;
+	oll_case_key?: string | null;
+	pll_case_key?: string | null;
+	method_name?: string | null;
+}
+
+/**
+ * The finished ladder from a solve's stored breakdown: the rows the solve card, the phase
+ * analysis module and the session table read. A finished solve used to be drawn from a
+ * second analysis of its own, so the ladder could show a CFOP breakdown of a solve every
+ * other place showed as Roux ('auto' is resolved when the rows are made, not live).
+ *
+ * A row holds its step's own duration and each step starts where the previous one ended,
+ * so a step's end is the running sum: the same seconds the engine's timestamps give.
+ * Null when there is nothing to draw.
+ */
+export function liveResultFromStepRows(rows: StoredStepRow[] | null | undefined): LiveAnalysisResult | null {
+	if (!rows || !rows.length) return null;
+
+	const method = (rows.find((r) => r.method_name)?.method_name || 'cfop') as SolveMethod;
+	const def = getMethod(method);
+	const byStep: Record<string, StoredStepRow> = {};
+	for (const row of rows) byStep[row.step_name] = row;
+
+	const steps: any = {};
+	const stepTimes: PhaseTimes = {};
+	const stepSplits: PhaseTimes = {};
+	const stepCases: Record<string, string> = {};
+	const recognition: PhaseTimes = {};
+	const execution: PhaseTimes = {};
+	let ollIdentified: string | undefined;
+	let pllIdentified: string | undefined;
+	let elapsed = 0;
+
+	for (const id of def.steps) {
+		const row = byStep[id];
+		if (!row) continue;
+
+		const split = Math.max(0, row.total_time || 0);
+		const rec = Math.min(split, Math.max(0, row.recognition_time || 0));
+		elapsed += split;
+		stepTimes[id] = elapsed;
+		stepSplits[id] = split;
+		recognition[id] = rec;
+		execution[id] = split - rec;
+
+		// Older rows name the case only in the legacy OLL/PLL columns.
+		const set = row.case_set || (row.oll_case_key ? 'oll' : row.pll_case_key ? 'pll' : null);
+		const key = row.case_key || row.oll_case_key || row.pll_case_key || undefined;
+		const name = caseNameFromKey(set, key);
+		if (name) stepCases[id] = name;
+		if (name && set === 'oll') ollIdentified = name;
+		if (name && set === 'pll') pllIdentified = name;
+
+		steps[id] = {
+			case: name,
+			key,
+			skipped: !!row.skipped,
+			recognitionMs: rec * 1000,
+			executionMs: (split - rec) * 1000,
+			// Rows keep the HTM count only, which is the one the ladder draws.
+			moveCount: { htm: row.turn_count || 0 },
+		};
+	}
+
+	if (!Object.keys(steps).length) return null;
+	if (steps.f2l_4) steps.f2l = steps.f2l_4;
+
+	const { currentStep, currentPhase, isSolved } = ladderPosition(method, (id) => !!byStep[id], true);
+	const f2lPairs = [stepTimes.f2l_1, stepTimes.f2l_2, stepTimes.f2l_3, stepTimes.f2l_4];
+
+	return {
+		steps,
+		method,
+		stepOrder: def.steps,
+		stepTimes,
+		stepSplits,
+		stepCases,
+		currentStep,
+		currentPhase,
+		crossSolved: !!byStep.cross,
+		f2lCount: f2lPairs.filter((t) => t != null).length,
+		ollIdentified,
+		pllIdentified,
+		isSolved,
+		scrambleError: false,
+		times: {
+			cross: stepTimes.cross,
+			f2l: stepTimes.f2l_4,
+			f2l_pairs: f2lPairs,
+			oll: stepTimes.oll,
+			oll_eo: stepTimes.eo,
+			pll: stepTimes.pll,
+			pll_cp: stepTimes.cp,
+			total: elapsed > 0 ? elapsed : undefined,
 			recognition,
 			execution,
 		},

@@ -108,6 +108,13 @@ export interface TimerStore {
 	lastSmartSolveStats?: {
 		turns: number;
 		tps: number;
+		/** The solve these stats belong to, so the finished ladder can read its stored breakdown. */
+		solveId?: string;
+		/** Moves stored: the breakdown worked out at the stop, the rows the save stores. */
+		stepRows?: Solve['solve_method_steps'];
+		/** What those rows were worked out from, for a view that splits the same moves finer. */
+		stepSource?: { id: string; smart_turns: string; scramble: string };
+		/** Only when the solve's moves are not stored (free plan): its breakdown, worked out here. */
 		correctedAnalysis?: LiveAnalysisResult;
 	} | null;
 	smartAbortVisible?: boolean;

@@ -10,6 +10,7 @@ import { Bluetooth, Gear } from 'phosphor-react';
 
 import { openModal, closeModal } from '../../../actions/general';
 import Cube from 'cubejs';
+import { v4 as uuid } from 'uuid';
 import block from '../../../styles/bem';
 import { initSmartSolver } from '../../../util/smart_scramble';
 import { initSolverWorker } from '../../../util/solver_worker_manager';
@@ -34,6 +35,7 @@ import { getTimerStore } from '../../../util/store/getTimer';
 import { endTimer, keyboardStartedSolveTurns, startTimer, startInspection } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
+import { prepareLocalStepRows } from '../../../db/solves/local-analysis';
 import { saveSolve } from '../helpers/save';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro } from '../../../lib/pro';
@@ -359,6 +361,9 @@ export default function SmartCube() {
 		const solveTurns = keyboardSolveTurnsRef.current;
 		keyboardSolveTurnsRef.current = [];
 		if (!start || !solveTurns.length || analysisMode === 'none' || !(mobileMode || liveSlot)) return;
+		// Moves stored (helpers/events.ts stores them for Pro): the overlay draws the stored
+		// breakdown, as for a cube-stopped solve above.
+		if (userIsPro) return;
 
 		// endTimer has just written this solve's stats; the analysis only lands on them.
 		const solveStats = getTimerStore('lastSmartSolveStats');
@@ -657,7 +662,11 @@ export default function SmartCube() {
 				? solveResult.htmCount
 				: countHTM(correctedMoves.map((m: any) => m.turn));
 
+			// Chosen here so the stats below can point at the solve endTimer saves.
+			const solveId = uuid();
+
 			endTimer(context, finalTimeMilli, {
+				id: solveId,
 				inspection_time: inspectionTime,
 				// Stamps the connected cube (helpers/cube_stamp.ts) instead of the main.
 				is_smart_cube: true,
@@ -677,11 +686,10 @@ export default function SmartCube() {
 			// Move count and TPS are cheap, so they go out with the time. Kept as one object:
 			// the deferred analysis below only lands while this exact object is still the
 			// current stats, so it can never overwrite a newer solve's.
-			const solveStats = { turns: htmCount, tps };
+			const solveStats = { turns: htmCount, tps, solveId };
 			setTimerParams({ lastSmartSolveStats: solveStats });
 
-			// Corrected phase analysis: so LiveAnalysisOverlay shows correct times
-			// correctedMoves.completedAt corrected via linear fit — more accurate than raw timestamps.
+			// The finished solve's phase analysis, for LiveAnalysisOverlay.
 			//
 			// Deferred by a tick on purpose. Running it inline costs ~75ms of blocked
 			// main thread (measured over 26 solves) BEFORE React can paint the final
@@ -689,8 +697,35 @@ export default function SmartCube() {
 			// feeds sits below the timer and does not need the same frame.
 			//
 			// Skipped on desktop when there is no live phase module: the finished ladder is
-			// only ever drawn there, so the work would be thrown away.
-			if (analysisMode !== 'none' && (mobileMode || liveSlot)) {
+			// only ever drawn there. With stored moves the save then works the breakdown out
+			// itself, after the next scramble has painted.
+			const overlayShown = analysisMode !== 'none' && (mobileMode || liveSlot);
+
+			// Stored moves (Pro): the breakdown is worked out once, here, from the moves and
+			// scramble the save stores. The save stores these same rows (createSolveDb) and the
+			// overlay draws them until it has, so the ladder, the solve card and the phase
+			// analysis module show one breakdown. The overlay used to run a second analysis of
+			// its own, which could disagree with the stored one (the method on 'auto', above all).
+			if (smartTurnsToSave && overlayShown) {
+				const stepSource = {
+					id: solveId,
+					smart_turns: smartTurnsToSave,
+					scramble: context.scramble,
+					cube_type: context.cubeType,
+					scramble_subset: context.scrambleSubset,
+				};
+				setTimeout(() => {
+					if (getTimerStore('lastSmartSolveStats') !== solveStats) return;
+					const stepRows = prepareLocalStepRows(stepSource, solveMethod || 'auto');
+					if (stepRows) {
+						setTimerParams({ lastSmartSolveStats: { ...solveStats, stepRows, stepSource } });
+					}
+				}, 0);
+			}
+
+			// Moves not stored (free plan): corrected via linear fit, more accurate than the raw
+			// timestamps the live ladder ran on.
+			if (!smartTurnsToSave && overlayShown) {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
 				const scrambledState = startState;
 				dbgCorr(`CORR_ANALYSIS scheduled | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${scrambledState?.length === 54 ? scrambledState.slice(0, 27) + '...' : `INVALID(len=${scrambledState?.length})`}`);

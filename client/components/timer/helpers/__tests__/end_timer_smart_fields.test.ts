@@ -162,8 +162,20 @@ describe('endTimer with a smart cube stopped from the keyboard', () => {
 
 		// R, U, R' (the leftover U predates the lead-in): 3 turns over 10 s.
 		expect(setTimerParams).toHaveBeenCalledWith(expect.objectContaining({
-			lastSmartSolveStats: { turns: 3, tps: 0.3 },
+			lastSmartSolveStats: { turns: 3, tps: 0.3, solveId: expect.any(String) },
 		}));
+	});
+
+	it('saves the solve under the id the stats point at', () => {
+		stop(timerContext());
+		const stats = (setTimerParams as jest.Mock).mock.calls
+			.map((c) => c[0]?.lastSmartSolveStats)
+			.find(Boolean);
+		runDeferredSave();
+
+		// The finished ladder finds the stored breakdown by this id.
+		const overrides = (saveSolve as jest.Mock).mock.calls[0][7];
+		expect(overrides.id).toBe(stats.solveId);
 	});
 
 	it('saves the turn count and the pick-up / put-down times read before the reset', () => {
@@ -224,9 +236,21 @@ describe('endTimer with a smart cube finished by the engine', () => {
 		runDeferredSave();
 
 		expect(setTimerParams).toHaveBeenCalledWith(expect.objectContaining({
-			lastSmartSolveStats: { turns: 42, tps: 4.67 },
+			lastSmartSolveStats: { turns: 42, tps: 4.67, solveId: expect.any(String) },
 		}));
 		const overrides = (saveSolve as jest.Mock).mock.calls[0][7];
 		expect(overrides.smart_turn_count).toBe(42);
+	});
+
+	it('keeps the id the caller chose for the solve', () => {
+		mockSettings.use_space_with_smart_cube = false;
+
+		stop(timerContext(), 9_000, { id: 'chosen-id', is_smart_cube: true, smart_turn_count: 42, smart_turns: null });
+		runDeferredSave();
+
+		expect(setTimerParams).toHaveBeenCalledWith(expect.objectContaining({
+			lastSmartSolveStats: expect.objectContaining({ solveId: 'chosen-id' }),
+		}));
+		expect((saveSolve as jest.Mock).mock.calls[0][7].id).toBe('chosen-id');
 	});
 });

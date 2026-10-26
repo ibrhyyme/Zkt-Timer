@@ -8,7 +8,10 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import { is3x3CubeType } from '../helpers/util';
 import { getTimeString } from '../../../util/time';
-import { effectiveAnalysisMode, resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
+import { effectiveAnalysisMode, liveResultFromStepRows, resolveAnalysisMethod } from '../../../util/solve/live_analysis_core';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
+import { getSolveDb } from '../../../db/solves/init';
+import { stepRowsForStoredSolve } from '../../../../shared/util/solve/solve_steps';
 
 const b = block('live-analysis');
 
@@ -129,6 +132,34 @@ export default function LiveAnalysisOverlay({
 
     const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState, analysisMethod);
 
+    // The finished solve as stored: its breakdown is the one the solve card and the phase
+    // analysis module read, so the ladder draws that one too. Re-read on every solve db
+    // change, which is how the server's answer (it replaces the device's rows) arrives.
+    useSolveDb();
+    const finishedSolveId = !timeStartedAt ? lastSmartSolveStats?.solveId : undefined;
+    const storedSolve = finishedSolveId ? getSolveDb()?.findOne({ id: finishedSolveId }) : null;
+    // Until the save has made the row (a few frames), the rows worked out at the stop: the
+    // same rows the save stores.
+    const storedRows = storedSolve ? storedSolve.solve_method_steps : lastSmartSolveStats?.stepRows;
+    const finishedSource = storedSolve || (finishedSolveId ? lastSmartSolveStats?.stepSource : null);
+    const storedAnalysis = React.useMemo(() => {
+        if (!finishedSource || !Array.isArray(storedRows) || !storedRows.length) return null;
+        // The two-look ladder splits OLL and PLL into EO/CO and CP/EP. Stored CFOP rows
+        // have one row each, so that view breaks the same stored moves down with the
+        // two-look steps. A display choice, never written anywhere.
+        if (analysisMode === 'cffffoopp' && storedRows.every((r) => !r.method_name || r.method_name === 'cfop')) {
+            try {
+                const detail = liveResultFromStepRows(stepRowsForStoredSolve(finishedSource as any, 'cfop2'));
+                if (detail) return detail;
+            } catch {
+                // Falls through to the stored one-look rows.
+            }
+        }
+        return liveResultFromStepRows(storedRows);
+        // Keyed by the moves, not the object: the save swaps the source for the stored row
+        // without changing what it holds.
+    }, [finishedSource?.smart_turns, finishedSource?.scramble, storedRows, analysisMode]);
+
     // ── DEBUG: Activated with window.__SMART_DEBUG__ = true ──
     // Dumps every analysis change during solve + correctedAnalysis when solve finishes
     const lastDebugLogRef = React.useRef<string>('');
@@ -136,7 +167,7 @@ export default function LiveAnalysisOverlay({
         if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
         const target = timeStartedAt && shouldRun
             ? analysis
-            : (lastSmartSolveStats?.correctedAnalysis || null);
+            : (storedAnalysis || lastSmartSolveStats?.correctedAnalysis || null);
         if (!target) return;
         const stepsActive = target.steps
             ? Object.keys(target.steps).filter(k => target.steps[k]).reduce((acc: any, k) => {
@@ -146,7 +177,7 @@ export default function LiveAnalysisOverlay({
             }, {})
             : {};
         const snapshot = {
-            src: timeStartedAt && shouldRun ? 'live' : 'corrected',
+            src: timeStartedAt && shouldRun ? 'live' : storedAnalysis ? 'stored' : 'corrected',
             phase: target.currentPhase,
             crossSolved: target.crossSolved,
             f2lCount: target.f2lCount,
@@ -167,7 +198,7 @@ export default function LiveAnalysisOverlay({
         if (json === lastDebugLogRef.current) return;
         lastDebugLogRef.current = json;
         console.log('%c[ANALYSIS]', 'color:#E91E63;font-weight:bold', snapshot);
-    }, [analysis, lastSmartSolveStats, shouldRun, is3x3, timeStartedAt]);
+    }, [analysis, storedAnalysis, lastSmartSolveStats, shouldRun, is3x3, timeStartedAt]);
 
     // Clear cache on new start (history is reset during render above)
     React.useEffect(() => {
@@ -195,12 +226,13 @@ export default function LiveAnalysisOverlay({
 
     // Display Logic:
     // If Timer is RUNNING, show live 'analysis'.
-    // Otherwise (Scramble/Inspection/Finished), show corrected analysis (linear fit) or cached.
-    // correctedAnalysis = phase durations corrected via linear fit (accurate)
-    // cachedAnalysis = calculated from raw BLE timestamps (approximate)
+    // Otherwise (Scramble/Inspection/Finished), the finished solve:
+    // storedAnalysis = the stored breakdown (moves stored, Pro), the one every other place shows
+    // correctedAnalysis = worked out here when the moves are not stored (linear-fit timestamps)
+    // cachedAnalysis = the last live result, from raw BLE timestamps, until one of those lands
     const displayAnalysis = timeStartedAt && shouldRun
         ? analysis
-        : (lastSmartSolveStats?.correctedAnalysis || cachedAnalysis);
+        : (storedAnalysis || lastSmartSolveStats?.correctedAnalysis || cachedAnalysis);
 
     if (!displayAnalysis || analysisMode === 'none' || !is3x3) return null;
 
@@ -448,7 +480,10 @@ export default function LiveAnalysisOverlay({
                 justifyItems: 'start'
             } : {}}>
                 {renderableRows.map((p, idx) => {
-                    if (!p.skipped) cumulative += p.time;
+                    // A skipped row still adds its time: a stored step of one or two moves
+                    // (an AUF after a PLL skip) is marked skipped but took real time, and
+                    // leaving it out stopped the running total short of the solve.
+                    cumulative += p.time || 0;
                     const showCumulative = idx > 0 && !p.skipped;
 
                     const timeStr = getTimeString(p.time || 0, 2);

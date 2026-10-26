@@ -72,6 +72,8 @@ export default function CrossSolverModule() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const reqIdRef = useRef(0);
+	// Solver and orientation of the last request, to tell a new scramble from a new question.
+	const solverKeyRef = useRef('');
 	const resultsRef = useRef<HTMLDivElement>(null);
 
 	const resolvedPuzzle = useMemo(
@@ -111,23 +113,49 @@ export default function CrossSolverModule() {
 		}
 
 		const currentReqId = ++reqIdRef.current;
-		setLoading(true);
 		setError(null);
 
 		const ori = needsOrientation ? orientation : undefined;
+
+		// A new scramble for the same solver keeps the previous rows up while the next ones
+		// are worked out. Most take a few milliseconds, and swapping the rows for "Solving..."
+		// and back made the module blink after every solve. Only a slow one shows the text.
+		// A different solver or orientation shows it at once: its old rows answer another
+		// question.
+		const solverKey = `${solverType}|${ori ?? ''}`;
+		const sameSolver = solverKeyRef.current === solverKey;
+		solverKeyRef.current = solverKey;
+		let slowTimer: ReturnType<typeof setTimeout> | null = null;
+		const stopSlowTimer = () => {
+			if (slowTimer) clearTimeout(slowTimer);
+			slowTimer = null;
+		};
+		if (sameSolver && results) {
+			slowTimer = setTimeout(() => {
+				if (reqIdRef.current === currentReqId) setLoading(true);
+			}, 250);
+		} else {
+			setLoading(true);
+		}
+
 		solveCrossAsync(scramble, solverType, ori)
 			.then((res) => {
 				if (reqIdRef.current === currentReqId) {
+					// An answer inside the grace period: the text must not come up after it.
+					stopSlowTimer();
 					setResults(res);
 					setLoading(false);
 				}
 			})
 			.catch((e) => {
 				if (reqIdRef.current === currentReqId) {
+					stopSlowTimer();
 					setError(e.message || t('cross_solver.error'));
 					setLoading(false);
 				}
 			});
+
+		return stopSlowTimer;
 	}, [scramble, solverType, orientation, hasAnySolver, needsOrientation]);
 
 	// Long solutions (e.g. EOCross) can wrap and overflow the module. Shrink the result

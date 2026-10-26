@@ -1,4 +1,5 @@
 import { unstable_batchedUpdates } from 'react-dom';
+import { v4 as uuid } from 'uuid';
 import { setTimerParams } from './params';
 import {
 	setTimer,
@@ -198,8 +199,13 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 	_timerEndFinalTime = finalTime;
 	window.dispatchEvent(new CustomEvent('timerEndFreeze'));
 
+	// A smart solve's id is fixed here, at the stop, instead of when the save makes the row
+	// two frames later: the finished ladder finds the stored breakdown by it
+	// (lastSmartSolveStats.solveId). A caller that already chose one (SmartCube) keeps it.
+	const smartSolveId = smartSolve ? (overrides?.id || uuid()) : undefined;
+
 	// Calculate smart cube stats (before dispatch)
-	let smartStats: { turns: number; tps: number } | null = null;
+	let smartStats: { turns: number; tps: number; solveId?: string } | null = null;
 	if (smartSolve) {
 		let turnCount = 0;
 
@@ -217,7 +223,7 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		// timestamps, leaves it out for the same reason.
 		const timeInSeconds = measuredTime / 1000;
 		const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
-		smartStats = { turns: turnCount, tps };
+		smartStats = { turns: turnCount, tps, solveId: smartSolveId };
 	}
 
 	// Timer/interval cleanup
@@ -257,6 +263,9 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 
 	const finishStop = () => {
 		const overridesCombined = { ...overrides };
+		if (smartSolveId) {
+			overridesCombined.id = smartSolveId;
+		}
 
 		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
 			// The keyboard started and stopped this one (use_space_with_smart_cube). The saved

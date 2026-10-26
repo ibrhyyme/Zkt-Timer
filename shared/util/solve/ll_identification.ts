@@ -174,6 +174,37 @@ export function getMatchingZBLLState(facelet54: string): CaseMatch | null {
 	return { case: name, key: name };
 }
 
+/**
+ * The name the engine gives a case, from the key a stored step row carries. A finished
+ * solve's ladder is drawn from its stored rows, which keep only the key; this inverts the
+ * lookups above so the name is the one the ladder showed live. ZBLL and corner cases
+ * without a library key already use the name as their key, so those come back as is.
+ */
+export function caseNameFromKey(set: string | null | undefined, key: string | null | undefined): string | undefined {
+	if (!key) return undefined;
+	let keys: Array<string | null>;
+	let names: string[];
+	switch (set) {
+		case 'oll':
+			keys = OLL_INDEX_TO_KEY;
+			names = OLL_CASE_NAMES;
+			break;
+		case 'pll':
+			keys = PLL_INDEX_TO_KEY;
+			names = PLL_CASE_NAMES;
+			break;
+		case 'coll':
+		case 'cmll':
+			keys = COLL_INDEX_TO_KEY;
+			names = COLL_CASE_NAMES;
+			break;
+		default:
+			return key;
+	}
+	const idx = keys.indexOf(key);
+	return (idx >= 0 && names[idx]) || key;
+}
+
 // Backward compatibility with old API (initLLStates was called in old code, no-op).
 export function initLLStates() {
 	void CUBE_ROTS;

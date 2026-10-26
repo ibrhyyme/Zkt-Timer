@@ -11,10 +11,10 @@ import { Solve } from '../../../server/schemas/Solve.schema';
  * The device's own breakdown of a smart or virtual cube solve.
  *
  * The breakdown (phases, solution, replay, charts) used to come only from the server's
- * answer to createSolve, so a solve timed without a connection stayed blank in the solve
- * card until the queue reached the server. The analysis code is shared
- * (shared/util/solve/solve_steps.ts) and is the same the server runs, so the phone works it
- * out itself from the moves it recorded.
+ * answer to createSolve, so a solve stayed blank until that answer arrived: about a second
+ * online, until the queue reached the server offline. The analysis code is shared
+ * (shared/util/solve/solve_steps.ts) and is the same the server runs, so the device works it
+ * out itself from the moves it recorded, when the solve is stored.
  *
  * The server stays the authority: its answer replaces these rows the moment the solve
  * reaches it (applyCreatedSolve), and it recomputes from the moves rather than taking the
@@ -82,24 +82,61 @@ export async function queuedAnalysisMethod(solveId: string): Promise<string | nu
 }
 
 /**
- * After the timer has painted: the analysis takes tens of milliseconds on a phone and must
- * not sit between the stop and the final time on screen.
+ * The breakdown of a solve that is about to be stored, worked out from its own moves.
+ * createSolveDb puts it into the row it inserts, so the solve card, the phase analysis
+ * module and the finished ladder all have it in the render that shows the solve.
+ *
+ * It used to be worked out only when the server could not be reached; online, every one
+ * of them waited for createSolve's answer and drew the solve with empty phases first,
+ * about a second on a phone. The save runs after the stop has painted
+ * (timer/helpers/events.ts), so this costs the final time on screen nothing.
  */
-export function scheduleLocalStepRows(solveId: string, method?: string | null): void {
-	if (typeof window === 'undefined') return;
-	const run = () => {
-		try {
-			ensureLocalStepRows(solveId, method);
-		} catch (e) {
-			console.error('[local-analysis] scheduled run failed', e);
+export function localStepRowsForNewSolve(solve: Solve, method?: string | null): Solve['solve_method_steps'] | null {
+	if (!solveNeedsStepRows(solve as any, canUseSmartAnalysis())) return null;
+
+	const prepared = preparedRows.get(solve.id);
+	if (prepared) {
+		preparedRows.delete(solve.id);
+		// Worked out from these very moves, scramble and outcome: use it rather than run the
+		// same analysis twice.
+		if (prepared.smartTurns === solve.smart_turns && prepared.scramble === solve.scramble && !solve.dnf) {
+			return prepared.rows;
 		}
-	};
-	const idle = (window as any).requestIdleCallback as ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
-	if (idle) {
-		idle(run, { timeout: 2000 });
-	} else {
-		setTimeout(run, 50);
 	}
+
+	try {
+		return stepRowsForStoredSolve(solve as any, method || 'auto') as any;
+	} catch (e) {
+		console.error('[local-analysis] failed for', solve.id, e);
+		return null;
+	}
+}
+
+type PreparedRows = { smartTurns: string; scramble: string; rows: Solve['solve_method_steps'] };
+
+// A smart cube solve's breakdown, worked out the moment the cube stops it, a few frames
+// before the save makes the row. The finished ladder draws it in those frames and
+// createSolveDb stores it, so the solve is analysed once.
+const preparedRows = new Map<string, PreparedRows>();
+
+/**
+ * Works out a completed smart cube solve's breakdown ahead of its save (SmartCube, at the
+ * stop). Returns the rows the save will store, or null when it will store none.
+ */
+export function prepareLocalStepRows(
+	solve: Pick<Solve, 'id' | 'smart_turns' | 'scramble' | 'cube_type' | 'scramble_subset'>,
+	method?: string | null
+): Solve['solve_method_steps'] | null {
+	const candidate = { ...solve, dnf: false, is_smart_cube: true, is_virtual_cube: false } as Solve;
+	const rows = localStepRowsForNewSolve(candidate, method);
+	if (!rows) return null;
+
+	preparedRows.set(solve.id, { smartTurns: solve.smart_turns, scramble: solve.scramble, rows });
+	// A save that never came (a crash in between) leaves its entry behind; keep only a few.
+	if (preparedRows.size > 5) {
+		preparedRows.delete(preparedRows.keys().next().value);
+	}
+	return rows;
 }
 
 const BACKFILL_LIMIT = 300;

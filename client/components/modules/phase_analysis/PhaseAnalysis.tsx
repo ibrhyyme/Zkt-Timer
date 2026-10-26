@@ -146,17 +146,15 @@ export default function PhaseAnalysis(props: Props) {
 	// Phase Analysis is Pro-gated on both desktop and mobile
 	const showProOverlay = isProEnabled() && !isPro(me);
 
-	if (showProOverlay) {
-		return (
-			<ProBlurOverlay
-				title={t('pro.upsell.phase_analysis.title')}
-				description={t('pro.upsell.phase_analysis.description')}
-			/>
-		);
-	}
-
+	// Hooks stay above the Pro return: the plan can change while the module is mounted
+	// (a purchase, an expiry, `me` arriving late), and a hook count that changes with it
+	// throws "Rendered more hooks than during the previous render".
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const isReceiving = useRef(false);
+
+	const solves = showProOverlay ? [] : fetchSolves(filterOptions);
+	// The list (and its scroll element) is drawn only on desktop once there is a smart solve.
+	const listShown = !showProOverlay && !mobileMode && solves.some((s) => s.is_smart_cube);
 
 	useEffect(() => {
 		const el = scrollRef.current;
@@ -174,9 +172,16 @@ export default function PhaseAnalysis(props: Props) {
 		});
 
 		return () => { el.removeEventListener('scroll', onScroll); unsub(); };
-	}, []);
+	}, [listShown]);
 
-	const solves = fetchSolves(filterOptions);
+	if (showProOverlay) {
+		return (
+			<ProBlurOverlay
+				title={t('pro.upsell.phase_analysis.title')}
+				description={t('pro.upsell.phase_analysis.description')}
+			/>
+		);
+	}
 
 	if (mobileMode) return <MobileView solves={solves} />;
 

@@ -209,7 +209,7 @@ describe('endTimer with a smart cube time offset', () => {
 
 		// 36 turns / 9.00 s, not 36 / 9.35
 		expect(setTimerParams).toHaveBeenCalledWith(expect.objectContaining({
-			lastSmartSolveStats: { turns: 36, tps: 4 },
+			lastSmartSolveStats: { turns: 36, tps: 4, solveId: expect.any(String) },
 		}));
 	});
 
