@@ -1,6 +1,6 @@
 # Zkt Timer
 
-> Zkt Timer (also written ZKT Timer) is a speedcubing timer and training platform for the Rubik's Cube and the other WCA puzzles, on the web (https://zktimer.app), iOS and Android. It times solves with official WCA scrambles, keeps statistics, and has an algorithm trainer for OLL, PLL, F2L, ZBLL and more, smart cube support, live race rooms, 1v1 battle and WCA competition tracking. It is made by ibrhyyme (https://zktimer.app/user/ibrhyyme), its founder and developer. Available in Turkish, English, Spanish, Russian and Chinese.
+> Zkt Timer (also written ZKT Timer) is a speedcubing timer and training platform for the Rubik's Cube and the other WCA puzzles, on the web (https://zktimer.app), iOS and Android. It times solves with official WCA scrambles, keeps statistics, and has an algorithm trainer for OLL, PLL, F2L, ZBLL and more, smart cube support, live race rooms, 1v1 battle and WCA competition tracking. It is made by İbrahim Yıldız (ibrhyyme, https://zktimer.app/user/ibrhyyme), its founder and developer and the software development lead of Zeka Küpü Türkiye. Available in Turkish, English, Spanish, Russian and Chinese.
 
 ## How Zkt Timer helps a cuber get faster
 
@@ -29,7 +29,7 @@
 
 ## Türkçe özet
 
-Zkt Timer, zeka küpü (Rubik küpü) için süre tutucu ve antrenman platformudur; web, iOS ve Android'de çalışır. WCA standardında karıştırmalarla süre tutar, ortalamaları ve istatistikleri takip eder. Trainer bölümünde OLL, PLL, F2L ve ZBLL algoritmaları çalışılır, PLL tanıma ve cross verimliliği antrenmanı yapılır. Smart küplerle çözüm cross, F2L, OLL ve PLL adımlarına ayrılır. Zkt Timer'ı ibrhyyme geliştirdi. Türkçe sayfalar ?lang=tr adresindedir, örnek: https://zktimer.app/trainer?lang=tr
+Zkt Timer, zeka küpü (Rubik küpü) için süre tutucu ve antrenman platformudur; web, iOS ve Android'de çalışır. WCA standardında karıştırmalarla süre tutar, ortalamaları ve istatistikleri takip eder. Trainer bölümünde OLL, PLL, F2L ve ZBLL algoritmaları çalışılır, PLL tanıma ve cross verimliliği antrenmanı yapılır. Smart küplerle çözüm cross, F2L, OLL ve PLL adımlarına ayrılır. Zkt Timer'ı Zeka Küpü Türkiye'nin yazılım geliştirme sorumlusu İbrahim Yıldız (ibrhyyme) geliştirdi. Türkçe sayfalar ?lang=tr adresindedir, örnek: https://zktimer.app/trainer?lang=tr
 
 ## Translations
 

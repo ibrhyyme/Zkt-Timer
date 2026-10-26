@@ -105,9 +105,23 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const creatorSchema = {
 		'@type': 'Person',
 		'@id': `${SITE_URL}/#creator`,
-		'name': 'ibrhyyme',
+		'name': 'İbrahim Yıldız',
+		'alternateName': 'ibrhyyme',
 		'url': `${SITE_URL}/user/ibrhyyme`,
-		'sameAs': ['https://github.com/ibrhyyme'],
+		'sameAs': ['https://github.com/ibrhyyme', 'https://zekakuputurkiye.com/cubers/2026IBYI01/'],
+		// Software development lead of Zeka Küpü Türkiye (its site and this app). The
+		// @id is the one zekakuputurkiye.com gives its Organization, so both sites
+		// describe the same entity.
+		'memberOf': {
+			'@type': 'OrganizationRole',
+			'roleName': 'Software Development Lead',
+			'memberOf': {
+				'@type': 'SportsOrganization',
+				'@id': 'https://zekakuputurkiye.com/#organization',
+				'name': 'Zeka Küpü Türkiye',
+				'url': 'https://zekakuputurkiye.com/'
+			}
+		},
 		'jobTitle': 'Founder & Lead Developer',
 		'knowsAbout': ['Speedcubing', "Rubik's Cube", 'Web Development', 'Smart Cube Bluetooth Integration']
 	};
