@@ -4,11 +4,13 @@ import {getAverage} from './average';
 import {fetchSolves, FilterSolvesOptions} from '../../../query';
 import {Solve} from '../../../../../../server/schemas/Solve.schema';
 
-export function getAveragePB(filterOptions: FilterSolvesOptions, count: number) {
+/** `mean`: over means of `count` (nothing trimmed) instead of averages. */
+export function getAveragePB(filterOptions: FilterSolvesOptions, count: number, mean = false) {
 	const cacheKey: SolveCacheKey = {
 		type: 'avg_pb',
 		filterOptions,
 		averageCount: count,
+		...(mean ? {mean: true as const} : {}),
 	};
 
 	const cachedValue = fetchSolveCache(cacheKey);
@@ -27,7 +29,7 @@ export function getAveragePB(filterOptions: FilterSolvesOptions, count: number) 
 	const sortedTimes = new SortedArray(firstSolves.map((solve) => solve.time));
 
 	let bestList: Solve[] = [...firstSolves];
-	let best = getAverage(firstSolves);
+	let best = getAverage(firstSolves, false, mean);
 
 	for (let i = 1; i <= allSolves.length - count; i++) {
 		const dropSolve = allSolves[i - 1];
@@ -36,7 +38,7 @@ export function getAveragePB(filterOptions: FilterSolvesOptions, count: number) 
 		sortedTimes.remove(dropSolve.time);
 		sortedTimes.insert(addSolve.time);
 
-		const avg = getAverage(sortedTimes.array);
+		const avg = getAverage(sortedTimes.array, false, mean);
 
 		if (avg > 0 && (best <= 0 || avg < best)) {
 			best = avg;

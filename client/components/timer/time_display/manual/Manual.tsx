@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Check } from 'phosphor-react';
 import Button from '../../../common/button/Button';
 import './Manual.scss';
-import { convertTimeStringToSeconds, getTimeString } from '../../../../util/time';
+import { convertTimeStringToSeconds } from '../../../../util/time';
 import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
 import { resetScramble } from '../../helpers/scramble';
@@ -16,7 +16,8 @@ import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { isNative, isAndroidNative } from '../../../../util/platform';
 import SolveDiff from '../SolveDiff';
 import Scramble from '../../../modules/scramble/ScrambleVisual';
-import { getStatsBlockValueFromFilter } from '../../../modules/quick_stats/util';
+import { formatStatsBlockValue, getStatsBlockValueFromFilter } from '../../../modules/quick_stats/util';
+import { getStatLabel } from '../../../modules/quick_stats/stat_label';
 import { useSolveDb } from '../../../../util/hooks/useSolveDb';
 import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
 
@@ -42,18 +43,20 @@ export default function Manual() {
 	const compactStats = useMemo(() => {
 		if (!mobileMode) return null;
 
-		const statBlocks: { label: string; block: StatsModuleBlock }[] = [
-			{ label: 'AO5', block: { statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' } },
-			{ label: 'AO12', block: { statType: 'average', sortBy: 'current', averageCount: 12, session: true, colorName: 'primary' } },
-			{ label: 'AO100', block: { statType: 'average', sortBy: 'current', averageCount: 100, session: true, colorName: 'primary' } },
-			{ label: 'Mean', block: { statType: 'average', sortBy: 'current', averageCount: null, session: true, colorName: 'primary' } },
+		const statBlocks: StatsModuleBlock[] = [
+			{ statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' },
+			{ statType: 'average', sortBy: 'current', averageCount: 12, session: true, colorName: 'primary' },
+			{ statType: 'average', sortBy: 'current', averageCount: 100, session: true, colorName: 'primary' },
+			{ statType: 'mean', sortBy: 'current', averageCount: 0, session: true, colorName: 'primary' },
 		];
 
-		return statBlocks.map(({ label, block }) => {
+		return statBlocks.map((block) => {
 			const stat = getStatsBlockValueFromFilter(block, solvesFilter, sessionId);
-			return { label, time: getTimeString(stat?.time) };
+			// Session scope is implied here, as in the bottom stats bar
+			const { key, params } = getStatLabel({ ...block, session: false });
+			return { label: t(key, params), time: formatStatsBlockValue(stat) };
 		});
-	}, [mobileMode, solvesFilter, sessionId]);
+	}, [mobileMode, solvesFilter, sessionId, t]);
 
 	useEffect(() => {
 		if (!disabled && manualInput.current) {

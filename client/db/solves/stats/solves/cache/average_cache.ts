@@ -39,6 +39,7 @@ function carryOverAppended(
 		type: entry.type,
 		filterOptions: entry.filterOptions,
 		averageCount: entry.averageCount,
+		...(entry.mean ? {mean: true as const} : {}),
 	};
 
 	clearSingleSolveStatCache(entry.cacheKey);
@@ -79,8 +80,8 @@ export function checkForAveragePBUpdate(solve: Solve, isNew: boolean) {
 	for (const cach of allCached) {
 		if (isNew) {
 			// Still the entry from before this solve: it is dropped or replaced only below.
-			const best = getAveragePB(cach.filterOptions, cach.averageCount);
-			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount);
+			const best = getAveragePB(cach.filterOptions, cach.averageCount, !!cach.mean);
+			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount, !!cach.mean);
 
 			if (avg && best && avg.time < best.time && avg.time >= 0) {
 				updatedPbs.push(cach);
@@ -135,8 +136,8 @@ export function checkForAverageWorstUpdate(solve: Solve, isNew: boolean) {
 	const updatedWorsts: typeof cached = [];
 	for (const cach of allCached) {
 		if (isNew) {
-			const worst = getAverageWorst(cach.filterOptions, cach.averageCount);
-			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount);
+			const worst = getAverageWorst(cach.filterOptions, cach.averageCount, !!cach.mean);
+			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount, !!cach.mean);
 
 			if (avg && worst && avg.time > worst.time && avg.time >= 0) {
 				updatedWorsts.push(cach);

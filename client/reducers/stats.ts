@@ -1,5 +1,6 @@
 import {StatsModule, StatsModuleBlock} from '../../server/schemas/StatsModule.schema';
 import {withDefaults} from './with_defaults';
+import {moveBlock} from '../components/modules/quick_stats/block_options';
 
 function statsModuleBlock(
 	statType: StatsModuleBlock['statType'],
@@ -19,7 +20,7 @@ function statsModuleBlock(
 
 export const defaultStatsModuleBlocks = [
 	statsModuleBlock('single', 'best', true, 'green', 0), // ses. pb
-	statsModuleBlock('average', 'current', true, 'text', 0), // ses. avg
+	statsModuleBlock('mean', 'current', true, 'text', 0), // ses. mean
 	statsModuleBlock('average', 'best', true, 'text', 5), // ses. ao5 pb
 	statsModuleBlock('average', 'current', true, 'text', 5), // ses. ao5
 	statsModuleBlock('average', 'best', true, 'text', 12), // ses. ao12 pb
@@ -76,6 +77,15 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				blocks,
+			};
+		}
+
+		case 'MOVE_STATS_MODULE_BLOCK': {
+			const {from, to} = action.payload;
+
+			return {
+				...state,
+				blocks: moveBlock(state.blocks, from, to),
 			};
 		}
 

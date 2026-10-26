@@ -11,6 +11,8 @@ export interface SolveCacheKey {
 	type: CacheType;
 	filterOptions: FilterSolvesOptions;
 	averageCount?: number;
+	/** A mean of N (nothing trimmed) rather than an average. Absent for an average, so those keys are unchanged. */
+	mean?: true;
 }
 
 export type SolveStatInput = {

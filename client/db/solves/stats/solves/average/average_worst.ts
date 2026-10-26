@@ -4,11 +4,13 @@ import SortedArray from 'sorted-array';
 import {getAverage} from './average';
 import {Solve} from '../../../../../../server/schemas/Solve.schema';
 
-export function getAverageWorst(filterOptions: FilterSolvesOptions, count: number) {
+/** `mean`: over means of `count` (nothing trimmed) instead of averages. */
+export function getAverageWorst(filterOptions: FilterSolvesOptions, count: number, mean = false) {
 	const cacheKey: SolveCacheKey = {
 		type: 'avg_worst',
 		filterOptions,
 		averageCount: count,
+		...(mean ? {mean: true as const} : {}),
 	};
 
 	const cachedValue = fetchSolveCache(cacheKey);
@@ -26,7 +28,7 @@ export function getAverageWorst(filterOptions: FilterSolvesOptions, count: numbe
 	const firstSolves = allSolves.slice(0, count);
 	const sortedTimes = new SortedArray(firstSolves.map((solve) => solve.time));
 
-	let worst = getAverage(firstSolves);
+	let worst = getAverage(firstSolves, false, mean);
 	let bestList: Solve[] = [...firstSolves];
 
 	for (let i = 1; i <= allSolves.length - count; i++) {
@@ -36,7 +38,7 @@ export function getAverageWorst(filterOptions: FilterSolvesOptions, count: numbe
 		sortedTimes.remove(dropSolve.time);
 		sortedTimes.insert(addSolve.time);
 
-		const avg = getAverage(sortedTimes.array);
+		const avg = getAverage(sortedTimes.array, false, mean);
 		if (avg > 0 && (worst <= 0 || avg > worst)) {
 			worst = avg;
 			bestList = allSolves.slice(i, i + count);

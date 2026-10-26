@@ -5,8 +5,9 @@ import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useActiveSessionId } from '../../util/hooks/useActiveSessionId';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
-import { getStatsBlockValueFromFilter, getStatsBlockDescription } from '../modules/quick_stats/util';
-import { getTimeString } from '../../util/time';
+import { useTranslation } from 'react-i18next';
+import { formatStatsBlockValue, getStatsBlockValueFromFilter, getStatsBlockDescription } from '../modules/quick_stats/util';
+import { getStatLabel } from '../modules/quick_stats/stat_label';
 import { StatsModuleBlock } from '../../../server/schemas/StatsModule.schema';
 import { openModal } from '../../actions/general';
 import HistoryModal from '../modules/history/history_modal/HistoryModal';
@@ -41,7 +42,7 @@ function buildMobileStats(aoCounts: number[]): StatsModuleBlock[] {
             session: true,
             colorName: 'primary' as const,
         })),
-        { statType: 'average' as const, sortBy: 'current' as const, averageCount: null, session: true, colorName: 'primary' as const },
+        { statType: 'mean' as const, sortBy: 'current' as const, averageCount: 0, session: true, colorName: 'primary' as const },
     ];
 }
 
@@ -50,10 +51,11 @@ const DEFAULT_STATS: StatsModuleBlock[] = [
     { statType: 'single', sortBy: 'best', averageCount: undefined, session: true, colorName: 'primary' },
     { statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' },
     { statType: 'average', sortBy: 'current', averageCount: 12, session: true, colorName: 'primary' },
-    { statType: 'average', sortBy: 'current', averageCount: null, session: true, colorName: 'primary' },
+    { statType: 'mean', sortBy: 'current', averageCount: 0, session: true, colorName: 'primary' },
 ];
 
 export default function StatsBar() {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const context = useContext(TimerContext);
     const { solvesFilter, timeStartedAt } = context;
@@ -86,8 +88,11 @@ export default function StatsBar() {
 
     const statItems = statsBlocks.map((statBlock, index) => {
         const statValue = getStatsBlockValueFromFilter(statBlock, solvesFilter, sessionId);
-        const timeStr = getTimeString(statValue?.time);
-        const label = getStatLabel(statBlock);
+        const timeStr = formatStatsBlockValue(statValue);
+        // The bar is the session's by definition, so the caption leaves "Session" out and
+        // stays short enough for four columns ("ao5", "Mean").
+        const { key, params } = getStatLabel({ ...statBlock, session: false });
+        const label = t(key, params);
 
         // Mean (tüm çözümler) için modal açmayı engelle - performans sorunu
         const isSessionMean = statBlock.session && !statBlock.averageCount;
@@ -97,7 +102,7 @@ export default function StatsBar() {
         const handleClick = () => {
             if (isSessionMean) return;
             if (statValue && statValue.solves && statValue.solves.length > 0) {
-                const description = getStatsBlockDescription(statBlock, solvesFilter);
+                const description = getStatsBlockDescription(statBlock);
                 dispatch(openModal(
                     <HistoryModal
                         statOptions={statBlock}
@@ -129,27 +134,4 @@ export default function StatsBar() {
             {statItems}
         </div>
     );
-}
-
-// İstatistik etiketini oluştur
-function getStatLabel(statOptions: StatsModuleBlock): string {
-    const parts: string[] = [];
-
-    if (statOptions.statType === 'average') {
-        if (statOptions.averageCount) {
-            parts.push(`AO${statOptions.averageCount}`);
-        } else {
-            parts.push('Mean');
-        }
-    } else {
-        if (statOptions.sortBy === 'best') {
-            parts.push('PB');
-        } else if (statOptions.sortBy === 'worst') {
-            parts.push('Worst');
-        } else {
-            parts.push('Single');
-        }
-    }
-
-    return parts.join(' ');
 }

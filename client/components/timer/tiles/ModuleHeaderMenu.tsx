@@ -38,6 +38,8 @@ const HEADER_MENUS: Partial<Record<TimerModuleType, (ctx: MenuContext) => TileMe
 					openModal(<CustomizeStats filterOptions={filterOptions} />, {
 						title: t('timer_modules.customize_stats'),
 						description: t('timer_modules.customize_stats_desc'),
+						// Room for the block list beside the editor, so the type chips fit one row
+						width: 880,
 					})
 				),
 		},

@@ -12,7 +12,9 @@ const b = block('history-modal');
 
 import { FilterSolvesOptions } from '../../../../db/solves/query';
 import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
-import { getStatsBlockValueFromFilter } from '../../quick_stats/util';
+import { formatStatsBlockValue, getStatsBlockValueFromFilter } from '../../quick_stats/util';
+import { blockWindowIsTrimmed } from '../../quick_stats/block_options';
+import { getTrimCount } from '../../../../db/solves/stats/solves/average/window_math';
 import { useSolveDb } from '../../../../util/hooks/useSolveDb';
 import { useActiveSessionId } from '../../../../util/hooks/useActiveSessionId';
 import { useDispatch } from 'react-redux';
@@ -35,9 +37,11 @@ interface Props {
 	onAoCountChange?: (newCount: number) => void;
 }
 
-function getTrimmedSolveIds(solves: Solve[]): Set<string> {
+// The solves an average drops, bracketed in the list. None for a list that is not one
+// average's window (a mean of N, the solves a BPA or target keeps).
+function getTrimmedSolveIds(solves: Solve[], trimmed: boolean): Set<string> {
 	const ids = new Set<string>();
-	if (solves.length < 5) return ids;
+	if (!trimmed || solves.length < 5) return ids;
 
 	const sorted = [...solves].sort((a, b) => {
 		const aTime = a.dnf ? Infinity : a.time;
@@ -45,7 +49,7 @@ function getTrimmedSolveIds(solves: Solve[]): Set<string> {
 		return aTime - bTime;
 	});
 
-	const dropCount = Math.ceil(Math.max(1, solves.length * 0.05));
+	const dropCount = getTrimCount(solves.length);
 
 	for (let i = 0; i < dropCount; i++) {
 		ids.add(sorted[i].id);
@@ -106,14 +110,18 @@ export default function HistoryModal(props: Props) {
 	const effectiveSolves = liveData ? liveData.solves : props.solves;
 	const effectiveTime = liveData ? liveData.time : props.time;
 
-	const timeString = getTimeString(effectiveTime);
+	// The block's own text when live: a target that cannot be reached is "-", not a DNF.
+	const timeString = liveData ? formatStatsBlockValue(liveData) : getTimeString(effectiveTime);
 
 	const solves = useMemo(() => {
 		if (!effectiveSolves) return [];
 		return [...effectiveSolves].sort((a, b) => b.started_at - a.started_at);
 	}, [effectiveSolves]);
 
-const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
+	const trimmedIds = useMemo(
+		() => getTrimmedSolveIds(solves, blockWindowIsTrimmed(localStatOptions)),
+		[solves, localStatOptions]
+	);
 
 	const lastSolve = solves[solves.length - 1];
 	const isSingleSolve = solves.length === 1;

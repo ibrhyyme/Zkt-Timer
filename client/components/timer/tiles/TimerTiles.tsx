@@ -17,12 +17,13 @@ import {
 	FloatFrame,
 	floatBoxOnScreen,
 	PLACEABLE_MODULES,
-	RailSplitStart,
-	railSizeOf,
-	splitRailSizes,
+	splitZoneSizes,
 	TILE_LIMITS,
 	TileBox,
 	TileDock,
+	ZoneSplitStart,
+	zoneSizeOf,
+	zoneTileFloor,
 } from './layout';
 import { measureFloatFrame, measureTopInset } from './dom_env';
 import './TimerTiles.scss';
@@ -192,50 +193,73 @@ export default function TimerTiles({ stageRef, children }: Props) {
 		[startFloatResize]
 	);
 
-	// The edge between two modules in a side rail. Dragging it trades height between
-	// those two only, so the top module has just its bottom edge, the bottom one just its
-	// top edge, and the rail never grows past the page. Stored as weights (layout.ts).
-	const splitRef = React.useRef<(RailSplitStart & { upper: TimerModuleType; lower: TimerModuleType }) | null>(null);
+	// The edge between two docked modules: in a side rail it trades height between the two,
+	// in the bottom bar width. Only those two change, so the first module has just its
+	// trailing edge, the last one just its leading edge, and the zone never grows past the
+	// page. Stored as weights (layout.ts).
+	const splitRef = React.useRef<
+		(ZoneSplitStart & { first: TimerModuleType; second: TimerModuleType; horizontal: boolean; floor: number }) | null
+	>(null);
 	const tileElement = (id: TimerModuleType) => document.querySelector<HTMLElement>(`[data-tile-id="${id}"]`);
-	const applySplit = (sizes: { upper: number; lower: number }) => {
+	const applySplit = (sizes: { first: number; second: number }) => {
 		const split = splitRef.current;
 		if (!split) return;
-		const upper = tileElement(split.upper);
-		const lower = tileElement(split.lower);
-		if (upper) upper.style.flexGrow = String(sizes.upper);
-		if (lower) lower.style.flexGrow = String(sizes.lower);
+		const first = tileElement(split.first);
+		const second = tileElement(split.second);
+		if (first) first.style.flexGrow = String(sizes.first);
+		if (second) second.style.flexGrow = String(sizes.second);
 	};
+	// The first tile's new length along the zone, from whichever axis this edge moves on.
+	const splitLength = (size: { width: number; height: number }) =>
+		splitRef.current?.horizontal ? size.width : size.height;
 	const startSplitResize = useEdgeResize({
-		getStart: () => ({ width: 0, height: splitRef.current?.upperHeight || 0 }),
-		onPreview: ({ height }) => {
-			if (splitRef.current) applySplit(splitRailSizes(splitRef.current, height));
+		getStart: () => {
+			const length = splitRef.current?.firstLength || 0;
+			return { width: length, height: length };
 		},
-		onCommit: ({ height }) => {
+		onPreview: (size) => {
 			const split = splitRef.current;
-			splitRef.current = null;
+			if (split) applySplit(splitZoneSizes(split, splitLength(size), split.floor));
+		},
+		onCommit: (size) => {
+			const split = splitRef.current;
 			if (!split) return;
-			const sizes = splitRailSizes(split, height);
-			tiles.setRailTileSizes({ [split.upper]: sizes.upper, [split.lower]: sizes.lower });
+			const sizes = splitZoneSizes(split, splitLength(size), split.floor);
+			splitRef.current = null;
+			tiles.setZoneTileSizes({ [split.first]: sizes.first, [split.second]: sizes.second });
 		},
 		onCancel: () => {
 			const split = splitRef.current;
-			if (split) applySplit({ upper: split.upperSize, lower: split.lowerSize });
+			if (split) applySplit({ first: split.firstSize, second: split.secondSize });
 			splitRef.current = null;
 		},
+		signX: 1,
 		signY: 1,
 	});
 
-	const onSplitStart = (event: React.PointerEvent, upper: TimerModuleType, lower: TimerModuleType) => {
-		const upperElement = tileElement(upper);
-		const lowerElement = tileElement(lower);
-		if (!upperElement || !lowerElement) return;
+	const onSplitStart = (
+		event: React.PointerEvent,
+		dock: Exclude<TileDock, 'float'>,
+		first: TimerModuleType,
+		second: TimerModuleType
+	) => {
+		const firstElement = tileElement(first);
+		const secondElement = tileElement(second);
+		if (!firstElement || !secondElement) return;
+		const horizontal = dock === 'bottom';
+		const length = (element: HTMLElement) => {
+			const rect = element.getBoundingClientRect();
+			return horizontal ? rect.width : rect.height;
+		};
 		splitRef.current = {
-			upper,
-			lower,
-			upperHeight: upperElement.getBoundingClientRect().height,
-			lowerHeight: lowerElement.getBoundingClientRect().height,
-			upperSize: railSizeOf(tiles.tiles[upper]),
-			lowerSize: railSizeOf(tiles.tiles[lower]),
+			first,
+			second,
+			horizontal,
+			floor: zoneTileFloor(dock),
+			firstLength: length(firstElement),
+			secondLength: length(secondElement),
+			firstSize: zoneSizeOf(tiles.tiles[first]),
+			secondSize: zoneSizeOf(tiles.tiles[second]),
 		};
 		startSplitResize(event);
 	};
@@ -261,7 +285,7 @@ export default function TimerTiles({ stageRef, children }: Props) {
 				dock={dock}
 				draggable={draggable}
 				style={style}
-				grow={dock === 'left' || dock === 'right' ? railSizeOf(config) : undefined}
+				grow={dock === 'float' ? undefined : zoneSizeOf(config)}
 				onDragStart={startDrag}
 				onResizeStart={dock === 'float' ? onFloatResizeStart : undefined}
 				onRemove={tiles.removeModule}
@@ -279,19 +303,19 @@ export default function TimerTiles({ stageRef, children }: Props) {
 	const renderZoneTiles = (dock: Exclude<TileDock, 'float'>, modules: TimerModuleType[]) => {
 		const items: ReactNode[] = modules.map((id) => renderTile(id, dock));
 
-		// The edges between rail modules. Not while a module is being moved: the slot
+		// The edges between docked modules. Not while a module is being moved: the slot
 		// opening between tiles is the only thing that should be there then.
-		if ((dock === 'left' || dock === 'right') && draggable && !drag) {
+		if (draggable && !drag) {
 			for (let i = modules.length - 1; i > 0; i--) {
-				const upper = modules[i - 1];
-				const lower = modules[i];
+				const first = modules[i - 1];
+				const second = modules[i];
 				items.splice(
 					i,
 					0,
 					<span
-						key={`__split-${upper}`}
-						className={b('split')}
-						onPointerDown={(event) => onSplitStart(event, upper, lower)}
+						key={`__split-${first}`}
+						className={b('split', { bar: dock === 'bottom' })}
+						onPointerDown={(event) => onSplitStart(event, dock, first, second)}
 						aria-hidden="true"
 					/>
 				);

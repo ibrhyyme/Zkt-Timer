@@ -132,6 +132,14 @@
 	&__quick-stats-body {
 		flex: 1 1 auto;
 		min-height: 0;
+
+		// Below laptop width the modules stack and this one sizes to its content, but the
+		// stats grid sizes its numbers to the height it is given: with none it collapsed to
+		// nothing and its numbers spilled over the History module under it.
+		@include bp-down($bp-xl) {
+			flex: none;
+			height: 15rem;
+		}
 	}
 
 	&__stats-header {

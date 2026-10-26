@@ -35,10 +35,10 @@ export interface TileConfig {
 	w?: number | null;
 	h?: number | null;
 	/**
-	 * Share of its side rail's height, as a flex weight (null = 1, an even share). Set by
-	 * dragging the edge between two modules in a rail. A weight rather than pixels, so a
-	 * window of another height or a zoom step keeps the proportions instead of leaving
-	 * the rail short or overflowing.
+	 * Share of its zone, as a flex weight (null = 1, an even share): of the height in a side
+	 * rail, of the width in the bottom bar. Set by dragging the edge between two modules. A
+	 * weight rather than pixels, so a window of another size or a zoom step keeps the
+	 * proportions instead of leaving the zone short or overflowing.
 	 */
 	size?: number | null;
 }
@@ -80,11 +80,15 @@ export const TILE_LIMITS = {
 	floatMinH: 150,
 	floatDefaultW: 380,
 	floatDefaultH: 280,
-	/** Shortest a module in a side rail can be dragged to. TimerTiles.scss holds the same floor. */
+	/**
+	 * Smallest a docked module can be dragged to along its zone: its height in a side rail,
+	 * its width in the bottom bar. TimerTiles.scss holds the same floors.
+	 */
 	railTileMin: 140,
-	/** Bounds for a stored rail weight, so a hand-edited blob cannot make a tile vanish. */
-	railSizeMin: 0.05,
-	railSizeMax: 20,
+	barTileMin: 240,
+	/** Bounds for a stored zone weight, so a hand-edited blob cannot make a tile vanish. */
+	zoneSizeMin: 0.05,
+	zoneSizeMax: 20,
 };
 
 /** Movement below this is a click, not a drag. */
@@ -108,54 +112,66 @@ export function clampDockHeight(height: number): number {
 	return Math.round(clampNumber(height, TILE_LIMITS.dockMin, TILE_LIMITS.dockMax));
 }
 
-/** A stored rail weight, or null for "even share" when it is missing or nonsense. */
-export function cleanRailSize(size: unknown): number | null {
+/** A stored zone weight, or null for "even share" when it is missing or nonsense. */
+export function cleanZoneSize(size: unknown): number | null {
 	if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) return null;
-	return Math.round(clampNumber(size, TILE_LIMITS.railSizeMin, TILE_LIMITS.railSizeMax) * 1000) / 1000;
+	return Math.round(clampNumber(size, TILE_LIMITS.zoneSizeMin, TILE_LIMITS.zoneSizeMax) * 1000) / 1000;
 }
 
-/** The weight a rail tile is drawn with. */
-export function railSizeOf(config: TileConfig | undefined): number {
-	return cleanRailSize(config?.size) ?? 1;
+/** The weight a docked tile is drawn with. */
+export function zoneSizeOf(config: TileConfig | undefined): number {
+	return cleanZoneSize(config?.size) ?? 1;
 }
 
-export interface RailSplitStart {
-	/** Heights of the two tiles either side of the dragged edge when the drag began. */
-	upperHeight: number;
-	lowerHeight: number;
+/** How small a module may be dragged along its zone: height in a rail, width in the bar. */
+export function zoneTileFloor(dock: TileDock): number {
+	return dock === 'bottom' ? TILE_LIMITS.barTileMin : TILE_LIMITS.railTileMin;
+}
+
+export interface ZoneSplitStart {
+	/**
+	 * Lengths along the zone (heights in a rail, widths in the bar) of the two tiles either
+	 * side of the dragged edge when the drag began: the first is above or left of it.
+	 */
+	firstLength: number;
+	secondLength: number;
 	/** Their weights at that moment. */
-	upperSize: number;
-	lowerSize: number;
+	firstSize: number;
+	secondSize: number;
 }
 
 /**
- * New weights for the two tiles either side of a dragged edge, from the upper tile's new
- * height. Only these two change and their sum stays the same, so every other tile in the
- * rail keeps its height and the rail as a whole does not grow or shrink: the top tile
- * can only move its bottom edge, the bottom one its top edge.
+ * New weights for the two tiles either side of a dragged edge, from the first tile's new
+ * length. Only these two change and their sum stays the same, so every other tile in the
+ * zone keeps its size and the zone as a whole does not grow: in a rail the top tile can
+ * only move its bottom edge and the bottom one its top edge, in the bar the same left to
+ * right.
  */
-export function splitRailSizes(start: RailSplitStart, upperHeight: number): { upper: number; lower: number } {
-	const totalHeight = start.upperHeight + start.lowerHeight;
-	const totalSize = start.upperSize + start.lowerSize;
-	const floor = TILE_LIMITS.railTileMin;
+export function splitZoneSizes(
+	start: ZoneSplitStart,
+	firstLength: number,
+	floor: number = TILE_LIMITS.railTileMin
+): { first: number; second: number } {
+	const totalLength = start.firstLength + start.secondLength;
+	const totalSize = start.firstSize + start.secondSize;
 
 	// Two tiles already at their floor have nothing to trade.
-	if (!(totalHeight > 0) || !(totalSize > 0) || totalHeight < floor * 2) {
-		return { upper: start.upperSize, lower: start.lowerSize };
+	if (!(totalLength > 0) || !(totalSize > 0) || totalLength < floor * 2) {
+		return { first: start.firstSize, second: start.secondSize };
 	}
 
-	const height = clampNumber(upperHeight, floor, totalHeight - floor);
-	const upper = Math.round(((totalSize * height) / totalHeight) * 1000) / 1000;
-	return { upper, lower: Math.round((totalSize - upper) * 1000) / 1000 };
+	const length = clampNumber(firstLength, floor, totalLength - floor);
+	const first = Math.round(((totalSize * length) / totalLength) * 1000) / 1000;
+	return { first, second: Math.round((totalSize - first) * 1000) / 1000 };
 }
 
-/** Writes rail weights for some tiles, leaving every other entry as it was. */
-export function setRailSizes(map: TileMap, sizes: Partial<Record<TimerModuleType, number>>): TileMap {
+/** Writes zone weights for some docked tiles, leaving every other entry as it was. */
+export function setZoneSizes(map: TileMap, sizes: Partial<Record<TimerModuleType, number>>): TileMap {
 	const next: TileMap = { ...map };
 	for (const [id, size] of Object.entries(sizes)) {
 		const config = next[id];
-		if (!config || (config.dock !== 'left' && config.dock !== 'right')) continue;
-		next[id] = { ...config, size: cleanRailSize(size) };
+		if (!config || config.dock === 'float') continue;
+		next[id] = { ...config, size: cleanZoneSize(size) };
 	}
 	return next;
 }
@@ -241,8 +257,8 @@ function renumber(map: TileMap): TileMap {
 
 /**
  * Drop a tile into a docked zone at `index` (append when omitted). Floating geometry is
- * cleared: the zone owns the size now. A tile moved within its own rail keeps its share
- * of the height; one arriving from elsewhere starts with an even share.
+ * cleared: the zone owns the size now. A tile moved within its own zone keeps its share;
+ * one arriving from elsewhere starts with an even share.
  */
 export function moveTile(map: TileMap, id: TimerModuleType, dock: Exclude<TileDock, 'float'>, index?: number): TileMap {
 	const others = tilesInDock(map, dock).filter((other) => other !== id);
@@ -250,7 +266,7 @@ export function moveTile(map: TileMap, id: TimerModuleType, dock: Exclude<TileDo
 	others.splice(at, 0, id);
 
 	const previous = map[id];
-	const size = previous?.dock === dock ? cleanRailSize(previous.size) : null;
+	const size = previous?.dock === dock ? cleanZoneSize(previous.size) : null;
 
 	const next: TileMap = { ...map };
 	next[id] = { dock, order: at, x: null, y: null, w: null, h: null, size };
@@ -332,7 +348,7 @@ export function normalizeTileMap(raw: unknown): TileMap {
 				h: typeof config.h === 'number' ? config.h : TILE_LIMITS.floatDefaultH,
 			};
 		} else {
-			out[id] = { dock, order, x: null, y: null, w: null, h: null, size: cleanRailSize(config.size) };
+			out[id] = { dock, order, x: null, y: null, w: null, h: null, size: cleanZoneSize(config.size) };
 		}
 	}
 

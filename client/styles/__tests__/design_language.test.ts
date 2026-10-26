@@ -57,6 +57,7 @@ describe('design language: shared primitives stay flat', () => {
 		'components/common/modal/Modal.scss',
 		'components/common/modal/modal_header/ModalHeader.scss',
 		'components/common/icon_button/IconButton.scss',
+		'components/common/choice_group/ChoiceGroup.scss',
 	];
 
 	it.each(PRIMITIVES)('%s has no blur, gradient or hand-written radius', (rel) => {

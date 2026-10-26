@@ -98,43 +98,52 @@ function randomTime(): number {
 const round3 = (n: number) => getNumberToDecimalPoints(n, 3);
 
 /** The full pass, written out independently: newest first, the newest window wins a tie. */
-function bruteForce(filter: FilterSolvesOptions, count: number, better: (a: number, b: number) => boolean) {
+function bruteForce(filter: FilterSolvesOptions, count: number, better: (a: number, b: number) => boolean, mean = false) {
 	const list = fetchSolves(filter);
 	if (list.length < count) return null;
 	let best: { time: number; ids: string[] } | null = null;
 	for (let i = 0; i + count <= list.length; i++) {
 		const window = list.slice(i, i + count);
-		const avg = getAverage(window.slice());
+		const avg = getAverage(window.slice(), false, mean);
 		if (avg <= 0) continue;
 		if (!best || better(avg, best.time)) best = { time: avg, ids: window.map((s: any) => s.id) };
 	}
 	return best;
 }
 
-const key = (type: 'avg_pb' | 'avg_worst', filterOptions: FilterSolvesOptions, averageCount: number): SolveCacheKey => ({
+const key = (
+	type: 'avg_pb' | 'avg_worst',
+	filterOptions: FilterSolvesOptions,
+	averageCount: number,
+	mean = false
+): SolveCacheKey => ({
 	type,
 	filterOptions,
 	averageCount,
+	...(mean ? { mean: true as const } : {}),
 });
+
+// Every count as an average and as a mean of N (mo3 rides the same cache, keyed apart).
+const VARIANTS: [number, boolean][] = [...COUNTS.map((n) => [n, false] as [number, boolean]), [3, true], [5, true], [12, true]];
 
 function prime() {
 	for (const filter of [BUCKET, SESSION]) {
-		for (const n of COUNTS) {
-			getAveragePB(filter, n);
-			getAverageWorst(filter, n);
+		for (const [n, mean] of VARIANTS) {
+			getAveragePB(filter, n, mean);
+			getAverageWorst(filter, n, mean);
 		}
 	}
 }
 
 function expectMatchesFullPass() {
 	for (const filter of [BUCKET, SESSION]) {
-		for (const n of COUNTS) {
+		for (const [n, mean] of VARIANTS) {
 			for (const [type, better] of [
 				['avg_pb', (a: number, b: number) => a < b],
 				['avg_worst', (a: number, b: number) => a > b],
 			] as const) {
-				const expected = bruteForce(filter, n, better);
-				const cached = fetchSolveCache(key(type, filter, n));
+				const expected = bruteForce(filter, n, better, mean);
+				const cached = fetchSolveCache(key(type, filter, n, mean));
 				if (!expected) {
 					expect(cached).toBeNull();
 					continue;
@@ -145,7 +154,7 @@ function expectMatchesFullPass() {
 				// Two windows can differ only past the third decimal, which the cache rounds
 				// away; then either window is a correct answer.
 				if (JSON.stringify(ids) !== JSON.stringify(expected.ids)) {
-					expect(round3(getAverage(cached.solves.slice()))).toBe(round3(expected.time));
+					expect(round3(getAverage(cached.solves.slice(), false, mean))).toBe(round3(expected.time));
 				}
 			}
 		}
@@ -192,6 +201,17 @@ describe('best and worst averages over new solves', () => {
 		expect(fetchSolveCache(key('avg_pb', BUCKET, 5))).toBeNull();
 		expect(fetchSolveCache(key('avg_worst', BUCKET, 5))).toBeNull();
 		prime();
+		expectMatchesFullPass();
+	});
+
+	it('keeps an average and a mean of the same count apart', async () => {
+		for (let i = 0; i < 12; i++) solves.insert(solve(`seed-${i}`, i === 3 ? 20 : 10 + i / 10));
+		prime();
+
+		// The 20 is trimmed from an ao5 but counts in a mo5, so the worst windows differ.
+		const ao5 = fetchSolveCache(key('avg_worst', BUCKET, 5));
+		const mo5 = fetchSolveCache(key('avg_worst', BUCKET, 5, true));
+		expect(mo5.time).toBeGreaterThan(ao5.time);
 		expectMatchesFullPass();
 	});
 

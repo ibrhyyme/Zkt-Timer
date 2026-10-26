@@ -1,83 +1,167 @@
-import {FilterSolvesOptions} from '../../../db/solves/query';
-import colorPalette, {ColorName} from '../../../../shared/colors';
-import {AppTheme} from '../../../util/hooks/useTheme';
+import {fetchSolves, FilterSolvesOptions} from '../../../db/solves/query';
 import {StatsModuleBlock} from '../../../../server/schemas/StatsModule.schema';
+import {Solve} from '../../../../server/schemas/Solve.schema';
 import {getStore} from '../../store';
 import {getWorstTime} from '../../../db/solves/stats/solves/single/single_worst';
-import {SolveStat} from '../../../db/solves/stats/solves/caching';
 import {getSinglePB} from '../../../db/solves/stats/solves/single/single_pb';
 import {getCurrentAverage} from '../../../db/solves/stats/solves/average/average';
 import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
+import {getAverageWorst} from '../../../db/solves/stats/solves/average/average_worst';
+import {
+	getCountingTimes,
+	getNextSolveOutlook,
+	getSampleStdDev,
+} from '../../../db/solves/stats/solves/average/window_math';
+import {getSolveSummary} from '../../../db/solves/stats/solves/summary';
+import {getTimeString} from '../../../util/time';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import i18n from '../../../i18n/i18n';
+import {getBlockCount, getBlockKind, getBlockValue, isMeanKind} from './block_options';
+import {getStatLabel} from './stat_label';
 
-export const STATS_GRID_SIZE = 4;
-
-export function getStatsBlockDescription(statsOptions: StatsModuleBlock, filterOptions: FilterSolvesOptions = {}) {
-	const description = [];
-
-	if (statsOptions.sortBy === 'worst' && statsOptions.statType === 'single') {
-		description.push(i18n.t('timer_modules.stat_worst'));
-	} else if (statsOptions.sortBy === 'best') {
-		description.push(i18n.t('timer_modules.stat_best'));
-	} else if (statsOptions.sortBy === 'current') {
-		description.push(i18n.t('timer_modules.stat_current'));
-	}
-
-	if (statsOptions.session) {
-		description.push(i18n.t('timer_modules.stat_session'));
-	}
-
-	if (statsOptions.statType === 'average') {
-		if (statsOptions.averageCount) {
-			description.push(i18n.t('timer_modules.stat_avg_of', {num: statsOptions.averageCount}));
-		} else {
-			description.push(i18n.t('timer_modules.stat_avg'));
-		}
-	} else {
-		description.push(i18n.t('timer_modules.stat_solve'));
-	}
-
-	return description.join(' ');
+/** What a stats block shows, and the solves it opens when clicked. */
+export interface StatsBlockResult {
+	/** Seconds; -1 is a DNF. Not a time for a count (see `text`). */
+	time: number;
+	/** Shown instead of the time: a solve count, or a target that is never / always reached. */
+	text?: string;
+	solve?: Solve;
+	solves?: Solve[];
 }
 
-export function getStatsBlockValueFromFilter(
-	statsOptions: StatsModuleBlock,
-	filterOptions: FilterSolvesOptions = {},
-	currentSessionId?: string
-): SolveStat {
+export function formatStatsBlockValue(result: StatsBlockResult | null): string {
+	if (!result) {
+		return '-';
+	}
+	return result.text ?? getTimeString(result.time);
+}
+
+/** The block's caption as text, for places that need a string (the solves modal's title). */
+export function getStatsBlockDescription(block: StatsModuleBlock): string {
+	const {key, params} = getStatLabel(block);
+	return i18n.t(key, params);
+}
+
+/**
+ * The scope a block reads: the given filter, narrowed to the session or widened to every
+ * session.
+ *
+ * A caller that already scoped its filter to a session wins. The Sessions page lets you
+ * inspect a session you are not timing in, and pinning the settings' current session here
+ * made every "session" block show the wrong session's numbers. The timer puts that same
+ * current session in this field, so nothing changes there.
+ */
+function getBlockFilter(block: StatsModuleBlock, filterOptions: FilterSolvesOptions, currentSessionId?: string) {
 	const solvesFilter = {...filterOptions};
-	if (statsOptions.session) {
-		// A caller that already scoped its filter to a session wins. The Sessions
-		// page lets you inspect a session you are not timing in, and pinning the
-		// settings' current session here made every "session" block show the wrong
-		// session's numbers. The timer puts that same current session in this field,
-		// so nothing changes there.
+	if (block.session) {
 		solvesFilter.session_id = filterOptions.session_id ?? currentSessionId;
 	} else {
 		delete solvesFilter.session_id;
 	}
+	return solvesFilter;
+}
 
-	let outputStat: SolveStat = null;
-
-	if (statsOptions.statType === 'single') {
-		if (statsOptions.sortBy === 'worst') {
-			outputStat = getWorstTime(solvesFilter);
-		} else {
-			outputStat = getSinglePB(solvesFilter);
-		}
+/** BPA, WPA or target of the next aoN / moN; opens the count - 1 solves the next window keeps. */
+function getNextSolveResult(
+	solvesFilter: FilterSolvesOptions,
+	count: number,
+	mean: boolean,
+	value: 'bpa' | 'wpa' | 'target'
+): StatsBlockResult | null {
+	const newest = fetchSolves(solvesFilter, {limit: count});
+	if (newest.length < count - 1) {
+		return null;
 	}
 
-	if (statsOptions.statType === 'average') {
-		if (statsOptions.sortBy === 'best') {
-			outputStat = getAveragePB(solvesFilter, statsOptions.averageCount);
-		} else {
-			outputStat = getCurrentAverage(solvesFilter, statsOptions.averageCount);
-		}
+	const previous = newest.slice(0, count - 1);
+	// A best to beat exists only once there has been a full window. getAveragePB is null both
+	// before that and when every window was a DNF; the second is a best of DNF (-1).
+	let bestAverage: number | null = null;
+	if (value === 'target' && newest.length === count) {
+		bestAverage = getAveragePB(solvesFilter, count, mean)?.time ?? -1;
 	}
 
-	return outputStat;
+	const outlook = getNextSolveOutlook(
+		previous.map((s) => s.time),
+		count,
+		mean,
+		bestAverage
+	);
+	if (!outlook) {
+		return null;
+	}
+
+	if (value === 'bpa') {
+		return {time: outlook.best, solves: previous};
+	}
+	if (value === 'wpa') {
+		return {time: outlook.worst, solves: previous};
+	}
+
+	const target = outlook.target;
+	if (target === null) {
+		return null;
+	}
+	if (target === 'never') {
+		return {time: -1, text: '-', solves: previous};
+	}
+	if (target === 'always') {
+		return {time: -1, text: '∞', solves: previous};
+	}
+	return {time: target, solves: previous};
+}
+
+export function getStatsBlockValueFromFilter(
+	block: StatsModuleBlock,
+	filterOptions: FilterSolvesOptions = {},
+	currentSessionId?: string
+): StatsBlockResult | null {
+	const solvesFilter = getBlockFilter(block, filterOptions, currentSessionId);
+	const kind = getBlockKind(block);
+	const value = getBlockValue(block);
+	const count = getBlockCount(block);
+
+	switch (kind) {
+		case 'single':
+			return value === 'worst' ? getWorstTime(solvesFilter) : getSinglePB(solvesFilter);
+
+		case 'ao':
+		case 'mo': {
+			const mean = isMeanKind(kind);
+			if (value === 'best') {
+				return getAveragePB(solvesFilter, count, mean);
+			}
+			if (value === 'worst') {
+				return getAverageWorst(solvesFilter, count, mean);
+			}
+			if (value === 'bpa' || value === 'wpa' || value === 'target') {
+				return getNextSolveResult(solvesFilter, count, mean, value);
+			}
+			return getCurrentAverage(solvesFilter, count, mean);
+		}
+
+		case 'stdev': {
+			if (!count) {
+				const sd = getSolveSummary(solvesFilter).stdDev;
+				return sd === null ? null : {time: sd};
+			}
+			// σ of the times the current average counts, as csTimer reports it.
+			const current = getCurrentAverage(solvesFilter, count);
+			const sd = current ? getSampleStdDev(getCountingTimes(current.solves.map((s) => s.time))) : null;
+			return sd === null ? null : {time: sd, solves: current.solves};
+		}
+
+		case 'count': {
+			const {total, dnf} = getSolveSummary(solvesFilter);
+			return {time: total, text: dnf ? `${total - dnf}/${total}` : String(total)};
+		}
+
+		default: {
+			const mean = getSolveSummary(solvesFilter).mean;
+			return mean === null ? null : {time: mean};
+		}
+	}
 }
 
 export async function saveStatsModuleBlocks() {
@@ -102,65 +186,4 @@ export async function saveStatsModuleBlocks() {
 	await gqlMutate(query, {
 		blocks,
 	});
-}
-
-export function getStatValueColorHex(colorName: ColorName, appTheme: AppTheme): string {
-	const colorMap = colorPalette[colorName];
-
-	if (appTheme.isDark) {
-		return colorMap[400];
-	} else {
-		return colorMap[700];
-	}
-}
-
-export function getQuickStatsGridSizes(blockCount: number) {
-	if (blockCount <= 0) {
-		return [];
-	}
-
-	// First number is col span, second number is row span
-	const blockSizes: [number, number][] = [];
-	const totalGridSize = STATS_GRID_SIZE * STATS_GRID_SIZE;
-
-	let currentGridSize = 0;
-	for (let i = 0; i < blockCount; i++) {
-		currentGridSize += 1;
-		blockSizes.push([1, 1]);
-	}
-
-	const halfGridSize = STATS_GRID_SIZE / 2;
-	let currentIndex = 0;
-
-	while (currentGridSize < totalGridSize) {
-		const cols = blockSizes[currentIndex][0];
-		const rows = blockSizes[currentIndex][1];
-		const area = cols * rows;
-
-		let newRows = rows;
-		let newCols = cols;
-
-		if (halfGridSize > cols) {
-			newCols = halfGridSize;
-		} else if (halfGridSize > rows) {
-			newRows = halfGridSize;
-		} else if (STATS_GRID_SIZE > cols) {
-			newCols = STATS_GRID_SIZE;
-		} else if (STATS_GRID_SIZE > rows) {
-			newRows = STATS_GRID_SIZE;
-		}
-
-		const newArea = newCols * newRows;
-		const areaAdded = newArea - area;
-
-		blockSizes[currentIndex] = [newCols, newRows];
-		currentGridSize += areaAdded;
-		currentIndex++;
-
-		if (currentIndex >= blockCount) {
-			currentIndex = 0;
-		}
-	}
-
-	return blockSizes;
 }

@@ -1,0 +1,51 @@
+@import '../../../styles/config';
+
+.#{$namespace}-choice-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: $zt-space-2;
+
+	&__option {
+		@include zt-control;
+
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: $zt-control-h-sm;
+		height: $zt-control-h-sm;
+		padding: 0 $zt-space-3;
+		border-radius: $zt-radius-sm;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1;
+		white-space: nowrap;
+		cursor: pointer;
+
+		// The accent fill takes the colour that contrasts with the accent (as the primary
+		// Button does), never a tint of the accent itself.
+		&--selected,
+		&--selected:hover:not(:disabled),
+		&--selected:active:not(:disabled) {
+			background: rgb(var(--primary-color));
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+			cursor: default;
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			border-style: dashed;
+		}
+	}
+
+	&--numeric &__option {
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	@include reduced-motion {
+		&__option {
+			transition: none;
+		}
+	}
+}

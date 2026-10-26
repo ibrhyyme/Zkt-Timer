@@ -36,6 +36,16 @@ export function updateStatsModuleBlock(index: number, statOptions: StatsModuleBl
 	};
 }
 
+export function moveStatsModuleBlock(from: number, to: number) {
+	return {
+		type: 'MOVE_STATS_MODULE_BLOCK',
+		payload: {
+			from,
+			to,
+		},
+	};
+}
+
 export function resetStatsModuleBlocks() {
 	return {
 		type: 'RESET_STATS_MODULE_BLOCKS',

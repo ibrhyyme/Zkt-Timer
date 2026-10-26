@@ -1,0 +1,302 @@
+@import '../../../../styles/config';
+
+$mono: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+// "Customize stats": block list beside the selected block's settings, stacked on a phone.
+// Text at full contrast throughout; hierarchy comes from size and weight.
+.#{$namespace}-customize-stats {
+	display: grid;
+	grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+	gap: $zt-space-5;
+	color: rgb(var(--text-color));
+
+	@include bp-down($bp-md) {
+		grid-template-columns: minmax(0, 1fr);
+		gap: $zt-space-4;
+	}
+
+	// One size whatever block is selected. A single has fewer settings than an average, and
+	// the modal grew and shrank as the selection moved (owner, 2026-10-26). The two sides
+	// scroll on their own instead; the reserved gutter keeps a scrollbar from shifting them.
+	@include bp-up($bp-md) {
+		height: min(700px, 72vh);
+
+		> * {
+			min-height: 0;
+			overflow-y: auto;
+			overscroll-behavior: contain;
+			scrollbar-gutter: stable;
+		}
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		min-width: 0;
+	}
+
+	&__heading,
+	&__label {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		margin: 0;
+		font-family: $mono;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+	}
+
+	&__rows {
+		display: flex;
+		flex-direction: column;
+		// A drag from a handle must not select the captions it passes over
+		user-select: none;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		overflow: hidden;
+	}
+
+	&__row {
+		display: flex;
+		align-items: stretch;
+		min-height: $zt-control-h-md;
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		list-style: none;
+
+		& + & {
+			border-top: 1px solid $zt-divider;
+		}
+
+		// The selected block: an accent bar on its leading edge, no fill.
+		&--selected {
+			box-shadow: inset 3px 0 0 rgb(var(--primary-color));
+		}
+
+		// The clone react-sortable-hoc drags, appended to <body>: above the modal (z 100000)
+		&--dragging {
+			user-select: none;
+			z-index: 100001;
+			border: 1px solid $zt-card-border;
+			border-radius: $zt-radius-md;
+			box-shadow: $zt-shadow-float;
+		}
+	}
+
+	&__handle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: $zt-control-h-sm;
+		color: $zt-text-muted;
+		cursor: grab;
+		touch-action: none;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	&__row--dragging &__handle {
+		cursor: grabbing;
+	}
+
+	&__row-main {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-3;
+		flex: 1 1 auto;
+		min-width: 0;
+		padding: 0 $zt-space-3 0 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background $zt-transition;
+
+		&:hover {
+			background: $zt-control-bg;
+		}
+
+		@include zt-focus-ring;
+	}
+
+	&__row--selected &__row-main {
+		font-weight: 700;
+	}
+
+	&__row-caption {
+		overflow: hidden;
+		font-size: 0.875rem;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	&__row-value {
+		flex-shrink: 0;
+		font-family: $mono;
+		font-size: 0.875rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__list-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-2;
+	}
+
+	&__editor {
+		min-width: 0;
+		padding-left: $zt-space-5;
+		border-left: 1px solid $zt-divider;
+
+		@include bp-down($bp-md) {
+			padding-left: 0;
+			padding-top: $zt-space-4;
+			border-left: 0;
+			border-top: 1px solid $zt-divider;
+		}
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-4;
+	}
+
+	&__title {
+		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 700;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	&__note {
+		margin: 0;
+		font-size: 0.85rem;
+		line-height: 1.45;
+
+		&--error {
+			color: rgb(var(--error-color));
+			font-weight: 600;
+		}
+	}
+
+	&__custom {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+	}
+
+	&__custom-prefix {
+		font-family: $mono;
+		font-weight: 600;
+	}
+
+	&__custom-input {
+		@include zt-control;
+
+		width: 120px;
+		height: $zt-control-h-sm;
+		padding: 0 $zt-space-3;
+		box-sizing: border-box;
+		border-radius: $zt-radius-sm;
+		font-family: $mono;
+		font-size: 0.875rem;
+		font-variant-numeric: tabular-nums;
+		outline: none;
+
+		&:focus {
+			border-color: rgb(var(--primary-color));
+		}
+
+		&--error,
+		&--error:focus {
+			border-color: rgb(var(--error-color));
+		}
+	}
+
+	&__pro {
+		padding: 2px $zt-space-2;
+		border: 1px solid rgb(var(--warning-color));
+		border-radius: $zt-radius-sm;
+		background: none;
+		color: rgb(var(--text-color));
+		font-family: $mono;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		cursor: pointer;
+
+		@include zt-focus-ring;
+	}
+
+	&__swatches {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-2;
+
+		// Two rows instead of three beside the list, so an average's settings fit the
+		// fixed height without scrolling on a laptop screen.
+		@include bp-up($bp-md) {
+			gap: $zt-space-1;
+		}
+	}
+
+	&__swatch {
+		width: 28px;
+		height: 28px;
+		padding: 0;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-full;
+		cursor: pointer;
+
+		@include bp-up($bp-md) {
+			width: 24px;
+			height: 24px;
+		}
+
+		// A ring with a gap, readable whatever the swatch colour is; it stays inside the
+		// 4px gap between swatches.
+		&--selected {
+			box-shadow: 0 0 0 1px rgb(var(--background-color)), 0 0 0 3px rgb(var(--primary-color));
+			cursor: default;
+		}
+
+		// Locked for a non-Pro account, at full colour: the PRO tag beside the label says why.
+		&:disabled {
+			cursor: not-allowed;
+		}
+
+		@include zt-focus-ring;
+	}
+
+	&__remove {
+		padding-top: $zt-space-2;
+	}
+
+	@include reduced-motion {
+		&__row-main {
+			transition: none;
+		}
+	}
+}

@@ -2,12 +2,15 @@
 import {cacheSolveStat, fetchSolveCache, SolveCacheKey, SolveStatInput} from '../caching';
 import {fetchSolves, FilterSolvesOptions} from '../../../query';
 import {Solve} from '../../../../../../server/schemas/Solve.schema';
+import {getTrimCount} from './window_math';
 
-export function getCurrentAverage(filterOptions: FilterSolvesOptions, count: number = -1) {
+/** `mean`: a mean of `count` (nothing trimmed, any DNF makes it a DNF) instead of an average. */
+export function getCurrentAverage(filterOptions: FilterSolvesOptions, count: number = -1, mean = false) {
 	const cacheKey: SolveCacheKey = {
 		type: 'avg_current',
 		averageCount: count,
 		filterOptions,
+		...(mean ? {mean: true as const} : {}),
 	};
 
 	const cachedValue = fetchSolveCache(cacheKey);
@@ -33,7 +36,7 @@ export function getCurrentAverage(filterOptions: FilterSolvesOptions, count: num
 		return null;
 	}
 
-	const avg = getAverage(solves, !limit);
+	const avg = getAverage(solves, !limit, mean);
 	const result: SolveStatInput = {
 		time: avg,
 		solves,
@@ -54,8 +57,9 @@ function getSolveTime(solve: Solve | number): number {
  * Generic average function for a list of solves
  * @param list - List of Solve objects
  * @param isSorted - If list is already sorted, skip sorting and save on compute
+ * @param mean - A mean: nothing is trimmed, so any DNF makes it a DNF
  */
-export function getAverage(list: Solve[] | number[], isSorted: boolean = false): number {
+export function getAverage(list: Solve[] | number[], isSorted: boolean = false, mean: boolean = false): number {
 	if (!list || !list.length) {
 		return 0;
 	}
@@ -64,13 +68,7 @@ export function getAverage(list: Solve[] | number[], isSorted: boolean = false):
 		list.sort((a, b) => getSolveTime(a) - getSolveTime(b));
 	}
 
-	const count = list.length;
-	let dropCount = Math.ceil(Math.max(1, count * 0.05));
-
-	// < 5 is a special case. We don't drop any from either end
-	if (count < 5) {
-		dropCount = 0;
-	}
+	const dropCount = getTrimCount(list.length, mean);
 
 	let dnfCount = 0;
 	for (let i = 0; i < list.length; i++) {

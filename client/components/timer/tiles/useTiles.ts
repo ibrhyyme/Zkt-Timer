@@ -12,7 +12,7 @@ import {
 	removeTile,
 	replaceTile,
 	resolveTileMap,
-	setRailSizes,
+	setZoneSizes,
 	TILE_LIMITS,
 	TileBox,
 	TileDock,
@@ -35,8 +35,8 @@ export interface TilesApi {
 	replaceModule: (from: TimerModuleType, to: TimerModuleType) => void;
 	setRailWidth: (width: number) => void;
 	setDockHeight: (height: number) => void;
-	/** Weights for rail tiles, written by dragging the edge between two of them. */
-	setRailTileSizes: (sizes: Partial<Record<TimerModuleType, number>>) => void;
+	/** Weights for docked tiles (rails and bar), written by dragging the edge between two of them. */
+	setZoneTileSizes: (sizes: Partial<Record<TimerModuleType, number>>) => void;
 	resetLayout: () => void;
 }
 
@@ -128,9 +128,9 @@ export function useTiles(): TilesApi {
 
 	// Part of the layout blob, so the proportions travel with it to every desktop the
 	// account signs in on (timer_tiles is a desktop prefs setting).
-	const setRailTileSizes = useCallback(
+	const setZoneTileSizes = useCallback(
 		(sizes: Partial<Record<TimerModuleType, number>>) => {
-			save(setRailSizes(tiles, sizes));
+			save(setZoneSizes(tiles, sizes));
 		},
 		[tiles, save]
 	);
@@ -161,7 +161,7 @@ export function useTiles(): TilesApi {
 		replaceModule,
 		setRailWidth,
 		setDockHeight,
-		setRailTileSizes,
+		setZoneTileSizes,
 		resetLayout,
 	};
 }
