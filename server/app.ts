@@ -10,8 +10,7 @@ import { extractIp } from './util/request';
 import { initLogger, logger } from './services/logger';
 import { ApolloServer } from 'apollo-server-express';
 import { baseResolvers, baseScalars } from './graphql';
-import * as Sentry from '@sentry/node';
-import '@sentry/tracing';
+import { randomBytes } from 'crypto';
 
 import { initLLStates } from '../shared/util/solve/ll_identification';
 import { initSocket } from './services/socket';
@@ -154,31 +153,22 @@ app.use(helmet({
 				"'unsafe-eval'",   // Apollo Client dev tools, esbuild dynamic
 				"https://challenges.cloudflare.com",
 				"https://static.cloudflareinsights.com", // Cloudflare Web Analytics (auto-injected)
-				"https://plausible.io",
-				"https://cdn.jsdelivr.net",
-				"https://www.googletagmanager.com",
-				"https://www.google-analytics.com",
-				"https://googleads.g.doubleclick.net",   // Google Ads conversion tracking
-				"https://www.google.com",                 // Google Ads remarketing
+				// No Google Ads / Analytics hosts: the AW-354788011 tag inherited from the
+				// CubeDesk fork sent every visit to CubeDesk's Google Ads account and was
+				// removed. Do not allow these hosts again for a tag that is not ours.
 				"https://www.youtube.com",                // Room music player: IFrame API loader
 				"https://s.ytimg.com",                    // ...which then pulls www-widgetapi.js from here
 			],
 			// Inline event handlers (onclick, onload) — present in legacy code patterns.
 			// Long-term: refactor to addEventListener. For now, allow via 'unsafe-inline'.
 			scriptSrcAttr: ["'unsafe-inline'"],
-			styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-			fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+			styleSrc: ["'self'", "'unsafe-inline'"],
+			fontSrc: ["'self'", "data:"], // every font is self-hosted (styles/fonts*.scss)
 			imgSrc: ["'self'", "data:", "blob:", "https:"],
 			connectSrc: [
 				"'self'",
 				"https://www.worldcubeassociation.org",
 				"https://api.revenuecat.com",
-				"https://o637154.ingest.sentry.io",
-				"https://plausible.io",
-				"https://www.google-analytics.com",
-				"https://www.google.com",                // Google Ads collect endpoints
-				"https://googleads.g.doubleclick.net",
-				"https://ad.doubleclick.net",            // Google Ads conversion collect (was CSP-blocked)
 				"https://static.cloudflareinsights.com", // Cloudflare Insights beacon
 				"https://firebaseinstallations.googleapis.com", // FCM web push - installation token
 				"https://fcmregistrations.googleapis.com",      // FCM web push - registration
@@ -189,7 +179,6 @@ app.use(helmet({
 			frameSrc: [
 				"'self'",
 				"https://challenges.cloudflare.com",
-				"https://googleads.g.doubleclick.net",   // Google Ads iframe
 				"https://www.openstreetmap.org",          // ZKT competition venue map embed
 				"https://www.youtube.com",                // Room music player: the YT.Player iframe itself
 			],
@@ -343,43 +332,9 @@ app.set('port', port);
 
 global.siteUrl = process.env.BASE_URI;
 
-if (!isDev) {
-	Sentry.init({
-		dsn: 'https://2f30d529a6b242449dc1f86ec18c1ba3@o637154.ingest.sentry.io/5770453',
-		release: process.env.RELEASE_NAME,
-		tracesSampleRate: 1.0,
-		environment: env,
-		beforeSend(event) {
-			// Don't send PII / sensitive headers to Sentry
-			if (event.request?.headers) {
-				delete event.request.headers['cookie'];
-				delete event.request.headers['authorization'];
-				delete event.request.headers['x-csrf-token'];
-				delete event.request.headers['cf-connecting-ip'];
-			}
-			// Redact password/token in body if present
-			if (event.request?.data) {
-				const data: any = event.request.data;
-				for (const key of Object.keys(data || {})) {
-					const lower = key.toLowerCase();
-					if (lower.includes('password') || lower.includes('token') || lower.includes('secret')) {
-						data[key] = '[REDACTED]';
-					}
-				}
-			}
-			// Also redact in extra context
-			if (event.extra) {
-				for (const key of Object.keys(event.extra)) {
-					const lower = key.toLowerCase();
-					if (lower.includes('password') || lower.includes('secret') || lower.includes('token')) {
-						event.extra[key] = '[REDACTED]';
-					}
-				}
-			}
-			return event;
-		},
-	});
-}
+// No third-party error reporting: the Sentry init that stood here sent server
+// errors to CubeDesk's Sentry organisation (o637154, inherited with the fork)
+// and was removed on 2026-10-26. Errors go to our own log (Elasticsearch).
 
 (async () => {
 	// TODO remove eventually
@@ -457,14 +412,12 @@ if (!isDev) {
 		],
 		formatError: (err: any) => {
 			if (isDev) return err;
-			// Production: don't leak stack traces and internal details, send to Sentry
+			// Production: don't leak stack traces and internal details
 			const code = err?.extensions?.code;
 			if (code === 'INTERNAL_SERVER_ERROR' || !code) {
-				let traceId = '';
-				try { traceId = Sentry.captureException(err) || ''; } catch { /* ignore */ }
-				// Also write it where `docker logs` can see it. Sentry alone leaves nothing
-				// on the box, so a user who cannot send a screenshot leaves no trail at all
-				// and the fault has to be guessed at.
+				// A short id generated here ties the code on the user's screen to this log
+				// line (it used to be the Sentry event id).
+				const traceId = randomBytes(6).toString('hex');
 				logger.error('GraphQL error', {
 					message: err?.message,
 					path: err?.path,
@@ -475,9 +428,7 @@ if (!isDev) {
 				// organizer can read out. Details stay hidden; the trace id is what
 				// connects their screenshot to the server log.
 				return {
-					message: traceId
-						? `Sunucu hatası oluştu. Hata kodu: ${traceId}`
-						: 'Sunucu hatası oluştu. Lütfen tekrar deneyin.',
+					message: `Sunucu hatası oluştu. Hata kodu: ${traceId}`,
 					extensions: { code: 'INTERNAL_SERVER_ERROR', traceId },
 				};
 			}
@@ -652,6 +603,9 @@ app.post('/api/iap/sync', iapSyncHandler);
 // and the video someone sent them privately never reach Google. See the handler.
 import { youtubeThumbnailHandler } from './api/youtube_thumbnail';
 app.get('/api/yt-thumb/:id', youtubeThumbnailHandler);
+
+import { geocodeHandler } from './api/geocode';
+app.get('/api/geocode', geocodeHandler);
 
 // Two different things, deliberately separate:
 //   version — the human-readable product version announced to users (CalVer

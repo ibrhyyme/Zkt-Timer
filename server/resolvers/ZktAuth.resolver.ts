@@ -33,7 +33,7 @@ import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
 import {checkRateLimit} from '../services/rate_limit';
-import {extractIp} from '../util/request';
+import {extractIp, extractCountry} from '../util/request';
 import {logger} from '../services/logger';
 
 // "Sign in with Zeka Kupu Turkiye". The federation is an identity provider now,
@@ -319,7 +319,7 @@ export class ZktAuthResolver {
 		const lastName = nameParts.slice(1).join(' ') || '';
 
 		const ip = extractIp(req);
-		const user = await createUserAccount(firstName, lastName, payload.email, trimmed, null, ip as string);
+		const user = await createUserAccount(firstName, lastName, payload.email, trimmed, null, ip as string, extractCountry(req));
 
 		// The federation only hands us an address it confirmed itself, so there is
 		// nothing left for us to verify.

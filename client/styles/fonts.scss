@@ -5,13 +5,17 @@
 // so display and body share a family instead of pulling in separate faces.
 // Numerals are tabular, which matters everywhere solve times are listed.
 //
+// The paths start with /public: the web serves public/ at both / and /public,
+// but the native bundle only has /public, so a bare /fonts/... never loaded in
+// the iOS/Android app.
+//
 // This replaces the Kontora/Gelion declarations that referenced font files which
 // were never added to the repo — every one of those rules silently fell back to
 // Arial, so the app shipped with no typeface of its own.
 
 @font-face {
 	font-family: 'Archivo';
-	src: url('/fonts/archivo/archivo-latin.woff2') format('woff2-variations');
+	src: url('/public/fonts/archivo/archivo-latin.woff2') format('woff2-variations');
 	font-weight: 400 900;
 	font-stretch: 62.5% 125%;
 	font-style: normal;
@@ -24,7 +28,7 @@
 // Turkish needs this subset: ş ğ ı İ live in Latin Extended-A.
 @font-face {
 	font-family: 'Archivo';
-	src: url('/fonts/archivo/archivo-latinext.woff2') format('woff2-variations');
+	src: url('/public/fonts/archivo/archivo-latinext.woff2') format('woff2-variations');
 	font-weight: 400 900;
 	font-stretch: 62.5% 125%;
 	font-style: normal;

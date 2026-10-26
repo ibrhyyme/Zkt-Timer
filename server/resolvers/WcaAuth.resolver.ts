@@ -22,7 +22,7 @@ import {getPrisma} from '../database';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
 import {fetchAndSaveWcaRecords} from '../models/wca_record';
 import {checkRateLimit} from '../services/rate_limit';
-import {extractIp} from '../util/request';
+import {extractIp, extractCountry} from '../util/request';
 import {logger} from '../services/logger';
 
 const jwtSecret = (process as any).env.JWT_SECRET as string;
@@ -316,7 +316,7 @@ export class WcaAuthResolver {
 		// 5. Create account (passwordless)
 		const ip = extractIp(req);
 
-		const user = await createUserAccount(firstName, lastName, payload.email, username, null, ip as string);
+		const user = await createUserAccount(firstName, lastName, payload.email, username, null, ip as string, extractCountry(req));
 
 		// email_verified = true (WCA email is trusted)
 		await getPrisma().userAccount.update({

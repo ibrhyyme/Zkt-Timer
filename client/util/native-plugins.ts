@@ -72,10 +72,9 @@ export async function initStatusBar(): Promise<void> {
 
 // Crashlytics — native crash reporting.
 //
-// Sentry (client/components/App.tsx) covers JavaScript only; a native crash kills the
-// process before any JS handler runs, which is exactly the class of bug that has hurt
-// most here (R8 stripping a reflection-heavy SDK, a plugin faulting at boot). The two
-// are complementary, not duplicates.
+// A native crash kills the process before any JS handler runs, which is exactly the
+// class of bug that has hurt most here (R8 stripping a reflection-heavy SDK, a plugin
+// faulting at boot). Reports go to our own Firebase project (zkt-timer-59c59).
 export async function initCrashlytics(): Promise<void> {
 	if (!isNative()) return;
 	try {

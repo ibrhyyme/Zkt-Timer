@@ -4,7 +4,6 @@ import block from '../../../styles/bem';
 import { getLocalStorage } from '../../../util/data/local_storage';
 import CSS from 'csstype';
 import { useTranslation } from 'react-i18next';
-import * as Sentry from '@sentry/browser';
 import { addEventListener, removeEventListener } from '../../../util/event_handler';
 
 const b = block('loading-cover');
@@ -27,9 +26,6 @@ export default function LoadingCover(props: Props) {
 	const [style, setStyle] = React.useState<CSS.Properties>({});
 	const [stuck, setStuck] = React.useState(false);
 	const [loadedSolves, setLoadedSolves] = React.useState(0);
-	// Mirrored in a ref so the Sentry report can read the latest count without the
-	// timer effect having to re-run (and restart the countdown) on every page.
-	const loadedSolvesRef = React.useRef(0);
 
 	useEffect(() => {
 		if (fadeOut || typeof localStorage === 'undefined') return;
@@ -48,10 +44,8 @@ export default function LoadingCover(props: Props) {
 		setStyle(newStyle);
 	}, [typeof localStorage]);
 
-	// A boot that never finishes used to be completely invisible: no exception is
-	// thrown, so nothing reached Sentry and the only signal was a user writing in
-	// to say the logo spins forever. Report it once so the real frequency of this
-	// failure can be measured.
+	// A boot that never finishes throws nothing, so without this the logo would
+	// just spin forever. After the threshold the cover offers a way out.
 	//
 	// The countdown restarts on every progress event. A first launch on a large
 	// account downloads tens of thousands of solves page by page and legitimately
@@ -64,25 +58,11 @@ export default function LoadingCover(props: Props) {
 
 		const arm = () => {
 			clearTimeout(timer);
-			timer = setTimeout(() => {
-				setStuck(true);
-				try {
-					Sentry.withScope((scope) => {
-						scope.setLevel(Sentry.Severity.Warning);
-						scope.setTag('boot_stage', 'loading_cover_stuck');
-						scope.setExtra('threshold_ms', STUCK_THRESHOLD_MS);
-						scope.setExtra('online', navigator.onLine);
-						scope.setExtra('path', window.location.pathname);
-						scope.setExtra('loaded_solves', loadedSolvesRef.current);
-						Sentry.captureMessage('[Boot] LoadingCover still visible after threshold');
-					});
-				} catch (e) {}
-			}, STUCK_THRESHOLD_MS);
+			timer = setTimeout(() => setStuck(true), STUCK_THRESHOLD_MS);
 		};
 
 		const onProgress = (data: { loadedSolves: number }) => {
-			loadedSolvesRef.current = data?.loadedSolves ?? 0;
-			setLoadedSolves(loadedSolvesRef.current);
+			setLoadedSolves(data?.loadedSolves ?? 0);
 			// Progress means the boot is alive, so it is not stuck after all.
 			setStuck(false);
 			arm();

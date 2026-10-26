@@ -11,7 +11,7 @@ import {
 	updateUserAccountWithParams,
 	updateUserAccountPassword,
 } from '../models/user_account';
-import { extractIp } from '../util/request';
+import { extractIp, extractCountry } from '../util/request';
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
 import { createDefaultSession } from '../models/session';
@@ -177,10 +177,10 @@ export const mutateActions = {
 			// Instead of deleting and recreating an existing unverified account, UPDATE it.
 			// An attacker was deleting the victim's registration (DoS); now the same row is refreshed.
 			user = await refreshUnverifiedAccount(
-				existingUser.id, first_name.trim(), last_name.trim(), username, password, ip
+				existingUser.id, first_name.trim(), last_name.trim(), username, password, ip, extractCountry(req)
 			);
 		} else {
-			user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
+			user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip, extractCountry(req));
 			await createSetting(user, language || 'en');
 			await createNotificationPreference(user);
 			await createDefaultSession(user, language || 'en');

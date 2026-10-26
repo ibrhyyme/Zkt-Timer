@@ -40,3 +40,11 @@ export function isLocalShell(): boolean {
 export function landingAsset(path: string): string {
 	return isLocalShell() ? Consts.STORAGE_ORIGIN + path : path;
 }
+
+// A route the server answers (/api/...), as the client must request it: relative on
+// the web and in old binaries, absolute in the local shell, where a relative path
+// would hit the bundle. The YouTube cover proxy needs it so that thumbnails still
+// come from our own host, never Google, inside the native app.
+export function serverPath(path: string): string {
+	return isLocalShell() ? Consts.STORAGE_ORIGIN + path : path;
+}

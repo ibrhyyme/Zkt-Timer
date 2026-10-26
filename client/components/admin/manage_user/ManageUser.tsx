@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {gql, useQuery, useLazyQuery} from '@apollo/client';
+import React from 'react';
+import {gql, useQuery} from '@apollo/client';
 import './ManageUser.scss';
 import {NO_CACHE} from '../../api';
 import Loading from '../../common/loading/Loading';
@@ -12,14 +12,6 @@ import UserSummary from './user_summary/UserSummary';
 import UserDailyActivity from './user_daily_activity/UserDailyActivity';
 import {UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema';
 import {useTranslation} from 'react-i18next';
-
-const GET_IP_INFO = gql`
-	query ipInfo($ip: String!) {
-		ipInfo(ip: $ip) {
-			ip country countryCode regionName city isp org proxy mobile hosting timezone
-		}
-	}
-`;
 
 const b = block('manage-user');
 
@@ -140,9 +132,6 @@ export default function ManageUser(props: Props) {
 		onUserUpdated?.();
 	}, [refetch, onUserUpdated]);
 
-	const [showIpDetail, setShowIpDetail] = useState(false);
-	const [fetchIpInfo, {data: ipData, loading: ipLoading}] = useLazyQuery<{ipInfo: any}>(GET_IP_INFO, {fetchPolicy: NO_CACHE});
-
 	const userData = data?.getUserAccountForAdmin;
 
 	if (loading) return <Loading />;
@@ -161,19 +150,12 @@ export default function ManageUser(props: Props) {
 			? zktIntegration.zkt_name
 			: null;
 
-	function handleIpDetail() {
-		if (!showIpDetail && userData.join_ip) {
-			fetchIpInfo({variables: {ip: userData.join_ip}});
-		}
-		setShowIpDetail((v) => !v);
-	}
-
 	function getInfoCards() {
-		const ipDetail = ipData?.ipInfo;
 		const rows = [
 			{label: 'Email', value: userData.email},
 			{label: t('email_verified'), value: userData.email_verified ? '✓' : '✗'},
 			{label: t('join_country'), value: userData.join_country || '—'},
+			{label: t('join_ip'), value: userData.join_ip || '—'},
 		];
 
 		return (
@@ -238,58 +220,6 @@ export default function ManageUser(props: Props) {
 						<span className={b('card-value')}>{row.value}</span>
 					</div>
 				))}
-				{userData.join_ip && (
-					<div className={b('card', {'ip-expandable': true})}>
-						<div className={b('card-ip-header')}>
-							<span className={b('card-label')}>{t('join_ip')}</span>
-							<div className={b('card-ip-right')}>
-								<span className={b('card-value')}>{userData.join_ip}</span>
-								<button className={b('ip-toggle')} onClick={handleIpDetail}>
-									{showIpDetail ? '▲' : '▼'}
-								</button>
-							</div>
-						</div>
-						{showIpDetail && (
-							<div className={b('ip-detail')}>
-								{ipLoading ? (
-									<span className={b('ip-detail-loading')}>Sorgulanıyor...</span>
-								) : ipDetail ? (
-									<>
-										<div className={b('ip-detail-row')}>
-											<span>{ipDetail.city}{ipDetail.regionName ? `, ${ipDetail.regionName}` : ''}</span>
-											<span>{ipDetail.country} ({ipDetail.countryCode})</span>
-										</div>
-										<div className={b('ip-detail-row')}>
-											<span className={b('ip-detail-label')}>ISP</span>
-											<span>{ipDetail.isp}</span>
-										</div>
-										{ipDetail.org && ipDetail.org !== ipDetail.isp && (
-											<div className={b('ip-detail-row')}>
-												<span className={b('ip-detail-label')}>Org</span>
-												<span>{ipDetail.org}</span>
-											</div>
-										)}
-										<div className={b('ip-detail-row')}>
-											<span className={b('ip-detail-label')}>Timezone</span>
-											<span>{ipDetail.timezone}</span>
-										</div>
-										<div className={b('ip-detail-flags')}>
-											<span className={b('ip-flag', {danger: ipDetail.proxy, ok: !ipDetail.proxy})}>
-												{ipDetail.proxy ? 'PROXY/VPN' : 'Proxy yok'}
-											</span>
-											<span className={b('ip-flag', {warn: ipDetail.hosting, ok: !ipDetail.hosting})}>
-												{ipDetail.hosting ? 'Hosting/VPS' : 'Hosting yok'}
-											</span>
-											<span className={b('ip-flag', {neutral: true})}>
-												{ipDetail.mobile ? 'Mobil' : 'Sabit hat'}
-											</span>
-										</div>
-									</>
-								) : null}
-							</div>
-						)}
-					</div>
-				)}
 			</div>
 		);
 	}

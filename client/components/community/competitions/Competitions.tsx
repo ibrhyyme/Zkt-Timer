@@ -4,6 +4,7 @@ import Header from '../../layout/header/Header';
 import {gqlQueryTyped} from '../../api';
 import {WcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {haversineDistanceKm} from '../../../util/geo';
+import {serverPath} from '../../../util/api-base';
 import CompetitionEventFilter, {WCA_EVENTS} from './CompetitionEventFilter';
 import Button from '../../common/button/Button';
 import Loading from '../../common/loading/Loading';
@@ -13,7 +14,8 @@ import './Competitions.scss';
 
 const b = block('competitions');
 
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+// Place search goes through our server (server/api/geocode.ts): the browser never
+// contacts OpenStreetMap, so the visitor's IP address stays with us.
 
 interface GeoPlace {
 	lat: string;
@@ -84,7 +86,7 @@ export default function Competitions() {
 		setPlaces(null);
 
 		try {
-			const res = await fetch(`${NOMINATIM_URL}?q=${encodeURIComponent(query)}&format=json&limit=5`);
+			const res = await fetch(serverPath(`/api/geocode?q=${encodeURIComponent(query)}`));
 			const data: GeoPlace[] = await res.json();
 			if (data.length === 1) {
 				selectPlace(data[0]);

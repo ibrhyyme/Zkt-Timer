@@ -33,8 +33,28 @@ const KEYS = [
 	'NoRg7ANAzArNAc1IigFgqgTB9MCcE8cAbBCJpKgeaSAAxTSPxgC6QA',
 ];
 
-// CICs 0x(01..=FF)00 — same as cstimer
-const MOYU32_CIC_LIST = Array(255).fill(undefined).map((_, i) => (i + 1) << 8);
+// The MAC comes from the advertisement's manufacturer data, and Web Bluetooth only
+// hands over the data of company ids (CICs) declared up front. A cube bound in the
+// WCU app uses the high bytes of the account id as its CIC (0x0100..0xFF00); an
+// UNBOUND cube uses 0x0000.
+//
+// 0x0000 used to break Chromium outright (its manufacturer-data map rejected 0 as a
+// key, and gatt.connect() died with it), so it was left out and unbound MoYu cubes
+// always fell back to the MAC prompt on the web. Chrome 130 fixed that
+// (crbug.com/356891475), so 0x0000 is declared everywhere except a build positively
+// identified as pre-130 Chromium. Ported from cstimer (moyu32SkipCic0000, 2026).
+function moyu32SkipCic0000() {
+	const brands = typeof navigator !== 'undefined' && navigator.userAgentData && navigator.userAgentData.brands;
+	if (!brands) return false; // non-Chromium or no UA-CH: never had the bug
+	return brands.some(
+		(b) => (b.brand === 'Google Chrome' || b.brand === 'Chromium') && parseInt(b.version, 10) < 130
+	);
+}
+
+const MOYU32_CIC_LIST = [
+	...(moyu32SkipCic0000() ? [] : [0x0000]),
+	...Array(255).fill(undefined).map((_, i) => (i + 1) << 8),
+];
 
 const MAC_CACHE_KEY = 'moyu32_cube_mac';
 

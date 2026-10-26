@@ -2,7 +2,9 @@ import {Request, Response} from 'express';
 import {logger} from '../services/logger';
 
 /**
- * Serves YouTube cover images for links shared in direct messages.
+ * Serves YouTube cover images for links shared in direct messages, and for the
+ * search results of the room music player (same reason: the visitor's browser
+ * never talks to Google until they actually press play).
  *
  * This exists for one reason: privacy. Rendering `img.youtube.com` directly in a chat
  * would tell Google the reader's IP address and which video someone sent them, which

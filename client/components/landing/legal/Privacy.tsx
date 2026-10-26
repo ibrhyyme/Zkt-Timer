@@ -44,6 +44,9 @@ export default function Privacy() {
 				<li>{t('privacy.section_2_item_5')}</li>
 				<li>{t('privacy.section_2_item_6')}</li>
 				<li>{t('privacy.section_2_item_7')}</li>
+				<li>{t('privacy.section_2_item_8')}</li>
+				<li>{t('privacy.section_2_item_9')}</li>
+				<li>{t('privacy.section_2_item_10')}</li>
 			</ul>
 
 			<h2>{t('privacy.section_3_title')}</h2>
@@ -53,6 +56,11 @@ export default function Privacy() {
 				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_2')}} />
 				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_3')}} />
 				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_4')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_5')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_6')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_7')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_8')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.section_3_item_9')}} />
 			</ul>
 
 			<h2>{t('privacy.section_4_title')}</h2>
@@ -62,6 +70,7 @@ export default function Privacy() {
 				<li>{t('privacy.section_4_item_2')}</li>
 				<li>{t('privacy.section_4_item_3')}</li>
 				<li>{t('privacy.section_4_item_4')}</li>
+				<li>{t('privacy.section_4_item_5')}</li>
 			</ul>
 			<p>{t('privacy.section_4_footer')}</p>
 
@@ -73,9 +82,31 @@ export default function Privacy() {
 				<li>{t('privacy.section_5_item_3')}</li>
 				<li>{t('privacy.section_5_item_4')}</li>
 				<li>{t('privacy.section_5_item_5')}</li>
+				<li>{t('privacy.section_5_item_6')}</li>
 			</ul>
 			<p>{t('privacy.section_5_footer')}</p>
 			<p>{t('privacy.section_5_international')}</p>
+			<p>{t('privacy.section_5_embeds')}</p>
+
+			<h2>{t('privacy.public_title')}</h2>
+			<p>{t('privacy.public_text')}</p>
+			<ul>
+				<li>{t('privacy.public_item_1')}</li>
+				<li>{t('privacy.public_item_2')}</li>
+				<li>{t('privacy.public_item_3')}</li>
+			</ul>
+			<p>{t('privacy.public_note')}</p>
+
+			<h2>{t('privacy.retention_title')}</h2>
+			<ul>
+				<li>{t('privacy.retention_item_1')}</li>
+				<li>{t('privacy.retention_item_2')}</li>
+				<li>{t('privacy.retention_item_3')}</li>
+				<li>{t('privacy.retention_item_4')}</li>
+			</ul>
+
+			<h2>{t('privacy.children_title')}</h2>
+			<p>{t('privacy.children_text')}</p>
 
 			<h2>{t('privacy.section_6_title')}</h2>
 			<p>{t('privacy.section_6_text')}</p>
@@ -117,6 +148,7 @@ export default function Privacy() {
 				<li dangerouslySetInnerHTML={{__html: t('privacy.cookie_section_2_item_1')}} />
 				<li dangerouslySetInnerHTML={{__html: t('privacy.cookie_section_2_item_2')}} />
 				<li dangerouslySetInnerHTML={{__html: t('privacy.cookie_section_2_item_3')}} />
+				<li dangerouslySetInnerHTML={{__html: t('privacy.cookie_section_2_item_4')}} />
 			</ul>
 
 			<h2>{t('privacy.cookie_section_3_title')}</h2>

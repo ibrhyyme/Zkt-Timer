@@ -195,7 +195,7 @@ export default function App(props: Props = {}) {
 			SplashScreen.hide();
 			initStatusBar();
 			lockTextZoom();
-			initCrashlytics(); // Native crash reporting (Sentry only sees JS)
+			initCrashlytics(); // Native crash reporting (our own Firebase project)
 			initRevenueCat(); // Prepare RevenueCat IAP SDK
 			initDeepLinkHandler(); // zkttimer:// OAuth relay + migrate bridge (local shell)
 			initNativeShellBoot(); // Capgo notifyAppReady + one-time migration checks

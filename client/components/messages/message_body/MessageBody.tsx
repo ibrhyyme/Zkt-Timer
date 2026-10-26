@@ -4,6 +4,7 @@ import {PlayCircle} from 'phosphor-react';
 import block from '../../../styles/bem';
 import {openInAppBrowser} from '../../../util/external-link';
 import {firstYoutubeVideo, parseMessageBody, youtubeThumbnail} from '../../../util/message-links';
+import {serverPath} from '../../../util/api-base';
 import './MessageBody.scss';
 
 const b = block('message-body');
@@ -89,7 +90,7 @@ export default function MessageBody({body, compact, trusted = true}: Props) {
 				>
 					<img
 						className={b('video-cover')}
-						src={youtubeThumbnail(video.id)}
+						src={serverPath(youtubeThumbnail(video.id))}
 						alt=""
 						loading="lazy"
 						onError={() => setCoverFailed(true)}

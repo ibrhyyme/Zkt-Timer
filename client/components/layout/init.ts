@@ -49,13 +49,12 @@ import { fetchSiteConfig } from '../../util/hooks/useSiteConfig';
 import { backfillLocalStepRows } from '../../db/solves/local-analysis';
 import { refreshCubes } from '../../lib/cubes/sync';
 import { migrateCubeLink } from '../../db/solves/migrate_cube_link';
-import * as Sentry from '@sentry/browser';
 
 // Every boot fetcher below already falls back to local data when its request
 // FAILS. What none of them survive is a request that never settles at all: a
 // mobile connection that keeps the socket open and answers nothing leaves the
 // await pending forever, `callback()` is never reached, and the LoadingCover
-// spins with no escape (Sentry sees nothing, because nothing threw). Racing
+// spins with no escape (nothing threw, so nothing reports it). Racing
 // every boot-path query against a deadline turns that dead end into the
 // already-written offline path.
 const BOOT_QUERY_TIMEOUT_MS = 20_000;
@@ -89,21 +88,10 @@ function withBootTimeout<T>(promise: Promise<T>, label: string, ms: number = BOO
 	});
 }
 
-// A boot timeout is invisible in the current telemetry: the app simply hangs.
-// Report it so the real-world frequency of this failure becomes measurable
-// instead of depending on users reporting it by hand.
+// A boot timeout leaves no exception behind, only a hang; this line is the trace
+// it leaves in the console (console.debug survives the production strip).
 function reportBootTimeout(label: string, ms: number) {
-	console.warn(`[Boot] ${label} timed out after ${ms}ms — falling back to local data`);
-	if (typeof window === 'undefined') return;
-	try {
-		Sentry.withScope((scope) => {
-			scope.setLevel(Sentry.Severity.Warning);
-			scope.setTag('boot_stage', label);
-			scope.setExtra('timeout_ms', ms);
-			scope.setExtra('online', navigator.onLine);
-			Sentry.captureMessage(`[Boot] ${label} timed out`);
-		});
-	} catch (e) {}
+	console.debug(`[Boot] ${label} timed out after ${ms}ms — falling back to local data`);
 }
 
 // A slow disk should not hold the timer hostage; boot with what we have and let the

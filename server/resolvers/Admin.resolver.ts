@@ -31,7 +31,7 @@ import { PaginationArgsInput, AdminUserFiltersInput, AdminUserSortInput, AdminUs
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { getMethodStepsReindexStatus, startMethodStepsReindex } from '../services/method_steps_reindex';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
@@ -48,7 +48,6 @@ import { WcaApiService } from '../services/WcaApiService';
 import axios from 'axios';
 import { runWcaBackfill } from '../services/WcaBackfillService';
 import { runZktBackfill } from '../services/ZktBackfillService';
-import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
 import { BulkArchiveResult, ReindexESResult, ReindexLLResult } from '../schemas/ArchiveAdmin.schema';
 import { ARCHIVED_COMP_INDEX, bootstrapArchivedCompIndex, getSearchClient } from '../services/search';
@@ -690,12 +689,6 @@ export class AdminResolver {
 		}
 
 		return true;
-	}
-
-	@Authorized([Role.ADMIN])
-	@Query(() => IpInfo)
-	async ipInfo(@Arg('ip') ip: string): Promise<IpInfo> {
-		return getIpDetail(ip);
 	}
 
 	@Authorized([Role.ADMIN])

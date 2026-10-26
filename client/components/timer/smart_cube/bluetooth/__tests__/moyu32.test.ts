@@ -255,3 +255,14 @@ describe('MoYu32 WCU_MY22 (2x2) — real captures', () => {
 		expect(afterMoves.slice(-6)).toEqual(capture.expectedStates!.map((s) => expand2x2Facelets(s)));
 	});
 });
+
+describe('MoYu32 — company ids declared for MAC discovery', () => {
+	// An unbound cube (never paired in the WCU app) advertises its MAC under CIC 0x0000.
+	// Without it in the list, Web Bluetooth withholds that data and the user gets the MAC prompt.
+	it('includes 0x0000 for unbound cubes, then every bound-account CIC', () => {
+		expect(MoYu32.cics[0]).toBe(0x0000);
+		expect(MoYu32.cics).toHaveLength(256);
+		expect(MoYu32.cics[1]).toBe(0x0100);
+		expect(MoYu32.cics[255]).toBe(0xff00);
+	});
+});

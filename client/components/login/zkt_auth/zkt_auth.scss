@@ -1,12 +1,9 @@
 /* ───────────────────────────────────────────────────
    Fonts — Inter Tight + JetBrains Mono
    ───────────────────────────────────────────────────
-   Via Google Fonts CDN (automatically selects browser subsets — TR/EN/ES/RU
-   loads latin + latin-ext + cyrillic; ZH falls back).
-   font-display: swap defined in Google CSS, no FOUT.
+   Self-hosted with the rest of the app's fonts (styles/fonts-google.scss):
+   latin + latin-ext + cyrillic, ZH falls back. No request leaves our origin.
    ─────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
 @import '../../../styles/config';
 
 /* ───────────────────────────────────────────────────

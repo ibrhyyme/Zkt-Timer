@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { gql, useLazyQuery } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
+import { youtubeThumbnail } from '../../util/message-links';
+import { serverPath } from '../../util/api-base';
 import { X, MagnifyingGlass, Play, Pause, Stop, SkipBack, SkipForward } from 'phosphor-react';
 
 const YOUTUBE_SEARCH = gql`
@@ -62,25 +64,21 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 	const searchResults = data?.youtubeSearch || [];
 	const hasSearched = !!data || !!error;
 
-	// Load YouTube IFrame API
-	useEffect(() => {
-		if (apiLoadedRef.current) return;
-
-		const existingScript = document.querySelector('script[src="https://www.youtube.com/iframe_api"]');
-		if (existingScript) {
-			apiLoadedRef.current = true;
-			return;
-		}
-
-		const tag = document.createElement('script');
-		tag.src = 'https://www.youtube.com/iframe_api';
-		document.head.appendChild(tag);
-		apiLoadedRef.current = true;
-	}, []);
-
 	// Create or change player video
 	useEffect(() => {
 		if (!currentVideo || !playerContainerRef.current) return;
+
+		// The YouTube IFrame API is fetched only once the visitor picks a song. This
+		// component is mounted in every room, and loading the script on mount sent
+		// everyone who merely opened a room to youtube.com.
+		if (!apiLoadedRef.current) {
+			apiLoadedRef.current = true;
+			if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+				const tag = document.createElement('script');
+				tag.src = 'https://www.youtube.com/iframe_api';
+				document.head.appendChild(tag);
+			}
+		}
 
 		const initPlayer = () => {
 			if (!window.YT?.Player) return;
@@ -291,7 +289,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 									className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-text/5 transition-colors text-left"
 								>
 									<img
-										src={video.thumbnail}
+										src={serverPath(youtubeThumbnail(video.videoId))}
 										alt=""
 										className="w-10 h-10 rounded object-cover shrink-0 bg-button"
 									/>

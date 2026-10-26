@@ -8,7 +8,7 @@ import {logger} from '../services/logger';
  * available, neither fresh nor cached.
  *
  * Without this the raw error reached formatError as an unknown error: it was
- * masked as "Sunucu hatası oluştu", reported to Sentry as a server bug, and the
+ * masked as "Sunucu hatası oluştu", logged as a server bug, and the
  * client could not tell "the federation is busy, try again in a few seconds"
  * apart from a real fault. The code lets the client keep what it already shows
  * and retry quietly; the i18nKey gives it a sentence in the viewer's language.

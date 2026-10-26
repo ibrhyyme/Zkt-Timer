@@ -3,8 +3,6 @@ import React from 'react';
 import 'seedrandom';
 import thunk from 'redux-thunk';
 import ReactDOM from 'react-dom';
-import * as Sentry from '@sentry/browser';
-import { Integrations } from '@sentry/tracing';
 import promise from 'redux-promise-middleware';
 import { applyMiddleware, createStore } from 'redux';
 import { Provider } from 'react-redux';
@@ -37,13 +35,9 @@ import { mapSingleRoute } from './map_route';
 import { ApolloProvider } from '@apollo/client';
 import { DataProvider } from '../providers/DataProvider';
 
-Sentry.init({
-	dsn: 'https://feee16c821834f408ae2453577b10f9e@o637154.ingest.sentry.io/5756098',
-	release: process.env.RELEASE_NAME,
-	environment: process.env.ENV,
-	integrations: [new Integrations.BrowserTracing()],
-	tracesSampleRate: 1.0,
-});
+// No third-party error reporting. The Sentry init that stood here sent every
+// page view and error to CubeDesk's Sentry organisation (inherited with the
+// fork) and was removed on 2026-10-26; nothing replaces it by design.
 
 ReactDOM.hydrate(
 	<ApolloProvider client={apolloClient}>

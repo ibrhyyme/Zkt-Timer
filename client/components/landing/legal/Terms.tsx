@@ -42,6 +42,22 @@ export default function Terms() {
 				<li>{t('terms.section_3_item_5')}</li>
 			</ul>
 
+			<h2>{t('terms.content_title')}</h2>
+			<p>{t('terms.content_text')}</p>
+			<ul>
+				<li>{t('terms.content_item_1')}</li>
+				<li>{t('terms.content_item_2')}</li>
+				<li>{t('terms.content_item_3')}</li>
+				<li>{t('terms.content_item_4')}</li>
+			</ul>
+			<p>{t('terms.content_footer')}</p>
+
+			<h2>{t('terms.fair_title')}</h2>
+			<p>{t('terms.fair_text')}</p>
+
+			<h2>{t('terms.relation_title')}</h2>
+			<p>{t('terms.relation_text')}</p>
+
 			<h2>{t('terms.section_4_title')}</h2>
 			<p>{t('terms.section_4_text')}</p>
 
@@ -50,6 +66,9 @@ export default function Terms() {
 
 			<h2>{t('terms.section_6_title')}</h2>
 			<p>{t('terms.section_6_text')}</p>
+
+			<h2>{t('terms.deletion_title')}</h2>
+			<p>{t('terms.deletion_text')}</p>
 
 			<h2>{t('terms.section_7_title')}</h2>
 			<p>{t('terms.section_7_text')}</p>

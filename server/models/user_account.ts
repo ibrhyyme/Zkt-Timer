@@ -1,4 +1,3 @@
-import {getLocationFromIp} from '../services/ipstack';
 import {v4 as uuid} from 'uuid';
 import {hashPassword} from '../util/password';
 import {CURRENT_CONSENT_VERSION} from '../../shared/consent';
@@ -14,7 +13,6 @@ import {
 } from '../schemas/UserAccount.schema';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
-import {logger} from '../services/logger';
 import {getActiveBanLogsByUserId} from './ban_log';
 import {publicIntegrationSelect} from './integration';
 
@@ -333,19 +331,11 @@ export async function refreshUnverifiedAccount(
 	lastName: string,
 	username: string,
 	password: string | null,
-	ip: string | undefined
+	ip: string | undefined,
+	// From Cloudflare's CF-IPCountry (util/request.ts extractCountry); never looked up
+	// from the IP, which would hand the address to a third party.
+	country: string = 'NONE'
 ) {
-	let country = 'NONE';
-	try {
-		const location = await getLocationFromIp(ip);
-		country = location.country_iso || 'NONE';
-	} catch (e) {
-		logger.warn('Could not get location for IP', {
-			ip,
-			error: e instanceof Error ? e.message : String(e),
-		});
-	}
-
 	const hashedPassword = password ? await hashPassword(password) : null;
 	const prisma = getPrisma();
 
@@ -377,22 +367,14 @@ export async function createUserAccount(
 	email: string,
 	username: string,
 	password: string | null,
-	ip: string | undefined
+	ip: string | undefined,
+	// From Cloudflare's CF-IPCountry (util/request.ts extractCountry); never looked up
+	// from the IP, which would hand the address to a third party.
+	country: string = 'NONE'
 ) {
 	const user = await getUserByEmail(email);
 	if (user != null) {
 		throw new Error('An account with this email already exists');
-	}
-
-	let country = 'NONE';
-	try {
-		const location = await getLocationFromIp(ip);
-		country = location.country_iso || 'NONE';
-	} catch (e) {
-		logger.warn('Could not get location for IP', {
-			ip,
-			error: e instanceof Error ? e.message : String(e),
-		});
 	}
 
 	const hashedPassword = password ? await hashPassword(password) : null;

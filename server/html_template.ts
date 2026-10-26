@@ -23,11 +23,6 @@ export default (payload: HtmlPagePayload) => {
 			<head>
 				<meta charset="UTF-8" />
 				<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-				<link rel="preconnect" href="https://fonts.gstatic.com">
-				<link rel="preload" href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Fira+Sans&family=JetBrains+Mono&family=Kiwi+Maru&family=Montserrat&family=Poppins&family=Roboto+Mono&family=Space+Mono&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Fira+Sans&family=JetBrains+Mono&family=Kiwi+Maru&family=Montserrat&family=Poppins&family=Roboto+Mono&family=Space+Mono&display=swap"></noscript>
-				<link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap"></noscript>
 				<script>try{var _t=JSON.parse(localStorage.getItem('zkt_theme')),_p=location.pathname.split('/')[1];if(_t&&['login','signup','wca-signup','zkt-signup','welcome','links'].indexOf(_p)<0){var _h=document.documentElement,_s=_h.style;if(_t.bg)_s.setProperty('--background-color',_t.bg);if(_t.mod)_s.setProperty('--module-color',_t.mod);if(_t.btn)_s.setProperty('--button-color',_t.btn);if(_t.txt)_s.setProperty('--text-color',_t.txt);if(_t.pri)_s.setProperty('--primary-color',_t.pri);if(_t.sec)_s.setProperty('--secondary-color',_t.sec);_h.classList.add(_t.light?'theme-light':'theme-dark');}}catch(e){}</script>
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="/public/cubing-icons/cubing-icons.css">
@@ -35,9 +30,6 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
-				<!-- iOS PWA Compatibility (Automatic Splash Screen Generator) -->
-				<!-- Supply chain attack protection: version pinned. Add SRI hash (user manual: jsdelivr SRI generator) -->
-				<script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.17/pwacompat.min.js" crossorigin="anonymous"></script>
 				<meta name="theme-color" content="#0F142B">
 
 				<!-- iOS / PWA -->
@@ -59,16 +51,6 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
 				<!-- iOS Launch Screen (Splash screen-like effect) -->
 				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png?v=${version}">
-				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zktimer.app" src="https://plausible.io/js/plausible.js"></script>` : ""}
-				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
-				<script>
-				  window.dataLayer = window.dataLayer || [];
-				  function gtag(){dataLayer.push(arguments);}
-				  gtag('js', new Date());
-
-				  gtag('config', 'AW-354788011');
-				</script>
-
 				<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 				${helmet.title.toString()}
 				${helmet.meta.toString()}

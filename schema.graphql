@@ -294,7 +294,6 @@ type Query {
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]
   adminDashboardStats: AdminDashboardStats
-  ipInfo(ip: String): IpInfo
   wcaStats: WcaStats
   methodStepsReindexStatus: MethodStepsBackfillResult
   statsModule: StatsModule
@@ -1428,20 +1427,6 @@ type MethodStepsBackfillResult {
   running: Boolean
   startedAt: String
   finishedAt: String
-}
-
-type IpInfo {
-  ip: String
-  country: String
-  countryCode: String
-  regionName: String
-  city: String
-  isp: String
-  org: String
-  proxy: Boolean
-  mobile: Boolean
-  hosting: Boolean
-  timezone: String
 }
 
 type WcaStats {
