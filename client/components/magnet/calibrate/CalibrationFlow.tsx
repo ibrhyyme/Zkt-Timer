@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, Circle, Warning } from 'phosphor-react';
+import { CheckCircle, Circle, Crosshair, DeviceMobile, HandPalm, Info, Magnet, Plug, Warning } from 'phosphor-react';
 import block from '../../../styles/bem';
 import { CALIBRATION_FLOW } from '../../../../shared/magnet_calibration';
 import {
@@ -22,8 +22,11 @@ import { formatInteger } from '../../../util/locale_format';
 import CalibrationArt, { CalibrationArtScene } from './CalibrationArt';
 import {
 	barFill,
+	BEFORE_START,
 	CAL_NS,
 	canRetry,
+	CheckItem,
+	checkItemKey,
 	failureKey,
 	hintKey,
 	measureBarScale,
@@ -32,6 +35,7 @@ import {
 	stepNumber,
 	stepTitleKey,
 	sweepRing,
+	troubleItems,
 } from './calibration_view';
 
 const b = block('magnet-calibrate');
@@ -168,6 +172,7 @@ export default function CalibrationFlow({ cubeId, cubeName, platform, caps, onSa
 	const n = stepNumber(step);
 	const measurement = step === 'done' ? meterRef.current?.result() ?? null : null;
 	const hint = hintKey(progress);
+	const trouble = step === 'failed' ? troubleItems(progress.failure) : [];
 
 	return (
 		<div className={b('flow')}>
@@ -214,6 +219,7 @@ export default function CalibrationFlow({ cubeId, cubeName, platform, caps, onSa
 					<p className={b('text')} role="alert">
 						{t(failureKey(progress.failure))}
 					</p>
+					{trouble.length ? <Checklist title={t(`${CAL_NS}.trouble_title`)} items={trouble} /> : null}
 					<div className={b('actions')}>
 						{canRetry(progress.failure) ? (
 							<button type="button" className={b('primary')} onClick={onRetry}>
@@ -258,6 +264,13 @@ function StepBody({ progress, step, hint, cubeName, recalibrating, num, onStart,
 				<p className={b('text')}>{t(`${CAL_NS}.intro`, { cube: cubeName })}</p>
 			) : null}
 			{bodyKey ? <p className={b('instruction')}>{t(bodyKey)}</p> : null}
+			{step === 'steady' ? <Checklist title={t(`${CAL_NS}.before_title`)} items={BEFORE_START} /> : null}
+			{step === 'sweep' ? (
+				<p className={b('info')}>
+					<Info weight="bold" aria-hidden="true" />
+					{t(`${CAL_NS}.sensor_note`)}
+				</p>
+			) : null}
 
 			{step === 'steady' ? (
 				<ul className={b('lights')}>
@@ -331,6 +344,35 @@ function StepBody({ progress, step, hint, cubeName, recalibrating, num, onStart,
 	);
 }
 
+const CHECK_ICONS: Record<CheckItem, React.ElementType> = {
+	case: DeviceMobile,
+	magnets: Magnet,
+	charging: Plug,
+	still: HandPalm,
+	corners: Crosshair,
+};
+
+/** The things on and around the phone that spoil a measurement, as a short list. */
+function Checklist({ title, items }: { title: string; items: CheckItem[] }) {
+	const { t } = useTranslation();
+	return (
+		<section className={b('checklist')}>
+			<h3 className={b('checklist-title')}>{title}</h3>
+			<ul className={b('checklist-items')}>
+				{items.map((item) => {
+					const Icon = CHECK_ICONS[item];
+					return (
+						<li key={item} className={b('checklist-item')}>
+							<Icon weight="bold" aria-hidden="true" />
+							<span>{t(checkItemKey(item))}</span>
+						</li>
+					);
+				})}
+			</ul>
+		</section>
+	);
+}
+
 function Light({ on, label, share }: { on: boolean; label: string; share?: number }) {
 	return (
 		<li className={b('light', { on })}>
@@ -387,6 +429,7 @@ function Result({ m, cubeName, num, saving, canSave, onSave, onRetry }: ResultPr
 				<span className={b('bar-line')} style={{ left: `${bar.line * 100}%` }} />
 			</div>
 			{m.quality === 'weak' ? <p className={b('hint')}>{t(`${CAL_NS}.result_weak`)}</p> : null}
+			<p className={b('text')}>{t(`${CAL_NS}.result_tip`)}</p>
 			{m.noisy ? (
 				<p className={b('warning')}>
 					<Warning weight="bold" aria-hidden="true" />

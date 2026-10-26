@@ -109,8 +109,13 @@ const ORIGINALS: Original[] = [
 	{titleKey: 'credits.original_notifications_title', descKey: 'credits.original_notifications'},
 	{titleKey: 'credits.original_radar_title', descKey: 'credits.original_radar'},
 	{titleKey: 'credits.original_native_title', descKey: 'credits.original_native'},
+	{titleKey: 'credits.original_magnet_title', descKey: 'credits.original_magnet'},
 	{titleKey: 'credits.original_offline_title', descKey: 'credits.original_offline'},
 	{titleKey: 'credits.original_battle_title', descKey: 'credits.original_battle'},
+	{titleKey: 'credits.original_online_battle_title', descKey: 'credits.original_online_battle'},
+	{titleKey: 'credits.original_algsets_title', descKey: 'credits.original_algsets'},
+	{titleKey: 'credits.original_messages_title', descKey: 'credits.original_messages'},
+	{titleKey: 'credits.original_personalization_title', descKey: 'credits.original_personalization'},
 	{titleKey: 'credits.original_cubercard_title', descKey: 'credits.original_cubercard'},
 ];
 

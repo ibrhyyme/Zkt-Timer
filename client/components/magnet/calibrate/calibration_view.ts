@@ -105,6 +105,52 @@ export function canRetry(reason: CalibrationFailReason | null): boolean {
 }
 
 /**
+ * case:     a case (MagSafe, a wallet or ring holder on the back) adds a magnet of its own
+ * magnets:  earbud cases, watches, speakers, laptops next to the phone
+ * charging: a charging cable or wireless charger (the current makes a field)
+ * still:    the phone has to lie still on the table for the whole measurement
+ * corners:  the sensor is not by the camera on every phone; try the other corners
+ */
+export type CheckItem = 'case' | 'magnets' | 'charging' | 'still' | 'corners';
+
+/** Step 1's "before you start" list: the things that spoil a measurement before it begins. */
+export const BEFORE_START: CheckItem[] = ['case', 'magnets', 'charging'];
+
+/**
+ * The "not working?" list under a failed measurement, the likeliest cause first. A slow sensor
+ * gets none: nothing on the table fixes it.
+ */
+export function troubleItems(reason: CalibrationFailReason | null): CheckItem[] {
+	switch (reason) {
+		case 'rate':
+			return [];
+		case 'too_weak':
+			// Weak where it rests: usually the wrong spot for this phone, or a case in between.
+			return ['corners', 'case', 'magnets'];
+		case 'phone_moved':
+			// The field did not come back: the phone moved, or something magnetic did.
+			return ['still', 'magnets', 'charging', 'case'];
+		default:
+			return ['still', 'case', 'magnets', 'charging'];
+	}
+}
+
+export function checkItemKey(item: CheckItem): string {
+	switch (item) {
+		case 'case':
+			return `${CAL_NS}.check_case`;
+		case 'magnets':
+			return `${CAL_NS}.check_magnets`;
+		case 'charging':
+			return `${CAL_NS}.check_charging`;
+		case 'still':
+			return `${CAL_NS}.check_still`;
+		default:
+			return `${CAL_NS}.check_corners`;
+	}
+}
+
+/**
  * Scale of the live bar during the measurement, uT: a little above the highest value seen so
  * far, so the bar never sits pinned at the end, and never under `minScale` so the noise of a
  * cube far away does not fill it.

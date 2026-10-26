@@ -5,9 +5,11 @@ import path from 'path';
 import type { CalibrationProgress } from '../../../../util/magnet-start/calibration';
 import {
 	barFill,
+	BEFORE_START,
 	CAL_NS,
 	calibrateLink,
 	canRetry,
+	checkItemKey,
 	failureKey,
 	hintKey,
 	measureBarScale,
@@ -17,6 +19,7 @@ import {
 	stepNumber,
 	stepTitleKey,
 	sweepRing,
+	troubleItems,
 } from '../calibration_view';
 
 function progress(partial: Partial<CalibrationProgress>): CalibrationProgress {
@@ -78,6 +81,22 @@ describe('calibration view', () => {
 		expect(failureKey(null)).toBe(`${CAL_NS}.fail_short`);
 		expect(canRetry('rate')).toBe(false);
 		for (const r of ['too_weak', 'phone_moved', 'timeout', 'short', null] as const) expect(canRetry(r)).toBe(true);
+	});
+
+	it('lists the things to check: before the start, and after a failure the likeliest first', () => {
+		expect(BEFORE_START).toEqual(['case', 'magnets', 'charging']);
+		// Nothing on the table makes a slow sensor fast.
+		expect(troubleItems('rate')).toEqual([]);
+		expect(troubleItems('too_weak')[0]).toBe('corners');
+		expect(troubleItems('phone_moved')[0]).toBe('still');
+		for (const r of ['too_weak', 'phone_moved', 'timeout', 'short', null] as const) {
+			const items = troubleItems(r);
+			expect(items).toContain('case');
+			expect(items).toContain('magnets');
+			expect(new Set(items).size).toBe(items.length);
+		}
+		expect(checkItemKey('case')).toBe(`${CAL_NS}.check_case`);
+		expect(checkItemKey('corners')).toBe(`${CAL_NS}.check_corners`);
 	});
 
 	it('the live bar scale stays above the highest value and above the floor', () => {
