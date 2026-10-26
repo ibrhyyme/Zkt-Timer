@@ -688,10 +688,10 @@ function ProfileContent() {
 		<div className={b('wrapper', { standalone: !me, mobile: mobileMode })}>
 			<Header
 				path={`/user/${username}`}
-				title={user.username + ' Profile | Zkt Timer'}
-				description={`Check out ${user.username}'s Zkt Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
+				title={t('seo.user_profile_title', { username: user.username })}
+				description={t('seo.user_profile_description', { username: user.username })}
 			/>
-			<h1 className="sr-only">{user.username} - Cuber Profile | Zkt Timer</h1>
+			<h1 className="sr-only">{t('seo.user_profile_title', { username: user.username })}</h1>
 			<div className={b({ me: myProfile })}>
 				{/* Banner — show only if header image exists and on desktop */}
 				{headerImage && !mobileMode && (

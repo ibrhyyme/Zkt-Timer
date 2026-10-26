@@ -15,7 +15,9 @@ import { useHistory } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { getStructuredData, SITE_URL, getPageKeywords } from '../../layout/header/Header';
+import { getStructuredData, SITE_URL, getPageKeywords, OG_LOCALE_MAP, renderLanguageAlternates } from '../../layout/header/Header';
+import { FALLBACK_LANGUAGE, matchSupportedLanguage } from '../../../../shared/i18n_language';
+import { localizedPath } from '../../../../shared/seo_language';
 
 export default function Welcome() {
 	const me = useMe();
@@ -43,7 +45,9 @@ export default function Welcome() {
 	// timer.jpeg was 1661x1036, so the ratio it advertised was never the one it had.
 	const ogImage = `${SITE_URL}/public/welcome/web/og-card.jpeg`;
 
-	const lang = i18n.language || 'en';
+	const lang = matchSupportedLanguage(i18n.language) || FALLBACK_LANGUAGE;
+	// "/" for English, /welcome?lang=tr for a translation (shared/seo_language.ts).
+	const pageUrl = `${SITE_URL}${localizedPath('/', lang)}`;
 	// No faqSchema here: the FAQ answers are rendered on /help, and that is where
 	// the FAQPage markup now lives.
 	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema } = getStructuredData('/', title, desc, t, lang);
@@ -55,7 +59,8 @@ export default function Welcome() {
 				<meta name="description" content={desc} />
 				<meta name="keywords" content={keywords} />
 				<meta name="author" content="Zkt Timer" />
-				<link rel="canonical" href={`${SITE_URL}/`} />
+				<link rel="canonical" href={pageUrl} />
+				{renderLanguageAlternates('/')}
 
 				{/* Open Graph */}
 				<meta property="og:title" content={title} />
@@ -64,17 +69,17 @@ export default function Welcome() {
 				<meta property="og:image:secure_url" content={ogImage} />
 				<meta property="og:image:width" content="1200" />
 				<meta property="og:image:height" content="630" />
-				<meta property="og:url" content={`${SITE_URL}/`} />
+				<meta property="og:url" content={pageUrl} />
 				<meta property="og:site_name" content="Zkt Timer" />
 				<meta property="og:type" content="website" />
-				<meta property="og:locale" content={lang === 'tr' ? 'tr_TR' : lang === 'es' ? 'es_ES' : lang === 'ru' ? 'ru_RU' : 'en_US'} />
+				<meta property="og:locale" content={OG_LOCALE_MAP[lang] || 'en_US'} />
 
 				{/* Twitter Card */}
 				<meta name="twitter:card" content="summary_large_image" />
 				<meta name="twitter:title" content={title} />
 				<meta name="twitter:description" content={desc} />
 				<meta name="twitter:image" content={ogImage} />
-				<meta name="twitter:url" content={`${SITE_URL}/`} />
+				<meta name="twitter:url" content={pageUrl} />
 
 				{/* JSON-LD Structured Data */}
 				<script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>

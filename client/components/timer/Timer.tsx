@@ -1,5 +1,6 @@
 import React, { createContext, ReactNode, useEffect, useState, useMemo, useRef } from 'react';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import './Timer.scss';
 import HeaderControl from './header_control/HeaderControl';
 import TimerFooter from './footer/TimerFooter';
@@ -51,6 +52,7 @@ export interface ITimerContext extends TimerProps, StableTimerStore { }
 export const TimerContext = createContext<ITimerContext>(null);
 
 export default function Timer(props: TimerProps) {
+	const { t } = useTranslation();
 	useStableViewportHeight();
 	const dispatch = useDispatch();
 	const _mobileMode = useGeneral('mobile_mode');
@@ -371,7 +373,7 @@ export default function Timer(props: TimerProps) {
 
 	return (
 		<>
-			<h1 className="sr-only">Rubik's Cube Timer - Zkt Timer</h1>
+			<h1 className="sr-only">{t('seo.timer_title')}</h1>
 			<div
 				className={b({
 					// Arming the virtual cube counts as started. Once Space applies the

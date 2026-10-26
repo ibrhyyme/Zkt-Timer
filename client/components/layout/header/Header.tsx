@@ -5,6 +5,8 @@ import Helmet from 'react-helmet';
 import { resourceUri } from '../../../util/storage';
 import { useBattleLaunch } from '../../battle/useBattleLaunch';
 import { battleCanonicalPath, isLaunchNoIndexPath } from '../../battle/battle_landing_modes';
+import { FALLBACK_LANGUAGE, matchSupportedLanguage } from '../../../../shared/i18n_language';
+import { languageAlternates, localizedPath } from '../../../../shared/seo_language';
 // process.env variables are defined by esbuild, no need to import process
 
 interface Props {
@@ -31,12 +33,23 @@ export const DEFAULT_FEATURED_IMAGE = resourceUri('/welcome/web/og-card.jpeg');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 
-const OG_LOCALE_MAP: Record<string, string> = {
-	tr: 'tr_TR', en: 'en_US', es: 'es_ES', ru: 'ru_RU'
+export const OG_LOCALE_MAP: Record<string, string> = {
+	tr: 'tr_TR', en: 'en_US', es: 'es_ES', ru: 'ru_RU', zh: 'zh_CN'
 };
 const LANG_CODE_MAP: Record<string, string> = {
-	tr: 'tr-TR', en: 'en-US', es: 'es-ES', ru: 'ru-RU'
+	tr: 'tr-TR', en: 'en-US', es: 'es-ES', ru: 'ru-RU', zh: 'zh-CN'
 };
+
+/**
+ * hreflang links tying a page to its translations (shared/seo_language.ts). Returned as
+ * an array because react-helmet reads children with React.Children, which flattens
+ * arrays but not fragments.
+ */
+export function renderLanguageAlternates(path: string) {
+	return languageAlternates(path).map((alt) => (
+		<link key={alt.hrefLang} rel="alternate" hrefLang={alt.hrefLang} href={`${SITE_URL}${alt.path}`} />
+	));
+}
 
 export function getPageKeywords(currentPath: string, t: TFunction): string {
 	const fallback = t('seo.keywords');
@@ -79,15 +92,9 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
 		'name': 'Zkt Timer',
-		'alternateName': [
-			"Rubik's Cube Timer",
-			'Zeka Küpü Timer',
-			'Cronómetro Cubo Rubik',
-			'Таймер Кубика Рубика',
-			'مؤقت مكعب روبيك',
-			'Speedcubing Timer',
-			'Cubing Timer'
-		],
+		// Other names of this site, not search phrases: Google reads alternateName as a
+		// site-name candidate, and generic phrases ("Rubik's Cube Timer") are never one.
+		'alternateName': ['ZKT Timer', 'zktimer.app'],
 		'url': SITE_URL,
 		'description': finalDesc,
 		'inLanguage': inLanguage,
@@ -97,8 +104,10 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	// Person schema - the creator behind the platform (E-E-A-T trust signal)
 	const creatorSchema = {
 		'@type': 'Person',
+		'@id': `${SITE_URL}/#creator`,
 		'name': 'ibrhyyme',
 		'url': `${SITE_URL}/user/ibrhyyme`,
+		'sameAs': ['https://github.com/ibrhyyme'],
 		'jobTitle': 'Founder & Lead Developer',
 		'knowsAbout': ['Speedcubing', "Rubik's Cube", 'Web Development', 'Smart Cube Bluetooth Integration']
 	};
@@ -108,23 +117,24 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
 		'name': 'Zkt Timer',
-		'alternateName': ["Rubik's Cube Timer", 'Speedcubing Platform', 'Cubing Timer'],
+		'alternateName': ['ZKT Timer'],
 		'url': SITE_URL,
 		'logo': LOGO_URL,
 		'image': LOGO_URL,
 		'description': finalDesc,
 		'foundingDate': '2024',
 		'founder': creatorSchema,
+		// Only Zkt Timer's own listings. The Instagram and YouTube accounts belong to Zeka
+		// Küpü Türkiye, a separate organization; listing them here told search engines the
+		// two are one entity.
 		'sameAs': [
 			'https://apps.apple.com/app/zkt-timer/id6760920873',
-			'https://play.google.com/store/apps/details?id=com.zktimer.app',
-			'https://www.instagram.com/zekakuputurkiye',
-			'https://www.youtube.com/@zekakuputurkiye'
+			'https://play.google.com/store/apps/details?id=com.zktimer.app'
 		],
 		'contactPoint': {
 			'@type': 'ContactPoint',
 			'contactType': 'customer support',
-			'availableLanguage': ['Turkish', 'English', 'Spanish', 'Russian']
+			'availableLanguage': ['Turkish', 'English', 'Spanish', 'Russian', 'Chinese']
 		}
 	};
 
@@ -307,11 +317,14 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 
 export default function Header(props: Props) {
 	const { t, i18n } = useTranslation();
-	const lang = i18n.language || 'en';
+	const lang = matchSupportedLanguage(i18n.language) || FALLBACK_LANGUAGE;
 	const currentPath = props.path || '';
 	// Online Battle launch (null until known): /ranks indexing, the /battle copy, canonical.
 	const launched = useBattleLaunch()?.launched ?? null;
-	const fullUrl = `https://zktimer.app${battleCanonicalPath(currentPath, launched)}`;
+	const canonicalPath = battleCanonicalPath(currentPath, launched);
+	// Each translation is its own canonical page (?lang=tr), or Google folds it into the
+	// English one and the hreflang links below are ignored.
+	const fullUrl = `${SITE_URL}${localizedPath(canonicalPath, lang)}`;
 
 	// Page-specific default SEO metadata
 	let pageTitle = props.title;
@@ -470,6 +483,7 @@ export default function Header(props: Props) {
 			<link rel="icon" type="image/png" href="/public/images/zkt-logo.png" />
 
 			{shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
+			{!shouldNoIndex && renderLanguageAlternates(canonicalPath)}
 
 			<meta name="description" content={finalDesc} />
 			<meta name="keywords" content={pageKeywords} />

@@ -7,6 +7,8 @@ import { logger } from './logger';
 import { getPrisma } from '../database';
 import { getSiteConfig } from '../models/site_config';
 import { isOnlineBattleLaunched, sitemapLaunchExclusions } from '../../client/components/battle/battle_landing_modes';
+import { FALLBACK_LANGUAGE, SUPPORTED_LANGUAGES } from '../../shared/i18n_language';
+import { languageAlternates, localizedPath } from '../../shared/seo_language';
 
 const SITEMAP_REDIS_KEY = createRedisKey(RedisNamespace.SITEMAP);
 const SITEMAP_SCHEMAS_DIR = __dirname + '/sitemap_schemas';
@@ -19,6 +21,8 @@ interface SiteMapUrl {
 	changeFrequency?: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 	priority?: number;
 	lastmod?: string;
+	/** hreflang links to the same page in every language, this one included. */
+	alternates?: { hrefLang: string; location: string }[];
 }
 
 // TODO need some sort of worker pool cuz there are lots of sync calls
@@ -231,9 +235,16 @@ export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 		// My Sets. The Community Sets list (/trainer/community) stays in.
 		'/trainer/algorithms/train',
 		'/trainer/sets',
+		// Visitors get a full page AccountRequired here, and robots.txt keeps them closed.
+		'/trainer/recognition',
+		'/trainer/efficiency',
+		'/trainer/ollcp',
 		// /battle/online always; /ranks and /battle/offline until Online Battle is public
 		...sitemapLaunchExclusions(onlineBattleLaunched),
 	];
+
+	// "/" and "/welcome" are one page (localizedPath), listed once.
+	const listedPaths = new Set<string>();
 
 	for (let i = 0; i < routes.length; i += 1) {
 		const fallbackPriority = Math.floor((1 - ((1 / routes.length) * i) / 10) * 1000) / 1000;
@@ -252,13 +263,28 @@ export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 			continue;
 		}
 
+		const canonicalPath = localizedPath(route.path, FALLBACK_LANGUAGE);
+		if (listedPaths.has(canonicalPath)) {
+			continue;
+		}
+		listedPaths.add(canonicalPath);
+
+		// One entry per language, each carrying the full hreflang set: Google wants every
+		// translation listed as its own <url> (shared/seo_language.ts).
 		const explicitPriority = getPriorityForPath(route.path);
-		urls.push({
-			location: `${baseUri}${route.path}`,
-			priority: explicitPriority ?? fallbackPriority,
-			changeFrequency: getChangeFrequency(route.path),
-			lastmod: today,
-		});
+		const alternates = languageAlternates(route.path).map((alt) => ({
+			hrefLang: alt.hrefLang,
+			location: `${baseUri}${alt.path}`,
+		}));
+		for (const lang of SUPPORTED_LANGUAGES) {
+			urls.push({
+				location: `${baseUri}${localizedPath(route.path, lang)}`,
+				priority: explicitPriority ?? fallbackPriority,
+				changeFrequency: getChangeFrequency(route.path),
+				lastmod: today,
+				alternates,
+			});
+		}
 	}
 
 	return urls;
@@ -269,7 +295,7 @@ function getSiteMapXmlFromSchemaUrlList(urls: SiteMapUrl[]): string {
 	const urlListInXml = urls.map((url) => convertSchemaUrlToXml(url)).join('\n');
 
 	return `
-		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 			${urlListInXml}
 		</urlset>
 	`;
@@ -280,10 +306,14 @@ function convertSchemaUrlToXml(url: SiteMapUrl) {
 	const priority = url.priority ? `<priority>${url.priority}</priority>` : '';
 	const changeFreq = url.changeFrequency ? `<changefreq>${url.changeFrequency}</changefreq>` : '';
 	const lastmod = url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : '';
+	const alternates = (url.alternates || [])
+		.map((alt) => `<xhtml:link rel="alternate" hreflang="${alt.hrefLang}" href="${alt.location}"/>`)
+		.join('');
 
 	return `
 		<url>
 			${location}
+			${alternates}
 			${priority}
 			${changeFreq}
 			${lastmod}

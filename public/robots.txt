@@ -1,7 +1,34 @@
 # ZKT Timer Robots.txt
 # https://zktimer.app
 
+# Tek grup: AI / LLM crawler'lari da ayni kurallara uyar.
+# RFC 9309: bir bot KENDI adini tasiyan grubu bulursa "*" grubunu hic okumaz.
+# Eskiden her AI botun ayri "Allow: /" grubu vardi; bu yuzden GPTBot, ClaudeBot vb.
+# asagidaki Disallow'lari (admin, api, graphql, ZKT) gormuyordu.
+# Adlarini yine de yaziyoruz: "AI'lar bizi bilsin" niyeti acik kalsin.
 User-agent: *
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: Claude-Web
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: GoogleOther
+User-agent: CCBot
+User-agent: cohere-ai
+User-agent: Meta-ExternalAgent
+User-agent: Bytespider
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: DuckAssistBot
+User-agent: MistralAI-User
 
 # Ana sayfalar - Izin ver
 Allow: /
@@ -50,7 +77,17 @@ Disallow: /messages/
 Disallow: /organizer
 Disallow: /organizer/
 
-# Trainer landing (/trainer) public; alt modlar (standard/smart/recognition/efficiency) login arkasinda
+# Trainer: hub, Trainers sayfasi, Algoritmalar ve Topluluk Setleri herkese acik.
+# Google en uzun eslesmeyi uygular, "Disallow: /trainer/" bu sayfalari da kapatiyordu.
+# "?" satirlari ceviri adreslerini (?lang=tr) acar; robots.txt'de "?" duz karakterdir.
+# Geri kalanlar (calisma ekrani, setler, recognition/efficiency/ollcp) ziyaretciye
+# AccountRequired gosterir, arama sonucu degeri yok.
+Allow: /trainer/modes$
+Allow: /trainer/modes?
+Allow: /trainer/algorithms$
+Allow: /trainer/algorithms?
+Allow: /trainer/community$
+Allow: /trainer/community?
 Disallow: /trainer/
 
 # Online Battle duello davetleri: tek kullanimlik, 15 dakikalik linkler (onizleme SSR meta ile calisir)
@@ -76,53 +113,6 @@ Disallow: /zkt-rankings/
 Disallow: /api/
 Disallow: /graphql
 Disallow: /public/uploads/temp/
-
-# AI / LLM crawlers - explicitly allowed
-# We want LLMs to know about Zkt Timer and reference us in answers
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Perplexity-User
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: GoogleOther
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: cohere-ai
-Allow: /
-
-User-agent: Meta-ExternalAgent
-Allow: /
-
-User-agent: Bytespider
-Allow: /
-
-User-agent: Applebot-Extended
-Allow: /
 
 # LLM-friendly summary
 # https://llmstxt.org/ standard

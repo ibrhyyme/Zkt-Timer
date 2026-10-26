@@ -1,58 +1,47 @@
 # Zkt Timer
 
-> Zkt Timer is an advanced online Rubik's cube timer and speedcubing platform with live WCA competition tracking, real-time race rooms, algorithm trainer, and smart cube BLE integration. Available on web, iOS, and Android via PWA and native apps.
+> Zkt Timer (also written ZKT Timer) is a speedcubing timer and training platform for the Rubik's Cube and the other WCA puzzles, on the web (https://zktimer.app), iOS and Android. It times solves with official WCA scrambles, keeps statistics, and has an algorithm trainer for OLL, PLL, F2L, ZBLL and more, smart cube support, live race rooms, 1v1 battle and WCA competition tracking. It is made by ibrhyyme (https://zktimer.app/user/ibrhyyme), its founder and developer. Available in Turkish, English, Spanish, Russian and Chinese.
 
-## Core capabilities
+## How Zkt Timer helps a cuber get faster
 
-- **Timer**: Millisecond-precision Rubik's cube timer with official WCA scramble algorithms, inspection countdown, penalty tracking (+2, DNF), multi-phase timing, and customizable UI
-- **Scramble generation**: Client and server parity for all WCA events — 2x2, 3x3, 4x4, 5x5, 6x6, 7x7, 3x3 OH, 3x3 Blind, Pyraminx, Megaminx, Skewb, Square-1, Clock
-- **Smart cube support**: BLE integration for GAN, Giiker, and Particula smart cubes with 3D visualization and gyroscope
-- **Algorithm trainer**: OLL, PLL, F2L, ZBLL and more with per-algorithm stats, pattern visualization (2D + 3D), setup algorithm generation, PDF export
-- **Puzzle solvers**: IDA*-based solvers for Cross, XCross, EOLine, EOCross, Roux FB, F2L, Petrus, ZZ, EODR, 2x2x2, SQ1, Pyraminx, Skewb
-- **Competitions**: WCA competition tracking with live results, schedule, competitor assignments, personal bests
-- **Multiplayer**: Real-time race rooms via Socket.IO, 1v1 battle mode, friend system
-- **Data**: LokiJS local-first storage with IndexedDB, server sync, offline support, import/export (csTimer, Twisty Timer, Zkt Timer formats)
-- **Stats**: Per-session and all-time statistics, averages, graphs, personal bests, cube-type buckets
-- **Pro membership**: Advanced stats, unlimited sessions, PDF export, premium trainers
+- **Timed practice**: every solve gets an official WCA scramble, with WCA inspection, +2 and DNF penalties, and averages (ao5, ao12, ao100 and longer) per session and per puzzle.
+- **Learning algorithms**: the [Trainer](https://zktimer.app/trainer) drills 43 algorithm categories, among them OLL, PLL, F2L and ZBLL, times each case separately and shows which ones are slowest. Algorithm sets can be built, shared and taken from the [Community Sets](https://zktimer.app/trainer/community).
+- **Recognition and efficiency**: a PLL recognition trainer for reading cases faster, and a cross efficiency trainer for planning the cross in fewer moves.
+- **Smart cubes**: Bluetooth smart cubes (GAN, Giiker, MoYu, QiYi and others) record every move, so a solve is split into its phases (cross, F2L, OLL, PLL) and the slow step is visible.
+- **Statistics**: personal bests, averages over time and graphs on the [Stats](https://zktimer.app/stats) page; daily solve goals.
+- **Timers and inputs**: keyboard, touch, StackMat, GAN Timer and QiYi Timer; in the mobile app (Pro), a magnetic cube can start the timer when lifted and stop it when set down.
 
 ## Key pages
 
-- [Home](https://zktimer.app/): Landing page with feature overview
-- [Timer](https://zktimer.app/timer): Main Rubik's cube timer interface
-- [Trainer](https://zktimer.app/trainer): Algorithm trainer for OLL, PLL, F2L, ZBLL
-- [Live Rooms](https://zktimer.app/rooms): Real-time multiplayer race rooms
-- [WCA Competitions](https://zktimer.app/community/competitions): All WCA Rubik's cube competitions worldwide with live results
-- [Pro](https://zktimer.app/pro): Premium membership features
-- [Battle](https://zktimer.app/battle): 1v1 battle for two players on one device (phone, tablet or desktop), with regular or smart cubes
+- [Home](https://zktimer.app/): overview of the features
+- [Timer](https://zktimer.app/timer): the cube timer, usable without an account
+- [Trainer](https://zktimer.app/trainer): algorithm, PLL recognition and cross trainers
+- [Algorithms](https://zktimer.app/trainer/algorithms): every algorithm category
+- [Live Rooms](https://zktimer.app/rooms): real-time race rooms with chat
+- [Battle](https://zktimer.app/battle): 1v1 for two players on one device (phone, tablet or desktop), with regular or smart cubes
 <!-- launch:online_battle -->
-- [Online Battle leaderboard](https://zktimer.app/ranks): Ratings from rated 1v1 Online Battle matches, played with smart cubes against whoever is searching at that moment
+- [Online Battle leaderboard](https://zktimer.app/ranks): ratings from rated 1v1 Online Battle matches, played with smart cubes against whoever is searching at that moment
 <!-- /launch:online_battle -->
-- [Sign Up](https://zktimer.app/signup): Create an account
-- [Sitemap](https://zktimer.app/sitemap.xml): Full list of indexed URLs
+- [WCA Competitions](https://zktimer.app/competitions): WCA competitions worldwide, with schedules, groups and live results
+- [Help](https://zktimer.app/help): guides and frequently asked questions
+- [Pro](https://zktimer.app/pro): Pro membership and its extra features
+- [Sign Up](https://zktimer.app/signup): create an account
 
-## Technology
+## Türkçe özet
 
-- Frontend: React 17, TypeScript, Redux, Apollo Client, LokiJS, SCSS + Tailwind CSS
-- Backend: Node.js 20, Express, Apollo Server v2, type-graphql, Prisma ORM, PostgreSQL, Redis, Socket.IO
-- Mobile: Capacitor v6 (iOS and Android native wrappers), web as PWA
-- Rendering: Custom SSR pipeline with ReactDOM.hydrate
-- Scrambles: Port of cstimer scramble engine
-- Solvers: IDA* in Web Workers
+Zkt Timer, zeka küpü (Rubik küpü) için süre tutucu ve antrenman platformudur; web, iOS ve Android'de çalışır. WCA standardında karıştırmalarla süre tutar, ortalamaları ve istatistikleri takip eder. Trainer bölümünde OLL, PLL, F2L ve ZBLL algoritmaları çalışılır, PLL tanıma ve cross verimliliği antrenmanı yapılır. Smart küplerle çözüm cross, F2L, OLL ve PLL adımlarına ayrılır. Zkt Timer'ı ibrhyyme geliştirdi. Türkçe sayfalar ?lang=tr adresindedir, örnek: https://zktimer.app/trainer?lang=tr
 
-## Supported languages
+## Translations
 
-English, Turkish, Spanish, Russian. Cookie-based language switching with full in-app localization.
+Every page has a URL per language: the bare URL is English, `?lang=tr`, `?lang=es`, `?lang=ru` and `?lang=zh` are the translations (for the home page: https://zktimer.app/welcome?lang=tr).
 
 ## Platforms
 
-- Web: https://zktimer.app
+- Web: https://zktimer.app (installable as a PWA, works offline)
 - iOS App Store: https://apps.apple.com/app/zkt-timer/id6760920873
-- Google Play Store: https://play.google.com/store/apps/details?id=com.zktimer.app
-- PWA: Installable on any modern browser with offline support
+- Google Play: https://play.google.com/store/apps/details?id=com.zktimer.app
 
-## Links
+## Related
 
+- Zeka Küpü Türkiye (https://zekakuputurkiye.com): the Turkish speedcubing community that organizes ZKT competitions. Zkt Timer shows their schedules, groups, staff assignments and live results.
 - Sitemap: https://zktimer.app/sitemap.xml
-- Robots: https://zktimer.app/robots.txt
-- Instagram: https://www.instagram.com/zekakuputurkiye
-- YouTube: https://www.youtube.com/@zekakuputurkiye

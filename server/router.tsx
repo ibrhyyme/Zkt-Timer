@@ -22,6 +22,7 @@ import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { logger } from './services/logger';
 import { ErrorCode } from './constants/errors';
 import { fillRedirectParams, mergeRedirectQuery } from '../shared/redirect_query';
+import { LANGUAGE_QUERY_PARAM, languageFromQuery } from '../shared/seo_language';
 import { seedBattleLaunch } from './services/battle_launch_ssr';
 import { seedSiteConfig } from './services/site_config_ssr';
 
@@ -155,10 +156,17 @@ function createComponents(req, store, route?: PageContext) {
 
 function appUseRouteForPage(routePath, route: PageContext) {
 	global.app.all(routePath, async (req, res) => {
-		// If no language cookie on first visit, detect from Accept-Language
-		// Ranked by q value: a substring check used to find "en" inside
-		// "tr-TR,tr;q=0.9,en;q=0.8" and served English to Turkish browsers.
-		if (!req.cookies?.zkt_language) {
+		// ?lang=tr is the crawlable address of a translation (hreflang, sitemap; see
+		// shared/seo_language.ts). It wins over the cookie and becomes the visitor's
+		// language, as picking it in settings would; the client reads the same param.
+		const queryLanguage = languageFromQuery(req.query?.[LANGUAGE_QUERY_PARAM]);
+		if (queryLanguage) {
+			res.cookie('zkt_language', queryLanguage, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
+			if (req.cookies) req.cookies.zkt_language = queryLanguage;
+		} else if (!req.cookies?.zkt_language) {
+			// If no language cookie on first visit, detect from Accept-Language
+			// Ranked by q value: a substring check used to find "en" inside
+			// "tr-TR,tr;q=0.9,en;q=0.8" and served English to Turkish browsers.
 			const preferred =
 				pickSupportedLanguage(parseAcceptLanguage(req.headers['accept-language'])) || FALLBACK_LANGUAGE;
 			res.cookie('zkt_language', preferred, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
@@ -171,13 +179,15 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		const promises: ((store: Store<any>, req: Request) => Promise<any>)[] = route.prefetchData || [];
 		const me = await initUserAccount(store, req);
 
-		// Redirect root route to timer if authenticated, to welcome if not
+		// Redirect root route to timer if authenticated, to welcome if not. The query
+		// travels along, so /?lang=tr still opens the Turkish page.
+		const rootSearch = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
 		if (routePath === '/' && me) {
-			res.status(302).redirect('/timer');
+			res.status(302).redirect(mergeRedirectQuery('/timer', rootSearch));
 			return;
 		}
 		if (routePath === '/' && !me) {
-			res.status(302).redirect('/welcome');
+			res.status(302).redirect(mergeRedirectQuery('/welcome', rootSearch));
 			return;
 		}
 

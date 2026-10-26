@@ -13,6 +13,7 @@ import {
 	SUPPORTED_LANGUAGES,
 	matchSupportedLanguage,
 } from '../../shared/i18n_language';
+import { LANGUAGE_QUERY_PARAM, languageFromQuery } from '../../shared/seo_language';
 
 const resources = {
 	tr: { translation: trTranslation },
@@ -31,6 +32,14 @@ const LANGUAGE_KEY = 'zkt_language';
  */
 function readSavedLanguage(): string | null {
 	if (typeof window === 'undefined') return null;
+	// ?lang= (a translation's own address, see shared/seo_language.ts): the SSR router
+	// rendered the page in it, so it wins over everything saved before.
+	try {
+		const fromQuery = languageFromQuery(new URLSearchParams(window.location.search).get(LANGUAGE_QUERY_PARAM));
+		if (fromQuery) return fromQuery;
+	} catch (e) {
+		// No URLSearchParams: fall through to what is saved.
+	}
 	try {
 		const stored = window.localStorage.getItem(LANGUAGE_KEY);
 		if (matchSupportedLanguage(stored)) return stored;
@@ -62,7 +71,9 @@ i18n
 		detection: {
 			// navigator is the last resort: the web always has the SSR cookie, so it only
 			// matters in the native app, whose local bundle has no server to set one.
-			order: ['localStorage', 'cookie', 'navigator'],
+			// querystring first: a ?lang= page was rendered in that language on the server.
+			order: ['querystring', 'localStorage', 'cookie', 'navigator'],
+			lookupQuerystring: LANGUAGE_QUERY_PARAM,
 			lookupLocalStorage: LANGUAGE_KEY,
 			lookupCookie: LANGUAGE_KEY,
 			caches: ['localStorage'],

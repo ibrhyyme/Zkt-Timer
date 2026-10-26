@@ -8,6 +8,8 @@ type Env = {
 	navigatorLanguage?: string;
 	stored?: string | null;
 	cookie?: string;
+	/** window.location.search, e.g. "?lang=tr" (a translation's own address). */
+	search?: string;
 	beforeDeviceAnswers?: (i18n: any) => Promise<void> | void;
 };
 
@@ -35,7 +37,8 @@ async function boot(env: Env) {
 		},
 	};
 	const navigatorLanguage = env.navigatorLanguage || 'en-US';
-	Object.assign(globalThis, { window: { localStorage, document }, document });
+	const location = { search: env.search || '', hash: '', pathname: '/' };
+	Object.assign(globalThis, { window: { localStorage, document, location }, document });
 	Object.defineProperty(globalThis, 'navigator', {
 		value: { language: navigatorLanguage, languages: [navigatorLanguage] },
 		configurable: true,
@@ -113,6 +116,12 @@ describe('native first launch language', () => {
 			beforeDeviceAnswers: (i18n) => i18n.changeLanguage('es'),
 		});
 		expect(i18n.language).toBe('es');
+	});
+
+	it('lets ?lang= win over a saved choice on the web, and keeps it', async () => {
+		const { i18n, store } = await boot({ native: false, navigatorLanguage: 'en-US', stored: 'en', cookie: 'en', search: '?lang=tr' });
+		expect(i18n.language).toBe('tr');
+		expect(store.zkt_language).toBe('tr');
 	});
 
 	it('does not ask the device on the web, where the SSR cookie decides', async () => {
