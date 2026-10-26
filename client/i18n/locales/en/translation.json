@@ -4697,11 +4697,24 @@
       "result_unrated": "Your rating did not change.",
       "history_tag": "Duel",
       "profile_challenge": "Challenge",
-      "profile_h2h": "Head to head {{wins}}–{{losses}}",
       "notif_title": "{{name}} challenges you to a duel",
       "notif_body": "{{name}} challenged you to an Online Battle duel. The invite lasts {{minutes}} minutes.",
       "notif_link_text": "Open invite",
-      "notif_category": "Online Battle"
+      "notif_category": "Online Battle",
+      "offer_first": "First duel",
+      "offer_rating": "Rating",
+      "offer_rating_value": "Not affected",
+      "offer_match": "Match",
+      "offer_invite": "Invite",
+      "offer_invite_value": "Valid for {{minutes}} minutes",
+      "offer_cube": "Cube",
+      "offer_continue": "Continue",
+      "offer_next": "Next you connect your cube and send the invite. {{name}} gets a notification and the duel starts the moment they accept."
+    },
+    "profile": {
+      "details": "Open Online Battle details",
+      "no_rating": "No rated matches yet",
+      "no_matches": "No matches yet"
     }
   },
   "battle_landing": {
@@ -4816,7 +4829,6 @@
     "load_error": "Couldn't load the rankings.",
     "retry": "Try again",
     "load_more": "Show more",
-    "profile_line": "Online Battle {{rating}} · #{{rank}}",
     "subtitle": "By Online Battle rating. Every match moves the order.",
     "col_rank": "Rank",
     "col_player": "Player",

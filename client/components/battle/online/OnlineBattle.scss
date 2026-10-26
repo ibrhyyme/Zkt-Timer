@@ -1,52 +1,15 @@
 @import '../../../styles/config';
+@import '../battle_type';
 
 // Online Battle (/battle/online): queue, match and result.
 //
 // Design language (ui-design skill): flat surfaces, hairlines instead of boxes, one accent (the
 // user's --primary-color), Archivo for words, Roboto Mono for every number. Shape, spacing and
-// surfaces come from the $zt-* tokens; type from the one scale below. Colour only where it means
-// something: a won or lost round, a penalty window, the rating change.
+// surfaces come from the $zt-* tokens; type from the one scale in _battle_type.scss. Colour only
+// where it means something: a won or lost round, a penalty window, the rating change.
 //
 // The match never scrolls and never rubber-bands on iOS (design 5.4): the root is fixed to the
 // viewport and the match fits by sizing its numbers to the viewport.
-
-$display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-$mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
-
-// Type scale. rem is 14px under 1500px and 15px above (reset.scss).
-$fs-xs: 0.8125rem;
-$fs-sm: 0.875rem;
-$fs-md: 1rem;
-$fs-lg: 1.25rem;
-$fs-xl: 1.75rem;
-$fs-2xl: 2.5rem;
-$fs-3xl: 3.5rem;
-
-$hairline: 1px solid $zt-divider;
-
-@mixin display($size) {
-	font-family: $display;
-	font-size: $size;
-	font-weight: 800;
-	font-stretch: 125%;
-	line-height: 1.05;
-	letter-spacing: -0.01em;
-}
-
-@mixin number($size, $weight: 700) {
-	font-family: $mono;
-	font-size: $size;
-	font-weight: $weight;
-	font-variant-numeric: tabular-nums;
-	line-height: 1;
-}
-
-@mixin ellipsis {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
 
 .#{$namespace}-online-battle {
 	position: fixed;

@@ -67,7 +67,7 @@ describe('ranks translations', () => {
 	const LOCALES_DIR = path.join(__dirname, '../../../i18n/locales');
 	const SOURCES = [
 		path.join(__dirname, '../Rankings.tsx'),
-		path.join(__dirname, '../../profile/battle_rating/BattleRatingLine.tsx'),
+		path.join(__dirname, '../../profile/battle_rating/BattlePlayerModal.tsx'),
 	];
 
 	function load(lang: string): any {

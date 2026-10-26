@@ -9,7 +9,8 @@ import {BATTLE_ERROR_KEYS} from '../../../../../shared/battle/events';
 
 const LANGS = ['tr', 'en', 'es', 'ru', 'zh'];
 const LOCALES_DIR = path.join(__dirname, '../../../../i18n/locales');
-const SOURCE_DIR = path.join(__dirname, '..');
+// The battle screens, and the profile's battle card and modals.
+const SOURCE_DIRS = [path.join(__dirname, '..'), path.join(__dirname, '../../../profile/battle_rating')];
 
 const CANCEL_REASONS = ['left_before_start', 'server_restart', 'both_disconnected', 'not_found'];
 const DNF_REASONS = [
@@ -43,10 +44,12 @@ function flatten(obj: any, prefix = ''): Record<string, string> {
 
 function sourceKeys(): string[] {
 	const keys = new Set<string>();
-	for (const file of fs.readdirSync(SOURCE_DIR)) {
-		if (!/\.(ts|tsx)$/.test(file)) continue;
-		const text = fs.readFileSync(path.join(SOURCE_DIR, file), 'utf8');
-		for (const m of text.matchAll(/['"`](online_battle\.[a-z0-9_.]+[a-z0-9_])['"`]/g)) keys.add(m[1]);
+	for (const dir of SOURCE_DIRS) {
+		for (const file of fs.readdirSync(dir)) {
+			if (!/\.(ts|tsx)$/.test(file)) continue;
+			const text = fs.readFileSync(path.join(dir, file), 'utf8');
+			for (const m of text.matchAll(/['"`](online_battle\.[a-z0-9_.]+[a-z0-9_])['"`]/g)) keys.add(m[1]);
+		}
 	}
 	return [...keys];
 }

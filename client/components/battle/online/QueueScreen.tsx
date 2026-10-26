@@ -5,7 +5,12 @@ import {ArrowRight, Sword} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import {gqlQueryTyped} from '../../api';
-import {BattleMatchHistoryDocument, MyBattleRatingDocument} from '../../../@types/generated/graphql';
+import {
+	BattleMatchHistoryDocument,
+	BattleMatchHistoryQuery,
+	MyBattleRatingDocument,
+	MyBattleRatingQuery,
+} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
 import {
 	BATTLE_PUZZLE,
@@ -84,9 +89,9 @@ export interface RecentMatch {
 }
 
 /** Matches in the form strip, the "last 10" GAN Cube Station shows on its ranked home. */
-const FORM_SIZE = 10;
+export const FORM_SIZE = 10;
 /** Rows in the recent matches list. */
-const RECENT_SIZE = 5;
+export const RECENT_SIZE = 5;
 
 function formatWait(sec: number): string {
 	const s = Math.max(0, Math.floor(sec));
@@ -102,6 +107,38 @@ export function formatDelta(delta: number | null | undefined): string {
 
 function toResult(value: string | null | undefined): MatchResult {
 	return value === 'WIN' || value === 'LOSS' ? value : 'DRAW';
+}
+
+type RatingRow = NonNullable<MyBattleRatingQuery['myBattleRating']>;
+type HistoryItem = NonNullable<NonNullable<BattleMatchHistoryQuery['battleMatchHistory']>['items']>[number];
+
+/** A rating row (myBattleRating, userBattleRating) as the player card shows it; null before a first match. */
+export function toQueueRating(row: RatingRow | null | undefined): QueueRating | null {
+	if (!row || !(row.games > 0)) return null;
+	return {
+		rating: Math.round(row.rating),
+		provisional: !!row.provisional,
+		games: row.games,
+		wins: row.wins,
+		losses: row.losses,
+		draws: row.draws,
+		peak: Math.round(row.peak_rating),
+		rank: row.rank ?? null,
+	};
+}
+
+/** A battleMatchHistory item, from the side of the player whose history it is. */
+export function toRecentMatch(m: HistoryItem): RecentMatch {
+	return {
+		id: m.id,
+		result: toResult(m.result),
+		scoreFor: m.score_for,
+		scoreAgainst: m.score_against,
+		delta: m.delta ?? null,
+		opponentName: m.opponent?.username || '?',
+		opponentAvatar: m.opponent?.pfp_image_url || null,
+		challenge: !!m.is_challenge,
+	};
 }
 
 /**
@@ -124,32 +161,10 @@ function useQueueProfile(userId: string | null): {rating: QueueRating | null; re
 			gqlQueryTyped(BattleMatchHistoryDocument, {userId, page: 0}, {fetchPolicy: 'no-cache'}).catch(() => null),
 		]).then(([ratingRes, historyRes]) => {
 			if (!alive) return;
-			const row = ratingRes?.data?.myBattleRating;
 			const items = historyRes?.data?.battleMatchHistory?.items || [];
 			setState({
-				rating:
-					row && row.games > 0
-						? {
-								rating: Math.round(row.rating),
-								provisional: !!row.provisional,
-								games: row.games,
-								wins: row.wins,
-								losses: row.losses,
-								draws: row.draws,
-								peak: Math.round(row.peak_rating),
-								rank: row.rank ?? null,
-						  }
-						: null,
-				recent: items.slice(0, FORM_SIZE).map((m) => ({
-					id: m.id,
-					result: toResult(m.result),
-					scoreFor: m.score_for,
-					scoreAgainst: m.score_against,
-					delta: m.delta ?? null,
-					opponentName: m.opponent?.username || '?',
-					opponentAvatar: m.opponent?.pfp_image_url || null,
-					challenge: !!m.is_challenge,
-				})),
+				rating: toQueueRating(ratingRes?.data?.myBattleRating),
+				recent: items.slice(0, FORM_SIZE).map(toRecentMatch),
 				loaded: true,
 			});
 		});

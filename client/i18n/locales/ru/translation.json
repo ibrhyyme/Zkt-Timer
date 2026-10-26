@@ -4764,11 +4764,24 @@
       "result_unrated": "Ваш рейтинг не изменился.",
       "history_tag": "Дуэль",
       "profile_challenge": "Вызвать",
-      "profile_h2h": "Личные встречи {{wins}}–{{losses}}",
       "notif_title": "{{name}} вызывает вас на дуэль",
       "notif_body": "{{name}} вызывает вас на дуэль в Online Battle. Приглашение действует {{minutes}} минут.",
       "notif_link_text": "Открыть приглашение",
-      "notif_category": "Online Battle"
+      "notif_category": "Online Battle",
+      "offer_first": "Первая дуэль",
+      "offer_rating": "Рейтинг",
+      "offer_rating_value": "Не меняется",
+      "offer_match": "Матч",
+      "offer_invite": "Приглашение",
+      "offer_invite_value": "Действует {{minutes}} минут",
+      "offer_cube": "Кубик",
+      "offer_continue": "Продолжить",
+      "offer_next": "На следующем экране подключите кубик и отправьте приглашение. {{name}} получит уведомление, дуэль начнётся, как только вызов примут."
+    },
+    "profile": {
+      "details": "Открыть подробности Online Battle",
+      "no_rating": "Рейтинговых матчей пока нет",
+      "no_matches": "Матчей пока нет"
     }
   },
   "battle_landing": {
@@ -4885,7 +4898,6 @@
     "load_error": "Не удалось загрузить рейтинг.",
     "retry": "Повторить",
     "load_more": "Показать ещё",
-    "profile_line": "Online Battle {{rating}} · #{{rank}}",
     "subtitle": "По рейтингу Online Battle. Каждый матч меняет порядок.",
     "col_rank": "Место",
     "col_player": "Игрок",

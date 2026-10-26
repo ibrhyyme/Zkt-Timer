@@ -4665,11 +4665,24 @@
       "result_unrated": "你的积分没有变化。",
       "history_tag": "对决",
       "profile_challenge": "发起挑战",
-      "profile_h2h": "交手记录 {{wins}}–{{losses}}",
       "notif_title": "{{name}} 向你发起对决",
       "notif_body": "{{name}} 向你发起了 Online Battle 对决。邀请 {{minutes}} 分钟内有效。",
       "notif_link_text": "打开邀请",
-      "notif_category": "Online Battle"
+      "notif_category": "Online Battle",
+      "offer_first": "首次对决",
+      "offer_rating": "积分",
+      "offer_rating_value": "不受影响",
+      "offer_match": "比赛",
+      "offer_invite": "邀请",
+      "offer_invite_value": "{{minutes}} 分钟内有效",
+      "offer_cube": "魔方",
+      "offer_continue": "继续",
+      "offer_next": "下一步连接魔方并发送邀请。{{name}} 会收到通知，接受后对决立即开始。"
+    },
+    "profile": {
+      "details": "查看 Online Battle 详情",
+      "no_rating": "还没有计分比赛",
+      "no_matches": "还没有比赛"
     }
   },
   "battle_landing": {
@@ -4783,7 +4796,6 @@
     "load_error": "排名加载失败。",
     "retry": "重试",
     "load_more": "显示更多",
-    "profile_line": "Online Battle {{rating}} · 第 {{rank}} 名",
     "subtitle": "按 Online Battle 积分排列。每场比赛都会改变排名。",
     "col_rank": "排名",
     "col_player": "玩家",

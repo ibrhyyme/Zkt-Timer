@@ -1,0 +1,49 @@
+// Type of the Online Battle screens, shared by /battle/online and the profile's battle card and
+// modals: Archivo for words, Roboto Mono for every number, one scale. Import after config.
+
+$display: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$mono: 'Roboto Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+
+// Type scale. rem is 14px under 1500px and 15px above (reset.scss).
+$fs-xs: 0.8125rem;
+$fs-sm: 0.875rem;
+$fs-md: 1rem;
+$fs-lg: 1.25rem;
+$fs-xl: 1.75rem;
+$fs-2xl: 2.5rem;
+$fs-3xl: 3.5rem;
+
+$hairline: 1px solid $zt-divider;
+
+@mixin display($size) {
+	font-family: $display;
+	font-size: $size;
+	font-weight: 800;
+	font-stretch: 125%;
+	line-height: 1.05;
+	letter-spacing: -0.01em;
+}
+
+@mixin number($size, $weight: 700) {
+	font-family: $mono;
+	font-size: $size;
+	font-weight: $weight;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+}
+
+@mixin ellipsis {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+// Small caps label in mono: section titles, units, stat names.
+@mixin eyebrow {
+	font-family: $mono;
+	font-size: $fs-xs;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}

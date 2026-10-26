@@ -1,18 +1,14 @@
 import React, { useContext } from 'react';
-import { useTranslation } from 'react-i18next';
 import './HeaderControl.scss';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { setCubeType, setSetting } from '../../../db/settings/update';
 import CubePicker from '../../common/cube_picker/CubePicker';
 import SessionSwitcher from '../../sessions/SessionPicker';
 import { HOTKEY_MAP } from '../../../util/timer/hotkeys';
-import CreateNewSession from '../../sessions/new_session/CreateNewSession';
-import { openModal } from '../../../actions/general';
 import BottomSheetNav from '../../layout/nav/bottom_sheet_nav/BottomSheetNav';
 import LeftSettingsDrawer from '../../layout/nav/left_settings_drawer/LeftSettingsDrawer';
 import { ITimerContext, TimerContext } from '../Timer';
 import { toggleSetting } from '../../../db/settings/update';
-import { useDispatch } from 'react-redux';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -52,9 +48,6 @@ interface HeaderControlBodyProps {
 }
 
 const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderControlBodyProps) {
-	const { t } = useTranslation();
-	const dispatch = useDispatch();
-
 	const me = useMe();
 	const { cubeType, matchMode } = props;
 	const headerOptions = props.headerOptions || {};
@@ -62,16 +55,6 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 
 	const mobileMode = useGeneral('mobile_mode');
 	const inspection = useSettings('inspection');
-
-	function toggleCreateNewSession() {
-		dispatch(openModal(<CreateNewSession />, {
-			compact: true,
-			width: 420,
-			title: t('sessions.create_new_session_title'),
-			description: t('sessions.create_new_session_desc'),
-			closeButtonText: t('solve_info.done'),
-		}));
-	}
 
 	const scrambleTopColorSetting = useSettings('scramble_top_color');
 

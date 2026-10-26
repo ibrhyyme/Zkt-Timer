@@ -4678,11 +4678,24 @@
       "result_unrated": "Rating'in değişmedi.",
       "history_tag": "Düello",
       "profile_challenge": "Meydan oku",
-      "profile_h2h": "Aranızdaki skor {{wins}}–{{losses}}",
       "notif_title": "{{name}} seni düelloya çağırıyor",
       "notif_body": "{{name}} seni Online Battle düellosuna çağırdı. Davet {{minutes}} dakika geçerli.",
       "notif_link_text": "Daveti aç",
-      "notif_category": "Online Battle"
+      "notif_category": "Online Battle",
+      "offer_first": "İlk düello",
+      "offer_rating": "Rating",
+      "offer_rating_value": "Değişmez",
+      "offer_match": "Maç",
+      "offer_invite": "Davet",
+      "offer_invite_value": "{{minutes}} dakika geçerli",
+      "offer_cube": "Küp",
+      "offer_continue": "Devam et",
+      "offer_next": "Sonraki ekranda küpünü bağlayıp daveti gönderirsin. {{name}} bildirim alır, kabul ettiği an düello başlar."
+    },
+    "profile": {
+      "details": "Online Battle ayrıntılarını aç",
+      "no_rating": "Henüz rating'li maçı yok",
+      "no_matches": "Henüz maç yok"
     }
   },
   "battle_landing": {
@@ -4797,7 +4810,6 @@
     "load_error": "Sıralama yüklenemedi.",
     "retry": "Tekrar dene",
     "load_more": "Daha fazla",
-    "profile_line": "Online Battle {{rating}} · #{{rank}}",
     "subtitle": "Online Battle rating'ine göre. Her maç sıralamayı değiştirir.",
     "col_rank": "Sıra",
     "col_player": "Oyuncu",

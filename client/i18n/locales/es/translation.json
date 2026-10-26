@@ -4697,11 +4697,24 @@
       "result_unrated": "Tu puntuación no cambió.",
       "history_tag": "Duelo",
       "profile_challenge": "Retar",
-      "profile_h2h": "Cara a cara {{wins}}–{{losses}}",
       "notif_title": "{{name}} te reta a un duelo",
       "notif_body": "{{name}} te retó a un duelo de Online Battle. La invitación dura {{minutes}} minutos.",
       "notif_link_text": "Abrir invitación",
-      "notif_category": "Online Battle"
+      "notif_category": "Online Battle",
+      "offer_first": "Primer duelo",
+      "offer_rating": "Puntuación",
+      "offer_rating_value": "No cambia",
+      "offer_match": "Partida",
+      "offer_invite": "Invitación",
+      "offer_invite_value": "Válida {{minutes}} minutos",
+      "offer_cube": "Cubo",
+      "offer_continue": "Continuar",
+      "offer_next": "En la siguiente pantalla conectas tu cubo y envías la invitación. {{name}} recibe una notificación y el duelo empieza en cuanto acepte."
+    },
+    "profile": {
+      "details": "Abrir detalles de Online Battle",
+      "no_rating": "Aún sin partidas con puntuación",
+      "no_matches": "Aún no hay partidas"
     }
   },
   "battle_landing": {
@@ -4817,7 +4830,6 @@
     "load_error": "No se pudo cargar la clasificación.",
     "retry": "Reintentar",
     "load_more": "Ver más",
-    "profile_line": "Online Battle {{rating}} · #{{rank}}",
     "subtitle": "Según la puntuación de Online Battle. Cada partida cambia el orden.",
     "col_rank": "Puesto",
     "col_player": "Jugador",
