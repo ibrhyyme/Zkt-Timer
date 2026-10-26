@@ -3,7 +3,7 @@ import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
 import { Solve, SolveInput } from '../schemas/Solve.schema';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
-import { getSolveSteps } from '../util/solve/solve_method';
+import { getSolveSteps, bucketHasMethodSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps, replaceSolveMethodSteps } from '../models/solve_method_step';
 import { generateUUID } from '../../shared/code';
 import { logger } from '../services/logger';
@@ -267,9 +267,13 @@ export class SolveResolver {
 					// that sends none (virtual cube, older app versions) gets the method
 					// detected from the solve itself, the same as the app's own default
 					// setting: 'cfop' here would mislabel every Roux and ZZ solve.
-					const steps = getSolveSteps(turns, input.scramble, input.analysis_method || 'auto', undefined, {
-						endedSolved: !input.dnf,
-					});
+					// A 2x2 (or a virtual cube of another size) keeps its moves, with no
+					// breakdown: the method engines are 3x3 ones.
+					const steps = bucketHasMethodSteps(input.cube_type, input.scramble_subset)
+						? getSolveSteps(turns, input.scramble, input.analysis_method || 'auto', undefined, {
+							endedSolved: !input.dnf,
+						})
+						: null;
 					// null: the engine failed on these moves. The solve stays as it is, with no
 					// breakdown, exactly as when the engine used to hand back an empty one.
 					const methodStepsData = steps ? await createSolveMethodSteps(createdSolve, steps) : [];
@@ -460,6 +464,8 @@ export class SolveResolver {
 				// but never get a breakdown, which is the exact silent gap this loop
 				// was added to close for smart cubes.
 				if (!((input as any).is_virtual_cube || (input.is_smart_cube && userIsPro))) continue;
+				// Same 3x3-only rule as the single-solve path.
+				if (!bucketHasMethodSteps(input.cube_type, input.scramble_subset)) continue;
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
 					if (!turns.length) continue;

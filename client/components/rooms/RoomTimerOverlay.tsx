@@ -12,7 +12,6 @@ import { hapticImpact } from '../../util/native-plugins';
 import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
-import { is3x3CubeType } from '../timer/helpers/util';
 import './RoomTimerOverlay.scss';
 
 // Timer phases

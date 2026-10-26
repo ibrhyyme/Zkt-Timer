@@ -59,6 +59,7 @@ import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import { isNative } from '../../util/platform';
 import {getSmartCubeManager} from '../../util/smart_cube/connection_manager';
 import { useNormalizeTimerType } from '../timer/helpers/timer_type_support';
+import { useSmartPuzzleMatch, smartPuzzleLabel } from '../timer/helpers/smart_puzzle';
 import { setTimerParams } from '../timer/helpers/params';
 import { applySmartCubeTimeOffset, getSmartCubeTimeOffset } from '../timer/helpers/smart_time_offset';
 import { SmartTurn } from '../../util/smart_scramble';
@@ -315,6 +316,7 @@ function FriendlyRoomContent() {
 
     // The input pickers judge support against the room's puzzle, not the timer page's.
     const roomSubset: string | null = (room as any)?.scramble_subset ?? null;
+    const roomPuzzleMatch = useSmartPuzzleMatch(room?.cube_type, roomSubset);
     const roomPuzzle = useMemo(
         () => (room?.cube_type ? {cubeType: room.cube_type, scrambleSubset: roomSubset} : undefined),
         [room?.cube_type, roomSubset]
@@ -685,7 +687,7 @@ function FriendlyRoomContent() {
     if (!engineRef.current) {
         engineRef.current = new SmartSolveEngine(
             (event) => engineEventRef.current(event),
-            { solvedState: reduxSmartSolvedState, moveOrderFix: smartCubeMoveOrderFix }
+            { solvedState: reduxSmartSolvedState, moveOrderFix: smartCubeMoveOrderFix, puzzle: roomPuzzleMatch.cube }
         );
     }
 
@@ -784,10 +786,32 @@ function FriendlyRoomContent() {
         }
     };
 
+    // The cube under the engine changed puzzle (a 2x2 replaced a 3x3).
+    useEffect(() => {
+        engineRef.current?.setPuzzle(roomPuzzleMatch.cube);
+    }, [roomPuzzleMatch.cube]);
+
+    // A cube that is not this room's puzzle drives nothing: the engine is parked and fed
+    // nothing. When the two agree again it takes the cube as it is and gets the round's scramble.
+    const roomEngineParkedRef = useRef(false);
+    useEffect(() => {
+        const engine = engineRef.current;
+        if (!engine) return;
+        if (roomPuzzleMatch.mismatch) {
+            roomEngineParkedRef.current = true;
+            engine.suspend();
+            return;
+        }
+        if (!roomEngineParkedRef.current) return;
+        roomEngineParkedRef.current = false;
+        engine.resume(smartTurns, reduxSmartCurrentState);
+        engine.setScramble(room?.current_scramble || '');
+    }, [roomPuzzleMatch.mismatch]);
+
     // ── Engine inputs ──
     // Each signal gets its own effect so a change in one does not replay the others.
     useEffect(() => {
-        engineRef.current?.setScramble(room?.current_scramble || '');
+        if (!roomPuzzleMatch.mismatch) engineRef.current?.setScramble(room?.current_scramble || '');
 
         // A new round can arrive mid-solve (the host moved on, or reset the room). The engine
         // drops the attempt in setScramble, so the page has to drop it too: leaving
@@ -824,12 +848,12 @@ function FriendlyRoomContent() {
     }, [smartCubeConnected]);
 
     useEffect(() => {
-        if (timerType !== 'smart') return;
+        if (timerType !== 'smart' || roomPuzzleMatch.mismatch) return;
         engineRef.current?.pushTurns(smartTurns);
     }, [smartTurns, timerType]);
 
     useEffect(() => {
-        if (timerType !== 'smart' || !reduxSmartCurrentState) return;
+        if (timerType !== 'smart' || !reduxSmartCurrentState || roomPuzzleMatch.mismatch) return;
         engineRef.current?.pushFacelets(reduxSmartCurrentState);
     }, [reduxSmartStateSeq, timerType]);
 
@@ -2093,6 +2117,14 @@ function FriendlyRoomContent() {
                         <div className="text-center font-mono text-base md:text-3xl leading-relaxed font-medium select-all px-1">
                             {alreadySolvedThisRound ? (
                                 <span className="text-text animate-pulse">{t('rooms.waiting_for_others')}</span>
+                            ) : timerType === 'smart' && smartCubeConnected && roomPuzzleMatch.mismatch ? (
+                                // A 2x2 in a 3x3 room or the reverse: connected, but it times nothing here.
+                                <span className="text-orange-400 font-bold text-sm md:text-lg">
+                                    {t('rooms.smart_cube_puzzle_mismatch', {
+                                        cube: smartPuzzleLabel(roomPuzzleMatch.cube),
+                                        session: smartPuzzleLabel(roomPuzzleMatch.session),
+                                    })}
+                                </span>
                             ) : needsCubeReset && timerType === 'smart' && smartCubeConnected ? (
                                 <div className="flex flex-col items-center gap-3 py-2">
                                     <span className="text-orange-400 font-bold text-lg md:text-2xl">{t('smart_cube.cube_mismatch_message')}</span>

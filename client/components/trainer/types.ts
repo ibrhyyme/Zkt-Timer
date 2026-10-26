@@ -129,6 +129,8 @@ export interface TrainerSessionState {
 
 	// Smart Cube State
 	smartConnected: boolean;
+	/** Puzzle of the connected cube. The trainer drills with a 3x3 only; a 2x2 stays connected but unused. */
+	smartPuzzle: '333' | '222';
 	smartConnecting: boolean;
 	smartScanning: boolean;
 	smartScanError: string | null;
@@ -167,7 +169,7 @@ export type TrainerAction =
 	| {type: 'ADVANCE_ALGORITHM'}
 	| {type: 'PREVIOUS_ALGORITHM'}
 	// Smart Cube Actions
-	| {type: 'SMART_CONNECTION'; payload: Partial<{scanning: boolean; connecting: boolean; connected: boolean; scanError: string | null; battery: number | null}>}
+	| {type: 'SMART_CONNECTION'; payload: Partial<{scanning: boolean; connecting: boolean; connected: boolean; scanError: string | null; battery: number | null; puzzle: '333' | '222'}>}
 	| {type: 'SMART_SET_PHASE'; payload: SmartPhase}
 	| {type: 'SET_MATCHED_MOVE_COUNT'; payload: number}
 	| {type: 'SET_TOTAL_EXPECTED_MOVES'; payload: number}

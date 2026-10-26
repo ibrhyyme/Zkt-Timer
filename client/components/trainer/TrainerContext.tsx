@@ -14,6 +14,8 @@ import {filterForMode, checkedKey} from '../../util/trainer/set_queue';
 import {parseStudyModeParam, resolveStudyMode, smartModeAllowed} from '../../util/trainer/study_mode';
 import {isPro, isProEnabled} from '../../lib/pro';
 import {getSmartCubeManager} from '../../util/smart_cube/connection_manager';
+import {toastError} from '../../util/toast';
+import i18n from '../../i18n/i18n';
 import {getMe} from '../store';
 import {getSetting} from '../../db/settings/query';
 import {getSettingsDb} from '../../db/settings/init';
@@ -304,8 +306,14 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 		const manager = getSmartCubeManager();
 
 		let wasConnected = manager.getSnapshot().connected;
+		// Once per connected cube, not per snapshot: a 2x2 here is explained, then left alone.
+		let warnedFor: string | null = null;
 
 		const apply = (snapshot: ReturnType<typeof manager.getSnapshot>) => {
+			if (snapshot.connected && snapshot.puzzle === '222' && warnedFor !== snapshot.deviceId) {
+				warnedFor = snapshot.deviceId;
+				toastError(i18n.t('smart_cube.puzzle_2x2_unsupported_here'));
+			}
 			if (wasConnected && !snapshot.connected) {
 				// SMART_DISCONNECT resets the whole smart block (phase, match counters, camera
 				// pad), so it fires only on the actual transition. Sending it for every
@@ -321,6 +329,7 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 					scanning: snapshot.scanning,
 					connecting: snapshot.connecting,
 					connected: snapshot.connected,
+					puzzle: snapshot.puzzle,
 					scanError: snapshot.scanError,
 					// Seeds the readout for a cube connected before the trainer opened; later
 					// readings arrive through subscribeBattery below.

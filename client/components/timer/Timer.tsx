@@ -19,7 +19,7 @@ import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { useSettings } from '../../util/hooks/useSettings';
 import TimerVideoBackground from './timer_background/TimerVideoBackground';
 import { resolveTimerBackground } from '../../../shared/timer_background';
-import { is3x3CubeType } from './helpers/util';
+import { smartCubePuzzleFor } from './helpers/util';
 import { useNormalizeTimerType } from './helpers/timer_type_support';
 import { virtualCubeSupports } from '../../util/virtual_cube/size';
 import { useVirtualCubeSize } from '../../util/virtual_cube/useVirtualCubeSize';
@@ -181,7 +181,7 @@ export default function Timer(props: TimerProps) {
 		};
 	}, [hasBackgroundImage, mobileMode]);
 
-	const smartActive = timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset) && !manualEntry;
+	const smartActive = timerType === 'smart' && smartCubePuzzleFor(cubeType, scrambleSubset) !== null && !manualEntry;
 	// The virtual cube only implements NxN, so a non-cube bucket falls back to the
 	// plain timer exactly as an unsupported smart cube bucket already does.
 	const virtualActive =

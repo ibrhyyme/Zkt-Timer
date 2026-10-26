@@ -46,6 +46,9 @@ const NAMES = [
 	'Rubiks_Connected',
 	'MHC-0001',
 	'WCU_MY32_ABCD',
+	'WCU_MY22_1037',
+	'GAN251Ui_AB12',
+	'GANic251_01',
 	'^S1234',
 	'QY-QYSC-S-1234',
 	'XMD-TornadoV4-i-55',
@@ -74,5 +77,10 @@ describe('battleCubeInfo', () => {
 		expect(battleCubeInfo('GoCube_X').hasClock).toBe(false);
 		expect(battleCubeInfo('MHC-0001').hasClock).toBe(false);
 		expect(battleCubeInfo('SomeOtherCube').hasClock).toBe(false);
+	});
+
+	it('keeps the 2x2 models out, clock or not: battle is a 3x3 event', () => {
+		expect(battleCubeInfo('GAN251Ui_AB12')).toEqual({brand: 'gan', hasClock: false});
+		expect(battleCubeInfo('WCU_MY22_1037')).toEqual({brand: 'moyu32', hasClock: false});
 	});
 });

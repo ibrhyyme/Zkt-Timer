@@ -18,6 +18,7 @@ import {
 	SolveCube,
 } from '../schemas/Cube.schema';
 import { Solve } from '../schemas/Solve.schema';
+import { smartCubePuzzleFromName } from '../../shared/smart_cube/puzzle';
 import {
 	brandFromBleName,
 	calibrationErrorKey,
@@ -264,7 +265,8 @@ export class CubeResolver {
 	 * The cube a smart cube that just connected belongs to, created on first sight (one request
 	 * instead of the old list + register pair). Matched by BLE id; then, for a name that carries
 	 * a serial ("GANi3_F568"), by name, which follows a cube to the new BLE id an iOS reinstall
-	 * or a browser gives it. Otherwise a new 3x3 smart cube.
+	 * or a browser gives it. Otherwise a new smart cube: a 3x3, or a 2x2 for the two models
+	 * whose name says so (GAN 251 UI, MoYu WCU_MY22), so its solves are stamped in the 2x2 bucket.
 	 */
 	@Authorized()
 	@Mutation(() => Cube)
@@ -306,12 +308,13 @@ export class CubeResolver {
 
 		if ((await countCubes(prisma, user.id)) >= MAX_CUBES_PER_USER) throw cubeError('limit');
 
+		const puzzle = smartCubePuzzleFromName(identity.bleName);
 		let created;
 		try {
 			created = await prisma.cube.create({
 				data: {
 					user_id: user.id,
-					puzzle: '333',
+					puzzle,
 					name: smartCubeDefaultName(identity.bleName),
 					brand: brandFromBleName(identity.bleName),
 					is_smart: true,
@@ -331,7 +334,7 @@ export class CubeResolver {
 			}
 			throw error;
 		}
-		await ensureMainForNewCube(prisma, user.id, '333', created.id, null);
+		await ensureMainForNewCube(prisma, user.id, puzzle, created.id, null);
 		return cubeResponse(context, created.id);
 	}
 

@@ -46,11 +46,13 @@ import {showBleConnectInfo} from '../common/showBleConnectInfo';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
-import { SmartSolveEngine, SmartEngineEvent, SolveResult } from '../../../util/smart_cube';
+import { SmartSolveEngine, SmartEngineEvent, SolveResult, computeTargetFacelets } from '../../../util/smart_cube';
 import { recordEngineEvent } from '../../../util/smart_cube/telemetry';
 import { getSmartCubeManager } from '../../../util/smart_cube/connection_manager';
 import { useSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import SmartCubeView, { SmartCubeViewHandle } from './cube_view/SmartCubeView';
+import { useSmartPuzzleMatch, smartPuzzleLabel } from '../helpers/smart_puzzle';
+import StartInstructions from '../time_display/start_instructions/StartInstructions';
 
 const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
@@ -214,6 +216,10 @@ export default function SmartCube() {
 	const smartGyroSupported = useSmartCubeStore('smartGyroSupported');
 	const smartCurrentState = useSmartCubeStore('smartCurrentState');
 	const smartStateSeq = useSmartCubeStore('smartStateSeq');
+	// A 2x2 cube on a 3x3 session (or the other way round) stays connected but drives nothing.
+	const puzzleMatch = useSmartPuzzleMatch(context.cubeType, context.scrambleSubset);
+	const cubePuzzle = puzzleMatch.cube;
+	const puzzleMismatch = puzzleMatch.mismatch;
 
 	// Surface wrong-MAC handshake failures on web (native shows the BleScanningModal
 	// error state instead). Without this the cube would silently fail after the watchdog.
@@ -289,8 +295,15 @@ export default function SmartCube() {
 		// end included, would otherwise commit separately.
 		engineRef.current = new SmartSolveEngine((event) => ReactDOM.unstable_batchedUpdates(() => engineEventRef.current(event)), {
 			moveOrderFix: smartCubeMoveOrderFix,
+			puzzle: cubePuzzle,
 		});
 	}
+
+	// The cube under the engine changed puzzle (a 2x2 replaced a 3x3). Before the scramble
+	// effect below, so the scramble is installed in the new puzzle's form.
+	useEffect(() => {
+		engineRef.current?.setPuzzle(cubePuzzle);
+	}, [cubePuzzle]);
 
 
 
@@ -384,18 +397,9 @@ export default function SmartCube() {
 	// Always use originalScramble — not correction scramble, original scramble
 	useEffect(() => {
 		const origScramble = originalScramble || scramble;
-		if (origScramble) {
-			try {
-				const targetCube = new Cube();
-				origScramble.split(' ').filter(m => m.trim()).forEach(m => targetCube.move(m));
-				targetFaceletsRef.current = targetCube.asString();
-			} catch (e) {
-				targetFaceletsRef.current = null;
-			}
-		} else {
-			targetFaceletsRef.current = null;
-		}
-	}, [scramble, originalScramble]);
+		// The engine's own form of the target, so the check below compares like with like.
+		targetFaceletsRef.current = origScramble ? computeTargetFacelets(origScramble, cubePuzzle) : null;
+	}, [scramble, originalScramble, cubePuzzle]);
 
 	// Assigned every render so the engine, created once, always reaches the current closure.
 	engineEventRef.current = (event: SmartEngineEvent) => {
@@ -488,13 +492,27 @@ export default function SmartCube() {
 	};
 
 	// ── Engine inputs ──
+	// Nothing reaches the engine while the cube is the wrong puzzle: it is parked, and once
+	// the cube or the session changes it takes the cube as it is then and gets the scramble.
+	const engineParkedRef = useRef(false);
 	useEffect(() => {
 		if (useSpaceWithSmartCube) return;
+		const engine = engineRef.current;
+		if (!engine) return;
+		if (puzzleMismatch) {
+			engineParkedRef.current = true;
+			engine.suspend();
+			return;
+		}
+		if (engineParkedRef.current) {
+			engineParkedRef.current = false;
+			engine.resume(smartTurnsRef.current, smartCurrentStateRef.current);
+		}
 		// Matching follows the displayed scramble (which may be a correction path); the
 		// facelets target always follows the original.
-		engineRef.current?.setScramble(scramble || '', originalScramble || scramble || '');
+		engine.setScramble(scramble || '', originalScramble || scramble || '');
 		syncScrambleStarted(engineScrambleStarted());
-	}, [scramble, originalScramble, useSpaceWithSmartCube]);
+	}, [scramble, originalScramble, useSpaceWithSmartCube, puzzleMismatch]);
 
 	useEffect(() => {
 		engineRef.current?.setConnected(smartCubeConnected);
@@ -511,12 +529,13 @@ export default function SmartCube() {
 			syncScrambleStarted(smartTurns.length > 0);
 			return;
 		}
+		if (puzzleMismatch) return;
 		engineRef.current?.pushTurns(smartTurns);
 		syncScrambleStarted(engineScrambleStarted());
 	}, [smartTurns, useSpaceWithSmartCube]);
 
 	useEffect(() => {
-		if (useSpaceWithSmartCube || !smartCurrentState) return;
+		if (useSpaceWithSmartCube || !smartCurrentState || puzzleMismatch) return;
 		engineRef.current?.pushFacelets(smartCurrentState);
 		syncScrambleStarted(engineScrambleStarted());
 	}, [smartStateSeq, useSpaceWithSmartCube]);
@@ -1117,6 +1136,15 @@ export default function SmartCube() {
 							<div className="zt-timer__mobile-action">
 								{actionButton}
 							</div>
+						)}
+						{/* Desktop says this under the digits (TimeDisplay SmartStartHint). */}
+						{puzzleMismatch && (
+							<StartInstructions>
+								{t('smart_cube.puzzle_mismatch', {
+									cube: smartPuzzleLabel(puzzleMatch.cube),
+									session: smartPuzzleLabel(puzzleMatch.session),
+								})}
+							</StartInstructions>
 						)}
 						<LiveAnalysisOverlay
 							startState={startState || engineRef.current?.trackerState || null}

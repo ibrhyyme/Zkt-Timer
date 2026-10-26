@@ -40,7 +40,8 @@ export function createCubeForDevice(device, adapter) {
 		return { cube: new MoYu(device, adapter), cubeType: 'MoYu MHC' };
 	}
 	// '^S': an advertising alias some MoYu32 boards use (smartcube-web-bluetooth routes it here).
-	if (name.startsWith('WCU_MY3') || name.startsWith('^S')) {
+	// WCU_MY22 is the Weipo V5 AI, a 2x2 on the same protocol (the driver reads its layout).
+	if (name.startsWith('WCU_MY3') || name.startsWith('WCU_MY22') || name.startsWith('^S')) {
 		return { cube: new MoYu32(device, adapter), cubeType: 'MoYu WeiLong AI' };
 	}
 	if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) {

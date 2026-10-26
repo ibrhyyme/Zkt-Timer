@@ -8,6 +8,8 @@ import { countHTM } from '../../../shared/util/solve/move_counter';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
 import { CubeTracker, prefixStatesFrom, ScramblePrefix } from './tracker';
 import { shouldRecoverFromMoveOrder } from './move_order_fix';
+import { normalizeFacelets } from './cube2x2';
+import type { SmartCubePuzzle } from '../../../shared/smart_cube/puzzle';
 
 /**
  * Framework-agnostic smart cube solve engine.
@@ -133,6 +135,11 @@ export interface SmartSolveEngineOptions {
 	 * timer that would trigger it.
 	 */
 	moveOrderFix?: boolean;
+	/**
+	 * The connected cube's puzzle. A 2x2 is compared on its corners, seen from DBL (see
+	 * cube2x2.ts); everything else in the engine is the same. Change it with setPuzzle.
+	 */
+	puzzle?: SmartCubePuzzle;
 }
 
 const DEFAULTS = {
@@ -142,6 +149,7 @@ const DEFAULTS = {
 	maxLateDrops: 3,
 	outOfSyncDelayMs: 1200,
 	moveOrderFix: false,
+	puzzle: '333' as SmartCubePuzzle,
 };
 
 /**
@@ -263,7 +271,14 @@ export class SmartSolveEngine {
 			outOfSyncDelayMs: options.outOfSyncDelayMs ?? DEFAULTS.outOfSyncDelayMs,
 			solvedState: options.solvedState ?? DEFAULT_SOLVED_STATE,
 			moveOrderFix: options.moveOrderFix ?? DEFAULTS.moveOrderFix,
+			puzzle: options.puzzle ?? DEFAULTS.puzzle,
 		};
+		this.tracker.setPuzzle(this.opts.puzzle);
+	}
+
+	/** The solved state in this puzzle's normalized form. */
+	private get solvedState(): string {
+		return normalizeFacelets(this.opts.solvedState, this.opts.puzzle);
 	}
 
 	// ── Inputs ────────────────────────────────────────────────────────────────
@@ -280,7 +295,7 @@ export class SmartSolveEngine {
 	 */
 	setScramble(scramble: string, targetScramble?: string): void {
 		if (this.disposed) return;
-		const nextTarget = computeTargetFacelets(targetScramble || scramble);
+		const nextTarget = computeTargetFacelets(targetScramble || scramble, this.opts.puzzle);
 		if (scramble === this.scramble && nextTarget === this.targetFacelets && this.phase !== 'idle') return;
 
 		this.scramble = scramble || '';
@@ -289,7 +304,7 @@ export class SmartSolveEngine {
 		this.targetFacelets = nextTarget;
 		// Every state the cube will pass through on the way to the target. Built once here
 		// so a re-anchor mid-scramble can answer "how far did the user actually get".
-		this.prefixStates = nextTarget ? prefixStatesFrom(nextTarget, this.scrambleMoves) : [];
+		this.prefixStates = nextTarget ? prefixStatesFrom(nextTarget, this.scrambleMoves, this.opts.puzzle) : [];
 		this.phase = this.scramble ? 'scrambling' : 'idle';
 
 		this.streamOffset = this.turns.length;
@@ -357,6 +372,51 @@ export class SmartSolveEngine {
 			clearTimeout(this.moveOrderTimer);
 			this.moveOrderTimer = null;
 		}
+	}
+
+	/**
+	 * The connected cube is a different puzzle (a 2x2 replaced a 3x3, or the other way).
+	 *
+	 * Engines are created once per page, and the cube under them can change without the page
+	 * remounting. Everything the engine holds about the old cube is spelled in the old
+	 * puzzle's form, so its last report is dropped and the scramble rebuilt in the new form.
+	 */
+	setPuzzle(puzzle: SmartCubePuzzle): void {
+		if (this.disposed || puzzle === this.opts.puzzle) return;
+		this.opts.puzzle = puzzle;
+		this.tracker.setPuzzle(puzzle);
+		this.facelets = null;
+		this.physicallySolved = false;
+		this.solvedFaceletsAt = null;
+		const scramble = this.scramble;
+		const target = this.targetMoves.join(' ');
+		// Cleared so setScramble does not take the unchanged scramble as "nothing to do".
+		this.scramble = '';
+		this.setScramble(scramble, target || undefined);
+	}
+
+	get puzzle(): SmartCubePuzzle {
+		return this.opts.puzzle;
+	}
+
+	/**
+	 * Take the cube as it is now, after a stretch in which the caller fed the engine nothing
+	 * (the connected cube was the wrong puzzle for the page). The turns made meanwhile are
+	 * counted as done, not replayed onto a state they may already be part of. Call before
+	 * setScramble, which anchors to the state given here.
+	 */
+	resume(turns: SmartTurn[], facelets: string | null): void {
+		if (this.disposed) return;
+		const now = Date.now();
+		this.turns = turns;
+		this.arrivals = turns.map(() => now);
+		this.facelets = facelets && isValidFacelets(facelets) ? normalizeFacelets(facelets, this.opts.puzzle) : null;
+		this.physicallySolved = this.facelets === this.solvedState;
+		this.solvedFaceletsAt = null;
+		if (this.facelets) this.tracker.setFromFacelets(this.facelets, turns.length);
+		else this.tracker.setSolved(turns.length);
+		this.streamOffset = turns.length;
+		this.solutionOffset = turns.length;
 	}
 
 	setConnected(connected: boolean): void {
@@ -468,13 +528,14 @@ export class SmartSolveEngine {
 	 * Feed a facelets payload. This is the cube's own account of its state and the only
 	 * signal that survives a dropped move packet.
 	 */
-	pushFacelets(facelets: string): void {
+	pushFacelets(reported: string): void {
 		if (this.disposed) return;
-		if (!isValidFacelets(facelets)) return;
+		if (!isValidFacelets(reported)) return;
 
+		const facelets = normalizeFacelets(reported, this.opts.puzzle);
 		const wasSolved = this.physicallySolved;
 		this.facelets = facelets;
-		this.physicallySolved = facelets === this.opts.solvedState;
+		this.physicallySolved = facelets === this.solvedState;
 
 		if (this.physicallySolved && !wasSolved) {
 			// First packet reporting the solved state. Later packets repeat it (the cube
@@ -503,7 +564,7 @@ export class SmartSolveEngine {
 	 */
 	markSolved(): void {
 		if (this.disposed) return;
-		this.facelets = this.opts.solvedState;
+		this.facelets = this.solvedState;
 		this.physicallySolved = true;
 		this.tracker.setSolved(this.turns.length);
 		this.compressor.reset();
@@ -791,7 +852,8 @@ export class SmartSolveEngine {
 	 * while a solve is actually being timed.
 	 */
 	private armMoveOrderFix(): void {
-		if (!this.opts.moveOrderFix || this.phase !== 'timing') return;
+		// The recovery's search and solver are 3x3 ones (move_order_fix.ts).
+		if (!this.opts.moveOrderFix || this.opts.puzzle !== '333' || this.phase !== 'timing') return;
 		if (this.moveOrderTimer) clearTimeout(this.moveOrderTimer);
 		this.moveOrderTimer = setTimeout(() => {
 			this.moveOrderTimer = null;
@@ -804,7 +866,7 @@ export class SmartSolveEngine {
 	 * unsolved? See `move_order_fix.ts` for the search and the guards around it.
 	 */
 	private runMoveOrderFix(): void {
-		if (this.phase !== 'timing' || !this.opts.moveOrderFix) return;
+		if (this.phase !== 'timing' || !this.opts.moveOrderFix || this.opts.puzzle !== '333') return;
 		// Same window cstimer inspects: everything since the cube was last known solved,
 		// scramble turns included. Rooms keep the scramble turns in the stream, so their
 		// window starts solved. The timer page clears the stream when the scramble completes,
@@ -813,9 +875,9 @@ export class SmartSolveEngine {
 		// The scramble that reaches the target stands in for the cleared turns.
 		const moves = this.turns.slice(this.streamOffset).map((t) => t.turn);
 		const facelets = this.tracker.state;
-		const windowStart = stateBeforeMoves(facelets, moves);
+		const windowStart = stateBeforeMoves(facelets, moves, this.opts.puzzle);
 		let fromSolved: string[] | null = null;
-		if (windowStart === this.opts.solvedState) {
+		if (windowStart === this.solvedState) {
 			fromSolved = [];
 		} else if (this.targetFacelets && windowStart === this.targetFacelets) {
 			fromSolved = this.targetMoves;
@@ -1201,8 +1263,8 @@ function moveTime(turn: SmartTurn | undefined): number {
  * scramble rather than read from the cube, so it is available before the user touches it.
  */
 /** The state the cube was in before `moves` took it to `state`. */
-function stateBeforeMoves(state: string, moves: string[]): string | null {
-	const tracker = new CubeTracker();
+function stateBeforeMoves(state: string, moves: string[], puzzle: SmartCubePuzzle): string | null {
+	const tracker = new CubeTracker(puzzle);
 	if (!tracker.setFromFacelets(state, 0)) return null;
 	const undo = moves
 		.slice()
@@ -1212,12 +1274,12 @@ function stateBeforeMoves(state: string, moves: string[]): string | null {
 	return tracker.state;
 }
 
-export function computeTargetFacelets(scramble: string): string | null {
+export function computeTargetFacelets(scramble: string, puzzle: SmartCubePuzzle = '333'): string | null {
 	const moves = (scramble || '').split(' ').filter((m) => m.trim());
 	if (!moves.length) return null;
 	try {
 		// Imported lazily through CubeTracker to keep cubejs in one place.
-		const tracker = new CubeTracker();
+		const tracker = new CubeTracker(puzzle);
 		return tracker.setFromScramble(scramble, 0) ? tracker.state : null;
 	} catch (e) {
 		console.warn('[smart-cube] target facelets computation failed:', e);

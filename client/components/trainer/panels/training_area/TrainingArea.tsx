@@ -248,7 +248,8 @@ export default function TrainingArea() {
 		) : null;
 
 	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
-	const useSmartCube = state.smartConnected && is3x3 && (!isProEnabled() || isPro(me));
+	// A 2x2 smart cube stays on the link but is not used: the drills match 3x3 patterns.
+	const useSmartCube = state.smartConnected && state.smartPuzzle === '333' && is3x3 && (!isProEnabled() || isPro(me));
 
 	// Etkin top/front face — whiteOnBottom aktifse D/F preset'i uygulanir
 	const effectiveOrientation = getEffectiveOrientation({

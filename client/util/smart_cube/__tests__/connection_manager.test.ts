@@ -37,6 +37,7 @@ class FakeCube {
 	};
 	emitGyro = (event: any) => { for (const cb of [...this.gyroListeners]) cb(event); };
 	_trackerCube: any = null;
+	puzzle: '333' | '222' = '333';
 	resetCubeState = jest.fn(async () => true);
 	init = jest.fn(async () => { /* handshake */ });
 }
@@ -51,6 +52,8 @@ class FakeConnect {
 	static initCubeFails = 0;
 	/** When set, the next handshake waits on this promise before reporting connected. */
 	static handshakeGate: Promise<void> | null = null;
+	/** Puzzle of the cubes the next handshakes create (drivers set `puzzle` from the name). */
+	static nextPuzzle: '333' | '222' = '333';
 
 	device: any = null;
 	activeCube: FakeCube | null = null;
@@ -78,6 +81,7 @@ class FakeConnect {
 			throw new Error('GATT failed');
 		}
 		const cube = new FakeCube();
+		cube.puzzle = FakeConnect.nextPuzzle;
 		this.activeCube = cube;
 		this._onCubeCreated?.(cube);
 		await cube.init();
@@ -168,6 +172,7 @@ jest.mock('../../../components/store', () => ({
 
 import { getSmartCubeManager, __resetSmartCubeManagerForTests } from '../connection_manager';
 import { DEFAULT_SOLVED_STATE } from '../facelets';
+import { solve2x2 } from '../cube2x2';
 import Cube from 'cubejs';
 
 /** A real reachable state: the manager validates facelets and rejects made-up strings. */
@@ -193,6 +198,7 @@ beforeEach(() => {
 	FakeConnect.instances = [];
 	FakeConnect.initCubeFails = 0;
 	FakeConnect.handshakeGate = null;
+	FakeConnect.nextPuzzle = '333';
 	dispatched.length = 0;
 	settingsListeners.length = 0;
 	mockAppVisible = true;
@@ -306,6 +312,38 @@ describe('the facelets tracker', () => {
 
 		currentCube().alertCubeState('nonsense');
 		expect(manager.getSnapshot().facelets).toBe(DEFAULT_SOLVED_STATE);
+	});
+});
+
+// GAN 251 UI and MoYu WCU_MY22: the driver says it is a 2x2, and every page reads it from here.
+describe('a 2x2 cube', () => {
+	it('is published as a 2x2 and judged solved on its corners', async () => {
+		FakeConnect.nextPuzzle = '222';
+		const manager = getSmartCubeManager();
+		await manager.connect();
+		expect(manager.getSnapshot().puzzle).toBe('222');
+		expect(dispatched.some((a) => a.payload?.params?.smartCubePuzzle === '222')).toBe(true);
+
+		// Scrambled, then solved by a different route: the 3x3 model under the tracker ends with
+		// its edges scrambled, which must not keep a solved 2x2 from reading as solved.
+		const scramble = ['R', "U'", 'F2', 'R2', 'U', "F'", 'R', 'U2', 'F', "R'", 'U', 'F2', "R'", 'U2'];
+		const scrambled = new Cube();
+		scramble.forEach((m) => scrambled.move(m));
+		const solution = solve2x2(scrambled.asString())!;
+		const turns = [...scramble, ...solution].map((turn, i) => ({ turn, completedAt: i }));
+		currentCube().alertTurnCubeBatch(turns.slice(0, scramble.length), null);
+		expect(manager.getSnapshot().physicallySolved).toBe(false);
+		currentCube().alertTurnCubeBatch(turns.slice(scramble.length), null);
+		expect(manager.getSnapshot().physicallySolved).toBe(true);
+	});
+
+	it('leaves the next cube a 3x3 again', async () => {
+		FakeConnect.nextPuzzle = '222';
+		const manager = getSmartCubeManager();
+		await manager.connect();
+		await manager.disconnect();
+		await flushPromises();
+		expect(manager.getSnapshot().puzzle).toBe('333');
 	});
 });
 

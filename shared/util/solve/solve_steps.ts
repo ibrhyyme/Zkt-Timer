@@ -24,6 +24,7 @@ import { SolveTurn, PhaseTransition, SolveMethod, SolvePhase } from './types';
 import { countHTM } from './move_counter';
 import { getPrettyMoves, TimedMove } from './pretty_moves';
 import { parseSmartTurns } from '../../smart_cube/parse_turns';
+import { isBuiltinPuzzleKey, puzzleOfBucket } from '../../cube_puzzle';
 import {
 	resolveAnalysisStartState,
 	startStateFromScramble,
@@ -335,6 +336,23 @@ export interface AnalyzableSolve {
 	is_smart_cube?: boolean | null;
 	is_virtual_cube?: boolean | null;
 	solve_method_steps?: unknown[] | null;
+	cube_type?: string | null;
+	scramble_subset?: string | null;
+}
+
+/**
+ * Does a breakdown mean anything for this bucket? Every method engine here is a 3x3 one.
+ * 2x2 smart cube solves (GAN 251 UI, MoYu WCU_MY22) and virtual cube solves of other sizes
+ * record their moves too, and fed to a 3x3 engine they came out with steps that never
+ * happened.
+ *
+ * Only a bucket known to be another built-in puzzle is left out. Anything the mapping cannot
+ * place (no cube type, an old `wca` row without its event) keeps the old behaviour, so no
+ * 3x3 solve that was broken down before stops being broken down.
+ */
+export function bucketHasMethodSteps(cubeType: string | null | undefined, scrambleSubset?: string | null): boolean {
+	const puzzle = puzzleOfBucket(cubeType, scrambleSubset);
+	return !isBuiltinPuzzleKey(puzzle) || puzzle === '333';
 }
 
 /**
@@ -345,6 +363,7 @@ export interface AnalyzableSolve {
 export function solveNeedsStepRows(solve: AnalyzableSolve | null | undefined, canUseSmartAnalysis: boolean): boolean {
 	if (!solve || !solve.smart_turns) return false;
 	if (Array.isArray(solve.solve_method_steps) && solve.solve_method_steps.length > 0) return false;
+	if (!bucketHasMethodSteps(solve.cube_type, solve.scramble_subset)) return false;
 	return !!solve.is_virtual_cube || (!!solve.is_smart_cube && canUseSmartAnalysis);
 }
 

@@ -18,8 +18,18 @@ import {
 	GAP_RECOVERY_TIMEOUT_MS,
 	GAP_RECOVERY_HARD_LIMIT_MS,
 	HISTORY_REPLY_WINDOW_MS,
+	GAN_251_ENCRYPTION_KEY,
+	GAN_251_COMMAND_CHARACTERISTIC_ALT,
+	GAN_GEN4_SERVICE,
+	GAN_GEN4_COMMAND_CHARACTERISTIC,
+	GAN_GEN4_STATE_CHARACTERISTIC,
+	GanCubeClassicConnection,
 } from '../gan_protocol';
 import fixtures from './fixtures/gan_captures.json';
+import Cube from 'cubejs';
+import LZString from '../lz_string';
+import { canonical2x2 } from '../../../../../util/smart_cube/cube2x2';
+import { DEFAULT_SOLVED_STATE } from '../../../../../util/smart_cube/facelets';
 
 interface Capture {
 	source: string;
@@ -228,5 +238,171 @@ describe('GAN gap write-off', () => {
 	it('writes it off after the hard limit even if no request ever went out', () => {
 		expect(gapExpired(opened, null, opened + GAP_RECOVERY_TIMEOUT_MS + 100)).toBe(false);
 		expect(gapExpired(opened, null, opened + GAP_RECOVERY_HARD_LIMIT_MS + 1)).toBe(true);
+	});
+});
+
+// ── GAN 251 UI (2x2) ─────────────────────────────────────────────────────────
+//
+// Neither reference has a capture of a 251 (cstimer keeps no fixtures, smartcube-web-bluetooth
+// recorded none), so these pin the port against cstimer gancube.js `is251` and the library's 2x2
+// Gen4 driver: the key, the corners-only state, both move packings and the skipped gaps.
+
+const MAC_251 = 'AB:12:CD:34:EF:56';
+const SOLVED_CP = [0, 1, 2, 3, 4, 5, 6];
+const SOLVED_CO = [0, 0, 0, 0, 0, 0, 0];
+
+/** A decrypted Gen4 FACELETS payload with the given corners and junk in the edge bits. */
+function gen4CornerPacket(serial: number, cp: number[], co: number[]): Uint8Array {
+	const bits = new Array(160).fill('0');
+	const put = (offset: number, value: number, width: number) => {
+		const s = value.toString(2).padStart(width, '0');
+		for (let i = 0; i < width; i++) bits[offset + i] = s[i];
+	};
+	put(0, 0xed, 8);
+	put(8, 0x13, 8);
+	put(16, serial & 0xff, 8);
+	put(24, (serial >> 8) & 0xff, 8);
+	for (let i = 0; i < 7; i++) {
+		put(32 + i * 3, cp[i], 3);
+		put(53 + i * 2, co[i], 2);
+	}
+	for (let i = 0; i < 11; i++) put(69 + i * 4, 15, 4); // not a permutation: must be ignored
+	const out = new Uint8Array(20);
+	for (let i = 0; i < 20; i++) out[i] = parseInt(bits.slice(i * 8, i * 8 + 8).join(''), 2);
+	return out;
+}
+
+/** cstimer's second packing: one-hot face at bit 64, power at bit 70 (both in byte 8). */
+function gen4MovePacketB(face: number, power: number, serial: number, ts: number): Uint8Array {
+	const packet = gen4MovePacket([{ face: 0, dir: 0, serial, ts }]);
+	const FACE_BITS = [2, 32, 8, 1, 16, 4];
+	packet[8] = (FACE_BITS[face] << 2) | power;
+	return packet;
+}
+
+function cornersOf(moves: string[]): { cp: number[]; co: number[]; facelets: string } {
+	const cube = new Cube();
+	for (const m of moves) cube.move(m);
+	const { cp, co } = cube.toJSON();
+	return { cp, co, facelets: cube.asString() };
+}
+
+describe('GAN 251 UI — key', () => {
+	it("is cstimer's KEYS[6] and KEYS[7]", () => {
+		// gancube.js: v2initKey(true, false, 2) reads KEYS[2 + 2 * 2] and KEYS[3 + 2 * 2].
+		const key = JSON.parse(LZString.decompressFromEncodedURIComponent('NoDhBoEYFYCZwJwHZyzuAzJVGBsqZF8YEoMMDsEJIEAGcaaHcAFlYF0g'));
+		const iv = JSON.parse(LZString.decompressFromEncodedURIComponent('NoRgTA7ANAnNYAYAcUliiE0QwMxQFZo1UoAWANlTKjBg1xXAVnoggF0g'));
+		expect(key).toEqual(GAN_251_ENCRYPTION_KEY.key);
+		expect(iv).toEqual(GAN_251_ENCRYPTION_KEY.iv);
+	});
+
+	it('decrypts what it encrypts, salted with the MAC', () => {
+		const key = GAN_251_ENCRYPTION_KEY;
+		const enc = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), saltFromMac(MAC_251));
+		const plain = gen4CornerPacket(3, SOLVED_CP, SOLVED_CO);
+		const cipher = enc.encrypt(plain.slice());
+		expect(Array.from(cipher)).not.toEqual(Array.from(plain));
+		expect(Array.from(enc.decrypt(cipher))).toEqual(Array.from(plain));
+	});
+});
+
+describe('GAN 251 UI — state', () => {
+	it('reads the corners, ignores the edge bits, and reports from DBL', async () => {
+		const driver: any = new GanGen4ProtocolDriver(2);
+		const { cp, co, facelets } = cornersOf(['R', "U'", 'F2', 'R']);
+		const events = await driver.handleStateEvent(mockConn, gen4CornerPacket(5, cp, co));
+		expect(events.find((e: any) => e.type === 'FACELETS').facelets).toBe(canonical2x2(facelets));
+	});
+
+	it('reads a solved cube seen from a drifted core as solved', async () => {
+		const driver: any = new GanGen4ProtocolDriver(2);
+		const { cp, co } = cornersOf(['y', 'x']);
+		const events = await driver.handleStateEvent(mockConn, gen4CornerPacket(5, cp, co));
+		expect(events.find((e: any) => e.type === 'FACELETS').facelets).toBe(DEFAULT_SOLVED_STATE);
+	});
+});
+
+describe('GAN 251 UI — moves', () => {
+	async function started(cubeSize = 2) {
+		const driver: any = new GanGen4ProtocolDriver(cubeSize);
+		const sent: Uint8Array[] = [];
+		const conn = { sendCommandMessage: async (m: Uint8Array) => { sent.push(m); }, disconnect: () => {} };
+		await driver.handleStateEvent(conn, cubeSize === 2 ? gen4CornerPacket(10, SOLVED_CP, SOLVED_CO) : gen4FaceletsPacket(10));
+		const send = async (packet: Uint8Array) =>
+			(await driver.handleStateEvent(conn, packet)).filter((e: any) => e.type === 'MOVE').map((e: any) => e.move);
+		return { driver, sent, send };
+	}
+
+	it('keeps U, R and F, and reads a D-layer turn as the U layer seen from DBL', async () => {
+		const { send } = await started();
+		expect(await send(gen4MovePacket([{ face: 1, dir: 0, serial: 11, ts: 100 }]))).toEqual(['R']);
+		expect(await send(gen4MovePacket([{ face: 3, dir: 1, serial: 12, ts: 200 }]))).toEqual(["U'"]);
+	});
+
+	it('reads the second packing when the first does not decode', async () => {
+		const { send } = await started();
+		expect(await send(gen4MovePacketB(2, 1, 11, 100))).toEqual(["F'"]);
+	});
+
+	it('reads a power of 2 as a half turn', async () => {
+		const { send } = await started();
+		expect(await send(gen4MovePacketB(0, 2, 11, 100))).toEqual(['U2']);
+	});
+
+	it('skips a gap instead of asking for move history', async () => {
+		const { driver, sent, send } = await started();
+		expect(await send(gen4MovePacket([{ face: 0, dir: 0, serial: 14, ts: 100 }]))).toEqual(['U']);
+		expect(sent).toHaveLength(0);
+		expect(driver.writtenOffMoves).toBe(3);
+	});
+
+	it('reads the next turn in the frame a state report set up', async () => {
+		const driver: any = new GanGen4ProtocolDriver(2);
+		await driver.handleStateEvent(mockConn, gen4CornerPacket(10, SOLVED_CP, SOLVED_CO));
+		// The cube turned D (serial 11) and only its state report arrived.
+		const afterD = cornersOf(['D']);
+		await driver.handleStateEvent(mockConn, gen4CornerPacket(11, afterD.cp, afterD.co));
+		const events = await driver.handleStateEvent(mockConn, gen4MovePacket([{ face: 1, dir: 0, serial: 12, ts: 200 }]));
+		const move = events.find((e: any) => e.type === 'MOVE').move;
+		const seenFromDbl = new Cube();
+		seenFromDbl.move('U'); // D, seen from DBL
+		seenFromDbl.move(move);
+		const device = new Cube();
+		device.move('D');
+		device.move('R');
+		expect(canonical2x2(seenFromDbl.asString())).toBe(canonical2x2(device.asString()));
+	});
+
+	it('leaves the 3x3 driver as it was', async () => {
+		const { send } = await started(3);
+		expect(await send(gen4MovePacket([{ face: 3, dir: 1, serial: 11, ts: 100 }]))).toEqual(["D'"]);
+	});
+});
+
+describe('GAN 251 UI — command characteristic', () => {
+	function connection(adapter: any, driver: any, key = GAN_251_ENCRYPTION_KEY) {
+		const enc = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), saltFromMac(MAC_251));
+		return new GanCubeClassicConnection(adapter, {}, GAN_GEN4_SERVICE, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, enc, driver) as any;
+	}
+
+	it('falls back to fff7 when fff5 is not there, and stays on it', async () => {
+		const writes: string[] = [];
+		const adapter = {
+			writeCharacteristic: async (_d: any, _s: string, uuid: string) => {
+				writes.push(uuid);
+				if (uuid === GAN_GEN4_COMMAND_CHARACTERISTIC) throw new Error('No Characteristics matching UUID');
+			},
+		};
+		const conn = connection(adapter, new GanGen4ProtocolDriver(2));
+		conn.altCommandCharUuid = GAN_251_COMMAND_CHARACTERISTIC_ALT;
+		await conn.sendCubeCommand({ type: 'REQUEST_FACELETS' });
+		await conn.sendCubeCommand({ type: 'REQUEST_BATTERY' });
+		expect(writes).toEqual([GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_251_COMMAND_CHARACTERISTIC_ALT, GAN_251_COMMAND_CHARACTERISTIC_ALT]);
+	});
+
+	it('still fails for a cube with no fallback', async () => {
+		const adapter = { writeCharacteristic: async () => { throw new Error('gatt'); } };
+		const conn = connection(adapter, new GanGen4ProtocolDriver(), GAN_ENCRYPTION_KEYS[0]);
+		await expect(conn.sendCubeCommand({ type: 'REQUEST_FACELETS' })).rejects.toThrow('gatt');
 	});
 });

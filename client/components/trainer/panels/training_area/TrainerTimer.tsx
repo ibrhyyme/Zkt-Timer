@@ -13,7 +13,7 @@ export default function TrainerTimer() {
 	const {timerState, currentTimerValue, currentAlgorithm} = state;
 
 	const is3x3 = getPuzzleType(currentAlgorithm?.category || '') === '3x3x3';
-	const isSmartMode = state.smartConnected && is3x3;
+	const isSmartMode = state.smartConnected && state.smartPuzzle === '333' && is3x3;
 
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const startTimeRef = useRef<number>(0);

@@ -40,8 +40,15 @@ describe('timerTypeSupportsBucket', () => {
 			expect(timerTypeSupportsBucket('smart', 'wca', '333')).toBe(true);
 		});
 
-		it('is refused on anything else, including other NxN sizes', () => {
-			for (const cubeType of ['222', '444', '555', '666', '777', 'megaminx', 'skewb', 'clock']) {
+		// GAN 251 UI and MoYu WCU_MY22 (shared/smart_cube/puzzle.ts).
+		it('works on 2x2, every subset, and the WCA 2x2 event', () => {
+			expect(timerTypeSupportsBucket('smart', '222')).toBe(true);
+			expect(timerTypeSupportsBucket('smart', '222', '222eg')).toBe(true);
+			expect(timerTypeSupportsBucket('smart', 'wca', '222')).toBe(true);
+		});
+
+		it('is refused on anything else, including bigger NxN sizes', () => {
+			for (const cubeType of ['444', '555', '666', '777', 'megaminx', 'skewb', 'clock']) {
 				expect(timerTypeSupportsBucket('smart', cubeType)).toBe(false);
 			}
 			expect(timerTypeSupportsBucket('smart', 'wca', '444')).toBe(false);
@@ -91,16 +98,14 @@ describe('timerTypeUnsupportedReason', () => {
 	});
 
 	it('names the reason per input', () => {
-		// Reuses a key that already existed in all five locales but had never been
-		// referenced from any code.
-		expect(timerTypeUnsupportedReason('smart', 'megaminx')).toBe('room_timer.smart_cube_3x3_only');
+		expect(timerTypeUnsupportedReason('smart', 'megaminx')).toBe('room_timer.smart_cube_3x3_2x2_only');
 		expect(timerTypeUnsupportedReason('virtual', 'megaminx')).toBe(
 			'room_timer.virtual_cube_nxn_only'
 		);
 	});
 
 	it('gives the smart cube its own reason on a big cube, not the virtual one', () => {
-		expect(timerTypeUnsupportedReason('smart', '444')).toBe('room_timer.smart_cube_3x3_only');
+		expect(timerTypeUnsupportedReason('smart', '444')).toBe('room_timer.smart_cube_3x3_2x2_only');
 		expect(timerTypeUnsupportedReason('virtual', '444')).toBeNull();
 	});
 });

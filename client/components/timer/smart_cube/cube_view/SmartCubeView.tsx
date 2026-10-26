@@ -9,6 +9,8 @@ import { onVisibilityChange } from '../../../../util/app-visibility';
 import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
 import type { SmartTurn } from '../../../../util/smart_scramble';
 import { getSmartCubeManager } from '../../../../util/smart_cube/connection_manager';
+import { solve2x2 } from '../../../../util/smart_cube/cube2x2';
+import type { SmartCubePuzzle } from '../../../../../shared/smart_cube/puzzle';
 import { recolorPuzzle, stickerPaletteFromFaceColors } from './cube_palette';
 import { useCubePalette } from '../../../../util/cube_colors/useCubePalette';
 import { HOME_TILT_DEG, HOME_TURN_DEG } from './view_defaults';
@@ -57,10 +59,12 @@ interface Props {
 	facelets?: string | null;
 	/** Null disables the gyroscope (battle draws no gyro). Undefined means the app-wide manager. */
 	gyroSource?: { subscribeGyro: (listener: (event: any) => void) => () => void } | null;
+	/** Which cube to draw. Left out, the connected cube's (a 2x2 for the GAN 251 UI and WCU_MY22). */
+	puzzle?: SmartCubePuzzle;
 }
 
 const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeView(
-	{ connected, size, hidden, keepVisualOnClear, onStreamCleared, turns, facelets, gyroSource },
+	{ connected, size, hidden, keepVisualOnClear, onStreamCleared, turns, facelets, gyroSource, puzzle: puzzleProp },
 	ref
 ) {
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -97,6 +101,8 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 	// Hooks run unconditionally; the props simply win when a caller supplies them.
 	const reduxTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
 	const reduxFacelets: string | null = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
+	const reduxPuzzle: SmartCubePuzzle = useSelector((state: any) => state.smartCube?.smartCubePuzzle || '333');
+	const puzzle = puzzleProp ?? reduxPuzzle;
 
 	const smartTurns: SmartTurn[] = turns ?? reduxTurns;
 	const smartCurrentState: string | null = facelets !== undefined ? facelets : reduxFacelets;
@@ -126,7 +132,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 				if (cancelled) return;
 
 				twisty = new TwistyPlayer({
-					puzzle: '3x3x3',
+					puzzle: puzzle === '222' ? '2x2x2' : '3x3x3',
 					visualization: 'PG3D',
 					alg: '',
 					experimentalSetupAnchor: 'start',
@@ -205,7 +211,7 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 			if (containerRef.current) containerRef.current.innerHTML = '';
 		};
-	}, [paletteKey]);
+	}, [paletteKey, puzzle]);
 
 	// ── Move mirror ──
 	useEffect(() => {
@@ -270,7 +276,10 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 				appliedTurnsRef.current = smartTurns.length;
 				if (facelets === DEFAULT_SOLVED_STATE) return;
 
-				const solution = await solveAsync(Cube.fromString(facelets).toJSON());
+				// A 2x2 state is corners only; the 3x3 solver refuses it (see cube2x2.ts).
+				const solution = puzzle === '222'
+					? (solve2x2(facelets) || []).join(' ')
+					: await solveAsync(Cube.fromString(facelets).toJSON());
 				// The solve runs in a worker; if the cube moved meanwhile, replaying the setup
 				// would fight with the moves the mirror effect already applied.
 				if (smartCurrentStateRef.current !== facelets) return;

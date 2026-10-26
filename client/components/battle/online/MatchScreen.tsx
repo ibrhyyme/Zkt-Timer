@@ -381,7 +381,7 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 				{/* The player's own cube. Kept mounted while the link is down, so it comes back
 				    where it was. */}
 				<div className={b('my-cube-view', {off: !cube.connected})}>
-					<SmartCubeView ref={cube.viewRef} connected={cube.connected} size={cubeSize} keepVisualOnClear />
+					<SmartCubeView ref={cube.viewRef} connected={cube.connected} size={cubeSize} keepVisualOnClear puzzle="333" />
 				</div>
 				{cubeWarning && <div className={b('cube-warning')}>{cubeWarning}</div>}
 			</section>

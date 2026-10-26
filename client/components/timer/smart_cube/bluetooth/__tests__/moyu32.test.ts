@@ -14,6 +14,8 @@ jest.mock('../mac_cache', () => ({
 
 import MoYu32, { isValidMoyu32Packet, moyu32MacCandidatesFromName } from '../moyu32';
 import fixtures from './fixtures/moyu32_captures.json';
+import my22Fixtures from './fixtures/moyu32_my22_captures.json';
+import { expand2x2Facelets, isValid2x2Facelets } from '../../../../../util/smart_cube/cube2x2';
 
 interface Capture {
 	name: string;
@@ -118,7 +120,138 @@ describe('MoYu32 — MAC candidates from the advertised name', () => {
 		expect(moyu32MacCandidatesFromName('WCU_MY33_AF9E')).toHaveLength(3);
 	});
 
-	it('offers nothing for the 2x2, which the app does not support', () => {
-		expect(moyu32MacCandidatesFromName('WCU_MY22_1037')).toEqual([]);
+	it('puts the observed address first for the 2x2 too', () => {
+		expect(moyu32MacCandidatesFromName('WCU_MY22_1037')[0]).toBe('CF:30:16:01:10:37');
+	});
+});
+
+// ── WCU_MY22, the Weipo V5 AI 2x2 ───────────────────────────────────────────────
+
+interface My22Capture {
+	source: string;
+	scenario: string;
+	name: string;
+	mac: string;
+	notifies: string[];
+	times: number[];
+	expectedMoves: string[] | null;
+	expectedStates: string[] | null;
+	expectedMoveCount: number;
+	expectedCubeTimestampGaps: number[] | null;
+}
+
+const MY22 = (my22Fixtures as { captures: My22Capture[] }).captures;
+const my22 = (scenario: string) => MY22.find((c) => c.source.includes(scenario))!;
+
+/**
+ * Replays a capture with the browser clock at the recorded receive times, so the driver's
+ * clock-drift correction sees the real pauses (smartcube-web-bluetooth does the same).
+ * `edit` may rewrite the decrypted packets first, re-encrypted with the cube's key.
+ */
+function replay2x2(capture: My22Capture, edit?: (packets: number[][]) => number[][]) {
+	const adapter = { writeCharacteristic: async () => {} };
+	const cube: any = new MoYu32({ name: capture.name, deviceId: 'test' }, adapter);
+	const moves: any[] = [];
+	const afterMoves: string[] = [];
+	const reported: string[] = [];
+	const gyro: any[] = [];
+	let connected = 0;
+	cube._sink = {
+		handleConnected: async () => { connected++; },
+		handleMoveBatch: (batch: any[], state: string | null) => {
+			moves.push(...batch);
+			if (state) afterMoves.push(state);
+		},
+		handleFacelets: (state: string) => reported.push(state),
+		handleBattery: () => {},
+		handleGyroSupported: () => {},
+	};
+	cube.subscribeGyro((e: any) => gyro.push(e));
+	cube.initDecoder(capture.mac);
+	let packets = capture.notifies.map((hex) => cube.decode(dataView(hex)));
+	if (edit) packets = edit(packets);
+	const times = capture.times.slice();
+	while (times.length < packets.length) times.push(times[times.length - 1] ?? 0);
+	const clock = jest.spyOn(Date, 'now');
+	try {
+		packets.forEach((plain, i) => {
+			clock.mockReturnValue(times[i]);
+			const bytes = Uint8Array.from(cube.encode(plain.slice()));
+			cube.onStateChanged(new DataView(bytes.buffer));
+		});
+	} finally {
+		clock.mockRestore();
+	}
+	return { cube, moves, afterMoves, reported, gyro, connected };
+}
+
+describe('MoYu32 WCU_MY22 (2x2) — real captures', () => {
+	it('knows it is a 2x2 from its name', () => {
+		const cube: any = new MoYu32({ name: 'WCU_MY22_1037', deviceId: 'test' }, {});
+		expect(cube.puzzle).toBe('222');
+		expect(new MoYu32({ name: 'WCU_MY32_A388', deviceId: 'test' }, {}).puzzle).toBe('333');
+	});
+
+	it('confirms on the solved 24-sticker state, reads the counter after it, streams the gyro', () => {
+		const { cube, reported, gyro, connected } = replay2x2(my22('2026-10-16.json'));
+		expect(connected).toBe(1);
+		expect(reported).toContain(expand2x2Facelets(my22('2026-10-16.json').expectedStates![0]));
+		// The counter follows the 72 sticker bits, not the 3x3 offset.
+		expect(cube.prevMoveCnt).toBe(4);
+		expect(gyro.length).toBeGreaterThan(0);
+	});
+
+	for (const scenario of ['T14-45-36', 'T14-56-57']) {
+		describe(my22(scenario).scenario, () => {
+			it('decodes the same turns as the reference', () => {
+				const { moves } = replay2x2(my22(scenario));
+				expect(moves.map((m) => m.turn)).toEqual(my22(scenario).expectedMoves);
+			});
+
+			it('passes on the same state after every turn', () => {
+				const { afterMoves } = replay2x2(my22(scenario));
+				expect(afterMoves.slice(-6)).toEqual(my22(scenario).expectedStates!.map((s) => expand2x2Facelets(s)));
+			});
+		});
+	}
+
+	it('stamps the turns with the cube clock the reference reads', () => {
+		const capture = my22('T14-45-36');
+		const { moves } = replay2x2(capture);
+		const gaps = moves.slice(1).map((m, i) => m.cubeTimestamp - moves[i].cubeTimestamp);
+		expect(gaps).toEqual(capture.expectedCubeTimestampGaps);
+	});
+
+	it('turns 98 mixed turns into 98 legal states', () => {
+		const { moves, afterMoves } = replay2x2(my22('T14-40-37'));
+		expect(moves).toHaveLength(98);
+		expect(afterMoves.every((s) => isValid2x2Facelets(s))).toBe(true);
+	});
+
+	it('reads a repeated notification once', () => {
+		const capture = my22('T14-45-36');
+		const doubled = (packets: number[][]) => packets.flatMap((p) => (p[0] === 165 ? [p, p.slice()] : [p]));
+		expect(replay2x2(capture, doubled).moves.map((m) => m.turn)).toEqual(capture.expectedMoves);
+	});
+
+	// smartcube-web-bluetooth "preserves delayed turn notifications when a requested snapshot
+	// already includes them": R R' is solved, so the real solved state is replayed with R''s
+	// counter just before R''s own notification.
+	it('keeps a turn whose state arrived first, marked stale and applied once', () => {
+		const capture = my22('T14-45-36');
+		const overtaken = (packets: number[][]) => {
+			const state = packets.find((p) => p[0] === 163)!.slice();
+			let turns = 0;
+			return packets.flatMap((p) => {
+				if (p[0] !== 165 || ++turns !== 2) return [p];
+				const early = state.slice();
+				early[10] = p[13];
+				return [early, p];
+			});
+		};
+		const { moves, afterMoves } = replay2x2(capture, overtaken);
+		expect(moves.map((m) => m.turn)).toEqual(capture.expectedMoves);
+		expect(moves.filter((m) => m.stale).map((m) => m.turn)).toEqual(["R'"]);
+		expect(afterMoves.slice(-6)).toEqual(capture.expectedStates!.map((s) => expand2x2Facelets(s)));
 	});
 });

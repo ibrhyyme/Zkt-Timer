@@ -1,6 +1,7 @@
 import { SmartTurn } from '../../../util/smart_scramble';
 import { CubeTracker } from '../../../util/smart_cube/tracker';
 import { computeTargetFacelets } from '../../../util/smart_cube/solve_engine';
+import type { SmartCubePuzzle } from '../../../../shared/smart_cube/puzzle';
 
 /**
  * Is the scramble already done? A state comparison (simulate the turns, compare the
@@ -8,12 +9,12 @@ import { computeTargetFacelets } from '../../../util/smart_cube/solve_engine';
  * half-finished double moves and commuting reorderings, the same way SmartSolveEngine's
  * own scramble-completion check works.
  */
-export function preflightChecks(smartTurns: SmartTurn[], scramble: string, turnOffset: number = 0): boolean {
-	const target = computeTargetFacelets(scramble);
+export function preflightChecks(smartTurns: SmartTurn[], scramble: string, turnOffset: number = 0, puzzle: SmartCubePuzzle = '333'): boolean {
+	const target = computeTargetFacelets(scramble, puzzle);
 	if (!target) return false;
 
 	const relevantTurns = turnOffset > 0 ? smartTurns.slice(turnOffset) : smartTurns;
-	const tracker = new CubeTracker();
+	const tracker = new CubeTracker(puzzle);
 	tracker.applyNew(relevantTurns);
 	return tracker.matches(target);
 }

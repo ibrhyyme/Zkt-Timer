@@ -2241,6 +2241,7 @@
     "no_solves_found": "No se encontraron resoluciones"
   },
   "rooms": {
+    "smart_cube_puzzle_mismatch": "El cubo inteligente conectado es {{cube}} y esta sala es {{session}}. Conecta un cubo inteligente {{session}} para competir aquí.",
     "page_title": "Salas",
     "description": "Crea una sala para competir con tus amigos o únete a una existente.",
     "create_room": "Crear nueva sala",
@@ -3372,7 +3373,7 @@
     "connect_stackmat": "Conectar StackMat",
     "setup_stackmat": "Configurar StackMat",
     "smart_cube": "Cubo inteligente",
-    "smart_cube_3x3_only": "El cubo inteligente solo es compatible con 3x3",
+    "smart_cube_3x3_2x2_only": "El cubo inteligente solo es compatible con 3x3 y 2x2",
     "virtual_cube_nxn_only": "El cubo virtual solo funciona en cubos de 2x2 a 7x7",
     "not_supported_in_room": "Actualmente no es compatible en salas",
     "use_keyboard_or_manual": "Usa el teclado o entrada manual",
@@ -3383,6 +3384,8 @@
     "place_hands_on_qytoys": "Coloca las manos en el timer QYtoys para comenzar"
   },
   "smart_cube": {
+    "puzzle_mismatch": "El cubo inteligente conectado es {{cube}} y esta sesión es {{session}}. Cambia el tipo de cubo o conecta un cubo inteligente {{session}}.",
+    "puzzle_2x2_unsupported_here": "Aquí no se puede usar un cubo inteligente 2x2. Esta parte de la app solo funciona con un 3x3.",
     "turns_label": "movimientos",
     "tps_label": "tps",
     "bt_unavailable_title": "¡Bluetooth no disponible!",

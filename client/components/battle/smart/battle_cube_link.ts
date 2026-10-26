@@ -3,6 +3,8 @@ import { SmartSolveEngine, SmartEngineEvent, DEFAULT_SOLVED_STATE, isValidFacele
 import { SmartCubeDriverSink } from '../../../util/smart_cube/driver_sink';
 import { SmartTurn } from '../../../util/smart_scramble';
 import { setTimerParams } from '../../timer/helpers/params';
+import { toastError } from '../../../util/toast';
+import i18n from '../../../i18n/i18n';
 
 /**
  * One player's cube in battle.
@@ -380,6 +382,15 @@ export class BattleCubeLink implements SmartCubeDriverSink {
 		}
 
 		const deviceName = server?.device?.name || this.conn?.device?.name || null;
+		// Battle scrambles and checks a 3x3. A 2x2 model (GAN 251 UI, MoYu WCU_MY22) connects
+		// fine but could never complete a round, so it is let go with a word instead.
+		if (cube?.puzzle === '222') {
+			this.trace('2x2 cube refused', deviceName);
+			toastError(i18n.t('smart_cube.puzzle_2x2_unsupported_here'));
+			clearPickerParams();
+			void this.disconnect();
+			return;
+		}
 		// The BLE handle, not the database row id: this is what the other player's scan excludes.
 		const deviceId = this.conn?.device?.deviceId || null;
 		const persistentId = this.conn?.device?.persistentId || null;

@@ -2,7 +2,7 @@ import {Lock} from 'redlock';
 import {getPrisma} from '../database';
 import {logger} from './logger';
 import {acquireRedisLock, createRedisKey, getValueFromRedis, RedisNamespace, setKeyInRedis} from './redis';
-import {getSolveSteps} from '../util/solve/solve_method';
+import {getSolveSteps, bucketHasMethodSteps} from '../util/solve/solve_method';
 import {isKnownMethod} from '../../shared/util/solve/methods';
 import {replaceSolveMethodSteps} from '../models/solve_method_step';
 import {parseSmartTurns} from '../../shared/smart_cube/parse_turns';
@@ -46,6 +46,8 @@ export interface MethodStepsReindexStatus {
 	filled: number;
 	skippedNoTurns: number;
 	skippedAlreadyHasSteps: number;
+	/** Not a 3x3 bucket (a 2x2 smart cube, a virtual cube of another size): nothing to break down. */
+	skippedPuzzle: number;
 	downgraded: number;
 	error: number;
 	methodChanged: number;
@@ -91,6 +93,7 @@ function emptyStatus(): MethodStepsReindexStatus {
 		filled: 0,
 		skippedNoTurns: 0,
 		skippedAlreadyHasSteps: 0,
+		skippedPuzzle: 0,
 		downgraded: 0,
 		error: 0,
 		methodChanged: 0,
@@ -139,6 +142,10 @@ export async function startMethodStepsReindex(): Promise<MethodStepsReindexStatu
 async function processOne(cand: any, status: MethodStepsReindexStatus) {
 	if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
 		status.skippedNoTurns++;
+		return;
+	}
+	if (!bucketHasMethodSteps(cand.cube_type, cand.scramble_subset)) {
+		status.skippedPuzzle++;
 		return;
 	}
 
@@ -204,6 +211,8 @@ async function runJob(initialLock: Lock, status: MethodStepsReindexStatus) {
 					id: true,
 					smart_turns: true,
 					scramble: true,
+					cube_type: true,
+					scramble_subset: true,
 					dnf: true,
 					is_smart_cube: true,
 					// Every step row of a solve carries the same method_name; one is enough.

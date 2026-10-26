@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { closeModal } from '../../actions/general';
 import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
 import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
+import { bucketHasMethodSteps } from '../../../shared/util/solve/solve_steps';
 import SolveCubeTag from './solve_cube/SolveCubeTag';
 import { getSolveDb } from '../../db/solves/init';
 import { emitEvent } from '../../util/event_handler';
@@ -308,7 +309,9 @@ export default function SolveInfo(props: Props) {
 		cubeTag,
 	};
 
-	if (isSmartCube) {
+	// Every tab of the smart layout is a method breakdown, and only 3x3 solves get one. A 2x2
+	// smart cube solve (GAN 251 UI, MoYu WCU_MY22) would open on empty charts and a 3x3 replay.
+	if (isSmartCube && bucketHasMethodSteps(cubeType, solve.scramble_subset)) {
 		return <SmartSolveLayout {...layoutProps} />;
 	}
 

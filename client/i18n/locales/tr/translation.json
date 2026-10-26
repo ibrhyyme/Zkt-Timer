@@ -2227,6 +2227,7 @@
     "no_solves_found": "Hiçbir çözüm bulunamadı"
   },
   "rooms": {
+    "smart_cube_puzzle_mismatch": "Bağlı smart küp {{cube}}, bu oda {{session}}. Bu odada yarışmak için {{session}} smart küp bağla.",
     "page_title": "Odalar",
     "description": "Arkadaşlarınla mücadele etmek için bir oda oluştur veya mevcut bir odaya katıl.",
     "create_room": "Yeni Oda Oluştur",
@@ -3355,7 +3356,7 @@
     "connect_stackmat": "StackMat Bağlan",
     "setup_stackmat": "StackMat Ayarla",
     "smart_cube": "Smart Küp",
-    "smart_cube_3x3_only": "Smart küp sadece 3x3 için destekleniyor",
+    "smart_cube_3x3_2x2_only": "Smart küp sadece 3x3 ve 2x2 için destekleniyor",
     "virtual_cube_nxn_only": "Sanal küp sadece 2x2 - 7x7 küplerde çalışır",
     "not_supported_in_room": "Şu an oda içinde desteklenmiyor",
     "use_keyboard_or_manual": "Klavye veya manuel giriş kullanın",
@@ -3366,6 +3367,8 @@
     "place_hands_on_qytoys": "QYtoys timer'a ellerinizi koyarak başlayın"
   },
   "smart_cube": {
+    "puzzle_mismatch": "Bağlı smart küp {{cube}}, bu oturum {{session}}. Küp türünü değiştir ya da {{session}} smart küp bağla.",
+    "puzzle_2x2_unsupported_here": "2x2 smart küp burada kullanılamaz, bu bölüm yalnızca 3x3 ile çalışır.",
     "turns_label": "hamle",
     "tps_label": "tps",
     "bt_unavailable_title": "Bluetooth kullanılamıyor!",

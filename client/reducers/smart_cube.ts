@@ -23,6 +23,7 @@ const initialState: SmartCubeStore = {
 	smartStateSeq: 0,
 	smartPhysicallySolved: false,
 	smartSolvedState: DEFAULT_SOLVED_FACELETS,
+	smartCubePuzzle: '333',
 };
 
 /**

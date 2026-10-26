@@ -3,6 +3,7 @@ import { LokiFetchOptions } from '../lokijs';
 import { cleanFilterOptions } from '../util';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { Solve } from '../../../server/schemas/Solve.schema';
+import { normalizeWcaEventBucket } from '../../../shared/solve';
 
 export type FilterSolvesOptions = LokiQuery<Solve>;
 
@@ -18,25 +19,31 @@ export function fetchLastSolve(options: FilterSolvesOptions = {}) {
 }
 
 /**
- * Builds a bucket-scoped solve filter (session + cube_type + subset) matching the
- * timer's current-view semantics in DefaultTimer. Use this whenever you need "the
- * last solve" for the timer display — filtering by session_id alone leaks the
+ * Builds a bucket-scoped solve filter (session + cube_type + subset): the timer's current
+ * view (DefaultTimer) and everything that must agree with it. Use this whenever you need
+ * "the last solve" for the timer display — filtering by session_id alone leaks the
  * globally-last solve across cube types/subsets into a different bucket's view.
+ *
+ * The bucket is the one a solve is WRITTEN to. A WCA event picked as a standalone type with
+ * its default subset (2x2 > WCA Standard, from the picker or Alt+2) is a duplicate of
+ * wca::222, and sanitizeSolve files every solve made there under wca::222. Filtering on the
+ * selection as picked showed none of them until a reload redirected the setting (init.ts).
  */
 export function buildBucketFilter(params: {
 	session_id: string;
 	cube_type: string;
 	scramble_subset?: string | null;
 }): FilterSolvesOptions {
+	const bucket = normalizeWcaEventBucket(params.cube_type, params.scramble_subset);
 	const filter: FilterSolvesOptions = {
 		session_id: params.session_id,
-		cube_type: params.cube_type,
+		cube_type: bucket.cube_type,
 	};
 
-	// Mirror DefaultTimer: subset constrains the bucket only when meaningful —
-	// always for WCA, otherwise only when a specific subset is selected.
-	if (params.cube_type === 'wca' || params.scramble_subset) {
-		filter.scramble_subset = params.scramble_subset ?? null;
+	// Subset constrains the bucket only when meaningful: always for WCA, otherwise only
+	// when a specific subset is selected.
+	if (bucket.cube_type === 'wca' || bucket.scramble_subset) {
+		filter.scramble_subset = bucket.scramble_subset ?? null;
 	}
 
 	return filter;

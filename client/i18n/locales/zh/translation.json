@@ -2216,6 +2216,7 @@
     "no_solves_found": "未找到还原记录"
   },
   "rooms": {
+    "smart_cube_puzzle_mismatch": "已连接的智能魔方是{{cube}}，本房间是{{session}}。请连接{{session}}智能魔方后再参与比赛。",
     "page_title": "房间",
     "description": "创建一个房间与朋友比赛或加入现有房间。",
     "create_room": "创建新房间",
@@ -3340,7 +3341,7 @@
     "connect_stackmat": "连接StackMat",
     "setup_stackmat": "设置StackMat",
     "smart_cube": "智能魔方",
-    "smart_cube_3x3_only": "智能魔方仅支持3x3x3",
+    "smart_cube_3x3_2x2_only": "智能魔方仅支持3x3x3和2x2x2",
     "virtual_cube_nxn_only": "虚拟魔方仅支持 2x2 至 7x7",
     "not_supported_in_room": "房间内暂不支持",
     "use_keyboard_or_manual": "使用键盘或手动输入",
@@ -3351,6 +3352,8 @@
     "place_hands_on_qytoys": "将双手放在 QYtoys 计时器上开始"
   },
   "smart_cube": {
+    "puzzle_mismatch": "已连接的智能魔方是{{cube}}，当前分组是{{session}}。请切换魔方类型，或连接{{session}}智能魔方。",
+    "puzzle_2x2_unsupported_here": "此处无法使用2x2智能魔方，该功能仅支持3x3。",
     "turns_label": "步",
     "tps_label": "tps",
     "bt_unavailable_title": "蓝牙不可用！",

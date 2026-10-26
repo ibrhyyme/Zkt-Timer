@@ -1,4 +1,5 @@
 import { SmartSolveEngine, SmartEngineEvent, computeTargetFacelets } from '../smart_cube';
+import { canonical2x2, solve2x2 } from '../smart_cube/cube2x2';
 import { DEFAULT_SOLVED_STATE } from '../smart_cube/facelets';
 import { SmartTurn } from '../smart_scramble';
 import Cube from 'cubejs';
@@ -1123,5 +1124,95 @@ describe('SmartSolveEngine — where a solve ends', () => {
 
 		expect(of('TIMER_START')).toHaveLength(0);
 		expect(engine.trackerState).toBe(computeTargetFacelets(SCRAMBLE));
+	});
+});
+
+describe('SmartSolveEngine — 2x2', () => {
+	// U/R/F only, as every 2x2 scramble the app generates.
+	const SCRAMBLE_222 = "R U' F2 R2 U F' R U2 F R' U F2 R' U2";
+	const SCRAMBLE_MOVES = SCRAMBLE_222.split(' ');
+
+	function scrambled(engine: SmartSolveEngine) {
+		engine.setScramble(SCRAMBLE_222);
+		engine.setConnected(true);
+		const turns = SCRAMBLE_MOVES.map((m, i) => turn(m, 1000 + i * 10));
+		engine.pushTurns(turns.slice());
+		return turns;
+	}
+
+	it('stops on solved corners, which the 3x3 model alone would never call solved', () => {
+		const { engine, of } = harness({ puzzle: '222' });
+		const turns = scrambled(engine);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+		const scrambleEnd = of('SCRAMBLE_COMPLETE')[0].at;
+
+		const solution = solve2x2(faceletsAfter(SCRAMBLE_MOVES))!;
+		// Not the scramble undone: on a 3x3 these turns leave the edges scrambled.
+		expect(faceletsAfter([...SCRAMBLE_MOVES, ...solution])).not.toBe(DEFAULT_SOLVED_STATE);
+
+		solution.forEach((m, i) => {
+			turns.push(turn(m, scrambleEnd + 1000 + i * 300));
+			engine.pushTurns(turns.slice());
+		});
+		expect(of('TIMER_START')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('tracker');
+		expect(of('SOLVE_COMPLETE')[0].result.solutionTurns.map((t) => t.turn)).toEqual(solution);
+	});
+
+	it('completes the scramble from a state report in any orientation', () => {
+		const { engine, of } = harness({ puzzle: '222' });
+		engine.setScramble(SCRAMBLE_222);
+		engine.setConnected(true);
+		// The cube reports the target while held rotated (a core-frame cube, a drifted frame).
+		engine.pushFacelets(faceletsAfter([...SCRAMBLE_MOVES, 'x', 'y2']));
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+		expect(of('SCRAMBLE_COMPLETE')[0].source).toBe('facelets');
+	});
+
+	it('commits from a solved report while a final move is missing', async () => {
+		const { engine, of } = harness({ puzzle: '222', graceMs: 10 });
+		const turns = scrambled(engine);
+		const scrambleEnd = of('SCRAMBLE_COMPLETE')[0].at;
+		const solution = solve2x2(faceletsAfter(SCRAMBLE_MOVES))!;
+		// Every move but the last arrives; the cube then reports itself solved, rotated.
+		solution.slice(0, -1).forEach((m, i) => turns.push(turn(m, scrambleEnd + 1000 + i * 300)));
+		engine.pushTurns(turns.slice());
+		engine.pushFacelets(faceletsAfter(['z']));
+		await wait(40);
+		expect(of('SOLVE_COMPLETE')).toHaveLength(1);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('facelets-grace');
+	});
+
+	it('rebuilds the scramble in the new form when the cube changes puzzle', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE_222);
+		engine.setConnected(true);
+		engine.setPuzzle('222');
+		expect(engine.target).toBe(canonical2x2(faceletsAfter(SCRAMBLE_MOVES)));
+		engine.pushTurns(SCRAMBLE_MOVES.map((m, i) => turn(m, 1000 + i * 10)));
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
+	});
+
+	it('leaves the move-order recovery off: its search is a 3x3 one', () => {
+		const { engine } = harness({ puzzle: '222', moveOrderFix: true });
+		scrambled(engine);
+		expect((engine as any).moveOrderTimer).toBeNull();
+	});
+});
+
+describe('SmartSolveEngine — resume after a stretch it was not fed', () => {
+	// The timer page parks the engine while a 2x2 sits on a 3x3 session (or the reverse) and
+	// feeds it nothing; when the two agree again it hands over the cube as it is then.
+	it('counts the turns made meanwhile as done instead of replaying them', () => {
+		const { engine, of } = harness();
+		engine.setScramble(SCRAMBLE);
+		engine.setConnected(true);
+		engine.suspend();
+		const meanwhile = [turn('R', 1000), turn('U', 1100)];
+		engine.resume(meanwhile, faceletsAfter(['R', 'U']));
+		engine.setScramble(SCRAMBLE);
+		engine.pushTurns([...meanwhile, turn('F', 1200)]);
+		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
 	});
 });

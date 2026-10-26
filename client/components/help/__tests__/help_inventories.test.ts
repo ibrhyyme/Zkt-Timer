@@ -46,6 +46,7 @@ describe('smart cube brands', () => {
 				'QY-QYSC',
 				'Rubiks',
 				'WCU_MY3',
+				'WCU_MY22',
 				'XMD-TornadoV4-i',
 				'^S',
 				'gan',

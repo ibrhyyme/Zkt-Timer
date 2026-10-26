@@ -24,6 +24,7 @@ import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
 
 export const SMART_DEFAULTS = {
 	smartConnected: false,
+	smartPuzzle: '333' as '333' | '222',
 	smartConnecting: false,
 	smartScanning: false,
 	smartScanError: null as string | null,
@@ -413,6 +414,7 @@ export function trainerReducer(state: TrainerSessionState, action: TrainerAction
 				...(action.payload.connected !== undefined && {smartConnected: action.payload.connected}),
 				...(action.payload.scanError !== undefined && {smartScanError: action.payload.scanError}),
 				...(action.payload.battery !== undefined && {smartBattery: action.payload.battery}),
+				...(action.payload.puzzle !== undefined && {smartPuzzle: action.payload.puzzle}),
 			};
 
 		case 'SMART_SET_PHASE':

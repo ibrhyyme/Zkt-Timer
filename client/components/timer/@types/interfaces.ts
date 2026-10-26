@@ -161,4 +161,9 @@ export interface SmartCubeStore {
 	smartStateSeq?: number;
 	smartPhysicallySolved?: boolean;
 	smartSolvedState?: string;
+	/**
+	 * Puzzle of the connected cube: '333', or '222' for the GAN 251 UI and the MoYu WCU_MY22.
+	 * A 2x2's facelets are corners only, seen from DBL (util/smart_cube/cube2x2.ts).
+	 */
+	smartCubePuzzle?: '333' | '222';
 }

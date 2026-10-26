@@ -247,7 +247,7 @@ WITH ins AS (
            WHEN starts_with(g.ble_name, 'Mi Smart Magic Cube') THEN 'Xiaomi' -- BRAND_CASE
            WHEN starts_with(g.ble_name, 'GoCube') THEN 'GoCube' -- BRAND_CASE
            WHEN starts_with(g.ble_name, 'Rubiks') THEN 'Rubik''s Connected' -- BRAND_CASE
-           WHEN starts_with(g.ble_name, 'MHC') OR starts_with(g.ble_name, 'WCU_MY3') OR starts_with(g.ble_name, '^S') THEN 'MoYu' -- BRAND_CASE
+           WHEN starts_with(g.ble_name, 'MHC') OR starts_with(g.ble_name, 'WCU_MY3') OR starts_with(g.ble_name, 'WCU_MY22') OR starts_with(g.ble_name, '^S') THEN 'MoYu' -- BRAND_CASE
            WHEN starts_with(g.ble_name, 'QY-QYSC') OR starts_with(g.ble_name, 'XMD-TornadoV4-i') THEN 'QiYi' -- BRAND_CASE
          END,
          true, g.ble_device_id, g.ble_name,

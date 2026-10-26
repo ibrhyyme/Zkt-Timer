@@ -1,6 +1,8 @@
 import Cube from 'cubejs';
 import { SmartTurn, invertMove } from '../smart_scramble';
 import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
+import { normalizeFacelets } from './cube2x2';
+import type { SmartCubePuzzle } from '../../../shared/smart_cube/puzzle';
 
 /**
  * The logical mirror of the physical cube.
@@ -16,10 +18,19 @@ import { DEFAULT_SOLVED_STATE, isValidFacelets } from './facelets';
  * for. Zeroing the counter instead would replay the whole backlog onto a freshly built
  * tracker, which is a real case after a Bluetooth drop where pre-drop turns are still
  * held by the caller.
+ *
+ * A 2x2 is tracked on the same 3x3 model; its state is read through `normalizeFacelets`
+ * (corners only, DBL home), so the edges the model scrambles never take part in a comparison.
  */
 export class CubeTracker {
 	private cube = new Cube();
 	private appliedTurns = 0;
+
+	constructor(private puzzle: SmartCubePuzzle = '333') {}
+
+	setPuzzle(puzzle: SmartCubePuzzle): void {
+		this.puzzle = puzzle;
+	}
 
 	/** Number of turns from the caller's stream already applied to this tracker. */
 	get applied(): number {
@@ -28,15 +39,15 @@ export class CubeTracker {
 
 	/** Current logical state as a facelets string. */
 	get state(): string {
-		return this.cube.asString();
+		return normalizeFacelets(this.cube.asString(), this.puzzle);
 	}
 
 	isSolved(solvedState = DEFAULT_SOLVED_STATE): boolean {
-		return this.cube.asString() === solvedState;
+		return this.state === normalizeFacelets(solvedState, this.puzzle);
 	}
 
 	matches(facelets: string | null | undefined): boolean {
-		return !!facelets && this.cube.asString() === facelets;
+		return !!facelets && this.state === normalizeFacelets(facelets, this.puzzle);
 	}
 
 	/**
@@ -171,8 +182,10 @@ export interface ScramblePrefix {
  * on the correction path the displayed scramble is a short fix-up sequence and the cube
  * does not start from a solved state. Inverting the sequence off the target finds the
  * real starting point in both cases.
+ *
+ * Every state is stored in the puzzle's normalized form (see CubeTracker).
  */
-export function prefixStatesFrom(targetFacelets: string, moves: string[]): ScramblePrefix[] {
+export function prefixStatesFrom(targetFacelets: string, moves: string[], puzzle: SmartCubePuzzle = '333'): ScramblePrefix[] {
 	if (!moves.length || !isValidFacelets(targetFacelets)) return [];
 	try {
 		const cube = Cube.fromString(targetFacelets);
@@ -231,7 +244,8 @@ export function prefixStatesFrom(targetFacelets: string, moves: string[]): Scram
 				states.push({ state: cube.asString(), done: index + 1, partial: false });
 			}
 		});
-		return states;
+		if (puzzle === '333') return states;
+		return states.map((prefix) => ({ ...prefix, state: normalizeFacelets(prefix.state, puzzle) }));
 	} catch (e) {
 		console.warn('[smart-cube] prefix state table build failed:', e);
 		return [];

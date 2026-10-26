@@ -9,6 +9,8 @@ import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 import { readCachedMac, readAnyMac, writeCachedMac, clearCachedMac, cubeStorageId } from './mac_cache';
 import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
+import { normalizeFacelets } from '../../../../util/smart_cube/cube2x2';
+import { isGan251Name } from '../../../../../shared/smart_cube/puzzle';
 import GanGen1ProtocolDriver, { isSupportedGen1Version } from './gan_v1_driver';
 import {
 	GAN_GEN2_SERVICE,
@@ -30,6 +32,8 @@ import {
 	GAN_GEN1_BATTERY_CHARACTERISTIC,
 	GAN_CIC_LIST,
 	GAN_ENCRYPTION_KEYS,
+	GAN_251_ENCRYPTION_KEY,
+	GAN_251_COMMAND_CHARACTERISTIC_ALT,
 	now,
 	GanGen2CubeEncrypter,
 	GanGen3CubeEncrypter,
@@ -411,6 +415,9 @@ export default class GAN extends SmartCube {
 		super();
 		this.device = device;
 		this.adapter = adapter;
+		// The GAN 251 UI is a 2x2 on the Gen4 protocol (cstimer `is251`). Read by the connection
+		// manager, which hands it to every page so states are compared on the cube's corners.
+		this.puzzle = isGan251Name(device?.name) ? '222' : '333';
 		// True once the first valid protocol packet confirms the connection (see _confirmConnectionOnce).
 		this._connectionConfirmed = false;
 		this.gyroListeners = [];
@@ -583,11 +590,14 @@ export default class GAN extends SmartCube {
 			return GanCubeClassicConnection.create(this.adapter, device, GAN_GEN3_SERVICE, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver, isValidGanGen3Packet);
 		}
 		if (hasService(GAN_GEN4_SERVICE)) {
-			const key = GAN_ENCRYPTION_KEYS[0];
+			const is251 = this.puzzle === '222';
+			const key = is251 ? GAN_251_ENCRYPTION_KEY : GAN_ENCRYPTION_KEYS[0];
 			const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
-			const driver = new GanGen4ProtocolDriver();
-			console.log('[BLE-GAN] generation resolved: Gen4');
-			return GanCubeClassicConnection.create(this.adapter, device, GAN_GEN4_SERVICE, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, encrypter, driver, isValidGanGen4Packet);
+			const driver = new GanGen4ProtocolDriver(is251 ? 2 : 3);
+			console.log('[BLE-GAN] generation resolved: Gen4', is251 ? '(GAN 251 UI, 2x2)' : '');
+			const conn = await GanCubeClassicConnection.create(this.adapter, device, GAN_GEN4_SERVICE, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, encrypter, driver, isValidGanGen4Packet);
+			if (is251) conn.altCommandCharUuid = GAN_251_COMMAND_CHARACTERISTIC_ALT;
+			return conn;
 		}
 
 		throw new Error("Can't find target BLE services - wrong or unsupported cube device model");
@@ -743,7 +753,7 @@ export default class GAN extends SmartCube {
 				const solvedState = getStore().getState().smartCube?.smartSolvedState;
 				if (stale && event.recovered === true) {
 					// Leave the freeze point as it is.
-				} else if (solvedState && this._trackerCube.asString() === solvedState) {
+				} else if (solvedState && this._trackerState() === normalizeFacelets(solvedState, this.puzzle)) {
 					// Clock skew corrected freeze: display = record = GAN reference
 					// This prevents "jump forward then back" effect
 					const timerState = getStore().getState().timer;
@@ -890,8 +900,11 @@ export default class GAN extends SmartCube {
 		// Send moves AND the resulting cube state in one dispatch. The tracker already
 		// has these moves applied, so consumers never see a state that disagrees with
 		// the move list.
-		this.alertTurnCubeBatch(batch, this._trackerCube.asString());
+		this.alertTurnCubeBatch(batch, this._trackerState());
 	};
+
+	/** The tracker's state as every consumer compares it (corners only on the 251). */
+	_trackerState = () => normalizeFacelets(this._trackerCube.asString(), this.puzzle);
 
 	/** Is a move with this serial already counted in the last adopted FACELETS state? */
 	_isStaleSerial = (serial) => {

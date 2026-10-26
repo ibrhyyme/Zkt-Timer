@@ -2297,6 +2297,7 @@
     "no_solves_found": "Сборки не найдены"
   },
   "rooms": {
+    "smart_cube_puzzle_mismatch": "Подключён умный куб {{cube}}, а эта комната для {{session}}. Подключите умный куб {{session}}, чтобы соревноваться здесь.",
     "page_title": "Комнаты",
     "description": "Создайте комнату, чтобы соревноваться с друзьями, или присоединитесь к существующей.",
     "create_room": "Создать новую комнату",
@@ -3440,7 +3441,7 @@
     "connect_stackmat": "Подключить StackMat",
     "setup_stackmat": "Настроить StackMat",
     "smart_cube": "Умный куб",
-    "smart_cube_3x3_only": "Умный куб поддерживается только для 3x3",
+    "smart_cube_3x3_2x2_only": "Умный куб поддерживается только для 3x3 и 2x2",
     "virtual_cube_nxn_only": "Виртуальный кубик работает только на 2x2 - 7x7",
     "not_supported_in_room": "В данный момент не поддерживается в комнатах",
     "use_keyboard_or_manual": "Используйте клавиатуру или ручной ввод",
@@ -3451,6 +3452,8 @@
     "place_hands_on_qytoys": "Положите руки на QYtoys таймер, чтобы начать"
   },
   "smart_cube": {
+    "puzzle_mismatch": "Подключён умный куб {{cube}}, а эта сессия для {{session}}. Смените тип куба или подключите умный куб {{session}}.",
+    "puzzle_2x2_unsupported_here": "Умный куб 2x2 здесь не поддерживается: этот раздел работает только с 3x3.",
     "turns_label": "ходов",
     "tps_label": "tps",
     "bt_unavailable_title": "Bluetooth недоступен!",

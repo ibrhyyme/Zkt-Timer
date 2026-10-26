@@ -1,4 +1,5 @@
 import type {BattleCubeInfo} from '../../../../shared/battle/events';
+import {smartCubePuzzleFromName} from '../../../../shared/smart_cube/puzzle';
 
 /**
  * Which cube is on the line, as Online Battle needs to know it (design 4.3, Q2).
@@ -25,12 +26,19 @@ export function battleCubeBrand(deviceName: string | null | undefined): BattleCu
 	if (lower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) return 'gan';
 	if (name.startsWith('GoCube') || name.startsWith('Rubiks')) return 'particula';
 	if (name.startsWith('MHC')) return 'moyu';
-	if (name.startsWith('WCU_MY3') || name.startsWith('^S')) return 'moyu32';
+	if (name.startsWith('WCU_MY3') || name.startsWith('WCU_MY22') || name.startsWith('^S')) return 'moyu32';
 	if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) return 'qiyi';
 	return 'unknown';
 }
 
+/**
+ * `hasClock` is what the queue checks, client and server (server/battle/queue.ts), so a cube
+ * that cannot play gets it false and meets the existing "this cube is not supported" path.
+ * Battle is a 3x3 event: the 2x2 models (GAN 251 UI, MoYu WCU_MY22) carry a clock but
+ * cannot play.
+ */
 export function battleCubeInfo(deviceName: string | null | undefined): BattleCubeInfo {
 	const brand = battleCubeBrand(deviceName);
-	return {brand, hasClock: CLOCK_BRANDS.includes(brand)};
+	const playable = smartCubePuzzleFromName(deviceName) === '333';
+	return {brand, hasClock: playable && CLOCK_BRANDS.includes(brand)};
 }

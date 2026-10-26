@@ -1,6 +1,4 @@
 import Cube from 'cubejs';
-import { getReverseTurns } from './solve/turns';
-import { solveAsync } from './solver_worker_manager';
 
 export interface SmartTurn {
 	turn: string;
@@ -38,44 +36,6 @@ export function initSmartSolver(): void {
 	} else {
 		setTimeout(doInit, 2000);
 	}
-}
-
-// Memoize inverse scramble — originalScramble is constant per session
-let _cachedScramble = '';
-let _cachedInverse: string[] = [];
-
-/**
- * Async version: runs Cube.solve() in a Web Worker so the main thread stays free.
- * Falls back to sync solve if Worker is unavailable.
- */
-export async function computeCorrectionPathAsync(
-	originalScramble: string,
-	userMovesRaw: string[]
-): Promise<string[]> {
-	if (originalScramble !== _cachedScramble) {
-		_cachedInverse = getReverseTurns(originalScramble);
-		_cachedScramble = originalScramble;
-	}
-
-	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
-
-	// Replay-based: diffCube = S⁻¹ × U
-	const diffCube = new Cube();
-	for (const move of _cachedInverse) {
-		diffCube.move(move);
-	}
-	for (const move of userMovesRaw) {
-		diffCube.move(move);
-	}
-
-	if (diffCube.asString() === SOLVED) {
-		return [];
-	}
-
-	const solution = await solveAsync(diffCube.toJSON());
-	if (!solution || !solution.trim()) return [];
-
-	return solution.trim().split(' ').filter(m => m.trim());
 }
 
 export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean = false) {

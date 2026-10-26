@@ -1,5 +1,7 @@
 import {ITimerContext} from '../Timer';
 import {getSetting} from '../../../db/settings/query';
+import {puzzleOfBucket} from '../../../../shared/cube_puzzle';
+import type {SmartCubePuzzle} from '../../../../shared/smart_cube/puzzle';
 
 // Tum 3x3 tabanli cube_type + subset kombinasyonlari. Akilli kup fiziksel
 // 3x3 cozumunu takip eder — scramble metoduna bakmaz.
@@ -19,9 +21,18 @@ export function is3x3CubeType(cubeType: string | null | undefined, scrambleSubse
 	return false;
 }
 
+/**
+ * The smart cube puzzle a timer bucket takes, or null when no smart cube can time it.
+ * 3x3 buckets as above; '222' (any subset) and WCA 2x2x2 take the 2x2 models.
+ */
+export function smartCubePuzzleFor(cubeType: string | null | undefined, scrambleSubset?: string | null): SmartCubePuzzle | null {
+	if (is3x3CubeType(cubeType, scrambleSubset)) return '333';
+	return puzzleOfBucket(cubeType, scrambleSubset) === '222' ? '222' : null;
+}
+
 export function smartCubeSelected(context: ITimerContext) {
 	const timerType = getSetting('timer_type');
 	const {cubeType, scrambleSubset} = context;
 
-	return timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset);
+	return timerType === 'smart' && smartCubePuzzleFor(cubeType, scrambleSubset) !== null;
 }

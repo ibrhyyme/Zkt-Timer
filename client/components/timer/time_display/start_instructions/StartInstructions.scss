@@ -2,6 +2,11 @@
 
 .#{$namespace}-start-instructions {
 	width: 100%;
+	// A long line (the smart cube puzzle mismatch, a long translation) wraps instead of
+	// widening the time display: next to the 3D cube that pushed the row past the timer
+	// column, and the centred overflow was clipped on the left.
+	max-width: 26rem;
+	margin-inline: auto;
 	text-align: center;
 	color: rgba(var(--text-color), 0.5);
 	font-size: 0.88rem;

@@ -766,6 +766,9 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 						hidden={!showCubePreview}
 						turns={cubeStream[player].turns}
 						facelets={cubeStream[player].facelets}
+						// Battle takes a 3x3 only (battle_cube_link refuses a 2x2), whatever the
+						// app-wide link happens to hold.
+						puzzle="333"
 						// This player's own cube, never the app-wide manager's: that one is a
 						// different cube and would turn the model with someone else's hands.
 						gyroSource={gyroSource}

@@ -18,6 +18,8 @@ import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
 import Cube from 'cubejs';
 import { readCachedMac, readAnyMac, writeCachedMac, clearCachedMac, cubeStorageId } from './mac_cache';
+import { expand2x2Facelets, isValid2x2Facelets, normalizeFacelets, Frame2x2 } from '../../../../util/smart_cube/cube2x2';
+import { isMoyuMy22Name } from '../../../../../shared/smart_cube/puzzle';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -50,14 +52,15 @@ const ENABLE_GYRO_PAYLOAD = [172, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 /**
  * MAC addresses a WCU name points to, most likely first. The fourth byte differs per
  * hardware line; confirmed on real cubes (WCU_MY32_A388 = CF:30:16:00:A3:88,
- * WCU_MY33_AF9E = CF:30:16:02:AF:9E). From smartcube-web-bluetooth mac-candidates.ts.
- * The 2x2 (WCU_MY22) is left out: the app has no 2x2 smart cube support.
+ * WCU_MY33_AF9E = CF:30:16:02:AF:9E, the 2x2 WCU_MY22_1037 = CF:30:16:01:10:37).
+ * From smartcube-web-bluetooth mac-candidates.ts.
  */
 export function moyu32MacCandidatesFromName(deviceName) {
 	const name = (deviceName || '').trim();
 	const lines = [
 		[/^WCU_MY32_([0-9A-Fa-f]{4})$/, ['00', '01', '02']],
 		[/^WCU_MY33_([0-9A-Fa-f]{4})$/, ['02', '01', '00']],
+		[/^WCU_MY22_([0-9A-Fa-f]{4})$/, ['01', '00', '02']],
 	];
 	for (const [pattern, mids] of lines) {
 		const m = pattern.exec(name);
@@ -146,6 +149,15 @@ export default class MoYu32 extends SmartCube {
 		this.deviceName = device.name?.trim() || '';
 		this.deviceMac = null;
 		this.decoder = null;
+
+		// The Weipo V5 AI (WCU_MY22) is a 2x2 on this protocol: four stickers a face in the
+		// state packet, six 3-bit turns (F, U, R only) in the move packet. Port of
+		// smartcube-web-bluetooth moyu32.ts `cubeSize === 2`.
+		this.puzzle = isMoyuMy22Name(this.deviceName) ? '222' : '333';
+		this.frame = this.puzzle === '222' ? new Frame2x2() : null;
+		// 2x2 only: counter of the state the tracker holds. A requested state can overtake
+		// the turn notification it already contains, so it is kept apart from prevMoveCnt.
+		this.stateMoveCnt = -1;
 
 		this.prevMoves = [];
 		this.timeOffs = [];
@@ -505,6 +517,10 @@ export default class MoYu32 extends SmartCube {
 			const softwareVersion = parseInt(bitStr.slice(72, 80), 2) + '.' + parseInt(bitStr.slice(80, 88), 2);
 			console.log('[Moyu32] HW Version:', hardwareVersion, '| SW Version:', softwareVersion, '| Device:', devName);
 		} else if (msgType === 163) { // state (facelets)
+			if (this.frame) {
+				this.parseState2x2(bitStr);
+				return;
+			}
 			const moveCnt = parseInt(bitStr.slice(152, 160), 2);
 			const facelet = this.parseFacelet(bitStr.slice(8, 152));
 			if (this.prevMoveCnt === -1) { // initial state
@@ -532,6 +548,10 @@ export default class MoYu32 extends SmartCube {
 			console.log('[Moyu32] battery:', this.batteryLevel);
 			this.alertBatteryLevel(this.batteryLevel);
 		} else if (msgType === 165) { // move
+			if (this.frame) {
+				this.parseMoves2x2(bitStr, locTime);
+				return;
+			}
 			this.moveCnt = parseInt(bitStr.slice(88, 96), 2);
 			if (this.moveCnt === this.prevMoveCnt || this.prevMoveCnt === -1) {
 				return;
@@ -552,6 +572,63 @@ export default class MoYu32 extends SmartCube {
 				this.updateMoveTimes(locTime);
 			}
 		}
+	}
+
+	/**
+	 * MY22 state packet: four stickers a face (72 bits from bit 8), the move counter right after.
+	 * Unlike the 3x3, a later state does not move prevMoveCnt: a state the app asked for can
+	 * arrive before the turn notifications it already contains, and those must still be read.
+	 */
+	parseState2x2(bitStr) {
+		const moveCnt = parseInt(bitStr.slice(80, 88), 2);
+		const facelets = expand2x2Facelets(this.parseFacelet2x2(bitStr.slice(8, 80)));
+		if (!isValid2x2Facelets(facelets)) return;
+		const state = this.frame.adopt(facelets);
+		this.moveCnt = moveCnt;
+		this.stateMoveCnt = moveCnt;
+		this.latestFacelet = state;
+		if (this.prevMoveCnt === -1) {
+			this.initCubeState();
+			return;
+		}
+		this.prevCube = Cube.fromString(state);
+		this.alertCubeState(state);
+	}
+
+	/**
+	 * MY22 move packet: six 16-bit time offsets, the counter at bit 104, then six 3-bit turns,
+	 * latest first. 0/1 = F/F', 2/3 = U/U', 4/5 = R/R' (smartcube-web-bluetooth, confirmed on
+	 * a capture of R R' U U' F F'); a slot the packet does not advance over may hold 7.
+	 */
+	parseMoves2x2(bitStr, locTime) {
+		this.moveCnt = parseInt(bitStr.slice(104, 112), 2);
+		if (this.moveCnt === this.prevMoveCnt || this.prevMoveCnt === -1) return;
+		const advance = (this.moveCnt - this.prevMoveCnt) & 0xff;
+		// An old notification arriving late; replaying it would run most of a counter cycle.
+		if (advance >= 128) return;
+		const codes = [];
+		this.timeOffs = [];
+		this.prevMoves = [];
+		for (let i = 0; i < 6; i++) {
+			codes[i] = parseInt(bitStr.slice(112 + i * 3, 115 + i * 3), 2);
+			this.timeOffs[i] = parseInt(bitStr.slice(8 + i * 16, 24 + i * 16), 2);
+			this.prevMoves[i] = 'FUR'.charAt(codes[i] >> 1) + " '".charAt(codes[i] & 1);
+		}
+		if (codes.some((code, i) => i < Math.min(advance, 6) && code >= 6)) return;
+		this.updateMoveTimes(locTime);
+	}
+
+	/** MY22 sticker bits: twelve a face, no centre, faces in FBUDLR order on the wire. */
+	parseFacelet2x2(faceletBits) {
+		const state = [];
+		const faces = [2, 5, 0, 3, 4, 1]; // parse in URFDLB order, from FBUDLR
+		for (let i = 0; i < 6; i++) {
+			const face = faceletBits.slice(faces[i] * 12, 12 + faces[i] * 12);
+			for (let j = 0; j < 4; j++) {
+				state.push('FBUDLR'.charAt(parseInt(face.slice(j * 3, 3 + j * 3), 2)));
+			}
+		}
+		return state.join('');
 	}
 
 	/**
@@ -601,8 +678,18 @@ export default class MoYu32 extends SmartCube {
 		const batch = [];
 		for (let i = moveDiff - 1; i >= 0; i--) {
 			const moveRaw = this.prevMoves[i]; // example: "R " or "R'"
-			const cubejsMove = moveRaw.replace(' ', ''); // " '" -> "'" / ""
-			this.prevCube.move(cubejsMove);
+			let cubejsMove = moveRaw.replace(' ', ''); // " '" -> "'" / ""
+			// 2x2: a turn the last state report already holds goes out marked stale and is not
+			// applied a second time (smartcube-web-bluetooth `applyToState`).
+			let stale = false;
+			if (this.frame) {
+				const serial = (this.moveCnt - i) & 0xff;
+				const ahead = (serial - this.stateMoveCnt) & 0xff;
+				stale = !(ahead > 0 && ahead < 128);
+				cubejsMove = this.frame.move(cubejsMove, stale);
+				if (!stale) this.stateMoveCnt = serial;
+			}
+			if (!stale) this.prevCube.move(cubejsMove);
 			this.deviceTime += this.timeOffs[i];
 
 			batch.push({
@@ -610,6 +697,7 @@ export default class MoYu32 extends SmartCube {
 				cubeTimestamp: this.deviceTime,
 				localTimestamp: i === 0 ? locTime : null,
 				completedAt: this.deviceTime,
+				...(stale ? { stale: true } : {}),
 			});
 			console.log('[Moyu32] move', moveRaw, 'tsOff:', this.timeOffs[i]);
 		}
@@ -618,7 +706,7 @@ export default class MoYu32 extends SmartCube {
 		// Push moves and the resulting cube state to Redux in ONE dispatch — two
 		// dispatches let the state land before the moves that produced it.
 		if (batch.length > 0) {
-			this.alertTurnCubeBatch(batch, this.prevCube.asString());
+			this.alertTurnCubeBatch(batch, normalizeFacelets(this.prevCube.asString(), this.puzzle));
 		}
 	}
 

@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
+import { Frame2x2 } from '../../../../util/smart_cube/cube2x2';
 
 /**
  * GAN protocol layer: BLE UUIDs, keys, the Gen2/Gen3/Gen4 encrypters and protocol drivers,
@@ -25,6 +26,18 @@ export const GAN_GEN3_STATE_CHARACTERISTIC = '8653000b-43e6-47b7-9cb0-5fc21d4ae3
 export const GAN_GEN4_SERVICE = '00000010-0000-fff7-fff6-fff5fff4fff0';
 export const GAN_GEN4_COMMAND_CHARACTERISTIC = '0000fff5-0000-1000-8000-00805f9b34fb';
 export const GAN_GEN4_STATE_CHARACTERISTIC = '0000fff6-0000-1000-8000-00805f9b34fb';
+
+/**
+ * GAN 251 UI (2x2): Gen4 framing under its own root key and IV, salted with the MAC like the
+ * others. cstimer gancube.js KEYS[6]/KEYS[7] (version 2 of v2initKey) and
+ * smartcube-web-bluetooth GAN_251_ENCRYPTION_KEY are the same pair.
+ */
+export const GAN_251_ENCRYPTION_KEY = {
+	key: [0x58, 0x98, 0x61, 0xfc, 0x1f, 0xec, 0xd7, 0x60, 0x9f, 0x85, 0xd3, 0x62, 0xbe, 0x37, 0x17, 0x2c],
+	iv: [0x7f, 0x61, 0xd0, 0x52, 0x75, 0xc1, 0x39, 0x52, 0x08, 0x2e, 0x54, 0x1d, 0x8a, 0x78, 0x63, 0x4d],
+};
+/** Some GAN 251 UI firmware takes commands here instead of on fff5 (smartcube-web-bluetooth). */
+export const GAN_251_COMMAND_CHARACTERISTIC_ALT = '0000fff7-0000-1000-8000-00805f9b34fb';
 
 /**
  * Gen1 (GAN 356i and the other first-generation cubes).
@@ -678,7 +691,17 @@ export class GanGen3ProtocolDriver {
 // Gen4 driver — moveBuffer + requestMoveHistory (from gan-web-bluetooth reference)
 // Gap recovery is done directly within the driver. Consumer receives only gap-free MOVE events.
 export class GanGen4ProtocolDriver {
-	constructor() {
+	/**
+	 * `cubeSize` 2 is the GAN 251 UI, ported from cstimer gancube.js (`is251`): corners-only
+	 * state, a second move packing, and lost moves skipped rather than recovered (cstimer:
+	 * "skip gaps on 251 instead of corrupting state"). Its turns and states leave the driver
+	 * in the DBL frame the rest of the app compares 2x2 states in (see cube2x2.ts).
+	 */
+	constructor(cubeSize = 3) {
+		this.cubeSize = cubeSize;
+		this.frame = cubeSize === 2 ? new Frame2x2() : null;
+		// Serial of the last state the frame was taken from, until a newer move arrives.
+		this._frameSerial = null;
 		this.serial = -1;
 		this.lastSerial = -1;
 		this.hwInfo = {};
@@ -710,6 +733,15 @@ export class GanGen4ProtocolDriver {
 		if (!undelivered) {
 			this._gapSince = null;
 			this._lastHistoryRequestAt = null;
+			return false;
+		}
+		if (this.cubeSize === 2) {
+			// No recovery is ever asked for on a 2x2, so there is nothing to wait for: the state
+			// the cube reports is the truth, and the turns it holds are written off.
+			this.writtenOffMoves += (this.serial - this.lastSerial) & 0xFF;
+			this.moveBuffer = [];
+			this.lastSerial = this.serial;
+			this._gapSince = null;
 			return false;
 		}
 		if (this._gapSince == null) this._gapSince = now();
@@ -805,6 +837,14 @@ export class GanGen4ProtocolDriver {
 		while (this.moveBuffer.length > 0) {
 			const bufferHead = this.moveBuffer[0];
 			const diff = this.lastSerial === -1 ? 1 : (bufferHead.serial - this.lastSerial) & 0xFF;
+			if (diff > 1 && this.cubeSize === 2) {
+				// cstimer's 251 path: the history reply is decoded with the 3x3 axis map, so the
+				// lost turns are skipped and the next state report puts the cube right.
+				console.debug('[ZKT:MOVEBUF] GAN 251 lost moves skipped', { from: this.lastSerial, to: bufferHead.serial });
+				this.writtenOffMoves += diff - 1;
+				this.lastSerial = (bufferHead.serial - 1) & 0xFF;
+				continue;
+			}
 			if (diff > 1) {
 				// Gap exists — request missed moves from cube
 				if (conn) {
@@ -859,12 +899,58 @@ export class GanGen4ProtocolDriver {
 
 	// Check for missed moves with periodic FACELETS event
 	async checkIfMoveMissed(conn) {
+		// The 251 never asks for history (see evictMoveBuffer).
+		if (this.cubeSize === 2) return;
 		const diff = (this.serial - this.lastSerial) & 0xFF;
 		if (diff > 0 && this.serial !== 0) {
 			const bufferHead = this.moveBuffer[0];
 			const startSerial = bufferHead ? bufferHead.serial : (this.serial + 1) & 0xFF;
 			await this.requestMoveHistory(conn, startSerial, diff + 1);
 		}
+	}
+
+	/**
+	 * The turn in one 72-bit MOVE chunk, or null when it does not decode to a face.
+	 *
+	 * The 251 follows cstimer's decodeV4Move: a power of 2 is a half turn, and a chunk that does
+	 * not decode in the usual packing (power at 64, one-hot face at 66) is tried with the face
+	 * at 64 and the power at 70. cstimer's third fallback, reversing the face bits, is left out:
+	 * reversing a value that is not one-hot never makes it one-hot, so it cannot match.
+	 */
+	decodeMove(msg, off) {
+		if (this.cubeSize !== 2) {
+			const direction = msg.getBitWord(off + 64, 2);
+			const face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(off + 66, 6));
+			if (face < 0) return null;
+			return { face, direction, move: ('URFDLB'.charAt(face) + " '".charAt(direction)).trim() };
+		}
+		const decode = (power, faceHot) => {
+			const face = [2, 32, 8, 1, 16, 4].indexOf(faceHot);
+			if (face < 0 || power > 2) return null;
+			return { face, direction: power, move: 'URFDLB'.charAt(face) + ['', "'", '2'][power] };
+		};
+		return decode(msg.getBitWord(off + 64, 2), msg.getBitWord(off + 66, 6))
+			|| decode(msg.getBitWord(off + 70, 2), msg.getBitWord(off + 64, 6));
+	}
+
+	/**
+	 * A 2x2 event in the DBL frame (cube2x2.ts). A turn at or below the serial of the state the
+	 * frame was last taken from is already in that state: it is rewritten without turning the
+	 * frame again, the same rule gan.js applies to the tracker (_isStaleSerial).
+	 */
+	toDblFrame(event) {
+		if (event.type === 'MOVE') {
+			const stale = this._frameSerial != null && typeof event.serial === 'number'
+				&& ((this._frameSerial - event.serial) & 0xFF) < 128;
+			if (!stale) this._frameSerial = null;
+			const move = this.frame.move(event.move, stale);
+			return { ...event, move, face: 'URFDLB'.indexOf(move[0]) };
+		}
+		if (event.type === 'FACELETS') {
+			this._frameSerial = typeof event.serial === 'number' ? event.serial : null;
+			return { ...event, facelets: this.frame.adopt(event.facelets) };
+		}
+		return event;
 	}
 
 	async handleStateEvent(conn, eventMessage) {
@@ -890,9 +976,8 @@ export class GanGen4ProtocolDriver {
 				while (off + 72 <= msgBitLen && msg.getBitWord(off, 8) === 0x01) {
 					const cubeTimestamp = msg.getBitWord(off + 16, 32, true);
 					const serial = msg.getBitWord(off + 48, 16, true);
-					const direction = msg.getBitWord(off + 64, 2);
-					const face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(off + 66, 6));
-					if (face < 0) break;
+					const decoded = this.decodeMove(msg, off);
+					if (!decoded) break;
 					this.serial = serial;
 					this.moveBuffer.push({
 						type: 'MOVE',
@@ -900,9 +985,9 @@ export class GanGen4ProtocolDriver {
 						timestamp: timestamp,
 						localTimestamp: timestamp,
 						cubeTimestamp: cubeTimestamp,
-						face: face,
-						direction: direction,
-						move: ('URFDLB'.charAt(face) + " '".charAt(direction)).trim(),
+						face: decoded.face,
+						direction: decoded.direction,
+						move: decoded.move,
 					});
 					off += 72;
 				}
@@ -965,12 +1050,19 @@ export class GanGen4ProtocolDriver {
 			}
 			cp.push(28 - sum(cp));
 			co.push((3 - (sum(co) % 3)) % 3);
-			for (let i = 0; i < 11; i++) {
-				ep.push(msg.getBitWord(69 + i * 4, 4));
-				eo.push(msg.getBitWord(113 + i, 1));
+			if (this.cubeSize === 2) {
+				// A 2x2 has no edges; whatever these bits hold is not a state. Solved edges keep
+				// the 54-character form the pipeline carries (smartcube-web-bluetooth reads none).
+				ep = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+				eo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+			} else {
+				for (let i = 0; i < 11; i++) {
+					ep.push(msg.getBitWord(69 + i * 4, 4));
+					eo.push(msg.getBitWord(113 + i, 1));
+				}
+				ep.push(66 - sum(ep));
+				eo.push((2 - (sum(eo) % 2)) % 2);
 			}
-			ep.push(66 - sum(ep));
-			eo.push((2 - (sum(eo) % 2)) % 2);
 
 			if (this.GAN_DEBUG_FACELETS) {
 				const facelets = toKociembaFacelets(cp, co, ep, eo);
@@ -1062,6 +1154,7 @@ export class GanGen4ProtocolDriver {
 			// DISCONNECT
 			conn.disconnect();
 		}
+		if (this.frame) cubeEvents = cubeEvents.map((event) => this.toDblFrame(event));
 		return cubeEvents;
 	}
 }
@@ -1084,6 +1177,9 @@ export class GanCubeClassicConnection {
 		this.encrypter = encrypter;
 		this.driver = driver;
 		this.validateDecrypted = validateDecrypted;
+		// A second command characteristic to fall back on (GAN 251 UI: fff7 when fff5 is not
+		// there). Set by the caller; null for every other cube.
+		this.altCommandCharUuid = null;
 		this.events$ = new Subject();
 		this._disconnected = false;
 
@@ -1135,7 +1231,18 @@ export class GanCubeClassicConnection {
 
 	async sendCommandMessage(message) {
 		const encryptedMessage = this.encrypter.encrypt(message);
-		return this.adapter.writeCharacteristic(this.device, this.serviceUuid, this.commandCharUuid, encryptedMessage.buffer);
+		try {
+			return await this.adapter.writeCharacteristic(this.device, this.serviceUuid, this.commandCharUuid, encryptedMessage.buffer);
+		} catch (error) {
+			if (!this.altCommandCharUuid) throw error;
+			// The adapter cannot list characteristics, so the missing one shows up as a failed
+			// write. Try the other; keep whichever works for the rest of the session.
+			const alt = this.altCommandCharUuid;
+			await this.adapter.writeCharacteristic(this.device, this.serviceUuid, alt, encryptedMessage.buffer);
+			console.debug('[ZKT:GAN] command characteristic switched to', alt);
+			this.altCommandCharUuid = this.commandCharUuid;
+			this.commandCharUuid = alt;
+		}
 	}
 
 	async sendCubeCommand(command) {

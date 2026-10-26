@@ -7,4 +7,4 @@
  * importing it from here.
  */
 
-export { getSolveSteps, methodStepRowsFromSteps } from '../../../shared/util/solve/solve_steps';
+export { getSolveSteps, methodStepRowsFromSteps, bucketHasMethodSteps } from '../../../shared/util/solve/solve_steps';

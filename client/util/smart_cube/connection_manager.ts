@@ -16,6 +16,7 @@ import type { SmartTurn } from '../smart_scramble';
 import { getCubeState } from '../../lib/cubes/store';
 import { ensureSmartCubeOnline, isCubeConnectivityError } from '../../lib/cubes/sync';
 import { smartCubeByBleId } from '../../lib/cubes/active_cube';
+import type { SmartCubePuzzle } from '../../../shared/smart_cube/puzzle';
 
 /**
  * App-level owner of the smart cube Bluetooth link.
@@ -53,6 +54,8 @@ export interface SmartCubeSnapshot {
 	physicallySolved: boolean;
 	batteryLevel: number | null;
 	gyroSupported: boolean;
+	/** The cube's puzzle. A page that only drives one puzzle checks it before using the cube. */
+	puzzle: SmartCubePuzzle;
 }
 
 export interface SmartCubeMoveBatch {
@@ -130,6 +133,8 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 	/** Whether this cube has actually delivered a gyro reading; see noteGyroSeen. */
 	private gyroSeen = false;
 	private solvedState = DEFAULT_SOLVED_STATE;
+	/** Puzzle of the cube on the link, read from its driver (see adoptPuzzle). */
+	private puzzle: SmartCubePuzzle = '333';
 
 	/**
 	 * The lightweight state tracker. It runs whether or not a page is listening, so a page
@@ -185,6 +190,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 			physicallySolved: this.tracker.isSolved(this.solvedState),
 			batteryLevel: this.batteryLevel,
 			gyroSupported: this.gyroSupported,
+			puzzle: this.puzzle,
 		};
 	}
 
@@ -405,6 +411,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		// A background reconnect must not touch the UI the user is in the middle of.
 		const background = this.reconnecting;
 		this.activeCubeRef = cube;
+		this.adoptPuzzle(cube);
 		this.retainedDevice = this.conn?.device || this.retainedDevice;
 		this.deviceName = server?.device?.name || this.retainedDevice?.name || null;
 
@@ -639,9 +646,25 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 			this.conn._onCubeCreated = (cube: any) => {
 				this.activeCubeRef = cube;
 				this.retainedDevice = this.conn?.device || this.retainedDevice;
+				// Before init: a 2x2 can send its first state while the handshake is still running.
+				this.adoptPuzzle(cube);
 			};
 		}
 		return this.conn;
+	}
+
+	/**
+	 * Take the puzzle from the driver. A 2x2 reports corners-only states seen from DBL, and the
+	 * tracker has to read its own state the same way or it never matches the cube's report.
+	 */
+	private adoptPuzzle(cube: any): void {
+		const puzzle: SmartCubePuzzle = cube?.puzzle === '222' ? '222' : '333';
+		if (puzzle === this.puzzle) return;
+		this.puzzle = puzzle;
+		this.tracker.setPuzzle(puzzle);
+		this.tracker.setSolved(0);
+		setSmartCubeParams({ smartCubePuzzle: puzzle });
+		console.debug('[smart-cube] puzzle of the connected cube:', puzzle);
 	}
 
 	/**
@@ -702,6 +725,9 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 		this.gyroSeen = false;
 		this.reportedSolved = false;
 		this.tracker.setSolved(0);
+		// The next cube starts from the common case; its driver says otherwise if it is a 2x2.
+		this.puzzle = '333';
+		this.tracker.setPuzzle('333');
 
 		setTimerParams({
 			smartCanStart: false,
@@ -722,6 +748,7 @@ class SmartCubeConnectionManager implements SmartCubeDriverSink {
 			smartGyroSupported: false,
 			smartCurrentState: null,
 			smartPhysicallySolved: false,
+			smartCubePuzzle: '333',
 		});
 		this.publishConnection();
 	}

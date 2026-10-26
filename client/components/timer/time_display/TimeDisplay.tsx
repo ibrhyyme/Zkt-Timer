@@ -4,6 +4,7 @@ import { getTimeString } from '../../../util/time';
 import './TimeDisplay.scss';
 import Manual from './manual/Manual';
 import { preflightChecks } from '../smart_cube/preflight';
+import { useSmartPuzzleMatch, smartPuzzleLabel } from '../helpers/smart_puzzle';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../db/settings/update';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
@@ -49,13 +50,26 @@ function smartFrozenSeconds(measuredSeconds: number): number {
  * every move; reading the turn list in TimeDisplay would re-render the whole display on
  * each turn.
  */
-function SmartStartHint({ scramble }: { scramble: string }) {
+function SmartStartHint({ scramble, cubeType, scrambleSubset }: { scramble: string; cubeType: string; scrambleSubset?: string | null }) {
 	const {t} = useTranslation();
 	const smartTurns = useTimerStore('smartTurns');
+	const match = useSmartPuzzleMatch(cubeType, scrambleSubset);
+
+	// The cube cannot time this session at all; saying "scramble the cube" would mislead.
+	if (match.mismatch) {
+		return (
+			<StartInstructions>
+				{t('smart_cube.puzzle_mismatch', {
+					cube: smartPuzzleLabel(match.cube),
+					session: smartPuzzleLabel(match.session),
+				})}
+			</StartInstructions>
+		);
+	}
 
 	return (
 		<StartInstructions>
-			{preflightChecks(smartTurns, scramble)
+			{preflightChecks(smartTurns, scramble, 0, match.cube)
 				? t('time_display.turn_smart_cube_to_start')
 				: t('time_display.scramble_smart_cube_to_start')}
 		</StartInstructions>
@@ -326,7 +340,7 @@ export default function TimeDisplay() {
 				</StartInstructions>
 			);
 		} else {
-			bottomInfo = <SmartStartHint scramble={scramble} />;
+			bottomInfo = <SmartStartHint scramble={scramble} cubeType={context.cubeType} scrambleSubset={context.scrambleSubset} />;
 		}
 	}
 

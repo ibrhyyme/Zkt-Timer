@@ -25,6 +25,12 @@ export default class SmartCube {
 	_sink = null;
 
 	/**
+	 * Which puzzle this cube is: '333', or '222' for the 2x2 models (shared/smart_cube/puzzle.ts).
+	 * A 2x2 driver reports corners-only states and turns seen from DBL (util/smart_cube/cube2x2.ts).
+	 */
+	puzzle = '333';
+
+	/**
 	 * Where this driver's callbacks go: its own sink when it has one, the app-wide manager
 	 * otherwise. Resolved per call rather than cached, because a Connect may be handed its
 	 * sink after the instance already exists.

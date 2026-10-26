@@ -4,13 +4,13 @@ import { AllSettings } from '../../../db/settings/query';
 import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { virtualCubeSupports } from '../../../util/virtual_cube/size';
-import { is3x3CubeType } from './util';
+import { smartCubePuzzleFor } from './util';
 
 /**
  * Which timer inputs work on which puzzles, in one place.
  *
  * Only two inputs care about the puzzle at all:
- *   smart    reads a physical 3x3 over Bluetooth
+ *   smart    reads a physical 3x3 or 2x2 over Bluetooth
  *   virtual  draws an NxN cube and only implements NxN
  *
  * Everything else measures wall-clock time and works on anything, so the table is
@@ -26,7 +26,7 @@ export function timerTypeSupportsBucket(
 	scrambleSubset?: string | null
 ): boolean {
 	if (type === 'smart') {
-		return is3x3CubeType(cubeType, scrambleSubset);
+		return smartCubePuzzleFor(cubeType, scrambleSubset) !== null;
 	}
 	if (type === 'virtual') {
 		return virtualCubeSupports(cubeType, scrambleSubset);
@@ -45,7 +45,7 @@ export function timerTypeUnsupportedReason(
 	}
 	return type === 'virtual'
 		? 'room_timer.virtual_cube_nxn_only'
-		: 'room_timer.smart_cube_3x3_only';
+		: 'room_timer.smart_cube_3x3_2x2_only';
 }
 
 /**
