@@ -4293,10 +4293,6 @@
     "cta_try": "Pruébalo ahora",
     "rating_line": "{{play}} en Google Play, {{apple}} en la App Store"
   },
-  "welcome_reel": {
-    "label": "Película de Zkt Timer",
-    "caption": "El cubo de la película repite una resolución real de 8.73, giro a giro y a la velocidad en que se hizo."
-  },
   "welcome_chapters": {
     "title": "Todo lo que rodea a una resolución",
     "lede": "Las pantallas de abajo salen directamente de la app, de sesiones reales.",

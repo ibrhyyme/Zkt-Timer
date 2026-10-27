@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import {FIXED_THEME_PATH, isFixedThemePath, isThemeLocked} from '../theme_lock';
+import {APP_THEME_PRESETS} from '../theme_consts';
+import {FIXED_THEME_PATH, isFixedThemePath, isLightThemePath, isThemeLocked, lockedThemeColors} from '../theme_lock';
 
 // E-106: the login and signup scene and the landing page never follow the user's
 // theme, and a visitor who is not signed in has no theme of their own.
@@ -20,6 +21,15 @@ describe('theme lock', () => {
 	it('locks every page for a visitor', () => {
 		for (const p of ['/timer', '/competitions', '/settings/appearance', '/login']) {
 			expect(isThemeLocked(p, false)).toBe(true);
+		}
+	});
+
+	// Owner, 2026-10-27: the landing page is white; the login scene and the rest stay dark.
+	it('locks the landing page to the light theme and every other page to the dark one', () => {
+		expect(lockedThemeColors('/welcome')).toEqual(APP_THEME_PRESETS.light.values);
+		for (const p of ['/login', '/signup', '/links', '/timer', '/welcomeback', '/']) {
+			expect(isLightThemePath(p)).toBe(false);
+			expect(lockedThemeColors(p)).toEqual(APP_THEME_PRESETS.dark.values);
 		}
 	});
 

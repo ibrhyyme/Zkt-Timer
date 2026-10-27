@@ -42,13 +42,11 @@ function decode(src: string): Promise<void> {
 export default function LayerStage({chapters, active, labels}: Props) {
 	const stageRef = useRef<HTMLDivElement>(null);
 	const prismRefs = useRef<(HTMLDivElement | null)[]>([]);
-	const videoRef = useRef<HTMLVideoElement>(null);
 	const stillRef = useRef<HTMLImageElement>(null);
 
 	const [shown, setShown] = useState(0);
 	const [turning, setTurning] = useState(false);
 	const [armed, setArmed] = useState(false);
-	const [visible, setVisible] = useState(false);
 
 	const shownRef = useRef(0);
 	const targetRef = useRef(active);
@@ -77,17 +75,6 @@ export default function LayerStage({chapters, active, labels}: Props) {
 		observer.observe(stage);
 		return () => observer.disconnect();
 	}, [chapters, src]);
-
-	// Only the chapter video needs to know whether the stage is on screen.
-	useEffect(() => {
-		const stage = stageRef.current;
-		if (!stage || !('IntersectionObserver' in window)) return;
-		const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
-			threshold: 0.25,
-		});
-		observer.observe(stage);
-		return () => observer.disconnect();
-	}, []);
 
 	const applyTurn = (prism: HTMLDivElement, progress: number, dir: number, half: number) => {
 		const theta = (Math.PI / 2) * progress;
@@ -131,7 +118,6 @@ export default function LayerStage({chapters, active, labels}: Props) {
 			applyTurn(prism, 0, dir, half);
 		});
 
-		videoRef.current?.pause();
 		setTurning(true);
 
 		const tl = gsap.timeline({
@@ -193,17 +179,6 @@ export default function LayerStage({chapters, active, labels}: Props) {
 	);
 
 	const current = chapters[shown];
-	const showVideo = !!current.video && !turning && armed;
-
-	useEffect(() => {
-		const video = videoRef.current;
-		if (!video) return;
-		if (showVideo && visible) {
-			video.play().catch(() => undefined);
-		} else {
-			video.pause();
-		}
-	}, [showVideo, visible]);
 
 	return (
 		<div ref={stageRef} className={b({turning})} role="img" aria-label={labels[shown]}>
@@ -217,22 +192,6 @@ export default function LayerStage({chapters, active, labels}: Props) {
 				width={1920}
 				height={1080}
 			/>
-
-			{current.video && (
-				<video
-					key={current.id}
-					ref={videoRef}
-					className={b('video', {on: showVideo})}
-					poster={landingAsset(current.image)}
-					muted
-					loop
-					playsInline
-					preload="none"
-					aria-hidden="true"
-				>
-					<source src={landingAsset(current.video.mp4)} type="video/mp4" />
-				</video>
-			)}
 
 			<div className={b('layers')} aria-hidden="true">
 				{ROWS.map((row) => (

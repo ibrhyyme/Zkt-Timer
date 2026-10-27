@@ -1,18 +1,16 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import HeroSection from './hero_section/HeroSection';
-import ReelSection from './reel_section/ReelSection';
 import ChaptersSection from './chapters_section/ChaptersSection';
 import WcaSection from './wca_section/WcaSection';
 import InsideSection from './inside_section/InsideSection';
 import MobileGrid from './mobile_grid/MobileGrid';
 import WelcomeFooter from './welcome_footer/WelcomeFooter';
-import {useScrollProgress} from './hooks/useScrollProgress';
 import './Welcome.scss';
 
 import { useMe } from '../../../util/hooks/useMe';
 import { useHistory } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { getStructuredData, SITE_URL, getPageKeywords, OG_LOCALE_MAP, renderLanguageAlternates } from '../../layout/header/Header';
@@ -23,9 +21,6 @@ export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
 	const { t, i18n } = useTranslation();
-	// The bar is written to directly; see useScrollProgress for why this is not state.
-	const progressRef = useRef<HTMLDivElement>(null);
-	useScrollProgress(progressRef);
 
 	useEffect(() => {
 		if (me) {
@@ -88,13 +83,8 @@ export default function Welcome() {
 				<script type="application/ld+json">{JSON.stringify(navigationSchema)}</script>
 			</Helmet>
 
-			<div className="zt-welcome min-h-screen bg-[#050505] text-white">
-				<div
-					ref={progressRef}
-					className="zt-welcome__scroll-progress"
-				/>
+			<div className="zt-welcome">
 				<HeroSection />
-				<ReelSection />
 				<ChaptersSection />
 				<WcaSection />
 				<InsideSection />

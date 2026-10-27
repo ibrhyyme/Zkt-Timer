@@ -4274,10 +4274,6 @@
     "cta_try": "Hemen Dene",
     "rating_line": "Google Play'de {{play}}, App Store'da {{apple}}"
   },
-  "welcome_reel": {
-    "label": "Zkt Timer filmi",
-    "caption": "Filmdeki küp gerçek bir 8.73 çözümünü, çözüldüğü hızda hamle hamle yeniden oynatıyor."
-  },
   "welcome_chapters": {
     "title": "Çözümün etrafındaki her şey",
     "lede": "Aşağıdaki ekranlar doğrudan uygulamadan, gerçek oturumlardan alındı.",

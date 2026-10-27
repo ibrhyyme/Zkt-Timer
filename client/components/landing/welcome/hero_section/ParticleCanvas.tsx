@@ -3,15 +3,17 @@ import block from '../../../../styles/bem';
 
 const b = block('hero-particles');
 
-// Rubik's cube colors as RGB
+// Rubik's cube colors as RGB. No white: on the white landing page it would not show.
 const PARTICLE_COLORS = [
 	[183, 18, 52],    // Red
 	[255, 88, 0],     // Orange
-	[255, 255, 255],  // White
 	[255, 213, 0],    // Yellow
 	[0, 155, 72],     // Green
 	[0, 70, 173],     // Blue
 ];
+
+// The cube's plastic, drawn round each square so it reads as a sticker on a white page.
+const PLASTIC = 'rgba(8, 16, 26, 0.55)';
 
 const PARTICLE_COUNT = 60;
 const BASE_SPEED = 0.3;
@@ -64,7 +66,7 @@ export default function ParticleCanvas() {
 				vy: (Math.random() - 0.5) * BASE_SPEED,
 				size: Math.random() * 6 + 2,
 				color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
-				opacity: Math.random() * 0.4 + 0.1,
+				opacity: Math.random() * 0.45 + 0.2,
 				rotation: Math.random() * Math.PI * 2,
 				rotationSpeed: (Math.random() - 0.5) * 0.02,
 			});
@@ -107,8 +109,8 @@ export default function ParticleCanvas() {
 
 				const [r, g, b] = p.color;
 				ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-				ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
-				ctx.shadowBlur = p.size * 2;
+				ctx.strokeStyle = PLASTIC;
+				ctx.lineWidth = 1;
 
 				const half = p.size / 2;
 				const radius = p.size * 0.2;
@@ -123,6 +125,7 @@ export default function ParticleCanvas() {
 				ctx.lineTo(-half, -half + radius);
 				ctx.quadraticCurveTo(-half, -half, -half + radius, -half);
 				ctx.fill();
+				ctx.stroke();
 
 				ctx.restore();
 			}
@@ -130,8 +133,8 @@ export default function ParticleCanvas() {
 			reqId = requestAnimationFrame(render);
 		}
 
-		// Draw only while the hero is on screen: sixty shadow-blurred shapes a frame is
-		// real work to keep doing for a canvas nobody can see.
+		// Draw only while the hero is on screen: sixty shapes a frame is real work to keep
+		// doing for a canvas nobody can see.
 		let running = false;
 		const start = () => {
 			if (running) return;

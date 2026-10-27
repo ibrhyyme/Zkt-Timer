@@ -1,0 +1,115 @@
+@import '../welcome-tokens';
+
+// Step tabs under a pinned scene (StepTabs.tsx).
+
+$steps-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+.zt-welcome-steps {
+	display: flex;
+	align-items: center;
+	gap: clamp(20px, 2.5vw, 40px);
+
+	&__count {
+		flex-shrink: 0;
+		min-width: 4.2em;
+		font-size: 1rem;
+		font-weight: 800;
+		color: $w-ink;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__total {
+		font-weight: 600;
+		color: $w-ink-2;
+	}
+
+	&__list {
+		flex: 1;
+		display: grid;
+		grid-template-columns: repeat(var(--count, 6), minmax(0, 1fr));
+		gap: 10px;
+	}
+
+	&__tab {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+		padding: 16px 2px 6px;
+		border: 0;
+		background: none;
+		color: $w-ink-2;
+		font: inherit;
+		font-size: 0.88rem;
+		font-weight: 600;
+		text-align: left;
+		cursor: pointer;
+		transition: color 0.2s $ease-standard;
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			border-radius: 2px;
+		}
+
+		&::before {
+			background: $w-line;
+		}
+
+		&::after {
+			background: $w-ink;
+			transform: scaleX(0);
+			transform-origin: left center;
+			transition: transform 0.6s $steps-ease-out;
+		}
+
+		&:hover {
+			color: $w-ink;
+		}
+
+		&:focus-visible {
+			outline: 2px solid $w-accent;
+			outline-offset: 4px;
+			border-radius: 4px;
+		}
+
+		&--active,
+		&--done {
+			color: $w-ink;
+
+			&::after {
+				transform: scaleX(1);
+			}
+		}
+
+		&--done::after {
+			background: rgba($w-ink, 0.35);
+		}
+
+		@include reduced-motion {
+			&::after {
+				transition: none;
+			}
+		}
+	}
+
+	&__sticker {
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		flex-shrink: 0;
+		@include w-sticker(1.5px);
+	}
+
+	&__label {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}

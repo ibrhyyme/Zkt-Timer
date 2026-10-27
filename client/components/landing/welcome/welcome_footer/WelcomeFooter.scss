@@ -1,8 +1,11 @@
-@import '../../../../styles/config.scss';
+@import '../welcome-tokens';
+
+// The close: a quiet grey band under the white page. Who we are, person by person,
+// then the site links and the small print.
 
 .zt-welcome-footer {
-	background: #080808;
-	border-top: 1px solid rgba(255, 255, 255, 0.05);
+	background: $w-mat;
+	border-top: 1px solid $w-line;
 
 	&__container {
 		max-width: 85.333rem;
@@ -15,30 +18,77 @@
 	}
 
 	// ============================================
-	// CTA Card
+	// Who we are: heading on the left, one row per person on the right
 	// ============================================
 
-	&__cta-card {
-		@include dark-glass(0.6, 15px, 0.12);
-		border-radius: 24px;
-		padding: 4rem 3rem;
-		text-align: center;
-		position: relative;
-		overflow: hidden;
+	&__community {
+		display: grid;
+		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+		gap: 3rem 4rem;
+		align-items: start;
 		margin-bottom: 4rem;
 
-		// Gradient overlay
-		&::after {
+		@include bp-down($bp-lg) {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 2rem;
+			margin-bottom: 3rem;
+		}
+	}
+
+	&__intro {
+		position: sticky;
+		top: 96px;
+
+		@include bp-down($bp-lg) {
+			position: static;
+		}
+	}
+
+	&__title {
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 118%;
+		font-weight: 800;
+		font-size: clamp(2.2rem, 4.2vw, 3.8rem);
+		line-height: 1.02;
+		letter-spacing: -0.02em;
+		color: $w-ink;
+		margin: 0 0 1.25rem;
+	}
+
+	&__description {
+		font-size: 1.1rem;
+		line-height: 1.65;
+		color: $w-ink-2;
+		margin: 0;
+		max-width: 28rem;
+	}
+
+	&__people {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid $w-line;
+	}
+
+	// One person. The row tints in their sticker colour on hover and the name steps in.
+	&__person {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.9rem 1.1rem;
+		padding: 1.6rem 1rem;
+		border-bottom: 1px solid $w-line;
+
+		&::before {
 			content: '';
 			position: absolute;
-			inset: 0;
-			background: linear-gradient(
-				135deg,
-				rgba(36, 107, 253, 0.1),
-				rgba(102, 187, 106, 0.1)
-			);
-			border-radius: 24px;
-			pointer-events: none;
+			inset: 6px 0;
+			border-radius: 18px;
+			background-color: var(--tint, #{$w-mat});
+			opacity: 0;
+			transition: opacity 0.35s $ease-standard;
+			z-index: 0;
 		}
 
 		> * {
@@ -46,135 +96,112 @@
 			z-index: 1;
 		}
 
-		@include bp-down($bp-md) {
-			padding: 3rem 2rem;
+		&:hover::before,
+		&:focus-within::before {
+			opacity: 0.14;
 		}
 
-		@include bp-down($bp-xs) {
-			padding: 2rem 1.5rem;
-		}
-	}
-
-	&__cta-title {
-		font-size: 3rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		margin-bottom: 1rem;
-		line-height: 1.2;
-
-		@include bp-down($bp-md) {
-			font-size: 2rem;
+		@include bp-down($bp-sm) {
+			padding: 1.25rem 0.5rem;
 		}
 	}
 
-	&__cta-description {
-		font-size: 1.125rem;
-		color: rgba(var(--text-color), 0.7);
-		margin-bottom: 3rem;
-		max-width: 700px;
-		margin-left: auto;
-		margin-right: auto;
-		line-height: 1.7;
+	&__sticker {
+		width: 18px;
+		height: 18px;
+		border-radius: 4px;
+		flex-shrink: 0;
+		background: var(--face, #{$w-ink});
+		@include w-sticker(2px);
+	}
 
-		@include bp-down($bp-md) {
-			font-size: 1rem;
-			margin-bottom: 2rem;
+	&__person-name {
+		flex: 1 1 auto;
+		min-width: 0;
+		font-family: 'Archivo', sans-serif;
+		font-stretch: 112%;
+		font-weight: 800;
+		font-size: clamp(1.45rem, 2.4vw, 2.15rem);
+		line-height: 1.1;
+		letter-spacing: -0.015em;
+		color: $w-ink;
+		transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+		@include bp-down($bp-sm) {
+			flex-basis: calc(100% - 40px);
 		}
 	}
 
-	// ============================================
-	// Social Media Grid
-	// ============================================
-
-	&__social-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 2rem;
-		max-width: 900px;
-		margin: 0 auto;
-
-		@include bp-down($bp-md) {
-			grid-template-columns: 1fr;
-			gap: 2rem;
-		}
+	&__person:hover &__person-name {
+		transform: translateX(6px);
 	}
 
-	&__social-category {
-		text-align: left;
-	}
-
-	&__social-category-title {
+	&__accounts {
 		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+
+		@include bp-down($bp-sm) {
+			flex-basis: 100%;
+			padding-left: calc(18px + 1.1rem);
+		}
+	}
+
+	&__account {
+		display: inline-flex;
 		align-items: center;
-		gap: 0.75rem;
-		font-size: 1.25rem;
+		gap: 0.45rem;
+		height: 40px;
+		padding: 0 0.85rem;
+		border-radius: 999px;
+		background: $w-paper;
+		border: 1px solid $w-line;
+		color: $w-ink;
+		font-size: 0.92rem;
 		font-weight: 600;
-		color: rgb(var(--text-color));
-		margin-bottom: 1.5rem;
-		padding-bottom: 0.75rem;
-		border-bottom: 2px solid rgba(var(--primary-color), 0.3);
-
-		svg {
-			color: rgb(var(--primary-color));
-		}
-	}
-
-	&__social-links {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	&__social-link {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid rgba(255, 255, 255, 0.05);
 		text-decoration: none;
-		transition: all 0.3s ease;
-		cursor: pointer;
-
-		svg {
-			flex-shrink: 0;
-			color: rgba(var(--text-color), 0.6);
-			transition: color 0.3s ease;
-		}
+		white-space: nowrap;
+		transition:
+			background-color 0.2s $ease-standard,
+			border-color 0.2s $ease-standard,
+			color 0.2s $ease-standard;
 
 		&:hover {
-			background: rgba(255, 255, 255, 0.08);
-			border-color: rgba(var(--primary-color), 0.3);
-			transform: translateY(-2px);
-			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+			background: $w-ink;
+			border-color: $w-ink;
+			color: #fff;
+		}
 
-			svg {
-				color: rgb(var(--primary-color));
-			}
-
-			.zt-welcome-footer__social-link-name {
-				color: rgb(var(--text-color));
-			}
+		&:focus-visible {
+			outline: 2px solid $w-accent;
+			outline-offset: 2px;
 		}
 	}
 
-	&__social-link-text {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	&__social-link-name {
-		font-size: 1rem;
+	// The root reset sets every span to 500; the handle keeps the link's weight.
+	&__account-handle {
 		font-weight: 600;
-		color: rgba(var(--text-color), 0.9);
-		transition: color 0.3s ease;
 	}
 
-	&__social-link-handle {
-		font-size: 0.875rem;
-		color: rgba(var(--text-color), 0.5);
+	&__account-arrow {
+		opacity: 0.6;
+		transition: transform 0.2s $ease-standard, opacity 0.2s $ease-standard;
+	}
+
+	&__account:hover &__account-arrow {
+		opacity: 1;
+		transform: translate(2px, -2px);
+	}
+
+	&__author {
+		color: $w-accent;
+		text-decoration: none;
+		font-weight: 600;
+
+		&:hover {
+			text-decoration: underline;
+			text-underline-offset: 3px;
+		}
 	}
 
 	// ============================================
@@ -188,7 +215,7 @@
 		gap: 1.25rem 2rem;
 		padding: 2rem 0;
 		margin-top: 2rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.05);
+		border-top: 1px solid $w-line;
 
 		@include bp-down($bp-xs) {
 			gap: 0.75rem 1.25rem;
@@ -201,7 +228,7 @@
 		justify-content: space-between;
 		align-items: center;
 		padding-top: 2rem;
-		border-top: 1px solid rgba(255, 255, 255, 0.05);
+		border-top: 1px solid $w-line;
 
 		@include bp-down($bp-md) {
 			flex-direction: column;
@@ -211,7 +238,7 @@
 	}
 
 	&__copyright {
-		color: rgba(var(--text-color), 0.5);
+		color: $w-ink-2;
 		font-size: 0.875rem;
 	}
 
@@ -225,14 +252,14 @@
 	}
 
 	&__nav-link {
-		color: rgba(var(--text-color), 0.5);
+		color: $w-ink-2;
 		font-size: 0.875rem;
 		cursor: pointer;
 		transition: color 0.2s ease;
 		text-decoration: none;
 
 		&:hover {
-			color: rgb(var(--text-color));
+			color: $w-accent;
 		}
 	}
 }

@@ -89,7 +89,7 @@ export default function LandingNav(props: Props) {
 
 	for (const nav of NAV_REST_LINKS) {
 		const {label, link, color} = nav;
-		const linkClasses = ['text-base', 'font-label', 'font-bold', 'border-solid', 'border-b-2'];
+		const linkClasses = [b('link', {action: !!color}), 'text-base', 'font-label', 'font-bold', 'border-solid', 'border-b-2'];
 
 		if (color) {
 			linkClasses.push(`text-${color}-500`);
@@ -109,9 +109,12 @@ export default function LandingNav(props: Props) {
 	return (
 		<div className={b({scrolled})}>
 			<div className={b('body')}>
+				<a href="/" className={b('brand')}>
+					<img src="/public/images/zkt-logo.png" alt="" width={28} height={28} />
+					<span>Zkt Timer</span>
+				</a>
 				<div className={b('links')}>
-					{/* Sits at the left of the bar, so the panel has to grow rightward. */}
-					<LanguageSwitcher align="start" />
+					<LanguageSwitcher align="end" />
 					{showNavLinks}
 				</div>
 			</div>

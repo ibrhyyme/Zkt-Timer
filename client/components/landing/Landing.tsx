@@ -5,6 +5,7 @@ import block from '../../styles/bem';
 import LandingNav from './common/landing_nav/LandingNav';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 import {updateThemeColors} from '../layout/themes';
+import {isLightThemePath} from '../../util/themes/theme_lock';
 
 const b = block('landing');
 
@@ -20,7 +21,7 @@ export default function Landing(props: any) {
 	}, [pathname]);
 
 	return (
-		<div className={b()}>
+		<div className={b({light: isLightThemePath(pathname)})}>
 			<LandingNav />
 			{children}
 			<SwipeBackIndicator />

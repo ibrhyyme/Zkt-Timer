@@ -4293,10 +4293,6 @@
     "cta_try": "Try it now",
     "rating_line": "{{play}} on Google Play, {{apple}} on the App Store"
   },
-  "welcome_reel": {
-    "label": "Zkt Timer film",
-    "caption": "The cube in the film replays a real 8.73 solve, turn for turn, at the speed it was solved."
-  },
   "welcome_chapters": {
     "title": "Everything around the solve",
     "lede": "The screens below come straight from the app, taken from real sessions.",

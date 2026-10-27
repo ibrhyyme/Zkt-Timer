@@ -1,10 +1,8 @@
-@import '../../../../styles/config.scss';
+@import '../welcome-tokens';
 
 .zt-welcome-mobile-grid {
 	position: relative;
-	padding: 4rem 0;
-	background: linear-gradient(to bottom, transparent, rgba(10, 10, 10, 0.5));
-	border-radius: 24px;
+	padding: 4rem 0 5rem;
 
 	&__container {
 		max-width: 85.333rem;
@@ -27,14 +25,14 @@
 		font-weight: 800;
 		font-size: clamp(2rem, 4.2vw, 3.6rem);
 		letter-spacing: -0.02em;
-		color: #f5f6f8;
+		color: $w-ink;
 		margin: 0 0 1rem;
 		line-height: 1.04;
 	}
 
 	&__description {
 		font-size: 1.125rem;
-		color: #c3c7d2;
+		color: $w-ink-2;
 		max-width: 600px;
 		margin: 0 auto;
 		line-height: 1.7;
@@ -87,7 +85,8 @@
 		border: 10px solid #1a1d21;
 		border-radius: 35px;
 		padding: 20px 10px;
-		@include dark-glass(0.05, 8px, 0.1);
+		background: #1a1d21;
+		box-shadow: 0 24px 50px -24px rgba($w-ink, 0.45);
 		overflow: hidden;
 
 		// iOS Safari fallback
@@ -134,20 +133,20 @@
 		}
 
 		&:hover {
-			box-shadow: 0 20px 60px rgba(36, 107, 253, 0.2);
+			box-shadow: 0 30px 60px -24px rgba($w-accent, 0.45);
 		}
 	}
 
 	&__label {
 		text-align: center;
 		margin-top: 1rem;
-		font-size: 0.9rem;
-		color: #c3c7d2;
+		font-size: 0.95rem;
+		color: $w-ink;
 		font-weight: 600;
 	}
 
 	// Closing call to action. The badge SVGs sit in a square viewBox with the badge
-	// across its middle third, hence the tall boxes (same sizing as the hero).
+	// across its middle third; cropped to the badge like the hero's.
 	&__stores {
 		display: flex;
 		justify-content: center;
@@ -158,22 +157,25 @@
 
 	&__store {
 		display: inline-block;
-		border-radius: 0.85rem;
+		border-radius: 0.6rem;
 		overflow: hidden;
 		transition: filter 0.2s ease;
+		height: 44px;
+		aspect-ratio: 135 / 40;
+
+		@include bp-down($bp-md) {
+			height: 40px;
+		}
 
 		img {
 			display: block;
-			height: 150px;
-			width: auto;
-
-			@include bp-down($bp-md) {
-				height: 114px;
-			}
+			height: 100%;
+			width: 100%;
+			object-fit: cover;
 		}
 
 		&:hover {
-			filter: brightness(1.15);
+			filter: drop-shadow(0 10px 18px rgba($w-ink, 0.22));
 		}
 	}
 

@@ -1,4 +1,4 @@
-@import '../../../../styles/config.scss';
+@import '../welcome-tokens';
 
 // ============================================
 // Hero Section — 2-Column Layout
@@ -26,42 +26,6 @@
 
 		@include bp-down($bp-sm) {
 			display: block;
-		}
-	}
-
-	// ============================================
-	// Background Effects
-	// ============================================
-
-	&__background {
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-		pointer-events: none;
-	}
-
-	&__background-orb {
-		position: absolute;
-		width: 70vw;
-		height: 70vw;
-		max-width: 800px;
-		max-height: 800px;
-		border-radius: 50%;
-		filter: blur(100px);
-		opacity: 0.1;
-		animation: heroOrbPulse 4s ease-in-out infinite;
-
-		&--position-left {
-			top: -20%;
-			left: -10%;
-			background: radial-gradient(circle, rgba(124, 58, 237, 0.8), transparent);
-		}
-
-		&--position-right {
-			bottom: -20%;
-			right: -10%;
-			background: radial-gradient(circle, rgba(59, 130, 246, 0.8), transparent);
-			animation-delay: 2s;
 		}
 	}
 
@@ -117,7 +81,6 @@
 		height: 140px;
 		object-fit: contain;
 		display: block;
-		filter: drop-shadow(0 4px 20px rgba(124, 58, 237, 0.4));
 
 		@include bp-down($bp-md) {
 			width: 100px;
@@ -131,28 +94,13 @@
 		line-height: 1.1;
 		letter-spacing: -0.02em;
 		margin-bottom: 1.5rem;
-		background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.6));
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
+		color: $w-ink;
 	}
 
 	&__title-highlight {
-		-webkit-text-fill-color: white;
 		display: inline-block;
 		white-space: nowrap;
-	}
-
-	&__description {
-		font-size: clamp(0.95rem, 1.5vw, 1.15rem);
-		color: rgba(255, 255, 255, 0.6);
-		line-height: 1.7;
-		max-width: 32rem;
-		margin-bottom: 2rem;
-
-		@include bp-down($bp-grid-collapse) {
-			max-width: 28rem;
-		}
+		color: $w-ink;
 	}
 
 	// ============================================
@@ -182,61 +130,6 @@
 		}
 	}
 
-	&__store-headline-wrap {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.85rem;
-		margin-bottom: 1.5rem;
-
-		@include bp-down($bp-grid-collapse) {
-			align-items: center;
-		}
-	}
-
-	&__store-pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.4rem 0.95rem;
-		border-radius: 999px;
-		background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(59, 130, 246, 0.22));
-		border: 1px solid rgba(124, 58, 237, 0.4);
-		color: #fff;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		backdrop-filter: blur(8px);
-		box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2);
-	}
-
-	&__store-pill-dot {
-		width: 0.5rem;
-		height: 0.5rem;
-		border-radius: 50%;
-		background: #4ade80;
-		box-shadow: 0 0 10px rgba(74, 222, 128, 0.9);
-		animation: heroStorePulse 2s ease-in-out infinite;
-	}
-
-	&__store-headline {
-		margin: 0;
-		font-size: clamp(1.4rem, 2.4vw, 1.85rem);
-		font-weight: 700;
-		line-height: 1.25;
-		letter-spacing: -0.01em;
-		background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		max-width: 32rem;
-
-		@include bp-down($bp-grid-collapse) {
-			text-align: center;
-		}
-	}
-
 	&__store-badges {
 		display: flex;
 		gap: 1.4rem;
@@ -257,7 +150,7 @@
 		}
 	}
 
-	// Store ratings and the live solve count, right under the badges they vouch for.
+	// Store ratings, right under the badges they vouch for.
 	&__proof {
 		display: flex;
 		flex-wrap: wrap;
@@ -266,7 +159,7 @@
 		font-size: 1.05rem;
 		font-weight: 600;
 		line-height: 1.4;
-		color: #c3c7d2;
+		color: $w-ink-2;
 
 		@include bp-down($bp-grid-collapse) {
 			justify-content: center;
@@ -280,8 +173,9 @@
 		gap: 0.35rem;
 	}
 
+	// The cube's yellow, a shade deeper so the star holds its shape on white.
 	&__proof-star {
-		color: #ffd400;
+		color: #f2b705;
 		flex-shrink: 0;
 	}
 
@@ -297,11 +191,11 @@
 	&__auth-divider-line {
 		flex: 1;
 		height: 1px;
-		background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.18), transparent);
+		background: $w-line;
 	}
 
 	&__auth-divider-text {
-		color: rgba(255, 255, 255, 0.55);
+		color: $w-ink-2;
 		font-size: 0.78rem;
 		font-weight: 500;
 		letter-spacing: 0.03em;
@@ -312,7 +206,7 @@
 	&__try-cta {
 		width: 100%;
 		max-width: 22rem;
-		margin: 0 auto 1rem;
+		margin: 1.25rem auto 1rem;
 
 		// The desktop hero column is left-aligned (logo, headline, store badges all
 		// start at the same edge), so the button follows that edge instead of
@@ -354,36 +248,42 @@
 		}
 	}
 
+	// The badge files are square with the badge across their middle 30%. Cropped to the
+	// badge's own 135:40 box, at the same visible size as before, so the rating line sits
+	// right under it instead of below a band of empty SVG.
 	&__store-badge {
 		display: inline-block;
 		transition: transform 0.2s ease, filter 0.2s ease;
-		border-radius: 0.85rem;
+		border-radius: 0.6rem;
 		overflow: hidden;
+		height: 52px;
+		aspect-ratio: 135 / 40;
+
+		@media (max-width: 1200px) {
+			height: 46px;
+		}
+
+		@media (max-width: 1000px) {
+			height: 41px;
+		}
+
+		@include bp-down($bp-md) {
+			height: 46px;
+		}
+
+		@include bp-down($bp-xs) {
+			height: 40px;
+		}
 
 		img {
-			height: 174px;
-			width: auto;
+			height: 100%;
+			width: 100%;
+			object-fit: cover;
 			display: block;
-
-			@media (max-width: 1200px) {
-				height: 156px;
-			}
-
-			@media (max-width: 1000px) {
-				height: 138px;
-			}
-
-			@include bp-down($bp-md) {
-				height: 120px;
-			}
-
-			@include bp-down($bp-xs) {
-				height: 102px;
-			}
 		}
 
 		&:hover {
-			filter: brightness(1.15) drop-shadow(0 8px 24px rgba(124, 58, 237, 0.45));
+			filter: drop-shadow(0 10px 18px rgba($w-ink, 0.22));
 		}
 	}
 
@@ -422,8 +322,8 @@
 	&__scroll-arrow {
 		width: 24px;
 		height: 24px;
-		border-right: 2px solid rgba(255, 255, 255, 0.4);
-		border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+		border-right: 2px solid rgba($w-ink, 0.45);
+		border-bottom: 2px solid rgba($w-ink, 0.45);
 		transform: rotate(45deg);
 		animation: heroScrollBounce 2s ease-in-out infinite;
 	}
@@ -473,19 +373,19 @@
 		left: 0;
 		right: 0;
 		text-align: center;
-		font-size: 0.75rem;
-		color: rgba(255, 255, 255, 0.35);
+		font-size: 0.8rem;
+		color: $w-ink-2;
 		pointer-events: none;
 		user-select: none;
 		transition: color 0.3s ease, font-size 0.3s ease;
 
 		@include bp-down($bp-grid-collapse) {
 			bottom: -1.25rem;
-			font-size: 0.7rem;
+			font-size: 0.75rem;
 		}
 
 		&--phase-timing {
-			color: rgba(255, 255, 255, 0.7);
+			color: $w-ink;
 			font-variant-numeric: tabular-nums;
 			font-family: 'Roboto Mono', monospace;
 			font-size: 1.1rem;
@@ -493,7 +393,7 @@
 		}
 
 		&--phase-solved {
-			color: #4ade80;
+			color: #15803d;
 			font-variant-numeric: tabular-nums;
 			font-family: 'Roboto Mono', monospace;
 			font-size: 1.1rem;
@@ -507,8 +407,8 @@
 
 	&__hint-retry {
 		background: none;
-		border: 1px solid rgba(255, 255, 255, 0.25);
-		color: rgba(255, 255, 255, 0.6);
+		border: 1px solid rgba($w-ink, 0.25);
+		color: $w-ink;
 		border-radius: 0.4rem;
 		padding: 0.2rem 0.6rem;
 		font-size: 0.7rem;
@@ -518,8 +418,8 @@
 		transition: all 0.2s ease;
 
 		&:hover {
-			color: #fff;
-			border-color: rgba(255, 255, 255, 0.5);
+			border-color: $w-accent;
+			color: $w-accent;
 		}
 	}
 }
@@ -541,17 +441,6 @@
 // Keyframes
 // ============================================
 
-@keyframes heroOrbPulse {
-	0%, 100% {
-		opacity: 0.1;
-		transform: scale(1);
-	}
-	50% {
-		opacity: 0.15;
-		transform: scale(1.05);
-	}
-}
-
 @keyframes heroScrollBounce {
 	0%, 100% {
 		transform: rotate(45deg) translateY(0);
@@ -560,16 +449,5 @@
 	50% {
 		transform: rotate(45deg) translateY(8px);
 		opacity: 0.8;
-	}
-}
-
-@keyframes heroStorePulse {
-	0%, 100% {
-		opacity: 1;
-		transform: scale(1);
-	}
-	50% {
-		opacity: 0.5;
-		transform: scale(0.85);
 	}
 }

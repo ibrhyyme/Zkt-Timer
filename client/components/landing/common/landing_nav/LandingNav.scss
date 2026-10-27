@@ -1,4 +1,5 @@
 @import '../../../../styles/config';
+@import '../../welcome/welcome-tokens';
 
 .#{$namespace}-landing-nav {
 	$self: &;
@@ -24,15 +25,21 @@
 		border-color: rgba(255, 255, 255, 0.1);
 	}
 
-	&__logo {
-		a {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-		}
+	&__brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		color: inherit;
+		font-weight: 800;
+		font-stretch: 112%;
+		font-size: 17px;
+		letter-spacing: -0.01em;
+		text-decoration: none;
 
 		img {
-			width: 120px;
+			width: 28px;
+			height: 28px;
+			display: block;
 		}
 	}
 
@@ -66,5 +73,78 @@
 	&__1v1 {
 		color: #409444;
 		border-color: lighten(#409444, 30%) !important;
+	}
+}
+
+// On the white landing page the bar is part of the page: white, ink, no blur. Log in
+// is a plain link and Sign up the bar's one action.
+.#{$namespace}-landing--light .#{$namespace}-landing-nav {
+	$self: '.#{$namespace}-landing-nav';
+
+	height: 64px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	background-color: $w-paper;
+	backdrop-filter: none;
+	border-bottom: 1px solid transparent;
+	color: $w-ink;
+	transition: border-color 0.15s $ease-standard;
+
+	@include bp-down($bp-sm) {
+		display: none;
+	}
+
+	&--scrolled {
+		border-color: $w-line;
+	}
+
+	#{$self}__body {
+		width: 100%;
+		max-width: 85.333rem;
+		padding: 0 1.5rem;
+		box-sizing: border-box;
+	}
+
+	#{$self}__links > *:not(:first-child) {
+		margin-left: 24px;
+	}
+
+	#{$self}__brand:focus-visible {
+		outline: 2px solid $w-accent;
+		outline-offset: 3px;
+	}
+
+	#{$self}__link {
+		border: 0;
+		color: $w-ink;
+		font-size: 15px;
+		font-weight: 600;
+		text-decoration: none;
+		transition: color 0.15s $ease-standard, background-color 0.15s $ease-standard;
+
+		&:hover {
+			color: $w-accent;
+		}
+
+		&:focus-visible {
+			outline: 2px solid $w-accent;
+			outline-offset: 3px;
+		}
+
+		&--action {
+			display: inline-flex;
+			align-items: center;
+			height: $zt-control-h-md;
+			padding: 0 16px;
+			border-radius: $zt-radius-md;
+			background-color: $w-accent;
+			color: #fff;
+
+			&:hover {
+				color: #fff;
+				background-color: darken($w-accent, 8%);
+			}
+		}
 	}
 }

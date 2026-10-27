@@ -3,7 +3,7 @@ import tinycolor from 'tinycolor2';
 import {AllSettings, getSetting} from '../../db/settings/query';
 import {getAnyColorStringAsRawRgbString, getAnyColorStringAsRgbString} from '../../util/themes/theme_util';
 import {normalizeSolveListColor, SOLVE_LIST_COLOR_KEYS, SOLVE_LIST_COLOR_VARS} from '../../util/themes/solve_list_colors';
-import {isFixedThemePath, isThemeColorKey, isThemeLocked, LOCKED_THEME_COLORS} from '../../util/themes/theme_lock';
+import {isFixedThemePath, isLightThemePath, isThemeColorKey, isThemeLocked, lockedThemeColors} from '../../util/themes/theme_lock';
 import {getStore} from '../store';
 
 const userDefinedColorsVar: Partial<Record<string, string>> = {
@@ -78,9 +78,9 @@ function saveThemeSnapshot(isLight: boolean) {
 	}
 }
 
-/** The colour actually worn: the user's setting, or the fixed dark theme where it is locked (E-106). */
-function effectiveColor(key: keyof AllSettings, locked: boolean): string {
-	if (locked && isThemeColorKey(key)) return LOCKED_THEME_COLORS[key];
+/** The colour actually worn: the user's setting, or the page's fixed theme where it is locked (E-106). */
+function effectiveColor(key: keyof AllSettings, locked: boolean, pathname: string): string {
+	if (locked && isThemeColorKey(key)) return lockedThemeColors(pathname)[key];
 	return getSetting(key) as string;
 }
 
@@ -94,7 +94,7 @@ export function updateThemeColors() {
 
 	// Always apply theme-light/dark class unconditionally — the <head> inline script may
 	// have pre-filled CSS variables so the color !== currentPc check below can skip this.
-	const bgColor = effectiveColor('background_color', locked);
+	const bgColor = effectiveColor('background_color', locked, pathname);
 	let isLight = false;
 	if (bgColor && bgColor !== 'undefined') {
 		const bgTc = tinycolor(getAnyColorStringAsRgbString(bgColor));
@@ -109,7 +109,7 @@ export function updateThemeColors() {
 	}
 
 	for (const key of colorKeys) {
-		const color = effectiveColor(key, locked);
+		const color = effectiveColor(key, locked, pathname);
 
 		if (!color || color === 'undefined') {
 			continue; // Something probably went wrong. Skip otherwise we get runtime errors.
@@ -126,8 +126,9 @@ export function updateThemeColors() {
 	applySolveListColors();
 
 	// A signed-in user on a fixed page keeps their own snapshot, so the next page they open
-	// paints their theme from the first frame. A visitor's snapshot is the locked one.
-	if (!(signedIn && isFixedThemePath(pathname))) saveThemeSnapshot(isLight);
+	// paints their theme from the first frame. A visitor's snapshot is the locked dark one;
+	// the landing page's light theme is never stored, or the next page would open light.
+	if (!(signedIn && isFixedThemePath(pathname)) && !isLightThemePath(pathname)) saveThemeSnapshot(isLight);
 }
 
 // Live-preview a single theme colour while a picker is being dragged, WITHOUT touching the

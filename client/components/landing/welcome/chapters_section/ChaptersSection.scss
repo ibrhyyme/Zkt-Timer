@@ -1,37 +1,51 @@
-@import '../../../../styles/config.scss';
+@import '../welcome-tokens';
 
-// Chapters: one pinned stage, six scrolling chapters.
+// Chapters.
 //
-// The stage is the page's one piece of spectacle, so everything around it stays
-// quiet: no cards, no glows, no entrance animation on the text. Colour comes from the
-// six sticker colours only, and each one marks a chapter.
+// Wide screens (>= 1024px): a pinned scene. The track is one screen tall per chapter;
+// the scene inside it is sticky, and usePinnedSteps moves one chapter per wheel tick.
+// The outgoing chapter's lines slide away in the direction of travel while the next
+// chapter comes in line by line, the stage turns its layers, the tabs fill up.
+//
+// Narrow screens: the chapters stack, each a screen of its own with its picture first,
+// and the browser's proximity snapping settles a swipe on the next one.
+//
+// Colour comes from the six sticker colours, each marking a chapter; on white every
+// sticker sits on a ring of cube plastic so the white one still shows.
 
-$chapters-ink: #f5f6f8;
-$chapters-body: #c3c7d2;
-$chapters-muted: #aeb3c0;
-$chapters-line: #232733;
 $chapters-stage-bg: #0b0d12;
+$chapters-nav-h: 64px; // the landing's top bar (LandingNav.scss, light variant)
+$chapters-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
 .zt-welcome-chapters {
 	position: relative;
 	z-index: 2;
-	padding: 7rem 0 4rem;
+	padding-top: 7rem;
 
 	@include bp-down($bp-lg) {
 		padding: 4.5rem 0 2rem;
 	}
 
-	// Wider than the other sections on purpose: the stage is the page's showpiece and
-	// the screenshots need the room to be legible.
-	&__container {
-		max-width: 1360px;
+	// Same frame as the top bar and the hero, so the scene lines up with both.
+	&__container,
+	&__scene {
+		max-width: 85.333rem;
 		margin: 0 auto;
-		padding: 0 24px;
+		padding: 0 1.5rem;
+		box-sizing: border-box;
+
+		@include bp-down($bp-sm) {
+			padding: 0 16px;
+		}
 	}
 
 	&__header {
 		max-width: 46rem;
-		margin-bottom: 2rem;
+		margin-bottom: 2.5rem;
+
+		@include bp-down($bp-lg) {
+			margin-bottom: 0;
+		}
 	}
 
 	&__title {
@@ -41,213 +55,343 @@ $chapters-stage-bg: #0b0d12;
 		font-size: clamp(2.2rem, 4.6vw, 4.2rem);
 		line-height: 1.02;
 		letter-spacing: -0.02em;
-		color: $chapters-ink;
+		color: $w-ink;
 		margin: 0 0 1rem;
 	}
 
 	&__lede {
 		font-size: clamp(1rem, 1.3vw, 1.15rem);
 		line-height: 1.6;
-		color: $chapters-muted;
+		color: $w-ink-2;
 		margin: 0;
 		max-width: 34rem;
 	}
 
-	&__body {
-		display: grid;
-		grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-		gap: 56px;
-
-		@include bp-down($bp-lg) {
-			display: block;
-		}
-	}
-
 	// ----------------------------------------------------------------------------
-	// Chapter text
+	// Chapter content (both layouts)
 	// ----------------------------------------------------------------------------
-
-	&__chapter {
-		min-height: 78vh;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		padding: 6vh 0;
-
-		@include bp-down($bp-lg) {
-			min-height: 0;
-			padding: 3rem 0 1rem;
-		}
-	}
 
 	&__marker {
 		display: flex;
 		align-items: center;
 		gap: 0.6rem;
-		margin-bottom: 1rem;
+		margin-bottom: 1.1rem;
 	}
 
 	&__sticker {
-		width: 14px;
-		height: 14px;
+		width: 16px;
+		height: 16px;
 		border-radius: 3px;
 		flex-shrink: 0;
+		@include w-sticker(2px);
 	}
 
 	&__name {
-		font-size: 0.95rem;
+		font-size: 1rem;
 		font-weight: 700;
-		color: $chapters-ink;
+		color: $w-ink;
 	}
 
 	&__pro {
-		font-size: 0.72rem;
-		font-weight: 800;
-		line-height: 1;
-		padding: 0.28rem 0.45rem;
-		border-radius: 4px;
-		color: #f5c542;
-		border: 1px solid rgba(245, 197, 66, 0.5);
+		@include w-pro-tag;
 	}
 
 	&__chapter-title {
 		font-family: 'Archivo', sans-serif;
 		font-stretch: 112%;
 		font-weight: 800;
-		font-size: clamp(1.7rem, 2.6vw, 2.55rem);
-		line-height: 1.08;
-		letter-spacing: -0.015em;
-		color: $chapters-ink;
-		margin: 0 0 1rem;
-	}
-
-	&__chapter-body {
-		font-size: 1.06rem;
-		line-height: 1.65;
-		color: $chapters-body;
+		font-size: clamp(1.9rem, min(3.4vw, 6.4vh), 3.5rem);
+		line-height: 1.04;
+		letter-spacing: -0.02em;
+		color: $w-ink;
 		margin: 0 0 1.25rem;
-		max-width: 34rem;
+
+		@include bp-down($bp-lg) {
+			font-size: clamp(1.8rem, 6.4vw, 2.6rem);
+		}
 	}
 
-	&__facts {
+	&__line--body {
+		font-size: 1.08rem;
+		line-height: 1.65;
+		color: $w-ink-2;
+		margin: 0 0 1.5rem;
+		max-width: 32rem;
+	}
+
+	&__line--facts {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: 0.55rem;
+		gap: 0.6rem;
 	}
 
 	&__fact {
 		position: relative;
-		padding-left: 1.2rem;
-		font-size: 0.98rem;
+		padding-left: 1.4rem;
+		font-size: 1rem;
 		line-height: 1.5;
-		color: $chapters-ink;
+		color: $w-ink;
 
 		// A single sticker per line, in the chapter's own colour.
 		&::before {
 			content: '';
 			position: absolute;
-			left: 0;
+			left: 1px;
 			top: 0.5em;
-			width: 7px;
-			height: 7px;
+			width: 8px;
+			height: 8px;
 			border-radius: 2px;
-			background: var(--face, #{$chapters-ink});
+			background: var(--face, #{$w-ink});
+			@include w-sticker(1.5px);
 		}
 	}
 
-	// Pictures inside the text column exist for narrow screens only.
 	&__inline-visual {
 		display: none;
-		margin: 1.75rem 0 0;
-
-		@include bp-down($bp-lg) {
-			display: block;
-		}
-	}
-
-	&__inline-media {
-		display: block;
-		width: 100%;
-		height: auto;
-		aspect-ratio: 16 / 9;
-		border-radius: 12px;
-		border: 1px solid $chapters-line;
-		background: $chapters-stage-bg;
-		object-fit: cover;
 	}
 
 	&__caption {
 		margin-top: 0.65rem;
 		font-size: 0.85rem;
 		line-height: 1.45;
-		color: $chapters-muted;
+		color: $w-ink-2;
 	}
 
 	// ----------------------------------------------------------------------------
-	// Pinned stage
+	// Wide screens: the pinned scene
 	// ----------------------------------------------------------------------------
 
-	&__stage-col {
-		position: relative;
-
-		@include bp-down($bp-lg) {
-			display: none;
-		}
-	}
-
-	&__pin {
-		position: sticky;
-		top: max(6rem, calc(50vh - 17rem));
-	}
-
-	&__rail {
-		display: flex;
-		align-items: center;
-		gap: 1.25rem;
-		margin-top: 1.1rem;
-	}
-
-	&__stickers {
-		display: flex;
-		gap: 6px;
-		flex-shrink: 0;
-	}
-
-	&__rail-sticker {
-		width: 18px;
-		height: 18px;
-		padding: 0;
-		border: 0;
-		border-radius: 4px;
-		cursor: pointer;
-		outline: 2px solid transparent;
-		outline-offset: 2px;
-		transition: outline-color 0.2s $ease-standard, transform 0.2s $ease-standard;
-
-		&:hover {
-			transform: translateY(-2px);
+	@include bp-up($bp-lg) {
+		&__track {
+			height: calc(var(--count, 6) * (100vh - #{$chapters-nav-h}));
 		}
 
-		&:focus-visible,
-		&--active {
-			outline-color: $chapters-ink;
+		&__pin {
+			position: sticky;
+			top: $chapters-nav-h;
+			height: calc(100vh - #{$chapters-nav-h});
+			overflow: hidden;
+		}
+
+		&__scene {
+			height: 100%;
+			display: grid;
+			grid-template-columns: minmax(0, 4.6fr) minmax(0, 7.4fr);
+			grid-template-rows: minmax(0, 1fr) auto;
+			grid-template-areas:
+				'text stage'
+				'tabs tabs';
+			column-gap: clamp(32px, 4vw, 72px);
+			padding-top: 24px;
+			padding-bottom: 20px;
+		}
+
+		&__texts {
+			grid-area: text;
+			position: relative;
+		}
+
+		// Every chapter's text sits in the same place; only the active one shows.
+		&__chapter {
+			position: absolute;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			visibility: hidden;
+			pointer-events: none;
+		}
+
+		&__chapter--state-active {
+			visibility: visible;
+			pointer-events: auto;
+		}
+
+		// The chapter that was on stays visible while its lines play out.
+		&__chapter--leaving {
+			transition: visibility 0s linear 0.5s;
+		}
+
+		// Chapters ahead wait below, chapters behind wait above: the next one always
+		// comes in from the direction the visitor is going.
+		&__line {
+			opacity: 0;
+			transform: translate3d(0, 44px, 0);
+			transition:
+				opacity 0.35s $ease-standard,
+				transform 0.65s $chapters-ease-out;
+		}
+
+		&__chapter--state-before &__line {
+			transform: translate3d(0, -44px, 0);
+		}
+
+		&__chapter--state-active &__line {
+			opacity: 1;
+			transform: none;
+			transition-delay: calc(var(--i, 0) * 70ms + 160ms);
+		}
+
+		&__chapter--leaving &__line {
+			transition-duration: 0.3s, 0.45s;
+			transition-delay: calc(var(--i, 0) * 25ms);
+		}
+
+		// The stage: a dark screen bezel round the turning layers, sized so it always fits
+		// the pinned height.
+		&__stage-col {
+			grid-area: stage;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			min-height: 0;
+		}
+
+		&__screen,
+		&__stage-caption {
+			width: min(calc(100% - 26px), calc((100vh - #{$chapters-nav-h} - 260px) * 16 / 9));
+			margin-left: auto;
+			margin-right: 26px;
+		}
+
+		&__stage-col {
+			isolation: isolate;
+		}
+
+		&__screen {
+			position: relative;
+			padding: 10px;
+			border-radius: 22px;
+			background: $chapters-stage-bg;
+			box-shadow: $w-shadow-stage;
+			box-sizing: border-box;
+
+			// A soft field in the active chapter's sticker colour, set behind the screen
+			// like a card under it; it changes colour with the chapter.
+			&::before {
+				content: '';
+				position: absolute;
+				top: -26px;
+				bottom: -26px;
+				left: 22%;
+				right: -26px;
+				z-index: -1;
+				border-radius: 34px;
+				background-color: var(--tint, #{$w-mat});
+				opacity: 0.14;
+				transition: background-color 0.7s $ease-standard;
+			}
+
+			.zt-welcome-stage {
+				border: 0;
+				border-radius: 13px;
+				box-shadow: none;
+			}
+		}
+
+		&__stage-caption {
+			margin-top: calc(26px + 0.9rem);
+			min-height: 1.4em;
+			font-size: 0.92rem;
+			line-height: 1.4;
+			color: $w-ink-2;
+		}
+
+		// The step tabs (pinned/StepTabs) sit across the bottom of the scene.
+		&__tabs {
+			grid-area: tabs;
+			padding-top: 6px;
+		}
+
+		// Short laptop screens: the facts give way so the text never runs past the scene.
+		@media (max-height: 700px) {
+			&__line--facts {
+				display: none;
+			}
 		}
 
 		@include reduced-motion {
-			&:hover {
-				transform: none;
+			&__line {
+				transition: none;
 			}
 		}
 	}
 
-	&__rail-caption {
-		margin: 0;
-		min-height: 1.4em;
-		font-size: 0.92rem;
-		line-height: 1.4;
-		color: $chapters-muted;
+	// ----------------------------------------------------------------------------
+	// Narrow screens: one stacked screen per chapter
+	// ----------------------------------------------------------------------------
+
+	@include bp-down($bp-lg) {
+		// Doubled for specificity: the tabs' own block (StepTabs.scss) sets display too.
+		&__stage-col,
+		& &__tabs {
+			display: none;
+		}
+
+		&__chapter {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			min-height: 100vh;
+			min-height: 100svh;
+			padding: 2.5rem 0;
+			box-sizing: border-box;
+			scroll-snap-align: start;
+			// Below 640px the top bar is hidden; above it, it covers the first 64px.
+			scroll-margin-top: $chapters-nav-h;
+
+			@include bp-down($bp-sm) {
+				scroll-margin-top: 0;
+			}
+		}
+
+		&__inline-visual {
+			display: block;
+			margin: 0 0 1.75rem;
+		}
+
+		&__inline-media {
+			display: block;
+			width: 100%;
+			height: auto;
+			aspect-ratio: 16 / 9;
+			border-radius: 14px;
+			border: 6px solid $chapters-stage-bg;
+			background: $chapters-stage-bg;
+			object-fit: cover;
+			box-shadow: $w-shadow-stage;
+			box-sizing: border-box;
+		}
+
+		// Each chapter comes in once, the first time it reaches the middle of the screen.
+		// Only once script has marked the section, so without it everything just shows.
+		&[data-motion='on'] &__chapter:not([data-seen]) &__line,
+		&[data-motion='on'] &__chapter:not([data-seen]) &__inline-visual {
+			opacity: 0;
+			transform: translate3d(0, 28px, 0);
+		}
+
+		&__line,
+		&__inline-visual {
+			transition:
+				opacity 0.5s $ease-standard,
+				transform 0.7s $chapters-ease-out;
+		}
+
+		&__chapter[data-seen] &__line {
+			transition-delay: calc(var(--i, 0) * 70ms + 120ms);
+		}
+	}
+}
+
+// One swipe, one chapter on phones and tablets: the page settles on the nearest
+// chapter's top. Proximity, not mandatory, so the rest of the page scrolls freely, and
+// a chapter taller than the screen can still be read through.
+@include bp-down($bp-lg) {
+	html:has(.zt-welcome-chapters) {
+		scroll-snap-type: y proximity;
 	}
 }
 
@@ -260,34 +404,24 @@ $chapters-stage-bg: #0b0d12;
 	width: 100%;
 	aspect-ratio: 16 / 9;
 	border-radius: 14px;
-	border: 1px solid $chapters-line;
+	border: 1px solid $w-line;
 	background: $chapters-stage-bg;
 	overflow: hidden;
 	perspective: var(--depth, 4000px);
-	box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.85);
+	box-shadow: $w-shadow-stage;
 
 	@supports not (aspect-ratio: 16 / 9) {
 		height: 0;
 		padding-top: 56.25%;
 	}
 
-	&__still,
-	&__video {
+	&__still {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		display: block;
-	}
-
-	&__video {
-		opacity: 0;
-		transition: opacity 0.2s linear;
-
-		&--on {
-			opacity: 1;
-		}
 	}
 
 	// Layers exist visually only for the length of a turn.
@@ -302,8 +436,7 @@ $chapters-stage-bg: #0b0d12;
 		display: block;
 	}
 
-	&--turning &__still,
-	&--turning &__video {
+	&--turning &__still {
 		visibility: hidden;
 	}
 

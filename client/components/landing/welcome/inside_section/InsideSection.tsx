@@ -1,10 +1,12 @@
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {SUPPORTED_SMART_CUBE_BRANDS} from '../../../timer/smart_cube/bluetooth/supported_cubes';
-import {STICKER, Face} from '../landing-data';
+import {STICKER, Face, stickerTint} from '../landing-data';
 import NotationHeading from '../notation_heading/NotationHeading';
 import {useBattleLaunch} from '../../../battle/useBattleLaunch';
+import {usePinnedSteps} from '../pinned/usePinnedSteps';
+import StepTabs from '../pinned/StepTabs';
 import './InsideSection.scss';
 
 const b = block('welcome-inside');
@@ -100,6 +102,14 @@ function brandList(lang: string): string {
 	}
 }
 
+/**
+ * Everything in the app, as six cards (one per area).
+ *
+ * Wide screens: the section pins like the chapters above it, and each wheel tick slides
+ * the row of cards one card to the left (usePinnedSteps). The card in front is full
+ * size with a field in its sticker colour behind it; the next ones wait at the right.
+ * Phones and tablets: a row of cards you swipe sideways (native scroll snapping).
+ */
 export default function InsideSection() {
 	const {t, i18n} = useTranslation();
 	const vars = {brands: brandList(i18n.language || 'en')};
@@ -107,38 +117,81 @@ export default function InsideSection() {
 	const launched = useBattleLaunch()?.launched === true;
 	const itemKey = (key: string) => (launched && key === 'battle' ? 'battle_online' : key);
 
+	const [active, setActive] = useState(0);
+	const trackRef = useRef<HTMLDivElement>(null);
+	const pinRef = useRef<HTMLDivElement>(null);
+	const {goTo} = usePinnedSteps({trackRef, pinRef, count: GROUPS.length, active, onChange: setActive});
+
+	const stateOf = (i: number) => (i === active ? 'active' : i < active ? 'before' : 'after');
+
 	return (
 		<section className={b()}>
-			<div className={b('container')}>
-				<header className={b('header')}>
-					<NotationHeading className={b('title')} text={t('welcome_inside.title')} />
-					<p className={b('lede')}>{t('welcome_inside.lede')}</p>
-				</header>
+			<div
+				ref={trackRef}
+				className={b('track')}
+				style={{'--count': GROUPS.length} as React.CSSProperties}
+			>
+				<div ref={pinRef} className={b('pin')}>
+					<div className={b('scene')}>
+						<header className={b('header')}>
+							<NotationHeading className={b('title')} text={t('welcome_inside.title')} />
+							<p className={b('lede')}>{t('welcome_inside.lede')}</p>
+						</header>
 
-				<div className={b('grid')}>
-					{GROUPS.map((group) => (
-						<div
-							key={group.id}
-							className={b('group')}
-							style={{'--face': STICKER[group.face]} as React.CSSProperties}
-						>
-							<h3 className={b('group-title')}>
-								<span className={b('sticker')} aria-hidden="true" />
-								{t(`welcome_inside.${group.id}.title`)}
-							</h3>
-							<ul className={b('items')}>
-								{group.items.map((item) => (
-									<li key={item.key} className={b('item')}>
-										<span>{t(`welcome_inside.${group.id}.${itemKey(item.key)}`, vars)}</span>
-										{item.pro && <span className={b('pro')}>Pro</span>}
+						<div className={b('viewport')}>
+							<ul className={b('cards')} style={{'--active': active} as React.CSSProperties}>
+								{GROUPS.map((group, i) => (
+									<li
+										key={group.id}
+										className={b('card', {state: stateOf(i)})}
+										style={
+											{
+												'--face': STICKER[group.face],
+												'--tint': stickerTint(group.face),
+											} as React.CSSProperties
+										}
+									>
+										{/* A sibling under the body, not a pseudo-element: the card scales, and a
+										    transform would lift a pseudo-element over the card's own white. */}
+										<span className={b('field')} aria-hidden="true" />
+										<div className={b('card-body')}>
+											<h3 className={b('group-title')}>
+												<span className={b('sticker')} aria-hidden="true" />
+												{t(`welcome_inside.${group.id}.title`)}
+											</h3>
+											<ul className={b('items')}>
+												{group.items.map((item, k) => (
+													<li
+														key={item.key}
+														className={b('item')}
+														style={{'--i': k} as React.CSSProperties}
+													>
+														<span>{t(`welcome_inside.${group.id}.${itemKey(item.key)}`, vars)}</span>
+														{item.pro && <span className={b('pro')}>Pro</span>}
+													</li>
+												))}
+											</ul>
+										</div>
 									</li>
 								))}
 							</ul>
 						</div>
-					))}
-				</div>
 
-				<p className={b('platforms')}>{t('welcome_inside.platforms')}</p>
+						<StepTabs
+							className={b('steps')}
+							items={GROUPS.map((group) => ({
+								key: group.id,
+								label: t(`welcome_inside.${group.id}.title`),
+								color: STICKER[group.face],
+							}))}
+							active={active}
+							onSelect={goTo}
+							label={t('welcome_inside.title')}
+						/>
+
+						<p className={b('platforms')}>{t('welcome_inside.platforms')}</p>
+					</div>
+				</div>
 			</div>
 		</section>
 	);

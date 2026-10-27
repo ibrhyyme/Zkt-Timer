@@ -4261,10 +4261,6 @@
     "cta_try": "立即体验",
     "rating_line": "Google Play 评分 {{play}}，App Store 评分 {{apple}}"
   },
-  "welcome_reel": {
-    "label": "Zkt Timer 短片",
-    "caption": "短片中的魔方按原速逐步重放了一次真实的 8.73 秒还原。"
-  },
   "welcome_chapters": {
     "title": "围绕还原的一切",
     "lede": "下面的画面都直接来自应用和真实的练习。",

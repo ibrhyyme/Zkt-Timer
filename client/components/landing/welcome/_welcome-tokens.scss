@@ -1,0 +1,55 @@
+@import '../../../styles/config.scss';
+
+// The white landing page's palette and shared surfaces. Every welcome stylesheet
+// imports this file, so a colour or a card style changes in one place.
+//
+// The page keeps its old components and motion; only the ground turned white
+// (owner, 2026-10-27). The six sticker colours still mark the chapters, so each sticker
+// is drawn on a ring of cube plastic: without it the white one would vanish on white.
+
+// ---------------------------------------------------------------------------------
+// Colour
+// ---------------------------------------------------------------------------------
+
+$w-paper: #ffffff; // ground
+$w-mat: #f3f4f7; // a quiet band: footer, card hover fills
+$w-line: #e2e5ea; // card edges and dividers
+$w-ink: #08101a; // headings and text: the hero cube's own body colour (cube/game.ts)
+$w-ink-2: #3d4553; // descriptions; 9.6:1 on paper, never fainter
+$w-accent: #246bfd; // the blue sticker, the app's primary
+$w-amber: #b45309; // the WCA section's accent where it has to read on white (icons)
+$w-amber-tint: rgba(234, 179, 8, 0.14);
+$w-pro: #f3e5bd; // Pro tag fill; the text on it stays ink
+
+// Shadows come from the ink and the accent, not a default grey.
+$w-shadow-card: 0 1px 2px rgba($w-ink, 0.05), 0 10px 28px -14px rgba($w-ink, 0.18);
+$w-shadow-card-hover: 0 2px 4px rgba($w-ink, 0.05), 0 22px 44px -18px rgba($w-accent, 0.35);
+$w-shadow-stage: 0 40px 90px -40px rgba($w-ink, 0.45);
+
+// ---------------------------------------------------------------------------------
+// Shared pieces
+// ---------------------------------------------------------------------------------
+
+// A white card with an ink-derived edge and shadow.
+@mixin w-card {
+	background: $w-paper;
+	border: 1px solid $w-line;
+	box-shadow: $w-shadow-card;
+}
+
+// A sticker square on its ring of black plastic, like on a real cube.
+@mixin w-sticker($ring: 2px) {
+	box-shadow: 0 0 0 $ring $w-ink;
+}
+
+// The Pro tag: gold tint fill, ink text (never gold on gold).
+@mixin w-pro-tag {
+	flex-shrink: 0;
+	font-size: 0.72rem;
+	font-weight: 800;
+	line-height: 1;
+	padding: 0.3rem 0.5rem;
+	border-radius: 4px;
+	color: $w-ink;
+	background: $w-pro;
+}

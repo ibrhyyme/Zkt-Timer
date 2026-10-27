@@ -5,6 +5,12 @@ interface Props {
 	text: string;
 	className?: string;
 	as?: 'h2' | 'h3';
+	/**
+	 * Leave unset and the heading resolves once, the first time it scrolls into view.
+	 * Set it and the heading resolves every time it turns true instead: the pinned
+	 * chapters replay it whenever a chapter comes on.
+	 */
+	play?: boolean;
 }
 
 // Frames per character swap. Swapping on every animation frame reads as noise; around
@@ -21,6 +27,54 @@ function scrambled(text: string, revealed: number): string {
 	return out;
 }
 
+function reducedMotion(): boolean {
+	return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * Turns the span's text into notation and resolves it left to right. Returns a cancel
+ * function that puts the real text back. The heading's height is held while it runs:
+ * notation letters are wider than most, and a heading that re-wraps while it resolves
+ * would push the page around under the reader.
+ */
+function startResolve(el: HTMLSpanElement, text: string, delayMs = 0): () => void {
+	const heading = el.parentElement as HTMLElement;
+	heading.style.minHeight = `${heading.offsetHeight}px`;
+	el.textContent = scrambled(text, 0);
+
+	let raf = 0;
+	const begin = performance.now() + delayMs;
+	const duration = Math.min(1100, 380 + text.length * 20);
+	let lastSwap = 0;
+
+	const tick = (now: number) => {
+		if (now < begin) {
+			raf = requestAnimationFrame(tick);
+			return;
+		}
+		const p = Math.min(1, (now - begin) / duration);
+		if (p === 1) {
+			el.textContent = text;
+			heading.style.minHeight = '';
+			return;
+		}
+		if (now - lastSwap >= SWAP_MS) {
+			lastSwap = now;
+			// Ease out: most letters land early, the last few hold the suspense.
+			const eased = 1 - Math.pow(1 - p, 2);
+			el.textContent = scrambled(text, Math.floor(text.length * eased));
+		}
+		raf = requestAnimationFrame(tick);
+	};
+	raf = requestAnimationFrame(tick);
+
+	return () => {
+		cancelAnimationFrame(raf);
+		el.textContent = text;
+		heading.style.minHeight = '';
+	};
+}
+
 /**
  * A section heading that arrives as cube notation and resolves into its words, the
  * way a scrambled cube resolves into a solved one.
@@ -30,48 +84,29 @@ function scrambled(text: string, revealed: number): string {
  * the page mounts. Screen readers always get the real text; the animated copy is hidden
  * from them.
  */
-export default function NotationHeading({text, className, as: Tag = 'h2'}: Props) {
+export default function NotationHeading({text, className, as: Tag = 'h2', play}: Props) {
 	const ref = useRef<HTMLSpanElement>(null);
+	const replay = play !== undefined;
 
+	// Once, on first view.
 	useEffect(() => {
+		if (replay) return;
 		const el = ref.current;
 		if (!el) return;
 		if (!('IntersectionObserver' in window)) return;
-		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (reducedMotion()) return;
 		if (el.getBoundingClientRect().top < window.innerHeight) return;
 
-		// Hold the resolved height: notation letters are wider than most, and a heading
-		// that re-wraps while it resolves would push the page around under the reader.
 		const heading = el.parentElement as HTMLElement;
 		heading.style.minHeight = `${heading.offsetHeight}px`;
 		el.textContent = scrambled(text, 0);
 
-		let raf = 0;
+		let cancel: (() => void) | null = null;
 		const observer = new IntersectionObserver(
 			([entry]) => {
 				if (!entry.isIntersecting) return;
 				observer.disconnect();
-
-				const start = performance.now();
-				const duration = Math.min(1100, 380 + text.length * 20);
-				let lastSwap = 0;
-
-				const tick = (now: number) => {
-					const p = Math.min(1, (now - start) / duration);
-					if (p === 1) {
-						el.textContent = text;
-						heading.style.minHeight = '';
-						return;
-					}
-					if (now - lastSwap >= SWAP_MS) {
-						lastSwap = now;
-						// Ease out: most letters land early, the last few hold the suspense.
-						const eased = 1 - Math.pow(1 - p, 2);
-						el.textContent = scrambled(text, Math.floor(text.length * eased));
-					}
-					raf = requestAnimationFrame(tick);
-				};
-				raf = requestAnimationFrame(tick);
+				cancel = startResolve(el, text);
 			},
 			{rootMargin: '0px 0px -12% 0px'}
 		);
@@ -79,11 +114,20 @@ export default function NotationHeading({text, className, as: Tag = 'h2'}: Props
 
 		return () => {
 			observer.disconnect();
-			cancelAnimationFrame(raf);
+			cancel?.();
 			el.textContent = text;
 			heading.style.minHeight = '';
 		};
-	}, [text]);
+	}, [text, replay]);
+
+	// Every time `play` turns true. A short delay lets the chapter's lines start moving
+	// first, so the scramble lands while the title slides in.
+	useEffect(() => {
+		if (!replay || !play) return;
+		const el = ref.current;
+		if (!el || reducedMotion()) return;
+		return startResolve(el, text, 120);
+	}, [text, replay, play]);
 
 	return (
 		<Tag className={className}>

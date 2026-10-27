@@ -4,10 +4,48 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import './WelcomeFooter.scss';
 import block from '../../../../styles/bem';
-import { InstagramLogo, YoutubeLogo } from 'phosphor-react';
-import { fadeInUp, staggerContainer, hoverScaleSubtle, tapScale } from '../motion-variants';
+import { ArrowUpRight, InstagramLogo, YoutubeLogo } from 'phosphor-react';
+import { fadeInUp, staggerContainer } from '../motion-variants';
+import NotationHeading from '../notation_heading/NotationHeading';
+import { STICKER, Face, stickerTint } from '../landing-data';
 
 const b = block('welcome-footer');
+
+type Network = 'instagram' | 'youtube';
+
+interface Person {
+	name: string;
+	face: Face;
+	accounts: { network: Network; handle: string; href: string }[];
+}
+
+// The people behind the app and their real accounts, nothing more: no roles or photos
+// are made up for them. Each gets a sticker colour for the row.
+const PEOPLE: Person[] = [
+	{
+		name: 'Zeka Küpü Türkiye',
+		face: 'F',
+		accounts: [{ network: 'instagram', handle: '@zekakuputurkiye', href: 'https://www.instagram.com/zekakuputurkiye/' }],
+	},
+	{
+		name: 'Zkt Timer',
+		face: 'B',
+		accounts: [{ network: 'instagram', handle: '@zkttimer', href: 'https://www.instagram.com/zkttimer' }],
+	},
+	{
+		name: 'İbrahim Yıldız',
+		face: 'L',
+		accounts: [
+			{ network: 'instagram', handle: '@ibrhyyme', href: 'https://www.instagram.com/ibrhyyme' },
+			{ network: 'youtube', handle: '@ibrhyyme', href: 'https://www.youtube.com/@ibrhyyme' },
+		],
+	},
+];
+
+const NETWORK = {
+	instagram: { label: 'Instagram', Icon: InstagramLogo },
+	youtube: { label: 'YouTube', Icon: YoutubeLogo },
+};
 
 export default function WelcomeFooter() {
 	const history = useHistory();
@@ -16,127 +54,57 @@ export default function WelcomeFooter() {
 	return (
 		<footer className={b()}>
 			<div className={b('container')}>
-				{/* Social Media Section */}
-				<motion.div
-					className={b('cta-card')}
-					variants={staggerContainer}
-					initial="hidden"
-					whileInView="visible"
-					viewport={{ once: true, amount: 0.2 }}
-				>
-					<motion.h2 className={b('cta-title')} variants={fadeInUp}>
-						{t('welcome_footer.cta_title')}
-					</motion.h2>
-					<motion.p className={b('cta-description')} variants={fadeInUp}>
-						{t('welcome_footer.cta_description')}
-					</motion.p>
+				{/* Who we are: the people and their accounts, one row each. */}
+				<div className={b('community')}>
+					<div className={b('intro')}>
+						<NotationHeading className={b('title')} text={t('welcome_footer.cta_title')} />
+						<p className={b('description')}>{t('welcome_footer.cta_description')}</p>
+					</div>
 
-					<motion.div className={b('social-grid')} variants={fadeInUp}>
-						{/* Instagram Accounts */}
-						<div className={b('social-category')}>
-							<h3 className={b('social-category-title')}>
-								<InstagramLogo size={24} weight="fill" />
-								Instagram
-							</h3>
-							<div className={b('social-links')}>
-								<motion.a
-									href="https://www.instagram.com/zekakuputurkiye/"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<InstagramLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>Zeka Küpü Türkiye</span>
-										<span className={b('social-link-handle')}>@zekakuputurkiye</span>
-									</div>
-								</motion.a>
-								<motion.a
-									href="https://www.instagram.com/mertsagdinc/"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<InstagramLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>Mert Sağdınç</span>
-										<span className={b('social-link-handle')}>@mertsagdinc</span>
-									</div>
-								</motion.a>
-								<motion.a
-									href="https://www.instagram.com/isoq58/"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<InstagramLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>İskender Aznavur</span>
-										<span className={b('social-link-handle')}>@isoq58</span>
-									</div>
-								</motion.a>
-							</div>
-						</div>
-
-						{/* YouTube Channels */}
-						<div className={b('social-category')}>
-							<h3 className={b('social-category-title')}>
-								<YoutubeLogo size={24} weight="fill" />
-								YouTube
-							</h3>
-							<div className={b('social-links')}>
-								<motion.a
-									href="https://www.youtube.com/@ibrhyyme"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<YoutubeLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>İbrahim Yıldız</span>
-										<span className={b('social-link-handle')}>@ibrhyyme</span>
-									</div>
-								</motion.a>
-								<motion.a
-									href="https://www.youtube.com/@AlgoMert"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<YoutubeLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>Mert Sağdınç</span>
-										<span className={b('social-link-handle')}>@AlgoMert</span>
-									</div>
-								</motion.a>
-								<motion.a
-									href="https://www.youtube.com/@isoq58/videos"
-									target="_blank"
-									rel="noopener noreferrer"
-									className={b('social-link')}
-									whileHover={hoverScaleSubtle}
-									whileTap={tapScale}
-								>
-									<YoutubeLogo size={32} weight="duotone" />
-									<div className={b('social-link-text')}>
-										<span className={b('social-link-name')}>İskender Aznavur</span>
-										<span className={b('social-link-handle')}>@isoq58</span>
-									</div>
-								</motion.a>
-							</div>
-						</div>
-					</motion.div>
-				</motion.div>
+					<motion.ul
+						className={b('people')}
+						variants={staggerContainer}
+						initial="hidden"
+						whileInView="visible"
+						viewport={{ once: true, amount: 0.3 }}
+					>
+						{PEOPLE.map((person) => (
+							<motion.li
+								key={person.name}
+								className={b('person')}
+								variants={fadeInUp}
+								style={
+									{
+										'--face': STICKER[person.face],
+										'--tint': stickerTint(person.face),
+									} as React.CSSProperties
+								}
+							>
+								<span className={b('sticker')} aria-hidden="true" />
+								<span className={b('person-name')}>{person.name}</span>
+								<span className={b('accounts')}>
+									{person.accounts.map(({ network, handle, href }) => {
+										const { label, Icon } = NETWORK[network];
+										return (
+											<a
+												key={href}
+												href={href}
+												target="_blank"
+												rel="noopener noreferrer"
+												className={b('account', { network })}
+												aria-label={`${label} ${handle}`}
+											>
+												<Icon size={18} weight="bold" aria-hidden="true" />
+												<span className={b('account-handle')}>{handle}</span>
+												<ArrowUpRight size={14} weight="bold" aria-hidden="true" className={b('account-arrow')} />
+											</a>
+										);
+									})}
+								</span>
+							</motion.li>
+						))}
+					</motion.ul>
+				</div>
 
 				{/* Internal SEO links — crawlers discover & rank these via anchor text */}
 				<nav className={b('sitemap')} aria-label="Site">
@@ -157,7 +125,7 @@ export default function WelcomeFooter() {
 							href="/user/ibrhyyme"
 							target="_blank"
 							rel="noopener noreferrer"
-							style={{ color: '#246bfd', textDecoration: 'none', fontWeight: 600 }}
+							className={b('author')}
 						>
 							ibrhyyme
 						</a>

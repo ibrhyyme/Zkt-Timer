@@ -134,11 +134,6 @@ export default function WcaSection() {
 
 	return (
 		<section className={b()}>
-			<div className={b('background')}>
-				<div className={b('orb', {position: 'top'})} />
-				<div className={b('orb', {position: 'bottom'})} />
-			</div>
-
 			<div className={b('container')}>
 				{/* Header */}
 				<motion.div
@@ -180,7 +175,6 @@ export default function WcaSection() {
 							width={1600}
 							height={1000}
 						/>
-						<div className={b('image-glow')} />
 						<div className={b('image-badge')}>
 							<span className={b('image-badge-dot')} />
 							{t('welcome_wca.image_badge_live')}

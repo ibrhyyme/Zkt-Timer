@@ -10,6 +10,40 @@
 	@include bp-down($bp-sm) {
 		padding-top: 0;
 	}
+
+	// The landing page wears the light preset (util/themes/theme_lock.ts). themes.ts
+	// writes it on <html> once the bundle runs; declaring the same colours here makes the
+	// server-rendered first paint white too, shared controls (Button, the language
+	// switcher) included. The --theme-* pairs are what themes.ts derives from them.
+	&--light {
+		--background-color: 255, 255, 255;
+		--module-color: 242, 243, 245;
+		--button-color: 212, 212, 212;
+		--text-color: 26, 29, 33;
+		--primary-color: 36, 107, 253;
+		--secondary-color: 65, 176, 88;
+		--theme-background: 255, 255, 255;
+		--theme-background-opposite: 0, 0, 0;
+		--theme-module: 255, 255, 255;
+		--theme-module-opposite: 0, 0, 0;
+		--theme-button: 255, 255, 255;
+		--theme-button-opposite: 0, 0, 0;
+		--theme-text: 0, 0, 0;
+		--theme-text-opposite: 255, 255, 255;
+		--theme-primary: 0, 0, 0;
+		--theme-primary-opposite: 255, 255, 255;
+		--theme-secondary: 255, 255, 255;
+		--theme-secondary-opposite: 0, 0, 0;
+		--theme-color-opposite: 0, 0, 0;
+
+		// The bar is 64px here (LandingNav.scss) and hidden on phones, as elsewhere.
+		padding-top: 64px;
+		background-color: #fff;
+
+		@include bp-down($bp-sm) {
+			padding-top: 0;
+		}
+	}
 }
 
 .#{$namespace}-landing-features {

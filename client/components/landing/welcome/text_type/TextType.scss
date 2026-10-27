@@ -12,10 +12,12 @@
 		pointer-events: none;
 	}
 
+	// The blinking caret takes the blue sticker, the page's accent.
 	&__cursor {
 		margin-left: 2px;
 		display: inline-block;
 		opacity: 1;
 		font-weight: 300;
+		color: #246bfd;
 	}
 }
