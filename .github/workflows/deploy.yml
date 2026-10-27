@@ -5,7 +5,38 @@ on:
     branches: [ main ]
 
 jobs:
+  # esbuild does not typecheck and the server builds straight from git, so this
+  # is the only gate between a type error or a failing test and production.
+  # Node 22 matches the Dockerfile builder stage (@capacitor/cli needs >= 22).
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '22'
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+
+    # Explicit so tsc never depends on @prisma/client's postinstall having run.
+    - name: Generate Prisma client
+      run: npx prisma generate
+
+    - name: Type check
+      run: npx -y -p typescript@5.6 tsc --noEmit
+
+    - name: Tests
+      run: yarn test --silent
+
   deploy:
+    needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 45
 

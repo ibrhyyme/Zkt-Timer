@@ -62,10 +62,6 @@ GoogleService-Info.plist
 !.env.example
 PROJECT_INFO_MAP.md
 
-# Backend tests
-server/**/*.test.ts
-server/**/__test__/
-
 # Uploads (Docker volume)
 public/uploads/
 
