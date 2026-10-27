@@ -34,16 +34,16 @@ everything lives under one roof, with your solves, sessions, and progress synced
 
 ## Screenshots
 
-<div align="center">
-<table>
-  <tr>
-    <td><img src="public/welcome/v2/phone-timer.webp" alt="Timer" width="200"></td>
-    <td><img src="public/welcome/v2/phone-trainer.webp" alt="Trainer" width="200"></td>
-    <td><img src="public/welcome/v2/phone-stats.webp" alt="Statistics" width="200"></td>
-    <td><img src="public/welcome/v2/phone-battle.webp" alt="Battle" width="200"></td>
-  </tr>
-</table>
-</div>
+<p align="center">
+  <img src="docs/images/screenshots/timer.png" alt="Timer" width="260">
+  <img src="docs/images/screenshots/trainer.png" alt="Trainer" width="260">
+  <img src="docs/images/screenshots/algorithms.png" alt="Algorithm Trainer" width="260">
+</p>
+<p align="center">
+  <img src="docs/images/screenshots/battle.png" alt="Battle" width="260">
+  <img src="docs/images/screenshots/competitions.png" alt="Competitions" width="260">
+  <img src="docs/images/screenshots/profile.png" alt="Profile" width="260">
+</p>
 
 ## Features
 
@@ -119,7 +119,7 @@ PostgreSQL, Redis, and Elasticsearch data layer, the external services it calls,
 pipeline.
 
 <div align="center">
-  <img src="public/images/architecture.png" alt="Zkt Timer request flow architecture" width="900">
+  <img src="docs/images/architecture.png" alt="Zkt Timer request flow architecture" width="900">
 </div>
 
 **Stack:** React 17 · custom esbuild SSR · type-graphql + Apollo Server · Prisma + PostgreSQL · Redis ·
