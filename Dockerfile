@@ -1,9 +1,10 @@
 # --- Stage 1: Builder ---
-# Node 22 here only — @capacitor/cli 8.x (devDependency, needed for its type-only
-# import in capacitor.config.ts, never actually run) requires it. This node_modules
-# never reaches the runtime image below: only build/*, dist/, and public/ are
-# copied out, and the runtime stage installs its own node_modules from scratch.
-FROM node:22-slim AS builder
+# Same image as the runtime stage. bookworm is pinned on purpose: Prisma 4 picks its
+# query engine by the system OpenSSL (bookworm = 3.0.x), and the plain `24-slim` tag
+# would silently move to a newer Debian when Docker changes its default. This
+# node_modules never reaches the runtime image below: only build/*, dist/, and
+# public/ are copied out, and the runtime stage installs its own node_modules.
+FROM node:24-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -51,7 +52,7 @@ RUN cp -r ./server/resources/mjml_templates ./build/server/resources/mjml_templa
     cp ./server/resources/not_found.html ./build/server/resources/not_found.html
 
 # --- Stage 2: Runtime (Final Image) ---
-FROM node:20.19-slim
+FROM node:24-bookworm-slim
 
 ENV NODE_ENV=production
 
@@ -67,9 +68,10 @@ RUN apt-get update && \
 COPY package.json yarn.lock ./
 # --ignore-engines: Yarn 1.x'in engine uyumluluk taraması, --production filtrelemesinden
 # ÖNCE (Fetching packages aşamasında) yarn.lock'taki TÜM girdileri (devDependencies dahil)
-# kontrol ediyor. @capacitor/cli (devDependency, Node >=22 istiyor) bu yüzden burada
-# hâlâ hata veriyordu, halbuki bu paket runtime image'da hiç kullanılmıyor (sadece
-# capacitor.config.ts'teki type-only import için var, o dosya bu image'a kopyalanmıyor).
+# kontrol ediyor. Runtime'da hiç kurulmayacak bir dev paketinin engines aralığı
+# (Node 20 döneminde @capacitor/cli >=22 istiyordu) bu kurulumu durdurmasın diye duruyor.
+# Prisma CLI bu kurulumda VAR: @prisma/client onu optional peer olarak istiyor ve Yarn 1
+# devDependencies'teki peer'i --production'da da kuruyor. Entrypoint'teki db push buna bağlı.
 RUN yarn install --production --frozen-lockfile --ignore-engines --network-timeout 600000 --network-concurrency 4 && yarn cache clean
 
 # Builder aşamasından derlenmiş dosyaları al
@@ -101,7 +103,7 @@ COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
 # Non-root user — container escape sonrasinda root erisim engeli
-# node:20-slim image'inda 'node' user'i (UID 1000) hazir gelir, onu kullaniyoruz.
+# node:*-slim image'inda 'node' user'i (UID 1000) hazir gelir, onu kullaniyoruz.
 # /app/public/uploads klasoru kullanici tarafindan yazilabilir olmali (volume mount)
 RUN mkdir -p /app/public/uploads && \
     chown -R node:node /app
