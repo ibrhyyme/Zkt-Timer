@@ -14,8 +14,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Bağımlılıkları yükle
+# Bağımlılıkları yükle (vendor/: package.json'daki file: bağımlılıkları, örn. cubejs)
 COPY package.json yarn.lock ./
+COPY vendor ./vendor
 RUN yarn install --frozen-lockfile --network-timeout 600000 --network-concurrency 4
 
 # Kaynak kodları kopyala
@@ -66,6 +67,7 @@ RUN apt-get update && \
 
 # Sadece production bağımlılıklarını yüklemek için package.json
 COPY package.json yarn.lock ./
+COPY vendor ./vendor
 # --ignore-engines: Yarn 1.x'in engine uyumluluk taraması, --production filtrelemesinden
 # ÖNCE (Fetching packages aşamasında) yarn.lock'taki TÜM girdileri (devDependencies dahil)
 # kontrol ediyor. Runtime'da hiç kurulmayacak bir dev paketinin engines aralığı
