@@ -69,14 +69,6 @@
 
 		th:last-child {
 			text-align: center;
-
-			// Copy button inline
-			> button,
-			> div {
-				display: inline-flex;
-				vertical-align: middle;
-				margin-left: 6px;
-			}
 		}
 
 		tbody tr {
@@ -101,12 +93,34 @@
 		}
 	}
 
+	// The moves column's label and its two copy buttons. They used to sit on one unbreakable
+	// line, which made the table wider than a phone card, out to the screen edge; the
+	// buttons may now drop under the label when there is no room.
+	&__turns-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+	}
+
 	&__step-name {
 		text-align: left;
 		font-weight: 500;
 		color: rgba(var(--text-color), 0.85);
 		width: 90px;
 		white-space: nowrap;
+	}
+
+	// The slot an F2L step filled, in its two side colours (SolutionInfo SlotMark).
+	&__slot {
+		display: inline-block;
+		width: 12px;
+		height: 12px;
+		border-radius: 3px;
+		margin-right: 6px;
+		vertical-align: -1px;
+		overflow: hidden;
 	}
 
 	&__step-turns {
@@ -151,6 +165,14 @@
 		border-radius: 3px;
 		white-space: nowrap; // Single move (e.g. "U2") must never wrap
 		transition: background-color 0.1s ease, color 0.1s ease;
+
+		// A whole-cube rotation the gyroscope saw, set apart from the turns like the holding.
+		// Before --current on purpose: a highlighted rotation must take its white text, not
+		// stay primary-coloured on the primary fill.
+		&--rotation {
+			color: rgb(var(--primary-color));
+			font-weight: 600;
+		}
 
 		&--current {
 			background-color: rgb(var(--primary-color));

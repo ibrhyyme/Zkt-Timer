@@ -268,6 +268,7 @@ type Query {
   solves(skip: Int, take: Int): [Solve]
   recoverMySolves(skip: Int, take: Int): [Solve]
   solvesByIds(ids: [String]): [Solve]
+  solveReplayData(shareCode: String, id: String): SolveReplayData
   mySolveIds: [String]
   mySolveFingerprints: [String]
   sessions: [Session]
@@ -411,6 +412,7 @@ type Mutation {
   resendEmailVerificationCode(email: String!, language: String): Void
   verifyEmailCode(email: String!, code: String!, language: String): PublicUserAccount
   confirmEmailChange(code: String!): PublicUserAccount
+  voteReconstruction(vote: Int, id: String): Boolean
   createSolve(input: SolveInput): Solve
   deleteAllSolvesInSession(sessionId: String): Void
   deleteSolves(ids: [String]): Boolean
@@ -578,6 +580,7 @@ type Solve {
   cube_id: String
   smart_turn_count: Int
   smart_turns: String
+  smart_rotations: String
   smart_put_down_time: Float
   smart_pick_up_time: Float
   inspection_time: Float
@@ -619,6 +622,12 @@ type SolveView {
   created_at: DateTime
   viewer: PublicUserAccount
   user: PublicUserAccount
+}
+
+type SolveReplayData {
+  smart_gyro: String
+  reconstruction_vote: Int
+  is_owner: Boolean
 }
 
 type SolveList {
@@ -3000,6 +3009,8 @@ input SolveInput {
   cube_id: String
   smart_turn_count: Int
   smart_turns: String
+  smart_rotations: String
+  smart_gyro: String
   analysis_method: String
   smart_put_down_time: Float
   smart_pick_up_time: Float

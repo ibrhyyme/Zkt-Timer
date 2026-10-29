@@ -1,198 +1,80 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cube, Timer, ArrowCounterClockwise, ArrowsClockwise, PaperPlaneRight } from 'phosphor-react';
-import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
-import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
+import TabBar, { TabBarTab } from '../../common/tab_bar/TabBar';
 import SolutionInfo from '../solution_info/SolutionInfo';
 import SmartOverviewTab from '../stats_info/smart_overview_tab/SmartOverviewTab';
 import StepsTable from '../stats_info/steps_table/StepsTable';
-import { getSmartSolveTps } from '../util/solution';
-import Avatar from '../../common/avatar/Avatar';
-import Button from '../../common/button/Button';
-import SendSolveModal from '../send_solve/SendSolveModal';
-import Tag from '../../common/tag/Tag';
-import CopyText from '../../common/copy_text/CopyText';
+import { getRecognitionExecution, getSmartSolveTps } from '../util/solution';
 import block from '../../../styles/bem';
-import { getFullFormattedDate } from '../../../util/dates';
-import { SolveLayoutProps } from '../SolveInfo';
-import { getApiBase } from '../../../util/api-base';
+import { getTimeString } from '../../../util/time';
+import { SmartSolveTab, SolveLayoutProps } from '../SolveInfo';
 import { useMe } from '../../../util/hooks/useMe';
-import { isPro, isProEnabled } from '../../../lib/pro';
+import { canSeeSmartAnalysis, isPro, isProEnabled } from '../../../lib/pro';
 import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
+import SolveCardHeader from '../solve_card/SolveCardHeader';
+import SolveScramble from '../solve_card/SolveScramble';
 import './SmartSolveLayout.scss';
 
 const b = block('solve-info');
 const bs = block('solve-info-smart');
 
 export default function SmartSolveLayout(props: SolveLayoutProps) {
-	const {
-		solve, effSolve, user, disabled, editMode, mobileMode,
-		toggleEditMode, togglePlusTwo, toggleDnf, deleteSolve,
-		handleChange, handleDone,
-		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf, cubeTag,
-	} = props;
+	const { solve, user, mobileMode, handleDone, initialTab } = props;
 
 	const { t } = useTranslation();
-	const [sendOpen, setSendOpen] = useState(false);
 	const me = useMe();
-	const [page, setPage] = useState('overview');
-	const showProOverlay = isProEnabled() && !isPro(me);
+	const [page, setPage] = useState<SmartSolveTab>(initialTab || 'overview');
+	// The analysis opens on the viewer's Pro or on the owner's (a Pro member's shared solve);
+	// sharing stays the viewer's own Pro feature.
+	const showProOverlay = !canSeeSmartAnalysis(me, user);
+	const canShare = !isProEnabled() || isPro(me);
 
-	const smartTurnCount = solve.smart_turn_count;
 	const tpsValue = getSmartSolveTps(solve);
-	const tps = tpsValue === null ? '-' : tpsValue.toFixed(2);
+	// Recognition and execution are part of the analysis, so behind the same lock as the tabs.
+	const split = showProOverlay ? null : getRecognitionExecution(solve);
 
-	const scramble = solve.scramble;
-	const cubeType = solve.cube_type;
-	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
-
-	let shareLink = null;
-	// No code on an old solve opened by someone other than its owner (see NormalSolveLayout).
-	if (typeof window !== 'undefined' && !showProOverlay && solve.share_code) {
-		shareLink = (
-			<CopyText
-				buttonProps={{ text: t('solve_info.share_link') }}
-				text={getApiBase() + '/solve/' + solve.share_code}
-			/>
+	// The time is the heading right above, so the summary says how it was spent: looking for
+	// the next case against turning, then how much and how fast.
+	const stats: { label: string; value: React.ReactNode }[] = [];
+	if (split) {
+		stats.push(
+			{ label: t('solve_info.recognition'), value: getTimeString(split.recognition, 2) },
+			{ label: t('solve_info.execution'), value: getTimeString(split.execution, 2) }
 		);
 	}
-
-	let editButton = (
-		<Button
-			text={editMode ? t('solve_info.save') : t('solve_info.edit')}
-			className={b('edit')}
-			gray
-			primary={editMode}
-			onClick={toggleEditMode}
-		/>
+	stats.push(
+		{ label: t('solve_info.turns'), value: solve.smart_turn_count ?? '-' },
+		{ label: t('solve_info.tps'), value: tpsValue === null ? '-' : tpsValue.toFixed(2) }
 	);
 
-	let plusTwoButton = <Button gray text="+2" disabled={disabled || isSystemDnf} onClick={togglePlusTwo} warning={plusTwo} />;
-	let dnfButton = <Button gray text="DNF" disabled={disabled || isSystemDnf} onClick={toggleDnf} danger={dnf} />;
-	let deleteButton = <Button gray title={t('solve_info.delete')} text={t('solve_info.delete')} onClick={deleteSolve} />;
-
-	if (disabled) {
-		deleteButton = null;
-		editButton = null;
-		plusTwoButton = null;
-		dnfButton = null;
-
-		if (plusTwo) {
-			plusTwoButton = <Tag text="+2" backgroundColor="orange" />;
-		}
-		if (dnf) {
-			dnfButton = <Tag text="DNF" backgroundColor="red" />;
-		}
-	}
-
-	const childBody = {
-		editMode,
-		solve,
-		handleChange,
-	};
-
-	const pageMap = {
+	const pageMap: Record<SmartSolveTab, React.ReactNode> = {
 		overview: <SmartOverviewTab solve={solve} />,
 		stats: <StepsTable solve={solve} />,
-		solution: <SolutionInfo {...childBody} />,
+		solution: <SolutionInfo solve={solve} />,
 	};
 
-	const pages = [
-		{ id: 'overview', value: t('solve_info.overview_tab') },
-		{ id: 'stats', value: t('solve_info.stats_tab') },
-		{ id: 'solution', value: t('solve_info.solve_tab') },
+	const tabs: TabBarTab<SmartSolveTab>[] = [
+		{ id: 'overview', label: t('solve_info.overview_tab') },
+		{ id: 'stats', label: t('solve_info.stats_tab') },
+		{ id: 'solution', label: t('solve_info.solve_tab') },
 	];
 
 	return (
 		<div className={b({ mobile: mobileMode, smart: true })}>
-			{mobileMode && (
-				<div className={b('mobile-header-top')}>
-					<div className={b('mobile-title')}>{t('solve_info.solve_detail')}</div>
-					<div className={b('mobile-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-				</div>
-			)}
-			{!mobileMode && (
-				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-			)}
-			<div className={b('top-actions')}>
-				<div>
-					{shareLink}
-					{/* Same action as the normal layout: which timer someone solved on is
-					    not a reason for the send button to be somewhere else. */}
-					{me && solve?.user_id === me.id && (
-						<Button
-							gray
-							icon={<PaperPlaneRight weight="bold" />}
-							title={t('solve_info.send_title')}
-							text={t('solve_info.send')}
-							onClick={() => setSendOpen(true)}
-						/>
-					)}
-				</div>
-				<div>
-					{deleteButton}
-					{editButton}
-				</div>
-			</div>
-			{sendOpen && <SendSolveModal solveId={solve.id} onClose={() => setSendOpen(false)} />}
+			{/* Nothing on a smart solve is typed in: its scramble and moves came from the cube. The
+			    Edit button it had toggled a mode no part of this card read. */}
+			<SolveCardHeader layout={props} canShareLink={canShare} editable={false} />
 
-			<h2 className={bs('time')}>{time}</h2>
-			<div className={b('date-info')}>
-				<span>{getFullFormattedDate(endedAt)}</span>
+			<div className={bs('strip')}>
+				{stats.map((stat) => (
+					<div key={stat.label} className={bs('stat')}>
+						<div className={bs('stat-label')}>{stat.label}</div>
+						<div className={bs('stat-value')}>{stat.value}</div>
+					</div>
+				))}
 			</div>
 
-			<div className={bs('header')}>
-				<div className={bs('header-info')}>
-					<Avatar small user={user} hideBadges profile={user?.profile} />
-					<div className={b('sub-actions')}>
-						{cubeTag}
-						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo.name} />
-						{plusTwoButton}
-						{dnfButton}
-					</div>
-				</div>
-				<div className={bs('header-visual')}>
-					<ScrambleVisual cubeType={visualCubeType} scramble={scramble} subset={solve.scramble_subset || undefined} />
-				</div>
-			</div>
-
-			<div className={bs('summary-cards')}>
-				{/* A screenshot of just this row now already contains the time. It used to
-				    be inspection time here, which duplicated the big <h2> above for little
-				    reason. Reuses the same `time` string the header already shows, so it
-				    respects +2/DNF exactly the same way. */}
-				<div className={bs('card')}>
-					<h4>{time}</h4>
-					<div className={bs('card-label')}>
-						<Timer />
-						<span>{t('solve_info.time_label')}</span>
-					</div>
-				</div>
-				<div className={bs('card')}>
-					<h4>{smartTurnCount}</h4>
-					<div className={bs('card-label')}>
-						<ArrowCounterClockwise />
-						<span>{t('solve_info.turns')}</span>
-					</div>
-				</div>
-				<div className={bs('card')}>
-					<h4>{tps}</h4>
-					<div className={bs('card-label')}>
-						<ArrowsClockwise />
-						<span>{t('solve_info.tps')}</span>
-					</div>
-				</div>
-			</div>
-
-			<div className={bs('scramble-row')}>
-				<p className={bs('scramble-text')}>
-					<span>{t('solve_info.scramble_label')}:</span> {scramble}
-				</p>
-				<CopyText
-					text={scramble}
-					buttonProps={{ text: '' }}
-				/>
-			</div>
+			<SolveScramble scramble={solve.scramble} />
 
 			{showProOverlay ? (
 				<ProBlurOverlay
@@ -202,10 +84,8 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 				/>
 			) : (
 				<>
-					<div className={b('nav')}>
-						<HorizontalNav tabId={page} onChange={setPage} tabs={pages} />
-					</div>
-					{pageMap[page]}
+					<TabBar<SmartSolveTab> className={bs('tabs')} tabs={tabs} value={page} onChange={setPage} label={t('solve_info.solve_detail')} />
+					<div className={bs('page')}>{pageMap[page]}</div>
 				</>
 			)}
 		</div>

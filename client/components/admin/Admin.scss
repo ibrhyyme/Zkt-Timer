@@ -165,7 +165,7 @@
 
 		&--active {
 			background-color: rgba(var(--primary-color), 0.18);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 
 			.zt-admin__dropdown-item-caret {
 				color: rgb(var(--primary-color));

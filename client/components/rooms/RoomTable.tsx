@@ -236,12 +236,12 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                 <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center gap-1 py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'} ${p.is_spectator ? 'opacity-70' : ''}`}>
                                     <span className="truncate">{p.username}</span>
                                     {p.is_moderator && p.user_id !== hostId && (
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-sky-400 bg-sky-400/15 px-1.5 py-0.5 rounded-sm shrink-0">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-text bg-sky-400/15 px-1.5 py-0.5 rounded-sm shrink-0">
                                             {t('rooms.role_moderator_short')}
                                         </span>
                                     )}
                                     {p.is_spectator && (
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-sm shrink-0">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-text bg-amber-400/10 px-1.5 py-0.5 rounded-sm shrink-0">
                                             {t('rooms.spectator')}
                                         </span>
                                     )}
@@ -316,7 +316,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                                     const expireTime = parts.length > 1 ? parseInt(parts[1]) : 0;
 
                                                     cellContent = (
-                                                        <div className="flex items-center gap-1.5 text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded-sm">
+                                                        <div className="flex items-center gap-1.5 text-text animate-pulse bg-rose-500/10 px-2 py-0.5 rounded-sm">
                                                             <WifiSlash size={12} weight="bold" />
                                                             <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
                                                                 {t('room_table.disconnected')}
@@ -331,8 +331,8 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                                 } else {
                                                     const statusText = getStatusText(userStatus);
                                                     cellContent = (
-                                                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm ${userStatus === 'TIMING' ? 'text-emerald-400 bg-emerald-400/10' :
-                                                            userStatus.includes('INSPECTING') ? 'text-amber-400 bg-amber-400/10' :
+                                                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm ${userStatus === 'TIMING' ? 'text-text bg-emerald-400/10' :
+                                                            userStatus.includes('INSPECTING') ? 'text-text bg-amber-400/10' :
                                                                 'text-text'
                                                             }`}>
                                                             {statusText}

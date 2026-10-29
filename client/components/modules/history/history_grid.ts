@@ -47,10 +47,13 @@ export function solveNumberColumnCh(count: number): number {
  * and `repeat(0, ...)` is invalid CSS.
  *
  * Desktop: number, time, then one column per average. Phone: number, time, delete.
+ *
+ * `ch` resolves at the number's own size (the row and the header carry it), the other
+ * minimums are in rem so they do not shrink with it.
  */
 export function historyGridTemplate(solveCount: number, averageColumns: number, mobile: boolean): string {
 	const index = `calc(${solveNumberColumnCh(solveCount)}ch + ${mobile ? 12 : 16}px)`;
 	if (mobile) return `${index} minmax(0, 1fr) 44px`;
-	const averages = averageColumns > 0 ? ` repeat(${averageColumns}, minmax(4.8em, 1fr))` : '';
-	return `${index} minmax(5.2em, 1.2fr)${averages}`;
+	const averages = averageColumns > 0 ? ` repeat(${averageColumns}, minmax(4.8rem, 1fr))` : '';
+	return `${index} minmax(5.2rem, 1.2fr)${averages}`;
 }

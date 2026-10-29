@@ -40,6 +40,7 @@ import { saveSolve } from '../helpers/save';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro } from '../../../lib/pro';
 import { smartTurnsForSave } from './smart_turns_payload';
+import { attachGyroRecorder, gyroFieldsForSave } from '../../../util/smart_cube/gyro_recorder';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
@@ -568,7 +569,10 @@ export default function SmartCube() {
 	// the user is on a page that never mounts this component.
 	useEffect(() => {
 		const detach = manager.attach({ turnStream: true });
+		// Gyro history for smart_rotations (whole-cube rotations in the reconstruction).
+		const detachGyro = attachGyroRecorder(manager);
 		return () => {
+			detachGyro();
 			detach();
 			if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 		};
@@ -654,6 +658,10 @@ export default function SmartCube() {
 			// BLE clock vs JS clock drift. Always use first move as 0 baseline → 4-byte/move
 			// average offset, no extra work for parser.
 			const smartTurnsToSave = smartTurnsForSave(correctedMoves, userIsPro);
+			// Same time base as the turns: the first move is 0 (smart_turns_payload.ts).
+			const gyroToSave = userIsPro && correctedMoves.length
+				? gyroFieldsForSave(correctedMoves, correctedMoves[0].completedAt)
+				: { smart_rotations: null, smart_gyro: null };
 
 			// cstimer-grade HTM move count: consecutive parallel plane same face repeated
 			// moves count as 1 (R R = R2 = 1, R U R = 2). Comes from the engine so the rooms
@@ -672,6 +680,7 @@ export default function SmartCube() {
 				is_smart_cube: true,
 				smart_turn_count: htmCount,
 				smart_turns: smartTurnsToSave,
+				...gyroToSave,
 				// Tell the server which ladder to break the solve down with, so the
 				// stored steps match what the user saw live.
 				// Raw setting, not the display method: 'auto' must reach the server so it
@@ -829,6 +838,9 @@ export default function SmartCube() {
 				is_smart_cube: true,
 				smart_turn_count: countHTM(abortedMoves.map((m) => m.turn)),
 				smart_turns: smartTurnsForSave(abortedMoves, userIsPro),
+				...(userIsPro && abortedMoves.length
+					? gyroFieldsForSave(abortedMoves, abortedMoves[0].completedAt)
+					: { smart_rotations: null, smart_gyro: null }),
 				// Raw setting, not the display method: 'auto' must reach the server so it
 				// can infer the method from the solve rather than assuming CFOP.
 				analysis_method: solveMethod || 'auto',

@@ -55,10 +55,10 @@ module.exports = {
 			// sm = chip/badge, md = button/input/row, lg = card/modal.
 			borderRadius: {
 				none: '0',
-				sm: '6px',
-				DEFAULT: '6px',
-				md: '10px',
-				lg: '10px',
+				sm: '4px',
+				DEFAULT: '4px',
+				md: '4px',
+				lg: '4px',
 				xl: '14px',
 				'2xl': '14px',
 				'3xl': '14px',

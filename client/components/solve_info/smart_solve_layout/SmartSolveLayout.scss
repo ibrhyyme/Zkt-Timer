@@ -1,139 +1,56 @@
 @import '../../../styles/config';
 
 .#{$namespace}-solve-info-smart {
-	// --- Header: two containers side by side ---
-	&__header {
-		display: flex;
-		align-items: center;
-		gap: 24px;
-		width: 100%;
-		margin-bottom: 6px;
+	// --- Summary: one row of figures between hairlines, not a box per figure ---
+	&__strip {
+		display: grid;
+		grid-auto-columns: 1fr;
+		grid-auto-flow: column;
+		gap: $zt-space-3 $zt-space-4;
+		padding: $zt-space-3 0;
+		border-bottom: 1px solid $zt-card-border;
 	}
 
-	&__header-info {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
+	&__stat {
 		min-width: 0;
 	}
 
-	&__header-visual {
-		flex-shrink: 0;
-		width: 250px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+	&__stat-label {
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: $zt-text-muted;
+		overflow-wrap: anywhere;
 	}
 
-	&__time {
-		width: 100%;
-		font-size: 3rem;
-		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
-		font-weight: bold;
-		text-align: center;
+	&__stat-value {
+		margin-top: $zt-space-1;
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 1.375rem;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
 		color: rgb(var(--text-color));
-		margin: 0;
 	}
 
-	// --- Summary Cards ---
-	&__summary-cards {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 8px;
-		width: 100%;
-		margin-bottom: 8px;
+	&__tabs {
+		margin-top: $zt-space-4;
 	}
 
-	&__card {
-		background-color: rgb(var(--module-color));
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 10px;
-		padding: 14px 12px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-
-		h4 {
-			font-weight: bold;
-			font-size: 1.4rem;
-			margin: 0 0 4px;
-			color: rgb(var(--text-color));
-		}
+	&__page {
+		padding-top: $zt-space-4;
 	}
 
-	&__card-label {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		opacity: 0.6;
-
-		svg {
-			font-size: 1rem;
-		}
-
-		span {
-			font-size: 0.8rem;
-		}
-	}
-
-	// --- Scramble Row ---
-	&__scramble-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		width: 100%;
-		padding: 10px 14px;
-		background-color: rgb(var(--module-color));
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 10px;
-		margin-bottom: 12px;
-	}
-
-	&__scramble-text {
-		font-family: 'Roboto Mono', monospace;
-		font-size: 0.85rem;
-		line-height: 1.4;
-		margin: 0;
-		color: rgb(var(--text-color));
-		opacity: 0.9;
-		word-break: break-word;
-
-		span {
-			font-weight: 600;
-			opacity: 0.6;
-			margin-right: 6px;
-		}
-	}
-
-	// --- Mobile ---
+	// Four figures in a row leave a phone's labels no room ("Reconocimiento"): two by two.
 	@include bp-down($bp-sm) {
-		&__header {
-			flex-direction: column;
-			gap: 12px;
+		&__strip {
+			grid-auto-flow: row;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
-		&__header-info {
-			align-items: center;
-		}
-
-		&__header-visual {
-			width: 180px;
-		}
-
-		&__time {
-			text-align: center;
-			font-size: 2.4rem;
-		}
-
-		&__card h4 {
-			font-size: 1.1rem;
-		}
-
-		&__card {
-			padding: 10px 8px;
+		&__stat-value {
+			font-size: 1.125rem;
 		}
 	}
 }

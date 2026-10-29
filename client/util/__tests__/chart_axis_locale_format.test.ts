@@ -1,4 +1,4 @@
-import {labelStride, pickTimeAxisTicks} from '../chart_axis';
+import {clampLabelCenter, labelStride, maxBarsForWidth, pickTimeAxisTicks} from '../chart_axis';
 import {
 	durationUnits,
 	formatDayMonth,
@@ -38,6 +38,25 @@ describe('labelStride', () => {
 	it('shows every label when they fit', () => {
 		expect(labelStride(['24.09', '25.09'], 60)).toBe(1);
 		expect(labelStride([], 10)).toBe(1);
+	});
+});
+
+describe('maxBarsForWidth', () => {
+	it('fits six bars in a phone module slot and never less than one', () => {
+		expect(maxBarsForWidth(185)).toBe(6);
+		expect(maxBarsForWidth(0)).toBe(1);
+	});
+});
+
+describe('clampLabelCenter', () => {
+	it('pushes edge labels inside the chart', () => {
+		// "12800" is about 32 px wide: centred at 10 it would start at -6.
+		expect(clampLabelCenter(10, '12800', 200)).toBeCloseTo(16.25);
+		expect(clampLabelCenter(195, '1:31-1:42', 200)).toBeCloseTo(200 - 29.25);
+	});
+
+	it('leaves labels that fit where they are', () => {
+		expect(clampLabelCenter(100, '12-13', 200)).toBe(100);
 	});
 });
 

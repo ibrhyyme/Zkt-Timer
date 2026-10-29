@@ -10,11 +10,10 @@
 	box-sizing: border-box;
 	align-items: flex-start;
 
+	// No frame of its own: the card has one, and a box around it read as a box in a box.
 	&__body {
 		box-sizing: border-box;
-		background-color: rgb(var(--module-color));
-		padding: 25px 20px;
-		border-radius: 6px;
+		padding: 0 $zt-space-4;
 		width: 100%;
 		max-width: 600px;
 
@@ -24,6 +23,16 @@
 
 		&--smart {
 			max-width: 1000px;
+		}
+
+		// The page scrolls here. Capped at 90vh as it is in a modal (SolveInfo.scss), the
+		// card scrolled inside a page that scrolled too, and cut the replay controls off.
+		// The phone card is a fullscreen sheet of its own and keeps its scroll.
+		> .#{$namespace}-solve-info:not(.#{$namespace}-solve-info--mobile) {
+			max-height: none;
+			overflow-y: visible;
+			// In a modal the shell's shadow sets it off; on the page a hairline does.
+			border: 1px solid $zt-card-border;
 		}
 	}
 }

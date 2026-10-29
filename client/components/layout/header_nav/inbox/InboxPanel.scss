@@ -319,9 +319,10 @@
 		text-align: left;
 		cursor: pointer;
 
+		// Danger in the fill, the label in the text colour: red text on the dark fill read faintly.
 		&:hover:not(:disabled) {
-			background-color: rgb(var(--button-color));
-			color: rgb(var(--error-color));
+			background-color: rgba(var(--error-color), 0.16);
+			color: rgb(var(--text-color));
 		}
 
 		&:disabled {

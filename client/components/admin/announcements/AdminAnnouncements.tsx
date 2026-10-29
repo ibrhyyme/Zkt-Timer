@@ -141,7 +141,7 @@ export default function AdminAnnouncements() {
 														{announcement.title}
 													</span>
 													{announcement.isDraft && (
-														<span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/20 font-medium">
+														<span className="text-[10px] bg-yellow-500/20 text-text px-2 py-0.5 rounded-full border border-yellow-500/20 font-medium">
 															{t('admin_announcements.draft_badge')}
 														</span>
 													)}
@@ -157,8 +157,8 @@ export default function AdminAnnouncements() {
 											</td>
 											<td className="p-5">
 												<span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${announcement.isActive
-													? 'bg-green-500/10 text-green-400 border-green-500/20'
-													: 'bg-red-500/10 text-red-400 border-red-500/20'
+													? 'bg-green-500/10 text-text border-green-500/20'
+													: 'bg-red-500/10 text-text border-red-500/20'
 													}`}>
 													{announcement.isActive ? t('admin_announcements.status_active') : t('admin_announcements.status_inactive')}
 												</span>
@@ -186,14 +186,14 @@ export default function AdminAnnouncements() {
 												<div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
 													<button
 														onClick={(e) => handleEdit(e, announcement)}
-														className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 rounded-lg transition border border-indigo-500/20"
+														className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-text rounded-lg transition border border-indigo-500/20"
 														title={t('admin_announcements.edit_button')}
 													>
 														<PencilSimple size={18} />
 													</button>
 													<button
 														onClick={(e) => handleDelete(e, announcement.id)}
-														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20"
+														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-text rounded-lg transition border border-red-500/20"
 														title={t('admin_announcements.delete_button')}
 													>
 														<Trash size={18} />

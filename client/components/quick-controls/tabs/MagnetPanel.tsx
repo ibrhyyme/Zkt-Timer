@@ -116,7 +116,7 @@ export default function MagnetPanel() {
 	const { farMax, nearMin } = detectorConfigFor(magnetService.getPlatform() ?? 'ios');
 
 	return (
-		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] space-y-3">
+		<div className="py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] space-y-3">
 			<div className="flex items-center justify-between gap-3">
 				<span className="font-medium text-text">{t('quick_controls.magnet_state')}</span>
 				<span className="text-sm font-semibold text-primary text-right">

@@ -180,6 +180,7 @@ export default function SolvePage() {
 					disabled
 					solve={solve}
 					solveId={solve?.id}
+					initialTab="solution"
 					onComplete={() => (history.length > 1 ? history.goBack() : history.push('/timer'))}
 				/>
 			</div>

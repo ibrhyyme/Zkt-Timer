@@ -144,7 +144,7 @@
 		margin: -44px 0 0 -44px;
 		border-radius: 24px;
 		background: rgba(var(--primary-color), 0.14);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -157,7 +157,7 @@
 
 	&--is-error &__core {
 		background: rgba(var(--error-color), 0.14);
-		color: rgb(var(--error-color));
+		color: rgb(var(--text-color));
 		box-shadow:
 			inset 0 0 0 1px rgba(var(--error-color), 0.35),
 			0 12px 32px rgba(0, 0, 0, 0.35);
@@ -195,7 +195,7 @@
 		border-radius: 8px;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--primary-color), 0.4);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 
 		&--small {
@@ -254,7 +254,7 @@
 	&__hint-count {
 		font-size: 13px;
 		font-weight: 700;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		padding: 2px 9px;
 		background: rgba(var(--primary-color), 0.15);
 		border-radius: 999px;
@@ -359,7 +359,7 @@
 		align-self: flex-start;
 		font-size: 11px;
 		font-weight: 700;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		padding: 1px 8px;
 		background: rgba(var(--primary-color), 0.15);
 		border-radius: 999px;
@@ -454,7 +454,7 @@
 		height: 22px;
 		border-radius: 11px;
 		background: rgba(var(--error-color), 0.16);
-		color: rgb(var(--error-color));
+		color: rgb(var(--text-color));
 		font-size: 12px;
 		font-weight: 700;
 		display: flex;

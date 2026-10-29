@@ -78,6 +78,17 @@ export class SolveInput {
 	@Field()
 	smart_turns?: string;
 
+	/** Gyro-detected whole-cube rotations, core frame, smart_turns format (Pro). */
+	@Field()
+	smart_rotations?: string;
+
+	/**
+	 * Raw gyro stream for the realistic replay (gyro_codec.ts, Pro). Input only: it is read
+	 * back through the solveGyro query, never with the solve, so no sync read carries it.
+	 */
+	@Field()
+	smart_gyro?: string;
+
 	/**
 	 * Which solving method to break this solve down with ('cfop' | 'cfop2' |
 	 * 'roux' | 'zz'). Sent by the client from the user's analysis setting; the
@@ -174,6 +185,9 @@ export class Solve {
 	@Field()
 	smart_turns: string;
 
+	@Field()
+	smart_rotations: string;
+
 	@Field(() => Float)
 	smart_put_down_time: number;
 
@@ -211,6 +225,26 @@ export class Solve {
 
 	@Field(() => PublicUserAccount)
 	user?: PublicUserAccount;
+}
+
+/**
+ * What the solve detail fetches for the gyro reconstruction, apart from the solve itself: the
+ * raw stream (no sync read carries it) and the owner's verdict on the reconstruction.
+ */
+@ObjectType()
+export class SolveReplayData {
+	@Field({ nullable: true })
+	smart_gyro?: string;
+
+	@Field(() => Int, { nullable: true })
+	reconstruction_vote?: number;
+
+	/**
+	 * Whether the caller owns the solve, so may judge its reconstruction. From the server, not
+	 * the client's copy: a solve saved on this device carries no user_id until a sync read.
+	 */
+	@Field({ nullable: true })
+	is_owner?: boolean;
 }
 
 @ObjectType()

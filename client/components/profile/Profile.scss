@@ -246,7 +246,7 @@
 
 		&:hover {
 			background: rgba(var(--primary-color), 0.2);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 			transform: translateY(-1px);
 		}
 	}
@@ -400,7 +400,7 @@
 		&--active {
 			opacity: 1;
 			background: rgba(var(--primary-color), 0.15);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -416,7 +416,7 @@
 
 	&__tab--active &__tab-count {
 		background: rgba(var(--primary-color), 0.2);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 	}
 
 	&__tab-wca-logo {

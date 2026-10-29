@@ -115,6 +115,7 @@ export const SOLVE_FRAGMENT = gql`
 		smart_turn_count
 		share_code
 		smart_turns
+		smart_rotations
 		smart_pick_up_time
 		smart_put_down_time
 		inspection_time

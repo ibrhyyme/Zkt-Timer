@@ -77,8 +77,14 @@ export async function createSolveDb(solveInput: Solve) {
 	// the chosen method (Auto, Roux, ZZ) stopped reaching the server and every smart solve
 	// came back analysed as CFOP. It travels beside the row, never inside it.
 	const analysisMethod = (solveInput as any)?.analysis_method as string | undefined;
+	// The raw gyro stream (~4 KB a solve) goes to the server only. LokiJS holds every solve in
+	// memory, so on the device it would cost tens of MB for a heavy user; the replay fetches it
+	// on demand (solveGyro) instead. It rides on the request and the queue record, like the
+	// method above.
+	const smartGyro = (solveInput as any)?.smart_gyro as string | null | undefined;
 
 	const solve = sanitizeSolve(solveInput) as Solve;
+	delete (solve as any).smart_gyro;
 	// The device's breakdown goes in with the row, so nothing draws this solve without its
 	// phases. The server's answer replaces it below (applyCreatedSolve).
 	const localSteps = localStepRowsForNewSolve(solve, analysisMethod);
@@ -106,6 +112,7 @@ export async function createSolveDb(solveInput: Solve) {
 		// neither the server nor the queue, and the next launch's reconciliation took it for
 		// a solve deleted on another device and removed it for good.
 		const input = toSolveInput(solve);
+		if (smartGyro) input.smart_gyro = smartGyro;
 		const queued = addToQueue(
 			'createSolve',
 			analysisMethod ? { input, analysis_method: analysisMethod } : { input },

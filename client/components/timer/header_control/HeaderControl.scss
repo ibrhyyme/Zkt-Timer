@@ -66,29 +66,33 @@
 		}
 	}
 
+	// One flat strip: cube type, subset and season (on the desktop also the timer type and
+	// the gear), split by hairlines. It used to be a blurred, shadowed box around separate
+	// pills, each with its own gradient fill and border: a box in a box that took the most
+	// room exactly where a narrow phone has the least (owner, 2026-10-29). The surface is
+	// the timer modules' own, readable over a background image without a blur.
 	&__left-controls {
-		// Dark Glassmorphism - Premium look
-		background: rgba(var(--button-color), 0.6);
-		border: 1px solid rgba(var(--text-color), 0.05);
-		padding: 4px;
-		border-radius: 10px;
-		align-items: center !important;
-		gap: 4px;
-		backdrop-filter: blur(10px);
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); // Slightly more prominent shadow
+		height: $zt-control-h-md;
+		background: var(--zt-surface);
+		border: 1px solid var(--zt-surface-border);
+		border-radius: $zt-radius-md;
+		overflow: hidden;
+		align-items: stretch !important;
 		width: fit-content;
 		min-width: 0;
+		max-width: 100%;
+		box-sizing: border-box;
 
 		>* {
 			margin-right: 0 !important;
 		}
 
-		// Cube group (CubePicker + SubsetPicker + CrossColorPicker) — kept as one
-		// unit; it is intrinsically narrow (logo/short label + capped subset + swatch),
-		// so it does NOT shrink. The session picker absorbs the squeeze instead.
+		// Cube group (CubePicker + SubsetPicker) — kept as one unit; it is intrinsically
+		// narrow (logo/short label + capped subset), so it does NOT shrink. The session
+		// picker absorbs the squeeze instead.
 		.#{$namespace}-timer-header-control__cube-group {
 			display: flex;
-			align-items: center;
+			align-items: stretch;
 			flex: 0 0 auto;
 			min-width: 0;
 		}
@@ -96,6 +100,7 @@
 		// Session name — the only wide, variable label. It is the part that shrinks
 		// (flex-shrink) and ellipsizes via FancyDropdown's own trigger-label rule.
 		.zt-session-picker {
+			display: flex;
 			flex: 0 1 auto;
 			min-width: 0;
 			max-width: 160px;
@@ -107,25 +112,42 @@
 			max-width: 120px;
 		}
 
-		// Button Overrides - Neutral Glass
-		.zt-common-button--theme-gray {
-			background: rgba(var(--text-color), 0.08) !important;
-			border: 1px solid rgba(var(--text-color), 0.05) !important;
-			color: rgba(var(--text-color), 0.9) !important;
-			box-shadow: none !important;
-			transition: all 0.2s ease !important;
+		// The segments: the shared triggers without a box of their own. The hover rule
+		// carries :not(:disabled) to outrank zt-control's whatever the stylesheet order.
+		.#{$namespace}-fancy-dropdown__trigger,
+		.#{$namespace}-timer-type-picker__trigger,
+		.#{$namespace}-settings-dropdown__trigger {
+			height: 100%;
+			padding: 0 $zt-space-3;
+			border: none;
+			border-radius: 0;
+			background: transparent;
 
 			&:hover:not(:disabled) {
-				background: rgba(var(--text-color), 0.15) !important;
-				border-color: rgba(var(--text-color), 0.2) !important;
-				transform: translateY(-1px);
-				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+				background: $zt-control-bg;
 			}
 
-			&:active:not(:disabled) {
-				transform: translateY(0);
-				background: rgba(var(--text-color), 0.1) !important;
+			&[data-state='open'] {
+				background: $zt-control-bg-active;
 			}
+
+			// The strip clips anything drawn outside it.
+			&:focus-visible {
+				outline-offset: -2px;
+			}
+		}
+
+		// The gear is a square segment, as tall as the strip.
+		.#{$namespace}-settings-dropdown__trigger {
+			width: $zt-control-h-md;
+			padding: 0;
+		}
+
+		// A hairline between neighbouring segments. Drawn inset so it never fights the
+		// segments' `border: none`; a translucent hover tint leaves it visible.
+		> * + *,
+		.#{$namespace}-timer-header-control__cube-group > * + * {
+			box-shadow: inset 1px 0 0 $zt-divider;
 		}
 	}
 
@@ -157,8 +179,8 @@
 		// arka plan resmi header'da da gorunsun. Ayni --background-color'in degisen
 		// alpha'si oldugu icin resimsiz kullanicida duz renk header ile birebir ayni
 		// gorunur (regresyon yok). Full-bar backdrop-filter kaldirildi: aksi halde resim
-		// yalnizca serit icinde bulaniklasip alt kenarda dikis izi olusurdu; pill'lerin
-		// kendi backdrop-filter'i (__left-controls) korunuyor.
+		// yalnizca serit icinde bulaniklasip alt kenarda dikis izi olusurdu. Secici seridi
+		// (__left-controls) de artik bulaniklik kullanmiyor, modullerin yuzeyini kullaniyor.
 		background: linear-gradient(
 			to bottom,
 			rgba(var(--background-color), 0.92) 0%,
@@ -167,21 +189,17 @@
 		);
 
 		&__left-controls {
-			background: rgba(var(--module-color), 0.9);
-			backdrop-filter: blur(20px);
-			-webkit-backdrop-filter: blur(20px);
-			border: 1px solid rgba(var(--text-color), 0.1);
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-			padding: 3px;
-			gap: 3px;
-			// Fluid: never exceed the grid column; clip + let children shrink.
-			min-width: 0;
-			max-width: 100%;
-			overflow: hidden;
+			// Tighter segments: the row has to fit a 360px phone next to the avatar.
+			.#{$namespace}-fancy-dropdown__trigger {
+				padding: 0 $zt-space-2;
+				gap: $zt-space-1;
+			}
 
-			// Session shrinks first; width scales with viewport, ellipsis kicks in.
+			// Session shrinks first; width scales with viewport, ellipsis kicks in. 40vw
+			// since the strip lost the pills' own padding: at 30vw a 360px phone cut
+			// "Yeni Sezon" to "Yeni Se…" with room to spare in the row.
 			.zt-session-picker {
-				max-width: clamp(64px, 30vw, 160px);
+				max-width: clamp(64px, 40vw, 160px);
 			}
 
 			.subset-picker-trigger {
@@ -234,11 +252,6 @@
 @media (max-width: 390px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(8px + #{sa(top)}) 10px 8px 10px !important;
-
-		&__left-controls {
-			padding: 2px;
-			gap: 2px;
-		}
 	}
 }
 

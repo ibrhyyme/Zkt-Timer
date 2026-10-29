@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Pause, SkipBack, SkipForward, Rewind, FastForward } from 'phosphor-react';
 import block from '../../../../styles/bem';
+import Switch from '../../../common/switch/Switch';
 
 const b = block('replay-controls');
 
@@ -18,6 +19,8 @@ interface Props {
 	onPrevStep: () => void;
 	onNextStep: () => void;
 	onSpeedChange: (s: number) => void;
+	/** Set when the solve has a gyro stream: the cube's real motion, on or off. */
+	gyro?: { on: boolean; onChange: (on: boolean) => void };
 }
 
 const SPEED_OPTIONS = [0.5, 1, 2];
@@ -41,6 +44,7 @@ export default function ReplayControls(props: Props) {
 		onPrevStep,
 		onNextStep,
 		onSpeedChange,
+		gyro,
 	} = props;
 
 	const progress = totalMoves > 0 ? (currentMoveIdx / totalMoves) * 100 : 0;
@@ -129,6 +133,12 @@ export default function ReplayControls(props: Props) {
 						{s}x
 					</button>
 				))}
+				{gyro && (
+					<span className={b('gyro')}>
+						<span className={b('speed-label')}>{t('solve_info.replay.gyro')}</span>
+						<Switch small on={gyro.on} onChange={gyro.onChange} />
+					</span>
+				)}
 			</div>
 		</div>
 	);

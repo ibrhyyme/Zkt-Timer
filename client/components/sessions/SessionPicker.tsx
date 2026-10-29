@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus } from 'phosphor-react';
+import { Plus, Rows } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setCubeType, setScrambleSubset } from '../../db/settings/update';
@@ -147,6 +147,10 @@ export default function SessionPicker(props: Props) {
 				value={selectedSession?.id || NO_SESSION}
 				onValueChange={handleValueChange}
 				groups={groups}
+				// The season's own mark (the nav's sessions icon): a season is often named
+				// after its puzzle, so "3x3" sat next to the subset's "3x3" with nothing to
+				// tell them apart.
+				triggerIcon={<Rows weight="bold" size={14} />}
 				triggerLabel={sessionName}
 				ariaLabel={t('sessions.select_session')}
 				maxHeight={400}

@@ -264,7 +264,7 @@ export function TimerSettingsDecimal({ label, description, value, step, min, max
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
 					}}
-					className="w-16 px-2 py-1 rounded-lg bg-button border border-text/[0.1] text-sm font-medium text-primary text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
+					className="w-16 px-2 py-1 rounded-lg bg-button border border-text/[0.1] text-sm font-medium text-text text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
 				/>
 				<button type="button" onClick={() => nudge(1)} disabled={current >= max} className={buttonClass(current >= max)}>
 					<Plus weight="bold" size={12} />
@@ -337,7 +337,7 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 								<button
 									key={option.value}
 									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between ${option.value === value
-										? 'bg-primary/10 text-primary font-medium'
+										? 'bg-primary/10 text-text font-medium'
 										: 'text-text hover:bg-text/[0.05]'
 										}`}
 									onClick={() => {

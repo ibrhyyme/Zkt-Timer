@@ -194,9 +194,10 @@ $status-fill-text-light: rgb(255, 255, 255);
 // ---------------------------------------------------------------------------
 
 // Shape. sm: chip, badge, segment, tag. md: button, input, list row, icon button.
-// lg: card, modal, popover, sheet.
-$zt-radius-sm: 6px;
-$zt-radius-md: 10px;
+// lg: card, modal, popover, sheet. Controls are near square (2026-10-29): at 10px a 32px
+// button read as an oval pill, which the owner never liked.
+$zt-radius-sm: 4px;
+$zt-radius-md: 4px;
 $zt-radius-lg: 14px;
 $zt-radius-full: 999px;
 
@@ -219,9 +220,10 @@ $zt-space-8: 64px;
 // Surfaces.
 $zt-card-bg: rgba(var(--text-color), 0.035);
 $zt-card-border: rgba(var(--text-color), 0.09);
-$zt-control-bg: rgba(var(--text-color), 0.06);
-$zt-control-bg-hover: rgba(var(--text-color), 0.1);
-$zt-control-bg-active: rgba(var(--text-color), 0.14);
+// A step stronger than it was with a border round it: the fill alone has to say "button".
+$zt-control-bg: rgba(var(--text-color), 0.08);
+$zt-control-bg-hover: rgba(var(--text-color), 0.12);
+$zt-control-bg-active: rgba(var(--text-color), 0.16);
 $zt-control-border: rgba(var(--text-color), 0.14);
 $zt-control-border-hover: rgba(var(--text-color), 0.26);
 $zt-divider: rgba(var(--text-color), 0.09);
@@ -254,17 +256,18 @@ $zt-transition: 120ms ease;
 }
 
 /// A neutral control surface: secondary buttons, icon buttons, segmented options.
-/// Hover and press change the fill only; nothing moves.
+/// Hover and press change the fill only; nothing moves. No outline: a fill with a line
+/// round it is what made every control a pill. The border stays, transparent, so a
+/// control that draws one (a focus, a dashed disabled option) keeps its size.
 @mixin zt-control {
 	background: $zt-control-bg;
-	border: 1px solid $zt-control-border;
+	border: 1px solid transparent;
 	border-radius: $zt-radius-md;
 	color: rgb(var(--text-color));
 	transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 	&:hover:not(:disabled) {
 		background: $zt-control-bg-hover;
-		border-color: $zt-control-border-hover;
 	}
 
 	&:active:not(:disabled) {

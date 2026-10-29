@@ -112,18 +112,13 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		return () => cancelAnimationFrame(raf);
 	}, [open]);
 
-	function renderOption(opt: FancyDropdownOption, indexInGroup: number) {
+	function renderOption(opt: FancyDropdownOption) {
 		return (
 			<Select.Item
 				key={opt.value}
 				value={opt.value}
 				disabled={opt.disabled}
 				className={b('option', { disabled: opt.disabled })}
-				style={{
-					// Stagger entrance — each item gets animation-delay (inline because
-					// nth-child doesn't work inside group in SCSS)
-					animationDelay: `${30 + indexInGroup * 25}ms`,
-				}}
 			>
 				{opt.icon && <span className={b('option-icon')}>{opt.icon}</span>}
 				<Select.ItemText>
@@ -199,13 +194,13 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 											<Select.Label className={b('group-label')}>
 												{group.header}
 											</Select.Label>
-											{group.options.map((opt, i) => renderOption(opt, i))}
+											{group.options.map((opt) => renderOption(opt))}
 										</Select.Group>
 									)}
-									{!group.header && group.options.map((opt, i) => renderOption(opt, i))}
+									{!group.header && group.options.map((opt) => renderOption(opt))}
 								</React.Fragment>
 							))
-							: (options ?? []).map((opt, i) => renderOption(opt, i))}
+							: (options ?? []).map((opt) => renderOption(opt))}
 					</Select.Viewport>
 				</Select.Content>
 			</Select.Portal>

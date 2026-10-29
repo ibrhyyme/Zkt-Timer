@@ -110,7 +110,7 @@ export default function GoalsTab() {
 
 			{/* Count room solves toggle */}
 			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
 						<UsersThree
 							size={18}
@@ -152,7 +152,7 @@ export default function GoalsTab() {
 			{/* Count deleted solves toggle. Same shape as the rooms toggle above, and the same
 			    reach: the daily goal and the activity graph only, never the session or stats. */}
 			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
 						<ClockCounterClockwise
 							size={18}
@@ -191,7 +191,7 @@ export default function GoalsTab() {
 
 			{/* Reminder toggle */}
 			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 					<div className="flex items-center space-x-3">
 						{storage.reminder_enabled ? (
 							<Bell size={18} weight="fill" className="text-primary" />
@@ -258,7 +258,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 	}
 
 	return (
-		<div className="rounded-xl bg-module border border-text/[0.08] p-4 space-y-3">
+		<div className="rounded-xl bg-text/[0.035] border border-text/[0.09] p-4 space-y-3">
 			{/* Cube name + title */}
 			<div className="flex items-center justify-between">
 				<div className="flex items-center space-x-2">
@@ -287,7 +287,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 						<button
 							type="button"
 							onClick={onRemove}
-							className="p-1 rounded-lg text-text/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
+							className="p-1 rounded-lg text-text/30 hover:text-text hover:bg-red-400/10 transition-all"
 						>
 							<Trash size={16} />
 						</button>
@@ -371,7 +371,7 @@ interface OtherGoalRowProps {
 
 function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowProps) {
 	return (
-		<div className="group flex items-center justify-between py-3 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-3 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center space-x-3 flex-1 min-w-0">
 				<span className={`font-medium text-sm ${goal.enabled ? 'text-text/80' : 'text-text/30'}`}>{name}</span>
 				{progress && (
@@ -408,7 +408,7 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 				<button
 					type="button"
 					onClick={onRemove}
-					className="p-1 rounded-lg text-text/30 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
+					className="p-1 rounded-lg text-text/30 hover:text-text hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
 				>
 					<Trash size={14} />
 				</button>

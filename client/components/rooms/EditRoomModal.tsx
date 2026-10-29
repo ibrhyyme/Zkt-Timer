@@ -175,7 +175,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                     <span className={`text-sm font-medium flex items-center gap-2 ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text'}`}>
                                         {getTypeName(type)}
                                         {proTypes.includes(type) && (
-                                            <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1 font-bold">
+                                            <span className="text-[10px] text-text bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1 font-bold">
                                                 <Crown size={10} weight="fill" />
                                                 Pro
                                             </span>

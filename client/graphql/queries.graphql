@@ -213,6 +213,16 @@ query solveByShareCode($shareCode: String) {
 	}
 }
 
+# Raw gyro stream of a solve, yours or one opened by its share code, and your verdict on its
+# reconstruction (never in sync reads).
+query solveReplayData($id: String!, $shareCode: String) {
+	solveReplayData(id: $id, shareCode: $shareCode) {
+		smart_gyro
+		reconstruction_vote
+		is_owner
+	}
+}
+
 query profile($username: String) {
 	profile(username: $username) {
 		...ProfileFragment

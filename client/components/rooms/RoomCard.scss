@@ -84,12 +84,12 @@
 
         &--waiting {
             background: rgba(var(--warning-color), 0.15);
-            color: rgb(var(--warning-color));
+            color: rgb(var(--text-color));
         }
 
         &--active {
             background: rgba(var(--success-color), 0.15);
-            color: rgb(var(--success-color));
+            color: rgb(var(--text-color));
         }
     }
 
@@ -130,7 +130,7 @@
 
         &--more {
             background: rgba(var(--primary-color), 0.1);
-            color: rgb(var(--primary-color));
+            color: rgb(var(--text-color));
         }
     }
 

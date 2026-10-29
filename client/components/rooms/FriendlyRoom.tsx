@@ -92,7 +92,7 @@ function connectButtonClass(connected: boolean, connecting: boolean): string {
         return `${base} cursor-wait bg-white/10 md:bg-text/[0.08] border-white/20 md:border-text/[0.15] text-white md:text-text`;
     }
     if (connected) {
-        return `${base} bg-green-500/25 hover:bg-green-500/35 border-green-400/40 hover:border-green-400/60 text-white md:text-green-400`;
+        return `${base} bg-green-500/25 hover:bg-green-500/35 border-green-400/40 hover:border-green-400/60 text-white md:text-text`;
     }
     return `${base} bg-white/15 hover:bg-white/25 md:bg-text/[0.08] md:hover:bg-text/[0.15] border-white/20 hover:border-white/35 md:border-text/[0.15] md:hover:border-text/[0.25] text-white md:text-text`;
 }
@@ -1888,7 +1888,7 @@ function FriendlyRoomContent() {
                                                 <div className="h-px bg-text/[0.1] my-1.5 mx-1" />
                                                 <button
                                                     onClick={handleDeleteRoom}
-                                                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-red-300 flex items-center gap-3 transition-colors"
+                                                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-text flex items-center gap-3 transition-colors"
                                                 >
                                                     <Trash size={18} weight="bold" />
                                                     {t('rooms.delete_room')}
@@ -2045,7 +2045,7 @@ function FriendlyRoomContent() {
                             }}
                             className={`p-1.5 md:p-2 rounded-lg transition-all border ${
                                 musicPlayerOpen
-                                    ? 'bg-green-500/20 border-green-400/40 text-green-300 md:text-green-400'
+                                    ? 'bg-green-500/20 border-green-400/40 text-white md:text-text'
                                     : 'bg-white/10 border-white/15 hover:bg-white/20 hover:border-white/25 md:bg-text/[0.08] md:border-text/[0.12] md:hover:bg-text/[0.15] md:hover:border-text/[0.25] text-white md:text-text hover:text-white md:hover:text-text'
                             }`}
                             title={t('rooms.music_player')}

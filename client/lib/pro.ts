@@ -13,6 +13,20 @@ export function isPro(user?: UserAccount | PublicUserAccount | UserAccountForAdm
 	return user?.is_pro || user?.is_premium || false;
 }
 
+/**
+ * Whether the viewer may see a smart cube solve's analysis (steps, reconstruction, replay):
+ * on their own Pro, or on the Pro of the solve's owner, whose solves are open to whoever opens
+ * them (a share link, a profile). It is the owner's Pro that opens a solve to others, so a
+ * Basic account sharing its own solve opens nothing. The server applies the same rule to the
+ * gyro stream (Solve.resolver.ts solveReplayData). With Pro switched off everyone sees it.
+ */
+export function canSeeSmartAnalysis(
+	viewer?: UserAccount | PublicUserAccount | UserAccountForAdmin,
+	owner?: UserAccount | PublicUserAccount | UserAccountForAdmin
+): boolean {
+	return !isProEnabled() || isPro(viewer) || isPro(owner);
+}
+
 export function isNotPro(user?: UserAccount | PublicUserAccount | UserAccountForAdmin): boolean {
 	return !isPro(user);
 }

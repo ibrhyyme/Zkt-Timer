@@ -150,6 +150,20 @@
         }
     }
 
+    // The charts draw edge to edge; the desktop cards give them their padding, here the
+    // slot does, so axis labels do not sit on the rounded border.
+    .zt-time-chart,
+    .zt-time-distro {
+        padding: 8px 8px 6px;
+    }
+
+    // The time distribution's column picker shows on hover and opens a menu this 147px,
+    // overflow-hidden slot cuts off. On the phone the column count follows the slot's
+    // width instead (TimeDistro.tsx), so the picker is not drawn.
+    .zt-time-distro__buckets {
+        display: none;
+    }
+
     // The empty history card ("No solves yet"). Empty's own spacing (30px above a 90px
     // image, 15px above the text) is taller than the slot on a 390x844 phone (145px),
     // so the text was cut off at the bottom. Centred and tighter inside the slot only.

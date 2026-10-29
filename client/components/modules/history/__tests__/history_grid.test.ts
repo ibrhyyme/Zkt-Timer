@@ -50,11 +50,11 @@ describe('solveNumberColumnCh', () => {
 
 describe('historyGridTemplate', () => {
 	it('adds one column per average on the desktop', () => {
-		expect(historyGridTemplate(30, 2, false)).toBe('calc(2ch + 16px) minmax(5.2em, 1.2fr) repeat(2, minmax(4.8em, 1fr))');
+		expect(historyGridTemplate(30, 2, false)).toBe('calc(2ch + 16px) minmax(5.2rem, 1.2fr) repeat(2, minmax(4.8rem, 1fr))');
 	});
 
 	it('never writes repeat(0, ...), which is invalid CSS', () => {
-		expect(historyGridTemplate(30, 0, false)).toBe('calc(2ch + 16px) minmax(5.2em, 1.2fr)');
+		expect(historyGridTemplate(30, 0, false)).toBe('calc(2ch + 16px) minmax(5.2rem, 1.2fr)');
 	});
 
 	it('is number, time and delete on a phone, whatever the column setting', () => {

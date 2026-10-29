@@ -20,6 +20,8 @@ type StepType = NonNullable<Solve['solve_method_steps']>[number];
 
 const PHASES = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 const LABELS = ['Cross', 'F2L 1', 'F2L 2', 'F2L 3', 'F2L 4', 'OLL', 'PLL'];
+// For a narrow module, where the full labels ran into each other (PhaseAnalysis.scss).
+const SHORT_LABELS = ['Cr', 'F1', 'F2', 'F3', 'F4', 'OLL', 'PLL'];
 const MOBILE_PHASES = ['cross', 'f2l', 'oll', 'pll'];
 const MOBILE_LABELS = ['Cross', 'F2L', 'OLL', 'PLL'];
 
@@ -39,6 +41,18 @@ function f2lTotal(steps: StepType[]): number | null {
 		if (s?.total_time != null) { sum += s.total_time; count++; }
 	}
 	return count > 0 ? sum : null;
+}
+
+// Moves of one mobile phase (HTM, as the engine counts step.turn_count); F2L adds up its
+// pairs. Null when the solve has no count for it (solves from before the reindex).
+function phaseTurns(steps: StepType[], phase: string): number | null {
+	if (phase !== 'f2l') return steps.find((s) => s.step_name === phase)?.turn_count ?? null;
+	let sum = 0, found = false;
+	for (const name of ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']) {
+		const s = steps.find((x) => x.step_name === name);
+		if (s?.turn_count != null) { sum += s.turn_count; found = true; }
+	}
+	return found ? sum : null;
 }
 
 function f2lPairCount(steps: StepType[]): number {
@@ -245,9 +259,10 @@ export default function PhaseAnalysis(props: Props) {
 		<div className="zt-phase-analysis h-full">
 			<div className="zt-phase-analysis__header">
 				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index zt-phase-analysis__cell--head" />
-				{LABELS.map((label) => (
-					<div key={label} className="zt-phase-analysis__cell zt-phase-analysis__cell--head">
-						{label}
+				{LABELS.map((label, i) => (
+					<div key={label} className="zt-phase-analysis__cell zt-phase-analysis__cell--head" title={label}>
+						<span className="zt-phase-analysis__label">{label}</span>
+						<span className="zt-phase-analysis__label zt-phase-analysis__label--short">{SHORT_LABELS[i]}</span>
 					</div>
 				))}
 				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--stat">
@@ -322,20 +337,37 @@ function MobileView({ solves }: { solves: Solve[] }) {
 			}
 		}
 
-		return { label: MOBILE_LABELS[i], val, comparison };
+		return { label: MOBILE_LABELS[i], val, moves: phaseTurns(currentSteps, phase), comparison };
 	});
 
 	// If any phase is missing, total should show '–' (partial sum is misleading)
 	const hasNullPhase = rows.some(r => r.val == null);
 	const total = hasNullPhase ? null : rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
+	// The same rule for the moves.
+	const totalMoves = rows.some((r) => r.moves == null) ? null : rows.reduce((sum, r) => sum + (r.moves ?? 0), 0);
+	const movesLabel = t('phase_analysis.turns_label');
+
+	// Moves sit in the gap between the phase and its time (owner, 2026-10-29): what the
+	// solver can work on (a 10-move cross, an 18-move PLL). Per-phase TPS was the other
+	// candidate and was left out: a phase's time includes its recognition, so a slow look
+	// read as slow hands. The time keeps the colour of the comparison.
+	const movesCell = (moves: number | null) => (
+		<td
+			className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--moves"
+			title={moves == null ? undefined : `${movesLabel}: ${moves}`}
+		>
+			{moves ?? '–'}
+		</td>
+	);
 
 	return (
 		<div className="zt-phase-analysis zt-phase-analysis--mobile">
 			<table className="zt-phase-analysis__mobile-table">
 				<tbody>
-					{rows.map(({ label, val, comparison }) => (
+					{rows.map(({ label, val, moves, comparison }) => (
 						<tr key={label} className="zt-phase-analysis__mobile-row">
 							<td className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--phase">{label}</td>
+							{movesCell(moves)}
 							<td className={`zt-phase-analysis__mobile-cell${comparison ? ` zt-phase-analysis__mobile-cell--${comparison}` : ''}`}>
 								{fmt(val)}
 							</td>
@@ -345,6 +377,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 						<td className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--phase">
 							{t('phase_analysis.total_label')}
 						</td>
+						{movesCell(totalMoves)}
 						<td className="zt-phase-analysis__mobile-cell">{total == null ? '–' : fmt(total)}</td>
 					</tr>
 				</tbody>

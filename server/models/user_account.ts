@@ -25,6 +25,9 @@ export const publicUserInclude = {
 		username: true,
 		verified: true,
 		is_pro: true,
+		// Granting Premium clears is_pro, so without it a Premium member read as Basic to others
+		// (PublicUserFragment asks for it): their shared smart solves stayed locked (pro.ts).
+		is_premium: true,
 		banned_forever: true,
 		banned_until: true,
 		// Never the OAuth tokens: this include feeds anonymous read paths.

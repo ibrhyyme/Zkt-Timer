@@ -232,7 +232,7 @@
 
 		&--main {
 			background: rgba(var(--primary-color), 0.16);
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 
 		&--smart {
@@ -588,7 +588,7 @@
 		padding: 0 14px;
 		border-radius: 10px;
 		background: rgba(var(--primary-color), 0.12);
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		font-weight: 700;
 
 		&:hover {

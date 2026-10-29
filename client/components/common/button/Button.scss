@@ -169,15 +169,13 @@
 		@include solid(var(--theme-background-opposite), rgb(var(--theme-background)));
 	}
 
-	// The neutral default: a quiet filled control.
+	// The neutral default: a quiet filled control, no outline (see zt-control).
 	&--theme-gray {
 		background-color: $zt-control-bg !important;
-		border-color: $zt-control-border;
 		color: rgb(var(--text-color));
 
 		&:hover:not(:disabled) {
 			background-color: $zt-control-bg-hover !important;
-			border-color: $zt-control-border-hover;
 		}
 
 		&:active:not(:disabled) {

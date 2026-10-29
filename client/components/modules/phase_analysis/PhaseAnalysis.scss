@@ -6,6 +6,13 @@
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
+	// The columns ask the module how wide it is, not the window: the dashboard puts it in
+	// a narrow column on a wide screen.
+	container-type: inline-size;
+
+	&__label--short {
+		display: none;
+	}
 
 	// ── Column header ─────────────────────────────────────────────
 	&__header {
@@ -117,6 +124,50 @@
 		}
 	}
 
+	// ── Narrow module ─────────────────────────────────────────────
+	// Below about 400px each of the seven phase columns got some 35px: the labels and the
+	// two-decimal times ran into each other ("CROSS F2L 1" over "1.121.48"). Short labels,
+	// a smaller face and thinner side columns give every time room of its own.
+	@container (max-width: 460px) {
+		&__label {
+			display: none;
+		}
+
+		&__label--short {
+			display: inline;
+		}
+
+		&__header,
+		&__row,
+		&__avg-row {
+			padding: 0 4px;
+		}
+
+		&__cell {
+			font-size: 0.74rem;
+			font-variant-numeric: tabular-nums;
+
+			&--index {
+				flex-basis: 20px;
+				min-width: 20px;
+			}
+
+			&--stat {
+				flex-basis: 40px;
+				min-width: 40px;
+				font-size: 0.72rem;
+			}
+
+			&--avg {
+				font-size: 0.74rem;
+			}
+
+			&--head {
+				font-size: 0.67rem;
+			}
+		}
+	}
+
 	// ── Mobile ────────────────────────────────────────────────────
 	&--mobile {
 		justify-content: center;
@@ -158,6 +209,21 @@
 			letter-spacing: 0.03em;
 			text-transform: uppercase;
 			width: 55px;
+		}
+
+		// The phase's moves, in the gap between its name and its time: a column of its own,
+		// centred, a step below the time so the time still leads.
+		&--moves {
+			text-align: center;
+			font-size: 0.8rem;
+			font-weight: 500;
+			font-variant-numeric: tabular-nums;
+		}
+
+		// The time hugs its digits, so the moves column takes the gap.
+		&:last-child {
+			width: 1%;
+			white-space: nowrap;
 		}
 
 		&--better {

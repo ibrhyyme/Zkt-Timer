@@ -20,6 +20,13 @@ import {pickTimeAxisTicks} from '../../../util/chart_axis';
 
 const b = block('time-chart');
 
+// Inset that keeps the 5px line and its round ends inside the card.
+const EDGE = 4;
+// Axis label font and the gap between the labels and the line.
+const AXIS_FONT_SIZE = 11;
+const AXIS_CHAR_WIDTH = 6.5;
+const AXIS_GAP = 6;
+
 interface Props {
 	dummy?: boolean;
 	filterOptions: FilterSolvesOptions;
@@ -67,13 +74,21 @@ export default function TimeChart(props: Props) {
 		<div className={b()}>
 			<ParentSize>
 				{(parent) => {
-					// update scale output ranges
-					xScale.range([0, parent.width]);
-					yScale.range([parent.height, 0]);
-
 					// Rounding half-second ticks to whole seconds printed "13, 13, 12, 12" (2.7-f):
 					// keep only ticks whose labels differ, with the decimals their step needs.
 					const yAxis = pickTimeAxisTicks(yScale.ticks(Math.max(2, Math.floor(parent.height / 40))));
+
+					// The labels get their own column, as wide as the longest one. They used to
+					// be centred 3px from the card's left edge, so half of "14" was cut off on
+					// the phone, and drawn 10px below the value they named.
+					const longestLabel = Math.max(
+						0,
+						...yAxis.values.map((v) => getTimeString(v, yAxis.decimals).length)
+					);
+					const axisWidth = longestLabel ? longestLabel * AXIS_CHAR_WIDTH + AXIS_GAP : 0;
+
+					xScale.range([axisWidth + EDGE, parent.width - EDGE]);
+					yScale.range([parent.height - EDGE, EDGE]);
 
 					return (
 						<svg width={parent.width} height={parent.height}>
@@ -96,15 +111,15 @@ export default function TimeChart(props: Props) {
 								scale={yScale}
 								tickLabelProps={() => ({
 									fill: 'rgb(var(--text-color))',
-									opacity: 0.6,
-									fontSize: 11,
+									fontSize: AXIS_FONT_SIZE,
 									fontWeight: 400,
-									textAnchor: 'middle',
+									textAnchor: 'end',
+									verticalAnchor: 'middle',
+									dx: -AXIS_GAP,
 								})}
 								tickValues={yAxis.values}
 								tickFormat={(d) => getTimeString(d as number, yAxis.decimals)}
-								left={-17}
-								top={10}
+								left={axisWidth}
 								strokeWidth={0}
 								tickLength={0}
 								stroke={hexToRgba(chartColor, chartColorOpacity)}

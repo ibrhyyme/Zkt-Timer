@@ -1584,7 +1584,7 @@
 		&--active {
 			background: rgba(var(--primary-color), 0.15);
 			border-color: rgb(var(--primary-color));
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 
 		&--large {
@@ -2167,7 +2167,7 @@
 		padding: 0.65rem 1rem;
 		background: rgb(var(--module-color));
 		border-radius: 0.5rem;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		text-decoration: none;
 		font-weight: 500;
 		font-size: 0.9rem;

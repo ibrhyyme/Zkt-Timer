@@ -174,7 +174,7 @@ export default function DataSettings() {
 						<button
 							type="button"
 							onClick={confirmResetSettings}
-							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 hover:text-red-300 hover:border-red-500/50 transition-all duration-200 cursor-pointer"
+							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/20 border border-red-500/30 text-text hover:bg-red-500/30 hover:text-text hover:border-red-500/50 transition-all duration-200 cursor-pointer"
 						>
 							{t('data_settings.reset_settings_button')}
 						</button>

@@ -369,7 +369,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								type="button"
 								onClick={handleTranslate}
 								disabled={!canTranslate || translating}
-								className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600/20 hover:bg-violet-600/30 disabled:bg-zinc-800 disabled:text-zinc-600 border border-violet-500/40 disabled:border-zinc-700 rounded-lg text-sm font-medium text-violet-300 disabled:cursor-not-allowed transition"
+								className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600/20 hover:bg-violet-600/30 disabled:bg-zinc-800 disabled:text-zinc-600 border border-violet-500/40 disabled:border-zinc-700 rounded-lg text-sm font-medium text-text disabled:cursor-not-allowed transition"
 							>
 								{translating ? (
 									<>

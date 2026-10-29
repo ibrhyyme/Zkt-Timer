@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getSolveStepsWithoutParents } from '../../util/solution';
 import { STEP_NAME_MAP } from '../../util/consts';
 import block from '../../../../styles/bem';
@@ -14,6 +15,7 @@ interface Props {
 
 export default function CombinedTimeline(props: Props) {
 	const { solve } = props;
+	const { t } = useTranslation();
 
 	const steps = getSolveStepsWithoutParents(solve);
 
@@ -34,6 +36,11 @@ export default function CombinedTimeline(props: Props) {
 
 	return (
 		<div className={b()}>
+			{/* The two colours are otherwise only explained by the Statistics tab's columns. */}
+			<div className={b('legend')}>
+				<span className={b('legend-item', { rec: true })}>{t('solve_info.recognition')}</span>
+				<span className={b('legend-item', { exec: true })}>{t('solve_info.execution')}</span>
+			</div>
 			{steps.map((step) => {
 				const total = step.total_time || 0;
 				const rec = step.recognition_time || 0;

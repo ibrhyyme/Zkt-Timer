@@ -69,7 +69,10 @@
 		top: 0;
 		z-index: 1;
 		display: grid;
-		grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(5.2em, 1.2fr));
+		grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(5.2rem, 1.2fr));
+		// Same size as the rows (HistorySolveRow.scss), so the shared template's `ch`
+		// gives the heading the same number column as the rows under it.
+		font-size: 0.8rem;
 		min-width: max-content;
 		width: 100%;
 		height: 28px;
@@ -80,7 +83,7 @@
 	}
 
 	// Desktop only (the phone draws no header): time and average headings sit centred over
-	// their centred numbers, the number column stays right-aligned.
+	// their centred numbers, the number column's heading is left-aligned like its numbers.
 	&__head-cell {
 		display: flex;
 		align-items: center;
@@ -94,7 +97,7 @@
 		white-space: nowrap;
 
 		&--index {
-			justify-content: flex-end;
+			justify-content: flex-start;
 			border-left: none;
 		}
 	}

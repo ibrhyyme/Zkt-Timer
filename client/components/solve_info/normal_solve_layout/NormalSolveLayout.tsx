@@ -1,123 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { Cube, ShareNetwork, PaperPlaneRight } from 'phosphor-react';
 import { openModal } from '../../../actions/general';
-import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
-import TextArea from '../../common/inputs/textarea/TextArea';
 import HistoryModal from '../../modules/history/history_modal/HistoryModal';
-import Avatar from '../../common/avatar/Avatar';
 import Button from '../../common/button/Button';
-import Tag from '../../common/tag/Tag';
-import CopyText from '../../common/copy_text/CopyText';
 import block from '../../../styles/bem';
-import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
-import { shareContent } from '../../../util/native-plugins';
-import { generateSolvesStatsText } from '../../../util/average_text';
-import { getApiBase } from '../../../util/api-base';
 import { canReadSync } from '../../../lib/sync-gate';
-import { useMe } from '../../../util/hooks/useMe';
-import SendSolveModal from '../send_solve/SendSolveModal';
 import PhaseBreakdown from '../phase_breakdown/PhaseBreakdown';
-import './NormalSolveLayout.scss';
+import SolveCardHeader from '../solve_card/SolveCardHeader';
+import SolveScramble from '../solve_card/SolveScramble';
 
 const b = block('solve-info');
 
 export default function NormalSolveLayout(props: SolveLayoutProps) {
-	const {
-		solve, effSolve, user, disabled, editMode, mobileMode,
-		toggleEditMode, togglePlusTwo, toggleDnf, deleteSolve,
-		handleChange, handleDone, onComplete,
-		time, cubeTypeInfo, endedAt, isSystemDnf, plusTwo, dnf, cubeTag,
-	} = props;
+	const { solve, effSolve, editMode, mobileMode, handleChange } = props;
 
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const me = useMe();
-	const [sendOpen, setSendOpen] = useState(false);
-
-	const scramble = solve.scramble;
-	const cubeType = solve.cube_type;
-	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
-
-	function handleShare() {
-		const solveUrl = getApiBase() + '/solve/' + solve.share_code;
-		// "Linki Paylas" already covers the link-only case, so Gonder shares the same
-		// stats text "Stats olarak goruntule" shows below (generateSolvesStatsText),
-		// otherwise the two buttons did the exact same thing. url travels alongside
-		// text: shareContent forwards it as its own field to the native Share plugin,
-		// and the Web Share API fallback accepts both together too.
-		const statsText = generateSolvesStatsText(t, t('solve_info.single_solve'), solve.time, [solve], true);
-		shareContent({
-			title: `${cubeTypeInfo.name} - ${time} | Zkt Timer`,
-			text: statsText,
-			url: solveUrl,
-		});
-	}
-
-	let shareLink = null;
-	// An old solve opened by someone other than its owner can lack a code (the server only
-	// fills one in for the owner); a link to /solve/null would lead nowhere.
-	if (typeof window !== 'undefined' && canReadSync() && solve.share_code) {
-		shareLink = (
-			<>
-				<CopyText
-					buttonProps={{ text: t('solve_info.share_link') }}
-					text={getApiBase() + '/solve/' + solve.share_code}
-				/>
-				<Button
-					gray
-					icon={<ShareNetwork weight="bold" />}
-					onClick={handleShare}
-				/>
-			</>
-		);
-	}
-
-	// Only your own solve, because the server refuses to attach anyone else's, and only
-	// when signed in. Sitting next to Share Link is deliberate: both are "show this to
-	// someone", one publicly and one to a single person.
-	let sendButton = null;
-	if (me && solve?.user_id === me.id) {
-		sendButton = (
-			<Button
-				gray
-				icon={<PaperPlaneRight weight="bold" />}
-				title={t('solve_info.send_title')}
-				text={t('solve_info.send')}
-				onClick={() => setSendOpen(true)}
-			/>
-		);
-	}
-
-	let editButton = (
-		<Button
-			text={editMode ? t('solve_info.save') : t('solve_info.edit')}
-			className={b('edit')}
-			gray
-			primary={editMode}
-			onClick={toggleEditMode}
-		/>
-	);
-
-	let plusTwoButton = <Button gray text="+2" disabled={disabled || isSystemDnf} onClick={togglePlusTwo} warning={plusTwo} />;
-	let dnfButton = <Button gray text="DNF" disabled={disabled || isSystemDnf} onClick={toggleDnf} danger={dnf} />;
-	let deleteButton = <Button gray title={t('solve_info.delete')} text={t('solve_info.delete')} onClick={deleteSolve} />;
-
-	if (disabled) {
-		deleteButton = null;
-		editButton = null;
-		plusTwoButton = null;
-		dnfButton = null;
-
-		if (plusTwo) {
-			plusTwoButton = <Tag text="+2" backgroundColor="orange" />;
-		}
-		if (dnf) {
-			dnfButton = <Tag text="DNF" backgroundColor="red" />;
-		}
-	}
 
 	const openTextModal = () => {
 		dispatch(
@@ -134,61 +34,16 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 
 	return (
 		<div className={b({ mobile: mobileMode, normal: true })}>
-			{mobileMode && (
-				<div className={b('mobile-header-top')}>
-					<div className={b('mobile-title')}>{t('solve_info.solve_detail')}</div>
-					<div className={b('mobile-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-				</div>
-			)}
-			{!mobileMode && (
-				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-			)}
-			<div className={b('top-actions')}>
-				<div>
-					{shareLink}
-					{sendButton}
-				</div>
-				<div>
-					{deleteButton}
-					{editButton}
-				</div>
-			</div>
-			{sendOpen && <SendSolveModal solveId={solve.id} onClose={() => setSendOpen(false)} />}
-			<div className={b('body')}>
-				<h2>{time}</h2>
-				<div className={b('sub')}>
-					<Avatar small user={user} hideBadges profile={user?.profile} />
-					<div className={b('sub-actions')}>
-						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo.name} />
-						{cubeTag}
-						{plusTwoButton}
-						{dnfButton}
-					</div>
-					<div className={b('date-info')}>
-						<span>{getFullFormattedDate(endedAt)}</span>
-					</div>
-				</div>
+			<SolveCardHeader layout={props} canShareLink={canReadSync()} />
 
-				<div className={b('inline-scramble')}>
-					<legend>{t('solve_info.scramble_label')}</legend>
-					<div className={b('inline-scramble-visual')}>
-						<ScrambleVisual cubeType={visualCubeType} scramble={scramble} subset={solve.scramble_subset || undefined} />
-					</div>
-					{editMode ? (
-						<TextArea fullWidth autoSize value={scramble} name="scramble" onChange={handleChange} />
-					) : (
-						<p>{scramble}</p>
-					)}
-					<div className={b('inline-scramble-actions')}>
-						<Button text={t('solve_info.view_as_stats')} onClick={openTextModal} />
-					</div>
-				</div>
+			<SolveScramble scramble={solve.scramble} editMode={editMode} onChange={handleChange}>
+				<Button small gray text={t('solve_info.view_as_stats')} onClick={openTextModal} />
+			</SolveScramble>
 
-				<PhaseBreakdown
-					phaseSplits={effSolve.phase_splits}
-					rawTime={effSolve.raw_time}
-				/>
-			</div>
+			<PhaseBreakdown
+				phaseSplits={effSolve.phase_splits}
+				rawTime={effSolve.raw_time}
+			/>
 		</div>
 	);
 }

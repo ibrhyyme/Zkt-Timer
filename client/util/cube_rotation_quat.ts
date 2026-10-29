@@ -61,6 +61,30 @@ export function calculateNetRotationQuat(moves: string[]): THREE.Quaternion {
 	return result;
 }
 
+const FACE_NORMAL: Record<string, THREE.Vector3> = {
+	R: new THREE.Vector3(1, 0, 0),
+	L: new THREE.Vector3(-1, 0, 0),
+	U: new THREE.Vector3(0, 1, 0),
+	D: new THREE.Vector3(0, -1, 0),
+	F: new THREE.Vector3(0, 0, 1),
+	B: new THREE.Vector3(0, 0, -1),
+};
+
+/**
+ * Scene quaternion for a solver frame (rotation_reconstruction.ts: solver position -> core
+ * face there). It turns the core-frame cube so each core face lands where the solver had it.
+ *
+ * Built from the frame rather than by chaining calculateNetRotationQuat over the rotations:
+ * that multiplies each rotation on the right, about the cube's own axes, which is the wrong
+ * order for rotations made one after another about the solver's axes.
+ */
+export function frameToQuat(frame: Record<'R' | 'U' | 'F', string>): THREE.Quaternion {
+	// Rows of the core->view matrix are the core directions now at view +X, +Y, +Z; makeBasis
+	// takes columns, so it builds the transpose, whose inverse is the rotation wanted.
+	const basis = new THREE.Matrix4().makeBasis(FACE_NORMAL[frame.R], FACE_NORMAL[frame.U], FACE_NORMAL[frame.F]);
+	return new THREE.Quaternion().setFromRotationMatrix(basis).invert();
+}
+
 /**
  * Bir tek hamle rotation/wide/slice mi? (yani core'u dondurur mu?)
  * True donuyorsa replay'de cube state'ine uygulanmamali, sahne quaternion'una uygulanmali.

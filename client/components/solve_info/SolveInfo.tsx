@@ -20,6 +20,7 @@ import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
 import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
 import { bucketHasMethodSteps } from '../../../shared/util/solve/solve_steps';
 import SolveCubeTag from './solve_cube/SolveCubeTag';
+import SolveStanding from './solve_standing/SolveStanding';
 import { getSolveDb } from '../../db/solves/init';
 import { emitEvent } from '../../util/event_handler';
 import { toastError } from '../../util/toast';
@@ -66,17 +67,25 @@ export interface SolveLayoutProps {
 	dnf: boolean;
 	/** The cube the solve was made with (SolveCubeTag), null when there is nothing to show. */
 	cubeTag: React.ReactNode;
+	/** The smart layout's first tab. */
+	initialTab?: SmartSolveTab;
+	/** The line under the time (SolveStanding), null for a solve not on this device. */
+	standing: React.ReactNode;
 }
+
+export type SmartSolveTab = 'overview' | 'stats' | 'solution';
 
 interface Props extends IModalProps {
 	solveId: string;
 	solve?: Solve;
 	disabled?: boolean;
 	closeModal?: () => void;
+	/** A shared link opens on the replay: that is what its viewer came to see. */
+	initialTab?: SmartSolveTab;
 }
 
 export default function SolveInfo(props: Props) {
-	const { solveId, disabled, onComplete } = props;
+	const { solveId, disabled, onComplete, initialTab } = props;
 
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
@@ -279,6 +288,9 @@ export default function SolveInfo(props: Props) {
 		/>
 	);
 	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0;
+	// Measured against this device's history, so only for a solve that is in it: someone
+	// else's shared solve has none here to compare with.
+	const standing = dbSolve ? <SolveStanding solve={dbSolve} /> : null;
 
 	const time = getTimeString(effSolve.time);
 	const baseCubeTypeInfo = getCubeTypeInfoById(cubeType);
@@ -307,6 +319,8 @@ export default function SolveInfo(props: Props) {
 		plusTwo: !!plusTwo,
 		dnf: !!dnf,
 		cubeTag,
+		initialTab,
+		standing,
 	};
 
 	// Every tab of the smart layout is a method breakdown, and only 3x3 solves get one. A 2x2

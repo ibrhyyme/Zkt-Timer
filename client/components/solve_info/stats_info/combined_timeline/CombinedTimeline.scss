@@ -6,6 +6,36 @@ $exec-color: #66bb6a;
 .#{$namespace}-solve-info-combined-timeline {
 	width: 100%;
 
+	&__legend {
+		display: flex;
+		gap: $zt-space-3;
+		margin-bottom: $zt-space-3;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: $zt-text-muted;
+	}
+
+	&__legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+
+		&::before {
+			content: '';
+			width: 8px;
+			height: 8px;
+			border-radius: 2px;
+		}
+
+		&--rec::before {
+			background-color: $rec-color;
+		}
+
+		&--exec::before {
+			background-color: $exec-color;
+		}
+	}
+
 	&__step {
 		margin-bottom: 10px;
 

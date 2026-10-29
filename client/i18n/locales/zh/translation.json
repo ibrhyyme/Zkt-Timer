@@ -2103,7 +2103,15 @@
       "no_data": "此次解决无回放数据",
       "pro_required_title": "智能魔方回放",
       "pro_required_desc": "升级到 Pro 以 3D 形式逐步观看您的解决过程。",
-      "upgrade_cta": "升级到 Pro"
+      "upgrade_cta": "升级到 Pro",
+      "gyro": "陀螺仪"
+    },
+    "reconstruction_vote": {
+      "question": "这个复盘正确吗？",
+      "right": "正确",
+      "wrong": "错误",
+      "thanks": "谢谢，你的反馈已保存",
+      "failed": "反馈保存失败"
     },
     "send": "发送",
     "send_title": "发送解法",
@@ -2115,7 +2123,12 @@
     "send_cancel": "取消",
     "send_change": "更改",
     "send_sent": "解法已发送给 {{name}}",
-    "send_recent": "最近聊天"
+    "send_recent": "最近聊天",
+    "chart_by": "图表显示",
+    "link_copied": "链接已复制",
+    "standing_pb": "个人最佳",
+    "standing_faster": "比前 {{count}} 次还原的平均快 {{diff}} 秒",
+    "standing_slower": "比前 {{count}} 次还原的平均慢 {{diff}} 秒"
   },
   "sessions": {
     "page_title": "阶段",

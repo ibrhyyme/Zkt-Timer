@@ -251,22 +251,22 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 										<td className="p-3">
 											<div className="flex gap-1.5 flex-wrap">
 												{user.admin && (
-													<span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/20">
+													<span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-text border border-red-500/20">
 														Admin
 													</span>
 												)}
 												{user.mod && (
-													<span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/20">
+													<span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-text border border-orange-500/20">
 														Mod
 													</span>
 												)}
 												{user.is_pro && (
-													<span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 border border-purple-500/20">
+													<span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-text border border-purple-500/20">
 														Pro
 													</span>
 												)}
 												{user.verified && (
-													<span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500/20">
+													<span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-text border border-green-500/20">
 														{t('admin_email.verified')}
 													</span>
 												)}

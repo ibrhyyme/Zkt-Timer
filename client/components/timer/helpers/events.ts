@@ -24,6 +24,7 @@ import { afterNextPaint } from '../../../util/after-paint';
 import { getStore } from '../../store';
 import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
+import { gyroFieldsForSave } from '../../../util/smart_cube/gyro_recorder';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
 import { applySmartCubeTimeOffset, timerPageAppliesSmartOffset } from './smart_time_offset';
@@ -287,12 +288,13 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 				// The lenient window can include a move stamped just before the start; offsets
 				// are taken from whichever is earlier so none of them is negative.
 				const baseMs = Math.min(startTime, solutionTurns[0]?.completedAt ?? startTime);
-				overridesCombined.smart_turns = serializeSmartTurnsCompact(
-					solutionTurns.map((t: any) => ({ turn: t.turn, completedAt: t.completedAt })),
-					baseMs
-				);
+				const turnsForSave = solutionTurns.map((t: any) => ({ turn: t.turn, completedAt: t.completedAt }));
+				overridesCombined.smart_turns = serializeSmartTurnsCompact(turnsForSave, baseMs);
+				Object.assign(overridesCombined, gyroFieldsForSave(turnsForSave, baseMs));
 			} else {
 				overridesCombined.smart_turns = null;
+				overridesCombined.smart_rotations = null;
+				overridesCombined.smart_gyro = null;
 			}
 		}
 

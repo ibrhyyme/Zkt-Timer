@@ -1,7 +1,7 @@
 import { Arg, Authorized, Ctx, Mutation, Query, Resolver, Int } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
-import { Solve, SolveInput } from '../schemas/Solve.schema';
+import { Solve, SolveInput, SolveReplayData } from '../schemas/Solve.schema';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
 import { getSolveSteps, bucketHasMethodSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps, replaceSolveMethodSteps } from '../models/solve_method_step';
@@ -16,6 +16,9 @@ import { invalidSolveTimeFields, solveFingerprint, SOLVE_SESSION_MISSING_I18N_KE
 import { isPro, isProEnabled } from '../lib/pro';
 import { resolveOwnedLinks } from '../util/solve_links';
 import { SYNC_SOLVE_SCALARS } from '../util/solve/sync_select';
+import { isValidGyroPayload } from '../../shared/smart_cube/gyro_codec';
+import { checkRateLimit } from '../services/rate_limit';
+import { extractIp } from '../util/request';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -34,6 +37,31 @@ function assertValidSolveTimes(input: Partial<SolveInput>) {
 	const invalid = invalidSolveTimeFields(input);
 	if (invalid.length) {
 		throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${invalid[0]}`);
+	}
+}
+
+/** A raw gyro stream past this is dropped: about 25 minutes at a GAN i4's 11 Hz. */
+const MAX_SMART_GYRO_CHARS = 250_000;
+/** Detected rotations are a few bytes each; anything near this is not from the detector. */
+const MAX_SMART_ROTATIONS_CHARS = 20_000;
+
+/**
+ * The gyro fields (smart_rotations, smart_gyro) are smart cube reconstruction, a Pro feature
+ * like the turns. Same rule as the Pro role: with Pro switched off everyone has it. A stream
+ * that does not decode, or is too large to be a solve, is dropped rather than stored.
+ */
+function gateGyroFields(input: Partial<SolveInput>, user: any): void {
+	const allowed = !!input.is_smart_cube && (!isProEnabled() || isPro(user));
+	if (!allowed) {
+		input.smart_rotations = null;
+		input.smart_gyro = null;
+		return;
+	}
+	if (input.smart_rotations != null && input.smart_rotations.length > MAX_SMART_ROTATIONS_CHARS) {
+		input.smart_rotations = null;
+	}
+	if (input.smart_gyro != null && !isValidGyroPayload(input.smart_gyro, MAX_SMART_GYRO_CHARS)) {
+		input.smart_gyro = null;
 	}
 }
 
@@ -154,6 +182,74 @@ export class SolveResolver {
 		});
 	}
 
+	/**
+	 * The raw gyro stream of a solve and the owner's verdict on its reconstruction, for the solve
+	 * detail. Its own query so no list or sync read ever carries the stream.
+	 *
+	 * Answered to the owner, and to anyone opening the solve through its share link: a shared
+	 * replay is there so others see how the solve was done, and the cube's real motion is part
+	 * of that. For them the share code is the key, as on solveByShareCode; an id alone opens
+	 * nothing, and the verdict stays the owner's (null).
+	 *
+	 * Pro: the viewer's or the owner's, the rule the analysis follows on screen (client/lib/pro.ts
+	 * canSeeSmartAnalysis). A Pro member's shared solve plays for a Basic or signed-out viewer
+	 * too; a Basic or lapsed owner's does not, so sharing your own solve unlocks nothing. Checked
+	 * here with expiry, which the client cannot see. With Pro switched off everyone gets it.
+	 */
+	@Query(() => SolveReplayData, { nullable: true })
+	async solveReplayData(
+		@Ctx() context: GraphQLContext,
+		@Arg('id') id: string,
+		@Arg('shareCode', { nullable: true }) shareCode?: string
+	): Promise<SolveReplayData | null> {
+		const { user } = context;
+		const solve = await context.prisma.solve.findUnique({
+			where: { id },
+			select: {
+				user_id: true,
+				share_code: true,
+				smart_gyro: true,
+				reconstruction_vote: true,
+				user: { select: { is_pro: true, is_premium: true, pro_expires_at: true, premium_expires_at: true } },
+			},
+		});
+		if (!solve) return null;
+		if (isProEnabled() && !isPro(user) && !isPro(solve.user as any)) return null;
+		if (user && solve.user_id === user.id) {
+			return { smart_gyro: solve.smart_gyro, reconstruction_vote: solve.reconstruction_vote, is_owner: true };
+		}
+		if (!shareCode || solve.share_code !== shareCode) return null;
+		// A public read of up to MAX_SMART_GYRO_CHARS, so throttled per IP like the shared solve
+		// itself. Over the limit the replay keeps its square frames; no error reaches the page.
+		const ip = extractIp(context.req);
+		if (ip) {
+			const limit = await checkRateLimit(`solve_replay:ip:${ip}`, 60, 60, { failOpen: true });
+			if (!limit.allowed) return null;
+		}
+		return { smart_gyro: solve.smart_gyro, reconstruction_vote: null, is_owner: false };
+	}
+
+	/**
+	 * The owner marks the gyro reconstruction right (1) or wrong (-1); 0 takes the mark back.
+	 * Only a solve with a reconstruction to judge, so the export of wrong ones holds real cases.
+	 */
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async voteReconstruction(
+		@Ctx() context: GraphQLContext,
+		@Arg('id') id: string,
+		@Arg('vote', () => Int) vote: number
+	): Promise<boolean> {
+		if (vote !== 1 && vote !== -1 && vote !== 0) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid vote');
+		}
+		const result = await context.prisma.solve.updateMany({
+			where: { id, user_id: context.user.id, smart_rotations: { not: null } },
+			data: { reconstruction_vote: vote === 0 ? null : vote },
+		});
+		return result.count > 0;
+	}
+
 	// Lightweight: returns only the user's solve IDs (no content) so the client can
 	// compute the backfill diff (local IDs minus server IDs) without exposing solve data
 	// to non-Pro users. READ of full solves stays Pro-gated.
@@ -230,6 +326,8 @@ export class SolveResolver {
 		// (cube_id) is checked in the same pass: the caller's cube of this puzzle, or null
 		// (server/util/solve_links.ts).
 		await resolveOwnedLinks(context.prisma, user.id, [input], 'createSolve');
+
+		gateGyroFields(input, user);
 
 		let createdSolve;
 		try {
@@ -431,6 +529,9 @@ export class SolveResolver {
 		// cube_id has no foreign key, but the same pass keeps it to the caller's own cubes of
 		// the right puzzle (server/util/solve_links.ts). One more query, not one per row.
 		await resolveOwnedLinks(context.prisma, user.id, accepted, 'bulkCreateSolves');
+
+		// Same rule as createSolve for the gyro fields.
+		for (const s of accepted) gateGyroFields(s, user);
 
 		// Use existing model function
 		await bulkCreateSolves(user, accepted);

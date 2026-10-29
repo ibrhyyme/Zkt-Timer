@@ -41,6 +41,10 @@ export const SOLVE_INPUT_FIELDS: (keyof SolveInput)[] = [
 	'cube_id',
 	'smart_turn_count',
 	'smart_turns',
+	'smart_rotations',
+	// Never on a local row (createSolveDb keeps it off the device); listed so a queued
+	// create, which is rebuilt from this list on replay, still carries it.
+	'smart_gyro',
 	'smart_put_down_time',
 	'smart_pick_up_time',
 	'inspection_time',

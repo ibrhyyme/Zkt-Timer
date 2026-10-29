@@ -51,6 +51,23 @@ export function getSolveStepsWithoutParents(solve: Solve) {
 }
 
 /**
+ * A smart solve's recognition and execution, summed over its steps: the Statistics tab's
+ * Total row and the card's summary use this one sum. Execution is a step's time past its
+ * recognition. Null when the steps hold no time.
+ */
+export function getRecognitionExecution(solve: Solve): {recognition: number; execution: number} | null {
+	let recognition = 0;
+	let execution = 0;
+	for (const step of getSolveStepsWithoutParents(solve)) {
+		const total = step.total_time || 0;
+		const rec = step.recognition_time || 0;
+		recognition += rec;
+		execution += Math.max(0, total - rec);
+	}
+	return recognition + execution > 0 ? {recognition, execution} : null;
+}
+
+/**
  * Turns per second for a smart cube solve, as the solve card shows it.
  *
  * One formula for every place that prints it: the card, and both clipboard copies. Before,

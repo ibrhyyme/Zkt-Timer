@@ -2114,7 +2114,15 @@
       "no_data": "Bu çözüm için replay verisi yok",
       "pro_required_title": "Smart Küp Replay",
       "pro_required_desc": "Pro üyelikle çözümünü adım adım 3D olarak izle.",
-      "upgrade_cta": "Pro'ya Geç"
+      "upgrade_cta": "Pro'ya Geç",
+      "gyro": "Jiroskop"
+    },
+    "reconstruction_vote": {
+      "question": "Rekonstrüksiyon doğru mu?",
+      "right": "Doğru",
+      "wrong": "Yanlış",
+      "thanks": "Teşekkürler, geri bildirimin kaydedildi",
+      "failed": "Geri bildirim kaydedilemedi"
     },
     "send": "Gönder",
     "send_title": "Çözümü gönder",
@@ -2126,7 +2134,12 @@
     "send_cancel": "Vazgeç",
     "send_change": "Değiştir",
     "send_sent": "Çözüm {{name}} adlı kişiye gönderildi",
-    "send_recent": "Son sohbetler"
+    "send_recent": "Son sohbetler",
+    "chart_by": "Grafikte göster",
+    "link_copied": "Link kopyalandı",
+    "standing_pb": "Kişisel rekor",
+    "standing_faster": "Önceki {{count}} çözümünün ortalamasından {{diff}} sn hızlı",
+    "standing_slower": "Önceki {{count}} çözümünün ortalamasından {{diff}} sn yavaş"
   },
   "sessions": {
     "page_title": "Sezonlar",

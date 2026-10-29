@@ -1,0 +1,43 @@
+@import '../../../styles/config';
+
+.#{$namespace}-tab-bar {
+	display: flex;
+	gap: $zt-space-5;
+	border-bottom: 1px solid $zt-card-border;
+	overflow-x: auto;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
+
+	&__tab {
+		flex-shrink: 0;
+		height: $zt-control-h-md;
+		padding: 0;
+		// Sits on the bar's hairline, so the underline replaces it under the selected tab.
+		margin-bottom: -1px;
+		border: none;
+		border-bottom: 2px solid transparent;
+		background: none;
+		color: $zt-text-muted;
+		font-family: inherit;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: pointer;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+
+		@include zt-focus-ring;
+
+		&--selected,
+		&--selected:hover {
+			color: rgb(var(--text-color));
+			border-bottom-color: rgb(var(--primary-color));
+			cursor: default;
+		}
+	}
+}

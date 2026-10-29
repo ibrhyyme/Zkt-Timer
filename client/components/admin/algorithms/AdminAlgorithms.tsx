@@ -135,7 +135,7 @@ export default function AdminAlgorithms() {
 												<div className="flex justify-end">
 													<button
 														onClick={(e) => handleDelete(e, item.id)}
-														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20 opacity-0 group-hover:opacity-100"
+														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-text rounded-lg transition border border-red-500/20 opacity-0 group-hover:opacity-100"
 														title="Delete"
 													>
 														<Trash size={18} />

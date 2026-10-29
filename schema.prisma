@@ -454,6 +454,15 @@ model Solve {
   smart_put_down_time  Float?            @default(0.0)
   smart_pick_up_time   Float?            @default(0.0)
   smart_turns          String?
+  /// Whole-cube rotations the gyroscope saw, in the cube's core frame, same "x@ms" format and
+  /// time base as smart_turns (shared/smart_cube/gyro_rotations.ts). Pro, like smart_turns.
+  smart_rotations      String?
+  /// Raw gyroscope stream for the realistic replay (shared/smart_cube/gyro_codec.ts, ~4 KB a
+  /// solve). Deliberately not in any sync read: the replay fetches it on demand (solveGyro).
+  smart_gyro           String?
+  /// The owner's verdict on the gyro reconstruction: 1 right, -1 wrong, null unrated. Wrong ones
+  /// are exported with their raw stream to tune the detector (scripts/export-reconstruction-feedback.ts).
+  reconstruction_vote  Int?
   smart_turn_count     Int?
   smart_device_id      String?
   /// Physical cube the solve was made with (Cube.id). Plain column, no foreign key on purpose:

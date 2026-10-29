@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getSolveStepsWithoutParents } from '../../util/solution';
+import { getRecognitionExecution, getSolveStepsWithoutParents } from '../../util/solution';
 import { STEP_NAME_MAP } from '../../util/consts';
 import block from '../../../../styles/bem';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
@@ -22,15 +22,9 @@ export default function StepsTable(props: Props) {
 	const pickupTime = solve.smart_pick_up_time || 0;
 	const putdownTime = solve.smart_put_down_time || 0;
 
-	let totalRec = 0;
-	let totalExec = 0;
-
-	for (const step of steps) {
-		const stepTotal = step.total_time || 0;
-		const stepRec = step.recognition_time || 0;
-		totalRec += stepRec;
-		totalExec += Math.max(0, stepTotal - stepRec);
-	}
+	const split = getRecognitionExecution(solve);
+	const totalRec = split?.recognition ?? 0;
+	const totalExec = split?.execution ?? 0;
 
 	// Turns and time come from the same rows. For a complete breakdown the engine's
 	// boundary-aware HTM makes SUM(step.turn_count) === smart_turn_count, so this is the

@@ -2127,7 +2127,15 @@
       "no_data": "No hay datos de reproducción para esta resolución",
       "pro_required_title": "Reproducción del Cubo Inteligente",
       "pro_required_desc": "Actualiza a Pro para ver tu resolución paso a paso en 3D.",
-      "upgrade_cta": "Actualizar a Pro"
+      "upgrade_cta": "Actualizar a Pro",
+      "gyro": "Giroscopio"
+    },
+    "reconstruction_vote": {
+      "question": "¿Es correcta esta reconstrucción?",
+      "right": "Correcta",
+      "wrong": "Incorrecta",
+      "thanks": "Gracias, tu opinión se ha guardado",
+      "failed": "No se pudo guardar tu opinión"
     },
     "send": "Enviar",
     "send_title": "Enviar resolucion",
@@ -2139,7 +2147,12 @@
     "send_cancel": "Cancelar",
     "send_change": "Cambiar",
     "send_sent": "Resolucion enviada a {{name}}",
-    "send_recent": "Chats recientes"
+    "send_recent": "Chats recientes",
+    "chart_by": "Mostrar en el gráfico",
+    "link_copied": "Enlace copiado",
+    "standing_pb": "Mejor marca personal",
+    "standing_faster": "{{diff}} s más rápido que la media de tus {{count}} resoluciones anteriores",
+    "standing_slower": "{{diff}} s más lento que la media de tus {{count}} resoluciones anteriores"
   },
   "sessions": {
     "page_title": "Sesiones",

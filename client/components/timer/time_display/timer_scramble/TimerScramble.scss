@@ -469,7 +469,7 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		padding: 2px 8px;
 		border-radius: 4px;
 		background: rgba($primaryRed, 0.15);
-		color: $primaryRed !important;
+		color: rgb(var(--text-color)) !important;
 		font-weight: 700;
 		font-size: inherit;
 		font-family: inherit;

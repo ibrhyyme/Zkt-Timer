@@ -165,7 +165,7 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 								<button
 									key={option.value}
 									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between group/item ${option.value === value
-											? 'bg-primary/10 text-primary font-medium'
+											? 'bg-primary/10 text-text font-medium'
 											: 'text-text/70 hover:bg-text/[0.05] hover:text-text'
 										}`}
 									onClick={() => {
@@ -312,7 +312,7 @@ export default function ExtrasTab({
 				<button
 					type="button"
 					onClick={() => openProOnlyModal(dispatch, t, 'slam_to_stop')}
-					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200 [font-size:inherit]"
+					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-violet-500/40 transition-all duration-200 [font-size:inherit]"
 				>
 					<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 						{t('quick_controls.slam_to_stop')}

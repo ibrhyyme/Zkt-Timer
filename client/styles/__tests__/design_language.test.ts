@@ -12,8 +12,8 @@ import path from 'path';
 const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
-	scssBackdropBlur: 49,
-	scssGradient: 205,
+	scssBackdropBlur: 40,
+	scssGradient: 190,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 4,
 	tsxInlineEffect: 7,
@@ -58,6 +58,7 @@ describe('design language: shared primitives stay flat', () => {
 		'components/common/modal/modal_header/ModalHeader.scss',
 		'components/common/icon_button/IconButton.scss',
 		'components/common/choice_group/ChoiceGroup.scss',
+		'components/common/tab_bar/TabBar.scss',
 	];
 
 	it.each(PRIMITIVES)('%s has no blur, gradient or hand-written radius', (rel) => {

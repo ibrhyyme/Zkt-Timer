@@ -7,7 +7,7 @@ import { Pie } from '@visx/shape';
 import { getSolveStepsWithoutParents } from '../../util/solution';
 import { STEP_NAME_MAP } from '../../util/consts';
 import { scaleOrdinal } from '@visx/scale';
-import HorizontalNav from '../../../common/horizontal_nav/HorizontalNav';
+import ChoiceGroup, { ChoiceOption } from '../../../common/choice_group/ChoiceGroup';
 import { getTimeString } from '../../../../util/time';
 import block from '../../../../styles/bem';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
@@ -29,6 +29,8 @@ const STEP_COLORS = scaleOrdinal({
 	range: ['#f4d35e', '#457b9d', '#f4a261', '#66bb6a', '#6d597a', '#2ec4b6', '#8093f1'],
 });
 
+type ChartType = 'time' | 'tps' | 'turns';
+
 interface Props {
 	solve: Solve;
 }
@@ -37,17 +39,15 @@ export default function StepPie(props: Props) {
 	const { solve } = props;
 	const { t } = useTranslation();
 
-	const [chartType, setChartType] = useState('time');
+	const [chartType, setChartType] = useState<ChartType>('time');
 
-	const chartTypes = [
-		{ id: 'time', value: t('solve_info.time_label') },
-		{ id: 'tps', value: 'TPS' },
-		{ id: 'turns', value: t('solve_info.turns') },
+	// A small choice under the card's tabs, not a second row of the same big tab buttons: it
+	// picks what the chart counts, it does not change the page.
+	const chartTypes: ChoiceOption<ChartType>[] = [
+		{ value: 'time', label: t('solve_info.time_label') },
+		{ value: 'tps', label: 'TPS' },
+		{ value: 'turns', label: t('solve_info.turns') },
 	];
-
-	function changeChartType(chartType) {
-		setChartType(chartType);
-	}
 
 	function toSinglePrecision(num: number) {
 		return Math.floor(num * 10) / 10;
@@ -90,7 +90,7 @@ export default function StepPie(props: Props) {
 
 	return (
 		<div className={b()}>
-			<HorizontalNav onChange={changeChartType} tabs={chartTypes} tabId={chartType} />
+			<ChoiceGroup<ChartType> options={chartTypes} value={chartType} onChange={setChartType} label={t('solve_info.chart_by')} />
 
 			<ParentSize
 				className={b('pie').toString()}

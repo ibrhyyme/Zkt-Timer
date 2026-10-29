@@ -38,6 +38,11 @@ mutation UpdateLocale($locale: String!) {
 	}
 }
 
+# The owner's verdict on a gyro reconstruction: 1 right, -1 wrong, 0 takes it back.
+mutation VoteReconstruction($id: String!, $vote: Int!) {
+	voteReconstruction(id: $id, vote: $vote)
+}
+
 mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 	updateSiteConfig(input: $input) {
 		id

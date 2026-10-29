@@ -117,7 +117,7 @@
 		justify-content: center;
 		font-size: 12px;
 		font-weight: 700;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		background: rgba(var(--primary-color), 0.16);
 		border: 1px solid rgba(var(--primary-color), 0.55);
 	}
@@ -149,7 +149,7 @@
 		font-weight: 600;
 		line-height: 1.4;
 		text-align: left;
-		color: rgb(var(--primary-color));
+		color: rgb(var(--text-color));
 		background: rgba(var(--primary-color), 0.14);
 		border: 1px solid rgba(var(--primary-color), 0.42);
 		border-radius: 8px;
@@ -167,7 +167,7 @@
 		}
 
 		&--copied {
-			color: rgb(var(--success-color));
+			color: rgb(var(--text-color));
 			background: rgba(var(--success-color), 0.16);
 			border-color: rgba(var(--success-color), 0.5);
 		}

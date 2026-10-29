@@ -65,19 +65,19 @@
 		&--important {
 			background: rgba(var(--error-color), 0.16);
 			border-color: rgba(var(--error-color), 0.4);
-			color: rgb(var(--error-color));
+			color: rgb(var(--text-color));
 		}
 
 		&--feature {
 			background: rgba(var(--secondary-color), 0.16);
 			border-color: rgba(var(--secondary-color), 0.4);
-			color: rgb(var(--secondary-color));
+			color: rgb(var(--text-color));
 		}
 
 		&--bugfix {
 			background: rgba(var(--warning-color), 0.16);
 			border-color: rgba(var(--warning-color), 0.4);
-			color: rgb(var(--warning-color));
+			color: rgb(var(--text-color));
 		}
 	}
 

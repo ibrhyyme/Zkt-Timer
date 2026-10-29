@@ -52,8 +52,9 @@ export default function SolveCubeTag(props: Props) {
 			icon={icon}
 			text={name || (choices.length ? t('solve_info.cube_choose') : undefined)}
 			title={t('solve_info.cube_title')}
-			large={smart}
-			backgroundColor={smart ? 'blue' : 'button'}
+			// A quiet chip beside the puzzle's, the Bluetooth mark telling a smart cube apart:
+			// the large blue tag was the loudest thing on the card.
+			backgroundColor="button"
 		/>
 	);
 

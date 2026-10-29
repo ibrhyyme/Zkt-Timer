@@ -312,9 +312,12 @@ export const mutateActions = {
 			if (input.cube_id !== undefined || link.cube_id !== solve.cube_id) input.cube_id = link.cube_id;
 		}
 
-		// These two fields can't be updated by the user
+		// These fields can't be updated by the user. The gyro ones are written once, at create,
+		// behind the Pro and size checks there (Solve.resolver.ts gateGyroFields).
 		input.bulk = solve.bulk;
 		input.from_timer = solve.from_timer;
+		delete input.smart_rotations;
+		delete input.smart_gyro;
 
 		return await updateSolve(id, {
 			...solve,

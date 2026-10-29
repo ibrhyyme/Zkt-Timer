@@ -1,0 +1,23 @@
+@import '../../../styles/config';
+
+.#{$namespace}-solve-standing {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: $zt-space-2;
+	font-size: 0.9rem;
+	font-weight: 600;
+
+	&--pb {
+		color: rgb(var(--primary-color));
+	}
+
+	&--faster {
+		color: rgb(var(--success-color));
+	}
+
+	// Slower is not an error: plain text, not the red of a failure.
+	&--slower {
+		color: $zt-text-muted;
+	}
+}

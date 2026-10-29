@@ -1006,6 +1006,10 @@ export function getSmartCubeManager(): SmartCubeConnectionManager {
 		manager = new SmartCubeConnectionManager();
 		// Before any Connect exists, so the drivers always find it (see driver_sink.ts).
 		setSmartCubeDriverSink(manager);
+		// Dev-only handle for browser probes that record raw move + gyro streams.
+		if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+			(window as any).__zktSmartCubeManager = manager;
+		}
 	}
 	return manager;
 }

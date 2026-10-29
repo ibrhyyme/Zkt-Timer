@@ -5,7 +5,7 @@ import { Copy, ShareNetwork, PencilSimple, CheckCircle } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import { getTimeString } from '../../../../util/time';
 import SolvesText from '../../solves_text/SolvesText';
-import Button, { CommonType } from '../../../common/button/Button';
+import Button from '../../../common/button/Button';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('history-modal');
@@ -247,7 +247,6 @@ export default function HistoryModal(props: Props) {
 						iconFirst
 						icon={<Copy weight="bold" />}
 						text={t('solve_info.copy')}
-						theme={CommonType.PRIMARY}
 						onClick={handleCopy}
 					/>
 					<Button
@@ -256,7 +255,6 @@ export default function HistoryModal(props: Props) {
 						iconFirst
 						icon={<ShareNetwork weight="bold" />}
 						text={t('solve_info.share')}
-						theme={CommonType.PRIMARY}
 						onClick={handleShare}
 					/>
 				</div>
@@ -351,8 +349,7 @@ export default function HistoryModal(props: Props) {
 					fullWidth
 					iconFirst
 					icon={<Copy weight="bold" />}
-					text="Kopyala"
-					theme={CommonType.PRIMARY}
+					text={t('solve_info.copy')}
 					onClick={handleCopy}
 				/>
 				<Button
@@ -360,8 +357,7 @@ export default function HistoryModal(props: Props) {
 					fullWidth
 					iconFirst
 					icon={<ShareNetwork weight="bold" />}
-					text="Paylaş"
-					theme={CommonType.PRIMARY}
+					text={t('solve_info.share')}
 					onClick={handleShare}
 				/>
 			</div>

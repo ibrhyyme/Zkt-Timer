@@ -1,0 +1,164 @@
+@import '../../../styles/config';
+
+// The solve card's shared parts (SolveCardHeader, SolveScramble, SolveActions): quiet rows
+// between hairlines instead of a box around every group, and the accent only where
+// something is chosen or primary.
+.#{$namespace}-solve-card {
+	// --- Title bar ---
+	&__bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: $zt-control-h-md;
+		margin-bottom: $zt-space-4;
+	}
+
+	&__title {
+		font-size: 1.0625rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__done {
+		height: $zt-control-h-md;
+		padding: 0 $zt-space-1;
+		border: none;
+		background: none;
+		color: rgb(var(--primary-color));
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		@include zt-focus-ring;
+	}
+
+	// --- The time, what it means, and who, what and when ---
+	&__head {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-5;
+	}
+
+	&__head-main {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__time {
+		margin: 0;
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 3.5rem;
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--text-color));
+	}
+
+	&__meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: $zt-space-2;
+		margin-top: $zt-space-3;
+	}
+
+	&__date {
+		font-size: 0.875rem;
+		color: $zt-text-muted;
+	}
+
+	&__visual {
+		flex-shrink: 0;
+		width: 160px;
+	}
+
+	// --- Penalties and actions ---
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: $zt-space-2;
+		margin-top: $zt-space-4;
+		padding-bottom: $zt-space-3;
+		border-bottom: 1px solid $zt-card-border;
+	}
+
+	&__penalty {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-1;
+		margin-left: auto;
+
+		// Edit stands apart from the icons: it is the one with a word.
+		> .#{$namespace}-common-button {
+			margin-left: $zt-space-2;
+		}
+	}
+
+	// --- A row between hairlines: the scramble, the smart summary ---
+	&__section {
+		padding: $zt-space-3 0;
+		border-bottom: 1px solid $zt-card-border;
+	}
+
+	&__label {
+		margin-bottom: $zt-space-1;
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: $zt-text-muted;
+	}
+
+	&__scramble {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: $zt-space-2 $zt-space-3;
+	}
+
+	&__scramble-text {
+		// Wide enough to read before the buttons drop under it.
+		flex: 1 1 240px;
+		min-width: 0;
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+		word-break: break-word;
+		color: rgb(var(--text-color));
+	}
+
+	&__scramble-actions {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		margin-left: auto;
+	}
+
+	@include bp-down($bp-sm) {
+		&__head {
+			gap: $zt-space-3;
+		}
+
+		&__time {
+			font-size: 2.6rem;
+		}
+
+		&__visual {
+			width: 104px;
+		}
+
+		&__scramble-text {
+			font-size: 0.875rem;
+		}
+	}
+}

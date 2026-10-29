@@ -28,6 +28,11 @@
 	// Set by History.tsx (history_grid.ts historyGridTemplate). The fallback is for rows
 	// drawn outside the module, like the streamer overlay: number and time.
 	grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(0, 1fr) auto);
+	// The number column is sized in `ch`, which resolves against this element: the row
+	// carries the number's own size so the column fits the number. At the inherited 1rem
+	// a 12,000-solve list gave "12.802" ~10px it never used, taken from the time on a
+	// phone. Every cell sets its own size; the template's other minimums are in rem.
+	font-size: 0.8rem;
 	align-items: stretch;
 	width: 100%;
 	min-width: max-content;
@@ -65,9 +70,10 @@
 			border-left: none;
 		}
 
-		// Hierarchy from size and weight, never from fading the number out.
+		// Hierarchy from size and weight, never from fading the number out. Left-aligned
+		// like the time next to it (owner's call, 2026-10-29).
 		&--index {
-			justify-content: flex-end;
+			justify-content: flex-start;
 			font-size: 0.8rem;
 			font-weight: 500;
 		}
@@ -163,12 +169,27 @@
 			font-size: clamp(0.8rem, 2.5vw, 0.9rem);
 		}
 
+		// The number keeps the size its column is measured with (see the row's font-size);
+		// the clamp above would grow it past the column on a wide mobile-mode screen.
+		#{$self}__cell--index {
+			font-size: 0.8rem;
+		}
+
+		// The time grows into whatever its column has left. That column is 50-96px on a
+		// phone, depending on the screen and on how wide the solve number is (2 vs 12,802
+		// solves), so one fixed size either overflows the narrow case or wastes the wide
+		// one. A vw clamp did neither: it sat at its floor on every phone. The size leaves
+		// room for "15.82" plus the smart-cube mark (about 2.6em + 18px); a browser without
+		// container queries keeps the first declaration.
 		#{$self}__cell--time {
 			justify-content: flex-start;
+			container-type: inline-size;
+			overflow: hidden;
 		}
 
 		#{$self}__time {
-			font-size: clamp(0.85rem, 2.6vw, 0.95rem);
+			font-size: 0.95rem;
+			font-size: clamp(0.85rem, calc((100cqi - 18px) / 2.6), 1.1rem);
 		}
 	}
 }

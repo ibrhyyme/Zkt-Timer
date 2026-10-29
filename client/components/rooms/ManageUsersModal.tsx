@@ -139,13 +139,13 @@ export default function ManageUsersModal({
                                                     </span>
                                                 )}
                                                 {targetRole === FriendlyRoomRole.OWNER && (
-                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-400 bg-orange-400/15 px-1.5 py-0.5 rounded-sm">
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-text bg-orange-400/15 px-1.5 py-0.5 rounded-sm">
                                                         <Crown size={11} weight="fill" />
                                                         {t('rooms.role_owner')}
                                                     </span>
                                                 )}
                                                 {targetRole === FriendlyRoomRole.MODERATOR && (
-                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-sky-400 bg-sky-400/15 px-1.5 py-0.5 rounded-sm">
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-text bg-sky-400/15 px-1.5 py-0.5 rounded-sm">
                                                         <ShieldCheck size={11} weight="fill" />
                                                         {t('rooms.role_moderator')}
                                                     </span>
@@ -157,7 +157,7 @@ export default function ManageUsersModal({
                                             {canChangeRole && (
                                                 <button
                                                     onClick={() => onSetModerator(p.user_id, targetRole !== FriendlyRoomRole.MODERATOR)}
-                                                    className="text-xs font-bold text-sky-400 hover:text-sky-300 uppercase tracking-wider px-2 py-1 hover:bg-sky-500/10 rounded transition-colors"
+                                                    className="text-xs font-bold text-sky-400 hover:text-text uppercase tracking-wider px-2 py-1 hover:bg-sky-500/10 rounded transition-colors"
                                                 >
                                                     {targetRole === FriendlyRoomRole.MODERATOR
                                                         ? t('rooms.remove_moderator')
@@ -167,7 +167,7 @@ export default function ManageUsersModal({
                                             {canTransfer && !isSelf && targetRole !== FriendlyRoomRole.OWNER && (
                                                 <button
                                                     onClick={() => handleTransfer(p.user_id, p.username)}
-                                                    className="text-xs font-bold text-orange-400 hover:text-orange-300 uppercase tracking-wider px-2 py-1 hover:bg-orange-500/10 rounded transition-colors"
+                                                    className="text-xs font-bold text-orange-400 hover:text-text uppercase tracking-wider px-2 py-1 hover:bg-orange-500/10 rounded transition-colors"
                                                 >
                                                     {t('rooms.transfer_ownership')}
                                                 </button>
@@ -177,7 +177,7 @@ export default function ManageUsersModal({
                                                     <div className="h-4 w-px bg-text/[0.15]" />
                                                     <button
                                                         onClick={() => onKick(p.user_id)}
-                                                        className="text-xs font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 hover:bg-red-500/10 rounded transition-colors"
+                                                        className="text-xs font-bold text-red-500 hover:text-text uppercase tracking-wider px-2 py-1 hover:bg-red-500/10 rounded transition-colors"
                                                     >
                                                         {t('rooms.kick')}
                                                     </button>
@@ -215,7 +215,7 @@ export default function ManageUsersModal({
                                         </div>
                                         <button
                                             onClick={() => handleUnban(b.user_id)}
-                                            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider px-3 py-1.5 hover:bg-emerald-500/10 rounded transition-colors"
+                                            className="text-xs font-bold text-emerald-400 hover:text-text uppercase tracking-wider px-3 py-1.5 hover:bg-emerald-500/10 rounded transition-colors"
                                         >
                                             {t('rooms.unban')}
                                         </button>

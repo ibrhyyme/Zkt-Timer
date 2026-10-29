@@ -641,7 +641,7 @@
 		margin-top: 2px;
 		font-size: 12.5px;
 		font-weight: 600;
-		color: rgb(var(--warning-color));
+		color: rgb(var(--text-color));
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
@@ -689,7 +689,7 @@
 		border: 1px solid rgba(var(--success-color), 0.55);
 		display: grid;
 		place-items: center;
-		color: rgb(var(--success-color));
+		color: rgb(var(--text-color));
 	}
 
 	&__turnstile-label {

@@ -36,3 +36,22 @@ export function labelStride(labels: string[], bandWidth: number, charWidth = 6.5
 	const needed = longest * charWidth + minGap;
 	return Math.max(1, Math.ceil(needed / bandWidth));
 }
+
+/** Narrowest bar BarGraph draws. */
+export const MIN_BAR_WIDTH = 28;
+
+/** How many bars fit in a bar graph this wide without any of them getting thinner than MIN_BAR_WIDTH. */
+export function maxBarsForWidth(width: number): number {
+	return Math.max(1, Math.floor(width / MIN_BAR_WIDTH));
+}
+
+/**
+ * Where to centre a label of `text` that belongs at `center`, so it stays inside
+ * [0, width]. The first bar's count and the last range label ("1:31-1:42") used to hang
+ * past the card edge and get cut off; they are pushed in instead.
+ */
+export function clampLabelCenter(center: number, text: string, width: number, charWidth = 6.5): number {
+	const half = (String(text).length * charWidth) / 2;
+	if (width <= half * 2) return width / 2;
+	return Math.min(Math.max(center, half), width - half);
+}

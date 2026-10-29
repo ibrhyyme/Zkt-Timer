@@ -2127,7 +2127,15 @@
       "no_data": "No replay data for this solve",
       "pro_required_title": "Smart Cube Replay",
       "pro_required_desc": "Upgrade to Pro to watch your solve step-by-step in 3D.",
-      "upgrade_cta": "Upgrade to Pro"
+      "upgrade_cta": "Upgrade to Pro",
+      "gyro": "Gyro"
+    },
+    "reconstruction_vote": {
+      "question": "Is this reconstruction right?",
+      "right": "Right",
+      "wrong": "Wrong",
+      "thanks": "Thanks, your feedback is saved",
+      "failed": "Could not save your feedback"
     },
     "send": "Send",
     "send_title": "Send solve",
@@ -2139,7 +2147,12 @@
     "send_cancel": "Cancel",
     "send_change": "Change",
     "send_sent": "Solve sent to {{name}}",
-    "send_recent": "Recent chats"
+    "send_recent": "Recent chats",
+    "chart_by": "Chart by",
+    "link_copied": "Link copied",
+    "standing_pb": "Personal best",
+    "standing_faster": "{{diff}}s faster than the average of your previous {{count}} solves",
+    "standing_slower": "{{diff}}s slower than the average of your previous {{count}} solves"
   },
   "sessions": {
     "page_title": "Sessions",

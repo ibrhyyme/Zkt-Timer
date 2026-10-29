@@ -1,7 +1,8 @@
 @import '../../../styles/config';
 
-// Styles for Radix Select primitives — data-state, data-side, data-highlighted attributes.
-// Animations via CSS keyframes + stagger entrance (Linear, Vercel, Notion style).
+// Styles for Radix Select primitives: data-state, data-side, data-highlighted attributes.
+// Flat like FancyDropdown (tokens.scss design language): a neutral control that opens a
+// floating panel. No gradient, shimmer, lift, glow, glass blur or staggered rows.
 
 .#{$namespace}-timer-type-picker {
 	&__trigger {
@@ -9,83 +10,22 @@
 		box-sizing: border-box;
 		display: inline-flex;
 		align-items: center;
-		gap: 8px;
+		gap: $zt-space-2;
 		height: 36px;
 		padding: 0 10px 0 12px;
-		background: linear-gradient(
-			135deg,
-			rgba(var(--text-color), 0.1) 0%,
-			rgba(var(--text-color), 0.06) 100%
-		);
-		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 10px;
-		color: rgba(var(--text-color), 0.92);
+		@include zt-control;
 		font-size: 0.85rem;
 		font-weight: 500;
 		font-family: inherit;
 		cursor: pointer;
-		transition:
-			background 0.2s ease,
-			border-color 0.2s ease,
-			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
-			box-shadow 0.2s ease;
 		white-space: nowrap;
 		min-width: 0;
 		position: relative;
 		overflow: hidden;
 
-		// Subtle shimmer overlay
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: linear-gradient(
-				115deg,
-				transparent 30%,
-				rgba(255, 255, 255, 0.04) 50%,
-				transparent 70%
-			);
-			opacity: 0;
-			transition: opacity 0.3s ease;
-			pointer-events: none;
-		}
-
-		&:hover {
-			background: linear-gradient(
-				135deg,
-				rgba(var(--text-color), 0.18) 0%,
-				rgba(var(--text-color), 0.1) 100%
-			);
-			border-color: rgba(var(--text-color), 0.2);
-			transform: translateY(-1px);
-			box-shadow:
-				0 4px 12px rgba(0, 0, 0, 0.25),
-				0 0 0 1px rgba(var(--text-color), 0.05);
-
-			&::before {
-				opacity: 1;
-			}
-		}
-
-		&:active {
-			transform: translateY(0);
-		}
-
-		&:focus-visible {
-			outline: 2px solid rgba(var(--primary-color), 0.5);
-			outline-offset: 2px;
-		}
-
 		&[data-state='open'] {
-			background: linear-gradient(
-				135deg,
-				rgba(var(--primary-color), 0.18) 0%,
-				rgba(var(--text-color), 0.12) 100%
-			);
-			border-color: rgba(var(--primary-color), 0.6);
-			box-shadow:
-				0 0 0 3px rgba(var(--primary-color), 0.18),
-				0 4px 16px rgba(0, 0, 0, 0.3);
+			background: $zt-control-bg-active;
+			border-color: rgb(var(--primary-color));
 
 			.#{$namespace}-timer-type-picker__trigger-caret {
 				transform: rotate(180deg);
@@ -94,7 +34,6 @@
 
 			.#{$namespace}-timer-type-picker__trigger-icon {
 				color: rgb(var(--primary-color));
-				transform: scale(1.05);
 			}
 		}
 	}
@@ -102,8 +41,8 @@
 	&__trigger-icon {
 		display: inline-flex;
 		align-items: center;
-		color: rgba(var(--text-color), 0.8);
-		transition: color 0.2s ease, transform 0.2s ease;
+		color: rgb(var(--text-color));
+		transition: color $zt-transition;
 	}
 
 	&__trigger-label {
@@ -115,49 +54,24 @@
 	&__trigger-caret {
 		display: inline-flex;
 		align-items: center;
-		color: rgba(var(--text-color), 0.5);
-		transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+		color: rgb(var(--text-color));
+		transition: transform $motion-fast $ease-standard, color $zt-transition;
 	}
 
 	&__panel {
 		min-width: 280px;
 		max-width: 340px;
-		background: rgba(var(--background-color), 0.85);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 12px;
-		box-shadow:
-			0 20px 50px rgba(0, 0, 0, 0.6),
-			0 8px 20px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+		@include zt-float;
 		padding: 6px;
 		z-index: 10001;
 		overflow: hidden;
-		transform-origin: var(--radix-select-content-transform-origin);
-		will-change: transform, opacity;
-
-		// Subtle gradient glow inside
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(
-				120% 60% at 50% 0%,
-				rgba(var(--primary-color), 0.06) 0%,
-				transparent 60%
-			);
-			border-radius: inherit;
-			pointer-events: none;
-			z-index: 0;
-		}
 
 		&[data-state='open'] {
-			animation: timer-type-picker-content-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+			animation: timer-type-picker-content-in $motion-fast $ease-standard;
 		}
 
 		&[data-state='closed'] {
-			animation: timer-type-picker-content-out 0.1s ease-in;
+			animation: timer-type-picker-content-out $motion-instant ease-in;
 		}
 	}
 
@@ -177,20 +91,8 @@
 		user-select: none;
 		width: 100%;
 		position: relative;
-		transition:
-			background 0.15s ease,
-			color 0.15s ease,
-			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+		transition: background $zt-transition, color $zt-transition;
 		z-index: 1;
-
-		// Stagger entrance — items enter one by one
-		animation: timer-type-picker-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-
-		@for $i from 1 through 7 {
-			&:nth-child(#{$i}) {
-				animation-delay: #{30 + ($i - 1) * 25}ms;
-			}
-		}
 
 		// Hover / keyboard highlight: a soft tint of the whole row. It used to be a
 		// 3x10px grey stripe at the row's left edge plus a 2px nudge, which read as a
@@ -202,18 +104,19 @@
 			outline: none;
 		}
 
+		// The accent fill, in the text colour that reads on it.
 		&--active {
 			background: rgb(var(--primary-color));
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 
 			.#{$namespace}-timer-type-picker__option-icon {
-				color: #fff;
+				color: rgb(var(--theme-primary-opposite));
 			}
 
 			// Active + hover: solid bg remains
 			&[data-highlighted] {
 				background: rgb(var(--primary-color));
-				color: #fff;
+				color: rgb(var(--theme-primary-opposite));
 			}
 		}
 
@@ -263,7 +166,7 @@
 		letter-spacing: 0.02em;
 
 		&--pro {
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 			background: rgba(var(--primary-color), 0.16);
 			box-shadow: 0 0 0 1px rgba(var(--primary-color), 0.2);
 		}
@@ -285,56 +188,33 @@
 	&__check {
 		display: inline-flex;
 		align-items: center;
-		color: #fff;
-		animation: timer-type-picker-check-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+		color: rgb(var(--theme-primary-opposite));
+	}
+
+	@include reduced-motion {
+		&__panel[data-state='open'],
+		&__panel[data-state='closed'] {
+			animation: none;
+		}
 	}
 }
 
-// Spring-like animations
+// The panel fades in and out. It used to spring, scale and stagger its rows in.
 @keyframes timer-type-picker-content-in {
 	from {
 		opacity: 0;
-		transform: scale(0.88) translateY(-8px);
 	}
 	to {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 }
 
 @keyframes timer-type-picker-content-out {
 	from {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 	to {
 		opacity: 0;
-		transform: scale(0.94) translateY(-4px);
-	}
-}
-
-@keyframes timer-type-picker-item-in {
-	from {
-		opacity: 0;
-		transform: translateX(-8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes timer-type-picker-check-in {
-	from {
-		opacity: 0;
-		transform: scale(0);
-	}
-	60% {
-		transform: scale(1.2);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1);
 	}
 }
 
