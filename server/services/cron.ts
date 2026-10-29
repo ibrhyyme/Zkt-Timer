@@ -11,7 +11,6 @@ import {initWcaRecordRadarCronJob} from './cron_wca_records';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {initZktBackfillCronJob} from './cron_zkt_backfill';
 import {initZktRegistrationNotifyCronJob} from './cron_zkt_registration_notify';
-import {initRegistrationWatchCronJob} from './cron_registration_watch';
 import {initMessageRetentionCronJob} from './cron_message_retention';
 import {freezeOldArchives} from './CompetitionArchiveService';
 import {getBucketEventKey} from '../../shared/solve';
@@ -38,7 +37,6 @@ export function initCronJobs() {
 	initWcaBackfillCronJob();
 	initZktBackfillCronJob();
 	initZktRegistrationNotifyCronJob();
-	initRegistrationWatchCronJob();
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();

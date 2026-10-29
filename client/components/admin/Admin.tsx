@@ -6,8 +6,6 @@ import {Link} from 'react-router-dom';
 import {SquaresFour, CaretDown, CaretRight} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useMe} from '../../util/hooks/useMe';
-import {useQuery} from '@apollo/client';
-import {RegistrationWatchAccessDocument} from '../../@types/generated/graphql';
 
 const b = block('admin');
 
@@ -28,13 +26,6 @@ const SECONDARY_TABS = [
 	{id: 'online-battle', link: '/admin/online-battle', labelKey: 'admin_nav.online_battle'},
 ];
 
-// Shown only to the allowlisted owner (server decides, see registration_watch_access.ts).
-const REGISTRATION_WATCH_TAB = {
-	id: 'registration-watch',
-	link: '/admin/registration-watch',
-	labelKey: 'admin_nav.registration_watch',
-};
-
 interface Props {
 	path: string;
 	children: React.ReactNode;
@@ -47,10 +38,6 @@ export default function Admin(props: Props) {
 	const {t} = useTranslation();
 	const [open, setOpen] = React.useState(false);
 	const dropdownRef = React.useRef<HTMLDivElement>(null);
-	const {data: watchAccess} = useQuery(RegistrationWatchAccessDocument, {skip: !me?.admin});
-	const secondaryTabs = watchAccess?.registrationWatchAccess
-		? [...SECONDARY_TABS, REGISTRATION_WATCH_TAB]
-		: SECONDARY_TABS;
 
 	React.useEffect(() => {
 		if (!open) return;
@@ -77,7 +64,7 @@ export default function Admin(props: Props) {
 	}
 
 	const isPanoActive = page === PANO_TAB.id;
-	const activeSecondary = secondaryTabs.find((tab) => tab.id === page);
+	const activeSecondary = SECONDARY_TABS.find((tab) => tab.id === page);
 	const triggerLabel = activeSecondary ? t(activeSecondary.labelKey) : t('admin_nav.other_pages');
 
 	return (
@@ -110,7 +97,7 @@ export default function Admin(props: Props) {
 
 						{open && (
 							<div className={b('dropdown-panel')}>
-								{secondaryTabs.map((tab) => {
+								{SECONDARY_TABS.map((tab) => {
 									const active = page === tab.id;
 									return (
 										<Link

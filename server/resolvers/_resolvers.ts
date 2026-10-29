@@ -48,4 +48,3 @@ export * from './MagnetTelemetry.resolver';
 export * from './Cube.resolver';
 export * from './AlgSet.resolver';
 export * from './Battle.resolver';
-export * from './RegistrationWatch.resolver';

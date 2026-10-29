@@ -67,7 +67,6 @@ import SmartCubeTelemetryPanel from '../admin/smart_cube_telemetry/SmartCubeTele
 import MagnetTelemetryPanel from '../admin/magnet_telemetry/MagnetTelemetryPanel';
 import AdminBattleMatches from '../admin/battle/AdminBattleMatches';
 import AdminMedia from '../admin/media/AdminMedia';
-import AdminRegistrationWatch from '../admin/registration_watch/AdminRegistrationWatch';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -345,7 +344,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/smart-telemetry', App, Admin, SmartCubeTelemetryPanel, true, false, true),
 	route('/admin/magnet-telemetry', App, Admin, MagnetTelemetryPanel, true, false, true),
 	route('/admin/online-battle', App, Admin, AdminBattleMatches, true, false, true),
-	route('/admin/registration-watch', App, Admin, AdminRegistrationWatch, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),

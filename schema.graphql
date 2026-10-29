@@ -371,9 +371,6 @@ type Query {
   battleHeadToHead(userId: String): BattleHeadToHead
   battleMatch(id: String): BattleMatchDetail
   adminFlaggedBattleMatches(page: Int = 0): AdminBattleMatchPage
-  registrationWatchAccess: Boolean
-  registrationWatchCompetitions: [RegistrationWatchCompetitionRow]
-  registrationWatchCompetition(competitionId: String): RegistrationWatchDetail
 }
 
 type Mutation {
@@ -2940,55 +2937,6 @@ type BattleChallengeInfo {
   restricted: Boolean
   own: Boolean
   for_you: Boolean
-}
-
-type RegistrationWatchCompetitionRow {
-  competition_id: String
-  name: String
-  start_date: String
-  end_date: String
-  registration_close: DateTime
-  competitor_limit: Int
-  accepted_count: Int
-  event_count: Int
-  flagged_count: Int
-  last_event_at: DateTime
-  baseline_at: DateTime
-  confirmed_at: DateTime
-  groups_seen_at: DateTime
-}
-
-type RegistrationWatchEventRow {
-  id: String
-  kind: String
-  wca_registration_id: Int
-  registrant_id: Int
-  wca_id: String
-  name: String
-  events_before: [String]
-  events_after: [String]
-  after_close: Boolean
-  after_groups: Boolean
-  window_start: DateTime
-  observed_at: DateTime
-}
-
-type RegistrationWatchRegistrantRow {
-  wca_registration_id: Int
-  registrant_id: Int
-  wca_id: String
-  name: String
-  event_ids: [String]
-  competitor_groups: Int
-  staff_tasks: Int
-  unstaffed: Boolean
-  first_seen_at: DateTime
-}
-
-type RegistrationWatchDetail {
-  competition: RegistrationWatchCompetitionRow
-  events: [RegistrationWatchEventRow]
-  registrants: [RegistrationWatchRegistrantRow]
 }
 
 type Notification {
