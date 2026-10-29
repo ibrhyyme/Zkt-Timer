@@ -45,14 +45,21 @@ export default function StepsTable(props: Props) {
 		cumulativeTimes.push(cumulative);
 	}
 
-	// Step time is recognition plus execution, the running total is the sum of the rows
-	// above: both can be read off the rest, so a phone leaves them out (StepsTable.scss).
-	// Seven columns did not fit one and pushed the whole card sideways.
-	const secondary = b('col', { secondary: true }).toString();
-
 	function fmt(val: number | null | undefined, suffix = 's'): string {
 		if (val == null || val === 0) return '-';
 		return getTimeString(val, 2) + suffix;
+	}
+
+	// A table cell's time. The unit is its own span so a phone can drop it: every time column
+	// is named as one, and the seven columns need the room (StepsTable.scss).
+	function timeCell(val: number | null | undefined): React.ReactNode {
+		if (val == null || val === 0) return '-';
+		return (
+			<>
+				{getTimeString(val, 2)}
+				<span className={b('unit')}>s</span>
+			</>
+		);
 	}
 
 	return (
@@ -63,48 +70,52 @@ export default function StepsTable(props: Props) {
 				</div>
 			)}
 
-			<table className={b('table')}>
-				<thead>
-					<tr>
-						<th>{t('solve_info.step')}</th>
-						<th>{t('solve_info.recognition')}</th>
-						<th>{t('solve_info.execution')}</th>
-						<th className={secondary}>{t('solve_info.step_time')}</th>
-						<th className={secondary}>{t('solve_info.total_time')}</th>
-						<th>{t('solve_info.turns')}</th>
-						<th>TPS</th>
-					</tr>
-				</thead>
-				<tbody>
-					{steps.map((step, i) => {
-						const stepTime = step.total_time || 0;
-						const rec = step.recognition_time || 0;
-						const exec = Math.max(0, stepTime - rec);
-						return (
-							<tr key={step.step_name}>
-								<td>{STEP_NAME_MAP[step.step_name] || step.step_name}</td>
-								<td>{fmt(rec)}</td>
-								<td>{fmt(exec)}</td>
-								<td className={secondary}>{fmt(stepTime)}</td>
-								<td className={b('cumulative') + ' ' + secondary}>{fmt(cumulativeTimes[i])}</td>
-								<td>{step.turn_count || '-'}</td>
-								<td>{step.tps ? step.tps.toFixed(2) : '-'}</td>
-							</tr>
-						);
-					})}
-				</tbody>
-				<tfoot>
-					<tr className={b('total-row')}>
-						<td>{t('solve_info.total')}</td>
-						<td>{fmt(totalRec)}</td>
-						<td>{fmt(totalExec)}</td>
-						<td className={secondary}>{fmt(totalStepTime)}</td>
-						<td className={secondary}></td>
-						<td>{totalTurns}</td>
-						<td>{totalTps}</td>
-					</tr>
-				</tfoot>
-			</table>
+			{/* If a language's headers still do not fit a phone, only the table scrolls sideways,
+			    never the card around it. */}
+			<div className={b('scroll')}>
+				<table className={b('table')}>
+					<thead>
+						<tr>
+							<th>{t('solve_info.step')}</th>
+							<th>{t('solve_info.recognition')}</th>
+							<th>{t('solve_info.execution')}</th>
+							<th>{t('solve_info.step_time')}</th>
+							<th>{t('solve_info.total_time')}</th>
+							<th>{t('solve_info.turns')}</th>
+							<th>TPS</th>
+						</tr>
+					</thead>
+					<tbody>
+						{steps.map((step, i) => {
+							const stepTime = step.total_time || 0;
+							const rec = step.recognition_time || 0;
+							const exec = Math.max(0, stepTime - rec);
+							return (
+								<tr key={step.step_name}>
+									<td>{STEP_NAME_MAP[step.step_name] || step.step_name}</td>
+									<td>{timeCell(rec)}</td>
+									<td>{timeCell(exec)}</td>
+									<td>{timeCell(stepTime)}</td>
+									<td className={b('cumulative')}>{timeCell(cumulativeTimes[i])}</td>
+									<td>{step.turn_count || '-'}</td>
+									<td>{step.tps ? step.tps.toFixed(2) : '-'}</td>
+								</tr>
+							);
+						})}
+					</tbody>
+					<tfoot>
+						<tr className={b('total-row')}>
+							<td>{t('solve_info.total')}</td>
+							<td>{timeCell(totalRec)}</td>
+							<td>{timeCell(totalExec)}</td>
+							<td>{timeCell(totalStepTime)}</td>
+							<td></td>
+							<td>{totalTurns}</td>
+							<td>{totalTps}</td>
+						</tr>
+					</tfoot>
+				</table>
+			</div>
 
 			{putdownTime > 0 && (
 				<div className={b('meta-row')}>
