@@ -1632,6 +1632,86 @@ model ZktCompetitionAnnouncement {
   @@map("zkt_competition_announcement")
 }
 
+// Registration watch (cron_registration_watch.ts): who joined and who left each
+// upcoming WCA competition in Turkey, and when. WCA keeps no public history of
+// its accepted lists, so these rows are the only record; nothing deletes them.
+// Owner-only: read through the allowlisted admin page, never a public API.
+model RegistrationWatchCompetition {
+  competition_id     String    @id
+  name               String
+  start_date         DateTime  @db.Date
+  end_date           DateTime  @db.Date
+  registration_open  DateTime?
+  registration_close DateTime?
+  competitor_limit   Int?
+  // Fingerprint of the accepted list at the last full read. The light read
+  // compares against it and only fetches the WCIF when it moved.
+  list_hash          String?
+  // Null until the first full read. That read is the baseline: it writes no events.
+  baseline_at        DateTime?
+  // Last time the stored list was confirmed equal to WCA's. A change seen on the
+  // next read happened after this moment.
+  confirmed_at       DateTime?
+  wcif_read_at       DateTime?
+  // First read on which anyone had a competitor group.
+  groups_seen_at     DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  registrants RegistrationWatchRegistrant[]
+  events      RegistrationWatchEvent[]
+
+  @@index([end_date])
+  @@map("registration_watch_competition")
+}
+
+// The accepted list as of the last full read.
+model RegistrationWatchRegistrant {
+  competition_id      String
+  wca_registration_id Int
+  registrant_id       Int?
+  wca_user_id         Int?
+  wca_id              String?
+  name                String
+  event_ids           String[]
+  roles               String[]
+  competitor_groups   Int      @default(0)
+  staff_tasks         Int      @default(0)
+  first_seen_at       DateTime @default(now())
+
+  competition RegistrationWatchCompetition @relation(fields: [competition_id], references: [competition_id], onDelete: Cascade)
+
+  @@id([competition_id, wca_registration_id])
+  @@map("registration_watch_registrant")
+}
+
+// One row per observed change. It happened between window_start (the previous
+// confirmed read) and observed_at.
+model RegistrationWatchEvent {
+  id                  String    @id @default(uuid())
+  competition_id      String
+  kind                String // 'joined' | 'left' | 'events_changed'
+  wca_registration_id Int
+  registrant_id       Int?
+  wca_user_id         Int?
+  wca_id              String?
+  name                String
+  events_before       String[]
+  events_after        String[]
+  // Certainly after registration closed / after groups were out (window_start
+  // already past the moment). A window straddling it stays false.
+  after_close         Boolean   @default(false)
+  after_groups        Boolean   @default(false)
+  window_start        DateTime?
+  observed_at         DateTime  @default(now())
+
+  competition RegistrationWatchCompetition @relation(fields: [competition_id], references: [competition_id], onDelete: Cascade)
+
+  @@index([competition_id, observed_at])
+  @@index([observed_at])
+  @@map("registration_watch_event")
+}
+
 model CompetitionFollow {
   id                     String   @id @default(uuid())
   user_id                String

@@ -1,0 +1,284 @@
+@import '../../../styles/config';
+
+// Owner-only registration watch. Flat: hairline cards, theme colours as RGB triplets.
+.#{$namespace}-admin-regwatch {
+	display: flex;
+	flex-direction: column;
+	gap: $zt-space-4;
+	color: rgb(var(--text-color));
+
+	&__header {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+	}
+
+	&__title {
+		font-size: 1.375rem;
+		font-weight: 700;
+		margin: 0;
+	}
+
+	&__lead,
+	&__hint,
+	&__note {
+		margin: 0;
+		color: $zt-text-muted;
+		line-height: 1.5;
+	}
+
+	&__layout {
+		display: grid;
+		grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+		gap: $zt-space-4;
+		align-items: start;
+
+		@include bp-down($bp-lg) {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	&__list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	&__row {
+		@include zt-control;
+		width: 100%;
+		min-height: $zt-control-h-lg;
+		padding: $zt-space-3;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: $zt-space-1;
+		text-align: left;
+		cursor: pointer;
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__row-name {
+		font-weight: 600;
+	}
+
+	&__row-dates,
+	&__row-pending {
+		font-size: 0.875rem;
+		color: $zt-text-muted;
+	}
+
+	&__row-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-1 $zt-space-3;
+		font-size: 0.875rem;
+		color: $zt-text-muted;
+
+		b {
+			font-family: 'Roboto Mono', monospace;
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__row-flagged b {
+		color: rgb(var(--warning-color));
+	}
+
+	&__detail {
+		min-width: 0;
+	}
+
+	&__panel {
+		@include zt-card($zt-space-4);
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-4;
+		min-width: 0;
+	}
+
+	&__panel-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $zt-space-2;
+	}
+
+	&__panel-title {
+		font-size: 1.125rem;
+		font-weight: 700;
+		margin: 0;
+	}
+
+	&__wca-link {
+		color: rgb(var(--primary-color));
+		font-size: 0.875rem;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: $zt-space-3;
+		margin: 0;
+	}
+
+	&__fact {
+		dt {
+			font-family: 'Roboto Mono', monospace;
+			font-size: 0.75rem;
+			font-weight: 600;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			color: $zt-text-muted;
+		}
+
+		dd {
+			margin: $zt-space-1 0 0;
+			font-family: 'Roboto Mono', monospace;
+		}
+	}
+
+	&__changes,
+	&__current {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+	}
+
+	&__events {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	&__event {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		padding: $zt-space-3 0;
+		border-bottom: 1px solid $zt-card-border;
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__event-main {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: $zt-space-1 $zt-space-3;
+	}
+
+	&__event-name {
+		font-weight: 600;
+	}
+
+	&__event-when {
+		font-size: 0.875rem;
+		color: $zt-text-muted;
+	}
+
+	&__kind {
+		font-family: 'Roboto Mono', monospace;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+
+		&--left {
+			color: rgb(var(--error-color));
+		}
+
+		&--joined {
+			color: rgb(var(--success-color));
+		}
+
+		&--events_changed {
+			color: rgb(var(--warning-color));
+		}
+	}
+
+	&__mono {
+		font-family: 'Roboto Mono', monospace;
+	}
+
+	&__muted {
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+	}
+
+	&__chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-2;
+	}
+
+	// Outline only: a warning fill under warning text is the pattern to avoid.
+	&__chip {
+		display: inline-block;
+		margin-left: $zt-space-2;
+		padding: 2px $zt-space-2;
+		border: 1px solid rgba(var(--warning-color), 0.7);
+		border-radius: $zt-radius-sm;
+		font-family: 'Roboto Mono', monospace;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	&__chips &__chip {
+		margin-left: 0;
+	}
+
+	&__table-wrap {
+		overflow-x: auto;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.875rem;
+
+		th {
+			font-family: 'Roboto Mono', monospace;
+			font-size: 0.75rem;
+			font-weight: 600;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			color: $zt-text-muted;
+			text-align: left;
+			white-space: nowrap;
+		}
+
+		th,
+		td {
+			padding: $zt-space-2 $zt-space-3 $zt-space-2 0;
+			border-bottom: 1px solid $zt-card-border;
+			vertical-align: top;
+		}
+
+		tbody tr:last-child td {
+			border-bottom: none;
+		}
+	}
+
+	&__tr--unstaffed td:first-child {
+		box-shadow: inset 2px 0 0 rgb(var(--warning-color));
+		padding-left: $zt-space-2;
+	}
+}

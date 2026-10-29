@@ -1,0 +1,58 @@
+query registrationWatchAccess {
+	registrationWatchAccess
+}
+
+fragment RegistrationWatchCompetitionFragment on RegistrationWatchCompetitionRow {
+	competition_id
+	name
+	start_date
+	end_date
+	registration_close
+	competitor_limit
+	accepted_count
+	event_count
+	flagged_count
+	last_event_at
+	baseline_at
+	confirmed_at
+	groups_seen_at
+}
+
+query registrationWatchCompetitions {
+	registrationWatchCompetitions {
+		...RegistrationWatchCompetitionFragment
+	}
+}
+
+query registrationWatchCompetition($competitionId: String!) {
+	registrationWatchCompetition(competitionId: $competitionId) {
+		competition {
+			...RegistrationWatchCompetitionFragment
+		}
+		events {
+			id
+			kind
+			wca_registration_id
+			registrant_id
+			wca_id
+			name
+			events_before
+			events_after
+			after_close
+			after_groups
+			window_start
+			observed_at
+		}
+		registrants {
+			wca_registration_id
+			registrant_id
+			wca_id
+			name
+			event_ids
+			competitor_groups
+			staff_tasks
+			unstaffed
+			first_seen_at
+		}
+	}
+}

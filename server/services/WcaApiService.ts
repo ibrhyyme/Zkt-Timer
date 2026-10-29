@@ -268,6 +268,23 @@ export class WcaApiService {
 	}
 
 	/**
+	 * Accepted registrations of a competition: `{id, user_id, event_ids}` per row,
+	 * about 10 KB where the WCIF is 200 KB. `id` is the WCIF's wcaRegistrationId.
+	 * Null on failure, so a caller never mistakes an error for an empty list.
+	 */
+	static async fetchCompetitionRegistrations(competitionId: string): Promise<any[] | null> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/competitions/${competitionId}/registrations`, {
+				timeout: 15000,
+			});
+			return Array.isArray(response.data) ? response.data : null;
+		} catch (error) {
+			console.error(`Failed to fetch registrations for competition ${competitionId}:`, error.message);
+			return null;
+		}
+	}
+
+	/**
 	 * Fetch user's registered competitions using OAuth token
 	 * Uses /api/v0/competitions/mine endpoint
 	 */
