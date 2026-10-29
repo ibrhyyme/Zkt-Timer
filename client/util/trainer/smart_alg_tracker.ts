@@ -217,6 +217,19 @@ export class SmartAlgTracker<S> {
 		};
 	}
 
+	/**
+	 * The cube's own state report during an attempt (a safety net for a lost move event).
+	 * Completes only on the algorithm's END state, never on "solved": the attempt is anchored
+	 * wherever the cube was, so after the previous case the start is usually the solved cube,
+	 * and a first move taken back (F, F') would land on solved and count as done.
+	 */
+	reportState(state: S): boolean {
+		if (!this.started || this.done || this.patterns.length === 0) return false;
+		if (!this.ops.same(this.ops.normalize(state), this.patterns[this.patterns.length - 1])) return false;
+		this.done = true;
+		return true;
+	}
+
 	// First algorithm state equal to `fixed`, then past any states equal to it (trailing rotations).
 	private findMatch(fixed: S): number {
 		const patterns = this.patterns;

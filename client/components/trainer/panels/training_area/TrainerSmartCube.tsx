@@ -21,7 +21,6 @@ import {
 	faceletsToPattern,
 	fixOrientation,
 	isIdenticalIgnoringCenters,
-	SOLVED_STATE as SOLVED_FACELETS,
 } from '../../../../util/trainer/pattern_utils';
 import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
 import {addTime, incrementFailCount, resetFailCount, checkAutoLearn} from '../../hooks/useAlgorithmData';
@@ -295,17 +294,19 @@ export default function TrainerSmartCube() {
 		// - When phase='ready': also rebuilds patternStates — to keep initialState current while
 		//   user is setting up. This way, mask mode + own method solving in mid-solve categories
 		//   like F2L is also caught.
-		// - During solving: if physical cube is SOLVED, handleSolveComplete is triggered (safety net).
+		// - During solving: if the physical cube reached the algorithm's end state, handleSolveComplete
+		//   is triggered (safety net). Never "solved": see SmartAlgTracker.reportState.
 		const unsubFacelets = manager.subscribeFacelets((faceletStr: string) => {
+			const pattern = faceletsToPattern(faceletStr);
+
 			if (smartPhaseRef.current === 'solving') {
-				// No overwrite during solving — only solved detection safety net
-				if (faceletStr === SOLVED_FACELETS) {
+				// No overwrite during solving — only the end state safety net
+				if (pattern && trackerRef.current?.reportState(pattern)) {
 					handleSolveCompleteRef.current();
 				}
 				return;
 			}
 
-			const pattern = faceletsToPattern(faceletStr);
 			if (!pattern) return;
 
 			// Once the user has started turning (a move processed since the last reset / algorithm

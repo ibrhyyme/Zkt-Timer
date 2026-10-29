@@ -393,6 +393,33 @@ describe('baseline and completion', () => {
 		expect(ops.same(t.getCurrent(), new Cube())).toBe(true);
 	});
 
+	it('the cube state report completes only on the end state, not on a first move taken back', () => {
+		// After the previous case the cube is solved, so the next attempt starts on solved.
+		const t = newTracker("F R U' R' U' R U R' F'");
+		const [first, undo] = run(t, ['F', "F'"]);
+		expect(first.started).toBe(true);
+		expect(undo).toMatchObject({verdict: 'undo', completed: false});
+		// Back on solved: the report must not finish the attempt (it used to compare to solved).
+		expect(t.reportState(t.getCurrent())).toBe(false);
+		const rest = run(t, ['F', 'R', "U'", "R'", "U'", 'R', 'U', "R'", "F'"]);
+		expect(rest[rest.length - 1].completed).toBe(true);
+	});
+
+	it('the cube state report on the end state completes once', () => {
+		const alg = "R U R' U'";
+		const t = newTracker(alg);
+		run(t, ['R', 'U', "R'"]);
+		const end = applyAll(new Cube(), algMovesOf(alg));
+		expect(t.reportState(end)).toBe(true);
+		expect(t.reportState(end)).toBe(false);
+		expect(t.push("U'")).toBeNull();
+	});
+
+	it('the cube state report is ignored before the first move', () => {
+		const t = newTracker("R U R' U'");
+		expect(t.reportState(applyAll(new Cube(), algMovesOf("R U R' U'")))).toBe(false);
+	});
+
 	it('reset keeps the expectations and waits for a new first move', () => {
 		const t = newTracker("R U R' U'");
 		run(t, ['R', 'U']);
