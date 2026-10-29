@@ -143,6 +143,19 @@ jobs:
           -H "Content-Type: application/json" \
           --data '{"purge_everything":true}'
 
+    # Keep only the newest 10 release tags. The version counter stays correct: it
+    # reads the highest N of the current month, and the newest tag is always kept.
+    # Runs last and never fails the job, so a prune error cannot skip the purge.
+    - name: Prune old release tags
+      if: success()
+      continue-on-error: true
+      run: |
+        OLD=$(git tag --list 'v[0-9]*' | sort -V | head -n -10)
+        if [ -n "$OLD" ]; then
+          echo "$OLD" | xargs git push origin --delete
+          echo "Silinen eski tag sayisi: $(echo "$OLD" | wc -l)"
+        fi
+
     - name: Notify on failure
       if: failure()
       run: echo "Deployment failed!"
