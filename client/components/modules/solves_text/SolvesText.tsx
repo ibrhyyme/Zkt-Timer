@@ -12,6 +12,7 @@ import {buildCsv, CSV_MIME} from '../../../util/csv';
 import {saveFile} from '../../../util/save-file';
 import { getCubeTypeName } from '../../../util/cubes/util';
 import { Solve } from '../../../../server/schemas/Solve.schema';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 const b = block('solves-text');
 
@@ -29,7 +30,10 @@ export default function SolvesText(props: Props) {
 	const isSingle = solves.length === 1;
 	// Single solve için tarih varsayılan açık olsun
 	const [includeScramble, setIncludeScramble] = useState(true);
-	const [wrapText, setWrapText] = useState(false);
+	// Wrapped where a line cannot fit anyway: one solve (no option to switch it) and a phone.
+	// Unwrapped, the scramble ran off the right edge and the box scrolled sideways.
+	const mobileMode = useGeneral('mobile_mode');
+	const [wrapText, setWrapText] = useState(isSingle || !!mobileMode);
 	const [includeDate, setIncludeDate] = useState(false);
 	const [includeCubeType, setIncludeCubeType] = useState(false);
 	const [includeNotes, setIncludeNotes] = useState(false);
@@ -112,16 +116,18 @@ export default function SolvesText(props: Props) {
 				<CopyText
 					text={solvesText}
 					buttonProps={{
-						primary: true,
 						text: t('solve_info.copy_text'),
 					}}
 				/>
-				<Button
-					icon={<Download weight="bold" />}
-					theme={CommonType.GRAY}
-					onClick={downloadCsv}
-					text={t('solve_info.download_csv')}
-				/>
+				{/* A spreadsheet of one row says nothing the copied text does not. */}
+				{!isSingle && (
+					<Button
+						icon={<Download weight="bold" />}
+						theme={CommonType.GRAY}
+						onClick={downloadCsv}
+						text={t('solve_info.download_csv')}
+					/>
+				)}
 			</div>
 		</div>
 	);

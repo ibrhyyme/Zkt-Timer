@@ -3,17 +3,24 @@
 .#{$namespace}-solves-text {
 	&__text {
 		margin-top: 10px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		background-color: rgb(var(--module-color));
-		padding: 15px;
+		padding: $zt-space-3 $zt-space-4;
 		box-sizing: border-box;
-		font-size: 1rem;
-		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
-		margin-bottom: 15px;
-		overflow-x: auto;
-		max-height: 600px;
+		width: 100%;
+		max-width: 100%;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		margin-bottom: $zt-space-4;
+		overflow: auto;
+		max-height: 60vh;
 		white-space: pre;
+
+		@include bp-down($bp-sm) {
+			font-size: 0.8125rem;
+		}
 
 		&--wrapText {
 			white-space: pre-wrap !important;
@@ -29,13 +36,20 @@
 		}
 	}
 
+	// Equal halves (or the whole row for one button), as the average card's Copy and Share.
 	&__actions {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
+		gap: $zt-space-2;
 
 		> * {
-			margin-right: 15px;
+			flex: 1 1 0;
+			min-width: 0;
+		}
+
+		button {
+			width: 100%;
 		}
 	}
 }

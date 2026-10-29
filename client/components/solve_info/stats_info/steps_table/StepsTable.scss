@@ -88,22 +88,25 @@
 	}
 
 	@include bp-down($bp-sm) {
+		&__col--secondary {
+			display: none;
+		}
+
 		&__table {
-			font-size: 0.7rem;
+			font-size: 0.8125rem;
 
 			th,
 			td {
-				padding: 6px 4px;
+				padding: 8px 4px;
 			}
 
 			th {
-				font-size: 0.6rem;
+				font-size: 0.6875rem;
 				letter-spacing: 0.02em;
 			}
 
 			td {
-				font-size: 0.7rem;
-				letter-spacing: -0.01em;
+				font-size: 0.8125rem;
 			}
 
 			th:first-child,
@@ -122,15 +125,15 @@
 		&__table {
 			th,
 			td {
-				padding: 5px 3px;
+				padding: 6px 3px;
 			}
 
 			th {
-				font-size: 0.6rem;
+				font-size: 0.625rem;
 			}
 
 			td {
-				font-size: 0.65rem;
+				font-size: 0.75rem;
 			}
 		}
 	}

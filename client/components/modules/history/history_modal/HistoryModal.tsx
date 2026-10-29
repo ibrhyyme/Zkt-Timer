@@ -304,8 +304,8 @@ export default function HistoryModal(props: Props) {
 		return (
 			<div className={b({ card: true })}>
 				<div className={b('card-header')}>
-					<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-						<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>{t('solve_info.done')}</div>
+					<div className={b('card-bar')}>
+						<button type="button" className={b('card-done')} onClick={handleDone}>{t('solve_info.done')}</button>
 					</div>
 					<div className={b('card-time')}>{timeString}</div>
 					<div className={b('card-desc')}>
@@ -333,8 +333,8 @@ export default function HistoryModal(props: Props) {
 
 	return (
 		<div className={b({ card: true })}>
-			<div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: 8 }}>
-				<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>{t('solve_info.done')}</div>
+			<div className={b('card-bar')}>
+				<button type="button" className={b('card-done')} onClick={handleDone}>{t('solve_info.done')}</button>
 			</div>
 			<div className={b('card-header')}>
 				<div className={b('card-time')}>{timeString}</div>

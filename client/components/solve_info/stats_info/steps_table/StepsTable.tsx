@@ -45,6 +45,11 @@ export default function StepsTable(props: Props) {
 		cumulativeTimes.push(cumulative);
 	}
 
+	// Step time is recognition plus execution, the running total is the sum of the rows
+	// above: both can be read off the rest, so a phone leaves them out (StepsTable.scss).
+	// Seven columns did not fit one and pushed the whole card sideways.
+	const secondary = b('col', { secondary: true }).toString();
+
 	function fmt(val: number | null | undefined, suffix = 's'): string {
 		if (val == null || val === 0) return '-';
 		return getTimeString(val, 2) + suffix;
@@ -64,8 +69,8 @@ export default function StepsTable(props: Props) {
 						<th>{t('solve_info.step')}</th>
 						<th>{t('solve_info.recognition')}</th>
 						<th>{t('solve_info.execution')}</th>
-						<th>{t('solve_info.step_time')}</th>
-						<th>{t('solve_info.total_time')}</th>
+						<th className={secondary}>{t('solve_info.step_time')}</th>
+						<th className={secondary}>{t('solve_info.total_time')}</th>
 						<th>{t('solve_info.turns')}</th>
 						<th>TPS</th>
 					</tr>
@@ -80,8 +85,8 @@ export default function StepsTable(props: Props) {
 								<td>{STEP_NAME_MAP[step.step_name] || step.step_name}</td>
 								<td>{fmt(rec)}</td>
 								<td>{fmt(exec)}</td>
-								<td>{fmt(stepTime)}</td>
-								<td className={b('cumulative')}>{fmt(cumulativeTimes[i])}</td>
+								<td className={secondary}>{fmt(stepTime)}</td>
+								<td className={b('cumulative') + ' ' + secondary}>{fmt(cumulativeTimes[i])}</td>
 								<td>{step.turn_count || '-'}</td>
 								<td>{step.tps ? step.tps.toFixed(2) : '-'}</td>
 							</tr>
@@ -93,8 +98,8 @@ export default function StepsTable(props: Props) {
 						<td>{t('solve_info.total')}</td>
 						<td>{fmt(totalRec)}</td>
 						<td>{fmt(totalExec)}</td>
-						<td>{fmt(totalStepTime)}</td>
-						<td></td>
+						<td className={secondary}>{fmt(totalStepTime)}</td>
+						<td className={secondary}></td>
 						<td>{totalTurns}</td>
 						<td>{totalTps}</td>
 					</tr>

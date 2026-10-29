@@ -13,6 +13,10 @@
 	// which is what a multi-phase solve does once the phase breakdown is added.
 	max-height: 90vh;
 	overflow-y: auto;
+	// Up and down only. A row a few pixels too wide (the stats table on a phone) let the
+	// whole card, tabs included, slide sideways under a slightly diagonal swipe.
+	overflow-x: hidden;
+	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
 
 	p {
