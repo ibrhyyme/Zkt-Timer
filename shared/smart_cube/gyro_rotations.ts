@@ -139,15 +139,27 @@ function slicePairs(turns: DetectedRotation[]): PendingSlice[] {
 	return out;
 }
 
-/** Core face -> the rotation axis it turns about. */
-const AXIS_OF_FACE: Record<string, string> = { R: 'x', L: 'x', U: 'y', D: 'y', F: 'z', B: 'z' };
+/**
+ * Quarter rotation -> the face turns that make a wide move with it (r = L x, l' = R' x, u = D y,
+ * f = B z...), the same pairs rotation_reconstruction.ts merges. Only these: R' next to an x'
+ * is no wide move, and taking any turn on the axis let a look in F2L fire as x' through the quick
+ * rule and put the OLL and PLL after it a quarter turn off.
+ */
+const WIDE_PARTS: Record<string, string[]> = {
+	x: ['L', "R'"],
+	"x'": ["L'", 'R'],
+	y: ['D', "U'"],
+	"y'": ["D'", 'U'],
+	z: ['B', "F'"],
+	"z'": ["B'", 'F'],
+};
 
-/** A face turn on the axis of a quarter rotation close enough to be its wide move's part. */
+/** A face turn close enough to a quarter rotation to be its wide move's part. */
 function hasWidePart(turns: DetectedRotation[], orientation: Orientation, since: number): boolean {
-	if (orientation.tokens.length !== 1) return false;
-	const axis = orientation.tokens[0][0];
+	const parts = orientation.tokens.length === 1 ? WIDE_PARTS[orientation.tokens[0]] : undefined;
+	if (!parts) return false;
 	return turns.some(
-		(tu) => AXIS_OF_FACE[tu.turn[0]] === axis && tu.completedAt >= since - PART_BEFORE_MS && tu.completedAt <= since + PART_AFTER_MS
+		(tu) => parts.includes(tu.turn) && tu.completedAt >= since - PART_BEFORE_MS && tu.completedAt <= since + PART_AFTER_MS
 	);
 }
 

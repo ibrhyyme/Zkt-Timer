@@ -49,6 +49,16 @@ describe('detectCubeRotations', () => {
 		expect(detectCubeRotations(out)).toEqual([]);
 	});
 
+	it('takes a quick rotation for a wide move only with the face turn that makes one', () => {
+		// Tilted 70 degrees about R for 200 ms and back: never settled.
+		const out: GyroSample[] = [];
+		for (let t = 0; t <= 3000; t += 100) out.push(sample(t, 'x', t >= 1100 && t <= 1200 ? 70 : 0));
+		// R' next to x' is no wide move (l' is R' x): the look stays a look.
+		expect(detectCubeRotations(out, [{ turn: "R'", completedAt: 1150 }])).toEqual([]);
+		// R next to x' is l: the quick rule takes it.
+		expect(detectCubeRotations(out, [{ turn: 'R', completedAt: 1150 }]).map((r) => r.turn)[0]).toBe("x'");
+	});
+
 	it('starts from the first quiet hold, not a stream that opens mid-rotation', () => {
 		// Still turning for the first 500 ms, held from then on, then one y at 2.0-2.3 s.
 		const out: GyroSample[] = [];
@@ -128,6 +138,27 @@ describe('a real GAN i4 solve with a fast Z perm', () => {
 		const holding = bestHolding(turns, rotations, 'z2');
 		const tokens = reconstructWithRotations(turns, rotations, holding).map((k) => k.move);
 		expect(tokens.slice(-11).join(' ')).toBe('U M2 U M2 U M U2 M2 U2 M U');
+	});
+});
+
+describe('a reconstruction anyone can replay', () => {
+	// What a shared solve has to do: the scramble, then the text as written, solves the cube.
+	// The scramble is the raw turns undone, so the raw turns solve it by construction.
+	const solved = (facelets: string) => [0, 1, 2, 3, 4, 5].every((f) => new Set(facelets.slice(f * 9, f * 9 + 9)).size === 1);
+	const undo = (turns: string[]) => turns.slice().reverse().map((t) => (t.endsWith("'") ? t[0] : t.endsWith('2') ? t : `${t}'`)).join(' ');
+
+	it('solves the scramble with the Z perm solve written as the table shows it', () => {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		const Cube = require('cubejs');
+		const turns = parseSmartTurns(zperm.smart_turns);
+		const gyro = decodeGyroSamples(zperm.smart_gyro);
+		const rotations = detectCubeRotations(gyro.filter((s) => s.t <= turns[turns.length - 1].completedAt), turns);
+		const holding = bestHolding(turns, rotations, 'z2');
+		const text = [holding, ...reconstructWithRotations(turns, rotations, holding).map((k) => k.move)].join(' ');
+		const cube = new Cube();
+		cube.move(undo(turns.map((t) => t.turn)));
+		cube.move(text);
+		expect(solved(cube.asString())).toBe(true);
 	});
 });
 

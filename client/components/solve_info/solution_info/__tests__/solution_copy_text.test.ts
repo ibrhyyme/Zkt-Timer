@@ -58,6 +58,16 @@ describe('buildStepMoveLines', () => {
 		expect(lines[0]).not.toContain('R U //');
 	});
 
+	it('prints the gyro reconstruction the table shows, rotations and its holding included', () => {
+		const steps = [step('cross', 'R U', 1, 0), step('f2l_1', "B U B'", 1, 0, 'f2l'), step('pll', "R L' U2", 1, 0)];
+		const gyro = { holding: 'z2 y', byStep: [['L', 'D'], ['y', 'R', 'U', "R'"], ['M', 'U2']] };
+		expect(buildStepMoveLines(steps as any, 'z2', gyro)).toEqual([
+			'z2 y L D // Cross',
+			"y R U R' // F2L Slot 1",
+			'M U2 // PLL',
+		]);
+	});
+
 	it('skips steps with no moves', () => {
 		const lines = buildStepMoveLines([step('oll', '', 0, 0), step('pll', 'U', 1, 0)] as any, '');
 		expect(lines).toEqual(['U // PLL']);

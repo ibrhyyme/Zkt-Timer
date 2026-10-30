@@ -40,16 +40,30 @@ function formatTps(solve: Solve): string {
  * The cube reports moves relative to its own core; a solver who did the cross on the bottom
  * turned "R" as their "L". `rotation` is that correction, and the cross line carries it as a
  * prefix so the reconstruction replays from the scrambled state.
+ *
+ * With gyro data the table shows the gyro reconstruction instead (rotation_reconstruction.ts),
+ * and so does this: `gyro` is the table's holding and its token moves per step. Without it the
+ * lines left out every rotation made during the solve, so a slot taken after a y read as
+ * "B U' B'" and a U perm as noise, next to a table reading R U R' and M2.
  */
-export function buildStepMoveLines(steps: CopyStep[], rotation: string): string[] {
+export function buildStepMoveLines(steps: CopyStep[], rotation: string, gyro?: GyroCopyMoves): string[] {
 	const lines: string[] = [];
-	for (const step of steps) {
-		const moves = simplifyMoves(rotation ? transformMoves(step.turns, rotation) : step.turns);
-		if (!moves) continue;
-		const prefix = step.step_name === 'cross' && rotation ? `${rotation} ` : '';
+	const holding = gyro ? gyro.holding : rotation;
+	steps.forEach((step, i) => {
+		const moves = gyro
+			? gyro.byStep[i].join(' ')
+			: simplifyMoves(rotation ? transformMoves(step.turns, rotation) : step.turns);
+		if (!moves) return;
+		const prefix = step.step_name === 'cross' && holding ? `${holding} ` : '';
 		lines.push(`${prefix}${moves} // ${getStepDisplayName(step as SolveMethodStep)}`);
-	}
+	});
 	return lines;
+}
+
+/** The gyro reconstruction as the table shows it: the holding, and each step's token moves. */
+export interface GyroCopyMoves {
+	holding: string;
+	byStep: string[][];
 }
 
 /**
@@ -85,7 +99,8 @@ export function buildSmartSolveDetailedCopyText(
 	t: Translate,
 	solve: Solve,
 	steps: CopyStep[],
-	rotation: string
+	rotation: string,
+	gyro?: GyroCopyMoves
 ): string {
 	const time = solve.dnf ? 'DNF' : getTimeString(solve.time, 2) + (solve.plus_two ? '+' : '');
 
@@ -96,7 +111,7 @@ export function buildSmartSolveDetailedCopyText(
 		`TPS: ${formatTps(solve)}`,
 	];
 
-	const moveLines = buildStepMoveLines(steps, rotation);
+	const moveLines = buildStepMoveLines(steps, rotation, gyro);
 	if (moveLines.length) {
 		lines.push('', ...moveLines);
 	}

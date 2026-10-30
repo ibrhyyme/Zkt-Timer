@@ -190,7 +190,13 @@ export default function SolutionInfo(props: Props) {
 	// Both clipboard texts come from the steps and rotation the table below renders, so what
 	// is copied is what is on screen (see solution_copy_text.ts).
 	const copyText = buildSmartSolveCopyText(t, solve);
-	const detailedCopyText = buildSmartSolveDetailedCopyText(t, solve, steps, rotation);
+	const detailedCopyText = buildSmartSolveDetailedCopyText(
+		t,
+		solve,
+		steps,
+		rotation,
+		gyro ? { holding: gyro.holding, byStep: gyro.byStep.map((tokens) => tokens.map((k) => k.move)) } : undefined
+	);
 
 	return (
 		<div className={b()}>
