@@ -21,15 +21,13 @@ import type { GyroSample } from '../../../../../shared/smart_cube/gyro_rotations
  * slices by a few hundred ms but does not lose them (four M2s of an H perm end 14 degrees
  * from where they started, hand movement included), so nothing here repairs the stream.
  *
- * What is taken out is its slow part. A hand that feels it holds the cube straight holds it
- * 20-30 degrees off, and the gyro drifts; shown raw, the cube sat at an angle the whole replay
- * and the owner saw it "held crooked" when it was not. So the offset from the held frame is
- * smoothed over about BIAS_SIGMA_MS either side and removed: a steady hold shows square, and
- * what moves faster than that (a rotation, a wobble, a regrip) shows as it happened. Moments
- * mid-rotation (offset past INLIER_DEG) are left out of the smoothing, so a rotation plays in
- * full and the correction bridges from the hold before it to the hold after it. What is left
- * below STRAIGHT_DEG (shake, jitter) is not shown either (straightened): the cube on screen
- * stands square and moves only when the solver's really did.
+ * Past that one rotation the stream is shown as recorded, the way acubemy plays it: a tilt, a
+ * wobble, a look at the last layer show as they happened, and the reconstruction's rotations
+ * do not move the scene. The scene used to be pinned to the held frame whenever the two agreed
+ * within 20 degrees, with anything slower than a second smoothed away. On real solves that
+ * froze the cube for a third to half of the replay while the one in the hands moved up to 35
+ * degrees, and a look at the last layer the detector took for a rotation played as a quarter
+ * turn the solver never made.
  */
 
 export interface GyroTrack {
@@ -44,13 +42,6 @@ const ANCHOR_PASSES = 4;
 const MIN_INLIERS = 3;
 /** How many readings are tried as the anchor's starting point. */
 const SEED_COUNT = 80;
-/** Spread of the smoothing that finds a reading's slow offset (Gaussian, ms). */
-const BIAS_SIGMA_MS = 400;
-/** Readings this far from a reading still count toward its offset; past that the weight is nil. */
-const BIAS_REACH_MS = 3 * BIAS_SIGMA_MS;
-/** Deviation from the held frame shown as square below this, as it is past MOTION_DEG. */
-const STRAIGHT_DEG = 20;
-const MOTION_DEG = 45;
 
 /** A device-frame reading in the scene's frame (+X R, +Y U, +Z F), as SmartCubeView maps it. */
 function toScene(s: GyroSample): THREE.Quaternion {
@@ -109,54 +100,8 @@ export function buildGyroTrack(samples: GyroSample[], t0: number, tokenTimes: nu
 		anchor = meanNear(inliers, anchor);
 	}
 
-	const anchored = raw.map((q) => anchor.clone().multiply(q));
-	return { times, quats: straightened(withoutSlowOffset(times, anchored, lattice), lattice) };
+	return { times, quats: raw.map((q) => anchor.clone().multiply(q)) };
 }
-
-/**
- * Small deviations from the held frame shown square, large ones as they are. With the slow
- * offset gone, what is left on a real solve is mostly quick shake: sensor jitter from the
- * turns and the hands (median 168 deg/s on a GAN i4 solve), a median 12-15 degrees off square
- * at any smoothing tried. The owner read it as the cube held crooked. Below STRAIGHT_DEG the
- * frame is shown; past MOTION_DEG (a rotation, a regrip) the reading; between, a smooth blend,
- * so a rotation still starts and ends without a jump.
- */
-function straightened(quats: THREE.Quaternion[], lattice: THREE.Quaternion[]): THREE.Quaternion[] {
-	return quats.map((q, i) => {
-		const d = angleDeg(q, lattice[i]);
-		const k = Math.min(1, Math.max(0, (d - STRAIGHT_DEG) / (MOTION_DEG - STRAIGHT_DEG)));
-		const w = k * k * (3 - 2 * k);
-		return lattice[i].clone().slerp(q, w);
-	});
-}
-
-/**
- * Each reading with its slow offset from the held frame taken out (see the header). The offset
- * is world-side (scene = offset * held), the way a tilting hand or a drifting gyro adds it.
- */
-function withoutSlowOffset(times: number[], quats: THREE.Quaternion[], lattice: THREE.Quaternion[]): THREE.Quaternion[] {
-	const offsets = quats.map((q, i) => q.clone().multiply(lattice[i].clone().invert()));
-	const settled = offsets.map((e) => angleDeg(e, IDENTITY) < INLIER_DEG);
-	let previous = new THREE.Quaternion();
-	return quats.map((q, i) => {
-		const sum = new THREE.Quaternion(0, 0, 0, 0);
-		let weight = 0;
-		for (let j = 0; j < quats.length; j++) {
-			const dt = times[j] - times[i];
-			if (!settled[j] || Math.abs(dt) > BIAS_REACH_MS) continue;
-			const w = Math.exp(-((dt / BIAS_SIGMA_MS) ** 2));
-			const e = offsets[j];
-			const s = e.dot(previous) < 0 ? -w : w;
-			sum.set(sum.x + s * e.x, sum.y + s * e.y, sum.z + s * e.z, sum.w + s * e.w);
-			weight += w;
-		}
-		// No hold anywhere near (a long rotation, a stream of misses): keep the last offset.
-		if (weight > 1e-3) previous = sum.normalize();
-		return previous.clone().invert().multiply(q);
-	});
-}
-
-const IDENTITY = new THREE.Quaternion();
 
 /** The track's orientation at replay time `t`, interpolated between the readings around it. */
 export function sampleGyroTrack(track: GyroTrack, t: number): THREE.Quaternion {

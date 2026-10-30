@@ -42,6 +42,25 @@ describe('detectCubeRotations', () => {
 		expect(detectCubeRotations(sweep('x', 35))).toEqual([]);
 	});
 
+	it('does not take a look at the last layer for a rotation', () => {
+		// Lifted 70 degrees and put back within 200 ms: 20 degrees from x', but never settled there.
+		const out: GyroSample[] = [];
+		for (let t = 0; t <= 3000; t += 100) out.push(sample(t, 'x', t >= 1100 && t <= 1200 ? 70 : 0));
+		expect(detectCubeRotations(out)).toEqual([]);
+	});
+
+	it('starts from the first quiet hold, not a stream that opens mid-rotation', () => {
+		// Still turning for the first 500 ms, held from then on, then one y at 2.0-2.3 s.
+		const out: GyroSample[] = [];
+		for (let t = 0; t <= 4000; t += 100) {
+			const deg = t < 500 ? 60 * (1 - t / 500) : -90 * Math.min(1, Math.max(0, (t - 2000) / 300));
+			out.push(sample(t, 'y', deg));
+		}
+		const rotations = detectCubeRotations(out);
+		expect(rotations.map((r) => r.turn)).toEqual(['y']);
+		expect(rotations[0].completedAt).toBeGreaterThanOrEqual(2000);
+	});
+
 	it('stamps a rotation when the cube crosses into the new orientation', () => {
 		const [r] = detectCubeRotations(sweep('y', -90));
 		expect(r.completedAt).toBeGreaterThanOrEqual(1100);

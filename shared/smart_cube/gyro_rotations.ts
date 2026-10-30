@@ -15,10 +15,25 @@
  * gyro's slow drift and the hand's tilt (20-30 degrees off square on a GAN i4 capture) are
  * absorbed by letting the reference follow the cube while it is not being rotated.
  *
- * A new orientation counts once the cube has stayed close to it long enough: each reading
- * adds (closeness x elapsed time), and the rotation fires at ACCUMULATED_THRESHOLD_S. That
- * keeps a turn in progress (halfway between two orientations, so close to neither) from
- * counting, and it does not depend on the sample rate (about 11 Hz on a GAN i4).
+ * A new orientation counts once the cube has settled in it: within SETTLE_DEG of it for
+ * SETTLE_S. A look at the last layer does not settle. On the owner's solves it lifts the cube
+ * 60-75 degrees and puts it back within 150-400 ms, and its readings came within 20-30 degrees
+ * of the next orientation for one or two readings at most, while every real rotation sat
+ * within 2-17 degrees of its new orientation for 200-2500 ms. This used to fire on closeness
+ * x elapsed time reaching 0.05 s (acubemy's rule), which at a GAN i4's 11 Hz is one reading
+ * 20 degrees off: every look became a rotation, and the rest of the step was read a quarter
+ * turn off. Settling cannot tell a look from a rotation by angle alone (a hand holds a cube up
+ * to 30 degrees off square, so SETTLE_DEG cannot go lower); what it adds is time.
+ *
+ * A wide move keeps the old, quick rule: its core rotation can last only as long as the
+ * algorithm leaves it (r U R' U' r'), and the face turn on the same axis is the evidence
+ * settling would otherwise give.
+ *
+ * The reference starts at the first quiet hold (firstQuietHold), not the first reading: the
+ * stream opens 1.5 s before the first turn, often mid-rotation, and a reference taken there put
+ * every later orientation off by however far the cube was turned then. Real F2L rotations then
+ * fell between two orientations, near neither, and went unseen. A reference that is off anyway
+ * (no orientation within LIMBO_DEG for LIMBO_MS) follows the cube until one is.
  *
  * Pure: no browser or Node APIs, shared by the client (detection at solve end) and tests.
  */
@@ -45,8 +60,26 @@ interface Quat {
 	z: number;
 }
 
-/** Seconds of full closeness a new orientation needs before it counts. */
+/** How near the new orientation the cube has to stay, and for how long, to count as there. */
+const SETTLE_DEG = 30;
+const SETTLE_S = 0.25;
+/** Seconds of full closeness a wide move's rotation needs before it counts (see the header). */
 const ACCUMULATED_THRESHOLD_S = 0.05;
+/**
+ * A wide move's face turn may lead its rotation by PART_BEFORE_MS... Measured on a GAN i4:
+ * the rotation of an r / r' lands 120-150 ms after its face turn, and a turn followed by a real
+ * whole-cube rotation (U then y') is well past this, so it stays two moves.
+ */
+export const PART_BEFORE_MS = 250;
+/** ...or trail it by this much: the rotation is stamped mid-turn, the faces at the end. */
+export const PART_AFTER_MS = 150;
+/** No orientation this near for this long: the reference is what is off, and it follows. */
+const LIMBO_DEG = 35;
+const LIMBO_MS = 300;
+const LIMBO_FOLLOW_DEG_PER_S = 30;
+/** Turning slower than this for QUIET_MS is a hold, the first of which is the reference. */
+const QUIET_DEG_PER_S = 40;
+const QUIET_MS = 300;
 /**
  * How fast the reference follows a cube that is not being rotated, in degrees per second.
  * Hands hold a cube 20-30 degrees off square and drift there between rotations; at 3 deg/s
@@ -104,6 +137,18 @@ function slicePairs(turns: DetectedRotation[]): PendingSlice[] {
 		i++;
 	}
 	return out;
+}
+
+/** Core face -> the rotation axis it turns about. */
+const AXIS_OF_FACE: Record<string, string> = { R: 'x', L: 'x', U: 'y', D: 'y', F: 'z', B: 'z' };
+
+/** A face turn on the axis of a quarter rotation close enough to be its wide move's part. */
+function hasWidePart(turns: DetectedRotation[], orientation: Orientation, since: number): boolean {
+	if (orientation.tokens.length !== 1) return false;
+	const axis = orientation.tokens[0][0];
+	return turns.some(
+		(tu) => AXIS_OF_FACE[tu.turn[0]] === axis && tu.completedAt >= since - PART_BEFORE_MS && tu.completedAt <= since + PART_AFTER_MS
+	);
 }
 
 const IDENTITY: Quat = { w: 1, x: 0, y: 0, z: 0 };
@@ -192,19 +237,32 @@ function closeness(deg: number): number {
 	return 1 / (1 + Math.exp(-((Math.max(0, 45 - deg) / 45) * 12 - 6)));
 }
 
+/** The first reading of the first QUIET_MS the cube turned slower than QUIET_DEG_PER_S; else the first. */
+function firstQuietHold(samples: GyroSample[]): Quat {
+	let runStart = 0;
+	for (let i = 1; i < samples.length; i++) {
+		const dt = Math.max(1e-3, (samples[i].t - samples[i - 1].t) / 1000);
+		if (angleDeg(fromDevice(samples[i - 1]), fromDevice(samples[i])) / dt > QUIET_DEG_PER_S) runStart = i;
+		else if (samples[i].t - samples[runStart].t >= QUIET_MS) return fromDevice(samples[runStart]);
+	}
+	return fromDevice(samples[0]);
+}
+
 /**
  * `turns`: the solve's face turns on the samples' timeline, core frame. Optional; with them,
- * fast slices the stream alone misses are confirmed (SLICE_PAIR_GYRO_MS).
+ * fast slices the stream alone misses are confirmed (SLICE_PAIR_GYRO_MS), and wide moves count
+ * on the quick rule (hasWidePart).
  */
 export function detectCubeRotations(samples: GyroSample[], turns: DetectedRotation[] = []): DetectedRotation[] {
 	const out: DetectedRotation[] = [];
 	if (!samples || samples.length < 2) return out;
 
-	let reference = fromDevice(samples[0]);
+	let reference = firstQuietHold(samples);
 	let lastT = samples[0].t;
 	let candidate: Orientation | null = null;
 	let candidateSince = 0;
 	let accumulated = 0;
+	let settled = 0;
 	let pending = slicePairs(turns);
 
 	for (let i = 1; i < samples.length; i++) {
@@ -234,6 +292,7 @@ export function detectCubeRotations(samples: GyroSample[], turns: DetectedRotati
 			pending = pending.filter((p) => !open.slice(0, confirmed).includes(p));
 			candidate = null;
 			accumulated = 0;
+			settled = 0;
 			continue;
 		}
 
@@ -251,6 +310,7 @@ export function detectCubeRotations(samples: GyroSample[], turns: DetectedRotati
 		if (!nearest) {
 			candidate = null;
 			accumulated = 0;
+			settled = 0;
 			if (stillDeg > 0.1) {
 				reference = slerp(reference, q, Math.min(1, (DRIFT_FOLLOW_DEG_PER_S * dt) / stillDeg));
 			}
@@ -263,9 +323,11 @@ export function detectCubeRotations(samples: GyroSample[], turns: DetectedRotati
 			// the moment of the rotation the stream has.
 			candidateSince = s.t;
 			accumulated = 0;
+			settled = 0;
 		}
 		accumulated += closeness(nearestDeg) * dt;
-		if (accumulated >= ACCUMULATED_THRESHOLD_S) {
+		settled = nearestDeg <= SETTLE_DEG ? settled + dt : 0;
+		if (settled >= SETTLE_S || (accumulated >= ACCUMULATED_THRESHOLD_S && hasWidePart(turns, nearest, candidateSince))) {
 			for (const turn of nearest.tokens) out.push({ turn, completedAt: candidateSince });
 			// Snap to the exact orientation rather than to the reading: the reading's small
 			// offset is left for the drift follow above instead of being baked in.
@@ -275,6 +337,11 @@ export function detectCubeRotations(samples: GyroSample[], turns: DetectedRotati
 			pending = pending.filter((p) => !(p.t <= s.t && axes.has(p.token[0])));
 			candidate = null;
 			accumulated = 0;
+			settled = 0;
+			continue;
+		}
+		if (nearestDeg > LIMBO_DEG && s.t - candidateSince > LIMBO_MS && stillDeg > 0.1) {
+			reference = slerp(reference, q, Math.min(1, (LIMBO_FOLLOW_DEG_PER_S * dt) / stillDeg));
 		}
 	}
 

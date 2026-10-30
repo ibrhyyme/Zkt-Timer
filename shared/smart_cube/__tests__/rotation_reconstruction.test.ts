@@ -104,10 +104,16 @@ describe('reconstructWithRotations', () => {
 		expect(moves('L@0', 'x@2000')).toBe('L x');
 	});
 
-	it('combines adjacent rotations about one axis, but keeps a rotation and its undo', () => {
+	it('combines adjacent rotations about one axis', () => {
 		expect(moves('R@0 R@1000', 'y@200 y@400')).toBe('R y2 L');
-		// Turned to look and back: two rotations the replay must show.
-		expect(moves('R@0 R@1000', "y@200 y'@400")).toBe("R y y' R");
+	});
+
+	it('drops a rotation and its undo: the cube lifted to look and put back', () => {
+		expect(moves('R@0 R@1000', "y@200 y'@400")).toBe('R2');
+		// Turns about the rotation's own axis read the same either way.
+		expect(moves("U@0 R@100 U@500 R'@1000", "y@200 y'@800")).toBe("U R U R'");
+		// A turn about another axis made in between makes it a real rotation.
+		expect(moves('R@0 R@500 R@1000', "y@200 y'@800")).toBe("R y F y' R");
 	});
 
 	it('maps the merged move ranges back to the raw turns', () => {

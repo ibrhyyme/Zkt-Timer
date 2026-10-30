@@ -25,7 +25,7 @@
  */
 import { getPrettyMoves } from '../util/solve/pretty_moves';
 import type { ParsedTurn } from './parse_turns';
-import { SLICE_CONFIRM_WINDOW_MS, SLICE_PAIR_GYRO_MS, slicePairRotation } from './gyro_rotations';
+import { PART_AFTER_MS, PART_BEFORE_MS, SLICE_CONFIRM_WINDOW_MS, SLICE_PAIR_GYRO_MS, slicePairRotation } from './gyro_rotations';
 
 export type ReconstructionTokenKind = 'turn' | 'rotation' | 'slice' | 'wide';
 
@@ -44,14 +44,6 @@ export type Face = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 /** Solver position -> the core face sitting there. */
 export type Frame = Record<Face, Face>;
 
-/**
- * A wide move's face turn may lead its rotation by this much... Measured on a GAN i4: the
- * rotation of an r / r' lands 120-150 ms after its face turn, and a turn followed by a real
- * whole-cube rotation (U then y') is well past this, so it stays two moves.
- */
-const PART_BEFORE_MS = 250;
-/** ...or trail it by this much: the rotation is stamped mid-turn, the faces at the end. */
-const PART_AFTER_MS = 150;
 /**
  * Opposite faces this close are one slice move on timing alone. A GAN i4 reports a slice's two
  * faces 0-39 ms apart on the cube's clock; deliberate separate turns are far slower.
@@ -296,11 +288,36 @@ function mergeParts(tokens: ReconstructionToken[]): ReconstructionToken[] {
 }
 
 /**
+ * A rotation and its undo with nothing between them but turns about the same axis (z F z',
+ * a cube lifted to read the last layer and put down) is a look, not a rotation: both go.
+ * Those turns read the same either way, since a rotation leaves the faces on its axis where
+ * they were. The replay shows the look from the gyro stream (gyro_track.ts), so the pair is
+ * not needed there either.
+ */
+function withoutLooks(tokens: ReconstructionToken[]): ReconstructionToken[] {
+	const out = tokens.slice();
+	for (let i = 0; i < out.length; i++) {
+		if (out[i].kind !== 'rotation') continue;
+		const axis = out[i].move[0];
+		const undo = (4 - quarters(out[i].move.slice(1))) % 4;
+		for (let j = i + 1; j < out.length; j++) {
+			const tok = out[j];
+			if (tok.kind === 'rotation' && tok.move[0] === axis && quarters(tok.move.slice(1)) === undo) {
+				out.splice(j, 1);
+				out.splice(i, 1);
+				i--;
+				break;
+			}
+			if (tok.kind !== 'turn' || !AXIS_FACES[axis].includes(tok.move[0] as Face)) break;
+		}
+	}
+	return out;
+}
+
+/**
  * Adjacent rotations about the same axis become one (y y -> y2), and so do two quarters of
- * the same slice (M' M' -> M2, the way an M2 arrives). A rotation and its undo (y y') stay
- * as two: the solver did turn the cube and back (to look at a side, say), the replay has to
- * show it, and dropping the pair left the replay a quarter turn off the gyro meanwhile.
- * Opposite slice quarters stay for the same reason.
+ * the same slice (M' M' -> M2, the way an M2 arrives). Opposite slice quarters stay as two:
+ * the solver turned the middle layer and back.
  */
 function combineRotations(tokens: ReconstructionToken[], breaks: Set<number>): ReconstructionToken[] {
 	const out: ReconstructionToken[] = [];
@@ -345,7 +362,7 @@ export function reconstructWithRotations(
 	holding = '',
 	stepStarts: number[] = []
 ): ReconstructionToken[] {
-	return combineRotations(mergeParts(toSolverFrame(turns, rotations, holding)), new Set(stepStarts));
+	return combineRotations(withoutLooks(mergeParts(toSolverFrame(turns, rotations, holding))), new Set(stepStarts));
 }
 
 /** The whole-cube turn a token makes, in the solver's notation (M = R L' x', r = L x). */

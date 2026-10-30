@@ -16,31 +16,37 @@ function reading(t: number, scene: THREE.Quaternion): GyroSample {
 	return { t, x: scene.x, y: -scene.z, z: scene.y, w: scene.w };
 }
 
+const still = () => new THREE.Quaternion();
+
 /**
- * A cube held 20 degrees tilted, turned by y (clockwise from the top: -90 about +Y) between
- * 0.9 and 1.1 s, in a gyro world frame that has nothing to do with the screen.
+ * A cube turned by y (clockwise from the top: -90 about +Y) between 0.9 and 1.1 s, in a gyro
+ * world frame that has nothing to do with the screen. `hand(t)` is what the hand adds on top
+ * (a shake, a look at the last layer); `extra` are rotations the reconstruction has besides the y.
  */
-function scenario(startAt = -1500, wobbleAt: number | null = null) {
-	const tokens = reconstructWithRotations([{ turn: 'R', completedAt: 0 }, { turn: 'R', completedAt: 4000 }], [{ turn: 'y', completedAt: 1000 }]);
+function scenario(startAt = -1500, hand: (t: number) => THREE.Quaternion = still, extra: { turn: string; completedAt: number }[] = []) {
+	const tokens = reconstructWithRotations(
+		[{ turn: 'R', completedAt: 0 }, { turn: 'R', completedAt: 4000 }],
+		[{ turn: 'y', completedAt: 1000 }, ...extra]
+	);
 	const frames = framesAlongTokens(tokens);
 	const world = axisAngle(0.3, 1, -0.4, 73);
-	const tilt = axisAngle(1, 0, 0, 20);
 	const samples: GyroSample[] = [];
 	for (let t = startAt; t <= 4500; t += 90) {
 		const k = Math.min(1, Math.max(0, (t - 900) / 200));
-		// A quick 25 degree shake of the hand, 150 ms long.
-		const shake = wobbleAt !== null && t >= wobbleAt && t < wobbleAt + 150 ? axisAngle(0, 0, 1, 25) : new THREE.Quaternion();
-		const held = shake.multiply(axisAngle(0, 1, 0, -90 * k)).multiply(tilt);
+		const held = hand(t).multiply(axisAngle(0, 1, 0, -90 * k));
 		samples.push(reading(t, world.clone().multiply(held)));
 	}
 	return { tokens, frames, samples };
 }
 
+/** The cube tilted 60 degrees about +X from 3.0 to 3.3 s and put back: a look at the last layer. */
+const look = (t: number) => (t >= 3000 && t < 3300 ? axisAngle(1, 0, 0, 60) : new THREE.Quaternion());
+
 const SQUARE_BEFORE = new THREE.Quaternion();
 const SQUARE_AFTER = axisAngle(0, 1, 0, -90);
 
 describe('buildGyroTrack', () => {
-	it('shows a steady hold square, whatever the hand\'s tilt and the gyro\'s world', () => {
+	it('finds where the solver faced, whatever frame the gyro reports in', () => {
 		const { tokens, frames, samples } = scenario();
 		const track = buildGyroTrack(samples, 0, tokens.map((k) => k.t), frames)!;
 		expect(deg(sampleGyroTrack(track, 300), SQUARE_BEFORE)).toBeLessThan(3);
@@ -56,10 +62,21 @@ describe('buildGyroTrack', () => {
 		expect(deg(mid, SQUARE_AFTER)).toBeGreaterThan(25);
 	});
 
-	it('does not show a small shake of the hand', () => {
-		const { tokens, frames, samples } = scenario(-1500, 3000);
+	it('shows a shake of the hand as it was', () => {
+		const shake = (t: number) => (t >= 3000 && t < 3150 ? axisAngle(0, 0, 1, 25) : new THREE.Quaternion());
+		const { tokens, frames, samples } = scenario(-1500, shake);
 		const track = buildGyroTrack(samples, 0, tokens.map((k) => k.t), frames)!;
-		expect(deg(sampleGyroTrack(track, 3050), SQUARE_AFTER)).toBeLessThan(5);
+		expect(deg(sampleGyroTrack(track, 3050), SQUARE_AFTER)).toBeGreaterThan(20);
+	});
+
+	it('shows a look at the last layer as the tilt it was, even when the reconstruction took it for a rotation', () => {
+		// The detector read the look as an x, and its return as nothing: the frames stay a quarter off.
+		const { tokens, frames, samples } = scenario(-1500, look, [{ turn: 'x', completedAt: 3100 }]);
+		const track = buildGyroTrack(samples, 0, tokens.map((k) => k.t), frames)!;
+		const atTop = deg(sampleGyroTrack(track, 3150), SQUARE_AFTER);
+		expect(atTop).toBeGreaterThan(55);
+		expect(atTop).toBeLessThan(65);
+		expect(deg(sampleGyroTrack(track, 3600), SQUARE_AFTER)).toBeLessThan(3);
 	});
 
 	it('is not thrown off by a recording that starts mid-rotation', () => {
@@ -70,8 +87,9 @@ describe('buildGyroTrack', () => {
 		expect(deg(sampleGyroTrack(track, 600), SQUARE_BEFORE)).toBeLessThan(5);
 	});
 
-	it('squares a real GAN i4 solve whose first turn came mid-motion', () => {
+	it('anchors a real GAN i4 solve whose first turn came mid-motion', () => {
 		// Seeded from the first turn's reading, this solve's replay sat 114 degrees off throughout.
+		// What is left is the hand's own tilt and wobble, shown as it was: a median 23 degrees here.
 		const turns = parseSmartTurns(zperm.smart_turns);
 		const samples = decodeGyroSamples(zperm.smart_gyro);
 		const rotations = detectCubeRotations(samples.filter((s) => s.t <= turns[turns.length - 1].completedAt), turns);
@@ -85,7 +103,7 @@ describe('buildGyroTrack', () => {
 			while (k < tokens.length && tokens[k].t - t0 <= t) k++;
 			return deg(track.quats[i], frameToQuat(frames[k]));
 		}).sort((a, b) => a - b);
-		expect(off[Math.floor(off.length / 2)]).toBeLessThan(20);
+		expect(off[Math.floor(off.length / 2)]).toBeLessThan(30);
 	});
 
 	it('is null without a stream', () => {
