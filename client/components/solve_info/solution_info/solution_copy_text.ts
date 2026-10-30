@@ -41,10 +41,10 @@ function formatTps(solve: Solve): string {
  * turned "R" as their "L". `rotation` is that correction, and the cross line carries it as a
  * prefix so the reconstruction replays from the scrambled state.
  *
- * With gyro data the table shows the gyro reconstruction instead (rotation_reconstruction.ts),
- * and so does this: `gyro` is the table's holding and its token moves per step. Without it the
- * lines left out every rotation made during the solve, so a slot taken after a y read as
- * "B U' B'" and a U perm as noise, next to a table reading R U R' and M2.
+ * A gyro solve's table shows its reconstruction instead (state_reconstruction.ts), and so does
+ * this: `gyro` is the table's holding and its token moves per step. Without it the lines left
+ * out every rotation made during the solve, so a slot taken after a y read as "B U' B'" and a
+ * U perm as noise, next to a table reading R U R' and M2.
  */
 export function buildStepMoveLines(steps: CopyStep[], rotation: string, gyro?: GyroCopyMoves): string[] {
 	const lines: string[] = [];
@@ -60,7 +60,7 @@ export function buildStepMoveLines(steps: CopyStep[], rotation: string, gyro?: G
 	return lines;
 }
 
-/** The gyro reconstruction as the table shows it: the holding, and each step's token moves. */
+/** A gyro solve's reconstruction as the table shows it: the holding, and each step's token moves. */
 export interface GyroCopyMoves {
 	holding: string;
 	byStep: string[][];

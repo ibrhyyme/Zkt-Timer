@@ -22,6 +22,10 @@
  * solver frame wrong for every move after it, so the pair alone implies it, and a gyro
  * rotation of the same sense nearby is taken as that same turn, not counted again. A slower
  * pair (up to SLICE_PAIR_GYRO_MS) is a slice when the gyro confirmed it (gyro_rotations.ts).
+ *
+ * The Solution tab no longer shows this gyro reading: it shows the state reading
+ * (state_reconstruction.ts), which is built from the pieces exported here (frames, slices on
+ * timing, tidying, NATURAL) with no rotation from the gyro.
  */
 import { getPrettyMoves } from '../util/solve/pretty_moves';
 import type { ParsedTurn } from './parse_turns';
@@ -72,7 +76,7 @@ function quarters(suffix: string): number {
 	return suffix === '2' ? 2 : suffix === "'" ? 3 : 1;
 }
 
-function applyRotation(s: Frame, move: string): Frame {
+export function applyRotation(s: Frame, move: string): Frame {
 	const n = quarters(move.slice(1));
 	for (let i = 0; i < n; i++) s = rotateFrame(s, move[0]);
 	return s;
@@ -112,7 +116,7 @@ const MERGES: Record<string, { parts: string[]; move: string; kind: 'slice' | 'w
 	"z'": [{ parts: ['F', "B'"], move: "S'", kind: 'slice' }, { parts: ["B'"], move: "f'", kind: 'wide' }, { parts: ['F'], move: 'b', kind: 'wide' }],
 };
 
-interface FrameEvent {
+export interface FrameEvent {
 	t: number;
 	kind: 'turn' | 'rotation' | 'slice';
 	/** Core move: the turn, the rotation, or for a slice its implied core rotation. */
@@ -170,7 +174,7 @@ function gyroSawSlice(rotations: ParsedTurn[], token: string, a: ParsedTurn, b: 
  * half's rotation and left the frame a quarter off. A pair within SLICE_PAIR_MS is a slice on
  * timing alone; one up to SLICE_PAIR_GYRO_MS needs the gyro to have seen it.
  */
-function frameEvents(turns: ParsedTurn[], rotations: ParsedTurn[]): FrameEvent[] {
+export function frameEvents(turns: ParsedTurn[], rotations: ParsedTurn[]): FrameEvent[] {
 	const events: FrameEvent[] = [];
 	const slices: FrameEvent[] = [];
 	for (let i = 0; i < turns.length; i++) {
@@ -209,7 +213,7 @@ function solverTurn(frame: Frame, coreTurn: string): string {
 	return pos ? pos + coreTurn.slice(1) : coreTurn;
 }
 
-function holdingFrame(holding: string): Frame {
+export function holdingFrame(holding: string): Frame {
 	let frame = identityFrame();
 	for (const r of holding.split(' ').filter(Boolean)) frame = applyRotation(frame, r);
 	return frame;
@@ -217,10 +221,14 @@ function holdingFrame(holding: string): Frame {
 
 /** Core-frame turns and rotations as the solver saw them, in time order. */
 function toSolverFrame(turns: ParsedTurn[], rotations: ParsedTurn[], holding: string): ReconstructionToken[] {
-	let frame = holdingFrame(holding);
+	return readEvents(turns, frameEvents(turns, rotations), holdingFrame(holding)).tokens;
+}
+
+/** `events` read from `frame` on, and the frame they leave the solver in. */
+export function readEvents(turns: ParsedTurn[], events: FrameEvent[], frame: Frame): { tokens: ReconstructionToken[]; frame: Frame } {
 	const out: ReconstructionToken[] = [];
 	let turnsSeen = 0;
-	for (const e of frameEvents(turns, rotations)) {
+	for (const e of events) {
 		if (e.kind === 'turn') {
 			out.push({ move: solverTurn(frame, turns[e.raws[0]].turn), kind: 'turn', rawStart: e.raws[0], rawEnd: e.raws[0] + 1, raws: e.raws, t: e.t });
 			turnsSeen = e.raws[0] + 1;
@@ -240,7 +248,7 @@ function toSolverFrame(turns: ParsedTurn[], rotations: ParsedTurn[], holding: st
 		}
 		frame = applyRotation(frame, rotation);
 	}
-	return out;
+	return { tokens: out, frame };
 }
 
 /** Puts slice and wide moves back together around each quarter rotation. */
@@ -319,7 +327,7 @@ function withoutLooks(tokens: ReconstructionToken[]): ReconstructionToken[] {
  * the same slice (M' M' -> M2, the way an M2 arrives). Opposite slice quarters stay as two:
  * the solver turned the middle layer and back.
  */
-function combineRotations(tokens: ReconstructionToken[], breaks: Set<number>): ReconstructionToken[] {
+export function combineRotations(tokens: ReconstructionToken[], breaks: Set<number>): ReconstructionToken[] {
 	const out: ReconstructionToken[] = [];
 	for (const tok of tokens) {
 		// Nothing is combined across a step boundary: each half belongs to its own row.
@@ -389,11 +397,17 @@ function rotationOf(token: ReconstructionToken): string | null {
  */
 export function framesAlongTokens(tokens: ReconstructionToken[], holding = ''): Frame[] {
 	const frames: Frame[] = [holdingFrame(holding)];
+	for (const token of tokens) frames.push(frameAfter(frames[frames.length - 1], [token]));
+	return frames;
+}
+
+/** The frame `tokens` leave the solver in, starting from `frame`. */
+export function frameAfter(frame: Frame, tokens: ReconstructionToken[]): Frame {
 	for (const token of tokens) {
 		const rotation = rotationOf(token);
-		frames.push(rotation ? applyRotation(frames[frames.length - 1], rotation) : frames[frames.length - 1]);
+		if (rotation) for (const r of rotation.split(' ')) frame = applyRotation(frame, r);
 	}
-	return frames;
+	return frame;
 }
 
 /**
@@ -406,6 +420,11 @@ const NATURAL: Record<string, number> = {
 	r: 2, l: 1, u: 1, f: 1, d: 0, b: -2,
 };
 
+/** `weights` overrides NATURAL for some moves. */
+export function naturalScore(tokens: ReconstructionToken[], weights: Record<string, number> = {}): number {
+	return tokens.reduce((s, k) => s + (weights[k.move[0]] ?? NATURAL[k.move[0]] ?? 0), 0);
+}
+
 /**
  * The holding to read the solve with: `crossHolding` (which face was down, from the cross)
  * plus the front that makes the solve read most naturally. The cross fixes only the bottom;
@@ -417,8 +436,7 @@ export function bestHolding(turns: ParsedTurn[], rotations: ParsedTurn[], crossH
 	let bestScore = -Infinity;
 	for (const y of ['', 'y', 'y2', "y'"]) {
 		const holding = [crossHolding, y].filter(Boolean).join(' ');
-		const score = reconstructWithRotations(turns, rotations, holding)
-			.reduce((s, k) => s + (NATURAL[k.move[0]] ?? 0), 0);
+		const score = naturalScore(reconstructWithRotations(turns, rotations, holding));
 		if (score > bestScore) {
 			bestScore = score;
 			best = holding;

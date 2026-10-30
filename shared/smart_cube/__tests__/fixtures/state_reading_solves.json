@@ -1,0 +1,149 @@
+{
+ "note": "Real GAN i4 timer solves (owner, 2026-10-29/30): scramble, smart_turns exactly as saved, and the method steps (parents left out). No gyro stream: the state reading does not use it.",
+ "solves": [
+  {
+   "id": "8a4f3a79",
+   "why": "the gyro reading had a false x z in F2L and OLL 44 a quarter turn off",
+   "scramble": "D2 B' U2 L2 U2 L F2 L' U2 R2 F2 R' U2 B' U' B R2 D B L'",
+   "smart_turns": "L@0 U'@129 F@341 U'@645 F@916 U@1294 B'@1358 U@1718 U@1868 D@2463 D@2891 D'@3453 B@4058 D@4146 B'@4259 D@4381 B@4565 D'@4945 B'@4997 F@5660 F'@5806 D'@6154 L@6341 D@6525 L'@6628 D@6675 D@6736 R'@7000 D'@7119 R@7185 D'@7878 L@8104 D'@8169 L'@8287 D'@8424 D'@8631 L@8759 D'@8826 L'@8887 B'@9199 D'@9267 B@9368 L@9899 D'@9935 L'@10019 D'@10138 L'@10214 F@10274 L@10354 F'@10504 L@10562 D'@10612 L'@10664 D'@11136 L@11311 L'@11655 B@11739 D@11870 R@11997 D'@12054 R'@12097 B'@12215 D@12892 D@12944",
+   "steps": [
+    {
+     "step_name": "cross",
+     "turns": "L U' F U' F U B' U2"
+    },
+    {
+     "step_name": "f2l_1",
+     "turns": "D B D B' D B D' B'"
+    },
+    {
+     "step_name": "f2l_2",
+     "turns": "D' L D L' D2 R' D' R"
+    },
+    {
+     "step_name": "f2l_3",
+     "turns": "D' L D' L' D2 L D' L' B' D' B"
+    },
+    {
+     "step_name": "f2l_4",
+     "turns": "L D' L' D' L' F L F' L D' L'"
+    },
+    {
+     "step_name": "oll",
+     "turns": "D' B D R D' R' B' D2"
+    },
+    {
+     "step_name": "pll",
+     "turns": ""
+    }
+   ]
+  },
+  {
+   "id": "ac09fe86",
+   "why": "a y the gyro missed put a back slot down as B U B'",
+   "scramble": "F D L' F2 D2 R' B2 R2 U2 F2 U2 R D2 U' F L B' D U' R2",
+   "smart_turns": "U'@0 U'@62 R@389 B@603 F@1556 L'@1861 F@1932 F@2023 U@2177 D'@2798 D@3869 D@4151 B@4215 D@4356 B'@4440 D@4812 R@4948 D@5072 R'@5194 D@5915 B'@6032 L@6114 B@6211 L'@6417 D@6631 B@6706 D@6807 B'@6915 D@7374 D@7448 F'@7948 D@8031 F@8192 F@8237 F'@8414 F@8543 D@8636 F'@8705 F'@8807 F@9402 L@9583 D'@9976 L'@10285 L@10357 L'@10516 D'@10625 D'@10836 L@11633 D'@11705 L'@11793 D@11828 F'@12077 D'@12166 F@12256 D@12409 F@12953 D@13412 D@13612 F'@13708 D'@13792 F@13871 D@13933 F'@14007 D'@14074 F@14160 D'@14245 F'@14296 D'@15060 F'@15337 F'@15418 L@15469 L@15702 F@15757 R@15849 F'@15910 L@15958 L@16147 F@16232 R'@16297 F@16356 D'@16834",
+   "steps": [
+    {
+     "step_name": "cross",
+     "turns": "U2 R B F L' F2 U"
+    },
+    {
+     "step_name": "f2l_1",
+     "turns": "D B D B' D R D R'"
+    },
+    {
+     "step_name": "f2l_2",
+     "turns": "D B' L B L' D B D B'"
+    },
+    {
+     "step_name": "f2l_3",
+     "turns": "D2 F' D F2 D F'"
+    },
+    {
+     "step_name": "f2l_4",
+     "turns": "L D' L' D2 L D' L' D F' D' F"
+    },
+    {
+     "step_name": "oll",
+     "turns": "D F D2 F' D' F D F' D' F D' F'"
+    },
+    {
+     "step_name": "pll",
+     "turns": "D' F2 L2 F R F' L2 F R' F D'"
+    }
+   ]
+  },
+  {
+   "id": "4b1a73b8",
+   "why": "a false orientation in the cross shifted the whole gyro reading; G perm at the end",
+   "scramble": "L' B' D2 R2 F2 D2 L' F2 L' R' F2 R' D2 F R D B2 F2 D2 B",
+   "smart_turns": "F@0 L'@243 F@339 F@404 U@655 L'@719 F@773 L@862 U'@1127 D@1507 D@1730 R'@1822 D@1924 R@2336 D'@2386 R'@2464 D'@2527 R@2614 L'@3150 D'@3225 L@3294 D@3423 B'@3833 D@3946 B@4065 D@4485 D@4547 D'@5120 L@5210 D'@5282 L'@5326 D@5370 L@5458 D@5523 L'@5606 D'@6040 D'@6312 B@6570 D'@6650 D'@6828 B'@6902 D@6939 B@6987 D'@7026 B'@7088 D@7573 B@7737 B@7799 U@7860 B'@7932 D@8012 D@8043 B@8127 U'@8196 B'@8314 D@8350 D@8399 B'@8456 D'@9262 B'@9431 B@9670 B@9739 B@9840 D@10174 B'@10370 D@10415 B'@10489 B@10612 B'@10729 D'@10781 B@10852 D'@10973 B@11072 B@11115 D'@11157 U@11164 B'@11239 D@11317 U'@11400 U@11533 B@11702 U'@11770",
+   "steps": [
+    {
+     "step_name": "cross",
+     "turns": "F L' F2 U L' F L U'"
+    },
+    {
+     "step_name": "f2l_1",
+     "turns": "D2 R' D R D' R' D' R"
+    },
+    {
+     "step_name": "f2l_2",
+     "turns": "L' D' L D B' D B"
+    },
+    {
+     "step_name": "f2l_3",
+     "turns": "D L D' L' D L D L'"
+    },
+    {
+     "step_name": "f2l_4",
+     "turns": "D2 B D2 B' D B D' B'"
+    },
+    {
+     "step_name": "oll",
+     "turns": "D B2 U B' D2 B U' B' D2 B'"
+    },
+    {
+     "step_name": "pll",
+     "turns": "D' B2 D B' D B' D' B D' B2 D' U B' D B U'"
+    }
+   ]
+  },
+  {
+   "id": "2ba5ba1c",
+   "why": "a slice in the cross leaves the centres turned",
+   "scramble": "U R U2 L2 D2 L U2 F2 L2 U2 B2 F' L2 B' L B' L' R U'",
+   "smart_turns": "D@0 B'@130 R'@237 L@295 D'@498 B@572 B@644 L'@1809 D@1906 L@2017 D'@2094 B@2412 D@2543 B'@2652 D'@3014 D'@3165 L@3264 D@3442 L'@3511 D@3587 F'@3815 D'@3869 F@3976 R'@4766 D@4815 R@4978 R@5039 D@5099 R'@5167 D'@5766 F@5878 D'@5925 F'@5986 D@6037 D@6068 F@6134 D'@6168 F'@6218 D'@6656 F@6759 F'@6887 F@6949 D@7052 F'@7099 D'@7164 B@7272 F'@7279 R@7372 F@7430 R'@7501 B'@7573 D@8234 D@8319 F@8561 D'@8601 F'@8658 D'@8751 F@8818 D@8881 F@8943 U@8995 F'@9070 D'@9126 F@9163 U'@9247 F'@9333 F'@9412 F@9665 D@9738 D@9797 F'@9836 D@10178 D'@10290 D'@10444",
+   "steps": [
+    {
+     "step_name": "cross",
+     "turns": "D B' R' L D' B2"
+    },
+    {
+     "step_name": "f2l_1",
+     "turns": "L' D L D' B D B'"
+    },
+    {
+     "step_name": "f2l_2",
+     "turns": "D2 L D L' D F' D' F"
+    },
+    {
+     "step_name": "f2l_3",
+     "turns": "R' D R2 D R'"
+    },
+    {
+     "step_name": "f2l_4",
+     "turns": "D' F D' F' D2 F D' F'"
+    },
+    {
+     "step_name": "oll",
+     "turns": "D' F D F' D' B F' R F R' B'"
+    },
+    {
+     "step_name": "pll",
+     "turns": "D2 F D' F' D' F D F U F' D' F U' F' D2 F' D'"
+    }
+   ]
+  }
+ ]
+}

@@ -8,7 +8,8 @@ import { STICKER_PALETTE } from '../../timer/smart_cube/cube_view/cube_palette';
 import { useMe } from '../../../util/hooks/useMe';
 import { canSeeSmartAnalysis } from '../../../lib/pro';
 import { decodeGyroSamples } from '../../../../shared/smart_cube/gyro_codec';
-import { detectCubeRotations } from '../../../../shared/smart_cube/gyro_rotations';
+import { reconstructFromState } from '../../../../shared/smart_cube/state_reconstruction';
+import { useLastLayerAlgs } from './useLastLayerAlgs';
 import './SolutionInfo.scss';
 import CopyText from '../../common/copy_text/CopyText';
 import { getSolveStepsWithoutParents } from '../util/solution';
@@ -21,10 +22,8 @@ import { useFlattenedMoves } from './replay/useFlattenedMoves';
 import { buildSmartSolveCopyText, buildSmartSolveDetailedCopyText } from './solution_copy_text';
 import { parseSmartTurns } from '../../../../shared/smart_cube/parse_turns';
 import {
-	bestHolding,
 	ReconstructionToken,
 	framesAlongTokens,
-	reconstructWithRotations,
 	splitTurnsBySteps,
 } from '../../../../shared/smart_cube/rotation_reconstruction';
 
@@ -87,7 +86,8 @@ export default function SolutionInfo(props: Props) {
 
 	// The raw gyro stream and the owner's verdict (in no sync read). solveReplayData answers the
 	// owner, and with the share code anyone viewing the shared link, so they see the cube move as
-	// it did; on the same Pro rule as this tab. One request for the table and the replay both.
+	// it did; on the same Pro rule as this tab. Only the replay and the vote use it: the table
+	// does not wait for it.
 	const me = useMe();
 	const canFetchReplayData = canSeeSmartAnalysis(me, solve.user) && solve.smart_rotations != null && !!solve.id;
 	const replayVariables = { id: solve.id, shareCode: solve.share_code || null };
@@ -100,42 +100,48 @@ export default function SolutionInfo(props: Props) {
 	const rawGyro = replayData?.solveReplayData?.smart_gyro;
 	const gyroSamples = useMemo(() => decodeGyroSamples(rawGyro), [rawGyro]);
 
-	// With gyro data, each row shows the moves as the solver held the cube: the rotations
-	// they made, and slices / wide moves put back together (rotation_reconstruction.ts).
-	// Null keeps the plain rows: no gyro data, or steps that do not line up with the turns.
-	// Keyed on the step moves, not the array: `steps` is rebuilt on every render, and the
-	// replay re-renders this on every move it plays.
+	// Which raw turns each step was built from, for the rows and the slot marks both. Keyed on
+	// the step moves, not the array: `steps` is rebuilt on every render, and the replay
+	// re-renders this on every move it plays.
 	const stepTurnsKey = steps.map((s) => s.turns || '').join('|');
-	// The replay then steps through these same tokens, so a replay position is a token: a
-	// rotation is a step of its own, an M2 plays as one, and the row highlight is exact.
-	const gyro = useMemo((): {
-		holding: string;
-		/** Position of each step's first token. */
-		offsets: number[];
-		byStep: ReconstructionToken[][];
-		replay: GyroReplay;
-	} | null => {
-		// An empty value is a gyro solve with no rotation in it, still read this way (its
-		// slices, its front); only a missing one means no gyro.
-		if (solve.smart_rotations == null || !solve.smart_turns) return null;
+	const stepNamesKey = steps.map((s) => s.step_name).join('|');
+	const ranges = useMemo(() => {
+		if (!solve.smart_turns) return null;
+		return splitTurnsBySteps(parseSmartTurns(solve.smart_turns).map((tu) => tu.turn), stepTurnsKey.split('|'));
+	}, [solve.smart_turns, stepTurnsKey]);
+
+	// The two side colours of the slot each F2L step filled, played out on a cube from the
+	// recorded turns; any smart solve has them, gyro or not.
+	const slotFaces = useMemo(() => {
+		if (!solve.smart_turns || !solve.scramble || !ranges) return null;
+		const turns = parseSmartTurns(solve.smart_turns).map((tu) => tu.turn);
+		const crossFace = crossStep ? getCrossSide(solve.scramble, crossStep.turns) : null;
+		return f2lSlotFaces(solve.scramble, turns, ranges, stepNamesKey.split('|'), crossFace);
+	}, [solve.smart_turns, solve.scramble, ranges, stepNamesKey, crossStep?.turns]);
+
+	// A gyro solve's rows show the moves as the solver held the cube: the rotation each step
+	// was held with, slices put together, a known OLL / PLL written as that algorithm
+	// (state_reconstruction.ts). Read from the moves and the cube's state alone; the gyro only
+	// turns the replay. Null keeps the plain rows: no gyro solve, or steps that do not line up
+	// with the turns.
+	const isGyroSolve = solve.smart_rotations != null && !!solve.smart_turns;
+	const lastLayerAlgs = useLastLayerAlgs(isGyroSolve);
+	// The replay steps through these same tokens, so a replay position is a token: a rotation
+	// is a step of its own, an M2 plays as one, and the row highlight is exact.
+	const reading = useMemo(() => {
+		if (!isGyroSolve || !ranges) return null;
 		const turns = parseSmartTurns(solve.smart_turns);
-		const ranges = splitTurnsBySteps(
-			turns.map((tu) => tu.turn),
-			stepTurnsKey.split('|')
+		if (!turns.length) return null;
+		const names = stepNamesKey.split('|');
+		const { holding, tokens } = reconstructFromState(
+			turns,
+			ranges.map((range, i) => ({
+				range,
+				slot: slotFaces?.[i] ? ([slotFaces[i]!.left, slotFaces[i]!.right] as const) : null,
+				algs: names[i] === 'oll' ? lastLayerAlgs?.oll : names[i] === 'pll' ? lastLayerAlgs?.pll : null,
+			})),
+			rotation
 		);
-		if (!ranges || !turns.length) return null;
-		// With the raw stream at hand the rotations are detected again, with today's detector, the
-		// same way the save did (gyro_recorder.ts): a fix to detection reaches solves already
-		// stored, and the table reads off the same data the replay turns the cube by. Without
-		// it (offline, a solve recorded before the stream was kept) the stored ones stand.
-		const first = turns[0].completedAt;
-		const last = turns[turns.length - 1].completedAt;
-		const rotations = gyroSamples.length
-			? detectCubeRotations(gyroSamples.filter((s) => s.t <= last), turns).filter((r) => r.completedAt >= first)
-			: parseSmartTurns(solve.smart_rotations);
-		// The cross fixes which face was down; the front is the one the solve reads best with.
-		const holding = bestHolding(turns, rotations, rotation);
-		const tokens = reconstructWithRotations(turns, rotations, holding, ranges.map(([start]) => start));
 		const byStep = ranges.map(([start, end]) => tokens.filter((k) => k.rawStart >= start && k.rawStart < end));
 		const offsets: number[] = [];
 		let at = 0;
@@ -143,42 +149,37 @@ export default function SolutionInfo(props: Props) {
 			offsets.push(at);
 			at += stepTokens.length;
 		}
-		const ordered = byStep.flat();
-		const t0 = turns[0]?.completedAt ?? 0;
+		const t0 = turns[0].completedAt;
 		return {
 			holding,
+			/** Position of each step's first token. */
 			offsets,
 			byStep,
-			replay: {
-				moves: byStep.flatMap((stepTokens, stepIdx) =>
-					stepTokens.map((k) => ({
-						// The core turns behind the token, as the cube reported them; none for a rotation.
-						move: k.raws.map((r) => turns[r].turn).join(' '),
-						relativeMs: k.t - t0,
-						stepIdx,
-					}))
-				),
-				frames: framesAlongTokens(ordered, holding),
-				stepStarts: offsets,
-				t0,
+			moves: byStep.flatMap((stepTokens, stepIdx) =>
+				stepTokens.map((k) => ({
+					// The core turns behind the token, as the cube reported them; none for a rotation.
+					move: k.raws.map((r) => turns[r].turn).join(' '),
+					relativeMs: k.t - t0,
+					stepIdx,
+				}))
+			),
+			frames: framesAlongTokens(byStep.flat(), holding),
+			t0,
+		};
+	}, [isGyroSolve, solve.smart_turns, ranges, slotFaces, stepNamesKey, rotation, lastLayerAlgs]);
+	const gyroReplay = useMemo(
+		(): GyroReplay | null =>
+			reading && {
+				moves: reading.moves,
+				frames: reading.frames,
+				stepStarts: reading.offsets,
+				t0: reading.t0,
 				samples: gyroSamples,
 			},
-		};
-	}, [solve.smart_rotations, solve.smart_turns, stepTurnsKey, rotation, gyroSamples]);
-	const gyroTokensByStep = gyro?.byStep || null;
-	const holdingShown = gyro ? gyro.holding : rotation;
-
-	// The two side colours of the slot each F2L step filled, played out on a cube from the
-	// recorded turns; any smart solve has them, gyro or not.
-	const stepNamesKey = steps.map((s) => s.step_name).join('|');
-	const slotFaces = useMemo(() => {
-		if (!solve.smart_turns || !solve.scramble) return null;
-		const turns = parseSmartTurns(solve.smart_turns).map((tu) => tu.turn);
-		const ranges = splitTurnsBySteps(turns, stepTurnsKey.split('|'));
-		if (!ranges) return null;
-		const crossFace = crossStep ? getCrossSide(solve.scramble, crossStep.turns) : null;
-		return f2lSlotFaces(solve.scramble, turns, ranges, stepNamesKey.split('|'), crossFace);
-	}, [solve.smart_turns, solve.scramble, stepTurnsKey, stepNamesKey, crossStep?.turns]);
+		[reading, gyroSamples]
+	);
+	const readingByStep: ReconstructionToken[][] | null = reading?.byStep || null;
+	const holdingShown = reading ? reading.holding : rotation;
 
 	// Replay state — SolutionInfo tutuyor, ReplayPlayer'a controlled prop olarak geciyor.
 	// Boylece tablo da aktif hamleyi highlight edebilir + step row'a tiklanca seek edebilir.
@@ -195,7 +196,7 @@ export default function SolutionInfo(props: Props) {
 		solve,
 		steps,
 		rotation,
-		gyro ? { holding: gyro.holding, byStep: gyro.byStep.map((tokens) => tokens.map((k) => k.move)) } : undefined
+		reading ? { holding: reading.holding, byStep: reading.byStep.map((tokens) => tokens.map((k) => k.move)) } : undefined
 	);
 
 	return (
@@ -224,10 +225,10 @@ export default function SolutionInfo(props: Props) {
 					<tbody>
 						{steps.map((step, sIdx) => {
 							const isCross = step.step_name === 'cross';
-							const stepStartGlobal = gyro ? gyro.offsets[sIdx] : (stepStartIndices[sIdx] ?? 0);
+							const stepStartGlobal = reading ? reading.offsets[sIdx] : (stepStartIndices[sIdx] ?? 0);
 							// Step toplam quarter sayisi = sIdx step'inin tum tokenlarinin quarter toplam'i
-							const stepQuarterCount = gyro
-								? gyro.byStep[sIdx].length
+							const stepQuarterCount = reading
+								? reading.byStep[sIdx].length
 								: (tokenQuarterCounts[sIdx] || []).reduce((s, n) => s + n, 0);
 							// Step row aktif mi? currentMoveIdx = "siradaki uygulanacak quarter" pozisyonu.
 							const isActiveStep = currentMoveIdx >= stepStartGlobal &&
@@ -249,7 +250,7 @@ export default function SolutionInfo(props: Props) {
 										{isCross && holdingShown && (
 											<span className={b('rotation')}>{holdingShown}</span>
 										)}
-										{gyroTokensByStep && gyroTokensByStep[sIdx].map((token, kIdx) => {
+										{readingByStep && readingByStep[sIdx].map((token, kIdx) => {
 											// One replay position per token here.
 											const position = stepStartGlobal + kIdx;
 											const isCurrent = currentMoveIdx - 1 === position;
@@ -266,7 +267,7 @@ export default function SolutionInfo(props: Props) {
 												</span>
 											);
 										})}
-										{!gyroTokensByStep && ((step.turns || '').split(' ').filter(Boolean) as string[]).map((rawMove: string, mIdx: number) => {
+										{!readingByStep && ((step.turns || '').split(' ').filter(Boolean) as string[]).map((rawMove: string, mIdx: number) => {
 											// Bu token hangi flat-quarter aralikta? U3 → 3 quarter'i kapsar.
 											const tokenStart = (tokenStartIndices[sIdx] || [])[mIdx] ?? (stepStartGlobal + mIdx);
 											const tokenQuarters = (tokenQuarterCounts[sIdx] || [])[mIdx] ?? 1;
@@ -298,7 +299,7 @@ export default function SolutionInfo(props: Props) {
 					</tbody>
 				</table>
 				{/* The verdict is the owner's; a viewer of the shared link is not asked. */}
-				{gyro && replayData?.solveReplayData?.is_owner && (
+				{reading && replayData?.solveReplayData?.is_owner && (
 					<ReconstructionVote
 						replayVariables={replayVariables}
 						vote={replayData.solveReplayData.reconstruction_vote ?? null}
@@ -310,7 +311,7 @@ export default function SolutionInfo(props: Props) {
 					solve={solve}
 					steps={steps}
 					rotation={holdingShown}
-					gyroReplay={gyro?.replay || null}
+					gyroReplay={gyroReplay}
 					currentMoveIdx={currentMoveIdx}
 					onMoveIdxChange={setCurrentMoveIdx}
 				/>
