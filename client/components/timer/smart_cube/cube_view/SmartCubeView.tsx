@@ -1,33 +1,27 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import * as THREE from 'three';
-import Cube from 'cubejs';
-import type { TwistyPlayer } from 'cubing/twisty';
-import { solveAsync } from '../../../../util/solver_worker_manager';
-import { getReverseTurns } from '../../../../util/solve/turns';
-import { onVisibilityChange } from '../../../../util/app-visibility';
-import { DEFAULT_SOLVED_STATE } from '../../../../util/smart_cube';
+import { isAppVisible, onVisibilityChange } from '../../../../util/app-visibility';
 import type { SmartTurn } from '../../../../util/smart_scramble';
 import { getSmartCubeManager } from '../../../../util/smart_cube/connection_manager';
-import { solve2x2 } from '../../../../util/smart_cube/cube2x2';
 import type { SmartCubePuzzle } from '../../../../../shared/smart_cube/puzzle';
-import { recolorPuzzle, stickerPaletteFromFaceColors } from './cube_palette';
 import { useCubePalette } from '../../../../util/cube_colors/useCubePalette';
 import { HOME_TILT_DEG, HOME_TURN_DEG } from './view_defaults';
+import { CubeRenderer } from './render/cube_renderer';
 
 /**
  * The 3D cube that mirrors a connected smart cube: turns animate as they arrive and the
- * gyroscope (when the cube has one) rotates the whole scene.
+ * gyroscope (when the cube has one) rotates the whole cube.
  *
  * Extracted from SmartCube.tsx so friendly rooms can show the same thing. The rules that
- * decide anything about a solve live in the shared engine; this component only draws.
+ * decide anything about a solve live in the shared engine; this component only draws, with
+ * our own renderer (render/).
  */
 
 export interface SmartCubeViewHandle {
 	/**
-	 * Replay the cube to a reported state. The player is driven by moves, so a state is
-	 * reached by applying the inverse of its solution. Called when the engine re-anchors
-	 * its tracker, otherwise the view keeps showing a state that never happened.
+	 * Show a reported state. Called when the engine re-anchors its tracker, otherwise the
+	 * view keeps showing a state that never happened.
 	 */
 	syncToFacelets: (facelets: string) => void;
 	/** Drop the gyro basis so the next reading re-establishes "home" orientation. */
@@ -38,7 +32,7 @@ interface Props {
 	/** Re-subscribes the gyro when this flips, since a new connection means a new cube. */
 	connected: boolean;
 	size: number;
-	/** Kept mounted but collapsed: tearing the player down would lose the visual state. */
+	/** Kept mounted but collapsed: tearing the renderer down would lose the visual state. */
 	hidden?: boolean;
 	/**
 	 * When the caller clears its turn stream right after a scramble finishes, the visual
@@ -56,6 +50,10 @@ interface Props {
 	 * Redux — without this the second cube would have nothing to draw from.
 	 */
 	turns?: SmartTurn[];
+	/**
+	 * Not read any more: it only guarded the old solve-and-replay sync against turns landing
+	 * mid-solve, and states are now drawn directly. Still accepted so battle compiles unchanged.
+	 */
 	facelets?: string | null;
 	/** Null disables the gyroscope (battle draws no gyro). Undefined means the app-wide manager. */
 	gyroSource?: { subscribeGyro: (listener: (event: any) => void) => () => void } | null;
@@ -64,14 +62,12 @@ interface Props {
 }
 
 const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeView(
-	{ connected, size, hidden, keepVisualOnClear, onStreamCleared, turns, facelets, gyroSource, puzzle: puzzleProp },
+	{ connected, size, hidden, keepVisualOnClear, onStreamCleared, turns, gyroSource, puzzle: puzzleProp },
 	ref
 ) {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const twistyPlayerRef = useRef<TwistyPlayer | null>(null);
+	const rendererRef = useRef<CubeRenderer | null>(null);
 
-	const twistySceneRef = useRef<THREE.Scene | null>(null);
-	const twistyVantageRef = useRef<any>(null);
 	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
 	// The viewing angle (see view_defaults.ts). The idle cube, the gyro view and "reset
 	// gyro" all derive from this one quaternion, so they move together.
@@ -81,150 +77,86 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 		)
 	);
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
-	const animFrameRef = useRef<number | null>(null);
-	// Sticker palette: which puzzle instances are already repainted, and whether the
-	// current scene still needs checking. See cube_palette.ts for why this is needed.
-	const paletteDoneRef = useRef(new WeakSet<object>());
-
-	// The user's own sticker colours. `paletteKey` is what the player's effect depends on:
-	// recolouring is one-shot per puzzle instance (it matches on the renderer's stock colours,
-	// which are gone after the first pass), so a changed palette has to rebuild the player
-	// rather than repaint it.
-	const cubeColors = useCubePalette();
-	const paletteKey = cubeColors.nxn.join(',');
-	const stickerPalette = useMemo(() => stickerPaletteFromFaceColors(cubeColors.nxn), [paletteKey]);
-	const stickerPaletteRef = useRef(stickerPalette);
-	stickerPaletteRef.current = stickerPalette;
-	const recolorPendingRef = useRef(true);
 	const appliedTurnsRef = useRef(0);
+
+	// The user's own sticker colours, applied in place: a palette change keeps the cube's state.
+	const cubeColors = useCubePalette();
+	const faceColorsRef = useRef(cubeColors.nxn);
+	faceColorsRef.current = cubeColors.nxn;
+	const paletteKey = cubeColors.nxn.join(',');
 
 	// Hooks run unconditionally; the props simply win when a caller supplies them.
 	const reduxTurns: SmartTurn[] = useSelector((state: any) => state.timer?.smartTurns || []);
-	const reduxFacelets: string | null = useSelector((state: any) => state.smartCube?.smartCurrentState || null);
 	const reduxPuzzle: SmartCubePuzzle = useSelector((state: any) => state.smartCube?.smartCubePuzzle || '333');
 	const puzzle = puzzleProp ?? reduxPuzzle;
 
 	const smartTurns: SmartTurn[] = turns ?? reduxTurns;
-	const smartCurrentState: string | null = facelets !== undefined ? facelets : reduxFacelets;
-	const smartCurrentStateRef = useRef(smartCurrentState);
-	smartCurrentStateRef.current = smartCurrentState;
 
 	// Props read inside long-lived callbacks; refs keep them current without re-subscribing.
 	const keepVisualRef = useRef(keepVisualOnClear);
 	keepVisualRef.current = keepVisualOnClear;
 	const onStreamClearedRef = useRef(onStreamCleared);
 	onStreamClearedRef.current = onStreamCleared;
+	const sizeRef = useRef(size);
+	sizeRef.current = size;
+	const hiddenRef = useRef(hidden);
+	hiddenRef.current = hidden;
 
-	// ── TwistyPlayer lifecycle ──
+	// ── Renderer lifecycle ──
+	// Rebuilt only for a different puzzle. Like the player it replaced, a new renderer starts
+	// solved and the move mirror carries on from the turns already applied.
 	useEffect(() => {
-		if (!containerRef.current) return;
+		const container = containerRef.current;
+		if (!container) return undefined;
 
-		containerRef.current.innerHTML = '';
-		if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+		let cube: CubeRenderer;
+		try {
+			cube = new CubeRenderer({
+				size: puzzle === '222' ? 2 : 3,
+				faceColors: faceColorsRef.current,
+				tableTilt: (HOME_TILT_DEG * Math.PI) / 180,
+				orientation: cubeQuaternion.current,
+			});
+		} catch (error) {
+			// No WebGL (blocked, lost, very old device): the rest of the page still works.
+			console.error('[SmartCubeView] 3D view unavailable:', error);
+			return undefined;
+		}
+		container.appendChild(cube.canvas);
+		cube.resize(sizeRef.current);
+		cube.setActive(!hiddenRef.current && isAppVisible());
+		rendererRef.current = cube;
 
-		let twisty: TwistyPlayer;
-		let cancelled = false;
-		let unsubVisibility: (() => void) | undefined;
-
-		const initTwisty = async () => {
-			try {
-				const { TwistyPlayer } = await import('cubing/twisty');
-				if (cancelled) return;
-
-				twisty = new TwistyPlayer({
-					puzzle: puzzle === '222' ? '2x2x2' : '3x3x3',
-					visualization: 'PG3D',
-					alg: '',
-					experimentalSetupAnchor: 'start',
-					background: 'none',
-					controlPanel: 'none',
-					hintFacelets: 'none',
-					experimentalDragInput: 'none',
-					cameraLatitude: 0,
-					cameraLongitude: 0,
-					cameraLatitudeLimit: 0,
-					tempoScale: 5, // Same as reference (gan-cube-sample): visible but fast
-				});
-
-				if (containerRef.current) {
-					containerRef.current.appendChild(twisty);
-					twisty.style.width = '100%';
-					twisty.style.height = '100%';
-					twistyPlayerRef.current = twisty;
-				}
-
-				let animRunning = true;
-
-				const animate = async () => {
-					if (cancelled || !animRunning) return;
-
-					if (!twistySceneRef.current || !twistyVantageRef.current) {
-						try {
-							const vantageList = await (twisty as any).experimentalCurrentVantages();
-							twistyVantageRef.current = [...vantageList][0];
-							twistySceneRef.current = await twistyVantageRef.current.scene.scene();
-							// A (re)acquired scene may hold a puzzle that has not been repainted.
-							recolorPendingRef.current = true;
-						} catch (e) {
-							// Scene not ready yet
-						}
-					}
-
-					if (twistySceneRef.current && twistyVantageRef.current) {
-						// The puzzle object appears a little after the scene does, so keep
-						// looking until it is there; once found this costs nothing more.
-						if (recolorPendingRef.current) {
-							const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current, stickerPaletteRef.current);
-							if (result !== 'not-found') recolorPendingRef.current = false;
-						}
-						twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
-						twistyVantageRef.current.render();
-					}
-
-					animFrameRef.current = requestAnimationFrame(animate);
-				};
-				animate();
-
-				// A backgrounded tab should not keep a render loop alive.
-				unsubVisibility = onVisibilityChange((visible) => {
-					if (visible && !animRunning && !cancelled) {
-						animRunning = true;
-						animate();
-					} else if (!visible) {
-						animRunning = false;
-						if (animFrameRef.current) {
-							cancelAnimationFrame(animFrameRef.current);
-							animFrameRef.current = null;
-						}
-					}
-				});
-			} catch (error) {
-				console.error('Failed to load TwistyPlayer:', error);
-			}
-		};
-
-		initTwisty();
+		// A backgrounded tab should not keep drawing.
+		const unsubVisibility = onVisibilityChange((visible) => cube.setActive(visible && !hiddenRef.current));
 
 		return () => {
-			cancelled = true;
-			unsubVisibility?.();
-			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-			if (containerRef.current) containerRef.current.innerHTML = '';
+			unsubVisibility();
+			cube.dispose();
+			if (rendererRef.current === cube) rendererRef.current = null;
 		};
-	}, [paletteKey, puzzle]);
+	}, [puzzle]);
+
+	useEffect(() => {
+		rendererRef.current?.setFaceColors(faceColorsRef.current);
+	}, [paletteKey]);
+
+	useEffect(() => {
+		rendererRef.current?.resize(size);
+	}, [size]);
+
+	useEffect(() => {
+		rendererRef.current?.setActive(!hidden && isAppVisible());
+	}, [hidden]);
 
 	// ── Move mirror ──
 	useEffect(() => {
-		if (smartTurns.length > appliedTurnsRef.current && twistyPlayerRef.current) {
-			const newTurns = smartTurns.slice(appliedTurnsRef.current);
-			newTurns.forEach((turnObj) => {
-				(twistyPlayerRef.current as any).experimentalAddMove(turnObj.turn, { cancel: false });
-			});
+		const cube = rendererRef.current;
+		if (smartTurns.length > appliedTurnsRef.current && cube) {
+			for (const turnObj of smartTurns.slice(appliedTurnsRef.current)) cube.addMove(turnObj.turn);
 			appliedTurnsRef.current = smartTurns.length;
 		} else if (smartTurns.length === 0 && appliedTurnsRef.current > 0) {
-			if (!keepVisualRef.current) {
-				resetVisualToSolved();
-			}
+			if (!keepVisualRef.current) cube?.reset();
 			appliedTurnsRef.current = 0;
 			onStreamClearedRef.current?.();
 		}
@@ -254,46 +186,25 @@ const SmartCubeView = forwardRef<SmartCubeViewHandle, Props>(function SmartCubeV
 			cubeQuaternion.current.copy(
 				quat.premultiply(gyroBasisRef.current).premultiply(HOME_ORIENTATION.current)
 			);
+			rendererRef.current?.setOrientation(cubeQuaternion.current);
 		});
 
 		return () => unsubscribe();
 	}, [connected, gyroSource]);
 
-	function resetVisualToSolved() {
-		if (!twistyPlayerRef.current) return;
-		twistyPlayerRef.current.alg = '';
-		// The scene object is replaced when alg is reset; drop the cached handles.
-		twistySceneRef.current = null;
-		twistyVantageRef.current = null;
-	}
-
 	useImperativeHandle(ref, () => ({
-		syncToFacelets: async (facelets: string) => {
-			const twisty = twistyPlayerRef.current;
-			if (!twisty) return;
-			try {
-				resetVisualToSolved();
-				appliedTurnsRef.current = smartTurns.length;
-				if (facelets === DEFAULT_SOLVED_STATE) return;
-
-				// A 2x2 state is corners only; the 3x3 solver refuses it (see cube2x2.ts).
-				const solution = puzzle === '222'
-					? (solve2x2(facelets) || []).join(' ')
-					: await solveAsync(Cube.fromString(facelets).toJSON());
-				// The solve runs in a worker; if the cube moved meanwhile, replaying the setup
-				// would fight with the moves the mirror effect already applied.
-				if (smartCurrentStateRef.current !== facelets) return;
-
-				for (const move of getReverseTurns((solution || '').trim())) {
-					(twisty as any).experimentalAddMove(move, { cancel: false });
-				}
-			} catch (e) {
-				console.warn('[SmartCubeView] visual sync to physical state failed:', e);
-			}
+		syncToFacelets: (facelets: string) => {
+			const cube = rendererRef.current;
+			if (!cube) return;
+			appliedTurnsRef.current = smartTurns.length;
+			// The state is drawn directly. No solve and replay, so no window in which a turn
+			// arriving mid-sync could be applied twice.
+			cube.setFacelets(facelets);
 		},
 		resetGyro: () => {
 			gyroBasisRef.current = null;
 			cubeQuaternion.current.copy(HOME_ORIENTATION.current);
+			rendererRef.current?.setOrientation(cubeQuaternion.current);
 		},
 	}));
 
