@@ -2,11 +2,12 @@
  * twisty_slots: a small budget for live 3D players (cubing.js TwistyPlayer) in card grids
  * (trainer-sets 5.6).
  *
- * Categories without a 2D pattern file (F2L, ZBLS, L6E...) fall back to a 3D TwistyPlayer. A
- * picker step with 164 F2L cards that all open a WebGL player is too much for a phone, so at most
- * MAX_TWISTY_SLOTS players live at once: a card asks for a slot when it scrolls into view and
- * gives it back when it scrolls out (its player is removed). Cards that ask while the budget is
- * full wait in order and get a slot as soon as one frees.
+ * Categories without a 2D pattern file (F2L, ZBLS, L6E...) fall back to a 3D picture
+ * (case_snapshot.ts: our engine for 2x2 and 3x3, a cubing.js player for other puzzles). A
+ * picker step with 164 F2L cards that all draw at once is too much for a phone, so at most
+ * MAX_TWISTY_SLOTS drawings run at once: a card asks for a slot when it scrolls into view and
+ * gives it back when it scrolls out. Cards that ask while the budget is full wait in order and
+ * get a slot as soon as one frees.
  *
  * Pure and React free so the rule is testable in node.
  */

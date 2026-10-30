@@ -272,7 +272,11 @@ export class Stage {
 	private reach: number;
 	shadowDirty = true;
 
-	constructor(canvas: HTMLCanvasElement, quality: CubeQuality, puzzleHalf: number, tableTilt: THREE.Quaternion) {
+	/**
+	 * `floor: false` leaves out the table and its shadow and centres the camera on the cube: a
+	 * still picture (trainer case images) is the cube alone, as large as the frame allows.
+	 */
+	constructor(canvas: HTMLCanvasElement, quality: CubeQuality, puzzleHalf: number, tableTilt: THREE.Quaternion, {floor = true} = {}) {
 		this.quality = quality;
 		this.config = QUALITY[quality];
 		this.reach = puzzleHalf * Math.sqrt(3) + 0.02;
@@ -303,7 +307,7 @@ export class Stage {
 		// frame, and far enough that the cube's whole reach still fits from there.
 		this.camera = new THREE.PerspectiveCamera(FOV, 1, 1, 100);
 		const halfFov = THREE.MathUtils.degToRad(FOV / 2);
-		const drop = puzzleHalf * CAMERA_DROP;
+		const drop = floor ? puzzleHalf * CAMERA_DROP : 0;
 		let distance = this.reach / Math.sin(halfFov);
 		while (Math.atan(drop / distance) + Math.asin(this.reach / distance) > halfFov) distance += 0.05;
 		this.camera.position.set(0, -drop, distance);
@@ -330,16 +334,18 @@ export class Stage {
 
 		// The table is level in the tilted frame the cube rests in, so the camera sees it from
 		// above even though the camera itself looks straight ahead.
-		this.floor.quaternion.copy(tableTilt);
-		const floorHeight = -(puzzleHalf + FLOOR_GAP);
-		const floorWidth = this.reach * 2.6;
-		this.contact = new ContactShadow(floorWidth, puzzleHalf * 3.2);
-		this.contact.group.position.y = floorHeight;
-		this.floor.add(this.contact.group);
-		this.blob = blobShadow(puzzleHalf * 3.4);
-		this.blob.position.y = floorHeight;
-		this.floor.add(this.blob);
-		this.scene.add(this.floor);
+		if (floor) {
+			this.floor.quaternion.copy(tableTilt);
+			const floorHeight = -(puzzleHalf + FLOOR_GAP);
+			const floorWidth = this.reach * 2.6;
+			this.contact = new ContactShadow(floorWidth, puzzleHalf * 3.2);
+			this.contact.group.position.y = floorHeight;
+			this.floor.add(this.contact.group);
+			this.blob = blobShadow(puzzleHalf * 3.4);
+			this.blob.position.y = floorHeight;
+			this.floor.add(this.blob);
+			this.scene.add(this.floor);
+		}
 
 		this.applyQuality();
 	}
@@ -415,6 +421,12 @@ export class Stage {
 		this.cssSize = Math.max(1, Math.round(cssSize));
 		this.renderer.setPixelRatio(this.pixelRatio);
 		this.renderer.setSize(this.cssSize, this.cssSize, false);
+	}
+
+	/** Exactly this many pixels a side, whatever the screen: for a picture, not a view. */
+	setPixels(pixels: number) {
+		this.pixelRatio = 1;
+		this.resize(pixels);
 	}
 
 	render() {

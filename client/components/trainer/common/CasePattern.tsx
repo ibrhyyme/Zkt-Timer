@@ -7,8 +7,9 @@
  *   Pyraminx, Skewb, Square-1) → 3D picture.
  *
  * The 3D picture is drawn once per case and orientation per device (case_snapshot.ts, kept in
- * IndexedDB) by a short-lived offscreen player when the case comes on screen, inside the shared
- * budget of twisty_slots (at most 8 players at once), and then shown as an image. The pattern
+ * IndexedDB) when the case comes on screen, offscreen (2x2 and 3x3 by our cube engine, other
+ * puzzles by a short-lived cubing.js player), inside the shared budget of twisty_slots (at most
+ * 8 drawings at once), and then shown as an image. The pattern
  * files load once from Trainer.tsx; until they are there a pattern category shows an empty box,
  * never a 3D picture it would throw away a moment later.
  *

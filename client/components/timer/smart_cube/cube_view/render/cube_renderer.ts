@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { stickerPaletteFromFaceColors } from '../cube_palette';
-import { AXES, CubeModel, type PuzzleSize } from './cube_model';
+import { AXES, CubeModel, type Cap, type PuzzleSize } from './cube_model';
 import { DIM, buildBodyGeometry, buildCapGeometry, capKindAt, capMatrix, capShapeFor, logoHome, logoMatrix, type CapKind } from './geometry';
 import { createBodyMaterial, createCapMaterial, createLogoMaterial, linearColor, type BodyUniforms } from './materials';
 import { layerTurns } from './notation';
@@ -34,7 +34,29 @@ export interface CubeRendererOptions {
 	tableTilt: number;
 	orientation: THREE.Quaternion;
 	quality?: CubeQuality;
+	/** No table and shadow, the cube centred (see Stage). Default true. */
+	floor?: boolean;
+	/** The logo on the U centre. Default true. */
+	logo?: boolean;
 }
+
+/**
+ * How a cap is drawn, as cubing.js stickering masks have it: in its colour, dimmed (half
+ * the colour; a light colour stays light, as cubing.js keeps dimmed white light grey), one
+ * flat grey ("ignored", as the trainer's 2D patterns draw a sticker that does not matter), or
+ * not at all.
+ */
+export type CapLook = 'regular' | 'dim' | 'ignored' | 'invisible';
+
+/** The look of each cap, by its piece (the cubie's solved position) and its side on that piece (normal in the piece's own frame). */
+export type CapLooks = (home: THREE.Vector3, normal: THREE.Vector3) => CapLook;
+
+/**
+ * Lighter than cubing.js's flat 0x444444: under the studio light that one drew close to the
+ * black body (measured ~#4e4e4e) and the masked layer lost its shape. This one draws about
+ * where cubing.js's unlit grey did (~#666).
+ */
+const IGNORED_HEX = 0x5a5a5a;
 
 interface CapView {
 	mesh: THREE.Mesh;
@@ -61,6 +83,10 @@ export class CubeRenderer {
 	/** Indexed like model.caps. */
 	private capViews: CapView[] = [];
 	private colors: THREE.Color[] = [];
+	private dimColors: THREE.Color[] = [];
+	private ignoredColor = linearColor(IGNORED_HEX);
+	/** Indexed like model.caps; empty means every cap in its colour. */
+	private looks: CapLook[] = [];
 	private capGeometries = new Map<CapKind, THREE.BufferGeometry>();
 	private logo: THREE.Mesh | null = null;
 	private logoCapId = -1;
@@ -86,12 +112,12 @@ export class CubeRenderer {
 		this.model = new CubeModel(options.size);
 		this.animator = new TurnAnimator(this.model);
 		const tilt = new THREE.Quaternion().setFromAxisAngle(AXES[0], options.tableTilt);
-		this.stage = new Stage(this.canvas, options.quality ?? pickQuality(), options.size / 2, tilt);
+		this.stage = new Stage(this.canvas, options.quality ?? pickQuality(), options.size / 2, tilt, {floor: options.floor ?? true});
 		this.target.copy(options.orientation);
 		this.stage.cubeRoot.quaternion.copy(options.orientation);
 
 		this.setColorsFrom(options.faceColors);
-		this.build();
+		this.build(options.logo ?? true);
 		this.paint();
 		this.syncTransforms();
 		// Nothing else would ask for a frame after a restore: the cube only draws on change.
@@ -163,6 +189,43 @@ export class CubeRenderer {
 		this.wake();
 	}
 
+	/** Draw caps as a stickering mask says (see CapLook); null draws every cap in its colour. The looks travel with the pieces. */
+	setCapLooks(looks: CapLooks | null) {
+		this.looks = [];
+		if (looks) {
+			for (const cubie of this.model.cubies) {
+				for (const cap of cubie.caps) this.looks[cap.id] = looks(cubie.home, cap.normal);
+			}
+		}
+		this.paint();
+		this.dirty = true;
+		this.wake();
+	}
+
+	/**
+	 * The cube as it stands now, `pixels` square, as a PNG data URL: turns still animating and
+	 * the orientation's easing are finished first. Draws at once, on or off screen; null when
+	 * the context cannot hand the picture out.
+	 */
+	capture(pixels: number): string | null {
+		if (this.stage.renderer.getContext().isContextLost()) return null;
+		if (this.animator.busy) {
+			this.animator.flush();
+			this.syncTransforms();
+			this.updateExposure();
+		}
+		this.stage.cubeRoot.quaternion.copy(this.target);
+		this.stage.setPixels(pixels);
+		this.stage.shadowDirty = true;
+		this.stage.render();
+		try {
+			// Read in the same task as the draw: the drawing buffer is not preserved past it.
+			return this.canvas.toDataURL('image/png');
+		} catch {
+			return null;
+		}
+	}
+
 	resize(cssSize: number) {
 		this.stage.resize(cssSize);
 		this.dirty = true;
@@ -214,13 +277,31 @@ export class CubeRenderer {
 
 	private setColorsFrom(hexes: string[]) {
 		const palette = stickerPaletteFromFaceColors(hexes || []);
-		this.colors = PALETTE_KEYS.map((name) => {
-			const [r, g, b] = palette[name];
+		const rgbs = PALETTE_KEYS.map((name) => palette[name]);
+		this.colors = rgbs.map(([r, g, b]) => linearColor((r << 16) | (g << 8) | b));
+		// Halved in sRGB as cubing.js does; a near-white keeps 0xDD of 0xFF, else it would read as grey.
+		this.dimColors = rgbs.map((rgb) => {
+			const k = rgb.every((c) => c > 0xe0) ? 0xdd / 0xff : 0.5;
+			const [r, g, b] = rgb.map((c) => Math.round(c * k));
 			return linearColor((r << 16) | (g << 8) | b);
 		});
 	}
 
-	private build() {
+	/** A cap's colour under its look; null for one not drawn. */
+	private capColor(cap: Cap): THREE.Color | null {
+		switch (this.looks[cap.id] ?? 'regular') {
+			case 'invisible':
+				return null;
+			case 'ignored':
+				return this.ignoredColor;
+			case 'dim':
+				return this.dimColors[cap.color];
+			default:
+				return this.colors[cap.color];
+		}
+	}
+
+	private build(withLogo: boolean) {
 		const { model, stage } = this;
 		const lite = stage.liteCaps;
 		const logoAt = logoHome(model.hi);
@@ -249,7 +330,7 @@ export class CubeRenderer {
 				this.capViews[cap.id] = capView;
 
 				// The logo goes on a U piece: white in the standard scheme, whatever the user's palette.
-				if (cap.normal.y > 0.5 && cubie.home.equals(logoAt)) this.addLogo(group, cap.id);
+				if (withLogo && cap.normal.y > 0.5 && cubie.home.equals(logoAt)) this.addLogo(group, cap.id);
 			}
 			this.views.push(view);
 			stage.cubeRoot.add(group);
@@ -279,19 +360,24 @@ export class CubeRenderer {
 	/** Push cap colours into their materials, and into the bodies for the glass tint. */
 	private paint() {
 		for (const cap of this.model.caps) {
-			const color = this.colors[cap.color];
-			(this.capViews[cap.id].mesh.material as THREE.MeshStandardMaterial).color.copy(color);
+			const color = this.capColor(cap);
+			const mesh = this.capViews[cap.id].mesh;
+			mesh.visible = !!color;
+			if (color) (mesh.material as THREE.MeshStandardMaterial).color.copy(color);
 		}
 		this.model.cubies.forEach((cubie, i) => {
 			const view = this.views[i];
 			for (const u of view.uniforms.uCap) u.value.setRGB(0, 0, 0);
-			cubie.caps.forEach((cap, j) => view.uniforms.uCap[view.caps[j].axis].value.copy(this.colors[cap.color]));
+			cubie.caps.forEach((cap, j) => {
+				const color = this.capColor(cap);
+				if (color) view.uniforms.uCap[view.caps[j].axis].value.copy(color);
+			});
 		});
 		if (this.logo) {
 			// Only while the logo's piece shows U's colour: a state painted from facelets could
-			// put another colour there, and a logo on it would be a lie.
+			// put another colour there, and a logo on it would be a lie. Not on a masked cap either.
 			const cap = this.model.caps[this.logoCapId];
-			this.logo.visible = this.logoReady && !!cap && cap.color === 0;
+			this.logo.visible = this.logoReady && !!cap && cap.color === 0 && (this.looks[cap.id] ?? 'regular') === 'regular';
 		}
 	}
 
@@ -299,7 +385,7 @@ export class CubeRenderer {
 		for (const cap of this.model.caps) {
 			const mesh = this.capViews[cap.id].mesh;
 			(mesh.material as THREE.Material).dispose();
-			mesh.material = createCapMaterial(this.colors[cap.color], lite);
+			mesh.material = createCapMaterial(this.capColor(cap) ?? this.colors[cap.color], lite);
 		}
 	}
 

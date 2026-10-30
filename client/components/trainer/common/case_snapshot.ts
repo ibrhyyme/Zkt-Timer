@@ -1,12 +1,15 @@
 /**
- * case_snapshot: still pictures of 3D-only cases (F2L, ZBLS, CLS, 2x2 PBL...).
+ * case_snapshot: still pictures of 3D-only cases (F2L, ZBLS, L6E, 2x2 PBL...).
  *
- * A live TwistyPlayer per card does not scale: WebGL contexts are scarce, so at most
- * MAX_TWISTY_SLOTS players may live at once and a grid of 20 visible F2L cards left most of them
- * empty. Instead each case is drawn once by a short-lived offscreen player, captured with
- * experimentalScreenshot (the PDF export does the same) and shown as an image. The player holds a
- * slot only for that moment, so the budget still bounds the GPU work, and every card gets its
- * picture.
+ * A live 3D view per card does not scale: WebGL contexts are scarce (browsers allow about
+ * sixteen), and a grid of 20 visible F2L cards would need 20. Instead each case is drawn once
+ * offscreen and shown as an image:
+ *  - 2x2 and 3x3 by our cube engine (cube_view/render/cube_pictures.ts), one context for every
+ *    picture, the case and its stickering mask from case_cube.ts;
+ *  - other puzzles (4x4, Pyraminx, Skewb, Square-1, whose 2D pattern is missing) by a
+ *    short-lived cubing.js player, captured with experimentalScreenshot (the PDF export does
+ *    the same); an algorithm the engine cannot read also goes this way.
+ * A card asks inside the twisty_slots budget either way (CasePattern), so the work stays bounded.
  *
  * Pictures are kept per case and orientation: in memory for the session and in IndexedDB on the
  * device (WebP, at most MAX_STORED, oldest dropped first), so a case is drawn once per device. A
@@ -15,9 +18,12 @@
  */
 import {getOrientationRotation, getPuzzleType, getStickering, isCubeShapePuzzle} from '../../../util/trainer/algorithm_engine';
 import {getRemappedMask} from '../../../util/trainer/stickering_remap';
+import {capLooksFromMask, caseTurns} from '../../../util/trainer/case_cube';
+import {drawCubePicture} from '../../timer/smart_cube/cube_view/render/cube_pictures';
 import type {CubeFace} from '../types';
 
-const SNAPSHOT_VERSION = 1;
+// 2: 2x2 and 3x3 drawn by our engine (was cubing.js).
+const SNAPSHOT_VERSION = 2;
 /** Pixel size of a picture: sharp in the largest box that shows one (the selector card, 2x). */
 const SNAPSHOT_SIZE = 240;
 /** How long the player gets to draw its first frame before the capture (as the PDF export). */
@@ -195,6 +201,26 @@ function offscreenHost(): HTMLDivElement {
 }
 
 async function draw(c: SnapshotCase): Promise<string | null> {
+	const puzzleType = getPuzzleType(c.category);
+	if (puzzleType === '3x3x3' || puzzleType === '2x2x2') {
+		const rotation = getOrientationRotation(c.topFace, c.frontFace);
+		const turns = caseTurns(c.algorithm, rotation);
+		if (turns) {
+			const stickering = puzzleType === '3x3x3' ? getStickering(c.category) : 'full';
+			// Unrotated: case_cube reads it for the places the rotation puts pieces in.
+			const mask = stickering !== 'full' ? await getRemappedMask(stickering, '') : null;
+			return drawCubePicture({
+				size: puzzleType === '2x2x2' ? 2 : 3,
+				turns,
+				looks: mask ? capLooksFromMask(mask, rotation) : null,
+				pixels: SNAPSHOT_SIZE,
+			});
+		}
+	}
+	return drawWithCubing(c);
+}
+
+async function drawWithCubing(c: SnapshotCase): Promise<string | null> {
 	const {TwistyPlayer} = await import('cubing/twisty');
 	const puzzleType = getPuzzleType(c.category);
 	const rotation = isCubeShapePuzzle(c.category) ? getOrientationRotation(c.topFace, c.frontFace) : '';
@@ -239,7 +265,7 @@ export async function findStoredSnapshot(c: SnapshotCase): Promise<string | null
 	return stored;
 }
 
-/** The picture of a case, drawn on first call. Null when cubing.js could not draw it. */
+/** The picture of a case, drawn on first call. Null when it could not be drawn. */
 export function renderCaseSnapshot(c: SnapshotCase): Promise<string | null> {
 	const key = snapshotKey(c);
 	const known = cache.get(key);
