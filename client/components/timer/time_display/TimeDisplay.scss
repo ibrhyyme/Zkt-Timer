@@ -228,6 +228,8 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	// GAN / QiYi: the cube label and the connect button share this row.
+	gap: $zt-space-2;
 	width: 100%;
 	margin-top: 1rem;
 
@@ -239,25 +241,5 @@
 
 	&:empty {
 		display: none;
-	}
-}
-
-// Hardware timers (StackMat / GAN / QiYi): the connect button moves next to the
-// digits instead of sitting under them, matching what the smart cube block does
-// with its own connect button. Keeps the timer area one row tall so a tall block
-// cannot push content up into the picker bar. Mobile keeps the stacked order:
-// there the digits already fill the width and a side-by-side pair would not fit.
-.#{$namespace}-time-display--hardwareConnect {
-	@include bp-up($bp-lg) {
-		flex-direction: row;
-		align-items: center;
-		justify-content: center;
-		gap: 2rem;
-
-		> .#{$namespace}-timer-bottom-info {
-			width: auto;
-			flex: 0 0 auto;
-			margin-top: 0;
-		}
 	}
 }

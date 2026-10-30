@@ -23,7 +23,12 @@ import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.sche
 
 const b = block('manual-time-entry');
 
-export default function Manual() {
+interface Props {
+	/** TimeDisplay's cube label (the cube the solve is stamped with), or null when hidden. */
+	cubeLabel?: React.ReactNode;
+}
+
+export default function Manual({ cubeLabel }: Props) {
 	const { t } = useTranslation();
 	const manualInput = useRef<HTMLInputElement>(null);
 
@@ -227,6 +232,8 @@ export default function Manual() {
 				<StartInstructions>{t('time_display.manual_hint')}</StartInstructions>
 			)}
 			<SolveDiff />
+
+			{!hideTime && cubeLabel}
 
 			{/* Mobilde: Scramble visual + kompakt AO stats */}
 			{mobileMode && !hideTime && (

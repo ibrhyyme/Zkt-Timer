@@ -14,7 +14,6 @@ import {
 const timeDisplay = block('time-display');
 const smartCube = block('smart-cube');
 const virtualCube = block('virtual-cube');
-const bottomInfo = block('timer-bottom-info');
 
 function px(value: string): number {
 	const n = parseFloat(value);
@@ -51,17 +50,15 @@ export function useTimeRowFit(rowRef: RefObject<HTMLElement>, frozen: boolean, l
 
 		const digits = Math.max(width(digitsEl), referenceDigitsWidth(px(getComputedStyle(digitsEl).fontSize)));
 
-		let gap = px(getComputedStyle(row).columnGap);
+		const gap = px(getComputedStyle(row).columnGap);
 		let companion = 0;
 		let companionStacked: number | undefined;
 		let companionFolded: number | undefined;
-		// The smart and virtual rows have a set width. The plain row hugs its content, so
-		// its room is the column around it.
-		let available = row.clientWidth;
+		// The smart and virtual rows have a set width.
+		const available = row.clientWidth;
 
 		const smart = row.querySelector<HTMLElement>(`:scope > .${smartCube()}`);
 		const virtual = row.querySelector<HTMLElement>(`:scope > .${virtualCube()}`);
-		const hardware = display.classList.contains(`${timeDisplay()}--hardwareConnect`);
 
 		if (smart) {
 			// Folded or stacked, the cube is drawn at FOLDED_CUBE_SCALE: undo it to get its
@@ -80,11 +77,6 @@ export function useTimeRowFit(rowRef: RefObject<HTMLElement>, frozen: boolean, l
 			companion = virtual.getBoundingClientRect().width > 0
 				? computeVirtualCubeSize(getSetting('virtual_cube_size') as number, window.innerWidth, window.innerHeight, false, false)
 				: 0;
-		} else if (hardware) {
-			// The connect control sits inside the time display, next to the digits.
-			gap = px(getComputedStyle(display).columnGap);
-			companion = width(display.querySelector(`:scope > .${bottomInfo()}`));
-			available = row.parentElement ? row.parentElement.clientWidth : available;
 		}
 
 		const next = timeRowFit({ available, digits, gap, companion, companionStacked, companionFolded });
@@ -106,9 +98,7 @@ export function useTimeRowFit(rowRef: RefObject<HTMLElement>, frozen: boolean, l
 		// not observed: they change every frame of a solve.
 		const observer = new ResizeObserver(() => measure());
 		observer.observe(row);
-		// The plain row hugs its content and does not follow the column by itself.
-		if (row.parentElement) observer.observe(row.parentElement);
-		row.querySelectorAll(`:scope > .${smartCube()}, :scope > .${virtualCube()}, .${bottomInfo()}`).forEach((el) => {
+		row.querySelectorAll(`:scope > .${smartCube()}, :scope > .${virtualCube()}`).forEach((el) => {
 			observer.observe(el);
 		});
 		return () => observer.disconnect();

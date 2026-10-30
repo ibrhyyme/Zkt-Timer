@@ -277,6 +277,41 @@ $zt-transition: 120ms ease;
 	@include zt-focus-ring;
 }
 
+/// A lone control on the timer's module surface, styled as one segment of the header
+/// picker strip: the connect button and the cube label under the digits. Readable over a
+/// timer background image like the modules. Hover tints through an inset layer, because
+/// the fill itself is the translucent surface; nothing moves.
+@mixin zt-surface-control {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: $zt-control-h-md;
+	padding: 0 $zt-space-3;
+	box-sizing: border-box;
+	background: var(--zt-surface);
+	border: 1px solid var(--zt-surface-border);
+	border-radius: $zt-radius-md;
+	color: rgb(var(--text-color));
+	font-family: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	transition: box-shadow $zt-transition;
+
+	&:hover:not(:disabled):not([aria-disabled='true']) {
+		box-shadow: inset 0 0 0 999px $zt-control-bg;
+	}
+
+	&:active:not(:disabled):not([aria-disabled='true']) {
+		box-shadow: inset 0 0 0 999px $zt-control-bg-active;
+	}
+
+	@include zt-focus-ring;
+}
+
 /// A layer above the page: modal body, dropdown menu, popover.
 @mixin zt-float {
 	background: rgb(var(--background-color));

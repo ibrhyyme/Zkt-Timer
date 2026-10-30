@@ -217,37 +217,36 @@
 
 // The cube the next solve is stamped with (TimerCubeLabel.tsx, 5.5). In touch_target.ts
 // BLOCKED_CLASSES so a tap on its padding never primes the timer.
+// Styled as a segment of the header picker strip (zt-surface-control), like the connect
+// button it sits next to on the GAN and QiYi timers (TimeDisplay.tsx). It was a pill of
+// its own until 2026-10-31.
 .#{$namespace}-timer-cube-label {
 	display: flex;
 	justify-content: center;
 	margin-top: 4px;
+	// Shares a row with the connect button on a narrow phone: the name ellipsizes rather
+	// than pushing the row wider than the screen.
+	min-width: 0;
 
 	&--hidden {
 		visibility: hidden;
 	}
 
-	&__button {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		max-width: 240px;
-		min-height: 32px;
-		padding: 4px 12px;
-		border-radius: 999px;
-		border: 1px solid rgba(var(--text-color), 0.14);
-		background-color: rgba(var(--text-color), 0.05);
-		color: rgb(var(--text-color));
-		font-size: 0.85rem;
-		font-weight: 600;
-		cursor: pointer;
+	// Inside the connect row the row's own gap does the spacing.
+	.#{$namespace}-timer-bottom-info > & {
+		margin-top: 0;
+	}
 
-		&:hover {
-			border-color: rgba(var(--text-color), 0.3);
-		}
+	&__button {
+		@include zt-surface-control;
+		gap: $zt-space-2;
+		max-width: min(240px, 100%);
+		min-width: 0;
 	}
 
 	&__icon {
 		flex: 0 0 auto;
+		font-size: 1.1em;
 	}
 
 	&__name {

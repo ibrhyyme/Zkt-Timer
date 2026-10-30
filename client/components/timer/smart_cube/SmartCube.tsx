@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import './SmartCube.scss';
 import SmartStats from './stats/SmartStats';
 import Emblem from '../../common/emblem/Emblem';
+import ConnectTrigger from '../common/ConnectTrigger';
 import Battery from './battery/Battery';
 import { setTimerParams } from '../helpers/params';
 import { Bluetooth, Gear } from 'phosphor-react';
@@ -1077,19 +1078,11 @@ export default function SmartCube() {
 		// The action button below carries the same bluetooth glyph, so repeating it
 		// in the status row only duplicates the icon and costs a row of height.
 		emblem = null;
-		actionButton = (
-			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
-				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.scanning_short')} />
-			</div>
-		);
+		actionButton = <ConnectTrigger state="busy" text={t('smart_cube.scanning_short')} />;
 		battery = null;
 	} else if (smartCubeConnecting) {
 		emblem = null;
-		actionButton = (
-			<div className="zt-timer__connect-trigger zt-timer__connect-trigger--disabled">
-				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.connecting').replace('...', '')} />
-			</div>
-		);
+		actionButton = <ConnectTrigger state="busy" text={t('smart_cube.connecting').replace('...', '')} />;
 		battery = null;
 	} else if (smartCubeConnected) {
 		// Connection is already conveyed by the battery percentage shown under the
@@ -1100,11 +1093,7 @@ export default function SmartCube() {
 		emblem = batteryVisible ? null : <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = null;
-		actionButton = (
-			<div className="zt-timer__connect-trigger" onClick={connectBluetooth} role="button">
-				<Emblem small red icon={<Bluetooth />} text={t('smart_cube.connect')} />
-			</div>
-		);
+		actionButton = <ConnectTrigger state="idle" text={t('smart_cube.connect')} onClick={connectBluetooth} />;
 		battery = null;
 	}
 

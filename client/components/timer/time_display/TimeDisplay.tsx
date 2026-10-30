@@ -263,8 +263,23 @@ export default function TimeDisplay() {
 		}, 33);
 	}
 
+	// The cube the next solve is stamped with (magnet-cubes 5.5). Not in rooms and
+	// matches (no stamp there), not for the smart cube (its own panel names the
+	// connected cube) nor the virtual cube (no physical cube). The Magnet Timer shows
+	// it once a calibrated cube runs; before that the guide card names the cube.
+	const cubeLabel =
+		!context.onSolve &&
+		!matchMode &&
+		!context.inModal &&
+		!smartCubeSelected(context) &&
+		!virtualCubeSelected(context) &&
+		(timerType !== 'magnet' || !magnet.profile || magnet.profile.status === 'ready') ? (
+			<TimerCubeLabel magnetOwnsInput={magnetOwns} visible={!timeStartedAt && !inInspection} />
+		) : null;
+
 	if (manualEntry) {
-		return <Manual />;
+		// Manual solves are stamped with the main cube too, so the label shows it here as well.
+		return <Manual cubeLabel={cubeLabel} />;
 	}
 
 	let timeStr;
@@ -316,17 +331,30 @@ export default function TimeDisplay() {
 		}
 	}
 
-	// Hardware timers (StackMat / GAN / QiYi) put a connect control in bottomInfo.
-	// Smart cube puts an instruction sentence there instead, which must stay under
-	// the digits, so the two cases get different layouts.
-	const hardwareTimerConnect = stackMatOn || ganTimerOn || qiyiTimerOn;
+	// bottomInfo always sits under the digits, centred, on every width. StackMat's line and
+	// the GAN / QiYi connect button used to move beside the digits on desktop, where they
+	// read as a stray block hanging off the time (owner, 2026-10-31).
+	//
+	// The Bluetooth timers have a connect button: the label joins it in one row instead
+	// of stacking a second control above it.
+	const cubeLabelBesideConnect = ganTimerOn || qiyiTimerOn;
 
 	if (stackMatOn) {
 		bottomInfo = <StackMat />;
 	} else if (ganTimerOn) {
-		bottomInfo = <GanTimer />;
+		bottomInfo = (
+			<>
+				{cubeLabel}
+				<GanTimer />
+			</>
+		);
 	} else if (qiyiTimerOn) {
-		bottomInfo = <QiyiTimer />;
+		bottomInfo = (
+			<>
+				{cubeLabel}
+				<QiyiTimer />
+			</>
+		);
 	} else if (magnetOwns && !timeStartedAt) {
 		// The Magnet Timer's own input (timer_type 'magnet'); the touch timer has no magnet.
 		// Shown also while the stream is off: without a calibrated cube nothing can start and
@@ -388,18 +416,7 @@ export default function TimeDisplay() {
 
 				<MultiPhaseIndicator />
 
-				{/* The cube the next solve is stamped with (magnet-cubes 5.5). Not in rooms and
-				    matches (no stamp there), not for the smart cube (its own panel names the
-				    connected cube) nor the virtual cube (no physical cube). The Magnet Timer shows
-				    it once a calibrated cube runs; before that the guide card names the cube. */}
-				{!context.onSolve &&
-					!matchMode &&
-					!context.inModal &&
-					!smartCubeSelected(context) &&
-					!virtualCubeSelected(context) &&
-					(timerType !== 'magnet' || !magnet.profile || magnet.profile.status === 'ready') && (
-					<TimerCubeLabel magnetOwnsInput={magnetOwns} visible={!timeStartedAt && !inInspection} />
-				)}
+				{!cubeLabelBesideConnect && cubeLabel}
 
 				{/* Mobile smart cube: SmartStats artık SOL kolonda LiveAnalysisOverlay altinda render ediliyor (SmartCube.tsx portal). */}
 			</div>
@@ -416,7 +433,6 @@ export default function TimeDisplay() {
 		<div
 			className={b({
 				smart: smartCubeSelected(context),
-				hardwareConnect: hardwareTimerConnect,
 			})}
 		>
 			{body}

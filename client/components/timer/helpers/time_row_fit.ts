@@ -1,10 +1,10 @@
 // How the desktop time row fits its centre column.
 //
 // The row puts the digits and a companion side by side: the smart cube with its connect
-// column, the virtual cube, or a hardware timer's connect control. Between two module
-// rails the centre can be narrower than that pair (a tablet in landscape, a laptop at
-// 1024 to 1280 px), and the pair used to spill out of both sides of the column, digits
-// cut on the left and the connect button on the right.
+// column, or the virtual cube. Between two module rails the centre can be narrower than
+// that pair (a tablet in landscape, a laptop at 1024 to 1280 px), and the pair used to
+// spill out of both sides of the column, digits cut on the left and the connect button
+// on the right.
 //
 // Two ways out, in order:
 //  - folded: the smart cube shrinks and its connect column moves under it, the pair stays

@@ -3,8 +3,6 @@
 
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {ITimerContext, TimerContext} from '../../Timer';
-import {Bluetooth} from 'phosphor-react';
-import Emblem from '../../../common/emblem/Emblem';
 import {startTimer, endTimer, startInspection, cancelInspection} from '../../helpers/events';
 import {setTimerParams} from '../../helpers/params';
 import {useSettings} from '../../../../util/hooks/useSettings';
@@ -12,6 +10,7 @@ import {getTimerStore} from '../../../../util/store/getTimer';
 import {useDispatch} from 'react-redux';
 import {openModal, closeModal} from '../../../../actions/general';
 import BluetoothErrorMessage from '../../common/BluetoothErrorMessage';
+import ConnectTrigger from '../../common/ConnectTrigger';
 import BleScanningModal from '../../smart_cube/ble_scanning_modal/BleScanningModal';
 import {showBleConnectInfo} from '../../common/showBleConnectInfo';
 import {isNative} from '../../../../util/platform';
@@ -237,19 +236,10 @@ export default function QiyiTimer() {
 	}
 
 	return (
-		<div
-			className={'zt-timer__connect-trigger' + (scanning ? ' zt-timer__connect-trigger--disabled' : '')}
-			onClick={scanning ? undefined : handleConnectButton}
-			role="button"
-		>
-			<Emblem
-				icon={<Bluetooth />}
-				text={emblemText}
-				small
-				red={!connected && !scanning}
-				green={connected}
-				orange={scanning}
-			/>
-		</div>
+		<ConnectTrigger
+			state={scanning ? 'busy' : connected ? 'connected' : 'idle'}
+			text={emblemText}
+			onClick={handleConnectButton}
+		/>
 	);
 }

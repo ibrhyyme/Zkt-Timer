@@ -45,7 +45,7 @@ describe('timeRowFit', () => {
 		expect(timeRowFit({ ...SMART, available: 220 })).toEqual({ stacked: true, folded: true });
 	});
 
-	it('stacks a companion that cannot fold (virtual cube, connect control)', () => {
+	it('stacks a companion that cannot fold (virtual cube)', () => {
 		const virtual = { digits: 270, gap: 28, companion: 184 };
 		expect(timeRowFit({ ...virtual, available: 610 })).toEqual({ stacked: false, folded: false });
 		expect(timeRowFit({ ...virtual, available: 433 })).toEqual({ stacked: true, folded: false });

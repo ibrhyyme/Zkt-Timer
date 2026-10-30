@@ -1,0 +1,43 @@
+@import '../../../styles/config';
+
+// One more segment of the header picker strip (zt-surface-control in tokens.scss), the
+// same as the cube label it sits next to on the GAN and QiYi timers. The header's
+// narrower phone padding is not copied: it exists to fit a 360px row. The state lives in
+// the glyph's colour only: a coloured fill under text was the part that clashed.
+//
+// A 1.1rem regular glyph with an 8px gap read as a loose icon floating beside smaller
+// text (owner, 2026-10-31), so the glyph is bold and sized to the text.
+.#{$namespace}-connect-trigger {
+	@include zt-surface-control;
+	flex: 0 0 auto;
+	// The Bluetooth glyph is narrow inside a square box, so its own side bearing already
+	// adds about 4px: the visible gap is 8px, and the left padding is 2px short to match.
+	gap: $zt-space-1;
+	padding-left: $zt-space-3 - 2px;
+
+	&--bare {
+		width: $zt-control-h-md;
+		padding: 0;
+	}
+
+	&--state-busy {
+		cursor: default;
+	}
+
+	&__icon {
+		flex: 0 0 auto;
+		font-size: 1.15em;
+	}
+
+	&--state-idle &__icon {
+		color: rgb(var(--error-color));
+	}
+
+	&--state-busy &__icon {
+		color: rgb(var(--warning-color));
+	}
+
+	&--state-connected &__icon {
+		color: rgb(var(--success-color));
+	}
+}
