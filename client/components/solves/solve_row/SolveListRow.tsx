@@ -99,7 +99,7 @@ export default function SolveListRow(props: Props) {
 			</div>
 			<div className={b('scramble')}>
 				<div className={b('scramble-body')}>
-					<Scramble frontFace width={scrambleSize} scramble={scramble} cubeType={visualCubeType} />
+					<Scramble frontFace still width={scrambleSize} scramble={scramble} cubeType={visualCubeType} />
 				</div>
 			</div>
 			<div className={b('badges')}>

@@ -70,7 +70,7 @@ function LastSolve(props: Props) {
 					<h6>{cubeTypeName}</h6>
 				</div>
 				<div className={b('scramble')}>
-					<Scramble frontFace width="70px" scramble={scramble} cubeType={cubeType} />
+					<Scramble frontFace still width="70px" scramble={scramble} cubeType={cubeType} />
 				</div>
 			</div>
 

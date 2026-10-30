@@ -28,6 +28,8 @@ export interface CubePictureRequest {
 	pixels: number;
 	/** Face colours U R F D L B; the app's default palette when left out. */
 	faceColors?: string[];
+	/** The floating hints of the hidden faces (scramble previews). */
+	hints?: boolean;
 }
 
 /** The renderers go after this long without a picture. */
@@ -39,7 +41,9 @@ interface Job {
 }
 
 const queue: Job[] = [];
-const renderers = new Map<PuzzleSize, CubeRenderer>();
+/** One per puzzle size and hints or not (hints change the framing), each made on first use. */
+const renderers = new Map<string, CubeRenderer>();
+const rendererKey = (size: PuzzleSize, hints: boolean) => `${size}${hints ? 'h' : ''}`;
 let scheduled = false;
 let releaseTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -70,25 +74,27 @@ function runNext() {
 	releaseTimer = setTimeout(releaseAll, RELEASE_AFTER_MS);
 }
 
-function drawNow({ size, turns, looks, pixels, faceColors }: CubePictureRequest): string | null {
+function drawNow({ size, turns, looks, pixels, faceColors, hints = false }: CubePictureRequest): string | null {
+	const key = rendererKey(size, hints);
 	try {
-		const cube = rendererFor(size);
+		const cube = rendererFor(size, hints);
 		cube.setFaceColors(faceColors ?? DEFAULT_NXN_COLORS);
 		cube.setMoves(turns);
 		cube.setCapLooks(looks ?? null);
 		const url = cube.capture(pixels);
 		// A lost context hands out a blank picture; the next request builds a new renderer.
-		if (!url) dropRenderer(size);
+		if (!url) dropRenderer(key);
 		return url;
 	} catch (error) {
 		console.error('[cube_pictures] draw failed:', error);
-		dropRenderer(size);
+		dropRenderer(key);
 		return null;
 	}
 }
 
-function rendererFor(size: PuzzleSize): CubeRenderer {
-	let cube = renderers.get(size);
+function rendererFor(size: PuzzleSize, hints: boolean): CubeRenderer {
+	const key = rendererKey(size, hints);
+	let cube = renderers.get(key);
 	if (cube) return cube;
 	const deg = Math.PI / 180;
 	cube = new CubeRenderer({
@@ -101,16 +107,17 @@ function rendererFor(size: PuzzleSize): CubeRenderer {
 		quality: 'medium',
 		floor: false,
 		logo: false,
+		hints,
 	});
 	// Only capture() draws; nothing is animated.
 	cube.setActive(false);
-	renderers.set(size, cube);
+	renderers.set(key, cube);
 	return cube;
 }
 
-function dropRenderer(size: PuzzleSize) {
-	renderers.get(size)?.dispose();
-	renderers.delete(size);
+function dropRenderer(key: string) {
+	renderers.get(key)?.dispose();
+	renderers.delete(key);
 }
 
 function releaseAll() {

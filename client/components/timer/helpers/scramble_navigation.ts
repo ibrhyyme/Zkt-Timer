@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { ITimerContext } from '../Timer';
-import { commitScramble, getNewScrambleAsync, resetScramble } from './scramble';
+import { commitScramble, generateTimerScramble, resetScramble } from './scramble';
 import { setTimerParam, setTimerParams } from './params';
 import { virtualCubeOwnsKeyboard } from './virtual_cube';
 import { appendScramble, canGoPrevious, EMPTY_SCRAMBLE_HISTORY, hasNextInHistory, ScrambleHistory } from './scramble_history';
@@ -60,7 +60,7 @@ export function useScrambleForBucket(context: ITimerContext) {
  * locked scramble, or a smart cube that has already turned part of it.
  */
 export function useScrambleHistory(context: ITimerContext, locked: boolean) {
-	const { scramble, cubeType, scrambleSubset, timeStartedAt } = context;
+	const { scramble, cubeType, scrambleSubset, scrambleTopColor, timeStartedAt } = context;
 	const smartTurnOffset = context.smartTurnOffset || 0;
 	const history = useTimerStore('scrambleHistory') || EMPTY_SCRAMBLE_HISTORY.history;
 	const index = useTimerStore('scrambleHistoryIndex') ?? EMPTY_SCRAMBLE_HISTORY.index;
@@ -105,16 +105,15 @@ export function useScrambleHistory(context: ITimerContext, locked: boolean) {
 			return;
 		}
 
-		const ct = getCubeTypeInfoById(cubeType);
-		if (!ct) return;
+		if (!getCubeTypeInfoById(cubeType)) return;
 		const callId = ++nextScrambleRef.current;
 		commitScramble('');
-		getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
+		generateTimerScramble(cubeType, scrambleSubset, scrambleTopColor).then((newScramble) => {
 			if (callId === nextScrambleRef.current && newScramble) {
 				commitScramble(newScramble);
 			}
 		}).catch((e) => { console.error('[scramble] next failed:', e); });
-	}, [locked, cubeType, scrambleSubset]);
+	}, [locked, cubeType, scrambleSubset, scrambleTopColor]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {

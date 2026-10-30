@@ -75,6 +75,7 @@ export default function CubeStatsFeatured() {
 							<ScrambleVisual
 								width="60px"
 								frontFace
+								still
 								scramble={singlePb?.solve?.scramble}
 								cubeType={pbVisualCubeType}
 							/>

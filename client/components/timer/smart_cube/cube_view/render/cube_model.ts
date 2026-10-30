@@ -7,12 +7,12 @@ import { layerTurns, parseMove, type Axis, type ParsedMove } from './notation';
  * its caps. No rendering here, so the move maths and the facelet mapping are tested
  * against cubejs without a WebGL context.
  *
- * Positions are in cubie units centred on the core: -1..1 on a 3x3, -0.5..0.5 on a 2x2.
- * A cap's `normal` is in the cubie's own frame (its solved orientation), which is also the
- * frame its meshes are built in.
+ * Positions are in cubie units centred on the core: -1..1 on a 3x3, -0.5..0.5 on a 2x2,
+ * -3..3 on a 7x7. A cap's `normal` is in the cubie's own frame (its solved orientation),
+ * which is also the frame its meshes are built in.
  */
 
-export type PuzzleSize = 2 | 3;
+export type PuzzleSize = 2 | 3 | 4 | 5 | 6 | 7;
 
 /** Face order of a facelet string (cubejs / Kociemba), and the colour index of each face. */
 export const FACE_ORDER = 'URFDLB';
@@ -85,11 +85,13 @@ export class CubeModel {
 		this.size = size;
 		this.hi = (size - 1) / 2;
 		this.lo = -this.hi;
-		const coords = size === 3 ? [-1, 0, 1] : [-0.5, 0.5];
+		const coords = Array.from({ length: size }, (_, i) => i - this.hi);
+		const outer = (v: number) => Math.abs(v) > this.hi - 1e-6;
 		for (const x of coords) {
 			for (const y of coords) {
 				for (const z of coords) {
-					if (x === 0 && y === 0 && z === 0) continue;
+					// Only the pieces on the surface; the core is not drawn.
+					if (!outer(x) && !outer(y) && !outer(z)) continue;
 					const home = new THREE.Vector3(x, y, z);
 					const cubie: Cubie = { home, pos: home.clone(), quat: new THREE.Quaternion(), caps: [] };
 					const onSurface = [x, y, z].filter((v) => Math.abs(v) > this.hi - 1e-6).length;
@@ -116,8 +118,7 @@ export class CubeModel {
 
 	/** The pieces a move turns, chosen from where they are now. */
 	select(move: ParsedMove): Cubie[] {
-		const { axis, layers } = move;
-		return this.cubies.filter((c) => layerTurns(layers, c.pos.getComponent(axis), this.lo, this.hi));
+		return this.cubies.filter((c) => layerTurns(move, c.pos.getComponent(move.axis), this.lo, this.hi));
 	}
 
 	/** Apply a move to the given pieces at once (the animation's end state). */
@@ -140,25 +141,34 @@ export class CubeModel {
 	}
 
 	/**
-	 * Show a reported state: every piece home, caps painted from the facelets. A 2x2 reads
-	 * only the corner facelets of the 54-character string, the same projection cube2x2.ts
-	 * puts it in. Returns false, touching nothing, when the string is not a facelet string.
+	 * Facelets per face side: a 2x2 is read in the 3x3's 54-character layout, the same
+	 * projection cube2x2.ts puts it in; every other size in its own N x N.
+	 */
+	private get grid(): number {
+		return this.size === 2 ? 3 : this.size;
+	}
+
+	/**
+	 * Show a reported state: every piece home, caps painted from the facelets (6 x N x N
+	 * characters; 54 for a 2x2, of which only the corners are read). Returns false, touching
+	 * nothing, when the string is not a facelet string of this size.
 	 */
 	setFacelets(facelets: string): boolean {
-		if (typeof facelets !== 'string' || facelets.length !== 54 || !/^[URFDLB]+$/.test(facelets)) return false;
+		const total = 6 * this.grid * this.grid;
+		if (typeof facelets !== 'string' || facelets.length !== total || !/^[URFDLB]+$/.test(facelets)) return false;
 		this.reset();
 		const lookup = new Map<string, Cap>();
 		for (const c of this.cubies) for (const cap of c.caps) lookup.set(key(c.home, cap.normal), cap);
-		for (let i = 0; i < 54; i++) {
+		for (let i = 0; i < total; i++) {
 			const pos = this.faceletPosition(i);
 			if (!pos) continue;
-			const cap = lookup.get(key(pos, FACE_NORMAL[Math.floor(i / 9)]));
+			const cap = lookup.get(key(pos, FACE_NORMAL[this.faceOf(i)]));
 			if (cap) cap.color = FACE_ORDER.indexOf(facelets[i]);
 		}
 		return true;
 	}
 
-	/** The current state as a 54-character facelet string (a 2x2 keeps edges and centres solved). */
+	/** The current state as a facelet string (a 2x2 keeps the 54 layout's edges and centres solved). */
 	getFacelets(): string {
 		const lookup = new Map<string, Cap>();
 		const n = new THREE.Vector3();
@@ -166,8 +176,8 @@ export class CubeModel {
 			for (const cap of c.caps) lookup.set(key(c.pos, snapPos(n.copy(cap.normal).applyQuaternion(c.quat))), cap);
 		}
 		let out = '';
-		for (let i = 0; i < 54; i++) {
-			const face = Math.floor(i / 9);
+		for (let i = 0, total = 6 * this.grid * this.grid; i < total; i++) {
+			const face = this.faceOf(i);
 			const pos = this.faceletPosition(i);
 			const cap = pos && lookup.get(key(pos, FACE_NORMAL[face]));
 			out += cap ? FACE_ORDER[cap.color] : FACE_ORDER[face];
@@ -175,17 +185,23 @@ export class CubeModel {
 		return out;
 	}
 
+	private faceOf(i: number): number {
+		return Math.floor(i / (this.grid * this.grid));
+	}
+
 	/** Where facelet `i` sits, or null for the 2x2's edge and centre facelets. */
 	private faceletPosition(i: number): THREE.Vector3 | null {
-		const face = Math.floor(i / 9);
-		const row = Math.floor((i % 9) / 3);
-		const col = i % 3;
-		if (this.size === 2 && (row === 1 || col === 1)) return null;
-		const step = this.size === 3 ? 1 : 0.5;
+		const g = this.grid;
+		const face = this.faceOf(i);
+		const row = Math.floor((i % (g * g)) / g);
+		const col = i % g;
+		const mid = (g - 1) / 2;
+		if (this.size === 2 && (row === mid || col === mid)) return null;
+		const step = this.size === 2 ? 0.5 : 1;
 		return new THREE.Vector3()
 			.addScaledVector(FACE_NORMAL[face], this.hi)
-			.addScaledVector(FACE_RIGHT[face], (col - 1) * step)
-			.addScaledVector(FACE_DOWN[face], (row - 1) * step);
+			.addScaledVector(FACE_RIGHT[face], (col - mid) * step)
+			.addScaledVector(FACE_DOWN[face], (row - mid) * step);
 	}
 }
 

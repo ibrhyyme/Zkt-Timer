@@ -5,6 +5,7 @@ import { CubeModel } from '../render/cube_model';
 import { DIM, buildBodyGeometry, buildCapGeometry, capMatrix, capShapeFor } from '../render/geometry';
 import { parseMove } from '../render/notation';
 import { TurnAnimator, springProgress } from '../render/turn_animator';
+import { applyScramble } from '../../../../../util/cubes/cube_state';
 
 const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 const FACE_TURNS = ['U', 'R', 'F', 'D', 'L', 'B'];
@@ -47,7 +48,8 @@ describe('parseMove', () => {
 	});
 
 	it('rejects what it does not know', () => {
-		for (const bad of ['', 'Q', 'R4x', '2R', 'RR', null as any]) expect(parseMove(bad)).toBeNull();
+		// '2R' is valid since big cubes: the second layer (see 'reads layer prefixes').
+		for (const bad of ['', 'Q', 'R4x', 'RR', null as any]) expect(parseMove(bad)).toBeNull();
 	});
 });
 
@@ -121,6 +123,67 @@ describe('CubeModel against cubejs', () => {
 		const model = new CubeModel(2);
 		expect(model.setFacelets(facelets)).toBe(true);
 		expect(model.getFacelets()).toBe(facelets);
+	});
+});
+
+describe('big cubes', () => {
+	const stateString = (size: number, turns: string[]) =>
+		applyScramble(size, turns.join(' ')).faces.map((face) => face.join('')).join('');
+
+	it('reads layer prefixes', () => {
+		expect(parseMove('2R')).toEqual({ axis: 0, layers: 'hi', quarters: -1, depth: [2, 2] });
+		expect(parseMove("3Rw'")).toEqual({ axis: 0, layers: 'wideHi', quarters: 1, depth: [1, 3] });
+		expect(parseMove('3r')).toEqual(parseMove('3Rw'));
+		expect(parseMove('2-3Lw2')).toEqual({ axis: 0, layers: 'wideLo', quarters: 2, depth: [2, 3] });
+		for (const bad of ['2M', '3x', '0R', '3-2Rw']) expect(parseMove(bad)).toBeNull();
+	});
+
+	// The scramble preview's own NxN simulator (cube_state.ts) is the reference. It reads a
+	// number on a face as a wide turn, so the sequences use only what both read the same way:
+	// faces, Rw / r, and 3Rw-style blocks.
+	it.each([4, 5, 6, 7] as const)('matches the 2D preview on a cube of %i layers', (size) => {
+		const next = rng(size * 31);
+		const pool = [
+			...FACE_TURNS,
+			...FACE_TURNS.map((f) => `${f}w`),
+			...FACE_TURNS.map((f) => f.toLowerCase()),
+			...FACE_TURNS.flatMap((f) => Array.from({ length: Math.max(0, size - 3) }, (_, k) => `${k + 3}${f}w`)),
+		];
+		for (let run = 0; run < 12; run++) {
+			const alg = randomAlg(next, pool, 30);
+			const model = new CubeModel(size);
+			for (const move of alg) expect([move, model.applyMove(move)]).toEqual([move, true]);
+			expect(model.getFacelets()).toBe(stateString(size, alg));
+		}
+	});
+
+	it('turns an inner slice alone', () => {
+		for (const size of [4, 5] as const) {
+			const slice = new CubeModel(size);
+			slice.applyMove('2R');
+			const pair = new CubeModel(size);
+			for (const move of ['Rw', "R'"]) pair.applyMove(move);
+			expect(slice.getFacelets()).toBe(pair.getFacelets());
+		}
+	});
+
+	it('reads and writes a 6 x N x N state', () => {
+		const model = new CubeModel(5);
+		for (const move of ['Rw', 'U2', "3Fw'", 'L']) model.applyMove(move);
+		const facelets = model.getFacelets();
+		expect(facelets).toHaveLength(150);
+		const copy = new CubeModel(5);
+		expect(copy.setFacelets(facelets)).toBe(true);
+		expect(copy.getFacelets()).toBe(facelets);
+		expect(copy.setFacelets(SOLVED)).toBe(false);
+	});
+
+	it('has every piece of the surface and no core', () => {
+		for (const size of [4, 5, 6, 7] as const) {
+			const model = new CubeModel(size);
+			expect(model.cubies).toHaveLength(size ** 3 - (size - 2) ** 3);
+			expect(model.caps).toHaveLength(6 * size * size);
+		}
 	});
 });
 

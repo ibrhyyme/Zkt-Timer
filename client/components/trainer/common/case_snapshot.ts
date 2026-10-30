@@ -18,7 +18,7 @@
  */
 import {getOrientationRotation, getPuzzleType, getStickering, isCubeShapePuzzle} from '../../../util/trainer/algorithm_engine';
 import {getRemappedMask} from '../../../util/trainer/stickering_remap';
-import {capLooksFromMask, caseTurns} from '../../../util/trainer/case_cube';
+import {caseDrawing} from '../../../util/trainer/case_drawing';
 import {drawCubePicture} from '../../timer/smart_cube/cube_view/render/cube_pictures';
 import type {CubeFace} from '../types';
 
@@ -201,23 +201,8 @@ function offscreenHost(): HTMLDivElement {
 }
 
 async function draw(c: SnapshotCase): Promise<string | null> {
-	const puzzleType = getPuzzleType(c.category);
-	if (puzzleType === '3x3x3' || puzzleType === '2x2x2') {
-		const rotation = getOrientationRotation(c.topFace, c.frontFace);
-		const turns = caseTurns(c.algorithm, rotation);
-		if (turns) {
-			const stickering = puzzleType === '3x3x3' ? getStickering(c.category) : 'full';
-			// Unrotated: case_cube reads it for the places the rotation puts pieces in.
-			const mask = stickering !== 'full' ? await getRemappedMask(stickering, '') : null;
-			return drawCubePicture({
-				size: puzzleType === '2x2x2' ? 2 : 3,
-				turns,
-				looks: mask ? capLooksFromMask(mask, rotation) : null,
-				pixels: SNAPSHOT_SIZE,
-			});
-		}
-	}
-	return drawWithCubing(c);
+	const drawing = await caseDrawing(c);
+	return drawing ? drawCubePicture({...drawing, pixels: SNAPSHOT_SIZE}) : drawWithCubing(c);
 }
 
 async function drawWithCubing(c: SnapshotCase): Promise<string | null> {

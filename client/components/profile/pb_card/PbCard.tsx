@@ -144,7 +144,7 @@ export default function PbCard(props: Props) {
 			</div>
 			<div className={b('scramble')}>
 				<div className={b('scramble-visual')}>
-					<Scramble frontFace scramble={scramble} cubeType={cubeType.id} />
+					<Scramble frontFace still scramble={scramble} cubeType={cubeType.id} />
 				</div>
 				<Tag large text={`${getBucketShortLabel(firstSolve.cube_type, firstSolve.scramble_subset)} ${single ? t('profile.single') : t('profile.average')}`} />
 			</div>

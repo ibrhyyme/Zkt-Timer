@@ -590,6 +590,15 @@
 		}
 	}
 
+	// CaseCube inside the viewer: the canvas squares itself into the padded box.
+	&__alg-detail-cube {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+	}
+
 	&__alg-detail-meta {
 		display: flex;
 		gap: 6px;
@@ -1089,6 +1098,15 @@
 			width: 250px;
 			height: 250px;
 		}
+	}
+
+	// Our engine's case cube (CaseCube): the box the canvas squares itself into.
+	&__case-cube {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 250px;
+		height: 250px;
 	}
 
 	&__training-main-alg {
@@ -1620,6 +1638,11 @@
 			}
 		}
 
+		&__case-cube {
+			width: 180px;
+			height: 180px;
+		}
+
 		&__training-main-alg {
 			margin-bottom: 0.25rem;
 		}
@@ -1893,6 +1916,13 @@
 		// CubeViewer wrapper min-height override
 		.#{$namespace}-trainer__cube-viewer {
 			min-height: auto;
+			width: 100%;
+			height: 100%;
+		}
+
+		.#{$namespace}-trainer__case-cube {
+			width: 100%;
+			height: 100%;
 		}
 	}
 

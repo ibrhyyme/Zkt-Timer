@@ -552,8 +552,8 @@
 	}
 
 	&__cube {
-		// Fixed height (not flex:1) → cube doesn't grow, controls close below.
-		// twisty-player has no intrinsic height; height:100% + fixed cube height REQUIRED.
+		// Fixed height (not flex:1) → cube doesn't grow, controls close below. The canvas is the
+		// largest square inside (SolutionPlayer sizes it).
 		flex: 0 0 auto;
 		min-height: 0;
 		width: 100%;
@@ -566,15 +566,18 @@
 			height: 26vh;
 			touch-action: pan-y; // dikey scroll küpü geçsin (drag mobilde kapalı)
 		}
+	}
 
-		twisty-player {
-			width: 100%;
-			height: 100%;
-			max-height: 38vh;
+	&__canvas {
+		flex: none;
 
-			@include bp-down($bp-grid-collapse) {
-				max-height: 26vh;
-				touch-action: pan-y;
+		// Desktop only: a drag turns the cube instead of scrolling the page.
+		&--drag {
+			touch-action: none;
+			cursor: grab;
+
+			&:active {
+				cursor: grabbing;
 			}
 		}
 	}

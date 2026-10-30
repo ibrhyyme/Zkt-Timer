@@ -229,14 +229,38 @@ let _preGeneratedForType: string | null = null;
 let _preGeneratedForSubset: string | null = null;
 let _preGeneratedForTopColor: TopColorFace | null = null;
 
+// Cube types whose scrambles color-neutral may move onto another face. transformMoves
+// only relabels face turns, so a type whose subsets emit slice or wide moves (Roux M,
+// Mehta) would come out as a different scramble and stays out.
+const COLOR_NEUTRAL_SCRAMBLE_TYPES = new Set(['333', '333cfop']);
+
 // When color-neutral is enabled for 3x3, transform the scramble onto a random face;
 // otherwise apply the regular top-color transform. (Color-neutral overrides top color.)
 export async function applyScrambleColor(raw: string, scrambleTypeId: string, effectiveTopColor: TopColorFace | null): Promise<string> {
 	const colorNeutral = getSetting('scramble_color_neutral');
-	if (colorNeutral !== 'none' && scrambleTypeId === '333') {
+	if (colorNeutral !== 'none' && COLOR_NEUTRAL_SCRAMBLE_TYPES.has(scrambleTypeId)) {
 		return applyColorNeutral(raw, colorNeutral);
 	}
 	return applyTopColorTransform(raw, effectiveTopColor);
+}
+
+/**
+ * A fresh scramble for the cube type and subset, already turned onto the colour the user
+ * trains (colour neutral, or the chosen top colour where the subset offers one). Every
+ * route that hands the timer a new scramble goes through here: Next used to commit the
+ * raw scramble, so a yellow-top PLL or a red cross came back white after one press.
+ */
+export async function generateTimerScramble(cubeType: string, subset: string | null | undefined, topColor: unknown): Promise<string> {
+	const ct = getCubeTypeInfoById(cubeType);
+	if (!ct) return '';
+
+	const effectiveTopColor: TopColorFace | null =
+		isTopColorAvailable(cubeType, subset) && isTopColorFace(topColor)
+			? topColor
+			: null;
+
+	const raw = await getNewScrambleAsync(ct.scramble, subset ?? undefined);
+	return applyScrambleColor(raw, ct.scramble, effectiveTopColor);
 }
 
 export function preGenerateScramble(cubeType: string, subset?: string, topColor?: string | null) {
@@ -324,15 +348,7 @@ export function resetScramble(context: ITimerContext) {
 
 	if (scrambleLocked) return;
 
-	// Top color transform only active for 3x3 CFOP + PLL/OLL/f2l subsets.
-	// In other cases, topColor is null → applyTopColorTransform returns raw scramble.
-	const effectiveTopColor: TopColorFace | null =
-		isTopColorAvailable(cubeType, scrambleSubset) && isTopColorFace(scrambleTopColor)
-			? scrambleTopColor
-			: null;
-
-	getNewScrambleAsync(ct.scramble, scrambleSubset).then(async (rawScramble) => {
-		const newScramble = await applyScrambleColor(rawScramble, ct.scramble, effectiveTopColor);
+	generateTimerScramble(cubeType, scrambleSubset, scrambleTopColor).then((newScramble) => {
 		commitScramble(newScramble);
 	}).catch((e) => { console.error('[scramble] resetScramble failed:', e); });
 }

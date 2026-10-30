@@ -21,6 +21,8 @@ import {
 	getOrientationRotation,
 	isCubeShapePuzzle,
 } from './algorithm_engine';
+import {caseDrawing, engineDrawsCase} from './case_drawing';
+import {drawCubePicture} from '../../components/timer/smart_cube/cube_view/render/cube_pictures';
 
 // ===================== Color Constants =====================
 
@@ -436,7 +438,7 @@ function drawSQ1Pattern(doc: any, top: number[], bottom: number[], mirror: boole
 	}
 }
 
-// ===================== 3D TwistyPlayer Screenshot =====================
+// ===================== 3D Pictures (our engine; TwistyPlayer for the rest) =====================
 
 /** Flatten transparent PNG onto background color, output as JPEG */
 function makeOpaque(dataURL: string, w: number, h: number): Promise<string> {
@@ -457,7 +459,12 @@ function makeOpaque(dataURL: string, w: number, h: number): Promise<string> {
 	});
 }
 
-/** Batch capture 3D screenshots for algorithms that lack 2D patterns */
+/**
+ * Batch capture 3D pictures for algorithms that lack 2D patterns. 2x2 and 3x3 are drawn by our
+ * cube engine, the same pictures as the trainer's cards (case_drawing.ts + cube_pictures.ts:
+ * one offscreen context, one picture per frame, no wait for a player to start); the rest
+ * (other puzzles, notation the engine cannot read) by cubing.js players.
+ */
 async function batchCapture3DScreenshots(
 	algorithms: {algorithm: string; index: number}[],
 	category: string,
@@ -466,6 +473,31 @@ async function batchCapture3DScreenshots(
 ): Promise<Map<number, string>> {
 	if (algorithms.length === 0) return new Map();
 
+	const results = new Map<number, string>();
+	const rest: {algorithm: string; index: number}[] = [];
+	await Promise.all(
+		algorithms.map(async (entry) => {
+			const drawing = engineDrawsCase(category, entry.algorithm)
+				? await caseDrawing({category, algorithm: entry.algorithm, topFace, frontFace}).catch(() => null)
+				: null;
+			const picture = drawing ? await drawCubePicture({...drawing, pixels: 300}) : null;
+			if (picture) results.set(entry.index, await makeOpaque(picture, 300, 300));
+			else rest.push(entry);
+		})
+	);
+	if (rest.length) {
+		const fromCubing = await captureWithCubing(rest, category, topFace, frontFace);
+		fromCubing.forEach((url, index) => results.set(index, url));
+	}
+	return results;
+}
+
+async function captureWithCubing(
+	algorithms: {algorithm: string; index: number}[],
+	category: string,
+	topFace: CubeFace,
+	frontFace: CubeFace,
+): Promise<Map<number, string>> {
 	const results = new Map<number, string>();
 
 	try {
@@ -864,18 +896,17 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 	const screenshotMap = await batchCapture3DScreenshots(needs3D, category, topFace, effectiveFrontFace);
 
 	// ---- Render ----
-	let lastPage = -1;
+	// The document starts on the first page (the cover's). A page is opened for every page a
+	// card is placed past, including the first: a card too tall for the cover page (an F2L
+	// case with dozens of alternatives) goes to page 2, and it used to be drawn over the cover.
+	let lastPage = 0;
 
 	for (const p of placements) {
-		if (p.page !== lastPage) {
-			if (lastPage >= 0) {
-				drawFooter();
-				doc.addPage();
-			}
-			if (p.page > 0) {
-				drawPageHeader(p.page + 1, totalPages);
-			}
-			lastPage = p.page;
+		while (lastPage < p.page) {
+			drawFooter();
+			doc.addPage();
+			lastPage++;
+			drawPageHeader(lastPage + 1, totalPages);
 		}
 
 		const {alg, x: cx, y: cy, h} = p;

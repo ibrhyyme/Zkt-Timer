@@ -12,7 +12,8 @@ import { getStepDisplayName } from '../../util/consts';
 import { calculateNetRotationQuat, frameToQuat } from '../../../../util/cube_rotation_quat';
 import type { Frame } from '../../../../../shared/smart_cube/rotation_reconstruction';
 import { CubeRenderer } from '../../../timer/smart_cube/cube_view/render/cube_renderer';
-import { HOME_TILT_DEG, HOME_TURN_DEG } from '../../../timer/smart_cube/cube_view/view_defaults';
+import { HOME_TILT_DEG } from '../../../timer/smart_cube/cube_view/view_defaults';
+import { ViewDrag } from '../../../timer/smart_cube/cube_view/view_drag';
 import { useCubePalette } from '../../../../util/cube_colors/useCubePalette';
 import { isAppVisible, onVisibilityChange } from '../../../../util/app-visibility';
 import { useFlattenedMoves } from './useFlattenedMoves';
@@ -73,54 +74,6 @@ function easeShare(dtMs: number): number {
 }
 
 const DEG = Math.PI / 180;
-
-/**
- * Dragging the cube turns the view on top of the scene's orientation: across the cube's whole
- * width is half a turn, a vertical drag a little less (as cubing.js's orbit, which this
- * replaced). Yaw is about the cube's up, pitch about the screen's horizontal, so the cube never
- * rolls; the pitch stops short of straight down or up.
- */
-const DRAG_DEG_PER_SIDE = 180;
-const DRAG_VERTICAL_SCALE = 0.75;
-const MAX_PITCH_DEG = 85;
-/** A flick keeps the view turning after release, fading with this time constant. */
-const FLING_MS = 150;
-/** Only a pointer that was still moving this recently at release flings. */
-const FLING_WINDOW_MS = 60;
-/** Degrees per ms; a fast flick coasts at most this fast. */
-const MAX_FLING_SPEED = 2;
-
-interface ViewDrag {
-	/** Degrees. Starts at the live cube's home view (view_defaults.ts). */
-	pitch: number;
-	yaw: number;
-	/** The pointer turning the view, -1 for none. */
-	pointer: number;
-	x: number;
-	y: number;
-	at: number;
-	/** Degrees per ms, for the fling. */
-	vPitch: number;
-	vYaw: number;
-}
-
-const homeDrag = (): ViewDrag => ({ pitch: HOME_TILT_DEG, yaw: -HOME_TURN_DEG, pointer: -1, x: 0, y: 0, at: 0, vPitch: 0, vYaw: 0 });
-
-function turnView(drag: ViewDrag, dPitch: number, dYaw: number) {
-	drag.yaw = (drag.yaw + dYaw) % 360;
-	const pitch = drag.pitch + dPitch;
-	drag.pitch = Math.max(-MAX_PITCH_DEG, Math.min(MAX_PITCH_DEG, pitch));
-	if (drag.pitch !== pitch) drag.vPitch = 0;
-}
-
-const clampSpeed = (v: number) => Math.max(-MAX_FLING_SPEED, Math.min(MAX_FLING_SPEED, v));
-
-const _euler = new THREE.Euler();
-
-/** The viewing angle: SmartCubeView's home quaternion, with the drag added to its tilt and turn. */
-function viewQuat(drag: ViewDrag, out: THREE.Quaternion): THREE.Quaternion {
-	return out.setFromEuler(_euler.set(drag.pitch * DEG, drag.yaw * DEG, 0));
-}
 
 interface Props {
 	solve: Solve;
@@ -204,8 +157,8 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 	// The scene loop asks for frames only while something moves; anything that gives it a new
 	// target wakes it. A no-op until the cube exists.
 	const wakeSceneRef = useRef<() => void>(() => {});
-	// The viewer's drag on top of the scene; back to the home view with every new cube.
-	const dragRef = useRef<ViewDrag>(homeDrag());
+	// The viewer's drag on top of the scene (view_drag.ts); back to the home view with every new cube.
+	const dragRef = useRef(new ViewDrag());
 
 	// The scene loop reads these each frame. With a gyro track the scene follows the replay
 	// clock: the time of the token last played, moving on toward the next while playing.
@@ -266,7 +219,7 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 			console.error('[ReplayPlayer] 3D view unavailable:', error);
 			return undefined;
 		}
-		dragRef.current = homeDrag();
+		dragRef.current.reset();
 		const idx = Math.max(0, Math.min(currentIdxRef.current, allMovesRef.current.length));
 		cube.setMoves(turnsUpTo(setupAlg, allMovesRef.current, idx));
 		appliedRef.current = { idx, key: movesKeyRef.current };
@@ -302,14 +255,7 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 			lastAt = now;
 
 			const drag = dragRef.current;
-			const flinging = drag.pointer === -1 && (drag.vPitch !== 0 || drag.vYaw !== 0);
-			if (flinging) {
-				turnView(drag, drag.vPitch * dt, drag.vYaw * dt);
-				const decay = Math.exp(-dt / FLING_MS);
-				drag.vPitch *= decay;
-				drag.vYaw *= decay;
-				if (Math.abs(drag.vPitch) + Math.abs(drag.vYaw) < 0.002) drag.vPitch = drag.vYaw = 0;
-			}
+			const flinging = drag.step(dt);
 
 			let target = targetQuatRef.current;
 			let ease = easeShare(dt);
@@ -332,7 +278,7 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 			}
 			if (!shown) shown = target.clone();
 			else shown.slerp(target, ease);
-			cube.setOrientation(viewQuat(drag, view).multiply(shown), true);
+			cube.setOrientation(drag.quat(view).multiply(shown), true);
 
 			if (following || flinging || shown.angleTo(target) > 1e-4) raf = requestAnimationFrame(sceneFrame);
 			else lastAt = 0;
@@ -402,45 +348,17 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 		return () => clearTimeout(tid);
 	}, [isPlaying, currentMoveIdx, allMoves, speed, onMoveIdxChange]);
 
-	// Dragging turns the view (one pointer at a time); see DRAG_DEG_PER_SIDE.
+	// Dragging turns the view (view_drag.ts); the scene loop draws it and coasts a flick.
 	function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
-		const drag = dragRef.current;
-		if (drag.pointer !== -1 || (e.pointerType === 'mouse' && e.button !== 0)) return;
-		drag.pointer = e.pointerId;
-		drag.x = e.clientX;
-		drag.y = e.clientY;
-		drag.at = e.timeStamp;
-		drag.vPitch = drag.vYaw = 0;
-		try {
-			e.currentTarget.setPointerCapture(e.pointerId);
-		} catch {
-			// The pointer is already gone; its up event ends the drag all the same.
-		}
+		dragRef.current.down(e);
 	}
 
 	function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-		const drag = dragRef.current;
-		if (e.pointerId !== drag.pointer) return;
-		const side = e.currentTarget.clientWidth || 1;
-		const dYaw = ((e.clientX - drag.x) / side) * DRAG_DEG_PER_SIDE;
-		const dPitch = ((e.clientY - drag.y) / side) * DRAG_DEG_PER_SIDE * DRAG_VERTICAL_SCALE;
-		const dt = Math.max(1, e.timeStamp - drag.at);
-		// Smoothed over the last two moves: one event alone is too noisy to fling with.
-		drag.vYaw = clampSpeed((drag.vYaw + dYaw / dt) / 2);
-		drag.vPitch = clampSpeed((drag.vPitch + dPitch / dt) / 2);
-		drag.x = e.clientX;
-		drag.y = e.clientY;
-		drag.at = e.timeStamp;
-		turnView(drag, dPitch, dYaw);
-		wakeSceneRef.current();
+		if (dragRef.current.move(e)) wakeSceneRef.current();
 	}
 
 	function handlePointerEnd(e: React.PointerEvent<HTMLDivElement>) {
-		const drag = dragRef.current;
-		if (e.pointerId !== drag.pointer) return;
-		drag.pointer = -1;
-		// Let go while still moving: the view coasts on (the scene loop). Held still first: it stays.
-		if (e.type === 'pointercancel' || e.timeStamp - drag.at > FLING_WINDOW_MS) drag.vPitch = drag.vYaw = 0;
+		dragRef.current.end(e);
 		wakeSceneRef.current();
 	}
 

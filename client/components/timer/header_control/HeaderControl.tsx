@@ -19,11 +19,11 @@ import SubsetPicker from './SubsetPicker';
 import TimerTypePicker from './TimerTypePicker';
 import SettingsDropdown from '../../quick-controls/SettingsDropdown';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
-import { getNewScrambleAsync } from '../helpers/scramble';
+import { generateTimerScramble } from '../helpers/scramble';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { setTimerParam, setTimerParams } from '../helpers/params';
 import { setScrambleTopColor } from '../../../db/settings/update';
-import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
+import { isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
 
 
 const b = block('timer-header-control');
@@ -58,19 +58,9 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 
 	const scrambleTopColorSetting = useSettings('scramble_top_color');
 
-	/**
-	 * Top color selection is only active for 3x3 CFOP + PLL/OLL/f2l subsets.
-	 * If not active, returns null — applyTopColorTransform returns raw scramble.
-	 */
-	function getEffectiveTopColor(ct: string, sub: string | null | undefined): TopColorFace | null {
-		if (!isTopColorAvailable(ct, sub)) return null;
-		return isTopColorFace(scrambleTopColorSetting) ? scrambleTopColorSetting : null;
-	}
-
-	async function generateAndSet(scrambleType: string, subset: string | null | undefined, topColor: TopColorFace | null) {
+	async function generateAndSet(cubeTypeId: string, subset: string | null | undefined, topColor: unknown) {
 		try {
-			const raw = await getNewScrambleAsync(scrambleType, subset ?? undefined);
-			const transformed = await applyTopColorTransform(raw, topColor);
+			const transformed = await generateTimerScramble(cubeTypeId, subset, topColor);
 			setTimerParams({ scramble: transformed, originalScramble: transformed, smartTurnOffset: 0 });
 		} catch (e) {
 			console.error('[scramble] generateAndSet failed:', e);
@@ -92,8 +82,7 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 		setTimerParam('scrambleSubset', newSubset);
 
 		setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-		const topColor = getEffectiveTopColor(cubeTypeId, newSubset);
-		generateAndSet(ct.scramble, newSubset, topColor);
+		generateAndSet(cubeTypeId, newSubset, scrambleTopColorSetting);
 	}
 
 	function handleSubsetChange(subset: string | null) {
@@ -103,8 +92,7 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 		const ct = getCubeTypeInfoById(cubeType);
 		if (ct) {
 			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-			const topColor = getEffectiveTopColor(cubeType, subset);
-			generateAndSet(ct.scramble, subset, topColor);
+			generateAndSet(cubeType, subset, scrambleTopColorSetting);
 		}
 	}
 
@@ -115,8 +103,7 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 		const curSubset = getSetting('scramble_subset') as string | null | undefined;
 		if (ct) {
 			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-			const topColor = isTopColorAvailable(cubeType, curSubset) ? color : null;
-			generateAndSet(ct.scramble, curSubset, topColor);
+			generateAndSet(cubeType, curSubset, color);
 		}
 	}
 

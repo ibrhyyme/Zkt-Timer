@@ -2,10 +2,10 @@ import * as THREE from 'three';
 
 import { stickerPaletteFromFaceColors } from '../cube_palette';
 import { AXES, CubeModel, type Cap, type PuzzleSize } from './cube_model';
-import { DIM, buildBodyGeometry, buildCapGeometry, capKindAt, capMatrix, capShapeFor, logoHome, logoMatrix, type CapKind } from './geometry';
+import { DIM, buildBodyGeometry, buildCapGeometry, capKindAt, capMatrix, capOutline, capShapeFor, logoHome, logoMatrix, type CapKind } from './geometry';
 import { createBodyMaterial, createCapMaterial, createLogoMaterial, linearColor, type BodyUniforms } from './materials';
 import { layerTurns } from './notation';
-import { Stage, pickQuality, type CubeQuality } from './stage';
+import { Stage, pickQuality, type BackView, type CubeQuality } from './stage';
 import { TurnAnimator } from './turn_animator';
 
 /**
@@ -38,7 +38,19 @@ export interface CubeRendererOptions {
 	floor?: boolean;
 	/** The logo on the U centre. Default true. */
 	logo?: boolean;
+	/**
+	 * Floating hints, as cubing.js's scramble previews have them: a flat copy of every sticker
+	 * a little way out from its face, facing the cube, so the faces turned away from the viewer
+	 * show beside it (mirrored, as seen through the cube). Meant without the table: the shadow
+	 * pass would draw them too.
+	 */
+	hints?: boolean;
 }
+
+/** How far beyond the faces the hints float. */
+const HINT_DISTANCE = 0.9;
+/** From a cap's frame (+z out of the face) to its hint: out along the normal, turned to face the cube. */
+const HINT_OFFSET = new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, HINT_DISTANCE);
 
 /**
  * How a cap is drawn, as cubing.js stickering masks have it: in its colour, dimmed (half
@@ -59,9 +71,13 @@ export type CapLooks = (home: THREE.Vector3, normal: THREE.Vector3) => CapLook;
 const IGNORED_HEX = 0x5a5a5a;
 
 interface CapView {
-	mesh: THREE.Mesh;
 	/** Axis of the cubie's own frame this cap sits on. */
 	axis: number;
+	kind: CapKind;
+	/** Its instance in its kind's batch. */
+	slot: number;
+	/** Where it sits inside its cubie (capMatrix). */
+	local: THREE.Matrix4;
 }
 
 interface CubieView {
@@ -70,6 +86,20 @@ interface CubieView {
 	uniforms: BodyUniforms;
 	caps: CapView[];
 }
+
+/**
+ * Every cap of one kind in a single draw, and their hints in another: a 7x7 has 294 caps,
+ * and one mesh each made dragging it drop to ~13 fps on a 6x slowed CPU. Matrices follow
+ * the cubies (syncTransforms), colours are per instance (the material is white).
+ */
+interface CapBatch {
+	caps: THREE.InstancedMesh;
+	hints: THREE.InstancedMesh | null;
+}
+
+const WHITE = new THREE.Color(1, 1, 1);
+/** A cap not drawn (look 'invisible'): its instance shrunk to nothing. */
+const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
 
 /** U R F D L B to the palette's colour names, see stickerPaletteFromFaceColors. */
 const PALETTE_KEYS = ['white', 'red', 'green', 'yellow', 'orange', 'blue'] as const;
@@ -87,11 +117,18 @@ export class CubeRenderer {
 	private ignoredColor = linearColor(IGNORED_HEX);
 	/** Indexed like model.caps; empty means every cap in its colour. */
 	private looks: CapLook[] = [];
+	private batches = new Map<CapKind, CapBatch>();
+	/** Indexed like model.caps: a cap whose look is 'invisible'. */
+	private hidden: boolean[] = [];
 	private capGeometries = new Map<CapKind, THREE.BufferGeometry>();
+	private hintGeometries = new Map<CapKind, THREE.BufferGeometry>();
+	/** By which sides carry caps: a 7x7 has 218 pieces but only 26 body shapes. */
+	private bodyGeometries = new Map<string, THREE.BufferGeometry>();
 	private logo: THREE.Mesh | null = null;
 	private logoCapId = -1;
 	private logoReady = false;
 	private target = new THREE.Quaternion();
+	private back: BackView = 'none';
 	private active = true;
 	private disposed = false;
 	private dirty = true;
@@ -112,12 +149,15 @@ export class CubeRenderer {
 		this.model = new CubeModel(options.size);
 		this.animator = new TurnAnimator(this.model);
 		const tilt = new THREE.Quaternion().setFromAxisAngle(AXES[0], options.tableTilt);
-		this.stage = new Stage(this.canvas, options.quality ?? pickQuality(), options.size / 2, tilt, {floor: options.floor ?? true});
+		this.stage = new Stage(this.canvas, options.quality ?? pickQuality(), options.size / 2, tilt, {
+			floor: options.floor ?? true,
+			margin: options.hints ? HINT_DISTANCE : 0,
+		});
 		this.target.copy(options.orientation);
 		this.stage.cubeRoot.quaternion.copy(options.orientation);
 
 		this.setColorsFrom(options.faceColors);
-		this.build(options.logo ?? true);
+		this.build(options.logo ?? true, options.hints ?? false);
 		this.paint();
 		this.syncTransforms();
 		// Nothing else would ask for a frame after a restore: the cube only draws on change.
@@ -189,6 +229,15 @@ export class CubeRenderer {
 		this.wake();
 	}
 
+	/** The cube from behind as well, in the same canvas (see Stage.render). */
+	setBackView(back: BackView) {
+		if (back === this.back) return;
+		this.back = back;
+		this.stage.shadowDirty = true;
+		this.dirty = true;
+		this.wake();
+	}
+
 	/** Draw caps as a stickering mask says (see CapLook); null draws every cap in its colour. The looks travel with the pieces. */
 	setCapLooks(looks: CapLooks | null) {
 		this.looks = [];
@@ -217,7 +266,7 @@ export class CubeRenderer {
 		this.stage.cubeRoot.quaternion.copy(this.target);
 		this.stage.setPixels(pixels);
 		this.stage.shadowDirty = true;
-		this.stage.render();
+		this.stage.render(this.back);
 		try {
 			// Read in the same task as the draw: the drawing buffer is not preserved past it.
 			return this.canvas.toDataURL('image/png');
@@ -257,12 +306,14 @@ export class CubeRenderer {
 		this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored);
 		if (this.raf) cancelAnimationFrame(this.raf);
 		this.raf = 0;
-		for (const view of this.views) {
-			view.body.geometry.dispose();
-			(view.body.material as THREE.Material).dispose();
-			for (const cap of view.caps) (cap.mesh.material as THREE.Material).dispose();
-		}
+		this.bodyGeometries.forEach((g) => g.dispose());
+		for (const view of this.views) (view.body.material as THREE.Material).dispose();
+		this.batches.forEach(({ caps, hints }) => {
+			(caps.material as THREE.Material).dispose();
+			(hints?.material as THREE.Material | undefined)?.dispose();
+		});
 		this.capGeometries.forEach((g) => g.dispose());
+		this.hintGeometries.forEach((g) => g.dispose());
 		if (this.logo) {
 			this.logo.geometry.dispose();
 			const material = this.logo.material as THREE.MeshPhysicalMaterial;
@@ -301,31 +352,24 @@ export class CubeRenderer {
 		}
 	}
 
-	private build(withLogo: boolean) {
+	private build(withLogo: boolean, withHints: boolean) {
 		const { model, stage } = this;
-		const lite = stage.liteCaps;
 		const logoAt = logoHome(model.hi);
+		const counts = new Map<CapKind, number>();
 		for (const cubie of model.cubies) {
 			const group = new THREE.Group();
 			const { material, uniforms } = createBodyMaterial(cubie.home);
-			const body = new THREE.Mesh(buildBodyGeometry(cubie.home, model.hi), material);
+			const body = new THREE.Mesh(this.bodyGeometry(cubie.home), material);
 			body.castShadow = body.receiveShadow = true;
 			group.add(body);
 
 			const kind = capKindAt(cubie.home, model.hi);
 			const view: CubieView = { group, body, uniforms, caps: [] };
 			for (const cap of cubie.caps) {
-				let geometry = this.capGeometries.get(kind);
-				if (!geometry) {
-					geometry = buildCapGeometry(capShapeFor(kind));
-					this.capGeometries.set(kind, geometry);
-				}
-				const mesh = new THREE.Mesh(geometry, createCapMaterial(this.colors[cap.color], lite));
-				mesh.applyMatrix4(capMatrix(cubie.home, cap.normal, model.hi));
-				mesh.castShadow = mesh.receiveShadow = true;
-				group.add(mesh);
+				const slot = counts.get(kind) ?? 0;
+				counts.set(kind, slot + 1);
 				const axis = Math.abs(cap.normal.x) > 0.5 ? 0 : Math.abs(cap.normal.y) > 0.5 ? 1 : 2;
-				const capView: CapView = { mesh, axis };
+				const capView: CapView = { axis, kind, slot, local: capMatrix(cubie.home, cap.normal, model.hi) };
 				view.caps.push(capView);
 				this.capViews[cap.id] = capView;
 
@@ -335,6 +379,57 @@ export class CubeRenderer {
 			this.views.push(view);
 			stage.cubeRoot.add(group);
 		}
+
+		counts.forEach((count, kind) => {
+			let geometry = this.capGeometries.get(kind);
+			if (!geometry) {
+				geometry = buildCapGeometry(capShapeFor(kind));
+				this.capGeometries.set(kind, geometry);
+			}
+			const caps = this.instanced(geometry, createCapMaterial(WHITE, stage.liteCaps), count);
+			caps.castShadow = caps.receiveShadow = true;
+			// One-sided and facing the cube: a hint shows only from the far side, so only the
+			// hidden faces' hints are seen.
+			const hints = withHints ? this.instanced(this.hintGeometry(kind), new THREE.MeshBasicMaterial(), count) : null;
+			this.batches.set(kind, { caps, hints });
+		});
+	}
+
+	private instanced(geometry: THREE.BufferGeometry, material: THREE.Material, count: number): THREE.InstancedMesh {
+		const mesh = new THREE.InstancedMesh(geometry, material, count);
+		mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+		// Colours set before the first draw, so the shader is built with instance colours.
+		for (let i = 0; i < count; i++) mesh.setColorAt(i, WHITE);
+		// Its bounds are the one cap's at the origin; culling by them would drop the whole batch.
+		mesh.frustumCulled = false;
+		this.stage.cubeRoot.add(mesh);
+		return mesh;
+	}
+
+	/** The body of the piece at `home`, shared with every piece whose caps sit on the same sides. */
+	private bodyGeometry(home: THREE.Vector3): THREE.BufferGeometry {
+		const { hi } = this.model;
+		const side = (v: number) => (v > hi - 1e-6 ? 1 : v < -hi + 1e-6 ? -1 : 0);
+		const key = `${side(home.x)},${side(home.y)},${side(home.z)}`;
+		let geometry = this.bodyGeometries.get(key);
+		if (!geometry) {
+			// buildBodyGeometry reads only which sides are outer, so any piece of the kind will do.
+			geometry = buildBodyGeometry(home, hi);
+			this.bodyGeometries.set(key, geometry);
+		}
+		return geometry;
+	}
+
+	/** A flat cap outline, front facing +z, for the floating hints. */
+	private hintGeometry(kind: CapKind): THREE.BufferGeometry {
+		let geometry = this.hintGeometries.get(kind);
+		if (!geometry) {
+			const { x, y } = capOutline(capShapeFor(kind), DIM.capHalf, 0);
+			const shape = new THREE.Shape(x.map((px, i) => new THREE.Vector2(px, y[i])));
+			geometry = new THREE.ShapeGeometry(shape);
+			this.hintGeometries.set(kind, geometry);
+		}
+		return geometry;
 	}
 
 	private addLogo(group: THREE.Group, capId: number) {
@@ -359,12 +454,23 @@ export class CubeRenderer {
 
 	/** Push cap colours into their materials, and into the bodies for the glass tint. */
 	private paint() {
+		let visibilityChanged = false;
 		for (const cap of this.model.caps) {
 			const color = this.capColor(cap);
-			const mesh = this.capViews[cap.id].mesh;
-			mesh.visible = !!color;
-			if (color) (mesh.material as THREE.MeshStandardMaterial).color.copy(color);
+			const { kind, slot } = this.capViews[cap.id];
+			const { caps, hints } = this.batches.get(kind) as CapBatch;
+			if (this.hidden[cap.id] !== !color) visibilityChanged = true;
+			this.hidden[cap.id] = !color;
+			if (!color) continue;
+			caps.setColorAt(slot, color);
+			hints?.setColorAt(slot, color);
 		}
+		this.batches.forEach(({ caps, hints }) => {
+			if (caps.instanceColor) caps.instanceColor.needsUpdate = true;
+			if (hints?.instanceColor) hints.instanceColor.needsUpdate = true;
+		});
+		// Hiding is done in the instance matrices.
+		if (visibilityChanged) this.syncTransforms();
 		this.model.cubies.forEach((cubie, i) => {
 			const view = this.views[i];
 			for (const u of view.uniforms.uCap) u.value.setRGB(0, 0, 0);
@@ -382,11 +488,10 @@ export class CubeRenderer {
 	}
 
 	private swapCapMaterials(lite: boolean) {
-		for (const cap of this.model.caps) {
-			const mesh = this.capViews[cap.id].mesh;
-			(mesh.material as THREE.Material).dispose();
-			mesh.material = createCapMaterial(this.capColor(cap) ?? this.colors[cap.color], lite);
-		}
+		this.batches.forEach(({ caps }) => {
+			(caps.material as THREE.Material).dispose();
+			caps.material = createCapMaterial(WHITE, lite);
+		});
 	}
 
 	private afterJump() {
@@ -404,14 +509,34 @@ export class CubeRenderer {
 		const a = this.animator.active;
 		const turn = a ? new THREE.Quaternion().setFromAxisAngle(AXES[a.move.axis], a.angle) : null;
 		const moving = a ? new Set(a.cubies) : null;
+		const piece = new THREE.Matrix4();
+		const m = new THREE.Matrix4();
 		this.model.cubies.forEach((cubie, i) => {
-			const group = this.views[i].group;
+			const view = this.views[i];
+			const group = view.group;
 			group.position.copy(cubie.pos);
 			group.quaternion.copy(cubie.quat);
 			if (turn && moving?.has(cubie)) {
 				group.position.applyQuaternion(turn);
 				group.quaternion.premultiply(turn);
 			}
+			// The caps' instances follow their piece.
+			piece.compose(group.position, group.quaternion, group.scale);
+			cubie.caps.forEach((cap, j) => {
+				const { kind, slot, local } = view.caps[j];
+				const { caps, hints } = this.batches.get(kind) as CapBatch;
+				if (this.hidden[cap.id]) {
+					caps.setMatrixAt(slot, HIDDEN);
+					hints?.setMatrixAt(slot, HIDDEN);
+					return;
+				}
+				caps.setMatrixAt(slot, m.multiplyMatrices(piece, local));
+				hints?.setMatrixAt(slot, m.multiply(HINT_OFFSET));
+			});
+		});
+		this.batches.forEach(({ caps, hints }) => {
+			caps.instanceMatrix.needsUpdate = true;
+			if (hints) hints.instanceMatrix.needsUpdate = true;
 		});
 	}
 
@@ -443,7 +568,7 @@ export class CubeRenderer {
 			for (const s of [1, -1]) {
 				const neighbour = cubie.pos.getComponent(axis) + s;
 				if (neighbour < model.lo - 1e-6 || neighbour > model.hi + 1e-6) continue;
-				if (layerTurns(a.move.layers, neighbour, model.lo, model.hi) === moving.has(cubie)) continue;
+				if (layerTurns(a.move, neighbour, model.lo, model.hi) === moving.has(cubie)) continue;
 				// That world direction, in the cubie's own frame.
 				dir.copy(AXES[axis]).multiplyScalar(s).applyQuaternion(inverse.copy(cubie.quat).invert());
 				const k = Math.abs(dir.x) > 0.5 ? 0 : Math.abs(dir.y) > 0.5 ? 1 : 2;
@@ -482,7 +607,7 @@ export class CubeRenderer {
 		}
 
 		if (changed) {
-			this.stage.render();
+			this.stage.render(this.back);
 			this.adaptToFrameTime(now);
 		} else {
 			this.lastFrame = 0;

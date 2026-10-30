@@ -9,7 +9,7 @@ const library = require('../../../../public/trainer/default-algs.json') as Recor
 	{algorithms: {algorithm: string; alternatives?: string[]}[]}[]
 >;
 
-function modelAfter(size: 2 | 3, turns: string[]): CubeModel {
+function modelAfter(size: 2 | 3 | 4, turns: string[]): CubeModel {
 	const model = new CubeModel(size);
 	for (const turn of turns) expect([turn, model.applyMove(turn)]).toEqual([turn, true]);
 	return model;
@@ -26,9 +26,13 @@ describe('algTurns', () => {
 	});
 
 	it('gives up on what the engine cannot turn', () => {
-		expect(algTurns('2R2 U2')).toBeNull();
+		expect(algTurns('2M U2')).toBeNull();
+		expect(algTurns('2R2 U2')).toEqual(['2R2', 'U2']);
 		expect(algTurns('(R U')).toBeNull();
 		expect(algTurns('R U)')).toBeNull();
+		// Cleaning drops the comma and colon; read as plain turns these would be other sequences.
+		expect(algTurns("[R U R', D]")).toBeNull();
+		expect(algTurns("[F: R U R' U']")).toBeNull();
 	});
 });
 
@@ -36,26 +40,29 @@ describe('caseTurns', () => {
 	it('undoes the algorithm after the rotation', () => {
 		expect(invertTurns(['R', 'U2', "F'"])).toEqual(['F', "U2'", "R'"]);
 		expect(caseTurns("R U R'", 'x2 y')).toEqual(['x2', 'y', 'R', "U'", "R'"]);
-		expect(caseTurns('2R U', '')).toBeNull();
+		expect(caseTurns('2M U', '')).toBeNull();
 	});
 
-	// Every 2x2 and 3x3 algorithm the library ships, main and alternatives: the engine reads
-	// each, and the case it sets up is the one the algorithm solves. In the owner's orientation
-	// (yellow top, red front), so the rotation is in it; the default one only drops it.
+	// Every 2x2, 3x3 and 4x4 algorithm the library ships, main and alternatives: the engine
+	// reads each (the 4x4 ones with layer prefixes, 2R2 and Uw2), and the case it sets up is the
+	// one the algorithm solves. In the owner's orientation (yellow top, red front), so the
+	// rotation is in it; the default one only drops it.
+	const SIZES: Record<string, 2 | 3 | 4> = {'2x2x2': 2, '3x3x3': 3, '4x4x4': 4};
 	const cases: [string, string][] = [];
 	for (const [category, subsets] of Object.entries(library)) {
-		const type = getPuzzleType(category);
-		if (type !== '3x3x3' && type !== '2x2x2') continue;
+		if (!SIZES[getPuzzleType(category)]) continue;
 		for (const s of subsets) for (const a of s.algorithms) for (const alg of [a.algorithm, ...(a.alternatives || [])]) cases.push([category, alg]);
 	}
 
 	it('every library algorithm sets up its case', () => {
 		expect(cases.length).toBeGreaterThan(1000);
+		expect(cases.some(([category]) => getPuzzleType(category) === '4x4x4')).toBe(true);
 		const rotation = getOrientationRotation('D', 'R');
-		const held = {2: modelAfter(2, rotation.split(' ').filter(Boolean)).getFacelets(), 3: modelAfter(3, rotation.split(' ').filter(Boolean)).getFacelets()};
+		const turns = rotation.split(' ').filter(Boolean);
+		const held = {2: modelAfter(2, turns).getFacelets(), 3: modelAfter(3, turns).getFacelets(), 4: modelAfter(4, turns).getFacelets()};
 		const failures: string[] = [];
 		for (const [category, alg] of cases) {
-			const size = getPuzzleType(category) === '2x2x2' ? 2 : 3;
+			const size = SIZES[getPuzzleType(category)];
 			const setup = caseTurns(alg, rotation);
 			if (!setup) {
 				failures.push(`${category}: ${alg} (unread)`);

@@ -9,7 +9,7 @@ import { fetchLastBucketForSession } from '../../db/solves/query';
 import { useActiveSessionId } from '../../util/hooks/useActiveSessionId';
 import { getSetting } from '../../db/settings/query';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
-import { getNewScrambleAsync } from '../timer/helpers/scramble';
+import { generateTimerScramble } from '../timer/helpers/scramble';
 import { setTimerParam, setTimerParams } from '../timer/helpers/params';
 import FancyDropdown, { FancyDropdownGroup } from '../timer/header_control/FancyDropdown';
 import { Session } from '../../../server/schemas/Session.schema';
@@ -113,7 +113,7 @@ export default function SessionPicker(props: Props) {
 			if (ct) {
 				setTimerParam('scrambleSubset', newSubset);
 				setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-				getNewScrambleAsync(ct.scramble, newSubset ?? undefined).then((newScramble) => {
+				generateTimerScramble(lastCubeType, newSubset, getSetting('scramble_top_color')).then((newScramble) => {
 					setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
 				}).catch((e) => {
 					console.error('[scramble] switchSession failed:', e);

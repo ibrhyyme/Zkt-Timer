@@ -148,6 +148,48 @@
 		}
 	}
 
+	// 2x2/3x3 in 3D, our engine (ScrambleCube): the same 4:3 box the cubing.js player had; the
+	// cube is the largest square inside it.
+	&__cube {
+		width: 100%;
+		max-width: 320px;
+		max-height: 240px;
+		aspect-ratio: 4 / 3;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		@include bp-down($bp-md) {
+			max-width: 100%;
+			max-height: 100%;
+		}
+
+		&--expanded {
+			max-width: none;
+			max-height: 70vh;
+		}
+	}
+
+	// The live cube owns a drag (it turns the view), on touch too, as the cubing.js player did.
+	&__cube-canvas {
+		flex: none;
+		touch-action: none;
+		cursor: grab;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	// A list row's still picture.
+	&__cube-picture {
+		display: block;
+		height: 100%;
+		max-width: 100%;
+		aspect-ratio: 1;
+		object-fit: contain;
+	}
+
 	&__sq1-renderer {
 		max-width: 100%;
 		max-height: 240px;

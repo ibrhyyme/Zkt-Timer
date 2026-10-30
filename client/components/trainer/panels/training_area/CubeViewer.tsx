@@ -5,6 +5,8 @@ import { getLLPattern, isLLPatternsLoaded, useLLPattern } from '../../../../util
 import { getIsometricPattern, isIsometricPatternsLoaded } from '../../../../util/trainer/isometric_patterns';
 import { getPuzzlePattern, isPuzzlePatternsLoaded } from '../../../../util/trainer/puzzle_patterns';
 import { getRemappedMask } from '../../../../util/trainer/stickering_remap';
+import { engineDrawsCase } from '../../../../util/trainer/case_drawing';
+import CaseCube from '../../common/CaseCube';
 import LLPatternView from '../LLPatternView';
 import CubeIsometricView from '../CubeIsometricView';
 import CubeTopPatternView from '../CubeTopPatternView';
@@ -64,10 +66,14 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 			: is2DPuzzle
 				? (puzzlePatternsLoaded ? !puzzlePattern : false)
 				: true;
+	// 2x2 and 3x3 are drawn by our cube engine (CaseCube); other puzzles stay with cubing.js.
+	const useEngine = use3D && engineDrawsCase(category, algorithm);
+	// backView normalize: true → 'top-right', string olarak gelirse oldugu gibi
+	const bv: TrainerBackView = backView === true ? 'top-right' : (backView || 'none');
 
 	// 3D TwistyPlayer
 	useEffect(() => {
-		if (!use3D || !containerRef.current) return;
+		if (!use3D || useEngine || !containerRef.current) return;
 
 		let cancelled = false;
 
@@ -97,8 +103,6 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});
 
-			// backView normalize: true → 'top-right', string olarak gelirse oldugu gibi
-			const bv = backView === true ? 'top-right' : (backView || 'none');
 			if (bv !== 'none') {
 				player.backView = bv as any;
 			}
@@ -121,7 +125,7 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 			}
 			playerRef.current = null;
 		};
-	}, [use3D, algorithm, category, backView, topFace, effectiveFrontFace, stickering, puzzleType, isCube, is3x3]);
+	}, [use3D, useEngine, algorithm, category, bv, topFace, effectiveFrontFace, stickering, puzzleType, isCube, is3x3]);
 
 	// Isometric 3-yuz pattern (WVLS, VHLS)
 	if (isometricPattern) {
@@ -176,6 +180,21 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 						size={200}
 					/>
 				)}
+			</div>
+		);
+	}
+
+	if (useEngine) {
+		return (
+			<div className={b('cube-viewer')}>
+				<CaseCube
+					className={b('case-cube')}
+					category={category}
+					algorithm={algorithm}
+					topFace={topFace}
+					frontFace={effectiveFrontFace}
+					backView={bv}
+				/>
 			</div>
 		);
 	}

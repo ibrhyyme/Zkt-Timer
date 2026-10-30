@@ -27,11 +27,20 @@ export function invertTurns(turns: string[]): string[] {
 }
 
 /**
+ * Commutator or conjugate notation ("[R U R', D]", "[F: R U R' U']"). cleanAlgorithmForCubing
+ * drops the comma and colon, which would turn it into a different sequence; cubing.js reads it.
+ */
+export function hasCommutator(alg: string): boolean {
+	return /[,:]/.test(alg || '');
+}
+
+/**
  * The single turns of an algorithm, groups written out: "(R U)2" is R U R U, "(R U)'" is
  * U' R'. Null when a turn is not one the engine knows (a layer prefix like 2R, a stray
- * bracket): the caller draws such a case another way.
+ * bracket, commutator notation): the caller draws such a case another way.
  */
 export function algTurns(alg: string): string[] | null {
+	if (hasCommutator(alg)) return null;
 	const tokens = cleanAlgorithmForCubing(alg || '').match(TOKEN) || [];
 	let i = 0;
 	const sequence = (): string[] | null => {

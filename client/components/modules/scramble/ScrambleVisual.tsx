@@ -19,6 +19,9 @@ const FtoRenderer = React.lazy(() => import('./FtoRenderer'));
 // Custom 2D canvas net renderer for NxN. Used in place of cubing.js's own 2D view, which
 // offers no way to set sticker colours (see NxnRenderer's header).
 const NxnRenderer = React.lazy(() => import('./NxnRenderer'));
+// 3D for 2x2 to 7x7: our cube engine (see ScrambleCube's header). Other puzzles keep cubing.js.
+import ScrambleCube from './ScrambleCube';
+import type { PuzzleSize } from '../../timer/smart_cube/cube_view/render/cube_model';
 
 const b = block('scramble-visual');
 
@@ -66,10 +69,12 @@ interface Props {
 	frontFace?: boolean;
 	compact?: boolean;
 	subset?: string;
+	/** A row of a list (solves, PB cards, last solve, stats): the 3D cube as a still picture. */
+	still?: boolean;
 }
 
 function ScrambleVisual(props: Props) {
-	const { cubeType, scramble, frontFace, compact, subset } = props;
+	const { cubeType, scramble, frontFace, compact, subset, still } = props;
 	const { t } = useTranslation();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
@@ -96,6 +101,7 @@ function ScrambleVisual(props: Props) {
 			: '3D';
 
 	const useNxnNet = nxnSize > 0 && visualizationVal === '2D';
+	const engineSize = visualizationVal === '3D' && nxnSize >= 2 && nxnSize <= 7 ? (nxnSize as PuzzleSize) : 0;
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -154,6 +160,8 @@ function ScrambleVisual(props: Props) {
 							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer-expanded')} />
 						) : useNxnNet ? (
 							<NxnRenderer size={nxnSize} scramble={viewerAlg} className={b('nxn-renderer-expanded')} />
+							) : engineSize ? (
+								<ScrambleCube size={engineSize} scramble={viewerAlg} className={b('cube', { expanded: true })} />
 						) : (
 							<TwistyPlayerWrapper
 								puzzle={puzzleId}
@@ -250,6 +258,8 @@ function ScrambleVisual(props: Props) {
 							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer')} />
 						) : useNxnNet ? (
 							<NxnRenderer size={nxnSize} scramble={viewerAlg} className={b('nxn-renderer')} />
+						) : engineSize ? (
+							<ScrambleCube size={engineSize} scramble={viewerAlg} still={still} className={b('cube')} />
 						) : (
 							<TwistyPlayerWrapper
 								puzzle={puzzleId}
@@ -274,6 +284,7 @@ export default React.memo(ScrambleVisual, (prevProps, nextProps) => {
 		prevProps.width === nextProps.width &&
 		prevProps.frontFace === nextProps.frontFace &&
 		prevProps.compact === nextProps.compact &&
-		prevProps.subset === nextProps.subset
+		prevProps.subset === nextProps.subset &&
+		prevProps.still === nextProps.still
 	);
 });

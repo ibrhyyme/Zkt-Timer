@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { isNative } from '../../../../../util/platform';
+import { HOME_TILT_DEG, HOME_TURN_DEG } from '../view_defaults';
 
 /**
  * Everything around the cube: renderer, camera, light and the shadow under it.
@@ -42,6 +43,25 @@ export function pickQuality(): CubeQuality {
 	const coarse = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 	return isNative() || coarse ? 'medium' : 'high';
 }
+
+/**
+ * A second look at the cube from behind and below (the trainer's "back view"): beside the
+ * front view, or small in its top-right corner over it, as cubing.js laid its two cameras out.
+ */
+export type BackView = 'none' | 'side-by-side' | 'top-right';
+
+/**
+ * From the front view to the back one. The home view is a tilt and a turn of the cube (the
+ * camera stays put); the back view tilts the other way and turns half round, which is where
+ * cubing.js put its back camera (latitude negated, longitude + 180). Applied on top of the
+ * cube's orientation, the back always shows the far side of the cube the front shows.
+ */
+const TO_BACK = (() => {
+	const deg = Math.PI / 180;
+	const home = new THREE.Quaternion().setFromEuler(new THREE.Euler(HOME_TILT_DEG * deg, -HOME_TURN_DEG * deg, 0));
+	const back = new THREE.Quaternion().setFromEuler(new THREE.Euler(-HOME_TILT_DEG * deg, (180 - HOME_TURN_DEG) * deg, 0));
+	return back.multiply(home.invert());
+})();
 
 /** Narrow lens from far away: the cube keeps its proportions instead of bulging. */
 const FOV = 26;
@@ -261,6 +281,8 @@ export class Stage {
 	quality: CubeQuality;
 	private config: QualityConfig;
 	private key: THREE.DirectionalLight;
+	/** Key, fill and rim; turned upside down for the back view (see render). */
+	private lights = new THREE.Group();
 	private floor = new THREE.Group();
 	private contact: ContactShadow | null = null;
 	private blob: THREE.Mesh | null = null;
@@ -275,11 +297,13 @@ export class Stage {
 	/**
 	 * `floor: false` leaves out the table and its shadow and centres the camera on the cube: a
 	 * still picture (trainer case images) is the cube alone, as large as the frame allows.
+	 * `margin`: how far beyond the faces something is drawn (the floating hints), so the
+	 * framing keeps it in view.
 	 */
-	constructor(canvas: HTMLCanvasElement, quality: CubeQuality, puzzleHalf: number, tableTilt: THREE.Quaternion, {floor = true} = {}) {
+	constructor(canvas: HTMLCanvasElement, quality: CubeQuality, puzzleHalf: number, tableTilt: THREE.Quaternion, {floor = true, margin = 0} = {}) {
 		this.quality = quality;
 		this.config = QUALITY[quality];
-		this.reach = puzzleHalf * Math.sqrt(3) + 0.02;
+		this.reach = Math.hypot(puzzleHalf + margin, puzzleHalf, puzzleHalf) + 0.02;
 
 		const renderer = new THREE.WebGLRenderer({
 			canvas,
@@ -322,13 +346,14 @@ export class Stage {
 		shadowCamera.far = keyDistance + this.reach + 0.5;
 		this.key.shadow.bias = -0.0004;
 		this.key.shadow.normalBias = 0.012;
-		this.scene.add(this.key);
+		this.lights.add(this.key);
 		const fill = new THREE.DirectionalLight(0xe4ebff, 1.4);
 		fill.position.set(7, 1.5, 4);
-		this.scene.add(fill);
+		this.lights.add(fill);
 		const rim = new THREE.DirectionalLight(0xffffff, 1.0);
 		rim.position.set(2.5, 5, -8);
-		this.scene.add(rim);
+		this.lights.add(rim);
+		this.scene.add(this.lights);
 
 		this.scene.add(this.cubeRoot);
 
@@ -429,11 +454,47 @@ export class Stage {
 		this.resize(pixels);
 	}
 
-	render() {
+	render(back: BackView = 'none') {
 		if (this.contact && this.config.floor === 'contact' && this.shadowDirty) {
 			this.contact.render(this.renderer, this.scene, [this.blob as THREE.Object3D]);
 		}
 		this.shadowDirty = false;
+		if (back === 'none') {
+			this.renderer.render(this.scene, this.camera);
+			return;
+		}
+
+		// Two passes into one canvas, one context: viewports and scissors, square so the cube
+		// keeps its shape. The front takes the left half or the whole canvas; the back the
+		// right half, or a quarter-size square in the top-right corner drawn over the front.
+		const r = this.renderer;
+		const s = this.cssSize;
+		const front = this.cubeRoot.quaternion.clone();
+		r.setViewport(0, 0, s, s);
+		r.clear();
+		r.autoClear = false;
+		r.setScissorTest(true);
+		this.pass(back === 'side-by-side' ? [0, s / 4, s / 2] : [0, 0, s]);
+		// The table belongs to the front: from behind and below it would cover the cube. The
+		// lamps turn upside down: the face the back view looks up at (the bottom) faces away
+		// from them and drew a white bottom grey, too close to the trainer's masked grey.
+		this.cubeRoot.quaternion.premultiply(TO_BACK);
+		this.floor.visible = false;
+		this.lights.scale.y = -1;
+		this.pass(back === 'side-by-side' ? [s / 2, s / 4, s / 2] : [s * 0.75, s * 0.75, s / 4]);
+		this.lights.scale.y = 1;
+		this.floor.visible = true;
+		this.cubeRoot.quaternion.copy(front);
+		r.setScissorTest(false);
+		r.setViewport(0, 0, s, s);
+		r.autoClear = true;
+	}
+
+	/** One square view at (x, y) from the bottom left, CSS pixels; depth cleared, colour kept. */
+	private pass([x, y, size]: number[]) {
+		this.renderer.setViewport(x, y, size, size);
+		this.renderer.setScissor(x, y, size, size);
+		this.renderer.clearDepth();
 		this.renderer.render(this.scene, this.camera);
 	}
 

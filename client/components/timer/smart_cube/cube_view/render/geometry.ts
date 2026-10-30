@@ -176,7 +176,11 @@ export function buildCapGeometry(shape: CapShape, half = DIM.capHalf): THREE.Buf
 	return geo;
 }
 
-export type CapKind = 'corner' | 'edge' | 'center';
+/**
+ * `center` is the one middle piece of a face (odd sizes); `inner` every other piece inside a
+ * face on a big cube (the x- and t-centres of a 4x4 and up), a plain rounded square.
+ */
+export type CapKind = 'corner' | 'edge' | 'center' | 'inner';
 
 export function capShapeFor(kind: CapKind): CapShape {
 	const r = DIM.capCornerRadius;
@@ -187,8 +191,11 @@ export function capShapeFor(kind: CapKind): CapShape {
 
 /** What kind of piece sits at `home` on a puzzle whose outer layer is at `hi`. */
 export function capKindAt(home: THREE.Vector3, hi: number): CapKind {
-	const outer = [home.x, home.y, home.z].filter((v) => Math.abs(v) > hi - 1e-6).length;
-	return outer === 1 ? 'center' : outer === 2 ? 'edge' : 'corner';
+	const coords = [home.x, home.y, home.z];
+	const outer = coords.filter((v) => Math.abs(v) > hi - 1e-6).length;
+	if (outer === 3) return 'corner';
+	if (outer === 2) return 'edge';
+	return coords.every((v) => Math.abs(v) < 1e-6 || Math.abs(v) > hi - 1e-6) ? 'center' : 'inner';
 }
 
 /**
@@ -200,13 +207,16 @@ export function capMatrix(home: THREE.Vector3, normal: THREE.Vector3, hi: number
 	const z = normal.clone();
 	const kind = capKindAt(home, hi);
 	let y: THREE.Vector3;
-	if (kind === 'center') {
+	if (kind === 'center' || kind === 'inner') {
 		y = Math.abs(normal.y) > 0.5 ? new THREE.Vector3(0, 0, -1) : new THREE.Vector3(0, 1, 0);
 	} else {
 		// Away from the face centre, within the face.
 		const inPlane = home.clone().addScaledVector(normal, -home.dot(normal));
 		if (kind === 'edge') {
-			y = inPlane.normalize();
+			// Towards the face's edge it sits on: on a big cube a wing is off-centre along the
+			// edge, and the edge is the in-plane axis at the outer layer.
+			const axis = [0, 1, 2].find((a) => Math.abs(inPlane.getComponent(a)) > hi - 1e-6) ?? 0;
+			y = new THREE.Vector3().setComponent(axis, Math.sign(inPlane.getComponent(axis)));
 		} else {
 			// Corners are symmetric; any in-plane axis will do.
 			const axis = Math.abs(inPlane.x) > 1e-6 ? 0 : 1;

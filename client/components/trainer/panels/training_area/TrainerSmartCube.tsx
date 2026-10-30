@@ -2,11 +2,8 @@ import React, {useState, useEffect, useRef, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {
-	expandNotation,
 	cleanAlgorithmForCubing,
 	getOrientationRotation,
-	getStickering,
-	getPuzzleType,
 	isLLCategory,
 	getDefaultFrontFace,
 	getEffectiveOrientation,
@@ -22,13 +19,12 @@ import {
 	fixOrientation,
 	isIdenticalIgnoringCenters,
 } from '../../../../util/trainer/pattern_utils';
-import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
+import {caseDrawing, type CaseDrawing} from '../../../../util/trainer/case_drawing';
 import {addTime, incrementFailCount, resetFailCount, checkAutoLearn} from '../../hooks/useAlgorithmData';
 import {useWakeLock} from '../../../../util/hooks/useWakeLock';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {cubeTimestampLinearFit} from '../../../../util/smart_cube_timing';
-import {onVisibilityChange} from '../../../../util/app-visibility';
-import type {TwistyPlayer} from 'cubing/twisty';
+import {isAppVisible, onVisibilityChange} from '../../../../util/app-visibility';
 import type {KPattern} from 'cubing/kpuzzle';
 import type {SmartTurn} from '../../types';
 import * as THREE from 'three';
@@ -37,7 +33,8 @@ import {useSettings} from '../../../../util/hooks/useSettings';
 import ScrambleMoveList, {isGreenBaseColor} from '../../../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
 import {sequenceMatchStatus} from '../../../timer/time_display/timer_scramble/smart_scramble/scramble_move_state';
 import {HOME_TILT_DEG, HOME_TURN_DEG} from '../../../timer/smart_cube/cube_view/view_defaults';
-import {recolorPuzzle} from '../../../timer/smart_cube/cube_view/cube_palette';
+import {CubeRenderer} from '../../../timer/smart_cube/cube_view/render/cube_renderer';
+import {useCubePalette} from '../../../../util/cube_colors/useCubePalette';
 import {getSmartCubeManager} from '../../../../util/smart_cube/connection_manager';
 import {SmartAlgTracker, CubeStateOps} from '../../../../util/trainer/smart_alg_tracker';
 
@@ -66,23 +63,29 @@ export default function TrainerSmartCube() {
 	// Flashing error indicator — animation re-triggers after each key increment
 	const [flashKey, setFlashKey] = useState(0);
 
-	// TwistyPlayer refs
+	// The 3D cube: our engine (cube_view/render/), as the timer's live cube
 	const containerRef = useRef<HTMLDivElement>(null);
-	const twistyPlayerRef = useRef<TwistyPlayer | null>(null);
+	const cubeRef = useRef<CubeRenderer | null>(null);
+	// The case the cube shows before any move: orientation rotation, then the algorithm undone.
+	// Kept for "reset", which puts the cube back on it.
+	const setupTurnsRef = useRef<string[]>([]);
+	const setupLooksRef = useRef<CaseDrawing['looks']>(null);
+
+	// The user's sticker colours, as on the timer's live cube.
+	const cubeColors = useCubePalette();
+	const faceColorsRef = useRef(cubeColors.nxn);
+	faceColorsRef.current = cubeColors.nxn;
+	const paletteKey = cubeColors.nxn.join(',');
 
 	// Gyro refs
-	const twistySceneRef = useRef<THREE.Scene | null>(null);
-	const twistyVantageRef = useRef<any>(null);
 	const gyroBasisRef = useRef<THREE.Quaternion | null>(null);
+	/** The last reading with its basis applied (identity before any): the camera pad turns the view around it. */
+	const gyroRef = useRef(new THREE.Quaternion());
 	// Shared with the timer's cube view so both show the cube from the same angle.
 	const HOME_ORIENTATION = useRef(
 		new THREE.Quaternion().setFromEuler(new THREE.Euler(HOME_TILT_DEG * Math.PI / 180, -HOME_TURN_DEG * Math.PI / 180, 0))
 	);
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
-	const animFrameRef = useRef<number | null>(null);
-	// Same sticker palette as the timer's cube view; see cube_palette.ts.
-	const paletteDoneRef = useRef(new WeakSet<object>());
-	const recolorPendingRef = useRef(true);
 	const unsubGyroRef = useRef<(() => void) | null>(null);
 	// Net rotation-aware gyro reset: uses previous algorithm's net rotation
 	// in new basis calculation to correct drift while preserving orientation
@@ -187,9 +190,7 @@ export default function TrainerSmartCube() {
 		awaitingBaselineRef.current = false;
 
 		// Update 3D visualization
-		if (twistyPlayerRef.current) {
-			(twistyPlayerRef.current as any).experimentalAddMove(move, {cancel: false});
-		}
+		cubeRef.current?.addMove(move);
 
 		// Null after the algorithm was completed: the move is applied so the next algorithm
 		// starts from the right state, but not judged against the old one.
@@ -265,9 +266,10 @@ export default function TrainerSmartCube() {
 						gyroBasisRef.current = baseConj;
 					}
 				}
-				cubeQuaternion.current.copy(
-					quat.premultiply(gyroBasisRef.current).premultiply(HOME_ORIENTATION.current)
-				);
+				gyroRef.current.copy(quat.premultiply(gyroBasisRef.current));
+				cubeQuaternion.current.copy(gyroRef.current).premultiply(HOME_ORIENTATION.current);
+				// The renderer eases towards it, a quarter of the way per frame (as before).
+				cubeRef.current?.setOrientation(cubeQuaternion.current);
 			}
 		});
 	}, []);
@@ -341,102 +343,59 @@ export default function TrainerSmartCube() {
 		};
 	}, [processMove, subscribeToGyro, rebuildPatternStates]);
 
-	// -- TwistyPlayer + Gyro animation loop --
+	// -- 3D cube --
+	// Built once, on the client. It draws only when something changes (a turn, the gyro, the
+	// case), so a cube lying still costs nothing; the gyro eases in the renderer, a quarter of
+	// the way per frame, as the old loop did.
 	useEffect(() => {
-		if (!containerRef.current) return;
-		containerRef.current.innerHTML = '';
-		if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-
-		let cancelled = false;
-		let unsubVisibility: (() => void) | undefined;
-
-		const initTwisty = async () => {
-			const {TwistyPlayer} = await import('cubing/twisty');
-			if (cancelled) return;
-
-			const player = new TwistyPlayer({
-				puzzle: '3x3x3',
-				visualization: 'PG3D',
-				alg: '',
-				experimentalSetupAnchor: 'start',
-				background: 'none',
-				controlPanel: 'none',
-				hintFacelets: 'none',
-				experimentalDragInput: 'none',
-				cameraLatitude: 0,
-				cameraLongitude: 0,
-				cameraLatitudeLimit: 0,
-				tempoScale: 5,
-				backView: options.backView === 'none' ? 'none' : (options.backView as any),
+		const container = containerRef.current;
+		if (!container) return undefined;
+		let cube: CubeRenderer;
+		try {
+			cube = new CubeRenderer({
+				size: 3,
+				faceColors: faceColorsRef.current,
+				tableTilt: (HOME_TILT_DEG * Math.PI) / 180,
+				orientation: cubeQuaternion.current,
 			});
+		} catch (error) {
+			// No WebGL (blocked, lost, very old device): matching and the timer still work.
+			console.error('[TrainerSmartCube] 3D view unavailable:', error);
+			return undefined;
+		}
+		cube.setMoves(setupTurnsRef.current);
+		cube.setCapLooks(setupLooksRef.current);
+		cube.setBackView(optionsRef.current.backView);
+		container.appendChild(cube.canvas);
 
-			if (containerRef.current && !cancelled) {
-				containerRef.current.appendChild(player);
-				player.style.width = '100%';
-				player.style.height = '100%';
-				twistyPlayerRef.current = player;
-			}
+		// Its box is sized by the cube size option, or by CSS on a phone.
+		const fit = () => cube.resize(Math.max(1, Math.min(container.clientWidth, container.clientHeight)));
+		fit();
+		const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
+		if (observer) observer.observe(container);
+		else window.addEventListener('resize', fit);
 
-			// Gyro SLERP animation loop
-			let animRunning = true;
-			const animate = async () => {
-				if (cancelled || !animRunning) return;
-
-				if (!twistySceneRef.current || !twistyVantageRef.current) {
-					try {
-						const vantageList = await (player as any).experimentalCurrentVantages();
-						twistyVantageRef.current = [...vantageList][0];
-						twistySceneRef.current = await twistyVantageRef.current.scene.scene();
-						recolorPendingRef.current = true;
-					} catch {
-						// Scene not yet ready
-					}
-				}
-
-				if (twistySceneRef.current && twistyVantageRef.current) {
-					// Once per puzzle. It stays applied through stickering and algorithm
-					// changes, which the trainer makes on every case.
-					if (recolorPendingRef.current) {
-						const result = recolorPuzzle(twistySceneRef.current, paletteDoneRef.current);
-						if (result !== 'not-found') recolorPendingRef.current = false;
-					}
-					twistySceneRef.current.quaternion.slerp(cubeQuaternion.current, 0.25);
-					twistyVantageRef.current.render();
-				}
-
-				animFrameRef.current = requestAnimationFrame(animate);
-			};
-			animate();
-
-			unsubVisibility = onVisibilityChange((visible: boolean) => {
-				if (visible && !animRunning && !cancelled) {
-					animRunning = true;
-					animate();
-				} else if (!visible) {
-					animRunning = false;
-					if (animFrameRef.current) {
-						cancelAnimationFrame(animFrameRef.current);
-						animFrameRef.current = null;
-					}
-				}
-			});
-		};
-
-		initTwisty();
+		cube.setActive(isAppVisible());
+		const unsubVisibility = onVisibilityChange((visible: boolean) => cube.setActive(visible));
+		cubeRef.current = cube;
 
 		return () => {
-			cancelled = true;
-			unsubVisibility?.();
-			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-			if (containerRef.current) containerRef.current.innerHTML = '';
-			twistyPlayerRef.current = null;
-			twistySceneRef.current = null;
-			twistyVantageRef.current = null;
+			if (observer) observer.disconnect();
+			else window.removeEventListener('resize', fit);
+			unsubVisibility();
+			cube.dispose();
+			if (cubeRef.current === cube) cubeRef.current = null;
 		};
-		// backView is a TwistyPlayer constructor option — cannot be changed at runtime,
-		// player must be recreated to reflect the change.
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// The back view is drawn in the same canvas: no rebuild.
+	useEffect(() => {
+		cubeRef.current?.setBackView(options.backView);
 	}, [options.backView]);
+
+	useEffect(() => {
+		cubeRef.current?.setFaceColors(faceColorsRef.current);
+	}, [paletteKey]);
 
 	// -- Build patternStates when algorithm changes --
 	useEffect(() => {
@@ -486,41 +445,30 @@ export default function TrainerSmartCube() {
 			dispatch({type: 'SET_USER_ALG', payload: algMoves});
 			dispatch({type: 'SET_ORIGINAL_USER_ALG', payload: algMoves});
 
-			// Update visual TwistyPlayer
-			if (twistyPlayerRef.current) {
-				const isLL = isLLCategory(currentAlgorithm.category);
-				// If whiteOnBottom preset is active, top/front face is overridden
-				const effective = getEffectiveOrientation({
-					topFace: options.topFace,
-					frontFace: options.frontFace,
-					whiteOnBottom: options.whiteOnBottom,
-				});
-				const effectiveFront = isLL ? getDefaultFrontFace(effective.topFace) : effective.frontFace;
-				const rotation = getOrientationRotation(effective.topFace, effectiveFront);
-				const stickering = getStickering(currentAlgorithm.category);
-				const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
-
-				// Cubing.js Alg — calculate inverse
-				const {Alg} = await import('cubing/alg');
-				const inverseAlg = Alg.fromString(algMoves.join(' ')).invert().toString();
-				const setupAlg = rotation ? `${rotation} ${inverseAlg}` : inverseAlg;
-
-				(twistyPlayerRef.current as any).alg = '';
-				(twistyPlayerRef.current as any).experimentalSetupAlg = setupAlg;
-
-				// Stickering
-				const baseStickering = is3x3 ? stickering : 'full';
-				if (baseStickering !== 'full') {
-					(twistyPlayerRef.current as any).experimentalStickering = baseStickering;
-					// Custom mask for rotated orientations
-					const customMask = await getRemappedMask(baseStickering, rotation);
-					if (customMask) {
-						(twistyPlayerRef.current as any).experimentalStickeringMaskOrbits = customMask;
-					}
-				} else {
-					(twistyPlayerRef.current as any).experimentalStickering = 'full';
-				}
-			}
+			// The case on the 3D cube: the algorithm as drilled (with its AUF) undone after the
+			// orientation rotation, and the category's stickering (case_drawing.ts, as the
+			// trainer's other cube views).
+			const isLL = isLLCategory(currentAlgorithm.category);
+			// If whiteOnBottom preset is active, top/front face is overridden
+			const effective = getEffectiveOrientation({
+				topFace: options.topFace,
+				frontFace: options.frontFace,
+				whiteOnBottom: options.whiteOnBottom,
+			});
+			const effectiveFront = isLL ? getDefaultFrontFace(effective.topFace) : effective.frontFace;
+			const drawing = await caseDrawing({
+				category: currentAlgorithm.category,
+				algorithm: algMoves.join(' '),
+				topFace: effective.topFace,
+				frontFace: effectiveFront,
+			});
+			// An algorithm the engine cannot read: the cube just turned to the orientation.
+			setupTurnsRef.current = drawing
+				? drawing.turns
+				: getOrientationRotation(effective.topFace, effectiveFront).split(' ').filter(Boolean);
+			setupLooksRef.current = drawing ? drawing.looks : null;
+			cubeRef.current?.setMoves(setupTurnsRef.current);
+			cubeRef.current?.setCapLooks(setupLooksRef.current);
 		};
 
 		setupPatterns();
@@ -572,10 +520,8 @@ export default function TrainerSmartCube() {
 		if (kpuzzle) {
 			trackerRef.current?.setCurrent(kpuzzle.defaultPattern());
 		}
-		// TwistyPlayer visual reset
-		if (twistyPlayerRef.current) {
-			(twistyPlayerRef.current as any).alg = '';
-		}
+		// Visual reset: back to the case
+		cubeRef.current?.setMoves(setupTurnsRef.current);
 		// Tracker cube reset (GAN)
 		const cube = getSmartCubeManager().activeCube;
 		if (cube?._trackerCube) {
@@ -631,6 +577,9 @@ export default function TrainerSmartCube() {
 		const yaw = (-HOME_TURN_DEG + nx * 120) * Math.PI / 180;
 		const pitch = (HOME_TILT_DEG - ny * 90) * Math.PI / 180;
 		HOME_ORIENTATION.current.setFromEuler(new THREE.Euler(pitch, yaw, 0));
+		// Shown at once, also for a cube without a gyroscope (it used to wait for a reading).
+		cubeQuaternion.current.copy(gyroRef.current).premultiply(HOME_ORIENTATION.current);
+		cubeRef.current?.setOrientation(cubeQuaternion.current);
 	}, [isDragging]);
 
 	const handlePadPointerUp = useCallback(() => {

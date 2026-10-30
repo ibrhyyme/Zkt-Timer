@@ -5,6 +5,9 @@ import {getLLPattern, isLLPatternsLoaded, useLLPattern} from '../../../../util/t
 import {getIsometricPattern, isIsometricPatternsLoaded} from '../../../../util/trainer/isometric_patterns';
 import {getPuzzlePattern, isPuzzlePatternsLoaded} from '../../../../util/trainer/puzzle_patterns';
 import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
+import {enginePuzzleSize} from '../../../../util/trainer/case_drawing';
+import {hasCommutator} from '../../../../util/trainer/case_cube';
+import CaseCube from '../../common/CaseCube';
 import LLPatternView from '../LLPatternView';
 import CubeIsometricView from '../CubeIsometricView';
 import CubeTopPatternView from '../CubeTopPatternView';
@@ -179,10 +182,14 @@ export default function AlgorithmDetailModal({
 				? (puzzlePatternsLoaded ? !puzzlePattern : false)
 				: true;
 
+	// 2x2 and 3x3 are drawn by our cube engine (CaseCube), which keeps the last case while an
+	// edit is half typed. Commutator notation and other puzzles stay with cubing.js.
+	const useEngine = use3D && enginePuzzleSize(category) !== null && !hasCommutator(editedAlg);
+
 	const twistyRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (!use3D || !twistyRef.current) return;
+		if (!use3D || useEngine || !twistyRef.current) return;
 
 		let cancelled = false;
 
@@ -222,7 +229,7 @@ export default function AlgorithmDetailModal({
 		return () => {
 			cancelled = true;
 		};
-	}, [use3D, editedAlg, category, topFace, effectiveFrontFace, puzzleType, is3x3]);
+	}, [use3D, useEngine, editedAlg, category, topFace, effectiveFrontFace, puzzleType, is3x3]);
 
 	const handleSelectAlternative = useCallback((alg: string) => {
 		setEditedAlg(alg);
@@ -302,6 +309,14 @@ export default function AlgorithmDetailModal({
 								/>
 							)}
 						</>
+					) : useEngine ? (
+						<CaseCube
+							className={b('alg-detail-cube')}
+							category={category}
+							algorithm={editedAlg}
+							topFace={topFace}
+							frontFace={effectiveFrontFace}
+						/>
 					) : (
 						<div
 							ref={twistyRef}
