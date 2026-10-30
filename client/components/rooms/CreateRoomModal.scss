@@ -1,515 +1,274 @@
-@import '../../styles/tokens';
-
-.create-room-modal {
-    position: relative;
-    min-width: 520px;
-    max-width: 560px;
-    background: linear-gradient(145deg,
-            rgba(var(--module-color), 0.98) 0%,
-            rgba(var(--module-color), 0.99) 50%,
-            rgba(var(--module-color), 1) 100%);
-    border-radius: 24px;
-    border: 1px solid rgba(var(--primary-color), 0.15);
-    box-shadow:
-        0 25px 80px rgba(0, 0, 0, 0.5),
-        0 0 1px 1px rgba(var(--text-color), 0.05),
-        inset 0 1px 0 rgba(var(--text-color), 0.08);
-    overflow: hidden;
-    animation: modalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    // Decorative Background Orbs
-    &__bg-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
-        pointer-events: none;
-        z-index: 0;
-
-        &--1 {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(var(--primary-color), 0.3) 0%, transparent 70%);
-            top: -60px;
-            right: -40px;
-            animation: orbFloat1 8s ease-in-out infinite;
-        }
-
-        &--2 {
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, transparent 70%);
-            bottom: 20px;
-            left: -30px;
-            animation: orbFloat2 10s ease-in-out infinite;
-        }
-
-        &--3 {
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, transparent 70%);
-            top: 50%;
-            right: 10%;
-            animation: orbFloat3 12s ease-in-out infinite;
-        }
-    }
-
-    @keyframes orbFloat1 {
-
-        0%,
-        100% {
-            transform: translate(0, 0) scale(1);
-        }
-
-        50% {
-            transform: translate(-20px, 20px) scale(1.1);
-        }
-    }
-
-    @keyframes orbFloat2 {
-
-        0%,
-        100% {
-            transform: translate(0, 0) scale(1);
-        }
-
-        50% {
-            transform: translate(30px, -15px) scale(0.9);
-        }
-    }
-
-    @keyframes orbFloat3 {
-
-        0%,
-        100% {
-            transform: translate(0, 0) scale(1);
-        }
-
-        50% {
-            transform: translate(-15px, 25px) scale(1.15);
-        }
-    }
-
-    // Header
-    &__header {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1.5rem 1.75rem;
-        background: linear-gradient(180deg, rgba(var(--text-color), 0.03) 0%, transparent 100%);
-        border-bottom: 1px solid rgba(var(--text-color), 0.06);
-    }
-
-    &__header-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    &__icon-wrapper {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, rgb(var(--primary-color)) 0%, #8b5cf6 100%);
-        border-radius: 14px;
-        color: white;
-        box-shadow:
-            0 8px 20px rgba(var(--primary-color), 0.35),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    }
-
-    &__title {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: rgb(var(--text-color));
-        letter-spacing: -0.02em;
-    }
-
-    &__subtitle {
-        margin: 0.25rem 0 0 0;
-        font-size: 0.875rem;
-        color: rgba(var(--text-color), 0.5);
-    }
-
-    &__close {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--text-color), 0.05);
-        border: 1px solid rgba(var(--text-color), 0.1);
-        border-radius: 10px;
-        color: rgba(var(--text-color), 0.6);
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            transform: rotate(90deg);
-        }
-    }
-
-    // Content
-    &__content {
-        position: relative;
-        z-index: 1;
-        padding: 1.75rem;
-    }
-
-    // Field
-    &__field {
-        margin-bottom: 1.5rem;
-    }
-
-    &__label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: rgba(var(--text-color), 0.6);
-        margin-bottom: 0.75rem;
-
-        svg {
-            color: rgb(var(--primary-color));
-        }
-    }
-
-    // Input
-    &__input-wrapper {
-        position: relative;
-    }
-
-    &__input {
-        width: 100%;
-        padding: 1rem 1.25rem;
-        font-size: 1rem;
-        font-weight: 500;
-        color: rgb(var(--text-color));
-        background: rgba(var(--text-color), 0.03);
-        border: 1px solid rgba(var(--text-color), 0.1);
-        border-radius: 12px;
-        outline: none;
-        transition: all 0.25s;
-        box-sizing: border-box;
-
-        &::placeholder {
-            color: rgba(var(--text-color), 0.3);
-        }
-
-        &:hover {
-            border-color: rgba(var(--primary-color), 0.3);
-            background: rgba(var(--text-color), 0.05);
-        }
-
-        &:focus {
-            border-color: rgb(var(--primary-color));
-            background: rgba(var(--primary-color), 0.08);
-            box-shadow:
-                0 0 0 4px rgba(var(--primary-color), 0.15),
-                0 4px 20px rgba(var(--primary-color), 0.1);
-        }
-    }
-
-    &__input-count {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.75rem;
-        color: rgba(var(--text-color), 0.3);
-        font-weight: 500;
-    }
-
-    // Row
-    &__row {
-        display: flex;
-        gap: 1rem;
-
-        .create-room-modal__field {
-            flex: 1;
-        }
-    }
-
-    // Select (FancyDropdown trigger)
-    &__select {
-        width: 100%;
-        padding: 1rem 1.25rem;
-        font-size: 1rem;
-        font-weight: 500;
-        color: rgb(var(--text-color));
-        background: rgba(var(--text-color), 0.03);
-        border: 1px solid rgba(var(--text-color), 0.1);
-        border-radius: 12px;
-        cursor: pointer;
-        outline: none;
-        transition: all 0.25s;
-
-        &:hover {
-            border-color: rgba(var(--primary-color), 0.3);
-            background: rgba(var(--text-color), 0.05);
-        }
-
-        &:focus {
-            border-color: rgb(var(--primary-color));
-            box-shadow: 0 0 0 4px rgba(var(--primary-color), 0.15);
-        }
-    }
-
-    // Privacy Section
-    &__privacy-section {
-        margin-bottom: 1.5rem;
-    }
-
-    &__privacy-toggle {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem 1.25rem;
-        background: rgba(var(--text-color), 0.03);
-        border: 1px solid rgba(var(--text-color), 0.1);
-        border-radius: 14px;
-        cursor: pointer;
-        transition: all 0.25s;
-        text-align: left;
-
-        &:hover {
-            background: rgba(var(--text-color), 0.06);
-            border-color: rgba(var(--text-color), 0.15);
-        }
-
-        &--active {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
-            border-color: rgba(168, 85, 247, 0.3);
-
-            .create-room-modal__privacy-icon {
-                background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-                color: white;
-            }
-        }
-    }
-
-    &__privacy-icon {
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--text-color), 0.08);
-        border-radius: 12px;
-        color: rgba(var(--text-color), 0.6);
-        transition: all 0.25s;
-    }
-
-    &__privacy-text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    &__privacy-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: rgb(var(--text-color));
-    }
-
-    &__privacy-desc {
-        font-size: 0.8rem;
-        color: rgba(var(--text-color), 0.45);
-    }
-
-    &__privacy-switch {
-        width: 52px;
-        height: 28px;
-        background: rgba(var(--text-color), 0.1);
-        border-radius: 14px;
-        padding: 3px;
-        transition: all 0.3s;
-
-        &--on {
-            background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-
-            .create-room-modal__privacy-switch-knob {
-                transform: translateX(24px);
-            }
-        }
-    }
-
-    &__privacy-switch-knob {
-        width: 22px;
-        height: 22px;
-        background: #fff;
-        border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    // Password Section
-    &__password-section {
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-
-        &--visible {
-            max-height: 120px;
-            opacity: 1;
-        }
-    }
-
-    // Footer
-    &__footer {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        padding: 1.25rem 1.75rem;
-        background: linear-gradient(180deg, transparent 0%, rgba(var(--background-color), 0.2) 100%);
-        border-top: 1px solid rgba(var(--text-color), 0.06);
-    }
-
-    // Buttons
-    &__btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.875rem 1.5rem;
-        font-size: 0.95rem;
-        font-weight: 600;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.25s;
-
-        &--secondary {
-            background: rgba(var(--text-color), 0.08);
-            color: rgba(var(--text-color), 0.8);
-            border: 1px solid rgba(var(--text-color), 0.1);
-
-            &:hover {
-                background: rgba(var(--text-color), 0.12);
-                color: rgb(var(--text-color));
-            }
-        }
-
-        &--primary {
-            background: linear-gradient(135deg, rgb(var(--primary-color)) 0%, rgb(var(--primary-color)) 50%, rgb(var(--primary-color)) 100%);
-            color: white;
-            box-shadow:
-                0 8px 24px rgba(var(--primary-color), 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-
-            &:hover:not(:disabled) {
-                transform: translateY(-2px);
-                box-shadow:
-                    0 12px 32px rgba(var(--primary-color), 0.45),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-            }
-
-            &:active:not(:disabled) {
-                transform: translateY(0);
-            }
-
-            &:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-                transform: none;
-            }
-        }
-
-        &--loading {
-            pointer-events: none;
-        }
-    }
-
-    &__btn-spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    // Mobile responsive
-    @include bp-down($bp-md) {
-        min-width: auto;
-        max-width: none;
-        width: 100%;
-        margin: 0;
-        border-radius: 0;
-        overflow: visible;
-        min-height: 100%;
-        display: flex;
-        flex-direction: column;
-        box-shadow: none;
-        border: none;
-        animation: none;
-
-        &__bg-orb {
-            display: none;
-        }
-
-        &__header {
-            padding: 1.25rem;
-        }
-
-        &__content {
-            padding: 1.25rem;
-            flex: 1;
-        }
-
-        &__row {
-            flex-direction: column;
-            gap: 0;
-        }
-
-        &__footer {
-            padding: 1rem 1.25rem;
-            position: sticky;
-            bottom: 0;
-            background: rgba(var(--module-color), 0.98);
-            backdrop-filter: blur(10px);
-        }
-
-        &__icon-wrapper {
-            width: 42px;
-            height: 42px;
-        }
-
-        &__title {
-            font-size: 1.25rem;
-        }
-    }
+@import '../../styles/config';
+
+// "Create New Room" form. The frame (title, subtitle, close button, surface, padding) is
+// common/modal/Modal; this draws the fields between two hairlines and the footer band.
+// The layout is the original one with its effects taken off (tokens.scss design
+// language): no orbs, gradients, glows, lifts or fixed purple; the one accent is the
+// user's own --primary-color.
+.#{$namespace}-create-room-modal {
+	$self: &;
+	// Bands run to the frame's edges, so they step out by the frame's own padding.
+	$frame-pad: $zt-space-5;
+	$frame-pad-phone: $zt-space-4;
+
+	color: rgb(var(--text-color));
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-5;
+		margin: 0 (-$frame-pad);
+		padding: $zt-space-5 $frame-pad;
+		border-top: 1px solid $zt-divider;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		min-width: 0;
+	}
+
+	&__label {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: $zt-text-muted;
+
+		svg {
+			flex-shrink: 0;
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__input-wrap {
+		position: relative;
+		display: block;
+	}
+
+	// Text fields and the two dropdown triggers share one surface.
+	&__input,
+	#{$self} &__select {
+		box-sizing: border-box;
+		width: 100%;
+		height: $zt-control-h-lg;
+		padding: 0 $zt-space-4;
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+		background: $zt-card-bg;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
+		outline: none;
+		transition: border-color $zt-transition, background $zt-transition;
+
+		&:hover:not(:disabled) {
+			border-color: $zt-control-border-hover;
+		}
+
+		&:focus,
+		&[data-state='open'] {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__input {
+		&::placeholder {
+			color: $zt-text-muted;
+			opacity: 1;
+		}
+
+		&--counted {
+			padding-right: 64px;
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.5;
+		}
+	}
+
+	#{$self} &__select {
+		appearance: none;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-2;
+		text-align: left;
+		cursor: pointer;
+
+		&[data-state='open'] .#{$namespace}-fancy-dropdown__trigger-caret {
+			transform: rotate(180deg);
+		}
+	}
+
+	&__count {
+		position: absolute;
+		top: 50%;
+		right: $zt-space-3;
+		transform: translateY(-50%);
+		font-size: 0.75rem;
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+		color: $zt-text-muted;
+		pointer-events: none;
+	}
+
+	&__row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $zt-space-4;
+	}
+
+	// Public / private: one row that is a switch.
+	&__privacy {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-4;
+		width: 100%;
+		padding: $zt-space-3 $zt-space-4;
+		font: inherit;
+		color: inherit;
+		text-align: left;
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		cursor: pointer;
+		transition: border-color $zt-transition;
+
+		&:hover {
+			border-color: $zt-control-border-hover;
+		}
+
+		@include zt-focus-ring;
+
+		&--on,
+		&--on:hover {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__privacy-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: $zt-control-h-md;
+		height: $zt-control-h-md;
+		border-radius: $zt-radius-md;
+		background: $zt-control-bg;
+		color: rgb(var(--text-color));
+		transition: background $zt-transition, color $zt-transition;
+
+		#{$self}__privacy--on & {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+		}
+	}
+
+	&__privacy-text {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__privacy-title {
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	&__privacy-desc {
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: $zt-text-muted;
+	}
+
+	&__switch {
+		position: relative;
+		flex-shrink: 0;
+		width: 44px;
+		height: 24px;
+		border-radius: $zt-radius-full;
+		background: $zt-control-bg-active;
+		transition: background $zt-transition;
+
+		&--on {
+			background: rgb(var(--primary-color));
+		}
+	}
+
+	&__switch-knob {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 18px;
+		height: 18px;
+		border-radius: $zt-radius-full;
+		background: rgb(var(--text-color));
+		transition: transform $motion-fast $ease-standard, background $zt-transition;
+
+		#{$self}__switch--on & {
+			transform: translateX(20px);
+			background: rgb(var(--theme-primary-opposite));
+		}
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: flex-end;
+		gap: $zt-space-2;
+		margin: 0 (-$frame-pad) (-$frame-pad);
+		padding: $zt-space-4 $frame-pad;
+		background: $zt-card-bg;
+		border-top: 1px solid $zt-divider;
+	}
+
+	@include reduced-motion {
+		&__switch-knob {
+			transition: background $zt-transition;
+		}
+	}
+
+	// Phone: the modal is a full screen. The form fills it and the footer band sits on the
+	// bottom edge, under the thumb. A screen too short for the form keeps the band after
+	// the fields, scrolling with them; the padding below reserves its height so it never
+	// covers a field. Not flex: a flex box beside the frame's floated close button would
+	// be narrowed by the button's width.
+	@include bp-down($bp-md) {
+		position: relative;
+		box-sizing: border-box;
+		min-height: 100%;
+		padding-bottom: calc(#{$zt-space-4 + $zt-control-h-md} + var(--safe-area-inset-bottom));
+
+		&__body {
+			margin: 0 (-$frame-pad-phone);
+			padding: $zt-space-5 $frame-pad-phone;
+		}
+
+		&__row {
+			grid-template-columns: 1fr;
+			gap: $zt-space-5;
+		}
+
+		// 16px keeps iOS from zooming the page when the field takes focus.
+		&__input {
+			font-size: 16px;
+		}
+
+		&__footer {
+			position: absolute;
+			right: -$frame-pad-phone;
+			bottom: -$frame-pad-phone;
+			left: -$frame-pad-phone;
+			margin: 0;
+			padding: $zt-space-4 $frame-pad-phone calc(#{$zt-space-4} + var(--safe-area-inset-bottom));
+		}
+	}
 }

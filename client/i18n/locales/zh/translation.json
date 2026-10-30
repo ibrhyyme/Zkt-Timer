@@ -441,7 +441,6 @@
     "room_password": "房间密码",
     "password_placeholder": "设置一个强密码...",
     "cancel": "取消",
-    "creating": "创建中...",
     "create_button": "创建房间"
   },
   "trainer": {

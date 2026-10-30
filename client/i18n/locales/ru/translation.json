@@ -453,7 +453,6 @@
     "room_password": "Пароль комнаты",
     "password_placeholder": "Установите надёжный пароль...",
     "cancel": "Отмена",
-    "creating": "Создание...",
     "create_button": "Создать комнату"
   },
   "trainer": {

@@ -98,10 +98,7 @@ function RoomsListContent() {
     }, [history]);
 
     function openCreateRoomModal() {
-        dispatch(openModal(<CreateRoomModal />, {
-            hideCloseButton: true,
-            noPadding: true,
-        }));
+        dispatch(openModal(<CreateRoomModal />, { width: 540 }));
     }
 
     function handleJoinRoom(room: FriendlyRoomData) {
@@ -134,7 +131,6 @@ function RoomsListContent() {
                         <>
                             {publicRooms.length === 0 && privateRooms.length === 0 ? (
                                 <div className="rooms-list-page__empty">
-                                    <div className="rooms-list-page__empty-icon">🎮</div>
                                     <h3>{t('rooms.no_rooms')}</h3>
                                     <p>{t('rooms.no_rooms_desc')}</p>
                                     <Button primary onClick={openCreateRoomModal}>

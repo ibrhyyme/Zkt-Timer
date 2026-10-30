@@ -445,7 +445,6 @@
     "room_password": "Room Password",
     "password_placeholder": "Set a strong password...",
     "cancel": "Cancel",
-    "creating": "Creating...",
     "create_button": "Create Room"
   },
   "trainer": {

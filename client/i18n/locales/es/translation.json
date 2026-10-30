@@ -445,7 +445,6 @@
     "room_password": "Contraseña de la sala",
     "password_placeholder": "Establece una contraseña segura...",
     "cancel": "Cancelar",
-    "creating": "Creando...",
     "create_button": "Crear sala"
   },
   "trainer": {
