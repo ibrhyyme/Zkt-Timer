@@ -7,6 +7,7 @@ import { CloseButton } from '../icon_button/IconButton';
 import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
 import { useSwipeBack } from '../../../util/hooks/useSwipeBack';
+import { useBackdropClose } from '../../../util/hooks/useBackdropClose';
 import { isUiReversed } from '../../../util/reversed-ui';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { isAndroidNative } from '../../../util/platform';
@@ -128,15 +129,11 @@ export default function Modal(props: IModalProps) {
 		threshold: 100,
 	});
 
-	function handleBackdropClick(e: React.MouseEvent) {
-		if (disableBackdropClick) {
-			return;
-		}
-
-		if (e.target === e.currentTarget) {
+	const backdropClose = useBackdropClose(() => {
+		if (!disableBackdropClick) {
 			clickClose();
 		}
-	}
+	});
 
 	const centerStyle: CSS.Properties = {};
 	if (width) {
@@ -181,7 +178,7 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet })} style={style} onClick={handleBackdropClick}>
+		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet })} style={style} {...backdropClose}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
 				{/* Close before the header: on phones it floats right and stays sticky, and a
 				    float only sits beside the content that follows it. */}

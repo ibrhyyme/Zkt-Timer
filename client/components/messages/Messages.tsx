@@ -51,6 +51,7 @@ import {
 import {useDmEditListener, useDmMessageListener, useDmReactionListener, useDmPresence, useDmUnsendListener, useTypingIndicator, useReadReceipt, refreshInbox, decrementInbox, useInbox} from '../../util/hooks/useInbox';
 import {useKeyboardInset} from '../../util/hooks/useKeyboardInset';
 import {useMe} from '../../util/hooks/useMe';
+import {useBackdropClose} from '../../util/hooks/useBackdropClose';
 import {getDateFromNow, getFullFormattedDate} from '../../util/dates';
 import {getTimeString} from '../../util/time';
 import {getCubeTypeBucketLabel} from '../../util/cubes/util';
@@ -178,6 +179,8 @@ function MessagesPage() {
 	const [reportReason, setReportReason] = useState('');
 	const [reporting, setReporting] = useState(false);
 	const [reportSent, setReportSent] = useState(false);
+	const reportBackdrop = useBackdropClose(() => setReportOpen(false));
+	const reportSentBackdrop = useBackdropClose(() => setReportSent(false));
 
 	const otherTyping = useTypingIndicator(activeId);
 	const otherReadAt = useReadReceipt(activeId);
@@ -1277,7 +1280,7 @@ function MessagesPage() {
 			<div className={b('thread')}>{threadBody}</div>
 
 			{reportOpen && (
-				<div className={b('report-backdrop')} onClick={() => setReportOpen(false)}>
+				<div className={b('report-backdrop')} {...reportBackdrop}>
 					<div className={b('report')} onClick={(e) => e.stopPropagation()}>
 						<h2>{t('messages.report_title')}</h2>
 						{/* The one place message text leaves the two participants, so it says so
@@ -1307,7 +1310,7 @@ function MessagesPage() {
 			)}
 
 			{reportSent && (
-				<div className={b('report-backdrop')} onClick={() => setReportSent(false)}>
+				<div className={b('report-backdrop')} {...reportSentBackdrop}>
 					<div className={b('report')} onClick={(e) => e.stopPropagation()}>
 						<h2>{t('messages.report_sent_title')}</h2>
 						<p className={b('report-explain')}>{t('messages.report_sent_body')}</p>

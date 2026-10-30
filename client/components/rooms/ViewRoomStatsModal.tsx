@@ -5,6 +5,7 @@ import { socketClient } from '../../util/socket/socketio';
 import { FriendlyRoomClientEvent, FriendlyRoomServerEvent } from '../../../shared/friendly_room';
 import RoomTable from './RoomTable';
 import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 import { X } from 'phosphor-react';
 
 interface ViewRoomStatsModalProps {
@@ -22,6 +23,7 @@ interface AdminRoomData {
 
 export default function ViewRoomStatsModal({ isOpen, onClose, roomId, roomName }: ViewRoomStatsModalProps) {
     const { t } = useTranslation();
+    const backdropClose = useBackdropClose(onClose);
     const [roomData, setRoomData] = useState<AdminRoomData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export default function ViewRoomStatsModal({ isOpen, onClose, roomId, roomName }
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" {...backdropClose}>
             <div className="w-full max-w-6xl bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}

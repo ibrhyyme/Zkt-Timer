@@ -5,6 +5,7 @@ import { X, Trash } from 'phosphor-react';
 import Button from '../common/button/Button';
 import { FriendlyRoomScrambleHistoryEntry, FriendlyRoomSolveData } from '../../../shared/friendly_room';
 import { convertTimeStringToSeconds, getTimeString } from '../../util/time';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 
 interface EditSolveModalProps {
     isOpen: boolean;
@@ -42,6 +43,7 @@ export default function EditSolveModal({
     onDelete,
 }: EditSolveModalProps) {
     const { t } = useTranslation();
+    const backdropClose = useBackdropClose(onClose);
     const [timeInput, setTimeInput] = useState('');
     const [dnf, setDnf] = useState(false);
     const [plusTwo, setPlusTwo] = useState(false);
@@ -81,7 +83,7 @@ export default function EditSolveModal({
     return createPortal(
         <div
             className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={onClose}
+            {...backdropClose}
         >
             <div
                 className="w-full max-w-md bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"

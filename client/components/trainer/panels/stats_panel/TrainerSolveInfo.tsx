@@ -11,6 +11,7 @@ import {
 } from '../../hooks/useAlgorithmData';
 import type {TrainerSolveRecord} from '../../types';
 import {useTranslation} from 'react-i18next';
+import {useBackdropClose} from '../../../../util/hooks/useBackdropClose';
 
 const b = block('trainer');
 
@@ -31,6 +32,7 @@ function formatTime(ms: number): string {
 
 export default function TrainerSolveInfo({record: initialRecord, index, algId, category, onClose, onDelete}: TrainerSolveInfoProps) {
 	const {t} = useTranslation();
+	const backdropClose = useBackdropClose(onClose);
 	const [record, setRecord] = useState<TrainerSolveRecord>(initialRecord);
 
 	const refreshRecord = useCallback(() => {
@@ -59,7 +61,7 @@ export default function TrainerSolveInfo({record: initialRecord, index, algId, c
 	const timeDisplay = record.dnf ? 'DNF' : formatTime(effectiveTime!);
 
 	return (
-		<div className={b('solve-info-overlay')} onClick={onClose}>
+		<div className={b('solve-info-overlay')} {...backdropClose}>
 			<div className={b('solve-info-card')} onClick={(e) => e.stopPropagation()}>
 				<div className={b('solve-info-top')}>
 					<Button gray text={t('solve_info.delete')} onClick={handleDelete} />

@@ -22,6 +22,7 @@ import {
 } from '../../../@types/generated/graphql';
 import {toastError, toastSuccess} from '../../../util/toast';
 import block from '../../../styles/bem';
+import {useBackdropClose} from '../../../util/hooks/useBackdropClose';
 import './SendSolveModal.scss';
 
 const b = block('send-solve');
@@ -35,6 +36,7 @@ interface Props {
 
 export default function SendSolveModal({solveId, onClose}: Props) {
 	const {t} = useTranslation();
+	const backdropClose = useBackdropClose(onClose);
 	const [query, setQuery] = useState('');
 	const [results, setResults] = useState<Recipient[]>([]);
 	const [searching, setSearching] = useState(false);
@@ -109,7 +111,7 @@ export default function SendSolveModal({solveId, onClose}: Props) {
 	}
 
 	return (
-		<div className={b('backdrop')} onClick={onClose}>
+		<div className={b('backdrop')} {...backdropClose}>
 			<div className={b()} onClick={(e) => e.stopPropagation()}>
 				<div className={b('head')}>
 					<span className={b('title')}>{t('solve_info.send_title')}</span>

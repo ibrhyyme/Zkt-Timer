@@ -13,6 +13,7 @@ import './MobileTimerScramble.scss';
 import { useScrambleForBucket } from './helpers/scramble_navigation';
 import { setTimerParams } from './helpers/params';
 import { hapticImpact } from '../../util/native-plugins';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 
 const b = block('mobile-timer-scramble');
 
@@ -103,6 +104,10 @@ export default function MobileTimerScramble() {
         setExpanded(false);
         setEditMode(false);
     }
+
+    const expandedBackdrop = useBackdropClose(() => {
+        if (!editMode) closeExpanded();
+    });
 
     function enterEditMode() {
         setEditValue(context.scramble || '');
@@ -210,7 +215,7 @@ export default function MobileTimerScramble() {
 
     const expandedOverlay = expanded && scramble && typeof document !== 'undefined'
         ? ReactDOM.createPortal(
-            <div className={b('expanded')} onClick={() => { if (!editMode) closeExpanded(); }}>
+            <div className={b('expanded')} {...expandedBackdrop}>
                 <button
                     className={b('expanded-close')}
                     onClick={(e) => { e.stopPropagation(); closeExpanded(); }}

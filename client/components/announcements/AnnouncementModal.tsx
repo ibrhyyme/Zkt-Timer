@@ -5,6 +5,7 @@ import { X, CaretRight, ArrowRight } from 'phosphor-react';
 import { Announcement } from '../../@types/generated/graphql';
 import { openInAppBrowser } from '../../util/external-link';
 import { renderRichText } from '../../util/rich_text';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 
 interface AnnouncementModalProps {
 	announcement: Announcement;
@@ -89,10 +90,12 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 		}, 50);
 	};
 
+	const backdropClose = useBackdropClose(onClose);
+
 	const modal = (
 		<div
 			className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-			onClick={onClose}
+			{...backdropClose}
 		>
 			<div
 				className={`

@@ -7,6 +7,7 @@ import { gqlMutate } from '../../api';
 import Checkbox from '../../common/checkbox/Checkbox';
 import { toastError, toastSuccess } from '../../../util/toast';
 import { renderRichText } from '../../../util/rich_text';
+import { useBackdropClose } from '../../../util/hooks/useBackdropClose';
 
 const CREATE_ANNOUNCEMENT = gql`
 	mutation CreateAnnouncement($input: CreateAnnouncementInput) {
@@ -230,8 +231,10 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 
 	const canTranslate = formData.title.trim().length > 0 && formData.content.trim().length > 0;
 
+	const backdropClose = useBackdropClose(onClose);
+
 	const modal = (
-		<div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
+		<div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60" {...backdropClose}>
 			<div
 				className="bg-zinc-800 border border-zinc-700 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
 				onClick={(e) => e.stopPropagation()}

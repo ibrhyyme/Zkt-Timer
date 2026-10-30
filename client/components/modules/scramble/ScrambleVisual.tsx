@@ -5,6 +5,7 @@ import './ScrambleVisual.scss';
 import block from '../../../styles/bem';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useBackdropClose } from '../../../util/hooks/useBackdropClose';
 import { useTranslation } from 'react-i18next';
 
 // Dynamically import TwistyPlayerWrapper
@@ -133,8 +134,16 @@ function ScrambleVisual(props: Props) {
 	};
 
 	// --- MODAL CONTENT ---
+	const expandedBackdrop = useBackdropClose(() => setIsExpanded(false));
 	const expandedModalContent = isExpanded && mobileMode ? (
-		<div className={b('expanded-overlay')} onClick={closeModal}>
+		<div
+			className={b('expanded-overlay')}
+			onPointerDownCapture={expandedBackdrop.onPointerDownCapture}
+			onClick={(e) => {
+				e.stopPropagation();
+				expandedBackdrop.onClick(e);
+			}}
+		>
 			<div className={b('expanded-content')} onClick={(e) => e.stopPropagation()}>
 				<div className={b('expanded-close')} onClick={closeModal}>✕</div>
 				<div className={b('expanded-twisty-container')} style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

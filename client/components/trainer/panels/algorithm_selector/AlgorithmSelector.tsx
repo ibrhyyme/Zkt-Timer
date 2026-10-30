@@ -21,6 +21,7 @@ import {checkedKey} from '../../../../util/trainer/set_queue';
 import {isHiddenSubset, subsetLabel} from '../../../../util/trainer/subset_label';
 import {openAddToSet} from '../../sets/AddToSetSheet';
 import {toAddItems} from '../../sets/add_items';
+import {useBackdropClose} from '../../../../util/hooks/useBackdropClose';
 
 const b = block('trainer');
 
@@ -54,6 +55,7 @@ export default function AlgorithmSelector() {
 	const isF2L = selectedCategory === 'F2L';
 	const [slotFilter, setSlotFilter] = useState('all');
 	const [showCatInfo, setShowCatInfo] = useState(false);
+	const catInfoBackdrop = useBackdropClose(() => setShowCatInfo(false));
 	useLLPatternsReady(); // Re-render cards when patterns are loaded
 	usePuzzlePatternsReady(); // Re-render cards when puzzle patterns are loaded
 	useIsometricPatternsReady(); // Re-render cards when isometric patterns are loaded
@@ -596,7 +598,7 @@ export default function AlgorithmSelector() {
 				</div>
 			)}
 		{showCatInfo && catInfoTitle && catInfoDesc && (
-				<div className={b('cat-info-overlay')} onClick={() => setShowCatInfo(false)}>
+				<div className={b('cat-info-overlay')} {...catInfoBackdrop}>
 					<div className={b('cat-info-modal')} onClick={(e) => e.stopPropagation()}>
 						<div className={b('cat-info-modal-header')}>
 							<span className={b('cat-info-modal-title')}>{catInfoTitle}</span>

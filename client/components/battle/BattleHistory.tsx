@@ -5,6 +5,7 @@ import { getTimeString } from '../../util/time';
 import { X, ShareNetwork } from 'phosphor-react';
 import block from '../../styles/bem';
 import { shareContent } from '../../util/native-plugins';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 
 const b = block('battle');
 
@@ -19,6 +20,7 @@ export default function BattleHistory() {
 	const { t } = useTranslation();
 	const { state, dispatch } = useBattle();
 	const { rounds, historyOpen, settings, selectedRound } = state;
+	const roundDetailBackdrop = useBackdropClose(() => dispatch({ type: 'DESELECT_ROUND' }));
 
 	if (!historyOpen) return null;
 
@@ -94,7 +96,7 @@ export default function BattleHistory() {
 			{selectedRoundData && (
 				<div
 					className={b('round-detail-backdrop')}
-					onClick={() => dispatch({ type: 'DESELECT_ROUND' })}
+					{...roundDetailBackdrop}
 				>
 					<div className={b('round-detail-card')} onClick={(e) => e.stopPropagation()}>
 						<div className={b('round-detail-header')}>

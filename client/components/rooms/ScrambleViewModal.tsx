@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { X, Copy, Check } from 'phosphor-react';
 import Button from '../common/button/Button';
 import { FriendlyRoomScrambleHistoryEntry } from '../../../shared/friendly_room';
+import { useBackdropClose } from '../../util/hooks/useBackdropClose';
 
 interface ScrambleViewModalProps {
     isOpen: boolean;
@@ -14,6 +15,7 @@ interface ScrambleViewModalProps {
 
 export default function ScrambleViewModal({ isOpen, onClose, round, scrambleHistory }: ScrambleViewModalProps) {
     const { t } = useTranslation();
+    const backdropClose = useBackdropClose(onClose);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
@@ -39,7 +41,7 @@ export default function ScrambleViewModal({ isOpen, onClose, round, scrambleHist
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" {...backdropClose}>
             <div className="w-full max-w-md bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module shrink-0">
                     <h3 className="text-lg font-bold text-text">

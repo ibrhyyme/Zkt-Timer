@@ -4,6 +4,7 @@ import {createPortal} from 'react-dom';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import {toastError} from '../../../util/toast';
+import {useBackdropClose} from '../../../util/hooks/useBackdropClose';
 
 const SEND_BULK_EMAIL = gql`
 	mutation SendBulkEmail($input: SendBulkEmailInput!) {
@@ -27,6 +28,7 @@ interface Props {
 
 export default function SendFilteredEmailModal({users, onClose}: Props) {
 	const {t} = useTranslation();
+	const backdropClose = useBackdropClose(onClose);
 	const [subject, setSubject] = useState('');
 	const [content, setContent] = useState('');
 	const [sending, setSending] = useState(false);
@@ -55,7 +57,7 @@ export default function SendFilteredEmailModal({users, onClose}: Props) {
 	return createPortal(
 		<div
 			className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60"
-			onClick={onClose}
+			{...backdropClose}
 		>
 			<div
 				className="bg-zinc-800 border border-zinc-700 rounded-xl w-full max-w-lg overflow-hidden"

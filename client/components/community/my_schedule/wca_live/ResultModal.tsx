@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import {useHistory} from 'react-router-dom';
 import {X, ArrowSquareOut} from 'phosphor-react';
 import {b, formatResult, RecordTag} from '../shared';
+import {useBackdropClose} from '../../../../util/hooks/useBackdropClose';
 
 export interface ResultModalRow {
 	title: string;            // Modal basligi (personName veya event-round adi)
@@ -33,6 +34,7 @@ interface Props {
 
 export default function ResultModal({row, competitionId, onClose, t, showViewProfile, showAverage = true}: Props) {
 	const history = useHistory();
+	const backdropClose = useBackdropClose(onClose);
 
 	useEffect(() => {
 		function onKey(e: KeyboardEvent) {
@@ -60,7 +62,7 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 	const showProfile = (showViewProfile ?? hasNavTarget) && hasNavTarget;
 
 	return (
-		<div className={b('wca-live-modal-overlay')} onClick={onClose}>
+		<div className={b('wca-live-modal-overlay')} {...backdropClose}>
 			<div className={b('wca-live-modal')} onClick={(e) => e.stopPropagation()}>
 				<div className={b('wca-live-modal-header')}>
 					<div>
