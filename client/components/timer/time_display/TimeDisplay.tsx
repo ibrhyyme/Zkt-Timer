@@ -338,6 +338,9 @@ export default function TimeDisplay() {
 	// The Bluetooth timers have a connect button: the label joins it in one row instead
 	// of stacking a second control above it.
 	const cubeLabelBesideConnect = ganTimerOn || qiyiTimerOn;
+	// The diff sits on the module surface like the label (TimeDisplay.scss), except next to
+	// the smart and virtual cubes, where the digits are small and the room tight.
+	const diffChip = !smartCubeSelected(context) && !virtualCubeSelected(context);
 
 	if (stackMatOn) {
 		bottomInfo = <StackMat />;
@@ -409,14 +412,25 @@ export default function TimeDisplay() {
 				{/* Magnet Timer: fills while a finger is held still to stop the solve. */}
 				{timerType === 'magnet' && timeStartedAt && <HoldStopProgress />}
 
-				{/* Diff underneath timer, close to it */}
-				<div style={{ marginTop: mobileMode ? '-5px' : '0' }}>
-					{!matchMode && <SolveDiff />}
-				</div>
+				{/* Diff underneath timer, close to it. With the cube label the two share one row
+				    pinned to the digits' edges, label left and diff right, so the middle under the
+				    time stays free: that is where a finger lands to start the touch timer, and a
+				    press on the label never primes it (touch_target.ts). */}
+				{cubeLabel && !cubeLabelBesideConnect ? (
+					<div className={b('under', { mobile: mobileMode })}>
+						{cubeLabel}
+						{!matchMode && <SolveDiff />}
+					</div>
+				) : (
+					<div
+						className={b('diff', { chip: diffChip, mobile: mobileMode })}
+						style={diffChip ? undefined : { marginTop: mobileMode ? '-5px' : '0' }}
+					>
+						{!matchMode && <SolveDiff />}
+					</div>
+				)}
 
 				<MultiPhaseIndicator />
-
-				{!cubeLabelBesideConnect && cubeLabel}
 
 				{/* Mobile smart cube: SmartStats artık SOL kolonda LiveAnalysisOverlay altinda render ediliyor (SmartCube.tsx portal). */}
 			</div>

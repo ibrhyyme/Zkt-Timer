@@ -36,7 +36,8 @@
         // styles/index.scss), so the averages stay readable over a timer background
         // image in both themes (feedback 1.8-f). Was text colour at 3%.
         background: var(--zt-surface);
-        border-radius: 8px;
+        // One corner for every surface on the timer (MobileModuleSlot.scss).
+        border-radius: $zt-radius-md;
         transition: transform 0.2s ease, background 0.2s ease;
         border: 1px solid var(--zt-surface-border);
 

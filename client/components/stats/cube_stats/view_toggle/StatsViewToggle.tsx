@@ -22,7 +22,6 @@ export default function StatsViewToggle({view, onChange, allCount, smartCount}: 
 
 	return (
 		<div className={b()} data-mode={view}>
-			<div className={b('glow')} />
 			<div className={b('track')}>
 				<button
 					type="button"

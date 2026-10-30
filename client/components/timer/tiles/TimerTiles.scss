@@ -340,7 +340,8 @@
 		position: absolute;
 		box-sizing: border-box;
 		border: 2px dashed rgba(var(--primary-color), 0.45);
-		border-radius: 14px;
+		// The module corner (TimerTile.scss): the outline stands for a module.
+		border-radius: $zt-radius-md;
 		background: rgba(var(--primary-color), 0.06);
 		transition: background 0.12s ease, border-color 0.12s ease;
 
@@ -380,7 +381,7 @@
 		padding: 7px 12px;
 		box-sizing: border-box;
 		box-sizing: border-box;
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--primary-color), 0.8);
 		background: rgba(var(--module-color), 0.96);
 		box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);

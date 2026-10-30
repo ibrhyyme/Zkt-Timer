@@ -45,10 +45,10 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 		// Compact is the phone timer: px-2 is the 0.5rem side margin of the action row and
 		// the module cards under it, so the three line up edge to edge.
 		<div className={`zt-daily-goal-progress w-full ${compact ? 'px-2 py-1' : 'px-4 py-2'}`}>
-			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-button rounded-full overflow-hidden border border-text/[0.06]`}>
+			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-[color:var(--zt-surface)] rounded overflow-hidden border border-[color:var(--zt-surface-border)]`}>
 				{/* Fill bar */}
 				<div
-					className={`h-full rounded-full transition-all duration-500 ease-out ${
+					className={`h-full rounded transition-all duration-500 ease-out ${
 						progress.completed ? 'bg-green-500' : 'bg-primary'
 					}`}
 					style={{width: `${progress.percentage}%`}}

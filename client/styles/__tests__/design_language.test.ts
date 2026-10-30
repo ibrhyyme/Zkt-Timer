@@ -13,7 +13,7 @@ const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
 	scssBackdropBlur: 39,
-	scssGradient: 179,
+	scssGradient: 175,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 4,
 	tsxInlineEffect: 7,

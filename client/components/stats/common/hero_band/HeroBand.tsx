@@ -20,7 +20,7 @@ export default function HeroBand(props: Props) {
 			<div className={b('top')}>
 				<div className={b('text')}>
 					<h1 className={b('title')}>
-						{title}
+						<span className={b('title-text')}>{title}</span>
 						<span className={b('mobile-cluster')}>
 							<MobileNav />
 							<span className={b('account-dropdown-mobile')}>

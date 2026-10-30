@@ -24,9 +24,11 @@ export default function PageTitle(props: Props) {
 	return (
 		<div className={b({ inline: !!inline })}>
 			<h1 className={b('title')}>
-				{iconBody}
-				{pageName}
-				<div style={{ marginLeft: '12px', display: 'flex', alignItems: 'center' }}>
+				<span className={b('title-text')}>
+					{iconBody}
+					{pageName}
+				</span>
+				<div className={b('mobile-cluster')}>
 					<MobileNav />
 					<div className="zt-page-title--account-dropdown-mobile">
 						<AccountDropdown />

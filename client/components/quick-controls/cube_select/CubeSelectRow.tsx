@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { CaretDown, CaretRight, CaretUp, Check, MagnifyingGlass, Plus } from 'phosphor-react';
+import { CaretDown, CaretRight, CaretUp, Cube, MagnifyingGlass, Plus } from 'phosphor-react';
 import Button from '../../common/button/Button';
+import block from '../../../styles/bem';
+import { formatInteger } from '../../../util/locale_format';
 import { useMe } from '../../../util/hooks/useMe';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
@@ -12,6 +14,9 @@ import { LocalCube } from '../../../lib/cubes/active_cube';
 import { filterCubes } from '../../settings/cubes/cube_labels';
 import { useCubeActions } from '../../settings/cubes/cube_actions';
 import { CUBE_SELECT_SEARCH_THRESHOLD, CubeSelectInput, cubeSelectView, CubeSelectView } from './cube_select_state';
+import './CubeSelect.scss';
+
+const b = block('cube-select');
 
 /**
  * Everything the row and the timer label need to know, read from the live stores. `magnetOwnsInput`
@@ -50,15 +55,19 @@ interface ListProps {
 	view: Extract<CubeSelectView, { kind: 'select' }>;
 	/** Called after a choice (or before leaving for My Cubes), so the container can close. */
 	onDone?: () => void;
+	/** Pads the list itself: set where no modal frame pads it (the quick settings row). */
+	inset?: boolean;
 }
 
 /**
  * The cubes of the timer's puzzle, main first (5.4). A choice makes that cube the puzzle's main
  * at once, on every device (S-4, applied locally first and sent when the network allows).
- * Shared by the quick settings row and the label under the digits.
+ * Shared by the quick settings row and the label under the digits. Each cube is a row in My
+ * Cubes' terms (name, Smart badge, brand · solve count) with a radio; My Cubes is a separate
+ * button under the choices.
  */
-export function CubeSelectList({ view, onDone }: ListProps) {
-	const { t } = useTranslation();
+export function CubeSelectList({ view, onDone, inset }: ListProps) {
+	const { t, i18n } = useTranslation();
 	const openMyCubes = useOpenMyCubes();
 	const [query, setQuery] = useState('');
 
@@ -70,61 +79,82 @@ export function CubeSelectList({ view, onDone }: ListProps) {
 		if (onDone) onDone();
 	}
 
-	// Selected: a primary tint with the text in the theme colour and a primary check. Primary
-	// text on the primary tint was same-hue text on a fill, which the colour rule rules out.
-	const itemClass = (selected: boolean) =>
-		`w-full min-h-[44px] flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors ${selected ? 'bg-primary/10 text-text font-semibold' : 'text-text hover:bg-text/[0.05]'
-		}`;
+	function meta(cube: LocalCube): string {
+		const count = cube.solve_count || 0;
+		const solves = t('cubes.solve_count', { count, n: formatInteger(count, i18n.language) });
+		return [cube.brand, solves].filter(Boolean).join(' · ');
+	}
+
+	const noneSelected = view.mainId === null;
 
 	return (
-		<div className="py-1 text-sm">
+		<div className={b({ inset: !!inset })}>
 			{searchable && (
-				<label className="flex items-center gap-2 mx-3 my-2 px-3 py-2 rounded-lg bg-text/[0.05] border border-text/[0.1]">
-					<MagnifyingGlass weight="bold" className="shrink-0 text-text" />
+				<label className={b('search')}>
+					<MagnifyingGlass weight="bold" />
 					<input
 						type="search"
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
 						placeholder={t('cube_select.search')}
 						aria-label={t('cube_select.search')}
-						className="min-w-0 flex-1 bg-transparent text-text outline-none"
 					/>
 				</label>
 			)}
 
-			{shown.map((cube: LocalCube) => {
-				const selected = cube.id === view.mainId;
-				return (
-					<button key={cube.id} type="button" className={itemClass(selected)} onClick={() => choose(cube.id)}>
-						<span className="min-w-0 flex flex-col">
-							<span className="truncate font-medium">{cube.name}</span>
-							{cube.brand && <span className="truncate text-xs text-text">{cube.brand}</span>}
+			<div className={b('list')}>
+				{shown.map((cube: LocalCube) => {
+					const selected = cube.id === view.mainId;
+					return (
+						<button
+							key={cube.id}
+							type="button"
+							className={b('option', { selected })}
+							aria-pressed={selected}
+							onClick={() => choose(cube.id)}
+						>
+							<span className={b('text')}>
+								<span className={b('name')}>
+									<span>{cube.name}</span>
+									{cube.is_smart && <span className={b('badge')}>{t('cubes.badge_smart')}</span>}
+								</span>
+								<span className={b('meta')}>{meta(cube)}</span>
+							</span>
+							<span className={b('radio', { on: selected })} aria-hidden="true" />
+						</button>
+					);
+				})}
+
+				{searchable && !shown.length && <div className={b('empty')}>{t('cube_select.no_match')}</div>}
+
+				{view.allowNone && (
+					<button
+						type="button"
+						className={b('option', { selected: noneSelected, none: true })}
+						aria-pressed={noneSelected}
+						onClick={() => choose(null)}
+					>
+						<span className={b('text')}>
+							<span className={b('name')}>
+								<span>{t('cube_select.none')}</span>
+							</span>
 						</span>
-						{selected && <Check weight="bold" className="shrink-0 text-primary" />}
+						<span className={b('radio', { on: noneSelected })} aria-hidden="true" />
 					</button>
-				);
-			})}
+				)}
+			</div>
 
-			{searchable && !shown.length && <div className="px-4 py-3 text-text">{t('cube_select.no_match')}</div>}
-
-			<div className="my-1 border-t border-text/[0.1]" />
-
-			{view.allowNone && (
-				<button type="button" className={itemClass(view.mainId === null)} onClick={() => choose(null)}>
-					<span>{t('cube_select.none')}</span>
-					{view.mainId === null && <Check weight="bold" className="shrink-0 text-primary" />}
-				</button>
-			)}
 			<button
 				type="button"
-				className={itemClass(false)}
+				className={b('open')}
 				onClick={() => {
 					if (onDone) onDone();
 					openMyCubes();
 				}}
 			>
+				<Cube weight="bold" aria-hidden="true" />
 				<span>{t('cube_select.open_cubes')}</span>
-				<CaretRight weight="bold" className="shrink-0" />
+				<CaretRight weight="bold" aria-hidden="true" />
 			</button>
 		</div>
 	);
@@ -199,7 +229,7 @@ export default function CubeSelectRow({ magnetOwnsInput }: RowProps) {
 			</div>
 			{open && (
 				<div className="border-t border-text/[0.09]">
-					<CubeSelectList view={view} onDone={() => setOpen(false)} />
+					<CubeSelectList view={view} onDone={() => setOpen(false)} inset />
 				</div>
 			)}
 		</div>

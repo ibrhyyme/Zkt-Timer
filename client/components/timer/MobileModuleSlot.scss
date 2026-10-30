@@ -7,7 +7,9 @@
     // image in both themes (feedback 1.8-f). Was text colour at 3%, which vanished.
     background: var(--zt-surface);
     border: 1px solid var(--zt-surface-border);
-    border-radius: 8px;
+    // The control corner, like the header strip and the chips under the digits: every
+    // surface on the phone timer shares one corner (owner, 2026-10-31).
+    border-radius: $zt-radius-md;
     overflow: hidden;
     height: 100%;
     min-height: 0;

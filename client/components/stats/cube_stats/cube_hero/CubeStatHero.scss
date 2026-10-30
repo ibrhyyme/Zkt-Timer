@@ -42,12 +42,13 @@
 		width: 5.6rem;
 		height: 5.6rem;
 		flex-shrink: 0;
-		border-radius: 18px;
-		background: linear-gradient(180deg, rgba(var(--primary-color), 0.18), rgba(var(--secondary-color), 0.08));
+		// Flat accent tint, control corner: the gradient fill and the coloured glow under it
+		// are on the forbidden list (ui-design), the 18px corner read as rounded (2026-10-31).
+		border-radius: $zt-radius-md;
+		background: rgba(var(--primary-color), 0.12);
 		border: 1px solid rgba(var(--primary-color), 0.3);
 		display: grid;
 		place-items: center;
-		box-shadow: 0 16px 40px -12px rgba(var(--primary-color), 0.4);
 
 		svg {
 			width: 60%;
@@ -71,7 +72,6 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		flex-wrap: wrap;
 		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		font-weight: 500;
 		font-size: clamp(2.4rem, 5vw, 3.6rem);
@@ -84,17 +84,26 @@
 	&__title-suffix {
 		color: rgb(var(--text-color));
 		font-weight: 400;
-		margin-left: 0.667rem;
+	}
+
+	// As PageTitle: "3x3 İstatistikler" wraps in its own box and the avatar keeps the right
+	// edge at the timer's 40px, centred on the first line. It used to wrap onto a line of
+	// its own under the title (owner, 2026-10-31).
+	&__title-text {
+		flex: 1 1 auto;
+		min-width: 0;
 	}
 
 	&__mobile-cluster {
-		margin-left: 0.8rem;
+		flex: 0 0 auto;
+		align-self: flex-start;
 		display: flex;
 		align-items: center;
+		margin-left: $zt-space-3;
+		margin-top: max(0px, calc((1.05em - 40px) / 2));
 	}
 
 	&__account-dropdown-mobile {
-		margin-left: 0.6rem;
 		display: none;
 
 		@include content-mobile {
@@ -108,7 +117,6 @@
 		}
 
 		.#{$namespace}-nav-account-dropdown__pfp {
-			--pfp-size: 32px;
 			margin-right: 0;
 		}
 	}
@@ -126,7 +134,7 @@
 		align-items: center;
 		gap: 0.4rem;
 		padding: 0.333rem 0.733rem;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		font-family: 'Roboto Mono', ui-monospace, monospace;
 		font-size: 0.7rem;
 		letter-spacing: 0.04em;

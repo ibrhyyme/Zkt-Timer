@@ -67,7 +67,7 @@
 		gap: 0.5rem;
 		min-height: 44px;
 		padding: 0 0.35rem 0 0.75rem;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.12);
 		box-sizing: border-box;
@@ -107,7 +107,7 @@
 		height: 44px;
 		padding: 0;
 		border: none;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		cursor: pointer;
@@ -186,7 +186,7 @@
 		min-height: 40px;
 		padding: 0.35rem 0.6rem;
 		border: none;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		font-size: 0.92rem;
@@ -263,7 +263,7 @@
 		display: flex;
 		flex-direction: column;
 		min-width: 0;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
 		overflow: hidden;
@@ -327,7 +327,7 @@
 
 	&__tile-selected {
 		padding: 0 0.4rem;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		background: rgba(var(--primary-color), 0.16);
 		color: rgb(var(--text-color));
 		font-weight: 700;
@@ -370,7 +370,7 @@
 	&__select-all {
 		min-height: 44px;
 		padding: 0 0.85rem;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.14);
 		background: transparent;
 		color: rgb(var(--text-color));
@@ -417,7 +417,7 @@
 	&__case-badge {
 		align-self: flex-start;
 		padding: 0.05rem 0.45rem;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.08);
 		font-size: 0.75rem;
 		font-weight: 600;
@@ -502,7 +502,7 @@
 	&__chip {
 		min-height: 36px;
 		padding: 0 0.8rem;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		border: 1px solid rgba(var(--text-color), 0.14);
 		background: transparent;
 		color: rgb(var(--text-color));
@@ -651,7 +651,7 @@
 		min-height: 44px;
 		padding: 0 0.5rem;
 		border: none;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		font: inherit;

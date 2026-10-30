@@ -15,7 +15,9 @@
 		padding: 0.45rem 0.85rem;
 		background-color: rgba(var(--button-color), 0.5);
 		border: 1px solid transparent;
-		border-radius: 999px;
+		// The control corner, like the Solves page filters and the timer header strip; the
+		// pill read as a different app (owner, 2026-10-31).
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.875rem;
 		font-weight: 600;
@@ -81,24 +83,37 @@
 
 	// Old Dropdown overrides removed — now using FancyDropdown.
 
+	// Phone: an even two-column grid instead of the breadcrumb row. Chips of every width
+	// with chevrons between them broke onto lines at random places, two on one line and one
+	// on the next (owner, 2026-10-31: "çok dağınık"). Each chip fills its cell, label on the
+	// left and caret on the right like a select, so the rows line up whatever the labels.
+	// The chevrons go: the order of the cells already reads left to right, top to bottom.
 	@include bp-down($bp-md) {
-		gap: 0.3rem;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: $zt-space-2;
+		width: 100%;
 
-		&__chip {
-			padding: 0.35rem 0.7rem;
-			font-size: 0.8rem;
-		}
-
+		&__chip,
 		&__chip--all {
-			padding: 0.35rem 0.8rem;
+			justify-content: space-between;
+			width: 100%;
+			max-width: none;
+			height: $zt-control-h-md;
+			padding: 0 $zt-space-3;
+			font-size: 0.85rem;
 		}
 
 		&__chip-label {
-			max-width: 10rem;
+			max-width: none;
 		}
 
 		&__separator {
-			font-size: 0.75rem;
+			display: none;
+		}
+
+		&__note {
+			grid-column: 1 / -1;
 		}
 	}
 }

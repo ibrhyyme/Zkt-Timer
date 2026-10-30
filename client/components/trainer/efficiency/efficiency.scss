@@ -61,7 +61,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 9px 16px;
-		border-radius: 22px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgba(var(--text-color), 0.04);
 		color: rgb(var(--text-color));
@@ -94,7 +94,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgba(var(--text-color), 0.04);
 		color: rgb(var(--text-color));
@@ -133,13 +133,13 @@
 		display: inline-flex;
 		gap: 4px;
 		padding: 4px;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.08);
 	}
 	&__segment-btn {
 		padding: 8px 18px;
-		border-radius: 9px;
+		border-radius: $zt-radius-md;
 		border: none;
 		background: transparent;
 		color: rgb(var(--text-color));
@@ -173,7 +173,7 @@
 	&__field-select {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.15);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		padding: 7px 12px;
 		font-size: 0.9rem;
@@ -299,7 +299,7 @@
 		grid-row: 1;
 		align-self: start;
 		padding: 18px;
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--module-color), 0.55);
 		border: 1px solid rgba(var(--text-color), 0.08);
 		backdrop-filter: blur(10px);
@@ -352,7 +352,7 @@
 		grid-column: 2;
 		grid-row: 2;
 		padding: 18px;
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--module-color), 0.55);
 		border: 1px solid rgba(var(--text-color), 0.08);
 		backdrop-filter: blur(10px);
@@ -371,7 +371,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		background: radial-gradient(circle at 50% 40%, rgba(var(--primary-color), 0.06), transparent 70%);
 	}
@@ -403,7 +403,7 @@
 		align-items: center;
 		gap: 12px;
 		padding: 10px 14px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
 
@@ -469,7 +469,7 @@
 	&__settings-card {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		padding: 16px 20px;
 	}
 	&__toggle-row {
@@ -499,7 +499,7 @@
 		position: relative;
 		width: 48px;
 		height: 28px;
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.2);
 		flex-shrink: 0;
 		cursor: pointer;
@@ -590,7 +590,7 @@
 		flex-direction: column;
 		gap: 12px;
 		padding: 12px 16px;
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--module-color), 0.6);
 		border: 1px solid rgba(var(--text-color), 0.08);
 		backdrop-filter: blur(8px);
@@ -689,7 +689,7 @@
 	}
 	&__speed {
 		padding: 5px 9px;
-		border-radius: 7px;
+		border-radius: $zt-radius-md;
 		border: none;
 		background: rgba(var(--text-color), 0.06);
 		color: rgb(var(--text-color));

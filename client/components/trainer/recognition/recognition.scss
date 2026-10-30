@@ -28,7 +28,7 @@
 	&__card {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		padding: 16px 20px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 		transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -44,7 +44,7 @@
 	&__input {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		padding: 8px 10px;
 		font-size: 0.9rem;
@@ -98,7 +98,7 @@
 	&__guide-group {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		overflow: hidden;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 	}
@@ -123,7 +123,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 6px 8px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 
 		&--highlight {
 			background: rgba(var(--warning-color), 0.18);
@@ -201,7 +201,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 9px 16px;
-		border-radius: 22px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgba(var(--text-color), 0.04);
 		color: rgb(var(--text-color));
@@ -232,7 +232,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgba(var(--text-color), 0.04);
 		color: rgb(var(--text-color));
@@ -255,7 +255,7 @@
 		@include bp-down($bp-sm) {
 			width: 40px;
 			height: 40px;
-			border-radius: 10px;
+			border-radius: $zt-radius-md;
 		}
 	}
 
@@ -283,7 +283,7 @@
 	&__sidebar-card {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		padding: 16px;
 		height: 100%;
 		overflow: hidden;
@@ -322,7 +322,7 @@
 	&__game-progress {
 		height: 22px;
 		background: rgba(var(--text-color), 0.06);
-		border-radius: 11px;
+		border-radius: $zt-radius-md;
 		overflow: hidden;
 		display: flex;
 		align-items: center;
@@ -395,7 +395,7 @@
 	&__game-auf-badge {
 		display: inline-block;
 		padding: 2px 8px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.12);
 		font-size: 0.8rem;
 		margin-left: 4px;
@@ -444,7 +444,7 @@
 		min-width: 52px;
 		min-height: 52px;
 		padding: 10px 14px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.12);
 		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
@@ -511,7 +511,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 8px 10px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.04);
 		border-left: 3px solid transparent;
 
@@ -526,7 +526,7 @@
 	}
 	&__result-item-badge {
 		padding: 3px 8px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		font-size: 0.78rem;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
@@ -547,7 +547,7 @@
 	&__eval-card {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		padding: 16px;
 		margin-bottom: 12px;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -592,7 +592,7 @@
 	}
 	&__home-hero-skeleton {
 		min-height: 70vh;
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		background: radial-gradient(
 			ellipse at 50% 0%,
 			rgba(var(--primary-color), 0.10) 0%,
@@ -611,7 +611,7 @@
 			rgba(var(--primary-color), 0.12) 0%,
 			transparent 70%
 		);
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 	}
 	&__home-hero-title {
 		font-size: 2rem;
@@ -692,7 +692,7 @@
 		flex-shrink: 0;
 		width: 150px;
 		padding: 10px;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
@@ -780,7 +780,7 @@
 			padding: 18px;
 			background: rgb(var(--button-color));
 			border: 1px solid rgba(var(--text-color), 0.08);
-			border-radius: 14px;
+			border-radius: $zt-radius-md;
 		}
 	}
 	&__preset-scroll-wrapper {
@@ -836,7 +836,7 @@
 		}
 
 		padding: 14px;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		border: 2px solid rgba(var(--text-color), 0.08);
 		cursor: pointer;
@@ -921,7 +921,7 @@
 		font-size: 0.72rem;
 		background: rgba(var(--text-color), 0.08);
 		padding: 3px 8px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		font-weight: 600;
 	}
 	&__pb-stats {
@@ -953,7 +953,7 @@
 	&__size-options {
 		display: inline-flex;
 		gap: 0;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		overflow: hidden;
 		border: 1px solid rgba(var(--text-color), 0.12);
 	}
@@ -997,7 +997,7 @@
 			rgba(var(--primary-color), 0.10) 0%,
 			transparent 70%
 		);
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 	}
 	&__quest-header {
 		display: flex;
@@ -1088,7 +1088,7 @@
 		text-align: center;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		padding: 16px;
 	}
 	&__quest-finale-title { font-weight: 700; margin: 0 0 4px 0; }
@@ -1184,7 +1184,7 @@
 		height: 32px;
 		padding: 0;
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		background: rgb(var(--button-color));
 	}
@@ -1199,7 +1199,7 @@
 		width: 100%;
 		padding: 8px 10px;
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
@@ -1223,7 +1223,7 @@
 		color: rgba(var(--text-color), 0.92);
 		cursor: pointer;
 		padding: 4px 6px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 
 		&:hover { background: rgba(var(--text-color), 0.06); }
 	}
@@ -1305,7 +1305,7 @@
 		text-align: center;
 		background: rgba(var(--text-color), 0.03);
 		border: 1px solid rgba(var(--text-color), 0.10);
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		padding: 20px 22px;
 		display: flex;
 		flex-direction: column;
@@ -1349,7 +1349,7 @@
 	&__eval-stats-pb-new { color: rgb(var(--success-color)); font-weight: 700; }
 	&__eval-stats-first {
 		padding: 8px 14px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--success-color), 0.12);
 		color: rgb(var(--text-color));
 		font-weight: 700;
@@ -1375,7 +1375,7 @@
 		font-weight: 700;
 		padding: 6px 12px;
 		background: rgba(var(--success-color), 0.12);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		display: inline-block;
 		align-self: center;
 	}
@@ -1384,7 +1384,7 @@
 		font-weight: 600;
 		padding: 6px 12px;
 		background: rgba(var(--warning-color), 0.12);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		display: inline-block;
 		align-self: center;
 	}
@@ -1398,7 +1398,7 @@
 			rgba(var(--primary-color), 0.03) 100%
 		);
 		border: 1px solid rgba(var(--primary-color), 0.35);
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
@@ -1415,7 +1415,7 @@
 	// Solid pill + clear border to stand out on gradient card
 	&__eval-cta-secondary,
 	&__eval-cta-secondary button {
-		border-radius: 22px !important;
+		border-radius: $zt-radius-md !important;
 		padding: 9px 16px !important;
 		border: 1.5px solid rgba(var(--text-color), 0.20) !important;
 		background: rgba(var(--background-color), 0.85) !important;
@@ -1499,7 +1499,7 @@
 			padding: 16px;
 			background: rgb(var(--button-color));
 			border: 1px solid rgba(var(--text-color), 0.08);
-			border-radius: 12px;
+			border-radius: $zt-radius-md;
 		}
 	}
 	&__history-main {
@@ -1532,7 +1532,7 @@
 		align-items: center;
 		gap: 12px;
 		padding: 12px 14px;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
 	}
@@ -1558,7 +1558,7 @@
 		background: rgb(var(--success-color));
 		color: rgb(var(--text-color));
 		padding: 3px 7px;
-		border-radius: 5px;
+		border-radius: $zt-radius-md;
 		font-size: 0.72rem;
 		font-weight: 700;
 	}
@@ -1598,7 +1598,7 @@
 		flex-direction: column;
 		gap: 18px;
 		padding: 22px 24px;
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.10);
 		background: rgba(var(--text-color), 0.03);
 	}
@@ -1637,7 +1637,7 @@
 		align-items: center;
 		gap: 8px;
 		padding: 12px;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.04);
 
 		@include bp-up($bp-md) {
@@ -1711,7 +1711,7 @@
 		padding: 14px 28px !important;
 		font-size: 1.05rem !important;
 		font-weight: 700 !important;
-		border-radius: 14px !important;
+		border-radius: $zt-radius-md !important;
 		letter-spacing: 0.02em;
 	}
 
@@ -1721,7 +1721,7 @@
 		flex-direction: column;
 		gap: 18px;
 		padding: 22px 24px;
-		border-radius: 16px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--error-color), 0.28);
 		background: rgba(var(--error-color), 0.04);
 		margin-top: 12px;
@@ -1780,7 +1780,7 @@
 	// Use via `className` prop: <Button className={b('btn-pill')} />.
 	&__btn-pill,
 	&__btn-pill button {
-		border-radius: 22px !important;
+		border-radius: $zt-radius-md !important;
 		padding: 10px 18px !important;
 		border: 1.5px solid rgba(var(--primary-color), 0.45) !important;
 		background: rgba(var(--primary-color), 0.06) !important;
@@ -1815,7 +1815,7 @@
 		width: 100%;
 		padding: 12px 14px;
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
 		font-size: 0.95rem;
@@ -1863,7 +1863,7 @@
 		min-height: 140px;
 		border: 2px solid rgba(var(--text-color), 0.10);
 		background: rgb(var(--button-color));
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		text-align: center;
 		color: rgb(var(--text-color));
@@ -1911,7 +1911,7 @@
 		font-size: 0.7rem;
 		background: rgba(var(--text-color), 0.10);
 		padding: 2px 8px;
-		border-radius: 5px;
+		border-radius: $zt-radius-md;
 		font-weight: 600;
 		color: rgba(var(--text-color), 0.85);
 	}
@@ -1987,7 +1987,7 @@
 		padding: 14px 16px;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 	}
 	&__glossary-card-visual {
 		flex-shrink: 0;
@@ -2025,7 +2025,7 @@
 	&__glossary-group-card {
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		padding: 14px 16px;
 		display: flex;
 		flex-direction: column;
@@ -2055,7 +2055,7 @@
 		display: flex;
 		gap: 10px;
 		padding: 12px 14px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--info-color), 0.10);
 		border: 1px solid rgba(var(--info-color), 0.25);
 		font-size: 0.88rem;

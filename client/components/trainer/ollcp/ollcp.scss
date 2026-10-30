@@ -1,3 +1,5 @@
+@import '../../../styles/config';
+
 /* OLLCP recognition mode (admin-only). Namespace: zt-trainer-ollcp.
    Theme-driven (rgb/rgba var(--..)); priority tiers use fixed traffic-light colors. */
 
@@ -28,7 +30,7 @@
 		padding: 14px 8px;
 		background: $panel;
 		border: 1px solid $line;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		color: rgb(var(--text-color));
 		/* Long-press enters select mode → block the native text/SVG selection + iOS copy callout. */
@@ -59,7 +61,7 @@
 		line-height: 1;
 		color: #0e0f12;
 		background: #ef4444;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 		/* On the web reference the badge sits inline in the OLL head row (not a card corner). */
 		&--inline {
@@ -79,7 +81,7 @@
 		border-bottom: 1px solid $line;
 		&--selected {
 			background: rgba(239, 68, 68, 0.06);
-			border-radius: 8px;
+			border-radius: $zt-radius-md;
 		}
 	}
 	&__oll-head {
@@ -97,7 +99,7 @@
 	&__oll-shape {
 		background: $panel;
 		padding: 5px;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		border: 1px solid $line;
 	}
 	&__oll-title { margin: 0; font-size: 17px; font-weight: 700; }
@@ -119,7 +121,7 @@
 	&__card {
 		background: $panel;
 		border: 1px solid $line;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		padding: 12px;
 		&--active {
 			border-color: #ef4444;
@@ -130,7 +132,7 @@
 	&__diagram {
 		background: rgba(var(--text-color), 0.04);
 		padding: 6px;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 	}
 	&__card-meta { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 	&__vlabel { font-size: 18px; font-weight: 700; color: $muted; }
@@ -138,7 +140,7 @@
 		font-size: 10.5px;
 		font-weight: 700;
 		padding: 3px 9px;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		white-space: nowrap;
 		&--t1 { background: rgba(22, 163, 74, 0.16); color: #46cf72; border: 1px solid rgba(22, 163, 74, 0.5); }
 		&--t2 { background: rgba(217, 146, 10, 0.16); color: #e0a93a; border: 1px solid rgba(217, 146, 10, 0.5); }
@@ -154,7 +156,7 @@
 		color: rgb(var(--text-color));
 		background: rgba(var(--text-color), 0.07);
 		border: 1px solid $line;
-		border-radius: 7px;
+		border-radius: $zt-radius-md;
 		padding: 8px 10px;
 		word-spacing: 2px;
 	}
@@ -183,7 +185,7 @@
 		color: #0e0f12;
 		background: #ef4444;
 		border: 1px solid #ef4444;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		padding: 6px 16px;
 		cursor: pointer;
 		&:hover { filter: brightness(1.08); }
@@ -227,7 +229,7 @@
 		color: rgb(var(--text-color));
 		background: $panel;
 		border: 1px solid $line;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		padding: 14px 16px;
 		word-spacing: 3px;
 		-webkit-user-select: all;
@@ -291,7 +293,7 @@
 		padding: 5px 9px;
 		background: $panel;
 		border: 1px solid $line;
-		border-radius: 7px;
+		border-radius: $zt-radius-md;
 		b { color: rgb(var(--text-color)); font-variant-numeric: tabular-nums; }
 	}
 	&__stat-chart { height: 70px; margin-top: 4px; }
@@ -305,7 +307,7 @@
 		color: rgb(var(--text-color));
 		background: $panel;
 		border: 1px solid $line;
-		border-radius: 7px;
+		border-radius: $zt-radius-md;
 		padding: 4px 11px;
 		cursor: pointer;
 		&:hover { border-color: var(--accent); }
@@ -341,7 +343,7 @@
 		font-size: 14px;
 		font-weight: 700;
 		border: none;
-		border-radius: 9px;
+		border-radius: $zt-radius-md;
 		padding: 10px 22px;
 		cursor: pointer;
 		&:active { transform: translateY(1px); }

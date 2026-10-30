@@ -1,0 +1,186 @@
+@import '../../../styles/config';
+
+// "Çözüm yapılan küp" list (CubeSelectList): each choice its own row, in My Cubes'
+// vocabulary (name, Smart badge, brand · solve count), a radio on the right, and the way
+// to My Cubes as a separate button under the choices (owner, 2026-10-31: the old list was
+// bare text on the modal with no rows). Shared by the modal under the timer digits and
+// the quick settings row, so it carries no frame of its own.
+.#{$namespace}-cube-select {
+	display: flex;
+	flex-direction: column;
+	gap: $zt-space-3;
+
+	// Inside the quick settings row the list sits under the row's own hairline and needs
+	// its own inset; in the modal the modal's padding does that.
+	&--inset {
+		padding: $zt-space-3;
+	}
+
+	&__search {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		height: $zt-control-h-md;
+		padding: 0 $zt-space-3;
+		border-radius: $zt-radius-md;
+		background: $zt-control-bg;
+		color: rgb(var(--text-color));
+
+		input {
+			flex: 1;
+			min-width: 0;
+			background: transparent;
+			border: none;
+			outline: none;
+			color: inherit;
+			font: inherit;
+		}
+
+		&:focus-within {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
+		}
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__option {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		width: 100%;
+		min-height: 56px;
+		padding: 10px 14px;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		cursor: pointer;
+		transition: background $zt-transition, border-color $zt-transition;
+
+		&:hover {
+			background: $zt-control-bg;
+		}
+
+		@include zt-focus-ring;
+
+		// The accent marks the choice by its outline and radio only: accent text on an accent
+		// tint is the same-hue pairing the colour rule rules out.
+		&--selected,
+		&--selected:hover {
+			border-color: rgb(var(--primary-color));
+		}
+
+		// "No cube" is not a cube: a step apart from them, one line tall.
+		&--none {
+			min-height: 46px;
+			margin-top: 6px;
+		}
+	}
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__name {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		min-width: 0;
+		font-size: 0.95rem;
+		font-weight: 600;
+
+		> span:first-child {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	&__option--none &__name {
+		font-weight: 500;
+	}
+
+	&__badge {
+		flex: 0 0 auto;
+		padding: 1px 6px;
+		border-radius: $zt-radius-sm;
+		background: $zt-control-bg;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+	}
+
+	&__meta {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.8rem;
+		color: $zt-text-muted;
+	}
+
+	&__radio {
+		position: relative;
+		flex: 0 0 auto;
+		width: 18px;
+		height: 18px;
+		box-sizing: border-box;
+		border-radius: 50%;
+		border: 2px solid rgba(var(--text-color), 0.3);
+
+		&--on {
+			border-color: rgb(var(--primary-color));
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 3px;
+				border-radius: 50%;
+				background: rgb(var(--primary-color));
+			}
+		}
+	}
+
+	&__empty {
+		padding: $zt-space-3 $zt-space-1;
+		color: $zt-text-muted;
+		font-size: 0.85rem;
+	}
+
+	// The way out to My Cubes: a button of its own, not one more choice in the list.
+	&__open {
+		all: unset;
+		@include zt-control;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		width: 100%;
+		height: 44px;
+		padding: 0 14px;
+		font-family: inherit;
+		font-size: 0.9rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		> span {
+			flex: 1;
+		}
+
+		svg {
+			flex: 0 0 auto;
+			font-size: 16px;
+		}
+	}
+}

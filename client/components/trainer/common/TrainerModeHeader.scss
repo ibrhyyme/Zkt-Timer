@@ -91,7 +91,7 @@
 			flex-shrink: 0;
 			padding: 0.3rem 0.45rem;
 			border: none;
-			border-radius: 8px;
+			border-radius: $zt-radius-md;
 			background: transparent;
 			font-size: 0.9rem;
 			font-weight: 500;
@@ -172,7 +172,7 @@
 		align-items: center;
 		justify-content: center;
 		border: none;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		cursor: pointer;
@@ -208,7 +208,7 @@
 		gap: 0.4rem;
 		min-height: 38px;
 		padding: 0 0.9rem;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		border: none;
 		background: rgb(var(--trainer-accent-red));
 		color: rgb(var(--trainer-accent-on));
@@ -238,7 +238,7 @@
 		min-width: 18px;
 		height: 18px;
 		padding: 0 5px;
-		border-radius: 9px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--trainer-accent-on));
 		color: rgb(var(--trainer-accent-red));
 		font-size: 0.72rem;
@@ -253,7 +253,7 @@
 		gap: 0.45rem;
 		min-height: 38px;
 		padding: 0 0.95rem;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		border: none;
 		// Same primary as the active study mode button next to it.
 		background: rgb(var(--primary-color));

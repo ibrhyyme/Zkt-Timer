@@ -218,6 +218,97 @@
 	letter-spacing: 2px;
 	margin-bottom: 4px;
 }
+
+// The row under the digits holding the cube label and the diff (TimeDisplay.tsx): label on
+// the left, diff on the right, the middle left free for the finger that starts the touch
+// timer.
+//
+// The pair is centred under the digits with a fingertip-wide gap (48px) in the exact
+// centre, both boxes as wide as the wider content, no wider (owner, 2026-10-31). Pinned to
+// the digits' edges at their own widths the gap sat off centre; stretched to half the
+// digits each they took too much room. A longer name ellipsizes once the pair reaches the
+// digits' width; the picker it opens shows it in full.
+//
+// The diff sits on the same module surface as the label, the same height, so the row
+// reads as a pair (owner, 2026-10-31). It stays informational: no hover, no pointer
+// (SolveDiff.scss), a press on it still reaches the timer.
+%diff-chip {
+	display: inline-flex;
+	align-items: center;
+	height: $zt-control-h-md;
+	padding: 0 $zt-space-3;
+	box-sizing: border-box;
+	margin: 0;
+	background: var(--zt-surface);
+	border: 1px solid var(--zt-surface-border);
+	border-radius: $zt-radius-md;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+.#{$namespace}-time-display__diff--chip {
+	> .#{$namespace}-solve-diff {
+		@extend %diff-chip;
+	}
+
+	// The phone digits have no bottom margin; the desktop ones keep 10px.
+	&.#{$namespace}-time-display__diff--mobile {
+		margin-top: $zt-space-1;
+	}
+}
+
+.#{$namespace}-time-display__under {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 0;
+	// At least a five-glyph time on the phone's 100px digits ("12.34"): under a four-glyph
+	// "0.00" the half left for the label clipped an ordinary name like "Gan V100" to
+	// "Gan …". Wider than the digits there, the row overhangs them evenly on both sides.
+	min-width: max(100%, 300px);
+
+	> .#{$namespace}-solve-diff {
+		@extend %diff-chip;
+		flex: 0 0 auto;
+	}
+
+	// TimerCubeLabel renders nothing when the puzzle has no main cube: the diff then stays
+	// centred on its own, as it always was.
+	// Shrink-wrapped: two equal fr columns in a max-content grid each take the wider
+	// item's width, and the cap shrinks both alike. The cap is a fixed 300px (a five-glyph
+	// time on the phone's digits), not a percentage: the column takes its width from its
+	// children, so a percentage would let a long name widen the whole time block instead.
+	&:has(> .#{$namespace}-timer-cube-label) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		column-gap: $zt-space-7;
+		width: max-content;
+		min-width: 0;
+		max-width: 300px;
+
+		// Wider digits from the tablet up: room for a name like "GANi4_F568" in full.
+		@include bp-up($bp-md) {
+			max-width: 360px;
+		}
+
+		> .#{$namespace}-timer-cube-label {
+			min-width: 0;
+			margin-top: 0;
+		}
+
+		> .#{$namespace}-timer-cube-label .#{$namespace}-timer-cube-label__button,
+		> .#{$namespace}-solve-diff {
+			width: 100%;
+			max-width: 100%;
+			justify-content: center;
+		}
+	}
+
+	&--mobile {
+		margin-top: $zt-space-1;
+	}
+}
+
 // GAN Timer / QiYi Timer / StackMat connect controls render into this block.
 // It had no rule of its own anywhere in the codebase: the only place the class
 // was mentioned was Timer.scss's "hide while solving" list. With no layout of

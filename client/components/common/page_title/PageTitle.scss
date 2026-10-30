@@ -30,6 +30,7 @@
 		// Scales down on narrow phones so two-word titles ("Hesap Ayarları",
 		// "Account Settings") stay on one line.
 		font-size: clamp(2rem, 7.5vw, 2.7rem);
+		line-height: 1.15;
 		letter-spacing: -0.01em;
 
 		i {
@@ -37,6 +38,26 @@
 			top: 3px;
 			margin-right: 0.8rem;
 		}
+	}
+
+	// The title wraps inside its own box; the avatar keeps the right edge on every page,
+	// where the timer has it, at the timer's 40px, centred on the first line of the title
+	// (owner, 2026-10-31: it used to follow the title's length, so it sat somewhere else
+	// on every page).
+	&__title-text {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__mobile-cluster {
+		flex: 0 0 auto;
+		align-self: flex-start;
+		display: flex;
+		align-items: center;
+		margin-left: $zt-space-3;
+		// Never above the title box: where the line is shorter than the avatar, a negative
+		// offset poked it out and a page with overflow hidden (the trainer) clipped its top.
+		margin-top: max(0px, calc((1.15em - 40px) / 2));
 	}
 
 	&--inline {
@@ -62,7 +83,6 @@
 	}
 
 	&--account-dropdown-mobile {
-		margin-left: 0.8rem;
 		display: none;
 
 		@include content-mobile {
@@ -78,7 +98,6 @@
 		}
 
 		.#{$namespace}-nav-account-dropdown__pfp {
-			--pfp-size: 32px;
 			margin-right: 0;
 		}
 	}

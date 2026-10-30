@@ -66,7 +66,9 @@ export default function CubeStatHero(props: Props) {
 					</div>
 					<div className={b('text')}>
 						<h1 className={b('title')}>
-							{cubeLabel} <span className={b('title-suffix')}>{t('stats.page_title')}</span>
+							<span className={b('title-text')}>
+								{cubeLabel} <span className={b('title-suffix')}>{t('stats.page_title')}</span>
+							</span>
 							<span className={b('mobile-cluster')}>
 								<MobileNav />
 								<span className={b('account-dropdown-mobile')}>

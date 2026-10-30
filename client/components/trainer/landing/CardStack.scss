@@ -18,6 +18,8 @@
 	// Opaque: the card's own faint gradient over the page background.
 	&__card.#{$namespace}-trainer__landing-card {
 		padding: 22px 22px 24px;
+		// The landing cards stay round by the owner's choice (2026-10-31), unlike the rest
+		// of the trainer: square they read harsh. Their buttons and badges stay square.
 		border-radius: 20px;
 		background:
 			linear-gradient(165deg, rgba(var(--text-color), 0.06), rgba(var(--text-color), 0.02)),

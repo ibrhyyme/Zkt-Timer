@@ -16,7 +16,9 @@
 	box-sizing: border-box;
 	min-width: 0;
 	min-height: 0;
-	border-radius: 14px;
+	// One corner for every surface on the timer, the phone modules and the header strip
+	// included (owner, 2026-10-31).
+	border-radius: $zt-radius-md;
 	// Shared module surface (styles/index.scss), the same one the mobile modules use.
 	border: 1px solid var(--zt-surface-border);
 	background-color: var(--zt-surface);

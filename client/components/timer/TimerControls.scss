@@ -17,7 +17,8 @@
         gap: 0.25rem;
         background: var(--zt-surface);
         border: 1px solid var(--zt-surface-border);
-        border-radius: 8px;
+        // One corner for every surface on the timer (MobileModuleSlot.scss).
+        border-radius: $zt-radius-md;
     }
 
     &--mobile &__left {
