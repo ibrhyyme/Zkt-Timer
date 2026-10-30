@@ -22,11 +22,11 @@ export interface FlattenedMovesResult {
 
 /**
  * Converts method steps into a single flat moves list.
- * Used by both ReplayPlayer (TwistyPlayer moves) and SolutionInfo (table highlighting)
+ * Used by both ReplayPlayer (the cube's moves) and SolutionInfo (table highlighting)
  * with the same data.
  *
  * Multi-quarter notation like U3/U4/U5 is expanded into same-direction single-quarter sequences
- * (U3 → U U U). This way TwistyPlayer plays each quarter with separate animation,
+ * (U3 → U U U). This way the replay plays each quarter with separate animation,
  * timing is properly aligned, and table highlighting preserves the original step.turns index
  * (moveInStepIdx).
  *

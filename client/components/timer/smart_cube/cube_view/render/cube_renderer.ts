@@ -132,9 +132,27 @@ export class CubeRenderer {
 		this.afterJump();
 	}
 
-	/** Ease towards this orientation (the gyro's, or home). */
-	setOrientation(q: THREE.Quaternion) {
+	/** Show the state these turns reach from solved at once, dropping any turns still animating. Unknown notation is skipped. */
+	setMoves(moves: string[]) {
+		this.animator.clear();
+		this.model.reset();
+		for (const move of moves) this.model.applyMove(move);
+		this.afterJump();
+	}
+
+	/**
+	 * Ease towards this orientation (the gyro's, or home). `immediate` puts the cube there on
+	 * the next frame, for a caller that eases on its own clock (the replay).
+	 */
+	setOrientation(q: THREE.Quaternion, immediate = false) {
 		this.target.copy(q);
+		if (immediate) {
+			const root = this.stage.cubeRoot.quaternion;
+			if (root.equals(q)) return;
+			root.copy(q);
+			this.stage.shadowDirty = true;
+			this.dirty = true;
+		}
 		this.wake();
 	}
 

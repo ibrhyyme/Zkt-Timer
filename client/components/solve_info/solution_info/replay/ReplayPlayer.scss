@@ -20,10 +20,17 @@
 		background-color: rgba(var(--button-color), 0.25);
 		border-radius: 8px;
 		overflow: hidden;
+	}
 
-		twisty-player {
-			width: 100% !important;
-			height: 100% !important;
+	// The square holding the canvas (sized by ReplayPlayer). A drag on it turns the view, so a
+	// touch there must not scroll the page; beside it the page scrolls as usual.
+	&__canvas {
+		flex: none;
+		touch-action: none;
+		cursor: grab;
+
+		&:active {
+			cursor: grabbing;
 		}
 	}
 

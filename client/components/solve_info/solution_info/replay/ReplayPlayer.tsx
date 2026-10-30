@@ -11,9 +11,12 @@ import { canSeeSmartAnalysis } from '../../../../lib/pro';
 import { getStepDisplayName } from '../../util/consts';
 import { calculateNetRotationQuat, frameToQuat } from '../../../../util/cube_rotation_quat';
 import type { Frame } from '../../../../../shared/smart_cube/rotation_reconstruction';
-import { recolorPuzzle, stickerPaletteFromFaceColors } from '../../../timer/smart_cube/cube_view/cube_palette';
+import { CubeRenderer } from '../../../timer/smart_cube/cube_view/render/cube_renderer';
+import { HOME_TILT_DEG, HOME_TURN_DEG } from '../../../timer/smart_cube/cube_view/view_defaults';
 import { useCubePalette } from '../../../../util/cube_colors/useCubePalette';
+import { isAppVisible, onVisibilityChange } from '../../../../util/app-visibility';
 import { useFlattenedMoves } from './useFlattenedMoves';
+import { turnsAt, turnsUpTo } from './replay_turns';
 import ReplayControls from './ReplayControls';
 import ReplayProUpsell from './ReplayProUpsell';
 import './ReplayPlayer.scss';
@@ -57,11 +60,6 @@ function writeGyroPref(on: boolean): void {
 	}
 }
 
-/** The turns one replay position plays: one, several (a gyro token), or none (a rotation). */
-function turnsAt(entry: { move: string }): string[] {
-	return entry.move.split(' ').filter(Boolean);
-}
-
 /**
  * Time constant of the scene easing toward its target: a rotation settles in ~150 ms. By time,
  * not per frame: a fixed share per frame took ten seconds at the 1 fps a background window
@@ -72,6 +70,56 @@ const SCENE_EASE_MS = 58;
 /** Share of the remaining turn to cover after `dtMs` of easing. */
 function easeShare(dtMs: number): number {
 	return 1 - Math.exp(-Math.max(0, dtMs) / SCENE_EASE_MS);
+}
+
+const DEG = Math.PI / 180;
+
+/**
+ * Dragging the cube turns the view on top of the scene's orientation: across the cube's whole
+ * width is half a turn, a vertical drag a little less (as cubing.js's orbit, which this
+ * replaced). Yaw is about the cube's up, pitch about the screen's horizontal, so the cube never
+ * rolls; the pitch stops short of straight down or up.
+ */
+const DRAG_DEG_PER_SIDE = 180;
+const DRAG_VERTICAL_SCALE = 0.75;
+const MAX_PITCH_DEG = 85;
+/** A flick keeps the view turning after release, fading with this time constant. */
+const FLING_MS = 150;
+/** Only a pointer that was still moving this recently at release flings. */
+const FLING_WINDOW_MS = 60;
+/** Degrees per ms; a fast flick coasts at most this fast. */
+const MAX_FLING_SPEED = 2;
+
+interface ViewDrag {
+	/** Degrees. Starts at the live cube's home view (view_defaults.ts). */
+	pitch: number;
+	yaw: number;
+	/** The pointer turning the view, -1 for none. */
+	pointer: number;
+	x: number;
+	y: number;
+	at: number;
+	/** Degrees per ms, for the fling. */
+	vPitch: number;
+	vYaw: number;
+}
+
+const homeDrag = (): ViewDrag => ({ pitch: HOME_TILT_DEG, yaw: -HOME_TURN_DEG, pointer: -1, x: 0, y: 0, at: 0, vPitch: 0, vYaw: 0 });
+
+function turnView(drag: ViewDrag, dPitch: number, dYaw: number) {
+	drag.yaw = (drag.yaw + dYaw) % 360;
+	const pitch = drag.pitch + dPitch;
+	drag.pitch = Math.max(-MAX_PITCH_DEG, Math.min(MAX_PITCH_DEG, pitch));
+	if (drag.pitch !== pitch) drag.vPitch = 0;
+}
+
+const clampSpeed = (v: number) => Math.max(-MAX_FLING_SPEED, Math.min(MAX_FLING_SPEED, v));
+
+const _euler = new THREE.Euler();
+
+/** The viewing angle: SmartCubeView's home quaternion, with the drag added to its tilt and turn. */
+function viewQuat(drag: ViewDrag, out: THREE.Quaternion): THREE.Quaternion {
+	return out.setFromEuler(_euler.set(drag.pitch * DEG, drag.yaw * DEG, 0));
 }
 
 interface Props {
@@ -92,19 +140,18 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 	// stays behind Pro: the viewer's, or the owner's for a solve they share.
 	const userIsPro = canSeeSmartAnalysis(me, solve?.user) || !!(solve as any)?.is_virtual_cube;
 
-	const containerRef = useRef<HTMLDivElement>(null);
-	const twistyRef = useRef<any>(null);
-	const [twistyReady, setTwistyReady] = useState(false);
+	/** The area the cube sits in, and the square inside it that holds the canvas. */
+	const boxRef = useRef<HTMLDivElement>(null);
+	const hostRef = useRef<HTMLDivElement>(null);
+	const rendererRef = useRef<CubeRenderer | null>(null);
+	const [rendererReady, setRendererReady] = useState(false);
 
-	// The viewer's sticker colours, as on the scramble cube above and the live cube. Without
-	// them the replay drew the renderer's neon stock colours next to the user's palette.
-	// Recolouring is one-shot per puzzle (see cube_palette.ts), so a new palette rebuilds the
-	// player: paletteKey is in its effect's dependencies.
+	// The viewer's sticker colours, as on the scramble cube above and the live cube. Applied in
+	// place: a palette change keeps the position.
 	const cubeColors = useCubePalette();
+	const faceColorsRef = useRef(cubeColors.nxn);
+	faceColorsRef.current = cubeColors.nxn;
 	const paletteKey = cubeColors.nxn.join(',');
-	const stickerPalette = useMemo(() => stickerPaletteFromFaceColors(cubeColors.nxn), [paletteKey]);
-	const stickerPaletteRef = useRef(stickerPalette);
-	stickerPaletteRef.current = stickerPalette;
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [speed, setSpeed] = useState(1);
 
@@ -113,16 +160,25 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 	const flattened = useFlattenedMoves(steps);
 	const allMoves = gyroReplay ? gyroReplay.moves : flattened.allMoves;
 	const stepStartIndices = gyroReplay ? gyroReplay.stepStarts : flattened.stepStartIndices;
+	const hasMoves = allMoves.length > 0;
+	// What the positions are. It changes when the last-layer algorithms arrive and the rows are
+	// read again; the array itself is rebuilt on every render of a solve without gyro data.
+	const movesKey = allMoves.map((m) => m.move).join('|');
 
 	const totalMs = (solve.time || 0) * 1000;
 
-	// Setup alg = ONLY scramble (rotation is NOT added to cube state).
-	// Reason: solver calculated step.turns against default cube state (to solve the scramble).
-	// If we add rotation to setup, cube state becomes rotated, and raw moves won't solve the scramble.
-	// Rotation is applied visually via scene quaternion (animation loop below).
+	// Setup = ONLY the scramble; the holding is the scene's orientation (see replay_turns.ts).
 	const setupAlg = solve.scramble || '';
 
-	const appliedMoveIdxRef = useRef(0);
+	// What the cube shows: this many positions played, of the positions under this key.
+	const appliedRef = useRef({ idx: 0, key: '' });
+	// Read when the cube is built, without rebuilding it on every move.
+	const currentIdxRef = useRef(currentMoveIdx);
+	currentIdxRef.current = currentMoveIdx;
+	const allMovesRef = useRef(allMoves);
+	allMovesRef.current = allMoves;
+	const movesKeyRef = useRef(movesKey);
+	movesKeyRef.current = movesKey;
 
 	// The recorded gyro stream turns the scene when there is one. Without it (offline, an older
 	// solve, one recorded before the stream was kept) the replay falls back to the
@@ -145,7 +201,13 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 		writeGyroPref(on);
 	}
 
-	// The animation loop reads these each frame. With a gyro track the scene follows the replay
+	// The scene loop asks for frames only while something moves; anything that gives it a new
+	// target wakes it. A no-op until the cube exists.
+	const wakeSceneRef = useRef<() => void>(() => {});
+	// The viewer's drag on top of the scene; back to the home view with every new cube.
+	const dragRef = useRef<ViewDrag>(homeDrag());
+
+	// The scene loop reads these each frame. With a gyro track the scene follows the replay
 	// clock: the time of the token last played, moving on toward the next while playing.
 	const gyroTrackRef = useRef<GyroTrack | null>(null);
 	gyroTrackRef.current = gyroOn ? gyroTrack : null;
@@ -156,165 +218,171 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 	useEffect(() => {
 		clockRef.current.idx = currentMoveIdx;
 		clockRef.current.enteredAt = performance.now();
+		wakeSceneRef.current();
 	}, [currentMoveIdx, isPlaying]);
 
 	// Target scene quaternion: the holding, or with gyro data the frame at this position.
-	// The scene eases toward it (sceneQuatRef), so a rotation turns the cube on screen and a
-	// slice reads as the middle layer moving rather than the outer two and then a jump.
+	// The scene eases toward it, so a rotation turns the cube on screen and a slice reads as
+	// the middle layer moving rather than the outer two and then a jump.
 	const targetQuatRef = useRef(new THREE.Quaternion());
-	const sceneQuatRef = useRef<THREE.Quaternion | null>(null);
 	useEffect(() => {
 		if (gyroReplay) {
 			const frame = gyroReplay.frames[Math.max(0, Math.min(currentMoveIdx, gyroReplay.frames.length - 1))];
 			targetQuatRef.current = frameToQuat(frame);
-			return;
+		} else {
+			const rotMoves = (rotation || '').split(' ').filter(Boolean);
+			targetQuatRef.current = calculateNetRotationQuat(rotMoves);
 		}
-		const rotMoves = (rotation || '').split(' ').filter(Boolean);
-		targetQuatRef.current = calculateNetRotationQuat(rotMoves);
+		wakeSceneRef.current();
 	}, [rotation, gyroReplay, currentMoveIdx]);
 
-	// TwistyPlayer init — async dynamic import (SSR-safe)
-	// requestAnimationFrame loop continuously forces scene quaternion to targetQuatRef
-	// (even if TwistyPlayer's render loop overrides it, we reset it every frame).
+	// The gyro switch, or the stream arriving, changes what the scene follows.
 	useEffect(() => {
-		if (!containerRef.current || !userIsPro) return;
-		let cancelled = false;
-		let animFrameId: number | null = null;
-		let sceneRef: THREE.Object3D | null = null;
-		let vantageRef: any = null;
-		let lastFrameAt = performance.now();
-		const recolored = new WeakSet<object>();
-		let recolorPending = true;
+		wakeSceneRef.current();
+	}, [gyroOn, gyroTrack]);
 
-		(async () => {
-			try {
-				const mod = await import('cubing/twisty');
-				if (cancelled) return;
-				const TwistyPlayer = (mod as any).TwistyPlayer;
-				const player = new TwistyPlayer({
-					puzzle: '3x3x3',
-					visualization: 'PG3D',
-					alg: '',
-					experimentalSetupAlg: setupAlg,
-					background: 'none',
-					controlPanel: 'none',
-					hintFacelets: 'none',
-					experimentalDragInput: 'auto',  // Rotate cube with mouse/touch
-					cameraLatitude: 30,
-					cameraLongitude: -30,
-					tempoScale: 4,
-				});
-				if (containerRef.current) {
-					containerRef.current.innerHTML = '';
-					containerRef.current.appendChild(player);
-					player.style.width = '100%';
-					player.style.height = '100%';
-					twistyRef.current = player;
-					appliedMoveIdxRef.current = 0;
-					setTwistyReady(true);
-				}
+	useEffect(() => {
+		rendererRef.current?.setFaceColors(faceColorsRef.current);
+	}, [paletteKey]);
 
-				// Scene quaternion sync animation loop
-				const animate = async () => {
-					if (cancelled) return;
-					try {
-						if (!sceneRef || !vantageRef) {
-							const vantageList = await player.experimentalCurrentVantages();
-							vantageRef = [...vantageList][0];
-							if (vantageRef) {
-								sceneRef = await vantageRef.scene.scene();
-							}
-						}
-						// The puzzle shows up a few frames after the scene; once found, this is free.
-						if (sceneRef && recolorPending) {
-							if (recolorPuzzle(sceneRef, recolored, stickerPaletteRef.current) !== 'not-found') recolorPending = false;
-						}
-						if (sceneRef && vantageRef && targetQuatRef.current) {
-							const frameAt = performance.now();
-							let target = targetQuatRef.current;
-							let ease = easeShare(frameAt - lastFrameAt);
-							lastFrameAt = frameAt;
-							const track = gyroTrackRef.current;
-							if (track) {
-								const { idx, enteredAt, playing, speed: rate, moves } = clockRef.current;
-								const first = moves.length ? moves[0].relativeMs : 0;
-								const from = idx === 0 ? first - FIRST_STEP_MS : moves[Math.min(idx, moves.length) - 1].relativeMs;
-								const to = idx < moves.length ? moves[idx].relativeMs : from;
-								const now = playing
-									? Math.min(Math.max(from, to), from + (performance.now() - enteredAt) * rate)
-									: from;
-								target = sampleGyroTrack(track, now);
-								// Playing follows the stream as recorded; a jump (a click, a step) eases.
-								if (playing) ease = 1;
-							}
-							if (!sceneQuatRef.current) sceneQuatRef.current = target.clone();
-							else sceneQuatRef.current.slerp(target, ease);
-							sceneRef.quaternion.copy(sceneQuatRef.current);
-							vantageRef.render();
-						}
-					} catch {
-						// Scene not ready yet, try again next frame
-					}
-					if (!cancelled) {
-						animFrameId = requestAnimationFrame(animate);
-					}
-				};
-				animate();
-			} catch (e) {
-				console.error('[ReplayPlayer] TwistyPlayer load failed', e);
+	// The cube: our own renderer (cube_view/render/), built on the client only, one per solve,
+	// at the position the replay is on. The scene loop in here turns it; the effect below plays
+	// the turns.
+	useEffect(() => {
+		const box = boxRef.current;
+		const host = hostRef.current;
+		if (!box || !host || !userIsPro) return undefined;
+
+		let cube: CubeRenderer;
+		try {
+			cube = new CubeRenderer({
+				size: 3,
+				faceColors: faceColorsRef.current,
+				tableTilt: HOME_TILT_DEG * DEG,
+				orientation: new THREE.Quaternion(),
+			});
+		} catch (error) {
+			// No WebGL (blocked, lost, very old device): the table and the controls still work.
+			console.error('[ReplayPlayer] 3D view unavailable:', error);
+			return undefined;
+		}
+		dragRef.current = homeDrag();
+		const idx = Math.max(0, Math.min(currentIdxRef.current, allMovesRef.current.length));
+		cube.setMoves(turnsUpTo(setupAlg, allMovesRef.current, idx));
+		appliedRef.current = { idx, key: movesKeyRef.current };
+		host.appendChild(cube.canvas);
+
+		// A square canvas, as large as the box allows.
+		const fit = () => {
+			const side = Math.max(1, Math.floor(Math.min(box.clientWidth, box.clientHeight)));
+			host.style.width = `${side}px`;
+			host.style.height = `${side}px`;
+			cube.resize(side);
+		};
+		fit();
+		const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(fit) : null;
+		if (observer) observer.observe(box);
+		else window.addEventListener('resize', fit);
+
+		// A backgrounded tab should not keep drawing.
+		cube.setActive(isAppVisible());
+		const unsubVisibility = onVisibilityChange((visible) => cube.setActive(visible));
+
+		// The scene loop: eases toward the target on its own clock (or follows the gyro stream as
+		// recorded while playing) and puts the cube there, the viewer's drag on top. The renderer
+		// does no easing of its own here and draws only when the orientation changed.
+		let raf = 0;
+		let lastAt = 0;
+		let shown: THREE.Quaternion | null = null;
+		const view = new THREE.Quaternion();
+		const sceneFrame = () => {
+			raf = 0;
+			const now = performance.now();
+			const dt = lastAt ? now - lastAt : 0;
+			lastAt = now;
+
+			const drag = dragRef.current;
+			const flinging = drag.pointer === -1 && (drag.vPitch !== 0 || drag.vYaw !== 0);
+			if (flinging) {
+				turnView(drag, drag.vPitch * dt, drag.vYaw * dt);
+				const decay = Math.exp(-dt / FLING_MS);
+				drag.vPitch *= decay;
+				drag.vYaw *= decay;
+				if (Math.abs(drag.vPitch) + Math.abs(drag.vYaw) < 0.002) drag.vPitch = drag.vYaw = 0;
 			}
-		})();
+
+			let target = targetQuatRef.current;
+			let ease = easeShare(dt);
+			let following = false;
+			const track = gyroTrackRef.current;
+			if (track) {
+				const { idx: at, enteredAt, playing, speed: rate, moves } = clockRef.current;
+				const first = moves.length ? moves[0].relativeMs : 0;
+				const prev = moves[Math.min(at, moves.length) - 1];
+				const from = at === 0 || !prev ? first - FIRST_STEP_MS : prev.relativeMs;
+				const to = at < moves.length ? moves[at].relativeMs : from;
+				const end = Math.max(from, to);
+				const clock = playing ? Math.min(end, from + (now - enteredAt) * rate) : from;
+				target = sampleGyroTrack(track, clock);
+				// Playing follows the stream as recorded; a jump (a click, a step) eases.
+				if (playing) {
+					ease = 1;
+					following = clock < end;
+				}
+			}
+			if (!shown) shown = target.clone();
+			else shown.slerp(target, ease);
+			cube.setOrientation(viewQuat(drag, view).multiply(shown), true);
+
+			if (following || flinging || shown.angleTo(target) > 1e-4) raf = requestAnimationFrame(sceneFrame);
+			else lastAt = 0;
+		};
+		wakeSceneRef.current = () => {
+			if (raf) return;
+			lastAt = performance.now();
+			raf = requestAnimationFrame(sceneFrame);
+		};
+		// The first orientation goes in before the renderer draws its first frame.
+		sceneFrame();
+
+		rendererRef.current = cube;
+		setRendererReady(true);
 
 		return () => {
-			cancelled = true;
-			if (animFrameId !== null) cancelAnimationFrame(animFrameId);
-			if (twistyRef.current && twistyRef.current.parentNode) {
-				twistyRef.current.parentNode.removeChild(twistyRef.current);
-			}
-			twistyRef.current = null;
-			appliedMoveIdxRef.current = 0;
-			// A new player starts at its target, not eased in from the last solve's orientation.
-			sceneQuatRef.current = null;
-			setTwistyReady(false);
+			if (raf) cancelAnimationFrame(raf);
+			wakeSceneRef.current = () => {};
+			if (observer) observer.disconnect();
+			else window.removeEventListener('resize', fit);
+			unsubVisibility();
+			cube.dispose();
+			if (rendererRef.current === cube) rendererRef.current = null;
+			setRendererReady(false);
 		};
-	}, [solve.id, setupAlg, userIsPro, paletteKey]);
+	}, [solve.id, setupAlg, userIsPro, hasMoves]);
 
-	// Synchronize TwistyPlayer state when currentMoveIdx changes.
-	// Forward (next move): incremental experimentalAddMove (smooth animation)
-	// Backward (seek backward): reset TwistyPlayer + setup + apply moves 0..currentIdx (instant)
+	// The cube's state follows the position. Forward plays the turns, animated; back, or the
+	// positions read again (the last-layer algorithms arrived), builds it at once from the
+	// scramble.
 	useEffect(() => {
-		if (!twistyReady || !twistyRef.current) return;
-		const player = twistyRef.current;
-		const applied = appliedMoveIdxRef.current;
-
-		if (currentMoveIdx === applied) return;
-
-		// Defensive clamp: if currentMoveIdx > allMoves.length, undefined access would occur
-		const maxIdx = Math.max(0, Math.min(currentMoveIdx, allMoves.length));
-
-		try {
-			if (maxIdx > applied) {
-				// Forward — apply added moves one by one (smooth animation)
-				for (let i = applied; i < maxIdx; i++) {
-					for (const m of turnsAt(allMoves[i])) player.experimentalAddMove(m, { cancel: false });
-				}
-			} else {
-				// Backward — reset alg, restart from setup, apply moves up to maxIdx (instant)
-				player.alg = '';
-				player.experimentalSetupAlg = setupAlg;
-				for (let i = 0; i < maxIdx; i++) {
-					for (const m of turnsAt(allMoves[i])) player.experimentalAddMove(m, { cancel: false });
-				}
+		const cube = rendererRef.current;
+		if (!rendererReady || !cube) return;
+		const idx = Math.max(0, Math.min(currentMoveIdx, allMoves.length));
+		const applied = appliedRef.current;
+		if (applied.key === movesKey && applied.idx === idx) return;
+		if (applied.key === movesKey && idx > applied.idx) {
+			for (let i = applied.idx; i < idx; i++) {
+				for (const m of turnsAt(allMoves[i])) cube.addMove(m);
 			}
-			appliedMoveIdxRef.current = maxIdx;
-		} catch (e) {
-			console.warn('[ReplayPlayer] sync failed', e);
+		} else {
+			cube.setMoves(turnsUpTo(setupAlg, allMoves, idx));
 		}
-	}, [currentMoveIdx, allMoves, setupAlg, twistyReady]);
+		appliedRef.current = { idx, key: movesKey };
+	}, [currentMoveIdx, allMoves, movesKey, setupAlg, rendererReady]);
 
-	// Playback timer — advances currentMoveIdx
+	// Playback timer — advances currentMoveIdx. It does not wait for the cube: one built later
+	// starts at the position the replay is on.
 	useEffect(() => {
-		if (!isPlaying || !twistyReady) return;
+		if (!isPlaying) return;
 		if (currentMoveIdx >= allMoves.length) {
 			setIsPlaying(false);
 			return;
@@ -332,9 +400,51 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 		}, delayMs / speed);
 
 		return () => clearTimeout(tid);
-	}, [isPlaying, currentMoveIdx, allMoves, speed, twistyReady, onMoveIdxChange]);
+	}, [isPlaying, currentMoveIdx, allMoves, speed, onMoveIdxChange]);
 
-	// Seek — only change currentMoveIdx, sync useEffect updates TwistyPlayer
+	// Dragging turns the view (one pointer at a time); see DRAG_DEG_PER_SIDE.
+	function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+		const drag = dragRef.current;
+		if (drag.pointer !== -1 || (e.pointerType === 'mouse' && e.button !== 0)) return;
+		drag.pointer = e.pointerId;
+		drag.x = e.clientX;
+		drag.y = e.clientY;
+		drag.at = e.timeStamp;
+		drag.vPitch = drag.vYaw = 0;
+		try {
+			e.currentTarget.setPointerCapture(e.pointerId);
+		} catch {
+			// The pointer is already gone; its up event ends the drag all the same.
+		}
+	}
+
+	function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+		const drag = dragRef.current;
+		if (e.pointerId !== drag.pointer) return;
+		const side = e.currentTarget.clientWidth || 1;
+		const dYaw = ((e.clientX - drag.x) / side) * DRAG_DEG_PER_SIDE;
+		const dPitch = ((e.clientY - drag.y) / side) * DRAG_DEG_PER_SIDE * DRAG_VERTICAL_SCALE;
+		const dt = Math.max(1, e.timeStamp - drag.at);
+		// Smoothed over the last two moves: one event alone is too noisy to fling with.
+		drag.vYaw = clampSpeed((drag.vYaw + dYaw / dt) / 2);
+		drag.vPitch = clampSpeed((drag.vPitch + dPitch / dt) / 2);
+		drag.x = e.clientX;
+		drag.y = e.clientY;
+		drag.at = e.timeStamp;
+		turnView(drag, dPitch, dYaw);
+		wakeSceneRef.current();
+	}
+
+	function handlePointerEnd(e: React.PointerEvent<HTMLDivElement>) {
+		const drag = dragRef.current;
+		if (e.pointerId !== drag.pointer) return;
+		drag.pointer = -1;
+		// Let go while still moving: the view coasts on (the scene loop). Held still first: it stays.
+		if (e.type === 'pointercancel' || e.timeStamp - drag.at > FLING_WINDOW_MS) drag.vPitch = drag.vYaw = 0;
+		wakeSceneRef.current();
+	}
+
+	// Seek — only change currentMoveIdx, the sync effect updates the cube
 	function seekTo(targetIdx: number) {
 		const clamped = Math.max(0, Math.min(targetIdx, allMoves.length));
 		onMoveIdxChange(clamped);
@@ -378,7 +488,16 @@ export default function ReplayPlayer({ solve, steps, rotation, gyroReplay, curre
 
 	return (
 		<div className={b()}>
-			<div className={b('cube')} ref={containerRef} />
+			<div className={b('cube')} ref={boxRef}>
+				<div
+					className={b('canvas')}
+					ref={hostRef}
+					onPointerDown={handlePointerDown}
+					onPointerMove={handlePointerMove}
+					onPointerUp={handlePointerEnd}
+					onPointerCancel={handlePointerEnd}
+				/>
+			</div>
 			<ReplayControls
 				isPlaying={isPlaying}
 				currentMoveIdx={Math.min(currentMoveIdx, allMoves.length)}
