@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { inReversedFrame, isUiReversed, orientDelta, reversedPlacement, toReaderPoint } from '../reversed-ui';
+import { inReversedFrame, isUiReversed, opensSystemInput, orientDelta, reversedPlacement, toReaderPoint } from '../reversed-ui';
 
 describe('reversed UI helpers', () => {
 	it('flips popper placement for a trigger inside the rotated timer', () => {
@@ -37,6 +37,26 @@ describe('reversed UI helpers', () => {
 		// A popover opened from inside a drawer has to flip like one opened from the timer.
 		const inDrawer = { closest: (sel: string) => (sel.split(', ').includes('body.zt-reversed .zt-edge-drawer__drawer') ? {} : null) };
 		expect(inReversedFrame(inDrawer)).toBe(true);
+	});
+
+	it('knows which focused elements open OS-drawn input (keyboard, native pickers)', () => {
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'text' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'number' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'date' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'INPUT' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'TEXTAREA' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'SELECT' })).toBe(true);
+		expect(opensSystemInput({ tagName: 'DIV', isContentEditable: true })).toBe(true);
+	});
+
+	it('leaves the page turned for focus that opens nothing from the OS', () => {
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'checkbox' })).toBe(false);
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'range' })).toBe(false);
+		expect(opensSystemInput({ tagName: 'INPUT', type: 'text', readOnly: true })).toBe(false);
+		expect(opensSystemInput({ tagName: 'TEXTAREA', readOnly: true })).toBe(false);
+		expect(opensSystemInput({ tagName: 'BUTTON' })).toBe(false);
+		expect(opensSystemInput({ tagName: 'BODY' })).toBe(false);
+		expect(opensSystemInput(null)).toBe(false);
 	});
 
 	it('is never reversed without a document (SSR, node)', () => {

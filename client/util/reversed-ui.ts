@@ -63,6 +63,25 @@ export function reversedPlacement(
 	return { side: flipSide[side], align: flipAlign[align] };
 }
 
+// Input types the WebView handles itself, with nothing drawn by the OS.
+const NO_SYSTEM_UI_TYPES = new Set(['checkbox', 'radio', 'range', 'button', 'submit', 'reset', 'image', 'hidden']);
+
+/**
+ * Whether focusing this element hands input to the OS: the soft keyboard, or the native
+ * pickers for <select>, dates and files. The OS draws them in the phone's physical
+ * orientation, which CSS cannot turn, so for a reversed reader they open upside down.
+ */
+export function opensSystemInput(
+	el: { tagName?: string; type?: string; readOnly?: boolean; isContentEditable?: boolean } | null | undefined
+): boolean {
+	if (!el) return false;
+	const tag = String(el.tagName || '').toUpperCase();
+	if (tag === 'SELECT') return true;
+	if (tag === 'TEXTAREA') return !el.readOnly;
+	if (tag === 'INPUT') return !el.readOnly && !NO_SYSTEM_UI_TYPES.has(String(el.type || 'text').toLowerCase());
+	return !!el.isContentEditable;
+}
+
 /**
  * The individual `rotate` property composes with the `transform` Radix and the enter
  * animations use. Without it the insets would be swapped with nothing rotated, so an old
