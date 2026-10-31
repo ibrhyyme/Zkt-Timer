@@ -5,6 +5,7 @@ import {useDispatch} from 'react-redux';
 import {closeModal} from '../../../actions/general';
 import {Crown, Check, ArrowRight} from 'phosphor-react';
 import block from '../../../styles/bem';
+import Button from '../button/Button';
 import './ProOnlyModal.scss';
 
 const b = block('pro-only-modal');
@@ -75,10 +76,15 @@ export default function ProOnlyModal({featureKey}: Props) {
 				))}
 			</div>
 
-			<button type="button" className={b('cta')} onClick={handleUpgrade}>
-				<span>{t('pro.upgrade_button')}</span>
-				<ArrowRight weight="bold" />
-			</button>
+			<Button
+				primary
+				large
+				fullWidth
+				noMargin
+				text={t('pro.upgrade_button')}
+				icon={<ArrowRight weight="bold" />}
+				onClick={handleUpgrade}
+			/>
 		</div>
 	);
 }

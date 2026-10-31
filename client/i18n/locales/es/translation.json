@@ -5769,7 +5769,6 @@
     "transfer_close": "Vale"
   },
   "account_required": {
-    "eyebrow": "Cuenta",
     "title": "Esta sección necesita una cuenta",
     "cta": "Crear cuenta",
     "stats": "Las estadísticas vinculan tu historial a tu cuenta: medias, récords, mapa de actividad y análisis por puzzle. Con una cuenta, todo esto se llena con tus propios datos.",

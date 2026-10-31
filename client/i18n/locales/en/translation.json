@@ -5768,7 +5768,6 @@
     "transfer_close": "OK"
   },
   "account_required": {
-    "eyebrow": "Account",
     "title": "This section needs an account",
     "cta": "Create account",
     "stats": "Statistics tie your solve history to your account: averages, records, an activity map and per-puzzle analysis. With an account, everything here fills up with your own data.",

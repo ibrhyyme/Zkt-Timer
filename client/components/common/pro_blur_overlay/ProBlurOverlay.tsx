@@ -3,11 +3,10 @@ import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {Crown, ArrowRight} from 'phosphor-react';
 import block from '../../../styles/bem';
+import Button from '../button/Button';
 import './ProBlurOverlay.scss';
 
 const b = block('pro-blur-overlay');
-
-const DUMMY_BAR_WIDTHS = [85, 70, 90, 55, 75, 65];
 
 interface Props {
 	title: string;
@@ -15,11 +14,9 @@ interface Props {
 	onBeforeNavigate?: () => void;
 	minHeight?: number;
 	// The same treatment gates two different things: Pro features (the default) and
-	// pages that simply need an account. Only the icon, the eyebrow, the button label
-	// and the destination differ, so they share one component rather than two that
-	// drift apart.
+	// pages that simply need an account. Only the icon, the button label and the
+	// destination differ, so they share one component rather than two that drift apart.
 	icon?: ReactNode;
-	eyebrow?: string;
 	ctaLabel?: string;
 	ctaTo?: string;
 }
@@ -30,7 +27,6 @@ export default function ProBlurOverlay({
 	onBeforeNavigate,
 	minHeight,
 	icon,
-	eyebrow,
 	ctaLabel,
 	ctaTo,
 }: Props) {
@@ -44,23 +40,24 @@ export default function ProBlurOverlay({
 
 	const style = minHeight ? {minHeight: `${minHeight}px`} : undefined;
 
+	// A flat card (owner, 2026-10-31). The blurred placeholder bars behind a frosted card,
+	// the eyebrow label and the gradient pill are gone; the title already says what is
+	// locked, the icon and the button say by what.
 	return (
 		<div className={b()} style={style}>
-			<div className={b('backdrop')} aria-hidden="true">
-				{DUMMY_BAR_WIDTHS.map((w, i) => (
-					<div key={i} className={b('backdrop-bar')} style={{width: `${w}%`}} />
-				))}
-			</div>
-
 			<div className={b('card')}>
 				<div className={b('icon')}>{icon || <Crown weight="fill" />}</div>
-				<div className={b('eyebrow')}>{eyebrow || t('pro.feature_title')}</div>
 				<h3 className={b('title')}>{title}</h3>
 				{description && <p className={b('description')}>{description}</p>}
-				<button type="button" className={b('cta')} onClick={handleClick}>
-					<span>{ctaLabel || t('pro.upgrade_button')}</span>
-					<ArrowRight weight="bold" />
-				</button>
+				<div className={b('cta')}>
+					<Button
+						primary
+						noMargin
+						text={ctaLabel || t('pro.upgrade_button')}
+						icon={<ArrowRight weight="bold" />}
+						onClick={handleClick}
+					/>
+				</div>
 			</div>
 		</div>
 	);

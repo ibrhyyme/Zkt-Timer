@@ -12,8 +12,8 @@ import path from 'path';
 const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
-	scssBackdropBlur: 39,
-	scssGradient: 175,
+	scssBackdropBlur: 37,
+	scssGradient: 171,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 4,
 	tsxInlineEffect: 7,

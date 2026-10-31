@@ -24,7 +24,6 @@ export default function AccountRequired({descriptionKey, minHeight}: Props) {
 	return (
 		<ProBlurOverlay
 			icon={<UserCirclePlus weight="fill" />}
-			eyebrow={t('account_required.eyebrow')}
 			title={t('account_required.title')}
 			description={t(descriptionKey)}
 			ctaLabel={t('account_required.cta')}

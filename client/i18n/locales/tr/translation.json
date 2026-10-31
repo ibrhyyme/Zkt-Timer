@@ -5749,7 +5749,6 @@
     "transfer_close": "Tamam"
   },
   "account_required": {
-    "eyebrow": "Üyelik",
     "title": "Bu bölüm için hesap gerekiyor",
     "cta": "Hesap aç",
     "stats": "İstatistikler çözüm geçmişini hesabına bağlar: ortalamalar, rekorlar, aktivite haritası ve küp bazlı analiz. Hesap açtığında buradaki her şey senin verinle dolar.",
