@@ -98,7 +98,7 @@ export default function CubeStats() {
 					</StatSection>
 					<StatSection title={t('stats_page.steps_detail')} className={b('steps-table')}>
 						<StatModule>
-							<SessionStepsTable filterOptions={filterOptions} lastN={smartLastN} hideTitle />
+							<SessionStepsTable filterOptions={filterOptions} lastN={smartLastN} />
 						</StatModule>
 					</StatSection>
 				</div>

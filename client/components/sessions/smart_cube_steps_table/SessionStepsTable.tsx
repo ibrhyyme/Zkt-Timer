@@ -23,9 +23,6 @@ interface Props {
 	sessionId?: string;
 	filterOptions?: FilterSolvesOptions;
 	lastN?: number | null;
-	title?: string;
-	/** Leave out the heading where the page already titles the section (Stats page). */
-	hideTitle?: boolean;
 }
 
 interface PhaseAggregate {
@@ -45,12 +42,22 @@ function avg(arr: number[]): number {
 	return arr.reduce((a, b) => a + b, 0) / arr.length;
 }
 
-function fmt(val: number | null | undefined, suffix = 's'): string {
+// The unit is its own span so a phone can drop it, as in the solve card's table (StepsTable.scss).
+function timeCell(val: number | null | undefined): React.ReactNode {
 	if (val == null || val === 0) return '-';
-	return getTimeString(val, 2) + suffix;
+	return (
+		<>
+			{getTimeString(val, 2)}
+			<span className={b('unit')}>s</span>
+		</>
+	);
 }
 
-export default function SessionStepsTable({ sessionId, filterOptions, lastN, title, hideTitle }: Props) {
+/**
+ * Smart cube phase averages. It carries no heading of its own: the modal from Phase
+ * Analysis titles it through openModal and the Stats page titles the section.
+ */
+export default function SessionStepsTable({ sessionId, filterOptions, lastN }: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -68,12 +75,9 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 
 	if (!solves.length) return null;
 
-	const resolvedTitle = title || t('sessions.session_steps_title');
-
 	if (showProOverlay) {
 		return (
 			<div className={bSession()}>
-				{hideTitle ? null : <h3 className={bSession('title')}>{resolvedTitle}</h3>}
 				<ProBlurOverlay
 					title={t('pro.upsell.smart_steps.title')}
 					description={t('pro.upsell.smart_steps.description')}
@@ -149,7 +153,6 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 
 	return (
 		<div className={bSession()}>
-			{hideTitle ? null : <h3 className={bSession('title')}>{resolvedTitle}</h3>}
 			<div className={b()}>
 				<table className={b('table')}>
 					<thead>
@@ -175,10 +178,10 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 							return (
 								<tr key={phase}>
 									<td>{STEP_NAME_MAP[phase] || phase}</td>
-									<td>{fmt(avgRec)}</td>
-									<td>{fmt(avgExec)}</td>
-									<td>{fmt(avgStep)}</td>
-									<td className={b('cumulative')}>{fmt(avgCum)}</td>
+									<td>{timeCell(avgRec)}</td>
+									<td>{timeCell(avgExec)}</td>
+									<td>{timeCell(avgStep)}</td>
+									<td className={b('cumulative')}>{timeCell(avgCum)}</td>
 									<td>{avgTurns > 0 ? Math.round(avgTurns) : '-'}</td>
 									<td>{tps}</td>
 								</tr>
@@ -188,9 +191,9 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 					<tfoot>
 						<tr className={b('total-row')}>
 							<td>{t('solve_info.total')}</td>
-							<td>{fmt(totalRec)}</td>
-							<td>{fmt(totalExec)}</td>
-							<td>{fmt(totalStepTime)}</td>
+							<td>{timeCell(totalRec)}</td>
+							<td>{timeCell(totalExec)}</td>
+							<td>{timeCell(totalStepTime)}</td>
 							<td></td>
 							<td>{Math.round(totalTurns)}</td>
 							<td>{totalTps}</td>

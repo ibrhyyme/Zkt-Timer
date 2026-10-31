@@ -1,15 +1,80 @@
 @import '../../../styles/config';
 
+// Manage cube types: the rows of the cube picker (CubeSelect.scss), two columns from the
+// tablet up since the defaults alone are nineteen rows. The user's own types come first,
+// a step apart from the defaults.
 .#{$namespace}-manage-custom-cubes {
+	display: flex;
+	flex-direction: column;
+	gap: $zt-space-3;
+
 	&__add {
-		width: 100%;
 		display: flex;
 		justify-content: center;
-		align-items: center;
-		padding: 20px 0;
+		padding: $zt-space-2 0;
 	}
 
-	&__table {
-		margin-top: 10px;
+	&__grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 6px;
+
+		@include bp-up($bp-md) {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		min-width: 0;
+		min-height: 56px;
+		padding: 10px 14px;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		color: rgb(var(--text-color));
+	}
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__name {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		min-width: 0;
+		font-size: 0.95rem;
+		font-weight: 600;
+
+		> span:first-child {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	&__badge {
+		flex: 0 0 auto;
+		padding: 1px 6px;
+		border-radius: $zt-radius-sm;
+		background: $zt-control-bg;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+	}
+
+	&__meta {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.8rem;
+		color: $zt-text-muted;
 	}
 }

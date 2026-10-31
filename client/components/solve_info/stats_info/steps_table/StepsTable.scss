@@ -17,79 +17,80 @@
 		text-align: center;
 	}
 
+	// Flat instrument table (owner, 2026-10-31): hairlines instead of zebra rows, the
+	// card corner, mono digits right-aligned so a column reads top to bottom.
 	&__table {
 		width: 100%;
-		border-collapse: collapse;
+		border-collapse: separate;
+		border-spacing: 0;
 		font-size: 0.95rem;
-		background-color: rgb(var(--module-color));
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 10px;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		// Clips the total row's fill to the corner.
 		overflow: hidden;
 
 		th,
 		td {
-			padding: 10px 8px;
-			text-align: center;
+			padding: 11px $zt-space-3;
+			text-align: right;
 			white-space: nowrap;
 		}
 
 		th {
+			font-family: 'Roboto Mono', ui-monospace, monospace;
 			font-weight: 600;
-			font-size: 0.85rem;
+			font-size: 0.72rem;
 			text-transform: uppercase;
-			color: rgb(var(--text-color));
-			background-color: rgb(var(--module-color));
-			border-bottom: 1px solid rgba(var(--text-color), 0.12);
-			letter-spacing: 0.04em;
+			letter-spacing: 0.06em;
+			color: $zt-text-muted;
+			border-bottom: 1px solid $zt-card-border;
 		}
 
 		td {
 			color: rgb(var(--text-color));
-			font-family: inherit;
+			font-family: 'Roboto Mono', ui-monospace, monospace;
 			font-variant-numeric: tabular-nums;
-			font-size: 0.95rem;
-			letter-spacing: 0.01em;
+			border-bottom: 1px solid $zt-card-border;
 		}
 
-		// İlk sütun (step adı) sol hizalı
+		// The step name column is words, not digits.
 		th:first-child,
 		td:first-child {
 			text-align: left;
-			padding-left: 12px;
+		}
+
+		td:first-child {
 			font-family: inherit;
-			font-weight: 500;
+			font-weight: 600;
 		}
 
-		tbody tr {
-			border-bottom: 1px solid rgba(var(--text-color), 0.08);
-
-			&:nth-child(odd) {
-				background-color: rgba(var(--button-color), 0.3);
-			}
-
-			&:nth-child(even) {
-				background-color: rgb(var(--module-color));
-			}
-
-			&:last-child {
-				border-bottom: none;
-			}
+		tbody tr:last-child td {
+			border-bottom: none;
 		}
+	}
+
+	&__unit {
+		color: $zt-text-muted;
+	}
+
+	// The green columns keep their unit in the same colour.
+	&__cumulative &__unit,
+	&__total-row &__unit {
+		color: inherit;
 	}
 
 	&__cumulative {
 		color: rgb(var(--secondary-color));
-		font-weight: 600;
+		font-weight: 700;
 	}
 
 	&__total-row {
 		td {
 			font-weight: 700;
 			color: rgb(var(--secondary-color));
-			border-top: 1px solid rgba(var(--text-color), 0.2);
-			background-color: rgb(var(--module-color)) !important;
-			padding-top: 10px;
-			padding-bottom: 10px;
+			background: $zt-card-bg;
+			border-top: 1px solid $zt-control-border;
+			border-bottom: none;
 		}
 	}
 

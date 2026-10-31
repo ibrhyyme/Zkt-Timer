@@ -212,7 +212,7 @@ export default function PhaseAnalysis(props: Props) {
 	}
 
 	function openSessionStats(sessionId: string) {
-		dispatch(openModal(<SessionStepsTable sessionId={sessionId} />, { width: 900 }));
+		dispatch(openModal(<SessionStepsTable sessionId={sessionId} />, { width: 900, title: t('sessions.session_steps_title') }));
 	}
 
 	function renderRow(index: number) {
