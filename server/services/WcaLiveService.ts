@@ -2,6 +2,8 @@ import {fetchDataFromCache, createRedisKey, RedisNamespace} from './redis';
 import {logger} from './logger';
 import {ZktFederationService} from './ZktFederationService';
 import {isZktCompetitionId, zktSlugOf, zktRoundToWcaLiveResults, zktRecordsToRecordEntries} from './ZktWcaAdapter';
+import {isWcaV1Id} from './WcaV1LiveAdapter';
+import {fetchV1LiveData, fetchV1RoundResults, fetchV1Records} from './WcaV1LiveService';
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 const WCA_LIVE_CACHE_TTL = 60 * 60; // 1 saat
@@ -94,7 +96,31 @@ async function fetchZktLiveData(competitionId: string): Promise<WcaLiveData | nu
 	};
 }
 
+/**
+ * WCA is moving every competition from the separate WCA Live app onto the live
+ * results built into its own website, so that system is asked first. It turns
+ * away competitions scored anywhere else, which then go to the classic app.
+ *
+ * A failure of the new system that is not such a refusal only counts once the
+ * classic app has no record of the competition either: thrown rather than
+ * returned as null, it is not cached as "no live results" for the next hour.
+ */
 async function fetchWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
+	let v1Error: unknown = null;
+	try {
+		const v1 = await fetchV1LiveData(competitionId);
+		if (v1) return v1;
+	} catch (err) {
+		v1Error = err;
+	}
+
+	const classic = await fetchClassicWcaLiveData(competitionId);
+	if (classic) return classic;
+	if (v1Error) throw v1Error;
+	return null;
+}
+
+async function fetchClassicWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
 	const axios = (await import('axios')).default;
 
 	const listRes = await axios.post(WCA_LIVE_ENDPOINT, {
@@ -152,8 +178,8 @@ export interface WcaLiveRecordEntry {
  * WR/CR/NR records set within one competition. PR records are dropped since the
  * radar never notifies on them.
  *
- * Takes the WCA Live numeric competition id (from `getWcaLiveData().compId`) or
- * a `zkt-<slug>` id. Resolving the source here rather than at each call site is
+ * Takes the live competition id from `getWcaLiveData().compId` (WCA Live's
+ * numeric id or a `wcav1:` WCA website id) or a `zkt-<slug>` id. Resolving the source here rather than at each call site is
  * what the two functions above already do, and it is what lets the record radar
  * treat both authorities identically.
  *
@@ -168,6 +194,7 @@ export async function fetchCompetitionRecords(liveCompId: string): Promise<WcaLi
 		const raw = await ZktFederationService.fetchCompetitionRecords(zktSlugOf(liveCompId));
 		return zktRecordsToRecordEntries((raw as any)?.items || []) as WcaLiveRecordEntry[];
 	}
+	if (isWcaV1Id(liveCompId)) return fetchV1Records(liveCompId);
 
 	const axios = (await import('axios')).default;
 
@@ -272,6 +299,8 @@ export async function fetchLiveRoundResults(
 		const raw = await ZktFederationService.fetchRoundResults(zktSlugOf(competitionId), liveRoundId);
 		return raw ? (zktRoundToWcaLiveResults(raw) as WcaLiveRoundData) : null;
 	}
+	// A WCA website round id carries its competition, so this works without one.
+	if (isWcaV1Id(liveRoundId)) return fetchV1RoundResults(liveRoundId);
 
 	const axios = (await import('axios')).default;
 

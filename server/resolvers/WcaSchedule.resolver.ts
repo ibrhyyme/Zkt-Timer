@@ -17,6 +17,8 @@ import {buildCompetitionDetail, ZktViewerIdentity} from '../services/WcifTransfo
 import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
+import {isWcaV1Id, parseV1PersonId} from '../services/WcaV1LiveAdapter';
+import {fetchV1Overview, fetchV1CompetitorResults} from '../services/WcaV1LiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
 import {ensureLifecycleForViewer} from '../services/CompetitionLifecycleDiscovery';
 import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
@@ -377,6 +379,22 @@ export class WcaScheduleResolver {
 				return zktCompetitorToWcaLive(c) as WcaLiveCompetitorResults;
 			}
 
+			// WCA website live results: the id names the competition and the
+			// registration. Validated before it becomes a cache key or a request
+			// path, so a made-up id leaves nothing behind.
+			if (isWcaV1Id(input.personLiveId)) {
+				const person = parseV1PersonId(input.personLiveId);
+				if (!person) return null;
+				return fetchDataFromCache(
+					createRedisKey(
+						RedisNamespace.WCA_WCIF,
+						`livecompetitor:${person.competitionId}:v1:${person.registrationId}`
+					),
+					() => fetchV1CompetitorResults(input.personLiveId),
+					WCA_LIVE_COMPETITOR_TTL
+				);
+			}
+
 			// personLiveId must be numeric (WCA Live person ID), sanitize for safety
 			const sanitizedId = String(parseInt(input.personLiveId, 10));
 			if (sanitizedId === 'NaN') return null;
@@ -606,6 +624,7 @@ export class WcaScheduleResolver {
 		// First get liveCompId
 		const liveData = await wcaLiveGetData(competitionId);
 		if (!liveData) return null;
+		if (isWcaV1Id(liveData.compId)) return fetchV1Overview(liveData.compId);
 
 		const res = await axios.post(WCA_LIVE_ENDPOINT, {
 			query: `{ competition(id: "${liveData.compId}") {
