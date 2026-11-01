@@ -121,20 +121,27 @@ export class WcaApiService {
 	}
 
 	/**
-	 * Fetch upcoming WCA competitions (parallel pages)
+	 * Fetch ongoing and upcoming WCA competitions (parallel pages).
+	 *
+	 * Bounded by the END date (`ongoing_and_future`), never the start date. A
+	 * competition runs one to five days, and a start-date bound drops every one
+	 * that began before it while it is still running: the old "from the 1st of
+	 * this month" bound took a two-day competition that started on 31 October
+	 * out of the list on its second day.
+	 *
+	 * The bound is yesterday so the record radar keeps its one-day tail after a
+	 * competition ends; callers that list only running competitions drop the
+	 * finished ones themselves.
 	 */
 	static async fetchUpcomingCompetitions(countryIso2?: string): Promise<any[]> {
 		try {
-			// Fetch from start of this month onwards (including competitions happening this month even though some are past)
-			const now = new Date();
-			const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-			const startFrom = monthStart.toISOString().split('T')[0];
+			const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
 			const PER_PAGE = 100;
 			const MAX_PAGES = 5;
 
 			const baseParams: Record<string, any> = {
-				start: startFrom,
+				ongoing_and_future: yesterday,
 				sort: 'start_date',
 				per_page: PER_PAGE,
 			};
