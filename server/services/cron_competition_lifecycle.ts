@@ -23,6 +23,7 @@ import {WcaApiService} from './WcaApiService';
 import {ZktFederationService} from './ZktFederationService';
 import {zktSlugOf} from './ZktWcaAdapter';
 import {getUserIdsWithPrefDisabled} from '../models/notification_preference';
+import {saveWcaPersonForUser} from '../models/wca_record';
 import {
 	bestsAtCompetition,
 	buildRankLines,
@@ -628,6 +629,15 @@ async function deliverResultFor(state: ResultState, now: Date, optedOut: Set<str
 	if (pbs.length === 0) return claimAndSend({});
 
 	const person = await WcaApiService.fetchPersonData(wcaId);
+	// The payload behind "you set a new PB" is the same one the profile shows:
+	// store it now, so the profile does not keep the old PB until the nightly
+	// refresh. Rechecks while WCA recomputes ranks store again, idempotently.
+	// A failure here must not hold the notification back.
+	if (person) {
+		await saveWcaPersonForUser(state.user_id, wcaId, person).catch((err: any) =>
+			logger.warn('[Lifecycle] WCA records save failed', {userId: state.user_id, err: err?.message})
+		);
+	}
 	const records = (person?.personal_records as any) || null;
 	if (records && ranksReady(pbs, records)) {
 		const rankLines = buildRankLines(pbs, baseline, records);

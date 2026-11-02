@@ -18,6 +18,8 @@ interface VisibilityState {
 	showMedals: boolean;
 	showRecords: boolean;
 	showPbs: boolean;
+	showRank: boolean;
+	showResults: boolean;
 }
 
 interface ZktProfile {
@@ -33,6 +35,8 @@ interface ZktProfile {
 	zkt_show_medals?: boolean;
 	zkt_show_records?: boolean;
 	zkt_show_pbs?: boolean;
+	zkt_show_rank?: boolean;
+	zkt_show_results?: boolean;
 }
 
 const MY_ZKT_PROFILE_QUERY = gql`
@@ -54,6 +58,8 @@ const MY_ZKT_PROFILE_QUERY = gql`
 			zkt_show_medals
 			zkt_show_records
 			zkt_show_pbs
+			zkt_show_rank
+			zkt_show_results
 		}
 	}
 `;
@@ -64,12 +70,16 @@ const UPDATE_ZKT_VISIBILITY = gql`
 		$showMedals: Boolean
 		$showRecords: Boolean
 		$showPbs: Boolean
+		$showRank: Boolean
+		$showResults: Boolean
 	) {
 		updateZktVisibility(
 			showCompetitions: $showCompetitions
 			showMedals: $showMedals
 			showRecords: $showRecords
 			showPbs: $showPbs
+			showRank: $showRank
+			showResults: $showResults
 		) {
 			id
 		}
@@ -87,6 +97,8 @@ export default function ManageZktData(props: IModalProps) {
 		showMedals: true,
 		showRecords: true,
 		showPbs: true,
+		showRank: true,
+		showResults: true,
 	});
 
 	useEffect(() => {
@@ -105,6 +117,8 @@ export default function ManageZktData(props: IModalProps) {
 					showMedals: data.zkt_show_medals !== false,
 					showRecords: data.zkt_show_records !== false,
 					showPbs: data.zkt_show_pbs !== false,
+					showRank: data.zkt_show_rank !== false,
+					showResults: data.zkt_show_results !== false,
 				});
 			}
 		} catch (error) {
@@ -154,6 +168,8 @@ export default function ManageZktData(props: IModalProps) {
 		{key: 'showMedals', label: t('profile.zkt_toggle_medals')},
 		{key: 'showRecords', label: t('profile.zkt_toggle_records')},
 		{key: 'showPbs', label: t('profile.zkt_toggle_pbs')},
+		{key: 'showRank', label: t('profile.zkt_toggle_rank')},
+		{key: 'showResults', label: t('profile.zkt_toggle_results')},
 	];
 
 	const pbs = profile.zkt_personal_bests || [];
@@ -194,19 +210,20 @@ export default function ManageZktData(props: IModalProps) {
 								<div className={b('card-stat')}>
 									<span className={b('card-stat-label')}>{t('profile.zkt_competitions')}</span>
 									<span className={b('card-stat-value')}>
-										{profile.zkt_competition_count ?? 0}
+										{profile.zkt_competition_count ?? '—'}
 									</span>
 								</div>
 								<div className={b('card-stat')}>
 									<span className={b('card-stat-label')}>{t('profile.zkt_medals')}</span>
 									<span className={b('card-stat-value')}>
-										{(profile.zkt_medal_gold || 0)}/{profile.zkt_medal_silver || 0}/
-										{profile.zkt_medal_bronze || 0}
+										{profile.zkt_medal_gold == null
+											? '—'
+											: `${profile.zkt_medal_gold}/${profile.zkt_medal_silver || 0}/${profile.zkt_medal_bronze || 0}`}
 									</span>
 								</div>
 								<div className={b('card-stat')}>
 									<span className={b('card-stat-label')}>{t('profile.zkt_records')}</span>
-									<span className={b('card-stat-value')}>{profile.zkt_record_count ?? 0}</span>
+									<span className={b('card-stat-value')}>{profile.zkt_record_count ?? '—'}</span>
 								</div>
 							</div>
 						</div>

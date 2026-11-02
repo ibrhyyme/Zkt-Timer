@@ -31,6 +31,7 @@ export * from './StatsModule.schema';
 export * from './WcaRecord.schema';
 export * from './PublicWcaProfile.schema';
 export * from './PublicZktProfile.schema';
+export * from './ZktPersonResults.schema';
 export * from './CustomTrainer.schema';
 export * from './YouTubeSearch.schema';
 export * from './DailyGoal.schema';

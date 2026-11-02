@@ -194,6 +194,11 @@ model Integration {
   wca_show_records       Boolean     @default(true)
   wca_show_rank          Boolean     @default(true)
   wca_show_results       Boolean     @default(false)
+  // When the WcaRecord rows and the wca_* career numbers above were last
+  // rewritten from the WCA API. The nightly refresh walks the oldest first, so
+  // a profile never lags WCA by more than one cycle. Null = never refreshed by
+  // the nightly pass (first link and Phase 2 backfill set it too).
+  wca_records_synced_at  DateTime?
   // --- Zeka Kupu Turkiye federation identity (service_name = 'zkt') ---------
   // Filled from the federation's /api/oauth/userinfo. zkt_user_id is the OAuth
   // subject and always present; zkt_id is the competition identity and stays
@@ -207,13 +212,17 @@ model Integration {
   zkt_avatar_url         String?
   zkt_country_iso2       String?
   // Which parts of the member's ZKT career their profile shows, mirroring the
-  // wca_show_* switches above. There is no ZKT equivalent of wca_show_rank
-  // (a world ranking is a WCA fact) and no separate "results" switch: the
-  // federation publishes career totals, not a result-by-result history.
+  // wca_show_* switches above. zkt_show_rank is the member's position in the
+  // ZKT all-time rankings (national by construction), not a world rank.
+  // zkt_show_results defaults on, unlike wca_show_results: every other ZKT
+  // section is on by default and the federation publishes the same history on
+  // its own cuber page.
   zkt_show_competitions  Boolean     @default(true)
   zkt_show_medals        Boolean     @default(true)
   zkt_show_records       Boolean     @default(true)
   zkt_show_pbs           Boolean     @default(true)
+  zkt_show_rank          Boolean     @default(true)
+  zkt_show_results       Boolean     @default(true)
   kinch_score            Float?
   sor_single             Int?
   sor_average            Int?

@@ -256,6 +256,18 @@ export class ZktFederationService {
 		);
 	}
 
+	// One member's result-by-result ZKT history, grouped by event — the profile's
+	// "ZKT competition history" tab, the counterpart of the WCA results tab.
+	// Same freshness as the summary: both change only when results are published.
+	static async fetchPersonResults(zktId: string): Promise<unknown | null> {
+		return cached(
+			RedisNamespace.ZKT_FED_PERSON_RESULTS,
+			zktId,
+			`/persons/${encodeURIComponent(zktId)}/results/`,
+			FRESH_PERSON
+		);
+	}
+
 	// National records set at one competition — the ZKT counterpart of WCA Live's
 	// competitionRecords. Structural surface.
 	static async fetchCompetitionRecords(idOrSlug: string): Promise<unknown | null> {

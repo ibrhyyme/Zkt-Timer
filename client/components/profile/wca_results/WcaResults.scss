@@ -165,6 +165,37 @@
 			background: rgba(#FFD700, 0.15);
 			color: #FFD700;
 		}
+
+		// ZKT history only: a personal record, outlined rather than filled so it
+		// does not compete with a federation record tag.
+		&--pr {
+			border: 1px solid rgba(var(--text-color), 0.3);
+			color: rgb(var(--text-color));
+		}
+	}
+
+	// ZKT history: the best Ao5 under an Ao12 mean.
+	&__sub {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 500;
+	}
+
+	// ZKT history: one line per chance of a Çift Şans round.
+	&__chance {
+		flex-basis: 100%;
+		display: flex;
+		gap: 6px;
+		flex-wrap: wrap;
+
+		&--counting {
+			font-weight: 600;
+		}
+	}
+
+	&__chance-label {
+		font-weight: 600;
+		margin-right: 2px;
 	}
 
 	// Mobil

@@ -148,8 +148,8 @@ export class IntegrationResolver {
 
 	/**
 	 * Which parts of the member's ZKT career their profile shows. Same shape as
-	 * updateWcaVisibility; there is no ZKT "rank" switch because a world ranking
-	 * is a WCA fact.
+	 * updateWcaVisibility; "rank" here is the ZKT all-time ranking position, not
+	 * a world rank.
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Integration)
@@ -158,7 +158,9 @@ export class IntegrationResolver {
 		@Arg('showCompetitions', {nullable: true}) showCompetitions?: boolean,
 		@Arg('showMedals', {nullable: true}) showMedals?: boolean,
 		@Arg('showRecords', {nullable: true}) showRecords?: boolean,
-		@Arg('showPbs', {nullable: true}) showPbs?: boolean
+		@Arg('showPbs', {nullable: true}) showPbs?: boolean,
+		@Arg('showRank', {nullable: true}) showRank?: boolean,
+		@Arg('showResults', {nullable: true}) showResults?: boolean
 	) {
 		const {user, prisma} = context;
 		const integration = await getIntegration(user, 'zkt');
@@ -171,6 +173,8 @@ export class IntegrationResolver {
 		if (showMedals !== undefined) data.zkt_show_medals = showMedals;
 		if (showRecords !== undefined) data.zkt_show_records = showRecords;
 		if (showPbs !== undefined) data.zkt_show_pbs = showPbs;
+		if (showRank !== undefined) data.zkt_show_rank = showRank;
+		if (showResults !== undefined) data.zkt_show_results = showResults;
 
 		return prisma.integration.update({
 			where: {id: integration.id},

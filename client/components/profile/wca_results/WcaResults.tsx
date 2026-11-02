@@ -4,6 +4,7 @@ import './WcaResults.scss';
 import block from '../../../styles/bem';
 import LoadingIcon from '../../common/LoadingIcon';
 import {formatResult} from '../../community/my_schedule/shared';
+import {intlLocale} from '../../../util/locale_format';
 
 const b = block('wca-results');
 
@@ -66,10 +67,12 @@ function getRoundName(roundTypeId: string, t: any): string {
 	return translated !== key ? translated : roundTypeId;
 }
 
-function formatCompDate(dateStr: string): string {
+function formatCompDate(dateStr: string, language: string): string {
 	if (!dateStr) return '';
+	// A bare YYYY-MM-DD parses as UTC midnight; format it in UTC so a viewer
+	// west of Greenwich does not see the day before.
 	const d = new Date(dateStr);
-	return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+	return d.toLocaleDateString(intlLocale(language), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 // Group by competition
@@ -99,7 +102,7 @@ function groupByCompetition(results: WcaResultItem[]): CompetitionGroup[] {
 }
 
 export default function WcaResults({ wcaId, data }: Props) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [eventFilter, setEventFilter] = useState<string>('all');
 
 	const results = data || [];
@@ -153,7 +156,7 @@ export default function WcaResults({ wcaId, data }: Props) {
 				<div key={group.id} className={b('competition')}>
 					<div className={b('comp-header')}>
 						<span className={b('comp-name')}>{group.name}</span>
-						<span className={b('comp-date')}>{formatCompDate(group.date)}</span>
+						<span className={b('comp-date')}>{formatCompDate(group.date, i18n.language)}</span>
 					</div>
 					<div className={b('table-wrapper')}>
 						<table className={b('table')}>

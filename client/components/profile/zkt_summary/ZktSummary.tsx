@@ -4,6 +4,7 @@ import {Trophy, Medal, Crown} from 'phosphor-react';
 import block from '../../../styles/bem';
 import {useZktBadge} from '../../../util/hooks/useZktBadge';
 import {getZktOrigin} from '../../../../shared/integration';
+import type {ZktPb} from '../zkt_pb_card/ZktPbCard';
 import './ZktSummary.scss';
 
 const b = block('zkt-summary');
@@ -12,17 +13,20 @@ export interface ZktProfileData {
 	zkt_id?: string;
 	zkt_name?: string;
 	zkt_country_iso2?: string;
-	zkt_member_no?: number;
 	zkt_competition_count?: number;
 	zkt_medal_gold?: number;
 	zkt_medal_silver?: number;
 	zkt_medal_bronze?: number;
 	zkt_record_count?: number;
-	zkt_personal_bests?: {event_id: string; single?: string; average?: string}[];
+	zkt_personal_bests?: ZktPb[];
 	zkt_show_competitions?: boolean;
 	zkt_show_medals?: boolean;
 	zkt_show_records?: boolean;
 	zkt_show_pbs?: boolean;
+	zkt_show_rank?: boolean;
+	zkt_show_results?: boolean;
+	zkt_best_rank?: number;
+	zkt_best_rank_event?: string;
 }
 
 interface Props {
@@ -40,9 +44,14 @@ export default function ZktSummary({profile}: Props) {
 
 	if (!profile) return null;
 
-	const showComps = profile.zkt_show_competitions !== false;
+	// A count is drawn only when it arrived: the server leaves it undefined both
+	// for a switched-off section and when the federation could not answer (no
+	// cached copy either). Defaulting to 0 there showed "0 competitions" for a
+	// member with a full career.
+	const showComps = profile.zkt_show_competitions !== false && profile.zkt_competition_count != null;
 	const showMedals = profile.zkt_show_medals !== false;
 	const showRecords = profile.zkt_show_records !== false;
+	const bestRank = profile.zkt_show_rank !== false ? profile.zkt_best_rank : undefined;
 
 	const medalTotal =
 		(profile.zkt_medal_gold || 0) + (profile.zkt_medal_silver || 0) + (profile.zkt_medal_bronze || 0);
@@ -51,7 +60,9 @@ export default function ZktSummary({profile}: Props) {
 	// A member who has not competed yet has no ZKT ID and no numbers; the linked
 	// account alone is not worth a card.
 	if (!profile.zkt_id) return null;
-	if (!showComps && !showMedals && !showRecords) return null;
+	const hasMedals = showMedals && medalTotal > 0;
+	const hasRecords = showRecords && recordCount > 0;
+	if (!showComps && !hasMedals && !hasRecords && !bestRank) return null;
 
 	return (
 		<div className={b()}>
@@ -73,18 +84,19 @@ export default function ZktSummary({profile}: Props) {
 				{/* Member number deliberately NOT shown: it is an operational handle
 				    (the desk looks people up with it), it starts at zero — the first
 				    members read as "#0" — and the ZKT ID beside it is already the
-				    identity. It stays available in the manage panel. */}
+				    identity. The public profile query does not even carry it; only the
+				    owner's own myZktProfile does. */}
 			</div>
 
 			<div className={b('stats')}>
 				{showComps && (
 					<div className={b('stat')}>
-						<span className={b('stat-value')}>{profile.zkt_competition_count ?? 0}</span>
+						<span className={b('stat-value')}>{profile.zkt_competition_count}</span>
 						<span className={b('stat-label')}>{t('profile.zkt_competitions')}</span>
 					</div>
 				)}
 
-				{showMedals && medalTotal > 0 && (
+				{hasMedals && (
 					<div className={b('stat')}>
 						<div className={b('medals')}>
 							<span className={b('medal', {gold: true})}>
@@ -101,10 +113,22 @@ export default function ZktSummary({profile}: Props) {
 					</div>
 				)}
 
-				{showRecords && recordCount > 0 && (
+				{hasRecords && (
 					<div className={b('stat')}>
 						<span className={b('record-badge')}>{recordCount}</span>
 						<span className={b('stat-label')}>{t('profile.zkt_records')}</span>
+					</div>
+				)}
+
+				{/* The ZKT counterpart of WcaSummary's best world rank. */}
+				{bestRank && (
+					<div className={b('stat')}>
+						<span className={b('stat-value')}>#{bestRank}</span>
+						<span className={b('stat-label')}>
+							{t('profile.zkt_best_rank')}
+							{profile.zkt_best_rank_event &&
+								` (${t(`wca_events.${profile.zkt_best_rank_event}`, profile.zkt_best_rank_event)})`}
+						</span>
 					</div>
 				)}
 			</div>

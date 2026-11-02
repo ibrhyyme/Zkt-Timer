@@ -36,7 +36,9 @@ export const publicIntegrationSelect = {
 	wca_show_results: true,
 	zkt_user_id: true,
 	zkt_id: true,
-	zkt_member_no: true,
+	// zkt_member_no deliberately absent: it is the federation desk's lookup
+	// handle, shown there only to the member and to admins. This select feeds
+	// anonymous read paths (any profile's user.integrations).
 	zkt_name: true,
 	zkt_avatar_url: true,
 	zkt_country_iso2: true,
@@ -44,6 +46,8 @@ export const publicIntegrationSelect = {
 	zkt_show_medals: true,
 	zkt_show_records: true,
 	zkt_show_pbs: true,
+	zkt_show_rank: true,
+	zkt_show_results: true,
 	revoked_at: true,
 	last_synced_at: true,
 	created_at: true,

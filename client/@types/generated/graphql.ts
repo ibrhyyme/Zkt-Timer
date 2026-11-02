@@ -988,7 +988,9 @@ export type Integration = {
   zkt_show_competitions?: Maybe<Scalars['Boolean']>;
   zkt_show_medals?: Maybe<Scalars['Boolean']>;
   zkt_show_pbs?: Maybe<Scalars['Boolean']>;
+  zkt_show_rank?: Maybe<Scalars['Boolean']>;
   zkt_show_records?: Maybe<Scalars['Boolean']>;
+  zkt_show_results?: Maybe<Scalars['Boolean']>;
   zkt_user_id?: Maybe<Scalars['String']>;
 };
 
@@ -2325,7 +2327,9 @@ export type MutationUpdateZktVisibilityArgs = {
   showCompetitions?: InputMaybe<Scalars['Boolean']>;
   showMedals?: InputMaybe<Scalars['Boolean']>;
   showPbs?: InputMaybe<Scalars['Boolean']>;
+  showRank?: InputMaybe<Scalars['Boolean']>;
   showRecords?: InputMaybe<Scalars['Boolean']>;
+  showResults?: InputMaybe<Scalars['Boolean']>;
 };
 
 
@@ -2577,6 +2581,8 @@ export type PublicWcaProfile = {
 export type PublicZktProfile = {
   __typename?: 'PublicZktProfile';
   zkt_avatar_url?: Maybe<Scalars['String']>;
+  zkt_best_rank?: Maybe<Scalars['Int']>;
+  zkt_best_rank_event?: Maybe<Scalars['String']>;
   zkt_competition_count?: Maybe<Scalars['Float']>;
   zkt_country_iso2?: Maybe<Scalars['String']>;
   zkt_id?: Maybe<Scalars['String']>;
@@ -2590,7 +2596,9 @@ export type PublicZktProfile = {
   zkt_show_competitions?: Maybe<Scalars['Boolean']>;
   zkt_show_medals?: Maybe<Scalars['Boolean']>;
   zkt_show_pbs?: Maybe<Scalars['Boolean']>;
+  zkt_show_rank?: Maybe<Scalars['Boolean']>;
   zkt_show_records?: Maybe<Scalars['Boolean']>;
+  zkt_show_results?: Maybe<Scalars['Boolean']>;
 };
 
 export type PushTokenInfo = {
@@ -2675,6 +2683,7 @@ export type Query = {
   profile: Profile;
   publicWcaProfile?: Maybe<PublicWcaProfile>;
   publicZktProfile?: Maybe<PublicZktProfile>;
+  publicZktResults?: Maybe<ZktPersonResults>;
   recoverMySolves?: Maybe<Array<Maybe<Solve>>>;
   reports?: Maybe<Array<Maybe<ReportSummary>>>;
   sessions?: Maybe<Array<Maybe<Session>>>;
@@ -2949,6 +2958,11 @@ export type QueryPublicWcaProfileArgs = {
 
 
 export type QueryPublicZktProfileArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryPublicZktResultsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -4512,8 +4526,10 @@ export type ZktBackfillResult = {
 export type ZktEventPb = {
   __typename?: 'ZktEventPb';
   average?: Maybe<Scalars['String']>;
+  average_rank?: Maybe<ZktRankPosition>;
   event_id?: Maybe<Scalars['String']>;
   single?: Maybe<Scalars['String']>;
+  single_rank?: Maybe<ZktRankPosition>;
 };
 
 export type ZktOAuthResult = {
@@ -4526,6 +4542,60 @@ export type ZktOAuthResult = {
   zktId?: Maybe<Scalars['String']>;
   zktMemberNo?: Maybe<Scalars['Float']>;
   zktName?: Maybe<Scalars['String']>;
+};
+
+export type ZktPersonChance = {
+  __typename?: 'ZktPersonChance';
+  average?: Maybe<Scalars['String']>;
+  chance?: Maybe<Scalars['Int']>;
+  counting?: Maybe<Scalars['Boolean']>;
+  noShow?: Maybe<Scalars['Boolean']>;
+  single?: Maybe<Scalars['String']>;
+  solves?: Maybe<Array<Maybe<ZktPersonSolve>>>;
+};
+
+export type ZktPersonEventResults = {
+  __typename?: 'ZktPersonEventResults';
+  eventId?: Maybe<Scalars['String']>;
+  rows?: Maybe<Array<Maybe<ZktPersonResultRow>>>;
+};
+
+export type ZktPersonResultRow = {
+  __typename?: 'ZktPersonResultRow';
+  average?: Maybe<Scalars['String']>;
+  averageTag?: Maybe<Scalars['String']>;
+  bestAo5?: Maybe<Scalars['String']>;
+  chances?: Maybe<Array<ZktPersonChance>>;
+  competitionId?: Maybe<Scalars['String']>;
+  competitionName?: Maybe<Scalars['String']>;
+  competitionSlug?: Maybe<Scalars['String']>;
+  date?: Maybe<Scalars['String']>;
+  isFinal?: Maybe<Scalars['Boolean']>;
+  podium?: Maybe<Scalars['Int']>;
+  ranking?: Maybe<Scalars['Int']>;
+  roundLabel?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  single?: Maybe<Scalars['String']>;
+  singleTag?: Maybe<Scalars['String']>;
+  solves?: Maybe<Array<Maybe<ZktPersonSolve>>>;
+};
+
+export type ZktPersonResults = {
+  __typename?: 'ZktPersonResults';
+  events?: Maybe<Array<Maybe<ZktPersonEventResults>>>;
+  totals?: Maybe<ZktPersonResultTotals>;
+};
+
+export type ZktPersonResultTotals = {
+  __typename?: 'ZktPersonResultTotals';
+  completedSolves?: Maybe<Scalars['Int']>;
+  roundCount?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPersonSolve = {
+  __typename?: 'ZktPersonSolve';
+  text?: Maybe<Scalars['String']>;
+  trimmed?: Maybe<Scalars['Boolean']>;
 };
 
 export type ZktPublicAttemptResult = {
@@ -4838,6 +4908,12 @@ export type ZktPublicTab = {
   id?: Maybe<Scalars['String']>;
   order?: Maybe<Scalars['Int']>;
   title?: Maybe<Scalars['String']>;
+};
+
+export type ZktRankPosition = {
+  __typename?: 'ZktRankPosition';
+  rank?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
 };
 
 export type AdminProUsersQueryVariables = Exact<{

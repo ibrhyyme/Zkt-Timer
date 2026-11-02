@@ -338,6 +338,7 @@ type Query {
   zktPublicGroupAssignments(groupId: String, competitionId: String): ZktPublicGroupAssignments
   zktPublicCompetitor(key: String, competitionId: String): ZktPublicCompetitorDetail
   zktPersonBests(zktId: String): [ZktEventPb!]
+  publicZktResults(userId: String): ZktPersonResults
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
@@ -429,7 +430,7 @@ type Mutation {
   resetSettings: Setting
   createIntegration(code: String, integrationType: IntegrationType): Integration
   updateWcaVisibility(showResults: Boolean, showRank: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
-  updateZktVisibility(showPbs: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
+  updateZktVisibility(showResults: Boolean, showRank: Boolean, showPbs: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
   deleteIntegration(integrationType: IntegrationType): Integration
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
@@ -716,6 +717,8 @@ type Integration {
   zkt_show_medals: Boolean
   zkt_show_records: Boolean
   zkt_show_pbs: Boolean
+  zkt_show_rank: Boolean
+  zkt_show_results: Boolean
   revoked_at: DateTime
   last_synced_at: DateTime
   created_at: DateTime
@@ -2102,10 +2105,17 @@ type RedeemPromoCodeResult {
   expires_at: DateTime
 }
 
+type ZktRankPosition {
+  rank: Int
+  total: Int
+}
+
 type ZktEventPb {
   event_id: String
   single: String
   average: String
+  single_rank: ZktRankPosition
+  average_rank: ZktRankPosition
 }
 
 type PublicZktProfile {
@@ -2124,6 +2134,58 @@ type PublicZktProfile {
   zkt_show_medals: Boolean
   zkt_show_records: Boolean
   zkt_show_pbs: Boolean
+  zkt_show_rank: Boolean
+  zkt_show_results: Boolean
+  zkt_best_rank: Int
+  zkt_best_rank_event: String
+}
+
+type ZktPersonSolve {
+  text: String
+  trimmed: Boolean
+}
+
+type ZktPersonChance {
+  chance: Int
+  single: String
+  average: String
+  solves: [ZktPersonSolve]
+  counting: Boolean
+  noShow: Boolean
+}
+
+type ZktPersonResultRow {
+  competitionId: String
+  competitionName: String
+  competitionSlug: String
+  date: String
+  roundLabel: String
+  roundNumber: Int
+  isFinal: Boolean
+  ranking: Int
+  single: String
+  average: String
+  singleTag: String
+  averageTag: String
+  bestAo5: String
+  chances: [ZktPersonChance!]
+  solves: [ZktPersonSolve]
+  podium: Int
+}
+
+type ZktPersonEventResults {
+  eventId: String
+  rows: [ZktPersonResultRow]
+}
+
+type ZktPersonResultTotals {
+  completedSolves: Int
+  roundCount: Int
+}
+
+type ZktPersonResults {
+  events: [ZktPersonEventResults]
+  totals: ZktPersonResultTotals
 }
 
 type ZktPublicCompetitor {

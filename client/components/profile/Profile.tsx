@@ -41,6 +41,8 @@ import BattleProfileCard from './battle_rating/BattleProfileCard';
 import ZktPbCard from './zkt_pb_card/ZktPbCard';
 import ManageZktData from './manage_zkt_data/ManageZktData';
 import WcaResults from './wca_results/WcaResults';
+import ZktResults, {ZktResultsData} from './zkt_results/ZktResults';
+import {pickRecordsTab, RecordsTab} from './records_tab';
 import CuberCardCanvas from './cuber_card/CuberCardCanvas';
 import {captureCuberCard, shareOrDownloadCuberCard} from '../../util/cuber_card';
 import {toastError, toastSuccess} from '../../util/toast';
@@ -210,7 +212,9 @@ function ProfileContent() {
 	const [ssrProfile, setSsrProfile] = useSsr<IProfileData>(matchUsername);
 	const [loading, setLoading] = useState(!ssrProfile);
 	const [profileData, setProfileData] = useState<IProfileData>(ssrProfile);
-	const [recordsTab, setRecordsTab] = useState<'pb' | 'wca' | 'zkt' | 'results'>('pb');
+	// What the viewer clicked; null until they do. The tab actually shown is
+	// derived from what is available (pickRecordsTab), so no loader has to pick it.
+	const [recordsTab, setRecordsTab] = useState<RecordsTab | null>(null);
 	const [wcaRecords, setWcaRecords] = useState([]);
 	const [wcaIntegration, setWcaIntegration] = useState<any>(null);
 	// The federation counterpart of wcaIntegration. Read live from the federation
@@ -218,6 +222,8 @@ function ProfileContent() {
 	// profile payload.
 	const [zktProfile, setZktProfile] = useState<any>(null);
 	const [wcaResultsData, setWcaResultsData] = useState<any[]>(null);
+	// undefined while loading, null when hidden, not linked or unavailable.
+	const [zktResultsData, setZktResultsData] = useState<ZktResultsData | null | undefined>(undefined);
 	const [fabOpen, setFabOpen] = useState(false);
 	const [cuberCardOpen, setCuberCardOpen] = useState(false);
 	const [cuberCardGenerating, setCuberCardGenerating] = useState(false);
@@ -269,7 +275,6 @@ function ProfileContent() {
 						zkt_name
 						zkt_avatar_url
 						zkt_country_iso2
-						zkt_member_no
 						zkt_competition_count
 						zkt_medal_gold
 						zkt_medal_silver
@@ -279,19 +284,88 @@ function ProfileContent() {
 							event_id
 							single
 							average
+							single_rank {
+								rank
+								total
+							}
+							average_rank {
+								rank
+								total
+							}
 						}
 						zkt_show_competitions
 						zkt_show_medals
 						zkt_show_records
 						zkt_show_pbs
+						zkt_show_rank
+						zkt_show_results
+						zkt_best_rank
+						zkt_best_rank_event
 					}
 				}
 			`;
 			const res = await gqlQuery(query, {userId: user?.id});
-			setZktProfile((res.data as any)?.publicZktProfile || null);
+			const zkt = (res.data as any)?.publicZktProfile || null;
+			setZktProfile(zkt);
+
+			// Fetched here, like the WCA results, so switching tabs never remounts a loader.
+			if (zkt?.zkt_id && zkt.zkt_show_results !== false) {
+				loadZktResultsData();
+			} else {
+				setZktResultsData(null);
+			}
 		} catch (error) {
 			// No linked ZKT account is the normal empty case, not a failure.
 			setZktProfile(null);
+			setZktResultsData(null);
+		}
+	}
+
+	async function loadZktResultsData() {
+		try {
+			const query = gql`
+				query PublicZktResults($userId: String) {
+					publicZktResults(userId: $userId) {
+						events {
+							eventId
+							rows {
+								competitionId
+								competitionName
+								date
+								roundLabel
+								roundNumber
+								isFinal
+								ranking
+								single
+								average
+								singleTag
+								averageTag
+								bestAo5
+								solves {
+									text
+									trimmed
+								}
+								chances {
+									chance
+									single
+									average
+									counting
+									noShow
+									solves {
+										text
+										trimmed
+									}
+								}
+							}
+						}
+					}
+				}
+			`;
+			const res = await gqlQuery(query, {userId: user?.id});
+			setZktResultsData((res.data as any)?.publicZktResults || null);
+		} catch (error) {
+			// The federation being unreachable leaves the tab out, as if hidden.
+			setZktResultsData(null);
 		}
 	}
 
@@ -344,15 +418,6 @@ function ProfileContent() {
 				// Also fetch WCA results data here (to prevent remount on tab change)
 				if (wcaProfile.wca_id && wcaProfile.wca_show_results !== false) {
 					loadWcaResultsData(wcaProfile.wca_id);
-				}
-			}
-
-			// Default tab: prefer WCA records, else results, when there are no PBs
-			if (Object.keys(pbs || {}).length === 0) {
-				if (records.length > 0) {
-					setRecordsTab('wca');
-				} else if (wcaProfile?.wca_id && wcaProfile.wca_show_results !== false) {
-					setRecordsTab('results');
 				}
 			}
 		} catch (error) {
@@ -532,18 +597,28 @@ function ProfileContent() {
 	const bestWorldRank: number | undefined = wcaIntegration?.best_world_rank ?? undefined;
 	const bestWorldRankEvent: string | undefined = wcaIntegration?.best_world_rank_event ?? undefined;
 
-	// Default tab: if no PB switch to WCA, if no WCA switch to results
-	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;
-	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || zktCards.length > 0 || hasResults;
+	const hasResults = !!(wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false);
+	// Only once it has rows: a hidden history, a federation that has not shipped
+	// the endpoint yet and an empty career all come back without any.
+	const hasZktResults = !!zktResultsData?.events?.some((ev) => ev.rows.length > 0);
+
+	// Same order as the tab bar below; the first one is the default.
+	const availableTabs: RecordsTab[] = [];
+	if (pbCards.length > 0) availableTabs.push('pb');
+	if (wcaCards.length > 0) availableTabs.push('wca');
+	if (zktCards.length > 0) availableTabs.push('zkt');
+	if (hasResults) availableTabs.push('results');
+	if (hasZktResults) availableTabs.push('zkt_results');
+	const activeTab = pickRecordsTab(recordsTab, availableTabs);
 
 	let recordsSection = null;
-	if (showTabs) {
+	if (activeTab) {
 		recordsSection = (
 			<div className={b('records')}>
 				<div className={b('records-tabs')}>
 					{pbCards.length > 0 && (
 						<button
-							className={b('tab', { active: recordsTab === 'pb' })}
+							className={b('tab', { active: activeTab === 'pb' })}
 							onClick={() => setRecordsTab('pb')}
 						>
 							{t(mobileMode ? 'profile.personal_records_short' : 'profile.personal_records')}
@@ -552,7 +627,7 @@ function ProfileContent() {
 					)}
 					{wcaCards.length > 0 && (
 						<button
-							className={b('tab', { active: recordsTab === 'wca' })}
+							className={b('tab', { active: activeTab === 'wca' })}
 							onClick={() => setRecordsTab('wca')}
 						>
 							<img
@@ -566,7 +641,7 @@ function ProfileContent() {
 					)}
 					{zktCards.length > 0 && (
 						<button
-							className={b('tab', { active: recordsTab === 'zkt' })}
+							className={b('tab', { active: activeTab === 'zkt' })}
 							onClick={() => setRecordsTab('zkt')}
 						>
 							<img
@@ -580,25 +655,48 @@ function ProfileContent() {
 					)}
 					{hasResults && (
 						<button
-							className={b('tab', { active: recordsTab === 'results' })}
+							className={b('tab', { active: activeTab === 'results' })}
 							onClick={() => setRecordsTab('results')}
 						>
+							{/* Both histories share the short label "Results" on mobile, so the
+							    federation mark is what tells them apart. */}
+							<img
+								src={resourceUri('/images/logos/wca_logo.svg')}
+								alt="WCA"
+								className={b('tab-wca-logo')}
+							/>
 							{t(mobileMode ? 'profile.wca_results_tab_short' : 'profile.wca_results_tab')}
+						</button>
+					)}
+					{hasZktResults && (
+						<button
+							className={b('tab', { active: activeTab === 'zkt_results' })}
+							onClick={() => setRecordsTab('zkt_results')}
+						>
+							<img
+								src={zktBadge}
+								alt="ZKT"
+								className={b('tab-wca-logo')}
+							/>
+							{t(mobileMode ? 'profile.zkt_results_tab_short' : 'profile.zkt_results_tab')}
 						</button>
 					)}
 				</div>
 				<div className={b('records-content')}>
-					{recordsTab === 'pb' && (
+					{activeTab === 'pb' && (
 						<div className={b('pbs')}>{pbCards}</div>
 					)}
-					{recordsTab === 'wca' && (
+					{activeTab === 'wca' && (
 						<div className={b('pbs')}>{wcaCards}</div>
 					)}
-					{recordsTab === 'zkt' && (
+					{activeTab === 'zkt' && (
 						<div className={b('pbs')}>{zktCards}</div>
 					)}
-					{recordsTab === 'results' && wcaIntegration?.wca_id && (
+					{activeTab === 'results' && wcaIntegration?.wca_id && (
 						<WcaResults wcaId={wcaIntegration.wca_id} data={wcaResultsData} />
+					)}
+					{activeTab === 'zkt_results' && (
+						<ZktResults data={zktResultsData} />
 					)}
 				</div>
 			</div>
@@ -617,15 +715,18 @@ function ProfileContent() {
 					onClick={openPublishSolves}
 					small
 				/>
-				<Button
-					primary
-					icon={<Plus weight="bold" />}
-					text={t('profile.wca_manage_data')}
-					onClick={openPublishWcaRecords}
-					small
-				/>
-				{/* Only offered once a ZKT account is actually linked — an empty panel
-				    is not a feature. */}
+				{/* Both data panels are offered only once that account is linked: an
+				    unlinked panel only failed on every switch. Linking itself is the
+				    WCA button in the identity block. */}
+				{wcaIntegration && (
+					<Button
+						primary
+						icon={<Plus weight="bold" />}
+						text={t('profile.wca_manage_data')}
+						onClick={openPublishWcaRecords}
+						small
+					/>
+				)}
 				{zktProfile && (
 					<Button
 						primary
@@ -657,9 +758,11 @@ function ProfileContent() {
 						<button className={b('fab-item')} onClick={() => { openPublishSolves(); setFabOpen(false); }}>
 							{t('profile.publish_pbs')}
 						</button>
-						<button className={b('fab-item')} onClick={() => { openPublishWcaRecords(); setFabOpen(false); }}>
-							{t('profile.wca_manage_data')}
-						</button>
+						{wcaIntegration && (
+							<button className={b('fab-item')} onClick={() => { openPublishWcaRecords(); setFabOpen(false); }}>
+								{t('profile.wca_manage_data')}
+							</button>
+						)}
 						{zktProfile && (
 							<button className={b('fab-item')} onClick={() => { openManageZktData(); setFabOpen(false); }}>
 								{t('profile.zkt_manage_data')}

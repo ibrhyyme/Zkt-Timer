@@ -1,4 +1,4 @@
-import {PrismaClient} from '@prisma/client';
+import {getPrisma} from '../database';
 import {WcaRecord} from '../schemas/WcaRecord.schema';
 import {PublicWcaProfile} from '../schemas/PublicWcaProfile.schema';
 import {InternalUserAccount} from '../schemas/UserAccount.schema';
@@ -6,21 +6,47 @@ import {Integration} from '../schemas/Integration.schema';
 import {WcaApiService, WcaPerson} from '../services/WcaApiService';
 import {publicIntegrationSelect} from './integration';
 
-const prisma = new PrismaClient();
-
 /**
  * Fetch and save WCA records for a user
  */
 export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integration: Integration): Promise<WcaRecord[]> {
 	const wcaPerson = await WcaApiService.fetchWcaRecordsForUser(integration);
-	
+
 	if (!wcaPerson) {
 		throw new Error('Failed to fetch WCA records');
 	}
 
-	// WCA person metadata'yi Integration'a kaydet
+	return saveWcaPersonRecords(user.id, integration.id, wcaPerson);
+}
+
+/**
+ * Whether a record in an event the user had no record in yet starts out
+ * published. A user who already shows WCA records on their profile expects a
+ * new event there too: it used to arrive hidden, so after their first 4x4 the
+ * profile looked incomplete until they found the manage panel. A user who
+ * publishes none keeps the WCA tab off on purpose, so a new event stays hidden.
+ * On the very first fetch nothing is published yet, so everything starts
+ * hidden, as before.
+ */
+export function newRecordStartsPublished(publishedCount: number): boolean {
+	return publishedCount > 0;
+}
+
+/**
+ * Write an already-fetched WCA person payload into the user's WcaRecord rows
+ * and the integration's career numbers. Shared by the manual refresh, the
+ * nightly refresh and the results-official notification (which fetches the
+ * same payload anyway, so it costs no extra WCA request).
+ */
+export async function saveWcaPersonRecords(
+	userId: string,
+	integrationId: string,
+	wcaPerson: WcaPerson
+): Promise<WcaRecord[]> {
+	const prisma = getPrisma();
+
 	await prisma.integration.update({
-		where: { id: integration.id },
+		where: {id: integrationId},
 		data: {
 			wca_country_iso2: wcaPerson.country_iso2 || null,
 			wca_competition_count: wcaPerson.competition_count ?? null,
@@ -30,32 +56,36 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 			wca_record_nr: wcaPerson.records?.national ?? null,
 			wca_record_cr: wcaPerson.records?.continental ?? null,
 			wca_record_wr: wcaPerson.records?.world ?? null,
+			wca_records_synced_at: new Date(),
 		},
 	});
+
+	const publishNew = newRecordStartsPublished(
+		await prisma.wcaRecord.count({where: {user_id: userId, published: true}})
+	);
 
 	const records: WcaRecord[] = [];
 	const supportedEvents = WcaApiService.getSupportedEvents();
 
 	for (const eventCode of supportedEvents) {
-		const personalRecord = wcaPerson.personal_records[eventCode];
-		
+		const personalRecord = wcaPerson.personal_records?.[eventCode];
+
 		if (!personalRecord || (!personalRecord.single && !personalRecord.average)) {
 			continue;
 		}
 
-		// Update or create record
 		const existingRecord = await prisma.wcaRecord.findUnique({
 			where: {
 				user_id_wca_event: {
-					user_id: user.id,
-					wca_event: eventCode
-				}
-			}
+					user_id: userId,
+					wca_event: eventCode,
+				},
+			},
 		});
 
 		const recordData = {
-			user_id: user.id,
-			integration_id: integration.id,
+			user_id: userId,
+			integration_id: integrationId,
 			wca_event: eventCode,
 			single_record: personalRecord.single?.best || null,
 			average_record: personalRecord.average?.best || null,
@@ -66,30 +96,30 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 			single_country_rank: personalRecord.single?.country_rank || null,
 			average_country_rank: personalRecord.average?.country_rank || null,
 			fetched_at: new Date(),
-			updated_at: new Date()
+			updated_at: new Date(),
 		};
 
 		let record;
 		if (existingRecord) {
 			record = await prisma.wcaRecord.update({
-				where: { id: existingRecord.id },
+				where: {id: existingRecord.id},
 				data: recordData,
 				include: {
 					integration: {select: publicIntegrationSelect},
-					user: true
-				}
+					user: true,
+				},
 			});
 		} else {
 			record = await prisma.wcaRecord.create({
 				data: {
 					...recordData,
-					published: false, // Default to unpublished
-					created_at: new Date()
+					published: publishNew,
+					created_at: new Date(),
 				},
 				include: {
 					integration: {select: publicIntegrationSelect},
-					user: true
-				}
+					user: true,
+				},
 			});
 		}
 
@@ -100,10 +130,56 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 }
 
 /**
+ * Save an already-fetched person payload for this user, but only when it is
+ * the WCA ID their (non-revoked) integration is linked to. Returns whether
+ * anything was written.
+ */
+export async function saveWcaPersonForUser(userId: string, wcaId: string, wcaPerson: WcaPerson): Promise<boolean> {
+	const integration = await getPrisma().integration.findFirst({
+		where: {user_id: userId, service_name: 'wca', wca_id: wcaId, revoked_at: null},
+		select: {id: true},
+	});
+	if (!integration) {
+		return false;
+	}
+	await saveWcaPersonRecords(userId, integration.id, wcaPerson);
+	return true;
+}
+
+interface RankFields {
+	single_world_rank?: number | null;
+	average_world_rank?: number | null;
+	single_continent_rank?: number | null;
+	average_continent_rank?: number | null;
+	integration?: {wca_show_rank?: boolean | null} | null;
+}
+
+/**
+ * Applies the wca_show_rank switch ("show world ranking") to records leaving
+ * for a profile: with it off, the world and continent ranks are blanked here,
+ * so they never reach a viewer. The switch used to hide only the summary's best
+ * world rank while every PB card kept showing "#1234 World". The country rank
+ * stays: the switch does not name it, and it is the record's local context.
+ */
+export function maskHiddenWcaRanks<T extends RankFields>(records: T[]): T[] {
+	return records.map((record) =>
+		record.integration?.wca_show_rank === false
+			? {
+					...record,
+					single_world_rank: null,
+					average_world_rank: null,
+					single_continent_rank: null,
+					average_continent_rank: null,
+				}
+			: record
+	);
+}
+
+/**
  * Get WCA records for a user
  */
 export async function getWcaRecords(userId: string): Promise<WcaRecord[]> {
-	return prisma.wcaRecord.findMany({
+	return getPrisma().wcaRecord.findMany({
 		where: { user_id: userId },
 		include: {
 			integration: {select: publicIntegrationSelect},
@@ -119,7 +195,7 @@ export async function getWcaRecords(userId: string): Promise<WcaRecord[]> {
  * Get published WCA records for a user (for public profile)
  */
 export async function getPublishedWcaRecords(userId: string): Promise<WcaRecord[]> {
-	return prisma.wcaRecord.findMany({
+	const records = await getPrisma().wcaRecord.findMany({
 		where: { 
 			user_id: userId,
 			published: true
@@ -131,7 +207,8 @@ export async function getPublishedWcaRecords(userId: string): Promise<WcaRecord[
 		orderBy: {
 			wca_event: 'asc'
 		}
-	}) as Promise<WcaRecord[]>;
+	});
+	return maskHiddenWcaRanks(records) as WcaRecord[];
 }
 
 /**
@@ -147,7 +224,7 @@ export async function getPublicWcaProfile(userId: string): Promise<PublicWcaProf
 		return null;
 	}
 
-	const integration = await prisma.integration.findFirst({
+	const integration = await getPrisma().integration.findFirst({
 		where: {
 			user_id: userId,
 			service_name: 'wca',
@@ -168,7 +245,7 @@ export async function getPublicWcaProfile(userId: string): Promise<PublicWcaProf
 	let bestWorldRankEvent: string | null = null;
 
 	if (showRank) {
-		const records = await prisma.wcaRecord.findMany({
+		const records = await getPrisma().wcaRecord.findMany({
 			where: {user_id: userId},
 			select: {wca_event: true, single_world_rank: true, average_world_rank: true},
 		});
@@ -210,7 +287,7 @@ export async function getPublicWcaProfile(userId: string): Promise<PublicWcaProf
  */
 export async function publishWcaRecord(recordId: string, userId: string): Promise<WcaRecord> {
 	// Verify ownership
-	const record = await prisma.wcaRecord.findFirst({
+	const record = await getPrisma().wcaRecord.findFirst({
 		where: {
 			id: recordId,
 			user_id: userId
@@ -221,7 +298,7 @@ export async function publishWcaRecord(recordId: string, userId: string): Promis
 		throw new Error('Record not found or access denied');
 	}
 
-	return prisma.wcaRecord.update({
+	return getPrisma().wcaRecord.update({
 		where: { id: recordId },
 		data: { published: true },
 		include: {
@@ -236,7 +313,7 @@ export async function publishWcaRecord(recordId: string, userId: string): Promis
  */
 export async function unpublishWcaRecord(recordId: string, userId: string): Promise<WcaRecord> {
 	// Verify ownership
-	const record = await prisma.wcaRecord.findFirst({
+	const record = await getPrisma().wcaRecord.findFirst({
 		where: {
 			id: recordId,
 			user_id: userId
@@ -247,7 +324,7 @@ export async function unpublishWcaRecord(recordId: string, userId: string): Prom
 		throw new Error('Record not found or access denied');
 	}
 
-	return prisma.wcaRecord.update({
+	return getPrisma().wcaRecord.update({
 		where: { id: recordId },
 		data: { published: false },
 		include: {
@@ -261,7 +338,7 @@ export async function unpublishWcaRecord(recordId: string, userId: string): Prom
  * Get WCA record by ID
  */
 export async function getWcaRecordById(recordId: string): Promise<WcaRecord | null> {
-	return prisma.wcaRecord.findUnique({
+	return getPrisma().wcaRecord.findUnique({
 		where: { id: recordId },
 		include: {
 			integration: {select: publicIntegrationSelect},

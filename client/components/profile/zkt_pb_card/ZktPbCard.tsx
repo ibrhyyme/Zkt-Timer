@@ -2,6 +2,7 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import '../wca_pb_card/WcaPbCard.scss';
 import block from '../../../styles/bem';
+import {Trophy, Medal, Crown} from 'phosphor-react';
 import {EventIcon} from '../../community/my_schedule/shared';
 
 // Reuses the WCA PB card's stylesheet and block: on the same profile these two
@@ -10,10 +11,17 @@ import {EventIcon} from '../../community/my_schedule/shared';
 // ZKT result.
 const b = block('profile-wca-pb-card');
 
+export interface ZktRankPosition {
+	rank: number;
+	total: number;
+}
+
 export interface ZktPb {
 	event_id: string;
 	single?: string;
 	average?: string;
+	single_rank?: ZktRankPosition | null;
+	average_rank?: ZktRankPosition | null;
 }
 
 interface Props {
@@ -23,9 +31,10 @@ interface Props {
 /**
  * One event's best ZKT competition result. Times arrive already formatted from
  * the federation (it owns the FMC/MBLD formatting rules for its own results),
- * so this card never re-formats them. There are no world/country ranks: ZKT
- * rankings are a separate page, and inventing a rank here would be a claim the
- * federation never made.
+ * so this card never re-formats them. The rank is the member's position in the
+ * ZKT all-time rankings, published by the federation itself; ZKT competitions
+ * are all in Türkiye, so it sits where the WCA card shows its country rank, and
+ * there is no world rank. Absent when the member switched ranking off.
  */
 export default function ZktPbCard({pb}: Props) {
 	const {t} = useTranslation();
@@ -34,6 +43,37 @@ export default function ZktPbCard({pb}: Props) {
 		const key = `wca_events.${eventCode}`;
 		const translated = t(key);
 		return translated !== key ? translated : eventCode;
+	}
+
+	function getRankIcon(position?: ZktRankPosition | null) {
+		const rank = position?.rank;
+		if (!rank) return null;
+
+		if (rank === 1) return <Crown weight="fill" className={b('rank-icon', {gold: true})} />;
+		if (rank <= 3) return <Medal weight="fill" className={b('rank-icon', {silver: true})} />;
+		if (rank <= 10) return <Trophy weight="fill" className={b('rank-icon', {bronze: true})} />;
+		return null;
+	}
+
+	function renderRecord(value?: string, position?: ZktRankPosition | null) {
+		if (!value) {
+			return <span className={b('no-record')}>—</span>;
+		}
+		return (
+			<>
+				<div className={b('time-container')}>
+					<span className={b('time-value')}>{value}</span>
+					{getRankIcon(position)}
+				</div>
+				{position && (
+					<div className={b('ranks')}>
+						<span className={b('rank')} title={`${position.rank} / ${position.total}`}>
+							#{position.rank} {t('profile.zkt_rank_short')}
+						</span>
+					</div>
+				)}
+			</>
+		);
 	}
 
 	if (!pb.single && !pb.average) {
@@ -61,24 +101,12 @@ export default function ZktPbCard({pb}: Props) {
 
 			<div className={b('record-section')}>
 				<div className={b('record-type')}>{t('profile.average')}</div>
-				{pb.average ? (
-					<div className={b('time-container')}>
-						<span className={b('time-value')}>{pb.average}</span>
-					</div>
-				) : (
-					<span className={b('no-record')}>—</span>
-				)}
+				{renderRecord(pb.average, pb.average_rank)}
 			</div>
 
 			<div className={b('record-section')}>
 				<div className={b('record-type')}>{t('profile.single')}</div>
-				{pb.single ? (
-					<div className={b('time-container')}>
-						<span className={b('time-value')}>{pb.single}</span>
-					</div>
-				) : (
-					<span className={b('no-record')}>—</span>
-				)}
+				{renderRecord(pb.single, pb.single_rank)}
 			</div>
 		</div>
 	);

@@ -49,20 +49,30 @@ export class WcaApiService {
 	 */
 	static async fetchPersonData(wcaId: string): Promise<WcaPerson | null> {
 		try {
-			const response = await axios.get(`${this.BASE_URL}/persons/${wcaId}`);
-			const data = response.data;
-			// WCA API response: {person: {name, country_iso2, ...}, personal_records: {...}, ...}
-			// Flatten person fields into top level for our interface
-			return {
-				...data,
-				wca_id: data.person?.wca_id || wcaId,
-				name: data.person?.name || '',
-				country_iso2: data.person?.country_iso2 || data.person?.country?.iso2 || '',
-			};
+			return await this.fetchPersonDataOrThrow(wcaId);
 		} catch (error) {
 			console.error(`Failed to fetch WCA person data for ${wcaId}:`, error.message);
 			return null;
 		}
+	}
+
+	/**
+	 * Like fetchPersonData, but a failure throws with the axios response intact,
+	 * so a batch caller (the nightly refresh) can tell a 429 apart and back off.
+	 */
+	static async fetchPersonDataOrThrow(wcaId: string): Promise<WcaPerson> {
+		const response = await axios.get(`${this.BASE_URL}/persons/${encodeURIComponent(wcaId)}`, {
+			timeout: 15000,
+		});
+		const data = response.data;
+		// WCA API response: {person: {name, country_iso2, ...}, personal_records: {...}, ...}
+		// Flatten person fields into top level for our interface
+		return {
+			...data,
+			wca_id: data.person?.wca_id || wcaId,
+			name: data.person?.name || '',
+			country_iso2: data.person?.country_iso2 || data.person?.country?.iso2 || '',
+		};
 	}
 
 	/**

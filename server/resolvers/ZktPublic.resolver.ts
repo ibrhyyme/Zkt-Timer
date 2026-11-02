@@ -9,8 +9,15 @@ import {Resolver, Query, Arg, Int, Ctx, Authorized} from 'type-graphql';
 import {ZktFederationService} from '../services/ZktFederationService';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
-import {getMyZktProfile, getPublicZktProfile} from '../models/zkt_profile';
+import {
+	FederationPersonSummary,
+	getMyZktProfile,
+	getPublicZktProfile,
+	getPublicZktResults,
+	mapFederationPbs,
+} from '../models/zkt_profile';
 import {PublicZktProfile, ZktEventPb} from '../schemas/PublicZktProfile.schema';
+import {ZktPersonResults} from '../schemas/ZktPersonResults.schema';
 import {getPrisma} from '../database';
 import {
 	ZktPublicCompetitionDetail,
@@ -152,19 +159,28 @@ export class ZktPublicResolver {
 	async zktPersonBests(@Arg('zktId') zktId: string): Promise<ZktEventPb[] | null> {
 		const id = (zktId || '').trim().toUpperCase();
 		if (!/^\d{4}[A-Z]{4}\d{2}$/.test(id)) return null;
-		const hidden = await getPrisma().integration.findFirst({
-			where: {service_name: 'zkt', zkt_id: id, zkt_show_pbs: false},
-			select: {id: true},
+		const linked = await getPrisma().integration.findFirst({
+			where: {service_name: 'zkt', zkt_id: id},
+			select: {zkt_show_pbs: true, zkt_show_rank: true},
 		});
-		if (hidden) return null;
+		if (linked?.zkt_show_pbs === false) return null;
 		const summary = (await federationRead('person_bests', () =>
 			ZktFederationService.fetchPersonSummary(id)
-		)) as {personalBests?: {eventId: string; single?: string | null; average?: string | null}[]} | null;
+		)) as FederationPersonSummary | null;
 		if (!summary) return null;
-		return (summary.personalBests || []).map((pb) => ({
-			event_id: pb.eventId,
-			single: pb.single ?? undefined,
-			average: pb.average ?? undefined,
-		}));
+		return mapFederationPbs(summary.personalBests, linked?.zkt_show_rank !== false);
+	}
+
+	/**
+	 * A user's result-by-result ZKT history for their profile — the counterpart
+	 * of `wcaResults`, but gated server-side: a member who switched it off gets
+	 * null here, so another viewer never receives it.
+	 */
+	@Query(() => ZktPersonResults, {nullable: true})
+	async publicZktResults(
+		@Arg('userId', {nullable: true}) userId?: string
+	): Promise<ZktPersonResults | null> {
+		if (!userId) return null;
+		return federationRead('person_results', () => getPublicZktResults(userId));
 	}
 }

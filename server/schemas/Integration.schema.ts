@@ -118,6 +118,12 @@ export class Integration {
 	@Field(() => Boolean, { nullable: true })
 	zkt_show_pbs?: boolean;
 
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_rank?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_results?: boolean;
+
 	@Field(() => Date, { nullable: true })
 	revoked_at?: Date;
 
