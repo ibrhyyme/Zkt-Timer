@@ -1,0 +1,27 @@
+ZKT Timer cronometra tus resoluciones, guarda cada resultado y te muestra en qué se te va el tiempo. Puedes cronometrar con la pantalla táctil, StackMat, GAN Timer, QiYi Timer o un cubo inteligente. La inspección, el +2 y el DNF siguen las reglas de la WCA, y después de cada resolución aparece una mezcla nueva.
+
+Cubos inteligentes
+Los cubos inteligentes de GAN, MoYu, QiYi, Giiker y Particula se conectan por Bluetooth. El cubo gira en la pantalla en 3D igual que en tu mano. El tiempo empieza con tu primer movimiento y se detiene cuando el cubo queda resuelto. Con Pro ves los tiempos de Cross, F2L, OLL y PLL, el número de movimientos y el TPS de cada resolución, y puedes repetirla movimiento a movimiento. Tus estadísticas también muestran qué casos de OLL y PLL te frenan.
+
+Entrenador de algoritmos
+Más de 40 sets, entre ellos OLL, PLL, F2L, ZBLL, COLL, CMLL y sets para 2x2, 4x4, Pyraminx y Square-1. Cada caso muestra su patrón. Puedes crear tus propios sets y practicar el reconocimiento de PLL. Con Pro puedes practicar los algoritmos en un cubo inteligente y ver si cada movimiento es correcto, y descargar los algoritmos en PDF.
+
+Online Battle y salas
+Online Battle te empareja con alguien que busca rival en ese mismo momento. Los dos resolvéis la misma mezcla con un cubo inteligente y gana quien se lleve primero tres rondas. El tiempo sale del reloj del propio cubo, así que el retraso de internet no cambia el resultado. Por ahora es solo 3x3, con cubos GAN, QiYi y MoYu WeiLong V10 AI.
+En las salas resuelves la misma mezcla que tus amigos y chateas. Offline Battle pone a dos jugadores cara a cara en un mismo teléfono.
+
+Competiciones
+Sigue las próximas competiciones de la WCA y de ZKT, con grupos, horario y resultados en directo en una sola página. Con Pro puedes seguir hasta 5 competidores por competición y recibir avisos de sus resultados y de los récords que se batan en las pruebas que elijas.
+
+Estadísticas y datos
+PB, ao5, ao12 y el número de resoluciones están disponibles para todos. Pro desbloquea todos los módulos de estadísticas y gráficos, y te deja ordenarlos bajo el timer. Puedes importar desde csTimer y Twisty Timer y exportar todas tus resoluciones. Con la sesión iniciada, tus resoluciones se guardan en el servidor y la app sigue funcionando sin conexión. Con Pro tus resoluciones se sincronizan en todos tus dispositivos.
+
+Pro también incluye
+Magnet Timer: al levantar un cubo magnético de junto a la cámara trasera del teléfono empieza el tiempo, y al dejarlo sobre la mesa se detiene.
+Soltar para detener: al terminar, sueltas el cubo o las manos sobre la mesa y el timer se detiene.
+6 temas exclusivos y tu propia imagen de fondo.
+Música, cubos inteligentes y GAN Timer en las salas.
+Publicar tus mejores tiempos en la tabla de líderes.
+Planes mensual, anual y de por vida.
+
+La app está en español, inglés, turco, ruso y chino. También puedes usar la misma cuenta en el navegador en zktimer.app.

@@ -1,0 +1,27 @@
+ZKT Timer küp çözerken süre tutmak, çözümlerini saklamak ve zamanın nereye gittiğini görmek için yapıldı. Süreyi ekrana dokunarak, StackMat, GAN Timer, QiYi Timer ya da smart küple tutabilirsin. 15 saniyelik inceleme, +2 ve DNF kuralları hazır gelir, her çözümden sonra yeni bir karıştırma çıkar.
+
+Smart küp
+GAN, MoYu, QiYi, Giiker ve Particula smart küpler Bluetooth ile bağlanır. Küp ekranda 3B olarak senin çevirdiğin gibi döner. Süre ilk hamlede başlar, küp çözülünce kendiliğinden durur. Pro ile her çözümün Cross, F2L, OLL ve PLL sürelerini, hamle sayısını ve TPS değerini ayrı ayrı görebilir, çözümü hamle hamle yeniden izleyebilirsin. İstatistikler hangi OLL ve PLL vakalarında yavaşladığını da gösterir.
+
+Algoritma çalışma
+OLL, PLL, F2L, ZBLL, COLL ve CMLL ile 2x2, 4x4, Pyraminx ve Square-1 setleri dahil 40'tan fazla kategori var. Her vakanın deseni görselle gösterilir. Kendi setlerini oluşturabilir, PLL tanıma pratiği yapabilirsin. Pro ile algoritmayı smart küpte çevirip her hamlenin doğru olup olmadığını görebilir, algoritmaları PDF olarak indirebilirsin.
+
+Online Battle ve odalar
+Online Battle'da smart küpünle o sırada rakip arayan biriyle eşleşirsin. İkiniz aynı karıştırmayı çözersiniz, üç turu ilk kazanan maçı alır. Süre küpün kendi saatinden geldiği için internet gecikmesi sonucu değiştirmez. Şimdilik 3x3'te ve GAN, QiYi, MoYu WeiLong V10 AI küplerle oynanıyor.
+Odalarda arkadaşlarınla aynı karıştırmayı çözüp sohbet edebilirsin. Offline Battle'da iki kişi aynı telefonda karşı karşıya yarışır.
+
+Yarışmalar
+Yaklaşan yarışmaların gruplarını, programını ve canlı sonuçlarını aynı sayfada takip edebilirsin. Pro ile bir yarışmada 5 yarışmacıya kadar takip edebilir, onların sonuçlarını ve seçtiğin etkinliklerde kırılan rekorları bildirim olarak alabilirsin.
+
+İstatistik ve veriler
+PB, ao5, ao12 ve toplam çözüm sayısı herkese açık. Pro ile tüm istatistik modüllerini ve grafikleri açıp timer'ın altındaki yerlerini düzenleyebilirsin. csTimer ve Twisty Timer verilerini içe aktarabilir, bütün çözümlerini dışa aktarabilirsin. Giriş yaptığında çözümlerin sunucuya yedeklenir, internet yokken de uygulama çalışmaya devam eder. Pro ile çözümlerin bütün cihazlarında aynı görünür.
+
+Pro ile ayrıca
+Magnet Timer: mıknatıslı küpü telefonun arka kamerasının yanından kaldırınca süre başlar, masaya koyunca durur.
+Bırakınca durdur: çözüm bitince küpü ya da ellerini masaya bırakınca süre durur.
+6 özel tema ve kendi arka plan resmin.
+Odalarda müzik, smart küp ve GAN Timer.
+En iyi süreni sıralamada yayınlama.
+Aylık, yıllık ve ömür boyu seçenekleri var.
+
+Uygulama Türkçe, İngilizce, İspanyolca, Rusça ve Çince. Aynı hesapla zktimer.app adresinden tarayıcıda da kullanabilirsin.

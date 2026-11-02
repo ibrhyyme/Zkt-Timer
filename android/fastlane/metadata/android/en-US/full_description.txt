@@ -1,0 +1,27 @@
+ZKT Timer times your cube solves, keeps every result and shows you where the time goes. You can time with touch, StackMat, GAN Timer, QiYi Timer or a smart cube. Inspection, +2 and DNF follow WCA rules, and a new scramble comes up after every solve.
+
+Smart cubes
+GAN, MoYu, QiYi, Giiker and Particula smart cubes connect over Bluetooth. The cube turns on screen in 3D as you turn it. The time starts on your first move and stops when the cube is solved. With Pro you see the Cross, F2L, OLL and PLL times, move count and TPS for every solve, and you can replay it move by move. Your stats also show which OLL and PLL cases slow you down.
+
+Algorithm trainer
+More than 40 sets, including OLL, PLL, F2L, ZBLL, COLL, CMLL and sets for 2x2, 4x4, Pyraminx and Square-1. Each case shows its pattern. You can build your own sets and practice PLL recognition. With Pro you can drill algorithms on a smart cube and see whether each move is right, and download algorithms as a PDF.
+
+Online Battle and rooms
+Online Battle pairs you with someone searching at the same moment. You both solve the same scramble on a smart cube, and the first to win three rounds takes the match. Times come from the cube's own clock, so internet lag does not change the result. For now it is 3x3 only, with GAN, QiYi and MoYu WeiLong V10 AI cubes.
+In rooms you solve the same scramble as your friends and chat. Offline Battle puts two players face to face on one phone.
+
+Competitions
+Follow upcoming WCA and ZKT competitions, with groups, schedule and live results on one page. With Pro you can follow up to 5 competitors per competition and get notified about their results and about records broken in the events you pick.
+
+Stats and data
+PB, ao5, ao12 and solve count are open to everyone. Pro unlocks every stats module and chart, and lets you arrange them under the timer. You can import from csTimer and Twisty Timer and export all your solves. When you are signed in, your solves are backed up to the server, and the app keeps working offline. With Pro your solves sync across all your devices.
+
+Pro also adds
+Magnet Timer: lift a magnetic cube from beside the phone's rear camera and the time starts; put it down on the table and it stops.
+Drop to stop: when you finish, drop the cube or your hands on the table and the timer stops.
+6 extra themes and your own background image.
+Music, smart cubes and GAN Timer in rooms.
+Publishing your best times to the leaderboard.
+Monthly, yearly and lifetime plans.
+
+The app is in English, Turkish, Spanish, Russian and Chinese. You can also use the same account in the browser at zktimer.app.

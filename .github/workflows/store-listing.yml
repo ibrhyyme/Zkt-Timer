@@ -1,0 +1,98 @@
+name: Store Listing
+
+# Pushes the store pages (title, descriptions, keywords, screenshots) from the
+# files under android/fastlane/metadata and ios/App/fastlane/{metadata,screenshots}.
+# Manual trigger only. Play changes go to review right away. App Store text lands
+# on the version waiting for submission and goes live with the next release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Which store'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
+        default: both
+      screenshots:
+        description: 'Also replace the screenshots'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    if: inputs.platform != 'ios'
+    name: Play Store listing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Write Play Store JSON key
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        run: |
+          JSON_PATH="$RUNNER_TEMP/play-store-key.json"
+          echo "$PLAY_STORE_JSON_KEY" > "$JSON_PATH"
+          echo "PLAY_STORE_JSON_KEY_PATH=$JSON_PATH" >> $GITHUB_ENV
+
+      - name: Install fastlane
+        run: gem install fastlane -NV
+
+      - name: Fastlane listing
+        working-directory: android
+        env:
+          FASTLANE_DISABLE_COLORS: 1
+          SCREENSHOTS: ${{ inputs.screenshots }}
+        run: fastlane listing screenshots:"$SCREENSHOTS"
+
+  ios:
+    if: inputs.platform != 'android'
+    name: App Store listing
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Install fastlane
+        run: gem install fastlane -NV
+
+      - name: Write App Store Connect API Key
+        env:
+          API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys/
+          printf '%s' "$API_KEY_CONTENT" > ~/fastlane_api_key.p8
+          cp ~/fastlane_api_key.p8 ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+          chmod 600 ~/fastlane_api_key.p8
+
+      - name: Fastlane listing
+        working-directory: ios/App
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          FASTLANE_DISABLE_COLORS: 1
+          SCREENSHOTS: ${{ inputs.screenshots }}
+        run: fastlane listing screenshots:"$SCREENSHOTS"

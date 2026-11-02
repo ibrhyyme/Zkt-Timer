@@ -1,0 +1,1 @@
+Online Battle'da smart küpünle o sırada rakip arayan biriyle yarışabilirsin. Aynı karıştırmayı çözersiniz, üç turu ilk kazanan maçı alır.

@@ -1,8 +1,43 @@
+require "fileutils"
+require "tmpdir"
+
 default_platform(:ios)
 
 TEAM_ID = "R6CCJB68TQ"
 APP_IDENTIFIER = "com.zktimer.app"
 ASC_APP_ID = "11492926306"
+
+# Plain Ruby in a Fastfile runs inside ./fastlane while actions run one level up,
+# so resolve listing folders to an absolute path that works from either.
+def fastlane_path(*parts)
+  [File.join(Dir.pwd, *parts), File.join(Dir.pwd, "fastlane", *parts)].find { |p| File.exist?(p) }
+end
+
+# Language family of a store locale code. Simplified and Traditional Chinese stay
+# apart; every other language matches on its first part (es-ES and es-MX -> es).
+def listing_language(code)
+  c = code.to_s.downcase
+  return "zh-hant" if %w[zh-tw zh-hk zh-hant].include?(c)
+  return "zh-hans" if %w[zh zh-cn zh-hans].include?(c)
+  c.split("-").first
+end
+
+# Copies each locale folder into a temp dir under the codes the store already
+# uses for that language, so an existing localization is updated instead of a
+# second one opening beside it. A language the store does not have keeps its code.
+def stage_listing_locales(src, live_codes)
+  staged = Dir.mktmpdir("listing")
+  Dir.children(src).sort.each do |local|
+    next unless File.directory?(File.join(src, local))
+    targets = live_codes.select { |c| listing_language(c) == listing_language(local) }
+    targets = [local] if targets.empty?
+    targets.each do |target|
+      FileUtils.cp_r(File.join(src, local), File.join(staged, target))
+      UI.message("Listing #{local} -> #{target}")
+    end
+  end
+  staged
+end
 
 platform :ios do
   desc "Build and upload to TestFlight"
@@ -78,6 +113,65 @@ platform :ios do
       api_key: api_key,
       skip_waiting_for_build_processing: true,
       skip_submission: true
+    )
+  end
+
+  desc "Upload the App Store listing from fastlane/metadata (screenshots only with screenshots:true)"
+  lane :listing do |options|
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: File.expand_path("~/fastlane_api_key.p8"),
+      duration: 1200,
+      in_house: false
+    )
+
+    # Name, subtitle, description and keywords only change on a version that is
+    # not live yet. Reuse the version already in Prepare for Submission when there
+    # is one (never renumber it); otherwise open the next version, numbered the
+    # way :beta numbers builds, so the next TestFlight build lands on it.
+    app = Spaceship::ConnectAPI::App.find(APP_IDENTIFIER)
+    edit_version = app.get_edit_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    if edit_version
+      version = edit_version.version_string
+    else
+      latest_testflight_build_number(
+        app_identifier: APP_IDENTIFIER,
+        api_key: api_key,
+        initial_build_number: 0
+      )
+      latest_version_str = lane_context[SharedValues::LATEST_TESTFLIGHT_VERSION] || "2.0.0"
+      version_parts = latest_version_str.split(".")
+      version_parts[-1] = (version_parts[-1].to_i + 1).to_s
+      version = version_parts.join(".")
+    end
+    UI.message("Store listing goes on version #{version}")
+
+    known_version = edit_version || app.get_live_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    live_codes = known_version ? known_version.get_app_store_version_localizations.map(&:locale) : []
+    UI.message("App Store localizations now: #{live_codes.join(', ')}")
+    local_codes = Dir.children(fastlane_path("metadata"))
+    stale = live_codes.reject { |c| local_codes.any? { |l| listing_language(l) == listing_language(c) } }
+    UI.important("App Store localizations with no folder here keep their old text: #{stale.join(', ')}") unless stale.empty?
+
+    # overwrite_screenshots clears every device size of each uploaded locale, so a
+    # screenshots:true run must carry the iPad set as well as the iPhone set. With
+    # no images in the folder the current screenshots are left alone.
+    screenshots_dir = fastlane_path("screenshots")
+    has_screenshots = !!screenshots_dir && !Dir.glob(File.join(screenshots_dir, "**", "*.png")).empty?
+    upload_screenshots = options[:screenshots].to_s == "true" && has_screenshots
+    deliver(
+      api_key: api_key,
+      app_identifier: APP_IDENTIFIER,
+      app_version: version,
+      metadata_path: stage_listing_locales(fastlane_path("metadata"), live_codes),
+      screenshots_path: upload_screenshots ? stage_listing_locales(screenshots_dir, live_codes) : nil,
+      skip_binary_upload: true,
+      skip_screenshots: !upload_screenshots,
+      overwrite_screenshots: true,
+      submit_for_review: false,
+      run_precheck_before_submit: false,
+      force: true
     )
   end
 end

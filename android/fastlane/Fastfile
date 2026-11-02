@@ -1,6 +1,41 @@
+require "fileutils"
+require "tmpdir"
+
 default_platform(:android)
 
 PACKAGE_NAME = "com.zktimer.app"
+
+# Plain Ruby in a Fastfile runs inside ./fastlane while actions run one level up,
+# so resolve listing folders to an absolute path that works from either.
+def fastlane_path(*parts)
+  [File.join(Dir.pwd, *parts), File.join(Dir.pwd, "fastlane", *parts)].find { |p| File.exist?(p) }
+end
+
+# Language family of a store locale code. Simplified and Traditional Chinese stay
+# apart; every other language matches on its first part (es-ES and es-419 -> es).
+def listing_language(code)
+  c = code.to_s.downcase
+  return "zh-hant" if %w[zh-tw zh-hk zh-hant].include?(c)
+  return "zh-hans" if %w[zh zh-cn zh-hans].include?(c)
+  c.split("-").first
+end
+
+# Copies each locale folder into a temp dir under the codes the store already
+# uses for that language, so an existing listing is updated instead of a second
+# one opening beside it. A language the store does not have yet keeps its code.
+def stage_listing_locales(src, live_codes)
+  staged = Dir.mktmpdir("listing")
+  Dir.children(src).sort.each do |local|
+    next unless File.directory?(File.join(src, local))
+    targets = live_codes.select { |c| listing_language(c) == listing_language(local) }
+    targets = [local] if targets.empty?
+    targets.each do |target|
+      FileUtils.cp_r(File.join(src, local), File.join(staged, target))
+      UI.message("Listing #{local} -> #{target}")
+    end
+  end
+  staged
+end
 
 platform :android do
   desc "Build and upload to Play Store Internal Track"
@@ -39,6 +74,40 @@ platform :android do
       skip_upload_images: true,
       skip_upload_screenshots: true,
       skip_upload_changelogs: true
+    )
+  end
+
+  desc "Upload the store listing from fastlane/metadata/android (screenshots only with screenshots:true)"
+  lane :listing do |options|
+    # Only languages with a folder under metadata/android are touched; every other
+    # Play translation stays as it is. A field without a .txt file keeps its
+    # current value. Screenshots are replaced per locale only on screenshots:true,
+    # so a text-only run leaves the images alone.
+    require "supply"
+    json_key = ENV["PLAY_STORE_JSON_KEY_PATH"]
+    Supply.config = FastlaneCore::Configuration.create(
+      Supply::Options.available_options,
+      { json_key: json_key, package_name: PACKAGE_NAME }
+    )
+    client = Supply::Client.make_from_config
+    client.begin_edit(package_name: PACKAGE_NAME)
+    live_codes = client.listings.map(&:language)
+    client.abort_current_edit
+    UI.message("Play listings now: #{live_codes.join(', ')}")
+    local_codes = Dir.children(fastlane_path("metadata", "android"))
+    stale = live_codes.reject { |c| local_codes.any? { |l| listing_language(l) == listing_language(c) } }
+    UI.important("Play listings with no folder here keep their old text: #{stale.join(', ')}") unless stale.empty?
+
+    upload_to_play_store(
+      json_key: json_key,
+      package_name: PACKAGE_NAME,
+      metadata_path: stage_listing_locales(fastlane_path("metadata", "android"), live_codes),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true,
+      skip_upload_metadata: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: options[:screenshots].to_s != "true"
     )
   end
 end
