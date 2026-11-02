@@ -12,6 +12,13 @@
 	justify-content: center;
 	padding: $zt-space-5 $zt-space-4;
 
+	// The Pro gate wears Pro's gold and the Pro page's gold frame; the account gate keeps
+	// the user's theme, since what it sells is an account, not Pro.
+	&--pro {
+		@include zt-pro-accent;
+		border-color: $zt-pro-frame;
+	}
+
 	&__card {
 		display: flex;
 		flex-direction: column;

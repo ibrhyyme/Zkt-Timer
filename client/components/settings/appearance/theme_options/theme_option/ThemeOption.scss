@@ -1,6 +1,8 @@
 @import '../../../../../styles/config';
 
 .#{$namespace}-theme-option {
+	$self: &;
+
 	border: 4px solid rgb(var(--button-color), 0.9);
 	background-color: rgb(var(--button-color), 0.4);
 	border-radius: 30px;
@@ -18,16 +20,9 @@
 		border-color: rgb(var(--primary-color));
 	}
 
-	&--locked {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
 	&__pro {
-		position: absolute;
-		top: 50%;
-		right: 20px;
-		transform: translate(0, -50%);
+		display: inline-flex;
+		margin-left: auto;
 	}
 
 	> p {
@@ -39,10 +34,14 @@
 		margin: 0 !important;
 	}
 
-	&__lock {
-		margin-left: auto;
-		color: rgb(var(--text-color));
-		opacity: 0.6;
+	// A tap opens the Pro page, so the row stays clickable rather than "not allowed". The
+	// preview and the name fade; the gold Pro tag keeps its full colour. After `> p`, which
+	// has the same specificity and would otherwise put the name back to full opacity.
+	&--locked {
+		> #{$self}__preview,
+		> p {
+			opacity: 0.5;
+		}
 	}
 
 	&:hover {
@@ -92,10 +91,6 @@
 			width: 30px;
 			height: 22px;
 			margin-right: 6px;
-		}
-
-		&__pro {
-			right: 12px;
 		}
 	}
 }

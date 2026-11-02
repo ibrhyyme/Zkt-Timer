@@ -1,9 +1,13 @@
 @import '../../../styles/config';
 
-// Pro upsell inside the shared Modal frame. Flat and in the user's own accent (owner,
-// 2026-10-31): the fixed violet, its gradients, glows and the lifting button are gone.
-// The champagne gold stays the Pro page's own exception and does not reach this modal.
+// Pro upsell inside the shared Modal frame. Flat (owner, 2026-10-31): the fixed violet, its
+// gradients, glows and the lifting button are gone. In Pro's gold like the Pro page (owner,
+// 2026-11-02), so the upsell already looks like the page it leads to. The accent is declared
+// here as well as on the frame (openProOnlyModal passes `pro`): the publish-solves modal
+// renders this body inside its own, untinted frame.
 .#{$namespace}-pro-only-modal {
+	@include zt-pro-accent;
+
 	padding-top: $zt-space-5;
 	display: flex;
 	flex-direction: column;

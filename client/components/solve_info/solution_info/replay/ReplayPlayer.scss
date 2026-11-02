@@ -203,7 +203,10 @@
 	}
 }
 
+// In Pro's gold with the Pro page's gold frame, like the other Pro gates (ProBlurOverlay).
 .#{$namespace}-replay-pro-upsell {
+	@include zt-pro-accent;
+
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -211,20 +214,15 @@
 	gap: 0.75rem;
 	padding: 1.5rem 1rem;
 	background: $zt-card-bg;
-	border: 1px solid $zt-card-border;
+	border: 1px solid $zt-pro-frame;
 	border-radius: $zt-radius-lg;
 	text-align: center;
 	min-height: 280px;
 
+	// A bare glyph in the accent: no tinted circle behind it.
 	&__icon-wrap {
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 60px;
-		height: 60px;
-		border-radius: 50%;
-		background: rgba(var(--primary-color), 0.15);
-		color: rgb(var(--text-color));
+		color: rgb(var(--primary-color));
 	}
 
 	&__title {

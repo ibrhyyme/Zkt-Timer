@@ -1,0 +1,12 @@
+@import '../../../styles/config';
+
+.#{$namespace}-pro-tag {
+	@include zt-pro-tag;
+
+	flex-shrink: 0;
+
+	svg {
+		width: 1em;
+		height: 1em;
+	}
+}

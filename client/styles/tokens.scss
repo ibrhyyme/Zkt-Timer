@@ -255,6 +255,73 @@ $zt-transition: 120ms ease;
 	padding: $padding;
 }
 
+// Pro's own accent, approved by the owner: champagne gold in place of the user's theme
+// colour, on every surface that shows or sells Pro (the Pro page, the upsell modal, the
+// Pro gate cards), so Pro reads as one world whatever the theme. Darker on a light page,
+// so small gold text keeps AA contrast on white. Still flat: no gradient, no glow.
+$zt-pro-gold: 232, 201, 140;
+$zt-pro-gold-on-light: 140, 104, 38;
+$zt-pro-gold-ink: 26, 21, 12;
+
+/// Declares the gold AS --primary-color, so every accent rule inside, the focus rings
+/// and the shared Button pick it up without per-rule colours.
+@mixin zt-pro-accent {
+	--primary-color: #{$zt-pro-gold};
+	--theme-primary-opposite: #{$zt-pro-gold-ink};
+
+	.theme-light & {
+		--primary-color: #{$zt-pro-gold-on-light};
+		--theme-primary-opposite: 255, 255, 255;
+	}
+}
+
+/// The Pro card's frame: the card's own surface, a gold hairline carries the identity.
+$zt-pro-frame: rgba(var(--primary-color), 0.55);
+
+/// The "Pro" tag on a gated option: the Pro page's solid plan tag (gold fill, ink text,
+/// mono capitals). Solid, not a tint: a tinted fill under same-hue text was ruled out.
+@mixin zt-pro-tag {
+	@include zt-pro-accent;
+
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 1px 6px;
+	border: 0;
+	border-radius: $zt-radius-sm;
+	box-shadow: none;
+	background: rgb(var(--primary-color));
+	color: rgb(var(--theme-primary-opposite));
+	font-family: 'Roboto Mono', ui-monospace, monospace;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.45;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+/// An icon-only Pro mark: a gold disc with an ink crown (the profile avatar's medallion,
+/// the timer type cards' corner).
+@mixin zt-pro-medallion($size) {
+	@include zt-pro-accent;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: $size;
+	height: $size;
+	border: 0;
+	border-radius: 50%;
+	background: rgb(var(--primary-color));
+	color: rgb(var(--theme-primary-opposite));
+
+	svg {
+		width: 62%;
+		height: 62%;
+	}
+}
+
 /// A neutral control surface: secondary buttons, icon buttons, segmented options.
 /// Hover and press change the fill only; nothing moves. No outline: a fill with a line
 /// round it is what made every control a pill. The border stays, transparent, so a

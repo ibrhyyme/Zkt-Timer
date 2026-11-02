@@ -92,6 +92,13 @@
 		}
 	}
 
+	// A Pro surface (the upsell, the promo success): Pro's gold on the whole frame, the
+	// "Done" action included, and the gold hairline in place of the neutral one.
+	&--pro #{$self}__center {
+		@include zt-pro-accent;
+		border-color: $zt-pro-frame;
+	}
+
 	// Top-right, the same 40px CloseButton every modal uses.
 	&__close-button {
 		position: absolute;
@@ -203,6 +210,11 @@
 				top: $zt-space-3;
 				right: $zt-space-3;
 				float: none;
+			}
+
+			// Phone cards drop the frame; a Pro card keeps its gold one.
+			&#{$self}--pro #{$self}__center {
+				border: 1px solid $zt-pro-frame;
 			}
 		}
 

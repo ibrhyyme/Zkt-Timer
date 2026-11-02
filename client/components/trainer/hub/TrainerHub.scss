@@ -96,14 +96,7 @@
 	}
 
 	&__pro {
-		display: inline-block;
-		padding: 1px 5px;
-		border-radius: $zt-radius-md;
-		font-size: 0.68rem;
-		font-weight: 800;
-		letter-spacing: 0.04em;
-		background: rgb(var(--trainer-accent-purple));
-		color: rgb(var(--trainer-accent-on));
+		@include zt-pro-tag;
 	}
 
 	// Mobile training header: one chip that flips the mode.

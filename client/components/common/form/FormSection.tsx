@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useDispatch} from 'react-redux';
 import {useMe} from '../../../util/hooks/useMe';
 import {useHistory} from 'react-router-dom';
-import Tag from '../tag/Tag';
+import ProTag from '../pro_tag/ProTag';
 import {isNotPro} from '../../../util/pro';
 import {closeModal} from '../../../actions/general';
 
@@ -48,7 +48,7 @@ export default function FormSection(props: Props) {
 				onClick={goToPro}
 				className="cursor-pointer inline-block"
 			>
-				<Tag text="PRO" textColor="orange" />
+				<ProTag />
 			</div>
 		);
 		body = (

@@ -1477,6 +1477,8 @@
     "wca_live_schedule": "Schedule",
     "wca_live_records": "Records",
     "wca_live_no_results": "No results yet for this round",
+    "dual_rounds": "Dual Rounds",
+    "dual_rounds_note": "These two rounds are ranked together: each competitor's better result of the two counts.",
     "round_status_done": "Done",
     "round_status_live": "Live",
     "round_status_open": "Open",
@@ -3740,7 +3742,6 @@
     "next_tooltip": "Next scramble (→ Right Arrow)"
   },
   "pro_page": {
-    "title": "Pro",
     "hero_title": "Pick your plan",
     "intro_title": "Everything you need, in ZKT Pro.",
     "intro_lede": "Smart cube analysis, algorithm practice on the cube, Magnet Timer and Drop to stop, competitor follow and record alerts, custom themes and backgrounds. {{count}} features in all.",
@@ -3751,10 +3752,6 @@
       "community": "Rooms and competitions",
       "personal": "Personalization"
     },
-    "subtitle": "Take your cubing to the next level with exclusive Pro features designed for serious speedcubers.",
-    "pro_card_title": "Pro Membership",
-    "pro_includes": "What you get with Pro",
-    "mobile_only_cta": "Purchase in mobile app",
     "mobile_only_hint": "Purchases are made through the iOS and Android apps",
     "basic_hint": "You're currently on Basic plan",
     "plan": {
@@ -3777,13 +3774,6 @@
       "yearly_cycle": "/ year",
       "monthly_cycle": "/ month",
       "lifetime_cycle": ""
-    },
-    "compare": {
-      "title": "Plan Comparison",
-      "subtitle": "Every difference between Basic and Pro",
-      "basic": "Basic",
-      "pro": "Pro",
-      "pro_price_hint": "Starts at $2.99"
     },
     "iap": {
       "purchase_cta": "Purchase",
@@ -3817,66 +3807,14 @@
       "downgrade_blocked_hint": "Your yearly plan expires on {{date}}. You can switch to monthly after that.",
       "paused_notice": "Your subscription is paused. You can resume it via Google Play."
     },
-    "whats_included": "What's included:",
-    "coming_soon": "Coming Soon",
-    "free": "Included",
-    "basic_desc": "Get started with the essentials.",
     "pro_active_desc": "Enjoy all Pro features.",
     "pro_expires": "Active until {{date}}",
     "current_plan": "Current plan",
     "subscribed_via_title": "You're subscribed via {{platform}} app",
     "subscribed_via_subtitle": "Manage your subscription on your {{platform}} device",
     "subscribed_via_home": "Home",
-    "click_hint": "Click for details",
-    "all_basic_included": "All free features included",
     "features_head_label": "What's included",
     "features_head_count": "{{count}} features",
-    "basic_features": {
-      "timer": {
-        "title": "Timer",
-        "desc": "Time your solves with keyboard, touch, StackMat, GAN Timer, or smart cube — whichever you prefer."
-      },
-      "sessions": {
-        "title": "Sessions",
-        "desc": "Create as many sessions as you need. Merge, reorder, or delete — your solves stay safe on your device."
-      },
-      "unlimited_solves": {
-        "title": "Unlimited solves",
-        "desc": "No solve limits. Solve as much as you want, add notes, and edit anytime."
-      },
-      "rooms": {
-        "title": "Community rooms",
-        "desc": "Jump into a room, solve the same scramble, and chat in real time with other cubers."
-      },
-      "basic_stats": {
-        "title": "Basic statistics",
-        "desc": "Track your PB, ao5, ao12, and total solve count at a glance."
-      },
-      "smart_cube_basic": {
-        "title": "Smart cube connection",
-        "desc": "Pair your smart cube via Bluetooth. Times and moves are recorded automatically."
-      },
-      "trainer_basic": {
-        "title": "Algorithm trainer",
-        "desc": "Drill OLL, PLL, F2L, and more. Memorize and practice at your own pace."
-      },
-      "friends": {
-        "title": "Friend system",
-        "desc": "Add friends, check their profiles, and solve together."
-      },
-      "notifications": {
-        "title": "Notifications",
-        "desc": "Get instant alerts for friend requests, room invites, and more."
-      },
-      "settings_sync": {
-        "title": "Settings sync",
-        "desc": "Set up your timer once, and it stays the same on all your devices."
-      },
-      "two_themes": {
-        "title": "2 themes",
-        "desc": "Switch between Dark and Light mode."
-      }
-    },
     "features": {
       "sync": {
         "title": "Cross-device sync",
@@ -4488,7 +4426,7 @@
         "title": "Stats Customization",
         "desc": "Set up stat modules exactly the way you want."
       },
-      "trainer": {
+      "trainer_smart_cube": {
         "title": "Train with Your Smart Cube",
         "desc": "Practice algorithms on your cube with instant feedback."
       },
@@ -4540,7 +4478,10 @@
       "follow_limit": "Up to 5 follows per competition",
       "slam_drop": "Stop by tapping the table, not the screen",
       "slam_calibrate": "Sensitivity tuned to every table",
-      "slam_stackmat": "StackMat feel — no hardware needed"
+      "slam_stackmat": "StackMat feel — no hardware needed",
+      "magnet_lift": "The timer starts the moment you lift the cube",
+      "magnet_drop": "It stops when you put the cube down on the table",
+      "magnet_setup": "All you need is a magnetic cube and the mobile app"
     }
   },
   "online_battle": {

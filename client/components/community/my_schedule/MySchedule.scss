@@ -972,16 +972,33 @@
 		line-height: 1.4;
 	}
 
+	// Pro's gold frame on a flat surface, like the Pro page; no tinted fill.
 	&__radar-pro-banner {
+		@include zt-pro-accent;
+		@include zt-focus-ring;
+
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		width: 100%;
 		padding: 0.7rem 0.9rem;
 		border-radius: 0.5rem;
-		border: 1px solid rgba(var(--primary-color), 0.4);
-		background: rgba(var(--primary-color), 0.1);
+		border: 1px solid $zt-pro-frame;
+		background: transparent;
 		color: rgb(var(--text-color));
+		font: inherit;
 		font-size: 0.85rem;
 		font-weight: 600;
+		text-align: left;
 		cursor: pointer;
 		margin-bottom: 1rem;
+
+		svg {
+			flex-shrink: 0;
+			width: 16px;
+			height: 16px;
+			color: rgb(var(--primary-color));
+		}
 	}
 
 	&__radar-builder {

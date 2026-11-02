@@ -4,6 +4,8 @@ import {useTranslation} from 'react-i18next';
 import {useDispatch} from 'react-redux';
 import {closeModal} from '../../actions/general';
 import block from '../../styles/bem';
+import Button from '../common/button/Button';
+import './PromoSuccessModal.scss';
 
 const b = block('promo-success-modal');
 
@@ -37,9 +39,14 @@ export default function PromoSuccessModal({membershipType, expiresAt}: Props) {
 			</div>
 			<h2 className={b('title')}>{t('pro_page.promo.success_title')}</h2>
 			<p className={b('message')}>{message}</p>
-			<button type="button" className={b('cta')} onClick={() => dispatch(closeModal())}>
-				{t('pro_page.promo.success_button')}
-			</button>
+			<Button
+				primary
+				large
+				fullWidth
+				noMargin
+				text={t('pro_page.promo.success_button')}
+				onClick={() => dispatch(closeModal())}
+			/>
 		</div>
 	);
 }

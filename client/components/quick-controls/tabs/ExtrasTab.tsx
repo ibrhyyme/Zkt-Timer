@@ -9,7 +9,8 @@ import { useMe } from '../../../util/hooks/useMe';
 import { isProEnabled, isNotPro } from '../../../lib/pro';
 import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
 import { isNative } from '../../../util/platform';
-import { CaretDown, CaretUp, Crown, Minus, Plus } from 'phosphor-react';
+import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import ProTag from '../../common/pro_tag/ProTag';
 import { useSlamStop } from '../../../util/slam-stop/settings';
 import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared/util/solve/multiphase';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
@@ -312,15 +313,12 @@ export default function ExtrasTab({
 				<button
 					type="button"
 					onClick={() => openProOnlyModal(dispatch, t, 'slam_to_stop')}
-					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-violet-500/40 transition-all duration-200 [font-size:inherit]"
+					className="w-full group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200 [font-size:inherit]"
 				>
 					<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 						{t('quick_controls.slam_to_stop')}
 					</span>
-					<span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
-						<Crown weight="fill" size={12} />
-						Pro
-					</span>
+					<ProTag />
 				</button>
 			) : (
 				<>

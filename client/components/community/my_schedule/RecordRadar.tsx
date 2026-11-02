@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, Trash, Plus, Bell} from 'phosphor-react';
+import {ArrowLeft, Trash, Plus, Bell, Crown} from 'phosphor-react';
 import {WCA_EVENT_IDS, WCA_CONTINENTS, WCA_COUNTRIES, COUNTRY_TO_CONTINENT} from '../../../../shared/wca_geo';
 import {Consts} from '../../../../shared/consts';
 import {useMe} from '../../../util/hooks/useMe';
@@ -230,9 +230,10 @@ export default function RecordRadar() {
 				<p className={b('radar-desc')}>{t('my_schedule.radar_desc')}</p>
 
 				{notPro && (
-					<div className={b('radar-pro-banner')} onClick={() => openProOnlyModal(dispatch, t, 'record_alerts')}>
+					<button type="button" className={b('radar-pro-banner')} onClick={() => openProOnlyModal(dispatch, t, 'record_alerts')}>
+						<Crown weight="fill" />
 						{t('my_schedule.radar_pro_hint')}
-					</div>
+					</button>
 				)}
 
 				{/* Builder */}

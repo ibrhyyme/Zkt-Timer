@@ -5,10 +5,10 @@
 // comes from the type, not from effects.
 //
 // One deliberate exception, approved by the owner: the accent is not the user's theme
-// colour. Champagne gold reads as a premium membership; in the theme blue this page looked
-// like any other settings screen. The gold is declared AS --primary-color on the layout, so every
-// rule below, the focus rings and the shared Button pick it up without per-rule colours.
-// Still flat: no gradient, no glow.
+// colour but Pro's champagne gold (zt-pro-accent in tokens.scss, shared with the upsell
+// modal and the Pro gate cards). In the theme blue this page looked like any other
+// settings screen. It sits on the layout, not the root, so the mobile header keeps the
+// user's own nav colours.
 //
 // No overflow on the root on purpose: overflow-x: hidden would make it a scroll
 // container and the sticky purchase panel would stick to it instead of the page.
@@ -16,11 +16,6 @@
 $mono: 'Roboto Mono', ui-monospace, monospace;
 $buy-width: 400px;
 $layout-max: 1120px;
-
-$pro-gold: 232, 201, 140;
-// Darker on a light page, so small gold text keeps AA contrast on white.
-$pro-gold-on-light: 140, 104, 38;
-$pro-gold-ink: 26, 21, 12;
 
 .#{$namespace}-pro-page {
 	width: 100%;
@@ -47,8 +42,7 @@ $pro-gold-ink: 26, 21, 12;
 
 	// ── Layout: claim and features on the left, purchase panel on the right ──
 	&__layout {
-		--primary-color: #{$pro-gold};
-		--theme-primary-opposite: #{$pro-gold-ink};
+		@include zt-pro-accent;
 
 		max-width: $layout-max;
 		margin: 0 auto;
@@ -71,11 +65,6 @@ $pro-gold-ink: 26, 21, 12;
 			grid-template-rows: auto;
 			padding: $zt-space-5 $zt-space-4 $zt-space-7;
 			max-width: 640px;
-		}
-
-		.theme-light & {
-			--primary-color: #{$pro-gold-on-light};
-			--theme-primary-opposite: 255, 255, 255;
 		}
 	}
 
@@ -144,7 +133,7 @@ $pro-gold-ink: 26, 21, 12;
 	// The page's own card surface; the gold frame and hairline carry the identity.
 	&__panel {
 		@include zt-card(0);
-		border-color: rgba(var(--primary-color), 0.55);
+		border-color: $zt-pro-frame;
 	}
 
 	&__panel-head {
@@ -750,8 +739,11 @@ $pro-gold-ink: 26, 21, 12;
 		color: rgb(var(--text-color));
 	}
 
+	// Outside the layout, so it declares the gold itself: its Pro mark wore the theme colour.
 	&__subscribed-via-card {
+		@include zt-pro-accent;
 		@include zt-card($zt-space-6);
+		border-color: $zt-pro-frame;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;

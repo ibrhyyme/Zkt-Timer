@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Crown } from 'phosphor-react';
 import './AvatarImage.scss';
 import { getStorageURL, resourceUri } from '../../../../util/storage';
 import block from '../../../../styles/bem';
@@ -88,6 +89,17 @@ export default function AvatarImage(props: Props) {
 	const profile = props.profile || props.user?.profile;
 
 	const showProRing = isProEnabled() && isPro(user as UserAccount);
+	const wrapperClass = b({ pro: showProRing, large, small, tiny });
+
+	// The crown medallion is for the large (profile) avatar only: on list-sized avatars it was
+	// a speck, and a list of Pro users became a row of crowns. There the ring marks Pro and
+	// the name carries the crown (Avatar.tsx). Top-right, since bottom-right belongs to the
+	// presence dot in the messages screens.
+	const proBadge = showProRing && large ? (
+		<span className={b('pro-badge')} role="img" aria-label="Pro" title="Pro">
+			<Crown weight="fill" />
+		</span>
+	) : null;
 
 	// Check if we have a profile image and it hasn't failed to load
 	const hasProfileImage = ((profile && profile.pfp_image) || image) && !imageError;
@@ -97,7 +109,7 @@ export default function AvatarImage(props: Props) {
 		const avatarSrc = image || getStorageURL(profile?.pfp_image?.storage_path);
 
 		avatar = (
-			<div className={b({pro: showProRing})}>
+			<div className={wrapperClass}>
 				<div className={b('body', { large, small, tiny })}>
 					<img
 						src={avatarSrc}
@@ -109,6 +121,7 @@ export default function AvatarImage(props: Props) {
 						onLoad={() => setImageError(false)}
 					/>
 				</div>
+				{proBadge}
 			</div>
 		);
 	} else {
@@ -128,7 +141,7 @@ export default function AvatarImage(props: Props) {
 		const initials = getInitials(user?.username || (user as any)?.first_name);
 
 		avatar = (
-			<div className={b({pro: showProRing})}>
+			<div className={wrapperClass}>
 				<div
 					className={b('body', { default: true, large, small, tiny })}
 					style={{ backgroundColor }}
@@ -142,12 +155,14 @@ export default function AvatarImage(props: Props) {
 							height: '100%',
 							color: 'white',
 							fontWeight: 'bold',
-							fontSize: large ? '24px' : small || tiny ? '12px' : '16px'
+							// A tiny Pro avatar gives 6px to the ring, which leaves two letters no room at 12px.
+							fontSize: large ? '24px' : tiny && showProRing ? '9px' : small || tiny ? '12px' : '16px'
 						}}
 					>
 						{initials}
 					</div>
 				</div>
+				{proBadge}
 			</div>
 		);
 	}

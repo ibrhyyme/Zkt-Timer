@@ -28,6 +28,22 @@
 		display: table;
 	}
 
+	// In Pro's gold (zt-pro-accent), whatever the theme.
+	&__pro {
+		@include zt-pro-accent;
+
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		margin-left: 5px;
+		color: rgb(var(--primary-color));
+
+		svg {
+			width: 0.95em;
+			height: 0.95em;
+		}
+	}
+
 	&__name {
 		display: flex;
 		flex-direction: column;

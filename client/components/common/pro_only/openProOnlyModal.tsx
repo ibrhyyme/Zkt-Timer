@@ -9,6 +9,7 @@ export function openProOnlyModal(dispatch: AnyDispatch, t: TFunction, featureKey
 	dispatch(
 		openModal(<ProOnlyModal featureKey={featureKey} />, {
 			compact: true,
+			pro: true,
 			width: 420,
 			closeButtonText: t('solve_info.done'),
 		}),

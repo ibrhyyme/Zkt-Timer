@@ -1,6 +1,7 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-avatar-image {
+	$self: &;
 	$aviSize: 50px;
 	$aviSizeTiny: 24px;
 	$aviSizeSmall: 30px;
@@ -14,11 +15,15 @@
 	display: inline-flex;
 	flex-shrink: 0;
 
+	// The photo gives up the Pro ring's room (--zt-avi-ring, 0 when not Pro), so a Pro avatar
+	// takes exactly the space of any other: with the ring added outside, a Pro user's row sat
+	// 8px off the rows around it. Hosts that size the avatar themselves set the body to 100%
+	// and get the same result from the padding.
 	&__body {
 		position: relative;
 		background-color: rgba(var(--text-color), 0.2);
-		width: $aviSize;
-		height: $aviSize;
+		width: calc(#{$aviSize} - 2 * var(--zt-avi-ring, 0px));
+		height: calc(#{$aviSize} - 2 * var(--zt-avi-ring, 0px));
 		border-radius: 50%;
 		overflow: hidden;
 		z-index: 1;
@@ -30,23 +35,30 @@
 		}
 
 		&--tiny {
-			width: $aviSizeTiny !important;
-			height: $aviSizeTiny !important;
+			width: calc(#{$aviSizeTiny} - 2 * var(--zt-avi-ring, 0px)) !important;
+			height: calc(#{$aviSizeTiny} - 2 * var(--zt-avi-ring, 0px)) !important;
 		}
 
 		&--small {
-			width: $aviSizeSmall !important;
-			height: $aviSizeSmall !important;
+			width: calc(#{$aviSizeSmall} - 2 * var(--zt-avi-ring, 0px)) !important;
+			height: calc(#{$aviSizeSmall} - 2 * var(--zt-avi-ring, 0px)) !important;
 		}
 
 		&--large {
-			width: $aviSizeLarge !important;
-			height: $aviSizeLarge !important;
+			width: calc(#{$aviSizeLarge} - 2 * var(--zt-avi-ring, 0px)) !important;
+			height: calc(#{$aviSizeLarge} - 2 * var(--zt-avi-ring, 0px)) !important;
 		}
 	}
 
+	// Pro, in Pro's gold like every Pro surface (zt-pro-accent in tokens.scss): a thin ring
+	// held off the photo by a gap, so it reads as a frame rather than a stroke. Flat: the
+	// spinning blue-violet-green ring it replaces was the generic effect the design language
+	// removes.
 	&--pro {
-		padding: 3px;
+		@include zt-pro-accent;
+		--zt-avi-ring: 4px;
+
+		padding: var(--zt-avi-ring);
 		border-radius: 50%;
 
 		&::before {
@@ -54,13 +66,33 @@
 			position: absolute;
 			inset: 0;
 			border-radius: 50%;
-			background: conic-gradient(from 0deg, #246bfd, #a855f7, #66bb6a, #246bfd);
-			animation: pro-ring-spin 8s linear infinite;
+			border: 2px solid rgb(var(--primary-color));
+		}
+
+		&#{$self}--large {
+			--zt-avi-ring: 6px;
+
+			&::before {
+				border-width: 3px;
+			}
+		}
+
+		&#{$self}--small,
+		&#{$self}--tiny {
+			--zt-avi-ring: 3px;
 		}
 	}
-}
 
-@keyframes pro-ring-spin {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(360deg); }
+	// Large (profile) avatar only: a crown medallion, the badge premium accounts carry
+	// elsewhere, a disc about a third of the avatar cut out of it by a ring in the page colour.
+	&__pro-badge {
+		@include zt-pro-medallion(34px);
+
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 2;
+		box-shadow: 0 0 0 3px rgb(var(--background-color));
+		pointer-events: none;
+	}
 }

@@ -64,8 +64,8 @@
 			height: var(--pfp-size);
 		}
 
-		// Body fills the (now definite) avatar box; the Pro ring's 3px padding
-		// still shrinks it, keeping the gradient border visible.
+		// Body fills the (now definite) avatar box; the Pro ring's padding still
+		// shrinks it, keeping the ring visible.
 		.#{$namespace}-avatar-image__body {
 			width: 100%;
 			height: 100%;
@@ -187,65 +187,17 @@
 			}
 		}
 
-		// ===================================================
-		// Pro item — koyu mor glow (legacy custom davranis)
-		// ===================================================
+		// Pro item (the upsell, shown to non-Pro users): Pro's gold, flat, like the Pro page's
+		// panel: a gold hairline and a gold crown. The violet glow, the gradient line and the
+		// fixed violet text it had are gone; it hovers like every other row.
 		&--pro {
-			background: #0e0c1c;
-			border: 1px solid rgba(139, 120, 255, 0.35);
-			box-shadow:
-				0 0 0 1px rgba(139, 120, 255, 0.12),
-				0 0 18px rgba(91, 62, 240, 0.2);
-			color: #c4b5ff;
-			overflow: hidden;
+			@include zt-pro-accent;
+
+			border: 1px solid $zt-pro-frame;
 			margin: 2px 0;
 
-			&::after {
-				content: '';
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				height: 1px;
-				background: linear-gradient(90deg, transparent, rgba(139, 120, 255, 0.6), transparent);
-			}
-
 			.#{$namespace}-nav-account-dropdown__option-icon svg {
-				color: #a78bff;
-			}
-
-			&:hover,
-			&:focus-visible {
-				background: #130f24;
-				border-color: rgba(139, 120, 255, 0.55);
-				color: #d4c4ff;
-				transform: translateX(2px);
-
-				&::before {
-					height: 0; // pro item'da stripe yok (zaten kendi glow'u var)
-				}
-			}
-
-			.theme-light & {
-				background: rgba(124, 58, 237, 0.08);
-				border-color: rgba(124, 58, 237, 0.3);
-				box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1);
-				color: #6d28d9;
-
-				&::after {
-					background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
-				}
-
-				.#{$namespace}-nav-account-dropdown__option-icon svg {
-					color: #7c3aed;
-				}
-
-				&:hover,
-				&:focus-visible {
-					background: rgba(124, 58, 237, 0.15);
-					border-color: rgba(124, 58, 237, 0.5);
-					color: #5b21b6;
-				}
+				color: rgb(var(--primary-color));
 			}
 		}
 	}

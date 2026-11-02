@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { Lock, Check, Crown } from 'phosphor-react';
+import { Lock, Check } from 'phosphor-react';
 import Button from '../common/button/Button';
+import ProTag from '../common/pro_tag/ProTag';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
@@ -176,12 +177,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                 >
                                     <span className={`text-sm font-medium flex items-center gap-2 ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text'}`}>
                                         {getTypeName(type)}
-                                        {proTypes.includes(type) && (
-                                            <span className="text-[10px] text-text bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1 font-bold">
-                                                <Crown size={10} weight="fill" />
-                                                Pro
-                                            </span>
-                                        )}
+                                        {proTypes.includes(type) && <ProTag />}
                                     </span>
                                     <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${allowedTypes.includes(type) ? 'bg-blue-500 text-white' : 'bg-gray-800'
                                         }`}>

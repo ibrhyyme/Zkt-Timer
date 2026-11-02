@@ -166,9 +166,7 @@
 		letter-spacing: 0.02em;
 
 		&--pro {
-			color: rgb(var(--text-color));
-			background: rgba(var(--primary-color), 0.16);
-			box-shadow: 0 0 0 1px rgba(var(--primary-color), 0.2);
+			@include zt-pro-tag;
 		}
 
 		&--locked {

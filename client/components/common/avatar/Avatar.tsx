@@ -1,7 +1,7 @@
 import React from 'react';
 import './Avatar.scss';
 import AvatarImage from './avatar_image/AvatarImage';
-import { CircleWavyCheck } from 'phosphor-react';
+import { CircleWavyCheck, Crown } from 'phosphor-react';
 import { Link } from 'react-router-dom';
 import Badges from './badges/Badges';
 import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../server/schemas/UserAccount.schema';
@@ -14,6 +14,7 @@ import {
 import block from '../../../styles/bem';
 import AvatarDropdown from './avatar_dropdown/AvatarDropdown';
 import { Profile } from '../../../../server/schemas/Profile.schema';
+import { isPro, isProEnabled } from '../../../util/pro';
 
 const b = block('avatar');
 
@@ -63,12 +64,24 @@ export default function Avatar(props: Props) {
 		);
 	}
 
+	// Beside the name, where premium badges sit in most products: legible at text size,
+	// where a badge on a list-sized avatar is not (AvatarImage keeps its own for large).
+	let proSymbol = null;
+	if (isProEnabled() && isPro(user as UserAccount)) {
+		proSymbol = (
+			<span className={b('pro')} role="img" aria-label="Pro" title="Pro">
+				<Crown weight="fill" />
+			</span>
+		);
+	}
+
 	let nameSpan = null;
 	if (user?.username) {
 		nameSpan = (
 			<span className={b('name')}>
 				<span className={b('username')}>
 					{user.username} {verifiedSymbol}
+					{proSymbol}
 				</span>
 			</span>
 		);

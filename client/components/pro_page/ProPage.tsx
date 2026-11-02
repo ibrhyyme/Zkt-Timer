@@ -75,8 +75,8 @@ const PLANS: Plan[] = [
 	},
 ];
 
-// The feature list itself lives in client/lib/pro_features.ts so this page and
-// PlanCompareModal cannot drift apart. The advertised count follows its length.
+// The feature list itself lives in client/lib/pro_features.ts, next to the gates it
+// describes. The advertised count follows its length.
 // Numbering runs on across groups, so each section knows where it starts.
 const FEATURE_SECTIONS = (() => {
 	let start = 0;
@@ -232,7 +232,8 @@ function ProPageContent() {
 			if (data?.success) {
 				setPromoCode('');
 				dispatch(openModal(
-					<PromoSuccessModal membershipType={data.membership_type} expiresAt={data.expires_at} />
+					<PromoSuccessModal membershipType={data.membership_type} expiresAt={data.expires_at} />,
+					{compact: true, pro: true, width: 420},
 				));
 			}
 		} catch (e: any) {

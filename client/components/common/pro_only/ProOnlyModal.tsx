@@ -17,19 +17,23 @@ const DEFAULT_HIGHLIGHTS = ['sync', 'themes', 'stats_customize'] as const;
 // Keyed by the `featureKey` callers pass. Where a key matches a registry entry in
 // client/lib/pro_features.ts, the two must stay spelled the same: `record_alerts` was
 // called `competition_watch` here while the Pro page called it `record_alerts`, and
-// nothing connected them. The data-import entry is gone with the feature, which turned
-// out not to be gated on either side.
+// nothing connected them. The same drift hit `trainer` (the Trainer passes
+// `trainer_smart_cube`) and `magnet_start` had copy but no list, so both upsells showed
+// the generic sync-and-themes pitch. A key a caller passes needs an entry here and a
+// `pro.modal.<key>` block in every locale. The data-import entry is gone with the
+// feature, which turned out not to be gated on either side.
 const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	room_music: ['music_youtube', 'music_friends', 'music_unlimited'],
 	leaderboard: ['leaderboard_publish', 'leaderboard_profile', 'leaderboard_compete'],
 	smart_cube: ['smart_analysis', 'smart_steps', 'smart_animation'],
 	themes: ['themes_six', 'themes_colors', 'themes_atmosphere'],
 	stats: ['stats_blocks', 'stats_charts', 'stats_customize'],
-	trainer: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
+	trainer_smart_cube: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
 	trainer_pdf: ['pdf_professional', 'pdf_alternatives', 'pdf_stats'],
 	competition_follow: ['follow_realtime', 'follow_limit'],
 	record_alerts: ['watch_records', 'watch_scope', 'watch_push'],
 	slam_to_stop: ['slam_drop', 'slam_calibrate', 'slam_stackmat'],
+	magnet_start: ['magnet_lift', 'magnet_drop', 'magnet_setup'],
 };
 
 interface Props {

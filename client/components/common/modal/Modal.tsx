@@ -38,6 +38,8 @@ export interface IModalProps {
 	compact?: boolean;
 	disableBackdropClick?: boolean;
 	position?: 'center' | 'bottom';
+	/** A Pro surface: the frame wears Pro's gold instead of the user's theme colour. */
+	pro?: boolean;
 }
 
 export default function Modal(props: IModalProps) {
@@ -57,6 +59,7 @@ export default function Modal(props: IModalProps) {
 		onComplete,
 		disableBackdropClick,
 		position,
+		pro,
 	} = props;
 
 	const isBottomSheet = position === 'bottom';
@@ -178,7 +181,7 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet })} style={style} {...backdropClose}>
+		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet, pro })} style={style} {...backdropClose}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
 				{/* Close before the header: on phones it floats right and stays sticky, and a
 				    float only sits beside the content that follows it. */}

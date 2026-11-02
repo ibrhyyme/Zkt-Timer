@@ -1453,6 +1453,8 @@
     "wca_live_schedule": "日程",
     "wca_live_records": "记录",
     "wca_live_no_results": "此轮次暂无成绩",
+    "dual_rounds": "双轮赛",
+    "dual_rounds_note": "这两轮合并排名：每位选手取两轮中较好的成绩。",
     "round_status_done": "已完成",
     "round_status_live": "进行中",
     "round_status_open": "进行中",
@@ -3708,7 +3710,6 @@
     "next_tooltip": "下一个打乱（→ 右箭头）"
   },
   "pro_page": {
-    "title": "Pro",
     "hero_title": "选择你的套餐",
     "intro_title": "你需要的一切，尽在 ZKT Pro。",
     "intro_lede": "智能魔方分析、在魔方上练习公式、Magnet Timer 与放下停止、关注选手与破纪录提醒、自定义主题和背景。共 {{count}} 项功能。",
@@ -3719,10 +3720,6 @@
       "community": "房间与比赛",
       "personal": "个性化"
     },
-    "subtitle": "通过专为严肃速拧玩家设计的专属 Pro 功能，将你的魔方水平提升到新高度。",
-    "pro_card_title": "Pro 会员",
-    "pro_includes": "Pro 功能包含",
-    "mobile_only_cta": "在移动应用内购买",
     "mobile_only_hint": "购买将在 iOS 和 Android 应用内进行",
     "basic_hint": "您当前使用的是 Basic 套餐",
     "plan": {
@@ -3745,13 +3742,6 @@
       "yearly_cycle": "/年",
       "monthly_cycle": "/月",
       "lifetime_cycle": ""
-    },
-    "compare": {
-      "title": "套餐对比",
-      "subtitle": "Basic 和 Pro 的所有区别",
-      "basic": "Basic",
-      "pro": "Pro",
-      "pro_price_hint": "起价 $2.99"
     },
     "iap": {
       "purchase_cta": "购买",
@@ -3785,66 +3775,14 @@
       "downgrade_blocked_hint": "您的年付套餐将于 {{date}} 到期。之后您可以切换到月付。",
       "paused_notice": "您的订阅已暂停。您可以通过 Google Play 恢复。"
     },
-    "whats_included": "包含内容：",
-    "coming_soon": "即将推出",
-    "free": "包含",
-    "basic_desc": "开始使用基础功能。",
     "pro_active_desc": "享受所有 Pro 功能。",
     "pro_expires": "有效期至 {{date}}",
     "current_plan": "当前套餐",
     "subscribed_via_title": "您通过 {{platform}} 应用订阅",
     "subscribed_via_subtitle": "请在您的 {{platform}} 设备上管理订阅",
     "subscribed_via_home": "首页",
-    "click_hint": "点击查看详情",
-    "all_basic_included": "包含所有免费功能",
     "features_head_label": "包含内容",
     "features_head_count": "{{count}} 项功能",
-    "basic_features": {
-      "timer": {
-        "title": "计时器",
-        "desc": "使用键盘、触摸、StackMat、GAN Timer 或智能魔方计时 — 任您选择。"
-      },
-      "sessions": {
-        "title": "阶段",
-        "desc": "创建任意数量的阶段。合并、重新排序或删除 — 您的还原记录安全保存在设备上。"
-      },
-      "unlimited_solves": {
-        "title": "无限次还原",
-        "desc": "无还原次数限制。随意还原，添加笔记，随时编辑。"
-      },
-      "rooms": {
-        "title": "社区房间",
-        "desc": "加入房间，还原相同的打乱公式，与其他玩家实时聊天。"
-      },
-      "basic_stats": {
-        "title": "基础统计",
-        "desc": "一目了然地追踪您的 PB、ao5、ao12 和总还原次数。"
-      },
-      "smart_cube_basic": {
-        "title": "智能魔方连接",
-        "desc": "通过蓝牙连接您的智能魔方。时间和步数自动记录。"
-      },
-      "trainer_basic": {
-        "title": "公式训练器",
-        "desc": "练习 OLL、PLL、F2L 等。按自己的节奏记忆和练习。"
-      },
-      "friends": {
-        "title": "好友系统",
-        "desc": "添加好友，查看他们的个人资料，一起还原。"
-      },
-      "notifications": {
-        "title": "通知",
-        "desc": "接收好友请求、房间邀请等即时提醒。"
-      },
-      "settings_sync": {
-        "title": "设置同步",
-        "desc": "设置一次计时器，所有设备保持一致。"
-      },
-      "two_themes": {
-        "title": "2 种主题",
-        "desc": "在深色和浅色模式之间切换。"
-      }
-    },
     "features": {
       "sync": {
         "title": "跨设备同步",
@@ -4456,7 +4394,7 @@
         "title": "统计数据自定义",
         "desc": "完全按照您想要的方式设置统计模块。"
       },
-      "trainer": {
+      "trainer_smart_cube": {
         "title": "使用智能魔方训练",
         "desc": "在您的魔方上练习公式，获得即时反馈。"
       },
@@ -4508,7 +4446,10 @@
       "follow_limit": "每个比赛最多 5 个关注",
       "slam_drop": "拍桌停止，无需触屏",
       "slam_calibrate": "针对每张桌子调节灵敏度",
-      "slam_stackmat": "StackMat 手感 — 无需硬件"
+      "slam_stackmat": "StackMat 手感 — 无需硬件",
+      "magnet_lift": "拿起魔方的那一刻计时开始",
+      "magnet_drop": "放回桌上计时就停止",
+      "magnet_setup": "只需要一个磁力魔方和手机应用"
     }
   },
   "online_battle": {

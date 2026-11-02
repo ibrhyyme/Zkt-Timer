@@ -4,8 +4,7 @@ import block from '../../../../../styles/bem';
 import jsonStr from 'json-stable-stringify';
 import {setSettings} from '../../../../../db/settings/update';
 import {useMe} from '../../../../../util/hooks/useMe';
-import Tag from '../../../../common/tag/Tag';
-import {Lock} from 'phosphor-react';
+import ProTag from '../../../../common/pro_tag/ProTag';
 import {getSetting} from '../../../../../db/settings/query';
 import {APP_THEME_PRESETS, PresetThemeValues} from '../../../../../util/themes/theme_consts';
 import {isNotPro, isProEnabled} from '../../../../../util/pro';
@@ -62,7 +61,8 @@ export default function ThemeOption(props: Props) {
 				</div>
 			</div>
 			<p>{theme.name}</p>
-			{locked ? <Lock size={18} weight="fill" className={b('lock')} /> : null}
+			{/* Says why it is locked: a bare lock read as "unavailable", not "comes with Pro". */}
+			{locked ? <span className={b('pro')}><ProTag /></span> : null}
 		</button>
 	);
 }

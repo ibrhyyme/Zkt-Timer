@@ -21,9 +21,8 @@ import {
 /**
  * Single source of truth for "what is actually Pro".
  *
- * The Pro page (`pro_page/ProPage.tsx`) and the plan comparison modal
- * (`pro_page/PlanCompareModal.tsx`) both render from this list. They used to keep
- * two hand-maintained arrays, which drifted: the page advertised features that no
+ * The Pro page (`pro_page/ProPage.tsx`) renders from this list. It and a plan
+ * comparison modal (since removed) used to keep two hand-maintained arrays, which drifted: the page advertised features that no
  * gate implemented (data import, PLL/Cross trainer, early access) while leaving out
  * ones that were genuinely gated (leaderboard publishing, slam to stop).
  *

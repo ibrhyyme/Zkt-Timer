@@ -68,13 +68,9 @@
 		font-weight: 700;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: #a78bff;
-
-		// The Pro violet is tuned for dark surfaces; on light ones it needs to go deeper
-		// to stay readable (same treatment as the account dropdown's Pro row).
-		.theme-light & {
-			color: #6d28d9;
-		}
+		// The Pro page's mark: Pro's gold, which zt-pro-accent deepens on light surfaces.
+		@include zt-pro-accent;
+		color: rgb(var(--primary-color));
 	}
 
 	// ------------------------------------------------------------------

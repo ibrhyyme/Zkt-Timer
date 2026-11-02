@@ -1,6 +1,8 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-timer-background {
+	$self: &;
+
 	> input {
 		display: none;
 	}
@@ -35,9 +37,16 @@
 		color: rgb(var(--text-color));
 	}
 
+	// Locked for non-Pro users: the box wears the Pro card's gold frame.
 	&__locked {
+		@include zt-pro-accent;
+
 		display: inline-block;
 		text-decoration: none;
+
+		#{$self}__image {
+			border-color: $zt-pro-frame;
+		}
 	}
 
 	&__pro-overlay {
@@ -48,20 +57,20 @@
 		align-items: center;
 		justify-content: center;
 		gap: 4px;
-		background: rgba(124, 58, 237, 0.18);
-		border-radius: 4px;
 	}
 
+	// The Pro page's mark: a gold crown over gold mono capitals, no tinted fill.
 	&__pro-crown {
-		color: #a78bfa;
+		color: rgb(var(--primary-color));
 		width: 22px;
 		height: 22px;
 	}
 
 	&__pro-label {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
 		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		color: #a78bfa;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		color: rgb(var(--primary-color));
 	}
 }

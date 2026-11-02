@@ -35,16 +35,17 @@ export default function ProBlurOverlay({
 
 	function handleClick() {
 		if (onBeforeNavigate) onBeforeNavigate();
-		history.push(ctaTo || '/pro');
+		history.push(destination);
 	}
 
 	const style = minHeight ? {minHeight: `${minHeight}px`} : undefined;
+	const destination = ctaTo || '/pro';
 
 	// A flat card (owner, 2026-10-31). The blurred placeholder bars behind a frosted card,
 	// the eyebrow label and the gradient pill are gone; the title already says what is
 	// locked, the icon and the button say by what.
 	return (
-		<div className={b()} style={style}>
+		<div className={b({pro: destination === '/pro'})} style={style}>
 			<div className={b('card')}>
 				<div className={b('icon')}>{icon || <Crown weight="fill" />}</div>
 				<h3 className={b('title')}>{title}</h3>
