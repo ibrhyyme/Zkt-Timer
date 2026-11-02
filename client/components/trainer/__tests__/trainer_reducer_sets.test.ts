@@ -232,3 +232,40 @@ describe('SET_PENDING_SET', () => {
 		expect(s.view).toBe('training');
 	});
 });
+
+describe('the category list and a category page', () => {
+	it('entering the Algorithm Trainer opens the category list; other trainers keep their own views', () => {
+		const hub = createTrainerState(OPTIONS, {mode: null, view: 'landing'});
+		expect(trainerReducer(hub, {type: 'SET_MODE', payload: 'standard'}).view).toBe('catalog');
+		expect(trainerReducer(hub, {type: 'SET_MODE', payload: 'smart'}).view).toBe('catalog');
+		expect(trainerReducer(hub, {type: 'SET_MODE', payload: 'recognition'}).view).toBe('selection');
+	});
+
+	it('Smart Cube mode leaves a category a smart cube cannot run, in one step', () => {
+		const onCll = run(base(), {type: 'SET_CATEGORY', payload: '2x2 CLL'});
+		const s = trainerReducer(onCll, {type: 'SET_STUDY_MODE', payload: 'smart'});
+		expect([s.mode, s.view, s.selectedCategory]).toEqual(['smart', 'catalog', '2x2 CLL']);
+	});
+
+	it('Smart Cube mode stays on a 3x3 category, Standard stays on any', () => {
+		const onPll = run(base(), {type: 'SET_CATEGORY', payload: 'PLL'});
+		expect(trainerReducer(onPll, {type: 'SET_STUDY_MODE', payload: 'smart'}).view).toBe('selection');
+		const onRoux = run(base(), {type: 'SET_CATEGORY', payload: 'CMLL'});
+		expect(trainerReducer(onRoux, {type: 'SET_STUDY_MODE', payload: 'smart'}).view).toBe('selection');
+		const smartOnCll = run(base('smart'), {type: 'SET_CATEGORY', payload: '2x2 CLL'});
+		expect(trainerReducer(smartOnCll, {type: 'SET_STUDY_MODE', payload: 'standard'}).view).toBe('selection');
+	});
+
+	it('a mode switch elsewhere keeps the view, even with a 2x2 category behind it', () => {
+		const training = run(base(), {type: 'SET_CATEGORY', payload: '2x2 CLL'}, {type: 'SET_VIEW', payload: 'training'});
+		expect(trainerReducer(training, {type: 'SET_STUDY_MODE', payload: 'smart'}).view).toBe('training');
+	});
+
+	it('going back to the list keeps the category and what was checked in it', () => {
+		const picked = run(base(), {type: 'SET_CATEGORY', payload: 'PLL'}, {type: 'SET_CHECKED_ALGORITHMS', payload: [CARDS[0]]});
+		const s = trainerReducer(picked, {type: 'SET_VIEW', payload: 'catalog'});
+		expect(s.view).toBe('catalog');
+		expect(s.selectedCategory).toBe('PLL');
+		expect(keys(s.checkedAlgorithms)).toEqual([checkedKey(CARDS[0])]);
+	});
+});

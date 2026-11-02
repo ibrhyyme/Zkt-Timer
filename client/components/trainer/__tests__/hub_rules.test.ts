@@ -1,7 +1,7 @@
 import {accountRequiredKey, isPublicTrainerView, studySwitchOutcome, studySwitchPlacement} from '../hub/hub_rules';
 import type {TrainerView} from '../types';
 
-const ALL_VIEWS: TrainerView[] = ['landing', 'modes', 'selection', 'training', 'sets', 'set', 'set-add', 'community'];
+const ALL_VIEWS: TrainerView[] = ['landing', 'modes', 'catalog', 'selection', 'training', 'sets', 'set', 'set-add', 'community'];
 
 describe('signed-out access (2.4)', () => {
 	it('opens the hub, the Trainers page, Community Sets and a set page to visitors', () => {
@@ -12,13 +12,15 @@ describe('signed-out access (2.4)', () => {
 	it('explains sets on My Sets and the picker, training elsewhere', () => {
 		expect(accountRequiredKey('sets')).toBe('account_required.trainer_sets');
 		expect(accountRequiredKey('set-add')).toBe('account_required.trainer_sets');
+		expect(accountRequiredKey('catalog')).toBe('account_required.trainer');
 		expect(accountRequiredKey('selection')).toBe('account_required.trainer');
 		expect(accountRequiredKey('training')).toBe('account_required.trainer');
 	});
 });
 
 describe('study mode switch placement (2.2)', () => {
-	it('desktop: in the header on the selector and in training', () => {
+	it('desktop: in the header on the category list, a category and in training', () => {
+		expect(studySwitchPlacement('catalog', false)).toBe('header');
 		expect(studySwitchPlacement('selection', false)).toBe('header');
 		expect(studySwitchPlacement('training', false)).toBe('header');
 	});
@@ -30,7 +32,8 @@ describe('study mode switch placement (2.2)', () => {
 		}
 	});
 
-	it('mobile: a row on the selector, a chip in training', () => {
+	it('mobile: a row on the category list and a category, a chip in training', () => {
+		expect(studySwitchPlacement('catalog', true)).toBe('row');
 		expect(studySwitchPlacement('selection', true)).toBe('row');
 		expect(studySwitchPlacement('training', true)).toBe('chip');
 	});

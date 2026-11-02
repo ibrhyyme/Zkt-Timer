@@ -5,13 +5,14 @@
  * URL scope:
  *   /trainer                       hub (two cards)
  *   /trainer/modes                 the Trainers page
- *   /trainer/algorithms            selection, `?cat=<slug>`, `&mode=smart`
+ *   /trainer/algorithms            category list, `?mode=smart`
+ *   /trainer/algorithms/<slug>     one category's page, `?mode=smart`
  *   /trainer/algorithms/train      training, `?cat=<slug>` or `?set=<code>`, `&mode=smart`
  *   /trainer/sets                  My Sets
  *   /trainer/community             Community Sets (its own query belongs to that page)
  *   /trainer/sets/:code[/add]      set page / its picker (the URL owns these, state follows)
- *   legacy /trainer/standard*, /trainer/smart*, /trainer/algorithms/{sets,community}: rewritten
- *   to the new address, query kept.
+ *   legacy /trainer/standard*, /trainer/smart*, /trainer/algorithms/{sets,community} and
+ *   /trainer/algorithms?cat=<slug>: rewritten to the new address, query kept.
  * Subset and algorithm checks stay out of the URL (a ZBLL selection would make it huge); a set
  * study is fully described by `?set=`.
  *
@@ -45,7 +46,7 @@ import {
 } from '../../../util/trainer/url/trainer_url';
 import {categoryToSlug, slugToCategory} from '../../../util/trainer/url/category_slug';
 import {resolveStudyMode, smartModeAllowed} from '../../../util/trainer/study_mode';
-import {startSetStudyPayload} from '../../../util/trainer/set_queue';
+import {canStudyWithSmartCube, startSetStudyPayload} from '../../../util/trainer/set_queue';
 import {loadSetForStudy} from '../../../lib/alg_sets/types';
 import {useMe} from '../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../lib/pro';
@@ -125,23 +126,31 @@ export function useTrainerUrlSync() {
 		// ── Study mode ──
 		const inAlgorithms = isStudyModeState(s.mode);
 		const mode = resolveStudyMode(query.mode, inAlgorithms ? (s.mode as StudyMode) : s.options.lastMode, smartAllowed);
+		// The view the reducer is in after this run's dispatches (stateRef is not updated in between).
+		let currentView = s.view;
 		if (!inAlgorithms) {
 			// Entering from the hub or another trainer.
 			dispatch({type: 'SET_MODE', payload: mode});
+			currentView = 'catalog';
 		} else if (s.mode !== mode) {
 			// A link or history entry asked for the other mode: follow it, without changing lastMode.
 			dispatch({type: 'SET_STUDY_MODE', payload: mode, remember: false});
 		}
 
-		// ── Category (?cat=), selection and category training only ──
+		// ── Category: the path on a category page, `?cat=` in category training ──
 		let category: string | null = null;
-		const needsCategory = view === 'selection' || (view === 'training' && !query.set);
-		if (needsCategory && query.cat) {
+		const catSlug = view === 'selection' ? parsed.categorySlug : view === 'training' && !query.set ? query.cat : null;
+		if (catSlug) {
 			const cats = catsRef.current;
 			if (cats.length === 0) return; // categories not loaded yet; the categories.length dep re-runs this
-			category = slugToCategory(query.cat, cats);
+			category = slugToCategory(catSlug, cats);
 			if (!category) {
-				history.replace(buildAlgorithmsPath(null, {mode})); // unresolvable slug → selection
+				history.replace(buildAlgorithmsPath(null, {mode})); // unresolvable slug → category list
+				return;
+			}
+			// A link to a category a smart cube cannot run, opened in Smart Cube mode.
+			if (view === 'selection' && mode === 'smart' && !canStudyWithSmartCube(category)) {
+				history.replace(buildAlgorithmsPath(null, {mode}));
 				return;
 			}
 			// ONLY when it really differs (SET_CATEGORY resets subsets and checks)
@@ -153,23 +162,24 @@ export function useTrainerUrlSync() {
 			if (query.set) {
 				const code = query.set;
 				if (s.activeSet && s.activeSet.code === code) {
-					if (s.view !== 'training') dispatch({type: 'SET_VIEW', payload: 'training'});
+					if (currentView !== 'training') dispatch({type: 'SET_VIEW', payload: 'training'});
 				} else if (loadingSetRef.current !== code) {
 					startSetLoad(code);
 				}
 				return;
 			}
 			if (s.checkedAlgorithms.length === 0 || s.activeSet) {
-				// Cold /train with no selection (checks are not in the URL) → selection, keep the category
+				// Cold /train with no selection (checks are not in the URL) → the category page
+				// (the category list without a category)
 				const cat = category || s.selectedCategory;
 				history.replace(buildAlgorithmsPath(null, {cat: cat ? categoryToSlug(cat) : null, mode}));
-			} else if (s.view !== 'training') {
+			} else if (currentView !== 'training') {
 				dispatch({type: 'SET_VIEW', payload: 'training'});
 			}
 			return;
 		}
 
-		if (s.view !== view) dispatch({type: 'SET_VIEW', payload: view});
+		if (currentView !== view) dispatch({type: 'SET_VIEW', payload: view});
 
 		function startSetLoad(code: string) {
 			loadingSetRef.current = code;
@@ -217,7 +227,13 @@ export function useTrainerUrlSync() {
 			target = HUB_PATH;
 		} else {
 			switch (s.view) {
+				case 'catalog':
+					target = buildAlgorithmsPath(null, {mode});
+					break;
 				case 'selection':
+					// A category page without its category is a cold load still waiting for the
+					// library: the address already names the category, leave it.
+					if (!cat) return;
 					target = buildAlgorithmsPath(null, {cat, mode});
 					break;
 				case 'training': {

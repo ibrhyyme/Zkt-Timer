@@ -448,6 +448,12 @@
     "create_button": "Oda Oluştur"
   },
   "trainer": {
+    "catalog": {
+      "pick_group": "Çalışmak istediğin alt grupları seç, vakaları burada listelenir.",
+      "large": "Büyük kategoriler",
+      "progress": "{{learned}}/{{total}} öğrenildi",
+      "smart_only": "Smart Küp modunda yalnızca 3x3 kategorileri listelenir, çünkü akıllı küp bir 3x3. 2x2, 4x4, Pyraminx, Skewb ve Square-1 Standart modda."
+    },
     "sets": {
       "loading": "Set yükleniyor",
       "smart_skipped": "Bu setteki {{count}} algoritma smart küple çalışılamaz ({{puzzles}}). Onlar Standart modda çalışılır.",

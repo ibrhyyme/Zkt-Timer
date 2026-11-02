@@ -16,7 +16,8 @@ import {CaretDown, Play, Info, X, DownloadSimple, Plus} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro} from '../../../../lib/pro';
 import {openProOnlyModal} from '../../../common/pro_only/openProOnlyModal';
-import {algSetCaseKey, cubeTypeOfCategory, CUBE_TYPE_ORDER} from '../../../../../shared/trainer/alg_sets';
+import {algSetCaseKey} from '../../../../../shared/trainer/alg_sets';
+import {LARGE_CATEGORIES, categoryInfoKey} from '../../../../util/trainer/catalog';
 import {checkedKey} from '../../../../util/trainer/set_queue';
 import {isHiddenSubset, subsetLabel} from '../../../../util/trainer/subset_label';
 import {openAddToSet} from '../../sets/AddToSetSheet';
@@ -27,27 +28,20 @@ const b = block('trainer');
 
 const F2L_SLOTS = ['Front Right', 'Front Left', 'Back Right', 'Back Left'];
 
-// Puzzle of a category (shared with the set screens and the server: shared/trainer/alg_sets.ts).
-const getCubeType = cubeTypeOfCategory;
+// Cards drawn per step: a large category (1LLL has 3,397 cases) is drawn as the list scrolls.
+const CARD_PAGE = 120;
 
-// A smart cube is a 3x3: Smart Cube mode lists only these puzzles.
-const SMART_CUBE_TYPES: readonly string[] = ['3x3', '3x3 Roux'];
-
-function getCategoryDisplayName(category: string): string {
-	const prefixes = ['2x2 ', '4x4 ', 'Pyraminx ', 'SQ1 '];
-	for (const prefix of prefixes) {
-		if (category.startsWith(prefix)) return category.slice(prefix.length);
-	}
-	return category;
-}
-
+/**
+ * One category's page (/trainer/algorithms/<slug>): its groups and cases. The category comes from
+ * the address (useTrainerUrlSync); the category list (AlgorithmCatalog) is one step back.
+ */
 export default function AlgorithmSelector() {
 	const {t} = useTranslation();
 	const reduxDispatch = useReduxDispatch();
 	const {state, dispatch} = useTrainerContext();
 	const {selectedCategory, selectedSubsets, checkedAlgorithms, options} = state;
 	const me = useMe();
-	const {categories, getSubsets, getAlgorithmsWithSubset} = useAlgorithmData();
+	const {getSubsets, getAlgorithmsWithSubset} = useAlgorithmData();
 	const [pdfLoading, setPdfLoading] = useState(false);
 	const isLL = isLLCategory(selectedCategory);
 	const isIso = isIsometricCategory(selectedCategory);
@@ -60,58 +54,29 @@ export default function AlgorithmSelector() {
 	usePuzzlePatternsReady(); // Re-render cards when puzzle patterns are loaded
 	useIsometricPatternsReady(); // Re-render cards when isometric patterns are loaded
 
-	// Derive cube types and filtered categories
-	const cubeTypes = useMemo(() => {
-		const available = new Set(categories.map(getCubeType));
-		const types: string[] = CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
-		// In smart mode, only 3x3 and 3x3 Roux (Bluetooth only works with 3x3 cubes)
-		if (state.mode === 'smart') {
-			return types.filter((ct) => SMART_CUBE_TYPES.includes(ct));
-		}
-		return types;
-	}, [categories, state.mode]);
-
-	const currentCubeType = useMemo(
-		() => (selectedCategory ? getCubeType(selectedCategory) : cubeTypes[0] || '3x3'),
-		[selectedCategory, cubeTypes]
-	);
-
-	const filteredCategories = useMemo(
-		() => categories.filter((cat) => getCubeType(cat) === currentCubeType),
-		[categories, currentCubeType]
-	);
-
-	// Auto-select first category
+	// The F2L slot filter belongs to the category it was set in.
 	useEffect(() => {
-		if (!selectedCategory && categories.length > 0) {
-			// URL'de ?cat varsa onu useTrainerUrlSync hidrate edecek — auto-select clobber etmesin
-			if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('cat')) return;
-			dispatch({type: 'SET_CATEGORY', payload: categories[0]});
-		}
-	}, [categories, selectedCategory, dispatch]);
-
-	// Switching to Smart Cube mode on a category a smart cube cannot run (2x2, Pyraminx...):
-	// move to the first 3x3 category instead of showing an empty puzzle list (trainer-sets 2.3).
-	useEffect(() => {
-		if (state.mode !== 'smart' || !selectedCategory || categories.length === 0) return;
-		if (SMART_CUBE_TYPES.includes(getCubeType(selectedCategory))) return;
-		const first3x3 = categories.find((cat) => SMART_CUBE_TYPES.includes(getCubeType(cat)));
-		if (first3x3) dispatch({type: 'SET_CATEGORY', payload: first3x3});
-	}, [state.mode, selectedCategory, categories, dispatch]);
+		setSlotFilter('all');
+	}, [selectedCategory]);
 
 	const subsets = useMemo(() => {
 		if (!selectedCategory) return [];
 		return getSubsets(selectedCategory);
 	}, [selectedCategory, getSubsets]);
 
-	// A one-group category ("Default") has no group to pick: its checkbox is not drawn, so the
-	// group is selected for the user and the cards show right away.
 	const visibleSubsets = useMemo(() => subsets.filter((s) => !isHiddenSubset(s)), [subsets]);
+
+	// A category opens with its cases on screen: every group ticked, once per opening, so clearing
+	// them stays possible. The large ones open on their groups: 1LLL has 49 of them, and the PDF
+	// button exports whatever is listed.
+	const openedCategoryRef = useRef('');
 	useEffect(() => {
-		if (subsets.length > 0 && visibleSubsets.length === 0 && selectedSubsets.length === 0) {
+		if (subsets.length === 0 || openedCategoryRef.current === selectedCategory) return;
+		openedCategoryRef.current = selectedCategory;
+		if (selectedSubsets.length === 0 && !LARGE_CATEGORIES.has(selectedCategory)) {
 			dispatch({type: 'SET_SUBSETS', payload: subsets});
 		}
-	}, [subsets, visibleSubsets, selectedSubsets, dispatch]);
+	}, [subsets, selectedCategory, selectedSubsets, dispatch]);
 
 	const algorithmsWithSubset = useMemo(() => {
 		if (!selectedCategory || selectedSubsets.length === 0) return [];
@@ -127,6 +92,31 @@ export default function AlgorithmSelector() {
 			}))
 			.filter((group) => group.algorithms.length > 0);
 	}, [algorithmsWithSubset, slotFilter, isF2L]);
+
+	// The cards on screen, CARD_PAGE more each time the end of the list comes near. Selecting
+	// still works on the whole list; only drawing waits.
+	const visibleCards = useMemo(
+		() => filteredAlgorithmsWithSubset.flatMap((group) => group.algorithms.map((alg) => ({alg, subset: group.subset}))),
+		[filteredAlgorithmsWithSubset]
+	);
+	const [cardLimit, setCardLimit] = useState(CARD_PAGE);
+	const moreCardsRef = useRef<HTMLDivElement>(null);
+	const hasMoreCards = visibleCards.length > cardLimit;
+	useEffect(() => {
+		setCardLimit(CARD_PAGE);
+	}, [selectedCategory, selectedSubsets, slotFilter]);
+	useEffect(() => {
+		const sentinel = moreCardsRef.current;
+		if (!hasMoreCards || !sentinel || typeof IntersectionObserver === 'undefined') return;
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting) setCardLimit((limit) => limit + CARD_PAGE);
+			},
+			{rootMargin: '600px'}
+		);
+		observer.observe(sentinel);
+		return () => observer.disconnect();
+	}, [hasMoreCards, cardLimit]);
 
 	// Checked cards by `category::name`: algorithm text is not unique across categories.
 	const checkedAlgSet = useMemo(
@@ -171,25 +161,6 @@ export default function AlgorithmSelector() {
 		}
 		dispatch({type: 'SET_CHECKED_ALGORITHMS', payload: learningAlgs});
 	}, [options.selectLearning, filteredAlgorithmsWithSubset, selectedCategory, dispatch]);
-
-	const handleCubeTypeChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
-			const newType = e.target.value;
-			const firstCat = categories.find((cat) => getCubeType(cat) === newType);
-			if (firstCat) {
-				dispatch({type: 'SET_CATEGORY', payload: firstCat});
-			}
-		},
-		[categories, dispatch]
-	);
-
-	const handleCategoryChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
-			dispatch({type: 'SET_CATEGORY', payload: e.target.value});
-			setSlotFilter('all');
-		},
-		[dispatch]
-	);
 
 	const handleSubsetToggle = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -329,8 +300,7 @@ export default function AlgorithmSelector() {
 				return {...alg, alternatives: allAlts};
 			});
 
-			const catKey = selectedCategory.toLowerCase().replace(/[\s-]+/g, '_');
-			const description = t(`trainer.cat_info.${catKey}.desc`, {defaultValue: ''});
+			const description = t(`trainer.cat_info.${categoryInfoKey(selectedCategory)}.desc`, {defaultValue: ''});
 
 			const {generateTrainerPdf} = await import('../../../../util/trainer/pdf_export');
 			await generateTrainerPdf({
@@ -365,7 +335,7 @@ export default function AlgorithmSelector() {
 
 	const adjacentFaces = useMemo(() => getAdjacentFaces(options.topFace), [options.topFace]);
 
-	const catInfoKey = selectedCategory.toLowerCase().replace(/[\s-]+/g, '_');
+	const catInfoKey = categoryInfoKey(selectedCategory);
 	const catInfoTitle = t(`trainer.cat_info.${catInfoKey}.title`, {defaultValue: ''});
 	const catInfoDesc = t(`trainer.cat_info.${catInfoKey}.desc`, {defaultValue: ''});
 
@@ -374,58 +344,27 @@ export default function AlgorithmSelector() {
 	const allAlgsSelected = filteredAlgorithmsWithSubset.length > 0 &&
 		filteredAlgorithmsWithSubset.every((g) => g.algorithms.every((a) => isChecked(a.name)));
 
+	const hasCatInfo = !!catInfoTitle && !!catInfoDesc;
+	const cubeShape = isCubeShapePuzzle(selectedCategory);
+
+	// A cold category address, until the library names the category.
+	if (!selectedCategory) return null;
+
 	return (
 		<div className={b('selector')}>
-			{/* Top Area: Sol Blok (Filtreler) + Orta Blok (Secenekler) */}
-			<div className={b('selector-top')}>
-				<div className={b('selector-filters-block')}>
-					<div className={b('selector-filter-row')}>
-						<div className={b('selector-section')}>
-							<label className={b('selector-label')}>{t('trainer.puzzle_type')}</label>
-							<div className={b('selector-dropdown')}>
-								<select
-									value={currentCubeType}
-									onChange={handleCubeTypeChange}
-									className={b('selector-select')}
-								>
-									{cubeTypes.map((ct) => (
-										<option key={ct} value={ct}>
-											{ct}
-										</option>
-									))}
-								</select>
-								<CaretDown size={16} className={b('selector-caret')} />
-							</div>
-						</div>
+			{/* Phone: the category's long name opens its description (the side panel is hidden there). */}
+			{hasCatInfo && (
+				<button type="button" className={b('cat-info-btn')} onClick={() => setShowCatInfo(true)}>
+					<Info size={18} weight="fill" aria-hidden="true" />
+					<span>{catInfoTitle}</span>
+				</button>
+			)}
 
-						<div className={b('selector-section')}>
-							<label className={b('selector-label')}>{t('trainer.category')}</label>
-							<div className={b('selector-category-row')}>
-								<div className={b('selector-dropdown')}>
-									<select
-										value={selectedCategory}
-										onChange={handleCategoryChange}
-										className={b('selector-select')}
-									>
-										{filteredCategories.map((cat) => (
-											<option key={cat} value={cat}>
-												{getCategoryDisplayName(cat)}
-											</option>
-										))}
-									</select>
-									<CaretDown size={16} className={b('selector-caret')} />
-								</div>
-								{catInfoTitle && (
-									<button className={b('cat-info-btn')} onClick={() => setShowCatInfo(true)} title={catInfoTitle}>
-										<Info size={18} weight="fill" />
-									</button>
-								)}
-							</div>
-						</div>
-					</div>
-
-					{isCubeShapePuzzle(selectedCategory) && (
-						<>
+			{/* Top area: orientation filters and the category description */}
+			{(cubeShape || hasCatInfo) && (
+				<div className={b('selector-top', {'info-only': !cubeShape})}>
+					{cubeShape && (
+						<div className={b('selector-filters-block')}>
 							<div className={b('selector-filter-row')}>
 								<div className={b('selector-face-group')}>
 									<label className={b('selector-face-label')}>{t('trainer.top_layer')}</label>
@@ -486,22 +425,22 @@ export default function AlgorithmSelector() {
 									</div>
 								</div>
 							)}
-						</>
+						</div>
+					)}
+
+					{hasCatInfo && (
+						<div className={b('selector-info')}>
+							<div className={b('selector-info-header')}>
+								<Info size={16} weight="fill" />
+								<span>{catInfoTitle}</span>
+							</div>
+							{catInfoDesc.split('\n\n').map((p, i) => (
+								<p key={i} className={b('selector-info-text')}>{p}</p>
+							))}
+						</div>
 					)}
 				</div>
-
-				{catInfoTitle && catInfoDesc && (
-					<div className={b('selector-info')}>
-						<div className={b('selector-info-header')}>
-							<Info size={16} weight="fill" />
-							<span>{catInfoTitle}</span>
-						</div>
-						{catInfoDesc.split('\n\n').map((p, i) => (
-							<p key={i} className={b('selector-info-text')}>{p}</p>
-						))}
-					</div>
-				)}
-			</div>
+			)}
 
 			{/* Subset Checkboxes */}
 			{visibleSubsets.length > 0 && (
@@ -529,6 +468,7 @@ export default function AlgorithmSelector() {
 							/>
 						))}
 					</div>
+					{selectedSubsets.length === 0 ? <p className={b('selector-hint')}>{t('trainer.catalog.pick_group')}</p> : null}
 				</div>
 			)}
 
@@ -578,23 +518,22 @@ export default function AlgorithmSelector() {
 						</div>
 					</div>
 					<div className={b('selector-algs')}>
-						{filteredAlgorithmsWithSubset.map((group) =>
-							group.algorithms.map((alg) => (
-								<AlgorithmCard
-									key={alg.name}
-									name={alg.name}
-									algorithm={alg.algorithm}
-									category={selectedCategory}
-									subset={group.subset}
-									checked={isChecked(alg.name)}
-									onToggle={handleAlgToggle}
-									onDetail={handleAlgDetail}
-									topFace={options.topFace}
-									frontFace={effectiveFrontFace}
-								/>
-							))
-						)}
+						{visibleCards.slice(0, cardLimit).map(({alg, subset}) => (
+							<AlgorithmCard
+								key={alg.name}
+								name={alg.name}
+								algorithm={alg.algorithm}
+								category={selectedCategory}
+								subset={subset}
+								checked={isChecked(alg.name)}
+								onToggle={handleAlgToggle}
+								onDetail={handleAlgDetail}
+								topFace={options.topFace}
+								frontFace={effectiveFrontFace}
+							/>
+						))}
 					</div>
+					{hasMoreCards ? <div ref={moreCardsRef} className={b('selector-more')} aria-hidden="true" /> : null}
 				</div>
 			)}
 		{showCatInfo && catInfoTitle && catInfoDesc && (

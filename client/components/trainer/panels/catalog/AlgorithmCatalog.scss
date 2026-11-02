@@ -1,0 +1,191 @@
+@import '../../../../styles/config';
+
+// The Algorithm Trainer's category list: puzzle buttons over a grid of category tiles. A tile is
+// bare (picture, learned / total, names) and takes the control fill on hover: no card box.
+.#{$namespace}-trainer-catalog {
+	display: flex;
+	flex-direction: column;
+	gap: $zt-space-5;
+	max-width: 1200px;
+	margin: 0 auto;
+
+	&__loading {
+		display: flex;
+		justify-content: center;
+		padding: $zt-space-7 0;
+		font-size: 1.5rem;
+		color: $zt-text-muted;
+	}
+
+	// The page's main choice, so a button per puzzle and not words over a hairline. One column per
+	// puzzle, full width, so Smart Cube mode's two buttons keep their size; a phone fits all seven
+	// on two rows, none hidden behind a scroll.
+	&__puzzles {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: $zt-space-2;
+
+		@include bp-down($bp-sm) {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	&__puzzle {
+		@include zt-control;
+
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: $zt-space-1;
+		min-width: 0;
+		min-height: 72px;
+		padding: $zt-space-2 $zt-space-1;
+		font-family: inherit;
+		font-size: 0.9375rem;
+		font-weight: 700;
+		line-height: 1.2;
+		cursor: pointer;
+
+		// The smallest phones: "Pyraminx" has to fit a quarter of the width.
+		@include bp-down($bp-xxs) {
+			padding-right: 0;
+			padding-left: 0;
+			font-size: 0.8125rem;
+		}
+
+		// A phone on its side has little height to give: icon beside the name, one control tall.
+		@media (max-height: $bp-short-height) {
+			flex-direction: row;
+			min-height: $zt-control-h-md;
+			padding: 0;
+			font-size: 0.8125rem;
+		}
+
+		&--selected,
+		&--selected:hover:not(:disabled),
+		&--selected:active:not(:disabled) {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+			cursor: default;
+		}
+	}
+
+	&__puzzle-icon {
+		font-size: 28px;
+		line-height: 1;
+
+		@media (max-height: $bp-short-height) {
+			font-size: 18px;
+		}
+	}
+
+	// Right under the puzzle buttons, so the gap above it is theirs.
+	&__note {
+		margin: (-$zt-space-3) 0 0;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: $zt-text-muted;
+	}
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+	}
+
+	&__section-title {
+		margin: 0;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: $zt-text-muted;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+		gap: $zt-space-2;
+
+		@include bp-down($bp-sm) {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: $zt-space-1;
+		}
+	}
+
+	&__tile {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $zt-space-1;
+		min-width: 0;
+		padding: $zt-space-3 $zt-space-2;
+		border-radius: $zt-radius-md;
+		color: rgb(var(--text-color));
+		text-align: center;
+		text-decoration: none;
+		transition: background $zt-transition;
+		// A link, for new tabs on desktop; a long press on a phone must not open the link menu.
+		-webkit-touch-callout: none;
+		user-select: none;
+
+		&:hover {
+			background: $zt-control-bg;
+		}
+
+		&:active {
+			background: $zt-control-bg-hover;
+		}
+
+		@include zt-focus-ring;
+	}
+
+	&__figure {
+		position: relative;
+		width: 72px;
+		height: 72px;
+		margin-bottom: $zt-space-2;
+
+		@include bp-down($bp-sm) {
+			width: 60px;
+			height: 60px;
+		}
+	}
+
+	// Learned / total on the picture's corner, on the page colour so it reads over any sticker.
+	&__count {
+		position: absolute;
+		right: -10px;
+		bottom: -8px;
+		padding: 0 5px;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		line-height: 1.5;
+		white-space: nowrap;
+
+		&--done {
+			border-color: rgb(var(--success-color));
+		}
+	}
+
+	&__name {
+		font-size: 0.9375rem;
+		font-weight: 700;
+		line-height: 1.25;
+		overflow-wrap: anywhere;
+	}
+
+	&__long-name {
+		font-size: 0.75rem;
+		line-height: 1.3;
+		color: $zt-text-muted;
+		overflow-wrap: anywhere;
+	}
+}

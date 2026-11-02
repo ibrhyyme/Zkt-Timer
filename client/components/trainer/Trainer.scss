@@ -203,12 +203,6 @@
 		white-space: nowrap;
 	}
 
-	&__selector-category-row {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-	}
-
 	&__selector-info {
 		flex: 1;
 		min-width: 0;
@@ -239,19 +233,28 @@
 		}
 	}
 
+	// Phone only: the category's long name, opening its description.
 	&__cat-info-btn {
-		background: none;
-		border: none;
-		color: rgba(var(--text-color), 0.4);
-		cursor: pointer;
-		padding: 0.25rem;
 		display: none;
 		align-items: center;
-		transition: color 0.15s;
+		align-self: flex-start;
+		gap: $zt-space-2;
+		padding: 0;
+		border: none;
+		background: none;
+		color: $zt-text-muted;
+		font-family: inherit;
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-align: left;
+		cursor: pointer;
+		transition: color $zt-transition;
 
 		&:hover {
 			color: rgb(var(--text-color));
 		}
+
+		@include zt-focus-ring;
 	}
 
 	&__cat-info-overlay {
@@ -350,6 +353,19 @@
 		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 		gap: 0.75rem;
 		margin-top: 0.25rem;
+	}
+
+	// Nothing ticked, so no cards: says why the page ends here.
+	&__selector-hint {
+		margin: $zt-space-1 0 0;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: $zt-text-muted;
+	}
+
+	// End of the drawn cards: coming near it draws the next ones (AlgorithmSelector CARD_PAGE).
+	&__selector-more {
+		height: 1px;
 	}
 
 	&__selector-start-inline {
@@ -1725,6 +1741,11 @@
 		}
 
 		&__selector-info {
+			display: none;
+		}
+
+		// Holds only the description, which the phone shows behind the long name instead.
+		&__selector-top--info-only {
 			display: none;
 		}
 

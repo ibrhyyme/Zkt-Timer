@@ -63,7 +63,9 @@ jobs:
     if: inputs.platform != 'android'
     name: App Store listing
     runs-on: macos-15
-    timeout-minutes: 20
+    # deliver waits until Apple finishes processing every uploaded screenshot,
+    # which took over 15 minutes for the 50-image set on 2026-11-02.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout

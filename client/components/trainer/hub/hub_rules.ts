@@ -20,8 +20,8 @@ export function accountRequiredKey(view: TrainerView): string {
 
 /**
  * Where the study mode switch is drawn (2.2):
- * - `header`: full switch in the header (desktop: the selector and training).
- * - `row`: full width switch under the header (mobile selector).
+ * - `header`: full switch in the header (desktop: the category list, a category and training).
+ * - `row`: full width switch under the header (mobile category list and category page).
  * - `chip`: small chip in the header (mobile training).
  * - null: not drawn here. The set lists have no mode, the set page draws its own next to
  *   "Study", the picker has none.
@@ -30,6 +30,7 @@ export type StudySwitchPlacement = 'header' | 'row' | 'chip';
 
 export function studySwitchPlacement(view: TrainerView, mobile: boolean): StudySwitchPlacement | null {
 	switch (view) {
+		case 'catalog':
 		case 'selection':
 			return mobile ? 'row' : 'header';
 		case 'training':

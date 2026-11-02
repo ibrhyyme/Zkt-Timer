@@ -37,9 +37,22 @@ describe('parseTrainerPath', () => {
 	});
 
 	it('algorithm trainer: the path carries no study mode', () => {
-		expect(parseTrainerPath('/trainer/algorithms')).toMatchObject({entry: 'algorithms', mode: null, sub: null, legacyMode: null});
-		expect(parseTrainerPath('/trainer/algorithms/train')).toMatchObject({entry: 'algorithms', sub: 'train'});
-		expect(parseTrainerPath('/trainer/algorithms/community')).toMatchObject({entry: 'algorithms', sub: 'community'});
+		expect(parseTrainerPath('/trainer/algorithms')).toMatchObject({entry: 'algorithms', mode: null, sub: null, legacyMode: null, categorySlug: null});
+		expect(parseTrainerPath('/trainer/algorithms/train')).toMatchObject({entry: 'algorithms', sub: 'train', categorySlug: null});
+		expect(parseTrainerPath('/trainer/algorithms/community')).toMatchObject({entry: 'algorithms', sub: 'community', categorySlug: null});
+	});
+
+	it('a category page carries its slug, lowercased', () => {
+		expect(parseTrainerPath('/trainer/algorithms/pll')).toMatchObject({entry: 'algorithms', sub: null, categorySlug: 'pll'});
+		expect(parseTrainerPath('/trainer/algorithms/2x2-cll')).toMatchObject({categorySlug: '2x2-cll'});
+		expect(parseTrainerPath('/trainer/algorithms/ZBLL')).toMatchObject({categorySlug: 'zbll'});
+	});
+
+	it('a malformed category segment is not a slug', () => {
+		expect(parseTrainerPath('/trainer/algorithms/pll/extra')).toMatchObject({categorySlug: null, sub: 'pll'});
+		expect(parseTrainerPath('/trainer/algorithms/a_b')).toMatchObject({categorySlug: null, sub: 'a_b'});
+		expect(parseTrainerPath('/trainer/algorithms/%E0%A4%A')).toMatchObject({categorySlug: null});
+		expect(parseTrainerPath('/trainer/algorithms/' + 'x'.repeat(65))).toMatchObject({categorySlug: null});
 	});
 
 	it('the Trainers page and Community Sets are entries of their own', () => {
@@ -86,7 +99,8 @@ describe('trainerViewForPath', () => {
 	it('hub, Trainers page, algorithm trainer and set views', () => {
 		expect(viewOf('/trainer')).toBe('landing');
 		expect(viewOf('/trainer/modes')).toBe('modes');
-		expect(viewOf('/trainer/algorithms')).toBe('selection');
+		expect(viewOf('/trainer/algorithms')).toBe('catalog');
+		expect(viewOf('/trainer/algorithms/pll')).toBe('selection');
 		expect(viewOf('/trainer/algorithms/train')).toBe('training');
 		expect(viewOf('/trainer/sets')).toBe('sets');
 		expect(viewOf('/trainer/community')).toBe('community');
@@ -99,14 +113,15 @@ describe('trainerViewForPath', () => {
 		expect(viewOf('/trainer/algorithms/community')).toBeNull();
 	});
 
-	it('legacy paths map to selection and training only', () => {
-		expect(viewOf('/trainer/standard')).toBe('selection');
+	it('legacy paths map to the category list and training only', () => {
+		expect(viewOf('/trainer/standard')).toBe('catalog');
 		expect(viewOf('/trainer/smart/train')).toBe('training');
 		expect(viewOf('/trainer/standard/sets')).toBeNull();
 	});
 
 	it('unknown sub-views and other entries → null', () => {
-		expect(viewOf('/trainer/algorithms/foo')).toBeNull();
+		expect(viewOf('/trainer/algorithms/pll/extra')).toBeNull();
+		expect(viewOf('/trainer/algorithms/a_b')).toBeNull();
 		expect(viewOf('/trainer/sets/abc/edit')).toBeNull();
 		expect(viewOf('/trainer/recognition')).toBeNull();
 		expect(viewOf('/trainer/foo')).toBeNull();
@@ -129,11 +144,19 @@ describe('parseTrainerSearch', () => {
 });
 
 describe('buildAlgorithmsPath', () => {
-	it('selection with category, smart only when smart', () => {
+	it('category list and category page, smart only when smart', () => {
 		expect(buildAlgorithmsPath(null)).toBe('/trainer/algorithms');
-		expect(buildAlgorithmsPath(null, {cat: 'pll'})).toBe('/trainer/algorithms?cat=pll');
-		expect(buildAlgorithmsPath(null, {cat: 'pll', mode: 'smart'})).toBe('/trainer/algorithms?cat=pll&mode=smart');
-		expect(buildAlgorithmsPath(null, {cat: 'pll', mode: 'standard'})).toBe('/trainer/algorithms?cat=pll');
+		expect(buildAlgorithmsPath(null, {mode: 'smart'})).toBe('/trainer/algorithms?mode=smart');
+		expect(buildAlgorithmsPath(null, {cat: 'pll'})).toBe('/trainer/algorithms/pll');
+		expect(buildAlgorithmsPath(null, {cat: 'pll', mode: 'smart'})).toBe('/trainer/algorithms/pll?mode=smart');
+		expect(buildAlgorithmsPath(null, {cat: 'pll', mode: 'standard'})).toBe('/trainer/algorithms/pll');
+	});
+
+	it('a category page round trips through the parser', () => {
+		const [path, query] = buildAlgorithmsPath(null, {cat: '2x2-cll', mode: 'smart'}).split('?');
+		expect(viewOf(path)).toBe('selection');
+		expect(parseTrainerPath(path).categorySlug).toBe('2x2-cll');
+		expect(parseTrainerSearch('?' + query).mode).toBe('smart');
 	});
 
 	it('training: set wins over category', () => {
@@ -177,6 +200,19 @@ describe('legacyAlgorithmsTarget', () => {
 
 	it('a mode already in the query wins', () => {
 		expect(target('/trainer/smart', '?mode=standard')).toBe('/trainer/algorithms?mode=standard');
+	});
+
+	it('the old selector address moves its category into the path, other params kept', () => {
+		expect(target('/trainer/algorithms', '?cat=pll')).toBe('/trainer/algorithms/pll');
+		expect(target('/trainer/algorithms', '?cat=OLL&mode=smart')).toBe('/trainer/algorithms/oll?mode=smart');
+		expect(target('/trainer/standard', '?cat=pll')).toBe('/trainer/algorithms/pll');
+		expect(target('/trainer/smart', '?cat=oll')).toBe('/trainer/algorithms/oll?mode=smart');
+	});
+
+	it('a category page and category training are not rewritten', () => {
+		expect(target('/trainer/algorithms/pll')).toBeNull();
+		expect(target('/trainer/algorithms/pll', '?cat=oll')).toBeNull();
+		expect(target('/trainer/algorithms/train', '?cat=pll')).toBeNull();
 	});
 
 	it('the old set tabs move to their own pages, query kept', () => {

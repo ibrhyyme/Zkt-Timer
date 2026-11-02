@@ -4,6 +4,7 @@ require "tmpdir"
 default_platform(:android)
 
 PACKAGE_NAME = "com.zktimer.app"
+TABLET_SCREENSHOT_TYPES = %w[sevenInchScreenshots tenInchScreenshots]
 
 # Plain Ruby in a Fastfile runs inside ./fastlane while actions run one level up,
 # so resolve listing folders to an absolute path that works from either.
@@ -100,10 +101,25 @@ platform :android do
     upload_screenshots = options[:screenshots].to_s == "true"
     UI.important("Screenshots left as they are: run with the screenshots box ticked to replace them") unless upload_screenshots
 
+    metadata_path = stage_listing_locales(fastlane_path("metadata", "android"), live_codes)
+
+    # supply only empties a slot it has files for, so old tablet images would stay
+    # next to the new phone set on the Play page. This repo keeps no tablet set.
+    if upload_screenshots
+      client.begin_edit(package_name: PACKAGE_NAME)
+      (Dir.children(metadata_path) & live_codes).each do |language|
+        TABLET_SCREENSHOT_TYPES.each do |type|
+          client.clear_screenshots(image_type: type, language: language)
+          UI.message("Cleared #{type} for #{language}")
+        end
+      end
+      client.commit_current_edit!
+    end
+
     upload_to_play_store(
       json_key: json_key,
       package_name: PACKAGE_NAME,
-      metadata_path: stage_listing_locales(fastlane_path("metadata", "android"), live_codes),
+      metadata_path: metadata_path,
       skip_upload_apk: true,
       skip_upload_aab: true,
       skip_upload_changelogs: true,

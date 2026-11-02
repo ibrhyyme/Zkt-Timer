@@ -76,12 +76,22 @@ export interface TrainerOptions {
 /**
  * - landing: trainer hub (two cards: Trainers, Algorithm Sets)
  * - modes: the Trainers page (Algorithm Trainer, PLL Recognition, Cross and XCross)
- * - selection: the Algorithm Trainer's category picker
+ * - catalog: the Algorithm Trainer's category list, by puzzle (/trainer/algorithms)
+ * - selection: one category's page, its groups and cases (/trainer/algorithms/<slug>)
  * - training: study screen (category selection or a set)
  * - sets: My Sets, community: Community Sets (the Algorithm Sets section)
  * - set: one set's page (/trainer/sets/:code), set-add: its algorithm picker (/trainer/sets/:code/add)
  */
-export type TrainerView = 'landing' | 'modes' | 'selection' | 'training' | 'sets' | 'set' | 'set-add' | 'community';
+export type TrainerView =
+	| 'landing'
+	| 'modes'
+	| 'catalog'
+	| 'selection'
+	| 'training'
+	| 'sets'
+	| 'set'
+	| 'set-add'
+	| 'community';
 
 /** The set being studied. `items` holds every row as a card; the queue holds the ones the current mode can run. */
 export interface ActiveStudySet {

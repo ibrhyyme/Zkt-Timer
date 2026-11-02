@@ -8,6 +8,7 @@ import {useTranslation} from 'react-i18next';
 import {TrainerProvider, useTrainerContext} from './TrainerContext';
 import {useTrainerUrlSync} from './hooks/useTrainerUrlSync';
 import AlgorithmSelector from './panels/algorithm_selector/AlgorithmSelector';
+import AlgorithmCatalog from './panels/catalog/AlgorithmCatalog';
 import TrainingArea from './panels/training_area/TrainingArea';
 import StatsPanel from './panels/stats_panel/StatsPanel';
 import TrainerToolbar from './toolbar/TrainerToolbar';
@@ -146,7 +147,7 @@ function TrainerContent() {
 		);
 	}
 
-	// Algorithm selector
+	// Category list, or one category's page. Keyed by view so each opens at the top of its list.
 	const switchRow = !locked && studySwitchPlacement(state.view, mobileMode) === 'row';
 	return (
 		<>
@@ -159,8 +160,8 @@ function TrainerContent() {
 			{locked ? (
 				<div className={bh('scroll')}>{accountRequired}</div>
 			) : (
-				<div className={b('selection-layout')}>
-					<AlgorithmSelector />
+				<div key={state.view} className={b('selection-layout')}>
+					{state.view === 'catalog' ? <AlgorithmCatalog /> : <AlgorithmSelector />}
 				</div>
 			)}
 		</>

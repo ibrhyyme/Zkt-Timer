@@ -448,6 +448,12 @@
     "create_button": "Create Room"
   },
   "trainer": {
+    "catalog": {
+      "pick_group": "Pick the subgroups you want to study and their cases appear here.",
+      "large": "Large categories",
+      "progress": "{{learned}} of {{total}} learned",
+      "smart_only": "Smart Cube mode lists 3x3 categories only, since a smart cube is a 3x3. 2x2, 4x4, Pyraminx, Skewb and Square-1 are in Standard mode."
+    },
     "sets": {
       "loading": "Loading set",
       "smart_skipped_one": "{{count}} algorithm in this set can't be practiced with a smart cube ({{puzzles}}). Practice it in Standard mode.",

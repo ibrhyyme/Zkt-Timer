@@ -19,7 +19,7 @@ import type {
 	TrainerView,
 } from './types';
 import {algToId} from '../../util/trainer/algorithm_engine';
-import {checkedKey, filterForMode} from '../../util/trainer/set_queue';
+import {canStudyWithSmartCube, checkedKey, filterForMode} from '../../util/trainer/set_queue';
 import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
 
 export const SMART_DEFAULTS = {
@@ -214,25 +214,34 @@ export function trainerReducer(state: TrainerSessionState, action: TrainerAction
 
 		case 'SET_MODE':
 			// Entering a trainer (from the hub, or another entry). A running set study ends here.
+			// The Algorithm Trainer opens on its category list; the other trainers own their views.
 			writeTrainerMode(action.payload);
 			return {
 				...state,
 				mode: action.payload,
-				view: 'selection',
+				view: action.payload === 'standard' || action.payload === 'smart' ? 'catalog' : 'selection',
 				activeSet: null,
 				pendingSetCode: null,
 			};
 
 		case 'SET_STUDY_MODE': {
-			// The mode switch: only the mode changes, view and queue stay. A set study re-filters
-			// its cards in TrainerProvider (filterForMode), not here. Locked while the timer runs.
+			// The mode switch: the mode changes, the queue stays. A set study re-filters its cards in
+			// TrainerProvider (filterForMode), not here. Locked while the timer runs.
 			if (state.timerState === 'RUNNING') return state;
 			const mode = action.payload;
 			const remember = action.remember !== false && state.options.lastMode !== mode;
 			if (state.mode === mode && !remember) return state;
+			// A smart cube cannot run this category: back to the list in the same step, or the
+			// address (still this category's) and the view pull against each other.
+			const leavesCategory =
+				mode === 'smart' &&
+				state.view === 'selection' &&
+				!!state.selectedCategory &&
+				!canStudyWithSmartCube(state.selectedCategory);
 			return {
 				...state,
 				mode,
+				view: leavesCategory ? 'catalog' : state.view,
 				options: remember ? {...state.options, lastMode: mode} : state.options,
 			};
 		}

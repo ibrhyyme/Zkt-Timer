@@ -448,6 +448,12 @@
     "create_button": "Crear sala"
   },
   "trainer": {
+    "catalog": {
+      "pick_group": "Elige los subgrupos que quieras estudiar y sus casos aparecerán aquí.",
+      "large": "Categorías grandes",
+      "progress": "{{learned}} de {{total}} aprendidos",
+      "smart_only": "El modo Cubo inteligente solo muestra categorías de 3x3, porque un cubo inteligente es un 3x3. 2x2, 4x4, Pyraminx, Skewb y Square-1 están en el modo Estándar."
+    },
     "sets": {
       "loading": "Cargando set",
       "smart_skipped_one": "{{count}} algoritmo de este set no se puede practicar con un cubo inteligente ({{puzzles}}). Practícalo en modo Estándar.",

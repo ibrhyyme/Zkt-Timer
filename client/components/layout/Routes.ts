@@ -253,12 +253,18 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.
 	// Algorithm Trainer (Standard and Smart Cube in one, the study mode is `?mode=smart`).
 	// The old /trainer/standard* and /trainer/smart* addresses are routeRedirect rows below.
+	// /trainer/algorithms is the category list, /trainer/algorithms/<slug> one category's page.
 	trainerRoute('/trainer/algorithms/train'),
+	// The old set tabs sit under the same prefix: they must match before the category route
+	// (the server registers handlers and the client <Switch> picks routes in this order).
+	routeRedirect('/trainer/algorithms/sets', '/trainer/sets'),
+	routeRedirect('/trainer/algorithms/community', '/trainer/community'),
+	trainerRoute('/trainer/algorithms/:category'),
 	trainerRoute('/trainer/algorithms'),
 	// The Trainers page (Algorithm Trainer, PLL Recognition, Cross and XCross).
 	trainerRoute('/trainer/modes'),
 	// Algorithm Sets, a section of their own next to the trainers: My Sets, Community Sets and
-	// one set's page. The old /trainer/algorithms/sets and /community tabs are redirect rows below.
+	// one set's page. The old /trainer/algorithms/sets and /community tabs are redirect rows above.
 	// Open to visitors: a public or link-shared set is readable signed out (the access rule is
 	// the server's), only studying and saving ask for an account (inside the page).
 	trainerRoute('/trainer/sets'),
@@ -392,6 +398,5 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/trainer/standard', '/trainer/algorithms'),
 	routeRedirect('/trainer/smart/train', '/trainer/algorithms/train?mode=smart'),
 	routeRedirect('/trainer/smart', '/trainer/algorithms?mode=smart'),
-	routeRedirect('/trainer/algorithms/sets', '/trainer/sets'),
-	routeRedirect('/trainer/algorithms/community', '/trainer/community'),
+	// The old /trainer/algorithms/sets and /community tabs: next to the category route above.
 ];

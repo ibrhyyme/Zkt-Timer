@@ -229,6 +229,7 @@ export default function TrainerToolbar() {
 
 	const toHub = () => dispatch({type: 'SET_VIEW', payload: 'landing'});
 	const toModes = () => dispatch({type: 'SET_VIEW', payload: 'modes'});
+	const toCatalog = () => dispatch({type: 'SET_VIEW', payload: 'catalog'});
 	const toSelection = () => dispatch({type: 'SET_VIEW', payload: 'selection'});
 	const toMySets = () => dispatch({type: 'SET_VIEW', payload: 'sets'});
 	const toCommunity = () => dispatch({type: 'SET_VIEW', payload: 'community'});
@@ -265,12 +266,18 @@ export default function TrainerToolbar() {
 				break;
 			}
 			const category = state.currentAlgorithm?.category || state.selectedCategory;
-			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode, toSelection)];
-			if (category) trail.push({label: category});
+			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode, toCatalog)];
+			if (category) trail.push({label: category, onClick: toSelection});
 			onBack = toSelection;
 			break;
 		}
+		case 'selection':
+			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode, toCatalog)];
+			if (state.selectedCategory) trail.push({label: state.selectedCategory});
+			onBack = toCatalog;
+			break;
 		default:
+			// The category list.
 			trail = [trainersCrumb(t, toModes), kindCrumb(t, state.mode)];
 			onBack = toModes;
 	}
@@ -314,7 +321,8 @@ export default function TrainerToolbar() {
 				</>
 			)}
 
-			{is3x3Category && state.mode === 'smart' && (
+			{/* The category list in Smart Cube mode holds 3x3 categories only: the cube can be connected there too. */}
+			{state.mode === 'smart' && (is3x3Category || view === 'catalog') && (
 				<button
 					className={bh('ble', {
 						connected: state.smartConnected,

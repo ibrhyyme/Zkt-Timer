@@ -7,8 +7,11 @@
  *     /trainer                           hub
  *     /trainer/modes                     Trainers: Algorithm Trainer, PLL Recognition, Cross and XCross
  *   Algorithm Trainer (trainer-sets 2.5):
- *     /trainer/algorithms                selection                   ?cat=<slug>&mode=smart
+ *     /trainer/algorithms                catalog (every category)    ?mode=smart
+ *     /trainer/algorithms/<slug>         one category's page         ?mode=smart
  *     /trainer/algorithms/train          training                    ?cat=<slug> | ?set=<code>, &mode=smart
+ *   The category used to be `/trainer/algorithms?cat=<slug>`; that address is rewritten to the
+ *   category page (legacyAlgorithmsTarget).
  *   Algorithm Sets (their own section, not a tab of the Algorithm Trainer):
  *     /trainer/sets                      My Sets
  *     /trainer/community                 Community Sets              (?q, ?sort, ?puzzle owned by that page)
@@ -65,6 +68,8 @@ export interface ParsedTrainerPath {
 	legacyMode: StudyMode | null;
 	/** `/trainer/sets/:code[/add]`: the share code */
 	setCode: string | null;
+	/** `/trainer/algorithms/<slug>`: the category slug (not checked against the library here) */
+	categorySlug: string | null;
 }
 
 const NOT_TRAINER: ParsedTrainerPath = {
@@ -75,7 +80,11 @@ const NOT_TRAINER: ParsedTrainerPath = {
 	unknownMode: false,
 	legacyMode: null,
 	setCode: null,
+	categorySlug: null,
 };
+
+/** Category slugs are categoryToSlug output: lowercase letters, digits and dashes. */
+const CATEGORY_SLUG = /^[a-z0-9-]{1,64}$/;
 
 function safeDecode(segment: string): string | null {
 	try {
@@ -110,7 +119,15 @@ export function parseTrainerPath(pathname: string): ParsedTrainerPath {
 		return {...NOT_TRAINER, isTrainer: true, entry: seg};
 	}
 	if (seg === 'algorithms') {
-		return {...NOT_TRAINER, isTrainer: true, entry: 'algorithms', sub: parts[2] ?? null};
+		const tail = parts[2] ?? null;
+		const reserved = tail === null || ALGORITHMS_SUBS.includes(tail as AlgorithmsSub) || LEGACY_ALGORITHMS_SUBS.has(tail);
+		if (!reserved && parts.length === 3) {
+			const slug = safeDecode(tail)?.toLowerCase();
+			if (slug && CATEGORY_SLUG.test(slug)) {
+				return {...NOT_TRAINER, isTrainer: true, entry: 'algorithms', categorySlug: slug};
+			}
+		}
+		return {...NOT_TRAINER, isTrainer: true, entry: 'algorithms', sub: tail};
 	}
 	if (seg === 'sets') {
 		const set = parseSetPath(pathname);
@@ -142,7 +159,8 @@ export function trainerViewForPath(parsed: ParsedTrainerPath): TrainerView | nul
 	if (parsed.entry === 'modes') return 'modes';
 	if (parsed.entry === 'community') return 'community';
 	if (parsed.entry === 'algorithms') {
-		if (parsed.sub === null) return 'selection';
+		if (parsed.categorySlug) return 'selection';
+		if (parsed.sub === null) return 'catalog';
 		if (parsed.sub === 'train') return 'training';
 		return null;
 	}
@@ -174,16 +192,20 @@ export function parseTrainerSearch(search: string | null | undefined): TrainerSe
 }
 
 /**
- * Algorithm Trainer address. `set` wins over `cat` (a set study has no selector category).
- * Only Smart is written to the URL; Standard is the default and keeps links short.
+ * Algorithm Trainer address. Without `sub`, `cat` is the category page (`/trainer/algorithms/pll`)
+ * and no `cat` the catalog. In training `set` wins over `cat` (a set study has no selector
+ * category). Only Smart is written to the URL; Standard is the default and keeps links short.
  */
 export function buildAlgorithmsPath(
 	sub: AlgorithmsSub | null,
 	query: {cat?: string | null; set?: string | null; mode?: StudyMode | null} = {}
 ): string {
-	const path = sub && ALGORITHMS_SUBS.includes(sub) ? `${ALGORITHMS_BASE}/${sub}` : ALGORITHMS_BASE;
+	const train = !!sub && ALGORITHMS_SUBS.includes(sub);
+	let path = train ? `${ALGORITHMS_BASE}/${sub}` : ALGORITHMS_BASE;
 	const parts: string[] = [];
-	if (query.set) parts.push('set=' + encodeURIComponent(query.set));
+	if (!train) {
+		if (query.cat) path += '/' + encodeURIComponent(query.cat);
+	} else if (query.set) parts.push('set=' + encodeURIComponent(query.set));
 	else if (query.cat) parts.push('cat=' + encodeURIComponent(query.cat));
 	if (query.mode === 'smart') parts.push('mode=smart');
 	return parts.length ? `${path}?${parts.join('&')}` : path;
@@ -197,20 +219,30 @@ export function buildSetPath(code: string, add = false): string {
 
 /**
  * New address for a legacy path, keeping its query: `/trainer/standard*` or `/trainer/smart*`
- * (`?cat` survives; a `mode` already in the query wins over the one the old path meant), and the
- * old `/trainer/algorithms/sets` and `/trainer/algorithms/community` tabs.
+ * (a `mode` already in the query wins over the one the old path meant), the old
+ * `/trainer/algorithms/sets` and `/trainer/algorithms/community` tabs, and the old selector
+ * address `/trainer/algorithms?cat=<slug>`, whose category moved into the path. In training
+ * `?cat` stays a query.
  */
 export function legacyAlgorithmsTarget(parsed: ParsedTrainerPath, search: string): string | null {
-	const movedTab = parsed.entry === 'algorithms' && !parsed.legacyMode && parsed.sub ? LEGACY_ALGORITHMS_SUBS.get(parsed.sub) : undefined;
+	if (parsed.entry !== 'algorithms') return null;
+	const movedTab = !parsed.legacyMode && parsed.sub ? LEGACY_ALGORITHMS_SUBS.get(parsed.sub) : undefined;
 	if (movedTab) {
 		const qs = (search || '').replace(/^\?/, '');
 		return qs ? `${movedTab}?${qs}` : movedTab;
 	}
-	if (!parsed.legacyMode) return null;
 	const params = new URLSearchParams(search || '');
+	const oldCat = parsed.sub === null && !parsed.categorySlug ? params.get('cat') : null;
+	if (!parsed.legacyMode && !oldCat) return null;
 	if (!params.get('mode') && parsed.legacyMode === 'smart') params.set('mode', 'smart');
+	let path = ALGORITHMS_BASE;
+	if (parsed.sub === 'train') {
+		path = `${ALGORITHMS_BASE}/train`;
+	} else if (oldCat) {
+		params.delete('cat');
+		path = `${ALGORITHMS_BASE}/${encodeURIComponent(oldCat.toLowerCase())}`;
+	}
 	const qs = params.toString();
-	const path = parsed.sub === 'train' ? `${ALGORITHMS_BASE}/train` : ALGORITHMS_BASE;
 	return qs ? `${path}?${qs}` : path;
 }
 

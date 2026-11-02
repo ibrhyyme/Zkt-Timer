@@ -444,6 +444,12 @@
     "create_button": "创建房间"
   },
   "trainer": {
+    "catalog": {
+      "pick_group": "选择要练习的子组，对应的情况会显示在这里。",
+      "large": "大型类别",
+      "progress": "已学会 {{learned}}/{{total}}",
+      "smart_only": "智能魔方模式只列出 3x3 类别，因为智能魔方是 3x3。2x2、4x4、Pyraminx、Skewb 和 Square-1 在标准模式中。"
+    },
     "sets": {
       "loading": "正在加载公式集",
       "smart_skipped": "此公式集中有 {{count}} 个公式无法用智能魔方练习（{{puzzles}}），请在标准模式下练习。",

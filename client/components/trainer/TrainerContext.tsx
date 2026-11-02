@@ -117,7 +117,7 @@ const savedMode = loadMode();
 // Context default only (a consumer outside the provider); the provider builds its own from the URL.
 const initialState: TrainerSessionState = createTrainerState(loadOptions(), {
 	mode: savedMode,
-	view: savedMode ? 'selection' : 'landing',
+	view: savedMode ? 'catalog' : 'landing',
 });
 
 function smartAllowedForMe(): boolean {
@@ -147,14 +147,16 @@ function resolveInitialNav(
 		const requested = parseStudyModeParam(search) ?? (parsed.legacyMode || null);
 		const mode = resolveStudyMode(requested, options.lastMode, smartAllowedForMe());
 		const view = trainerViewForPath(parsed);
+		const {set: code, cat} = parseTrainerSearch(search);
 		if (view === 'training') {
-			const code = parseTrainerSearch(search).set;
 			if (code) return {mode, view: 'training', pendingSetCode: code};
-			// No set and no selection survives a reload: start from the selector (the URL hook
-			// then rewrites the address, as before).
-			return {mode, view: 'selection', pendingSetCode: null};
+			// No set and no selection survives a reload: start from the category page, or the
+			// category list without one (the URL hook then rewrites the address, as before).
+			return {mode, view: cat ? 'selection' : 'catalog', pendingSetCode: null};
 		}
-		return {mode, view: view || 'selection', pendingSetCode: null};
+		// The old `/trainer/algorithms?cat=` address opens straight on the category page.
+		if (view === 'catalog' && cat) return {mode, view: 'selection', pendingSetCode: null};
+		return {mode, view: view || 'catalog', pendingSetCode: null};
 	}
 	if (parsed.mode) return {mode: parsed.mode, view: 'selection', pendingSetCode: null};
 	if (parsed.entry === 'modes') return {mode: null, view: 'modes', pendingSetCode: null};
