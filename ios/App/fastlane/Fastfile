@@ -160,6 +160,9 @@ platform :ios do
     screenshots_dir = fastlane_path("screenshots")
     has_screenshots = !!screenshots_dir && !Dir.glob(File.join(screenshots_dir, "**", "*.png")).empty?
     upload_screenshots = options[:screenshots].to_s == "true" && has_screenshots
+    unless upload_screenshots
+      UI.important(has_screenshots ? "Screenshots left as they are: run with the screenshots box ticked to replace them" : "Screenshots left as they are: no PNG under fastlane/screenshots")
+    end
     deliver(
       api_key: api_key,
       app_identifier: APP_IDENTIFIER,

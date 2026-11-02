@@ -17,9 +17,9 @@ on:
           - ios
         default: both
       screenshots:
-        description: 'Also replace the screenshots'
+        description: 'Also replace the screenshots (untick for a text-only update)'
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: read
