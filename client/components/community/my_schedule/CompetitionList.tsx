@@ -101,9 +101,16 @@ function normalizeZktComp(c: any): any {
 	};
 }
 
-// The WCA lists change slowly: a copy younger than this is not asked for again
-// on a visit (the ZKT lists always are, behind the copy on screen).
+// The viewer's own WCA registrations change slowly, and every refresh of them is
+// a call to WCA with the viewer's token: a copy younger than this is not asked
+// for again on a visit (the ZKT lists always are, behind the copy on screen).
 const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+// How old a copy of the general list may be before a visit or a resumed app asks
+// again. The server answers it from its own cache, so the check costs nothing,
+// and the copy on screen stays drawn while the fresh one loads. A visit used to
+// keep it for LIST_CACHE_TTL, which held a corrected list back on phones for half
+// an hour (a running competition missing on its second day).
+const RESUME_REFRESH_MS = 2 * 60 * 1000;
 
 export default function CompetitionList() {
 	const {t, i18n} = useTranslation();
@@ -223,7 +230,7 @@ export default function CompetitionList() {
 		markHydrated();
 		setCompetitions((prev) => prev ?? shownList(WCA_LIST_KEY));
 		setZktComps((prev) => prev ?? shownList(ZKT_LIST_KEY));
-		if (isOlderThan(peekCached(WCA_LIST_KEY), LIST_CACHE_TTL)) fetchCompetitions();
+		if (isOlderThan(peekCached(WCA_LIST_KEY), RESUME_REFRESH_MS)) fetchCompetitions();
 		// ZKT competitions are published/updated often, and an empty cache (from a
 		// visit before any comp existed, or a transient error) would otherwise stay
 		// stuck for 30 min and hide the section. Always refetch on mount — the
@@ -289,7 +296,6 @@ export default function CompetitionList() {
 		const silentRefresh = () => {
 			if (document.visibilityState !== 'visible') return;
 			// If last fetch was older than 2 minutes, refetch (avoid excessive requests)
-			const RESUME_REFRESH_MS = 2 * 60 * 1000;
 			if (isOlderThan(peekCached(WCA_LIST_KEY), RESUME_REFRESH_MS)) fetchCompetitions();
 			if (me) {
 				if (isOlderThan(peekCached(myWcaKey()), RESUME_REFRESH_MS)) fetchMyCompetitions();

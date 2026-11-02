@@ -1,4 +1,4 @@
-import {fetchLiveRoundResults} from './WcaLiveService';
+import {fetchLiveRoundView} from './WcaLiveService';
 import {createRedisKey, RedisNamespace, setKeyInRedis} from './redis';
 import {logger} from './logger';
 import {ZktFederationService} from './ZktFederationService';
@@ -39,7 +39,7 @@ async function fetchRoundData(liveRoundId: string, competitionId: string): Promi
 		);
 		return raw ? zktRoundToWcaLiveResults(raw) : null;
 	}
-	return fetchLiveRoundResults(liveRoundId);
+	return fetchLiveRoundView(liveRoundId);
 }
 
 async function pollRound(liveRoundId: string, competitionId: string) {

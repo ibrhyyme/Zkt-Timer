@@ -527,7 +527,7 @@ export class WcaLiveRoundInfo {
 	@Field({nullable: true})
 	isFinal?: boolean;
 
-	/** ZKT Dual Chance round (see WcaRound.dualChance). */
+	/** ZKT Dual Chance round (see WcaRound.dualChance), or a WCA dual round. */
 	@Field({nullable: true})
 	dualChance?: boolean;
 }
@@ -751,7 +751,11 @@ export class WcaLiveRoundResults {
 	@Field()
 	sortBy: string;
 
-	/** ZKT Dual Chance round (see WcaRound.dualChance). */
+	/**
+	 * Better-of-two table: a ZKT Dual Chance round (see WcaRound.dualChance), or
+	 * on a WCA competition a dual round merged with its linked round, one chance
+	 * per round.
+	 */
 	@Field({nullable: true})
 	dualChance?: boolean;
 

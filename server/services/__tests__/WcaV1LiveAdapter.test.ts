@@ -15,6 +15,7 @@ import {
 	v1RoundMap,
 	v1RoundToWcaLiveResults,
 	v1RoundsWithResults,
+	v1LinkedRoundsToWcaLiveResults,
 } from '../WcaV1LiveAdapter';
 
 const COMP = 'NewAgeTurkey2026';
@@ -51,8 +52,8 @@ const rounds = [
 		},
 		state: 'pending',
 	},
-	{id: '222-r1', format: 'a', participationRuleset: fromRegistrations, state: 'locked', total_competitors: 44},
-	{id: '222-r2', format: 'a', participationRuleset: fromRegistrations, state: 'open', total_competitors: 30, completed_competitors: 0},
+	{id: '222-r1', format: 'a', linkedRounds: ['222-r1', '222-r2'], participationRuleset: fromRegistrations, state: 'locked', total_competitors: 44},
+	{id: '222-r2', format: 'a', linkedRounds: ['222-r1', '222-r2'], participationRuleset: fromRegistrations, state: 'open', total_competitors: 30, completed_competitors: 0},
 	{
 		id: '222-r3',
 		format: 'm',
@@ -166,6 +167,13 @@ describe('v1OverviewEvents', () => {
 		expect(round('222', 2).advancementCondition).toEqual({type: 'attemptResult', level: 500});
 	});
 
+	test('dual rounds are flagged for the merged table, other rounds are not', () => {
+		expect(round('222', 1).dualChance).toBe(true);
+		expect(round('222', 2).dualChance).toBe(true);
+		expect(round('222', 3).dualChance).toBeUndefined();
+		expect(round('333', 1).dualChance).toBeUndefined();
+	});
+
 	test('live round ids are self-contained', () => {
 		expect(round('333', 1).liveRoundId).toBe(`wcav1:${COMP}:333-r1`);
 		expect(v1RoundMap(COMP, rounds)[1]).toEqual({activityCode: '333-r1', liveRoundId: `wcav1:${COMP}:333-r1`});
@@ -277,4 +285,90 @@ test('v1RegistrationToCompetitorResults', () => {
 	});
 	expect(out.results[2]).toMatchObject({roundName: 'Final', singleRecordTag: 'NR'});
 	expect(v1RegistrationToCompetitorResults(null, rounds)).toBeNull();
+});
+
+// Shaped like BramptonAutumn2026 3x3: rounds 1 and 2 are dual rounds. WCA's own
+// page shows them as one table ranked by global_pos, under either round. Jimi
+// only competed in round 2, Solo only in round 1.
+describe('v1LinkedRoundsToWcaLiveResults', () => {
+	const linked = ['333-r1', '333-r2'];
+	const r1 = {
+		id: '333-r1',
+		format: 'a',
+		linked_round_ids: linked,
+		competitors: [
+			{id: 1, name: 'Jensen', country_iso2: 'CA', wca_id: '2020JENS01'},
+			{id: 2, name: 'Luan', country_iso2: 'GB', wca_id: '2020LUAN01'},
+			{id: 3, name: 'Isaac', country_iso2: 'GB', wca_id: '2020ISAA01'},
+			{id: 5, name: 'Solo', country_iso2: 'GB', wca_id: null},
+		],
+		results: [
+			{global_pos: 1, local_pos: 2, registration_id: 1, best: 781, average: 858, advancing: true, attempts: [{attempt_number: 1, value: 781}]},
+			{global_pos: 2, local_pos: 3, registration_id: 2, best: 738, average: 873, advancing: true, attempts: []},
+			{global_pos: 3, local_pos: 1, registration_id: 3, best: 717, average: 853, single_record_tag: 'NR', advancing: true, attempts: [{attempt_number: 1, value: 717}]},
+			{global_pos: 5, local_pos: 4, registration_id: 5, best: 900, average: 1000, advancing: false, attempts: []},
+		],
+	};
+	const r2 = {
+		id: '333-r2',
+		format: 'a',
+		linked_round_ids: linked,
+		competitors: [
+			{id: 1, name: 'Jensen', country_iso2: 'CA', wca_id: '2020JENS01'},
+			{id: 2, name: 'Luan', country_iso2: 'GB', wca_id: '2020LUAN01'},
+			{id: 3, name: 'Isaac', country_iso2: 'GB', wca_id: '2020ISAA01'},
+			{id: 4, name: 'Jimi', country_iso2: 'GB', wca_id: '2020JIMI01'},
+		],
+		results: [
+			{global_pos: 1, local_pos: 1, registration_id: 1, best: 694, average: 819, advancing: true, attempts: [{attempt_number: 1, value: 694}]},
+			{global_pos: 2, local_pos: 2, registration_id: 2, best: 763, average: 852, advancing: true, attempts: []},
+			{global_pos: 3, local_pos: 3, registration_id: 3, best: 835, average: 908, advancing: true, attempts: [{attempt_number: 1, value: 835}]},
+			{global_pos: 4, local_pos: 4, registration_id: 4, best: 884, average: 953, advancing: true, attempts: []},
+		],
+	};
+	const info1 = {id: '333-r1', state: 'locked', linkedRounds: linked};
+	const out = v1LinkedRoundsToWcaLiveResults(COMP, [r1, r2], info1, false);
+	const row = (name: string) => out.results.find((r: any) => r.personName === name);
+
+	test('one table ranked together, everyone once', () => {
+		expect(out.dualChance).toBe(true);
+		expect(out.results.map((r: any) => [r.ranking, r.personName])).toEqual([
+			[1, 'Jensen'],
+			[2, 'Luan'],
+			[3, 'Isaac'],
+			[4, 'Jimi'],
+			[5, 'Solo'],
+		]);
+		expect(out).toMatchObject({roundName: 'First round', finished: true, sortBy: 'average'});
+	});
+
+	test('the better round counts, the best single spans both', () => {
+		// Jensen: round 2 average 8.19 beats round 1's 8.58.
+		expect(row('Jensen')).toMatchObject({average: 819, best: 694, attempts: [{result: 694}]});
+		expect(row('Jensen').chances).toEqual([
+			{chance: 1, attempts: [{result: 781}], best: 781, average: 858, noShow: false, counting: false},
+			{chance: 2, attempts: [{result: 694}], best: 694, average: 819, noShow: false, counting: true},
+		]);
+		// Isaac: round 1 counts, and his record single came from round 1.
+		expect(row('Isaac')).toMatchObject({average: 853, best: 717, singleRecordTag: 'NR'});
+		expect(row('Isaac').chances.map((c: any) => c.counting)).toEqual([true, false]);
+	});
+
+	test('a round the competitor was not in is an empty column, not a DNS', () => {
+		expect(row('Jimi').chances[0]).toEqual({chance: 1, attempts: [], best: 0, average: 0, noShow: false, counting: false});
+		expect(row('Jimi').chances[1].counting).toBe(true);
+		expect(row('Solo').chances[1]).toMatchObject({average: 0, counting: false});
+		expect(row('Solo').advancing).toBe(false);
+	});
+
+	test('round 2 shows the same table under its own header', () => {
+		const out2 = v1LinkedRoundsToWcaLiveResults(COMP, [r2, r1], {id: '333-r2', state: 'open', linkedRounds: linked}, false);
+		expect(out2).toMatchObject({roundName: 'Second round', active: true, finished: false});
+		expect(out2.results).toEqual(out.results);
+	});
+
+	test('competitor results use WCA ranking, the linked pair together', () => {
+		const reg = {name: 'Isaac', results: [{round_wcif_id: '333-r1', local_pos: 1, global_pos: 3, best: 717, average: 853, attempts: []}]};
+		expect(v1RegistrationToCompetitorResults(reg, rounds).results[0].ranking).toBe(3);
+	});
 });

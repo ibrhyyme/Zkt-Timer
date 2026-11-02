@@ -3,7 +3,7 @@ import {logger} from './logger';
 import {ZktFederationService} from './ZktFederationService';
 import {isZktCompetitionId, zktSlugOf, zktRoundToWcaLiveResults, zktRecordsToRecordEntries} from './ZktWcaAdapter';
 import {isWcaV1Id} from './WcaV1LiveAdapter';
-import {fetchV1LiveData, fetchV1RoundResults, fetchV1Records} from './WcaV1LiveService';
+import {fetchV1LiveData, fetchV1RoundResults, fetchV1RoundView, fetchV1Records} from './WcaV1LiveService';
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 const WCA_LIVE_CACHE_TTL = 60 * 60; // 1 saat
@@ -342,6 +342,21 @@ export async function fetchLiveRoundResults(
 			advancingQuestionable: !!r.advancingQuestionable,
 		})),
 	};
+}
+
+/**
+ * One round as the live results screen shows it (the resolver and the socket
+ * push). Same as fetchLiveRoundResults except that a WCA dual round comes back
+ * merged with the round it is linked to. Anything that reacts to one round on
+ * its own (notifications, archives, follows) must keep calling
+ * fetchLiveRoundResults: a merged round 2 already carries round 1's results.
+ */
+export async function fetchLiveRoundView(
+	liveRoundId: string,
+	competitionId?: string
+): Promise<WcaLiveRoundData | null> {
+	if (isWcaV1Id(liveRoundId)) return fetchV1RoundView(liveRoundId);
+	return fetchLiveRoundResults(liveRoundId, competitionId);
 }
 
 // MBLD (3x3 Multi-Blind) result decoding — mirrors client shared.tsx formatMbldResult.

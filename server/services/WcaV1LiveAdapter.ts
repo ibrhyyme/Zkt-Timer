@@ -60,6 +60,10 @@ export function isValidWcaCompetitionId(id: string): boolean {
 	return COMPETITION_ID.test(id);
 }
 
+export function isValidRoundWcifId(id: string): boolean {
+	return ROUND_ID.test(id);
+}
+
 // WCA format ids: "a" average of 5, "m" mean of 3, digits best of N.
 const ATTEMPTS: Record<string, number> = {'1': 1, '2': 2, '3': 3, '5': 5, a: 5, m: 3};
 const attemptsOf = (f: string): number => ATTEMPTS[f] ?? 5;
@@ -174,6 +178,8 @@ export function v1OverviewEvents(competitionId: string, rounds: any[], wcif?: an
 				? {attemptResult: r.cutoff.resultValue || 0, numberOfAttempts: r.cutoff.numberOfAttempts || 0}
 				: undefined,
 			advancementCondition: advancement.get(r.id),
+			// Dual rounds: the results screen shows the linked pair as one table.
+			dualChance: (r.linkedRounds?.length ?? 0) > 1 ? true : undefined,
 		});
 	}
 
@@ -223,8 +229,12 @@ function competitorsById(payload: any): Map<number, any> {
 	return new Map((payload?.competitors || []).map((c: any) => [c.id, c]));
 }
 
-/** Ranking within the round. On a dual round global_pos ranks the linked pair together. */
-const rankingOf = (res: any): number | undefined => res.local_pos ?? res.global_pos ?? undefined;
+/**
+ * WCA's own ranking of a row, the one its WCIF exports. On a dual round it ranks
+ * the linked pair together (local_pos would rank the row's round alone); on any
+ * other round the two are equal.
+ */
+const rankingOf = (res: any): number | undefined => res.global_pos ?? res.local_pos ?? undefined;
 
 function sortResults<T extends {ranking?: number; personName: string}>(rows: T[]): T[] {
 	return rows.sort((a, b) => {
@@ -244,25 +254,7 @@ export function v1RoundToWcaLiveResults(competitionId: string, payload: any, rou
 	const people = competitorsById(payload);
 	const state: string | undefined = roundInfo?.state;
 
-	const results = (payload?.results || []).map((res: any) => {
-		const person = people.get(res.registration_id);
-		return {
-			ranking: rankingOf(res),
-			best: res.best ?? 0,
-			average: res.average ?? 0,
-			attempts: [...(res.attempts || [])]
-				.sort((a: any, b: any) => (a.attempt_number ?? 0) - (b.attempt_number ?? 0))
-				.map((a: any) => ({result: a.value ?? 0})),
-			personName: person?.name || '',
-			personWcaId: person?.wca_id || undefined,
-			personCountryIso2: person?.country_iso2 || undefined,
-			personLiveId: v1PersonId(competitionId, res.registration_id),
-			singleRecordTag: normalizeRecordTag(res.single_record_tag),
-			averageRecordTag: normalizeRecordTag(res.average_record_tag),
-			advancing: !!res.advancing,
-			advancingQuestionable: !!res.advancing_questionable,
-		};
-	});
+	const results = (payload?.results || []).map((res: any) => resultRow(competitionId, res, people));
 
 	return {
 		roundActivityCode: v1RoundId(competitionId, payload?.id || roundInfo?.id || ''),
@@ -273,6 +265,105 @@ export function v1RoundToWcaLiveResults(competitionId: string, payload: any, rou
 		sortBy: sortByOf(format),
 		results: sortResults(results),
 	};
+}
+
+const attemptsOfRow = (res: any): {result: number}[] =>
+	[...(res?.attempts || [])]
+		.sort((a: any, b: any) => (a.attempt_number ?? 0) - (b.attempt_number ?? 0))
+		.map((a: any) => ({result: a.value ?? 0}));
+
+function resultRow(competitionId: string, res: any, people: Map<number, any>): any {
+	const person = people.get(res.registration_id);
+	return {
+		ranking: rankingOf(res),
+		best: res.best ?? 0,
+		average: res.average ?? 0,
+		attempts: attemptsOfRow(res),
+		personName: person?.name || '',
+		personWcaId: person?.wca_id || undefined,
+		personCountryIso2: person?.country_iso2 || undefined,
+		personLiveId: v1PersonId(competitionId, res.registration_id),
+		singleRecordTag: normalizeRecordTag(res.single_record_tag),
+		averageRecordTag: normalizeRecordTag(res.average_record_tag),
+		advancing: !!res.advancing,
+		advancingQuestionable: !!res.advancing_questionable,
+	};
+}
+
+/** Sort key of a result value: a time first, then DNF/DNS, then nothing entered. */
+const valueKey = (v: number | null | undefined): number => (v && v > 0 ? v : v === -1 || v === -2 ? 1e12 : 1e13);
+
+/**
+ * WCA dual rounds (Regulation 9v): the first two rounds of an event linked and
+ * ranked together, each competitor's better result counting. WCA's own page
+ * shows the pair as one table under either round, ranked by global_pos.
+ *
+ * This builds that table in the layout the client already has for "better of
+ * two counts" (`dualChance` + `chances`, made for ZKT's Çift Şans). The two are
+ * different things, one round done twice against two linked rounds, which is why
+ * the client labels the columns by source. Each chance is one round, numbered by
+ * the round (9v1 puts dual rounds at 1 and 2); the row carries the counting
+ * round's attempts and average, the best single across both, and WCA's ranking.
+ *
+ * Display only. Notifications and archives read each round on its own.
+ */
+export function v1LinkedRoundsToWcaLiveResults(
+	competitionId: string,
+	payloads: any[],
+	roundInfo: any,
+	isFinal: boolean
+): any {
+	const ordered = [...payloads]
+		.filter((p) => parseRoundCode(p?.id || ''))
+		.sort((a, b) => parseRoundCode(a.id)!.number - parseRoundCode(b.id)!.number);
+	const current = ordered.find((p) => p.id === roundInfo?.id) || ordered[0];
+	const header = v1RoundToWcaLiveResults(competitionId, current, roundInfo, isFinal);
+	const byAverage = header.sortBy === 'average';
+	const sortKey = (res: any): [number, number] =>
+		byAverage ? [valueKey(res.average), valueKey(res.best)] : [valueKey(res.best), 0];
+	const better = (a: any, b: any) => {
+		const [ka, kb] = [sortKey(a), sortKey(b)];
+		return ka[0] !== kb[0] ? ka[0] < kb[0] : ka[1] <= kb[1];
+	};
+
+	const people = new Map<number, any>();
+	for (const p of ordered) for (const [id, c] of competitorsById(p)) people.set(id, c);
+
+	const rowsByPerson = new Map<number, {roundNumber: number; res: any}[]>();
+	for (const p of ordered) {
+		const roundNumber = parseRoundCode(p.id)!.number;
+		for (const res of p.results || []) {
+			if (!rowsByPerson.has(res.registration_id)) rowsByPerson.set(res.registration_id, []);
+			rowsByPerson.get(res.registration_id)!.push({roundNumber, res});
+		}
+	}
+
+	const results = [...rowsByPerson.values()].map((rows) => {
+		const counting = rows.reduce((a, b) => (better(a.res, b.res) ? a : b));
+		const bestSingle = rows.reduce((a, b) => (valueKey(a.res.best) <= valueKey(b.res.best) ? a : b));
+		const row = resultRow(competitionId, counting.res, people);
+		return {
+			...row,
+			best: bestSingle.res.best ?? 0,
+			singleRecordTag: normalizeRecordTag(bestSingle.res.single_record_tag),
+			advancing: rows.some((r) => !!r.res.advancing),
+			chances: ordered.map((p) => {
+				const n = parseRoundCode(p.id)!.number;
+				const own = rows.find((r) => r.roundNumber === n);
+				// Not in this round: shown as no result, not as a DNS.
+				return {
+					chance: n,
+					attempts: own ? attemptsOfRow(own.res) : [],
+					best: own?.res.best ?? 0,
+					average: own?.res.average ?? 0,
+					noShow: false,
+					counting: own === counting && sortKey(counting.res)[0] < 1e13,
+				};
+			}),
+		};
+	});
+
+	return {...header, dualChance: true, results: sortResults(results)};
 }
 
 /** Rounds whose payload is worth reading: anything with results in it. */

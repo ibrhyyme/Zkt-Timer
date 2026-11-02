@@ -8,6 +8,7 @@ import {logger} from './logger';
 import {WcaApiService} from './WcaApiService';
 import type {WcaLiveData, WcaLiveRoundData, WcaLiveRecordEntry} from './WcaLiveService';
 import {
+	isValidRoundWcifId,
 	isValidWcaCompetitionId,
 	parseRoundCode,
 	parseV1CompId,
@@ -16,6 +17,7 @@ import {
 	v1CompId,
 	v1Competitors,
 	v1LastRoundByEvent,
+	v1LinkedRoundsToWcaLiveResults,
 	v1OverviewEvents,
 	v1Podiums,
 	v1RecordsFromRounds,
@@ -140,6 +142,34 @@ export async function fetchV1RoundResults(liveRoundId: string): Promise<WcaLiveR
 	const code = parseRoundCode(id.roundWcifId)!;
 	const isFinal = v1LastRoundByEvent(rounds || []).get(code.eventId) === code.number;
 	return v1RoundToWcaLiveResults(id.competitionId, payload, info, isFinal);
+}
+
+/**
+ * One round as the results screen shows it: a dual round comes back merged with
+ * the round it is linked to, the way WCA's own page shows it. Everything that
+ * reacts to a single round (notifications, archives, follows) keeps reading
+ * fetchV1RoundResults, which never merges.
+ */
+export async function fetchV1RoundView(liveRoundId: string): Promise<any | null> {
+	const id = parseV1RoundId(liveRoundId);
+	if (!id) return null;
+	const [rounds, payload] = await Promise.all([
+		getRounds(id.competitionId),
+		fetchRoundPayload(id.competitionId, id.roundWcifId),
+	]);
+	if (!payload) return null;
+	const info = (rounds || []).find((r: any) => r.id === id.roundWcifId);
+	const code = parseRoundCode(id.roundWcifId)!;
+	const isFinal = v1LastRoundByEvent(rounds || []).get(code.eventId) === code.number;
+
+	// The linked ids come from WCA but still end up in a request path.
+	const linked: string[] = (payload.linked_round_ids || []).filter(
+		(rid: string) => rid !== id.roundWcifId && isValidRoundWcifId(rid)
+	);
+	if (linked.length === 0) return v1RoundToWcaLiveResults(id.competitionId, payload, info, isFinal);
+
+	const others = await Promise.all(linked.map((rid) => fetchRoundPayload(id.competitionId, rid)));
+	return v1LinkedRoundsToWcaLiveResults(id.competitionId, [payload, ...others.filter(Boolean)], info, isFinal);
 }
 
 export async function fetchV1Overview(liveCompId: string): Promise<any | null> {

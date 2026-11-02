@@ -210,6 +210,10 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	// chance counts. The two chances take the average column's place; the row's
 	// own attempts are the counting chance's, and the best single spans both.
 	const dualChance = !!(roundResults?.dualChance ?? selectedRound.dualChance);
+	// The same better-of-two table serves two different things: ZKT's Çift Şans
+	// (one round done twice) and WCA dual rounds (two linked rounds, one column
+	// each). Same layout, named for what it is.
+	const chanceLabel = (n: number) => (isZkt ? t('zkt_comp.chance_n', {n}) : t('zkt_comp.round_n', {n}));
 	const chanceIsAverage = sortBy === 'average' && showAverage;
 
 	function formatTimeLimitLabel(): string | null {
@@ -345,7 +349,9 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 						</span>
 					)}
 					{dualChance && (
-						<span className={b('wca-live-round-info-item', {accent: true})}>{t('zkt_comp.dual_chance')}</span>
+						<span className={b('wca-live-round-info-item', {accent: true})}>
+							{isZkt ? t('zkt_comp.dual_chance') : t('my_schedule.dual_rounds')}
+						</span>
 					)}
 					{formatTimeLimitLabel() && (
 						<span className={b('wca-live-round-info-item')}>{formatTimeLimitLabel()}</span>
@@ -358,7 +364,11 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 					)}
 				</div>
 			)}
-			{dualChance && <div className={b('wca-live-dual-note')}>{t('zkt_comp.dual_chance_note')}</div>}
+			{dualChance && (
+				<div className={b('wca-live-dual-note')}>
+					{isZkt ? t('zkt_comp.dual_chance_note') : t('my_schedule.dual_rounds_note')}
+				</div>
+			)}
 
 			{/* Entry progress — how much of the round has been scored so far. Only
 			    meaningful while the round is still being scored, so it disappears
@@ -427,8 +437,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 									<th className={b('wca-live-th-name')}>{t('my_schedule.col_name')}</th>
 									{showChances ? (
 										<>
-											<th>{t('zkt_comp.chance_n', {n: 1})}</th>
-											<th>{t('zkt_comp.chance_n', {n: 2})}</th>
+											<th>{chanceLabel(1)}</th>
+											<th>{chanceLabel(2)}</th>
 										</>
 									) : (
 										showAverage && <th>{t('my_schedule.col_average')}</th>
@@ -471,7 +481,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 															? [1, 2].map((n) => {
 																const {c, value, counting} = chanceOf(r, n);
 																return {
-																	label: t('zkt_comp.chance_n', {n}),
+																	label: chanceLabel(n),
 																	value,
 																	counting,
 																	attempts: c && !c.noShow ? formatAttempts(c.attempts || [], numAttempts, event.eventId) : [],

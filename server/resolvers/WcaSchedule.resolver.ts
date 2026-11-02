@@ -16,7 +16,7 @@ import {WcaApiService} from '../services/WcaApiService';
 import {buildCompetitionDetail, ZktViewerIdentity} from '../services/WcifTransformer';
 import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
-import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
+import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundView as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
 import {isWcaV1Id, parseV1PersonId} from '../services/WcaV1LiveAdapter';
 import {fetchV1Overview, fetchV1CompetitorResults} from '../services/WcaV1LiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
