@@ -70,7 +70,9 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 
 		// The YouTube IFrame API is fetched only once the visitor picks a song. This
 		// component is mounted in every room, and loading the script on mount sent
-		// everyone who merely opened a room to youtube.com.
+		// everyone who merely opened a room to youtube.com. The script itself has to come
+		// from www.youtube.com (youtube-nocookie.com answers 404 for it); the `host` below
+		// is what moves the player iframe to the privacy-enhanced domain.
 		if (!apiLoadedRef.current) {
 			apiLoadedRef.current = true;
 			if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
@@ -89,6 +91,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 			}
 
 			playerRef.current = new window.YT.Player(playerContainerRef.current, {
+				host: 'https://www.youtube-nocookie.com',
 				height: '1',
 				width: '1',
 				videoId: currentVideo.videoId,

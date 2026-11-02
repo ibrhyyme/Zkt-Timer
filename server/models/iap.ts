@@ -307,6 +307,22 @@ export async function linkRevenueCatUserId(userId: string): Promise<void> {
 	});
 }
 
+/** Removes a customer from RevenueCat when their account is deleted. Throws on failure. */
+export async function deleteRevenueCatCustomer(rcUserId: string): Promise<void> {
+	const secretKey = process.env.REVENUECAT_SECRET_KEY;
+	if (!secretKey) {
+		throw new Error('REVENUECAT_SECRET_KEY env var missing');
+	}
+
+	const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(rcUserId)}`, {
+		method: 'DELETE',
+		headers: {Authorization: `Bearer ${secretKey}`},
+	});
+	if (!response.ok) {
+		throw new Error(`RevenueCat API error ${response.status}`);
+	}
+}
+
 /**
  * Fetches entitlement status from RevenueCat REST API + updates DB via applyIapPurchase.
  * Called from restore, manual sync, TRANSFER webhook event, and identify race fallbacks.

@@ -44,12 +44,28 @@
 		}
 	}
 
+	ol {
+		list-style: decimal;
+		padding-left: 20px;
+		margin-bottom: 20px;
+
+		li {
+			margin-bottom: 10px;
+		}
+	}
+
 	a {
 		color: rgba(255, 255, 255, 0.8);
 		text-decoration: underline;
 
 		&:hover {
 			color: white;
+		}
+
+		// The link rules above are for inline text links, not for a Button rendered as <a>.
+		&.#{$namespace}-common-button {
+			color: white;
+			text-decoration: none;
 		}
 	}
 

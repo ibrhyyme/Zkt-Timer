@@ -83,6 +83,8 @@ export default function Privacy() {
 				<li>{t('privacy.section_5_item_4')}</li>
 				<li>{t('privacy.section_5_item_5')}</li>
 				<li>{t('privacy.section_5_item_6')}</li>
+				<li>{t('privacy.section_5_item_7')}</li>
+				<li>{t('privacy.section_5_item_8')}</li>
 			</ul>
 			<p>{t('privacy.section_5_footer')}</p>
 			<p>{t('privacy.section_5_international')}</p>
@@ -102,6 +104,9 @@ export default function Privacy() {
 				<li>{t('privacy.retention_item_2')}</li>
 				<li>{t('privacy.retention_item_3')}</li>
 				<li>{t('privacy.retention_item_4')}</li>
+				<li>{t('privacy.retention_item_5')}</li>
+				<li>{t('privacy.retention_item_6')}</li>
+				<li>{t('privacy.retention_item_7')}</li>
 			</ul>
 
 			<h2>{t('privacy.children_title')}</h2>
@@ -132,6 +137,7 @@ export default function Privacy() {
 				<li>{t('privacy.messaging_item_3')}</li>
 				<li>{t('privacy.messaging_item_4')}</li>
 				<li>{t('privacy.messaging_item_5')}</li>
+				<li>{t('privacy.messaging_item_6')}</li>
 			</ul>
 
 			<hr />

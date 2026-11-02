@@ -439,6 +439,9 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/privacy') {
 			pageTitle = t('seo.privacy_title');
 			pageDesc = t('seo.privacy_description');
+		} else if (currentPath === '/delete-account') {
+			pageTitle = t('seo.delete_account_title');
+			pageDesc = t('seo.delete_account_description');
 		} else if (currentPath === '/credits') {
 			pageTitle = t('seo.credits_title');
 			pageDesc = t('seo.credits_description');

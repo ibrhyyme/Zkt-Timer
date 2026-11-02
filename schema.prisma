@@ -524,7 +524,7 @@ model EmailLog {
   vars       String
   created_at DateTime     @default(now())
   email      String
-  user       UserAccount? @relation(fields: [user_id], references: [id], onDelete: SetDefault)
+  user       UserAccount? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@map("email_log")

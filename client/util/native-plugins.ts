@@ -75,6 +75,9 @@ export async function initStatusBar(): Promise<void> {
 // A native crash kills the process before any JS handler runs, which is exactly the
 // class of bug that has hurt most here (R8 stripping a reflection-heavy SDK, a plugin
 // faulting at boot). Reports go to our own Firebase project (zkt-timer-59c59).
+//
+// Reports stay anonymous: no account id, no membership tier, nothing that ties a crash
+// to a person. The privacy page and the App Store declaration both promise this.
 export async function initCrashlytics(): Promise<void> {
 	if (!isNative()) return;
 	try {
@@ -82,6 +85,10 @@ export async function initCrashlytics(): Promise<void> {
 			import('@capacitor-firebase/crashlytics'),
 			import('./device-info'),
 		]);
+
+		// Older builds named the account here, and the SDK can hold on to that across
+		// launches. Blanking it is what makes an updated install anonymous too.
+		await FirebaseCrashlytics.setUserId({ userId: '' });
 
 		const info = await getDeviceInfo();
 
@@ -110,18 +117,6 @@ export async function initCrashlytics(): Promise<void> {
 		} catch (e) {}
 	} catch (e) {
 		console.warn('[Native] Crashlytics init failed:', e);
-	}
-}
-
-/** Attaches the signed-in identity to crash reports. Safe to call on every auth change. */
-export async function setCrashlyticsUser(userId?: string, isPro?: boolean): Promise<void> {
-	if (!isNative() || !userId) return;
-	try {
-		const { FirebaseCrashlytics } = await import('@capacitor-firebase/crashlytics');
-		await FirebaseCrashlytics.setUserId({ userId });
-		await FirebaseCrashlytics.setCustomKey({ key: 'is_pro', value: Boolean(isPro), type: 'boolean' });
-	} catch (e) {
-		console.warn('[Native] Crashlytics user id failed:', e);
 	}
 }
 

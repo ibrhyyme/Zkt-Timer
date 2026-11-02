@@ -14,7 +14,6 @@ import { BanLog, BanUserInput } from '../schemas/BanLog.schema';
 import {
 	banUserAccountForever,
 	banUserAccountUntil,
-	deleteUserAccount,
 	getUserById,
 	getUserByIdOrThrow404,
 	getUserByIdWithSettings,
@@ -30,6 +29,7 @@ import { resolveReportsOfUserId } from './Report.resolver';
 import { PaginationArgsInput, AdminUserFiltersInput, AdminUserSortInput, AdminUserSortField } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
+import { deleteAccountCompletely } from '../services/account_deletion';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
 import { OnlineStats, OnlineUser, BackfillResult, ZktBackfillResult, WcaStats, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
@@ -373,7 +373,7 @@ export class AdminResolver {
 	async adminDeleteUserAccount(@Ctx() context: GraphQLContext, @Arg('userId') userId: string) {
 		const targetUser = await getUserByIdOrThrow404(userId);
 		disconnectUserSockets(targetUser.id);
-		await deleteUserAccount(targetUser);
+		await deleteAccountCompletely(targetUser);
 
 		return targetUser;
 	}

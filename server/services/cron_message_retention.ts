@@ -14,12 +14,16 @@ import {acquireRedisLock, createRedisKey, RedisNamespace} from './redis';
  *
  * Conversations that end up with no messages at all are removed too, which cascades to
  * their participant rows and stops empty threads accumulating in everyone's inbox.
+ *
+ * Reports hold a plain-text copy of the messages they were filed about, so the same year
+ * applies to them or that copy would outlive the original. Only a report that is still
+ * OPEN stays past it, because a moderator has not seen the evidence yet.
  */
 const RETENTION_DAYS = 365;
 const LOCK_KEY = createRedisKey(RedisNamespace.PRO_DATA, 'message_retention_cron_lock');
 const LOCK_TTL_MS = 10 * 60 * 1000;
 
-async function runTick() {
+export async function runTick() {
 	// Several app instances share one database, so only one of them should sweep.
 	const acquired = await acquireRedisLock(LOCK_KEY, LOCK_TTL_MS);
 	if (!acquired) {
@@ -38,10 +42,15 @@ async function runTick() {
 		where: {messages: {none: {}}, created_at: {lt: cutoff}},
 	});
 
-	if (deletedMessages.count > 0 || emptyConversations.count > 0) {
+	const closedReports = await getPrisma().messageReport.deleteMany({
+		where: {status: {not: 'OPEN'}, created_at: {lt: cutoff}},
+	});
+
+	if (deletedMessages.count > 0 || emptyConversations.count > 0 || closedReports.count > 0) {
 		logger.info('[MessageRetention] swept', {
 			messages: deletedMessages.count,
 			conversations: emptyConversations.count,
+			reports: closedReports.count,
 			retention_days: RETENTION_DAYS,
 		});
 	}

@@ -46,7 +46,7 @@ export async function sendEmailWithTemplate(user: UserAccount, subject: string, 
 	const templateBody = Handlebars.compile(source);
 	const body = templateBody(variables);
 
-	await createEmailLog(user, subject, template, vars);
+	await createEmailLog(user, subject, template);
 
 	return sendEmail(user.email, subject, body);
 }

@@ -156,8 +156,7 @@ app.use(helmet({
 				// No Google Ads / Analytics hosts: the AW-354788011 tag inherited from the
 				// CubeDesk fork sent every visit to CubeDesk's Google Ads account and was
 				// removed. Do not allow these hosts again for a tag that is not ours.
-				"https://www.youtube.com",                // Room music player: IFrame API loader
-				"https://s.ytimg.com",                    // ...which then pulls www-widgetapi.js from here
+				"https://www.youtube.com",                // Room music player: IFrame API loader and its www-widgetapi.js
 			],
 			// Inline event handlers (onclick, onload) — present in legacy code patterns.
 			// Long-term: refactor to addEventListener. For now, allow via 'unsafe-inline'.
@@ -180,7 +179,7 @@ app.use(helmet({
 				"'self'",
 				"https://challenges.cloudflare.com",
 				"https://www.openstreetmap.org",          // ZKT competition venue map embed
-				"https://www.youtube.com",                // Room music player: the YT.Player iframe itself
+				"https://www.youtube-nocookie.com",       // Room music player: the YT.Player iframe itself
 			],
 			mediaSrc: ["'self'", "blob:"],
 			objectSrc: ["'none'"],

@@ -175,7 +175,7 @@ function getChangeFrequency(path: string): SiteMapUrl['changeFrequency'] {
 		'/ranks',
 	];
 	const weeklyPaths = ['/pro', '/solves', '/stats', '/battle'];
-	const yearlyPaths = ['/terms', '/privacy', '/credits'];
+	const yearlyPaths = ['/terms', '/privacy', '/delete-account', '/credits'];
 
 	if (hourlyPaths.includes(path)) return 'hourly';
 	if (dailyPaths.includes(path)) return 'daily';
@@ -203,6 +203,7 @@ function getPriorityForPath(path: string): number | null {
 		'/help': 0.7,
 		'/terms': 0.3,
 		'/privacy': 0.3,
+		'/delete-account': 0.3,
 		'/credits': 0.3,
 	};
 	return highPriorityPaths[path] ?? null;

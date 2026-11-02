@@ -20,6 +20,7 @@ import SocialSettings from '../account/social/SocialSettings';
 
 import Privacy from '../landing/legal/Privacy';
 import Terms from '../landing/legal/Terms';
+import DeleteAccount from '../landing/legal/DeleteAccount';
 import Credits from '../landing/legal/Credits';
 import Help from '../help/Help';
 import Landing from '../landing/Landing';
@@ -227,6 +228,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// route('/how-to-solve/:stepId', null, Landing, HTSLearn, false, false, false, false, true),
 	route('/terms', null, Landing, Terms, false, true),
 	route('/privacy', null, Landing, Privacy, false, true),
+	route('/delete-account', null, Landing, DeleteAccount, false, true),
 	route('/credits', null, Landing, Credits, false, true),
 	// Its own shell (page as parent, like RootRedirect). Not the App shell: that one
 	// paints a LoadingCover on the server and fills in on the client, which would hand

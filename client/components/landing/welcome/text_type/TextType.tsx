@@ -32,8 +32,10 @@ export default function TextType({
 	cursorCharacter = '|',
 	startOnVisible = false,
 }: TextTypeProps) {
-	const [displayedText, setDisplayedText] = useState('');
-	const [currentCharIndex, setCurrentCharIndex] = useState(0);
+	// Starts fully typed so the server-rendered page shows the first line before JS runs.
+	const firstText = Array.isArray(text) ? text[0] : text;
+	const [displayedText, setDisplayedText] = useState(firstText);
+	const [currentCharIndex, setCurrentCharIndex] = useState(firstText.length);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [currentTextIndex, setCurrentTextIndex] = useState(0);
 	const [isVisible, setIsVisible] = useState(!startOnVisible);

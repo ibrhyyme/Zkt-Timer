@@ -28,7 +28,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
-import { initStatusBar, lockTextZoom, initCrashlytics, setCrashlyticsUser } from '../../util/native-plugins';
+import { initStatusBar, lockTextZoom, initCrashlytics } from '../../util/native-plugins';
 import { initViewportLock } from '../../util/viewport-lock';
 import { setBackButtonHandle, releaseNativeBackButton } from '../../util/native-back';
 import { openInAppBrowser } from '../../util/external-link';
@@ -171,12 +171,6 @@ export default function App(props: Props = {}) {
 			} catch (e) {}
 		}
 	}, [me]);
-
-	// Name the crashing user, so a report can be tied back to the ticket they open.
-	useEffect(() => {
-		if (!me?.id) return;
-		setCrashlyticsUser(me.id, Boolean(me.is_pro));
-	}, [me?.id, me?.is_pro]);
 
 	function appInitiated() {
 		setBrowserSessionId(dispatch);

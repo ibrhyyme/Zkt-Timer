@@ -11,6 +11,8 @@ import {initWcaRecordRadarCronJob} from './cron_wca_records';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {initZktBackfillCronJob} from './cron_zkt_backfill';
 import {initZktRegistrationNotifyCronJob} from './cron_zkt_registration_notify';
+import {initEmailLogRetentionCronJob} from './cron_email_log_retention';
+import {initLogRetentionCronJob} from './cron_log_retention';
 import {initMessageRetentionCronJob} from './cron_message_retention';
 import {freezeOldArchives} from './CompetitionArchiveService';
 import {getBucketEventKey} from '../../shared/solve';
@@ -41,6 +43,8 @@ export function initCronJobs() {
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();
 	initMessageRetentionCronJob();
+	initEmailLogRetentionCronJob();
+	initLogRetentionCronJob();
 }
 
 function initActivityHeartbeatCleanupCronJob() {

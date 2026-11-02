@@ -9,6 +9,7 @@ import { clearOfflineData } from '../../layout/offline';
 import { clearAllSolveTombstones } from '../../../util/solve-tombstones';
 import { clearAccountCaches } from '../../../util/auth/clear-account-cache';
 import { cancelPersist } from '../../../db/persist';
+import { logoutRevenueCat } from '../../../lib/iap';
 import { ArrowCounterClockwise, Trash } from 'phosphor-react';
 import SettingsCard from '../common/settings_card/SettingsCard';
 import block from '../../../styles/bem';
@@ -46,6 +47,9 @@ export default function DangerZone() {
 		`;
 
 		await gqlMutate(query);
+		// The reload below skips App's own logout, and an SDK still holding this id would
+		// recreate the customer the server just deleted on the next launch.
+		await logoutRevenueCat();
 		deleteLocalStorage('wasBasicUser');
 		deleteLocalStorage('offlineHash');
 		clearAllSolveTombstones();

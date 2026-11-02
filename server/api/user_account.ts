@@ -1,7 +1,6 @@
 import GraphQLError from '../util/graphql_error';
 import {
 	createUserAccount,
-	deleteUserAccount,
 	getUserByEmail,
 	getUserByIdWithProfile,
 	getUserByUsername,
@@ -26,6 +25,7 @@ import { validateEmailMx } from '../util/email_validation';
 import { validateName } from '../util/name_validation';
 import { checkRateLimit } from '../services/rate_limit';
 import { logger } from '../services/logger';
+import { deleteAccountCompletely } from '../services/account_deletion';
 import { notifyAdminsOfNewUser } from '../services/admin_notification';
 
 export const gqlQuery = `
@@ -370,7 +370,7 @@ export const mutateActions = {
 		}
 
 		try {
-			return await deleteUserAccount(user);
+			return await deleteAccountCompletely(user);
 		} catch (e) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Something went wrong on our side');
 		}
