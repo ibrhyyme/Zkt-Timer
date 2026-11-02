@@ -41,6 +41,11 @@ export function solveNumberColumnCh(count: number): number {
 	return Math.max(2, digits + groups * 0.5);
 }
 
+/** The number column of a list of `solveCount` solves, in the row's own font size. */
+export function solveNumberColumnWidth(solveCount: number, mobile = false): string {
+	return `calc(${solveNumberColumnCh(solveCount)}ch + ${mobile ? 12 : 16}px)`;
+}
+
 /**
  * The grid's `grid-template-columns`, shared by the header and every row through one CSS
  * variable. Built here rather than in the stylesheet because the column count varies
@@ -52,7 +57,7 @@ export function solveNumberColumnCh(count: number): number {
  * minimums are in rem so they do not shrink with it.
  */
 export function historyGridTemplate(solveCount: number, averageColumns: number, mobile: boolean): string {
-	const index = `calc(${solveNumberColumnCh(solveCount)}ch + ${mobile ? 12 : 16}px)`;
+	const index = solveNumberColumnWidth(solveCount, mobile);
 	if (mobile) return `${index} minmax(0, 1fr) 44px`;
 	const averages = averageColumns > 0 ? ` repeat(${averageColumns}, minmax(4.8rem, 1fr))` : '';
 	return `${index} minmax(5.2rem, 1.2fr)${averages}`;

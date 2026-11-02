@@ -12,6 +12,7 @@ import { isPro, isProEnabled } from '../../../lib/pro';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import { getTimeString } from '../../../util/time';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
+import { formatSolveNumber, solveNumberColumnWidth, solveNumberGroupSeparator } from '../history/history_grid';
 import { openModal } from '../../../actions/general';
 import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
 import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
@@ -19,14 +20,24 @@ import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
 type StepType = NonNullable<Solve['solve_method_steps']>[number];
 
 const PHASES = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
-const LABELS = ['Cross', 'F2L 1', 'F2L 2', 'F2L 3', 'F2L 4', 'OLL', 'PLL'];
-// For a narrow module, where the full labels ran into each other (PhaseAnalysis.scss).
-const SHORT_LABELS = ['Cr', 'F1', 'F2', 'F3', 'F4', 'OLL', 'PLL'];
+// The table's columns. 'f2l' is the sum of the pairs: every row carries both, and
+// PhaseAnalysis.scss shows one or the other by the module's width.
+const COLUMNS = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'f2l', 'oll', 'pll'];
+const COLUMN_LABELS: Record<string, string> = {
+	cross: 'Cross',
+	f2l_1: 'F2L 1',
+	f2l_2: 'F2L 2',
+	f2l_3: 'F2L 3',
+	f2l_4: 'F2L 4',
+	f2l: 'F2L',
+	oll: 'OLL',
+	pll: 'PLL',
+};
 const MOBILE_PHASES = ['cross', 'f2l', 'oll', 'pll'];
 const MOBILE_LABELS = ['Cross', 'F2L', 'OLL', 'PLL'];
 
 function fmt(seconds: number | null | undefined): string {
-	if (seconds == null || seconds < 0) return '–';
+	if (seconds == null || seconds < 0) return '-';
 	return getTimeString(seconds, 2);
 }
 
@@ -55,6 +66,16 @@ function phaseTurns(steps: StepType[], phase: string): number | null {
 	return found ? sum : null;
 }
 
+function phaseTime(steps: StepType[], phase: string): number | null {
+	if (phase === 'f2l') return f2lTotal(steps);
+	return totalTime(steps.find((s) => s.step_name === phase));
+}
+
+function columnClass(column: string): string {
+	if (column === 'f2l') return ' zt-phase-analysis__cell--f2l';
+	return column.startsWith('f2l_') ? ' zt-phase-analysis__cell--pair' : '';
+}
+
 function f2lPairCount(steps: StepType[]): number {
 	let count = 0;
 	for (const name of ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']) {
@@ -67,8 +88,7 @@ function f2lPairCount(steps: StepType[]): number {
 function phaseAvg(solves: Solve[], phase: string): number | null {
 	const vals: number[] = [];
 	for (const solve of solves) {
-		const step = solve.solve_method_steps?.find((s) => s.step_name === phase);
-		const v = totalTime(step);
+		const v = phaseTime(solve.solve_method_steps || [], phase);
 		if (v != null && v >= 0) vals.push(v);
 	}
 	if (!vals.length) return null;
@@ -115,7 +135,7 @@ function solveStepTurns(solve: Solve): number | null {
 function solveTps(solve: Solve): string {
 	const turns = solveStepTurns(solve);
 	const time = solveTotalStepTime(solve.solve_method_steps || []);
-	if (!turns || time === 0) return '–';
+	if (!turns || time === 0) return '-';
 	return (turns / time).toFixed(2);
 }
 
@@ -140,7 +160,7 @@ function avgTps(solves: Solve[]): string {
 			found = true;
 		}
 	}
-	if (!found || time === 0) return '–';
+	if (!found || time === 0) return '-';
 	return (turns / time).toFixed(2);
 }
 
@@ -150,7 +170,7 @@ interface Props {
 
 export default function PhaseAnalysis(props: Props) {
 	const { filterOptions } = props;
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
 	useSolveDb();
@@ -219,56 +239,44 @@ export default function PhaseAnalysis(props: Props) {
 		const solve = solves[index];
 		const displayIndex = solves.length - index - 1;
 		const steps = solve.solve_method_steps || [];
-		const isEven = index % 2 === 0;
 
 		return (
-			<div
-				className={[
-					'zt-phase-analysis__row',
-					isEven ? 'zt-phase-analysis__row--even' : '',
-					!solve.is_smart_cube ? 'zt-phase-analysis__row--empty' : '',
-					'zt-phase-analysis__row--clickable',
-				].filter(Boolean).join(' ')}
-				key={solve.id}
-				onClick={() => openSessionStats(solve.session_id)}
-			>
+			<div className="zt-phase-analysis__row" key={solve.id} onClick={() => openSessionStats(solve.session_id)}>
 				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index">
-					{(displayIndex + 1).toLocaleString()}.
+					{formatSolveNumber(displayIndex + 1, solveNumberGroupSeparator(i18n.language))}
 				</div>
-				{PHASES.map((phase) => {
-					const step = steps.find((s) => s.step_name === phase);
-					return (
-						<div key={phase} className="zt-phase-analysis__cell">
-							{fmt(totalTime(step))}
-						</div>
-					);
-				})}
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--stat">
-					{solve.is_smart_cube ? (solveTurns(solve) ?? '–') : '–'}
+				{COLUMNS.map((column) => (
+					<div key={column} className={`zt-phase-analysis__cell${columnClass(column)}`}>
+						{fmt(phaseTime(steps, column))}
+					</div>
+				))}
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--turns">
+					{solve.is_smart_cube ? (solveTurns(solve) ?? '-') : '-'}
 				</div>
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--stat">
-					{solve.is_smart_cube ? solveTps(solve) : '–'}
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--tps">
+					{solve.is_smart_cube ? solveTps(solve) : '-'}
 				</div>
 			</div>
 		);
 	}
 
 	const turns = avgTurns(smartSolves);
+	// Same column as the solves grid beside it, sized for the longest number in the list.
+	const gridStyle = { '--zt-phase-index': solveNumberColumnWidth(solves.length) } as React.CSSProperties;
 
 	return (
-		<div className="zt-phase-analysis h-full">
+		<div className="zt-phase-analysis h-full" style={gridStyle}>
 			<div className="zt-phase-analysis__header">
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index zt-phase-analysis__cell--head" />
-				{LABELS.map((label, i) => (
-					<div key={label} className="zt-phase-analysis__cell zt-phase-analysis__cell--head" title={label}>
-						<span className="zt-phase-analysis__label">{label}</span>
-						<span className="zt-phase-analysis__label zt-phase-analysis__label--short">{SHORT_LABELS[i]}</span>
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--head-index">#</div>
+				{COLUMNS.map((column) => (
+					<div key={column} className={`zt-phase-analysis__cell zt-phase-analysis__cell--head${columnClass(column)}`}>
+						{COLUMN_LABELS[column]}
 					</div>
 				))}
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--turns">
 					{t('phase_analysis.turns_label')}
 				</div>
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--head zt-phase-analysis__cell--tps">
 					TPS
 				</div>
 			</div>
@@ -281,15 +289,15 @@ export default function PhaseAnalysis(props: Props) {
 				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--index zt-phase-analysis__cell--avg">
 					{t('phase_analysis.avg_short')}
 				</div>
-				{PHASES.map((phase) => (
-					<div key={phase} className="zt-phase-analysis__cell zt-phase-analysis__cell--avg">
-						{fmt(phaseAvg(smartSolves, phase))}
+				{COLUMNS.map((column) => (
+					<div key={column} className={`zt-phase-analysis__cell zt-phase-analysis__cell--avg${columnClass(column)}`}>
+						{fmt(phaseAvg(smartSolves, column))}
 					</div>
 				))}
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--stat">
-					{turns != null ? Math.round(turns) : '–'}
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--turns">
+					{turns != null ? Math.round(turns) : '-'}
 				</div>
-				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--stat">
+				<div className="zt-phase-analysis__cell zt-phase-analysis__cell--avg zt-phase-analysis__cell--tps">
 					{avgTps(smartSolves)}
 				</div>
 			</div>
@@ -320,13 +328,8 @@ function MobileView({ solves }: { solves: Solve[] }) {
 	const prevSteps = previous?.solve_method_steps || [];
 
 	const rows = MOBILE_PHASES.map((phase, i) => {
-		const val = phase === 'f2l'
-			? f2lTotal(currentSteps)
-			: totalTime(currentSteps.find((s) => s.step_name === phase));
-
-		const prevVal = phase === 'f2l'
-			? f2lTotal(prevSteps)
-			: totalTime(prevSteps.find((s) => s.step_name === phase));
+		const val = phaseTime(currentSteps, phase);
+		const prevVal = phaseTime(prevSteps, phase);
 
 		let comparison: 'better' | 'worse' | null = null;
 		if (val != null && prevVal != null) {
@@ -340,7 +343,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 		return { label: MOBILE_LABELS[i], val, moves: phaseTurns(currentSteps, phase), comparison };
 	});
 
-	// If any phase is missing, total should show '–' (partial sum is misleading)
+	// If any phase is missing, total should show '-' (partial sum is misleading)
 	const hasNullPhase = rows.some(r => r.val == null);
 	const total = hasNullPhase ? null : rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
 	// The same rule for the moves.
@@ -356,7 +359,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 			className="zt-phase-analysis__mobile-cell zt-phase-analysis__mobile-cell--moves"
 			title={moves == null ? undefined : `${movesLabel}: ${moves}`}
 		>
-			{moves ?? '–'}
+			{moves ?? '-'}
 		</td>
 	);
 
@@ -378,7 +381,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 							{t('phase_analysis.total_label')}
 						</td>
 						{movesCell(totalMoves)}
-						<td className="zt-phase-analysis__mobile-cell">{total == null ? '–' : fmt(total)}</td>
+						<td className="zt-phase-analysis__mobile-cell">{total == null ? '-' : fmt(total)}</td>
 					</tr>
 				</tbody>
 			</table>

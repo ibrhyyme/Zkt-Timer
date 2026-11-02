@@ -1,0 +1,88 @@
+// The sheet look shared by the solves grid (History, HistorySolveRow) and the phase
+// analysis table next to it. The two are read across as one table, and they drifted apart
+// while each had its own copy of these rules, so a change to the look belongs here.
+
+$solve-grid-head-height: 28px;
+// Both lists scroll together by pixels (util/scroll_sync.ts). A different row height in
+// one of them puts the same solve on a different line, further off the further you scroll.
+$solve-grid-row-height: 32px;
+$solve-grid-line: rgba(var(--text-color), 0.08);
+$solve-grid-rule: rgba(var(--text-color), 0.18);
+
+// `ch` in a grid template resolves at this size, the number's own (HistorySolveRow.scss).
+$solve-grid-number-size: 0.8rem;
+
+@mixin solve-grid-head {
+	font-size: $solve-grid-number-size;
+	height: $solve-grid-head-height;
+	box-sizing: border-box;
+	border-bottom: 1px solid $solve-grid-rule;
+	// Opaque (shared surface token, styles/index.scss), because rows scroll under it.
+	background: var(--zt-surface-float, rgb(var(--module-color)));
+}
+
+// Headings sit centred over their centred numbers.
+@mixin solve-grid-head-cell($padding: 8px) {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 $padding;
+	box-sizing: border-box;
+	border-left: 1px solid $solve-grid-line;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: rgb(var(--text-color));
+	white-space: nowrap;
+}
+
+// The number column's heading is left-aligned like its numbers.
+@mixin solve-grid-head-cell-index {
+	justify-content: flex-start;
+	border-left: none;
+}
+
+@mixin solve-grid-row {
+	font-size: $solve-grid-number-size;
+	height: $solve-grid-row-height;
+	box-sizing: border-box;
+	border-bottom: 1px solid $solve-grid-line;
+	color: rgb(var(--text-color));
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: background 0.1s ease;
+
+	&:hover,
+	&:focus-visible {
+		background: rgba(var(--text-color), 0.06);
+		outline: none;
+	}
+}
+
+@mixin solve-grid-cell($padding: 8px) {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	padding: 0 $padding;
+	box-sizing: border-box;
+	border-left: 1px solid $solve-grid-line;
+	font-size: 0.9rem;
+	white-space: nowrap;
+
+	&:first-child {
+		border-left: none;
+	}
+}
+
+// Hierarchy from size and weight, never from fading the number out. Left-aligned like the
+// time next to it (owner's call, 2026-10-29).
+@mixin solve-grid-cell-index {
+	justify-content: flex-start;
+	font-size: $solve-grid-number-size;
+	font-weight: 500;
+}
+
+@mixin solve-grid-cell-value {
+	justify-content: center;
+	font-weight: 500;
+	color: rgb(var(--text-color));
+}

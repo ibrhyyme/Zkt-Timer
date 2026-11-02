@@ -1,4 +1,5 @@
 @import '../../../styles/config';
+@import '../history/solve_grid';
 
 .zt-phase-analysis {
 	width: 100%;
@@ -10,20 +11,23 @@
 	// a narrow column on a wide screen.
 	container-type: inline-size;
 
-	&__label--short {
-		display: none;
+	// The number column, then equal columns that share what is left: one that leaves in a
+	// narrow module simply hands its room to the others. The 3.4rem floor keeps the average
+	// row's label in the column on a short list.
+	&__header,
+	&__row,
+	&__avg-row {
+		display: grid;
+		grid-template-columns: max(var(--zt-phase-index, 2ch), 3.4rem);
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		align-items: stretch;
 	}
 
 	// ── Column header ─────────────────────────────────────────────
 	&__header {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		padding: 0 6px;
-		height: 28px;
+		@include solve-grid-head;
 		flex-shrink: 0;
-		background-color: rgba(var(--button-color), 0.6);
-		border-bottom: 1px solid rgba(var(--text-color), 0.10);
 	}
 
 	// ── Scrollable list ───────────────────────────────────────────
@@ -35,136 +39,75 @@
 	// ── Solve row ─────────────────────────────────────────────────
 	&__row {
 		width: 100%;
-		display: flex;
-		flex-direction: row;
-		height: 36px;
-		padding: 0 6px;
-		box-sizing: border-box;
-		align-items: center;
-		border-bottom: 1px solid rgba(var(--text-color), 0.05);
-		background-color: rgb(var(--module-color));
-
-		&--even {
-			background-color: rgba(var(--button-color), 0.3);
-		}
-
-		&:hover {
-			background-color: rgba(var(--text-color), 0.06) !important;
-		}
-
-		&--empty {
-			opacity: 0.35;
-		}
-
-		&--clickable {
-			cursor: pointer;
-		}
+		@include solve-grid-row;
 	}
 
 	// ── Average footer ────────────────────────────────────────────
+	// The sheet's closing row: the heading's surface and rule, mirrored.
 	&__avg-row {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		padding: 0 6px;
-		height: 32px;
+		@include solve-grid-head;
+		height: $solve-grid-row-height;
 		flex-shrink: 0;
-		border-top: 1px solid rgba(var(--secondary-color), 0.2);
-		background-color: rgba(var(--secondary-color), 0.05);
+		border-top: 1px solid $solve-grid-rule;
+		border-bottom: none;
 	}
 
 	// ── Cell ──────────────────────────────────────────────────────
+	// 4px sides, not the solves grid's 8px: the times stay apart in a 3.7rem column.
 	&__cell {
-		flex: 1;
-		font-size: 0.82rem;
-		color: rgb(var(--text-color));
-		text-align: center;
-		white-space: nowrap;
-		min-width: 0;
-
-		&--index {
-			flex: 0 0 26px;
-			min-width: 26px;
-			text-align: left;
-			opacity: 0.35;
-			font-size: 0.74rem;
-		}
+		@include solve-grid-cell-value;
+		@include solve-grid-cell(4px);
 
 		&--head {
-			opacity: 0.40;
-			font-size: 0.67rem;
-			font-weight: 700;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
+			@include solve-grid-head-cell(4px);
 		}
 
-		&--stat {
-			flex: 0 0 54px;
-			min-width: 54px;
-			color: rgba(var(--text-color), 0.60);
-			font-size: 0.78rem;
-			border-left: 1px solid rgba(var(--text-color), 0.07);
+		&--index {
+			@include solve-grid-cell-index;
+			padding: 0 8px;
+		}
+
+		&--head-index {
+			@include solve-grid-head-cell-index;
+			padding: 0 8px;
 		}
 
 		&--avg {
 			color: rgb(var(--secondary-color));
 			font-weight: 700;
-			font-size: 0.83rem;
+		}
 
-			&.zt-phase-analysis__cell--index {
-				color: rgb(var(--text-color));
-				font-weight: 500;
-				opacity: 0.4;
-				font-size: 0.72rem;
-			}
-
-			&.zt-phase-analysis__cell--stat {
-				color: rgba(var(--secondary-color), 0.8);
-			}
+		// The sum of the four pairs, drawn only once they fold (below).
+		&--f2l {
+			display: none;
 		}
 	}
 
 	// ── Narrow module ─────────────────────────────────────────────
-	// Below about 400px each of the seven phase columns got some 35px: the labels and the
-	// two-decimal times ran into each other ("CROSS F2L 1" over "1.121.48"). Short labels,
-	// a smaller face and thinner side columns give every time room of its own.
-	@container (max-width: 460px) {
-		&__label {
+	// Columns leave instead of squeezing: fitting all ten at any width is what ran the times
+	// into each other. TPS goes first, then the moves, then the four pairs fold into one F2L
+	// column. Each step sits where the columns would drop under about 3.7rem. The sizes are
+	// in rem like the solves grid's minimums, and the module asks about itself, not the
+	// window: the dashboard can put it in a narrow column on a wide screen.
+	@container (max-width: 37rem) {
+		&__cell--tps {
+			display: none;
+		}
+	}
+
+	@container (max-width: 33.5rem) {
+		&__cell--turns {
+			display: none;
+		}
+	}
+
+	@container (max-width: 30rem) {
+		&__cell--pair {
 			display: none;
 		}
 
-		&__label--short {
-			display: inline;
-		}
-
-		&__header,
-		&__row,
-		&__avg-row {
-			padding: 0 4px;
-		}
-
-		&__cell {
-			font-size: 0.74rem;
-			font-variant-numeric: tabular-nums;
-
-			&--index {
-				flex-basis: 20px;
-				min-width: 20px;
-			}
-
-			&--stat {
-				flex-basis: 40px;
-				min-width: 40px;
-				font-size: 0.72rem;
-			}
-
-			&--avg {
-				font-size: 0.74rem;
-			}
-
-			&--head {
-				font-size: 0.67rem;
-			}
+		&__cell--f2l {
+			display: flex;
 		}
 	}
 

@@ -1,4 +1,5 @@
 @import '../../../../styles/config';
+@import '../solve_grid';
 
 // The newest solve's row fades and slides up into place; opacity/transform only,
 // so react-list's "uniform" virtualization (History.tsx) never sees a height
@@ -32,50 +33,22 @@
 	// carries the number's own size so the column fits the number. At the inherited 1rem
 	// a 12,000-solve list gave "12.802" ~10px it never used, taken from the time on a
 	// phone. Every cell sets its own size; the template's other minimums are in rem.
-	font-size: 0.8rem;
+	// That size and the row's uniform height (react-list's "uniform" virtualization
+	// measures one row and assumes the rest) come from the mixin below.
 	align-items: stretch;
 	width: 100%;
 	min-width: max-content;
-	// Uniform height: react-list's "uniform" virtualization measures one row and
-	// assumes the rest.
-	height: 32px;
-	box-sizing: border-box;
-	border-bottom: 1px solid rgba(var(--text-color), 0.08);
-	color: rgb(var(--text-color));
-	font-variant-numeric: tabular-nums;
-	cursor: pointer;
-	transition: background 0.1s ease;
-
-	&:hover,
-	&:focus-visible {
-		background: rgba(var(--text-color), 0.06);
-		outline: none;
-	}
+	@include solve-grid-row;
 
 	&--new {
 		animation: historySolveRowEnter $motion-fast $ease-standard;
 	}
 
 	&__cell {
-		display: flex;
-		align-items: center;
-		min-width: 0;
-		padding: 0 8px;
-		box-sizing: border-box;
-		border-left: 1px solid rgba(var(--text-color), 0.08);
-		font-size: 0.9rem;
-		white-space: nowrap;
+		@include solve-grid-cell;
 
-		&:first-child {
-			border-left: none;
-		}
-
-		// Hierarchy from size and weight, never from fading the number out. Left-aligned
-		// like the time next to it (owner's call, 2026-10-29).
 		&--index {
-			justify-content: flex-start;
-			font-size: 0.8rem;
-			font-weight: 500;
+			@include solve-grid-cell-index;
 		}
 
 		// Centred in their columns on the desktop grid; the phone row puts the time back on
@@ -86,9 +59,7 @@
 		}
 
 		&--average {
-			justify-content: center;
-			font-weight: 500;
-			color: rgb(var(--text-color));
+			@include solve-grid-cell-value;
 			background: transparent;
 			cursor: pointer;
 

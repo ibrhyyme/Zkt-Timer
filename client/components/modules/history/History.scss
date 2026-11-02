@@ -1,4 +1,5 @@
 @import '../../../styles/config';
+@import 'solve_grid';
 
 .zt-history {
 	width: 100%;
@@ -55,6 +56,15 @@
 		// browser's swipe-to-go-back. Contained here, it set off that back gesture on
 		// a tablet instead.
 		overscroll-behavior: auto contain;
+
+		// The phase analysis beside this list keeps its average row under its rows. One row
+		// of room here gives both the same scroll range (util/scroll_sync.ts), so the oldest
+		// solves line up too and none ends up behind that average row.
+		&::after {
+			content: '';
+			display: block;
+			height: $solve-grid-row-height;
+		}
 	}
 
 	&--mobile &__list {
@@ -62,43 +72,29 @@
 		overflow-y: auto;
 		-webkit-overflow-scrolling: touch;
 		touch-action: pan-y;
+
+		&::after {
+			content: none;
+		}
 	}
 
 	&__head {
+		@include solve-grid-head;
 		position: sticky;
 		top: 0;
 		z-index: 1;
 		display: grid;
 		grid-template-columns: var(--zt-history-cols, calc(4ch + 16px) minmax(5.2rem, 1.2fr));
-		// Same size as the rows (HistorySolveRow.scss), so the shared template's `ch`
-		// gives the heading the same number column as the rows under it.
-		font-size: 0.8rem;
 		min-width: max-content;
 		width: 100%;
-		height: 28px;
-		box-sizing: border-box;
-		border-bottom: 1px solid rgba(var(--text-color), 0.18);
-		// Opaque (shared surface token, styles/index.scss), because the rows scroll under it.
-		background: var(--zt-surface-float, rgb(var(--module-color)));
 	}
 
-	// Desktop only (the phone draws no header): time and average headings sit centred over
-	// their centred numbers, the number column's heading is left-aligned like its numbers.
+	// Desktop only: the phone draws no header.
 	&__head-cell {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 0 8px;
-		box-sizing: border-box;
-		border-left: 1px solid rgba(var(--text-color), 0.08);
-		font-size: 0.78rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		white-space: nowrap;
+		@include solve-grid-head-cell;
 
 		&--index {
-			justify-content: flex-start;
-			border-left: none;
+			@include solve-grid-head-cell-index;
 		}
 	}
 }
