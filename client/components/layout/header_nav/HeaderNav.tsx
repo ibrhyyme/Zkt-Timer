@@ -412,7 +412,7 @@ export default function HeaderNav(props: Props = {}) {
 						<span className={b('logo')} aria-label="Zeka Küpü Türkiye">
 							<Logo />
 						</span>
-						Zkt Timer
+						ZKT Timer
 					</Link>
 				</div>
 

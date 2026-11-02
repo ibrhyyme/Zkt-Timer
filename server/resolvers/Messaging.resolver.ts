@@ -334,7 +334,7 @@ export class MessagingResolver {
 		void deliverMessage({
 			message,
 			recipients: recipients.map((r) => ({id: r.user_id, accepted: Boolean(r.accepted_at)})),
-			senderUsername: context.user.username || 'Zkt Timer',
+			senderUsername: context.user.username || 'ZKT Timer',
 		});
 
 		return message as unknown as Message;

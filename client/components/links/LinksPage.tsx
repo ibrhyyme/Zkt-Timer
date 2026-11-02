@@ -74,7 +74,7 @@ export default function LinksPage() {
 			<main className={b('body')}>
 				<header className={b('head')}>
 					<img className={b('logo')} src="/public/images/zkt-logo.png" alt="" />
-					<h1 className={b('name')}>Zkt Timer</h1>
+					<h1 className={b('name')}>ZKT Timer</h1>
 					<p className={b('tagline')}>{t('links_page.tagline')}</p>
 				</header>
 

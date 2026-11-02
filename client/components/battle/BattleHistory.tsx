@@ -40,7 +40,7 @@ export default function BattleHistory() {
 		const p2 = state.player2Score;
 		const text = `🎮 ${t('battle.share_text', { player1: player1Name, player2: player2Name, score1: p1, score2: p2 })}`;
 		shareContent({
-			title: 'Zkt Timer Battle',
+			title: 'ZKT Timer Battle',
 			text,
 			url: 'https://zktimer.app/battle',
 		});

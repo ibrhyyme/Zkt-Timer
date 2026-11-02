@@ -18,7 +18,7 @@ export enum ImportDataType {
 // DataSettings.tsx openModal title'inda kullaniyor — kaynak app ismi.
 export const IMPORT_TYPE_NAMES: Record<ImportDataType, string> = {
 	[ImportDataType.CS_TIMER]: 'csTimer',
-	[ImportDataType.ZKT_TIMER]: 'Zkt Timer',
+	[ImportDataType.ZKT_TIMER]: 'ZKT Timer',
 	[ImportDataType.TWISTY_TIMER]: 'Twisty Timer',
 	[ImportDataType.CUBE_TIME]: 'CubeTime',
 };

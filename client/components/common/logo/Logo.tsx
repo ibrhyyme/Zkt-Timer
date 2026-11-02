@@ -8,7 +8,7 @@ interface LogoProps {
 
 export default function Logo({ large }: LogoProps) {
 	return (
-		<span className={`zt-logo${large ? ' zt-logo--large' : ''}`} aria-label="Zkt Timer">
+		<span className={`zt-logo${large ? ' zt-logo--large' : ''}`} aria-label="ZKT Timer">
 			<img className="zt-logo__img zt-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
 			<img className="zt-logo__img zt-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
 		</span>

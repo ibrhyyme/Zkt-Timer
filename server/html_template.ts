@@ -36,8 +36,8 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="mobile-web-app-capable" content="yes">
 				<meta name="apple-mobile-web-app-capable" content="yes">
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-				<meta name="apple-mobile-web-app-title" content="Zkt Timer">
-				<meta name="application-name" content="Zkt Timer">
+				<meta name="apple-mobile-web-app-title" content="ZKT Timer">
+				<meta name="application-name" content="ZKT Timer">
 				<meta name="format-detection" content="telephone=no">
 				<!-- Smart App Banner: shows "Open in App" button in Safari -->
 				<meta name="apple-itunes-app" content="app-id=6760920873">

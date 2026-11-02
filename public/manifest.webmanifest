@@ -1,6 +1,6 @@
 {
-  "name": "Zkt Timer - Rubik's Cube Timer & WCA Competitions",
-  "short_name": "Zkt Timer",
+  "name": "ZKT Timer - Rubik's Cube Timer & WCA Competitions",
+  "short_name": "ZKT Timer",
   "description": "The most advanced online Rubik's cube timer and WCA competition platform. Professional timer, live WCA competitions, live race rooms, smart cube support, and global leaderboards.",
   "start_url": "/?source=pwa",
   "scope": "/",

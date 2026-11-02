@@ -51,7 +51,7 @@ export async function notifyAdminsOfNewUser(
 				pending
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt Timer', notification.data().inAppMessage);
+			await sendPushToUser(admin.id, 'ZKT Timer', notification.data().inAppMessage);
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id}:`, error);
 		}
@@ -75,7 +75,7 @@ export async function notifyAdminsOfProPurchase(
 				platform
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+			await sendPushToUser(admin.id, 'ZKT Timer', notification.inAppMessage());
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of Pro purchase:`, error);
 		}
@@ -108,7 +108,7 @@ export async function notifyAdminsOfProCancellation(
 				platform
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+			await sendPushToUser(admin.id, 'ZKT Timer', notification.inAppMessage());
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of Pro cancellation:`, error);
 		}
@@ -132,7 +132,7 @@ export async function notifyAdminsOfSupportTicket(
 				ticketId
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+			await sendPushToUser(admin.id, 'ZKT Timer', notification.inAppMessage());
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of support ticket:`, error);
 		}
@@ -156,7 +156,7 @@ export async function notifyAdminsOfTicketReply(
 				ticketId
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+			await sendPushToUser(admin.id, 'ZKT Timer', notification.inAppMessage());
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of ticket reply:`, error);
 		}
@@ -179,7 +179,7 @@ export async function notifyUserOfTicketReply(
 			ticketId
 		);
 		await notification.send();
-		await sendPushToUser(user.id, 'Zkt Timer', notification.inAppMessage());
+		await sendPushToUser(user.id, 'ZKT Timer', notification.inAppMessage());
 	} catch (error) {
 		console.error(`[SupportTicket] Failed to notify user ${user.id} of admin reply:`, error);
 	}

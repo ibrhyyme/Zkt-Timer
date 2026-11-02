@@ -84,7 +84,7 @@ export default function LoadingCover(props: Props) {
 				fadeOut,
 			})}
 		>
-			<span className="zt-logo spin" aria-label="Zkt Timer" style={{ width: '8rem', height: '8rem' }}>
+			<span className="zt-logo spin" aria-label="ZKT Timer" style={{ width: '8rem', height: '8rem' }}>
 				<img className="zt-logo__img zt-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
 				<img className="zt-logo__img zt-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
 			</span>

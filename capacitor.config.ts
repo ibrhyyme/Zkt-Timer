@@ -3,7 +3,7 @@ import { KeyboardResize } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
     appId: 'com.zktimer.app',
-    appName: 'Zkt Timer',
+    appName: 'ZKT Timer',
     // Faz 2: the app boots from the bundled web root (built by build-native-bundle.js)
     // instead of loading https://zktimer.app remotely. Guarantees offline cold start
     // (including first launch); freshness comes from the Capgo OTA updater below.

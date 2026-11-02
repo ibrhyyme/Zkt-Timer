@@ -25,7 +25,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0F142B">
-<title>Zkt Timer</title>
+<title>ZKT Timer</title>
 <style>
   html,body{margin:0;height:100%}
   body{background:#12141C;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -236,7 +236,7 @@ self.addEventListener('fetch', (e) => {
 
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = (data.notification && data.notification.title) || 'Zkt Timer';
+  const title = (data.notification && data.notification.title) || 'ZKT Timer';
   // FCM payload: { notification: {...}, data: {type, link, ...} }
   const payloadData = data.data || (data.notification && data.notification.data) || {};
   const options = {

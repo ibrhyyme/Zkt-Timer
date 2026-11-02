@@ -88,7 +88,7 @@ export default function SolveCardHeader({ layout, canShareLink, editable = true 
 					disabled={disabled}
 					editMode={editMode}
 					editable={editable}
-					shareTitle={`${cubeTypeInfo?.name} - ${time} | Zkt Timer`}
+					shareTitle={`${cubeTypeInfo?.name} - ${time} | ZKT Timer`}
 					toggleEditMode={toggleEditMode}
 					deleteSolve={deleteSolve}
 				/>

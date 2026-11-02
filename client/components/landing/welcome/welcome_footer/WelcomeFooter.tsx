@@ -28,7 +28,7 @@ const PEOPLE: Person[] = [
 		accounts: [{ network: 'instagram', handle: '@zekakuputurkiye', href: 'https://www.instagram.com/zekakuputurkiye/' }],
 	},
 	{
-		name: 'Zkt Timer',
+		name: 'ZKT Timer',
 		face: 'B',
 		accounts: [{ network: 'instagram', handle: '@zkttimer', href: 'https://www.instagram.com/zkttimer' }],
 	},

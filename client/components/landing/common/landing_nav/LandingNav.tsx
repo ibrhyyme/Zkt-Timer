@@ -111,7 +111,7 @@ export default function LandingNav(props: Props) {
 			<div className={b('body')}>
 				<a href="/" className={b('brand')}>
 					<img src="/public/images/zkt-logo.png" alt="" width={28} height={28} />
-					<span>Zkt Timer</span>
+					<span>ZKT Timer</span>
 				</a>
 				<div className={b('links')}>
 					<LanguageSwitcher align="end" />

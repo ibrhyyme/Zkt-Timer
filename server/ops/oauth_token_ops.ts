@@ -108,7 +108,7 @@ export function parseOpsArgs(argv: string[]): OpsArgs {
 	if (command === 'revoke' && service === 'zkt') {
 		throw new OpsArgsError(
 			'ZKT jetonları federasyon tarafında iptal edilir: zekakuputurkiye-site deposundaki ' +
-				'scripts/expire-oauth-access-tokens.ts. Zkt Timer tarafında ZKT için sadece rotate var.'
+				'scripts/expire-oauth-access-tokens.ts. ZKT Timer tarafında ZKT için sadece rotate var.'
 		);
 	}
 	if (command === 'revoke' && booleans.has('only-unexpired')) {

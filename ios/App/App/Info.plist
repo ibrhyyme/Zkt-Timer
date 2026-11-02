@@ -13,7 +13,7 @@
 		<string>zh-Hans</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-        <string>Zkt Timer</string>
+        <string>ZKT Timer</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -69,14 +69,14 @@
 		</dict>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Zkt Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
+	<string>ZKT Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Zkt Timer needs Bluetooth to communicate with smart cubes.</string>
+	<string>ZKT Timer needs Bluetooth to communicate with smart cubes.</string>
 	<key>NSCalendarsUsageDescription</key>
-	<string>Zkt Timer adds competitions you choose to your calendar. It never reads your existing events.</string>
+	<string>ZKT Timer adds competitions you choose to your calendar. It never reads your existing events.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Zkt Timer uses the camera only when you choose to take a photo or video to attach to a support request.</string>
+	<string>ZKT Timer uses the camera only when you choose to take a photo or video to attach to a support request.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Zkt Timer uses the microphone to read a StackMat timer and to record sound in videos you attach to a support request.</string>
+	<string>ZKT Timer uses the microphone to read a StackMat timer and to record sound in videos you attach to a support request.</string>
 </dict>
 </plist>

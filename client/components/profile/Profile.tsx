@@ -491,7 +491,7 @@ function ProfileContent() {
 	function shareProfile() {
 		const url = `${getApiBase()}/user/${username}`;
 		shareContent({
-			title: `${username} - Zkt Timer`,
+			title: `${username} - ZKT Timer`,
 			text: t('profile.share_text', { username }) as string,
 			url,
 		});

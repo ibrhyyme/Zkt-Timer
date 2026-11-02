@@ -85,7 +85,7 @@ export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 		id: 'zkt',
 		name: 'Zeka Küpü Türkiye',
 		description:
-			'ZKT hesabını bağlayarak ZKT yarışmalarını, derecelerini ve rekorlarını Zkt Timer içinde gör.',
+			'ZKT hesabını bağlayarak ZKT yarışmalarını, derecelerini ve rekorlarını ZKT Timer içinde gör.',
 		// PNG, not SVG: an <img> pointing at an external SVG does not render in the
 		// native shell (see the WCA logo's history), and 160px is plenty for the
 		// 48px slots this appears in.

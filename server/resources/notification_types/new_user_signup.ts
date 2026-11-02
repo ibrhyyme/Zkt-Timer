@@ -52,7 +52,7 @@ export default class NewUserSignupNotification extends Notification {
 		if (this.pending) {
 			return `${this.input.triggeringUser.username} kullanıcısı ${method} ile kayıt oldu, e-posta doğrulaması bekleniyor.`;
 		}
-		return `${this.input.triggeringUser.username} kullanıcısı ${method} ile Zkt Timer'a kayıt oldu.`;
+		return `${this.input.triggeringUser.username} kullanıcısı ${method} ile ZKT Timer'a kayıt oldu.`;
 	}
 
 	icon() {

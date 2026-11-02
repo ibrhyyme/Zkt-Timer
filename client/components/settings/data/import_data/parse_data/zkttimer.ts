@@ -26,7 +26,7 @@ export function parseZktTimerData(txt: string, context: IImportDataContext): Imp
 			return parseZktTimerLegacyData(txt, context);
 		}
 	} catch (e) {
-		throw new Error('Invalid import file. Please make sure this is a valid file exported from Zkt Timer');
+		throw new Error('Invalid import file. Please make sure this is a valid file exported from ZKT Timer');
 	}
 
 	const sessions = [];

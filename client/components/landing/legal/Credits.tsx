@@ -18,7 +18,7 @@ interface Reference {
 }
 
 const BUILDER: Reference = {
-	project: 'Zkt Timer',
+	project: 'ZKT Timer',
 	user: 'ibrhyyme',
 	username: 'ibrhyyme',
 	link: '',

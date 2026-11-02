@@ -22,7 +22,7 @@ export default function TopNav(props: Props) {
 					<a href="/">
 						<img
 							src={white ? '/public/images/zkt-logo-white.png' : '/public/images/zkt-logo.png'}
-							alt="Zkt Timer"
+							alt="ZKT Timer"
 						/>
 					</a>
 				</div>
