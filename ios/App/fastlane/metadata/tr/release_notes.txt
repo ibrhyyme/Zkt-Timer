@@ -1,0 +1,1 @@
+ZKT Timer artık App Store'da desteklediği beş dili gösteriyor: Türkçe, İngilizce, İspanyolca, Rusça ve Çince. Uygulamanın içindeki iOS pencereleri ve düğmeleri de telefonunun diline göre açılıyor.

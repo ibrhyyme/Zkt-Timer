@@ -1,0 +1,1 @@
+ZKT Timer now lists all five of its languages on the App Store: English, Turkish, Spanish, Russian and Chinese. iOS system dialogs and buttons inside the app now follow your phone's language.
