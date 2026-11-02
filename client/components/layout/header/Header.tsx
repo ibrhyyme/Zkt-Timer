@@ -17,7 +17,7 @@ interface Props {
 	children?: ReactNode;
 }
 
-export const DEFAULT_TITLE = "Zkt Timer | Online Rubik's Cube Timer, WCA Competitions & Speedcubing Platform";
+export const DEFAULT_TITLE = "ZKT Timer | Online Rubik's Cube Timer, WCA Competitions & Speedcubing Platform";
 export const DEFAULT_DESCRIPTION =
 	"The most advanced online Rubik's cube timer with live WCA competitions, live race rooms, algorithm trainer, smart cube support, and global leaderboards. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.";
 export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing timer, online cube timer, WCA timer, WCA competitions, speedcubing competitions, cube competition, WCA live, 3x3 timer, 2x2 timer, 4x4 timer, 5x5 timer, rubik cube, speedcubing, cubing, puzzle timer, zeka küpü timer, rubik küp, küp zamanlayıcı, zeka küpü yarışması, WCA yarışma, кубик рубика таймер, спидкубинг, соревнования WCA, cronómetro cubo rubik, cubo rubik, competiciones WCA, rubik's cube solver, algorithm trainer, cube racing, cube records, world records";
@@ -91,10 +91,10 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const websiteSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
-		'name': 'Zkt Timer',
+		'name': 'ZKT Timer',
 		// Other names of this site, not search phrases: Google reads alternateName as a
 		// site-name candidate, and generic phrases ("Rubik's Cube Timer") are never one.
-		'alternateName': ['ZKT Timer', 'zktimer.app'],
+		'alternateName': ['Zkt Timer', 'zktimer.app'],
 		'url': SITE_URL,
 		'description': finalDesc,
 		'inLanguage': inLanguage,
@@ -130,8 +130,8 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const organizationSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
-		'name': 'Zkt Timer',
-		'alternateName': ['ZKT Timer'],
+		'name': 'ZKT Timer',
+		'alternateName': ['Zkt Timer'],
 		'url': SITE_URL,
 		'logo': LOGO_URL,
 		'image': LOGO_URL,
@@ -157,7 +157,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const softwareSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'WebApplication',
-		'name': 'Zkt Timer',
+		'name': 'ZKT Timer',
 		'alternateName': "Rubik's Cube Timer",
 		'description': t('seo.app_description'),
 		'url': SITE_URL,
@@ -177,7 +177,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'author': creatorSchema,
 		'publisher': {
 			'@type': 'Organization',
-			'name': 'Zkt Timer',
+			'name': 'ZKT Timer',
 			'url': SITE_URL,
 			'logo': LOGO_URL
 		}
@@ -187,7 +187,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const iosAppSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'MobileApplication',
-		'name': 'Zkt Timer',
+		'name': 'ZKT Timer',
 		'operatingSystem': 'iOS',
 		'applicationCategory': 'GameApplication',
 		'applicationSubCategory': 'PuzzleGame',
@@ -204,7 +204,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const androidAppSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'MobileApplication',
-		'name': 'Zkt Timer',
+		'name': 'ZKT Timer',
 		'operatingSystem': 'Android',
 		'applicationCategory': 'GameApplication',
 		'applicationSubCategory': 'PuzzleGame',
@@ -284,7 +284,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'inLanguage': inLanguage,
 		'isPartOf': {
 			'@type': 'WebSite',
-			'name': 'Zkt Timer',
+			'name': 'ZKT Timer',
 			'url': SITE_URL
 		}
 	} : null;
@@ -303,7 +303,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 			{
 				'@type': 'ListItem',
 				'position': 2,
-				'name': finalTitle.replace(/ [-|] Zkt Timer$/, ''),
+				'name': finalTitle.replace(/ [-|] ZKT Timer$/, ''),
 				'item': `${SITE_URL}${currentPath}`
 			}
 		]
@@ -504,7 +504,7 @@ export default function Header(props: Props) {
 
 			<meta name="description" content={finalDesc} />
 			<meta name="keywords" content={pageKeywords} />
-			<meta name="author" content="Zkt Timer" />
+			<meta name="author" content="ZKT Timer" />
 
 			{/* Twitter Card */}
 			<meta name="twitter:card" content="summary_large_image" />
@@ -521,7 +521,7 @@ export default function Header(props: Props) {
 			<meta property="og:image:secure_url" content={secureImage} />
 			<meta property="og:image:width" content="1200" />
 			<meta property="og:image:height" content="630" />
-			<meta property="og:site_name" content="Zkt Timer" />
+			<meta property="og:site_name" content="ZKT Timer" />
 			<meta property="og:type" content="website" />
 			<meta property="og:locale" content={OG_LOCALE_MAP[lang] || 'en_US'} />
 

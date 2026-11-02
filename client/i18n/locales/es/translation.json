@@ -152,7 +152,7 @@
     "ics_hint": "Descarga un archivo .ics",
     "note": "La competición se añade como evento de todo el día. Los horarios de las rondas pueden cambiar ese día, así que sigue el programa en la aplicación.",
     "done": "Hecho",
-    "event_description": "Horario y resultados en Zkt Timer:",
+    "event_description": "Horario y resultados en ZKT Timer:",
     "native_saved": "Competición añadida a tu calendario.",
     "native_denied": "No se concedió acceso al calendario. Puedes añadirla de otra forma.",
     "native_error": "No se pudo abrir la aplicación de calendario.",
@@ -200,10 +200,10 @@
     "login_button": "Iniciar sesión",
     "forgot_password": "¿Olvidaste tu contraseña?",
     "no_account": "¿No tienes una cuenta? Regístrate",
-    "wca_login": "Iniciar sesion con WCA",
+    "wca_login": "Iniciar sesión con WCA",
     "wca_connecting": "Conectando con WCA...",
     "wca_divider": "o",
-    "wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas.",
+    "wca_note": "Si ya tienes una cuenta, inicia sesión primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas.",
     "try_without_account": "Probar sin cuenta",
     "help": "Ayuda"
   },
@@ -224,21 +224,21 @@
   "forgot": {
     "email": "Correo electrónico",
     "email_placeholder": "Ingresa tu correo electrónico",
-    "enter_email_error": "Por favor ingresa tu dirección de correo electrónico",
-    "enter_code_error": "Por favor ingresa el código",
+    "enter_email_error": "Escribe tu correo electrónico",
+    "enter_code_error": "Escribe el código",
     "send_code": "Enviar código",
     "login_link": "Iniciar sesión",
     "signup_link": "Registrarse",
-    "check_email": "Revisa tu correo electrónico. Deberías haber recibido un código para restablecer tu contraseña.",
+    "check_email": "Revisa tu correo. Te enviamos un código para restablecer tu contraseña.",
     "verification_code": "Código de verificación",
-    "code_placeholder": "Ingresa el código de 6 dígitos",
+    "code_placeholder": "Escribe el código de 6 dígitos",
     "verify_code": "Verificar código",
     "back": "Volver",
-    "set_new_password": "Por favor establece tu nueva contraseña.",
+    "set_new_password": "Elige tu nueva contraseña.",
     "new_password": "Nueva contraseña",
-    "new_password_placeholder": "Ingresa tu nueva contraseña",
+    "new_password_placeholder": "Escribe tu nueva contraseña",
     "confirm_password": "Confirmar contraseña",
-    "confirm_password_placeholder": "Vuelve a ingresar tu contraseña",
+    "confirm_password_placeholder": "Vuelve a escribir tu contraseña",
     "change_password": "Cambiar contraseña"
   },
   "confirm_modal": {
@@ -331,14 +331,14 @@
   },
   "danger_zone": {
     "reset_settings_title": "Restablecer configuración",
-    "reset_settings_desc": "Usa esta opción si deseas restablecer tu configuración a los valores predeterminados. Esto <strong>no eliminará</strong> tus resoluciones ni sesiones, solo tu configuración local.",
+    "reset_settings_desc": "Devuelve tu configuración a los valores predeterminados. Tus resoluciones y sesiones <strong>no se eliminan</strong>, solo se restablece tu configuración local.",
     "reset_settings_button": "Restablecer configuración",
     "reset_settings_confirm_title": "Restablecer configuración",
-    "reset_settings_confirm_desc": "Estás a punto de restablecer tu configuración a los valores predeterminados. Los tipos de cubo personalizados no se verán afectados.",
-    "delete_account_warning": "Ten cuidado aquí. Si haces clic en el botón de abajo, eliminarás toda tu cuenta. Todas tus resoluciones, datos de sesión, estadísticas, etc. serán eliminados permanentemente. Procede con precaución.",
+    "reset_settings_confirm_desc": "Vas a restablecer tu configuración a los valores predeterminados. Los tipos de cubo personalizados no cambian.",
+    "delete_account_warning": "Si pulsas el botón de abajo, tu cuenta se elimina. Todas tus resoluciones, sesiones y estadísticas se pierden para siempre.",
     "delete_account_button": "Eliminar cuenta",
     "delete_account_title": "Eliminar cuenta",
-    "delete_account_confirm_desc": "Ten cuidado aquí. Estás a punto de eliminar toda tu cuenta. Todos tus datos de Zkt Timer serán eliminados y no podrán recuperarse.",
+    "delete_account_confirm_desc": "Vas a eliminar tu cuenta. Todos tus datos de ZKT Timer se eliminarán y no podrán recuperarse.",
     "delete_account_confirm_button": "Eliminar cuenta y todos los datos"
   },
   "admin_announcements": {
@@ -479,8 +479,8 @@
       "saves_count_one": "{{count}} guardado",
       "saves_count_other": "{{count}} guardados",
       "progress": "{{learned}} aprendidos · {{learning}} aprendiendo",
-      "share_text_one": "{{name}}: {{count}} algoritmo. Practícalo en Zkt Timer.",
-      "share_text_other": "{{name}}: {{count}} algoritmos. Practícalos en Zkt Timer.",
+      "share_text_one": "{{name}}: {{count}} algoritmo. Practícalo en ZKT Timer.",
+      "share_text_other": "{{name}}: {{count}} algoritmos. Practícalos en ZKT Timer.",
       "link_copied": "Enlace copiado",
       "reset_link": "Renovar enlace",
       "reset_link_confirm": "El enlace anterior deja de funcionar. Quienes guardaron el set lo conservan.",
@@ -595,7 +595,7 @@
     "card_best": "Mejor",
     "card_ao5": "Ao5",
     "card_learned_status": "Estado de aprendizaje",
-    "page_title": "Entrenador | Zkt Timer",
+    "page_title": "Entrenador | ZKT Timer",
     "title": "Entrenador",
     "puzzle_type": "Puzzle",
     "category": "Categoría",
@@ -603,15 +603,15 @@
     "algorithms": "Algoritmos",
     "select_all": "Seleccionar todo",
     "deselect_all": "Deseleccionar todo",
-    "select_algorithms_hint": "Selecciona una categoría y algoritmos para comenzar a entrenar",
-    "select_algorithm": "Selecciona un algoritmo para ver estadísticas",
+    "select_algorithms_hint": "Elige una categoría y algoritmos para empezar a practicar",
+    "select_algorithm": "Elige un algoritmo para ver sus estadísticas",
     "no_stats": "Sin estadísticas aún",
     "best": "Mejor",
     "solves": "Resoluciones",
     "total_solves": "Resoluciones totales",
     "recent_times": "Tiempos recientes",
     "reset_season": "Reiniciar temporada",
-    "reset_season_confirm": "¿Estás seguro de que quieres eliminar todo el historial de resoluciones de este algoritmo?",
+    "reset_season_confirm": "¿Eliminar todo el historial de resoluciones de este algoritmo?",
     "export": "Exportar",
     "export_pdf": "Exportar como PDF",
     "show_moves": "Mostrar movimientos",
@@ -623,7 +623,7 @@
     "option_prioritize_failed": "Priorizar casos fallidos",
     "option_auto_learn_enabled": "Marcar como 'Aprendido' automáticamente",
     "option_auto_learn_threshold": "Resoluciones limpias consecutivas para marcar como 'Aprendido'",
-    "option_auto_learn_threshold_help": "Cuando resuelves un algoritmo de forma limpia (sin errores, sin DNF/+2) esta cantidad de veces seguidas, se marca automáticamente como 'Aprendido'. Menor es más fácil, mayor es más difícil.",
+    "option_auto_learn_threshold_help": "Si resuelves un algoritmo limpio (sin errores, sin DNF ni +2) este número de veces seguidas, se marca como 'Aprendido'. Un número menor lo hace más fácil, uno mayor más difícil.",
     "option_cube_size": "Tamaño del cubo",
     "option_wake_lock": "Mantener pantalla encendida",
     "option_back_view": "Vista trasera",
@@ -727,10 +727,10 @@
       "sets_desc": "Crea tus propios sets, envíaselos a un amigo, practica los sets de la comunidad.",
       "sets_feat1": "Reúne en un set los casos que quieras",
       "sets_feat2": "Envíaselo a un amigo con un enlace",
-      "sets_feat3": "Descubre los sets que comparte la comunidad",
+      "sets_feat3": "Practica los sets que comparte la comunidad",
       "whats_inside": "Qué incluye",
       "community_title": "Sets de la comunidad",
-      "community_desc": "Descubre los sets que comparten otros",
+      "community_desc": "Encuentra los sets que comparten otros",
       "breadcrumb": "Ubicación",
       "set_crumb": "Set"
     },
@@ -793,8 +793,8 @@
         "groups_no_bookends_desc": "Los extremos son de colores distintos. V, Y o E perm."
       },
       "home_title": "Entrenador de Reconocimiento PLL",
-      "home_subtitle": "se esconden dentro de 21 casos PLL; cada uno puede aparecer en cualquier combinación de colores y desde cualquier ángulo. Entrena tu vista para reconocerlos todos.",
-      "home_subtitle_short": "se esconden dentro de 21 casos PLL.",
+      "home_subtitle": "se esconden dentro de 21 casos PLL. Cada uno puede aparecer con cualquier combinación de colores y desde cualquier ángulo, y entrenas la vista para reconocerlos todos. El entrenador se adapta a tus puntos débiles y repite los patrones que fallas hasta que los reconozcas.",
+      "home_subtitle_short": "se esconden dentro de 21 casos PLL. Cada uno puede aparecer con cualquier combinación de colores y desde cualquier ángulo.",
       "home_distinct_patterns": "73 patrones distintos",
       "home_start_journey": "Iniciar Viaje",
       "home_free_practice": "Práctica Libre",
@@ -812,7 +812,7 @@
       "setup_add_custom": "Personalizado",
       "setup_scroll_left": "Desplazar izquierda",
       "setup_scroll_right": "Desplazar derecha",
-      "setup_info": "Elige un preset, define el tamaño y comienza.",
+      "setup_info": "Elige un preset, define el tamaño de la sesión y empieza. Tus estadísticas se guardan al final de cada sesión. Puedes repetir más los casos débiles con \"Entrenamiento personalizado\".",
       "trainer_start": "Iniciar",
       "trainer_resume": "Continuar",
       "trainer_pause": "Pausar",
@@ -872,7 +872,7 @@
       "settings_color_variance": "Variación de color",
       "settings_color_variance_help": "Desplazar aleatoriamente los colores en cada caso",
       "settings_quest_mode": "Modo guiado",
-      "settings_quest_mode_help": "Mostrar el viaje guiado en la página de inicio",
+      "settings_quest_mode_help": "Mostrar la ruta guiada en la página de inicio",
       "settings_reset": "Restablecer",
       "settings_start_training": "Iniciar Entrenamiento",
       "settings_reset_confirm": "¿Restablecer a valores por defecto?",
@@ -930,11 +930,11 @@
       },
       "oll": {
         "title": "Orientación de la última capa",
-        "desc": "OLL es el tercer paso del método CFOP. Tras las dos primeras capas deja la cara superior de un solo color; si empiezas con la cruz blanca, completa la cara amarilla. Hay 57 casos, agrupados según cuántas aristas ya están orientadas arriba: las cuatro, dos como en las formas L, T, P y W, o ninguna en los casos de punto.\n\nSi sabes OLL en 2 pasos, ya conoces 9 o 10 de ellos. Muchos algoritmos son el espejo o la inversa de otro, lo que facilita memorizarlos. Los casos de punto suelen ser los más difíciles y lentos, por eso casi todos los dejan para el final.\n\nEmpezar por los casos con las aristas orientadas y seguir con las formas T y L es un buen orden. Elegir algoritmos cómodos para tus dedos marca mucha diferencia a la larga."
+        "desc": "OLL es el tercer paso del método CFOP. Tras las dos primeras capas deja la cara superior de un solo color; si empiezas con la cruz blanca, completa la cara amarilla. Hay 57 casos, agrupados según cuántas aristas ya están orientadas arriba: las cuatro, dos como en las formas L, T, P y W, o ninguna en los casos de punto.\n\nSi sabes OLL en 2 pasos, ya conoces 9 o 10 de ellos. Muchos algoritmos son el espejo o la inversa de otro, lo que facilita memorizarlos. Los casos de punto suelen ser los más difíciles y lentos, por eso casi todos los dejan para el final.\n\nPuedes empezar por los casos con las aristas orientadas y seguir con las formas T y L. Al elegir algoritmos, quédate con los que te resulten cómodos."
       },
       "f2l": {
         "title": "Primeras dos capas",
-        "desc": "F2L es el segundo paso del método CFOP. Después de la cruz unes una esquina con su arista y las metes juntas en su hueco como pareja. Es mucho más rápido que colocar las piezas una a una. Hay 41 casos básicos; el entrenador muestra cada uno para los cuatro huecos, 164 en total.\n\nConviene aprender F2L de forma intuitiva antes de memorizar algoritmos. Si entiendes por qué cada caso se resuelve así, encontrarás tu propia solución en una situación nueva. Los algoritmos apoyados en esa base también se recuerdan mejor.\n\nLo que más acelera el F2L es mirar por adelantado: mientras metes una pareja, intenta seguir dónde está la siguiente. Evitar giros de cubo innecesarios también importa mucho. Más adelante puedes pasar a VHLS o ZBLS, que orientan las aristas de arriba al meter la última pareja."
+        "desc": "F2L es el segundo paso del método CFOP. Después de la cruz unes una esquina con su arista y las metes juntas en su hueco como pareja. Es mucho más rápido que colocar las piezas una a una. Hay 41 casos básicos; el entrenador muestra cada uno para los cuatro huecos, 164 en total.\n\nConviene aprender F2L de forma intuitiva antes de memorizar algoritmos. Si entiendes por qué cada caso se resuelve así, encontrarás tu propia solución en una situación nueva. Los algoritmos apoyados en esa base también se recuerdan mejor.\n\nLo que más acelera el F2L es mirar por adelantado: mientras metes una pareja, intenta seguir dónde está la siguiente. Evitar giros de cubo innecesarios también baja tus tiempos. Más adelante puedes pasar a VHLS o ZBLS, que orientan las aristas de arriba al meter la última pareja."
       },
       "2_look_pll": {
         "title": "PLL en 2 pasos",
@@ -966,7 +966,7 @@
       },
       "vhls": {
         "title": "Vandenbergh-Harris último hueco",
-        "desc": "VHLS orienta las aristas de la última capa mientras metes la última pareja del F2L. Solo cubre inserciones cortas, así que se queda en 32 casos: 16 con la pareja unida y 16 con la pareja separada. En situaciones más largas haces F2L normal.\n\nDespués de VHLS solo quedan los casos de OLL con las aristas orientadas. La probabilidad de saltarte el OLL sube de 1 entre 216 a 1 entre 27, y los casos que quedan suelen ser más cortos. Si además sabes COLL, VHLS y COLL juntos forman un enfoque de última capa muy sólido.\n\nPuedes ver VHLS como una parte pequeña de ZBLS. La mayoría de casos son intuitivos: miras la orientación de la última arista y eliges la inserción correcta."
+        "desc": "VHLS orienta las aristas de la última capa mientras metes la última pareja del F2L. Solo cubre inserciones cortas, así que se queda en 32 casos: 16 con la pareja unida y 16 con la pareja separada. En situaciones más largas haces F2L normal.\n\nDespués de VHLS solo quedan los casos de OLL con las aristas orientadas. La probabilidad de saltarte el OLL sube de 1 entre 216 a 1 entre 27, y los casos que quedan suelen ser más cortos. Si además sabes COLL, puedes usar los dos juntos como enfoque de última capa.\n\nPuedes ver VHLS como una parte pequeña de ZBLS. La mayoría de casos son intuitivos: miras la orientación de la última arista y eliges la inserción correcta."
       },
       "cmll": {
         "title": "Esquinas de la última capa (Roux)",
@@ -978,7 +978,7 @@
       },
       "oh_cmll": {
         "title": "CMLL a una mano",
-        "desc": "CMLL a una mano es un set de algoritmos para el paso CMLL de Roux elegidos para resolver con una sola mano. Mismos 42 casos y mismos 8 grupos que el CMLL normal; la diferencia es que los algoritmos se giran bien con una mano.\n\nA una mano se evitan los giros de cubo z y x, porque volver a agarrar el cubo cuesta tiempo. Por eso los algoritmos usan sobre todo movimientos R, U y r. Los zurdos los hacen en espejo con L, U y l.\n\nLos algoritmos de CMLL normales también funcionan a una mano, pero son más lentos. Aprender CMLL a dos manos primero y luego pasar a los de una mano es un buen orden."
+        "desc": "CMLL a una mano es un set de algoritmos para el paso CMLL de Roux elegidos para resolver con una sola mano. Mismos 42 casos y mismos 8 grupos que el CMLL normal; la diferencia es que los algoritmos se giran bien con una mano.\n\nA una mano se evitan los giros de cubo z y x, porque volver a agarrar el cubo cuesta tiempo. Por eso los algoritmos usan sobre todo movimientos R, U y r. Los zurdos los hacen en espejo con L, U y l.\n\nLos algoritmos de CMLL normales también funcionan a una mano, pero son más lentos. Puedes aprender CMLL a dos manos primero y luego pasar a los de una mano."
       },
       "l6e_eo": {
         "title": "Últimas 6 aristas: orientación",
@@ -998,7 +998,7 @@
       },
       "2x2_eg2": {
         "title": "2x2 EG-2",
-        "desc": "EG-2 es el set de 40 casos que suele aprenderse al final de la familia EG. Cubre las situaciones en las que las esquinas de abajo tienen un intercambio diagonal. Es la situación menos común, con una probabilidad de 1 entre 6.\n\nJunto con CLL y EG-1 completa todas las situaciones del 2x2 después de una cara. Como sale poco suele aprenderse al final, pero saber todo EG significa estar listo para cualquier caso.\n\nEG-2 te da más libertad al elegir qué cara resolver durante la inspección. Reconocer rápido el intercambio diagonal influye directamente en cuánto ayuda este set."
+        "desc": "EG-2 es el set de 40 casos que suele aprenderse al final de la familia EG. Cubre las situaciones en las que las esquinas de abajo tienen un intercambio diagonal. Es la situación menos común, con una probabilidad de 1 entre 6.\n\nJunto con CLL y EG-1 completa todas las situaciones del 2x2 después de una cara. Como sale poco suele aprenderse al final, pero saber todo EG significa estar listo para cualquier caso.\n\nEG-2 te da más libertad al elegir qué cara resolver durante la inspección. Para sacar partido a este set tienes que reconocer rápido el intercambio diagonal."
       },
       "2x2_pbl": {
         "title": "Permutación de ambas capas",
@@ -1006,23 +1006,23 @@
       },
       "4x4_pll_parity": {
         "title": "Paridad PLL del 4x4",
-        "desc": "La paridad PLL es frecuente en el 4x4, más o menos una vez cada dos resoluciones. Aparece una situación de aristas imposible en el 3x3, porque cada arista del 4x4 está formada por dos piezas que pueden emparejarse de otra forma. La paridad OLL es otro tema.\n\nEste set tiene 22 casos. Los algoritmos resuelven la paridad junto con el PLL en un solo paso, lo que es más rápido que hacer la paridad y el PLL por separado.\n\nEmpieza por los casos que más te salen y añade los raros después. Unos buenos algoritmos de paridad se notan claramente en tus tiempos de 4x4."
+        "desc": "La paridad PLL es frecuente en el 4x4, más o menos una vez cada dos resoluciones. Aparece una situación de aristas imposible en el 3x3, porque cada arista del 4x4 está formada por dos piezas que pueden emparejarse de otra forma. La paridad OLL es otro tema.\n\nEste set tiene 22 casos. Los algoritmos resuelven la paridad junto con el PLL en un solo paso, lo que es más rápido que hacer la paridad y el PLL por separado.\n\nEmpieza por los casos que más te salen y añade los raros después."
       },
       "pyraminx_ll": {
         "title": "Última capa del Pyraminx",
-        "desc": "Estos algoritmos resuelven la última capa del Pyraminx con el método capa por capa. El método tiene dos pasos: primera capa y luego última capa. En la última capa quedan tres aristas, 5 casos en total.\n\nLos casos son sencillos y se aprenden rápido; la mayoría de algoritmos son de pocos movimientos. Reconocerlos también es fácil: solo miras tres aristas. Un buen comienzo para quien empieza con el Pyraminx.\n\nCuando domines este método, puedes pasar a L4E o a métodos intuitivos. Estos 5 casos siguen siendo útiles en cualquier caso."
+        "desc": "Estos algoritmos resuelven la última capa del Pyraminx con el método capa por capa. El método tiene dos pasos: primera capa y luego última capa. En la última capa quedan tres aristas, 5 casos en total.\n\nLos casos son sencillos y se aprenden rápido; la mayoría de algoritmos son de pocos movimientos. Reconocerlos también es fácil: solo miras tres aristas. Adecuado para quien empieza con el Pyraminx.\n\nCuando domines este método, puedes pasar a L4E o a métodos intuitivos. Estos 5 casos siguen siendo útiles en cualquier caso."
       },
       "pyraminx_l4e": {
         "title": "Últimas 4 aristas del Pyraminx",
-        "desc": "L4E es un método avanzado de Pyraminx en dos pasos: primero haces una V abajo y luego resuelves las cuatro aristas restantes en un paso. Este set tiene 35 casos en 5 grupos según el estado de las aristas.\n\nUna V es menos restrictiva que una primera capa completa, así que es fácil de planificar en la inspección. Para reconocer el caso, mira dónde están las aristas restantes y cómo están orientadas.\n\nLa mayoría de quienes resuelven rápido el Pyraminx usan este método. Los algoritmos son cortos, así que elegir buenos movimientos de dedos marca mucha diferencia."
+        "desc": "L4E es un método avanzado de Pyraminx en dos pasos: primero haces una V abajo y luego resuelves las cuatro aristas restantes en un paso. Este set tiene 35 casos en 5 grupos según el estado de las aristas.\n\nUna V es menos restrictiva que una primera capa completa, así que es fácil de planificar en la inspección. Para reconocer el caso, mira dónde están las aristas restantes y cómo están orientadas.\n\nLa mayoría de quienes resuelven rápido el Pyraminx usan este método. Los algoritmos son cortos, así que tienes que elegir bien los movimientos de dedos."
       },
       "sarah_intermediate": {
         "title": "Sarah intermedio (Skewb)",
-        "desc": "Sarah intermedio es para quien quiere ir un paso más allá del método principiante en el Skewb. Con solo 10 casos es una buena forma de bajar tus tiempos con poco esfuerzo.\n\nEl método tiene tres pasos: resuelve una cara, resuelve la cara opuesta con triggers sledgehammer (R' F R F') y hedgeslammer (F R' F' R), y luego resuelve los centros. Los casos se dividen en 3 grupos según cuántos triggers usan.\n\nEs un paso natural hacia Sarah avanzado. Sledgehammer y hedgeslammer son los movimientos básicos del Skewb y con este método te acostumbras a ellos."
+        "desc": "Sarah intermedio es para quien quiere ir un paso más allá del método principiante en el Skewb. Con 10 casos puedes bajar tus tiempos.\n\nEl método tiene tres pasos: resuelve una cara, resuelve la cara opuesta con triggers sledgehammer (R' F R F') y hedgeslammer (F R' F' R), y luego resuelve los centros. Los casos se dividen en 3 grupos según cuántos triggers usan.\n\nSe aprende antes de Sarah avanzado. Sledgehammer y hedgeslammer son los movimientos básicos del Skewb y con este método te acostumbras a ellos."
       },
       "sarah_advanced": {
         "title": "Sarah avanzado (Skewb)",
-        "desc": "Sarah avanzado reduce la resolución del Skewb a dos pasos: resuelve una cara y luego todo lo demás en un paso. Este set tiene 93 casos para el segundo paso, en 16 grupos.\n\nLa mayoría de soluciones se basan en triggers sledgehammer (R' F R F') y hedgeslammer (F R' F' R). Para reconocer el caso, mira el patrón opuesto a la cara resuelta y los colores de las caras laterales. Muchos casos son el espejo o la inversa de otro.\n\nLa mayoría de quienes resuelven rápido el Skewb usan este método. Aprender el set completo lleva tiempo, pero poder planificar toda la resolución en la inspección es una gran ventaja."
+        "desc": "Sarah avanzado reduce la resolución del Skewb a dos pasos: resuelve una cara y luego todo lo demás en un paso. Este set tiene 93 casos para el segundo paso, en 16 grupos.\n\nLa mayoría de soluciones se basan en triggers sledgehammer (R' F R F') y hedgeslammer (F R' F' R). Para reconocer el caso, mira el patrón opuesto a la cara resuelta y los colores de las caras laterales. Muchos casos son el espejo o la inversa de otro.\n\nLa mayoría de quienes resuelven rápido el Skewb usan este método. Aprender el set completo lleva tiempo y, a cambio, puedes planificar toda la resolución en la inspección."
       },
       "sq1_cube_shape": {
         "title": "Square-1 Forma de cubo",
@@ -1042,7 +1042,7 @@
       },
       "sq1_ep": {
         "title": "Square-1 Permutación de aristas",
-        "desc": "La permutación de aristas suele ser el último paso del Square-1 y coloca todas las aristas en su sitio. Hay 40 casos en 8 grupos según la capa superior.\n\nCon paridad los algoritmos normales no sirven y necesitas uno que también la corrija (salvo que hayas usado CSP). Aprender algoritmos que resuelvan las dos cosas a la vez es más eficiente que hacerlas por separado.\n\nPara reconocer el caso, mira dónde están las aristas. Elegir rápido el algoritmo correcto influye directamente en tus tiempos de Square-1."
+        "desc": "La permutación de aristas suele ser el último paso del Square-1 y coloca todas las aristas en su sitio. Hay 40 casos en 8 grupos según la capa superior.\n\nCon paridad los algoritmos normales no sirven y necesitas uno que también la corrija (salvo que hayas usado CSP). Aprender algoritmos que resuelvan las dos cosas a la vez es más eficiente que hacerlas por separado.\n\nPara reconocer el caso, mira dónde están las aristas."
       },
       "sq1_obl": {
         "title": "Square-1 Orientar ambas capas",
@@ -1198,11 +1198,11 @@
   "support": {
     "page_title": "Soporte",
     "title": "Crear ticket de soporte",
-    "description": "Reporta un error, haz una pregunta o comparte una sugerencia. Responderemos lo antes posible.",
+    "description": "Cuéntanos un problema, un error o una idea. Te responderemos lo antes posible.",
     "subject": "Asunto",
     "subject_placeholder": "Escribe un título breve",
     "message": "Mensaje",
-    "message_placeholder": "Describe el problema o sugerencia en detalle",
+    "message_placeholder": "Describe tu problema o idea",
     "send": "Enviar",
     "sending": "Enviando...",
     "success": "Tu ticket fue enviado. ¡Gracias!",
@@ -1273,17 +1273,17 @@
     "email_change_title": "Cambio de correo pendiente",
     "email_change_description": "Enviamos un código de 6 dígitos a la dirección de abajo. Introdúcelo para confirmar.",
     "email_change_code": "Código de verificación",
-    "email_change_enter_code": "Por favor introduce el código",
+    "email_change_enter_code": "Escribe el código",
     "email_change_confirm_button": "Confirmar correo",
     "email_change_confirmed": "Tu correo ha sido actualizado.",
-    "change_password": "Cambiar Contrasena",
-    "set_password": "Crear Contrasena",
-    "set_password_description": "Tu cuenta fue creada con WCA. Puedes establecer una contrasena para iniciar sesion con correo y contrasena.",
-    "current_password": "Contrasena Actual",
-    "new_password": "Nueva Contrasena",
-    "change_password_button": "Cambiar Contrasena",
-    "set_password_button": "Crear Contrasena",
-    "password_success": "Contrasena actualizada correctamente",
+    "change_password": "Cambiar Contraseña",
+    "set_password": "Crear Contraseña",
+    "set_password_description": "Tu cuenta se creó con WCA. Elige una contraseña si también quieres iniciar sesión con correo y contraseña.",
+    "current_password": "Contraseña Actual",
+    "new_password": "Nueva Contraseña",
+    "change_password_button": "Cambiar Contraseña",
+    "set_password_button": "Crear Contraseña",
+    "password_success": "Contraseña actualizada",
     "profile_title": "Información del perfil",
     "profile_description": "Tu nombre, nombre de usuario y correo electrónico."
   },
@@ -1292,14 +1292,14 @@
     "new_password": "Nueva contraseña",
     "change_button": "Cambiar contraseña",
     "weak_password": "Contraseña débil",
-    "success": "Contraseña actualizada exitosamente"
+    "success": "Contraseña actualizada"
   },
   "community_nav": {
     "page_title": "Competiciones"
   },
   "maintenance": {
     "title": "Estamos en mantenimiento",
-    "description": "Estamos mejorando la infraestructura de Zkt Timer. ¡Volveremos pronto!",
+    "description": "Estamos mejorando la infraestructura de ZKT Timer. ¡Volveremos pronto!",
     "thanks": "Gracias por tu paciencia 💙"
   },
   "site_config": {
@@ -1594,7 +1594,7 @@
   },
   "notification_prefs": {
     "email_notifications": "Notificaciones por correo electrónico",
-    "marketing_emails": "Consejos, actualizaciones y otros correos de Zkt Timer",
+    "marketing_emails": "Consejos, actualizaciones y otros correos de ZKT Timer",
     "support_ticket_reply": "Enviarme un correo cuando respondan a mi ticket de soporte",
     "email_notifications_description": "Elige cuándo quieres recibir correos nuestros.",
     "competition_notifications": "Notificaciones de competencias",
@@ -1609,7 +1609,7 @@
   },
   "orientation_warning": {
     "title": "Por favor rota tu dispositivo",
-    "text": "Zkt Timer está diseñado para la mejor experiencia en modo vertical en dispositivos móviles."
+    "text": "ZKT Timer está diseñado para la mejor experiencia en modo vertical en dispositivos móviles."
   },
   "settings": {
     "page_title": "Configuración",
@@ -1653,25 +1653,25 @@
   },
   "appearance": {
     "timer_modules": "Módulos del timer",
-    "timer_modules_desc": "Cambia el número de módulos que se muestran en la página del timer. Ten en cuenta que este es el número *máximo* de módulos mostrados (según el tamaño de tu ventana).",
+    "timer_modules_desc": "El número máximo de módulos en la página del cronómetro. Pueden verse menos según el tamaño de la ventana.",
     "default_suffix": "(Predeterminado)",
     "timer_layout": "Diseño del timer",
-    "timer_layout_desc": "Cambia la apariencia de tu timer. Si tienes una pantalla más pequeña, puedes colocar los módulos a la izquierda o derecha.",
+    "timer_layout_desc": "Cambia la distribución de la página del cronómetro. En una pantalla pequeña puedes poner los módulos a la izquierda o a la derecha.",
     "timer_background": "Fondo de escritorio",
     "timer_background_desc": "La imagen o el video detrás del timer.",
     "timer_background_hint": "Sube un PNG, JPG o MP4. El vídeo tiene un límite de {{size}} MB y se pausa mientras el cronómetro corre.",
     "timer_background_mobile_same": "Usar el mismo en el móvil",
-    "timer_background_mobile_same_desc": "Desactívalo para elegir otra imagen o video para el teléfono.",
+    "timer_background_mobile_same_desc": "Desactívalo para elegir otra imagen o vídeo para el teléfono.",
     "timer_background_mobile": "Fondo del móvil",
     "timer_background_mobile_desc": "La imagen o el video detrás del timer en el teléfono.",
     "timer_font": "Fuente del timer",
-    "timer_font_desc": "La fuente del timer grande que ves en la página del timer",
+    "timer_font_desc": "La fuente del tiempo grande en la página del cronómetro",
     "reset": "Restablecer",
     "save_as_default": "Establecer predeterminado",
     "timer_font_size": "Tamaño de fuente del timer",
-    "timer_font_size_desc": "El tamaño de fuente del tiempo grande que ves en la página del timer",
+    "timer_font_size_desc": "El tamaño de fuente del tiempo grande en la página del cronómetro",
     "scramble_font_size": "Tamaño de fuente de la mezcla",
-    "scramble_font_size_desc": "El tamaño de fuente de la mezcla que ves en la página del timer",
+    "scramble_font_size_desc": "El tamaño de fuente de la mezcla en la página del cronómetro",
     "category_theme": "Tema",
     "category_layout": "Diseño",
     "category_typography": "Tipografía",
@@ -1698,14 +1698,14 @@
     "decimal_points_desc": "Cuántos puntos decimales mostrar en la página del timer",
     "decimal_suffix": "puntos decimales",
     "input_type": "Tipo de entrada del timer",
-    "input_type_desc": "Elige entre usar tu teclado (barra espaciadora), StackMat o cubo inteligente para iniciar el timer.",
+    "input_type_desc": "Inicia el cronómetro con el teclado (barra espaciadora), un StackMat o un cubo inteligente.",
     "input_keyboard": "Teclado",
     "input_touch": "Táctil",
     "input_smart": "Cubo inteligente",
     "input_gantimer": "GAN Smart Timer",
     "input_qiyitimer": "QiYi Smart Timer",
     "freeze_time": "Tiempo de espera (s)",
-    "freeze_time_desc": "Cuántos segundos mantener la barra espaciadora antes de que el timer comience.",
+    "freeze_time_desc": "Cuántos segundos mantener la barra espaciadora antes de que empiece el cronómetro.",
     "remote_input_compat": "Compatibilidad con conexión remota",
     "remote_input_compat_desc": "Actívalo si te conectas con un escritorio remoto o una herramienta de streaming. Evita que el timer se inicie y se detenga solo mientras mantienes pulsada la barra espaciadora. Los tiempos guardados no cambian.",
     "cube_types": "Tipos de cubo",
@@ -1726,7 +1726,7 @@
     "use_3d_scramble_visual": "Vista previa 3D del scramble",
     "use_3d_scramble_visual_desc": "Mostrar vista previa 3D para puzzles compatibles",
     "inspection": "Inspección",
-    "inspection_desc": "Limitar el tiempo de inspección. Bueno para prepararse para competencias.",
+    "inspection_desc": "Te da una inspección como en competición antes de que empiece el tiempo.",
     "play_sound": "Reproducir sonido",
     "play_sound_desc": "Reproducir una alerta de audio cuando hayan pasado 8 y 12 segundos",
     "inspection_auto_start": "Inicio automático de inspección",
@@ -1736,8 +1736,8 @@
     "mic_access": "Permitir acceso al micrófono (método de transmisión de datos de StackMat)",
     "stackmat_auto_inspection": "Inicio automático de inspección",
     "seconds": "segundos",
-    "stackmat_select": "Selecciona tu dispositivo StackMat. Generalmente se llama \"USB Audio Device\"",
-    "stackmat_warning_title": "Advertencia de inspección automática de StackMat",
+    "stackmat_select": "Selecciona tu dispositivo StackMat. Suele aparecer como \"USB Audio Device\"",
+    "stackmat_warning_title": "Aviso de inspección automática de StackMat",
     "dont_show_again": "No mostrar de nuevo",
     "understood": "Entendido",
     "use_space_with_smart_cube": "Usar barra espaciadora con cubos inteligentes",
@@ -1745,24 +1745,24 @@
     "smart_cube_move_order_fix_desc": "Cuando giras dos capas a la vez, un cubo inteligente a veces informa los movimientos en el orden equivocado, y el cronómetro sigue corriendo aunque el cubo ya esté resuelto. Con esto activado, la aplicación lo detecta y termina el tiempo. Puede fallar en algún caso, por eso viene desactivado.",
     "smart_cube_time_offset": "Tiempo adicional (s)",
     "smart_cube_time_offset_desc": "Se suma al tiempo de cada resolución con cubo inteligente.",
-    "use_space_with_smart_cube_desc": "Usa la barra espaciadora como con cubos normales en lugar de detectar cuándo una resolución comienza/termina mediante movimientos del cubo inteligente.",
+    "use_space_with_smart_cube_desc": "Usa la barra espaciadora como con un cubo normal en lugar de detectar el inicio y el final con los movimientos del cubo inteligente.",
     "hide_time_when_solving": "Ocultar tiempo mientras resuelves",
     "zero_out_time_after_solve": "Reiniciar tiempo después de resolver",
-    "zero_out_time_after_solve_desc": "En lugar de mostrar el tiempo de tu última resolución, el timer se actualiza a 0.00 después de resolver.",
+    "zero_out_time_after_solve_desc": "El cronómetro vuelve a 0.00 después de resolver en lugar de mostrar tu último tiempo.",
     "inspection_time": "Tiempo de inspección (s)",
     "auto_inspection_start": "Inicio automático de inspección",
     "auto_inspection_start_desc": "Inicia automáticamente el tiempo de inspección después de reiniciar el mat.",
     "stackmat_select_device": "Selecciona tu dispositivo StackMat",
-    "stackmat_change_device": "Seleccionado - Cambiar dispositivo de entrada",
-    "stackmat_warning_desc": "Hay información importante que debes saber sobre esta función.",
+    "stackmat_change_device": "Seleccionado. Cambiar dispositivo de entrada",
+    "stackmat_warning_desc": "Lee esto antes de usar la función.",
     "stackmat_warning_how_it_works": "Cómo funciona esta función:",
-    "stackmat_warning_step1": "Presiona el botón de reinicio en el mat después de completar tu resolución",
-    "stackmat_warning_step2": "Después del tiempo que configuraste (predeterminado 2 segundos), la inspección comienza automáticamente",
-    "stackmat_warning_step3": "Si inicias el timer dentro de este tiempo, la inspección se cancela",
+    "stackmat_warning_step1": "Pulsa reset en el mat cuando termines la resolución",
+    "stackmat_warning_step2": "La inspección empieza sola tras el tiempo que configuraste (2 segundos por defecto)",
+    "stackmat_warning_step3": "Si inicias el cronómetro dentro de ese tiempo, la inspección se cancela",
     "stackmat_warning_limitation_title": "⚠️ Limitación importante:",
-    "stackmat_warning_limitation_desc": "Si cancelas la inspección con la tecla ESC, como no llega una nueva señal del mat, la inspección no comenzará aunque presiones reiniciar de nuevo. En este caso, necesitas iniciar la inspección desde el teclado (Espacio) o hacer una nueva resolución.",
-    "stackmat_warning_protocol_note": "Esta limitación proviene del protocolo StackMat y no tiene solución por software.",
-    "stackmat_warning_critical": "⚠️ ADVERTENCIA CRÍTICA: Por favor NO REINICIES el StackMat hasta que el tiempo se haya detenido completamente después de resolver. Esto puede causar que la señal del StackMat se sincronice incorrectamente y puede causar algunos errores en el tiempo de inspección. Pedimos disculpas por estos errores de protocolo fuera de nuestro control.",
+    "stackmat_warning_limitation_desc": "Si cancelas la inspección con ESC, el mat no envía una señal nueva y la inspección no empieza aunque pulses reset otra vez. Entonces tienes que iniciarla desde el teclado (Espacio) o hacer una resolución nueva.",
+    "stackmat_warning_protocol_note": "Esta limitación viene del protocolo StackMat y no se puede arreglar por software.",
+    "stackmat_warning_critical": "No reinicies el StackMat hasta que el tiempo se haya detenido del todo. La señal puede desincronizarse y causar errores en la inspección.",
     "category_general": "General",
     "category_input": "Entrada",
     "category_confirmations": "Confirmaciones",
@@ -1771,15 +1771,15 @@
     "category_qiyi": "QiYi Timer",
     "qiyi_auto_inspection": "Inicio Automático de Inspección",
     "qiyi_auto_inspection_desc": "Al presionar restart en el dispositivo, el tiempo se reinicia y (si la inspección está activada) la inspección comienza automáticamente.",
-    "qiyi_warning_title": "Aviso de Inspección Automática del QiYi Timer",
+    "qiyi_warning_title": "Aviso de inspección automática de QiYi Timer",
     "qiyi_warning_desc": "Esta función puede afectar tus hábitos en competición real.",
     "qiyi_warning_how_it_works": "Cómo funciona esta función:",
-    "qiyi_warning_step1": "Después de un solve, presiona restart en el dispositivo → el tiempo se reinicia y la inspección comienza automáticamente (un solo toque).",
-    "qiyi_warning_step2": "Este comportamiento combinado ocurre en un solo toque porque el dispositivo no envía una segunda señal de restart.",
-    "qiyi_warning_critical": "⚠️ Cuando está desactivada: el botón restart solo reinicia el tiempo. Para iniciar la inspección, presiona espacio en el teclado o coloca las manos en el dispositivo.",
+    "qiyi_warning_step1": "Después de una resolución, pulsa restart en el dispositivo. El tiempo se reinicia y la inspección empieza sola.",
+    "qiyi_warning_step2": "Las dos cosas ocurren con una sola pulsación porque el dispositivo no envía una segunda señal de restart.",
+    "qiyi_warning_critical": "Con esto desactivado, el botón restart solo reinicia el tiempo. Para iniciar la inspección, pulsa espacio en el teclado o pon las manos en el dispositivo.",
     "category_multi_phase": "Fases manuales",
     "multi_phase_count": "Número de fases",
-    "multi_phase_count_desc": "Cada pulsación de espacio o de la pantalla durante el solve cierra una fase. La última detiene el cronómetro.",
+    "multi_phase_count_desc": "Cada pulsación de espacio o de la pantalla durante la resolución cierra una fase. La última detiene el cronómetro.",
     "multi_phase_count_n": "{{n}} fases",
     "multi_phase_off": "Desactivado",
     "multi_phase_method": "Método",
@@ -1808,9 +1808,9 @@
     "vrc_mp_roux": "Roux",
     "input_wired": "Temporizador",
     "smart_cube_show": "Mostrar cubo inteligente",
-    "smart_cube_show_desc": "Muestra u oculta el cubo inteligente 3D en la pantalla del temporizador.",
+    "smart_cube_show_desc": "Muestra u oculta el cubo inteligente 3D en la pantalla del cronómetro.",
     "smart_cube_size": "Tamaño del cubo inteligente",
-    "smart_cube_size_desc": "Ajusta el tamaño del cubo inteligente en la página principal.",
+    "smart_cube_size_desc": "Tamaño del cubo inteligente en la página principal.",
     "haptic_feedback": "Vibración",
     "haptic_feedback_desc": "Vibra brevemente el dispositivo al iniciar y detener una resolución.",
     "category_smart_analysis": "Método y análisis",
@@ -1829,41 +1829,41 @@
   },
   "data_settings": {
     "force_reload": "Forzar recarga",
-    "force_reload_desc": "Si tus datos o configuración están desincronizados, puedes forzar la recarga para resincronizar con la base de datos.",
+    "force_reload_desc": "Si tus datos o tu configuración no parecen actualizados, puedes recargarlos desde la base de datos.",
     "force_reload_button": "Forzar recarga",
     "export_data": "Exportar datos de resoluciones y sesiones",
-    "export_data_desc": "Estos datos pueden servir como respaldo de tus resoluciones y sesiones que se pueden importar más tarde si es necesario.",
+    "export_data_desc": "Este archivo es una copia de seguridad de tus resoluciones y sesiones. Puedes importarlo cuando lo necesites.",
     "export_button": "Exportar datos",
-    "export_success": "Todos los datos de resoluciones y sesiones se descargaron exitosamente.",
+    "export_success": "Se descargaron todos los datos de resoluciones y sesiones.",
     "import_data": "Importar datos",
-    "import_data_desc": "Importar datos desde csTimer o Zkt Timer",
+    "import_data_desc": "Importar datos desde csTimer o ZKT Timer",
     "import_cstimer": "Importar desde csTimer",
-    "import_zkttimer": "Importar desde respaldo de Zkt Timer",
+    "import_zkttimer": "Importar desde respaldo de ZKT Timer",
     "reset_settings": "Restablecer configuración",
     "reset_settings_desc": "Restablecer toda la configuración a los valores predeterminados (excepto tipos de cubo personalizados)",
     "reset_settings_button": "Restablecer configuración",
-    "reset_settings_confirm_desc": "Ten cuidado. Estás a punto de restablecer tu configuración a los valores predeterminados. Los tipos de cubo personalizados no se verán afectados.",
+    "reset_settings_confirm_desc": "Vas a restablecer tu configuración a los valores predeterminados. Los tipos de cubo personalizados no cambian.",
     "session_name": "Nombre de sesión",
     "solves_count": "Resoluciones: {{count}}",
     "sessions_count": "Sesiones: {{count}}",
     "skipped_count": "Omitidos (tipo de cubo desconocido): {{count}} resoluciones",
     "review_and_import": "Revisar e importar",
-    "review_description": "Asegúrate de que los números a continuación sean correctos. ¡Luego importa los datos!",
+    "review_description": "Comprueba los números de abajo y luego importa los datos.",
     "mixed_session": "Mixta ({{count}})",
     "split_session": "Dividir",
     "import": "Importar",
     "importing_progress": "Importando... {{percent}}%",
-    "import_success": "¡{{sessions}} sesiones y {{solves}} resoluciones importadas exitosamente!",
-    "session_import_failed": "¡Error en la importación de sesiones: {{count}} errores de fragmento! Importación de resoluciones cancelada.",
-    "import_failed": "¡Error en la importación: {{count}} errores de fragmento!",
+    "import_success": "Se importaron {{sessions}} sesiones y {{solves}} resoluciones.",
+    "session_import_failed": "No se pudieron importar {{count}} partes de las sesiones, así que las resoluciones no se importaron.",
+    "import_failed": "Importación incompleta: no se pudieron importar {{count}} partes.",
     "import_modal_title": "Importar datos de {{name}}",
     "select_file": "Selecciona el archivo a importar",
     "drag_and_drop": "Arrastra y suelta o haz clic para seleccionar",
     "cube_type": "Tipo de cubo",
     "remove": "Eliminar",
-    "retry_in_progress": "Reintentando fragmentos fallidos...",
-    "retry_success": "¡Todos los fragmentos fallidos se importaron exitosamente!",
-    "retry_partial_fail": "{{count}} fragmentos aún fallaron en el reintento.",
+    "retry_in_progress": "Reintentando las partes que fallaron...",
+    "retry_success": "Las partes restantes se importaron.",
+    "retry_partial_fail": "{{count}} partes volvieron a fallar en el reintento.",
     "import_twistytimer": "Importar desde Twisty Timer",
     "import_cubetime": "Importar desde CubeTime",
     "import_select_placeholder": "Seleccionar fuente",
@@ -1877,7 +1877,7 @@
     "cstimer_step_1_suffix": "ve al sitio web",
     "cstimer_step_2": "Haz clic en el icono \"Exportar\" (junto al botón Configuración)",
     "cstimer_step_3": "Haz clic en \"Exportar a archivo\"",
-    "zkttimer_instructions_title": "Cómo exportar datos desde Zkt Timer",
+    "zkttimer_instructions_title": "Cómo exportar datos desde ZKT Timer",
     "zkttimer_step_1_link": "Configuración",
     "zkttimer_step_1_suffix": "página",
     "zkttimer_step_2": "Haz clic en el botón \"Exportar datos\" y guarda el archivo",
@@ -1885,18 +1885,18 @@
     "cubetime_step_1": "Abre la aplicación CubeTime",
     "cubetime_step_2": "Ve a Ajustes → Import & Export",
     "cubetime_step_3_emphasis": "JSON",
-    "cubetime_step_3_suffix": "formato (no CSV — CSV no incluye tipo de cubo ni sesiones)",
+    "cubetime_step_3_suffix": "formato (CSV no incluye tipo de cubo ni sesiones)",
     "cubetime_step_4": "Pulsa \"Export\" y guarda el archivo",
     "cubetime_step_5": "Sube el archivo .json descargado abajo",
-    "cubetime_csv_not_supported": "Formato CSV no compatible — exporta como JSON desde CubeTime",
+    "cubetime_csv_not_supported": "CSV no es compatible. Exporta como JSON desde CubeTime.",
     "category_management": "Gestión de datos",
     "category_reset": "Restablecer",
-    "import_error_title": "Importación completada (con algunos errores)",
+    "import_error_title": "Importación terminada, algunas partes fallaron",
     "import_success_count": "Exitosos: {{count}} fragmentos",
-    "import_failed_count": "Fallidos: {{count}} fragmentos",
+    "import_failed_count": "Fallidas: {{count}} partes",
     "import_failed_chunks_header": "Fragmentos fallidos:",
     "import_items_range": "Elementos: {{range}}",
-    "import_retry_failed_btn": "Reintentar fragmentos fallidos",
+    "import_retry_failed_btn": "Reintentar las partes fallidas",
     "import_continue_anyway": "Continuar de todas formas",
     "import_duplicates_skipped": "{{count}} resoluciones ya están guardadas, omitidas.",
     "import_nothing_new": "No hay nada nuevo que importar, tu cuenta ya tiene todo esto.",
@@ -1945,7 +1945,7 @@
     "no_solves_yet": "Aún no hay resoluciones",
     "stackmat_place_hands": "Coloca tus manos en el StackMat para comenzar",
     "audio_place_hands": "Coloca tus manos en el {{device}} para comenzar",
-    "audio_ready": "Listo — suelta para comenzar",
+    "audio_ready": "Listo, suelta para comenzar",
     "edit_scramble": "Editar mezcla",
     "edit": "Editar",
     "plus_two_penalty": "Penalización +2",
@@ -2062,8 +2062,8 @@
   },
   "solve_page": {
     "not_found": "Solución no encontrada",
-    "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
-    "share_description": "Mira paso a paso la solución de {{cubeType}} de {{user}} en {{time}}. Mezcla, tiempo y detalles completos en Zkt Timer."
+    "share_title": "{{time}} · {{cubeType}} · {{user}} | ZKT Timer",
+    "share_description": "Mira paso a paso la solución de {{cubeType}} de {{user}} en {{time}}. Mezcla, tiempo y detalles completos en ZKT Timer."
   },
   "solve_info": {
     "cube_choose": "Elegir cubo",
@@ -2089,7 +2089,7 @@
     "wrap_text": "Ajustar texto",
     "copy_text": "Copiar texto",
     "download_csv": "Descargar como CSV",
-    "generated_by": "Generado por Zkt Timer el {{date}}",
+    "generated_by": "Generado por ZKT Timer el {{date}}",
     "single_solve": "Resolución individual",
     "view_as_stats": "Ver como estadísticas",
     "tps": "TPS",
@@ -2144,7 +2144,7 @@
       "failed": "No se pudo guardar tu opinión"
     },
     "send": "Enviar",
-    "send_title": "Enviar resolucion",
+    "send_title": "Enviar resolución",
     "send_search": "Buscar personas",
     "send_hint": "Escribe el nombre de usuario de la persona a la que quieres enviarlo",
     "send_none": "No se encontro a nadie",
@@ -2152,7 +2152,7 @@
     "send_action": "Enviar",
     "send_cancel": "Cancelar",
     "send_change": "Cambiar",
-    "send_sent": "Resolucion enviada a {{name}}",
+    "send_sent": "Resolución enviada a {{name}}",
     "send_recent": "Chats recientes",
     "chart_by": "Mostrar en el gráfico",
     "link_copied": "Enlace copiado",
@@ -2209,7 +2209,7 @@
     "create_session": "Crear sesión",
     "create_session_error": "Error del servidor: No se pudo crear la sesión",
     "create_new_session_title": "Crear nueva sesión",
-    "create_new_session_desc": "Las sesiones en Zkt Timer pueden tener múltiples tipos de cubo. Puedes dividir las sesiones como quieras: por tipo de cubo, por día, etc.",
+    "create_new_session_desc": "Las sesiones en ZKT Timer pueden tener múltiples tipos de cubo. Puedes dividir las sesiones como quieras: por tipo de cubo, por día, etc.",
     "new_session_placeholder": "Nueva sesión",
     "cube_type": "Tipo de cubo",
     "cube_type_info": "No te preocupes :) Esto se puede cambiar después",
@@ -2425,7 +2425,7 @@
   },
   "profile": {
     "remove": "Quitar",
-    "share_text": "Mira el perfil de speedcubing de {{username}} en Zkt Timer",
+    "share_text": "Mira el perfil de speedcubing de {{username}} en ZKT Timer",
     "about_me": "Sobre mí",
     "socials": "Redes sociales",
     "biography": "Biografía",
@@ -3012,9 +3012,9 @@
     "preview": "Vista previa",
     "email_greeting": "Hola Usuario,",
     "content_preview_placeholder": "El contenido del correo aparecerá aquí...",
-    "go_to_zkttimer": "Ir a Zkt Timer",
+    "go_to_zkttimer": "Ir a ZKT Timer",
     "regards": "Saludos cordiales,",
-    "team": "Equipo de Zkt Timer",
+    "team": "Equipo de ZKT Timer",
     "clear": "Limpiar",
     "sending": "Enviando...",
     "send_button": "Enviar correo",
@@ -3037,57 +3037,57 @@
     "select_people": "Seleccionar {{count}} personas"
   },
   "seo": {
-    "home_title": "Zkt Timer — Cronómetro de Speedcube, WCA Live, Entrenador de Algoritmos y Plataforma Smart Cube",
+    "home_title": "ZKT Timer — Cronómetro de Speedcube, WCA Live, Entrenador de Algoritmos y Plataforma Smart Cube",
     "home_description": "Plataforma profesional de speedcubing: cronómetro de cubo, entrenador OLL/PLL/ZBLL, seguimiento en vivo de competiciones WCA, modo battle 1v1, soporte para cubos inteligentes y análisis por fases. Todos los puzzles WCA en un solo lugar.",
-    "timer_title": "Cronómetro de Cubo Rubik con Smart Cube y Mezclas WCA - Zkt Timer",
+    "timer_title": "Cronómetro de Cubo Rubik con Smart Cube y Mezclas WCA - ZKT Timer",
     "timer_description": "Cronómetro profesional de cubo Rubik con precisión de milisegundos, mezclas conformes a WCA, soporte para cubos inteligentes (GAN), análisis por fases (Cross/F2L/OLL/PLL) y seguimiento detallado de resoluciones.",
-    "wca_competitions_title": "Competiciones WCA - Resultados en Vivo y Horarios | Zkt Timer",
+    "wca_competitions_title": "Competiciones WCA - Resultados en Vivo y Horarios | ZKT Timer",
     "wca_competitions_description": "Explora todas las competiciones WCA de cubo Rubik en todo el mundo. Resultados en vivo, horarios de competencia, información de registro, listas de competidores y seguimiento en directo. Todas las competiciones oficiales WCA en una sola plataforma.",
-    "wca_competition_detail_title": "Detalles de Competición WCA - Resultados en Vivo | Zkt Timer",
+    "wca_competition_detail_title": "Detalles de Competición WCA - Resultados en Vivo | ZKT Timer",
     "wca_competition_detail_description": "Detalles completos de la competición WCA: eventos, horario, competidores, resultados en vivo y seguimiento de récords personales. Actualizaciones en tiempo real y clasificaciones durante la competencia.",
-    "zkt_competition_detail_title": "Detalles de Competición ZKT - Resultados en Vivo | Zkt Timer",
+    "zkt_competition_detail_title": "Detalles de Competición ZKT - Resultados en Vivo | ZKT Timer",
     "zkt_competition_detail_description": "Detalles de competición no oficial ZKT. Resultados en vivo, eventos, registro, entrada de scorecard, transmisión en vivo y seguimiento de récords.",
-    "pro_title": "Zkt Timer Pro - Membresía Premium",
-    "pro_description": "Actualiza a Zkt Timer Pro para estadísticas avanzadas, sesiones ilimitadas, exportación PDF, todos los entrenadores de algoritmos y funciones premium.",
-    "battle_title": "Modo Battle 1v1 - Zkt Timer",
+    "pro_title": "ZKT Timer Pro - Membresía Premium",
+    "pro_description": "Actualiza a ZKT Timer Pro para estadísticas avanzadas, sesiones ilimitadas, exportación PDF, todos los entrenadores de algoritmos y funciones premium.",
+    "battle_title": "Modo Battle 1v1 - ZKT Timer",
     "battle_description": "¡Battle 1v1 con tu amigo en la misma pantalla! Inicio independiente, seguimiento de penalizaciones, historial de rondas. Duelo móvil de cubo Rubik.",
-    "login_title": "Iniciar sesión - Zkt Timer",
-    "login_description": "Inicia sesión en tu cuenta de Zkt Timer. Guarda tus resoluciones, sigue tus estadísticas y ocupa tu lugar en las clasificaciones.",
-    "signup_title": "Crear cuenta - Zkt Timer",
+    "login_title": "Iniciar sesión - ZKT Timer",
+    "login_description": "Inicia sesión en tu cuenta de ZKT Timer. Guarda tus resoluciones, sigue tus estadísticas y ocupa tu lugar en las clasificaciones.",
+    "signup_title": "Crear cuenta - ZKT Timer",
     "signup_description": "¡Únete a una de las comunidades de cubo Rubik más grandes! Crea una cuenta, guarda tus resoluciones y compite con cuberos de todo el mundo.",
-    "forgot_password_title": "Restablecer contraseña - Zkt Timer",
-    "forgot_password_description": "Restablece la contraseña de tu cuenta de Zkt Timer. Establece una nueva contraseña con el enlace enviado a tu correo electrónico.",
-    "rooms_title": "Salas de carreras en vivo - Zkt Timer",
+    "forgot_password_title": "Restablecer contraseña - ZKT Timer",
+    "forgot_password_description": "Restablece la contraseña de tu cuenta de ZKT Timer. Establece una nueva contraseña con el enlace enviado a tu correo electrónico.",
+    "rooms_title": "Salas de carreras en vivo - ZKT Timer",
     "rooms_description": "¡Compite contra otros cuberos en tiempo real! Crea salas con amigos o únete a salas abiertas. La mejor plataforma para competencias de speedcubing.",
-    "settings_title": "Configuración de usuario - Zkt Timer",
+    "settings_title": "Configuración de usuario - ZKT Timer",
     "settings_description": "Personaliza la configuración de tu timer, apariencia y preferencias de cuenta.",
     "user_fallback": "Usuario",
-    "user_profile_title": "{{username}} - Perfil de cubero | Zkt Timer",
+    "user_profile_title": "{{username}} - Perfil de cubero | ZKT Timer",
     "user_profile_description": "Perfil de cubo Rubik de {{username}}. Récords, estadísticas de resoluciones e historial de competencias.",
-    "trainer_title": "Entrenador de algoritmos del cubo de Rubik: OLL, PLL, F2L, ZBLL, reconocimiento PLL y Cross | Zkt Timer",
+    "trainer_title": "Entrenador de algoritmos del cubo de Rubik: OLL, PLL, F2L, ZBLL, reconocimiento PLL y Cross | ZKT Timer",
     "trainer_description": "Practica OLL, PLL, F2L, ZBLL y más, crea tus propios sets de algoritmos y compártelos. Reconocimiento PLL, práctica de Cross y XCross, seguimiento movimiento a movimiento con un cubo inteligente. Cada algoritmo guarda sus propios tiempos.",
-    "trainer_algorithms_title": "Entrenador de algoritmos: OLL, PLL, F2L y más | Zkt Timer",
+    "trainer_algorithms_title": "Entrenador de algoritmos: OLL, PLL, F2L y más | ZKT Timer",
     "trainer_algorithms_description": "Practica OLL, PLL, F2L, ZBLL y el resto de las 43 categorías, crea tus propios sets y compártelos.",
-    "trainer_community_title": "Sets de la comunidad: sets de algoritmos compartidos | Zkt Timer",
+    "trainer_community_title": "Sets de la comunidad: sets de algoritmos compartidos | ZKT Timer",
     "trainer_community_description": "Explora los sets de algoritmos que comparten otros cuberos, añádelos a tus sets y practica.",
-    "alg_set_title": "{{name}} · {{owner}} | Zkt Timer",
-    "alg_set_description_one": "{{count}} algoritmo: {{categories}}. Practica en el Entrenador de algoritmos de Zkt Timer.",
-    "alg_set_description_other": "{{count}} algoritmos: {{categories}}. Practica en el Entrenador de algoritmos de Zkt Timer.",
-    "alg_set_description_empty": "Un set de algoritmos compartido en Zkt Timer.",
-    "stats_title": "Estadísticas de resoluciones - Zkt Timer",
+    "alg_set_title": "{{name}} · {{owner}} | ZKT Timer",
+    "alg_set_description_one": "{{count}} algoritmo: {{categories}}. Practica en el Entrenador de algoritmos de ZKT Timer.",
+    "alg_set_description_other": "{{count}} algoritmos: {{categories}}. Practica en el Entrenador de algoritmos de ZKT Timer.",
+    "alg_set_description_empty": "Un set de algoritmos compartido en ZKT Timer.",
+    "stats_title": "Estadísticas de resoluciones - ZKT Timer",
     "stats_description": "Analiza tu rendimiento en el cubo Rubik. Promedios, mejores tiempos, gráficos y estadísticas detalladas.",
-    "solves_title": "Historial de resoluciones - Zkt Timer",
+    "solves_title": "Historial de resoluciones - ZKT Timer",
     "solves_description": "Ve todas tus resoluciones del cubo Rubik. Análisis de rendimiento con mezcla, tiempo y detalles de resolución.",
-    "leaderboards_title": "Clasificación de Online Battle | Zkt Timer",
-    "leaderboards_description": "La clasificación de Online Battle de Zkt Timer. Puntuaciones de partidas 1v1 jugadas con cubos inteligentes.",
-    "terms_title": "Términos de Servicio - Zkt Timer",
-    "terms_description": "Términos de servicio de Zkt Timer: reglas de uso, cuentas, contenido y tus derechos y responsabilidades como usuario.",
-    "privacy_title": "Política de Privacidad - Zkt Timer",
-    "privacy_description": "Cómo Zkt Timer recopila, usa y protege tus datos. Política de privacidad e información de cookies.",
-    "delete_account_title": "Eliminar la cuenta - Zkt Timer",
-    "delete_account_description": "Cómo eliminar su cuenta de Zkt Timer, qué se elimina y qué permanece.",
-    "credits_title": "Créditos y Agradecimientos - Zkt Timer",
-    "credits_description": "Los proyectos de código abierto, bibliotecas y desarrolladores que inspiraron y ayudaron a construir Zkt Timer.",
+    "leaderboards_title": "Clasificación de Online Battle | ZKT Timer",
+    "leaderboards_description": "La clasificación de Online Battle de ZKT Timer. Puntuaciones de partidas 1v1 jugadas con cubos inteligentes.",
+    "terms_title": "Términos de Servicio - ZKT Timer",
+    "terms_description": "Términos de servicio de ZKT Timer: reglas de uso, cuentas, contenido y tus derechos y responsabilidades como usuario.",
+    "privacy_title": "Política de Privacidad - ZKT Timer",
+    "privacy_description": "Cómo ZKT Timer recopila, usa y protege tus datos. Política de privacidad e información de cookies.",
+    "delete_account_title": "Eliminar la cuenta - ZKT Timer",
+    "delete_account_description": "Cómo eliminar su cuenta de ZKT Timer, qué se elimina y qué permanece.",
+    "credits_title": "Créditos y Agradecimientos - ZKT Timer",
+    "credits_description": "Los proyectos de código abierto, bibliotecas y desarrolladores que inspiraron y ayudaron a construir ZKT Timer.",
     "app_description": "La aplicación de cronómetro de cubo Rubik, seguimiento de competiciones WCA y plataforma de speedcubing más avanzada. Precisión de milisegundos.",
     "feature_list": [
       "Cronómetro de cubo Rubik",
@@ -3121,49 +3121,49 @@
     "leaderboards_keywords": "clasificación online battle, ranking cubo inteligente, cubo rubik 1v1, puntuación speedcubing, duelo de cubos",
     "stats_keywords": "estadísticas cubo rubik, análisis de solves, promedios cubo, estadísticas speedcubing, récords personales",
     "solves_keywords": "historial de solves cubo rubik, registros de solves, historial de scramble, registro cubo",
-    "pro_keywords": "Zkt Timer Pro, timer cubo premium, funciones avanzadas speedcubing, pro speedcubing",
+    "pro_keywords": "ZKT Timer Pro, timer cubo premium, funciones avanzadas speedcubing, pro speedcubing",
     "user_profile_keywords": "perfil cubero, speedcuber, perfil comunidad cubing, perfil WCA",
     "wca_competitions_keywords": "competiciones WCA, competiciones speedcubing, competiciones cubo rubik, WCA en vivo, calendario de competiciones",
     "zkt_competitions_keywords": "competición ZKT, competición cubo no oficial, evento cubo Turquía, competición nacional de cubo",
-    "login_keywords": "Zkt Timer iniciar sesión, registro timer cubo, cuenta speedcubing",
-    "wca_live_title": "Resultados en Vivo WCA - Clasificación en Tiempo Real | Zkt Timer",
+    "login_keywords": "ZKT Timer iniciar sesión, registro timer cubo, cuenta speedcubing",
+    "wca_live_title": "Resultados en Vivo WCA - Clasificación en Tiempo Real | ZKT Timer",
     "wca_live_description": "Resultados en vivo de la competición WCA. Clasificaciones de ronda en tiempo real, tiempos y seguimiento de eventos.",
-    "wca_person_title": "Perfil del Competidor - Competición WCA | Zkt Timer",
+    "wca_person_title": "Perfil del Competidor - Competición WCA | ZKT Timer",
     "wca_person_description": "Detalles del competidor, resultados de eventos y récords personales en la competición WCA.",
-    "wca_activity_title": "Actividad de Competición - Programa WCA | Zkt Timer",
+    "wca_activity_title": "Actividad de Competición - Programa WCA | ZKT Timer",
     "wca_activity_description": "Detalles de actividad: eventos programados, rondas y asignaciones de competidores.",
-    "wca_personal_bests_title": "Récords Personales - Competidor WCA | Zkt Timer",
+    "wca_personal_bests_title": "Récords Personales - Competidor WCA | ZKT Timer",
     "wca_personal_bests_description": "Récords personales del competidor en todos los eventos WCA.",
     "faq": [
       {
         "id": "what-is",
-        "q": "¿Qué es Zkt Timer?",
-        "a": "Zkt Timer es una de las plataformas de cronómetro de cubo Rubik más avanzadas. Mide tus tiempos de speedcubing con precisión de milisegundos, proporciona algoritmos de mezcla WCA oficiales, estadísticas detalladas y análisis de rendimiento. Incluye salas de carreras en vivo, soporte para cubos inteligentes y entrenador de algoritmos."
+        "q": "¿Qué es ZKT Timer?",
+        "a": "ZKT Timer es una de las plataformas de cronómetro de cubo Rubik más avanzadas. Mide tus tiempos de speedcubing con precisión de milisegundos, proporciona algoritmos de mezcla WCA oficiales, estadísticas detalladas y análisis de rendimiento. Incluye salas de carreras en vivo, soporte para cubos inteligentes y entrenador de algoritmos."
       },
       {
         "id": "how-works",
-        "q": "¿Cómo funciona Zkt Timer?",
+        "q": "¿Cómo funciona ZKT Timer?",
         "a": "Regístrate y comienza de inmediato. Las funciones principales como el cronómetro, estadísticas, carreras online y entrenador están disponibles. Actualiza a la membresía Pro para funciones premium adicionales."
       },
       {
         "id": "cube-types",
         "q": "¿Qué tipos de cubos soporta?",
-        "a": "Zkt Timer soporta todas las categorías oficiales de la WCA: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 una mano, 3x3 con los ojos vendados y más. Se utilizan algoritmos de mezcla oficiales de la WCA."
+        "a": "ZKT Timer soporta todas las categorías oficiales de la WCA: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 una mano, 3x3 con los ojos vendados y más. Se utilizan algoritmos de mezcla oficiales de la WCA."
       },
       {
         "id": "offline",
         "q": "¿Puedo usarlo sin conexión a internet?",
-        "a": "¡Sí! Zkt Timer funciona sin conexión gracias a la tecnología PWA. Después de instalar la app desde la opción 'Agregar a pantalla de inicio', puedes usar el cronómetro sin internet. Tus datos se sincronizan automáticamente al reconectarte."
+        "a": "¡Sí! ZKT Timer funciona sin conexión gracias a la tecnología PWA. Después de instalar la app desde la opción 'Agregar a pantalla de inicio', puedes usar el cronómetro sin internet. Tus datos se sincronizan automáticamente al reconectarte."
       },
       {
         "id": "wca-official",
         "q": "¿Es un cronómetro oficial de la WCA?",
-        "a": "Zkt Timer utiliza algoritmos de mezcla oficiales de la WCA y está diseñado para entrenamiento. Los Stackmat Timer físicos son obligatorios en competencias oficiales de la WCA. Zkt Timer es ideal para práctica, entrenamiento y seguimiento de estadísticas."
+        "a": "ZKT Timer utiliza algoritmos de mezcla oficiales de la WCA y está diseñado para entrenamiento. Los Stackmat Timer físicos son obligatorios en competencias oficiales de la WCA. ZKT Timer es ideal para práctica, entrenamiento y seguimiento de estadísticas."
       },
       {
         "id": "devices",
         "q": "¿En qué dispositivos funciona?",
-        "a": "Zkt Timer funciona en todos los navegadores modernos. Compatible con Windows, macOS, Linux, Android e iOS. Se puede instalar como PWA en tu teléfono. También es compatible con Smart Cubes (GAN, MoYu) y Stackmat Timer."
+        "a": "ZKT Timer funciona en todos los navegadores modernos. Compatible con Windows, macOS, Linux, Android e iOS. Se puede instalar como PWA en tu teléfono. También es compatible con Smart Cubes (GAN, MoYu) y Stackmat Timer."
       },
       {
         "id": "data-safety",
@@ -3183,11 +3183,11 @@
       {
         "id": "smart-cube",
         "q": "¿Cómo conecto un smart cube?",
-        "a": "Zkt Timer soporta smart cubes GAN, Giiker y Particula vía Bluetooth. En móvil, activa el Bluetooth y usa el plugin Capacitor BLE; en navegadores web, usa Chrome o Edge que soportan Web Bluetooth. Abre el menú Smart Cube desde el timer, pulsa Escanear y empareja con tu dispositivo. Una vez conectado, el timer inicia y para automáticamente según el estado del cubo."
+        "a": "ZKT Timer soporta smart cubes GAN, Giiker y Particula vía Bluetooth. En móvil, activa el Bluetooth y usa el plugin Capacitor BLE; en navegadores web, usa Chrome o Edge que soportan Web Bluetooth. Abre el menú Smart Cube desde el timer, pulsa Escanear y empareja con tu dispositivo. Una vez conectado, el timer inicia y para automáticamente según el estado del cubo."
       },
       {
         "id": "stackmat",
-        "q": "¿Zkt Timer soporta Stackmat Timer?",
+        "q": "¿ZKT Timer soporta Stackmat Timer?",
         "a": "Sí. Conecta tu Stackmat Timer a través de la entrada de audio (jack 3.5mm). En los ajustes del timer, selecciona StackMat como tipo de entrada y elige el dispositivo de audio correcto. El timer detectará las señales del Stackmat automáticamente."
       },
       {
@@ -3203,22 +3203,22 @@
       {
         "id": "pro",
         "q": "¿Qué me da la membresía Pro?",
-        "a": "Zkt Timer Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación PDF de tus algoritmos y estadísticas, acceso a todos los entrenadores de algoritmos, temas premium y soporte prioritario. Es una compra única o recurrente según el plan."
+        "a": "ZKT Timer Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación PDF de tus algoritmos y estadísticas, acceso a todos los entrenadores de algoritmos, temas premium y soporte prioritario. Es una compra única o recurrente según el plan."
       },
       {
         "id": "import",
         "q": "¿Puedo importar datos de csTimer o Twisty Timer?",
-        "a": "Sí. Zkt Timer soporta importación de datos desde csTimer, Twisty Timer y sus propios formatos de exportación anteriores. Ve a Ajustes > Datos > Importar, selecciona el formato fuente y sube tu archivo de exportación. Todos los solves, sesiones y metadatos se preservan."
+        "a": "Sí. ZKT Timer soporta importación de datos desde csTimer, Twisty Timer y sus propios formatos de exportación anteriores. Ve a Ajustes > Datos > Importar, selecciona el formato fuente y sube tu archivo de exportación. Todos los solves, sesiones y metadatos se preservan."
       },
       {
         "id": "backup",
         "q": "¿Cómo hago respaldo de mis datos?",
-        "a": "Ve a Ajustes > Datos > Exportar. Zkt Timer genera un archivo JSON con todos tus solves, sesiones y ajustes. Guárdalo en un lugar seguro — puedes reimportarlo en cualquier dispositivo. Los usuarios conectados también obtienen sincronización automática en la nube."
+        "a": "Ve a Ajustes > Datos > Exportar. ZKT Timer genera un archivo JSON con todos tus solves, sesiones y ajustes. Guárdalo en un lugar seguro — puedes reimportarlo en cualquier dispositivo. Los usuarios conectados también obtienen sincronización automática en la nube."
       },
       {
         "id": "scramble-algo",
-        "q": "¿Qué algoritmo de scramble usa Zkt Timer?",
-        "a": "Zkt Timer usa el mismo motor de scramble que cstimer, el estándar de facto en speedcubing. Esto incluye scramblers random-state compatibles con WCA para 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock y más. Todos los scrambles cumplen con las regulaciones WCA."
+        "q": "¿Qué algoritmo de scramble usa ZKT Timer?",
+        "a": "ZKT Timer usa el mismo motor de scramble que cstimer, el estándar de facto en speedcubing. Esto incluye scramblers random-state compatibles con WCA para 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock y más. Todos los scrambles cumplen con las regulaciones WCA."
       },
       {
         "id": "battle",
@@ -3232,13 +3232,13 @@
       },
       {
         "id": "pricing",
-        "q": "¿Necesito pagar para usar Zkt Timer?",
+        "q": "¿Necesito pagar para usar ZKT Timer?",
         "a": "Puedes registrarte y empezar a usar la experiencia básica de inmediato: el cronómetro, los scrambles WCA, las estadísticas, las salas de carreras en línea, las clasificaciones y el entrenador de algoritmos. La membresía Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación a PDF, los modos de entrenador con cubo inteligente, temas premium y soporte prioritario. No hay anuncios."
       },
       {
         "id": "mobile-apps",
         "q": "¿Hay aplicación iOS o Android?",
-        "a": "Sí. Zkt Timer está disponible nativamente en la App Store de iOS y Google Play Store. Las apps incluyen soporte Bluetooth de smart cube, modo offline, notificaciones push y rendimiento nativo. También puedes instalar la app web como PWA."
+        "a": "Sí. ZKT Timer está disponible nativamente en la App Store de iOS y Google Play Store. Las apps incluyen soporte Bluetooth de smart cube, modo offline, notificaciones push y rendimiento nativo. También puedes instalar la app web como PWA."
       },
       {
         "id": "inspection",
@@ -3248,12 +3248,12 @@
       {
         "id": "per-cube-stats",
         "q": "¿Se rastrean las estadísticas por separado para diferentes tipos de cubo?",
-        "a": "Sí. Zkt Timer agrupa estadísticas por (tipo de cubo, subconjunto de scramble). Tus promedios de 3x3, récords personales de 2x2 y tiempos de Pyraminx se rastrean independientemente. La página de Estadísticas permite filtrar por tipo de cubo y rango de tiempo."
+        "a": "Sí. ZKT Timer agrupa estadísticas por (tipo de cubo, subconjunto de scramble). Tus promedios de 3x3, récords personales de 2x2 y tiempos de Pyraminx se rastrean independientemente. La página de Estadísticas permite filtrar por tipo de cubo y rango de tiempo."
       },
       {
         "id": "offline-how",
-        "q": "¿Cómo funciona Zkt Timer sin internet?",
-        "a": "Como PWA, Zkt Timer almacena todos los archivos de la app después de la primera visita. Puedes cronometrar solves, generar scrambles y ver estadísticas cacheadas totalmente offline. Al reconectar, los solves pendientes se sincronizan automáticamente vía Background Sync API."
+        "q": "¿Cómo funciona ZKT Timer sin internet?",
+        "a": "Como PWA, ZKT Timer almacena todos los archivos de la app después de la primera visita. Puedes cronometrar solves, generar scrambles y ver estadísticas cacheadas totalmente offline. Al reconectar, los solves pendientes se sincronizan automáticamente vía Background Sync API."
       },
       {
         "id": "recognition-trainer",
@@ -3272,7 +3272,7 @@
       },
       {
         "id": "desktop-usage",
-        "q": "¿Cómo se usa Zkt Timer en el ordenador?",
+        "q": "¿Cómo se usa ZKT Timer en el ordenador?",
         "a": "Los menús de arriba seleccionan la sesión, el puzzle y el tipo de cronómetro, y la mezcla aparece justo debajo. Mantén pulsada la barra espaciadora y suéltala para empezar, pulsa de nuevo para parar. Tus solves recientes, tus medias y el análisis del solve están en módulos junto al cronómetro, y puedes arrastrar los módulos donde quieras. Haz clic en cualquier tiempo para abrir su ventana de detalle, donde puedes añadir una penalización, ver la mezcla o borrar el solve."
       },
       {
@@ -3298,15 +3298,15 @@
     ],
     "nav_timer_name": "Temporizador",
     "nav_battle_name": "Modo Battle",
-    "nav_pro_name": "Zkt Timer Pro",
-    "wca_records_title": "Récords WCA - Récords recién batidos | Zkt Timer",
+    "nav_pro_name": "ZKT Timer Pro",
+    "wca_records_title": "Récords WCA - Récords recién batidos | ZKT Timer",
     "wca_records_description": "Últimos récords mundiales, continentales y nacionales de la WCA, con alertas para las pruebas que sigues.",
     "wca_records_keywords": "records wca, record mundial cubo, record nacional, alertas de records, records speedcubing",
-    "battle_launch_title": "Batalla: Online y Offline Battle | Zkt Timer",
+    "battle_launch_title": "Batalla: Online y Offline Battle | ZKT Timer",
     "battle_launch_description": "Juega Online Battle con tu cubo inteligente contra quien esté buscando rival ahora mismo, o una Offline Battle con un amigo en un mismo dispositivo.",
-    "battle_online_title": "Online Battle | Zkt Timer",
+    "battle_online_title": "Online Battle | ZKT Timer",
     "battle_online_description": "Partidas 1v1 puntuadas con cubos inteligentes. Los dos resuelven la misma mezcla, gana quien se lleva tres rondas primero y la puntuación entra en la clasificación.",
-    "duel_title": "{{name}} te reta a un duelo | Zkt Timer",
+    "duel_title": "{{name}} te reta a un duelo | ZKT Timer",
     "duel_description": "Un duelo 1v1 de Online Battle con cubos inteligentes. Gana quien llegue a {{n}} rondas, sin puntuación. La invitación dura {{minutes}} minutos."
   },
   "quick_controls": {
@@ -3425,7 +3425,7 @@
     "bt_status_link_text": "estado de implementación del Grupo Comunitario Web Bluetooth",
     "bt_status_link_post": "página.",
     "select_device": "Elige tu dispositivo",
-    "select_device_desc": "Selecciona el tuyo de la lista — el más cercano suele estar arriba.",
+    "select_device_desc": "Selecciona el tuyo de la lista. El más cercano suele estar arriba.",
     "searching_devices": "Buscando dispositivos…",
     "nearest": "Más cercano",
     "wrong_mac": "Dirección MAC incorrecta",
@@ -3444,7 +3444,7 @@
     "mac_input_help_windows": "Windows: Configuración > Bluetooth y dispositivos > tu dispositivo > Detalles",
     "mac_input_help_macos": "macOS: Ajustes del sistema > Bluetooth > clic derecho en el dispositivo > Copiar dirección",
     "mac_input_help_android": "Android: Ajustes > Bluetooth > tu dispositivo (ⓘ) > dirección MAC",
-    "mac_input_chrome_hint": "Lo más fácil en escritorio — abre esto en Chrome, busca tu dispositivo y copia su dirección:",
+    "mac_input_chrome_hint": "Lo más fácil en escritorio: abre esto en Chrome, busca tu dispositivo y copia su dirección:",
     "mac_input_cancel": "Cancelar",
     "mac_input_connect": "Conectar",
     "ble_info_title": "Conectar por Bluetooth",
@@ -3570,16 +3570,16 @@
   "integration": {
     "disconnect": "Desconectar",
     "disconnect_title": "Desconectar cuenta de {{name}}",
-    "disconnect_confirm": "¿Estás seguro de que deseas desconectar esta cuenta?",
+    "disconnect_confirm": "¿Quieres desconectar esta cuenta?",
     "disconnect_button": "Desconectar cuenta",
     "account_linked": "Cuenta vinculada",
     "link_account": "Vincular cuenta",
-    "wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales.",
-    "disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal.",
+    "wca_description": "Vincula tu cuenta WCA para mostrar tus resultados oficiales en tu perfil.",
+    "disconnect_no_password": "Para desvincular, primero crea una contraseña en la página de Información personal.",
     "wca_connecting": "Conectando con WCA...",
     "linking_account": "Vinculando cuenta...",
-    "oauth_error": "Se produjo un error durante la conexión OAuth",
-    "zkt_description": "Vincula tu cuenta de ZKT para ver tus competencias, resultados y récords de ZKT en Zkt Timer."
+    "oauth_error": "No se pudo vincular la cuenta. Inténtalo de nuevo.",
+    "zkt_description": "Vincula tu cuenta de ZKT para ver tus competencias, resultados y récords de ZKT en ZKT Timer."
   },
   "otp": {
     "verifying": "Verificando…",
@@ -3602,32 +3602,32 @@
   },
   "email_verification": {
     "title": "Verificación de correo",
-    "check_email": "Hemos enviado un código de verificación a tu correo. Revisa tu bandeja de entrada.",
+    "check_email": "Te enviamos un código de verificación a tu correo. Revisa tu bandeja de entrada.",
     "verification_code": "Código de verificación",
-    "code_placeholder": "Ingresa el código de 6 dígitos",
-    "enter_code_error": "Por favor ingresa el código de verificación",
+    "code_placeholder": "Escribe el código de 6 dígitos",
+    "enter_code_error": "Escribe el código de verificación",
     "verify_button": "Verificar",
     "resend_code": "Reenviar código",
     "code_resent": "¡Código reenviado!"
   },
   "wca_signup": {
-    "title": "Elige un Nombre de Usuario",
-    "description": "Te estas registrando con tu cuenta WCA. Por favor elige un nombre de usuario.",
+    "title": "Elige un nombre de usuario",
+    "description": "Te estás registrando con tu cuenta WCA. Elige un nombre de usuario.",
     "first_name": "Nombre",
     "last_name": "Apellido",
     "email": "Correo",
     "wca_id": "WCA ID",
-    "username_label": "Nombre de Usuario",
-    "submit": "Crear Cuenta",
+    "username_label": "Nombre de usuario",
+    "submit": "Crear cuenta",
     "username_too_short": "El nombre de usuario debe tener al menos 2 caracteres",
-    "username_too_long": "El nombre de usuario no puede tener mas de 18 caracteres",
-    "username_invalid": "El nombre de usuario solo puede contener letras, numeros y guiones bajos",
-    "session_expired": "La sesion ha expirado. Por favor intente iniciar sesion con WCA nuevamente.",
-    "loading": "Iniciando sesion con WCA..."
+    "username_too_long": "El nombre de usuario no puede tener más de 18 caracteres",
+    "username_invalid": "El nombre de usuario solo puede contener letras, números y guiones bajos",
+    "session_expired": "Tu sesión ha caducado. Inicia sesión con WCA de nuevo.",
+    "loading": "Iniciando sesión con WCA..."
   },
   "login_wrapper": {
-    "login_title": "Zkt Timer | Iniciar sesión",
-    "signup_title": "Zkt Timer | Registrarse",
+    "login_title": "ZKT Timer | Iniciar sesión",
+    "signup_title": "ZKT Timer | Registrarse",
     "reset_password": "Restablecer contraseña",
     "verify_email": "Verificación de correo",
     "welcome": "Bienvenido",
@@ -3758,8 +3758,8 @@
   },
   "pro_page": {
     "hero_title": "Elige tu plan",
-    "intro_title": "Todo lo que necesitas, en ZKT Pro.",
-    "intro_lede": "Análisis de cubo inteligente, práctica de algoritmos en el cubo, Magnet Timer y Soltar para detener, seguimiento de competidores y alertas de récords, temas y fondos personalizados. {{count}} funciones en total.",
+    "intro_title": "Qué incluye Pro",
+    "intro_lede": "Pro tiene {{count}} funciones: análisis de cubo inteligente, práctica de algoritmos con cubo inteligente, Magnet Timer, Soltar para detener, seguimiento de competidores, alertas de récords, temas y fondos personalizados.",
     "basic_included": "Todo lo de Basic incluido",
     "groups": {
       "analysis": "Análisis y datos",
@@ -3767,12 +3767,12 @@
       "community": "Salas y competiciones",
       "personal": "Personalización"
     },
-    "mobile_only_hint": "Las compras se realizan en las apps de iOS y Android",
+    "mobile_only_hint": "Puedes comprar Pro en las apps de iOS y Android",
     "basic_hint": "Actualmente tienes el plan Basic",
     "plan": {
       "monthly_label": "Mensual",
       "yearly_label": "Anual",
-      "lifetime_label": "Lifetime",
+      "lifetime_label": "De por vida",
       "monthly_price": "$2,99",
       "yearly_price": "$19,99",
       "lifetime_price": "$39,99",
@@ -3782,8 +3782,8 @@
       "monthly_detail_dynamic": "{{price}} al mes, facturación mensual",
       "yearly_detail_dynamic": "Unos {{perMonth}}/mes · Ahorra {{savings}}%",
       "popular": "Popular",
-      "best_value": "Mejor Valor",
-      "trial": "7 días gratis",
+      "best_value": "La mejor opción",
+      "trial": "7 días de prueba",
       "no_trial": "Pago único, sin prueba",
       "region_hint": "El precio puede variar según tu región",
       "yearly_cycle": "/ año",
@@ -3793,11 +3793,11 @@
     "iap": {
       "purchase_cta": "Comprar",
       "purchasing": "Procesando...",
-      "purchase_success": "Tu suscripción está activa",
-      "purchase_error": "La compra falló, inténtalo de nuevo",
-      "blocked_by_grant": "Ya tienes Pro concedido, no puedes comprar ahora",
+      "purchase_success": "Tu membresía Pro ha comenzado",
+      "purchase_error": "No se pudo completar la compra. Inténtalo de nuevo.",
+      "blocked_by_grant": "No puedes comprar mientras tengas activa una membresía Pro otorgada a tu cuenta",
       "granted_pro": "Pro activo hasta {{date}}",
-      "cancellation_notice": "Cancelaste tu suscripción. El acceso continúa hasta {{date}}",
+      "cancellation_notice": "Cancelaste tu suscripción. Puedes usar las funciones Pro hasta el {{date}}.",
       "billing_issue_notice": "Pago fallido. Actualiza tus datos de pago para continuar",
       "update_payment": "Actualizar pago",
       "manage_subscription": "Gestionar suscripción",
@@ -3806,23 +3806,23 @@
       "restore_success": "Tu suscripción fue restaurada",
       "restore_empty": "No se encontraron compras anteriores",
       "restore_error": "Restauración fallida",
-      "upgrade_to_yearly": "Cambiar a Anual",
-      "downgrade_to_monthly": "Cambiar a Mensual",
+      "upgrade_to_yearly": "Cambiar al plan anual",
+      "downgrade_to_monthly": "Cambiar al plan mensual",
       "cancel_first": "Cancela la suscripción primero",
-      "lifetime_needs_cancel": "Para comprar Lifetime, cancela primero tu suscripción activa",
-      "lifetime_needs_cancel_hint": "Lifetime estará disponible cuando termine tu suscripción",
+      "lifetime_needs_cancel": "Para comprar el plan de por vida, primero cancela tu suscripción",
+      "lifetime_needs_cancel_hint": "Podrás comprar el plan de por vida cuando termine tu suscripción",
       "cross_platform_notice": "Tu suscripción está activa a través de {{platform}}. Adminístrala desde tu dispositivo {{platform}}.",
-      "cross_platform_cta": "Gestionar en {{platform}}",
+      "cross_platform_cta": "Gestionar en tu dispositivo {{platform}}",
       "cross_platform_blocked": "Esta suscripción fue comprada en {{platform}} y no se puede cambiar aquí",
       "already_lifetime": "Tu membresía de por vida ya está activa",
-      "already_lifetime_cta": "Lifetime Activo",
-      "already_lifetime_hint": "No puedes suscribirte mientras una membresía de por vida esté activa",
+      "already_lifetime_cta": "De por vida activo",
+      "already_lifetime_hint": "No puedes suscribirte mientras tengas la membresía de por vida",
       "downgrade_blocked_toast": "No puedes cambiar al plan mensual antes de que expire tu plan anual",
-      "downgrade_blocked_cta": "Plan Anual Activo",
+      "downgrade_blocked_cta": "Plan anual activo",
       "downgrade_blocked_hint": "Tu plan anual vence el {{date}}. Podrás cambiar al mensual después de esa fecha.",
       "paused_notice": "Tu suscripción está en pausa. Puedes reanudarla desde Google Play."
     },
-    "pro_active_desc": "Disfruta de todas las funciones Pro.",
+    "pro_active_desc": "Todas las funciones Pro están activas.",
     "pro_expires": "Activo hasta {{date}}",
     "current_plan": "Plan actual",
     "subscribed_via_title": "Estás suscrito a través de la app {{platform}}",
@@ -3833,67 +3833,67 @@
     "features": {
       "sync": {
         "title": "Sincronización entre dispositivos",
-        "desc": "Resuelve en tu teléfono, continúa justo donde lo dejaste en tu computadora. Todas tus resoluciones, sesiones y estadísticas se respaldan automáticamente en la nube. Cambia de dispositivo, borra tu navegador, incluso reinstala la app — todo vuelve exactamente como lo dejaste. Nunca más pierdas tus datos."
+        "desc": "Tus resoluciones y sesiones se ven igual en todos tus dispositivos. Un tiempo que haces en el teléfono también aparece en el ordenador. Si cambias de dispositivo o reinstalas la app, tu historial vuelve."
       },
       "smart_cube_analysis": {
-        "title": "Análisis profundo de cubo inteligente",
-        "desc": "Analiza cada resolución paso a paso: Cross, F2L, OLL, PLL — ve el tiempo, movimientos y TPS de cada fase por separado. Detecta al instante qué etapa te está costando tiempo y qué algoritmos te ralentizan. Gráficos generales, tablas de detalle paso a paso y animaciones de resolución te permiten seguir tu mejora con datos reales."
+        "title": "Análisis de cubo inteligente",
+        "desc": "Ves por separado los tiempos de Cross, F2L, OLL y PLL, los movimientos y el TPS de cada resolución. Las estadísticas también muestran en qué casos de OLL y PLL vas más lento. Puedes volver a ver la resolución movimiento a movimiento."
       },
       "trainer_smart_cube": {
         "title": "Practica algoritmos con un cubo inteligente",
         "desc": "Conecta tu cubo inteligente por Bluetooth y ejecuta el algoritmo en el cubo. Ves al instante si cada movimiento es correcto, y el tiempo empieza y se detiene solo."
       },
       "trainer_pdf": {
-        "title": "Descarga todos los algoritmos en PDF",
-        "desc": "Descarga todos los algoritmos o solo los que seleccionaste, con sus alternativas, en formato PDF."
+        "title": "Descarga algoritmos en PDF",
+        "desc": "Descarga todos los algoritmos o solo los que elijas, con sus alternativas, en PDF."
       },
       "themes": {
         "title": "6 temas exclusivos",
-        "desc": "El brillo neón de Cyberpunk, las calles nocturnas de Tokyo, el minimalismo de Norman, los tonos cálidos de Save the Bees, la oscuridad de Night Owl y el aire académico de The PhD Student — dale a tu temporizador una personalidad completamente nueva. Cada tema transforma colores, fondos y toda la atmósfera."
+        "desc": "Cyberpunk, Tokyo, Norman, Save the Bees, Night Owl y The PhD Student. Cada tema cambia los colores y el fondo."
       },
       "leaderboard_publish": {
-        "title": "Destaca en la tabla de líderes",
-        "desc": "Publica tu mejor single o ao5 en la tabla de líderes y muestra tus PBs con orgullo en tu perfil. Deja que otros speedcubers vean tus resoluciones y se inspiren. Resolver cubos no es solo para ti — muestra al mundo lo rápido que realmente eres."
+        "title": "Publica en la tabla de líderes",
+        "desc": "Publica tu mejor single o ao5 en la tabla de líderes. Tus PBs aparecen en tu perfil."
       },
       "timer_background": {
         "title": "Fondo personalizado",
-        "desc": "Pon tu propia foto o imagen favorita como fondo del temporizador. Cada vez que lo abras, se siente únicamente tuyo. Cámbialo cuando quieras, reinícialo cuando quieras — está completamente en tus manos."
+        "desc": "Pon tu propia foto o vídeo detrás del cronómetro. Cámbialo o quítalo cuando quieras."
       },
       "room_music": {
         "title": "Música en las salas",
-        "desc": "Entra a una sala, busca cualquier canción y escúchala sin anuncios mientras resuelves. Elige lo que quieras de la enorme biblioteca de YouTube y déjalo sonar de fondo. El reproductor está integrado en la sala, sin necesidad de pestañas extra. Mantén tu motivación alta con tu propia música."
+        "desc": "Busca una canción en YouTube y escúchala mientras resuelves en una sala. El reproductor está dentro de la sala, no necesitas otra pestaña."
       },
       "pro_badge": {
         "title": "Insignia Pro",
-        "desc": "Un anillo Pro brillante alrededor de tu foto de perfil. En las salas, en la tabla de líderes, en tu perfil — todos pueden ver que eres Pro dondequiera que vayas. No es solo una insignia, es tu estatus en la comunidad."
+        "desc": "Un anillo Pro aparece alrededor de tu foto de perfil. Se ve en las salas, en la tabla de líderes y en tu perfil."
       },
       "stats_customization": {
         "title": "Personalización de estadísticas",
-        "desc": "Personaliza completamente los módulos de estadísticas debajo de tu temporizador. Tú decides qué bloques mostrar — añade, elimina y reordénalos a tu gusto. Ve solo los datos que te importan, sin ruido innecesario."
+        "desc": "Tú eliges los módulos de estadísticas que hay debajo del cronómetro. Puedes añadirlos, quitarlos y cambiar su orden."
       },
       "solve_sharing": {
         "title": "Compartir resoluciones",
-        "desc": "Comparte tu resolución de cubo inteligente como un simple enlace. Tus amigos hacen clic y exploran toda tu solución paso a paso — qué algoritmos usaste, cuántos segundos tardó cada fase, tu TPS y conteo de movimientos, todo detallado."
+        "desc": "Comparte una resolución con un solo enlace. En las resoluciones con cubo inteligente, quien lo abre ve los pasos, el tiempo de cada fase, tu TPS y tus movimientos."
       },
       "room_smart_cube": {
-        "title": "Cubo inteligente & GAN timer en salas",
-        "desc": "Conecta tu cubo inteligente o GAN timer mientras resuelves con amigos en una sala online. Los tiempos se registran automáticamente y compites en tiempo real — se requiere Pro para usar esta función."
+        "title": "Cubo inteligente y GAN Timer en salas",
+        "desc": "Usa un cubo inteligente o GAN Timer mientras resuelves con amigos en una sala. Los tiempos se guardan solos."
       },
       "competition_follow": {
         "title": "Seguir competidores",
-        "desc": "Sigue hasta 5 competidores en cualquier competencia WCA. Recibe notificaciones en tiempo real de resultados, avances de ronda y podios."
+        "desc": "Sigue hasta 5 competidores en una competición WCA. Sus resultados, pases de ronda y podios llegan a tu teléfono como notificaciones."
       },
       "record_alerts": {
         "title": "Alertas de récords",
-        "desc": "Recibe una notificación en el momento en que se rompa un récord mundial, continental o nacional en los eventos que elijas, en cualquier competencia en vivo."
+        "desc": "Recibe una notificación cuando caiga un récord mundial, continental o nacional en cualquier competición en vivo, en las pruebas que elijas."
       },
       "slam_to_stop": {
         "title": "Soltar para detener",
-        "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa: el cronómetro se detiene solo. No hace falta volver a la pantalla y consigues la sensación de un StackMat sin comprar hardware. Funciona en la app móvil y ajustas la sensibilidad a tu mesa."
+        "desc": "Al terminar, suelta el cubo o las manos sobre la mesa y el tiempo se detiene, sin tocar la pantalla. No necesitas hardware extra. Funciona en la app móvil y ajustas la sensibilidad a tu mesa."
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "Pon el cubo junto a la cámara trasera del teléfono y el cronómetro arranca en cuanto lo levantas y se para al dejarlo sobre la mesa. Sin tocar la pantalla. Solo necesitas un cubo magnético y la app móvil."
+        "desc": "Pon el cubo junto a la cámara trasera del teléfono. El tiempo empieza cuando lo levantas y se detiene cuando lo dejas sobre la mesa. Solo necesitas un cubo magnético y la app móvil."
       }
     },
     "promo": {
@@ -3903,7 +3903,7 @@
       "redeem": "Canjear",
       "success_title": "¡Felicidades!",
       "success_until": "Eres {{type}} hasta el {{date}}.",
-      "success_forever": "¡Ahora eres {{type}} para siempre!",
+      "success_forever": "Ahora eres {{type}} sin fecha de fin.",
       "success_button": "Entendido",
       "error_invalid": "Código promo inválido o expirado",
       "error_used": "Ya has usado este código",
@@ -4008,55 +4008,55 @@
     "privacy": "Política de Privacidad"
   },
   "credits": {
-    "title": "Zkt Timer",
+    "title": "ZKT Timer",
     "intro_1": "Hola, soy Ibrahim. Llevo mucho tiempo resolviendo cubos y, cuando empecé a competir, esto dejó de ser solo un pasatiempo para mí y se convirtió en algo mucho más serio. A medida que mis entrenamientos se volvían más exigentes, empecé a hacerme las mismas preguntas después de cada resolución: ¿dónde perdí tiempo, en qué transición me frené, qué algoritmo todavía no tengo del todo asentado? Las herramientas que usaba medían el tiempo perfectamente, pero no me ayudaban demasiado a encontrar esas respuestas. Yo quería una herramienta en la que pudiera analizar mis resoluciones a fondo, practicar mis algoritmos de forma ordenada y hacerlo todo en un solo lugar. Probé distintas aplicaciones, pero en ninguna encontré exactamente lo que buscaba, así que al final decidí construirla yo mismo.",
     "intro_2": "Al principio mi objetivo era bastante modesto: solo quería un timer sencillo para mi propio uso, del que conociera cada detalle. Pero cada pieza que añadía traía consigo una nueva necesidad. Primero escribí herramientas de análisis para estudiar mis resoluciones, después el entrenador para practicar algoritmos y, más tarde, añadí la conexión con cubos inteligentes y la sincronización entre dispositivos. Nada de eso fue tan fácil como podría parecer; el protocolo Bluetooth de cada marca de cubo era un rompecabezas en sí mismo, algo que funcionaba a la perfección en un dispositivo podía fallar en otro por donde menos lo esperaba, y a veces pasé horas, incluso días, persiguiendo un solo error. Aun así, cada problema que resolvía me llevaba un paso más allá, y con el tiempo aquel pequeño timer se convirtió en un ecosistema propio.",
     "intro_3": "El proyecto comenzó en 2025 y desde entonces ha llegado muy lejos de donde empezó. Lo que nació en la web pasó con el tiempo a iOS y Android; hoy el mismo código funciona en el navegador, en el móvil y en la tableta. Recorrí la mayor parte de este camino solo. Desde las revisiones de las tiendas hasta los sistemas de pago, desde el código nativo hasta las partidas en tiempo real, cada paso fue un aprendizaje propio, y casi ninguno encajó al primer intento. En todo este tiempo, mi trabajo nunca consistió solo en añadir nuevas funcionalidades; la verdadera lucha fue revisar los sistemas una y otra vez, rediseñar algunos desde cero más de una vez y lograr que todas las piezas funcionaran en armonía.",
-    "intro_4": "Una herramienta que al principio escribí solo para mí se ha convertido en un lugar donde otros cuberos entrenan cada día, compiten entre sí y siguen las competiciones. Ver a alguien a quien nunca he conocido batir su récord personal en Zkt Timer me dice que todo ese esfuerzo no fue en vano. Además, buena parte de las nuevas funciones nace ahora de los comentarios de quienes la usan. No veo Zkt Timer como un producto terminado; es un proyecto en el que sigo trabajando cada día, que no deja de crecer, y, sinceramente, siento que todavía estoy al principio de este camino.",
-    "builder_ibrhyyme": "La persona que diseña y desarrolla Zkt Timer.",
+    "intro_4": "Una herramienta que al principio escribí solo para mí se ha convertido en un lugar donde otros cuberos entrenan cada día, compiten entre sí y siguen las competiciones. Ver a alguien a quien nunca he conocido batir su récord personal en ZKT Timer me dice que todo ese esfuerzo no fue en vano. Además, buena parte de las nuevas funciones nace ahora de los comentarios de quienes la usan. No veo ZKT Timer como un producto terminado; es un proyecto en el que sigo trabajando cada día, que no deja de crecer, y, sinceramente, siento que todavía estoy al principio de este camino.",
+    "builder_ibrhyyme": "La persona que diseña y desarrolla ZKT Timer.",
     "credits_section_title": "Credits",
-    "credits_intro_1": "Antes dije que recorrí la mayor parte de este camino solo, pero lo cierto es que nunca estuve realmente solo. El mundo del speedcubing tiene una cultura de código abierto extraordinariamente generosa que ha crecido con los años, y mientras desarrollaba Zkt Timer me nutrí de ella constantemente. Estudié a fondo muchos proyectos; algunos los ejecuté en mi propio ordenador para probarlos, y otros los leí línea por línea solo para entender de verdad cómo funcionaban.",
+    "credits_intro_1": "Antes dije que recorrí la mayor parte de este camino solo, pero lo cierto es que nunca estuve realmente solo. El mundo del speedcubing tiene una cultura de código abierto extraordinariamente generosa que ha crecido con los años, y mientras desarrollaba ZKT Timer me nutrí de ella constantemente. Estudié a fondo muchos proyectos; algunos los ejecuté en mi propio ordenador para probarlos, y otros los leí línea por línea solo para entender de verdad cómo funcionaban.",
     "credits_intro_2": "De cada proyecto aprendí algo distinto. Algunos me orientaron en cuestiones técnicas como la generación de mezclas o los enfoques de los solucionadores; otros me ayudaron a ver qué funciona de verdad en el entrenador y en la experiencia de usuario. A veces fue una idea de algoritmo, a veces un modelo de datos y a veces una forma de mirar un sistema completo lo que me abrió camino cuando estaba atascado.",
-    "credits_intro_3": "En lugar de tomar esas piezas y usarlas tal cual, retomé cada una para que encajara en la propia estructura de Zkt Timer. Reescribí la mayoría de los sistemas desde cero, simplifiqué algunos y amplié otros según fue haciendo falta. Reunir enfoques de fuentes distintas bajo una sola arquitectura, funcionando en armonía entre sí, fue a la vez la parte más difícil y la más enriquecedora de este proceso.",
-    "credits_intro_4": "Por eso la estructura que existe hoy no depende de una sola fuente; tomó forma al reunir y reconstruir lo que aprendí de muchos proyectos distintos. Pero quiero decirlo con claridad: sin el trabajo de los desarrolladores que aparecen a continuación, Zkt Timer jamás habría llegado a ser lo que es hoy en tan poco tiempo.",
+    "credits_intro_3": "En lugar de tomar esas piezas y usarlas tal cual, retomé cada una para que encajara en la propia estructura de ZKT Timer. Reescribí la mayoría de los sistemas desde cero, simplifiqué algunos y amplié otros según fue haciendo falta. Reunir enfoques de fuentes distintas bajo una sola arquitectura, funcionando en armonía entre sí, fue a la vez la parte más difícil y la más enriquecedora de este proceso.",
+    "credits_intro_4": "Por eso la estructura que existe hoy no depende de una sola fuente; tomó forma al reunir y reconstruir lo que aprendí de muchos proyectos distintos. Pero quiero decirlo con claridad: sin el trabajo de los desarrolladores que aparecen a continuación, ZKT Timer jamás habría llegado a ser lo que es hoy en tan poco tiempo.",
     "credits_belief": "Creo que llevar algo hacia delante nunca consiste solo en añadir algo nuevo; entender bien el trabajo que se hizo antes que tú, respetarlo y construir sobre él una contribución honesta importa igual. Por eso reconocer el mérito de todas las personas que han tocado este proyecto, directa o indirectamente, es para mí menos una cuestión de cortesía que una deuda que hay que saldar.",
-    "credits_outro": "Cada uno de los proyectos y desarrolladores que menciono a continuación tuvo un papel distinto en la formación de Zkt Timer. Algunos fueron el punto de partida de una idea, otros me ayudaron a resolver un problema en el que llevaba mucho tiempo atascado, y otros ampliaron mis horizontes y me permitieron ver un enfoque mejor. La mayor parte de este trabajo lo crearon personas que sacrificaron su propio tiempo libre y lo compartieron con todos sin esperar nada a cambio; entendí mucho mejor lo valioso que es eso cuando asumí esa misma carga en mi propio proyecto.",
+    "credits_outro": "Cada uno de los proyectos y desarrolladores que menciono a continuación tuvo un papel distinto en la formación de ZKT Timer. Algunos fueron el punto de partida de una idea, otros me ayudaron a resolver un problema en el que llevaba mucho tiempo atascado, y otros ampliaron mis horizontes y me permitieron ver un enfoque mejor. La mayor parte de este trabajo lo crearon personas que sacrificaron su propio tiempo libre y lo compartieron con todos sin esperar nada a cambio; entendí mucho mejor lo valioso que es eso cuando asumí esa misma carga en mi propio proyecto.",
     "credits_thanks": "A todas las personas que comparten su esfuerzo, su tiempo y su conocimiento con esta comunidad, les ofrezco mi más profundo respeto y mi agradecimiento más sincero. Gracias por estar ahí.",
-    "intro_signature": "— ibrhyyme",
+    "intro_signature": "ibrhyyme",
     "inspiration_title": "Referencias",
-    "inspiration_desc": "Los proyectos siguientes sirvieron como referencia de distintas formas durante el desarrollo de Zkt Timer. Cada entrada indica dos cosas: qué se tomó de ese proyecto y qué se construyó encima.",
-    "inspiration_cubedesk": "Mi referencia más fuerte en el apartado de arquitectura de software de Zkt Timer. Cómo encajan React + SSR, Node.js + GraphQL, PostgreSQL + Prisma y Redis dentro de una plataforma de cubing se dedujo estudiando <strong>cubedesk</strong>, de <strong>kash</strong>. Orientó la organización de servicios y la estructura de carpetas. Su influencia no se limitó al lado del servidor: el lenguaje de interfaz que estableció cubedesk también fue una referencia para la disposición de la pantalla del cronómetro, la lista de resoluciones y la organización de los módulos. Donde nos separamos: cubedesk es una aplicación web. Yo quería que el mismo código llegara a iOS y Android mediante Capacitor, así que reconstruí la capa SSR, la gestión de sesiones y la sincronización entre dispositivos para que también sostuvieran el lado nativo.",
+    "inspiration_desc": "Los proyectos siguientes sirvieron como referencia de distintas formas durante el desarrollo de ZKT Timer. Cada entrada indica dos cosas: qué se tomó de ese proyecto y qué se construyó encima.",
+    "inspiration_cubedesk": "Mi referencia más fuerte en el apartado de arquitectura de software de ZKT Timer. Cómo encajan React + SSR, Node.js + GraphQL, PostgreSQL + Prisma y Redis dentro de una plataforma de cubing se dedujo estudiando <strong>cubedesk</strong>, de <strong>kash</strong>. Orientó la organización de servicios y la estructura de carpetas. Su influencia no se limitó al lado del servidor: el lenguaje de interfaz que estableció cubedesk también fue una referencia para la disposición de la pantalla del cronómetro, la lista de resoluciones y la organización de los módulos. Donde nos separamos: cubedesk es una aplicación web. Yo quería que el mismo código llegara a iOS y Android mediante Capacitor, así que reconstruí la capa SSR, la gestión de sesiones y la sincronización entre dispositivos para que también sostuvieran el lado nativo.",
     "inspiration_cstimer": "La base de la generación de mezclas. Los algoritmos de mezcla y la estructura de subconjuntos de los tipos de puzle, el solucionador Kociemba min2phase y la librería de teoría de grupos se construyeron tomando como referencia <strong>csTimer</strong> y <strong>min2phase</strong>, de <strong>cs0x7f</strong>. Al trasladar ese código de JavaScript a TypeScript se reestructuró alrededor de una arquitectura de generadores basada en registro; ahora cada tipo de puzle registra su propio generador y el cliente y el servidor pueden producir la misma mezcla. Encima se añadieron más de 40 subconjuntos de CFOP, Roux, Mehta y ZZ, mis propios renderizadores 2D para Square-1 y Clock, y una capa de Web Workers que ejecuta los solucionadores pesados sin congelar la interfaz.",
-    "inspiration_cubedex": "Una de mis referencias principales en la parte de experiencia de usuario del módulo Trainer. Cómo se conecta un cubo inteligente a un flujo de entrenamiento se dedujo estudiando el proyecto de <strong>Pau Oliva Fora</strong>. En Zkt Timer esta estructura se dividió en cuatro modos distintos (Estándar, Cubo Inteligente, Reconocimiento, Eficiencia); se guardaron estadísticas por algoritmo, se hizo que el orden de la cola se adapte a los casos en los que el usuario es débil, y se añadieron visualización de patrones en 2D y 3D y exportación a PDF para imprimir hojas de algoritmos.",
-    "inspiration_cubingapp": "Una parte importante de la colección de algoritmos usada en el Trainer proviene del conjunto de datos <strong>cubingapp</strong> creado por <strong>spencerchubb</strong> y se adaptó al modelo de datos de Zkt Timer. Los algoritmos de preparación se regeneraron con mis propios scripts, las imágenes de patrones pasaron por mi propia canalización de renderizado, la colección se dividió en 31 categorías y se amplió con algoritmos propios.",
-    "inspiration_rubikssolverdemo": "El punto de partida de la lógica de los solucionadores de Cross, XCross, EOCross y pares F2L. Las implementaciones de IDA* basadas en coordenadas desarrolladas por <strong>or18</strong> fueron una referencia fundamental en el diseño del sistema de solucionadores de Zkt Timer. El trabajo en este módulo fue de portado y adaptación: los solucionadores se llevaron a una arquitectura de Web Workers y se conectaron a una interfaz de solución paso a paso. Las matemáticas que hay detrás del algoritmo pertenecen a or18.",
-    "inspiration_letscube": "La base conceptual de las salas 1v1 y del formato de carrera amistosa viene de este proyecto. Cómo se construye un modelo de resolución compartido y sincronizado se dedujo estudiando el trabajo de <strong>coder13</strong>. El sistema de salas de Zkt Timer se escribió desde cero sobre esa idea, y se añadieron las siguientes ideas que consideré ausentes en LetsCube: soporte de cubo inteligente dentro de las salas, chat en vivo, modo espectador, moderación de salas y bloqueo de usuarios, un modo de duelo 1v1, y una capa de Socket.IO que transmite entre varios servidores a través de Redis.",
-    "inspiration_competitorgroups": "Un proyecto creado para que los competidores puedan seguir sus propios grupos y asignaciones en las competiciones WCA, y hace ese trabajo muy bien. No quería que los competidores tuvieran que visitar otro sitio para esa información, así que la misma experiencia se trajo dentro de Zkt Timer. El horario propio del competidor, sus asignaciones de juez y mezclador, sus mejores marcas por evento y sus resultados de ronda se reúnen ahora en una sola pantalla. La disposición de las pantallas de grupos tomó forma bajo la influencia de este proyecto.",
-    "inspiration_wcalive": "Una plataforma creada para seguir en vivo las competiciones WCA, y que resuelve realmente bien el flujo de resultados ronda a ronda. El trabajo del <strong>WCA Software Team</strong> fue la fuente directa del enfoque estructural de la integración con WCA Live en Zkt Timer. La plataforma de competiciones ZKT en sí se escribió desde cero para Zkt Timer: inscripción, entrada de tarjetas de puntuación, modo de entrada por lotes, gestión de rondas, asignación de jueces, mezcladores y runners, seguimiento de récords nacionales, gestión de delegados, competiciones divididas en días A/B y generación de WCIF. Lo que se tomó de wca-live es la lógica del flujo de trabajo del delegado.",
-    "inspiration_rubikcube": "El cubo 3D interactivo de la página de inicio se portó uno a uno desde este proyecto de <strong>Dev-tanay</strong>. La fuente estaba escrita contra Three.js r95; las API que cambiaron se adaptaron al pasarlo a r125 y el código se convirtió a TypeScript. La estructura de clases y los nombres de métodos se mantuvieron igual que en la fuente. Mi aportación fue conectar el cubo al cronómetro de Zkt Timer: generación de mezcla, detección de resolución y medición de tiempo. En esta entrada el esqueleto del código pertenece a Dev-tanay.",
+    "inspiration_cubedex": "Una de mis referencias principales en la parte de experiencia de usuario del módulo Trainer. Cómo se conecta un cubo inteligente a un flujo de entrenamiento se dedujo estudiando el proyecto de <strong>Pau Oliva Fora</strong>. En ZKT Timer esta estructura se dividió en cuatro modos distintos (Estándar, Cubo Inteligente, Reconocimiento, Eficiencia); se guardaron estadísticas por algoritmo, se hizo que el orden de la cola se adapte a los casos en los que el usuario es débil, y se añadieron visualización de patrones en 2D y 3D y exportación a PDF para imprimir hojas de algoritmos.",
+    "inspiration_cubingapp": "Una parte importante de la colección de algoritmos usada en el Trainer proviene del conjunto de datos <strong>cubingapp</strong> creado por <strong>spencerchubb</strong> y se adaptó al modelo de datos de ZKT Timer. Los algoritmos de preparación se regeneraron con mis propios scripts, las imágenes de patrones pasaron por mi propia canalización de renderizado, la colección se dividió en 31 categorías y se amplió con algoritmos propios.",
+    "inspiration_rubikssolverdemo": "El punto de partida de la lógica de los solucionadores de Cross, XCross, EOCross y pares F2L. Las implementaciones de IDA* basadas en coordenadas desarrolladas por <strong>or18</strong> fueron una referencia fundamental en el diseño del sistema de solucionadores de ZKT Timer. El trabajo en este módulo fue de portado y adaptación: los solucionadores se llevaron a una arquitectura de Web Workers y se conectaron a una interfaz de solución paso a paso. Las matemáticas que hay detrás del algoritmo pertenecen a or18.",
+    "inspiration_letscube": "La base conceptual de las salas 1v1 y del formato de carrera amistosa viene de este proyecto. Cómo se construye un modelo de resolución compartido y sincronizado se dedujo estudiando el trabajo de <strong>coder13</strong>. El sistema de salas de ZKT Timer se escribió desde cero sobre esa idea, y se añadieron las siguientes ideas que consideré ausentes en LetsCube: soporte de cubo inteligente dentro de las salas, chat en vivo, modo espectador, moderación de salas y bloqueo de usuarios, un modo de duelo 1v1, y una capa de Socket.IO que transmite entre varios servidores a través de Redis.",
+    "inspiration_competitorgroups": "Un proyecto creado para que los competidores puedan seguir sus propios grupos y asignaciones en las competiciones WCA, y hace ese trabajo muy bien. No quería que los competidores tuvieran que visitar otro sitio para esa información, así que la misma experiencia se trajo dentro de ZKT Timer. El horario propio del competidor, sus asignaciones de juez y mezclador, sus mejores marcas por evento y sus resultados de ronda se reúnen ahora en una sola pantalla. La disposición de las pantallas de grupos tomó forma bajo la influencia de este proyecto.",
+    "inspiration_wcalive": "Una plataforma creada para seguir en vivo las competiciones WCA, y que resuelve realmente bien el flujo de resultados ronda a ronda. El trabajo del <strong>WCA Software Team</strong> fue la fuente directa del enfoque estructural de la integración con WCA Live en ZKT Timer. La plataforma de competiciones ZKT en sí se escribió desde cero para ZKT Timer: inscripción, entrada de tarjetas de puntuación, modo de entrada por lotes, gestión de rondas, asignación de jueces, mezcladores y runners, seguimiento de récords nacionales, gestión de delegados, competiciones divididas en días A/B y generación de WCIF. Lo que se tomó de wca-live es la lógica del flujo de trabajo del delegado.",
+    "inspiration_rubikcube": "El cubo 3D interactivo de la página de inicio se portó uno a uno desde este proyecto de <strong>Dev-tanay</strong>. La fuente estaba escrita contra Three.js r95; las API que cambiaron se adaptaron al pasarlo a r125 y el código se convirtió a TypeScript. La estructura de clases y los nombres de métodos se mantuvieron igual que en la fuente. Mi aportación fue conectar el cubo al cronómetro de ZKT Timer: generación de mezcla, detección de resolución y medición de tiempo. En esta entrada el esqueleto del código pertenece a Dev-tanay.",
     "inspiration_pllrecognition": "La base directa del módulo Entrenador de Reconocimiento de PLL. La práctica de reconocimiento de PLL por teclado, la guía de reconocimiento de dos caras y la lógica de repetición adaptativa vienen del proyecto de <strong>Roman Strakhov</strong>. La fuente estaba escrita en Vue; el módulo se reescribió en React y TypeScript. Durante la reescritura se completó la guía de reconocimiento para cubrir los 73 casos y se añadieron una capa de historial en el dispositivo, una vista de glosario y una misión guiada de 13 pasos. Hoy el módulo tiene aproximadamente cuatro veces el tamaño de la fuente.",
     "libraries_title": "Bibliotecas Utilizadas",
-    "libraries_desc": "Bibliotecas centrales de cubing utilizadas directamente en la infraestructura de Zkt Timer.",
+    "libraries_desc": "Bibliotecas centrales de cubing utilizadas directamente en la infraestructura de ZKT Timer.",
     "libraries_cubingjs": "La biblioteca central utilizada para el seguimiento del estado del smart cube, la notación WCA y la coincidencia KPattern. Desarrollada por <strong>Lucas Garron</strong> y los colaboradores de cubing.js.",
     "libraries_ganweb": "La biblioteca que proporciona la gestión de conexión Bluetooth y la lógica de giroscopio/movimiento para los smart cubes GAN. El módulo Smart Cube se construye sobre esta biblioteca.",
     "libraries_smartcube_web_bluetooth": "El sucesor mantenido de gan-web-bluetooth. Muchas correcciones de nuestros controladores GAN, QiYi, MoYu, Giiker y GoCube (leer varios movimientos GAN de un paquete Bluetooth, validación de paquetes, soporte de giroscopio, candidatos de MAC) provienen de esta biblioteca, y sus grabaciones de cubos reales se usan en nuestras pruebas.",
     "libraries_cubejs": "Una biblioteca central de resolución de cubos utilizada en varias funciones de análisis y resolución.",
     "opensource_title": "Código Abierto",
-    "opensource_text": "Zkt Timer está construido sobre cientos de paquetes de código abierto, incluyendo React, Apollo, Prisma y Three.js. La lista completa de dependencias puede encontrarse en el archivo <code>package.json</code>. Mi sincero agradecimiento a todas las personas que han desarrollado y mantenido estas bibliotecas durante años.",
+    "opensource_text": "ZKT Timer está construido sobre cientos de paquetes de código abierto, incluyendo React, Apollo, Prisma y Three.js. La lista completa de dependencias puede encontrarse en el archivo <code>package.json</code>. Mi sincero agradecimiento a todas las personas que han desarrollado y mantenido estas bibliotecas durante años.",
     "community_title": "A la Comunidad",
-    "community_text": "A la <strong>WCA</strong> y a la comunidad global de speedcubing. Se ha construido una comunidad mundial extraordinaria en torno a un solo puzzle. La verdadera razón por la que Zkt Timer tiene sentido es que puede formar parte de esta comunidad.",
+    "community_text": "A la <strong>WCA</strong> y a la comunidad global de speedcubing. Se ha construido una comunidad mundial extraordinaria en torno a un solo puzzle. La verdadera razón por la que ZKT Timer tiene sentido es que puede formar parte de esta comunidad.",
     "copyright_title": "Avisos de Derechos de Autor",
-    "copyright_text": "Partes de este software hacen referencia a código o conceptos de los proyectos mencionados arriba. Cada proyecto conserva sus propios derechos de autor originales. La arquitectura, los sistemas y las funcionalidades propias de Zkt Timer están sujetos a los siguientes derechos de autor:",
+    "copyright_text": "Partes de este software hacen referencia a código o conceptos de los proyectos mencionados arriba. Cada proyecto conserva sus propios derechos de autor originales. La arquitectura, los sistemas y las funcionalidades propias de ZKT Timer están sujetos a los siguientes derechos de autor:",
     "copyright_zkt": "Copyright (c) 2026 <strong>ibrhyyme</strong>",
     "license_text": "Este proyecto se publica bajo la <strong>Licencia Pública General de GNU v3.0</strong>.",
-    "originals_title": "Novedades de Zkt Timer",
-    "originals_desc": "Esta sección recoge las funciones diseñadas y desarrolladas para Zkt Timer. Cada una surgió de las necesidades de la propia plataforma y de los comentarios de sus usuarios.",
+    "originals_title": "Novedades de ZKT Timer",
+    "originals_desc": "Esta sección recoge las funciones diseñadas y desarrolladas para ZKT Timer. Cada una surgió de las necesidades de la propia plataforma y de los comentarios de sus usuarios.",
     "original_notifications_title": "Sistema de Notificaciones y Cuenta Atrás de Competición",
-    "original_notifications": "Zkt Timer genera notificaciones automáticas para las competiciones que sigues. La apertura de inscripciones, la publicación de grupos y asignaciones, la entrada de resultados y los récords batidos se envían como notificaciones, y se mantiene una cuenta atrás hasta la fecha de la competición. El sistema funciona como tareas programadas en el servidor y produce notificaciones tanto dentro de la aplicación como push.",
+    "original_notifications": "ZKT Timer genera notificaciones automáticas para las competiciones que sigues. La apertura de inscripciones, la publicación de grupos y asignaciones, la entrada de resultados y los récords batidos se envían como notificaciones, y se mantiene una cuenta atrás hasta la fecha de la competición. El sistema funciona como tareas programadas en el servidor y produce notificaciones tanto dentro de la aplicación como push.",
     "original_radar_title": "Radar de Récords",
     "original_radar": "Calcula por adelantado qué récords podrían caer en una competición a la que asistes. Se comparan la lista de competidores, el calendario de eventos y los récords nacionales vigentes para determinar qué récords están en riesgo, y el resultado se muestra en la página de la competición.",
     "original_native_title": "Aplicación Móvil Nativa",
-    "original_native": "Zkt Timer se distribuye como aplicación nativa en iOS y Android. La conexión con cubos inteligentes funciona a través de una capa BLE nativa, y el soporte de acelerómetro y háptica se proporciona mediante plugins nativos. Los gestos de borde, las áreas seguras y el comportamiento del teclado se tratan por separado en cada plataforma.",
+    "original_native": "ZKT Timer se distribuye como aplicación nativa en iOS y Android. La conexión con cubos inteligentes funciona a través de una capa BLE nativa, y el soporte de acelerómetro y háptica se proporciona mediante plugins nativos. Los gestos de borde, las áreas seguras y el comportamiento del teclado se tratan por separado en cada plataforma.",
     "original_offline_title": "Modo Sin Conexión Completo",
     "original_offline": "Se pueden registrar resoluciones, abrir sesiones y consultar estadísticas sin conexión a internet. Cuando la conexión vuelve, las resoluciones pendientes se ponen en cola y se reconcilian con el servidor, los conflictos se resuelven y los registros duplicados se filtran por huella.",
     "original_battle_title": "Offline Battle (1v1)",
@@ -4077,17 +4077,17 @@
   "terms": {
     "title": "Términos de Servicio",
     "last_update": "Última actualización: 26 de octubre de 2026",
-    "intro": "Lea atentamente estos Términos de Servicio (\"Acuerdo\") antes de utilizar los servicios de Zkt Timer (\"Plataforma\"). Al acceder o utilizar la Plataforma, usted acepta estar sujeto a este Acuerdo.",
+    "intro": "Lea atentamente estos Términos de Servicio (\"Acuerdo\") antes de utilizar los servicios de ZKT Timer (\"Plataforma\"). Al acceder o utilizar la Plataforma, usted acepta estar sujeto a este Acuerdo.",
     "section_1_title": "1. Partes",
-    "section_1_text": "Este Contrato se celebra entre İbrahim Yıldız, desarrollador de Zkt Timer (\"Zkt Timer\"), y el usuario de la Plataforma (\"Usuario\").",
+    "section_1_text": "Este Contrato se celebra entre İbrahim Yıldız, desarrollador de ZKT Timer (\"ZKT Timer\"), y el usuario de la Plataforma (\"Usuario\").",
     "section_2_title": "2. Alcance del Servicio",
-    "section_2_text": "Zkt Timer es una plataforma que ofrece un cronómetro en línea para el cubo de Rubik y otros rompecabezas, seguimiento de estadísticas, entrenamiento de algoritmos, compatibilidad con cubos inteligentes y funciones de comunidad como salas y Online Battle. La Plataforma se ofrece \"tal cual\" y no se garantiza que funcione sin interrupciones ni errores.",
+    "section_2_text": "ZKT Timer es una plataforma que ofrece un cronómetro en línea para el cubo de Rubik y otros rompecabezas, seguimiento de estadísticas, entrenamiento de algoritmos, compatibilidad con cubos inteligentes y funciones de comunidad como salas y Online Battle. La Plataforma se ofrece \"tal cual\" y no se garantiza que funcione sin interrupciones ni errores.",
     "section_3_title": "3. Membresía y Condiciones de Uso",
     "section_3_item_1": "El Usuario declara que la información proporcionada durante el registro es precisa y actualizada.",
     "section_3_item_2": "Los usuarios menores de 18 años deben haber obtenido el consentimiento de sus padres o tutor legal para usar la Plataforma.",
     "section_3_item_3": "El Usuario solo puede utilizar la Plataforma con fines lícitos. Se prohíben las actividades que amenacen la seguridad de la Plataforma, perjudiquen a otros usuarios o interrumpan el funcionamiento del sistema.",
     "section_3_item_4": "El Usuario es el único responsable de la seguridad de su cuenta (contraseñas, etc.). Cualquier uso no autorizado de la cuenta debe ser informado inmediatamente a la Plataforma.",
-    "section_3_item_5": "Zkt Timer puede suspender o cancelar la membresía de un Usuario en caso de incumplimiento de este Contrato, uso abusivo o daño a otros usuarios.",
+    "section_3_item_5": "ZKT Timer puede suspender o cancelar la membresía de un Usuario en caso de incumplimiento de este Contrato, uso abusivo o daño a otros usuarios.",
     "content_title": "4. Contenido del usuario y normas de la comunidad",
     "content_text": "Usted es responsable del contenido que añade a su perfil, sus mensajes y los chats de las salas, y nos concede el permiso necesario para mostrarlo en la Plataforma. Está prohibido:",
     "content_item_1": "El contenido que incluya insultos, acoso, amenazas, discurso de odio o discriminación,",
@@ -4098,17 +4098,17 @@
     "fair_title": "5. Uso justo",
     "fair_text": "Los tiempos que entran en las clasificaciones, en Online Battle y en las salas deben reflejar resoluciones reales. Los tiempos inventados, los datos de cubos inteligentes alterados o los resultados obtenidos con herramientas de automatización se eliminan cuando se detectan; las puntuaciones pueden restablecerse y la cuenta puede restringirse.",
     "relation_title": "6. Relación con la WCA y la ZKT",
-    "relation_text": "Zkt Timer es una aplicación independiente; no está afiliada a la World Cube Association (WCA) ni avalada por ella. La información de competiciones y resultados de la WCA se muestra a partir de los datos públicos de la WCA con fines informativos. Las competiciones de Zeka Küpü Türkiye (ZKT) las organiza la ZKT; Zkt Timer solo muestra su información.",
+    "relation_text": "ZKT Timer es una aplicación independiente; no está afiliada a la World Cube Association (WCA) ni avalada por ella. La información de competiciones y resultados de la WCA se muestra a partir de los datos públicos de la WCA con fines informativos. Las competiciones de Zeka Küpü Türkiye (ZKT) las organiza la ZKT; ZKT Timer solo muestra su información.",
     "section_4_title": "7. Derechos de propiedad intelectual",
-    "section_4_text": "Todo el software, diseños, contenido, imágenes y marcas comerciales de la Plataforma pertenecen a Zkt Timer o a sus licenciantes. Los usuarios no pueden copiar, reproducir, distribuir ni utilizar este contenido con fines comerciales.",
+    "section_4_text": "Todo el software, diseños, contenido, imágenes y marcas comerciales de la Plataforma pertenecen a ZKT Timer o a sus licenciantes. Los usuarios no pueden copiar, reproducir, distribuir ni utilizar este contenido con fines comerciales.",
     "section_5_title": "8. Exención de responsabilidad",
-    "section_5_text": "Zkt Timer no será responsable por la pérdida de datos, errores de conexión o incompatibilidades de hardware que puedan ocurrir durante el uso de la Plataforma. El acceso a enlaces de terceros es responsabilidad exclusiva del Usuario.",
+    "section_5_text": "ZKT Timer no será responsable por la pérdida de datos, errores de conexión o incompatibilidades de hardware que puedan ocurrir durante el uso de la Plataforma. El acceso a enlaces de terceros es responsabilidad exclusiva del Usuario.",
     "section_6_title": "9. Servicios de pago y reembolsos",
     "section_6_text": "Algunos servicios de la Plataforma son de pago. Las compras de la membresía Pro se realizan a través de Apple App Store o Google Play Store; el pago, la gestión de la suscripción y los reembolsos se rigen por la política de la tienda correspondiente. Los nuevos suscriptores disponen de una prueba gratuita de 7 días. Para solicitar un reembolso, póngase en contacto directamente con el soporte de App Store o Google Play. Eliminar su cuenta no cancela una suscripción activa; debe cancelarla por separado en los ajustes de App Store o Google Play.",
     "deletion_title": "10. Eliminación de la cuenta",
     "deletion_text": "Puede eliminar su cuenta en cualquier momento con \"Eliminar cuenta\" en la sección \"Zona de peligro\" de los ajustes de su cuenta. La eliminación es permanente; sus resoluciones, sesiones, estadísticas y mensajes no se pueden recuperar. Antes de eliminarla, puede exportar sus datos desde Ajustes.",
     "section_7_title": "11. Modificaciones del Contrato",
-    "section_7_text": "Zkt Timer se reserva el derecho de actualizar este Acuerdo en cualquier momento. Los términos actualizados entran en vigor en la fecha de su publicación en la Plataforma. Se recomienda a los usuarios revisar periódicamente esta página.",
+    "section_7_text": "ZKT Timer se reserva el derecho de actualizar este Acuerdo en cualquier momento. Los términos actualizados entran en vigor en la fecha de su publicación en la Plataforma. Se recomienda a los usuarios revisar periódicamente esta página.",
     "section_8_title": "12. Resolución de conflictos",
     "section_8_text": "Este Contrato se rige por la legislación turca. En los conflictos que surjan en su condición de consumidor, son competentes las Juntas Arbitrales de Consumo dentro de los límites económicos fijados por la Ley n.º 6502 de Protección del Consumidor y, por encima de esos límites, los Tribunales de Consumo.",
     "section_9_title": "13. Contacto",
@@ -4117,12 +4117,12 @@
   },
   "privacy": {
     "title": "Política de Privacidad y Aviso de Protección de Datos",
-    "app_identity": "Aplicación: Zkt Timer Rubik's Timer & WCA (com.zktimer.app). Desarrollador: İbrahim Yıldız.",
+    "app_identity": "Aplicación: ZKT Timer Rubik's Timer & WCA (com.zktimer.app). Desarrollador: İbrahim Yıldız.",
     "last_update": "Última actualización: 2 de noviembre de 2026",
-    "intro_1": "En Zkt Timer (\"Plataforma\", \"Nosotros\"), otorgamos gran importancia a la seguridad y privacidad de los datos personales de nuestros usuarios (\"Usuario\", \"Usted\"). Este aviso ha sido preparado de conformidad con la Ley de Protección de Datos Personales de Turquía N.° 6698 (\"KVKK\") y la legislación relacionada para informarle sobre el procesamiento, almacenamiento y transferencia de sus datos personales.",
+    "intro_1": "En ZKT Timer (\"Plataforma\", \"Nosotros\"), otorgamos gran importancia a la seguridad y privacidad de los datos personales de nuestros usuarios (\"Usuario\", \"Usted\"). Este aviso ha sido preparado de conformidad con la Ley de Protección de Datos Personales de Turquía N.° 6698 (\"KVKK\") y la legislación relacionada para informarle sobre el procesamiento, almacenamiento y transferencia de sus datos personales.",
     "intro_2": "Este texto tiene fines informativos. Sus datos personales se tratan sobre las bases jurídicas indicadas a continuación; cuando se requiere su consentimiento explícito, se le solicita por separado y de forma expresa.",
     "section_1_title": "1. Responsable del Tratamiento",
-    "section_1_text": "Conforme a la KVKK, sus datos personales son tratados, en calidad de responsable del tratamiento, por İbrahim Yıldız, desarrollador de Zkt Timer, en el alcance descrito a continuación. Puede contactarnos en ibrhyyme@icloud.com.",
+    "section_1_text": "Conforme a la KVKK, sus datos personales son tratados, en calidad de responsable del tratamiento, por İbrahim Yıldız, desarrollador de ZKT Timer, en el alcance descrito a continuación. Puede contactarnos en ibrhyyme@icloud.com.",
     "section_2_title": "2. Finalidad del Tratamiento de Datos Personales",
     "section_2_text": "Sus datos personales se procesan con las siguientes finalidades:",
     "section_2_item_1": "Realización de procedimientos de membresía en la Plataforma.",
@@ -4194,7 +4194,7 @@
     "section_6_item_8": "Reclamar una indemnización por daños derivados del procesamiento ilegal de datos personales.",
     "section_6_contact": "Para ejercer estos derechos, envíe su solicitud desde la dirección de correo electrónico registrada en su cuenta a <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>. Su solicitud se responderá gratuitamente en un plazo máximo de 30 días. Si su solicitud es rechazada, considera insuficiente la respuesta o no se responde a tiempo, puede presentar una reclamación ante la Junta de Protección de Datos Personales de Turquía (Junta de la KVKK).",
     "cookie_title": "Política de Cookies",
-    "cookie_intro": "Zkt Timer utiliza únicamente las cookies y el almacenamiento del dispositivo necesarios para que el servicio funcione. No se utilizan cookies publicitarias ni de seguimiento. La única excepción: al elegir una canción en una sala, el reproductor de YouTube que se abre puede usar sus propias cookies o su propio almacenamiento.",
+    "cookie_intro": "ZKT Timer utiliza únicamente las cookies y el almacenamiento del dispositivo necesarios para que el servicio funcione. No se utilizan cookies publicitarias ni de seguimiento. La única excepción: al elegir una canción en una sala, el reproductor de YouTube que se abre puede usar sus propias cookies o su propio almacenamiento.",
     "cookie_section_1_title": "1. ¿Qué Son las Cookies?",
     "cookie_section_1_text": "Las cookies son pequeños archivos de texto almacenados en su dispositivo o servidor de red a través de su navegador por los sitios web que visita.",
     "cookie_section_2_title": "2. Tipos de Cookies Utilizadas",
@@ -4217,14 +4217,16 @@
   },
   "delete_account": {
     "title": "Eliminar la cuenta",
-    "intro": "Puede eliminar su cuenta de Zkt Timer y los datos vinculados a ella en cualquier momento. La eliminación se hace desde dentro de su cuenta, por lo que primero debe iniciar sesión.",
+    "intro": "Puede eliminar su cuenta de ZKT Timer y los datos vinculados a ella en cualquier momento. La eliminación se hace desde dentro de su cuenta, por lo que primero debe iniciar sesión.",
     "steps_title": "Cómo eliminar su cuenta",
-    "step_1": "Inicie sesión en Zkt Timer desde el sitio web o la aplicación.",
+    "step_1": "Inicie sesión en ZKT Timer desde el sitio web o la aplicación.",
     "step_2": "Abra la sección \"Zona de peligro\" en los ajustes de su cuenta.",
     "step_3": "Pulse \"Eliminar cuenta\" y confirme.",
     "button": "Ir a Zona de peligro",
     "no_login_title": "Si no puede iniciar sesión",
     "no_login_text": "Si olvidó su contraseña, puede restablecerla desde la pantalla de inicio de sesión. Si aun así no puede entrar, escriba a <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> desde el correo electrónico de su cuenta y la eliminaremos por usted. Su solicitud se responde en un plazo máximo de 30 días.",
+    "partial_title": "Si solo quiere eliminar parte de sus datos",
+    "partial_text": "Sin eliminar su cuenta, puede borrar resoluciones, sesiones y mensajes individuales dentro de la aplicación, y quitar sus cuentas vinculadas en los ajustes de la cuenta. Para cualquier otro dato, como su foto de perfil, escriba a <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> desde el correo electrónico de su cuenta. Su solicitud se responde en un plazo máximo de 30 días.",
     "deleted_title": "Qué se elimina",
     "deleted_text": "Sus resoluciones, sesiones, estadísticas, mensajes, perfil, archivos subidos y registros de envío de correo se eliminan de forma permanente. Los datos eliminados no se pueden recuperar.",
     "kept_title": "Qué permanece",
@@ -4232,32 +4234,32 @@
   },
   "welcome_wca": {
     "eyebrow": "Competiciones WCA",
-    "title": "Sigue Todas las Competiciones WCA en Una Sola Plataforma",
-    "subtitle": "Estés donde estés en el mundo — resultados en vivo, tus asignaciones, sede y horario al alcance con notificaciones instantáneas.",
+    "title": "Sigue las competiciones WCA desde la app",
+    "subtitle": "Resultados en vivo, tus tareas, la sede y el horario en una sola página. Recibes una notificación cuando empieza una ronda y cuando salen los resultados.",
     "image_alt": "Vista previa de la página de detalle de competición WCA",
     "image_badge_live": "WCA LIVE",
-    "feat_live_title": "Resultados en vivo de WCA Live",
-    "feat_live_desc": "En cuanto termina una ronda, los resultados llegan desde WCA Live. Sin recargar.",
-    "feat_notifications_title": "Notificaciones push de ronda",
-    "feat_notifications_desc": "Entérate cuando empieza tu ronda, se publican resultados y se llama a tu grupo.",
+    "feat_live_title": "Resultados de WCA Live",
+    "feat_live_desc": "Los resultados llegan de WCA Live al terminar cada ronda, no hace falta recargar.",
+    "feat_notifications_title": "Notificaciones de ronda",
+    "feat_notifications_desc": "Te enteras por notificación de cuándo empieza tu ronda, cuándo salen los resultados y cuál es tu grupo.",
     "feat_assignments_title": "Asignaciones",
     "feat_assignments_desc": "Todas tus tareas como juez, scrambler, runner y competidor en una sola pantalla.",
     "feat_venue_title": "Sede y horario",
-    "feat_venue_desc": "Detalles completos de la sede, mapa, disposición de salas y cronograma.",
+    "feat_venue_desc": "Sede, mapa, distribución de salas y horario completo.",
     "feat_competitors_title": "Estadísticas de competidores",
-    "feat_competitors_desc": "Rankings WR/NR, récords personales e historial de cada competidor a un toque.",
-    "feat_records_title": "Seguimiento WR / NR",
-    "feat_records_desc": "Ve romperse récords en vivo durante la competición — no te pierdas nada.",
-    "upcoming_title": "Próximas Competiciones",
-    "upcoming_hint": "Desde todo el mundo — toca para abrir la página de detalle",
-    "stat_wca_upcoming": "Competiciones WCA próximas",
+    "feat_competitors_desc": "Rankings WR y NR, récords personales e historial de cada competidor.",
+    "feat_records_title": "Récords WR y NR",
+    "feat_records_desc": "Ves en directo los récords que caen durante la competición.",
+    "upcoming_title": "Próximas competiciones",
+    "upcoming_hint": "De todo el mundo. Toca para ver los detalles.",
+    "stat_wca_upcoming": "Próximas competiciones WCA",
     "stat_capacity": "Plazas de competidores",
-    "stat_events": "Eventos WCA soportados",
-    "stat_languages": "Idiomas de la plataforma",
+    "stat_events": "Pruebas WCA compatibles",
+    "stat_languages": "Idiomas",
     "stat_cubers": "Cubers registrados",
     "stat_solves": "Resoluciones registradas",
     "empty": "No hay competiciones próximas por ahora.",
-    "cta": "Explorar Todas las Competiciones"
+    "cta": "Todas las competiciones"
   },
   "welcome_hero": {
     "title_start": "Profesional",
@@ -4271,20 +4273,20 @@
     "title_highlight_3": "herramienta de análisis",
     "title_highlight_4": "Asistente de Competición WCA",
     "store_pill": "Nuevo",
-    "store_tagline": "Zkt Timer ya está en las tiendas de aplicaciones",
+    "store_tagline": "ZKT Timer ya está en las tiendas de aplicaciones",
     "or_continue_web": "o continúa en la web",
     "app_store_alt": "Descargar en App Store",
     "google_play_alt": "Disponible en Google Play",
-    "cta_try": "Pruébalo ahora",
+    "cta_try": "Abrir el cronómetro",
     "rating_line": "{{play}} en Google Play, {{apple}} en la App Store"
   },
   "welcome_chapters": {
-    "title": "Todo lo que rodea a una resolución",
-    "lede": "Las pantallas de abajo salen directamente de la app, de sesiones reales.",
+    "title": "Desde dentro de la app",
+    "lede": "Las pantallas salen de la app, de sesiones reales.",
     "timer": {
       "name": "Cronómetro",
       "title": "Configúralo una vez y solo resuelve",
-      "body": "Inspección WCA con +2 y DNF automáticos, una mezcla nueva tras cada resolución y una pantalla que organizas a tu manera. Mueve los módulos, elige un tema y, con Pro, pon tu propia foto o vídeo detrás del tiempo.",
+      "body": "La inspección WCA de 15 segundos viene lista, con las reglas de +2 y DNF. Tras cada resolución aparece una mezcla nueva. Puedes mover los módulos y elegir un tema. Con Pro puedes poner tu propia foto o vídeo detrás del tiempo.",
       "fact_1": "Teclado, táctil, StackMat, cronómetros GAN y QiYi o un cubo inteligente",
       "fact_2": "Soluciones de Cross y XCross calculadas para cada mezcla",
       "fact_3": "Todas las pruebas WCA, con vista previa 3D de la mezcla",
@@ -4293,9 +4295,9 @@
     "smart": {
       "name": "Cubo inteligente",
       "title": "Cada giro, registrado",
-      "body": "Conecta un cubo inteligente: el tiempo empieza con tu primer giro y se detiene cuando el cubo queda resuelto. Después abre la resolución y recórrela paso a paso: la cruz, cada par de F2L, OLL y PLL, con el tiempo que pasaste mirando separado del que pasaste girando.",
+      "body": "Al conectar un cubo inteligente, el tiempo empieza con tu primer giro y se detiene cuando el cubo queda resuelto. Después abres la resolución y la recorres paso a paso: la cruz, cada par de F2L, OLL y PLL. El tiempo mirando y el tiempo girando aparecen por separado.",
       "fact_1": "{{brands}} marcas compatibles, entre ellas GAN, MoYu y QiYi",
-      "fact_2": "Tu cubo reflejado en 3D, giro a giro",
+      "fact_2": "El cubo gira en pantalla en 3D igual que en tu mano",
       "fact_3": "Análisis paso a paso y repetición con Pro",
       "caption": "Repetición de una resolución de 8.73 con un GAN i4: 55 giros a 6.30 giros por segundo"
     },
@@ -4311,7 +4313,7 @@
     "stats": {
       "name": "Estadísticas",
       "title": "Mira en qué se te va el tiempo",
-      "body": "Tu mejor single y tus medias, una línea de tiempo, la regularidad según la hora del día, un calendario de resoluciones y un año entero de actividad de un vistazo. Filtra por sesión, cubo y subconjunto y comparte esa vista exacta con un enlace.",
+      "body": "Tu mejor single, tus medias, una línea de tiempo, la regularidad según la hora del día, un calendario de resoluciones y un año de actividad en una sola página. Filtra por sesión, cubo y subconjunto y comparte esa vista con un enlace.",
       "fact_1": "Medias desde ao5 hasta ao1000",
       "fact_2": "Objetivos diarios y rachas",
       "fact_3": "Importa tu historial desde otros cronómetros",
@@ -4329,7 +4331,7 @@
     "together": {
       "name": "En compañía",
       "title": "Compite con quien tienes enfrente",
-      "body": "Battle divide una sola pantalla entre dos jugadores sentados frente a frente: la misma mezcla, un marcador para cada uno y, si quieren, un cubo inteligente cada uno. Para los amigos que están lejos, en las salas todos resuelven la misma mezcla y los tiempos aparecen en una tabla en directo.",
+      "body": "Battle divide una pantalla entre dos jugadores sentados frente a frente. Resolvéis la misma mezcla, cada uno lleva su marcador y, si queréis, los dos podéis usar un cubo inteligente. Para los amigos que están lejos están las salas: todos resuelven la misma mezcla y los tiempos caen en una tabla en directo.",
       "fact_1": "Salas de hasta 16 personas, con chat y espectadores",
       "fact_2": "Battle funciona en móviles, tabletas y ordenadores",
       "fact_3": "Mensajes con resoluciones adjuntas",
@@ -4338,7 +4340,7 @@
   },
   "welcome_inside": {
     "title": "Qué hay en la app",
-    "lede": "Todo lo de esta lista ya está en Zkt Timer. Las líneas marcadas con Pro vienen con la membresía Pro.",
+    "lede": "Todo lo de esta lista ya está en ZKT Timer. Las líneas marcadas con Pro vienen con la membresía Pro.",
     "platforms": "En la web, iOS y Android, en turco, inglés, español, ruso y chino.",
     "timer": {
       "title": "Cronómetro",
@@ -4353,7 +4355,7 @@
     "smart": {
       "title": "Cubo inteligente",
       "brands": "Compatible con {{brands}}",
-      "mirror": "Tu cubo en 3D, giro a giro",
+      "mirror": "El cubo gira en pantalla en 3D igual que en tu mano",
       "auto": "Empieza con tu primer giro y para cuando el cubo está resuelto",
       "scramble": "Los movimientos de la mezcla se marcan al girar, con la corrección si te equivocas",
       "phases": "Tiempos de cruz, F2L, OLL y PLL con giros, TPS y repetición",
@@ -4401,15 +4403,15 @@
     "try_again": "Intentar de nuevo"
   },
   "welcome_mobile": {
-    "title": "Siempre a tu lado",
-    "description": "Zkt Timer en iOS y Android, con tus resoluciones guardadas en tu cuenta.",
+    "title": "También en tu teléfono",
+    "description": "ZKT Timer también está en iOS y Android, y tus resoluciones se guardan en tu cuenta.",
     "label_timer": "Cronómetro",
     "label_stats": "Estadísticas"
   },
   "welcome_footer": {
-    "cta_title": "Únete a Nuestra Comunidad",
-    "cta_description": "Síguenos en redes sociales, mantente al día con nuevo contenido y forma parte de la comunidad de speedcubing.",
-    "copyright": "© {{year}} Zkt Timer. Created and Designed by",
+    "cta_title": "Síguenos",
+    "cta_description": "Compartimos el contenido nuevo en nuestras redes sociales.",
+    "copyright": "© {{year}} ZKT Timer. Created and Designed by",
     "privacy": "Privacidad",
     "terms": "Términos",
     "credits": "Créditos",
@@ -4417,104 +4419,104 @@
   },
   "pro": {
     "feature_title": "Función Pro",
-    "feature_description": "Esta función es exclusiva para miembros Pro. Actualiza para desbloquear todo.",
-    "upgrade_button": "Actualizar a Pro",
+    "feature_description": "Esta función viene con Pro.",
+    "upgrade_button": "Pasar a Pro",
     "upsell": {
       "phase_analysis": {
-        "title": "Análisis de Fases",
-        "description": "Ve tu desglose de Cross, F2L, OLL y PLL"
+        "title": "Análisis de fases",
+        "description": "Tiempos de Cross, F2L, OLL y PLL por separado"
       },
       "smart_steps": {
-        "title": "Pasos del Cubo Inteligente",
-        "description": "Inspecciona cada movimiento uno por uno"
+        "title": "Pasos del cubo inteligente",
+        "description": "Cada movimiento, uno por uno"
       },
       "smart_solve": {
-        "title": "Análisis del Cubo Inteligente",
-        "description": "TPS, número de movimientos y datos detallados"
+        "title": "Análisis de cubo inteligente",
+        "description": "TPS, movimientos y tiempos por fase"
       },
       "phase_splits": {
-        "title": "Tiempos Promedio por Fase",
+        "title": "Tiempos medios por fase",
         "description": "Ve en qué fase pierdes más tiempo"
       }
     },
     "modal": {
       "record_alerts": {
         "title": "Alertas de récords",
-        "desc": "Sigue los récords de los eventos que te importan. Recibe un aviso en el momento en que se rompa un WR, CR o NR en cualquier competencia en vivo de la WCA."
+        "desc": "Recibe una notificación cuando caiga un WR, CR o NR en cualquier competición WCA en vivo, en las pruebas que elijas."
       },
       "room_music": {
-        "title": "Música en las Salas",
-        "desc": "Escucha tu música favorita sin anuncios mientras resuelves en salas. Desbloquea la experiencia musical con Pro."
+        "title": "Música en las salas",
+        "desc": "Escucha la música que quieras mientras resuelves en una sala."
       },
       "leaderboard": {
-        "title": "Destaca en la Tabla de Líderes",
-        "desc": "Publica tus mejores resoluciones e inspira a otros speedcubers."
+        "title": "Publica en la tabla de líderes",
+        "desc": "Publica tus mejores resoluciones en la tabla de líderes."
       },
       "smart_cube": {
-        "title": "Análisis Profundo de Cubo Inteligente",
-        "desc": "Analiza tus resoluciones paso a paso y ve cada detalle."
+        "title": "Análisis de cubo inteligente",
+        "desc": "Abre una resolución paso a paso y ve el tiempo, los movimientos y el TPS de cada fase."
       },
       "themes": {
-        "title": "Temas Exclusivos",
-        "desc": "Dale personalidad a tu temporizador con 6 temas exclusivos."
+        "title": "Temas personalizados",
+        "desc": "Elige uno de los 6 temas personalizados con Pro."
       },
       "stats": {
-        "title": "Personalización de Estadísticas",
-        "desc": "Configura los módulos de estadísticas exactamente como quieras."
+        "title": "Personalización de estadísticas",
+        "desc": "Organiza como quieras los módulos de estadísticas de debajo del cronómetro."
       },
       "trainer_smart_cube": {
-        "title": "Entrena con Tu Cubo Inteligente",
-        "desc": "Practica algoritmos en tu cubo con feedback instantáneo."
+        "title": "Practica con tu cubo inteligente",
+        "desc": "Gira el algoritmo en tu cubo y ve en pantalla si cada movimiento es correcto."
       },
       "trainer_pdf": {
-        "title": "Descarga Todos los Algoritmos en PDF",
-        "desc": "Descarga todos los algoritmos o solo los que seleccionaste, con sus alternativas, en formato PDF."
+        "title": "Descarga algoritmos en PDF",
+        "desc": "Descarga todos los algoritmos o solo los que elijas, con sus alternativas, en PDF."
       },
       "competition_follow": {
         "title": "Seguir competidores",
-        "desc": "Con Pro, sigue hasta 5 competidores en cualquier competencia WCA y recibe notificaciones en tiempo real de resultados, avances y podios."
+        "desc": "Sigue hasta 5 competidores en cada competición WCA. Sus resultados, pases de ronda y podios te llegan como notificaciones."
       },
       "slam_to_stop": {
         "title": "Soltar para Detener",
-        "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa para detener el cronómetro automáticamente. Sin tocar la pantalla, como un StackMat."
+        "desc": "Al terminar, suelta el cubo o las manos sobre la mesa y el tiempo se detiene. Como en un StackMat, sin tocar la pantalla."
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "Pon el cubo junto a la cámara trasera del teléfono y el cronómetro arranca en cuanto lo levantas. Sin tocar la pantalla, como un StackMat."
+        "desc": "Pon el cubo junto a la cámara trasera del teléfono y el tiempo empieza cuando lo levantas. Como en un StackMat, sin tocar la pantalla."
       }
     },
     "highlights": {
-      "watch_records": "Avisos cuando se rompe un récord",
-      "watch_scope": "Alcance mundial, continental o nacional",
-      "watch_push": "Notificaciones push en tiempo real",
-      "sync": "Sincronización automática en todos tus dispositivos",
-      "themes": "6 temas exclusivos para personalización total",
-      "music_youtube": "Música ilimitada y sin anuncios de YouTube",
+      "watch_records": "Notificación cuando cae un récord",
+      "watch_scope": "Récords mundiales, continentales o nacionales",
+      "watch_push": "Las notificaciones llegan a tu teléfono",
+      "sync": "Tus resoluciones iguales en todos tus dispositivos",
+      "themes": "6 temas personalizados",
+      "music_youtube": "Busca en YouTube y escucha en la sala",
       "music_friends": "Escucha tu propia música mientras resuelves",
-      "music_unlimited": "Búsqueda y reproducción ilimitada",
+      "music_unlimited": "No necesitas otra pestaña",
       "leaderboard_publish": "Publica tu mejor single o ao5",
-      "leaderboard_profile": "Muestra tus PBs en tu perfil",
-      "leaderboard_compete": "Compite con otros speedcubers",
-      "smart_analysis": "Ve el tiempo y TPS de cada paso",
-      "smart_steps": "Cross, F2L, OLL, PLL analizados por separado",
-      "smart_animation": "Animación de resolución para revisión detallada",
-      "themes_six": "Cyberpunk, Tokyo, Norman y más",
-      "themes_colors": "Colores y fondos se transforman completamente",
-      "themes_atmosphere": "Cada tema crea una atmósfera única",
-      "stats_blocks": "Todos los bloques de estadísticas desbloqueados",
-      "stats_charts": "Gráficos detallados y tendencias",
+      "leaderboard_profile": "Tus PBs aparecen en tu perfil",
+      "leaderboard_compete": "En la misma lista que otros speedcubers",
+      "smart_analysis": "Tiempo y TPS de cada paso",
+      "smart_steps": "Cross, F2L, OLL y PLL por separado",
+      "smart_animation": "Vuelve a ver la resolución movimiento a movimiento",
+      "themes_six": "Cyberpunk, Tokyo, Norman y tres más",
+      "themes_colors": "Cambian los colores y el fondo",
+      "themes_atmosphere": "Cambia de tema cuando quieras",
+      "stats_blocks": "Tú eliges los módulos bajo el cronómetro",
+      "stats_charts": "En pantalla solo quedan los números que miras",
       "stats_customize": "Añade, elimina y reordena módulos",
-      "trainer_ble": "Conexión Bluetooth con cubo inteligente",
-      "trainer_feedback": "Feedback instantáneo sobre precisión del algoritmo",
-      "trainer_speed": "Más rápido y preciso con cada repetición",
-      "pdf_professional": "Salida PDF con diseño profesional",
+      "trainer_ble": "El cubo inteligente se conecta por Bluetooth",
+      "trainer_feedback": "Cada movimiento se comprueba en pantalla",
+      "trainer_speed": "El tiempo empieza y se detiene solo",
+      "pdf_professional": "Las hojas de algoritmos se descargan en PDF",
       "pdf_alternatives": "Algoritmos alternativos incluidos",
-      "pdf_stats": "Exporta todos o los algoritmos seleccionados",
-      "follow_realtime": "Notificaciones en cuanto se publican los resultados",
-      "follow_limit": "Hasta 5 seguidos por competencia",
-      "slam_drop": "Detén golpeando la mesa, no la pantalla",
-      "slam_calibrate": "Sensibilidad ajustada a cada mesa",
-      "slam_stackmat": "Sensación StackMat — sin hardware",
+      "pdf_stats": "Descarga todos o solo los que elijas",
+      "follow_realtime": "Notificación cuando hay resultado",
+      "follow_limit": "5 competidores por competición",
+      "slam_drop": "Se detiene al soltar el cubo o las manos",
+      "slam_calibrate": "Sensibilidad ajustada a tu mesa",
+      "slam_stackmat": "Sin hardware extra",
       "magnet_lift": "El cronómetro arranca en cuanto levantas el cubo",
       "magnet_drop": "Se para al dejar el cubo sobre la mesa",
       "magnet_setup": "Solo necesitas un cubo magnético y la app móvil"
@@ -4696,7 +4698,7 @@
       "copy": "Copiar",
       "copied": "Copiado",
       "share": "Compartir",
-      "share_text": "{{name}} te reta a un duelo en Zkt Timer",
+      "share_text": "{{name}} te reta a un duelo en ZKT Timer",
       "cancel_invite": "Cancelar invitación",
       "expired_title": "Tu invitación caducó",
       "cancelled_title": "Invitación cerrada",
@@ -4764,7 +4766,7 @@
     "first_match": "Entra en la clasificación con tu primera partida",
     "subtitle": "Busca un rival en línea o enfréntate en un mismo dispositivo.",
     "online_f1": "Rival con una puntuación cercana a la tuya",
-    "online_f2": "Gana quien se lleve tres rondas, la misma mezcla para los dos",
+    "online_f2": "Gana el primero en llevarse tres rondas, la misma mezcla para los dos",
     "online_f3": "Cada partida cambia tu puntuación y tu puesto",
     "online_f4": "Necesitas un cubo inteligente GAN, QiYi o WeiLong V10 AI",
     "offline_f1": "Frente a frente en móvil o tableta, lado a lado en el ordenador",
@@ -4799,7 +4801,7 @@
     "cube_type": "Tipo de Cubo",
     "player_1": "Jugador 1",
     "player_2": "Jugador 2",
-    "share_text": "Batalla en Zkt Timer: {{player1}} {{score1}}, {{player2}} {{score2}}",
+    "share_text": "Batalla en ZKT Timer: {{player1}} {{score1}}, {{player2}} {{score2}}",
     "settings": "Ajustes",
     "plus_two": "+2",
     "dnf": "DNF",
@@ -4912,10 +4914,10 @@
   },
   "notifications": {
     "membership_granted": {
-      "subject": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer está activa",
+      "subject": "¡Felicitaciones! Tu membresía {{label}} de ZKT Timer está activa",
       "subject_expiry": "¡Felicitaciones! Tu membresía {{label}} está activa hasta {{date}}",
-      "message": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer ha sido activada exitosamente. Tu membresía es ilimitada.",
-      "message_expiry": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer ha sido activada exitosamente. Tu membresía es válida hasta {{date}}.",
+      "message": "¡Felicitaciones! Tu membresía {{label}} de ZKT Timer ha sido activada exitosamente. Tu membresía es ilimitada.",
+      "message_expiry": "¡Felicitaciones! Tu membresía {{label}} de ZKT Timer ha sido activada exitosamente. Tu membresía es válida hasta {{date}}.",
       "link_text": "Ver tu configuración"
     },
     "subscription_changed": {
@@ -5033,9 +5035,9 @@
     "change_recipient": "Cambiar destinatario",
     "requests_with_count": "Solicitudes ({{count}})",
     "requests_note": "Estas personas te escriben por primera vez. Si respondes, la conversación pasa a tu bandeja; si no, deslízala o bloquéalas.",
-    "more_actions": "Mas",
+    "more_actions": "Más",
     "unsend": "Deshacer envio",
-    "unsend_confirm": "Retirar este mensaje? Tambien se elimina para la otra persona.",
+    "unsend_confirm": "¿Retirar este mensaje? También se elimina para la otra persona.",
     "clear_chat": "Eliminar chat",
     "clear_confirm": "Eliminar este chat de tu lado? La otra persona conserva su copia.",
     "report": "Denunciar",
@@ -5044,10 +5046,10 @@
     "report_placeholder": "Describe brevemente lo ocurrido",
     "report_send": "Denunciar",
     "report_sent_title": "Denuncia recibida",
-    "report_sent_body": "La revisaremos en breve. Si no quieres saber mas de esta persona, puedes bloquearla desde el menu.",
+    "report_sent_body": "La revisaremos en breve. Si no quieres saber más de esta persona, puedes bloquearla desde el menú.",
     "cancel": "Cancelar",
     "done": "Listo",
-    "privacy_note": "Zkt Timer no lee sus mensajes. Solo se revisan los mensajes que usted denuncia.",
+    "privacy_note": "ZKT Timer no lee sus mensajes. Solo se revisan los mensajes que usted denuncia.",
     "search_placeholder": "Buscar",
     "clear_search": "Borrar busqueda",
     "filter_all": "Todos",
@@ -5122,24 +5124,24 @@
     "start_with": "Inicia un chat con {{name}}"
   },
   "zkt_signup": {
-    "title": "Elige un Nombre de Usuario",
+    "title": "Elige un nombre de usuario",
     "description": "Te estás registrando con tu cuenta de Zeka Küpü Türkiye. Elige un nombre de usuario.",
     "first_name": "Nombre",
     "last_name": "Apellido",
     "email": "Correo electrónico",
     "zkt_id": "ZKT ID",
     "username_label": "Nombre de usuario",
-    "submit": "Crear Cuenta",
+    "submit": "Crear cuenta",
     "username_too_short": "El nombre de usuario debe tener al menos 2 caracteres",
     "username_too_long": "El nombre de usuario puede tener como máximo 18 caracteres",
     "username_invalid": "El nombre de usuario solo puede contener letras, números y guiones bajos",
-    "session_expired": "Tu sesión expiró. Inicia sesión con ZKT de nuevo.",
+    "session_expired": "Tu sesión ha caducado. Inicia sesión con ZKT de nuevo.",
     "loading": "Iniciando sesión con ZKT..."
   },
   "auth_email_taken": {
     "title": "Este correo ya está registrado",
     "subtitle": "No se pudo completar el inicio de sesión",
-    "subtitle_with_email": "Ya tienes una cuenta de Zkt Timer con {{email}}",
+    "subtitle_with_email": "Ya tienes una cuenta de ZKT Timer con {{email}}",
     "description": "Por seguridad no combinamos cuentas automáticamente. Inicia sesión con tu contraseña y luego vincula tu cuenta de {{provider}} en <strong>Ajustes > Cuentas Vinculadas</strong>. Después podrás iniciar sesión con {{provider}} también.",
     "login_button": "Iniciar sesión con contraseña",
     "forgot_button": "Olvidé mi contraseña"
@@ -5382,8 +5384,8 @@
   },
   "help": {
     "title": "Ayuda",
-    "meta_title": "Ayuda | Zkt Timer",
-    "meta_description": "Cómo usar Zkt Timer: conectar un cubo inteligente, importar desde csTimer, el entrenador, competiciones y más.",
+    "meta_title": "Ayuda | ZKT Timer",
+    "meta_description": "Cómo usar ZKT Timer: conectar un cubo inteligente, importar desde csTimer, el entrenador, competiciones y más.",
     "diagram": {
       "session": "Sesión",
       "cube_type": "Puzzle",
@@ -5425,7 +5427,7 @@
       "getting-started": {
         "title": "Primeros pasos",
         "body": [
-          "Puedes usar Zkt Timer desde el navegador o con las apps de iOS y Android. Con una cuenta tus resuelves se respaldan en el servidor, así que tus datos sobreviven a la pérdida del dispositivo. Ver ese historial en cada dispositivo donde inicies sesión viene con Pro; sin Pro, tus resuelves se quedan en el dispositivo que los hizo.",
+          "Puedes usar ZKT Timer desde el navegador o con las apps de iOS y Android. Con una cuenta tus resuelves se respaldan en el servidor, así que tus datos sobreviven a la pérdida del dispositivo. Ver ese historial en cada dispositivo donde inicies sesión viene con Pro; sin Pro, tus resuelves se quedan en el dispositivo que los hizo.",
           "También puedes probarlo sin cuenta. Sin sesión iniciada funcionan el cronómetro, tus resuelves y el entrenador; los tiempos se quedan solo en ese dispositivo. Si te registras más tarde, la aplicación te ofrece pasar esos resuelves a tu cuenta.",
           "En el ordenador el cronómetro queda en el centro de la pantalla: arriba hay tres menús (sesión, tipo de cubo y tipo de cronómetro) y debajo el scramble y el tiempo. En la disposición por defecto, tu lista de resuelves y los módulos de estadísticas están en las columnas de los lados, y puedes mover los módulos donde quieras.",
           "Los ajustes se reparten en ocho secciones: Timer, Entrada y dispositivos, Cubo inteligente, Mezcla, Apariencia, Colores, Datos e Idioma. Si no sabes en qué sección está el ajuste que buscas, usa el buscador dentro de los ajustes."
@@ -5485,7 +5487,7 @@
       "smart-cube": {
         "title": "Cubo inteligente",
         "body": [
-          "Zkt Timer reconoce cubos inteligentes de estas marcas:",
+          "ZKT Timer reconoce cubos inteligentes de estas marcas:",
           "Una vez conectado, el estado del cubo aparece en pantalla en 3D. El cronómetro arranca al girar el cubo y para solo cuando el cubo queda resuelto."
         ],
         "steps": [
@@ -5508,7 +5510,7 @@
         "title": "Magnet Timer",
         "body": [
           "Magnet Timer arranca el cronómetro al levantar el cubo y lo para cuando dejas el cubo sobre la mesa, sin tocar la pantalla. El teléfono queda plano sobre la mesa y el cubo se apoya en el extremo de la cámara trasera.",
-          "El sensor de brújula del teléfono detecta los imanes del cubo, así que necesitas un cubo magnético; la mayoría de los cubos que se venden hoy lo son. También necesitas la app de Zkt Timer para iOS o Android. Magnet Timer no está disponible en el navegador ni en salas.",
+          "El sensor de brújula del teléfono detecta los imanes del cubo, así que necesitas un cubo magnético; la mayoría de los cubos que se venden hoy lo son. También necesitas la app de ZKT Timer para iOS o Android. Magnet Timer no está disponible en el navegador ni en salas.",
           "No todos los teléfonos tienen un sensor lo bastante rápido. En los que no son compatibles Magnet Timer no aparece en la lista, o la pantalla dice \"El sensor de este dispositivo es demasiado lento\". Si no lo ves, actualiza primero la app."
         ],
         "steps": [
@@ -5629,7 +5631,7 @@
       "messages": {
         "title": "Mensajes",
         "body": [
-          "En Mensajes hablas uno a uno con otros usuarios de Zkt Timer. Para empezar una conversación, busca un nombre de usuario y elige a la persona.",
+          "En Mensajes hablas uno a uno con otros usuarios de ZKT Timer. Para empezar una conversación, busca un nombre de usuario y elige a la persona.",
           "Quien te escribe por primera vez no entra directamente en tu bandeja; espera en la pestaña Solicitudes. Si aceptas, la conversación pasa a tu bandeja. Si prefieres que no, puedes borrarla o bloquear a esa persona.",
           "Puedes adjuntar uno de tus resuelves a una conversación. La otra persona ve el tiempo y puede abrir el detalle del resuelve.",
           "Los ajustes de mensajes están en Social, dentro de la sección de cuenta: quién puede escribirte, si apareces en la búsqueda de mensajes, las confirmaciones de lectura, el indicador de escritura y el punto de conexión. Tu lista de bloqueados también está ahí."
@@ -5661,9 +5663,9 @@
       "profile": {
         "title": "Perfil",
         "body": [
-          "Tu perfil es tu cara pública en Zkt Timer. Está en /user/tunombredeusuario y lo puede abrir cualquiera, con sesión iniciada o sin ella, así que basta con compartir el enlace.",
+          "Tu perfil es tu cara pública en ZKT Timer. Está en /user/tunombredeusuario y lo puede abrir cualquiera, con sesión iniciada o sin ella, así que basta con compartir el enlace.",
           "Arriba están la foto de portada y la foto de perfil, y debajo la sección Sobre mí: biografía, enlaces de YouTube, Twitch y X, tu método de 3x3, tu objetivo, tu cubo principal y tu evento favorito.",
-          "Los récords se reparten en pestañas. Récords Personales vienen de los resuelves que hiciste en Zkt Timer. Récords Oficiales WCA y Récords ZKT vienen de las cuentas que vinculaste. La pestaña Resultados WCA lista tu historial de competiciones ronda por ronda.",
+          "Los récords se reparten en pestañas. Récords Personales vienen de los resuelves que hiciste en ZKT Timer. Récords Oficiales WCA y Récords ZKT vienen de las cuentas que vinculaste. La pestaña Resultados WCA lista tu historial de competiciones ronda por ronda.",
           "Tus tiempos no aparecen solos en el perfil. Eliges uno por uno cuáles se muestran desde la pantalla de publicación."
         ],
         "steps": [
@@ -5683,7 +5685,7 @@
         "body": [
           "La página de cuenta tiene siete secciones: Información personal, Notificaciones, Social, Cuentas vinculadas, Anuncios, Soporte y Zona de riesgo.",
           "En Información personal cambias tu nombre, tu nombre de usuario y tu correo, y estableces tu contraseña. El cambio de correo se confirma con un código de seis dígitos enviado a la nueva dirección. Si creaste la cuenta con WCA, aquí también puedes poner una contraseña para entrar además con correo.",
-          "En Cuentas vinculadas conectas tus cuentas de ZKT y WCA. Una vez vinculada, las competiciones, los resultados y los récords de esa cuenta se ven dentro de Zkt Timer. El enlace para unirte a la comunidad de WhatsApp también está aquí.",
+          "En Cuentas vinculadas conectas tus cuentas de ZKT y WCA. Una vez vinculada, las competiciones, los resultados y los récords de esa cuenta se ven dentro de ZKT Timer. El enlace para unirte a la comunidad de WhatsApp también está aquí.",
           "Desde Soporte informas de un error, haces una pregunta o envías una sugerencia. El ticket funciona como una conversación: puedes responder, adjuntar una captura o un vídeo, cerrarlo cuando se resuelva y reabrirlo más tarde."
         ],
         "steps": [
@@ -5723,7 +5725,7 @@
     "search_no_results": "Nada coincide con \"{{query}}\". Prueba otra palabra."
   },
   "links_page": {
-    "meta_title": "Zkt Timer | Enlaces",
+    "meta_title": "ZKT Timer | Enlaces",
     "tagline": "Timer profesional de speedcubing",
     "web": "Usar en la web",
     "web_detail": "zktimer.app, directamente en tu navegador",

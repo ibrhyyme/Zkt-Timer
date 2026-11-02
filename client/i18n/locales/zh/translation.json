@@ -148,7 +148,7 @@
     "ics_hint": "下载 .ics 文件",
     "note": "比赛将作为全天活动添加到日历。比赛当天各轮次时间可能变动，请在应用中查看最新赛程。",
     "done": "完成",
-    "event_description": "赛程与成绩请见 Zkt Timer：",
+    "event_description": "赛程与成绩请见 ZKT Timer：",
     "native_saved": "比赛已添加到日历。",
     "native_denied": "未授予日历权限。你可以用其他方式添加。",
     "native_error": "无法打开日历应用。",
@@ -189,9 +189,9 @@
   },
   "login": {
     "email": "邮箱",
-    "email_placeholder": "输入您的邮箱",
+    "email_placeholder": "输入你的邮箱",
     "password": "密码",
-    "password_placeholder": "输入您的密码",
+    "password_placeholder": "输入你的密码",
     "remember_me": "记住我",
     "login_button": "登录",
     "forgot_password": "忘记密码？",
@@ -199,13 +199,13 @@
     "wca_login": "使用 WCA 登录",
     "wca_connecting": "正在连接到 WCA...",
     "wca_divider": "或",
-    "wca_note": "如果您已有账户，请先登录，然后从“账户”>“关联账户”中关联您的 WCA 账户。",
+    "wca_note": "如果你已有账户，请先登录，然后从“账户”>“关联账户”中关联你的 WCA 账户。",
     "try_without_account": "不注册先体验",
     "help": "帮助"
   },
   "signup": {
     "consent_label": "我已阅读并同意<priv>隐私政策</priv>和<terms>服务条款</terms>。",
-    "consent_required": "您必须接受隐私政策和服务条款才能继续。",
+    "consent_required": "你必须接受隐私政策和服务条款才能继续。",
     "first_name": "名字",
     "last_name": "姓氏",
     "email": "邮箱",
@@ -213,28 +213,28 @@
     "password": "密码",
     "signup_button": "注册",
     "has_account": "已有账户？登录",
-    "email_suggestion": "您是指 {{domain}} 吗？",
+    "email_suggestion": "你是指 {{domain}} 吗？",
     "email_invalid_chars": "邮箱地址包含无效字符。",
-    "invalid_email_domain": "此邮箱域名似乎不接受邮件。请检查您的邮箱地址。"
+    "invalid_email_domain": "此邮箱域名似乎不接受邮件。请检查你的邮箱地址。"
   },
   "forgot": {
     "email": "邮箱",
-    "email_placeholder": "输入您的邮箱",
-    "enter_email_error": "请输入您的邮箱地址",
+    "email_placeholder": "输入你的邮箱",
+    "enter_email_error": "请输入你的邮箱地址",
     "enter_code_error": "请输入验证码",
     "send_code": "发送验证码",
     "login_link": "登录",
     "signup_link": "注册",
-    "check_email": "请检查您的邮箱。您应该已收到重置密码的验证码。",
+    "check_email": "请查看你的邮箱。我们已发送重置密码的验证码。",
     "verification_code": "验证码",
     "code_placeholder": "输入 6 位数字验证码",
     "verify_code": "验证验证码",
     "back": "返回",
-    "set_new_password": "请设置您的新密码。",
+    "set_new_password": "请设置你的新密码。",
     "new_password": "新密码",
-    "new_password_placeholder": "输入您的新密码",
+    "new_password_placeholder": "输入你的新密码",
     "confirm_password": "确认密码",
-    "confirm_password_placeholder": "重新输入您的密码",
+    "confirm_password_placeholder": "重新输入你的密码",
     "change_password": "更改密码"
   },
   "confirm_modal": {
@@ -327,14 +327,14 @@
   },
   "danger_zone": {
     "reset_settings_title": "重置设置",
-    "reset_settings_desc": "如果您想将设置恢复到默认值，请使用此选项。这<strong>不会删除</strong>您的还原记录或阶段数据，只会重置您的本地设置。",
+    "reset_settings_desc": "把设置恢复为默认值。你的还原和分组<strong>不会被删除</strong>，只重置本地设置。",
     "reset_settings_button": "重置设置",
     "reset_settings_confirm_title": "重置设置",
-    "reset_settings_confirm_desc": "您即将将设置恢复到默认值。自定义魔方类型不受影响。",
-    "delete_account_warning": "请谨慎操作。如果您点击下面的按钮，您将删除您的整个账户。所有还原记录、阶段数据、统计信息等都将被永久删除。请谨慎操作。",
+    "reset_settings_confirm_desc": "你即将把设置恢复为默认值。自定义魔方类型不受影响。",
+    "delete_account_warning": "点击下面的按钮后，你的账户会被删除。所有还原、分组和统计都会永久消失。",
     "delete_account_button": "删除账户",
     "delete_account_title": "删除账户",
-    "delete_account_confirm_desc": "请谨慎操作。您即将删除您的整个账户。所有 Zkt Timer 数据将被删除且无法恢复。",
+    "delete_account_confirm_desc": "你即将删除账户。所有 ZKT Timer 数据都会被删除，无法恢复。",
     "delete_account_confirm_button": "删除账户及所有数据"
   },
   "admin_announcements": {
@@ -472,7 +472,7 @@
       "count": "{{count}} 个公式",
       "saves_count": "{{count}} 次保存",
       "progress": "已学会 {{learned}} · 学习中 {{learning}}",
-      "share_text": "{{name}}：{{count}} 个公式。在 Zkt Timer 上练习。",
+      "share_text": "{{name}}：{{count}} 个公式。在 ZKT Timer 上练习。",
       "link_copied": "链接已复制",
       "reset_link": "更新链接",
       "reset_link_confirm": "旧链接将无法打开，已保存此公式集的人不受影响。",
@@ -576,7 +576,7 @@
     "card_best": "最佳",
     "card_ao5": "Ao5",
     "card_learned_status": "学习状态",
-    "page_title": "训练器 | Zkt Timer",
+    "page_title": "训练器 | ZKT Timer",
     "title": "训练器",
     "puzzle_type": "魔方类型",
     "category": "类别",
@@ -592,14 +592,14 @@
     "total_solves": "总还原次数",
     "recent_times": "近期时间",
     "reset_season": "重置赛季",
-    "reset_season_confirm": "您确定要删除此公式的所有还原历史记录吗？",
+    "reset_season_confirm": "删除此公式的所有还原记录吗？",
     "option_random_order": "随机顺序",
     "option_random_auf": "随机 AUF",
     "option_prioritize_slow": "优先训练慢速情况",
     "option_prioritize_failed": "优先训练失败情况",
     "option_auto_learn_enabled": "自动标记为「已学会」",
     "option_auto_learn_threshold": "标记为「已学会」所需的连续无误解答次数",
-    "option_auto_learn_threshold_help": "当您连续这么多次干净地解开一个公式（无错误、无 DNF/+2）时，它会自动标记为「已学会」。数值越低越容易，越高越难。",
+    "option_auto_learn_threshold_help": "连续这么多次干净地完成一个公式（无错误、无 DNF 和 +2）后，它会被标记为「已学会」。数值越低越容易，越高越难。",
     "option_cube_size": "立方体尺寸",
     "option_wake_lock": "保持屏幕开启",
     "option_back_view": "背面视图",
@@ -632,7 +632,7 @@
     "face_l": "橙色 (L)",
     "show_moves": "显示步数",
     "hide_moves": "隐藏步数",
-    "ble_make_first_move": "进行您的第一步",
+    "ble_make_first_move": "进行你的第一步",
     "export": "导出公式",
     "export_pdf": "导出为 PDF",
     "reset": "重置",
@@ -707,10 +707,10 @@
       "sets_desc": "建立你自己的公式集，发给朋友，练习社区的公式集。",
       "sets_feat1": "把想练的情况放进一个公式集",
       "sets_feat2": "用链接发给朋友",
-      "sets_feat3": "发现社区分享的公式集",
+      "sets_feat3": "练习社区分享的公式集",
       "whats_inside": "包含内容",
       "community_title": "社区公式集",
-      "community_desc": "发现其他人分享的公式集",
+      "community_desc": "查找其他人分享的公式集",
       "breadcrumb": "位置",
       "set_crumb": "公式集"
     },
@@ -773,8 +773,8 @@
         "groups_no_bookends_desc": "两端颜色不同。V、Y 或 E perm。"
       },
       "home_title": "PLL 识别训练器",
-      "home_subtitle": "藏在 21 个 PLL 情况中；每个都可能以任何颜色组合和角度出现。训练你的眼睛识别它们。",
-      "home_subtitle_short": "藏在 21 个 PLL 情形中。",
+      "home_subtitle": "藏在 21 个 PLL 情况中。每个都可能以任何颜色组合和角度出现，你要训练眼睛认出它们。训练器会根据你的弱项调整，反复询问你没认出的图案，直到你能认出。",
+      "home_subtitle_short": "藏在 21 个 PLL 情况中。每个都可能以任何颜色组合和角度出现。",
       "home_distinct_patterns": "73 个独特图案",
       "home_start_journey": "开始旅程",
       "home_free_practice": "自由训练",
@@ -792,7 +792,7 @@
       "setup_add_custom": "自定义",
       "setup_scroll_left": "向左滚动",
       "setup_scroll_right": "向右滚动",
-      "setup_info": "选择预设、会话大小，然后开始。",
+      "setup_info": "选择预设和会话大小，然后开始。每次会话结束后统计会保存。可以用「个性化训练」更频繁地练习薄弱情况。",
       "trainer_start": "开始",
       "trainer_resume": "继续",
       "trainer_pause": "暂停",
@@ -852,7 +852,7 @@
       "settings_color_variance": "颜色变化",
       "settings_color_variance_help": "每次随机偏移颜色",
       "settings_quest_mode": "引导模式",
-      "settings_quest_mode_help": "主页显示引导式学习旅程",
+      "settings_quest_mode_help": "在主页显示引导路线",
       "settings_reset": "重置",
       "settings_start_training": "开始训练",
       "settings_reset_confirm": "重置默认?",
@@ -910,11 +910,11 @@
       },
       "oll": {
         "title": "顶层朝向",
-        "desc": "OLL 是 CFOP 方法的第三步。在前两层之后，它让顶面颜色统一；如果从白色十字开始，它会完成黄色面。共有 57 种情况，按顶层已有几个棱块朝向正确分组：四个棱块都正确，两个棱块正确（如 L、T、P、W 形），以及一个都没有的点状情况。\n\n如果会两步 OLL，其中 9 到 10 个你已经掌握。很多公式互为镜像或逆序，因此更容易记住。点状情况通常最难最慢，大多数人把它们留到最后。\n\n一个好的顺序是先学棱块已正确的情况，再学 T 形和 L 形。选择顺手的公式，长期来看会有回报。"
+        "desc": "OLL 是 CFOP 方法的第三步。在前两层之后，它让顶面颜色统一；如果从白色十字开始，它会完成黄色面。共有 57 种情况，按顶层已有几个棱块朝向正确分组：四个棱块都正确，两个棱块正确（如 L、T、P、W 形），以及一个都没有的点状情况。\n\n如果会两步 OLL，其中 9 到 10 个你已经掌握。很多公式互为镜像或逆序，因此更容易记住。点状情况通常最难最慢，大多数人把它们留到最后。\n\n可以先学棱块已正确的情况，再学 T 形和 L 形。选公式时选顺手的。"
       },
       "f2l": {
         "title": "前两层",
-        "desc": "F2L 是 CFOP 方法的第二步。完成十字后，把一个角块和对应的棱块组成一对，一起放入槽位。这比一块一块放快得多。共有 41 种基本情况；训练器为四个槽位分别显示每种情况，总共 164 个。\n\n先凭直觉理解 F2L，再去背公式会更好。理解了每种情况为什么这样解，遇到新情况时就能自己找到解法。建立在这个基础上的公式也更好记。\n\nF2L 最大的提升来自预判：放入一对的同时，留意下一对在哪里。避免不必要的整体转动也很重要。之后可以学习 VHLS 或 ZBLS，在放入最后一对时顺便调整顶层棱块的朝向。"
+        "desc": "F2L 是 CFOP 方法的第二步。完成十字后，把一个角块和对应的棱块组成一对，一起放入槽位。这比一块一块放快得多。共有 41 种基本情况；训练器为四个槽位分别显示每种情况，总共 164 个。\n\n先凭直觉理解 F2L，再去背公式会更好。理解了每种情况为什么这样解，遇到新情况时就能自己找到解法。建立在这个基础上的公式也更好记。\n\nF2L 最大的提升来自预判：放入一对的同时，留意下一对在哪里。避免不必要的整体转动也能降低成绩。之后可以学习 VHLS 或 ZBLS，在放入最后一对时顺便调整顶层棱块的朝向。"
       },
       "2_look_pll": {
         "title": "两步 PLL",
@@ -946,7 +946,7 @@
       },
       "vhls": {
         "title": "Vandenbergh Harris 最后槽位",
-        "desc": "VHLS 在放入最后一对 F2L 时调整顶层棱块的朝向。它只覆盖较短的放入方式，所以只有 32 种情况：16 种块对相连，16 种块对分开。更长的情况就做普通 F2L。\n\nVHLS 之后只剩下棱块已正确的 OLL 情况。跳过 OLL 的概率从 1/216 提高到 1/27，剩下的情况通常也更短。如果你也会 COLL，VHLS 加 COLL 是很强的顶层方案。\n\n可以把 VHLS 看作 ZBLS 的一小部分。大多数情况是直觉式的：看最后一个棱块的朝向，选择合适的放入方式。"
+        "desc": "VHLS 在放入最后一对 F2L 时调整顶层棱块的朝向。它只覆盖较短的放入方式，所以只有 32 种情况：16 种块对相连，16 种块对分开。更长的情况就做普通 F2L。\n\nVHLS 之后只剩下棱块已正确的 OLL 情况。跳过 OLL 的概率从 1/216 提高到 1/27，剩下的情况通常也更短。如果你也会 COLL，可以把两者一起用作顶层方案。\n\n可以把 VHLS 看作 ZBLS 的一小部分。大多数情况是直觉式的：看最后一个棱块的朝向，选择合适的放入方式。"
       },
       "cmll": {
         "title": "顶层角块（Roux）",
@@ -958,7 +958,7 @@
       },
       "oh_cmll": {
         "title": "单手 CMLL",
-        "desc": "单手 CMLL 是 Roux 中 CMLL 步骤的一套公式，专为单手还原挑选。情况与普通 CMLL 一样，都是 42 种、8 组；区别在于这些公式用一只手也容易转。\n\n单手还原时会避免 z 和 x 整体转动，因为重新握持魔方要花时间。所以公式大多由 R、U 和 r 组成。左手玩家用 L、U 和 l 镜像。\n\n普通 CMLL 公式单手也能用，但更慢。先用双手学会 CMLL，再换成单手公式，是个好顺序。"
+        "desc": "单手 CMLL 是 Roux 中 CMLL 步骤的一套公式，专为单手还原挑选。情况与普通 CMLL 一样，都是 42 种、8 组；区别在于这些公式用一只手也容易转。\n\n单手还原时会避免 z 和 x 整体转动，因为重新握持魔方要花时间。所以公式大多由 R、U 和 r 组成。左手玩家用 L、U 和 l 镜像。\n\n普通 CMLL 公式单手也能用，但更慢。可以先用双手学会 CMLL，再换成单手公式。"
       },
       "l6e_eo": {
         "title": "最后六棱：棱块朝向",
@@ -978,7 +978,7 @@
       },
       "2x2_eg2": {
         "title": "二阶 EG-2",
-        "desc": "EG-2 是 EG 家族中通常最后学习的 40 种情况的公式集。它覆盖底层角块对角交换的情况。这是最少见的情况，概率为 1/6。\n\n它和 CLL、EG-1 一起覆盖了完成一个面之后二阶的所有情况。因为出现得少，通常最后学，但会全部 EG 就意味着任何情况都能应对。\n\nEG-2 让你在观察时选择还原哪个面更自由。能多快看出对角交换，直接决定这个公式集的作用有多大。"
+        "desc": "EG-2 是 EG 家族中通常最后学习的 40 种情况的公式集。它覆盖底层角块对角交换的情况。这是最少见的情况，概率为 1/6。\n\n它和 CLL、EG-1 一起覆盖了完成一个面之后二阶的所有情况。因为出现得少，通常最后学，但会全部 EG 就意味着任何情况都能应对。\n\nEG-2 让你在观察时选择还原哪个面更自由。要用好这个公式集，需要能快速看出对角交换。"
       },
       "2x2_pbl": {
         "title": "两层排列",
@@ -986,23 +986,23 @@
       },
       "4x4_pll_parity": {
         "title": "四阶 PLL 奇偶校验",
-        "desc": "PLL 奇偶校验在四阶上很常见，大约每两次还原出现一次。会出现三阶上不可能出现的棱块情况，因为四阶的每个棱块由两块组成，可能以不同方式配对。OLL 奇偶校验是另一回事。\n\n这个公式集有 22 种情况。公式一步同时解决奇偶校验和 PLL，比分开做更快。\n\n先学最常遇到的情况，少见的以后再加。选好奇偶校验公式，对四阶成绩有明显影响。"
+        "desc": "PLL 奇偶校验在四阶上很常见，大约每两次还原出现一次。会出现三阶上不可能出现的棱块情况，因为四阶的每个棱块由两块组成，可能以不同方式配对。OLL 奇偶校验是另一回事。\n\n这个公式集有 22 种情况。公式一步同时解决奇偶校验和 PLL，比分开做更快。\n\n先学最常遇到的情况，少见的以后再加。"
       },
       "pyraminx_ll": {
         "title": "金字塔顶层",
-        "desc": "这些公式用层先法还原金字塔的最后一层。这个方法分两步：第一层，然后最后一层。最后一层剩下三个棱块，共 5 种情况。\n\n情况简单，学得快；大多数公式只有几步。识别也很容易：只需看三个棱块。对刚接触金字塔的人来说是很好的起点。\n\n熟练这个方法后，可以转向 L4E 或直觉式方法。这 5 种情况无论如何都有用。"
+        "desc": "这些公式用层先法还原金字塔的最后一层。这个方法分两步：第一层，然后最后一层。最后一层剩下三个棱块，共 5 种情况。\n\n情况简单，学得快；大多数公式只有几步。识别也很容易：只需看三个棱块。适合刚接触金字塔的人。\n\n熟练这个方法后，可以转向 L4E 或直觉式方法。这 5 种情况无论如何都有用。"
       },
       "pyraminx_l4e": {
         "title": "金字塔最后四棱",
-        "desc": "L4E 是金字塔的进阶两步法：先在底部做出 V 形，再一步还原剩下的四个棱块。这个公式集有 35 种情况，按棱块状态分成 5 组。\n\nV 形比完整的第一层限制更少，因此在观察时容易规划。识别时看剩下的棱块在哪里、朝向如何。\n\n大多数快速的金字塔玩家都用这个方法。公式很短，所以好的指法差别很大。"
+        "desc": "L4E 是金字塔的进阶两步法：先在底部做出 V 形，再一步还原剩下的四个棱块。这个公式集有 35 种情况，按棱块状态分成 5 组。\n\nV 形比完整的第一层限制更少，因此在观察时容易规划。识别时看剩下的棱块在哪里、朝向如何。\n\n大多数快速的金字塔玩家都用这个方法。公式很短，所以要选好指法。"
       },
       "sarah_intermediate": {
         "title": "Sarah's Intermediate（斜转）",
-        "desc": "Sarah's Intermediate 适合想在斜转初级法之上更进一步的玩家。只有 10 种情况，是不费太多力气就能降低成绩的好方法。\n\n这个方法分三步：还原一个面，用 sledgehammer（R' F R F'）和 hedgeslammer（F R' F' R）触发还原对面，然后还原中心。情况按使用的触发数分成 3 组。\n\n它是通往 Sarah's Advanced 的自然一步。sledgehammer 和 hedgeslammer 是斜转的基本动作，这个方法让你习惯它们。"
+        "desc": "Sarah's Intermediate 适合想在斜转初级法之上更进一步的玩家。学 10 种情况就能降低成绩。\n\n这个方法分三步：还原一个面，用 sledgehammer（R' F R F'）和 hedgeslammer（F R' F' R）触发还原对面，然后还原中心。情况按使用的触发数分成 3 组。\n\n它在 Sarah's Advanced 之前学习。sledgehammer 和 hedgeslammer 是斜转的基本动作，这个方法让你习惯它们。"
       },
       "sarah_advanced": {
         "title": "Sarah's Advanced（斜转）",
-        "desc": "Sarah's Advanced 把斜转还原缩减为两步：还原一个面，然后一步还原其余部分。这个公式集为第二步提供 93 种情况，分成 16 组。\n\n大多数解法建立在 sledgehammer（R' F R F'）和 hedgeslammer（F R' F' R）触发之上。识别时看已还原面对面的图案和侧面的颜色。很多情况互为镜像或逆序。\n\n大多数快速的斜转玩家都用这个方法。学完整套要花时间，但能在观察时规划整个还原是很大的优势。"
+        "desc": "Sarah's Advanced 把斜转还原缩减为两步：还原一个面，然后一步还原其余部分。这个公式集为第二步提供 93 种情况，分成 16 组。\n\n大多数解法建立在 sledgehammer（R' F R F'）和 hedgeslammer（F R' F' R）触发之上。识别时看已还原面对面的图案和侧面的颜色。很多情况互为镜像或逆序。\n\n大多数快速的斜转玩家都用这个方法。学完整套要花时间，学会后可以在观察时规划整个还原。"
       },
       "sq1_cube_shape": {
         "title": "Square-1 复形",
@@ -1022,7 +1022,7 @@
       },
       "sq1_ep": {
         "title": "Square-1 棱块排列",
-        "desc": "棱块排列通常是 Square-1 的最后一步，让所有棱块归位。共有 40 种情况，按顶层分成 8 组。\n\n遇到奇偶时普通公式不起作用，需要同时修正奇偶的公式（除非你用了 CSP）。学习同时解决两者的公式比分开做更高效。\n\n识别时看棱块的位置。能多快选对公式，直接影响你的 Square-1 成绩。"
+        "desc": "棱块排列通常是 Square-1 的最后一步，让所有棱块归位。共有 40 种情况，按顶层分成 8 组。\n\n遇到奇偶时普通公式不起作用，需要同时修正奇偶的公式（除非你用了 CSP）。学习同时解决两者的公式比分开做更高效。\n\n识别时看棱块的位置。"
       },
       "sq1_obl": {
         "title": "Square-1 两层朝向",
@@ -1178,23 +1178,23 @@
   "support": {
     "page_title": "支持",
     "title": "创建支持工单",
-    "description": "报告错误、提问或分享建议。我们会尽快回复。",
+    "description": "告诉我们你遇到的问题、错误或想法。我们会尽快回复。",
     "subject": "主题",
     "subject_placeholder": "写一个简短的标题",
     "message": "消息",
-    "message_placeholder": "详细描述问题或建议",
+    "message_placeholder": "描述你的问题或想法",
     "send": "发送",
     "sending": "发送中...",
-    "success": "您的工单已提交。谢谢!",
+    "success": "你的工单已提交。谢谢!",
     "error": "出错了,请重试。",
     "history_title": "我的历史工单",
-    "no_history": "您还没有支持工单",
+    "no_history": "你还没有支持工单",
     "status_open": "未解决",
     "status_resolved": "已解决",
-    "you": "您",
+    "you": "你",
     "admin_label": "支持",
     "reply": "回复",
-    "reply_placeholder": "输入您的回复...",
+    "reply_placeholder": "输入你的回复...",
     "send_reply": "发送",
     "closed_cant_reply": "此工单已标记为已解决,无法添加新消息。",
     "modal_close": "关闭",
@@ -1258,12 +1258,12 @@
     "email_change_confirmed": "你的邮箱已更新。",
     "change_password": "更改密码",
     "set_password": "设置密码",
-    "set_password_description": "您的账户是通过 WCA 创建的。您可以设置一个密码，以便使用邮箱/密码登录。",
+    "set_password_description": "你的账户是通过 WCA 创建的。如果还想用邮箱和密码登录，可以设置密码。",
     "current_password": "当前密码",
     "new_password": "新密码",
     "change_password_button": "更改密码",
     "set_password_button": "设置密码",
-    "password_success": "密码已成功更新",
+    "password_success": "密码已更新",
     "profile_title": "个人资料",
     "profile_description": "你的姓名、用户名和电子邮件地址。"
   },
@@ -1272,21 +1272,21 @@
     "new_password": "新密码",
     "change_button": "更改密码",
     "weak_password": "密码太弱",
-    "success": "密码已成功更新"
+    "success": "密码已更新"
   },
   "community_nav": {
     "page_title": "比赛"
   },
   "maintenance": {
     "title": "我们正在维护中",
-    "description": "我们正在升级基础设施，以使 Zkt Timer 更好用。我们很快就会回来！",
-    "thanks": "感谢您的耐心等待 💙"
+    "description": "我们正在升级基础设施，以使 ZKT Timer 更好用。我们很快就会回来！",
+    "thanks": "感谢你的耐心等待 💙"
   },
   "site_config": {
     "page_disabled_title": "{{page}} 正在维护中",
     "page_disabled_description": "此功能暂时禁用。我们很快就会回来。",
     "go_to_timer": "返回计时器",
-    "admin_disabled_banner": "{{page}} 当前已禁用 — 只有管理员（您）可以看到此信息",
+    "admin_disabled_banner": "{{page}} 当前已禁用 — 只有管理员（你）可以看到此信息",
     "online_battle_enabled": "Online Battle",
     "online_battle_enabled_desc": "排队、对战和排行榜。关闭时只有管理员和下方列表中的用户可以玩。要在菜单中显示排行榜，还需要开启 Rankings。",
     "online_battle_enable_confirm": "Online Battle 将向所有人开放：菜单中会出现排行榜，页面也会被搜索引擎收录。继续吗？"
@@ -1310,7 +1310,7 @@
     "page_title": "我的比赛日程",
     "login_description": "登录后查看你的比赛和个人日程。",
     "wca_login": "使用 WCA 登录",
-    "connect_wca": "关联您的 WCA 账户",
+    "connect_wca": "关联你的 WCA 账户",
     "connect_wca_description": "显示你已报名的 WCA 比赛。",
     "connect_wca_btn": "关联 WCA 账号",
     "back_to_list": "返回比赛列表",
@@ -1473,20 +1473,20 @@
     "notif_result_body_single_only": "单次: {{single}}",
     "notif_round_finished_title": "{{eventName}} 第 {{roundNumber}} 轮已完成",
     "notif_final_finished_title": "{{eventName}} 决赛已完成",
-    "notif_advancing": "恭喜！您以 {{ranking}}{{suffix}} 名晋级！",
-    "notif_advancing_questionable": "恭喜！您以 {{ranking}}{{suffix}} 名（暂定，可能变更）晋级！",
-    "notif_not_advancing": "恭喜。您以 {{ranking}}{{suffix}} 名完成比赛。虽然未能晋级，但您的表现非常出色！",
-    "notif_final_result": "恭喜！您以 {{ranking}}{{suffix}} 名完成比赛！",
+    "notif_advancing": "恭喜！你以 {{ranking}}{{suffix}} 名晋级！",
+    "notif_advancing_questionable": "恭喜！你以 {{ranking}}{{suffix}} 名（暂定，可能变更）晋级！",
+    "notif_not_advancing": "恭喜。你以 {{ranking}}{{suffix}} 名完成比赛。虽然未能晋级，但你的表现非常出色！",
+    "notif_final_result": "恭喜！你以 {{ranking}}{{suffix}} 名完成比赛！",
     "notif_podium_1st_title": "🥇 冠军！",
-    "notif_podium_1st_body": "您赢得了 {{eventName}} 决赛。这是属于您的荣耀！",
+    "notif_podium_1st_body": "你赢得了 {{eventName}} 决赛。这是属于你的荣耀！",
     "notif_podium_2nd_title": "🥈 亚军！",
-    "notif_podium_2nd_body": "您在 {{eventName}} 决赛中获得第二名。多么精彩的表现！",
+    "notif_podium_2nd_body": "你在 {{eventName}} 决赛中获得第二名。多么精彩的表现！",
     "notif_podium_3rd_title": "🥉 季军！",
-    "notif_podium_3rd_body": "您在 {{eventName}} 决赛中获得第三名。您登上领奖台了！",
+    "notif_podium_3rd_body": "你在 {{eventName}} 决赛中获得第三名。你登上领奖台了！",
     "notif_link_text": "查看成绩",
     "notif_countdown_title_days": "{{days}} 天后：{{competitionName}}",
     "notif_countdown_title_tomorrow": "明日比赛：{{competitionName}}",
-    "notif_countdown_body": "您已报名的比赛即将开始。是时候准备了。",
+    "notif_countdown_body": "你已报名的比赛即将开始。是时候准备了。",
     "notif_countdown_body_with_time": "开始时间：{{startTime}}。是时候准备了。",
     "notif_countdown_link_text": "查看比赛",
     "cutoff_attempts": "{{count}} 次尝试",
@@ -1527,19 +1527,19 @@
     "notif_activity_round": "{{eventName}} 第 {{roundNumber}} 轮",
     "notif_activity_group": "{{eventName}} 第 {{roundNumber}} 轮 第 {{groupNumber}} 组",
     "notif_groups_title": "{{competitionName}}：分组已公布",
-    "notif_groups_first": "您的第一组：{{activity}}（{{time}}）",
+    "notif_groups_first": "你的第一组：{{activity}}（{{time}}）",
     "notif_groups_duty_judge": "裁判：{{count}}",
     "notif_groups_duty_scrambler": "打乱：{{count}}",
     "notif_groups_duty_runner": "引导员：{{count}}",
     "notif_groups_duty_other": "其他任务：{{count}}",
-    "notif_groups_body_generic": "点击查看您的分组和任务。",
-    "notif_schedule_title": "{{competitionName}}：您的日程有变动",
+    "notif_groups_body_generic": "点击查看你的分组和任务。",
+    "notif_schedule_title": "{{competitionName}}：你的日程有变动",
     "notif_schedule_time": "{{activity}}：{{before}} → {{after}}",
     "notif_schedule_added": "新增：{{activity}}（{{time}}）",
     "notif_schedule_removed": "已移除：{{activity}}",
     "notif_schedule_more": "另有 {{count}} 项变动",
     "notif_results_title": "{{competitionName}}：成绩已正式公布",
-    "notif_results_body": "您的成绩已录入官方记录。",
+    "notif_results_body": "你的成绩已录入官方记录。",
     "notif_results_rank": "{{eventName}} {{type}}：国家排名 {{before}} → {{after}}",
     "notif_results_first_rank": "{{eventName}} {{type}}：国家排名 {{after}}",
     "notif_results_pb": "新的正式个人纪录：{{eventName}} {{type}} {{result}}",
@@ -1570,11 +1570,11 @@
   },
   "notification_prefs": {
     "email_notifications": "电子邮件通知",
-    "marketing_emails": "来自 Zkt Timer 的技巧、更新和其他电子邮件",
+    "marketing_emails": "来自 ZKT Timer 的技巧、更新和其他电子邮件",
     "support_ticket_reply": "我的支持请求收到回复时发送邮件",
     "email_notifications_description": "选择你希望在什么情况下收到我们的邮件。",
     "competition_notifications": "比赛通知",
-    "competition_notifications_description": "选择您想接收的比赛通知。",
+    "competition_notifications_description": "选择你想接收的比赛通知。",
     "zkt_competition_announced": "新的 ZKT 比赛公布时，以及报名开放前",
     "competition_groups_published": "我报名的比赛公布分组时",
     "competition_schedule_changed": "我的比赛日程时间变动时",
@@ -1584,8 +1584,8 @@
     "battle_challenge": "有人从我的主页向我发起挑战时"
   },
   "orientation_warning": {
-    "title": "请旋转您的设备",
-    "text": "Zkt Timer 专为在移动设备上竖屏模式下获得最佳体验而设计。"
+    "title": "请旋转你的设备",
+    "text": "ZKT Timer 专为在移动设备上竖屏模式下获得最佳体验而设计。"
   },
   "settings": {
     "page_title": "设置",
@@ -1629,10 +1629,10 @@
   },
   "appearance": {
     "timer_modules": "计时器模块",
-    "timer_modules_desc": "更改计时器页面上显示的模块数量。请注意，这是显示的*最大*模块数量（取决于您的窗口大小）。",
+    "timer_modules_desc": "计时器页面显示的模块数量上限。根据窗口大小，可能显示更少。",
     "default_suffix": "(默认)",
     "timer_layout": "计时器布局",
-    "timer_layout_desc": "更改计时器的外观。如果您的屏幕较小，您可能希望将模块放在左侧或右侧。",
+    "timer_layout_desc": "改变计时器页面的布局。屏幕较小时可以把模块放在左侧或右侧。",
     "timer_background": "桌面端背景",
     "timer_background_desc": "计时器后面显示的图片或视频。",
     "timer_background_hint": "可上传 PNG、JPG 或 MP4。视频最大 {{size}} MB，计时进行时会暂停。",
@@ -1641,13 +1641,13 @@
     "timer_background_mobile": "手机端背景",
     "timer_background_mobile_desc": "手机上计时器后面显示的图片或视频。",
     "timer_font": "计时器字体",
-    "timer_font_desc": "您在计时器页面上看到的巨大计时器的字体",
+    "timer_font_desc": "计时器页面上大号时间的字体",
     "reset": "重置",
     "save_as_default": "设为默认",
     "timer_font_size": "计时器字体大小",
-    "timer_font_size_desc": "您在计时器页面上看到的巨大时间的字体大小",
+    "timer_font_size_desc": "计时器页面上大号时间的字号",
     "scramble_font_size": "打乱字体大小",
-    "scramble_font_size_desc": "您在计时器页面上看到的打乱的字体大小",
+    "scramble_font_size_desc": "计时器页面上打乱的字号",
     "category_theme": "主题",
     "category_layout": "布局",
     "category_typography": "排版",
@@ -1674,7 +1674,7 @@
     "decimal_points_desc": "在计时器页面上显示多少位小数",
     "decimal_suffix": "位小数",
     "input_type": "计时器输入类型",
-    "input_type_desc": "选择使用键盘（空格键）、StackMat 或智能魔方来启动计时器。",
+    "input_type_desc": "用键盘（空格键）、StackMat 或智能魔方启动计时器。",
     "input_keyboard": "键盘",
     "input_touch": "触摸",
     "input_smart": "智能魔方",
@@ -1698,11 +1698,11 @@
     "confirm_delete_season": "删除阶段前确认",
     "confirm_delete_season_desc": "在删除所选阶段的所有还原前显示确认对话框",
     "pb_confetti": "个人最好成绩礼花",
-    "pb_confetti_desc": "当您打破个人最好成绩时显示礼花",
+    "pb_confetti_desc": "打破个人最好成绩时显示礼花",
     "use_3d_scramble_visual": "3D 打乱预览",
-    "use_3d_scramble_visual_desc": "为支持的拼图显示 3D 预览",
+    "use_3d_scramble_visual_desc": "为支持的魔方显示 3D 预览",
     "inspection": "观察",
-    "inspection_desc": "限制观察时间。有助于为比赛做准备。",
+    "inspection_desc": "开始计时前给你比赛式的观察时间。",
     "play_sound": "播放声音",
     "play_sound_desc": "在经过 8 秒和 12 秒时播放音频警报",
     "inspection_auto_start": "自动开始观察",
@@ -1712,7 +1712,7 @@
     "mic_access": "允许麦克风访问（StackMat 的数据传输方法）",
     "stackmat_auto_inspection": "自动开始观察",
     "seconds": "秒",
-    "stackmat_select": "选择您的 StackMat 设备。通常命名为“USB Audio Device”",
+    "stackmat_select": "选择你的 StackMat 设备。通常显示为“USB Audio Device”",
     "stackmat_warning_title": "StackMat 自动观察警告",
     "dont_show_again": "不再显示",
     "understood": "我明白了",
@@ -1721,24 +1721,24 @@
     "smart_cube_move_order_fix_desc": "同时转动两层时，智能魔方有时会按错误的顺序上报转动，导致魔方已经复原而计时器仍在运行。开启后，应用会识别这种情况并结束计时。偶尔可能误判，因此默认关闭。",
     "smart_cube_time_offset": "附加时间（秒）",
     "smart_cube_time_offset_desc": "会加到每次智能魔方还原的时间上。",
-    "use_space_with_smart_cube_desc": "像普通魔方一样使用空格键，而不是通过智能魔方移动来检测何时开始/结束还原。",
+    "use_space_with_smart_cube_desc": "像普通魔方一样使用空格键，而不是通过智能魔方的转动判断还原的开始和结束。",
     "hide_time_when_solving": "还原时隐藏时间",
     "zero_out_time_after_solve": "还原后清零时间",
-    "zero_out_time_after_solve_desc": "计时器在还原后更新为 0.00，而不是显示上次还原的时间。",
+    "zero_out_time_after_solve_desc": "还原后计时器回到 0.00，而不是显示上次成绩。",
     "inspection_time": "观察时间（秒）",
     "auto_inspection_start": "自动开始观察",
     "auto_inspection_start_desc": "在垫子重置后自动开始观察时间。",
-    "stackmat_select_device": "选择您的 StackMat 设备",
-    "stackmat_change_device": "已选择 - 更改输入设备",
-    "stackmat_warning_desc": "有一些重要信息您应该了解此功能。",
+    "stackmat_select_device": "选择你的 StackMat 设备",
+    "stackmat_change_device": "已选择。更改输入设备",
+    "stackmat_warning_desc": "使用此功能前请先阅读。",
     "stackmat_warning_how_it_works": "此功能的工作原理：",
-    "stackmat_warning_step1": "完成还原后，按下垫子上的重置按钮",
-    "stackmat_warning_step2": "在您设置的时间（默认为 2 秒）后，观察将自动开始",
-    "stackmat_warning_step3": "如果您在此时间内启动计时器，则观察将被取消",
+    "stackmat_warning_step1": "还原结束后，按下垫子上的重置键",
+    "stackmat_warning_step2": "经过你设置的时间（默认 2 秒）后，观察自动开始",
+    "stackmat_warning_step3": "如果在这段时间内启动计时器，观察会取消",
     "stackmat_warning_limitation_title": "⚠️ 重要限制：",
-    "stackmat_warning_limitation_desc": "如果您使用 ESC 键取消观察，由于垫子没有新的信号，即使您再次按下重置键，观察也不会开始。在这种情况下，您需要从键盘（空格键）开始观察或进行新的还原。",
-    "stackmat_warning_protocol_note": "此限制来自 StackMat 协议，没有软件解决方案。",
-    "stackmat_warning_critical": "⚠️ 严重警告：请在还原完成后，直到时间完全停止后，再在 StackMat 上重置。这可能会导致 StackMat 信号同步不正确，并可能导致观察时间出现一些错误。对于这些超出我们控制范围的协议错误，我们深表歉意。",
+    "stackmat_warning_limitation_desc": "如果用 ESC 取消观察，垫子不会发送新信号，再按重置观察也不会开始。这时需要从键盘（空格键）开始观察，或进行一次新的还原。",
+    "stackmat_warning_protocol_note": "这是 StackMat 协议的限制，软件无法解决。",
+    "stackmat_warning_critical": "时间完全停止前不要重置 StackMat。信号可能不同步，观察时间会出错。",
     "category_general": "通用",
     "category_input": "输入",
     "category_confirmations": "确认",
@@ -1748,14 +1748,14 @@
     "qiyi_auto_inspection": "自动开始观察",
     "qiyi_auto_inspection_desc": "在设备上按重置按钮时,时间清零并(若观察已开启)自动开始观察。",
     "qiyi_warning_title": "QiYi 计时器自动观察警告",
-    "qiyi_warning_desc": "此功能可能影响您在真实比赛中的习惯。",
+    "qiyi_warning_desc": "此功能可能影响你在真实比赛中的习惯。",
     "qiyi_warning_how_it_works": "此功能的工作方式:",
-    "qiyi_warning_step1": "解完后在设备上按重置 → 时间清零并自动开始观察(单击)。",
-    "qiyi_warning_step2": "此合并行为通过单击实现,因为设备不发送第二次重置信号。",
-    "qiyi_warning_critical": "⚠️ 关闭时:重置按钮仅清零时间。要开始观察,请按键盘空格键或将手放在设备上。",
+    "qiyi_warning_step1": "还原后在设备上按重置键。时间清零，观察自动开始。",
+    "qiyi_warning_step2": "两件事只需按一次，因为设备不会发送第二次重置信号。",
+    "qiyi_warning_critical": "关闭时，重置键只清零时间。要开始观察，请按键盘空格键或把手放在设备上。",
     "category_multi_phase": "手动分阶段",
     "multi_phase_count": "阶段数量",
-    "multi_phase_count_desc": "解算过程中每次按空格或点击屏幕都会结束一个阶段，最后一次按键停止计时。",
+    "multi_phase_count_desc": "还原过程中每次按空格或点击屏幕都会结束一个阶段，最后一次按下会停止计时。",
     "multi_phase_count_n": "{{n}} 个阶段",
     "multi_phase_off": "关闭",
     "multi_phase_method": "方法",
@@ -1786,7 +1786,7 @@
     "smart_cube_show": "显示智能魔方",
     "smart_cube_show_desc": "在计时器界面显示或隐藏 3D 智能魔方。",
     "smart_cube_size": "智能魔方尺寸",
-    "smart_cube_size_desc": "调整主页上智能魔方的尺寸。",
+    "smart_cube_size_desc": "主页上智能魔方的大小。",
     "haptic_feedback": "触觉反馈",
     "haptic_feedback_desc": "在还原开始和结束时短暂振动设备。",
     "category_smart_analysis": "方法与分析",
@@ -1805,41 +1805,41 @@
   },
   "data_settings": {
     "force_reload": "强制重新加载",
-    "force_reload_desc": "如果您的数据或设置不同步，您可以强制重新加载以与数据库重新同步。",
+    "force_reload_desc": "如果数据或设置看起来不是最新的，可以从数据库重新加载。",
     "force_reload_button": "强制重新加载",
     "export_data": "导出还原和阶段数据",
-    "export_data_desc": "这些数据可以作为您的还原和阶段数据的备份，以便以后需要时导入。",
+    "export_data_desc": "此文件是还原和分组数据的备份，需要时可以导入。",
     "export_button": "导出数据",
-    "export_success": "所有还原和阶段数据已成功下载。",
+    "export_success": "所有还原和分组数据已下载。",
     "import_data": "导入数据",
-    "import_data_desc": "从 csTimer 或 Zkt Timer 导入数据",
+    "import_data_desc": "从 csTimer 或 ZKT Timer 导入数据",
     "import_cstimer": "从 csTimer 导入",
-    "import_zkttimer": "从 Zkt Timer 备份导入",
+    "import_zkttimer": "从 ZKT Timer 备份导入",
     "reset_settings": "重置设置",
     "reset_settings_desc": "将设置中的所有内容重置为默认值（自定义魔方类型除外）",
     "reset_settings_button": "重置设置",
-    "reset_settings_confirm_desc": "请小心。您即将将设置重置为默认值。自定义魔方类型不受影响。",
+    "reset_settings_confirm_desc": "你即将把设置恢复为默认值。自定义魔方类型不受影响。",
     "session_name": "阶段名称",
     "solves_count": "还原次数：{{count}}",
     "sessions_count": "阶段次数：{{count}}",
     "skipped_count": "已跳过（未知魔方类型）：{{count}} 个还原",
     "review_and_import": "审阅并导入",
-    "review_description": "请确保以下数字正确。然后导入数据！",
+    "review_description": "请核对下面的数字，然后导入数据。",
     "mixed_session": "混合 ({{count}})",
     "split_session": "拆分",
     "import": "导入",
     "importing_progress": "正在导入... {{percent}}%",
-    "import_success": "{{sessions}} 个阶段和 {{solves}} 次还原已成功导入！",
-    "session_import_failed": "阶段导入失败：{{count}} 个块错误！还原导入已取消。",
-    "import_failed": "导入失败：{{count}} 个块错误！",
+    "import_success": "已导入 {{sessions}} 个分组和 {{solves}} 次还原。",
+    "session_import_failed": "有 {{count}} 部分分组未能导入，因此还原没有导入。",
+    "import_failed": "导入未完成，有 {{count}} 部分未能导入。",
     "import_modal_title": "导入 {{name}} 数据",
     "select_file": "选择要导入的文件",
     "drag_and_drop": "拖放或点击选择",
     "cube_type": "魔方类型",
     "remove": "移除",
-    "retry_in_progress": "正在重试失败的块...",
-    "retry_success": "所有失败的块已成功导入！",
-    "retry_partial_fail": "重试后仍有 {{count}} 个块失败。",
+    "retry_in_progress": "正在重试未能导入的部分...",
+    "retry_success": "剩余部分已导入。",
+    "retry_partial_fail": "重试后仍有 {{count}} 部分未能导入。",
     "import_twistytimer": "从 Twisty Timer 导入",
     "import_cubetime": "从 CubeTime 导入",
     "import_select_placeholder": "选择来源",
@@ -1853,7 +1853,7 @@
     "cstimer_step_1_suffix": "前往网站",
     "cstimer_step_2": "点击“导出”图标（设置按钮旁边）",
     "cstimer_step_3": "点击“导出到文件”",
-    "zkttimer_instructions_title": "如何从 Zkt Timer 导出数据",
+    "zkttimer_instructions_title": "如何从 ZKT Timer 导出数据",
     "zkttimer_step_1_link": "设置",
     "zkttimer_step_1_suffix": "页面",
     "zkttimer_step_2": "点击“导出数据”按钮并保存文件",
@@ -1861,21 +1861,21 @@
     "cubetime_step_1": "打开 CubeTime 应用",
     "cubetime_step_2": "进入设置 → Import & Export",
     "cubetime_step_3_emphasis": "JSON",
-    "cubetime_step_3_suffix": "格式（不是 CSV — CSV 不包含魔方类型和会话信息）",
+    "cubetime_step_3_suffix": "格式（CSV 不包含魔方类型和分组信息）",
     "cubetime_step_4": "点击“Export”并保存文件",
     "cubetime_step_5": "在下方上传下载的 .json 文件",
-    "cubetime_csv_not_supported": "不支持 CSV 格式 — 请从 CubeTime 导出为 JSON",
+    "cubetime_csv_not_supported": "不支持 CSV。请从 CubeTime 导出 JSON。",
     "category_management": "数据管理",
     "category_reset": "重置",
-    "import_error_title": "导入完成（有部分错误）",
+    "import_error_title": "导入完成，部分内容未能导入",
     "import_success_count": "成功: {{count}} 块",
-    "import_failed_count": "失败: {{count}} 块",
+    "import_failed_count": "失败：{{count}} 部分",
     "import_failed_chunks_header": "失败的块：",
     "import_items_range": "项目：{{range}}",
-    "import_retry_failed_btn": "重试失败的块",
+    "import_retry_failed_btn": "重试失败的部分",
     "import_continue_anyway": "仍然继续",
     "import_duplicates_skipped": "{{count}} 个复原记录已存在，已跳过。",
-    "import_nothing_new": "没有可导入的新内容，这些记录已全部在您的账户中。",
+    "import_nothing_new": "没有可导入的新内容，这些记录已全部在你的账户中。",
     "cubes_to_create": "将添加 {{count}} 个魔方",
     "import_cubes_failed": "{{count}} 个魔方无法添加，它们的还原记录将不关联魔方保存。"
   },
@@ -1921,7 +1921,7 @@
     "no_solves_yet": "还没有还原记录",
     "stackmat_place_hands": "将手放在 StackMat 上开始计时",
     "audio_place_hands": "将手放在 {{device}} 上开始计时",
-    "audio_ready": "准备就绪 — 松手开始",
+    "audio_ready": "准备就绪，松手开始",
     "edit_scramble": "编辑打乱",
     "edit": "编辑",
     "plus_two_penalty": "+2 秒惩罚",
@@ -2038,8 +2038,8 @@
   },
   "solve_page": {
     "not_found": "未找到此还原",
-    "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
-    "share_description": "逐步观看 {{user}} 的 {{cubeType}} 还原，用时 {{time}}。打乱、成绩与完整还原详情尽在 Zkt Timer。"
+    "share_title": "{{time}} · {{cubeType}} · {{user}} | ZKT Timer",
+    "share_description": "逐步观看 {{user}} 的 {{cubeType}} 还原，用时 {{time}}。打乱、成绩与完整还原详情尽在 ZKT Timer。"
   },
   "solve_info": {
     "cube_choose": "选择魔方",
@@ -2065,7 +2065,7 @@
     "wrap_text": "换行",
     "copy_text": "复制文本",
     "download_csv": "下载 CSV",
-    "generated_by": "由 Zkt Timer 在 {{date}} 生成",
+    "generated_by": "由 ZKT Timer 在 {{date}} 生成",
     "single_solve": "单次还原",
     "view_as_stats": "查看统计",
     "tps": "TPS",
@@ -2108,7 +2108,7 @@
       "seek": "跳转",
       "no_data": "此次解决无回放数据",
       "pro_required_title": "智能魔方回放",
-      "pro_required_desc": "升级到 Pro 以 3D 形式逐步观看您的解决过程。",
+      "pro_required_desc": "升级到 Pro 以 3D 形式逐步观看你的解决过程。",
       "upgrade_cta": "升级到 Pro",
       "gyro": "陀螺仪"
     },
@@ -2165,11 +2165,11 @@
     "yes_delete": "是的，删除",
     "delete_sessions": "删除阶段",
     "merge_sessions": "合并阶段",
-    "delete_confirm_desc": "请小心。您即将删除阶段“{{name}}”。此操作无法撤销。",
+    "delete_confirm_desc": "请小心。你即将删除阶段“{{name}}”。此操作无法撤销。",
     "delete_selected_desc": "将删除 {{count}} 个阶段：{{names}}。此操作无法撤销。",
-    "merge_confirm_desc": "请小心。您即将合并“{{source}}”到“{{target}}”。合并后，“{{source}}”将被删除。",
-    "cannot_delete_last": "您不能删除最后一个阶段！",
-    "cannot_delete_all": "您不能删除所有阶段！至少要保留一个阶段。",
+    "merge_confirm_desc": "请小心。你即将合并“{{source}}”到“{{target}}”。合并后，“{{source}}”将被删除。",
+    "cannot_delete_last": "你不能删除最后一个阶段！",
+    "cannot_delete_all": "你不能删除所有阶段！至少要保留一个阶段。",
     "session_deleted": "阶段“{{name}}”已成功删除",
     "sessions_deleted": "{{count}} 个阶段已成功删除",
     "session_name_placeholder": "输入阶段名称",
@@ -2178,14 +2178,14 @@
     "select_prompt": "选择阶段",
     "selected_count": "已选 {{count}} 个",
     "delete_selected_short": "删除 ({{count}})",
-    "are_you_sure": "您确定吗？",
-    "bulk_delete_confirm": "您正在删除多个阶段。此操作无法撤销。是否继续？",
+    "are_you_sure": "你确定吗？",
+    "bulk_delete_confirm": "你正在删除多个阶段。此操作无法撤销。是否继续？",
     "created": "创建于",
     "drag_to_reorder": "拖动以重新排序",
     "create_session": "创建阶段",
     "create_session_error": "服务器错误：无法创建阶段",
     "create_new_session_title": "创建新阶段",
-    "create_new_session_desc": "Zkt Timer 中的阶段可以包含多种魔方类型。您可以随意划分阶段：按魔方类型、按日期等。",
+    "create_new_session_desc": "ZKT Timer 中的阶段可以包含多种魔方类型。你可以随意划分阶段：按魔方类型、按日期等。",
     "new_session_placeholder": "新阶段",
     "cube_type": "魔方类型",
     "cube_type_info": "别担心 :) 之后可以更改",
@@ -2249,13 +2249,13 @@
     "active": "进行中",
     "full": "已满",
     "join": "加入",
-    "delete_confirm": "您确定要删除房间“{{name}}”吗？",
+    "delete_confirm": "你确定要删除房间“{{name}}”吗？",
     "view_room": "查看房间",
     "edit_room": "编辑房间",
     "manage_users": "管理用户",
     "delete_room": "删除房间",
     "reset_room": "重置房间",
-    "reset_room_confirm": "房间内的所有还原和轮次将被删除，所有人从第 1 轮重新开始。项目不变。您确认吗？",
+    "reset_room_confirm": "房间内的所有还原和轮次将被删除，所有人从第 1 轮重新开始。项目不变。你确认吗？",
     "reset_notification": "{{username}} 重置了房间",
     "room_name": "房间名称",
     "room_name_placeholder": "输入房间名称...",
@@ -2271,14 +2271,14 @@
     "cancel": "取消",
     "save": "保存",
     "session_takeover_title": "已在其他设备登录",
-    "session_takeover_message": "您的账号已在其他设备登录。此处将退出当前房间。您的还原记录已保留。",
+    "session_takeover_message": "你的账号已在其他设备登录。此处将退出当前房间。你的还原记录已保留。",
     "session_takeover_button": "确定",
-    "already_in_other_room_title": "您已在一个房间中",
-    "already_in_other_room_message": "您当前在 '{{roomName}}' 房间中。无法同时进入两个房间。",
+    "already_in_other_room_title": "你已在一个房间中",
+    "already_in_other_room_message": "你当前在 '{{roomName}}' 房间中。无法同时进入两个房间。",
     "go_to_current_room": "前往当前房间",
-    "you_are_here": "您在此",
+    "you_are_here": "你在此",
     "return_to_room": "返回",
-    "cube_change_warning": "更改项目/魔方类型将重置房间内的所有还原和分数。您确认吗？",
+    "cube_change_warning": "更改项目/魔方类型将重置房间内的所有还原和分数。你确认吗？",
     "chat_title": "聊天",
     "chat_empty": "暂无消息",
     "chat_placeholder": "输入消息...",
@@ -2400,7 +2400,7 @@
   },
   "profile": {
     "remove": "移除",
-    "share_text": "在 Zkt Timer 上查看 {{username}} 的速拧资料",
+    "share_text": "在 ZKT Timer 上查看 {{username}} 的速拧资料",
     "about_me": "关于我",
     "socials": "社交媒体",
     "biography": "个人简介",
@@ -2587,7 +2587,7 @@
     "webview_update_required": "要启用离线支持，请从 Google Play 更新 Android System WebView 应用。",
     "oauth_relay_returning": "正在返回应用...",
     "oauth_relay_open_app": "打开应用",
-    "native_migrate_title": "正在将您的数据迁移到应用...",
+    "native_migrate_title": "正在将你的数据迁移到应用...",
     "native_migrate_back": "返回应用",
     "delete_solve": "删除还原",
     "delete_solve_confirm": "确定要删除这次还原吗？",
@@ -2607,7 +2607,7 @@
     "copied": "已复制",
     "coming_soon": "敬请期待",
     "boot_stuck_title": "应用无法启动",
-    "boot_stuck_message": "无法连接到服务器。请检查您的网络连接后重试。",
+    "boot_stuck_message": "无法连接到服务器。请检查你的网络连接后重试。",
     "boot_stuck_retry": "重试",
     "boot_downloading_solves": "正在下载你的复原记录... {{count}}"
   },
@@ -2981,9 +2981,9 @@
     "preview": "预览",
     "email_greeting": "您好,",
     "content_preview_placeholder": "邮件内容将在此处显示...",
-    "go_to_zkttimer": "前往 Zkt Timer",
+    "go_to_zkttimer": "前往 ZKT Timer",
     "regards": "此致,",
-    "team": "Zkt Timer 团队",
+    "team": "ZKT Timer 团队",
     "clear": "清空",
     "sending": "发送中...",
     "send_button": "发送邮件",
@@ -3006,56 +3006,56 @@
     "select_people": "选择 {{count}} 人"
   },
   "seo": {
-    "home_title": "Zkt Timer — 速拧计时器、WCA Live、公式训练器与智能魔方平台",
+    "home_title": "ZKT Timer — 速拧计时器、WCA Live、公式训练器与智能魔方平台",
     "home_description": "专业速拧平台：魔方计时器、OLL/PLL/ZBLL公式训练器、WCA比赛实时追踪、1v1对战模式、智能魔方支持与分阶段分析。所有WCA项目，一站式专业体验。",
-    "timer_title": "支持智能魔方与WCA打乱的魔方计时器 - Zkt Timer",
+    "timer_title": "支持智能魔方与WCA打乱的魔方计时器 - ZKT Timer",
     "timer_description": "专业魔方计时器：毫秒级精度、符合WCA标准的打乱、智能魔方（GAN）支持、分阶段分析（Cross/F2L/OLL/PLL）与详细还原追踪。",
-    "wca_competitions_title": "WCA比赛 - 实时成绩与赛程 | Zkt Timer",
+    "wca_competitions_title": "WCA比赛 - 实时成绩与赛程 | ZKT Timer",
     "wca_competitions_description": "浏览全球所有WCA速拧比赛。实时成绩、比赛日程、报名信息、选手列表和实时追踪。所有官方WCA魔方比赛尽在一个平台。",
-    "wca_competition_detail_title": "WCA比赛详情 - 实时成绩 | Zkt Timer",
+    "wca_competition_detail_title": "WCA比赛详情 - 实时成绩 | ZKT Timer",
     "wca_competition_detail_description": "WCA比赛的完整详情：项目、赛程、选手、实时成绩和个人最好成绩追踪。比赛期间实时分数更新和排名。",
-    "zkt_competition_detail_title": "ZKT比赛详情 - 实时成绩 | Zkt Timer",
+    "zkt_competition_detail_title": "ZKT比赛详情 - 实时成绩 | ZKT Timer",
     "zkt_competition_detail_description": "ZKT非官方比赛详情。实时成绩、项目、报名、记分卡录入、直播和记录追踪。",
-    "pro_title": "Zkt Timer Pro - 高级会员",
-    "pro_description": "升级到Zkt Timer Pro，享受高级统计、无限阶段、PDF导出、所有公式训练器和高级功能。",
-    "battle_title": "1v1对战模式 - Zkt Timer",
+    "pro_title": "ZKT Timer Pro - 高级会员",
+    "pro_description": "升级到ZKT Timer Pro，享受高级统计、无限阶段、PDF导出、所有公式训练器和高级功能。",
+    "battle_title": "1v1对战模式 - ZKT Timer",
     "battle_description": "在同一屏幕上与朋友进行1v1对战！独立开始、处罚追踪、回合历史。移动端魔方决斗。",
-    "login_title": "登录 - Zkt Timer",
-    "login_description": "登录您的Zkt Timer账户。保存您的还原记录，追踪您的统计数据，并在排名中占据一席之地。",
-    "signup_title": "创建账户 - Zkt Timer",
+    "login_title": "登录 - ZKT Timer",
+    "login_description": "登录您的ZKT Timer账户。保存您的还原记录，追踪您的统计数据，并在排名中占据一席之地。",
+    "signup_title": "创建账户 - ZKT Timer",
     "signup_description": "加入最大的魔方社区之一！创建账户，保存您的还原记录，并与全球魔方玩家竞争。",
-    "forgot_password_title": "重置密码 - Zkt Timer",
-    "forgot_password_description": "重置您的Zkt Timer账户密码。使用发送到您邮箱的链接设置新密码。",
-    "rooms_title": "实时竞速房间 - Zkt Timer",
+    "forgot_password_title": "重置密码 - ZKT Timer",
+    "forgot_password_description": "重置您的ZKT Timer账户密码。使用发送到您邮箱的链接设置新密码。",
+    "rooms_title": "实时竞速房间 - ZKT Timer",
     "rooms_description": "与其他魔方玩家实时竞速！创建房间与朋友一起玩，或加入公开房间。最佳在线速拧比赛平台。",
-    "settings_title": "用户设置 - Zkt Timer",
+    "settings_title": "用户设置 - ZKT Timer",
     "settings_description": "自定义您的计时器设置、外观和账户偏好。",
     "user_fallback": "用户",
-    "user_profile_title": "{{username}} - 魔方玩家资料 | Zkt Timer",
+    "user_profile_title": "{{username}} - 魔方玩家资料 | ZKT Timer",
     "user_profile_description": "{{username}}的魔方玩家资料。记录、还原统计和比赛历史。",
-    "trainer_title": "魔方公式训练器：OLL、PLL、F2L、ZBLL、PLL 识别和 Cross | Zkt Timer",
+    "trainer_title": "魔方公式训练器：OLL、PLL、F2L、ZBLL、PLL 识别和 Cross | ZKT Timer",
     "trainer_description": "练习 OLL、PLL、F2L、ZBLL 等公式，创建自己的公式集并分享。PLL 识别、Cross 和 XCross 练习，用智能魔方逐步跟踪每一步。每个公式单独记录用时。",
-    "trainer_algorithms_title": "公式训练器：OLL、PLL、F2L 等 | Zkt Timer",
+    "trainer_algorithms_title": "公式训练器：OLL、PLL、F2L 等 | ZKT Timer",
     "trainer_algorithms_description": "练习 OLL、PLL、F2L、ZBLL 等共 43 个类别，创建并分享你自己的公式集。",
-    "trainer_community_title": "社区公式集：魔友分享的公式集 | Zkt Timer",
+    "trainer_community_title": "社区公式集：魔友分享的公式集 | ZKT Timer",
     "trainer_community_description": "浏览魔友分享的公式集，添加到你的公式集中并练习。",
-    "alg_set_title": "{{name}} · {{owner}} | Zkt Timer",
-    "alg_set_description": "{{count}} 个公式：{{categories}}。在 Zkt Timer 公式训练器中练习。",
-    "alg_set_description_empty": "在 Zkt Timer 上分享的公式集。",
-    "stats_title": "还原统计 - Zkt Timer",
+    "alg_set_title": "{{name}} · {{owner}} | ZKT Timer",
+    "alg_set_description": "{{count}} 个公式：{{categories}}。在 ZKT Timer 公式训练器中练习。",
+    "alg_set_description_empty": "在 ZKT Timer 上分享的公式集。",
+    "stats_title": "还原统计 - ZKT Timer",
     "stats_description": "分析您的魔方表现。平均值、最佳时间、图表和详细统计。",
-    "solves_title": "还原历史 - Zkt Timer",
+    "solves_title": "还原历史 - ZKT Timer",
     "solves_description": "查看您的所有魔方还原记录。包含打乱、时间、还原详情的性能分析。",
-    "leaderboards_title": "Online Battle 排名 | Zkt Timer",
-    "leaderboards_description": "Zkt Timer 的 Online Battle 排名。分数来自使用智能魔方进行的 1v1 比赛。",
-    "terms_title": "服务条款 - Zkt Timer",
-    "terms_description": "Zkt Timer 服务条款：使用规则、账户、内容以及您作为用户的权利和责任。",
-    "privacy_title": "隐私政策 - Zkt Timer",
-    "privacy_description": "Zkt Timer 如何收集、使用和保护您的数据。隐私政策和 Cookie 信息。",
-    "delete_account_title": "删除账户 - Zkt Timer",
-    "delete_account_description": "如何删除您的 Zkt Timer 账户，哪些内容会被删除，哪些内容会保留。",
-    "credits_title": "鸣谢与致谢 - Zkt Timer",
-    "credits_description": "启发并帮助构建 Zkt Timer 的开源项目、库和开发者。",
+    "leaderboards_title": "Online Battle 排名 | ZKT Timer",
+    "leaderboards_description": "ZKT Timer 的 Online Battle 排名。分数来自使用智能魔方进行的 1v1 比赛。",
+    "terms_title": "服务条款 - ZKT Timer",
+    "terms_description": "ZKT Timer 服务条款：使用规则、账户、内容以及您作为用户的权利和责任。",
+    "privacy_title": "隐私政策 - ZKT Timer",
+    "privacy_description": "ZKT Timer 如何收集、使用和保护您的数据。隐私政策和 Cookie 信息。",
+    "delete_account_title": "删除账户 - ZKT Timer",
+    "delete_account_description": "如何删除您的 ZKT Timer 账户，哪些内容会被删除，哪些内容会保留。",
+    "credits_title": "鸣谢与致谢 - ZKT Timer",
+    "credits_description": "启发并帮助构建 ZKT Timer 的开源项目、库和开发者。",
     "app_description": "最先进的在线魔方计时器、WCA比赛追踪器和速拧平台。毫秒级精度计时。",
     "feature_list": [
       "魔方计时器",
@@ -3089,49 +3089,49 @@
     "leaderboards_keywords": "online battle 排名, 智能魔方排名, 魔方 1v1, 速拧分数, 魔方对决",
     "stats_keywords": "魔方统计, 还原分析, 魔方平均值, 速拧统计, 个人最好成绩",
     "solves_keywords": "魔方还原历史, 还原记录, 打乱历史, 魔方还原日志",
-    "pro_keywords": "Zkt Timer Pro, 高级魔方计时器, 高级魔方功能, 速拧Pro",
+    "pro_keywords": "ZKT Timer Pro, 高级魔方计时器, 高级魔方功能, 速拧Pro",
     "user_profile_keywords": "魔方玩家资料, 速拧玩家, 魔方社区资料, WCA资料",
     "wca_competitions_keywords": "WCA比赛, 速拧比赛, 魔方比赛, WCA实时, 比赛日程",
     "zkt_competitions_keywords": "ZKT比赛, 非官方魔方比赛, 土耳其魔方比赛, 国家级魔方赛事",
-    "login_keywords": "Zkt Timer登录, 魔方计时器注册, 速拧账户",
-    "wca_live_title": "WCA实时成绩 - 实时排名 | Zkt Timer",
+    "login_keywords": "ZKT Timer登录, 魔方计时器注册, 速拧账户",
+    "wca_live_title": "WCA实时成绩 - 实时排名 | ZKT Timer",
     "wca_live_description": "实时WCA比赛成绩。比赛进行时实时回合排名、还原时间和项目追踪。",
-    "wca_person_title": "选手资料 - WCA比赛 | Zkt Timer",
+    "wca_person_title": "选手资料 - WCA比赛 | ZKT Timer",
     "wca_person_description": "WCA比赛中的选手详情、项目成绩和个人最好成绩。",
-    "wca_activity_title": "比赛活动 - WCA赛程 | Zkt Timer",
+    "wca_activity_title": "比赛活动 - WCA赛程 | ZKT Timer",
     "wca_activity_description": "活动详情：预定项目、回合和选手安排。",
-    "wca_personal_bests_title": "个人最好成绩 - WCA选手 | Zkt Timer",
+    "wca_personal_bests_title": "个人最好成绩 - WCA选手 | ZKT Timer",
     "wca_personal_bests_description": "选手的各项WCA项目的个人最好成绩。",
     "faq": [
       {
         "id": "what-is",
-        "q": "什么是Zkt Timer？",
-        "a": "Zkt Timer是最先进的在线魔方计时器平台之一。它以毫秒级精度测量您的速拧还原时间，提供官方WCA打乱公式、详细统计和性能分析。功能包括实时竞速房间、智能魔方支持和公式训练器。"
+        "q": "什么是ZKT Timer？",
+        "a": "ZKT Timer是最先进的在线魔方计时器平台之一。它以毫秒级精度测量您的速拧还原时间，提供官方WCA打乱公式、详细统计和性能分析。功能包括实时竞速房间、智能魔方支持和公式训练器。"
       },
       {
         "id": "how-works",
-        "q": "Zkt Timer如何工作？",
+        "q": "ZKT Timer如何工作？",
         "a": "注册即可立即开始。计时器、统计、在线竞速和训练器等核心功能均可用。升级到Pro会员可获得更多高级功能。"
       },
       {
         "id": "cube-types",
         "q": "支持哪些类型的魔方？",
-        "a": "Zkt Timer支持所有官方WCA类别：2x2、3x3、4x4、5x5、6x6、7x7；金字塔、十二面体、Skewb、Square-1、Clock；3x3单手、3x3盲拧等。每个类别均使用官方WCA打乱公式。"
+        "a": "ZKT Timer支持所有官方WCA类别：2x2、3x3、4x4、5x5、6x6、7x7；金字塔、十二面体、Skewb、Square-1、Clock；3x3单手、3x3盲拧等。每个类别均使用官方WCA打乱公式。"
       },
       {
         "id": "offline",
         "q": "我可以在离线状态下使用它吗？",
-        "a": "是的！得益于PWA技术，Zkt Timer可以离线工作。通过浏览器“添加到主屏幕”选项安装应用程序后，您无需互联网即可使用计时器。您的数据在重新连接时会自动同步。"
+        "a": "是的！得益于PWA技术，ZKT Timer可以离线工作。通过浏览器“添加到主屏幕”选项安装应用程序后，您无需互联网即可使用计时器。您的数据在重新连接时会自动同步。"
       },
       {
         "id": "wca-official",
         "q": "它是一个官方WCA计时器吗？",
-        "a": "Zkt Timer使用官方WCA打乱公式，并为训练目的而构建。官方WCA比赛需要实体Stackmat计时器。Zkt Timer非常适合练习、训练和统计追踪。"
+        "a": "ZKT Timer使用官方WCA打乱公式，并为训练目的而构建。官方WCA比赛需要实体Stackmat计时器。ZKT Timer非常适合练习、训练和统计追踪。"
       },
       {
         "id": "devices",
         "q": "支持哪些设备？",
-        "a": "Zkt Timer可在所有现代浏览器上运行。支持Windows、macOS、Linux、Android和iOS。它可以作为PWA安装在您的手机上。它还兼容智能魔方（GAN、MoYu）和Stackmat计时器。"
+        "a": "ZKT Timer可在所有现代浏览器上运行。支持Windows、macOS、Linux、Android和iOS。它可以作为PWA安装在您的手机上。它还兼容智能魔方（GAN、MoYu）和Stackmat计时器。"
       },
       {
         "id": "data-safety",
@@ -3151,11 +3151,11 @@
       {
         "id": "smart-cube",
         "q": "如何连接智能魔方？",
-        "a": "Zkt Timer通过蓝牙支持GAN、Giiker和Particula智能魔方。在移动设备上，启用蓝牙并使用Capacitor BLE插件；在Web浏览器上，使用支持Web蓝牙的Chrome或Edge。从计时器菜单中打开智能魔方，按扫描，然后与您的设备配对。连接后，计时器会根据魔方状态自动开始和停止。"
+        "a": "ZKT Timer通过蓝牙支持GAN、Giiker和Particula智能魔方。在移动设备上，启用蓝牙并使用Capacitor BLE插件；在Web浏览器上，使用支持Web蓝牙的Chrome或Edge。从计时器菜单中打开智能魔方，按扫描，然后与您的设备配对。连接后，计时器会根据魔方状态自动开始和停止。"
       },
       {
         "id": "stackmat",
-        "q": "Zkt Timer支持Stackmat计时器吗？",
+        "q": "ZKT Timer支持Stackmat计时器吗？",
         "a": "是的。通过音频输入（3.5毫米插孔）连接您的Stackmat计时器。在计时器设置中，选择StackMat作为输入类型，然后选择正确的音频输入设备。计时器将自动检测您的Stackmat信号。"
       },
       {
@@ -3171,22 +3171,22 @@
       {
         "id": "pro",
         "q": "Pro会员有什么好处？",
-        "a": "Zkt Timer Pro解锁高级统计、无限阶段、公式和统计的PDF导出、访问所有公式训练器、高级主题和优先支持。根据计划，这是一次性或定期购买。"
+        "a": "ZKT Timer Pro解锁高级统计、无限阶段、公式和统计的PDF导出、访问所有公式训练器、高级主题和优先支持。根据计划，这是一次性或定期购买。"
       },
       {
         "id": "import",
         "q": "我可以从csTimer或Twisty Timer导入数据吗？",
-        "a": "是的。Zkt Timer支持从csTimer、Twisty Timer及其自身之前的导出格式导入数据。转到设置 > 数据 > 导入，选择源格式，然后上传您的导出文件。所有还原记录、阶段和元数据都将保留。"
+        "a": "是的。ZKT Timer支持从csTimer、Twisty Timer及其自身之前的导出格式导入数据。转到设置 > 数据 > 导入，选择源格式，然后上传您的导出文件。所有还原记录、阶段和元数据都将保留。"
       },
       {
         "id": "backup",
         "q": "如何备份我的数据？",
-        "a": "转到设置 > 数据 > 导出。Zkt Timer会生成一个包含您所有还原记录、阶段和设置的JSON文件。安全地存储此文件——您可以在任何设备上重新导入它。已登录用户还享有自动云同步。"
+        "a": "转到设置 > 数据 > 导出。ZKT Timer会生成一个包含您所有还原记录、阶段和设置的JSON文件。安全地存储此文件——您可以在任何设备上重新导入它。已登录用户还享有自动云同步。"
       },
       {
         "id": "scramble-algo",
-        "q": "Zkt Timer使用哪个打乱公式？",
-        "a": "Zkt Timer使用与cstimer相同的打乱引擎，这是速拧领域的标准。这包括适用于2x2、3x3、4x4、金字塔、十二面体、Skewb、Square-1、Clock等的符合WCA标准的随机状态打乱器。所有打乱都符合WCA规定。"
+        "q": "ZKT Timer使用哪个打乱公式？",
+        "a": "ZKT Timer使用与cstimer相同的打乱引擎，这是速拧领域的标准。这包括适用于2x2、3x3、4x4、金字塔、十二面体、Skewb、Square-1、Clock等的符合WCA标准的随机状态打乱器。所有打乱都符合WCA规定。"
       },
       {
         "id": "battle",
@@ -3200,13 +3200,13 @@
       },
       {
         "id": "pricing",
-        "q": "使用 Zkt Timer 需要付费吗？",
+        "q": "使用 ZKT Timer 需要付费吗？",
         "a": "您可以注册并立即开始使用核心体验：计时器、WCA 打乱、统计、在线竞速房间、排行榜和公式训练器。Pro 会员可解锁高级统计、无限会话、PDF 导出、智能魔方训练模式、高级主题和优先支持。没有广告。"
       },
       {
         "id": "mobile-apps",
         "q": "有iOS或Android应用程序吗？",
-        "a": "是的。Zkt Timer在iOS App Store和Google Play Store上提供原生应用。这些应用程序支持智能魔方蓝牙连接、离线模式、推送通知和原生性能。您也可以将Web应用程序安装为PWA。"
+        "a": "是的。ZKT Timer在iOS App Store和Google Play Store上提供原生应用。这些应用程序支持智能魔方蓝牙连接、离线模式、推送通知和原生性能。您也可以将Web应用程序安装为PWA。"
       },
       {
         "id": "inspection",
@@ -3216,12 +3216,12 @@
       {
         "id": "per-cube-stats",
         "q": "不同魔方类型的统计数据是分开追踪的吗？",
-        "a": "是的。Zkt Timer按（魔方类型、打乱子集）对统计数据进行分类。您的3x3平均值、2x2个人最好成绩和金字塔时间都会被独立追踪。统计页面允许您按魔方类型和时间范围进行筛选。"
+        "a": "是的。ZKT Timer按（魔方类型、打乱子集）对统计数据进行分类。您的3x3平均值、2x2个人最好成绩和金字塔时间都会被独立追踪。统计页面允许您按魔方类型和时间范围进行筛选。"
       },
       {
         "id": "offline-how",
-        "q": "Zkt Timer如何在没有互联网的情况下工作？",
-        "a": "作为PWA，Zkt Timer在首次访问后会缓存所有应用程序文件。您可以完全离线地计时还原、生成打乱和查看缓存的统计数据。当您重新连接时，待处理的还原记录将通过后台同步API自动同步到服务器。"
+        "q": "ZKT Timer如何在没有互联网的情况下工作？",
+        "a": "作为PWA，ZKT Timer在首次访问后会缓存所有应用程序文件。您可以完全离线地计时还原、生成打乱和查看缓存的统计数据。当您重新连接时，待处理的还原记录将通过后台同步API自动同步到服务器。"
       },
       {
         "id": "recognition-trainer",
@@ -3240,7 +3240,7 @@
       },
       {
         "id": "desktop-usage",
-        "q": "在电脑上怎么使用 Zkt Timer？",
+        "q": "在电脑上怎么使用 ZKT Timer？",
         "a": "顶部的菜单用来选择分组、项目和计时器类型，打乱公式就显示在下面。按住空格再松开开始计时，再按一次停止。最近的还原记录、平均成绩和还原分析在计时器旁边的模块里，模块可以拖到任意位置。点击任意成绩会打开详情窗口，可以加判罚、查看打乱或删除该次还原。"
       },
       {
@@ -3266,15 +3266,15 @@
     ],
     "nav_timer_name": "计时器",
     "nav_battle_name": "对战模式",
-    "nav_pro_name": "Zkt Timer Pro",
-    "wca_records_title": "WCA 纪录 - 最新打破的纪录 | Zkt Timer",
+    "nav_pro_name": "ZKT Timer Pro",
+    "wca_records_title": "WCA 纪录 - 最新打破的纪录 | ZKT Timer",
     "wca_records_description": "最新打破的 WCA 世界、洲际和国家纪录，并可为关注的项目开启纪录提醒。",
     "wca_records_keywords": "wca 纪录, 魔方世界纪录, 国家纪录, 纪录提醒, 速拧纪录",
-    "battle_launch_title": "对战：Online 与 Offline Battle | Zkt Timer",
+    "battle_launch_title": "对战：Online 与 Offline Battle | ZKT Timer",
     "battle_launch_description": "用智能魔方与此刻正在寻找对手的玩家进行 Online Battle，或在同一设备上与朋友进行 Offline Battle。",
-    "battle_online_title": "Online Battle | Zkt Timer",
+    "battle_online_title": "Online Battle | ZKT Timer",
     "battle_online_description": "使用智能魔方的计分 1v1 比赛。双方还原同一个打乱，先赢三局者获胜，分数计入排名。",
-    "duel_title": "{{name}} 向你发起对决 | Zkt Timer",
+    "duel_title": "{{name}} 向你发起对决 | ZKT Timer",
     "duel_description": "使用智能魔方的 Online Battle 1v1 对决。先赢 {{n}} 局者获胜，不计积分。邀请 {{minutes}} 分钟内有效。"
   },
   "quick_controls": {
@@ -3385,15 +3385,15 @@
     "turns_label": "步",
     "tps_label": "tps",
     "bt_unavailable_title": "蓝牙不可用！",
-    "bt_check_enabled": "请检查您的系统是否已启用蓝牙。",
-    "bt_browser_hint": "您的浏览器可能不支持 Web Bluetooth API。请考虑使用兼容的浏览器，最佳选择为：",
+    "bt_check_enabled": "请检查你的系统是否已启用蓝牙。",
+    "bt_browser_hint": "你的浏览器可能不支持 Web Bluetooth API。请考虑使用兼容的浏览器，最佳选择为：",
     "bt_browser_chrome": "macOS、Linux、Android 或 Windows 上的 Chrome",
     "bt_browser_bluefy": "iOS 上的 Bluefy",
     "bt_status_link_pre": "有关浏览器及受支持的 Web Bluetooth API 功能的完整列表，请参阅",
     "bt_status_link_text": "Web Bluetooth 社区组实现状态",
     "bt_status_link_post": "页面。",
     "select_device": "选择你的设备",
-    "select_device_desc": "从列表中选择你的设备 — 最近的通常在最上面。",
+    "select_device_desc": "从列表中选择你的设备。最近的通常在最上面。",
     "searching_devices": "正在搜索设备…",
     "nearest": "最近",
     "wrong_mac": "MAC 地址错误",
@@ -3412,7 +3412,7 @@
     "mac_input_help_windows": "Windows：设置 > 蓝牙和其他设备 > 你的设备 > 详细信息",
     "mac_input_help_macos": "macOS：系统设置 > 蓝牙 > 右键点击设备 > 复制地址",
     "mac_input_help_android": "Android：设置 > 蓝牙 > 你的设备 (ⓘ) > MAC 地址",
-    "mac_input_chrome_hint": "电脑上最简单 — 在 Chrome 中打开此地址，找到你的设备并复制其地址：",
+    "mac_input_chrome_hint": "电脑上最简单：在 Chrome 中打开此地址，找到你的设备并复制其地址：",
     "mac_input_cancel": "取消",
     "mac_input_connect": "连接",
     "ble_info_title": "通过蓝牙连接",
@@ -3445,12 +3445,12 @@
     "unknown_device": "未知设备",
     "disconnect": "断开连接",
     "connecting": "正在连接...",
-    "connecting_desc": "正在与您的设备配对...",
+    "connecting_desc": "正在与你的设备配对...",
     "connect": "连接",
     "ble_scan_title": "连接设备",
     "scanning": "正在搜索设备...",
     "scanning_short": "搜索中...",
-    "scanning_desc": "请确保您的设备已开机并靠近。",
+    "scanning_desc": "请确保你的设备已开机并靠近。",
     "not_listed": "列表里没有你的魔方？",
     "not_listed_desc": "浏览器的设备列表已关闭。如果里面没有你的魔方，试试下面的方法。",
     "not_listed_tip_1": "魔方连接到其他设备时在这里不可见。请先在手机上断开连接，然后转动一面将它唤醒。",
@@ -3458,11 +3458,11 @@
     "not_listed_tip_3": "如果你的魔方是我们尚未收录的新型号，请使用“显示所有设备”。",
     "show_all_devices": "显示所有设备",
     "scan_failed": "未找到设备",
-    "scan_failed_desc": "附近未找到支持的设备。请确保您的设备已开机并靠近手机。",
+    "scan_failed_desc": "附近未找到支持的设备。请确保你的设备已开机并靠近手机。",
     "permission_denied": "需要蓝牙权限",
-    "permission_denied_desc": "您需要授予“附近设备”权限才能进行蓝牙连接。请前往设置 > 应用 > 权限以启用它。",
+    "permission_denied_desc": "你需要授予“附近设备”权限才能进行蓝牙连接。请前往设置 > 应用 > 权限以启用它。",
     "bluetooth_disabled": "蓝牙已关闭",
-    "bluetooth_disabled_desc": "请打开蓝牙以连接到您的设备。",
+    "bluetooth_disabled_desc": "请打开蓝牙以连接到你的设备。",
     "nearby_devices": "附近的设备",
     "step_found": "已找到设备",
     "step_paired": "已配对",
@@ -3481,7 +3481,7 @@
     "retry": "重试",
     "abort_solve": "放弃本次还原",
     "abort_confirm_heading": "放弃确认",
-    "abort_confirm_title": "您确定要放弃本次还原吗？",
+    "abort_confirm_title": "你确定要放弃本次还原吗？",
     "abort_save_dnf": "是的，保存为DNF",
     "abort_discard": "是的，但不保存本次还原",
     "abort_continue": "不，继续",
@@ -3506,7 +3506,7 @@
     "no_devices": "未找到音频输入设备。请插入计时器并刷新。",
     "not_supported_mobile": "StackMat计时器在移动应用中不支持",
     "permission_granted": "权限已授予",
-    "permission_denied": "权限被拒绝。请从您的操作系统设置中允许麦克风访问",
+    "permission_denied": "权限被拒绝。请从你的操作系统设置中允许麦克风访问",
     "grant_mic_access": "授予麦克风访问权限"
   },
   "room_settings": {
@@ -3538,16 +3538,16 @@
   "integration": {
     "disconnect": "断开连接",
     "disconnect_title": "断开 {{name}} 账户",
-    "disconnect_confirm": "您确定要断开此账户吗？",
+    "disconnect_confirm": "要断开此账户吗？",
     "disconnect_button": "断开账户",
     "account_linked": "账户已关联",
     "link_account": "关联账户",
-    "wca_description": "关联您的WCA账户并显示您的官方记录，以增加可信度。",
+    "wca_description": "绑定 WCA 账号，在个人资料中显示你的官方成绩。",
     "disconnect_no_password": "要断开连接，请先在个人信息页面设置密码。",
     "wca_connecting": "正在连接到WCA...",
     "linking_account": "正在关联账户...",
-    "oauth_error": "OAuth 连接期间发生错误",
-    "zkt_description": "绑定 ZKT 账号，在 Zkt Timer 中查看你的 ZKT 比赛、成绩和纪录。"
+    "oauth_error": "无法绑定账号，请重试。",
+    "zkt_description": "绑定 ZKT 账号，在 ZKT Timer 中查看你的 ZKT 比赛、成绩和纪录。"
   },
   "otp": {
     "verifying": "验证中…",
@@ -3570,32 +3570,32 @@
   },
   "email_verification": {
     "title": "邮箱验证",
-    "check_email": "我们已向您的邮箱发送了一个验证码。请检查您的收件箱。",
+    "check_email": "我们已向你的邮箱发送验证码。请查看收件箱。",
     "verification_code": "验证码",
-    "code_placeholder": "输入6位数字验证码",
+    "code_placeholder": "输入 6 位数字验证码",
     "enter_code_error": "请输入验证码",
     "verify_button": "验证",
     "resend_code": "重新发送验证码",
     "code_resent": "验证码已重发！"
   },
   "wca_signup": {
-    "title": "选择用户名",
-    "description": "您正在使用您的WCA账户注册。请选择一个用户名。",
+    "title": "设置用户名",
+    "description": "你正在使用 WCA 账号注册。请选择一个用户名。",
     "first_name": "名字",
     "last_name": "姓氏",
     "email": "邮箱",
     "wca_id": "WCA ID",
     "username_label": "用户名",
-    "submit": "创建账户",
-    "username_too_short": "用户名必须至少包含2个字符",
+    "submit": "创建账号",
+    "username_too_short": "用户名至少需要 2 个字符",
     "username_too_long": "用户名最多不能超过18个字符",
     "username_invalid": "用户名只能包含字母、数字和下划线",
-    "session_expired": "会话已过期。请重试WCA登录。",
+    "session_expired": "会话已过期，请重新使用 WCA 登录。",
     "loading": "正在使用WCA登录..."
   },
   "login_wrapper": {
-    "login_title": "Zkt Timer | 登录",
-    "signup_title": "Zkt Timer | 注册",
+    "login_title": "ZKT Timer | 登录",
+    "signup_title": "ZKT Timer | 注册",
     "reset_password": "重置密码",
     "verify_email": "邮箱验证",
     "welcome": "欢迎",
@@ -3609,7 +3609,7 @@
     "signup_with_zkt": "使用 ZKT 注册",
     "connecting": "连接中…",
     "submit_login": "登录",
-    "submit_signup": "创建账户",
+    "submit_signup": "创建账号",
     "error_invalid_credentials": "邮箱或密码错误。请重试。",
     "email_suggest_cta": "你是不是想输入？",
     "turnstile_verify": "请验证你不是机器人",
@@ -3699,7 +3699,7 @@
   "theme_options": {
     "login_to_choose": "登录后即可选择主题。",
     "themes_title": "主题",
-    "themes_desc": "从预定义的主题列表中选择，或在下方自定义您自己的主题。*警告*：选择其中一个主题将重置您可能已设置的任何自定义主题设置。",
+    "themes_desc": "从预定义的主题列表中选择，或在下方自定义你自己的主题。*警告*：选择其中一个主题将重置你可能已设置的任何自定义主题设置。",
     "basic_customization": "基本主题自定义",
     "primary_color": "主色",
     "secondary_color": "次色",
@@ -3726,8 +3726,8 @@
   },
   "pro_page": {
     "hero_title": "选择你的套餐",
-    "intro_title": "你需要的一切，尽在 ZKT Pro。",
-    "intro_lede": "智能魔方分析、在魔方上练习公式、Magnet Timer 与放下停止、关注选手与破纪录提醒、自定义主题和背景。共 {{count}} 项功能。",
+    "intro_title": "Pro 包含什么",
+    "intro_lede": "Pro 有 {{count}} 项功能：智能魔方分析、用智能魔方练习公式、Magnet Timer、放下停止、关注选手、破纪录提醒、自定义主题和背景。",
     "basic_included": "包含 Basic 的全部功能",
     "groups": {
       "analysis": "分析与数据",
@@ -3735,8 +3735,8 @@
       "community": "房间与比赛",
       "personal": "个性化"
     },
-    "mobile_only_hint": "购买将在 iOS 和 Android 应用内进行",
-    "basic_hint": "您当前使用的是 Basic 套餐",
+    "mobile_only_hint": "可以在 iOS 和 Android 应用中购买 Pro",
+    "basic_hint": "你当前使用的是 Basic 套餐",
     "plan": {
       "monthly_label": "月付",
       "yearly_label": "年付",
@@ -3750,8 +3750,8 @@
       "monthly_detail_dynamic": "每月 {{price}}，按月结算",
       "yearly_detail_dynamic": "约 {{perMonth}}/月 · 节省 {{savings}}%",
       "popular": "热门",
-      "best_value": "性价比之选",
-      "trial": "7 天免费试用",
+      "best_value": "最划算",
+      "trial": "前 7 天试用",
       "no_trial": "一次性支付，无试用",
       "region_hint": "价格可能因地区而异",
       "yearly_cycle": "/年",
@@ -3761,120 +3761,120 @@
     "iap": {
       "purchase_cta": "购买",
       "purchasing": "正在处理...",
-      "purchase_success": "您的订阅已激活",
-      "purchase_error": "购买失败，请重试",
-      "blocked_by_grant": "您已拥有赠送的 Pro 会员，暂时无法购买",
+      "purchase_success": "你的 Pro 会员已开始",
+      "purchase_error": "购买未完成，请重试。",
+      "blocked_by_grant": "账户获赠的 Pro 会员有效期间无法购买",
       "granted_pro": "Pro 会员有效期至 {{date}}",
-      "cancellation_notice": "您已取消订阅。访问权限将持续到 {{date}}",
-      "billing_issue_notice": "支付失败。请更新您的支付信息以继续",
+      "cancellation_notice": "你已取消订阅。{{date}} 之前仍可使用 Pro 功能。",
+      "billing_issue_notice": "支付失败。请更新你的支付信息以继续",
       "update_payment": "更新支付信息",
       "manage_subscription": "管理订阅",
       "restore": "恢复购买",
       "restoring": "正在恢复...",
-      "restore_success": "您的订阅已成功恢复",
+      "restore_success": "你的订阅已成功恢复",
       "restore_empty": "未找到之前的购买记录",
       "restore_error": "恢复失败",
-      "upgrade_to_yearly": "升级到年付",
-      "downgrade_to_monthly": "降级到月付",
+      "upgrade_to_yearly": "换成年付",
+      "downgrade_to_monthly": "换成月付",
       "cancel_first": "请先取消订阅",
-      "lifetime_needs_cancel": "购买永久会员，请先取消当前订阅",
-      "lifetime_needs_cancel_hint": "永久会员将在当前订阅到期后解锁",
-      "cross_platform_notice": "您的订阅通过 {{platform}} 激活。请在 {{platform}} 设备上管理。",
-      "cross_platform_cta": "在 {{platform}} 上管理",
+      "lifetime_needs_cancel": "购买永久方案前，请先取消订阅",
+      "lifetime_needs_cancel_hint": "订阅结束后即可购买永久方案",
+      "cross_platform_notice": "你的订阅通过 {{platform}} 激活。请在 {{platform}} 设备上管理。",
+      "cross_platform_cta": "在 {{platform}} 设备上管理",
       "cross_platform_blocked": "此订阅是在 {{platform}} 上购买的，无法在此处更改",
-      "already_lifetime": "您已是永久会员",
+      "already_lifetime": "你已是永久会员",
       "already_lifetime_cta": "永久会员有效",
-      "already_lifetime_hint": "您无法在永久会员有效期间再次订阅",
-      "downgrade_blocked_toast": "您的年付套餐到期前无法切换到月付",
+      "already_lifetime_hint": "拥有永久会员时无法订阅",
+      "downgrade_blocked_toast": "你的年付套餐到期前无法切换到月付",
       "downgrade_blocked_cta": "年付套餐有效",
-      "downgrade_blocked_hint": "您的年付套餐将于 {{date}} 到期。之后您可以切换到月付。",
-      "paused_notice": "您的订阅已暂停。您可以通过 Google Play 恢复。"
+      "downgrade_blocked_hint": "你的年付套餐将于 {{date}} 到期。之后你可以切换到月付。",
+      "paused_notice": "你的订阅已暂停。你可以通过 Google Play 恢复。"
     },
-    "pro_active_desc": "享受所有 Pro 功能。",
+    "pro_active_desc": "所有 Pro 功能已开启。",
     "pro_expires": "有效期至 {{date}}",
     "current_plan": "当前套餐",
-    "subscribed_via_title": "您通过 {{platform}} 应用订阅",
-    "subscribed_via_subtitle": "请在您的 {{platform}} 设备上管理订阅",
+    "subscribed_via_title": "你通过 {{platform}} 应用订阅",
+    "subscribed_via_subtitle": "请在你的 {{platform}} 设备上管理订阅",
     "subscribed_via_home": "首页",
     "features_head_label": "包含内容",
     "features_head_count": "{{count}} 项功能",
     "features": {
       "sync": {
         "title": "跨设备同步",
-        "desc": "在手机上还原，在电脑上无缝继续。所有还原记录、阶段和统计数据都会自动备份到云端。更换设备、清除浏览器缓存、甚至重装应用 — 所有数据都会恢复原样。再也不会丢失数据。"
+        "desc": "你的还原和分组在所有设备上保持一致。在手机上的成绩也会出现在电脑上。更换设备或重装应用后，历史记录会恢复。"
       },
       "smart_cube_analysis": {
-        "title": "智能魔方深度分析",
-        "desc": "分步解析每一次还原：Cross、F2L、OLL、PLL — 分别查看每个阶段的时间、步数和 TPS。立即找出哪个阶段耗时最多，哪些公式拖慢了你的速度。概览图表、分步详细表格和还原动画，让您用真实数据追踪进步。"
+        "title": "智能魔方分析",
+        "desc": "分别查看每次还原的 Cross、F2L、OLL、PLL 用时、步数和 TPS。统计还会显示你在哪些 OLL 和 PLL 情况上变慢。可以逐步回放还原。"
       },
       "trainer_smart_cube": {
         "title": "用智能魔方练习公式",
         "desc": "通过蓝牙连接智能魔方，在魔方上转动公式。每一步是否正确立刻就能看到，计时会自动开始和停止。"
       },
       "trainer_pdf": {
-        "title": "将所有公式导出为 PDF",
-        "desc": "将所有公式或仅选定的公式及其替代方案，导出为 PDF 文件。"
+        "title": "下载公式 PDF",
+        "desc": "下载全部公式或只下载选中的公式，包含替代公式。"
       },
       "themes": {
         "title": "6 种专属主题",
-        "desc": "赛博朋克的霓虹闪烁、东京的夜街、诺曼的极简干净、蜜蜂守护的温暖色调、夜猫头的深邃黑暗，以及博士生的学术氛围 — 为您的计时器赋予全新的个性。每种主题都会改变颜色、背景和整体氛围。"
+        "desc": "Cyberpunk、Tokyo、Norman、Save the Bees、Night Owl 和 The PhD Student。每个主题都会改变颜色和背景。"
       },
       "leaderboard_publish": {
-        "title": "在排行榜上大放异彩",
-        "desc": "将您的最佳单次或 ao5 发布到排行榜，并在您的个人资料上自豪地展示您的 PB。让其他速拧玩家看到您的还原记录并获得启发。魔方不仅仅是为了自己 — 向世界展示您有多快。"
+        "title": "发布到排行榜",
+        "desc": "把你的最佳单次或 ao5 发布到排行榜。你的 PB 会显示在个人资料中。"
       },
       "timer_background": {
         "title": "自定义背景",
-        "desc": "将您自己的照片或喜欢的图片设置为计时器背景。每次打开计时器，都感觉独一无二。随时更换，随时重置 — 完全由您掌控。"
+        "desc": "把自己的照片或视频放在计时器后面，随时可以更换或移除。"
       },
       "room_music": {
         "title": "在房间里听音乐",
-        "desc": "加入房间，搜索任何歌曲，在还原魔方时无广告收听。从 YouTube 海量曲库中选择任何歌曲并在后台播放。播放器内置于房间内，无需额外标签页。在还原时用您自己的音乐保持动力。"
+        "desc": "在 YouTube 上搜索歌曲，在房间里边还原边听。播放器就在房间内，不用另开标签页。"
       },
       "pro_badge": {
         "title": "Pro 徽章",
-        "desc": "您的个人资料照片周围环绕着闪耀的 Pro 光环。在房间、排行榜、个人资料页面 — 无论您走到哪里，每个人都能看到您是 Pro。这不仅仅是一个徽章，更是您在社区中的身份象征。"
+        "desc": "头像周围会出现 Pro 光环。在房间、排行榜和你的个人资料中都能看到。"
       },
       "stats_customization": {
         "title": "统计自定义",
-        "desc": "完全自定义计时器下方的统计模块。您决定显示哪些模块 — 添加、删除和重新排序它们以适应您的工作流程。只查看对您重要的数据，忽略无关信息。"
+        "desc": "计时器下方的统计模块由你选择，可以添加、移除和调整顺序。"
       },
       "solve_sharing": {
         "title": "还原分享",
-        "desc": "将您的智能魔方还原分享为单个链接。您的朋友点击即可逐步探索您的完整解决方案 — 您使用了哪些公式，每个阶段花费了多少秒，您的 TPS 和步数都将详细列出。"
+        "desc": "用一个链接分享还原。智能魔方的还原，打开链接的人能看到步骤、各阶段用时、你的 TPS 和步数。"
       },
       "room_smart_cube": {
-        "title": "房间内智能魔方和 GAN 计时器",
-        "desc": "在在线房间与朋友一起还原时，连接您的智能魔方或 GAN 计时器。时间自动记录，您实时竞争 — 需要 Pro 会员才能使用此功能。"
+        "title": "房间内使用智能魔方和 GAN Timer",
+        "desc": "在房间里和朋友一起还原时可以使用智能魔方或 GAN Timer。成绩会自动保存。"
       },
       "competition_follow": {
         "title": "关注选手",
-        "desc": "在任何 WCA 比赛中关注最多 5 名选手。实时接收成绩、晋级和领奖台结果的推送通知。"
+        "desc": "在一场 WCA 比赛中最多关注 5 名选手。他们的成绩、晋级和领奖台会以通知发到你的手机。"
       },
       "record_alerts": {
         "title": "破纪录提醒",
-        "desc": "当你选择的项目在任何直播比赛中打破世界、洲际或国家纪录时，第一时间收到推送通知。"
+        "desc": "在任何进行中的比赛里，你选择的项目打破世界、洲际或国家纪录时，你会收到通知。"
       },
       "slam_to_stop": {
         "title": "放下停止",
-        "desc": "完成还原后，把魔方或双手放到桌上，计时器会自动停止。无需伸手触碰屏幕，不用额外硬件也能获得 StackMat 的手感。在手机应用中可用，灵敏度可按你的桌面调整。"
+        "desc": "还原结束后，把魔方或双手放到桌上，计时就会停止，不用碰屏幕。不需要额外硬件。在手机应用中可用，灵敏度可按你的桌面调整。"
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "把魔方放在手机后置摄像头旁边，拿起的那一刻计时就开始，放回桌上计时就停止，不用碰屏幕。只需要一个磁力魔方和手机应用。"
+        "desc": "把魔方放在手机后置摄像头旁边。拿起时开始计时，放回桌上时停止。只需要一个磁力魔方和手机应用。"
       }
     },
     "promo": {
       "title": "有促销代码吗？",
-      "desc": "在下方输入您的促销代码以激活您的会员资格。",
+      "desc": "在下方输入你的促销代码以激活你的会员资格。",
       "placeholder": "输入代码",
       "redeem": "兑换",
       "success_title": "恭喜！",
-      "success_until": "您的 {{type}} 会员有效期至 {{date}}。",
-      "success_forever": "您已成为永久 {{type}} 会员！",
+      "success_until": "你的 {{type}} 会员有效期至 {{date}}。",
+      "success_forever": "你已成为无到期日的 {{type}} 会员。",
       "success_button": "知道了",
       "error_invalid": "促销代码无效或已过期",
-      "error_used": "您已使用过此代码",
+      "error_used": "你已使用过此代码",
       "error_max_uses": "此代码已达到使用上限"
     }
   },
@@ -3884,7 +3884,7 @@
   },
   "report_user": {
     "title": "举报 {{username}}",
-    "description": "如果您认为该用户有值得举报的行为，请在下方简要说明原因并提交举报。我们将公平审查所有举报，并在必要时采取行动。",
+    "description": "如果你认为该用户有值得举报的行为，请在下方简要说明原因并提交举报。我们将公平审查所有举报，并在必要时采取行动。",
     "reason": "原因",
     "submit": "举报",
     "success": "已成功举报 {{username}}。其余事宜将由我们处理"
@@ -3976,55 +3976,55 @@
     "privacy": "隐私政策"
   },
   "credits": {
-    "title": "Zkt Timer",
+    "title": "ZKT Timer",
     "intro_1": "大家好，我是 Ibrahim。我玩魔方已经很久了，开始参加比赛之后，它对我来说就不再只是一个爱好，而是变成了一件认真得多的事情。随着训练越来越认真，每次还原之后我都会问自己同样的问题：我在哪里浪费了时间？哪个衔接拖慢了我？哪个公式我还没有真正练熟？我当时用的工具计时做得很好，但在帮我找到这些答案方面却帮不上太多忙。我想要的是这样一个工具：能深入分析我的还原，能有条理地练习公式，并且能在同一个地方完成这一切。我试过不同的应用，却没有一个完全符合我的需求，最后我决定自己动手把它做出来。",
     "intro_2": "起初我的目标很朴素：只是想做一个自己用的、每个细节都了如指掌的简单计时器。但每加入一个部分，都会随之带来新的需求。我先写了分析工具来研究自己的还原，然后是用来练习公式的训练器，之后又加入了智能魔方连接和跨设备同步。这些都远没有听起来那么简单：每个魔方品牌的蓝牙协议本身就是一道谜题，在一台设备上完美运行的功能，换到另一台设备上可能会在完全意想不到的地方出问题，有时为了追一个 bug，我要花上好几个小时，甚至好几天。尽管如此，每解决一个问题，我就往前多走一步，那个小小的计时器也随着时间慢慢成长为一个完整的生态。",
     "intro_3": "这个项目始于 2025 年，从那时起，它已经走出了很远，和最初的样子大不相同。最初在 Web 上起步的项目，后来逐渐扩展到了 iOS 和 Android；如今同一套代码运行在浏览器、手机和平板上。这条路的大部分，我都是一个人走过来的。从应用商店审核到支付系统，从原生代码到实时对战，每一步对我来说都是一次全新的学习，几乎没有一样是第一次就做对的。在这段时间里，我的工作从来不只是添加新功能；真正艰难的，是一次又一次地重新审视各个系统，把其中一些不止一次地从头设计，并让所有部分和谐地协同工作。",
-    "intro_4": "一个最初只为自己编写的工具，如今已成为其他魔方爱好者每天训练、彼此较量、关注比赛的地方。看到素不相识的人在 Zkt Timer 上打破个人纪录，我就知道这一切付出没有白费。现在相当一部分新功能也来自使用者的反馈。我并不把 Zkt Timer 看作一个已经完成的产品；它是我至今仍每天投入其中、持续成长的项目，说实话，我觉得自己还只是站在这条路的起点。",
-    "builder_ibrhyyme": "设计和开发 Zkt Timer 的人。",
+    "intro_4": "一个最初只为自己编写的工具，如今已成为其他魔方爱好者每天训练、彼此较量、关注比赛的地方。看到素不相识的人在 ZKT Timer 上打破个人纪录，我就知道这一切付出没有白费。现在相当一部分新功能也来自使用者的反馈。我并不把 ZKT Timer 看作一个已经完成的产品；它是我至今仍每天投入其中、持续成长的项目，说实话，我觉得自己还只是站在这条路的起点。",
+    "builder_ibrhyyme": "设计和开发 ZKT Timer 的人。",
     "credits_section_title": "致谢",
-    "credits_intro_1": "前面我说过，这条路的大部分是我一个人走过来的，但说实话，我从来都不是真正的孤身一人。速拧魔方圈多年来形成了一种非常慷慨的开源文化，在开发 Zkt Timer 的过程中，我一直从中汲取养分。我花了很长时间研究许多项目：有些在自己的电脑上运行试用，有些则一行一行地读，只为真正弄懂它们是如何工作的。",
+    "credits_intro_1": "前面我说过，这条路的大部分是我一个人走过来的，但说实话，我从来都不是真正的孤身一人。速拧魔方圈多年来形成了一种非常慷慨的开源文化，在开发 ZKT Timer 的过程中，我一直从中汲取养分。我花了很长时间研究许多项目：有些在自己的电脑上运行试用，有些则一行一行地读，只为真正弄懂它们是如何工作的。",
     "credits_intro_2": "每个项目都让我学到了不同的东西。有的在打乱生成、求解器思路等技术问题上为我指明了方向；有的让我看清了在训练器和用户体验方面什么才真正有效。有时是一个算法思路，有时是一个数据模型，有时则是看待整个系统的一种视角，在我卡住的时候为我打开了局面。",
-    "credits_intro_3": "我没有把这些部分原样拿来使用，而是重新审视每一部分，让它们契合 Zkt Timer 自身的结构。大部分系统我都从头重写了，有些做了简化，有些则根据需要进行了扩展。把来自不同来源的思路统一到一个架构之下，让它们彼此和谐地协同工作，是这个过程中最困难、也最有收获的部分。",
-    "credits_intro_4": "因此，今天的这套结构并不依赖于某一个来源；它是把我从许多不同项目中学到的东西汇集起来、重新构建而成的。但我必须坦白地说：如果没有下面这些开发者的付出，Zkt Timer 绝不可能在这么短的时间里走到今天。",
+    "credits_intro_3": "我没有把这些部分原样拿来使用，而是重新审视每一部分，让它们契合 ZKT Timer 自身的结构。大部分系统我都从头重写了，有些做了简化，有些则根据需要进行了扩展。把来自不同来源的思路统一到一个架构之下，让它们彼此和谐地协同工作，是这个过程中最困难、也最有收获的部分。",
+    "credits_intro_4": "因此，今天的这套结构并不依赖于某一个来源；它是把我从许多不同项目中学到的东西汇集起来、重新构建而成的。但我必须坦白地说：如果没有下面这些开发者的付出，ZKT Timer 绝不可能在这么短的时间里走到今天。",
     "credits_belief": "我相信，推动一件事向前发展，从来不只是添加新的东西；真正理解前人所做的工作、尊重它，并在其基础上做出诚实的贡献，同样重要。因此，对每一位直接或间接影响过这个项目的人给予应有的认可，对我来说与其说是一种礼节，不如说是一笔必须偿还的债。",
-    "credits_outro": "下面提到的每一个项目和每一位开发者，都在 Zkt Timer 的成长中扮演了不同的角色。有的是一个想法的起点，有的帮我解决了困扰我很久的问题，有的则开阔了我的视野，让我看到了更好的方法。这些成果大多是人们牺牲自己的业余时间开发出来，并且不求任何回报地与所有人分享的；直到我在自己的项目中扛起同样的担子，才更深刻地体会到这有多么珍贵。",
+    "credits_outro": "下面提到的每一个项目和每一位开发者，都在 ZKT Timer 的成长中扮演了不同的角色。有的是一个想法的起点，有的帮我解决了困扰我很久的问题，有的则开阔了我的视野，让我看到了更好的方法。这些成果大多是人们牺牲自己的业余时间开发出来，并且不求任何回报地与所有人分享的；直到我在自己的项目中扛起同样的担子，才更深刻地体会到这有多么珍贵。",
     "credits_thanks": "向每一位把自己的心血、时间和知识分享给这个社区的人，致以我最深的敬意和最诚挚的感谢。有你们真好。",
-    "intro_signature": "— ibrhyyme",
+    "intro_signature": "ibrhyyme",
     "inspiration_title": "参考项目",
-    "inspiration_desc": "以下项目在 Zkt Timer 的开发过程中以不同方式充当了参考。每一条都说明两件事：从该项目中借鉴了什么，以及在此基础上构建了什么。",
-    "inspiration_cubedesk": "Zkt Timer 在软件架构方面最重要的参考。React + SSR、Node.js + GraphQL、PostgreSQL + Prisma 与 Redis 如何在一个魔方平台中协同工作，是通过研究 <strong>kash</strong> 的 <strong>cubedesk</strong> 项目梳理出来的。它在服务组织与目录结构上提供了方向。其影响并不限于服务端：cubedesk 确立的界面语言，也成为计时器界面布局、还原列表与模块排布的参考。我们分道扬镳之处在于：cubedesk 是一个网页应用。我希望同一套代码能通过 Capacitor 发布到 iOS 与 Android，因此重新构建了 SSR 层、会话管理以及跨设备同步，使其同时支撑原生端。",
+    "inspiration_desc": "以下项目在 ZKT Timer 的开发过程中以不同方式充当了参考。每一条都说明两件事：从该项目中借鉴了什么，以及在此基础上构建了什么。",
+    "inspiration_cubedesk": "ZKT Timer 在软件架构方面最重要的参考。React + SSR、Node.js + GraphQL、PostgreSQL + Prisma 与 Redis 如何在一个魔方平台中协同工作，是通过研究 <strong>kash</strong> 的 <strong>cubedesk</strong> 项目梳理出来的。它在服务组织与目录结构上提供了方向。其影响并不限于服务端：cubedesk 确立的界面语言，也成为计时器界面布局、还原列表与模块排布的参考。我们分道扬镳之处在于：cubedesk 是一个网页应用。我希望同一套代码能通过 Capacitor 发布到 iOS 与 Android，因此重新构建了 SSR 层、会话管理以及跨设备同步，使其同时支撑原生端。",
     "inspiration_cstimer": "打乱生成的基础。各类魔方的打乱算法与子集结构、min2phase Kociemba 求解器以及群论库，都是参考 <strong>cs0x7f</strong> 的 <strong>csTimer</strong> 与 <strong>min2phase</strong> 构建的。在把这部分代码从 JavaScript 迁移到 TypeScript 的过程中，它被重构为基于注册表的生成器架构；现在每种魔方类型都会注册自己的生成器，客户端与服务器可以产生相同的打乱。在此基础上，还加入了 40 多个 CFOP、Roux、Mehta 与 ZZ 子集、我自己为 Square-1 和 Clock 编写的 2D 渲染器，以及一个让重型求解器在不卡界面的前提下运行的 Web Worker 层。",
-    "inspiration_cubedex": "Trainer 模块用户体验方面的主要参考之一。智能魔方如何接入训练流程，是通过研究 <strong>Pau Oliva Fora</strong> 的项目梳理出来的。在 Zkt Timer 中，这一结构被拆分为四种独立模式（标准、智能魔方、识别、效率）；系统为每条公式单独记录统计数据，队列顺序会根据用户较弱的情况自适应调整，并加入了 2D 与 3D 图案可视化以及用于打印公式表的 PDF 导出。",
-    "inspiration_cubingapp": "Trainer 中使用的公式集合有很大一部分来自 <strong>spencerchubb</strong> 创建的 <strong>cubingapp</strong> 数据集，并被适配到 Zkt Timer 的数据模型。其中的还原准备公式由我自己的脚本重新生成，图案图像经过我自己的渲染流程处理，整个集合被划分为 31 个类别，并用我自己补充的公式进行了扩展。",
-    "inspiration_rubikssolverdemo": "Cross、XCross、EOCross 以及 F2L 配对求解逻辑的起点。<strong>or18</strong> 开发的基于坐标的 IDA* 实现，是 Zkt Timer 求解器系统设计中的基础参考。这一模块中的工作是移植与适配：求解器被迁移到 Web Worker 架构，并接入了逐步求解界面。算法背后的数学属于 or18。",
-    "inspiration_letscube": "1v1 房间与友谊赛形式的概念基础来自这个项目。同步共享的还原模型如何构建，是通过研究 <strong>coder13</strong> 的作品梳理出来的。Zkt Timer 的房间系统是在这一思路之上从零编写的，并加入了我认为 LetsCube 中所缺少的部分：房间内的智能魔方支持、实时聊天、观战模式、房间管理与用户封禁、1v1 对决模式，以及通过 Redis 在多台服务器之间广播的 Socket.IO 层。",
-    "inspiration_competitorgroups": "这是一个让选手在 WCA 比赛中查看自己分组与任务的项目，而且做得非常好。我不希望选手为了这些信息还要去另一个网站，因此把同样的体验搬进了 Zkt Timer。选手自己的日程、担任裁判与打乱员的任务、各项目的个人最佳成绩以及轮次成绩，现在都集中在同一个界面上。分组界面的布局正是在这个项目的影响下成形的。",
-    "inspiration_wcalive": "一个为实时跟踪 WCA 比赛而打造的平台，它把逐轮成绩流这件事解决得非常出色。<strong>WCA Software Team</strong> 的工作，是 Zkt Timer 中 WCA Live 集成在结构方法上的直接来源。而 ZKT 比赛平台本身则是为 Zkt Timer 从零编写的：报名、成绩卡录入、批量录入模式、轮次管理、裁判与打乱员及跑者的任务分配、全国纪录跟踪、代表管理、A/B 分日比赛以及 WCIF 生成。从 wca-live 借鉴的是代表工作流程的逻辑。",
-    "inspiration_rubikcube": "首页上的交互式 3D 魔方是从 <strong>Dev-tanay</strong> 的这个项目一比一移植而来的。原始代码基于 Three.js r95 编写；迁移到 r125 时适配了发生变化的 API，并将代码转换为 TypeScript。类结构与方法命名与原始代码保持一致。我所增加的部分是把魔方接入 Zkt Timer 的计时器：打乱生成、还原检测与计时。这一条中代码的骨架属于 Dev-tanay。",
+    "inspiration_cubedex": "Trainer 模块用户体验方面的主要参考之一。智能魔方如何接入训练流程，是通过研究 <strong>Pau Oliva Fora</strong> 的项目梳理出来的。在 ZKT Timer 中，这一结构被拆分为四种独立模式（标准、智能魔方、识别、效率）；系统为每条公式单独记录统计数据，队列顺序会根据用户较弱的情况自适应调整，并加入了 2D 与 3D 图案可视化以及用于打印公式表的 PDF 导出。",
+    "inspiration_cubingapp": "Trainer 中使用的公式集合有很大一部分来自 <strong>spencerchubb</strong> 创建的 <strong>cubingapp</strong> 数据集，并被适配到 ZKT Timer 的数据模型。其中的还原准备公式由我自己的脚本重新生成，图案图像经过我自己的渲染流程处理，整个集合被划分为 31 个类别，并用我自己补充的公式进行了扩展。",
+    "inspiration_rubikssolverdemo": "Cross、XCross、EOCross 以及 F2L 配对求解逻辑的起点。<strong>or18</strong> 开发的基于坐标的 IDA* 实现，是 ZKT Timer 求解器系统设计中的基础参考。这一模块中的工作是移植与适配：求解器被迁移到 Web Worker 架构，并接入了逐步求解界面。算法背后的数学属于 or18。",
+    "inspiration_letscube": "1v1 房间与友谊赛形式的概念基础来自这个项目。同步共享的还原模型如何构建，是通过研究 <strong>coder13</strong> 的作品梳理出来的。ZKT Timer 的房间系统是在这一思路之上从零编写的，并加入了我认为 LetsCube 中所缺少的部分：房间内的智能魔方支持、实时聊天、观战模式、房间管理与用户封禁、1v1 对决模式，以及通过 Redis 在多台服务器之间广播的 Socket.IO 层。",
+    "inspiration_competitorgroups": "这是一个让选手在 WCA 比赛中查看自己分组与任务的项目，而且做得非常好。我不希望选手为了这些信息还要去另一个网站，因此把同样的体验搬进了 ZKT Timer。选手自己的日程、担任裁判与打乱员的任务、各项目的个人最佳成绩以及轮次成绩，现在都集中在同一个界面上。分组界面的布局正是在这个项目的影响下成形的。",
+    "inspiration_wcalive": "一个为实时跟踪 WCA 比赛而打造的平台，它把逐轮成绩流这件事解决得非常出色。<strong>WCA Software Team</strong> 的工作，是 ZKT Timer 中 WCA Live 集成在结构方法上的直接来源。而 ZKT 比赛平台本身则是为 ZKT Timer 从零编写的：报名、成绩卡录入、批量录入模式、轮次管理、裁判与打乱员及跑者的任务分配、全国纪录跟踪、代表管理、A/B 分日比赛以及 WCIF 生成。从 wca-live 借鉴的是代表工作流程的逻辑。",
+    "inspiration_rubikcube": "首页上的交互式 3D 魔方是从 <strong>Dev-tanay</strong> 的这个项目一比一移植而来的。原始代码基于 Three.js r95 编写；迁移到 r125 时适配了发生变化的 API，并将代码转换为 TypeScript。类结构与方法命名与原始代码保持一致。我所增加的部分是把魔方接入 ZKT Timer 的计时器：打乱生成、还原检测与计时。这一条中代码的骨架属于 Dev-tanay。",
     "inspiration_pllrecognition": "PLL 识别训练模块的直接基础。键盘驱动的 PLL 识别练习、双面识别指南以及自适应重复逻辑均来自 <strong>Roman Strakhov</strong> 的项目。原始代码使用 Vue 编写；该模块被用 React 与 TypeScript 重写。在重写过程中，识别指南被补全至覆盖全部 73 种情况，并加入了设备端历史记录层、术语表视图以及一段 13 步的引导任务。如今该模块的体量约为原始项目的四倍。",
     "libraries_title": "使用的库",
-    "libraries_desc": "直接用于 Zkt Timer 基础设施的核心速拧库。",
+    "libraries_desc": "直接用于 ZKT Timer 基础设施的核心速拧库。",
     "libraries_cubingjs": "用于智能魔方状态跟踪、WCA 符号和 KPattern 匹配的核心库。由 <strong>Lucas Garron</strong> 和 cubing.js 贡献者开发。",
     "libraries_ganweb": "提供 GAN 智能魔方的蓝牙连接管理和陀螺仪/运动逻辑的库。智能魔方模块构建在此库之上。",
     "libraries_smartcube_web_bluetooth": "gan-web-bluetooth 的持续维护版本。我们 GAN、QiYi、MoYu、Giiker 和 GoCube 驱动中的许多修复（从一个蓝牙数据包读取多个 GAN 转动、数据包校验、陀螺仪支持、MAC 候选地址）都来自这个库，它的真实魔方录制数据也用于我们的测试。",
     "libraries_cubejs": "用于各种分析和还原功能的が核心魔方求解库。",
     "opensource_title": "开源",
-    "opensource_text": "Zkt Timer 构建在数百个开源软件包之上，包括 React、Apollo、Prisma 和 Three.js。完整的依赖列表可以在 <code>package.json</code> 文件中找到。衷心感谢所有多年来构建和维护这些库的人。",
+    "opensource_text": "ZKT Timer 构建在数百个开源软件包之上，包括 React、Apollo、Prisma 和 Three.js。完整的依赖列表可以在 <code>package.json</code> 文件中找到。衷心感谢所有多年来构建和维护这些库的人。",
     "community_title": "致社区",
-    "community_text": "致 <strong>WCA</strong> 和全球速拧社区。围绕一个单一的谜题建立了一个非凡的全球社区。Zkt Timer 有意义的真正原因在于它能够成为这个社区的一部分。",
+    "community_text": "致 <strong>WCA</strong> 和全球速拧社区。围绕一个单一的谜题建立了一个非凡的全球社区。ZKT Timer 有意义的真正原因在于它能够成为这个社区的一部分。",
     "copyright_title": "版权声明",
-    "copyright_text": "本软件的部分内容引用了上述项目的代码或概念。每个项目保留其原始版权。Zkt Timer 自身的架构、系统和功能受以下版权保护：",
+    "copyright_text": "本软件的部分内容引用了上述项目的代码或概念。每个项目保留其原始版权。ZKT Timer 自身的架构、系统和功能受以下版权保护：",
     "copyright_zkt": "版权所有 (c) 2026 <strong>ibrhyyme</strong>",
     "license_text": "本项目根据 <strong>GNU General Public License v3.0</strong> 发布。",
-    "originals_title": "Zkt Timer 的新功能",
-    "originals_desc": "本节收录为 Zkt Timer 设计并开发的功能。每一项都源于平台自身的需求以及用户提出的反馈。",
+    "originals_title": "ZKT Timer 的新功能",
+    "originals_desc": "本节收录为 ZKT Timer 设计并开发的功能。每一项都源于平台自身的需求以及用户提出的反馈。",
     "original_notifications_title": "比赛通知与倒计时系统",
-    "original_notifications": "Zkt Timer 会为你关注的比赛生成自动通知。报名开放、分组与任务分配的发布、成绩录入以及被打破的纪录都会以通知形式送达，同时会显示距离比赛日期的倒计时。该系统在服务器端以定时任务运行，并同时产生应用内通知和推送通知。",
+    "original_notifications": "ZKT Timer 会为你关注的比赛生成自动通知。报名开放、分组与任务分配的发布、成绩录入以及被打破的纪录都会以通知形式送达，同时会显示距离比赛日期的倒计时。该系统在服务器端以定时任务运行，并同时产生应用内通知和推送通知。",
     "original_radar_title": "纪录雷达",
     "original_radar": "提前计算你所参加的比赛中可能被打破的纪录。系统会比对选手名单、项目日程与现行的全国纪录，判断哪些纪录面临风险，并在比赛页面上展示结果。",
     "original_native_title": "原生移动应用",
-    "original_native": "Zkt Timer 以原生应用的形式在 iOS 和 Android 上发布。智能魔方连接通过原生 BLE 层运行，加速度计与触觉反馈由原生插件提供。边缘手势、安全区域和键盘行为在每个平台上分别处理。",
+    "original_native": "ZKT Timer 以原生应用的形式在 iOS 和 Android 上发布。智能魔方连接通过原生 BLE 层运行，加速度计与触觉反馈由原生插件提供。边缘手势、安全区域和键盘行为在每个平台上分别处理。",
     "original_offline_title": "完整离线模式",
     "original_offline": "在没有网络连接的情况下，依然可以记录还原、开启分组并查看统计数据。连接恢复后，待处理的还原会进入队列并与服务器进行核对，冲突会被解决，重复记录会依据指纹被过滤掉。",
     "original_battle_title": "Offline Battle（1v1）",
@@ -4045,17 +4045,17 @@
   "terms": {
     "title": "服务条款",
     "last_update": "最后更新：2026年10月26日",
-    "intro": "在使用 Zkt Timer（“平台”）服务之前，请仔细阅读本服务条款协议（“协议”）。通过访问或使用本平台，即表示您同意受本协议的约束。",
+    "intro": "在使用 ZKT Timer（“平台”）服务之前，请仔细阅读本服务条款协议（“协议”）。通过访问或使用本平台，即表示您同意受本协议的约束。",
     "section_1_title": "1. 各方",
-    "section_1_text": "本协议由 Zkt Timer 的开发者 İbrahim Yıldız（\"Zkt Timer\"）与平台用户（\"用户\"）订立。",
+    "section_1_text": "本协议由 ZKT Timer 的开发者 İbrahim Yıldız（\"ZKT Timer\"）与平台用户（\"用户\"）订立。",
     "section_2_title": "2. 服务范围",
-    "section_2_text": "Zkt Timer 是一个提供魔方及其他扭转类益智玩具在线计时器、统计追踪、公式训练、智能魔方支持，以及房间和 Online Battle 等社区功能的平台。本平台按\"现状\"提供，不保证不间断或无错误运行。",
+    "section_2_text": "ZKT Timer 是一个提供魔方及其他扭转类益智玩具在线计时器、统计追踪、公式训练、智能魔方支持，以及房间和 Online Battle 等社区功能的平台。本平台按\"现状\"提供，不保证不间断或无错误运行。",
     "section_3_title": "3. 会员资格和使用条款",
     "section_3_item_1": "用户保证在注册时提供的信息准确且最新。",
     "section_3_item_2": "18 岁以下用户必须获得父母或法定监护人的同意才能使用本平台。",
     "section_3_item_3": "用户只能将本平台用于合法目的。禁止威胁平台安全、损害其他用户或干扰系统运行的活动。",
     "section_3_item_4": "用户对账户安全（密码等）负全部责任。任何未经授权的账户使用必须立即向平台报告。",
-    "section_3_item_5": "如用户违反本协议、滥用平台或损害其他用户，Zkt Timer 可暂停或终止该用户的会员资格。",
+    "section_3_item_5": "如用户违反本协议、滥用平台或损害其他用户，ZKT Timer 可暂停或终止该用户的会员资格。",
     "content_title": "4. 用户内容与社区规则",
     "content_text": "您须对添加到个人资料、私信和房间聊天中的内容负责，并授予我们在平台上展示这些内容所需的许可。以下行为被禁止：",
     "content_item_1": "包含侮辱、骚扰、威胁、仇恨言论或歧视的内容，",
@@ -4066,17 +4066,17 @@
     "fair_title": "5. 公平使用",
     "fair_text": "进入排名、Online Battle 和房间的成绩必须反映真实的还原。编造的成绩、被篡改的智能魔方数据或借助自动化工具取得的成绩一经发现即被删除；积分可能被重置，账户可能受到限制。",
     "relation_title": "6. 与WCA和ZKT的关系",
-    "relation_text": "Zkt Timer 是一款独立应用，与世界魔方协会（WCA）无关联，也未获其认可。WCA的比赛和成绩信息依据WCA的公开数据展示，仅供参考。Zeka Küpü Türkiye（ZKT）的比赛由ZKT主办；Zkt Timer 仅展示其信息。",
+    "relation_text": "ZKT Timer 是一款独立应用，与世界魔方协会（WCA）无关联，也未获其认可。WCA的比赛和成绩信息依据WCA的公开数据展示，仅供参考。Zeka Küpü Türkiye（ZKT）的比赛由ZKT主办；ZKT Timer 仅展示其信息。",
     "section_4_title": "7. 知识产权",
-    "section_4_text": "平台上的所有软件、设计、内容、图像和商标均属于 Zkt Timer 或其许可方。用户不得为商业目的复制、复制、分发或使用此内容。",
+    "section_4_text": "平台上的所有软件、设计、内容、图像和商标均属于 ZKT Timer 或其许可方。用户不得为商业目的复制、复制、分发或使用此内容。",
     "section_5_title": "8. 免责声明",
-    "section_5_text": "Zkt Timer 对在使用平台过程中可能发生的数据丢失、连接错误或硬件不兼容不承担任何责任。访问第三方链接由用户自行负责。",
+    "section_5_text": "ZKT Timer 对在使用平台过程中可能发生的数据丢失、连接错误或硬件不兼容不承担任何责任。访问第三方链接由用户自行负责。",
     "section_6_title": "9. 付费服务与退款",
     "section_6_text": "平台上的部分服务为付费服务。Pro 会员通过 Apple App Store 或 Google Play Store 购买；付款、订阅管理和退款均适用相应商店的政策。新订阅用户可享受7天免费试用。如需退款，请直接联系 App Store 或 Google Play 客服。删除账户不会取消有效订阅；您需要在 App Store 或 Google Play 设置中另行取消订阅。",
     "deletion_title": "10. 删除账户",
     "deletion_text": "您可以随时在账户设置的\"危险区域\"中使用\"删除账户\"删除您的账户。删除是永久性的；您的还原记录、会话、统计和私信无法恢复。删除前，您可以在设置中导出您的数据。",
     "section_7_title": "11. 协议变更",
-    "section_7_text": "Zkt Timer 保留随时更新本协议的权利。更新后的条款在平台上发布之日生效。建议用户定期查看此页面。",
+    "section_7_text": "ZKT Timer 保留随时更新本协议的权利。更新后的条款在平台上发布之日生效。建议用户定期查看此页面。",
     "section_8_title": "12. 争议解决",
     "section_8_text": "本协议适用土耳其法律。对于您以消费者身份产生的争议，在第6502号《消费者保护法》规定的金额限度内由消费者仲裁委员会管辖，超出该限度的由消费者法院管辖。",
     "section_9_title": "13. 联系方式",
@@ -4085,12 +4085,12 @@
   },
   "privacy": {
     "title": "隐私政策和数据保护声明",
-    "app_identity": "应用：Zkt Timer Rubik's Timer & WCA (com.zktimer.app)。开发者：İbrahim Yıldız。",
+    "app_identity": "应用：ZKT Timer Rubik's Timer & WCA (com.zktimer.app)。开发者：İbrahim Yıldız。",
     "last_update": "最后更新：2026年11月2日",
-    "intro_1": "在Zkt Timer（“平台”，“我们”）中，我们高度重视用户（“用户”，“您”）个人数据的安全和隐私。本声明已根据土耳其第6698号个人数据保护法（“KVKK”）及相关法规准备，旨在告知您关于您的个人数据的处理、存储和传输。",
+    "intro_1": "在ZKT Timer（“平台”，“我们”）中，我们高度重视用户（“用户”，“您”）个人数据的安全和隐私。本声明已根据土耳其第6698号个人数据保护法（“KVKK”）及相关法规准备，旨在告知您关于您的个人数据的处理、存储和传输。",
     "intro_2": "本文仅供告知之用。您的个人数据依据下文所列的法律依据进行处理；凡需要您明确同意的情形，均会另行明确征得您的同意。",
     "section_1_title": "1. 数据控制者",
-    "section_1_text": "根据KVKK，您的个人数据由 Zkt Timer 的开发者 İbrahim Yıldız 作为数据控制者，在下述范围内进行处理。您可以通过 ibrhyyme@icloud.com 与我们联系。",
+    "section_1_text": "根据KVKK，您的个人数据由 ZKT Timer 的开发者 İbrahim Yıldız 作为数据控制者，在下述范围内进行处理。您可以通过 ibrhyyme@icloud.com 与我们联系。",
     "section_2_title": "2. 个人数据处理目的",
     "section_2_text": "您的个人数据将用于以下目的进行处理：",
     "section_2_item_1": "进行平台会员注册。",
@@ -4162,7 +4162,7 @@
     "section_6_item_8": "要求赔偿因非法处理个人数据而造成的损害。",
     "section_6_contact": "如需行使上述权利，请使用您账户注册的电子邮件地址将请求发送至 <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>。我们将在最迟30天内免费答复。如您的请求被拒绝、您认为答复不充分或未在期限内得到答复，您可以向土耳其个人数据保护委员会（KVKK委员会）投诉。",
     "cookie_title": "Cookie政策",
-    "cookie_intro": "Zkt Timer 仅使用服务运行所必需的Cookie和设备存储，不使用任何广告或追踪Cookie。唯一的例外：您在房间中选择歌曲后，打开的 YouTube 播放器可能会使用其自身的Cookie或存储。",
+    "cookie_intro": "ZKT Timer 仅使用服务运行所必需的Cookie和设备存储，不使用任何广告或追踪Cookie。唯一的例外：您在房间中选择歌曲后，打开的 YouTube 播放器可能会使用其自身的Cookie或存储。",
     "cookie_section_1_title": "1. 什么是Cookie？",
     "cookie_section_1_text": "Cookie是您访问的网站通过您的浏览器存储在您的设备或网络服务器上的小型文本文件。",
     "cookie_section_2_title": "2. 使用的Cookie类型",
@@ -4185,74 +4185,76 @@
   },
   "delete_account": {
     "title": "删除账户",
-    "intro": "您可以随时删除您的 Zkt Timer 账户及其关联数据。删除操作在账户内完成，因此您需要先登录。",
+    "intro": "你可以随时删除你的 ZKT Timer 账户及其关联数据。删除操作在账户内完成，因此你需要先登录。",
     "steps_title": "如何删除账户",
-    "step_1": "在网站或应用中登录 Zkt Timer。",
+    "step_1": "在网站或应用中登录 ZKT Timer。",
     "step_2": "在账户设置中打开\"危险区域\"。",
     "step_3": "点击\"删除账户\"并确认。",
     "button": "前往危险区域",
-    "no_login_title": "如果您无法登录",
-    "no_login_text": "如果您忘记了密码，可以在登录页面重置。如果仍然无法登录，请使用账户绑定的电子邮件地址发送邮件至 <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>，我们将为您删除账户。您的请求最迟在30天内得到答复。",
+    "no_login_title": "如果你无法登录",
+    "no_login_text": "如果你忘记了密码，可以在登录页面重置。如果仍然无法登录，请使用账户绑定的电子邮件地址发送邮件至 <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>，我们将为你删除账户。你的请求最迟在30天内得到答复。",
+    "partial_title": "如果你只想删除部分数据",
+    "partial_text": "无需删除账户，你可以在应用内逐条删除还原记录、会话和私信，并在账户设置中移除关联账户。如需删除头像等其他数据，请使用账户绑定的电子邮件地址发送邮件至 <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>。你的请求最迟在30天内得到答复。",
     "deleted_title": "哪些内容会被删除",
-    "deleted_text": "您的还原记录、会话、统计、私信、个人资料、上传的文件和邮件发送记录将被永久删除。已删除的数据无法恢复。",
+    "deleted_text": "你的还原记录、会话、统计、私信、个人资料、上传的文件和邮件发送记录将被永久删除。已删除的数据无法恢复。",
     "kept_title": "哪些内容会保留",
-    "kept_text": "Online Battle 对局保留在对手的历史记录中，但与您账户的关联已被移除。服务器记录最迟在1年内删除，备份在备份周期结束后删除。如果您有有效订阅，删除账户不会取消订阅；您需要在 App Store 或 Google Play 中取消。"
+    "kept_text": "Online Battle 对局保留在对手的历史记录中，但与你账户的关联已被移除。服务器记录最迟在1年内删除，备份在备份周期结束后删除。如果你有有效订阅，删除账户不会取消订阅；你需要在 App Store 或 Google Play 中取消。"
   },
   "welcome_wca": {
     "eyebrow": "WCA比赛",
-    "title": "在一个平台追踪所有WCA比赛",
-    "subtitle": "无论您身在何处 — 实时结果、您的任务分配、场地和赛程尽在掌握，并有即时通知。",
+    "title": "在应用中关注 WCA 比赛",
+    "subtitle": "实时成绩、你的任务、场地和赛程都在一个页面。轮次开始和成绩公布时你会收到通知。",
     "image_alt": "WCA比赛详情页预览",
     "image_badge_live": "WCA LIVE",
-    "feat_live_title": "WCA Live实时结果",
-    "feat_live_desc": "轮次结束的瞬间，结果即可从WCA Live流式传输。无需刷新。",
-    "feat_notifications_title": "实时轮次推送通知",
-    "feat_notifications_desc": "了解您的轮次何时开始、结果何时发布以及您的组别何时被叫到。",
+    "feat_live_title": "WCA Live 成绩",
+    "feat_live_desc": "每轮结束后成绩从 WCA Live 传来，不用刷新页面。",
+    "feat_notifications_title": "轮次通知",
+    "feat_notifications_desc": "通过通知了解你的轮次何时开始、成绩何时公布，以及你在哪一组。",
     "feat_assignments_title": "任务分配",
-    "feat_assignments_desc": "您的所有裁判、打乱员、引导员和选手分配集中在一屏。",
+    "feat_assignments_desc": "你担任裁判、打乱员、引导员和选手的任务都在一个页面。",
     "feat_venue_title": "场地与赛程",
-    "feat_venue_desc": "完整的场地详情、地图、房间布局和完整的赛程时间线。",
+    "feat_venue_desc": "场地、地图、房间布局和完整赛程。",
     "feat_competitors_title": "选手统计",
-    "feat_competitors_desc": "每位选手的WR/NR排名、个人最好成绩和历史记录 — 一键可达。",
-    "feat_records_title": "WR/NR记录追踪",
-    "feat_records_desc": "在比赛期间实时观看记录被打破 — 绝不错过任何精彩瞬间。",
+    "feat_competitors_desc": "每位选手的 WR 和 NR 排名、个人最好成绩和历史记录。",
+    "feat_records_title": "WR 和 NR 纪录",
+    "feat_records_desc": "比赛期间实时查看被打破的纪录。",
     "upcoming_title": "即将举行的比赛",
-    "upcoming_hint": "来自世界各地 — 点击打开详情页",
+    "upcoming_hint": "来自世界各地。点击查看详情。",
     "stat_wca_upcoming": "即将举行的WCA比赛",
-    "stat_capacity": "总选手容量",
+    "stat_capacity": "选手名额",
     "stat_events": "支持的WCA项目",
-    "stat_languages": "平台语言",
+    "stat_languages": "语言",
     "stat_cubers": "注册选手",
     "stat_solves": "已记录的还原次数",
     "empty": "目前没有即将举行的比赛。",
-    "cta": "浏览所有比赛"
+    "cta": "所有比赛"
   },
   "welcome_hero": {
     "title_start": "专业",
     "title_highlight": "魔方计时器",
-    "description": "通过专业计时器、详细分析和实时比赛解锁您的潜力。",
+    "description": "通过专业计时器、详细分析和实时比赛解锁你的潜力。",
     "cta_start": "开始计时 →",
-    "start_now": "立即开始",
+    "start_now": "开始",
     "cta_signup": "注册",
     "cta_login": "登录",
     "title_highlight_2": "速拧平台",
     "title_highlight_3": "还原与分析工具",
     "title_highlight_4": "WCA比赛助手",
     "store_pill": "新",
-    "store_tagline": "Zkt Timer现已登陆应用商店",
-    "or_continue_web": "或继续在网页版使用",
+    "store_tagline": "ZKT Timer现已登陆应用商店",
+    "or_continue_web": "或在网页版继续",
     "app_store_alt": "在App Store下载",
-    "google_play_alt": "在Google Play获取",
-    "cta_try": "立即体验",
+    "google_play_alt": "从 Google Play 下载",
+    "cta_try": "打开计时器",
     "rating_line": "Google Play 评分 {{play}}，App Store 评分 {{apple}}"
   },
   "welcome_chapters": {
-    "title": "围绕还原的一切",
-    "lede": "下面的画面都直接来自应用和真实的练习。",
+    "title": "应用内的画面",
+    "lede": "画面来自应用和真实的练习。",
     "timer": {
       "name": "计时器",
       "title": "设置一次，然后专心还原",
-      "body": "符合 WCA 规则的观察时间，自动判定 +2 和 DNF；每次还原后生成新打乱；界面由你自己安排。移动模块、选择主题，开通 Pro 后还能在时间后面放上自己的照片或视频。",
+      "body": "15 秒 WCA 观察时间和 +2、DNF 规则已设置好。每次还原后会出现新的打乱。可以移动模块、选择主题。开通 Pro 后，可以在时间后面放上自己的照片或视频。",
       "fact_1": "键盘、触屏、StackMat、GAN 和 QiYi 计时器，或智能魔方",
       "fact_2": "为每个打乱算好十字和 XCross 解法",
       "fact_3": "支持全部 WCA 项目，并提供打乱的 3D 预览",
@@ -4261,9 +4263,9 @@
     "smart": {
       "name": "智能魔方",
       "title": "每一步都有记录",
-      "body": "连接智能魔方后，第一步转动时开始计时，魔方还原时自动停止。之后打开这次还原逐步查看：十字、每组 F2L、OLL 和 PLL，观察用时和转动用时分开显示。",
+      "body": "连接智能魔方后，第一步转动时开始计时，魔方还原时停止。之后打开这次还原逐步查看：十字、每组 F2L、OLL 和 PLL。观察用时和转动用时分开显示。",
       "fact_1": "支持 {{brands}} 个品牌，包括 GAN、MoYu 和 QiYi",
-      "fact_2": "魔方在屏幕上以 3D 同步，一步不差",
+      "fact_2": "魔方在屏幕上以 3D 跟着你的手转动",
       "fact_3": "Pro 提供逐步分析和回放",
       "caption": "GAN i4 上一次 8.73 秒还原的回放：55 步，每秒 6.30 步"
     },
@@ -4279,7 +4281,7 @@
     "stats": {
       "name": "统计",
       "title": "看清时间花在哪里",
-      "body": "最佳单次和各项平均、时间线、按小时的稳定性、还原日历，以及一整年的活跃度，一目了然。可按分组、魔方和子类型筛选，并把当前视图作为链接分享。",
+      "body": "最佳单次、各项平均、时间线、按小时的稳定性、还原日历和一年的活跃度都在一个页面。可按分组、魔方和子类型筛选，并把这个视图作为链接分享。",
       "fact_1": "从 ao5 到 ao1000 的平均成绩",
       "fact_2": "每日还原目标和连续天数",
       "fact_3": "可从其他计时器导入历史记录",
@@ -4297,7 +4299,7 @@
     "together": {
       "name": "一起玩",
       "title": "和对面的人比一比",
-      "body": "对战模式把一块屏幕分给面对面坐着的两位玩家：同一个打乱，各自计分，愿意的话还能各用一个智能魔方。离得远的朋友可以进房间，大家还原同一个打乱，成绩实时显示在表格中。",
+      "body": "对战模式把一块屏幕分给面对面坐着的两位玩家。你们还原同一个打乱，各自计分，愿意的话都可以用智能魔方。离得远的朋友可以进房间：大家还原同一个打乱，成绩显示在实时表格中。",
       "fact_1": "最多 16 人的房间，支持聊天和观战",
       "fact_2": "对战模式可在手机、平板和电脑上使用",
       "fact_3": "可附带还原记录的私信",
@@ -4306,7 +4308,7 @@
   },
   "welcome_inside": {
     "title": "应用里有什么",
-    "lede": "这份清单上的功能如今都已在 Zkt Timer 中。标有 Pro 的项目需要 Pro 会员。",
+    "lede": "这份清单上的功能如今都已在 ZKT Timer 中。标有 Pro 的项目需要 Pro 会员。",
     "platforms": "支持网页、iOS 和 Android，提供土耳其语、英语、西班牙语、俄语和中文。",
     "timer": {
       "title": "计时器",
@@ -4321,7 +4323,7 @@
     "smart": {
       "title": "智能魔方",
       "brands": "支持 {{brands}}",
-      "mirror": "你的魔方以 3D 同步显示",
+      "mirror": "魔方在屏幕上以 3D 跟着你的手转动",
       "auto": "第一步转动开始计时，还原后自动停止",
       "scramble": "转动时逐步勾选打乱步骤，转错会提示纠正",
       "phases": "十字、F2L、OLL 和 PLL 分段用时，附步数、TPS 和回放",
@@ -4369,15 +4371,15 @@
     "try_again": "再试一次"
   },
   "welcome_mobile": {
-    "title": "永远在你身边",
-    "description": "Zkt Timer 支持 iOS 和 Android，你的还原会备份到账户中。",
+    "title": "手机上也能用",
+    "description": "ZKT Timer 也有 iOS 和 Android 版，你的还原会备份到账户中。",
     "label_timer": "计时器",
     "label_stats": "统计"
   },
   "welcome_footer": {
-    "cta_title": "加入我们的社区",
-    "cta_description": "在社交媒体上关注我们，获取最新内容，并成为速拧社区的一员！",
-    "copyright": "© {{year}} Zkt Timer. 由...创作和设计",
+    "cta_title": "关注我们",
+    "cta_description": "我们在社交媒体账号上分享新内容。",
+    "copyright": "© {{year}} ZKT Timer. Created and Designed by",
     "privacy": "隐私政策",
     "terms": "服务条款",
     "credits": "鸣谢",
@@ -4385,20 +4387,20 @@
   },
   "pro": {
     "feature_title": "Pro 功能",
-    "feature_description": "此功能仅限Pro会员。升级以解锁所有内容。",
-    "upgrade_button": "升级到Pro",
+    "feature_description": "此功能包含在 Pro 中。",
+    "upgrade_button": "升级到 Pro",
     "upsell": {
       "phase_analysis": {
         "title": "阶段分析",
-        "description": "查看 Cross、F2L、OLL 和 PLL 的细分"
+        "description": "分别显示 Cross、F2L、OLL 和 PLL 用时"
       },
       "smart_steps": {
         "title": "智能魔方步骤",
-        "description": "逐步查看每一个动作"
+        "description": "逐个查看每一步"
       },
       "smart_solve": {
         "title": "智能魔方分析",
-        "description": "TPS、移动次数和详细数据"
+        "description": "TPS、步数和各阶段用时"
       },
       "phase_splits": {
         "title": "平均阶段时长",
@@ -4408,81 +4410,81 @@
     "modal": {
       "record_alerts": {
         "title": "破纪录提醒",
-        "desc": "关注你在意的项目的记录。任何 WCA 直播比赛中一旦打破 WR、CR 或 NR，立即收到推送。"
+        "desc": "在任何进行中的 WCA 比赛里，你选择的项目打破 WR、CR 或 NR 时，你会收到通知。"
       },
       "room_music": {
         "title": "在房间内听音乐",
-        "desc": "在房间内玩魔方时，无广告收听您喜爱的音乐。通过Pro解锁音乐体验。"
+        "desc": "在房间里还原时听你想听的音乐。"
       },
       "leaderboard": {
-        "title": "在排行榜上大放异彩",
-        "desc": "发布您的最佳还原记录，激励其他速拧玩家。"
+        "title": "发布到排行榜",
+        "desc": "把你的最佳还原发布到排行榜。"
       },
       "smart_cube": {
-        "title": "智能魔方深度分析",
-        "desc": "分步分析您的还原，查看每一个细节。"
+        "title": "智能魔方分析",
+        "desc": "逐步打开一次还原，查看每个阶段的用时、步数和 TPS。"
       },
       "themes": {
-        "title": "专属主题",
-        "desc": "用6款专属主题赋予您的计时器个性。"
+        "title": "自定义主题",
+        "desc": "用 Pro 从 6 个自定义主题中选择。"
       },
       "stats": {
         "title": "统计数据自定义",
-        "desc": "完全按照您想要的方式设置统计模块。"
+        "desc": "按你喜欢的方式调整计时器下方的统计模块。"
       },
       "trainer_smart_cube": {
         "title": "使用智能魔方训练",
-        "desc": "在您的魔方上练习公式，获得即时反馈。"
+        "desc": "在魔方上转动公式，屏幕会显示每一步是否正确。"
       },
       "trainer_pdf": {
-        "title": "将所有公式下载为PDF",
-        "desc": "将所有公式或您选择的公式及其变体下载为PDF。"
+        "title": "下载公式 PDF",
+        "desc": "下载全部公式或只下载选中的公式，包含替代公式。"
       },
       "competition_follow": {
         "title": "关注选手",
-        "desc": "通过 Pro 在任何 WCA 比赛中关注最多 5 名选手，实时接收成绩、晋级和领奖台通知。"
+        "desc": "每场 WCA 比赛最多关注 5 名选手。他们的成绩、晋级和领奖台会以通知发给你。"
       },
       "slam_to_stop": {
         "title": "放下停止",
-        "desc": "完成还原后，把魔方或双手放到桌上即可自动停止计时。无需触碰屏幕，就像 StackMat 一样。"
+        "desc": "还原结束后，把魔方或双手放到桌上，计时就会停止。和 StackMat 一样，不用碰屏幕。"
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "把魔方放在手机后置摄像头旁边，拿起即开始计时。无需触碰屏幕，就像 StackMat 一样。"
+        "desc": "把魔方放在手机后置摄像头旁边，拿起时开始计时。和 StackMat 一样，不用碰屏幕。"
       }
     },
     "highlights": {
-      "watch_records": "破纪录时提醒",
-      "watch_scope": "世界、洲际或国家范围",
-      "watch_push": "实时推送通知",
-      "sync": "跨所有设备自动同步",
-      "themes": "6款专属主题，完全自定义",
-      "music_youtube": "来自YouTube的无限量无广告音乐",
-      "music_friends": "玩魔方时听您自己的音乐",
-      "music_unlimited": "无限歌曲搜索和播放",
-      "leaderboard_publish": "发布您的最佳单次或ao5",
-      "leaderboard_profile": "在您的个人资料中展示您的PB",
-      "leaderboard_compete": "与其他速拧玩家竞争",
-      "smart_analysis": "查看每一步的时间和TPS",
-      "smart_steps": "单独分析Cross, F2L, OLL, PLL",
-      "smart_animation": "还原动画用于详细回顾",
-      "themes_six": "赛博朋克、东京、诺曼等",
-      "themes_colors": "颜色和背景完全变换",
-      "themes_atmosphere": "每个主题营造独特的氛围",
-      "stats_blocks": "所有统计模块已解锁",
-      "stats_charts": "详细图表和趋势",
+      "watch_records": "破纪录时收到通知",
+      "watch_scope": "世界、洲际或国家纪录",
+      "watch_push": "通知发到你的手机",
+      "sync": "还原在所有设备上保持一致",
+      "themes": "6 个自定义主题",
+      "music_youtube": "在 YouTube 搜索，在房间里听",
+      "music_friends": "玩魔方时听你自己的音乐",
+      "music_unlimited": "不用另开标签页",
+      "leaderboard_publish": "发布你的最佳单次或 ao5",
+      "leaderboard_profile": "你的 PB 显示在个人资料中",
+      "leaderboard_compete": "和其他速拧玩家在同一榜单",
+      "smart_analysis": "每一步的用时和 TPS",
+      "smart_steps": "Cross、F2L、OLL 和 PLL 分开显示",
+      "smart_animation": "逐步回放还原",
+      "themes_six": "Cyberpunk、Tokyo、Norman 等 6 个主题",
+      "themes_colors": "改变颜色和背景",
+      "themes_atmosphere": "随时可以更换主题",
+      "stats_blocks": "计时器下方的模块由你选择",
+      "stats_charts": "屏幕上只留下你要看的数字",
       "stats_customize": "添加、删除和重新排序模块",
-      "trainer_ble": "蓝牙智能魔方连接",
-      "trainer_feedback": "公式准确性即时反馈",
-      "trainer_speed": "每次重复都更快更准确",
-      "pdf_professional": "专业设计的PDF输出",
+      "trainer_ble": "智能魔方通过蓝牙连接",
+      "trainer_feedback": "屏幕显示每一步是否正确",
+      "trainer_speed": "计时自动开始和停止",
+      "pdf_professional": "公式表可下载为 PDF",
       "pdf_alternatives": "包含替代公式",
-      "pdf_stats": "导出全部或选定公式",
-      "follow_realtime": "结果发布即收到通知",
-      "follow_limit": "每个比赛最多 5 个关注",
-      "slam_drop": "拍桌停止，无需触屏",
-      "slam_calibrate": "针对每张桌子调节灵敏度",
-      "slam_stackmat": "StackMat 手感 — 无需硬件",
+      "pdf_stats": "可下载全部或选中的公式",
+      "follow_realtime": "有成绩时收到通知",
+      "follow_limit": "每场比赛 5 名选手",
+      "slam_drop": "放下魔方或双手即停止",
+      "slam_calibrate": "灵敏度按桌面调整",
+      "slam_stackmat": "不需要额外硬件",
       "magnet_lift": "拿起魔方的那一刻计时开始",
       "magnet_drop": "放回桌上计时就停止",
       "magnet_setup": "只需要一个磁力魔方和手机应用"
@@ -4664,7 +4666,7 @@
       "copy": "复制",
       "copied": "已复制",
       "share": "分享",
-      "share_text": "{{name}} 在 Zkt Timer 向你发起对决",
+      "share_text": "{{name}} 在 ZKT Timer 向你发起对决",
       "cancel_invite": "取消邀请",
       "expired_title": "邀请已过期",
       "cancelled_title": "邀请已关闭",
@@ -4732,7 +4734,7 @@
     "first_match": "打完第一场比赛即可进入排名",
     "subtitle": "在线寻找对手，或在同一设备上面对面对战。",
     "online_f1": "与积分相近的对手匹配",
-    "online_f2": "先赢三局者获胜，双方打乱相同",
+    "online_f2": "先赢三轮的一方拿下比赛，双方打乱相同",
     "online_f3": "每场比赛都会改变你的积分和排名",
     "online_f4": "需要 GAN、QiYi 或 WeiLong V10 AI 智能魔方",
     "offline_f1": "手机和平板上面对面，电脑上并排",
@@ -4767,7 +4769,7 @@
     "cube_type": "魔方类型",
     "player_1": "玩家 1",
     "player_2": "玩家 2",
-    "share_text": "Zkt Timer 对战：{{player1}} {{score1}}，{{player2}} {{score2}}",
+    "share_text": "ZKT Timer 对战：{{player1}} {{score1}}，{{player2}} {{score2}}",
     "settings": "设置",
     "+2": "+2",
     "dnf": "DNF",
@@ -4878,17 +4880,17 @@
   },
   "notifications": {
     "membership_granted": {
-      "subject": "恭喜！您的 Zkt Timer {{label}} 会员资格已激活",
-      "subject_expiry": "恭喜！您的 {{label}} 会员资格有效期至 {{date}}",
-      "message": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。您的会员资格为永久有效。",
-      "message_expiry": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。会员资格有效期至 {{date}}。",
+      "subject": "恭喜！你的 ZKT Timer {{label}} 会员资格已激活",
+      "subject_expiry": "恭喜！你的 {{label}} 会员资格有效期至 {{date}}",
+      "message": "恭喜！你的 ZKT Timer {{label}} 会员资格已成功激活。你的会员资格为永久有效。",
+      "message_expiry": "恭喜！你的 ZKT Timer {{label}} 会员资格已成功激活。会员资格有效期至 {{date}}。",
       "link_text": "查看设置"
     },
     "subscription_changed": {
-      "upgrade_title": "您的订阅已升级",
+      "upgrade_title": "你的订阅已升级",
       "upgrade_body": "{{plan}} 已生效。剩余天数的积分已应用于新周期。",
       "downgrade_title": "套餐变更已安排",
-      "downgrade_body": "当前周期结束后将切换到 {{plan}}。在此期间您仍可继续使用。",
+      "downgrade_body": "当前周期结束后将切换到 {{plan}}。在此期间你仍可继续使用。",
       "plan_monthly": "月度 Pro",
       "plan_yearly": "年度 Pro",
       "plan_lifetime": "终身 Pro",
@@ -5005,14 +5007,14 @@
     "clear_confirm": "从你这边删除这个聊天？对方仍保留副本。",
     "report": "举报",
     "report_title": "举报此聊天",
-    "report_explain": "举报时将随附最后 {{count}} 条消息的副本。您的其他消息不会被查看。",
+    "report_explain": "举报时将随附最后 {{count}} 条消息的副本。你的其他消息不会被查看。",
     "report_placeholder": "简要说明发生了什么",
     "report_send": "举报",
     "report_sent_title": "已收到举报",
     "report_sent_body": "我们会尽快处理。如果不想再收到消息，可以在菜单中拉黑对方。",
     "cancel": "取消",
     "done": "完成",
-    "privacy_note": "Zkt Timer 不会阅读您的消息。仅审核您举报的消息。",
+    "privacy_note": "ZKT Timer 不会阅读你的消息。仅审核你举报的消息。",
     "search_placeholder": "搜索",
     "clear_search": "清除搜索",
     "filter_all": "全部",
@@ -5104,7 +5106,7 @@
   "auth_email_taken": {
     "title": "该邮箱已被注册",
     "subtitle": "无法完成登录",
-    "subtitle_with_email": "你已经有一个使用 {{email}} 的 Zkt Timer 账号",
+    "subtitle_with_email": "你已经有一个使用 {{email}} 的 ZKT Timer 账号",
     "description": "出于安全考虑，我们不会自动合并账号。请先用密码登录，然后在 <strong>设置 > 已绑定账号</strong> 中绑定你的 {{provider}} 账号。之后你也可以用 {{provider}} 登录。",
     "login_button": "用密码登录",
     "forgot_button": "忘记密码"
@@ -5347,8 +5349,8 @@
   },
   "help": {
     "title": "帮助",
-    "meta_title": "帮助 | Zkt Timer",
-    "meta_description": "如何使用 Zkt Timer：连接智能魔方、从 csTimer 导入数据、训练器、比赛等。",
+    "meta_title": "帮助 | ZKT Timer",
+    "meta_description": "如何使用 ZKT Timer：连接智能魔方、从 csTimer 导入数据、训练器、比赛等。",
     "diagram": {
       "session": "分组",
       "cube_type": "项目",
@@ -5390,7 +5392,7 @@
       "getting-started": {
         "title": "入门",
         "body": [
-          "Zkt Timer 可以在浏览器里用，也有 iOS 和 Android 应用。注册账号后，你的还原会备份到服务器，设备丢了数据也还在。要在每台登录过的设备上都看到这些记录，需要 Pro；没有 Pro 的话，还原留在打出它的那台设备上。",
+          "ZKT Timer 可以在浏览器里用，也有 iOS 和 Android 应用。注册账号后，你的还原会备份到服务器，设备丢了数据也还在。要在每台登录过的设备上都看到这些记录，需要 Pro；没有 Pro 的话，还原留在打出它的那台设备上。",
           "不注册也可以先试。未登录时计时器、你的还原记录和训练器都能用，成绩只留在这台设备上。之后如果注册，应用会提示把这些还原转到你的账号里。",
           "电脑上计时器位于屏幕中间：顶部有三个菜单（分组、魔方类型和计时方式），下面是打乱和成绩。默认布局中，还原列表和统计模块在两侧的栏里，模块可以随意移动。",
           "设置分成八个部分：计时器、输入与设备、智能魔方、打乱、外观、颜色、数据和语言。不确定要找的设置在哪一部分，就用设置里的搜索框。"
@@ -5450,7 +5452,7 @@
       "smart-cube": {
         "title": "智能魔方",
         "body": [
-          "Zkt Timer 可以识别这些品牌的智能魔方：",
+          "ZKT Timer 可以识别这些品牌的智能魔方：",
           "连上以后，魔方的状态会在屏幕上以三维显示。开始转动就计时，魔方还原后自动停表。"
         ],
         "steps": [
@@ -5473,7 +5475,7 @@
         "title": "Magnet Timer",
         "body": [
           "Magnet Timer 不用碰屏幕：拿起魔方开始计时，把魔方放回桌上停止计时。手机平放在桌上，魔方放在手机后置摄像头那一端。",
-          "手机的指南针传感器能感应魔方里的磁铁，所以需要一个磁力魔方；现在卖的魔方大多带磁。另外需要 Zkt Timer 的 iOS 或 Android 应用。浏览器和房间里没有 Magnet Timer。",
+          "手机的指南针传感器能感应魔方里的磁铁，所以需要一个磁力魔方；现在卖的魔方大多带磁。另外需要 ZKT Timer 的 iOS 或 Android 应用。浏览器和房间里没有 Magnet Timer。",
           "不是每部手机的传感器都够快。不支持的手机上列表里不会出现 Magnet Timer，或者屏幕上显示「此设备的传感器速度太慢」。看不到的话，先更新应用。"
         ],
         "steps": [
@@ -5594,7 +5596,7 @@
       "messages": {
         "title": "私信",
         "body": [
-          "在「私信」里可以和其他 Zkt Timer 用户一对一聊天。开始新对话时，搜索用户名并选择对方。",
+          "在「私信」里可以和其他 ZKT Timer 用户一对一聊天。开始新对话时，搜索用户名并选择对方。",
           "第一次给你发消息的人不会直接进收件箱，而是停在「请求」标签页。你接受了，对话就移到收件箱；不想接受，可以删掉或者拉黑对方。",
           "你可以把自己的一次还原附到对话里。对方能看到成绩，也能打开这次还原的详情。",
           "私信设置在账号里的「社交」页面：谁可以给你发消息、是否出现在消息搜索里、已读回执、正在输入提示和在线小圆点。拉黑名单也在那里。"
@@ -5626,9 +5628,9 @@
       "profile": {
         "title": "个人资料",
         "body": [
-          "个人资料页是你在 Zkt Timer 上对外的一面。地址是 /user/你的用户名，没有登录的人也能打开，把链接发出去就行。",
+          "个人资料页是你在 ZKT Timer 上对外的一面。地址是 /user/你的用户名，没有登录的人也能打开，把链接发出去就行。",
           "顶部是封面图和头像，下面是「关于我」：简介、YouTube、Twitch 和 X 链接、你的三阶方法、目标、主力魔方和喜欢的项目。",
-          "成绩分成几个标签页。「个人纪录」来自你在 Zkt Timer 上的还原，「WCA 官方纪录」和「ZKT 纪录」来自你绑定的账号，「WCA 成绩」标签页按轮次列出你的比赛历史。",
+          "成绩分成几个标签页。「个人纪录」来自你在 ZKT Timer 上的还原，「WCA 官方纪录」和「ZKT 纪录」来自你绑定的账号，「WCA 成绩」标签页按轮次列出你的比赛历史。",
           "你的成绩不会自动出现在资料页上。要显示哪些成绩，在发布界面里一条一条选。"
         ],
         "steps": [
@@ -5648,7 +5650,7 @@
         "body": [
           "账号页分成七个部分：个人信息、通知、社交、绑定账号、公告、支持和危险区域。",
           "在「个人信息」里修改姓名、用户名和邮箱，并设置密码。更换邮箱需要用发到新地址的六位验证码确认。如果账号是用 WCA 创建的，也在这里设置密码，之后就能用邮箱登录。",
-          "在「绑定账号」里连接你的 ZKT 和 WCA 账号。绑定之后，该账号的比赛、成绩和纪录会在 Zkt Timer 里显示出来。加入 WhatsApp 社群的链接也在这里。",
+          "在「绑定账号」里连接你的 ZKT 和 WCA 账号。绑定之后，该账号的比赛、成绩和纪录会在 ZKT Timer 里显示出来。加入 WhatsApp 社群的链接也在这里。",
           "在「支持」里报告问题、提问或提建议。工单像一段对话：可以回复、附上截图或视频，问题解决后关闭，之后也能重新打开。"
         ],
         "steps": [
@@ -5688,7 +5690,7 @@
     "search_no_results": "没有与“{{query}}”匹配的内容。换个词试试。"
   },
   "links_page": {
-    "meta_title": "Zkt Timer | 链接",
+    "meta_title": "ZKT Timer | 链接",
     "tagline": "专业速拧计时器",
     "web": "在网页上使用",
     "web_detail": "zktimer.app，直接在浏览器中打开",

@@ -152,7 +152,7 @@
     "ics_hint": "Downloads an .ics file",
     "note": "The competition is added as an all-day event. Round times can shift on the day, so follow the schedule in the app.",
     "done": "Done",
-    "event_description": "Schedule and results on Zkt Timer:",
+    "event_description": "Schedule and results on ZKT Timer:",
     "native_saved": "Competition added to your calendar.",
     "native_denied": "Calendar access was not granted. You can add it another way.",
     "native_error": "Could not open your calendar app.",
@@ -215,7 +215,7 @@
     "email": "Email",
     "username": "Username",
     "password": "Password",
-    "signup_button": "Sign Up",
+    "signup_button": "Sign up",
     "has_account": "Already have an account? Log in",
     "email_suggestion": "Did you mean {{domain}}?",
     "email_invalid_chars": "Email address contains invalid characters.",
@@ -224,22 +224,22 @@
   "forgot": {
     "email": "Email",
     "email_placeholder": "Enter your email",
-    "enter_email_error": "Please enter your email address",
-    "enter_code_error": "Please enter the code",
-    "send_code": "Send Code",
+    "enter_email_error": "Enter your email address",
+    "enter_code_error": "Enter the code",
+    "send_code": "Send code",
     "login_link": "Log in",
     "signup_link": "Sign up",
-    "check_email": "Check your email. You should have received a code to reset your password.",
-    "verification_code": "Verification Code",
+    "check_email": "Check your email. We sent a code to reset your password.",
+    "verification_code": "Verification code",
     "code_placeholder": "Enter the 6-digit code",
-    "verify_code": "Verify Code",
+    "verify_code": "Verify code",
     "back": "Go back",
-    "set_new_password": "Please set your new password.",
-    "new_password": "New Password",
+    "set_new_password": "Set your new password.",
+    "new_password": "New password",
     "new_password_placeholder": "Enter your new password",
-    "confirm_password": "Confirm Password",
+    "confirm_password": "Confirm password",
     "confirm_password_placeholder": "Re-enter your password",
-    "change_password": "Change Password"
+    "change_password": "Change password"
   },
   "confirm_modal": {
     "confirm_word": "confirm",
@@ -331,14 +331,14 @@
   },
   "danger_zone": {
     "reset_settings_title": "Reset Settings",
-    "reset_settings_desc": "Use this option if you want to reset your settings to default values. This will <strong>not delete</strong> your solves or sessions, only your local settings.",
+    "reset_settings_desc": "Returns your settings to default values. Your solves and sessions are <strong>not deleted</strong>, only your local settings are reset.",
     "reset_settings_button": "Reset Settings",
     "reset_settings_confirm_title": "Reset Settings",
-    "reset_settings_confirm_desc": "You are about to reset your settings to default values. Custom cube types will not be affected.",
-    "delete_account_warning": "Be careful here. If you click the button below, you will delete your entire account. All your solves, session data, statistics, etc. will be permanently deleted. Proceed with caution.",
+    "reset_settings_confirm_desc": "You are about to reset your settings to default values. Custom cube types won't be affected.",
+    "delete_account_warning": "If you press the button below, your account is deleted. All your solves, sessions and statistics are permanently gone.",
     "delete_account_button": "Delete Account",
     "delete_account_title": "Delete Account",
-    "delete_account_confirm_desc": "Be careful here. You are about to delete your entire account. All your Zkt Timer data will be deleted and cannot be recovered.",
+    "delete_account_confirm_desc": "You are about to delete your account. All your ZKT Timer data will be deleted and can't be recovered.",
     "delete_account_confirm_button": "Delete account and all data"
   },
   "admin_announcements": {
@@ -479,8 +479,8 @@
       "saves_count_one": "{{count}} save",
       "saves_count_other": "{{count}} saves",
       "progress": "{{learned}} learned · {{learning}} learning",
-      "share_text_one": "{{name}}: {{count}} algorithm. Practice it on Zkt Timer.",
-      "share_text_other": "{{name}}: {{count}} algorithms. Practice them on Zkt Timer.",
+      "share_text_one": "{{name}}: {{count}} algorithm. Practice it on ZKT Timer.",
+      "share_text_other": "{{name}}: {{count}} algorithms. Practice them on ZKT Timer.",
       "link_copied": "Link copied",
       "reset_link": "Renew link",
       "reset_link_confirm": "The old link stops working. People who saved the set keep it.",
@@ -595,7 +595,7 @@
     "card_best": "Best",
     "card_ao5": "Ao5",
     "card_learned_status": "Learning status",
-    "page_title": "Trainer | Zkt Timer",
+    "page_title": "Trainer | ZKT Timer",
     "title": "Trainer",
     "puzzle_type": "Puzzle",
     "category": "Category",
@@ -603,22 +603,22 @@
     "algorithms": "Algorithms",
     "select_all": "Select All",
     "deselect_all": "Deselect All",
-    "select_algorithms_hint": "Select a category and algorithms to start training",
-    "select_algorithm": "Select an algorithm to view statistics",
+    "select_algorithms_hint": "Pick a category and algorithms to start practicing",
+    "select_algorithm": "Pick an algorithm to see its stats",
     "no_stats": "No statistics yet",
     "best": "Best",
     "solves": "Solves",
     "total_solves": "Total Solves",
     "recent_times": "Recent Times",
     "reset_season": "Reset Season",
-    "reset_season_confirm": "Are you sure you want to delete all solve history for this algorithm?",
+    "reset_season_confirm": "Delete all solve history for this algorithm?",
     "option_random_order": "Random order",
     "option_random_auf": "Random AUF",
     "option_prioritize_slow": "Prioritize slow cases",
     "option_prioritize_failed": "Prioritize failed cases",
     "option_auto_learn_enabled": "Auto-mark as 'Learned'",
     "option_auto_learn_threshold": "Consecutive clean solves to mark as 'Learned'",
-    "option_auto_learn_threshold_help": "When you solve an algorithm cleanly (no mistakes, no DNF/+2) this many times in a row, it is automatically marked as 'Learned'. Lower means easier to learn, higher means harder.",
+    "option_auto_learn_threshold_help": "Solve an algorithm cleanly (no mistakes, no DNF or +2) this many times in a row and it's marked as 'Learned'. A lower number makes that easier, a higher one harder.",
     "option_cube_size": "Cube Size",
     "option_wake_lock": "Keep Screen On",
     "option_back_view": "Back View",
@@ -727,10 +727,10 @@
       "sets_desc": "Build your own sets, send them to a friend, practice the community's sets.",
       "sets_feat1": "Collect the cases you want in one set",
       "sets_feat2": "Send it to a friend with a link",
-      "sets_feat3": "Discover sets shared by the community",
+      "sets_feat3": "Practice sets shared by the community",
       "whats_inside": "What's inside",
       "community_title": "Community Sets",
-      "community_desc": "Discover sets shared by others",
+      "community_desc": "Find sets shared by others",
       "breadcrumb": "Location",
       "set_crumb": "Set"
     },
@@ -793,8 +793,8 @@
         "groups_no_bookends_desc": "Different colors at the ends. V, Y or E perm."
       },
       "home_title": "PLL Recognition Trainer",
-      "home_subtitle": "hide inside 21 PLL cases; each one can show up in any color combo and from any angle. Train your eye to recognize them all. The trainer adapts to your weaknesses and keeps asking the patterns you miss until you recognize them.",
-      "home_subtitle_short": "hide inside 21 PLL cases; each one can show up in any color combo and from any angle.",
+      "home_subtitle": "hide inside 21 PLL cases. Each one can show up in any color and from any angle, and you train your eye to recognize them all. The trainer adapts to your weak spots and keeps asking the patterns you miss until you recognize them.",
+      "home_subtitle_short": "hide inside 21 PLL cases. Each one can show up in any color and from any angle.",
       "home_distinct_patterns": "73 distinct patterns",
       "home_start_journey": "Start Journey",
       "home_free_practice": "Free Practice",
@@ -812,7 +812,7 @@
       "setup_add_custom": "Custom",
       "setup_scroll_left": "Scroll left",
       "setup_scroll_right": "Scroll right",
-      "setup_info": "Pick a preset, choose session size, and start. After each session your stats are saved; weak cases can be drilled more with \"Personalized Training\".",
+      "setup_info": "Pick a preset, choose the session size and start. Your stats are saved after each session. You can repeat weak cases more often with \"Personalized Training\".",
       "trainer_start": "Start",
       "trainer_resume": "Resume",
       "trainer_pause": "Pause",
@@ -872,7 +872,7 @@
       "settings_color_variance": "Color variance",
       "settings_color_variance_help": "Randomly shift cube colors for each new case",
       "settings_quest_mode": "Guided mode",
-      "settings_quest_mode_help": "Show guided learning journey on home",
+      "settings_quest_mode_help": "Show the guided path on the home page",
       "settings_reset": "Reset",
       "settings_start_training": "Start Training",
       "settings_reset_confirm": "Reset to defaults?",
@@ -930,11 +930,11 @@
       },
       "oll": {
         "title": "Orientation of the Last Layer",
-        "desc": "OLL is the third step of the CFOP method. After the first two layers it makes the top face one color; if you start with a white cross, it completes the yellow face. There are 57 cases, grouped by how many edges are already oriented on top: all four edges oriented, two edges oriented such as the L, T, P and W shapes, and the dot cases with none.\n\nIf you know 2-Look OLL, you already know 9 or 10 of them. Many algorithms are mirrors or inverses of each other, which makes them easier to memorize. Dot cases are usually the hardest and slowest, so most people leave them for last.\n\nStarting with the cases whose edges are oriented and moving on to the T and L shapes is a good order. Picking algorithms that feel comfortable in your hands pays off in the long run."
+        "desc": "OLL is the third step of the CFOP method. After the first two layers it makes the top face one color; if you start with a white cross, it completes the yellow face. There are 57 cases, grouped by how many edges are already oriented on top: all four edges oriented, two edges oriented such as the L, T, P and W shapes, and the dot cases with none.\n\nIf you know 2-Look OLL, you already know 9 or 10 of them. Many algorithms are mirrors or inverses of each other, which makes them easier to memorize. Dot cases are usually the hardest and slowest, so most people leave them for last.\n\nYou can start with the cases whose edges are oriented and move on to the T and L shapes. When choosing algorithms, go for the ones that feel comfortable in your hands."
       },
       "f2l": {
         "title": "First Two Layers",
-        "desc": "F2L is the second step of the CFOP method. After the cross you join a corner with its matching edge and insert them together into their slot as a pair. That is much faster than placing pieces one by one. There are 41 basic cases; the trainer shows each one for all four slots, 164 in total.\n\nIt helps to learn F2L intuitively before memorizing algorithms. If you understand why each case is solved the way it is, you can find your own solution in a new situation. Algorithms built on that base are also easier to remember.\n\nThe biggest gain in F2L comes from looking ahead: while you insert one pair, try to track where the next pair is. Avoiding unnecessary cube rotations matters a lot too. Later you can move on to VHLS or ZBLS, which also orient the top edges while inserting the last pair."
+        "desc": "F2L is the second step of the CFOP method. After the cross you join a corner with its matching edge and insert them together into their slot as a pair. That is much faster than placing pieces one by one. There are 41 basic cases; the trainer shows each one for all four slots, 164 in total.\n\nIt helps to learn F2L intuitively before memorizing algorithms. If you understand why each case is solved the way it is, you can find your own solution in a new situation. Algorithms built on that base are also easier to remember.\n\nThe biggest gain in F2L comes from looking ahead: while you insert one pair, try to track where the next pair is. Avoiding unnecessary cube rotations also cuts your times. Later you can move on to VHLS or ZBLS, which also orient the top edges while inserting the last pair."
       },
       "2_look_pll": {
         "title": "2-Look PLL",
@@ -966,7 +966,7 @@
       },
       "vhls": {
         "title": "Vandenbergh-Harris Last Slot",
-        "desc": "VHLS orients the last layer edges while inserting the last F2L pair. It only covers short inserts, so it stays at 32 cases: 16 with the pair connected and 16 with it split. For longer situations you do normal F2L.\n\nAfter VHLS only the OLL cases with oriented edges are left. The chance of skipping OLL rises from 1 in 216 to 1 in 27, and the remaining cases are usually shorter. If you also know COLL, VHLS and COLL together make a very strong last layer approach.\n\nYou can think of VHLS as a small part of ZBLS. Most cases are intuitive: you look at the orientation of the last edge and pick the right insert."
+        "desc": "VHLS orients the last layer edges while inserting the last F2L pair. It only covers short inserts, so it stays at 32 cases: 16 with the pair connected and 16 with it split. For longer situations you do normal F2L.\n\nAfter VHLS only the OLL cases with oriented edges are left. The chance of skipping OLL rises from 1 in 216 to 1 in 27, and the remaining cases are usually shorter. If you also know COLL, you can use the two together as a last layer approach.\n\nYou can think of VHLS as a small part of ZBLS. Most cases are intuitive: you look at the orientation of the last edge and pick the right insert."
       },
       "cmll": {
         "title": "Corners of the Last Layer (Roux)",
@@ -978,7 +978,7 @@
       },
       "oh_cmll": {
         "title": "One-Handed CMLL",
-        "desc": "One-Handed CMLL is a set of algorithms for the CMLL step of Roux chosen for solving with one hand. Same 42 cases and same 8 groups as normal CMLL; the difference is that the algorithms are easy to turn with one hand.\n\nOne-handed solvers avoid z and x rotations, because regripping the cube costs time. That is why the algorithms are mostly made of R, U and r moves. Left-handed solvers mirror them with L, U and l.\n\nNormal CMLL algorithms also work one-handed, but they are slower. Learning CMLL two-handed first and then switching to the one-handed algorithms is a good order."
+        "desc": "One-Handed CMLL is a set of algorithms for the CMLL step of Roux chosen for solving with one hand. Same 42 cases and same 8 groups as normal CMLL; the difference is that the algorithms are easy to turn with one hand.\n\nOne-handed solvers avoid z and x rotations, because regripping the cube costs time. That is why the algorithms are mostly made of R, U and r moves. Left-handed solvers mirror them with L, U and l.\n\nNormal CMLL algorithms also work one-handed, but they are slower. You can learn CMLL two-handed first and then switch to the one-handed algorithms."
       },
       "l6e_eo": {
         "title": "Last Six Edges: Edge Orientation",
@@ -998,7 +998,7 @@
       },
       "2x2_eg2": {
         "title": "2x2 EG-2",
-        "desc": "EG-2 is the set of 40 cases usually learned last in the EG family. It covers the situations where the bottom corners have a diagonal swap. This is the least common situation, with a chance of 1 in 6.\n\nTogether with CLL and EG-1 it completes every 2x2 situation after one face. Because it comes up rarely it is usually learned last, but knowing all of EG means being ready for anything.\n\nEG-2 gives you more freedom when choosing which face to solve during inspection. Recognizing the diagonal swap quickly directly affects how much this set helps."
+        "desc": "EG-2 is the set of 40 cases usually learned last in the EG family. It covers the situations where the bottom corners have a diagonal swap. This is the least common situation, with a chance of 1 in 6.\n\nTogether with CLL and EG-1 it completes every 2x2 situation after one face. Because it comes up rarely it is usually learned last, but knowing all of EG means being ready for anything.\n\nEG-2 gives you more freedom when choosing which face to solve during inspection. To get the most from this set you need to recognize the diagonal swap quickly."
       },
       "2x2_pbl": {
         "title": "Permutation of Both Layers",
@@ -1006,23 +1006,23 @@
       },
       "4x4_pll_parity": {
         "title": "4x4 PLL Parity",
-        "desc": "PLL parity is common on the 4x4, about once every two solves. An edge situation appears that cannot happen on a 3x3, because each 4x4 edge is made of two pieces that can pair up differently. OLL parity is a separate topic.\n\nThis set has 22 cases. The algorithms solve the parity together with the PLL in one step, which is faster than doing parity and PLL separately.\n\nStart with the cases you meet most often and add the rare ones later. Well-chosen parity algorithms make a clear difference to your 4x4 times."
+        "desc": "PLL parity is common on the 4x4, about once every two solves. An edge situation appears that cannot happen on a 3x3, because each 4x4 edge is made of two pieces that can pair up differently. OLL parity is a separate topic.\n\nThis set has 22 cases. The algorithms solve the parity together with the PLL in one step, which is faster than doing parity and PLL separately.\n\nStart with the cases you meet most often and add the rare ones later."
       },
       "pyraminx_ll": {
         "title": "Pyraminx Last Layer",
-        "desc": "These algorithms solve the last layer of the Pyraminx with the layer by layer method. The method has two steps: first layer, then last layer. Three edges are left in the last layer, 5 cases in total.\n\nThe cases are simple and quick to learn; most algorithms are only a few moves. Recognition is easy too: you only look at three edges. A good start for anyone new to the Pyraminx.\n\nOnce you are comfortable with this method, you can move on to L4E or intuitive methods. These 5 cases stay useful either way."
+        "desc": "These algorithms solve the last layer of the Pyraminx with the layer by layer method. The method has two steps: first layer, then last layer. Three edges are left in the last layer, 5 cases in total.\n\nThe cases are simple and quick to learn; most algorithms are only a few moves. Recognition is easy too: you only look at three edges. Suited to anyone new to the Pyraminx.\n\nOnce you are comfortable with this method, you can move on to L4E or intuitive methods. These 5 cases stay useful either way."
       },
       "pyraminx_l4e": {
         "title": "Pyraminx Last 4 Edges",
-        "desc": "L4E is an advanced two-step Pyraminx method: first you build a V shape on the bottom, then you solve the remaining four edges in one step. This set has 35 cases in 5 groups based on the state of the edges.\n\nA V shape is less restrictive than a full first layer, so it is easy to plan during inspection. To recognize a case, look at where the remaining edges are and how they are oriented.\n\nMost fast Pyraminx solvers use this method. The algorithms are short, so choosing good fingertricks makes a big difference."
+        "desc": "L4E is an advanced two-step Pyraminx method: first you build a V shape on the bottom, then you solve the remaining four edges in one step. This set has 35 cases in 5 groups based on the state of the edges.\n\nA V shape is less restrictive than a full first layer, so it is easy to plan during inspection. To recognize a case, look at where the remaining edges are and how they are oriented.\n\nMost fast Pyraminx solvers use this method. The algorithms are short, so you need to choose your fingertricks well."
       },
       "sarah_intermediate": {
         "title": "Sarah's Intermediate (Skewb)",
-        "desc": "Sarah's Intermediate is for Skewb solvers who want to go one step beyond the beginner method. With only 10 cases it is a good way to lower your times with little effort.\n\nThe method has three steps: solve one face, solve the opposite face with sledgehammer (R' F R F') and hedgeslammer (F R' F' R) triggers, then solve the centers. The cases are split into 3 groups by how many triggers they use.\n\nIt is a natural step towards Sarah's Advanced. Sledgehammer and hedgeslammer are the basic moves of the Skewb, and this method gets you used to them."
+        "desc": "Sarah's Intermediate is for Skewb solvers who want to go one step beyond the beginner method. With 10 cases you can lower your times.\n\nThe method has three steps: solve one face, solve the opposite face with sledgehammer (R' F R F') and hedgeslammer (F R' F' R) triggers, then solve the centers. The cases are split into 3 groups by how many triggers they use.\n\nIt is learned before Sarah's Advanced. Sledgehammer and hedgeslammer are the basic moves of the Skewb, and this method gets you used to them."
       },
       "sarah_advanced": {
         "title": "Sarah's Advanced (Skewb)",
-        "desc": "Sarah's Advanced reduces the Skewb solve to two steps: solve one face, then solve everything else in one step. This set has 93 cases for the second step, in 16 groups.\n\nMost solutions are built on sledgehammer (R' F R F') and hedgeslammer (F R' F' R) triggers. To recognize a case, look at the pattern opposite the solved face and the colors on the side faces. Many cases are mirrors or inverses of each other.\n\nMost fast Skewb solvers use this method. Learning the whole set takes time, but being able to plan the entire solve during inspection is a big advantage."
+        "desc": "Sarah's Advanced reduces the Skewb solve to two steps: solve one face, then solve everything else in one step. This set has 93 cases for the second step, in 16 groups.\n\nMost solutions are built on sledgehammer (R' F R F') and hedgeslammer (F R' F' R) triggers. To recognize a case, look at the pattern opposite the solved face and the colors on the side faces. Many cases are mirrors or inverses of each other.\n\nMost fast Skewb solvers use this method. Learning the whole set takes time, and in return you can plan the entire solve during inspection."
       },
       "sq1_cube_shape": {
         "title": "Square-1 Cube Shape",
@@ -1042,7 +1042,7 @@
       },
       "sq1_ep": {
         "title": "Square-1 Edge Permutation",
-        "desc": "Edge permutation is usually the last step of the Square-1 and puts every edge in place. There are 40 cases in 8 groups based on the top layer.\n\nWith parity the normal algorithms do not work and you need one that also fixes parity (unless you used CSP). Learning algorithms that solve both together is more efficient than doing them separately.\n\nTo recognize a case, look at where the edges are. Picking the right algorithm quickly directly affects your Square-1 times."
+        "desc": "Edge permutation is usually the last step of the Square-1 and puts every edge in place. There are 40 cases in 8 groups based on the top layer.\n\nWith parity the normal algorithms do not work and you need one that also fixes parity (unless you used CSP). Learning algorithms that solve both together is more efficient than doing them separately.\n\nTo recognize a case, look at where the edges are."
       },
       "sq1_obl": {
         "title": "Square-1 Orient Both Layers",
@@ -1198,11 +1198,11 @@
   "support": {
     "page_title": "Support",
     "title": "Create a Support Ticket",
-    "description": "Report a bug, ask a question, or share a suggestion. We will respond as soon as possible.",
+    "description": "Tell us about a problem, a bug or an idea. We'll get back to you as soon as we can.",
     "subject": "Subject",
     "subject_placeholder": "Write a short title",
     "message": "Message",
-    "message_placeholder": "Describe the issue or suggestion in detail",
+    "message_placeholder": "Describe your problem or idea",
     "send": "Send",
     "sending": "Sending...",
     "success": "Your ticket was submitted. Thanks!",
@@ -1273,17 +1273,17 @@
     "email_change_title": "Email change pending",
     "email_change_description": "We sent a 6-digit code to the address below. Enter it to confirm.",
     "email_change_code": "Verification code",
-    "email_change_enter_code": "Please enter the code",
+    "email_change_enter_code": "Enter the code",
     "email_change_confirm_button": "Confirm email",
     "email_change_confirmed": "Your email has been updated.",
     "change_password": "Change Password",
     "set_password": "Set Password",
-    "set_password_description": "Your account was created via WCA. You can set a password to also log in with email/password.",
+    "set_password_description": "Your account was created with WCA. Set a password if you also want to log in with email and password.",
     "current_password": "Current Password",
     "new_password": "New Password",
     "change_password_button": "Change Password",
     "set_password_button": "Set Password",
-    "password_success": "Password updated successfully",
+    "password_success": "Password updated",
     "profile_title": "Profile Information",
     "profile_description": "Your name, username and email address."
   },
@@ -1292,14 +1292,14 @@
     "new_password": "New Password",
     "change_button": "Change Password",
     "weak_password": "Weak password",
-    "success": "Password updated successfully"
+    "success": "Password updated"
   },
   "community_nav": {
     "page_title": "Competitions"
   },
   "maintenance": {
     "title": "We're under maintenance",
-    "description": "We're upgrading the infrastructure to make Zkt Timer better. We'll be back soon!",
+    "description": "We're upgrading the infrastructure to make ZKT Timer better. We'll be back soon!",
     "thanks": "Thank you for your patience 💙"
   },
   "site_config": {
@@ -1594,7 +1594,7 @@
   },
   "notification_prefs": {
     "email_notifications": "Email Notifications",
-    "marketing_emails": "Tips, updates, and other emails from Zkt Timer",
+    "marketing_emails": "Tips, updates, and other emails from ZKT Timer",
     "support_ticket_reply": "Email me when my support ticket gets a reply",
     "email_notifications_description": "Choose when you want to hear from us by email.",
     "competition_notifications": "Competition Notifications",
@@ -1603,13 +1603,13 @@
     "competition_groups_published": "Groups are out for a competition I registered for",
     "competition_schedule_changed": "Times change in my competition schedule",
     "competition_results_official": "My results become official",
-    "battle_notifications": "Online Battle Notifications",
+    "battle_notifications": "Online Battle notifications",
     "battle_notifications_description": "Choose which Online Battle notifications you get.",
     "battle_challenge": "When someone challenges me from my profile"
   },
   "orientation_warning": {
     "title": "Please Rotate Your Device",
-    "text": "Zkt Timer is designed for the best experience in portrait mode on mobile devices."
+    "text": "ZKT Timer is designed for the best experience in portrait mode on mobile devices."
   },
   "settings": {
     "page_title": "Settings",
@@ -1649,14 +1649,14 @@
   "upload": {
     "invalid_file": "Invalid file. Must be a PNG or JPEG",
     "file_too_large": "File is too large. Maximum size is {{size}} MB",
-    "failed": "Upload failed. Please try again"
+    "failed": "Upload failed. Try again."
   },
   "appearance": {
     "timer_modules": "Timer modules",
-    "timer_modules_desc": "Change the number of modules shown on the timer page. Note that this is the *maximum* number of modules shown (based on your window size).",
+    "timer_modules_desc": "The maximum number of modules shown on the timer page. Fewer may appear depending on your window size.",
     "default_suffix": "(Default)",
     "timer_layout": "Timer layout",
-    "timer_layout_desc": "Change the appearance of your timer. If you have a smaller screen, you may want to put modules to the left or right.",
+    "timer_layout_desc": "Changes the layout of the timer page. On a smaller screen you can put modules on the left or right.",
     "timer_background": "Desktop background",
     "timer_background_desc": "The image or video behind the timer.",
     "timer_background_hint": "Upload a PNG, JPG or MP4. Video is capped at {{size}} MB and pauses while the timer runs.",
@@ -1665,13 +1665,13 @@
     "timer_background_mobile": "Mobile background",
     "timer_background_mobile_desc": "The image or video behind the timer on your phone.",
     "timer_font": "Timer font",
-    "timer_font_desc": "The font of the large timer you see on the timer page",
+    "timer_font_desc": "The font of the large time on the timer page",
     "reset": "Reset",
     "save_as_default": "Set as Default",
     "timer_font_size": "Timer font size",
-    "timer_font_size_desc": "The font size of the large time you see on the timer page",
+    "timer_font_size_desc": "The font size of the large time on the timer page",
     "scramble_font_size": "Scramble font size",
-    "scramble_font_size_desc": "The font size of the scramble you see on the timer page",
+    "scramble_font_size_desc": "The font size of the scramble on the timer page",
     "category_theme": "Theme",
     "category_layout": "Layout",
     "category_typography": "Typography",
@@ -1698,7 +1698,7 @@
     "decimal_points_desc": "How many decimal points to show on the timer page",
     "decimal_suffix": "decimal points",
     "input_type": "Timer input type",
-    "input_type_desc": "Choose between using your keyboard (spacebar), StackMat, or Smart Cube to start the timer.",
+    "input_type_desc": "Start the timer with your keyboard (spacebar), a StackMat or a smart cube.",
     "input_keyboard": "Keyboard",
     "input_touch": "Touch",
     "input_smart": "Smart Cube",
@@ -1726,7 +1726,7 @@
     "use_3d_scramble_visual": "3D scramble preview",
     "use_3d_scramble_visual_desc": "Show 3D preview for supported puzzles",
     "inspection": "Inspection",
-    "inspection_desc": "Limit inspection time. Good for preparing for competitions.",
+    "inspection_desc": "Gives you competition-style inspection before the time starts.",
     "play_sound": "Play sound",
     "play_sound_desc": "Play an audio alert when 8 and 12 seconds have passed",
     "inspection_auto_start": "Auto start inspection",
@@ -1736,8 +1736,8 @@
     "mic_access": "Allow microphone access (StackMat's data transmission method)",
     "stackmat_auto_inspection": "Auto Start Inspection",
     "seconds": "seconds",
-    "stackmat_select": "Select your StackMat device. Usually named \"USB Audio Device\"",
-    "stackmat_warning_title": "StackMat Auto Inspection Warning",
+    "stackmat_select": "Select your StackMat device. It usually appears as \"USB Audio Device\"",
+    "stackmat_warning_title": "StackMat auto inspection warning",
     "dont_show_again": "Don't show again",
     "understood": "I understand",
     "use_space_with_smart_cube": "Use spacebar with smart cubes",
@@ -1745,24 +1745,24 @@
     "smart_cube_move_order_fix_desc": "When you turn two layers at once, a smart cube sometimes reports the moves in the wrong order, which leaves the timer running on an already solved cube. With this on, the app detects that and finishes the solve. It can occasionally be wrong, so it is off by default.",
     "smart_cube_time_offset": "Extra time (s)",
     "smart_cube_time_offset_desc": "Added to the time of every smart cube solve.",
-    "use_space_with_smart_cube_desc": "Use the spacebar like normal cubes instead of detecting when a solve starts/ends by smart cube moves.",
+    "use_space_with_smart_cube_desc": "Use the spacebar as on a normal cube instead of detecting the start and end of a solve from smart cube moves.",
     "hide_time_when_solving": "Hide time while solving",
     "zero_out_time_after_solve": "Reset time after solve",
-    "zero_out_time_after_solve_desc": "Instead of showing the time of your last solve, the timer updates to 0.00 after the solve.",
+    "zero_out_time_after_solve_desc": "The timer returns to 0.00 after a solve instead of showing your last time.",
     "inspection_time": "Inspection time (s)",
     "auto_inspection_start": "Auto Start Inspection",
     "auto_inspection_start_desc": "Automatically starts inspection time after the mat is reset.",
     "stackmat_select_device": "Select your StackMat device",
-    "stackmat_change_device": "Selected - Change Input Device",
-    "stackmat_warning_desc": "There is important information you should know about this feature.",
+    "stackmat_change_device": "Selected. Change input device",
+    "stackmat_warning_desc": "Read this before using the feature.",
     "stackmat_warning_how_it_works": "How this feature works:",
-    "stackmat_warning_step1": "Press the reset button on the mat after completing your solve",
-    "stackmat_warning_step2": "After the time you set (default 2 seconds), inspection starts automatically",
-    "stackmat_warning_step3": "If you start the timer within this time, inspection is cancelled",
+    "stackmat_warning_step1": "Press reset on the mat when your solve is done",
+    "stackmat_warning_step2": "Inspection starts by itself after the time you set (2 seconds by default)",
+    "stackmat_warning_step3": "If you start the timer within that time, inspection is cancelled",
     "stackmat_warning_limitation_title": "⚠️ Important Limitation:",
-    "stackmat_warning_limitation_desc": "If you cancel inspection with the ESC key, since no new signal comes from the mat, inspection won't start even if you press reset again. In this case, you need to start inspection from the keyboard (Space) or do a new solve.",
-    "stackmat_warning_protocol_note": "This limitation comes from the StackMat protocol and has no software solution.",
-    "stackmat_warning_critical": "⚠️ CRITICAL WARNING: Please DO NOT RESET on StackMat until the time has fully stopped after solving. This may cause the StackMat signal to synchronize incorrectly and may cause some errors in inspection time. We apologize for these protocol errors beyond our control.",
+    "stackmat_warning_limitation_desc": "If you cancel inspection with ESC, the mat sends no new signal, so inspection won't start even if you press reset again. You then need to start inspection from the keyboard (Space) or do a new solve.",
+    "stackmat_warning_protocol_note": "This limitation comes from the StackMat protocol and can't be fixed in software.",
+    "stackmat_warning_critical": "Don't reset the StackMat until the time has fully stopped after a solve. The signal can go out of sync and cause errors in inspection.",
     "category_general": "General",
     "category_input": "Input",
     "category_confirmations": "Confirmations",
@@ -1771,12 +1771,12 @@
     "category_qiyi": "QiYi Timer",
     "qiyi_auto_inspection": "Auto Inspection Start",
     "qiyi_auto_inspection_desc": "When you press restart on the device, the time resets and (if inspection is enabled) inspection starts automatically.",
-    "qiyi_warning_title": "QiYi Timer Auto Inspection Warning",
+    "qiyi_warning_title": "QiYi Timer auto inspection warning",
     "qiyi_warning_desc": "This feature may affect your real competition habits.",
     "qiyi_warning_how_it_works": "How this feature works:",
-    "qiyi_warning_step1": "After a solve, press restart on the device → time resets and inspection starts automatically (single tap).",
-    "qiyi_warning_step2": "This combined behavior happens in one tap because the device does not send a 2nd restart signal.",
-    "qiyi_warning_critical": "⚠️ When off: the restart button only resets the time. To start inspection, press space on the keyboard or place your hands on the device.",
+    "qiyi_warning_step1": "After a solve, press restart on the device. The time resets and inspection starts by itself.",
+    "qiyi_warning_step2": "Both happen on one press because the device doesn't send a second restart signal.",
+    "qiyi_warning_critical": "With this off, the restart button only resets the time. To start inspection, press space on the keyboard or put your hands on the device.",
     "category_multi_phase": "Manual phases",
     "multi_phase_count": "Number of phases",
     "multi_phase_count_desc": "Each press of space or the screen mid-solve closes a phase. The last press stops the timer.",
@@ -1810,7 +1810,7 @@
     "smart_cube_show": "Show Smart Cube",
     "smart_cube_show_desc": "Show or hide the 3D smart cube visual on the timer screen.",
     "smart_cube_size": "Smart Cube Size",
-    "smart_cube_size_desc": "Adjust the size of the smart cube on the homepage.",
+    "smart_cube_size_desc": "Size of the smart cube on the home page.",
     "haptic_feedback": "Haptic Feedback",
     "haptic_feedback_desc": "Vibrates the device briefly when a solve starts and stops.",
     "category_smart_analysis": "Method & Analysis",
@@ -1829,41 +1829,41 @@
   },
   "data_settings": {
     "force_reload": "Force reload",
-    "force_reload_desc": "If your data or settings are out of sync, you can force reload to re-sync with the database.",
+    "force_reload_desc": "If your data or settings look out of date, you can reload them from the database.",
     "force_reload_button": "Force reload",
     "export_data": "Export solve and session data",
-    "export_data_desc": "This data can serve as a backup for your solve and session data that can be imported later if needed.",
+    "export_data_desc": "This file is a backup of your solve and session data. You can import it again when needed.",
     "export_button": "Export data",
-    "export_success": "All solve and session data downloaded successfully.",
+    "export_success": "All solve and session data downloaded.",
     "import_data": "Import data",
-    "import_data_desc": "Import data from csTimer or Zkt Timer",
+    "import_data_desc": "Import data from csTimer or ZKT Timer",
     "import_cstimer": "Import from csTimer",
-    "import_zkttimer": "Import from Zkt Timer backup",
+    "import_zkttimer": "Import from ZKT Timer backup",
     "reset_settings": "Reset settings",
     "reset_settings_desc": "Reset everything in settings to default values (except custom cube types)",
     "reset_settings_button": "Reset settings",
-    "reset_settings_confirm_desc": "Be careful. You are about to reset your settings to default values. Custom cube types will not be affected.",
+    "reset_settings_confirm_desc": "You are about to reset your settings to default values. Custom cube types won't be affected.",
     "session_name": "Session Name",
     "solves_count": "Solves: {{count}}",
     "sessions_count": "Sessions: {{count}}",
     "skipped_count": "Skipped (unknown cube type): {{count}} solves",
     "review_and_import": "Review and Import",
-    "review_description": "Make sure the numbers below are correct. Then import the data!",
+    "review_description": "Check the numbers below, then import the data.",
     "mixed_session": "Mixed ({{count}})",
     "split_session": "Split",
     "import": "Import",
     "importing_progress": "Importing... {{percent}}%",
-    "import_success": "{{sessions}} sessions and {{solves}} solves imported successfully!",
-    "session_import_failed": "Session import failed: {{count}} chunk errors! Solve import cancelled.",
-    "import_failed": "Import failed: {{count}} chunk errors!",
+    "import_success": "{{sessions}} sessions and {{solves}} solves imported.",
+    "session_import_failed": "{{count}} session parts couldn't be imported, so solves weren't imported.",
+    "import_failed": "Import incomplete: {{count}} parts couldn't be imported.",
     "import_modal_title": "Import {{name}} data",
     "select_file": "Select the file to import",
     "drag_and_drop": "Drag and drop or click to select",
     "cube_type": "Cube Type",
     "remove": "Remove",
-    "retry_in_progress": "Retrying failed chunks...",
-    "retry_success": "All failed chunks imported successfully!",
-    "retry_partial_fail": "{{count}} chunks still failed on retry.",
+    "retry_in_progress": "Retrying the parts that failed...",
+    "retry_success": "The remaining parts were imported.",
+    "retry_partial_fail": "{{count}} parts still failed on retry.",
     "import_twistytimer": "Import from Twisty Timer",
     "import_cubetime": "Import from CubeTime",
     "import_select_placeholder": "Select source",
@@ -1877,7 +1877,7 @@
     "cstimer_step_1_suffix": "go to the website",
     "cstimer_step_2": "Click the \"Export\" icon (next to the Settings button)",
     "cstimer_step_3": "Click \"Export to file\"",
-    "zkttimer_instructions_title": "How to export data from Zkt Timer",
+    "zkttimer_instructions_title": "How to export data from ZKT Timer",
     "zkttimer_step_1_link": "Settings",
     "zkttimer_step_1_suffix": "page",
     "zkttimer_step_2": "Click the \"Export data\" button and save the file",
@@ -1885,18 +1885,18 @@
     "cubetime_step_1": "Open the CubeTime app",
     "cubetime_step_2": "Go to Settings → Import & Export",
     "cubetime_step_3_emphasis": "JSON",
-    "cubetime_step_3_suffix": "format (not CSV — CSV lacks cube type and session info)",
+    "cubetime_step_3_suffix": "format (CSV has no cube type or session info)",
     "cubetime_step_4": "Tap \"Export\" and save the file",
     "cubetime_step_5": "Upload the downloaded .json file below",
-    "cubetime_csv_not_supported": "CSV format is not supported — please export as JSON from CubeTime",
+    "cubetime_csv_not_supported": "CSV isn't supported. Export as JSON from CubeTime.",
     "category_management": "Data Management",
     "category_reset": "Reset",
-    "import_error_title": "Import Completed (With Some Errors)",
+    "import_error_title": "Import finished, some parts failed",
     "import_success_count": "Successful: {{count}} chunks",
-    "import_failed_count": "Failed: {{count}} chunks",
+    "import_failed_count": "Failed: {{count}} parts",
     "import_failed_chunks_header": "Failed Chunks:",
     "import_items_range": "Items: {{range}}",
-    "import_retry_failed_btn": "Retry Failed Chunks",
+    "import_retry_failed_btn": "Retry failed parts",
     "import_continue_anyway": "Continue Anyway",
     "import_duplicates_skipped": "{{count}} solves are already saved, skipped.",
     "import_nothing_new": "Nothing new to import, your account already has all of these.",
@@ -1945,7 +1945,7 @@
     "no_solves_yet": "No solves yet",
     "stackmat_place_hands": "Place your hands on the StackMat to start",
     "audio_place_hands": "Place your hands on the {{device}} to start",
-    "audio_ready": "Ready — release to start",
+    "audio_ready": "Ready, release to start",
     "edit_scramble": "Edit scramble",
     "edit": "Edit",
     "plus_two_penalty": "+2 penalty",
@@ -2062,8 +2062,8 @@
   },
   "solve_page": {
     "not_found": "Solve not found",
-    "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
-    "share_description": "Watch {{user}}'s {{time}} {{cubeType}} solve step by step. Scramble, time and full solve breakdown on Zkt Timer."
+    "share_title": "{{time}} · {{cubeType}} · {{user}} | ZKT Timer",
+    "share_description": "Watch {{user}}'s {{time}} {{cubeType}} solve step by step. Scramble, time and full solve breakdown on ZKT Timer."
   },
   "solve_info": {
     "cube_choose": "Choose cube",
@@ -2089,7 +2089,7 @@
     "wrap_text": "Wrap text",
     "copy_text": "Copy text",
     "download_csv": "Download as CSV",
-    "generated_by": "Generated by Zkt Timer on {{date}}",
+    "generated_by": "Generated by ZKT Timer on {{date}}",
     "single_solve": "Single Solve",
     "view_as_stats": "View as Stats",
     "tps": "TPS",
@@ -2209,7 +2209,7 @@
     "create_session": "Create Session",
     "create_session_error": "Server Error: Could not create session",
     "create_new_session_title": "Create New Session",
-    "create_new_session_desc": "Sessions in Zkt Timer can have multiple cube types. You can split sessions however you like: by cube type, by day, etc.",
+    "create_new_session_desc": "Sessions in ZKT Timer can have multiple cube types. You can split sessions however you like: by cube type, by day, etc.",
     "new_session_placeholder": "New Session",
     "cube_type": "Cube Type",
     "cube_type_info": "Don't worry :) This can be changed later",
@@ -2425,7 +2425,7 @@
   },
   "profile": {
     "remove": "Remove",
-    "share_text": "Check out {{username}}'s speedcubing profile on Zkt Timer",
+    "share_text": "Check out {{username}}'s speedcubing profile on ZKT Timer",
     "about_me": "About Me",
     "socials": "Socials",
     "biography": "Biography",
@@ -3012,9 +3012,9 @@
     "preview": "Preview",
     "email_greeting": "Hello User,",
     "content_preview_placeholder": "Email content will appear here...",
-    "go_to_zkttimer": "Go to Zkt Timer",
+    "go_to_zkttimer": "Go to ZKT Timer",
     "regards": "Best regards,",
-    "team": "Zkt Timer Team",
+    "team": "ZKT Timer Team",
     "clear": "Clear",
     "sending": "Sending...",
     "send_button": "Send Email",
@@ -3037,57 +3037,57 @@
     "select_people": "Select {{count}} People"
   },
   "seo": {
-    "home_title": "Zkt Timer — Speedcube Timer, WCA Live, Algorithm Trainer & Smart Cube Platform",
+    "home_title": "ZKT Timer — Speedcube Timer, WCA Live, Algorithm Trainer & Smart Cube Platform",
     "home_description": "Professional speedcubing platform: cube timer, OLL/PLL/ZBLL trainer, live WCA competition tracking, 1v1 battle mode, smart cube support and phase analysis. All WCA puzzles, all in one place.",
-    "timer_title": "Rubik's Cube Timer with Smart Cube & WCA Scrambles - Zkt Timer",
+    "timer_title": "Rubik's Cube Timer with Smart Cube & WCA Scrambles - ZKT Timer",
     "timer_description": "Professional Rubik's cube timer with millisecond precision, WCA-compliant scrambles, smart cube (GAN) support, phase analysis (Cross/F2L/OLL/PLL) and detailed solve tracking.",
-    "wca_competitions_title": "WCA Competitions - Live Results & Schedules | Zkt Timer",
+    "wca_competitions_title": "WCA Competitions - Live Results & Schedules | ZKT Timer",
     "wca_competitions_description": "Browse all WCA speedcubing competitions worldwide. Live results, competition schedules, registration info, competitor lists and live tracking. All official WCA Rubik's cube competitions on a single platform.",
-    "wca_competition_detail_title": "WCA Competition Details - Live Results | Zkt Timer",
+    "wca_competition_detail_title": "WCA Competition Details - Live Results | ZKT Timer",
     "wca_competition_detail_description": "Full details of WCA competition: events, schedule, competitors, live results and personal best tracking. Real-time score updates and rankings during the competition.",
-    "zkt_competition_detail_title": "ZKT Competition Details - Live Results | Zkt Timer",
+    "zkt_competition_detail_title": "ZKT Competition Details - Live Results | ZKT Timer",
     "zkt_competition_detail_description": "ZKT unofficial competition details. Live results, events, registration, scorecard entry, live stream and record tracking.",
-    "pro_title": "Zkt Timer Pro - Premium Membership",
-    "pro_description": "Upgrade to Zkt Timer Pro for advanced statistics, unlimited sessions, PDF export, all algorithm trainers and premium features.",
-    "battle_title": "1v1 Battle Mode - Zkt Timer",
+    "pro_title": "ZKT Timer Pro - Premium Membership",
+    "pro_description": "Upgrade to ZKT Timer Pro for advanced statistics, unlimited sessions, PDF export, all algorithm trainers and premium features.",
+    "battle_title": "1v1 Battle Mode - ZKT Timer",
     "battle_description": "1v1 battle with your friend on the same screen! Independent start, penalty tracking, round history. Mobile Rubik's cube duel.",
-    "login_title": "Log In - Zkt Timer",
-    "login_description": "Log in to your Zkt Timer account. Save your solves, track your stats and take your place in the rankings.",
-    "signup_title": "Create Account - Zkt Timer",
+    "login_title": "Log In - ZKT Timer",
+    "login_description": "Log in to your ZKT Timer account. Save your solves, track your stats and take your place in the rankings.",
+    "signup_title": "Create Account - ZKT Timer",
     "signup_description": "Join one of the largest Rubik's cube communities! Create an account, save your solves and compete with cubers worldwide.",
-    "forgot_password_title": "Reset Password - Zkt Timer",
-    "forgot_password_description": "Reset your Zkt Timer account password. Set a new password with the link sent to your email.",
-    "rooms_title": "Live Race Rooms - Zkt Timer",
+    "forgot_password_title": "Reset Password - ZKT Timer",
+    "forgot_password_description": "Reset your ZKT Timer account password. Set a new password with the link sent to your email.",
+    "rooms_title": "Live Race Rooms - ZKT Timer",
     "rooms_description": "Race other cubers in real time! Create rooms with friends or join open rooms. The best platform for online speedcubing competition.",
-    "settings_title": "User Settings - Zkt Timer",
+    "settings_title": "User Settings - ZKT Timer",
     "settings_description": "Customize your timer settings, appearance and account preferences.",
     "user_fallback": "User",
-    "user_profile_title": "{{username}} - Cuber Profile | Zkt Timer",
+    "user_profile_title": "{{username}} - Cuber Profile | ZKT Timer",
     "user_profile_description": "{{username}}'s Rubik's cube profile. Records, solve statistics and competition history.",
-    "trainer_title": "Rubik's Cube Algorithm Trainer: OLL, PLL, F2L, ZBLL, PLL Recognition and Cross | Zkt Timer",
+    "trainer_title": "Rubik's Cube Algorithm Trainer: OLL, PLL, F2L, ZBLL, PLL Recognition and Cross | ZKT Timer",
     "trainer_description": "Practice OLL, PLL, F2L, ZBLL and more, build your own algorithm sets and share them. PLL recognition, Cross and XCross practice, move by move tracking with a smart cube. Every algorithm keeps its own times.",
-    "trainer_algorithms_title": "Algorithm Trainer: OLL, PLL, F2L and more | Zkt Timer",
+    "trainer_algorithms_title": "Algorithm Trainer: OLL, PLL, F2L and more | ZKT Timer",
     "trainer_algorithms_description": "Practice OLL, PLL, F2L, ZBLL and the rest of 43 categories, build your own sets and share them.",
-    "trainer_community_title": "Community Sets: shared algorithm sets | Zkt Timer",
+    "trainer_community_title": "Community Sets: shared algorithm sets | ZKT Timer",
     "trainer_community_description": "Browse algorithm sets shared by cubers, add them to your sets and practice.",
-    "alg_set_title": "{{name}} · {{owner}} | Zkt Timer",
-    "alg_set_description_one": "{{count}} algorithm: {{categories}}. Practice in the Zkt Timer Algorithm Trainer.",
-    "alg_set_description_other": "{{count}} algorithms: {{categories}}. Practice in the Zkt Timer Algorithm Trainer.",
-    "alg_set_description_empty": "An algorithm set shared on Zkt Timer.",
-    "stats_title": "Solve Statistics - Zkt Timer",
+    "alg_set_title": "{{name}} · {{owner}} | ZKT Timer",
+    "alg_set_description_one": "{{count}} algorithm: {{categories}}. Practice in the ZKT Timer Algorithm Trainer.",
+    "alg_set_description_other": "{{count}} algorithms: {{categories}}. Practice in the ZKT Timer Algorithm Trainer.",
+    "alg_set_description_empty": "An algorithm set shared on ZKT Timer.",
+    "stats_title": "Solve Statistics - ZKT Timer",
     "stats_description": "Analyze your Rubik's cube performance. Averages, best times, graphs and detailed statistics.",
-    "solves_title": "Solve History - Zkt Timer",
+    "solves_title": "Solve History - ZKT Timer",
     "solves_description": "View all your Rubik's cube solves. Performance analysis with scramble, time and solve details.",
-    "leaderboards_title": "Online Battle Leaderboard | Zkt Timer",
-    "leaderboards_description": "The Zkt Timer Online Battle leaderboard. Ratings from 1v1 matches played with smart cubes.",
-    "terms_title": "Terms of Service - Zkt Timer",
-    "terms_description": "Zkt Timer terms of service: usage rules, accounts, content and your rights and responsibilities as a user.",
-    "privacy_title": "Privacy Policy - Zkt Timer",
-    "privacy_description": "How Zkt Timer collects, uses and protects your data. Privacy policy and cookie information.",
-    "delete_account_title": "Delete Your Account - Zkt Timer",
-    "delete_account_description": "How to delete your Zkt Timer account, what is deleted and what stays.",
-    "credits_title": "Credits & Acknowledgements - Zkt Timer",
-    "credits_description": "The open-source projects, libraries and developers that inspired and helped build Zkt Timer.",
+    "leaderboards_title": "Online Battle Leaderboard | ZKT Timer",
+    "leaderboards_description": "The ZKT Timer Online Battle leaderboard. Ratings from 1v1 matches played with smart cubes.",
+    "terms_title": "Terms of Service - ZKT Timer",
+    "terms_description": "ZKT Timer terms of service: usage rules, accounts, content and your rights and responsibilities as a user.",
+    "privacy_title": "Privacy Policy - ZKT Timer",
+    "privacy_description": "How ZKT Timer collects, uses and protects your data. Privacy policy and cookie information.",
+    "delete_account_title": "Delete Your Account - ZKT Timer",
+    "delete_account_description": "How to delete your ZKT Timer account, what is deleted and what stays.",
+    "credits_title": "Credits & Acknowledgements - ZKT Timer",
+    "credits_description": "The open-source projects, libraries and developers that inspired and helped build ZKT Timer.",
     "app_description": "The most advanced online Rubik's cube timer, WCA competition tracker and speedcubing platform. Millisecond precision timing.",
     "feature_list": [
       "Rubik's cube timer",
@@ -3121,49 +3121,49 @@
     "leaderboards_keywords": "online battle leaderboard, smart cube rankings, rubiks cube 1v1, speedcubing rating, cube duel",
     "stats_keywords": "rubik's cube statistics, solve analysis, cube averages, speedcubing stats, personal bests",
     "solves_keywords": "rubik's cube solve history, solve records, scramble history, cube solve log",
-    "pro_keywords": "Zkt Timer Pro, premium cube timer, advanced cubing features, speedcubing pro",
+    "pro_keywords": "ZKT Timer Pro, premium cube timer, advanced cubing features, speedcubing pro",
     "user_profile_keywords": "cuber profile, speedcuber, cube community profile, WCA profile",
     "wca_competitions_keywords": "WCA competitions, speedcubing competitions, rubik's cube competitions, WCA live, competition schedule",
     "zkt_competitions_keywords": "ZKT competition, unofficial cube competition, Turkey cubing competition, national cube event",
-    "login_keywords": "Zkt Timer login, cube timer signup, speedcubing account",
-    "wca_live_title": "WCA Live Results - Real-time Rankings | Zkt Timer",
+    "login_keywords": "ZKT Timer login, cube timer signup, speedcubing account",
+    "wca_live_title": "WCA Live Results - Real-time Rankings | ZKT Timer",
     "wca_live_description": "Live WCA competition results. Real-time round rankings, solve times and event tracking as the competition unfolds.",
-    "wca_person_title": "Competitor Profile - WCA Competition | Zkt Timer",
+    "wca_person_title": "Competitor Profile - WCA Competition | ZKT Timer",
     "wca_person_description": "Competitor details, event results and personal bests in the WCA competition.",
-    "wca_activity_title": "Competition Activity - WCA Schedule | Zkt Timer",
+    "wca_activity_title": "Competition Activity - WCA Schedule | ZKT Timer",
     "wca_activity_description": "Activity details: scheduled events, rounds and competitor assignments.",
-    "wca_personal_bests_title": "Personal Bests - WCA Competitor | Zkt Timer",
+    "wca_personal_bests_title": "Personal Bests - WCA Competitor | ZKT Timer",
     "wca_personal_bests_description": "Personal bests for all WCA events of the competitor.",
     "faq": [
       {
         "id": "what-is",
-        "q": "What is Zkt Timer?",
-        "a": "Zkt Timer is one of the most advanced online Rubik's cube timer platforms. It measures your speedcubing solve times with millisecond precision, provides official WCA scramble algorithms, detailed statistics and performance analysis. Features include live race rooms, smart cube support, and an algorithm trainer."
+        "q": "What is ZKT Timer?",
+        "a": "ZKT Timer is one of the most advanced online Rubik's cube timer platforms. It measures your speedcubing solve times with millisecond precision, provides official WCA scramble algorithms, detailed statistics and performance analysis. Features include live race rooms, smart cube support, and an algorithm trainer."
       },
       {
         "id": "how-works",
-        "q": "How does Zkt Timer work?",
+        "q": "How does ZKT Timer work?",
         "a": "Sign up and start right away. Core features like the timer, statistics, online races and the trainer are available. Upgrade to Pro membership for additional premium features."
       },
       {
         "id": "cube-types",
         "q": "Which cube types are supported?",
-        "a": "Zkt Timer supports all official WCA categories: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 One-Handed, 3x3 Blindfolded and more. Official WCA scramble algorithms are used for each category."
+        "a": "ZKT Timer supports all official WCA categories: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 One-Handed, 3x3 Blindfolded and more. Official WCA scramble algorithms are used for each category."
       },
       {
         "id": "offline",
         "q": "Can I use it offline?",
-        "a": "Yes! Zkt Timer works offline thanks to PWA technology. After installing the app via your browser's 'Add to Home Screen' option, you can use the timer without internet. Your data automatically syncs when you reconnect."
+        "a": "Yes! ZKT Timer works offline thanks to PWA technology. After installing the app via your browser's 'Add to Home Screen' option, you can use the timer without internet. Your data automatically syncs when you reconnect."
       },
       {
         "id": "wca-official",
         "q": "Is it an official WCA timer?",
-        "a": "Zkt Timer uses official WCA scramble algorithms and is built for training purposes. Physical Stackmat Timers are required for official WCA competitions. Zkt Timer is ideal for practice, training, and statistics tracking."
+        "a": "ZKT Timer uses official WCA scramble algorithms and is built for training purposes. Physical Stackmat Timers are required for official WCA competitions. ZKT Timer is ideal for practice, training, and statistics tracking."
       },
       {
         "id": "devices",
         "q": "Which devices are supported?",
-        "a": "Zkt Timer works on all modern browsers. Windows, macOS, Linux, Android and iOS are supported. It can be installed as a PWA on your phone. It's also compatible with Smart Cubes (GAN, MoYu) and Stackmat Timer."
+        "a": "ZKT Timer works on all modern browsers. Windows, macOS, Linux, Android and iOS are supported. It can be installed as a PWA on your phone. It's also compatible with Smart Cubes (GAN, MoYu) and Stackmat Timer."
       },
       {
         "id": "data-safety",
@@ -3183,11 +3183,11 @@
       {
         "id": "smart-cube",
         "q": "How do I connect a smart cube?",
-        "a": "Zkt Timer supports GAN, Giiker, and Particula smart cubes via Bluetooth. On mobile, enable Bluetooth and use the Capacitor BLE plugin; on web browsers, use Chrome or Edge which support Web Bluetooth. Open the Smart Cube menu from the timer, press Scan, and pair with your device. Once connected, the timer auto-starts and stops based on the cube state."
+        "a": "ZKT Timer supports GAN, Giiker, and Particula smart cubes via Bluetooth. On mobile, enable Bluetooth and use the Capacitor BLE plugin; on web browsers, use Chrome or Edge which support Web Bluetooth. Open the Smart Cube menu from the timer, press Scan, and pair with your device. Once connected, the timer auto-starts and stops based on the cube state."
       },
       {
         "id": "stackmat",
-        "q": "Does Zkt Timer support Stackmat Timer?",
+        "q": "Does ZKT Timer support Stackmat Timer?",
         "a": "Yes. Connect your Stackmat Timer via the audio input (3.5mm jack). In the timer settings, select StackMat as the input type, then choose the correct audio input device. The timer will detect your Stackmat signals automatically."
       },
       {
@@ -3203,22 +3203,22 @@
       {
         "id": "pro",
         "q": "What does Pro membership give me?",
-        "a": "Zkt Timer Pro unlocks advanced statistics, unlimited sessions, PDF export of your algorithms and stats, access to all algorithm trainers, premium themes, and priority support. It's a one-time or recurring purchase depending on the plan."
+        "a": "ZKT Timer Pro unlocks advanced statistics, unlimited sessions, PDF export of your algorithms and stats, access to all algorithm trainers, premium themes, and priority support. It's a one-time or recurring purchase depending on the plan."
       },
       {
         "id": "import",
         "q": "Can I import data from csTimer or Twisty Timer?",
-        "a": "Yes. Zkt Timer supports data import from csTimer, Twisty Timer, and its own previous export formats. Go to Settings > Data > Import, select the source format, and upload your export file. All solves, sessions, and metadata are preserved."
+        "a": "Yes. ZKT Timer supports data import from csTimer, Twisty Timer, and its own previous export formats. Go to Settings > Data > Import, select the source format, and upload your export file. All solves, sessions, and metadata are preserved."
       },
       {
         "id": "backup",
         "q": "How do I back up my data?",
-        "a": "Go to Settings > Data > Export. Zkt Timer generates a JSON file containing all your solves, sessions, and settings. Store this file safely — you can re-import it on any device. Signed-in users also get automatic cloud sync."
+        "a": "Go to Settings > Data > Export. ZKT Timer generates a JSON file containing all your solves, sessions, and settings. Store this file safely — you can re-import it on any device. Signed-in users also get automatic cloud sync."
       },
       {
         "id": "scramble-algo",
-        "q": "Which scramble algorithm does Zkt Timer use?",
-        "a": "Zkt Timer uses the same scramble engine as cstimer, the de facto standard in speedcubing. This includes WCA-compliant random-state scramblers for 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock, and more. All scrambles meet WCA regulations."
+        "q": "Which scramble algorithm does ZKT Timer use?",
+        "a": "ZKT Timer uses the same scramble engine as cstimer, the de facto standard in speedcubing. This includes WCA-compliant random-state scramblers for 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock, and more. All scrambles meet WCA regulations."
       },
       {
         "id": "battle",
@@ -3232,13 +3232,13 @@
       },
       {
         "id": "pricing",
-        "q": "Do I need to pay to use Zkt Timer?",
+        "q": "Do I need to pay to use ZKT Timer?",
         "a": "You can sign up and use the core experience at no cost: the timer, WCA scrambles, statistics, online race rooms, leaderboards, and the algorithm trainer. Pro membership unlocks advanced statistics, unlimited sessions, PDF export, smart-cube trainer modes, premium themes, and priority support. There are no ads."
       },
       {
         "id": "mobile-apps",
         "q": "Is there an iOS or Android app?",
-        "a": "Yes. Zkt Timer is available natively on the iOS App Store and Google Play Store. The apps include smart cube Bluetooth support, offline mode, push notifications, and native performance. You can also install the web app as a PWA."
+        "a": "Yes. ZKT Timer is available natively on the iOS App Store and Google Play Store. The apps include smart cube Bluetooth support, offline mode, push notifications, and native performance. You can also install the web app as a PWA."
       },
       {
         "id": "inspection",
@@ -3248,12 +3248,12 @@
       {
         "id": "per-cube-stats",
         "q": "Are stats tracked separately for different cube types?",
-        "a": "Yes. Zkt Timer buckets stats by (cube type, scramble subset). Your 3x3 averages, 2x2 personal bests, and Pyraminx times are all tracked independently. The Stats page lets you filter by cube type and time range."
+        "a": "Yes. ZKT Timer buckets stats by (cube type, scramble subset). Your 3x3 averages, 2x2 personal bests, and Pyraminx times are all tracked independently. The Stats page lets you filter by cube type and time range."
       },
       {
         "id": "offline-how",
-        "q": "How does Zkt Timer work without internet?",
-        "a": "As a PWA, Zkt Timer caches all app files after the first visit. You can time solves, generate scrambles, and view cached stats fully offline. When you reconnect, pending solves are automatically synced to the server via Background Sync API."
+        "q": "How does ZKT Timer work without internet?",
+        "a": "As a PWA, ZKT Timer caches all app files after the first visit. You can time solves, generate scrambles, and view cached stats fully offline. When you reconnect, pending solves are automatically synced to the server via Background Sync API."
       },
       {
         "id": "recognition-trainer",
@@ -3272,7 +3272,7 @@
       },
       {
         "id": "desktop-usage",
-        "q": "How do I use Zkt Timer on a desktop?",
+        "q": "How do I use ZKT Timer on a desktop?",
         "a": "The menus at the top select your session, puzzle and timer type, with the scramble right below them. Hold space and release to start, press again to stop. Your recent solves, your averages and the solve analysis sit in modules beside the timer, and you can drag the modules wherever you like. Click any time to open its detail window, where you can add a penalty, see the scramble or delete the solve."
       },
       {
@@ -3298,15 +3298,15 @@
     ],
     "nav_timer_name": "Timer",
     "nav_battle_name": "Battle Mode",
-    "nav_pro_name": "Zkt Timer Pro",
-    "wca_records_title": "WCA Records - Recently Broken Records | Zkt Timer",
+    "nav_pro_name": "ZKT Timer Pro",
+    "wca_records_title": "WCA Records - Recently Broken Records | ZKT Timer",
     "wca_records_description": "Latest broken WCA world, continental and national records, plus record alerts for the events you follow.",
     "wca_records_keywords": "wca records, world record cube, national record, cube record alerts, speedcubing records",
-    "battle_launch_title": "Battle: Online and Offline Battle | Zkt Timer",
+    "battle_launch_title": "Battle: Online and Offline Battle | ZKT Timer",
     "battle_launch_description": "Play Online Battle with your smart cube against whoever is searching right now, or an Offline Battle with a friend on one device.",
-    "battle_online_title": "Online Battle | Zkt Timer",
+    "battle_online_title": "Online Battle | ZKT Timer",
     "battle_online_description": "Rated 1v1 matches with smart cubes. Both players solve the same scramble, the first to win three rounds wins, and the rating goes on the leaderboard.",
-    "duel_title": "{{name}} challenges you to a duel | Zkt Timer",
+    "duel_title": "{{name}} challenges you to a duel | ZKT Timer",
     "duel_description": "A 1v1 Online Battle duel with smart cubes. First to {{n}} rounds wins, unrated. The invite lasts {{minutes}} minutes."
   },
   "quick_controls": {
@@ -3425,7 +3425,7 @@
     "bt_status_link_text": "Web Bluetooth Community Group implementation status",
     "bt_status_link_post": "page.",
     "select_device": "Choose your device",
-    "select_device_desc": "Pick yours from the list — the closest one is usually at the top.",
+    "select_device_desc": "Pick yours from the list. The closest one is usually at the top.",
     "searching_devices": "Searching for devices…",
     "nearest": "Nearest",
     "wrong_mac": "Wrong MAC address",
@@ -3444,7 +3444,7 @@
     "mac_input_help_windows": "Windows: Settings > Bluetooth & devices > your device > Details",
     "mac_input_help_macos": "macOS: System Settings > Bluetooth > right-click the device > Copy address",
     "mac_input_help_android": "Android: Settings > Bluetooth > your device (ⓘ) > MAC address",
-    "mac_input_chrome_hint": "Easiest on desktop — open this in Chrome, find your device and copy its address:",
+    "mac_input_chrome_hint": "Easiest on desktop: open this in Chrome, find your device and copy its address:",
     "mac_input_cancel": "Cancel",
     "mac_input_connect": "Connect",
     "ble_info_title": "Connect over Bluetooth",
@@ -3574,12 +3574,12 @@
     "disconnect_button": "Disconnect account",
     "account_linked": "Account Linked",
     "link_account": "Link Account",
-    "wca_description": "Increase credibility by linking your WCA account and displaying your official records.",
+    "wca_description": "Link your WCA account to show your official results on your profile.",
     "disconnect_no_password": "To disconnect, first set a password from the Personal Info page.",
     "wca_connecting": "Connecting to WCA...",
     "linking_account": "Linking account...",
-    "oauth_error": "An error occurred during OAuth connection",
-    "zkt_description": "Link your ZKT account to see your ZKT competitions, results and records inside Zkt Timer."
+    "oauth_error": "Couldn't link the account. Try again.",
+    "zkt_description": "Link your ZKT account to see your ZKT competitions, results and records inside ZKT Timer."
   },
   "otp": {
     "verifying": "Verifying…",
@@ -3601,38 +3601,38 @@
     ]
   },
   "email_verification": {
-    "title": "Email Verification",
-    "check_email": "We've sent a verification code to your email. Please check your inbox.",
-    "verification_code": "Verification Code",
+    "title": "Email verification",
+    "check_email": "We sent a verification code to your email. Check your inbox.",
+    "verification_code": "Verification code",
     "code_placeholder": "Enter the 6-digit code",
-    "enter_code_error": "Please enter the verification code",
+    "enter_code_error": "Enter the verification code",
     "verify_button": "Verify",
     "resend_code": "Resend code",
     "code_resent": "Code resent!"
   },
   "wca_signup": {
-    "title": "Choose Username",
-    "description": "You're signing up with your WCA account. Please choose a username.",
+    "title": "Choose a username",
+    "description": "You're signing up with your WCA account. Choose a username.",
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email",
     "wca_id": "WCA ID",
     "username_label": "Username",
-    "submit": "Create Account",
+    "submit": "Create account",
     "username_too_short": "Username must be at least 2 characters",
     "username_too_long": "Username cannot be longer than 18 characters",
     "username_invalid": "Username can only contain letters, numbers, and underscores",
-    "session_expired": "Session expired. Please try WCA login again.",
+    "session_expired": "Your session expired. Sign in with WCA again.",
     "loading": "Logging in with WCA..."
   },
   "login_wrapper": {
-    "login_title": "Zkt Timer | Login",
-    "signup_title": "Zkt Timer | Sign Up",
-    "reset_password": "Reset Password",
-    "verify_email": "Email Verification",
+    "login_title": "ZKT Timer | Login",
+    "signup_title": "ZKT Timer | Sign Up",
+    "reset_password": "Reset password",
+    "verify_email": "Email verification",
     "welcome": "Welcome",
     "login": "Login",
-    "signup": "Sign Up"
+    "signup": "Sign up"
   },
   "zkt_auth": {
     "divider_or_email": "or with email",
@@ -3758,8 +3758,8 @@
   },
   "pro_page": {
     "hero_title": "Pick your plan",
-    "intro_title": "Everything you need, in ZKT Pro.",
-    "intro_lede": "Smart cube analysis, algorithm practice on the cube, Magnet Timer and Drop to stop, competitor follow and record alerts, custom themes and backgrounds. {{count}} features in all.",
+    "intro_title": "What's in Pro",
+    "intro_lede": "Pro has {{count}} features: smart cube analysis, algorithm practice on a smart cube, Magnet Timer, Drop to stop, competitor follow, record alerts, custom themes and backgrounds.",
     "basic_included": "Everything in Basic included",
     "groups": {
       "analysis": "Analysis and data",
@@ -3767,7 +3767,7 @@
       "community": "Rooms and competitions",
       "personal": "Personalization"
     },
-    "mobile_only_hint": "Purchases are made through the iOS and Android apps",
+    "mobile_only_hint": "You can buy Pro in the iOS and Android apps",
     "basic_hint": "You're currently on Basic plan",
     "plan": {
       "monthly_label": "Monthly",
@@ -3782,8 +3782,8 @@
       "monthly_detail_dynamic": "{{price}} per month, billed monthly",
       "yearly_detail_dynamic": "About {{perMonth}}/month · Save {{savings}}%",
       "popular": "Popular",
-      "best_value": "Best Value",
-      "trial": "7-day free trial",
+      "best_value": "Best value",
+      "trial": "7-day trial",
       "no_trial": "One-time, no trial",
       "region_hint": "Price may vary based on your region",
       "yearly_cycle": "/ year",
@@ -3791,13 +3791,13 @@
       "lifetime_cycle": ""
     },
     "iap": {
-      "purchase_cta": "Purchase",
+      "purchase_cta": "Buy",
       "purchasing": "Processing...",
-      "purchase_success": "Your subscription is active",
-      "purchase_error": "Purchase failed, please try again",
-      "blocked_by_grant": "You already have a granted Pro, can't purchase now",
+      "purchase_success": "Your Pro membership has started",
+      "purchase_error": "The purchase didn't go through. Try again.",
+      "blocked_by_grant": "You can't buy while a Pro membership granted to your account is active",
       "granted_pro": "Pro active until {{date}}",
-      "cancellation_notice": "You cancelled your subscription. Access continues until {{date}}",
+      "cancellation_notice": "You cancelled your subscription. You can use Pro features until {{date}}.",
       "billing_issue_notice": "Payment failed. Please update your payment details to continue",
       "update_payment": "Update payment",
       "manage_subscription": "Manage subscription",
@@ -3806,23 +3806,23 @@
       "restore_success": "Your subscription was restored",
       "restore_empty": "No previous purchases found",
       "restore_error": "Restore failed",
-      "upgrade_to_yearly": "Upgrade to Yearly",
-      "downgrade_to_monthly": "Downgrade to Monthly",
+      "upgrade_to_yearly": "Switch to yearly",
+      "downgrade_to_monthly": "Switch to monthly",
       "cancel_first": "Cancel subscription first",
-      "lifetime_needs_cancel": "To buy Lifetime, cancel your active subscription first",
-      "lifetime_needs_cancel_hint": "Lifetime will unlock once your subscription ends",
+      "lifetime_needs_cancel": "Cancel your subscription first to buy the lifetime plan",
+      "lifetime_needs_cancel_hint": "You can buy the lifetime plan once your subscription ends",
       "cross_platform_notice": "Your subscription is active via {{platform}}. Manage it from your {{platform}} device.",
-      "cross_platform_cta": "Manage on {{platform}}",
+      "cross_platform_cta": "Manage on your {{platform}} device",
       "cross_platform_blocked": "This subscription was purchased on {{platform}} and cannot be changed here",
       "already_lifetime": "Your lifetime membership is already active",
-      "already_lifetime_cta": "Lifetime Active",
-      "already_lifetime_hint": "You cannot subscribe while a lifetime membership is active",
+      "already_lifetime_cta": "Lifetime active",
+      "already_lifetime_hint": "You can't subscribe while you have a lifetime membership",
       "downgrade_blocked_toast": "You cannot switch to monthly before your yearly plan expires",
-      "downgrade_blocked_cta": "Yearly Plan Active",
+      "downgrade_blocked_cta": "Yearly plan active",
       "downgrade_blocked_hint": "Your yearly plan expires on {{date}}. You can switch to monthly after that.",
       "paused_notice": "Your subscription is paused. You can resume it via Google Play."
     },
-    "pro_active_desc": "Enjoy all Pro features.",
+    "pro_active_desc": "All Pro features are on.",
     "pro_expires": "Active until {{date}}",
     "current_plan": "Current plan",
     "subscribed_via_title": "You're subscribed via {{platform}} app",
@@ -3833,67 +3833,67 @@
     "features": {
       "sync": {
         "title": "Cross-device sync",
-        "desc": "Solve on your phone, pick up right where you left off on your computer. All your solves, sessions, and stats are automatically backed up to the cloud. Switch devices, clear your browser, even reinstall the app — everything comes back exactly as you left it. Never lose your data again."
+        "desc": "Your solves and sessions look the same on all your devices. A time you solve on your phone also shows up on your computer. If you switch devices or reinstall the app, your history comes back."
       },
       "smart_cube_analysis": {
-        "title": "Smart cube deep analysis",
-        "desc": "Break down every solve step by step: Cross, F2L, OLL, PLL — see the time, move count, and TPS for each phase individually. Instantly spot which stage is costing you time and which algorithms are slowing you down. Overview charts, step-by-step detail tables, and solve animations let you track your improvement with real data."
+        "title": "Smart cube analysis",
+        "desc": "See the Cross, F2L, OLL and PLL times, move count and TPS of every solve separately. Stats also show which OLL and PLL cases slow you down. You can replay a solve move by move."
       },
       "trainer_smart_cube": {
         "title": "Practice algorithms with a smart cube",
         "desc": "Connect your smart cube via Bluetooth and turn the algorithm on the cube. You see right away whether each move is correct, and the timer starts and stops by itself."
       },
       "trainer_pdf": {
-        "title": "Download all algorithms as PDF",
-        "desc": "Download all algorithms or just the ones you selected, with their alternatives, as a PDF."
+        "title": "Download algorithms as PDF",
+        "desc": "Download all algorithms or only the ones you pick, with their alternatives, as a PDF."
       },
       "themes": {
         "title": "6 exclusive themes",
-        "desc": "Cyberpunk's neon glow, Tokyo's night streets, Norman's clean minimalism, Save the Bees' warm tones, Night Owl's deep darkness, and The PhD Student's academic vibe — give your timer a completely new personality. Each theme transforms colors, backgrounds, and the entire atmosphere."
+        "desc": "Cyberpunk, Tokyo, Norman, Save the Bees, Night Owl and The PhD Student. Each theme changes the colors and the background."
       },
       "leaderboard_publish": {
-        "title": "Show off on the leaderboard",
-        "desc": "Publish your best single or ao5 to the leaderboard and display your PBs proudly on your profile. Let other speedcubers see your solves and get inspired. Cubing isn't just for yourself — show the world how fast you really are."
+        "title": "Publish on the leaderboard",
+        "desc": "Publish your best single or ao5 on the leaderboard. Your PBs show on your profile."
       },
       "timer_background": {
         "title": "Custom background",
-        "desc": "Set your own photo or favorite image as the timer background. Every time you open the timer, it feels uniquely yours. Change it whenever you want, reset it anytime — it's completely in your hands."
+        "desc": "Put your own photo or video behind the timer. Change or remove it whenever you like."
       },
       "room_music": {
         "title": "Listen to music in rooms",
-        "desc": "Join a room, search for any song, and listen ad-free while you cube. Pick anything from YouTube's massive library and let it play in the background. The music player is built right into the room, no extra tabs needed. Stay motivated with your own soundtrack while solving."
+        "desc": "Search YouTube for a song and listen while you solve in a room. The player is inside the room, so you don't need another tab."
       },
       "pro_badge": {
         "title": "Pro badge",
-        "desc": "A glowing Pro ring around your profile photo. In rooms, on the leaderboard, on your profile page — everyone can see you're Pro wherever you go. It's not just a badge, it's your status in the community."
+        "desc": "A Pro ring appears around your profile photo. People see it in rooms, on the leaderboard and on your profile."
       },
       "stats_customization": {
         "title": "Stats customization",
-        "desc": "Fully customize the stat modules below your timer. You decide which blocks to show — add, remove, and reorder them to fit your workflow. See only the data that matters to you, skip the noise."
+        "desc": "You choose the stat modules below the timer. Add them, remove them or change their order."
       },
       "solve_sharing": {
         "title": "Solve sharing",
-        "desc": "Share your smart cube solve as a single link. Your friends click it and explore your entire solution step by step — which algorithms you used, how many seconds each phase took, your TPS, and move count all laid out in detail."
+        "desc": "Share a solve with a single link. For smart cube solves, whoever opens it sees the steps, the time spent on each phase, your TPS and your move count."
       },
       "room_smart_cube": {
-        "title": "Smart cube & GAN timer in rooms",
-        "desc": "Connect your smart cube or GAN timer while solving with friends in an online room. Times are recorded automatically and you compete in real time — Pro required to use this feature."
+        "title": "Smart cube and GAN Timer in rooms",
+        "desc": "Use a smart cube or GAN Timer while you solve with friends in a room. Times are saved automatically."
       },
       "competition_follow": {
         "title": "Follow competitors",
-        "desc": "Follow up to 5 competitors in any WCA competition. Receive real-time push notifications for results, round advancements, and podium finishes."
+        "desc": "Follow up to 5 competitors in a WCA competition. Their results, round advancements and podiums reach your phone as notifications."
       },
       "record_alerts": {
         "title": "Record alerts",
-        "desc": "Get a push notification the moment a world, continental, or national record is broken in the events you choose, at any live competition."
+        "desc": "Get a notification when a world, continental or national record falls at any live competition in the events you choose."
       },
       "slam_to_stop": {
         "title": "Drop to stop",
-        "desc": "Finish your solve and drop the cube or your hands on the table, and the timer stops by itself. No reaching back for the screen, and you get the StackMat feel without buying any hardware. Works in the mobile app, with sensitivity you tune to your own table."
+        "desc": "When you finish, drop the cube or your hands on the table and the time stops, without touching the screen. No extra hardware. Works in the mobile app, and you set the sensitivity for your table."
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "Put the cube by the phone's rear camera and the timer starts the moment you lift it and stops when you put it down on the table. No need to touch the screen. All you need is a magnetic cube and the mobile app."
+        "desc": "Put the cube next to the phone's rear camera. The time starts when you lift it and stops when you put it back on the table. All you need is a magnetic cube and the mobile app."
       }
     },
     "promo": {
@@ -3903,10 +3903,10 @@
       "redeem": "Redeem",
       "success_title": "Congratulations!",
       "success_until": "You are {{type}} until {{date}}.",
-      "success_forever": "You are now {{type}} forever!",
+      "success_forever": "You are now {{type}} with no end date.",
       "success_button": "Got it",
       "error_invalid": "Invalid or expired promo code",
-      "error_used": "You have already used this code",
+      "error_used": "You've already used this code",
       "error_max_uses": "This code has reached its usage limit"
     }
   },
@@ -4008,55 +4008,55 @@
     "privacy": "Privacy Policy"
   },
   "credits": {
-    "title": "Zkt Timer",
+    "title": "ZKT Timer",
     "intro_1": "Hi, I'm Ibrahim. I've been solving cubes for a long time, and once I started competing, it stopped being just a hobby for me and became something far more serious. As my practice grew more serious, I found myself asking the same questions after every solve: Where did I lose time, which transition slowed me down, which algorithm have I still not quite nailed? The tools I was using were perfectly good at keeping time, but they didn't do much to help me find those answers. What I wanted was a tool where I could study my solves in depth, practise my algorithms in an organised way, and do all of it in one place. I tried different apps, but none of them was quite what I was looking for, so in the end I decided to build it myself.",
     "intro_2": "At first my goal was quite modest: I just wanted a simple timer for my own use, one where I understood every detail. But every piece I added brought a new need along with it. First I wrote analysis tools to study my solves, then the trainer to practise algorithms, and after that I added smart cube connectivity and syncing across devices. None of it was as easy as it might sound; every cube brand's Bluetooth protocol was a puzzle of its own, a feature that worked flawlessly on one device could break on another in a place I never expected, and sometimes I spent hours, even days, chasing a single bug. Still, every problem I solved carried me one step further, and over time that little timer grew into an ecosystem of its own.",
     "intro_3": "The project started in 2025, and since then it has come a long way from where it began. What started on the web gradually moved to iOS and Android; today the same codebase runs in the browser, on phones and on tablets. I walked most of this road on my own. From store reviews to payment systems, from native code to real-time matches, every step was its own learning process, and almost none of them fell into place on the first try. Throughout this time my work was never just about adding new features; the real struggle was revisiting systems again and again, redesigning some of them from scratch more than once, and making sure every piece worked in harmony with the rest.",
-    "intro_4": "A tool I first wrote only for myself has become a place where other cubers train every day, race each other and follow competitions. Seeing someone I've never met break a personal best on Zkt Timer tells me that all that effort wasn't for nothing. A good share of new features now comes from the feedback of the people who use it, too. I don't see Zkt Timer as a finished product; it's a project I still work on every day, one that keeps growing, and honestly, I feel I'm still only at the beginning of this road.",
-    "builder_ibrhyyme": "The person who designs and develops Zkt Timer.",
+    "intro_4": "A tool I first wrote only for myself has become a place where other cubers train every day, race each other and follow competitions. Seeing someone I've never met break a personal best on ZKT Timer tells me that all that effort wasn't for nothing. A good share of new features now comes from the feedback of the people who use it, too. I don't see ZKT Timer as a finished product; it's a project I still work on every day, one that keeps growing, and honestly, I feel I'm still only at the beginning of this road.",
+    "builder_ibrhyyme": "The person who designs and develops ZKT Timer.",
     "credits_section_title": "Credits",
-    "credits_intro_1": "Earlier I said I walked most of this road on my own, but the truth is I was never really alone. The speedcubing world has a remarkably generous open-source culture that has grown over the years, and while building Zkt Timer I drew on it constantly. I studied many projects at length; some I ran on my own computer to try them out, and others I read line by line just to truly understand how they worked.",
+    "credits_intro_1": "Earlier I said I walked most of this road on my own, but the truth is I was never really alone. The speedcubing world has a remarkably generous open-source culture that has grown over the years, and while building ZKT Timer I drew on it constantly. I studied many projects at length; some I ran on my own computer to try them out, and others I read line by line just to truly understand how they worked.",
     "credits_intro_2": "I learned something different from each project. Some guided me on technical matters such as scramble generation or solver approaches; others helped me see what really works on the trainer and user experience side. Sometimes an algorithm idea, sometimes a data model, and sometimes a way of looking at a whole system was what cleared the way when I was stuck.",
-    "credits_intro_3": "Rather than taking these pieces and using them as they were, I revisited each one so it would fit Zkt Timer's own structure. I rewrote most of the systems from scratch, simplified some, and extended others as the need arose. Bringing approaches from different sources together under a single architecture, working in harmony with one another, was both the hardest and the most rewarding part of this process.",
-    "credits_intro_4": "That is why the structure that exists today doesn't rest on any single source; it took shape by bringing together and rebuilding what I learned from many different projects. But I should say this plainly: without the work of the developers named below, Zkt Timer would never have become what it is today in so short a time.",
+    "credits_intro_3": "Rather than taking these pieces and using them as they were, I revisited each one so it would fit ZKT Timer's own structure. I rewrote most of the systems from scratch, simplified some, and extended others as the need arose. Bringing approaches from different sources together under a single architecture, working in harmony with one another, was both the hardest and the most rewarding part of this process.",
+    "credits_intro_4": "That is why the structure that exists today doesn't rest on any single source; it took shape by bringing together and rebuilding what I learned from many different projects. But I should say this plainly: without the work of the developers named below, ZKT Timer would never have become what it is today in so short a time.",
     "credits_belief": "I believe that moving something forward is never only about adding something new; understanding the work that came before you, respecting it, and building an honest contribution on top of it matter just as much. That is why giving due credit to everyone who has touched this project, directly or indirectly, is for me less a matter of courtesy than a debt to be repaid.",
-    "credits_outro": "Each of the projects and developers I name below played a different part in shaping Zkt Timer. Some were the starting point of an idea, some helped me solve a problem I had been stuck on for a long time, and some broadened my horizons and let me see a better approach. Most of this work was built by people who gave up their own free time and shared it with everyone without expecting anything in return; I understood how valuable that is far better once I took on the same load in my own project.",
+    "credits_outro": "Each of the projects and developers I name below played a different part in shaping ZKT Timer. Some were the starting point of an idea, some helped me solve a problem I had been stuck on for a long time, and some broadened my horizons and let me see a better approach. Most of this work was built by people who gave up their own free time and shared it with everyone without expecting anything in return; I understood how valuable that is far better once I took on the same load in my own project.",
     "credits_thanks": "To everyone who shares their effort, time and knowledge with this community, I offer my deepest respect and heartfelt thanks. I'm so glad you're out there.",
-    "intro_signature": "— ibrhyyme",
+    "intro_signature": "ibrhyyme",
     "inspiration_title": "References",
-    "inspiration_desc": "The projects below served as references in different ways throughout Zkt Timer's development. Each entry states two things: what was taken from that project, and what was built on top of it.",
-    "inspiration_cubedesk": "My strongest reference on the software architecture side of Zkt Timer. How React + SSR, Node.js + GraphQL, PostgreSQL + Prisma and Redis fit together inside a cubing platform was worked out by studying <strong>cubedesk</strong> by <strong>kash</strong>. It guided the service organisation and folder structure. Its influence was not limited to the server side: the interface language cubedesk established was also a reference for the timer screen layout, the solve list and the module arrangement. Where we part ways: cubedesk is a web app. I wanted the same codebase to ship to iOS and Android through Capacitor, so I rebuilt the SSR layer, the session handling and the cross-device sync to carry the native side as well.",
+    "inspiration_desc": "The projects below served as references in different ways throughout ZKT Timer's development. Each entry states two things: what was taken from that project, and what was built on top of it.",
+    "inspiration_cubedesk": "My strongest reference on the software architecture side of ZKT Timer. How React + SSR, Node.js + GraphQL, PostgreSQL + Prisma and Redis fit together inside a cubing platform was worked out by studying <strong>cubedesk</strong> by <strong>kash</strong>. It guided the service organisation and folder structure. Its influence was not limited to the server side: the interface language cubedesk established was also a reference for the timer screen layout, the solve list and the module arrangement. Where we part ways: cubedesk is a web app. I wanted the same codebase to ship to iOS and Android through Capacitor, so I rebuilt the SSR layer, the session handling and the cross-device sync to carry the native side as well.",
     "inspiration_cstimer": "The foundation of scramble generation. The scramble algorithms and subset structure for the puzzle types, the min2phase Kociemba solver and the group theory library were built with reference to <strong>csTimer</strong> and <strong>min2phase</strong> by <strong>cs0x7f</strong>. While moving this code from JavaScript to TypeScript it was restructured around a registry-based generator architecture; every puzzle type now registers its own generator, and the client and the server can produce the same scramble. On top of that, more than 40 CFOP, Roux, Mehta and ZZ subsets, my own 2D renderers for Square-1 and Clock, and a Web Worker layer that runs the heavy solvers without freezing the interface were added.",
-    "inspiration_cubedex": "One of my main references for the user experience side of the Trainer module. How a smart cube connects into a drilling flow was worked out by studying <strong>Pau Oliva Fora</strong>'s project. In Zkt Timer this structure was split into four separate modes (Standard, Smart Cube, Recognition, Efficiency); per-algorithm statistics were kept, the queue order was made to adapt to the cases a user is weak at, and 2D and 3D pattern visualisation plus PDF export for printing algorithm sheets were added.",
-    "inspiration_cubingapp": "A large portion of the algorithm collection used in the Trainer came from the <strong>cubingapp</strong> dataset created by <strong>spencerchubb</strong> and was adapted to Zkt Timer's data model. The setup algorithms were regenerated with my own scripts, the pattern images were run through my own rendering pipeline, the collection was split into 31 categories and extended with algorithms of my own.",
-    "inspiration_rubikssolverdemo": "The starting point for the Cross, XCross, EOCross and F2L pair solver logic. The coordinate-based IDA* implementations developed by <strong>or18</strong> were a fundamental reference in the design of Zkt Timer's solver system. The work in this module was porting and adaptation: the solvers were moved into a Web Worker architecture and wired into a step-by-step solution interface. The mathematics behind the algorithm belongs to or18.",
-    "inspiration_letscube": "The conceptual basis for 1v1 rooms and the friendly-race format comes from this project. How a synchronised, shared solve model is built was worked out by studying <strong>coder13</strong>'s work. Zkt Timer's room system was written from scratch on top of that idea, and the following were added as things I considered missing in LetsCube: smart cube support inside rooms, live chat, spectator mode, room moderation and user banning, a 1v1 duel mode, and a Socket.IO layer that broadcasts across multiple servers through Redis.",
-    "inspiration_competitorgroups": "A project built so competitors can follow their own groups and assignments at WCA competitions, and it does that job very well. I did not want competitors to have to visit a separate site for this information, so the same experience was brought inside Zkt Timer. A competitor's own schedule, their judging and scrambling assignments, their per-event personal bests and their round results are now gathered on a single screen. The layout of the group screens took shape under the influence of this project.",
-    "inspiration_wcalive": "A platform built for following WCA competitions live, and one that solves round-by-round result flow genuinely well. The <strong>WCA Software Team</strong>'s work was the direct source for the structural approach of the WCA Live integration in Zkt Timer. The ZKT competition platform itself was written from scratch for Zkt Timer: registration, scorecard entry, batch entry mode, round management, judge, scrambler and runner assignment, national record tracking, delegate management, A/B day-split competitions and WCIF generation. What was taken from wca-live is the logic of the delegate workflow.",
-    "inspiration_rubikcube": "The interactive 3D cube on the landing page was ported one-to-one from this project by <strong>Dev-tanay</strong>. The source was written against Three.js r95; the changed APIs were adapted while moving it to r125 and the code was converted to TypeScript. The class structure and method names stayed the same as the source. My addition was wiring the cube into Zkt Timer's timer: scramble generation, solve detection and timing. In this entry the skeleton of the code belongs to Dev-tanay.",
+    "inspiration_cubedex": "One of my main references for the user experience side of the Trainer module. How a smart cube connects into a drilling flow was worked out by studying <strong>Pau Oliva Fora</strong>'s project. In ZKT Timer this structure was split into four separate modes (Standard, Smart Cube, Recognition, Efficiency); per-algorithm statistics were kept, the queue order was made to adapt to the cases a user is weak at, and 2D and 3D pattern visualisation plus PDF export for printing algorithm sheets were added.",
+    "inspiration_cubingapp": "A large portion of the algorithm collection used in the Trainer came from the <strong>cubingapp</strong> dataset created by <strong>spencerchubb</strong> and was adapted to ZKT Timer's data model. The setup algorithms were regenerated with my own scripts, the pattern images were run through my own rendering pipeline, the collection was split into 31 categories and extended with algorithms of my own.",
+    "inspiration_rubikssolverdemo": "The starting point for the Cross, XCross, EOCross and F2L pair solver logic. The coordinate-based IDA* implementations developed by <strong>or18</strong> were a fundamental reference in the design of ZKT Timer's solver system. The work in this module was porting and adaptation: the solvers were moved into a Web Worker architecture and wired into a step-by-step solution interface. The mathematics behind the algorithm belongs to or18.",
+    "inspiration_letscube": "The conceptual basis for 1v1 rooms and the friendly-race format comes from this project. How a synchronised, shared solve model is built was worked out by studying <strong>coder13</strong>'s work. ZKT Timer's room system was written from scratch on top of that idea, and the following were added as things I considered missing in LetsCube: smart cube support inside rooms, live chat, spectator mode, room moderation and user banning, a 1v1 duel mode, and a Socket.IO layer that broadcasts across multiple servers through Redis.",
+    "inspiration_competitorgroups": "A project built so competitors can follow their own groups and assignments at WCA competitions, and it does that job very well. I did not want competitors to have to visit a separate site for this information, so the same experience was brought inside ZKT Timer. A competitor's own schedule, their judging and scrambling assignments, their per-event personal bests and their round results are now gathered on a single screen. The layout of the group screens took shape under the influence of this project.",
+    "inspiration_wcalive": "A platform built for following WCA competitions live, and one that solves round-by-round result flow genuinely well. The <strong>WCA Software Team</strong>'s work was the direct source for the structural approach of the WCA Live integration in ZKT Timer. The ZKT competition platform itself was written from scratch for ZKT Timer: registration, scorecard entry, batch entry mode, round management, judge, scrambler and runner assignment, national record tracking, delegate management, A/B day-split competitions and WCIF generation. What was taken from wca-live is the logic of the delegate workflow.",
+    "inspiration_rubikcube": "The interactive 3D cube on the landing page was ported one-to-one from this project by <strong>Dev-tanay</strong>. The source was written against Three.js r95; the changed APIs were adapted while moving it to r125 and the code was converted to TypeScript. The class structure and method names stayed the same as the source. My addition was wiring the cube into ZKT Timer's timer: scramble generation, solve detection and timing. In this entry the skeleton of the code belongs to Dev-tanay.",
     "inspiration_pllrecognition": "The direct basis for the PLL Recognition Trainer module. The keyboard-driven PLL recognition practice, the two-sided recognition guide and the adaptive repetition logic came from <strong>Roman Strakhov</strong>'s project. The source was written in Vue; the module was rewritten in React and TypeScript. During the rewrite the recognition guide was completed to cover all 73 cases, and an on-device history layer, a glossary view and a 13-step guided quest were added. The module is roughly four times the size of the source today.",
     "libraries_title": "Libraries Used",
-    "libraries_desc": "Core cubing libraries used directly in Zkt Timer's infrastructure.",
+    "libraries_desc": "Core cubing libraries used directly in ZKT Timer's infrastructure.",
     "libraries_cubingjs": "The core library used for smart cube state tracking, WCA notation, and KPattern matching. Developed by <strong>Lucas Garron</strong> and the cubing.js contributors.",
     "libraries_ganweb": "The library that provides Bluetooth connection management and gyroscope/motion logic for GAN smart cubes. The Smart Cube module is built on top of this library.",
     "libraries_smartcube_web_bluetooth": "The maintained successor of gan-web-bluetooth. Many fixes in our GAN, QiYi, MoYu, Giiker and GoCube drivers (reading several GAN moves from one Bluetooth packet, packet validation, gyroscope support, MAC candidates) come from this library, and its real cube recordings are used in our tests.",
     "libraries_cubejs": "A core cube solver library used in various analysis and solve features.",
     "opensource_title": "Open Source",
-    "opensource_text": "Zkt Timer is built on top of hundreds of open-source packages, including React, Apollo, Prisma, and Three.js. The full list of dependencies can be found in the <code>package.json</code> file. A heartfelt thanks to everyone who has built and maintained these libraries over the years.",
+    "opensource_text": "ZKT Timer is built on top of hundreds of open-source packages, including React, Apollo, Prisma, and Three.js. The full list of dependencies can be found in the <code>package.json</code> file. A heartfelt thanks to everyone who has built and maintained these libraries over the years.",
     "community_title": "To the Community",
-    "community_text": "To the <strong>WCA</strong> and the global speedcubing community. A remarkable worldwide community has been built around a single puzzle. The real reason Zkt Timer means anything is that it gets to be a part of this community.",
+    "community_text": "To the <strong>WCA</strong> and the global speedcubing community. A remarkable worldwide community has been built around a single puzzle. The real reason ZKT Timer means anything is that it gets to be a part of this community.",
     "copyright_title": "Copyright Notices",
-    "copyright_text": "Portions of this software reference code or concepts from the projects mentioned above. Each project retains its own original copyright. Zkt Timer's own architecture, systems, and features are subject to the following copyright:",
+    "copyright_text": "Portions of this software reference code or concepts from the projects mentioned above. Each project retains its own original copyright. ZKT Timer's own architecture, systems, and features are subject to the following copyright:",
     "copyright_zkt": "Copyright (c) 2026 <strong>ibrhyyme</strong>",
     "license_text": "This project is released under the <strong>GNU General Public License v3.0</strong>.",
-    "originals_title": "What's New in Zkt Timer",
-    "originals_desc": "This section covers the features designed and developed for Zkt Timer. Each one grew out of the platform's own needs and the feedback that came from its users.",
+    "originals_title": "What's New in ZKT Timer",
+    "originals_desc": "This section covers the features designed and developed for ZKT Timer. Each one grew out of the platform's own needs and the feedback that came from its users.",
     "original_notifications_title": "Competition Notification & Countdown System",
-    "original_notifications": "Zkt Timer generates automatic notifications for the competitions you follow. Registration opening, publication of groups and assignments, results being entered and records being broken are all delivered as notifications, and a countdown runs up to the competition date. The system runs as scheduled jobs on the server and produces both in-app and push notifications.",
+    "original_notifications": "ZKT Timer generates automatic notifications for the competitions you follow. Registration opening, publication of groups and assignments, results being entered and records being broken are all delivered as notifications, and a countdown runs up to the competition date. The system runs as scheduled jobs on the server and produces both in-app and push notifications.",
     "original_radar_title": "Record Radar",
     "original_radar": "Calculates in advance which records could fall at a competition you are attending. The competitor list, the event schedule and the current national records are compared to determine which records are at risk, and the result is shown on the competition page.",
     "original_native_title": "Native Mobile App",
-    "original_native": "Zkt Timer ships as a native app on iOS and Android. Smart cube connectivity runs through a native BLE layer, and accelerometer and haptic support are provided through native plugins. Edge gestures, safe areas and keyboard behaviour are handled separately for each platform.",
+    "original_native": "ZKT Timer ships as a native app on iOS and Android. Smart cube connectivity runs through a native BLE layer, and accelerometer and haptic support are provided through native plugins. Edge gestures, safe areas and keyboard behaviour are handled separately for each platform.",
     "original_offline_title": "Full Offline Mode",
     "original_offline": "Solves can be recorded, sessions can be opened and statistics can be viewed with no internet connection. When the connection returns, pending solves are queued and reconciled with the server, conflicts are resolved, and duplicate records are filtered out by fingerprint.",
     "original_battle_title": "Offline Battle (1v1)",
@@ -4077,17 +4077,17 @@
   "terms": {
     "title": "Terms of Service",
     "last_update": "Last updated: October 26, 2026",
-    "intro": "Please read this Terms of Service agreement (\"Agreement\") carefully before using Zkt Timer (\"Platform\") services. By accessing or using the Platform, you agree to be bound by this Agreement.",
+    "intro": "Please read this Terms of Service agreement (\"Agreement\") carefully before using ZKT Timer (\"Platform\") services. By accessing or using the Platform, you agree to be bound by this Agreement.",
     "section_1_title": "1. Parties",
-    "section_1_text": "This Agreement is concluded between İbrahim Yıldız, the developer of Zkt Timer (\"Zkt Timer\"), and the user of the Platform (\"User\").",
+    "section_1_text": "This Agreement is concluded between İbrahim Yıldız, the developer of ZKT Timer (\"ZKT Timer\"), and the user of the Platform (\"User\").",
     "section_2_title": "2. Scope of Service",
-    "section_2_text": "Zkt Timer is a platform offering an online timer for the Rubik's cube and other twisty puzzles, statistics tracking, algorithm training, smart cube support and community features such as rooms and Online Battle. The Platform is provided \"as is\" and is not guaranteed to be uninterrupted or error-free.",
+    "section_2_text": "ZKT Timer is a platform offering an online timer for the Rubik's cube and other twisty puzzles, statistics tracking, algorithm training, smart cube support and community features such as rooms and Online Battle. The Platform is provided \"as is\" and is not guaranteed to be uninterrupted or error-free.",
     "section_3_title": "3. Membership and Terms of Use",
     "section_3_item_1": "The User represents that the information provided during registration is accurate and up to date.",
     "section_3_item_2": "Users under the age of 18 must have obtained parental or legal guardian consent to use the Platform.",
     "section_3_item_3": "The User may only use the Platform for lawful purposes. Activities that threaten the Platform's security, harm other users, or disrupt system operations are prohibited.",
     "section_3_item_4": "The User is solely responsible for account security (passwords, etc.). Any unauthorized use of the account must be immediately reported to the Platform.",
-    "section_3_item_5": "Zkt Timer may suspend or terminate a User's membership in case of a breach of this Agreement, abuse, or harm to other users.",
+    "section_3_item_5": "ZKT Timer may suspend or terminate a User's membership in case of a breach of this Agreement, abuse, or harm to other users.",
     "content_title": "4. User Content and Community Rules",
     "content_text": "You are responsible for the content you add to your profile, messages and room chats, and you give us the permission needed to display it on the Platform. The following are prohibited:",
     "content_item_1": "Content containing insults, harassment, threats, hate speech or discrimination,",
@@ -4098,17 +4098,17 @@
     "fair_title": "5. Fair Use",
     "fair_text": "Times entered into rankings, Online Battle and rooms must reflect real solves. Made-up times, altered smart cube data or results obtained with automation tools are deleted when detected; ratings may be reset and the account may be restricted.",
     "relation_title": "6. Relationship with the WCA and ZKT",
-    "relation_text": "Zkt Timer is an independent app; it is not affiliated with or endorsed by the World Cube Association (WCA). WCA competition and result information is shown from the WCA's public data for information purposes. Zeka Küpü Türkiye (ZKT) competitions are organised by ZKT; Zkt Timer only displays their information.",
+    "relation_text": "ZKT Timer is an independent app; it is not affiliated with or endorsed by the World Cube Association (WCA). WCA competition and result information is shown from the WCA's public data for information purposes. Zeka Küpü Türkiye (ZKT) competitions are organised by ZKT; ZKT Timer only displays their information.",
     "section_4_title": "7. Intellectual Property Rights",
-    "section_4_text": "All software, designs, content, images, and trademarks on the Platform belong to Zkt Timer or its licensors. Users may not copy, reproduce, distribute, or use this content for commercial purposes.",
+    "section_4_text": "All software, designs, content, images, and trademarks on the Platform belong to ZKT Timer or its licensors. Users may not copy, reproduce, distribute, or use this content for commercial purposes.",
     "section_5_title": "8. Disclaimer",
-    "section_5_text": "Zkt Timer shall not be held liable for data loss, connection errors, or hardware incompatibilities that may occur during Platform use. Access to third-party links is at the User's own responsibility.",
+    "section_5_text": "ZKT Timer shall not be held liable for data loss, connection errors, or hardware incompatibilities that may occur during Platform use. Access to third-party links is at the User's own responsibility.",
     "section_6_title": "9. Paid Services and Refunds",
     "section_6_text": "Some services on the Platform are paid. Pro membership purchases are made through the Apple App Store or Google Play Store; payment, subscription management and refunds are subject to the policy of the relevant store. New subscribers are offered a 7-day free trial. For refund requests, please contact App Store or Google Play support directly. Deleting your account does not cancel an active subscription; you must cancel it separately in your App Store or Google Play settings.",
     "deletion_title": "10. Account Deletion",
     "deletion_text": "You can delete your account at any time with \"Delete Account\" in the \"Danger Zone\" section of your account settings. Deletion is permanent; your solves, sessions, statistics and messages cannot be restored. Before deleting, you can export your data from Settings.",
     "section_7_title": "11. Changes to the Agreement",
-    "section_7_text": "Zkt Timer reserves the right to update this Agreement at any time. Updated terms take effect on the date they are published on the Platform. Users are advised to periodically review this page.",
+    "section_7_text": "ZKT Timer reserves the right to update this Agreement at any time. Updated terms take effect on the date they are published on the Platform. Users are advised to periodically review this page.",
     "section_8_title": "12. Dispute Resolution",
     "section_8_text": "This Agreement is governed by Turkish law. For disputes arising in your capacity as a consumer, the Consumer Arbitration Committees are competent within the monetary limits set under Law No. 6502 on Consumer Protection, and the Consumer Courts above those limits.",
     "section_9_title": "13. Contact",
@@ -4117,12 +4117,12 @@
   },
   "privacy": {
     "title": "Privacy Policy and Data Protection Notice",
-    "app_identity": "App: Zkt Timer Rubik's Timer & WCA (com.zktimer.app). Developer: İbrahim Yıldız.",
+    "app_identity": "App: ZKT Timer Rubik's Timer & WCA (com.zktimer.app). Developer: İbrahim Yıldız.",
     "last_update": "Last updated: November 2, 2026",
-    "intro_1": "At Zkt Timer (\"Platform\", \"We\"), we place great importance on the security and privacy of our users' (\"User\", \"You\") personal data. This notice has been prepared in accordance with the Turkish Personal Data Protection Law No. 6698 (\"KVKK\") and related legislation to inform you about the processing, storage, and transfer of your personal data.",
+    "intro_1": "At ZKT Timer (\"Platform\", \"We\"), we place great importance on the security and privacy of our users' (\"User\", \"You\") personal data. This notice has been prepared in accordance with the Turkish Personal Data Protection Law No. 6698 (\"KVKK\") and related legislation to inform you about the processing, storage, and transfer of your personal data.",
     "intro_2": "This notice is for information. Your personal data is processed on the legal grounds set out below; where your explicit consent is required, it is asked for separately and explicitly.",
     "section_1_title": "1. Data Controller",
-    "section_1_text": "Under the KVKK, your personal data is processed, as data controller, by İbrahim Yıldız, the developer of Zkt Timer, as described below. You can reach us at ibrhyyme@icloud.com.",
+    "section_1_text": "Under the KVKK, your personal data is processed, as data controller, by İbrahim Yıldız, the developer of ZKT Timer, as described below. You can reach us at ibrhyyme@icloud.com.",
     "section_2_title": "2. Purpose of Processing Personal Data",
     "section_2_text": "Your personal data is processed for the following purposes:",
     "section_2_item_1": "Carrying out Platform membership procedures.",
@@ -4194,7 +4194,7 @@
     "section_6_item_8": "To claim compensation for damages arising from unlawful processing of personal data.",
     "section_6_contact": "To exercise these rights, send your request from the email address registered to your account to <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>. Your request is answered free of charge within 30 days at the latest. If your request is refused, you find the answer insufficient or it is not answered in time, you may file a complaint with the Turkish Personal Data Protection Board (KVKK Board).",
     "cookie_title": "Cookie Policy",
-    "cookie_intro": "Zkt Timer uses only the cookies and device storage the service needs to work. No advertising or tracking cookies are used. The one exception: when you pick a song in a room, the YouTube player that opens may use its own cookies or storage.",
+    "cookie_intro": "ZKT Timer uses only the cookies and device storage the service needs to work. No advertising or tracking cookies are used. The one exception: when you pick a song in a room, the YouTube player that opens may use its own cookies or storage.",
     "cookie_section_1_title": "1. What Are Cookies?",
     "cookie_section_1_text": "Cookies are small text files stored on your device or network server through your browser by the websites you visit.",
     "cookie_section_2_title": "2. Types of Cookies Used",
@@ -4217,14 +4217,16 @@
   },
   "delete_account": {
     "title": "Delete Your Account",
-    "intro": "You can delete your Zkt Timer account and the data linked to it at any time. Deletion is done from inside your account, so you need to sign in first.",
+    "intro": "You can delete your ZKT Timer account and the data linked to it at any time. Deletion is done from inside your account, so you need to sign in first.",
     "steps_title": "How to delete your account",
-    "step_1": "Sign in to Zkt Timer on the website or in the app.",
+    "step_1": "Sign in to ZKT Timer on the website or in the app.",
     "step_2": "Open the \"Danger Zone\" section in your account settings.",
     "step_3": "Press \"Delete Account\" and confirm.",
     "button": "Go to Danger Zone",
     "no_login_title": "If you cannot sign in",
     "no_login_text": "If you forgot your password, you can reset it from the sign-in screen. If you still cannot get in, write to <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> from the email address on your account and we will delete it for you. Your request is answered within 30 days at the latest.",
+    "partial_title": "If you only want to delete some of your data",
+    "partial_text": "Without deleting your account, you can delete individual solves, sessions and messages inside the app, and remove linked accounts in your account settings. For any other data, such as your profile photo, write to <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> from the email address on your account. Your request is answered within 30 days at the latest.",
     "deleted_title": "What is deleted",
     "deleted_text": "Your solves, sessions, statistics, messages, profile, uploaded files and email delivery records are permanently deleted. Deleted data cannot be restored.",
     "kept_title": "What stays",
@@ -4232,59 +4234,59 @@
   },
   "welcome_wca": {
     "eyebrow": "WCA Competitions",
-    "title": "Track Every WCA Competition on One Platform",
-    "subtitle": "Wherever you are in the world — live results, your task assignments, venue and schedule at your fingertips with instant notifications.",
+    "title": "Follow WCA competitions from the app",
+    "subtitle": "Live results, your assignments, the venue and the schedule on one page. You get a notification when a round starts and when results are in.",
     "image_alt": "WCA competition detail page preview",
     "image_badge_live": "WCA LIVE",
-    "feat_live_title": "WCA Live live results",
-    "feat_live_desc": "The moment a round ends, results stream in from WCA Live. No refresh needed.",
-    "feat_notifications_title": "Live round push notifications",
-    "feat_notifications_desc": "Know when your round starts, when results are posted, and when your group is called.",
+    "feat_live_title": "WCA Live results",
+    "feat_live_desc": "Results come from WCA Live as each round ends, so you don't need to refresh.",
+    "feat_notifications_title": "Round notifications",
+    "feat_notifications_desc": "Find out by notification when your round starts, when results are posted and which group you're in.",
     "feat_assignments_title": "Task assignments",
     "feat_assignments_desc": "All your judge, scrambler, runner and competitor assignments on one screen.",
-    "feat_venue_title": "Venue & schedule",
-    "feat_venue_desc": "Full venue details, map, room layout and a complete schedule timeline.",
+    "feat_venue_title": "Venue and schedule",
+    "feat_venue_desc": "Venue, map, room layout and the full schedule.",
     "feat_competitors_title": "Competitor stats",
-    "feat_competitors_desc": "Every competitor's WR/NR rankings, personal records, and history — one tap away.",
-    "feat_records_title": "WR / NR record tracking",
-    "feat_records_desc": "Watch records break live during the competition — never miss a moment.",
-    "upcoming_title": "Upcoming Competitions",
-    "upcoming_hint": "From around the world — tap to open the detail page",
-    "stat_wca_upcoming": "Upcoming WCA Competitions",
-    "stat_capacity": "Total Competitor Capacity",
-    "stat_events": "Supported WCA Events",
-    "stat_languages": "Platform Languages",
+    "feat_competitors_desc": "Every competitor's WR and NR rankings, personal records and history.",
+    "feat_records_title": "WR and NR records",
+    "feat_records_desc": "See records fall live during the competition.",
+    "upcoming_title": "Upcoming competitions",
+    "upcoming_hint": "From around the world. Tap for details.",
+    "stat_wca_upcoming": "Upcoming WCA competitions",
+    "stat_capacity": "Competitor capacity",
+    "stat_events": "Supported WCA events",
+    "stat_languages": "Languages",
     "stat_cubers": "Registered Cubers",
     "stat_solves": "Solves Recorded",
     "empty": "No upcoming competitions right now.",
-    "cta": "Explore All Competitions"
+    "cta": "All competitions"
   },
   "welcome_hero": {
     "title_start": "Professional",
     "title_highlight": "Rubik's Cube Timer",
     "description": "Unlock your potential with a professional timer, detailed analytics, and live competitions.",
     "cta_start": "Start Timer →",
-    "start_now": "Get Started",
-    "cta_signup": "Sign Up",
-    "cta_login": "Log In",
+    "start_now": "Get started",
+    "cta_signup": "Sign up",
+    "cta_login": "Log in",
     "title_highlight_2": "speedcubing platform",
     "title_highlight_3": "solve & analytics tool",
     "title_highlight_4": "WCA Competition Assistant",
     "store_pill": "New",
-    "store_tagline": "Zkt Timer is now on the app stores",
+    "store_tagline": "ZKT Timer is now on the app stores",
     "or_continue_web": "or continue on the web",
     "app_store_alt": "Download on the App Store",
     "google_play_alt": "Get it on Google Play",
-    "cta_try": "Try it now",
+    "cta_try": "Open the timer",
     "rating_line": "{{play}} on Google Play, {{apple}} on the App Store"
   },
   "welcome_chapters": {
-    "title": "Everything around the solve",
-    "lede": "The screens below come straight from the app, taken from real sessions.",
+    "title": "From inside the app",
+    "lede": "The screens come from the app, taken from real sessions.",
     "timer": {
       "name": "Timer",
       "title": "Set it up once, then just solve",
-      "body": "WCA inspection with automatic +2 and DNF, a fresh scramble after every solve, and a screen you arrange yourself. Move the modules, pick a theme and, with Pro, put your own photo or video behind the time.",
+      "body": "15-second WCA inspection with +2 and DNF rules comes ready. A new scramble appears after every solve. You can move the modules and pick a theme. With Pro you can put your own photo or video behind the time.",
       "fact_1": "Keyboard, touch, StackMat, GAN and QiYi timers, or a smart cube",
       "fact_2": "Cross and XCross solutions worked out for every scramble",
       "fact_3": "Every WCA event, with a 3D preview of the scramble",
@@ -4293,9 +4295,9 @@
     "smart": {
       "name": "Smart cube",
       "title": "Every turn on the record",
-      "body": "Connect a smart cube and the time starts with your first turn and stops when the cube is solved. Then open the solve and walk through it: the cross, each F2L pair, OLL and PLL, with the time you spent looking kept apart from the time you spent turning.",
+      "body": "Connect a smart cube and the time starts with your first turn and stops when the cube is solved. Then open the solve and go through it step by step: the cross, each F2L pair, OLL and PLL. Looking time and turning time show separately.",
       "fact_1": "{{brands}} brands supported, GAN, MoYu and QiYi among them",
-      "fact_2": "Your cube mirrored in 3D, turn for turn",
+      "fact_2": "The cube turns on screen in 3D just as you turn it",
       "fact_3": "Step-by-step analysis and replay with Pro",
       "caption": "Replay of an 8.73 solve on a GAN i4: 55 turns at 6.30 turns per second"
     },
@@ -4311,7 +4313,7 @@
     "stats": {
       "name": "Statistics",
       "title": "See where the time goes",
-      "body": "Your best single and averages, a timeline, consistency by hour of day, a solve calendar and a whole year of activity at a glance. Filter by session, cube and subset, then share the exact view as a link.",
+      "body": "Your best single, averages, a timeline, consistency by hour of day, a solve calendar and a year of activity on one page. Filter by session, cube and subset, and share that view as a link.",
       "fact_1": "Averages from ao5 up to ao1000",
       "fact_2": "Daily solve goals and streaks",
       "fact_3": "Import your history from other timers",
@@ -4329,7 +4331,7 @@
     "together": {
       "name": "Together",
       "title": "Race the person across the table",
-      "body": "Battle splits one screen between two players facing each other: the same scramble, a score each and, if they like, a smart cube each. For friends further away, rooms give everyone the same scramble and a live table of times.",
+      "body": "Battle splits one screen between two players facing each other. You solve the same scramble, each keeps a score, and both can use a smart cube if you like. For friends further away there are rooms: everyone solves the same scramble and times land on a live table.",
       "fact_1": "Rooms for up to 16 people, with chat and spectators",
       "fact_2": "Battle works on phones, tablets and computers",
       "fact_3": "Messages with solves you can attach",
@@ -4338,7 +4340,7 @@
   },
   "welcome_inside": {
     "title": "What's in the app",
-    "lede": "Everything on this list is in Zkt Timer today. Lines marked Pro come with a Pro membership.",
+    "lede": "Everything on this list is in ZKT Timer today. Lines marked Pro come with a Pro membership.",
     "platforms": "On the web, iOS and Android, in Turkish, English, Spanish, Russian and Chinese.",
     "timer": {
       "title": "Timer",
@@ -4353,7 +4355,7 @@
     "smart": {
       "title": "Smart cube",
       "brands": "Works with {{brands}}",
-      "mirror": "Your cube in 3D, turn for turn",
+      "mirror": "The cube turns on screen in 3D just as you turn it",
       "auto": "Starts on your first turn, stops when the cube is solved",
       "scramble": "Scramble moves tick off as you turn, with the fix for a wrong move",
       "phases": "Cross, F2L, OLL and PLL splits with turns, TPS and a replay",
@@ -4401,120 +4403,120 @@
     "try_again": "Try again"
   },
   "welcome_mobile": {
-    "title": "Always by your side",
-    "description": "Zkt Timer on iOS and Android, with your solves backed up to your account.",
+    "title": "On your phone too",
+    "description": "ZKT Timer is on iOS and Android too, and your solves are backed up to your account.",
     "label_timer": "Timer",
     "label_stats": "Statistics"
   },
   "welcome_footer": {
-    "cta_title": "Join Our Community",
-    "cta_description": "Follow us on social media, stay updated with new content, and become part of the speedcubing community!",
-    "copyright": "© {{year}} Zkt Timer. Created and Designed by",
+    "cta_title": "Follow us",
+    "cta_description": "We share new content on our social media accounts.",
+    "copyright": "© {{year}} ZKT Timer. Created and Designed by",
     "privacy": "Privacy",
     "terms": "Terms",
     "credits": "Credits",
     "help": "Help"
   },
   "pro": {
-    "feature_title": "Pro Feature",
-    "feature_description": "This feature is exclusive to Pro members. Upgrade to unlock everything.",
+    "feature_title": "Pro feature",
+    "feature_description": "This feature comes with Pro.",
     "upgrade_button": "Upgrade to Pro",
     "upsell": {
       "phase_analysis": {
-        "title": "Phase Analysis",
-        "description": "See your Cross, F2L, OLL and PLL breakdown"
+        "title": "Phase analysis",
+        "description": "Cross, F2L, OLL and PLL times separately"
       },
       "smart_steps": {
-        "title": "Smart Cube Steps",
-        "description": "Inspect every move one by one"
+        "title": "Smart cube steps",
+        "description": "Every move, one by one"
       },
       "smart_solve": {
-        "title": "Smart Cube Analysis",
-        "description": "TPS, move count and detailed data"
+        "title": "Smart cube analysis",
+        "description": "TPS, move count and phase times"
       },
       "phase_splits": {
-        "title": "Average Phase Times",
+        "title": "Average phase times",
         "description": "See where you're losing time"
       }
     },
     "modal": {
       "record_alerts": {
-        "title": "Record Alerts",
-        "desc": "Follow records in the events you care about. Get a push the moment a WR, CR, or NR is broken in any live WCA competition."
+        "title": "Record alerts",
+        "desc": "Get a notification when a WR, CR or NR falls at any live WCA competition in the events you choose."
       },
       "room_music": {
-        "title": "Listen to Music in Rooms",
-        "desc": "Listen to your favorite music ad-free while cubing in rooms. Unlock the music experience with Pro."
+        "title": "Listen to music in rooms",
+        "desc": "Listen to the music you want while solving in a room."
       },
       "leaderboard": {
-        "title": "Show Off on the Leaderboard",
-        "desc": "Publish your best solves and inspire other speedcubers."
+        "title": "Publish on the leaderboard",
+        "desc": "Publish your best solves on the leaderboard."
       },
       "smart_cube": {
-        "title": "Smart Cube Deep Analysis",
-        "desc": "Analyze your solves step by step and see every detail."
+        "title": "Smart cube analysis",
+        "desc": "Open a solve step by step and see the time, move count and TPS of each phase."
       },
       "themes": {
-        "title": "Exclusive Themes",
-        "desc": "Give your timer personality with 6 exclusive themes."
+        "title": "Custom themes",
+        "desc": "Pick one of 6 custom themes with Pro."
       },
       "stats": {
-        "title": "Stats Customization",
-        "desc": "Set up stat modules exactly the way you want."
+        "title": "Stats customization",
+        "desc": "Arrange the stat modules below the timer the way you like."
       },
       "trainer_smart_cube": {
-        "title": "Train with Your Smart Cube",
-        "desc": "Practice algorithms on your cube with instant feedback."
+        "title": "Practice with your smart cube",
+        "desc": "Turn the algorithm on your cube and see on screen whether each move is right."
       },
       "trainer_pdf": {
-        "title": "Download All Algorithms as PDF",
-        "desc": "Download all algorithms or just the ones you selected, with their alternatives, as a PDF."
+        "title": "Download algorithms as PDF",
+        "desc": "Download all algorithms or only the ones you pick, with their alternatives, as a PDF."
       },
       "competition_follow": {
         "title": "Follow competitors",
-        "desc": "With Pro, follow up to 5 competitors in any WCA competition and receive real-time notifications for results, advancements, and podium finishes."
+        "desc": "Follow up to 5 competitors in each WCA competition. Their results, advancements and podiums reach you as notifications."
       },
       "slam_to_stop": {
         "title": "Drop to Stop",
-        "desc": "Finish your solve and drop the cube — or your hands — on the table to stop the timer automatically. No need to reach for the screen, just like a StackMat."
+        "desc": "When you finish, drop the cube or your hands on the table and the time stops. Like a StackMat, no need to touch the screen."
       },
       "magnet_start": {
         "title": "Magnet Timer",
-        "desc": "Put the cube by the phone's rear camera and the timer starts the moment you lift it. No need to touch the screen, just like a StackMat."
+        "desc": "Put the cube next to the phone's rear camera and the time starts when you lift it. Like a StackMat, no need to touch the screen."
       }
     },
     "highlights": {
-      "watch_records": "Alerts when a record is broken",
-      "watch_scope": "World, continental, or national scope",
-      "watch_push": "Real-time push notifications",
-      "sync": "Automatic sync across all your devices",
-      "themes": "6 exclusive themes for full customization",
-      "music_youtube": "Unlimited, ad-free music from YouTube",
+      "watch_records": "Notification when a record falls",
+      "watch_scope": "World, continental or national records",
+      "watch_push": "Notifications reach your phone",
+      "sync": "Your solves match on all your devices",
+      "themes": "6 custom themes",
+      "music_youtube": "Search YouTube, listen in the room",
       "music_friends": "Listen to your own music while cubing",
-      "music_unlimited": "Unlimited song search and playback",
+      "music_unlimited": "No extra tab needed",
       "leaderboard_publish": "Publish your best single or ao5",
-      "leaderboard_profile": "Display your PBs on your profile",
-      "leaderboard_compete": "Compete with other speedcubers",
-      "smart_analysis": "See time and TPS for every step",
-      "smart_steps": "Cross, F2L, OLL, PLL analyzed separately",
-      "smart_animation": "Solve animation for detailed review",
-      "themes_six": "Cyberpunk, Tokyo, Norman, and more",
-      "themes_colors": "Colors and backgrounds fully transform",
-      "themes_atmosphere": "Each theme creates a unique atmosphere",
-      "stats_blocks": "All stat blocks unlocked",
-      "stats_charts": "Detailed charts and trends",
+      "leaderboard_profile": "Your PBs show on your profile",
+      "leaderboard_compete": "On the same list as other speedcubers",
+      "smart_analysis": "Time and TPS for every step",
+      "smart_steps": "Cross, F2L, OLL and PLL separately",
+      "smart_animation": "Replay the solve move by move",
+      "themes_six": "Cyberpunk, Tokyo, Norman and three more",
+      "themes_colors": "Colors and background change",
+      "themes_atmosphere": "Switch themes whenever you like",
+      "stats_blocks": "You choose the modules below the timer",
+      "stats_charts": "Only the numbers you look at stay on screen",
       "stats_customize": "Add, remove, and reorder modules",
-      "trainer_ble": "Bluetooth smart cube connection",
-      "trainer_feedback": "Instant feedback on algorithm accuracy",
-      "trainer_speed": "Get faster and more accurate every rep",
-      "pdf_professional": "Professionally designed PDF output",
+      "trainer_ble": "Smart cube connects over Bluetooth",
+      "trainer_feedback": "Each move's accuracy shows on screen",
+      "trainer_speed": "The time starts and stops by itself",
+      "pdf_professional": "Algorithm sheets download as PDF",
       "pdf_alternatives": "Alternative algorithms included",
-      "pdf_stats": "Export all or selected algorithms",
-      "follow_realtime": "Notifications the moment results go live",
-      "follow_limit": "Up to 5 follows per competition",
-      "slam_drop": "Stop by tapping the table, not the screen",
-      "slam_calibrate": "Sensitivity tuned to every table",
-      "slam_stackmat": "StackMat feel — no hardware needed",
+      "pdf_stats": "Download all or just your picks",
+      "follow_realtime": "Notification when a result is in",
+      "follow_limit": "5 competitors per competition",
+      "slam_drop": "Stops when you drop the cube or your hands",
+      "slam_calibrate": "Set the sensitivity for your table",
+      "slam_stackmat": "No extra hardware needed",
       "magnet_lift": "The timer starts the moment you lift the cube",
       "magnet_drop": "It stops when you put the cube down on the table",
       "magnet_setup": "All you need is a magnetic cube and the mobile app"
@@ -4696,7 +4698,7 @@
       "copy": "Copy",
       "copied": "Copied",
       "share": "Share",
-      "share_text": "{{name}} challenges you to a duel on Zkt Timer",
+      "share_text": "{{name}} challenges you to a duel on ZKT Timer",
       "cancel_invite": "Cancel invite",
       "expired_title": "Your invite expired",
       "cancelled_title": "Invite closed",
@@ -4764,7 +4766,7 @@
     "first_match": "Get ranked with your first match",
     "subtitle": "Find an opponent online, or face off on one device.",
     "online_f1": "Matched with a player near your rating",
-    "online_f2": "First to three rounds, same scramble for both",
+    "online_f2": "First to win three rounds takes the match, same scramble for both",
     "online_f3": "Every match moves your rating and rank",
     "online_f4": "Needs a GAN, QiYi or WeiLong V10 AI smart cube",
     "offline_f1": "Facing each other on a phone or tablet, side by side on a computer",
@@ -4799,7 +4801,7 @@
     "cube_type": "Cube Type",
     "player_1": "Player 1",
     "player_2": "Player 2",
-    "share_text": "Zkt Timer battle: {{player1}} {{score1}}, {{player2}} {{score2}}",
+    "share_text": "ZKT Timer battle: {{player1}} {{score1}}, {{player2}} {{score2}}",
     "settings": "Settings",
     "plus_two": "+2",
     "dnf": "DNF",
@@ -4911,10 +4913,10 @@
   },
   "notifications": {
     "membership_granted": {
-      "subject": "Congratulations! Your Zkt Timer {{label}} membership is now active",
+      "subject": "Congratulations! Your ZKT Timer {{label}} membership is now active",
       "subject_expiry": "Congratulations! Your {{label}} membership is active until {{date}}",
-      "message": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is unlimited.",
-      "message_expiry": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is valid until {{date}}.",
+      "message": "Congratulations! Your ZKT Timer {{label}} membership has been successfully activated. Your membership is unlimited.",
+      "message_expiry": "Congratulations! Your ZKT Timer {{label}} membership has been successfully activated. Your membership is valid until {{date}}.",
       "link_text": "View your settings"
     },
     "subscription_changed": {
@@ -5046,7 +5048,7 @@
     "report_sent_body": "We will review it shortly. If you do not want to hear from this person, you can block them from the menu.",
     "cancel": "Cancel",
     "done": "Done",
-    "privacy_note": "Zkt Timer does not read your messages. Only messages you report are reviewed.",
+    "privacy_note": "ZKT Timer does not read your messages. Only messages you report are reviewed.",
     "search_placeholder": "Search",
     "clear_search": "Clear search",
     "filter_all": "All",
@@ -5121,24 +5123,24 @@
     "start_with": "Start a chat with {{name}}"
   },
   "zkt_signup": {
-    "title": "Choose a Username",
+    "title": "Choose a username",
     "description": "You are signing up with your Zeka Küpü Türkiye account. Pick a username.",
     "first_name": "First name",
     "last_name": "Last name",
     "email": "Email",
     "zkt_id": "ZKT ID",
     "username_label": "Username",
-    "submit": "Create Account",
+    "submit": "Create account",
     "username_too_short": "Username must be at least 2 characters",
     "username_too_long": "Username can be at most 18 characters",
     "username_invalid": "Username can only contain letters, numbers and underscores",
-    "session_expired": "Your session expired. Please sign in with ZKT again.",
+    "session_expired": "Your session expired. Sign in with ZKT again.",
     "loading": "Signing in with ZKT..."
   },
   "auth_email_taken": {
     "title": "This email is already registered",
     "subtitle": "Sign-in could not be completed",
-    "subtitle_with_email": "You already have a Zkt Timer account with {{email}}",
+    "subtitle_with_email": "You already have a ZKT Timer account with {{email}}",
     "description": "For your security we do not merge accounts automatically. Sign in with your password first, then link your {{provider}} account under <strong>Settings > Linked Accounts</strong>. After that you can sign in with {{provider}} too.",
     "login_button": "Sign in with password",
     "forgot_button": "I forgot my password"
@@ -5381,8 +5383,8 @@
   },
   "help": {
     "title": "Help",
-    "meta_title": "Help | Zkt Timer",
-    "meta_description": "How to use Zkt Timer: connecting a smart cube, importing from csTimer, the trainer, competitions and more.",
+    "meta_title": "Help | ZKT Timer",
+    "meta_description": "How to use ZKT Timer: connecting a smart cube, importing from csTimer, the trainer, competitions and more.",
     "diagram": {
       "session": "Session",
       "cube_type": "Puzzle",
@@ -5424,7 +5426,7 @@
       "getting-started": {
         "title": "Getting started",
         "body": [
-          "You can use Zkt Timer in a browser or through the iOS and Android apps. With an account your solves are backed up to the server, so your data survives losing the device. Seeing that history on every device you sign in on comes with Pro; without it, your solves stay on the device that made them.",
+          "You can use ZKT Timer in a browser or through the iOS and Android apps. With an account your solves are backed up to the server, so your data survives losing the device. Seeing that history on every device you sign in on comes with Pro; without it, your solves stay on the device that made them.",
           "You can also try it without an account. Signed out, the timer, your solves and the trainer all work; the times stay on that device only. If you sign up later, the app offers to move those solves into your account.",
           "On desktop the timer sits in the middle of the screen: three menus at the top (session, cube type and timer type), with the scramble and the time below them. In the default layout your solve list and stat modules sit in the columns on either side, and you can move the modules wherever you like.",
           "Settings are split into eight sections: Timer, Input & Devices, Smart Cube, Scramble, Appearance, Colors, Data and Language. If you are not sure which section holds the setting you want, use the search box inside settings."
@@ -5484,7 +5486,7 @@
       "smart-cube": {
         "title": "Smart cube",
         "body": [
-          "Zkt Timer recognises smart cubes from these brands:",
+          "ZKT Timer recognises smart cubes from these brands:",
           "Once connected, the cube's state appears on screen in 3D. The timer starts when you turn the cube and stops on its own when the cube is solved."
         ],
         "steps": [
@@ -5507,7 +5509,7 @@
         "title": "Magnet Timer",
         "body": [
           "Magnet Timer starts the timer when you lift the cube and stops it when you put the cube down on the table, without touching the screen. The phone lies flat on the table and the cube rests at the phone's rear camera end.",
-          "The phone's compass sensor picks up the magnets inside the cube, so you need a magnetic cube; most cubes sold today are magnetic. You also need the Zkt Timer iOS or Android app. Magnet Timer is not available in a browser or in rooms.",
+          "The phone's compass sensor picks up the magnets inside the cube, so you need a magnetic cube; most cubes sold today are magnetic. You also need the ZKT Timer iOS or Android app. Magnet Timer is not available in a browser or in rooms.",
           "Not every phone's sensor is fast enough for this. On unsupported phones Magnet Timer is not in the list, or the screen says \"This device's sensor is too slow\". If you cannot see it, update the app first."
         ],
         "steps": [
@@ -5628,7 +5630,7 @@
       "messages": {
         "title": "Messages",
         "body": [
-          "Messages is where you talk one to one with other Zkt Timer users. To start a conversation, search for a username and pick the person.",
+          "Messages is where you talk one to one with other ZKT Timer users. To start a conversation, search for a username and pick the person.",
           "Someone writing to you for the first time does not land straight in your inbox; they wait in the Requests tab. Accept and the thread moves to your inbox. If you would rather not, you can delete it or block the person.",
           "You can attach one of your solves to a conversation. The other person sees the time and can open the solve's detail.",
           "Message settings live under Social in the account section: who is allowed to write to you, whether you appear in message search, read receipts, the typing indicator and the online dot. Your blocked list is kept there too."
@@ -5660,9 +5662,9 @@
       "profile": {
         "title": "Profile",
         "body": [
-          "Your profile is your public face on Zkt Timer. It lives at /user/yourusername and opens for anyone, signed in or not, so the link is all you need to share.",
+          "Your profile is your public face on ZKT Timer. It lives at /user/yourusername and opens for anyone, signed in or not, so the link is all you need to share.",
           "A cover photo and profile picture sit at the top, with the About section below: biography, YouTube, Twitch and X links, your 3x3 method, your goal, your main cube and your favourite event.",
-          "Records are split across tabs. Personal Records come from the solves you did in Zkt Timer. WCA Official Records and ZKT Records come from the accounts you linked. The WCA Results tab lists your competition history round by round.",
+          "Records are split across tabs. Personal Records come from the solves you did in ZKT Timer. WCA Official Records and ZKT Records come from the accounts you linked. The WCA Results tab lists your competition history round by round.",
           "Your times do not appear on the profile on their own. You pick which ones show, one by one, from the publish screen."
         ],
         "steps": [
@@ -5682,7 +5684,7 @@
         "body": [
           "The account page has seven sections: Personal Info, Notifications, Social, Linked Accounts, Announcements, Support and Danger Zone.",
           "Personal Info is where you change your name, username and email, and set your password. An email change is confirmed with a six-digit code sent to the new address. If your account was created through WCA, this is also where you set a password so you can sign in with email as well.",
-          "Linked Accounts is where you connect your ZKT and WCA accounts. Once linked, that account's competitions, results and records become visible inside Zkt Timer. The link to join the WhatsApp community is here too.",
+          "Linked Accounts is where you connect your ZKT and WCA accounts. Once linked, that account's competitions, results and records become visible inside ZKT Timer. The link to join the WhatsApp community is here too.",
           "Support is where you report a bug, ask a question or send a suggestion. A ticket works like a conversation: you can reply, attach a screenshot or video, close it once it is solved and reopen it later."
         ],
         "steps": [
@@ -5722,7 +5724,7 @@
     "search_no_results": "Nothing matches \"{{query}}\". Try another word."
   },
   "links_page": {
-    "meta_title": "Zkt Timer | Links",
+    "meta_title": "ZKT Timer | Links",
     "tagline": "Professional speedcubing timer",
     "web": "Use on the web",
     "web_detail": "zktimer.app, right in your browser",

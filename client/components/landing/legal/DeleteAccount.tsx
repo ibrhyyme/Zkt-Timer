@@ -40,6 +40,9 @@ export default function DeleteAccount() {
 			<h2>{t('delete_account.no_login_title')}</h2>
 			<p dangerouslySetInnerHTML={{__html: t('delete_account.no_login_text')}} />
 
+			<h2>{t('delete_account.partial_title')}</h2>
+			<p dangerouslySetInnerHTML={{__html: t('delete_account.partial_text')}} />
+
 			<h2>{t('delete_account.deleted_title')}</h2>
 			<p>{t('delete_account.deleted_text')}</p>
 
