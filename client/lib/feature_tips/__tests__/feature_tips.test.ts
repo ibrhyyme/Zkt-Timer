@@ -63,6 +63,33 @@ describe('pickFeatureTip', () => {
 	it('stays quiet once the tip has expired', () => {
 		expect(pickFeatureTip([tip('a')], emptyFeatureTipState(), release + 90 * DAY)).toBeNull();
 	});
+
+	it('shows the newest release first, whatever the list order', () => {
+		const older = tip('older', '2026-11-03');
+		const newer = tip('newer', '2026-11-10');
+		const at = Date.parse('2026-11-12T12:00:00Z');
+		expect(pickFeatureTip([older, newer], emptyFeatureTipState(), at)?.id).toBe('newer');
+		const answered = { seen: ['newer'], views: {} };
+		expect(pickFeatureTip([older, newer], answered, at)?.id).toBe('older');
+	});
+
+	it('skips a feature that already existed when the user started', () => {
+		const older = tip('older', '2026-11-03');
+		const newer = tip('newer', '2026-11-10');
+		const at = Date.parse('2026-11-12T12:00:00Z');
+		const startedBetween = Date.parse('2026-11-05T09:00:00Z');
+		const state = { seen: ['newer'], views: {} };
+		expect(pickFeatureTip([older, newer], state, at, undefined, startedBetween)).toBeNull();
+		expect(pickFeatureTip([older, newer], emptyFeatureTipState(), at, undefined, startedBetween)?.id).toBe('newer');
+		// Someone who was here before both releases still gets both.
+		const startedBefore = Date.parse('2026-10-01T09:00:00Z');
+		expect(pickFeatureTip([older, newer], state, at, undefined, startedBefore)?.id).toBe('older');
+	});
+
+	it('treats a start on the release day itself as after the release', () => {
+		const sameDay = release + 10 * 60 * 60 * 1000;
+		expect(pickFeatureTip([tip('a')], emptyFeatureTipState(), release + DAY, undefined, sameDay)).toBeNull();
+	});
 });
 
 describe('parseFeatureTipState', () => {

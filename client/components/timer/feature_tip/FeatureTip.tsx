@@ -8,13 +8,14 @@ import Button from '../../common/button/Button';
 import { CloseButton } from '../../common/icon_button/IconButton';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { FEATURE_TIPS, FeatureTip as FeatureTipDef, pickFeatureTip } from '../../../lib/feature_tips/feature_tips';
-import { hasSolvesOnDevice, isFeatureTipRelevant } from '../../../lib/feature_tips/relevance';
+import { firstSolveTime, isFeatureTipRelevant } from '../../../lib/feature_tips/relevance';
 import {
 	announcementShownThisLoad,
 	countFeatureTipView,
 	featureTipShownThisLoad,
 	markFeatureTipSeen,
 	noteFeatureTipShown,
+	readFeatureTipPreview,
 	readFeatureTipState,
 } from '../../../lib/feature_tips/store';
 import PresetBackground from '../timer_background/presets/PresetBackground';
@@ -60,12 +61,20 @@ export default function FeatureTip({ blocked }: Props) {
 	modalOpenRef.current = Array.isArray(modals) && modals.length > 0;
 
 	useEffect(() => {
-		if (featureTipShownThisLoad()) return undefined;
+		const previewId = readFeatureTipPreview();
+		const preview = previewId ? FEATURE_TIPS.find((t) => t.id === previewId) : null;
+		if (featureTipShownThisLoad() && !preview) return undefined;
 		const timer = setTimeout(() => {
 			if (blockedRef.current || modalOpenRef.current) return;
+			// A preview ignores every rule but the running solve and an open window.
+			if (preview) {
+				setTip(preview);
+				return;
+			}
 			if (featureTipShownThisLoad() || announcementShownThisLoad()) return;
-			if (!hasSolvesOnDevice()) return;
-			const next = pickFeatureTip(FEATURE_TIPS, readFeatureTipState(), Date.now(), isFeatureTipRelevant);
+			const startedAt = firstSolveTime();
+			if (startedAt === null) return;
+			const next = pickFeatureTip(FEATURE_TIPS, readFeatureTipState(), Date.now(), isFeatureTipRelevant, startedAt);
 			if (!next) return;
 			noteFeatureTipShown();
 			countFeatureTipView(next.id);

@@ -4,6 +4,17 @@
 import { FeatureTipState, parseFeatureTipState } from './feature_tips';
 
 const STORAGE_KEY = 'zt_feature_tips';
+// Set by hand in one browser (localStorage.zt_feature_tip_preview = '<tip id>') to see a tip
+// whatever the rules say, e.g. on a test device whose first solve is newer than the release.
+const PREVIEW_KEY = 'zt_feature_tip_preview';
+
+export function readFeatureTipPreview(): string | null {
+	try {
+		return localStorage.getItem(PREVIEW_KEY);
+	} catch {
+		return null;
+	}
+}
 
 // Per page load. App remounts on every route change, the module does not, so "one tip per
 // app open" survives moving between pages.

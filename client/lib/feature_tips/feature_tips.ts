@@ -2,10 +2,13 @@
 // takes them to it. Only features the owner picks get a tip; fixes and small changes never
 // do, or the app would talk all the time and nobody would read it (owner, 2026-11-03).
 //
-// Rules: one tip per app open, once per feature (answered, or shown FEATURE_TIP_MAX_VIEWS
-// times), never during a solve, never on a device with no solves yet (a first visit, where
-// everything is new), not for someone already using the feature, and gone
-// FEATURE_TIP_LIFETIME_DAYS after release. Stored on the device only: no server, no push.
+// Rules: one tip per app open, newest first, once per feature (answered, or shown
+// FEATURE_TIP_MAX_VIEWS times), never during a solve, never on a device with no solves yet
+// (a first visit, where everything is new), never for a feature that already existed when
+// the user started (first solve on this device after its release: to them it is not new),
+// not for someone already using the feature, and gone FEATURE_TIP_LIFETIME_DAYS after
+// release. Stored on the device only: no server, no push. A tip ships with a deploy, like
+// the feature it points at. Workflow for adding one: the feature-tip skill.
 //
 // Pure, so the picking rules are tested in node. Adding a tip = an entry here, its
 // sentence under feature_tips.* in the five languages, and a relevance check in
@@ -71,21 +74,37 @@ export function parseFeatureTipState(raw: string | null | undefined): FeatureTip
 	}
 }
 
+/** Start of the release day in ms (UTC), NaN when unreadable. */
+export function featureTipReleaseTime(tip: FeatureTip): number {
+	return Date.parse(`${tip.releasedAt}T00:00:00Z`);
+}
+
 export function isFeatureTipLive(tip: FeatureTip, now: number): boolean {
-	const start = Date.parse(`${tip.releasedAt}T00:00:00Z`);
+	const start = featureTipReleaseTime(tip);
 	if (!Number.isFinite(start)) return false;
 	return now >= start && now < start + FEATURE_TIP_LIFETIME_DAYS * DAY_MS;
 }
 
-/** The tip to show now, or null. `isRelevant` answers "is this user not using it yet". */
+/**
+ * The tip to show now, or null.
+ * @param isRelevant "is this user not using the feature yet".
+ * @param startedAt when this user started here (first solve on the device), null if unknown.
+ *   A tip released before that is skipped: the feature was already there when they came.
+ */
 export function pickFeatureTip(
 	tips: FeatureTip[],
 	state: FeatureTipState,
 	now: number,
-	isRelevant: (tip: FeatureTip) => boolean = () => true
+	isRelevant: (tip: FeatureTip) => boolean = () => true,
+	startedAt: number | null = null
 ): FeatureTip | null {
-	for (const tip of tips) {
+	// Newest release first; the list order breaks ties.
+	const ordered = tips
+		.map((tip, index) => ({ tip, index, release: featureTipReleaseTime(tip) }))
+		.sort((a, b) => b.release - a.release || a.index - b.index);
+	for (const { tip, release } of ordered) {
 		if (!isFeatureTipLive(tip, now)) continue;
+		if (startedAt !== null && startedAt >= release) continue;
 		if (state.seen.includes(tip.id)) continue;
 		if ((state.views[tip.id] || 0) >= FEATURE_TIP_MAX_VIEWS) continue;
 		if (!isRelevant(tip)) continue;

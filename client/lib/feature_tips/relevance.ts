@@ -19,11 +19,21 @@ export function isFeatureTipRelevant(tip: FeatureTip): boolean {
 	}
 }
 
-/** A device with no solve yet is a first visit: the onboarding hints have the screen. */
-export function hasSolvesOnDevice(): boolean {
+/**
+ * When this user started here: the time of the first solve on the device, imported solves
+ * left out (a csTimer history says nothing about when they came to ZKT Timer). Null when
+ * there is none, which is a first visit: the onboarding hints have the screen then.
+ */
+export function firstSolveTime(): number | null {
 	try {
-		return (getSolveDb()?.count() || 0) > 0;
+		let first = Infinity;
+		for (const solve of getSolveDb()?.find() || []) {
+			if (solve.bulk) continue;
+			const at = Number(solve.ended_at) || Number(solve.started_at);
+			if (at > 0 && at < first) first = at;
+		}
+		return Number.isFinite(first) ? first : null;
 	} catch {
-		return false;
+		return null;
 	}
 }
