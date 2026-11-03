@@ -34,6 +34,77 @@ export function detectImageType(buffer: Buffer): 'png' | 'jpeg' | 'gif' | 'webp'
 	return null;
 }
 
+// Jimp decodes with pure JS (pngjs, omggif, jpeg-js) synchronously on the main thread,
+// and the cost follows the pixel count the header claims, not the file size. Measured
+// 2026-11-03: a 380 KB PNG or a 50-byte GIF claiming 20000x20000 froze the process for
+// ~21 s and took 2+ GB. jpeg-js already stops near 47 MP on its own (maxMemoryUsageInMB);
+// 40 MP gives every format the same ceiling and still admits an 8K (33 MP) wallpaper.
+export const MAX_IMAGE_PIXELS = 40_000_000;
+
+/**
+ * Reads the pixel area the decoder would allocate, straight from the file header,
+ * without decoding. Returns null when the header cannot be parsed. For GIF the largest
+ * of the logical screen and every frame descriptor counts: omggif sizes its buffers per
+ * frame, so a 1x1 screen holding a 20000x20000 frame is still a bomb.
+ */
+export function readImagePixelCount(buffer: Buffer, type: 'png' | 'jpeg' | 'gif'): number | null {
+	if (type === 'png') {
+		if (buffer.length < 24 || buffer.toString('ascii', 12, 16) !== 'IHDR') return null;
+		return buffer.readUInt32BE(16) * buffer.readUInt32BE(20);
+	}
+
+	if (type === 'gif') {
+		if (buffer.length < 13) return null;
+		let max = buffer.readUInt16LE(6) * buffer.readUInt16LE(8);
+		let i = 13;
+		if (buffer[10] & 0x80) i += 3 * (1 << ((buffer[10] & 0x07) + 1));
+		const skipSubBlocks = () => {
+			while (i < buffer.length && buffer[i] !== 0) i += buffer[i] + 1;
+			i++;
+		};
+		while (i < buffer.length) {
+			const block = buffer[i];
+			if (block === 0x3b) break;
+			if (block === 0x21) {
+				i += 2;
+				skipSubBlocks();
+			} else if (block === 0x2c) {
+				if (i + 10 > buffer.length) return null;
+				max = Math.max(max, buffer.readUInt16LE(i + 5) * buffer.readUInt16LE(i + 7));
+				const flags = buffer[i + 9];
+				i += 10;
+				if (flags & 0x80) i += 3 * (1 << ((flags & 0x07) + 1));
+				i++; // LZW minimum code size
+				skipSubBlocks();
+			} else {
+				break; // malformed tail: keep what was read, the decoder will reject the rest
+			}
+		}
+		return max;
+	}
+
+	// JPEG: walk the segments up to the first start-of-frame marker.
+	let i = 2;
+	while (i + 9 < buffer.length) {
+		if (buffer[i] !== 0xff) return null;
+		const marker = buffer[i + 1];
+		if (marker === 0xff) {
+			i++;
+			continue;
+		}
+		if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+			return buffer.readUInt16BE(i + 5) * buffer.readUInt16BE(i + 7);
+		}
+		if (marker === 0xda || marker === 0xd9) return null; // scan or end before any frame header
+		if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+			i += 2;
+			continue;
+		}
+		i += 2 + buffer.readUInt16BE(i + 2);
+	}
+	return null;
+}
+
 export async function getImageBufferFromFileStream(
 	fileName: string,
 	fileStream: () => ReadStream,
@@ -48,13 +119,23 @@ export async function getImageBufferFromFileStream(
 		throw new Error('Invalid image file: only PNG, JPEG, GIF, WebP allowed');
 	}
 
+	// WebP is left to Jimp, which has no WebP decoder and rejects it before allocating.
+	if (detected !== 'webp') {
+		const pixels = readImagePixelCount(bufferStream, detected);
+		if (pixels === null || pixels === 0) {
+			throw new Error('Invalid image file: unreadable image header');
+		}
+		if (pixels > MAX_IMAGE_PIXELS) {
+			throw new Error('Image too large: at most 40 megapixels allowed');
+		}
+	}
+
 	let mimeType: string = Jimp.MIME_PNG;
 	if (detected === 'gif') {
 		mimeType = Jimp.MIME_GIF;
 	} else if (detected === 'jpeg') {
 		mimeType = Jimp.MIME_JPEG;
 	}
-	// For WebP, Jimp re-encodes as PNG — safe
 
 	const img = await Jimp.read(bufferStream);
 
