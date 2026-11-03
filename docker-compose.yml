@@ -42,9 +42,14 @@ services:
       - elasticsearch
 
   postgres:
-    image: postgres:14
+    # The Debian suite is pinned on purpose: when Docker moves the default suite, a
+    # plain `postgres:16` pull would swap glibc (and therefore collation) under the
+    # existing data directory and corrupt text indexes. Changing the major version
+    # needs a dump/restore into a new volume, never a tag bump on the old one.
+    image: postgres:16-trixie
     container_name: zkt-timer-postgres-1
     logging: *default-logging
+    restart: unless-stopped
     environment:
       # Production'da .env icinden DB_USER + DB_PASSWORD set et.
       # Eski "root/root" geriye-uyumluluk default — yeni deploy'larda override edilmeli.
@@ -52,7 +57,7 @@ services:
       POSTGRES_USER: ${DB_USER:-root}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres16_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7
@@ -78,7 +83,10 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
 volumes:
+  # PostgreSQL 14 data, kept untouched as the rollback path after the 16 migration
+  # (2026-11). No service mounts it; delete it once 16 has run cleanly for two weeks.
   postgres_data:
+  postgres16_data:
   redis_data:
   npm_cache:
   yarn_cache:
