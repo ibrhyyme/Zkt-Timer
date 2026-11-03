@@ -4,7 +4,10 @@
 import Cube from 'cubejs';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 
-jest.mock('../init', () => ({ getSolveDb: () => null }));
+const mockRows: Record<string, any> = {};
+jest.mock('../init', () => ({
+	getSolveDb: () => ({ findOne: ({ id }: { id: string }) => mockRows[id] || null }),
+}));
 jest.mock('../../../util/event_handler', () => ({ emitEvent: jest.fn() }));
 jest.mock('../../persist', () => ({ requestPersist: jest.fn() }));
 jest.mock('../../../util/offline-queue', () => ({ getAllQueued: jest.fn(async () => []) }));
@@ -24,7 +27,7 @@ jest.mock('../../../../shared/util/solve/solve_steps', () => {
 	};
 });
 
-import { localStepRowsForNewSolve, prepareLocalStepRows } from '../local-analysis';
+import { localStepRowsForNewSolve, prepareLocalStepRows, solveReadyToShow } from '../local-analysis';
 
 const mv = (a: string) => a.trim().split(/\s+/).filter(Boolean);
 const inv = (a: string) =>
@@ -78,5 +81,27 @@ describe('prepareLocalStepRows', () => {
 	it('stores nothing for a solve whose moves it may not analyse', () => {
 		const input = { ...solveInput('s3'), cube_type: '222', scramble_subset: null };
 		expect(prepareLocalStepRows(input as any, 'auto')).toBeNull();
+	});
+});
+
+// The card draws these without a spinner, so it must not draw one that would open empty.
+describe('solveReadyToShow', () => {
+	it('gives a plain timer solve at once', () => {
+		mockRows.plain = { id: 'plain', time: 12.3, cube_type: '333' };
+		expect(solveReadyToShow('plain')).toBe(mockRows.plain);
+	});
+
+	it('gives a smart solve that has its breakdown', () => {
+		mockRows.done = { ...solveInput('done'), is_smart_cube: true, solve_method_steps: [{ step_index: 0 }] };
+		expect(solveReadyToShow('done')).toBe(mockRows.done);
+	});
+
+	it('holds back a smart solve whose breakdown is still to be worked out', () => {
+		mockRows.bare = { ...solveInput('bare'), is_smart_cube: true, solve_method_steps: [] };
+		expect(solveReadyToShow('bare')).toBeNull();
+	});
+
+	it('has nothing for a solve that is not on this device', () => {
+		expect(solveReadyToShow('elsewhere')).toBeNull();
 	});
 });

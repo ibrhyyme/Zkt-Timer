@@ -35,6 +35,17 @@ function canUseSmartAnalysis(): boolean {
 const unreadable = new Set<string>();
 
 /**
+ * The stored row the solve card can draw at once, without waiting for anything. Null when
+ * the solve is not on this device, or when its breakdown is still to be worked out: the card
+ * would open on empty charts.
+ */
+export function solveReadyToShow(solveId: string): Solve | null {
+	const row = getSolveDb()?.findOne({ id: solveId });
+	if (!row || solveNeedsStepRows(row as any, canUseSmartAnalysis())) return null;
+	return row;
+}
+
+/**
  * Works out and stores the breakdown of a stored solve that has moves but no steps.
  * Returns the stored row (updated or not), or null when the solve is not stored here.
  */

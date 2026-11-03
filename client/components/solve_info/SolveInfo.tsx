@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getTimeString } from '../../util/time';
 import './SolveInfo.scss';
 import { gql } from '@apollo/client';
@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { canReadSync } from '../../lib/sync-gate';
 import { isNetworkError } from '../../util/network-error';
 import { isSolvePendingSync } from '../../util/offline-queue';
-import { ensureLocalStepRows, queuedAnalysisMethod } from '../../db/solves/local-analysis';
+import { ensureLocalStepRows, queuedAnalysisMethod, solveReadyToShow } from '../../db/solves/local-analysis';
 
 const b = block('solve-info');
 
@@ -92,10 +92,19 @@ export default function SolveInfo(props: Props) {
 	const mobileMode = useGeneral('mobile_mode');
 	const me = useSelector((state: any) => state.account.me);
 
-	const [loading, setLoading] = useState(true);
-	const [solve, setSolve] = useState<Solve>(props.solve);
+	// A solve on this device draws at once and the server's answer refreshes it behind:
+	// waiting for that answer put a spinner in the card on every open. Not for `disabled`,
+	// which is someone else's solve or the shared page, and that page renders on the server.
+	const [deviceSolve] = useState(() => (disabled ? null : solveReadyToShow(solveId)));
+	const [loading, setLoading] = useState(!deviceSolve);
+	const [solve, setSolve] = useState<Solve>(deviceSolve || props.solve);
 	const [editMode, setEditMode] = useState(false);
-	const [dbSolve, setDbSolve] = useState<Solve>(null);
+	const [dbSolve, setDbSolve] = useState<Solve>(deviceSolve);
+
+	// The card can be used before an answer arrives, so an answer may be out of date by then.
+	const shownIdRef = useRef(solveId);
+	const editModeRef = useRef(editMode);
+	editModeRef.current = editMode;
 
 	useSolveDb();
 	useEffect(() => {
@@ -105,11 +114,13 @@ export default function SolveInfo(props: Props) {
 	const user = solve?.user || me;
 
 	function updateSolve(targetSolveId?: string) {
-		const id = targetSolveId || solveId;
+		const id = targetSolveId || shownIdRef.current;
+		shownIdRef.current = id;
 
 		// Basic user: do not fetch from server, show directly from local storage
 		if (!canReadSync()) {
 			void fetchLocalSolveWithSteps(id).then((localSolve) => {
+				if (shownIdRef.current !== id) return;
 				if (localSolve) {
 					setDbSolve(localSolve);
 					setSolve(localSolve);
@@ -138,10 +149,14 @@ export default function SolveInfo(props: Props) {
 		);
 
 		solveQuery.then((res) => {
+			if (shownIdRef.current !== id) return;
 			setDbSolve(fetchSolve(id));
-			setSolve(res.data.solve);
+			// An edit begun before this answer keeps what was typed; Done fetches again.
+			if (!editModeRef.current) setSolve(res.data.solve);
 			setLoading(false);
 		}).catch(async (err) => {
+			if (shownIdRef.current !== id) return;
+
 			// Delete ONLY on an authoritative server verdict: the request reached the
 			// GraphQL layer and the server explicitly said NOT_FOUND. Every ambiguous
 			// failure (offline, 5xx, auth hiccup, engine-specific fetch errors) must
@@ -212,9 +227,18 @@ export default function SolveInfo(props: Props) {
 		// the card stays on the same solve.
 		if (!(await deleteSolveDb(solveToDelete))) return;
 
+		// An answer still on its way is about the solve that just went.
+		shownIdRef.current = adjacentSolve?.id || null;
+
 		// If there's a next solve, navigate to it
 		if (adjacentSolve) {
-			setLoading(true);
+			const ready = solveReadyToShow(adjacentSolve.id);
+			if (ready) {
+				setSolve(ready);
+				setDbSolve(ready);
+			} else {
+				setLoading(true);
+			}
 			updateSolve(adjacentSolve.id);
 		} else {
 			// Last solve deleted, close modal
@@ -263,7 +287,7 @@ export default function SolveInfo(props: Props) {
 
 	if (loading) {
 		return (
-			<div className={b()}>
+			<div className={b({ loading: true })}>
 				<Loading />
 			</div>
 		);

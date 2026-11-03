@@ -84,7 +84,8 @@
 
 // Phones: the card rises from the bottom (Modal --sheet) instead of filling the screen by itself.
 // The frame scrolls, so the card's own height caps come off.
-.zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--mobile) {
+.zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--mobile),
+.zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--loading) {
 	padding: 14px 0 0 !important;
 	border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
 	background: rgb(var(--background-color)) !important;
@@ -99,6 +100,16 @@
 	max-height: none;
 	overflow: visible;
 	padding-top: 0;
+	border-radius: 0;
+}
+
+// A solve that is not on this device comes from the server. Holds a card's height, so the
+// sheet does not rise as a sliver and grow when the answer lands.
+.zt-modal--sheet .zt-solve-info--loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: min(440px, 70dvh);
 	border-radius: 0;
 }
 
