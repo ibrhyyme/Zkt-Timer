@@ -20,7 +20,11 @@ export const TIMER_INPUT_TYPE_KEYS = {
 	stackmat: 'timer_settings.input_stackmat',
 };
 
-/** Every `timer_type` value, in the owner's order (timer_type_catalog.ts decides per device). */
+/**
+ * Every `timer_type` value, in the owner's order (timer_type_catalog.ts decides per device).
+ * Except the Kamera Timer ('camera'): it is an admin-only test for now, so the help page does
+ * not list it. Add it here, with help.timer_types.camera in five languages, when it opens.
+ */
 export const TIMER_INPUT_TYPES = Object.keys(TIMER_INPUT_TYPE_KEYS) as Array<
 	keyof typeof TIMER_INPUT_TYPE_KEYS
 >;

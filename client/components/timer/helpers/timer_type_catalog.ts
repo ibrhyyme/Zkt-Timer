@@ -12,7 +12,7 @@ import type { DeviceProfile } from '../../../util/device-profile';
  */
 
 /** Stored `timer_type` values. Kept in step with AllSettings['timer_type']. */
-export type StoredTimerType = 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual' | 'magnet';
+export type StoredTimerType = 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual' | 'magnet' | 'camera';
 
 /**
  * What a picker shows. Two choices map onto something that is not a timer_type:
@@ -29,7 +29,8 @@ export type TimerChoice =
 	| 'gantimer'
 	| 'qiyitimer'
 	| 'stackmat'
-	| 'qiyiwired';
+	| 'qiyiwired'
+	| 'camera';
 
 export type WiredBrand = 'stackmat' | 'qiyi';
 
@@ -46,10 +47,21 @@ export function magnetOfferedOnDevice(device: DeviceProfile): boolean {
 	return device.native;
 }
 
+/**
+ * The Kamera Timer watches the hands through a camera on a desktop browser (the phone is only
+ * ever going to be its camera, never its timer). Whether this user gets it (admins while it is
+ * tested) and whether the server has the brain is the caller's call (`cameraAvailable`).
+ */
+export function cameraOfferedOnDevice(device: DeviceProfile): boolean {
+	return !device.native && !device.touchFirst;
+}
+
 export interface ChoiceListInput {
 	device: DeviceProfile;
 	/** The MagnetDetector probe succeeded (false while it runs, and on old binaries). */
 	magnetAvailable: boolean;
+	/** Allowed for this user and the brain manifest loaded (false while it loads). */
+	cameraAvailable?: boolean;
 	/** Friendly rooms run their own timer overlay, which has no magnet path. */
 	inRoom: boolean;
 	layout: 'dropdown' | 'grid';
@@ -78,6 +90,10 @@ export function timerChoices(input: ChoiceListInput): TimerChoice[] {
 			list.push('stackmat');
 		}
 	}
+	// Last, as a test input. The narrow desktop grid is already full with the wired cell.
+	if (cameraOfferedOnDevice(input.device) && input.cameraAvailable && !input.inRoom && list.length < (input.layout === 'grid' ? GRID_TIMER_CELLS : Infinity)) {
+		list.push('camera');
+	}
 	return list;
 }
 
@@ -90,6 +106,7 @@ export function timerChoices(input: ChoiceListInput): TimerChoice[] {
 export function effectiveTimerType<T extends string>(stored: T, device: DeviceProfile): T | 'keyboard' {
 	if (stored === 'stackmat' && !wiredOffered(device)) return 'keyboard';
 	if (stored === 'magnet' && !magnetOfferedOnDevice(device)) return 'keyboard';
+	if (stored === 'camera' && !cameraOfferedOnDevice(device)) return 'keyboard';
 	return stored;
 }
 
@@ -106,6 +123,8 @@ export interface ActiveChoiceInput {
 	wiredBrand: WiredBrand | null | undefined;
 	/** Pro (or admin) and the probe has not failed. */
 	magnetUsable: boolean;
+	/** Allowed (admin) and the brain manifest has not failed to load. */
+	cameraUsable?: boolean;
 	inRoom: boolean;
 	/** The list on screen, so a brand that has no row of its own lands on the row that exists. */
 	offered: TimerChoice[];
@@ -120,6 +139,8 @@ export function activeChoice(i: ActiveChoiceInput): TimerChoice {
 		choice = i.wiredBrand === 'qiyi' ? 'qiyiwired' : 'stackmat';
 		if (!i.offered.includes(choice) && i.offered.includes('stackmat')) choice = 'stackmat';
 	} else if (i.timerType === 'magnet' && (!i.magnetUsable || i.inRoom)) {
+		choice = 'keyboard';
+	} else if (i.timerType === 'camera' && (!i.cameraUsable || i.inRoom)) {
 		choice = 'keyboard';
 	} else {
 		choice = i.timerType as TimerChoice;
@@ -144,4 +165,24 @@ export interface MagnetTimerInput {
  */
 export function magnetTimerOwnsInput(i: MagnetTimerInput): boolean {
 	return i.timerType === 'magnet' && !i.manualEntry && i.allowed && i.caps !== null;
+}
+
+export interface CameraTimerInput {
+	timerType: string;
+	manualEntry: boolean;
+	/** canUseCameraTimer(me). */
+	allowed: boolean;
+	/** The brain manifest: undefined while it loads, null when the server has none. */
+	manifest: unknown | null | undefined;
+}
+
+/**
+ * The Kamera Timer owns the start and stop: the hands leaving the pads start, coming back
+ * stops, and Space only stops a running solve (the way out when the camera misses a stop).
+ * A Kamera selection by someone who may not use it, or on a server without the brain, falls
+ * back to the keyboard timer. A manifest still loading counts as available, so a Space press
+ * in the first moment after the page opens does not start a keyboard solve.
+ */
+export function cameraTimerOwnsInput(i: CameraTimerInput): boolean {
+	return i.timerType === 'camera' && !i.manualEntry && i.allowed && i.manifest !== null;
 }

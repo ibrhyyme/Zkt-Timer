@@ -28,6 +28,7 @@ import { gyroFieldsForSave } from '../../../util/smart_cube/gyro_recorder';
 import { countHTM } from '../../../../shared/util/solve/move_counter';
 import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
 import { applySmartCubeTimeOffset, timerPageAppliesSmartOffset } from './smart_time_offset';
+import { getCameraTimerStatus } from '../../../util/camera-timer/status_store';
 
 let endLocked = false;
 
@@ -422,6 +423,9 @@ export function startInspection(context: ITimerContext) {
 	const stackMatOn = timerType === 'stackmat';
 	// Hardware timers (GAN Timer + QiYi Timer) disable inspection auto-start
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
+	// So does the Kamera Timer while its camera runs: the hands leaving the pads start the
+	// solve, and an inspection nobody ended is a DNF, as with a StackMat.
+	const cameraOn = timerType === 'camera' && getCameraTimerStatus().engaged;
 
 	setTimerParams({
 		inInspection: true,
@@ -433,7 +437,7 @@ export function startInspection(context: ITimerContext) {
 	setTimer(
 		INSPECTION_TIMEOUT,
 		setTimeout(() => {
-			if (inspectionAutoStart && !ganTimerOn && !stackMatOn) {
+			if (inspectionAutoStart && !ganTimerOn && !stackMatOn && !cameraOn) {
 				startTimer();
 				return;
 			}

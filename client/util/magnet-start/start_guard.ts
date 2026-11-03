@@ -6,6 +6,8 @@
 
 export interface StartGuardInput {
 	timerType: string;
+	/** The input asking: only it may start (default 'magnet'; the Kamera Timer passes 'camera'). */
+	owner?: 'magnet' | 'camera';
 	manualEntry: boolean;
 	/** Open modal count (general.modals.length). */
 	modalCount: number;
@@ -39,9 +41,9 @@ export type StartBlockReason =
 export function startBlockReason(g: StartGuardInput): StartBlockReason | null {
 	if (g.testMode) return 'test_mode';
 	if (!g.visible) return 'hidden';
-	// Only the Magnet Timer is started by the magnet. Every other type (touch, smart cube,
-	// virtual cube, StackMat, GAN, QiYi) owns its own start.
-	if (g.timerType !== 'magnet') return 'timer_type';
+	// Only the Magnet Timer is started by the magnet (and only the Kamera Timer by the camera).
+	// Every other type (touch, smart cube, virtual cube, StackMat, GAN, QiYi) owns its own start.
+	if (g.timerType !== (g.owner ?? 'magnet')) return 'timer_type';
 	if (g.manualEntry) return 'manual_entry';
 	if (g.inModal) return 'in_modal';
 	if (g.matchMode) return 'match_mode';

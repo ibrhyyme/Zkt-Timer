@@ -31,6 +31,7 @@ import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/opera
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 import { useMagnetStart } from '../../../util/magnet-start/useMagnetStart';
 import { useMagnetTimerOwnsInput } from '../../../util/magnet-start/useMagnetTimer';
+import { useCameraTimerOwnsInput } from '../../../util/camera-timer/useCameraTimerOwnsInput';
 import { magnetService } from '../../../util/magnet-start/service';
 import { useLegacyMagnetNotice } from '../time_display/magnet/LegacyMagnetNotice';
 import { magnetDebugLog } from '../../../util/magnet-start/debug_log';
@@ -127,6 +128,9 @@ export default function KeyWatcher(props: Props) {
 	useMagnetStart(context);
 	// While the Magnet Timer drives the timer, touch and Space neither start nor stop it.
 	const magnetOwnsInput = useMagnetTimerOwnsInput();
+	// The Kamera Timer starts from the hands leaving the pads; Space only stops a running solve
+	// (the way out when the camera misses the stop).
+	const cameraOwnsInput = useCameraTimerOwnsInput();
 	// Members who had the old lift-to-start switch on get told once where it went.
 	useLegacyMagnetNotice(!inModal && !context.matchMode);
 
@@ -645,6 +649,7 @@ export default function KeyWatcher(props: Props) {
 		if (magnetOwnsInput || ganTimerOn || stackMatOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || virtualCubeSelected(context) || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
 			return;
 		}
+		if (cameraOwnsInput && !getTimerStore('timeStartedAt')) return;
 
 		// Don't trigger if user is typing in an input
 		const target = e.target as HTMLElement;
@@ -811,7 +816,7 @@ export default function KeyWatcher(props: Props) {
 
 		// Modes where this handler can never start a solve: a hold left over from before
 		// the mode changed has to be cleared, not left glowing.
-		if (magnetOwnsInput || ganTimerOn || stackMatOn || manualEntry || virtualCubeSelected(context)) {
+		if (magnetOwnsInput || cameraOwnsInput || ganTimerOn || stackMatOn || manualEntry || virtualCubeSelected(context)) {
 			disarmPriming();
 			return;
 		}

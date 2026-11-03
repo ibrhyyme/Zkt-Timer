@@ -3392,6 +3392,7 @@
     "wired_timer": "Temporizador con cable",
     "virtual_phase_tracking": "Seguimiento automático de fases",
     "magnet_timer": "Magnet Timer",
+    "camera_timer": "Temporizador con cámara",
     "qiyi_wired": "QiYi con cable",
     "beta": "Beta",
     "back": "Atrás"
@@ -5791,6 +5792,30 @@
     "clock_pin_up": "Pin levantado",
     "reset_group": "Restablecer",
     "reset_all": "Restablecer todos los colores"
+  },
+  "camera_timer": {
+    "intro": "La cámara sigue tus manos. Levanta una mano de la mesa para empezar y vuelve a apoyar las dos para parar.",
+    "open_camera": "Abrir cámara",
+    "camera": "Cámara",
+    "starting": "Abriendo la cámara",
+    "loading": "Cargando el seguimiento de manos",
+    "place_hands": "Pon el cubo delante de ti y las dos manos planas sobre la mesa",
+    "place_hands_inspection": "Al terminar la inspección, deja el cubo y apoya las dos manos planas sobre la mesa",
+    "ready": "Listo. Levanta una mano para empezar",
+    "ready_inspection": "Listo. Levanta una mano para empezar la inspección",
+    "lift_to_rearm": "Levanta las manos de la mesa un momento para empezar otra resolución",
+    "download_log": "Descargar el registro del último minuto",
+    "error_unsupported": "Este navegador no puede usar el temporizador con cámara. Usa Chrome o Edge.",
+    "error_permission": "No se permitió el acceso a la cámara. Actívalo desde el icono de la cámara en la barra de direcciones y vuelve a intentarlo.",
+    "error_not_found": "No se encontró ninguna cámara. Conecta una y vuelve a intentarlo.",
+    "error_in_use": "Otra aplicación está usando la cámara. Ciérrala y vuelve a intentarlo.",
+    "error_camera": "Se cortó la imagen de la cámara. Vuelve a abrirla.",
+    "error_brain": "No se pudo iniciar el seguimiento de manos. Recarga la página y vuelve a intentarlo.",
+    "warning_low_fps": "La cámara da {{fps}} fotogramas por segundo y necesita al menos 30. Con más luz, la mayoría de las cámaras van más rápido.",
+    "warning_dark": "La imagen está oscura y tus manos no se distinguen bien. Pon más luz.",
+    "warning_low_res": "La resolución de la cámara es baja ({{height}}p). Prueba con una cámara de más resolución.",
+    "warning_slow": "Tu ordenador no llega a seguir las manos ({{ms}} ms por fotograma). Prueba a cerrar otras pestañas.",
+    "warning_no_hands": "La cámara no ve tus manos. Oriéntala hacia la mesa y tus manos."
   },
   "feature_tips": {
     "new": "Nuevo",

@@ -1,5 +1,6 @@
 import {
 	activeChoice,
+	cameraTimerOwnsInput,
 	choiceEngineType,
 	effectiveTimerType,
 	magnetTimerOwnsInput,
@@ -133,5 +134,47 @@ describe('magnetTimerOwnsInput', () => {
 		expect(magnetTimerOwnsInput({ ...base, caps: null })).toBe(false);
 		expect(magnetTimerOwnsInput({ ...base, manualEntry: true })).toBe(false);
 		expect(magnetTimerOwnsInput({ ...base, timerType: 'keyboard' })).toBe(false);
+	});
+});
+
+describe('Kamera Timer', () => {
+	it('comes last in the desktop dropdown, only when available and never in rooms', () => {
+		const list = timerChoices({ device: DESKTOP_WEB, magnetAvailable: false, cameraAvailable: true, inRoom: false, layout: 'dropdown' });
+		expect(list[list.length - 1]).toBe('camera');
+		expect(timerChoices({ device: DESKTOP_WEB, magnetAvailable: false, cameraAvailable: false, inRoom: false, layout: 'dropdown' })).not.toContain('camera');
+		expect(timerChoices({ device: DESKTOP_WEB, magnetAvailable: false, cameraAvailable: true, inRoom: true, layout: 'dropdown' })).not.toContain('camera');
+	});
+
+	it('is never offered on phones, tablets or in the app, and keeps the narrow grid at seven', () => {
+		for (const device of [PHONE_WEB, APP]) {
+			expect(timerChoices({ device, magnetAvailable: true, cameraAvailable: true, inRoom: false, layout: 'dropdown' })).not.toContain('camera');
+			expect(timerChoices({ device, magnetAvailable: true, cameraAvailable: true, inRoom: false, layout: 'grid' })).not.toContain('camera');
+		}
+		const narrow = timerChoices({ device: DESKTOP_WEB, magnetAvailable: false, cameraAvailable: true, inRoom: false, layout: 'grid' });
+		expect(narrow.length).toBeLessThanOrEqual(7);
+	});
+
+	it('reads a synced camera selection as the keyboard timer where it cannot run', () => {
+		expect(effectiveTimerType('camera', PHONE_WEB)).toBe('keyboard');
+		expect(effectiveTimerType('camera', APP)).toBe('keyboard');
+		expect(effectiveTimerType('camera', DESKTOP_WEB)).toBe('camera');
+	});
+
+	it('checks the keyboard row for a camera selection that may not run', () => {
+		const offered = timerChoices({ device: DESKTOP_WEB, magnetAvailable: false, cameraAvailable: true, inRoom: false, layout: 'dropdown' });
+		const base = { manualEntry: false, wiredBrand: 'stackmat' as const, magnetUsable: false, inRoom: false, offered };
+		expect(activeChoice({ ...base, timerType: 'camera', cameraUsable: true })).toBe('camera');
+		expect(activeChoice({ ...base, timerType: 'camera', cameraUsable: false })).toBe('keyboard');
+		expect(activeChoice({ ...base, timerType: 'camera' })).toBe('keyboard');
+	});
+
+	it('owns the input for an allowed user while the manifest loads or once it loaded', () => {
+		const base = { timerType: 'camera', manualEntry: false, allowed: true, manifest: { v: 1 } };
+		expect(cameraTimerOwnsInput(base)).toBe(true);
+		expect(cameraTimerOwnsInput({ ...base, manifest: undefined })).toBe(true);
+		expect(cameraTimerOwnsInput({ ...base, manifest: null })).toBe(false);
+		expect(cameraTimerOwnsInput({ ...base, allowed: false })).toBe(false);
+		expect(cameraTimerOwnsInput({ ...base, manualEntry: true })).toBe(false);
+		expect(cameraTimerOwnsInput({ ...base, timerType: 'keyboard' })).toBe(false);
 	});
 });

@@ -3375,6 +3375,7 @@
     "wired_timer": "Kablolu Timer",
     "virtual_phase_tracking": "Otomatik faz takibi",
     "magnet_timer": "Magnet Timer",
+    "camera_timer": "Kamera Timer",
     "qiyi_wired": "QiYi Kablolu",
     "beta": "Beta",
     "back": "Geri"
@@ -5771,6 +5772,30 @@
     "clock_pin_up": "Kalkık pim",
     "reset_group": "Varsayılana dön",
     "reset_all": "Tüm renkleri sıfırla"
+  },
+  "camera_timer": {
+    "intro": "Kamera ellerini izler. Elini masadan kaldırınca süre başlar, iki elini masaya koyunca durur.",
+    "open_camera": "Kamerayı aç",
+    "camera": "Kamera",
+    "starting": "Kamera açılıyor",
+    "loading": "El takibi yükleniyor",
+    "place_hands": "Küpü önüne koy, iki elini masaya düz koy",
+    "place_hands_inspection": "İncelemeyi bitirince küpü bırak, iki elini masaya düz koy",
+    "ready": "Hazır. Elini kaldırınca süre başlar",
+    "ready_inspection": "Hazır. Elini kaldırınca inceleme başlar",
+    "lift_to_rearm": "Yeni çözüm için ellerini bir an masadan kaldır",
+    "download_log": "Son dakikanın kaydını indir",
+    "error_unsupported": "Bu tarayıcı Kamera Timer'ı çalıştıramıyor. Chrome ya da Edge kullan.",
+    "error_permission": "Kamera izni verilmedi. Adres çubuğundaki kamera simgesinden izin verip tekrar dene.",
+    "error_not_found": "Kamera bulunamadı. Bir kamera bağlayıp tekrar dene.",
+    "error_in_use": "Kamera başka bir uygulamada açık. O uygulamayı kapatıp tekrar dene.",
+    "error_camera": "Kamera görüntüsü kesildi. Kamerayı tekrar aç.",
+    "error_brain": "El takibi başlatılamadı. Sayfayı yenileyip tekrar dene.",
+    "warning_low_fps": "Kamera saniyede {{fps}} kare veriyor, en az 30 olmalı. Çoğu kamera ışık artınca hızlanır.",
+    "warning_dark": "Görüntü karanlık, ellerin net seçilmiyor. Işığı artır.",
+    "warning_low_res": "Kamera çözünürlüğü düşük ({{height}}p). Daha yüksek çözünürlüklü bir kamera dene.",
+    "warning_slow": "Bilgisayar el takibine yetişmiyor (kare başına {{ms}} ms). Diğer sekmeleri kapatmayı dene.",
+    "warning_no_hands": "Kamera ellerini görmüyor. Kamerayı masayı ve ellerini görecek şekilde çevir."
   },
   "feature_tips": {
     "new": "Yeni",

@@ -231,11 +231,11 @@ function FriendlyRoomContent() {
     // Settings
     const manualEntry = useSettings('manual_entry');
     const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
-    // The Magnet Timer has no room path (the room runs RoomTimerOverlay, not KeyWatcher), so
-    // it reads as the touch timer here. Read only: the user's Magnet choice is kept for the
-    // timer page instead of being rewritten by the allow-list effect below.
+    // The Magnet Timer and the Kamera Timer have no room path (the room runs RoomTimerOverlay,
+    // not KeyWatcher), so they read as the touch/keyboard timer here. Read only: the user's
+    // choice is kept for the timer page instead of being rewritten by the allow-list effect below.
     const storedTimerType = useSettings('timer_type');
-    const timerType = storedTimerType === 'magnet' ? 'keyboard' : storedTimerType;
+    const timerType = storedTimerType === 'magnet' || storedTimerType === 'camera' ? 'keyboard' : storedTimerType;
     const inspection = useSettings('inspection');
     const inspectionDelay = useSettings('inspection_delay');
     const timerDecimalPoints = useSettings('timer_decimal_points');

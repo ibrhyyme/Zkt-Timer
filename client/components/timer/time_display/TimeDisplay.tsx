@@ -27,7 +27,11 @@ import MagnetGuide from './magnet/MagnetGuide';
 import MagnetLiveBar from './magnet/MagnetLiveBar';
 import TimerCubeLabel from './cube_label/TimerCubeLabel';
 import HoldStopProgress from './magnet/HoldStopProgress';
+import CameraTimer from './camera/CameraTimer';
 import { useMagnetStatus } from '../../../util/magnet-start/status_store';
+import { getCameraPendingStop, useCameraTimerStatus } from '../../../util/camera-timer/status_store';
+import { useCameraTimerOwnsInput } from '../../../util/camera-timer/useCameraTimerOwnsInput';
+import { frozenSeconds } from '../../../util/camera-timer/decision';
 
 const b = block('time-display');
 const bi = block('timer-bottom-info');
@@ -123,6 +127,12 @@ export default function TimeDisplay() {
 	// The Magnet Timer owns the input (Pro, sensor, selection): useMagnetStart publishes a cube
 	// profile only then. The guide, the live bar and the label below all key off it.
 	const magnetOwns = timerType === 'magnet' && !!magnet.profile && !context.inModal && !matchMode;
+	// Kamera Timer (desktop, admins while tested): green while both hands rest on the pads,
+	// kept outside canStart for the same reason as the magnet's.
+	const cameraOwnsInput = useCameraTimerOwnsInput();
+	const cameraStatus = useCameraTimerStatus();
+	const cameraOwns = cameraOwnsInput && !context.inModal && !matchMode;
+	const cameraGreen = cameraOwns && cameraStatus.green && !timeStartedAt;
 
 	// True from a stop until the next start: the reduced-motion stop cue (TimeDisplay.scss)
 	// plays once when the class appears. Derived during render, so the class lands in the
@@ -258,6 +268,14 @@ export default function TimeDisplay() {
 				return;
 			}
 
+			// Kamera Timer: both hands are back on the pads and the stop is being confirmed.
+			// Freeze at the time it will get; if the pose breaks, the clock runs on.
+			const cameraFrozen = frozenSeconds(getCameraPendingStop(), timeStartedAt.getTime());
+			if (cameraFrozen !== null) {
+				setTime(cameraFrozen);
+				return;
+			}
+
 			const runningTime = (now.getTime() - timeStartedAt.getTime()) / 1000;
 			setTime(runningTime);
 		}, 33);
@@ -344,6 +362,8 @@ export default function TimeDisplay() {
 
 	if (stackMatOn) {
 		bottomInfo = <StackMat />;
+	} else if (cameraOwns) {
+		bottomInfo = <CameraTimer />;
 	} else if (ganTimerOn) {
 		bottomInfo = (
 			<>
@@ -388,7 +408,7 @@ export default function TimeDisplay() {
 					}}
 					className={b({
 						gray: inInspection,
-						green: canStart || magnetGreen,
+						green: canStart || magnetGreen || cameraGreen,
 						orange: !!spaceTimerStarted || magnetOrange,
 						disabled,
 						// Digits grow/shrink only on this edge (armed/inspecting stay at

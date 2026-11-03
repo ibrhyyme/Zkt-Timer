@@ -25,6 +25,8 @@ services:
       - ./server/config/firebase-service-account.json:/app/firebase-service-account.json:ro
       # Trainer algoritma kütüphanesi: git'te yok, sunucuya elle yüklenir (data/trainer/library.json)
       - ./data/trainer:/app/data/trainer:ro
+      # Kamera Timer beyni (worker + MediaPipe + model): git'te yok, sunucuya elle yüklenir (data/camera-timer)
+      - ./data/camera-timer:/app/data/camera-timer:ro
     ports:
       - "127.0.0.1:3000:3000"
     restart: always

@@ -1,0 +1,67 @@
+@import '../../../../styles/config';
+
+// The Kamera Timer under the digits: the preview (with the hands and pads drawn over it), the
+// line saying what to do, a camera warning and the camera controls. Flat like the rest of the
+// timer surface: a hairline frame, the timer's corner, no fill behind the controls.
+.#{$namespace}-camera-timer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: $zt-space-2;
+	width: 100%;
+
+	&__stage {
+		position: relative;
+		width: min(360px, 100%);
+		// Until the camera reports its size.
+		aspect-ratio: 16 / 9;
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-card-border;
+		overflow: hidden;
+		background: $zt-card-bg;
+
+		&--hidden {
+			display: none;
+		}
+	}
+
+	// The overlay is drawn in the frame's own coordinates, so the video must fill the box
+	// exactly (the box takes the camera's aspect ratio): no cover, no letterbox.
+	&__video,
+	&__overlay {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	&__video {
+		object-fit: fill;
+	}
+
+	&__overlay {
+		pointer-events: none;
+	}
+
+	&__warning {
+		max-width: 360px;
+		text-align: center;
+		font-size: 0.9rem;
+		color: rgb(var(--warning-color));
+	}
+
+	&__controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: $zt-space-2;
+	}
+
+	&__log {
+		font-size: 0.85rem;
+		color: $zt-text-muted;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+}

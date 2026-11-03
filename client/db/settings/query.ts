@@ -52,7 +52,7 @@ export interface AllSettings {
 	haptic_feedback: boolean;
 	// 'magnet' is the Magnet Timer (native app only). What a stored value means on the current
 	// device is decided on read by timer_type_catalog.ts effectiveTimerType.
-	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual' | 'magnet';
+	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'virtual' | 'magnet' | 'camera';
 	/**
 	 * Which wired timer the desktop dropdown shows as checked. Both run on the StackMat engine
 	 * (timer_type 'stackmat'); the brand only picks the label. A platform setting (prefs blob),

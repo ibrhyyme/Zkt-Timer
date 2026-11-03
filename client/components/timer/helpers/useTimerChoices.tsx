@@ -10,6 +10,7 @@ import {
 	Microphone,
 	Monitor,
 	PencilSimple,
+	VideoCamera,
 } from 'phosphor-react';
 import { setSetting, setSettings } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -19,6 +20,8 @@ import { openModal } from '../../../actions/general';
 import { getDeviceProfile } from '../../../util/device-profile';
 import { isPro } from '../../../lib/pro';
 import { canUseMagnetStart } from '../../../lib/magnet-start-access';
+import { canUseCameraTimer } from '../../../lib/camera-timer-access';
+import { useCameraTimerAvailability } from '../../../util/camera-timer/availability';
 import { useMagnetAvailability } from '../../../util/magnet-start/availability';
 import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
 import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
@@ -28,6 +31,7 @@ import { normalizeAllowedTimerTypes, timerTypeUnsupportedReason } from './timer_
 import { PRO_GATED_TIMER_TYPES } from './pro_timer_types';
 import {
 	activeChoice,
+	cameraOfferedOnDevice,
 	choiceEngineType,
 	magnetOfferedOnDevice,
 	TimerChoice,
@@ -96,12 +100,17 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 	// Dropping the cube is the Magnet Timer's only stop (touch never stops it), so a binary
 	// without the slam detector does not get the tile either.
 	const magnetAvailable = !!magnetCaps && isSlamDetectorAvailable();
-	const offered = timerChoices({ device, magnetAvailable, inRoom, layout });
+	// Kamera Timer: admins on a desktop browser, and only once the server has the brain (the
+	// manifest is asked for by nobody else).
+	const cameraAllowed = canUseCameraTimer(me);
+	const cameraManifest = useCameraTimerAvailability(cameraAllowed && cameraOfferedOnDevice(device) && !inRoom);
+	const offered = timerChoices({ device, magnetAvailable, cameraAvailable: !!cameraManifest, inRoom, layout });
 	const active = activeChoice({
 		timerType,
 		manualEntry: !!manualEntry,
 		wiredBrand,
 		magnetUsable: magnetAllowed && magnetCaps !== null,
+		cameraUsable: cameraAllowed && cameraManifest !== null,
 		inRoom,
 		offered,
 	});
@@ -119,6 +128,7 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 		qiyitimer: 'QiYi Timer',
 		stackmat: layout === 'grid' ? t('quick_controls.wired_timer') : 'StackMat',
 		qiyiwired: t('quick_controls.qiyi_wired'),
+		camera: t('quick_controls.camera_timer'),
 	};
 
 	const ICONS: Record<TimerChoice, (size: number) => React.ReactNode> = {
@@ -133,6 +143,7 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 		stackmat: (s) => <Microphone weight="bold" size={s} />,
 		// Read through the audio input like StackMat, so it carries the same microphone.
 		qiyiwired: (s) => <Microphone weight="bold" size={s} />,
+		camera: (s) => <VideoCamera weight="bold" size={s} />,
 	};
 
 	const options: TimerChoiceOption[] = offered.map((key) => {
@@ -158,7 +169,7 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 			proGated,
 			notAllowed,
 			unsupportedReason,
-			beta: key === 'magnet',
+			beta: key === 'magnet' || key === 'camera',
 		};
 	});
 

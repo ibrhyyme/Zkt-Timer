@@ -606,6 +606,11 @@ app.get('/api/yt-thumb/:id', youtubeThumbnailHandler);
 import { geocodeHandler } from './api/geocode';
 app.get('/api/geocode', geocodeHandler);
 
+// Kamera Timer brain (worker + MediaPipe + model): private, mounted from data/camera-timer,
+// admins only for now. See the handler.
+import { cameraTimerHandler } from './api/camera_timer';
+app.get('/api/camera-timer/*', cameraTimerHandler);
+
 // Two different things, deliberately separate:
 //   version — the human-readable product version announced to users (CalVer
 //             "26.8.1", computed per deploy in .github/workflows/deploy.yml)

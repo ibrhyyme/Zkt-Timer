@@ -3392,6 +3392,7 @@
     "wired_timer": "Wired Timer",
     "virtual_phase_tracking": "Automatic phase tracking",
     "magnet_timer": "Magnet Timer",
+    "camera_timer": "Camera Timer",
     "qiyi_wired": "QiYi Wired",
     "beta": "Beta",
     "back": "Back"
@@ -5790,6 +5791,30 @@
     "clock_pin_up": "Raised pin",
     "reset_group": "Reset to default",
     "reset_all": "Reset all colors"
+  },
+  "camera_timer": {
+    "intro": "The camera watches your hands. Lift a hand off the table to start, put both hands back to stop.",
+    "open_camera": "Open camera",
+    "camera": "Camera",
+    "starting": "Opening the camera",
+    "loading": "Loading hand tracking",
+    "place_hands": "Put the cube in front of you and both hands flat on the table",
+    "place_hands_inspection": "When you finish inspecting, put the cube down and both hands flat on the table",
+    "ready": "Ready. Lift a hand to start",
+    "ready_inspection": "Ready. Lift a hand to start inspection",
+    "lift_to_rearm": "Lift your hands off the table for a moment to start a new solve",
+    "download_log": "Download the last minute's log",
+    "error_unsupported": "This browser can't run the Camera Timer. Use Chrome or Edge.",
+    "error_permission": "Camera access was blocked. Allow it from the camera icon in the address bar and try again.",
+    "error_not_found": "No camera found. Connect one and try again.",
+    "error_in_use": "Another app is using the camera. Close it and try again.",
+    "error_camera": "The camera feed stopped. Open the camera again.",
+    "error_brain": "Hand tracking couldn't start. Reload the page and try again.",
+    "warning_low_fps": "The camera gives {{fps}} frames per second and needs at least 30. Most cameras speed up with more light.",
+    "warning_dark": "The picture is dark and your hands are hard to make out. Add more light.",
+    "warning_low_res": "The camera resolution is low ({{height}}p). Try a higher-resolution camera.",
+    "warning_slow": "Your computer can't keep up with hand tracking ({{ms}} ms per frame). Try closing other tabs.",
+    "warning_no_hands": "The camera can't see your hands. Point it at the table and your hands."
   },
   "feature_tips": {
     "new": "New",

@@ -12,13 +12,16 @@ interface Props {
 	// Omitted when connected: the green glyph alone says it.
 	text?: string;
 	onClick?: () => void;
+	// The glyph; Bluetooth unless the device connects some other way (the Kamera Timer's camera).
+	icon?: React.ElementType;
 }
 
-// The one Bluetooth connect control on the timer (smart cube, GAN Timer, QiYi Timer).
+// The one connect control on the timer (smart cube, GAN Timer, QiYi Timer, Kamera Timer).
 // A div, not a button: a focused button would take the spacebar that starts the timer
 // and fire a connect or disconnect instead.
-export default function ConnectTrigger({state, text, onClick}: Props) {
+export default function ConnectTrigger({state, text, onClick, icon}: Props) {
 	const busy = state === 'busy';
+	const Icon = icon || Bluetooth;
 
 	return (
 		<div
@@ -27,7 +30,7 @@ export default function ConnectTrigger({state, text, onClick}: Props) {
 			role="button"
 			aria-disabled={busy || undefined}
 		>
-			<Bluetooth className={b('icon')} weight="bold" />
+			<Icon className={b('icon')} weight="bold" />
 			{text && <span className={b('label')}>{text}</span>}
 		</div>
 	);
