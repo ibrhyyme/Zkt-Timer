@@ -6,6 +6,7 @@ import {
 	parseTrainerSearch,
 	buildAlgorithmsPath,
 	buildSetPath,
+	setPathSegment,
 	legacyAlgorithmsTarget,
 	recognitionSubToView,
 	recognitionViewToSub,
@@ -80,9 +81,9 @@ describe('parseTrainerPath', () => {
 
 describe('parseSetPath', () => {
 	it('code and picker', () => {
-		expect(parseSetPath('/trainer/sets/abc123')).toEqual({code: 'abc123', add: false});
-		expect(parseSetPath('/trainer/sets/abc123/add')).toEqual({code: 'abc123', add: true});
-		expect(parseSetPath('/trainer/sets/abc123/')).toEqual({code: 'abc123', add: false});
+		expect(parseSetPath('/trainer/sets/abc123')).toEqual({code: 'abc123', add: false, segment: 'abc123'});
+		expect(parseSetPath('/trainer/sets/abc123/add')).toEqual({code: 'abc123', add: true, segment: 'abc123'});
+		expect(parseSetPath('/trainer/sets/abc123/')).toEqual({code: 'abc123', add: false, segment: 'abc123'});
 	});
 
 	it('anything else is not a set path', () => {
@@ -91,7 +92,8 @@ describe('parseSetPath', () => {
 		expect(parseSetPath('/trainer/sets/abc/add/more')).toBeNull();
 		expect(parseSetPath('/trainer/algorithms/sets')).toBeNull();
 		expect(parseSetPath('/trainer/sets/%E0%A4%A')).toBeNull(); // broken escape
-		expect(parseSetPath('/trainer/sets/' + 'x'.repeat(65))).toBeNull();
+		expect(parseSetPath('/trainer/sets/' + 'x'.repeat(129))).toBeNull();
+		expect(parseSetPath('/trainer/sets/name-')).toBeNull(); // slug with no code
 	});
 });
 
@@ -182,9 +184,28 @@ describe('buildAlgorithmsPath', () => {
 
 describe('buildSetPath', () => {
 	it('page and picker, round trip', () => {
-		expect(buildSetPath('Ab3dE6gH9k')).toBe('/trainer/sets/Ab3dE6gH9k');
-		expect(buildSetPath('Ab3dE6gH9k', true)).toBe('/trainer/sets/Ab3dE6gH9k/add');
-		expect(parseSetPath(buildSetPath('Ab3dE6gH9k', true))).toEqual({code: 'Ab3dE6gH9k', add: true});
+		expect(buildSetPath({code: 'Ab3dE6gH9k', name: '2-Look OLL'})).toBe('/trainer/sets/2-look-oll-Ab3dE6gH9k');
+		expect(buildSetPath({code: 'Ab3dE6gH9k', name: 'Öğrenmem gerekenler'}, true)).toBe(
+			'/trainer/sets/ogrenmem-gerekenler-Ab3dE6gH9k/add'
+		);
+		expect(parseSetPath(buildSetPath({code: 'Ab3dE6gH9k', name: '2-Look OLL'}, true))).toEqual({
+			code: 'Ab3dE6gH9k',
+			add: true,
+			segment: '2-look-oll-Ab3dE6gH9k',
+		});
+	});
+
+	it('name unknown or without a slug: the bare code', () => {
+		expect(buildSetPath({code: 'Ab3dE6gH9k'})).toBe('/trainer/sets/Ab3dE6gH9k');
+		expect(buildSetPath({code: 'Ab3dE6gH9k', name: '公式集'})).toBe('/trainer/sets/Ab3dE6gH9k');
+	});
+
+	it('an old bare-code link and a renamed slug open the same set', () => {
+		expect(parseSetPath('/trainer/sets/Ab3dE6gH9k')?.code).toBe('Ab3dE6gH9k');
+		expect(parseSetPath('/trainer/sets/old-name-Ab3dE6gH9k')?.code).toBe('Ab3dE6gH9k');
+		expect(parseTrainerPath('/trainer/sets/2-look-oll-Ab3dE6gH9k/add')).toMatchObject({setCode: 'Ab3dE6gH9k', sub: 'add'});
+		expect(viewOf('/trainer/sets/2-look-oll-Ab3dE6gH9k')).toBe('set');
+		expect(setPathSegment({code: 'Ab3dE6gH9k', name: '2-Look OLL'})).toBe('2-look-oll-Ab3dE6gH9k');
 	});
 });
 

@@ -54,7 +54,7 @@ import {toastError} from '../../../util/toast';
 import {getGqlErrorMessage} from '../../../util/gql-error';
 import {algToId} from '../../../util/trainer/algorithm_engine';
 import {startSetStudyPayload, trainerAlgText} from '../../../util/trainer/set_queue';
-import {MY_SETS_PATH, COMMUNITY_PATH, buildSetPath, parseSetPath} from '../../../util/trainer/url/trainer_url';
+import {MY_SETS_PATH, COMMUNITY_PATH, buildSetPath, parseSetPath, setPathSegment} from '../../../util/trainer/url/trainer_url';
 import {getBestTime, getLearnedStatus} from '../hooks/useAlgorithmData';
 import {
 	removeAlgSetItems,
@@ -147,7 +147,7 @@ export default function AlgSetPage() {
 			if (loaded) {
 				if (loaded.set.code && loaded.set.code !== code) {
 					ownCodeChange.current = loaded.set.code;
-					history.replace(buildSetPath(loaded.set.code));
+					history.replace(buildSetPath(loaded.set));
 				}
 				setView({
 					code: loaded.set.code || code,
@@ -172,6 +172,20 @@ export default function AlgSetPage() {
 	}, [code, meId, history]);
 
 	const set = view.set;
+
+	// The address names the set by its current name: an old bare-code link, a rename or a
+	// hand-typed slug is rewritten in place (same code, so nothing reloads). The history state
+	// rides along (the picker's highlight ids).
+	const shownCode = set?.code || null;
+	const shownName = set?.name || null;
+	useEffect(() => {
+		if (!shownCode || shownCode !== code) return;
+		const segment = parseSetPath(location.pathname)?.segment;
+		if (segment && segment !== setPathSegment({code: shownCode, name: shownName})) {
+			history.replace(buildSetPath({code: shownCode, name: shownName}) + location.search, location.state);
+		}
+	}, [shownCode, shownName, code, location.pathname, location.search, location.state, history]);
+
 	const isOwner = !!set?.is_owner;
 	const canWrite = online;
 	const offlineNote = t('trainer.sets.offline_needed');
@@ -310,7 +324,7 @@ export default function AlgSetPage() {
 					actions.confirmResetLink(set, (next) => {
 						ownCodeChange.current = next.code;
 						setView((prev) => ({...prev, code: next.code, set: next}));
-						history.replace(buildSetPath(next.code));
+						history.replace(buildSetPath(next));
 					}),
 			});
 		}
@@ -620,7 +634,7 @@ export default function AlgSetPage() {
 									text={t('trainer.sets.add_algorithms')}
 									disabled={!canWrite || !!sorting}
 									title={!canWrite ? offlineNote : undefined}
-									onClick={() => history.push(buildSetPath(set.code, true))}
+									onClick={() => history.push(buildSetPath(set, true))}
 								/>
 							) : (
 								<Button
@@ -676,7 +690,7 @@ export default function AlgSetPage() {
 									iconFirst
 									text={t('trainer.sets.add_algorithms')}
 									disabled={!canWrite}
-									onClick={() => history.push(buildSetPath(set.code, true))}
+									onClick={() => history.push(buildSetPath(set, true))}
 								/>
 							) : null}
 						</div>

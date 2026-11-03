@@ -197,7 +197,7 @@ export function useTrainerUrlSync() {
 				if (!stillHere) return;
 				if (!set) {
 					dispatch({type: 'SET_PENDING_SET', payload: null});
-					history.replace(buildSetPath(code));
+					history.replace(buildSetPath({code}));
 					return;
 				}
 				dispatch({type: 'START_SET_STUDY', payload: startSetStudyPayload(set, getBestTime)});

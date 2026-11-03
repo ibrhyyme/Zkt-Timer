@@ -53,11 +53,11 @@ export default function MySets() {
 	const saved = list.data?.saved || [];
 	const atLimit = own.length >= ALG_SET_LIMITS.MAX_SETS_PER_USER;
 
-	const open = (set: AlgSetSummaryData) => history.push(buildSetPath(set.code));
+	const open = (set: AlgSetSummaryData) => history.push(buildSetPath(set));
 	const study = (set: AlgSetSummaryData) => history.push(buildAlgorithmsPath('train', {set: set.code, mode}));
 
 	const createSet = () => {
-		actions.openCreate((created) => history.push(buildSetPath(created.code, true)));
+		actions.openCreate((created) => history.push(buildSetPath(created, true)));
 	};
 
 	const ownMenu = (set: AlgSetSummaryData, anchor: ActionMenuAnchor) => {

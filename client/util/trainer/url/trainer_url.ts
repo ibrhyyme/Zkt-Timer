@@ -15,8 +15,10 @@
  *   Algorithm Sets (their own section, not a tab of the Algorithm Trainer):
  *     /trainer/sets                      My Sets
  *     /trainer/community                 Community Sets              (?q, ?sort, ?puzzle owned by that page)
- *     /trainer/sets/:code                one set's page
- *     /trainer/sets/:code/add            its algorithm picker
+ *     /trainer/sets/<name>-<code>        one set's page (bare `<code>` still opens it)
+ *     /trainer/sets/<name>-<code>/add    its algorithm picker
+ *   The code finds the set and is the secret of a link-only share; the name slug in front only
+ *   makes the link readable (shared/url_slug.ts) and is ignored on the way in.
  *   Legacy `/trainer/standard[/train]`, `/trainer/smart[/train]`, `/trainer/algorithms/sets` and
  *   `/trainer/algorithms/community` still parse so an old address inside the app is rewritten
  *   instead of breaking (legacyAlgorithmsTarget); the server answers them with a 301.
@@ -27,6 +29,7 @@
 import type {StudyMode, TrainerMode, TrainerView} from '../../../components/trainer/types';
 import type {RecognitionView} from '../../../components/trainer/recognition/types';
 import type {EfficiencyView} from '../../../components/trainer/efficiency/types';
+import {idFromSlugWithId, slugWithId} from '../../../../shared/url_slug';
 
 export type TrainerEntry = 'modes' | 'algorithms' | 'sets' | 'community' | 'recognition' | 'efficiency' | 'ollcp';
 
@@ -94,17 +97,40 @@ function safeDecode(segment: string): string | null {
 	}
 }
 
+/** Longest set segment accepted: a slug (48) + dash + code (10), with room for an older shape. */
+const SET_SEGMENT_MAX_LENGTH = 128;
+
+/** What a set address needs: the code, plus the current name for the readable part. */
+export interface SetPathRef {
+	code: string;
+	name?: string | null;
+}
+
+/** `<name slug>-<code>`, or the bare code when the name has nothing a slug can keep. */
+export function setPathSegment(set: SetPathRef): string {
+	return slugWithId(set.name, set.code);
+}
+
+/** The code inside a set segment (`2-look-oll-Ab3dE6gH9k` or a bare `Ab3dE6gH9k`). */
+export function setCodeFromSegment(segment: string | null | undefined): string {
+	return segment ? idFromSlugWithId(segment) : '';
+}
+
 /**
- * `/trainer/sets/:code` and `/trainer/sets/:code/add`. Any non-empty code is returned: the set
- * page itself says "not found" for a wrong one, which is clearer than a silent redirect.
+ * `/trainer/sets/<segment>` and `/trainer/sets/<segment>/add`. Any non-empty code is returned:
+ * the set page itself says "not found" for a wrong one, which is clearer than a silent
+ * redirect. `segment` is the decoded path part as written, so a page can tell whether the
+ * address still names the set by its current name.
  */
-export function parseSetPath(pathname: string): {code: string; add: boolean} | null {
+export function parseSetPath(pathname: string): {code: string; add: boolean; segment: string} | null {
 	const parts = (pathname || '').split('/').filter(Boolean);
 	if (parts[0] !== 'trainer' || parts[1] !== 'sets' || !parts[2]) return null;
 	if (parts.length > 4 || (parts[3] !== undefined && parts[3] !== 'add')) return null;
-	const code = safeDecode(parts[2]);
-	if (!code || code.length > 64) return null;
-	return {code, add: parts[3] === 'add'};
+	const segment = safeDecode(parts[2]);
+	if (!segment || segment.length > SET_SEGMENT_MAX_LENGTH) return null;
+	const code = setCodeFromSegment(segment);
+	if (!code) return null;
+	return {code, add: parts[3] === 'add', segment};
 }
 
 /** Splits a pathname into the trainer backbone. Query and hash are ignored. */
@@ -211,9 +237,13 @@ export function buildAlgorithmsPath(
 	return parts.length ? `${path}?${parts.join('&')}` : path;
 }
 
-/** `/trainer/sets/<code>` or its picker `/trainer/sets/<code>/add`. */
-export function buildSetPath(code: string, add = false): string {
-	const base = `${SETS_BASE}/${encodeURIComponent(code)}`;
+/**
+ * `/trainer/sets/<name>-<code>` or its picker `.../add`. Pass the set itself so the link carries
+ * its name; `{code}` alone (name unknown) gives the bare code, which the set page rewrites once
+ * the set has loaded.
+ */
+export function buildSetPath(set: SetPathRef, add = false): string {
+	const base = `${SETS_BASE}/${encodeURIComponent(setPathSegment(set))}`;
 	return add ? `${base}/add` : base;
 }
 

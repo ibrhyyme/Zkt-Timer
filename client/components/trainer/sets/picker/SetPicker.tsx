@@ -164,12 +164,12 @@ export default function SetPicker() {
 			if (!alive) return;
 			if (loaded) {
 				if (!loaded.set.is_owner) {
-					history.replace(buildSetPath(loaded.set.code || code));
+					history.replace(buildSetPath({code: loaded.set.code || code, name: loaded.set.name}));
 					return;
 				}
 				if (loaded.set.code && loaded.set.code !== code) {
 					ownCodeChange.current = loaded.set.code;
-					history.replace(buildSetPath(loaded.set.code, true) + (typeof window !== 'undefined' ? window.location.search : ''));
+					history.replace(buildSetPath(loaded.set, true) + (typeof window !== 'undefined' ? window.location.search : ''));
 				}
 				setSet(loaded.set);
 				setStatus('ready');
@@ -186,7 +186,7 @@ export default function SetPicker() {
 
 	// A cached copy of somebody else's set (saved) is not ours to edit either.
 	useEffect(() => {
-		if (set && !set.is_owner) history.replace(buildSetPath(set.code || code));
+		if (set && !set.is_owner) history.replace(buildSetPath({code: set.code || code, name: set.name}));
 	}, [set, code, history]);
 
 	// ── Library ─────────────────────────────────────────────────────────
@@ -422,7 +422,7 @@ export default function SetPicker() {
 			upsertOwnSet(full);
 			const addedIds = addedItemIds(before, full.items);
 			leavingRef.current = true;
-			const target = buildSetPath(full.code || code);
+			const target = buildSetPath({code: full.code || code, name: full.name});
 			const navState = {addedIds};
 			if (depth > 0) {
 				// Drop the picker's own steps from the history first, then swap the picker for the set page.

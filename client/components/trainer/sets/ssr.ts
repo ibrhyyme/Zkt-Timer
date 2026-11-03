@@ -5,10 +5,12 @@ import {setSsrValue} from '../../../actions/ssr';
 import {gqlQueryTyped} from '../../api';
 import {AlgSetMetaDocument, AlgSetMetaQuery} from '../../../@types/generated/graphql';
 import {isAlgSetCode} from '../../../../shared/trainer/alg_sets';
+import {buildSetPath, setCodeFromSegment} from '../../../util/trainer/url/trainer_url';
 import type {SsrMetaFn} from '../../layout/Routes';
 
 /**
- * Link preview for a shared set page (`/trainer/sets/:code`), design trainer-sets.md 7.5.
+ * Link preview for a shared set page (`/trainer/sets/<name>-<code>`), design trainer-sets.md 7.5.
+ * The route param is the whole segment; only the code after the last dash is read.
  *
  * The trainer body is never server rendered (it sits behind `app_loaded`), so SSR only has to
  * give WhatsApp and friends a title and a description. The request goes through the public
@@ -47,11 +49,16 @@ export function toAlgSetSsrPreview(set: AlgSetMetaQuery['algSet'] | null | undef
 	};
 }
 
+/** The set code inside the `:code` route param (`2-look-oll-Ab3dE6gH9k` or a bare code). */
+function codeOf(req: Request): string {
+	return setCodeFromSegment(String(req.params?.code || ''));
+}
+
 export async function prefetchAlgSetMeta(store: Store<any>, req: Request) {
-	const code: string = req.params?.code;
+	const code = codeOf(req);
 	if (!isAlgSetCode(code)) {
 		// A malformed code cannot exist; skip the round trip and let the page say "not found".
-		return store.dispatch(setSsrValue(algSetSsrKey(String(code || '')), null));
+		return store.dispatch(setSsrValue(algSetSsrKey(code), null));
 	}
 
 	// NOT_FOUND, a rate limit or a network error must never turn into a 404 or a 500 here:
@@ -67,8 +74,8 @@ export async function prefetchAlgSetMeta(store: Store<any>, req: Request) {
 
 /** Head tags for the set page. Unknown or unreachable set: null, the site defaults stay. */
 export const algSetSsrMeta: SsrMetaFn = (store, req, t) => {
-	const code: string = req.params?.code;
-	const preview: AlgSetSsrPreview | null = store.getState()?.ssr?.[algSetSsrKey(String(code || ''))] || null;
+	const code = codeOf(req);
+	const preview: AlgSetSsrPreview | null = store.getState()?.ssr?.[algSetSsrKey(code)] || null;
 	if (!preview) return null;
 
 	const shown = preview.categories.slice(0, MAX_PREVIEW_CATEGORIES);
@@ -80,5 +87,7 @@ export const algSetSsrMeta: SsrMetaFn = (store, req, t) => {
 		description: categories
 			? t('seo.alg_set_description', {count: preview.count, categories})
 			: t('seo.alg_set_description_empty'),
+		// og:url names the set by its current name, whatever slug the shared link carried.
+		path: buildSetPath({code, name: preview.name}),
 	};
 };

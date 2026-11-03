@@ -221,11 +221,9 @@ export default function TrainerToolbar() {
 		  (mySets.data ? null : listedSetName(readAlgSetCache(me?.id).list, setCode))
 		: null;
 	const mine = !!myListName || (!!setCode && !!peekCachedAlgSet(setCode));
-	const setName =
-		(studySetCode ? state.activeSet?.name : null) ||
-		myListName ||
-		(setCode ? peekCachedAlgSet(setCode)?.name : null) ||
-		t('trainer.hub.set_crumb');
+	const knownSetName =
+		(studySetCode ? state.activeSet?.name : null) || myListName || (setCode ? peekCachedAlgSet(setCode)?.name : null) || null;
+	const setName = knownSetName || t('trainer.hub.set_crumb');
 
 	const toHub = () => dispatch({type: 'SET_VIEW', payload: 'landing'});
 	const toModes = () => dispatch({type: 'SET_VIEW', payload: 'modes'});
@@ -234,7 +232,7 @@ export default function TrainerToolbar() {
 	const toMySets = () => dispatch({type: 'SET_VIEW', payload: 'sets'});
 	const toCommunity = () => dispatch({type: 'SET_VIEW', payload: 'community'});
 	const toSetPage = () => {
-		if (setCode) history.push(buildSetPath(setCode));
+		if (setCode) history.push(buildSetPath({code: setCode, name: knownSetName}));
 	};
 
 	let trail: TrainerCrumb[];

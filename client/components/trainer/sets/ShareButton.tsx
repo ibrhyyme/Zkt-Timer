@@ -21,8 +21,9 @@ import {copyText} from '../../../util/clipboard';
 import {useGeneral} from '../../../util/hooks/useGeneral';
 import {buildSetPath} from '../../../util/trainer/url/trainer_url';
 
-export function algSetShareUrl(code: string): string {
-	return getApiBase() + buildSetPath(code);
+/** Public link with the set's name in it (`/trainer/sets/<name>-<code>`). */
+export function algSetShareUrl(set: {code: string; name: string}): string {
+	return getApiBase() + buildSetPath(set);
 }
 
 /** Returns `share(set)`: native share sheet on phones, clipboard on desktop. */
@@ -31,7 +32,7 @@ export function useShareAlgSet() {
 	const mobileMode = useGeneral('mobile_mode');
 
 	return async function share(set: {code: string; name: string; item_count: number}) {
-		const url = algSetShareUrl(set.code);
+		const url = algSetShareUrl(set);
 		const text = t('trainer.sets.share_text', {name: set.name, count: set.item_count});
 		const canSheet = isNative() || (mobileMode && typeof navigator !== 'undefined' && !!navigator.share);
 		if (canSheet && (await shareContent({title: set.name, text, url}))) return;

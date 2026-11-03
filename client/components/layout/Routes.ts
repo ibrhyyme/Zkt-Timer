@@ -93,6 +93,8 @@ export interface SsrMeta {
 	title?: string;
 	description?: string;
 	image?: string;
+	/** Canonical path for og:url when the request path is not it (a stale slug in a set link). */
+	path?: string;
 }
 
 export type SsrMetaFn = (store: Store<any>, req: Request, t: (key: string, vars?: any) => string) => SsrMeta | null;

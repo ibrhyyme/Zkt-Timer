@@ -130,7 +130,7 @@ export default function CommunitySets() {
 		return () => observer.disconnect();
 	}, [hasMore, status, loadingMore, page, load]);
 
-	const open = (set: AlgSetSummaryData) => history.push(buildSetPath(set.code));
+	const open = (set: AlgSetSummaryData) => history.push(buildSetPath(set));
 	const filtered = !!filters.q.trim() || !!filters.puzzle;
 
 	return (

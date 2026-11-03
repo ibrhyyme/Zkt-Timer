@@ -135,7 +135,7 @@ function createComponents(req, store, route?: PageContext) {
 	const tree = ssrMeta ? (
 		<>
 			{staticRouter}
-			<SsrMetaTags meta={ssrMeta} path={req.url.split('?')[0]} />
+			<SsrMetaTags meta={ssrMeta} path={ssrMeta.path || req.url.split('?')[0]} />
 		</>
 	) : (
 		staticRouter

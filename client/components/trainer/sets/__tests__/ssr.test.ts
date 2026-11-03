@@ -79,6 +79,14 @@ describe('prefetchAlgSetMeta', () => {
 		expect(mockQuery).not.toHaveBeenCalled();
 		expect(store.getState().ssr[algSetSsrKey('not a code')]).toBeNull();
 	});
+
+	it('reads the code at the end of a named link, whatever the slug says', async () => {
+		mockQuery.mockResolvedValue({data: {algSet: SET}});
+		const store = makeStore();
+		await prefetchAlgSetMeta(store, req(`some-old-name-${CODE}`));
+		expect(mockQuery.mock.calls[0][1]).toEqual({code: CODE});
+		expect(store.getState().ssr[algSetSsrKey(CODE)]).toMatchObject({name: SET.name});
+	});
 });
 
 describe('algSetSsrMeta', () => {
@@ -93,6 +101,14 @@ describe('algSetSsrMeta', () => {
 			`seo.alg_set_description ${JSON.stringify({count: 21, categories: 'OLL, PLL, F2L'})}`
 		);
 		expect(meta.image).toBeUndefined();
+	});
+
+	it('points og:url at the current name, not the slug the link carried', async () => {
+		mockQuery.mockResolvedValue({data: {algSet: SET}});
+		const store = makeStore();
+		const stale = req(`some-old-name-${CODE}`);
+		await prefetchAlgSetMeta(store, stale);
+		expect(algSetSsrMeta(store, stale, t).path).toBe(`/trainer/sets/ogrenmem-gerekenler-${CODE}`);
 	});
 
 	it('folds long category lists into +N', async () => {

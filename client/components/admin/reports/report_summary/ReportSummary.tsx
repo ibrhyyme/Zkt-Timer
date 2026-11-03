@@ -16,6 +16,7 @@ import {gql, useMutation} from '@apollo/client';
 import {toastError} from '../../../../util/toast';
 import {getGqlErrorMessage} from '../../../../util/gql-error';
 import {algSetHiddenSource, parseAlgSetReportReason} from './alg_set_report';
+import {buildSetPath} from '../../../../util/trainer/url/trainer_url';
 
 const b = block('admin-report-summary');
 
@@ -188,7 +189,7 @@ function AlgSetLine(props: AlgSetLineProps) {
 		<div className={b('alg-set')}>
 			<div className={b('alg-set-info')}>
 				<span className={b('alg-set-label')}>{t('admin_reports.alg_set_label')}</span>
-				<a href={`/trainer/sets/${algSet.code}`} target="_blank" rel="noopener noreferrer" className={b('alg-set-link')}>
+				<a href={buildSetPath({code: algSet.code || '', name: algSet.name})} target="_blank" rel="noopener noreferrer" className={b('alg-set-link')}>
 					{algSet.name}
 				</a>
 				{visibilityText ? <Tag small text={visibilityText} /> : null}

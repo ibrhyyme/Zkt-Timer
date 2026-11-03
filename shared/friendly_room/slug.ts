@@ -7,6 +7,10 @@
 //
 // The slug is generated once at creation and never changes, even if the room is renamed:
 // a link shared right before a live session must keep working for the whole session.
+//
+// The letter rule itself is the app-wide one in shared/url_slug.ts.
+
+import { slugify } from '../url_slug';
 
 export const MAX_ROOM_SLUG_LENGTH = 60;
 
@@ -15,17 +19,6 @@ export const ROOM_SLUG_FALLBACK = 'oda';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Turkish letters are mapped explicitly rather than through toLocaleLowerCase('tr'),
-// which would fold ASCII "I" to "ı" and corrupt latin room names.
-const TURKISH_MAP: { [char: string]: string } = {
-    'ç': 'c', 'Ç': 'c',
-    'ğ': 'g', 'Ğ': 'g',
-    'ı': 'i', 'İ': 'i',
-    'ö': 'o', 'Ö': 'o',
-    'ş': 's', 'Ş': 's',
-    'ü': 'u', 'Ü': 'u',
-};
-
 // True when the URL segment is a raw room id rather than a slug. Slugs can never take
 // this shape (see slugifyRoomName), so the two namespaces cannot collide.
 export function looksLikeRoomId(value: string | null | undefined): boolean {
@@ -33,16 +26,7 @@ export function looksLikeRoomId(value: string | null | undefined): boolean {
 }
 
 export function slugifyRoomName(name: string | null | undefined): string {
-    const mapped = (name || '').replace(/[çÇğĞıİöÖşŞüÜ]/g, (c) => TURKISH_MAP[c] || c);
-
-    const slug = mapped
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // drop combining accents left by NFD
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, MAX_ROOM_SLUG_LENGTH)
-        .replace(/-+$/g, ''); // slicing can leave a trailing dash
+    const slug = slugify(name, MAX_ROOM_SLUG_LENGTH);
 
     if (!slug) return ROOM_SLUG_FALLBACK;
     // A slug shaped like an id would make /rooms/<segment> ambiguous.
