@@ -36,7 +36,7 @@ export interface CubeRendererOptions {
 	quality?: CubeQuality;
 	/** No table and shadow, the cube centred (see Stage). Default true. */
 	floor?: boolean;
-	/** The logo on the U centre. Default true. */
+	/** The logo on a U piece: the centre of an odd cube, the UFR corner of an even one (logoHome). Default true. */
 	logo?: boolean;
 	/**
 	 * Floating hints, as cubing.js's scramble previews have them: a flat copy of every sticker

@@ -79,7 +79,7 @@ function LiveCube({ size, scramble, className }: Omit<Props, 'still'>) {
 				tableTilt: HOME_TILT_DEG * DEG,
 				orientation: drag.quat(new THREE.Quaternion()),
 				floor: false,
-				logo: false,
+				logo: true,
 				hints: true,
 			});
 		} catch (error) {

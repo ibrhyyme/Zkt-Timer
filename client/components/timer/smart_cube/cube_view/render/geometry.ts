@@ -238,11 +238,13 @@ export function logoMatrix(): THREE.Matrix4 {
 }
 
 /**
- * Which piece carries the logo: the U centre on a 3x3, the UFR corner on a 2x2 (no centres;
- * UFR is the corner nearest the viewer in the home view).
+ * Which piece carries the logo. An odd cube (3x3, 5x5, 7x7) has a fixed U centre, as real
+ * cubes print it. An even cube (2x2, 4x4, 6x6) has no fixed centre, and its four inner U
+ * centres are alike, so the logo goes on the UFR corner, the one nearest the viewer in the
+ * home view. `hi` is (size - 1) / 2: whole on an odd cube, a half on an even one.
  */
 export function logoHome(hi: number): THREE.Vector3 {
-	return hi >= 1 ? new THREE.Vector3(0, hi, 0) : new THREE.Vector3(hi, hi, hi);
+	return Number.isInteger(hi) ? new THREE.Vector3(0, hi, 0) : new THREE.Vector3(hi, hi, hi);
 }
 
 /**

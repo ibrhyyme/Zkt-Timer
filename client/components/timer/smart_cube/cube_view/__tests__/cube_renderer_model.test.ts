@@ -2,7 +2,7 @@ import Cube from 'cubejs';
 import * as THREE from 'three';
 
 import { CubeModel } from '../render/cube_model';
-import { DIM, buildBodyGeometry, buildCapGeometry, capMatrix, capShapeFor } from '../render/geometry';
+import { DIM, buildBodyGeometry, buildCapGeometry, capKindAt, capMatrix, capShapeFor, logoHome } from '../render/geometry';
 import { parseMove } from '../render/notation';
 import { TurnAnimator, springProgress } from '../render/turn_animator';
 import { applyScramble } from '../../../../../util/cubes/cube_state';
@@ -285,5 +285,15 @@ describe('geometry', () => {
 		expect(down.y).toBeCloseTo(-1, 6);
 		const up = new THREE.Vector3(0, 0, 1).transformDirection(m);
 		expect(up.z).toBeCloseTo(1, 6);
+	});
+
+	it.each([2, 3, 4, 5, 6, 7] as const)('puts the logo on a real U piece of a %ix%i', (size) => {
+		const model = new CubeModel(size);
+		const at = logoHome(model.hi);
+		const cubie = model.cubies.find((c) => c.home.equals(at));
+		// The renderer finds the logo's piece by exact home; a miss draws no logo at all.
+		expect(cubie).toBeDefined();
+		expect(at.y).toBe(model.hi);
+		expect(capKindAt(at, model.hi)).toBe(size % 2 ? 'center' : 'corner');
 	});
 });
