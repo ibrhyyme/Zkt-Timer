@@ -66,7 +66,7 @@ export interface CameraTimerSide {
 
 export type CameraStartAction =
 	| { kind: 'none'; reason: StartBlockReason | 'solving' | 'stale' | 'dnf' }
-	| { kind: 'startInspection' }
+	| { kind: 'startInspection'; onset: number }
 	| { kind: 'startTimer'; onset: number; addTwo?: boolean };
 
 /** A hand left its pad (brain 'start' event, onset already on the wall clock). */
@@ -88,10 +88,48 @@ export function decideOnCameraStart(c: CameraTimerSide, onset: number): CameraSt
 	if (c.inspectionEnabled) {
 		// startInspection would start a blind solve itself, without the backdated onset.
 		if (c.exceptBld) return { kind: 'startTimer', onset: start };
-		return { kind: 'startInspection' };
+		// Inspection is backdated like the solve: it began when the hands left the pads, not
+		// when the brain confirmed it ~0.25 s later (owner, 2026-11-03: inspection felt late).
+		return { kind: 'startInspection', onset: start };
 	}
 
 	return { kind: 'startTimer', onset: start };
+}
+
+/**
+ * How far the hands are off their pads, in each pad's hand sizes: the larger of the two, as
+ * the pad timer measures it (its `disp`), rebuilt from the trimmed snapshot the brain sends.
+ * Two palms are left to right like the pads; a lone palm belongs to the nearer pad. Null with
+ * no pads or no palm in view.
+ */
+export function padDisplacement(pads: PadPoint[] | null, palms: PadPoint[]): number | null {
+	if (!pads || pads.length !== 2 || !palms.length) return null;
+	const dist = (a: PadPoint, b: PadPoint) => Math.hypot(a.x - b.x, a.y - b.y);
+	let worst: number | null = null;
+	pads.forEach((pad, s) => {
+		let palm: PadPoint | null = null;
+		if (palms.length >= 2) palm = palms[s];
+		else if (dist(palms[0], pad) <= dist(palms[0], pads[1 - s])) palm = palms[0];
+		if (!palm) return;
+		const d = dist(palm, pad) / pad.scale;
+		worst = worst === null ? d : Math.max(worst, d);
+	});
+	return worst;
+}
+
+/**
+ * Share of the start distance (the brain's leaveFar) at which the green goes out. The start
+ * itself needs the full distance on two frames; at 0.7 of it the green drops a median 60 ms
+ * sooner, and in 33 recorded waits on the pads (2026-11-03) resting hands slid at most 0.34
+ * hand sizes, so it never flickers while they rest (owner: the lift felt late).
+ */
+export const EARLY_LEAVE = 0.7;
+
+/** Digits green: armed, no solve running, and no hand has started to leave its pad. */
+export function cameraGreen(snap: Pick<BrainSnap, 'state' | 'pads' | 'palms'>, running: boolean, leaveFar: number): boolean {
+	if (running || snap.state !== 'ready') return false;
+	const d = padDisplacement(snap.pads, snap.palms);
+	return d === null || d <= EARLY_LEAVE * leaveFar;
 }
 
 /** The camera's stop applies only to a solve that is running (Space may have ended it). */

@@ -45,6 +45,8 @@ import { useMagnetReversed } from '../../util/magnet-start/useMagnetReversed';
 import { isUiReversed, orientDelta, REVERSED_BODY_CLASS } from '../../util/reversed-ui';
 import { TOUCH_GUARD_AFTER_MAGNET_MS } from '../../util/magnet-start/config';
 import { getLastMagnetActionAt, touchGuardedAfterMagnet } from '../../util/magnet-start/touch_guard';
+import { useCameraTimerOwnsInput } from '../../util/camera-timer/useCameraTimerOwnsInput';
+import { CameraViewSlot } from './time_display/camera/view_slot';
 
 const b = block('timer');
 
@@ -220,6 +222,14 @@ export default function Timer(props: TimerProps) {
 		`${timerType}|${smartActive}|${virtualActive}|${mobileMode}|${loading}`
 	);
 
+	// Kamera Timer: the middle of the screen splits in two, the camera picture in a module-style
+	// panel on the left and the timer on the right (owner, 2026-11-03). Timer only places the
+	// panel; CameraTimer, which owns the camera, renders into it through a portal.
+	const cameraOwnsInput = useCameraTimerOwnsInput();
+	// Same conditions as TimeDisplay's cameraOwns (plus desktop), or the left half sits empty.
+	const cameraPanel = cameraOwnsInput && !props.inModal && !props.matchMode && !mobileMode;
+	const [cameraSlot, setCameraSlot] = useState<HTMLDivElement | null>(null);
+
 	let virtualCubeVisual: ReactNode = null;
 	if (virtualActive) {
 		virtualCubeVisual = <VirtualCube stacked={!mobileMode && timeRowFit.stacked} />;
@@ -239,6 +249,7 @@ export default function Timer(props: TimerProps) {
 					className={b('main-time', {
 						smart: smartActive,
 						virtual: virtualActive,
+						camera: cameraPanel,
 						stacked: timeRowFit.stacked,
 						folded: timeRowFit.folded,
 					})}
@@ -251,6 +262,7 @@ export default function Timer(props: TimerProps) {
 							: undefined
 					}
 				>
+					{cameraPanel && <div ref={setCameraSlot} className={b('camera-view')} />}
 					<TimeDisplay />
 					{smartCubeVisual}
 					{virtualCubeVisual}
@@ -410,6 +422,7 @@ export default function Timer(props: TimerProps) {
 					layoutLeft: timerLayout === 'left' && !mobileMode && !props.inModal,
 				})}
 			>
+				<CameraViewSlot.Provider value={cameraPanel ? cameraSlot : null}>
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
@@ -483,6 +496,7 @@ export default function Timer(props: TimerProps) {
 							</div>
 						</KeyWatcher>
 				</TimerContext.Provider>
+				</CameraViewSlot.Provider>
 				{background}
 			</div>
 		</>

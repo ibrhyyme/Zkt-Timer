@@ -5811,7 +5811,7 @@
     "error_in_use": "Otra aplicación está usando la cámara. Ciérrala y vuelve a intentarlo.",
     "error_camera": "Se cortó la imagen de la cámara. Vuelve a abrirla.",
     "error_brain": "No se pudo iniciar el seguimiento de manos. Recarga la página y vuelve a intentarlo.",
-    "warning_low_fps": "La cámara da {{fps}} fotogramas por segundo y necesita al menos 30. Con más luz, la mayoría de las cámaras van más rápido.",
+    "warning_low_fps": "La cámara da {{fps}} fotogramas por segundo y necesita al menos {{min}}. Con más luz, la mayoría de las cámaras van más rápido.",
     "warning_dark": "La imagen está oscura y tus manos no se distinguen bien. Pon más luz.",
     "warning_low_res": "La resolución de la cámara es baja ({{height}}p). Prueba con una cámara de más resolución.",
     "warning_slow": "Tu ordenador no llega a seguir las manos ({{ms}} ms por fotograma). Prueba a cerrar otras pestañas.",

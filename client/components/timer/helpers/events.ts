@@ -399,14 +399,21 @@ export function cancelInspection() {
 	clearInspectionTimers(true, true);
 }
 
-export function startInspection(context: ITimerContext) {
+/**
+ * @param startedAt wall-clock ms the inspection really began, when the input confirms it late:
+ * the Kamera Timer sees the hands leave the pads a few frames before it is sure. The countdown
+ * and the DNF deadline start that much in, so the 15 s are counted from the lift. Default: now.
+ */
+export function startInspection(context: ITimerContext, startedAt?: number) {
 	// "Except BLD": on blind subsets (333ni/444bld/555bld/r3ni) skip inspection and start the timer directly.
 	if (getSetting('inspection_except_bld') && /(ni|bld)$/.test(context.scrambleSubset || '')) {
 		startTimer();
 		return;
 	}
 
-	_inspectionStartedAt = Date.now();
+	const now = Date.now();
+	_inspectionStartedAt = startedAt !== undefined ? Math.min(startedAt, now) : now;
+	const ageMs = now - _inspectionStartedAt;
 
 	// Close open dropdowns
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
@@ -429,7 +436,7 @@ export function startInspection(context: ITimerContext) {
 
 	setTimerParams({
 		inInspection: true,
-		inspectionTimer: inspectionDelay + 2,
+		inspectionTimer: inspectionDelay + 2 - ageMs / 1000,
 		addTwoToSolve: false,
 		dnfTime: false,
 	});
@@ -457,7 +464,7 @@ export function startInspection(context: ITimerContext) {
 				// should be able to retry). For new scramble, user presses ArrowRight or UI button.
 				resetTimerParams(context, true);
 			}, 2000);
-		}, inspectionDelay * 1000 + 2000)
+		}, inspectionDelay * 1000 + 2000 - ageMs)
 	);
 
 	setTimer(

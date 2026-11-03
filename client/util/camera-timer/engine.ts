@@ -413,7 +413,8 @@ export class CameraTimerEngine {
 			  })
 			: [];
 		this.setStatus({
-			cameraFps: Math.round(cameraFps),
+			// Floor, not round: the warning fires below QUALITY.minFps, so 23.6 must read as 23.
+			cameraFps: Math.floor(cameraFps),
 			modelMs: Math.round(this.modelMs),
 			warnings,
 		});

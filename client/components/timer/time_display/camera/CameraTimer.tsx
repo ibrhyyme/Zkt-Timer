@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { unstable_batchedUpdates } from 'react-dom';
+import { createPortal, unstable_batchedUpdates } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { VideoCamera } from 'phosphor-react';
 import block from '../../../../styles/bem';
@@ -20,10 +20,14 @@ import { canUseCameraTimer } from '../../../../lib/camera-timer-access';
 import { useCameraTimerAvailability } from '../../../../util/camera-timer/availability';
 import { BrainResult, CameraTimerEngine, EngineStatus, INITIAL_STATUS } from '../../../../util/camera-timer/engine';
 import {
+	cameraGreen,
 	cameraStopApplies,
 	CameraTimerSide,
 	captureToEpoch,
 	decideOnCameraStart,
+	EARLY_LEAVE,
+	padDisplacement,
+	QUALITY,
 } from '../../../../util/camera-timer/decision';
 import {
 	resetCameraTimerStatus,
@@ -31,6 +35,7 @@ import {
 	setCameraTimerStatus,
 } from '../../../../util/camera-timer/status_store';
 import { startBlockReason } from '../../../../util/magnet-start/start_guard';
+import { useCameraViewSlot } from './view_slot';
 import './CameraTimer.scss';
 
 const b = block('camera-timer');
@@ -86,7 +91,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 			: null
 	);
 	if (!r.events.length) {
-		setCameraTimerStatus({ green: r.snap.state === 'ready' && !running });
+		setCameraTimerStatus({ green: cameraGreen(r.snap, running, engine.leaveFar) });
 		return;
 	}
 
@@ -103,7 +108,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 				});
 				if (action.kind === 'startInspection') {
 					setCameraTimerStatus({ green: false });
-					startInspection(ctx);
+					startInspection(ctx, action.onset);
 					// The hands go back on the pads after inspection, like on a StackMat.
 					engine.reset();
 				} else if (action.kind === 'startTimer') {
@@ -128,7 +133,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 				}
 			}
 		}
-		setCameraTimerStatus({ green: r.snap.state === 'ready' && !getTimerStore('timeStartedAt') });
+		setCameraTimerStatus({ green: cameraGreen(r.snap, !!getTimerStore('timeStartedAt'), engine.leaveFar) });
 	});
 }
 
@@ -155,7 +160,10 @@ function drawOverlay(canvas: HTMLCanvasElement, engine: CameraTimerEngine, color
 	ctx.clearRect(0, 0, w, h);
 	const { hands, snap } = engine.latest;
 	const state = snap?.state || 'idle';
-	const color = colors[state] || colors.idle;
+	// A hand already on its way off the pad drops the green with the digits (cameraGreen).
+	const d = state === 'ready' && snap ? padDisplacement(snap.pads, snap.palms) : null;
+	const leaving = d !== null && d > EARLY_LEAVE * engine.leaveFar;
+	const color = (leaving ? colors.idle : colors[state]) || colors.idle;
 	ctx.strokeStyle = color;
 	ctx.fillStyle = color;
 	if (state === 'ready' && snap?.pads) {
@@ -214,6 +222,8 @@ export default function CameraTimer() {
 
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
+	// The camera panel left of the digits, or null: then the picture stays in the box here.
+	const slot = useCameraViewSlot();
 	const contextRef = useRef(context);
 	contextRef.current = context;
 
@@ -261,6 +271,16 @@ export default function CameraTimer() {
 		setCameraTimerStatus({ engaged: stage === 'running' });
 	}, [stage]);
 
+	// The video element moved (the camera panel came or went) after the camera opened:
+	// the stream is still on the old element, so open it again into the new one.
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!engine || !video || engine.status.stage === 'off' || engine.status.stage === 'error') return;
+		if (video.srcObject) return;
+		engine.open(video, engine.status.deviceId || undefined);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [slot]);
+
 	// A solve that ended some other way (Space, Escape) while the brain still waits for the
 	// hands: back to idle so its late stop does not land on the next attempt.
 	const timeStartedAt = context.timeStartedAt;
@@ -291,7 +311,8 @@ export default function CameraTimer() {
 		};
 		raf = requestAnimationFrame(loop);
 		return () => cancelAnimationFrame(raf);
-	}, [engine, stage]);
+		// slot: the canvas is a different element once the picture moves into the panel.
+	}, [engine, stage, slot]);
 
 	function openCamera(deviceId?: string) {
 		if (engine && videoRef.current) engine.open(videoRef.current, deviceId);
@@ -342,15 +363,37 @@ export default function CameraTimer() {
 	const showControls = !solving && !inInspection;
 	const cameraOptions = status.cameras.map((c) => ({ value: c.deviceId, label: c.label }));
 
+	const pictureHidden = !running && stage !== 'loading';
+	const aspect = status.width && status.height ? { aspectRatio: `${status.width} / ${status.height}` } : undefined;
+	const media = (
+		<>
+			<video ref={videoRef} className={b('video')} />
+			<canvas ref={canvasRef} className={b('overlay')} />
+		</>
+	);
+	// Desktop timer: a module-style panel left of the digits, there in every state so the digits
+	// never move when the camera opens. Elsewhere (no panel): its own box under the digits, only
+	// while there is a picture.
+	const picture = slot ? (
+		createPortal(
+			<div className={b('panel')}>
+				<div className={b('panel-head')}>{t('camera_timer.camera')}</div>
+				<div className={b('panel-body', { off: pictureHidden })} style={aspect}>
+					{pictureHidden && <VideoCamera className={b('panel-placeholder')} aria-hidden="true" />}
+					{media}
+				</div>
+			</div>,
+			slot
+		)
+	) : (
+		<div className={b('stage', { hidden: pictureHidden })} style={aspect}>
+			{media}
+		</div>
+	);
+
 	return (
 		<div className={b()}>
-			<div
-				className={b('stage', { hidden: !running && stage !== 'loading' })}
-				style={status.width && status.height ? { aspectRatio: `${status.width} / ${status.height}` } : undefined}
-			>
-				<video ref={videoRef} className={b('video')} />
-				<canvas ref={canvasRef} className={b('overlay')} />
-			</div>
+			{picture}
 
 			{line && <StartInstructions>{line}</StartInstructions>}
 
@@ -358,6 +401,7 @@ export default function CameraTimer() {
 				<div className={b('warning')}>
 					{t(`camera_timer.warning_${warning}`, {
 						fps: status.cameraFps,
+						min: QUALITY.minFps,
 						height: status.height,
 						ms: status.modelMs,
 					})}

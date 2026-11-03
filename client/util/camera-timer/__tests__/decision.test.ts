@@ -1,12 +1,15 @@
 import {
+	cameraGreen,
 	cameraStopApplies,
 	CameraTimerSide,
 	cameraWarnings,
 	captureToEpoch,
 	decideOnCameraStart,
+	EARLY_LEAVE,
 	frozenSeconds,
 	MAX_ONSET_AGE_MS,
 	meanLuma,
+	padDisplacement,
 	QUALITY,
 } from '../decision';
 import { parseCameraTimerManifest } from '../availability';
@@ -45,8 +48,9 @@ describe('decideOnCameraStart', () => {
 		expect(decideOnCameraStart(side(), NOW + 50)).toEqual({ kind: 'startTimer', onset: NOW });
 	});
 
-	it('opens inspection first when it is on, except on blind subsets with except-BLD', () => {
-		expect(decideOnCameraStart(side({ inspectionEnabled: true }), NOW - 100)).toEqual({ kind: 'startInspection' });
+	it('opens inspection first when it is on (from the lift, not the confirmation), except on blind subsets with except-BLD', () => {
+		expect(decideOnCameraStart(side({ inspectionEnabled: true }), NOW - 250)).toEqual({ kind: 'startInspection', onset: NOW - 250 });
+		expect(decideOnCameraStart(side({ inspectionEnabled: true }), NOW + 50)).toEqual({ kind: 'startInspection', onset: NOW });
 		expect(decideOnCameraStart(side({ inspectionEnabled: true, exceptBld: true }), NOW - 100)).toEqual({
 			kind: 'startTimer',
 			onset: NOW - 100,
@@ -59,6 +63,37 @@ describe('decideOnCameraStart', () => {
 		expect(decideOnCameraStart(side(insp), NOW - 1100)).toEqual({ kind: 'startTimer', onset: NOW - 1100, addTwo: false });
 		expect(decideOnCameraStart(side(insp), NOW - 900)).toEqual({ kind: 'startTimer', onset: NOW - 900, addTwo: true });
 		expect(decideOnCameraStart(side({ ...insp, dnfTime: true }), NOW - 100)).toEqual({ kind: 'none', reason: 'dnf' });
+	});
+});
+
+describe('green and the early leave', () => {
+	const pads = [
+		{ x: 0.3, y: 0.6, scale: 0.1 },
+		{ x: 0.7, y: 0.6, scale: 0.1 },
+	];
+	const ready = (palms: { x: number; y: number; scale: number }[]) => ({ state: 'ready' as const, pads, palms });
+
+	it('measures the hand furthest off its pad, in that pad’s hand sizes', () => {
+		expect(padDisplacement(pads, [{ x: 0.3, y: 0.6, scale: 0.1 }, { x: 0.74, y: 0.6, scale: 0.1 }])).toBeCloseTo(0.4);
+		// A lone palm belongs to the nearer pad; the other side is unknown, not off.
+		expect(padDisplacement(pads, [{ x: 0.68, y: 0.6, scale: 0.1 }])).toBeCloseTo(0.2);
+		expect(padDisplacement(null, [{ x: 0.3, y: 0.6, scale: 0.1 }])).toBeNull();
+		expect(padDisplacement(pads, [])).toBeNull();
+	});
+
+	it('stays green while resting hands slide, and goes out once a hand is on its way', () => {
+		const leaveFar = 0.5;
+		// 0.34 hand sizes: the most a resting hand slid in the recordings.
+		expect(cameraGreen(ready([pads[0], { x: 0.734, y: 0.6, scale: 0.1 }]), false, leaveFar)).toBe(true);
+		expect(cameraGreen(ready([pads[0], { x: 0.74, y: 0.6, scale: 0.1 }]), false, leaveFar)).toBe(false);
+		expect(EARLY_LEAVE * leaveFar).toBeGreaterThan(0.34);
+		expect(EARLY_LEAVE).toBeLessThan(1);
+	});
+
+	it('is never green outside ready or during a solve; hands out of view leave it to the brain', () => {
+		expect(cameraGreen({ state: 'idle', pads, palms: pads }, false, 0.5)).toBe(false);
+		expect(cameraGreen(ready(pads), true, 0.5)).toBe(false);
+		expect(cameraGreen(ready([]), false, 0.5)).toBe(true);
 	});
 });
 

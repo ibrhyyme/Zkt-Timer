@@ -260,6 +260,30 @@ body.timer-immersive-bg {
 		}
 
 		&-time {
+			// Kamera Timer: the camera panel on the left half, the timer on the right half
+			// (CameraTimer portals the picture into __camera-view). When the half is narrower
+			// than the digits, the row wraps and wrap-reverse puts the camera under them, where
+			// it used to be.
+			&--camera {
+				width: 95%;
+				display: flex;
+				flex-wrap: wrap-reverse;
+				justify-content: center;
+				align-items: center;
+				gap: 1rem 2rem;
+
+				> .#{$namespace}-time-display {
+					flex: 1 1 calc(50% - 1rem);
+					width: auto;
+				}
+
+				> #{$self}__camera-view {
+					flex: 1 1 calc(50% - 1rem);
+					min-width: 240px;
+					max-width: 640px;
+				}
+			}
+
 			&--smart {
 				width: 95%;
 				display: flex;
