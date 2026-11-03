@@ -16,7 +16,7 @@
 		height: 38px;
 		padding: 0 14px;
 		max-width: 16rem;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		background: rgba(var(--text-color), 0.1);
 		color: rgb(var(--text-color));
@@ -66,40 +66,30 @@
 		min-width: 200px;
 		max-width: min(300px, calc(100vw - 24px));
 		max-height: min(420px, var(--radix-popover-content-available-height, 420px));
-		padding: 6px;
-		box-sizing: border-box;
-		background: rgba(var(--background-color), 0.92);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 12px;
-		box-shadow:
-			0 20px 50px rgba(0, 0, 0, 0.6),
-			0 8px 20px rgba(0, 0, 0, 0.4);
+		@include zt-menu-panel;
+		// The list scrolls under the search box, so the block padding is the list's.
+		padding: 0;
 		z-index: 10001;
 		overflow: hidden;
-		color: rgb(var(--text-color));
 	}
 
 	&__search {
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: $zt-space-2;
 		flex-shrink: 0;
-		margin-bottom: 6px;
-		padding: 0 10px;
-		height: 36px;
-		border-radius: 8px;
-		background: rgba(var(--text-color), 0.06);
-		border: 1px solid rgba(var(--text-color), 0.1);
+		padding: 0 $zt-space-3;
+		height: $zt-control-h-md;
+		border-bottom: 1px solid $zt-menu-separator;
 
 		&:focus-within {
-			border-color: rgba(var(--primary-color), 0.6);
+			border-bottom-color: rgb(var(--primary-color));
 		}
 	}
 
 	&__search-icon {
 		flex-shrink: 0;
+		color: $zt-text-muted;
 	}
 
 	&__search-input {
@@ -113,59 +103,40 @@
 		font-size: 16px;
 
 		&::placeholder {
-			color: rgba(var(--text-color), 0.6);
+			color: $zt-text-muted;
 		}
 	}
 
 	&__list {
-		overflow-y: auto;
 		min-height: 0;
-		scrollbar-width: thin;
-		scrollbar-color: rgba(var(--text-color), 0.2) transparent;
+		padding: $zt-space-1 0;
+		@include zt-menu-scroll;
 	}
 
 	&__group {
-		margin-top: 4px;
-		padding-top: 4px;
-		border-top: 1px solid rgba(var(--text-color), 0.08);
+		margin-top: 6px;
+		padding-top: 2px;
+		border-top: 1px solid $zt-menu-separator;
 	}
 
 	&__group-label {
-		padding: 6px 10px 4px;
-		font-size: 0.68rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		user-select: none;
+		@include zt-menu-group-label;
 	}
 
 	&__option {
-		all: unset;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		width: 100%;
-		min-height: 36px;
-		padding: 8px 10px;
-		border-radius: 7px;
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 0.85rem;
-		font-weight: 500;
-		cursor: pointer;
+		@include zt-menu-row;
 
 		&:hover,
 		&:focus-visible {
-			background: rgba(var(--text-color), 0.08);
-			outline: none;
+			@include zt-menu-row-hover;
 		}
 
-		&--selected,
-		&--selected:hover,
-		&--selected:focus-visible {
-			background: rgba(var(--primary-color), 0.2);
-			font-weight: 600;
+		&--selected {
+			&,
+			&:hover,
+			&:focus-visible {
+				@include zt-menu-row-selected;
+			}
 		}
 	}
 
@@ -178,23 +149,17 @@
 	}
 
 	&__badge {
-		flex-shrink: 0;
-		padding: 1px 7px;
-		border-radius: 999px;
-		background: rgba(var(--primary-color), 0.18);
-		color: rgb(var(--text-color));
-		font-size: 0.68rem;
-		font-weight: 700;
+		@include zt-menu-tag;
 	}
 
 	&__check {
 		flex-shrink: 0;
-		color: rgb(var(--primary-color));
 	}
 
 	&__empty {
-		padding: 10px;
-		font-size: 0.85rem;
+		padding: $zt-space-3;
+		color: $zt-text-muted;
+		font-size: $zt-menu-font;
 	}
 
 	@include bp-down($bp-md) {
@@ -202,9 +167,9 @@
 			max-width: 12rem;
 		}
 
-		&__option {
-			min-height: 40px;
+		&__panel {
+			max-width: $zt-menu-max-w-phone;
+			max-height: #{'min(' + $zt-menu-max-h-phone + ', var(--radix-popover-content-available-height, 420px))'};
 		}
 	}
 }
-

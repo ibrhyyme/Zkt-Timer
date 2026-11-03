@@ -84,3 +84,50 @@
 		}
 	}
 }
+
+// The time filter, a small form hanging off its button. No gray-800: it ignored the theme.
+.#{$namespace}-solves-list {
+	&__time-panel {
+		position: absolute;
+		top: calc(100% + #{$zt-menu-offset});
+		left: 0;
+		z-index: 50;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		min-width: 280px;
+		@include zt-menu-panel;
+		padding: $zt-space-3;
+	}
+
+	&__time-label {
+		display: block;
+		margin-bottom: $zt-space-1;
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	&__time-input {
+		box-sizing: border-box;
+		width: 100%;
+		height: $zt-control-h-sm;
+		padding: 0 $zt-space-2;
+		border: 0;
+		border-radius: $zt-radius-md;
+		outline: 1px solid transparent;
+		background: $zt-control-bg;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.9375rem;
+
+		&:focus {
+			outline-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__time-separator {
+		@include zt-menu-separator;
+		margin: $zt-space-1 0;
+	}
+}

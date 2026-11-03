@@ -5,7 +5,7 @@
 // offers "log in / sign up" and paints a fixed dark ground). Because it is no longer
 // on that fixed ground, every colour here comes from the theme tokens and the page
 // follows light and dark like the rest of the product.
-$help-radius: 12px;
+$help-radius: $zt-radius-md;
 
 .#{$namespace}-landing-help {
 	min-height: 100vh;
@@ -16,9 +16,10 @@ $help-radius: 12px;
 	// the search box and overrode its own max-width, stretching it across the page.
 	&__shell {
 		width: 100%;
-		max-width: 1080px;
+		box-sizing: border-box;
+		max-width: $zt-sheet-width + 40px;
 		margin: 0 auto;
-		padding: 32px 20px 80px;
+		padding: 24px 20px 80px;
 	}
 
 	// Desktop only. On mobile PageTitle draws the heading (together with the avatar
@@ -48,28 +49,12 @@ $help-radius: 12px;
 		transform: translateY(-50%);
 		width: 16px;
 		height: 16px;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		pointer-events: none;
 	}
 
 	&__search-input {
-		width: 100%;
-		padding: 10px 14px 10px 36px;
-		border-radius: 12px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgba(var(--text-color), 0.04);
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 0.95rem;
-
-		&::placeholder {
-			color: rgba(var(--text-color), 0.45);
-		}
-
-		&:focus {
-			outline: none;
-			border-color: rgba(var(--primary-color), 0.6);
-		}
+		@include zt-search-input;
 	}
 
 	&__empty {
@@ -112,7 +97,7 @@ $help-radius: 12px;
 		padding: 26px;
 		margin-bottom: 14px;
 		border: 1px solid rgba(var(--text-color), 0.09);
-		border-radius: 14px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.035);
 
 		&:last-child {
@@ -246,7 +231,7 @@ $help-radius: 12px;
 	&__key {
 		display: inline-block;
 		padding: 3px 8px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.22);
 		border-bottom-width: 2px;
 		background: rgba(var(--text-color), 0.07);
@@ -342,6 +327,74 @@ $help-radius: 12px;
 		padding: 0 16px 16px;
 		line-height: 1.55rem;
 		color: rgba(var(--text-color), 0.92);
+	}
+
+	// --- Desktop: the framed sheet --------------------------------------------
+
+	@include bp-up($bp-lg) {
+		// The same height sum as the App shell's pages, whose wrapper supplies this padding.
+		&__shell {
+			padding: var(--wrapper-padding) 20px;
+		}
+
+		&__sheet {
+			@include zt-sheet;
+		}
+
+		&__band {
+			@include zt-sheet-band;
+		}
+
+		&__title {
+			@include zt-sheet-title;
+		}
+
+		&__search {
+			width: 340px;
+			max-width: none;
+			margin: 0;
+		}
+
+		&__layout {
+			@include zt-sheet-layout;
+			gap: 0;
+			// The base rule is start: a column as tall as its content never scrolls, it spills
+			// out of the sheet.
+			align-items: stretch;
+
+			&--searching {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+
+		&__nav-column {
+			@include zt-sheet-rail;
+			position: static;
+		}
+
+		&__content {
+			@include zt-sheet-content;
+		}
+
+		// Sections are blocks of the sheet, split by a rule. A card in a frame is a box in a box.
+		&__section {
+			scroll-margin-top: 0;
+			padding: $zt-space-6;
+			margin-bottom: 0;
+			border: 0;
+			border-bottom: $zt-sheet-rule;
+			border-radius: 0;
+			background: none;
+
+			&:last-child {
+				border-bottom: 0;
+			}
+		}
+
+		// A line this wide is hard to read back from its end to the start of the next.
+		&__paragraph {
+			max-width: 920px;
+		}
 	}
 
 	// --- Mobile --------------------------------------------------------------

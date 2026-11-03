@@ -63,6 +63,23 @@
 		text-overflow: ellipsis;
 	}
 
+	// --- Desktop: rows of the sheet's rail --------------------------------------
+
+	@include bp-up($bp-lg) {
+		gap: 0;
+		padding: $zt-space-2 0;
+		box-sizing: border-box;
+
+		&__item {
+			@include zt-sheet-rail-item;
+			flex-shrink: 0;
+		}
+
+		&__item-highlight {
+			border-radius: 0;
+		}
+	}
+
 	// --- Mobile: a table of contents, not a nav bar --------------------------
 	//
 	// The list stays vertical and scrolls away with the page. It is read once at the

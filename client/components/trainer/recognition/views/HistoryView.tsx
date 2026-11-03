@@ -2,6 +2,7 @@
  * HistoryView — session gecmisi, filter, pagination, PB rozet, trend ok.
  */
 import React, {useCallback} from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {ArrowUp, ArrowDown, ClockClockwise, Crosshair, Lightning, Timer, Trash} from 'phosphor-react';
@@ -97,21 +98,19 @@ export default function HistoryView() {
 
 						{sessionTypes.length > 1 && (
 							<div className={b('history-filter')}>
-								<select
+								<SelectMenu
+									fullWidth
 									value={selectedType}
-									onChange={(e) => setSelectedType(e.target.value)}
-									className={b('select')}
-									style={{width: '100%'}}
-								>
-									<option value="all">
-										{t('trainer.recognition.history_all_types', {count: sessions.length, defaultValue: `All types (${sessions.length})`})}
-									</option>
-									{sessionTypes.map((tp) => (
-										<option key={tp.key} value={tp.key}>
-											{tp.label} ({tp.totalCases})
-										</option>
-									))}
-								</select>
+									onChange={setSelectedType}
+									ariaLabel={t('trainer.recognition.history_all_types', {count: sessions.length, defaultValue: `All types (${sessions.length})`})}
+									options={[
+										{
+											value: 'all',
+											label: t('trainer.recognition.history_all_types', {count: sessions.length, defaultValue: `All types (${sessions.length})`}),
+										},
+										...sessionTypes.map((tp) => ({value: tp.key, label: `${tp.label} (${tp.totalCases})`})),
+									]}
+								/>
 							</div>
 						)}
 					</aside>

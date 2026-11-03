@@ -54,9 +54,6 @@
 		max-height: 400px;
 		padding: 0;
 		overflow: hidden;
-		border-radius: 13px;
-		background-color: rgb(var(--background-color));
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
 
 		> *:not(:last-child) {
 			margin-bottom: 0;

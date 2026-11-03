@@ -66,7 +66,7 @@ export default function SettingsDropdown({
 				<Popover.Content
 					className={b('panel')}
 					align="end"
-					sideOffset={8}
+					sideOffset={4}
 					collisionPadding={12}
 				>
 					<div className={b('tabs')}>

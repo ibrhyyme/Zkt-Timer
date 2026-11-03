@@ -176,6 +176,42 @@
 		}
 	}
 
+	&__grabber {
+		width: 40px;
+		height: 4px;
+		margin: 0 auto $zt-space-3;
+		border-radius: $zt-radius-full;
+		background: rgba(var(--text-color), 0.18);
+	}
+
+	// sheetOnPhone: the modal's own title and body, rising from the bottom. Only a phone ever
+	// gets this class. Doubled for weight: the phone rules further down fill the screen.
+	&--sheet#{$self} {
+		padding: 0;
+		align-items: flex-end;
+
+		#{$self}__center {
+			width: 100%;
+			max-width: 100%;
+			height: auto;
+			max-height: 90vh;
+			max-height: 90dvh;
+			padding: 14px 20px 24px;
+			padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+			border: none;
+			// !important: --compact sets its corner that way, and a compact modal is a sheet here too.
+			border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
+			background: rgb(var(--module-color));
+			box-shadow: none;
+			transform: translateY(100%);
+			transition: transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+		}
+
+		&#{$self}--active #{$self}__center {
+			transform: translateY(0);
+		}
+	}
+
 	@include reduced-motion {
 		transition: none;
 

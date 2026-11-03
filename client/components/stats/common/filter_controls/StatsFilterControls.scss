@@ -43,9 +43,8 @@
 
 		// When Radix Select Trigger opens (FancyDropdown panel visible) — highlight chip
 		&[data-state='open'] {
-			background-color: rgba(var(--primary-color), 0.28);
-			border-color: rgba(var(--primary-color), 0.7);
-			box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.15);
+			background-color: $zt-control-bg-active;
+			border-color: transparent;
 
 			.#{$namespace}-stats-filter-controls__chip-caret {
 				transform: rotate(180deg);

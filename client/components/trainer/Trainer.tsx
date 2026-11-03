@@ -104,24 +104,24 @@ function TrainerContent() {
 	// Community Sets. Each scrolls in its own container (the page body is locked below).
 	if (state.view === 'sets') {
 		return (
-			<>
+			<div className={bh('sheet')}>
 				<TrainerToolbar />
 				<div className={bh('scroll')}>
 					<CommunityBanner />
 					{locked ? accountRequired : <MySets />}
 				</div>
-			</>
+			</div>
 		);
 	}
 
 	if (state.view === 'community') {
 		return (
-			<>
+			<div className={bh('sheet')}>
 				<TrainerToolbar />
 				<div className={bh('scroll')}>
 					<CommunitySets />
 				</div>
-			</>
+			</div>
 		);
 	}
 
@@ -129,28 +129,28 @@ function TrainerContent() {
 	// picker owns its layout and scrolling, it has a selection bar at the bottom).
 	if (state.view === 'set') {
 		return (
-			<>
+			<div className={bh('sheet')}>
 				<TrainerToolbar />
 				<div className={bh('scroll')}>
 					<AlgSetPage />
 				</div>
-			</>
+			</div>
 		);
 	}
 
 	if (state.view === 'set-add') {
 		return (
-			<>
+			<div className={bh('sheet')}>
 				<TrainerToolbar />
 				{locked ? <div className={bh('scroll')}>{accountRequired}</div> : <div className={bh('pane')}><SetPicker /></div>}
-			</>
+			</div>
 		);
 	}
 
 	// Category list, or one category's page. Keyed by view so each opens at the top of its list.
 	const switchRow = !locked && studySwitchPlacement(state.view, mobileMode) === 'row';
 	return (
-		<>
+		<div className={bh('sheet')}>
 			<TrainerToolbar />
 			{switchRow ? (
 				<div className={bh('switch-row')}>
@@ -164,7 +164,7 @@ function TrainerContent() {
 					{state.view === 'catalog' ? <AlgorithmCatalog /> : <AlgorithmSelector />}
 				</div>
 			)}
-		</>
+		</div>
 	);
 }
 

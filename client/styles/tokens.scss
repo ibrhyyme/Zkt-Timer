@@ -200,6 +200,9 @@ $zt-radius-sm: 4px;
 $zt-radius-md: 4px;
 $zt-radius-lg: 14px;
 $zt-radius-full: 999px;
+// A sheet rising from the bottom of a phone. It is the one big corner the owner wants: it
+// reads as a native sheet, not as a card.
+$zt-radius-bottom-sheet: 28px;
 
 // Control heights. md is the default; lg is the touch-first size for primary actions
 // on phones; sm is for dense toolbars. Nothing tappable goes below sm.
@@ -385,4 +388,296 @@ $zt-pro-frame: rgba(var(--primary-color), 0.55);
 	border: 1px solid $zt-card-border;
 	border-radius: $zt-radius-lg;
 	box-shadow: $zt-shadow-float;
+}
+
+// ---------------------------------------------------------------------------
+// Menus (owner-approved design, 2026-11-03). Every dropdown, select list and popover
+// takes its shape from here, so a change reaches all of them at once. Before this each
+// one carried its own copy and the copies drifted: a flat menu next to a blurred one,
+// square triggers opening round panels.
+//
+// The panel has the corner of the control it opens from, sits a step above the page and
+// is split into blocks by separators. Rows run edge to edge, so a row's fill never shows
+// a corner of its own inside the panel.
+// ---------------------------------------------------------------------------
+
+// Toward white on every theme. A tint of the text colour would darken a light page and
+// colour the panel on themes whose text is not neutral (Cyberpunk, The PhD Student).
+$zt-menu-lift: rgba(255, 255, 255, 0.07);
+$zt-menu-frame: rgba(var(--text-color), 0.14);
+$zt-menu-hover: rgba(var(--text-color), 0.08);
+$zt-menu-separator: rgba(var(--text-color), 0.16);
+// Trigger to panel. Radix `sideOffset` props hold the same number.
+$zt-menu-offset: 4px;
+$zt-menu-row-h: 36px;
+$zt-menu-font: 0.9375rem;
+// Phones: a menu is a small thing over the timer, never a sheet across it. The owner
+// rejected full-width 44px rows (2026-11-03: "bütün sayfayı kaplamasın"). The old 28px rows
+// were only a little too small, so these sit just above them, and the panel is capped
+// against the screen in both directions.
+$zt-menu-row-h-phone: 34px;
+$zt-menu-font-phone: 0.875rem;
+$zt-menu-max-w-phone: #{'min(240px, 64vw)'};
+$zt-menu-max-h-phone: 52vh;
+$zt-shadow-float-light: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+/// The panel of any menu. A list that scrolls moves the block padding onto the scrolling
+/// element and sets this one's to 0, or the first and last rows clip against the edge.
+@mixin zt-menu-panel {
+	box-sizing: border-box;
+	padding: $zt-space-1 0;
+	border: 0;
+	border-radius: $zt-radius-md;
+	background: rgb(var(--background-color));
+	box-shadow:
+		inset 0 0 0 999px $zt-menu-lift,
+		0 0 0 1px $zt-menu-frame,
+		$zt-shadow-float;
+	color: rgb(var(--text-color));
+
+	.theme-light & {
+		box-shadow:
+			inset 0 0 0 999px $zt-menu-lift,
+			0 0 0 1px $zt-menu-frame,
+			$zt-shadow-float-light;
+	}
+}
+
+/// A row. The states below are separate mixins because a Radix row hangs them on data
+/// attributes and a plain button on its modifiers.
+@mixin zt-menu-row {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-height: $zt-menu-row-h;
+	margin: 0;
+	padding: 0 $zt-space-3;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	color: rgb(var(--text-color));
+	font-family: inherit;
+	font-size: $zt-menu-font;
+	font-weight: 500;
+	line-height: 1.25;
+	text-align: left;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	transition: background $zt-transition, color $zt-transition;
+
+	@include bp-down($bp-md) {
+		gap: $zt-space-2;
+		min-height: $zt-menu-row-h-phone;
+		padding: 0 10px;
+		font-size: $zt-menu-font-phone;
+	}
+}
+
+@mixin zt-menu-row-hover {
+	background: $zt-menu-hover;
+	color: rgb(var(--text-color));
+	outline: none;
+}
+
+/// The accent fill. A tick in the accent instead reads 1.4:1 on Save the Bees and 2.1:1 on
+/// Norman; the fill with its own opposite text stays readable on all eight presets.
+@mixin zt-menu-row-selected {
+	--zt-menu-icon-color: currentColor;
+	--zt-menu-tag-line: currentColor;
+
+	background: rgb(var(--primary-color));
+	color: rgb(var(--theme-primary-opposite));
+	font-weight: 600;
+}
+
+/// Unavailable, not faded: the row still has to be readable, it may be explaining why.
+@mixin zt-menu-row-disabled {
+	background: none;
+	color: $zt-text-muted;
+	cursor: not-allowed;
+}
+
+/// The icon slot. A row recolours it through --zt-menu-icon-color.
+@mixin zt-menu-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	min-width: 16px;
+	color: var(--zt-menu-icon-color, #{$zt-text-muted});
+	font-size: 16px;
+
+	> img,
+	> svg,
+	> span > img,
+	> span > svg {
+		max-width: 22px;
+		max-height: 22px;
+	}
+}
+
+@mixin zt-menu-separator {
+	flex-shrink: 0;
+	height: 1px;
+	margin: 6px 0;
+	background: $zt-menu-separator;
+}
+
+@mixin zt-menu-group-label {
+	padding: $zt-space-2 $zt-space-3 $zt-space-1;
+	color: $zt-text-muted;
+	font-family: 'Roboto Mono', ui-monospace, monospace;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/// A quiet outlined tag on a row (Beta, Main, Official). Pro uses zt-pro-tag.
+@mixin zt-menu-tag {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	padding: 1px 6px;
+	border-radius: $zt-radius-sm;
+	box-shadow: inset 0 0 0 1px var(--zt-menu-tag-line, rgba(var(--text-color), 0.25));
+	font-family: 'Roboto Mono', ui-monospace, monospace;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.45;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+}
+
+@mixin zt-menu-scroll {
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(var(--text-color), 0.2) transparent;
+}
+
+// ---------------------------------------------------------------------------
+// The page sheet (owner-approved design, 2026-11-03): Settings, Account and Help. These
+// pages are narrower than the screen, and their text used to sit straight on the ground
+// with nothing to say where a page starts or ends ("written on a blackboard"). The sheet
+// gives them edges: a hairline on every side, a step above the page, a band for the title
+// and search, and a rail for the page's own nav.
+//
+// It is one fixed size, the height of the screen under the top nav, on every page and
+// section. Only the content column scrolls: a sheet that grew with its content was short
+// on one page and long on the next, and the page scrolling took the band away with it.
+//
+// Desktop only. A phone has no side margins to explain, and the mobile drill-in between
+// the list and a section depends on the plain block layout.
+// ---------------------------------------------------------------------------
+$zt-sheet-width: 1360px;
+$zt-sheet-rail-width: 260px;
+$zt-sheet-band-h: 76px;
+$zt-sheet-row-h: 44px;
+// What is left under the top nav once the page's own padding is taken off, so the window
+// itself has nothing to scroll.
+$zt-sheet-height: calc(100vh - var(--nav-h) - 2 * var(--wrapper-padding));
+$zt-sheet-min-height: 480px;
+$zt-sheet-lift: rgba(255, 255, 255, 0.035);
+$zt-sheet-rule: 1px solid $zt-menu-separator;
+
+@mixin zt-sheet {
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: $zt-sheet-width;
+	height: $zt-sheet-height;
+	min-height: $zt-sheet-min-height;
+	margin: 0 auto;
+	border-radius: $zt-radius-md;
+	background: $zt-sheet-lift;
+	box-shadow: 0 0 0 1px $zt-menu-frame;
+}
+
+@mixin zt-sheet-band {
+	box-sizing: border-box;
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: space-between;
+	gap: $zt-space-5;
+	min-height: $zt-sheet-band-h;
+	padding: 0 $zt-space-6 0 $zt-space-5;
+	border-bottom: $zt-sheet-rule;
+}
+
+@mixin zt-sheet-title {
+	margin: 0;
+	color: rgb(var(--text-color));
+	font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 1.625rem;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+@mixin zt-sheet-layout {
+	display: grid;
+	flex: 1;
+	grid-template-columns: $zt-sheet-rail-width minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
+	min-height: 0;
+}
+
+@mixin zt-sheet-rail {
+	min-width: 0;
+	border-right: $zt-sheet-rule;
+	@include zt-menu-scroll;
+}
+
+/// The column that scrolls.
+@mixin zt-sheet-content {
+	min-width: 0;
+	min-height: 0;
+	@include zt-menu-scroll;
+}
+
+/// A row of the rail: edge to edge, like a menu row, so the current one reads as a band
+/// across the rail rather than a pill inside it.
+@mixin zt-sheet-rail-item {
+	box-sizing: border-box;
+	min-height: $zt-sheet-row-h;
+	padding: 0 $zt-space-5;
+	border-radius: 0;
+}
+
+/// The search field of a page band.
+@mixin zt-search-input {
+	box-sizing: border-box;
+	width: 100%;
+	height: $zt-control-h-md;
+	padding: 0 14px 0 36px;
+	border: 0;
+	border-radius: $zt-radius-md;
+	outline: 1px solid transparent;
+	background: $zt-control-bg;
+	color: rgb(var(--text-color));
+	font-family: inherit;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	transition: background $zt-transition, outline-color $zt-transition;
+
+	&::placeholder {
+		color: $zt-text-muted;
+	}
+
+	&:hover {
+		background: $zt-control-bg-hover;
+	}
+
+	&:focus {
+		outline-color: rgb(var(--primary-color));
+	}
 }

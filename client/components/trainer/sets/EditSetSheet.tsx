@@ -175,6 +175,15 @@ export default function EditSetSheet({mode, initial, saveCount = 0, hidden = fal
 
 			<div className={b('sheet-actions')}>
 				<Button
+					gray
+					large
+					fullWidth
+					type="button"
+					text={t('trainer.sets.cancel')}
+					disabled={busy}
+					onClick={() => onClose && onClose()}
+				/>
+				<Button
 					primary
 					large
 					fullWidth

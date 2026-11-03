@@ -3712,6 +3712,8 @@
     "save": "Kaydet"
   },
   "theme_options": {
+    "group_dark": "Koyu",
+    "group_light": "Açık",
     "login_to_choose": "Tema seçmek için giriş yap.",
     "themes_title": "Temalar",
     "themes_desc": "Hazır temalardan birini seç ya da aşağıdaki bölümden kendi temanı oluştur. Hazır tema seçmek, ayarladığın özel renkleri sıfırlar.",

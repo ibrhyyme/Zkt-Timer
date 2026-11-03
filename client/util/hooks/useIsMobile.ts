@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 // the app is on the desktop side, which is what the 92 `md:` utility classes
 // already assumed. The nav shell is a separate, wider threshold: see
 // HeaderNav.tsx, which collapses below 1024.
-const MOBILE_BREAKPOINT = 768;
+export const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
     const [isMobile, setIsMobile] = useState(false);

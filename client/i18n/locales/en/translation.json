@@ -3729,6 +3729,8 @@
     "save": "Save"
   },
   "theme_options": {
+    "group_dark": "Dark",
+    "group_light": "Light",
     "login_to_choose": "Sign in to choose a theme.",
     "themes_title": "Themes",
     "themes_desc": "Choose from a pre-defined list of themes or customize your own in the section below. *Warning*: Selecting one of these themes will reset any custom theme settings you may have set.",

@@ -665,7 +665,7 @@ $bottom-corner-clearance: 210px;
 
 	&__cube-dropdown {
 		position: absolute;
-		bottom: calc(100% + 8px);
+		bottom: calc(100% + #{$zt-menu-offset});
 		left: 50%;
 		transform: translateX(-50%);
 		display: grid;
@@ -675,11 +675,8 @@ $bottom-corner-clearance: 210px;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: $gap-tight;
 		width: #{'min(320px, calc(100vw - 28px))'};
+		@include zt-menu-panel;
 		padding: $gap;
-		border-radius: $radius-panel;
-		background: rgb(var(--background-color));
-		border: 1px solid rgba(var(--text-color), 0.12);
-		box-shadow: $shadow-panel;
 		z-index: 100;
 		animation: zt-battle-panel-in 0.2s $ease-out-snap both;
 

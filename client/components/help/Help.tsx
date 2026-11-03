@@ -6,7 +6,7 @@
 // data — Google requires that markup to match content a reader can actually see,
 // and before this page existed those answers were published to search engines only.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useLocation} from 'react-router-dom';
 import {
@@ -49,6 +49,9 @@ import {SUPPORTED_SMART_CUBE_BRANDS} from '../timer/smart_cube/bluetooth/support
 import {IMPORT_TYPE_NAMES} from '../settings/data/import_data/import_sources';
 
 const b = block('landing-help');
+
+/** $bp-lg in tokens.scss, where the page becomes the framed sheet. */
+const SHEET_MIN_WIDTH = 1024;
 
 // Cube-face tones, same idea as AccountNav: after a couple of visits the colour is
 // what you aim for, so the list is scannable without reading every label.
@@ -313,11 +316,18 @@ export default function Help() {
 	const sections = useMemo(() => (launched ? SECTIONS : SECTIONS.filter((s) => !s.launchOnly)), [launched]);
 
 	const sectionIds = useMemo(() => sections.map((s) => s.id), [sections]);
-	// Band starts below the fixed landing nav. `pick: 'last'` because a section
-	// scrolled to the top still shares the band with the tail of the one before it.
+	// From the desktop up the sections scroll inside the sheet's content column, on a phone
+	// with the page. Decided after mount: this page is server rendered.
+	const contentRef = useRef<HTMLDivElement>(null);
+	const [scrollsInSheet, setScrollsInSheet] = useState(false);
+	useEffect(() => setScrollsInSheet(window.innerWidth >= SHEET_MIN_WIDTH), []);
+
+	// `pick: 'last'` because a section scrolled to the top still shares the band with the
+	// tail of the one before it. On a phone the band starts below the fixed nav.
 	const activeId = useScrollSpy({
 		sectionIds,
-		rootMargin: '-96px 0px -70% 0px',
+		scrollContainerRef: scrollsInSheet ? contentRef : undefined,
+		rootMargin: scrollsInSheet ? '0px 0px -70% 0px' : '-96px 0px -70% 0px',
 		pick: 'last',
 	});
 
@@ -335,6 +345,10 @@ export default function Help() {
 	function scrollToSection(id: string, behavior: ScrollBehavior = 'smooth') {
 		const target = document.getElementById(id);
 		if (!target) return;
+		if (scrollsInSheet || window.innerWidth >= SHEET_MIN_WIDTH) {
+			target.scrollIntoView({behavior, block: 'start'});
+			return;
+		}
 		// The mobile nav strip is sticky and would otherwise cover the heading it
 		// just scrolled to.
 		const offset = target.getBoundingClientRect().top + window.scrollY - 96;
@@ -377,19 +391,22 @@ export default function Help() {
 
 			<div className={b('shell')}>
 			<PageTitle pageName={t('help.title')} />
-			<h1 className={b('title')}>{t('help.title')}</h1>
+			<div className={b('sheet')}>
+			<header className={b('band')}>
+				<h1 className={b('title')}>{t('help.title')}</h1>
 
-			<div className={b('search')}>
-				<MagnifyingGlass className={b('search-icon')} weight="bold" aria-hidden="true" />
-				<input
-					type="search"
-					className={b('search-input')}
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					placeholder={t('help.search_placeholder')}
-					aria-label={t('help.search_placeholder')}
-				/>
-			</div>
+				<div className={b('search')}>
+					<MagnifyingGlass className={b('search-icon')} weight="bold" aria-hidden="true" />
+					<input
+						type="search"
+						className={b('search-input')}
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+						placeholder={t('help.search_placeholder')}
+						aria-label={t('help.search_placeholder')}
+					/>
+				</div>
+			</header>
 
 			<div className={b('layout', {searching: !!trimmedQuery})}>
 				{/* While searching the section list is dead weight: the cards on the right
@@ -401,7 +418,7 @@ export default function Help() {
 					</div>
 				)}
 
-				<div className={b('content')}>
+				<div className={b('content')} ref={contentRef}>
 					{visibleSections.length === 0 ? (
 						<p className={b('empty')}>{t('help.search_no_results', {query: trimmedQuery})}</p>
 					) : (
@@ -410,6 +427,7 @@ export default function Help() {
 						))
 					)}
 				</div>
+			</div>
 			</div>
 			</div>
 		</div>

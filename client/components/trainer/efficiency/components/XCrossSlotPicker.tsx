@@ -3,6 +3,7 @@
  * NOT: slot idx<->isim eslemesi twisty ile dogrulanmali (constants XCROSS_SLOTS).
  */
 import React from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {XCROSS_SLOTS} from '../../../../util/trainer/efficiency/constants';
@@ -19,18 +20,15 @@ export default function XCrossSlotPicker({value, onChange}: Props) {
 	return (
 		<label className={b('field')}>
 			<span className={b('field-label')}>{t('trainer.efficiency.xcross_slot_label', {defaultValue: 'Slot'})}</span>
-			<select
-				className={b('field-select')}
+			<SelectMenu
 				value={value ?? ''}
-				onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-			>
-				<option value="">{t('trainer.efficiency.xcross_slot_optimal', {defaultValue: 'Optimal'})}</option>
-				{XCROSS_SLOTS.map((s) => (
-					<option key={s.idx} value={s.idx}>
-						{s.name}
-					</option>
-				))}
-			</select>
+				onChange={(next) => onChange(next === '' ? undefined : Number(next))}
+				ariaLabel={t('trainer.efficiency.xcross_slot_label', {defaultValue: 'Slot'})}
+				options={[
+					{value: '', label: t('trainer.efficiency.xcross_slot_optimal', {defaultValue: 'Optimal'})},
+					...XCROSS_SLOTS.map((s) => ({value: String(s.idx), label: s.name})),
+				]}
+			/>
 		</label>
 	);
 }

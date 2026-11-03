@@ -27,6 +27,7 @@ import AlgSetCard from './AlgSetCard';
 import {useSetActions} from './set_actions';
 import {useShareAlgSet} from './ShareButton';
 import type {SheetAction} from './parts';
+import type {ActionMenuAnchor} from '../../common/action_menu/ActionMenu';
 import type {AlgSetSummaryData} from '../../../lib/alg_sets/types';
 import './AlgSets.scss';
 
@@ -59,24 +60,24 @@ export default function MySets() {
 		actions.openCreate((created) => history.push(buildSetPath(created.code, true)));
 	};
 
-	const ownMenu = (set: AlgSetSummaryData) => {
+	const ownMenu = (set: AlgSetSummaryData, anchor: ActionMenuAnchor) => {
 		const items: SheetAction[] = [
 			{
-				key: 'study',
+				id: 'study',
 				label: t('trainer.sets.study'),
 				icon: <Play size={18} weight="bold" />,
 				disabled: set.item_count === 0,
 				onSelect: () => study(set),
 			},
 			{
-				key: 'share',
+				id: 'share',
 				label: t('trainer.sets.share'),
 				icon: <ShareNetwork size={18} weight="bold" />,
 				// A private set opens its page, where sharing is offered first.
 				onSelect: () => (set.visibility === 'private' ? open(set) : share(set)),
 			},
 			{
-				key: 'edit',
+				id: 'edit',
 				label: t('trainer.sets.edit'),
 				icon: <PencilSimple size={18} weight="bold" />,
 				disabled: !canWrite,
@@ -84,7 +85,7 @@ export default function MySets() {
 				onSelect: () => actions.openEdit(set, null),
 			},
 			{
-				key: 'delete',
+				id: 'delete',
 				label: t('trainer.sets.delete'),
 				icon: <Trash size={18} weight="bold" />,
 				danger: true,
@@ -93,27 +94,28 @@ export default function MySets() {
 				onSelect: () => actions.confirmDelete(set),
 			},
 		];
-		actions.openMenu(set.name, items);
+		actions.openMenu(set.name, items, anchor);
 	};
 
-	const savedMenu = (set: AlgSetSummaryData) => {
-		actions.openMenu(set.name, [
+	const savedMenu = (set: AlgSetSummaryData, anchor: ActionMenuAnchor) => {
+		const items: SheetAction[] = [
 			{
-				key: 'study',
+				id: 'study',
 				label: t('trainer.sets.study'),
 				icon: <Play size={18} weight="bold" />,
 				disabled: set.item_count === 0,
 				onSelect: () => study(set),
 			},
 			{
-				key: 'unsave',
+				id: 'unsave',
 				label: t('trainer.sets.remove_from_list'),
 				icon: <X size={18} weight="bold" />,
 				disabled: !canWrite,
 				note: offlineNote,
 				onSelect: () => unsave(set.id),
 			},
-		]);
+		];
+		actions.openMenu(set.name, items, anchor);
 	};
 
 	const unsave = (setId: string) => {
@@ -229,6 +231,8 @@ export default function MySets() {
 					) : null}
 				</>
 			) : null}
+
+			{actions.menuElement}
 		</div>
 	);
 }

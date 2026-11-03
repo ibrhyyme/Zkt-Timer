@@ -31,7 +31,7 @@ import { formatInteger } from '../../../util/locale_format';
 import { formatLastUsed, formatLongDay, formatShortDay, puzzleLabel } from './cube_labels';
 import { useCubeActions } from './cube_actions';
 import { cubeErrorMessage } from './cube_errors';
-import { useCubeMenu } from './CubeMenu';
+import { useActionMenu } from '../../common/action_menu/ActionMenu';
 
 const b = block('cube-profile');
 
@@ -100,7 +100,7 @@ export default function CubeProfile() {
 	const online = useOnlineStatus();
 	const state = useCubes();
 	const actions = useCubeActions();
-	const menu = useCubeMenu();
+	const menu = useActionMenu();
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {

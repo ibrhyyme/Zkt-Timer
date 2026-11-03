@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import { useTranslation } from 'react-i18next';
 import './WcaResults.scss';
 import block from '../../../styles/bem';
@@ -137,18 +138,17 @@ export default function WcaResults({ wcaId, data }: Props) {
 			<div className={b('header')}>
 				<h3>{t('profile.wca_results_title')}</h3>
 				<div className={b('filter')}>
-					<select
+					<SelectMenu
 						value={eventFilter}
-						onChange={(e) => setEventFilter(e.target.value)}
+						onChange={setEventFilter}
 						className={b('filter-select')}
-					>
-						<option value="all">{t('profile.wca_all_events')}</option>
-						{uniqueEvents.map((ev) => (
-							<option key={ev} value={ev}>
-								{t(`wca_events.${ev}`, ev)}
-							</option>
-						))}
-					</select>
+						ariaLabel={t('profile.wca_all_events')}
+						align="end"
+						options={[
+							{value: 'all', label: t('profile.wca_all_events')},
+							...uniqueEvents.map((ev) => ({value: ev, label: t(`wca_events.${ev}`, ev)})),
+						]}
+					/>
 				</div>
 			</div>
 

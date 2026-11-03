@@ -38,6 +38,13 @@ export default function HelpNav(props: Props) {
 		if (!list) return;
 		const active = list.querySelector<HTMLElement>(`[data-help-nav="${activeId}"]`);
 		if (!active) return;
+		// On desktop the rail scrolls on its own, and the list is longer than a laptop screen:
+		// the row for the section being read has to stay in sight.
+		const rail = list.parentElement;
+		if (rail && rail.scrollHeight > rail.clientHeight) {
+			active.scrollIntoView({block: 'nearest'});
+			return;
+		}
 		// Only worth doing while the strip is actually scrollable (mobile layout).
 		if (list.scrollWidth <= list.clientWidth) return;
 		const offset = active.offsetLeft - (list.clientWidth - active.clientWidth) / 2;

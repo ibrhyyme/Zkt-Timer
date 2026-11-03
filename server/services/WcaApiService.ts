@@ -152,7 +152,10 @@ export class WcaApiService {
 
 			const baseParams: Record<string, any> = {
 				ongoing_and_future: yesterday,
-				sort: 'start_date',
+				// A total order, not just the date: dozens of competitions share a start
+				// date, and with ties the WCA is free to order them differently per request.
+				// A page then repeats rows from the one before and loses others (11 of 500).
+				sort: 'start_date,end_date,name',
 				per_page: PER_PAGE,
 			};
 
@@ -189,7 +192,14 @@ export class WcaApiService {
 			const restPages = await Promise.all(pagePromises);
 			const allCompetitions = [firstPage, ...restPages].flat();
 
-			return allCompetitions.filter((c: any) => !c.cancelled_at);
+			// The list can still shift between the parallel requests if a competition is
+			// announced in the meantime.
+			const seen = new Set<string>();
+			return allCompetitions.filter((c: any) => {
+				if (c.cancelled_at || seen.has(c.id)) return false;
+				seen.add(c.id);
+				return true;
+			});
 		} catch (error) {
 			// Swallowing the error and returning [] is dangerous — client treats this as "truly empty"
 			// and shows "not found". Throw to ensure client opens real error UI.

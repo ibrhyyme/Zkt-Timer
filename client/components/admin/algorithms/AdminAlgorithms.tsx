@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useCallback} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {Trash} from 'phosphor-react';
 import {AdminTrainerAlternativesDocument, AdminDeleteTrainerAlternativeDocument} from '../../../@types/generated/graphql';
 import {gqlQueryTyped, gqlMutateTyped} from '../../api';
@@ -74,19 +75,15 @@ export default function AdminAlgorithms() {
 			</div>
 
 			<div className="flex gap-4 mb-6 bg-[#1e1e24] p-2 rounded-xl border border-white/5 w-fit">
-				<select
+				<SelectMenu
 					value={category}
-					onChange={(e) => {
-						setCategory(e.target.value);
+					onChange={(value) => {
+						setCategory(value);
 						setPage(0);
 					}}
-					className="px-4 py-2 bg-[#1e1e24] text-gray-300 focus:outline-none focus:text-white [&>option]:bg-[#1e1e24] [&>option]:text-gray-300"
-				>
-					<option value="">All categories</option>
-					{CATEGORIES.map((cat) => (
-						<option key={cat} value={cat}>{cat}</option>
-					))}
-				</select>
+					ariaLabel="Category"
+					options={[{value: '', label: 'All categories'}, ...CATEGORIES.map((cat) => ({value: cat, label: cat}))]}
+				/>
 			</div>
 
 			<div className="bg-[#1e1e24] rounded-2xl border border-white/5 overflow-hidden shadow-xl">

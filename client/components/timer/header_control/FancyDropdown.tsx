@@ -13,9 +13,16 @@ import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEf
 import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
 import { timerOwnsSpaceKey } from '../helpers/space_target';
 import { inReversedFrame, reversedPlacement } from '../../../util/reversed-ui';
+import { MOBILE_BREAKPOINT } from '../../../util/hooks/useIsMobile';
 import './FancyDropdown.scss';
 
 const b = block('fancy-dropdown');
+
+// Radix Select throws on an item whose value is '', and '' is what "all" or "none" holds in
+// half the filters. The value stays '' for the caller; only Radix sees this stand-in.
+const EMPTY_VALUE = '__zt_empty__';
+const toRadixValue = (value: string) => (value === '' ? EMPTY_VALUE : value);
+const fromRadixValue = (value: string) => (value === EMPTY_VALUE ? '' : value);
 
 export interface FancyDropdownOption {
 	value: string;
@@ -23,6 +30,8 @@ export interface FancyDropdownOption {
 	icon?: React.ReactNode;
 	disabled?: boolean;
 	badge?: React.ReactNode;
+	// A line under the label, e.g. why the row is unavailable. Wraps, unlike the label.
+	description?: React.ReactNode;
 }
 
 export interface FancyDropdownGroup {
@@ -45,6 +54,8 @@ interface FancyDropdownProps {
 	ariaLabel: string;
 	// Open direction (default 'start' — panel's left edge aligns with trigger's left edge, expands right)
 	align?: 'start' | 'end' | 'center';
+	// Which side of the trigger the panel opens on (default 'bottom')
+	side?: 'top' | 'bottom';
 	// Max panel height (scrollable)
 	maxHeight?: number;
 	// Trigger min/max width (default adjustable for wide labels)
@@ -59,6 +70,10 @@ interface FancyDropdownProps {
 	// Don't add default trigger SCSS class — consumer provides their own triggerStyle via className
 	// (e.g. StatsFilterControls uses chip style)
 	noTriggerStyles?: boolean;
+	// Sits inside a popover that is itself an exclusive dropdown (the gear panel): opening
+	// this must not close the panel it lives in.
+	nested?: boolean;
+	disabled?: boolean;
 }
 
 export default function FancyDropdown(props: FancyDropdownProps) {
@@ -72,17 +87,23 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		triggerContent,
 		ariaLabel,
 		align = 'start',
+		side = 'bottom',
 		maxHeight = 400,
 		triggerMinWidth,
 		triggerMaxWidth,
 		className,
 		panelClassName,
 		noTriggerStyles,
+		nested,
+		disabled,
 	} = props;
 
 	// Open control — scroll selected item to center of panel.
 	// useExclusiveDropdown: opening this closes any other header dropdown.
-	const [open, setOpen] = useExclusiveDropdown();
+	const [exclusiveOpen, setExclusiveOpen] = useExclusiveDropdown();
+	const [nestedOpen, setNestedOpen] = useState(false);
+	const open = nested ? nestedOpen : exclusiveOpen;
+	const setOpen = nested ? setNestedOpen : setExclusiveOpen;
 	const viewportRef = useRef<HTMLDivElement>(null);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -90,12 +111,17 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 	// opens a panel in physical coordinates. Decided per trigger when it opens, because
 	// dropdowns in the upright edge drawers must stay as they are.
 	const [reversed, setReversed] = useState(false);
+	// A trigger in a phone's right-hand column would otherwise push the panel off the screen.
+	const [fitScreen, setFitScreen] = useState(false);
 	function handleOpenChange(next: boolean) {
-		if (next) setReversed(inReversedFrame(triggerRef.current));
+		if (next) {
+			setReversed(inReversedFrame(triggerRef.current));
+			setFitScreen(window.innerWidth < MOBILE_BREAKPOINT);
+		}
 		setOpen(next);
 	}
 	// "Below" for the reader is physically above; the reader's start edge is the physical end.
-	const placement = reversedPlacement('bottom', align, reversed);
+	const placement = reversedPlacement(side, align, reversed);
 
 	// When panel opens, scroll selected item to viewport center
 	// (Radix default only makes it visible, manual scroll needed to center)
@@ -116,17 +142,20 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		return (
 			<Select.Item
 				key={opt.value}
-				value={opt.value}
+				value={toRadixValue(opt.value)}
 				disabled={opt.disabled}
-				className={b('option', { disabled: opt.disabled })}
+				className={b('option', { disabled: opt.disabled, described: !!opt.description })}
 			>
 				{opt.icon && <span className={b('option-icon')}>{opt.icon}</span>}
-				<Select.ItemText>
-					<span className={b('option-label')}>{opt.label}</span>
-				</Select.ItemText>
+				<span className={b('option-text')}>
+					<Select.ItemText>
+						<span className={b('option-label')}>{opt.label}</span>
+					</Select.ItemText>
+					{opt.description && <span className={b('option-description')}>{opt.description}</span>}
+				</span>
 				{opt.badge && <span className={b('option-badge-slot')}>{opt.badge}</span>}
 				<Select.ItemIndicator className={b('check')}>
-					<Check weight="bold" size={16} />
+					<Check weight="bold" size={14} />
 				</Select.ItemIndicator>
 			</Select.Item>
 		);
@@ -137,7 +166,13 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 	if (triggerMaxWidth !== undefined) triggerStyle.maxWidth = triggerMaxWidth;
 
 	return (
-		<Select.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={handleOpenChange}>
+		<Select.Root
+			value={toRadixValue(value)}
+			onValueChange={(next) => onValueChange(fromRadixValue(next))}
+			open={open}
+			onOpenChange={handleOpenChange}
+			disabled={disabled}
+		>
 			<Select.Trigger
 				ref={triggerRef}
 				className={[noTriggerStyles ? null : b('trigger'), className].filter(Boolean).join(' ')}
@@ -162,11 +197,14 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 					className={[b('panel'), panelClassName].filter(Boolean).join(' ')}
 					position="popper"
 					side={placement.side}
-					avoidCollisions={false}
-					sideOffset={6}
+					// Not in reversed use: the panel is placed in physical coordinates there.
+					avoidCollisions={fitScreen && !reversed}
+					sideOffset={4}
 					align={placement.align}
 					collisionPadding={12}
-					style={{ maxHeight: `min(${maxHeight}px, var(--radix-select-content-available-height))` }}
+					style={{
+						maxHeight: `min(${maxHeight}px, var(--radix-select-content-available-height), var(--zt-menu-max-h, 100vh))`,
+					}}
 					// On the timer page Space is the timer's key. Handing focus back to the
 					// trigger made the next Space reopen the picker instead of starting a solve.
 					// Everywhere else the trigger gets focus back, as keyboard users expect.

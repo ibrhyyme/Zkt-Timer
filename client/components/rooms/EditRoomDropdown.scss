@@ -1,49 +1,26 @@
 @import '../../styles/config';
 
-// Room edit dropdown — similar glassmorphism to SettingsDropdown.
+// Room edit dropdown: the same floating layer as SettingsDropdown.
 
 .#{$namespace}-edit-room-dropdown {
 	&__panel {
 		width: 420px;
 		max-width: calc(100vw - 24px);
 		max-height: min(620px, calc(100vh - 100px));
-		background: rgba(var(--background-color), 0.92);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 14px;
-		box-shadow:
-			0 24px 60px rgba(0, 0, 0, 0.65),
-			0 10px 24px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+		@include zt-menu-panel;
+		padding: 0;
 		z-index: 10001;
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-		transform-origin: var(--radix-popover-content-transform-origin);
-		will-change: transform, opacity;
 		position: relative;
 
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(
-				120% 60% at 50% 0%,
-				rgba(var(--primary-color), 0.06) 0%,
-				transparent 60%
-			);
-			border-radius: inherit;
-			pointer-events: none;
-			z-index: 0;
-		}
-
 		&[data-state='open'] {
-			animation: edit-room-dropdown-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+			animation: edit-room-dropdown-in $motion-fast $ease-standard;
 		}
 
 		&[data-state='closed'] {
-			animation: edit-room-dropdown-out 0.1s ease-in;
+			animation: edit-room-dropdown-out $motion-instant ease-in;
 		}
 	}
 
@@ -105,7 +82,7 @@
 		width: 100%;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		padding: 10px 12px;
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
@@ -195,7 +172,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 10px 12px;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.04);
 		border: 1px solid rgba(var(--text-color), 0.08);
 		cursor: pointer;
@@ -240,7 +217,7 @@
 		justify-content: center;
 		width: 20px;
 		height: 20px;
-		border-radius: 5px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.1);
 		color: transparent;
 		transition: all 0.15s ease;
@@ -271,7 +248,7 @@
 		font-weight: 500;
 		font-family: inherit;
 		color: rgba(var(--text-color), 0.6);
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		transition: color 0.15s ease, background 0.15s ease;
 
@@ -285,22 +262,25 @@
 @keyframes edit-room-dropdown-in {
 	from {
 		opacity: 0;
-		transform: scale(0.92) translateY(-10px);
 	}
 	to {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 }
 
 @keyframes edit-room-dropdown-out {
 	from {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 	to {
 		opacity: 0;
-		transform: scale(0.96) translateY(-4px);
+	}
+}
+
+@include reduced-motion {
+	.#{$namespace}-edit-room-dropdown__panel[data-state='open'],
+	.#{$namespace}-edit-room-dropdown__panel[data-state='closed'] {
+		animation: none;
 	}
 }
 

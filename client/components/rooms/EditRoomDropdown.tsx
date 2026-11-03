@@ -128,7 +128,7 @@ export default function EditRoomDropdown({
 				<Popover.Content
 					className={b('panel')}
 					align="start"
-					sideOffset={10}
+					sideOffset={4}
 					collisionPadding={12}
 				>
 					<div className={b('header')}>

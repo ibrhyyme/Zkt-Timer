@@ -288,7 +288,7 @@ export default function InputSettings() {
 						type="button"
 						onClick={openStackMatPickerModal}
 						className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 cursor-pointer ${stackMatId
-							? 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15]'
+							? 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.14]'
 							: 'bg-primary border-primary text-white hover:bg-primary/80'
 							}`}
 					>

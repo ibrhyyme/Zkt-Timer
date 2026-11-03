@@ -1,0 +1,16 @@
+@import '../../../styles/config';
+
+// Sized like a form control, with the caret at the far end as a select has it. Compound
+// selectors, so the result does not depend on which stylesheet loaded first.
+.#{$namespace}-fancy-dropdown__trigger.#{$namespace}-select-menu {
+	justify-content: space-between;
+	min-width: 120px;
+	max-width: 100%;
+	height: $zt-control-h-md;
+	font-size: 0.9375rem;
+
+	&--full {
+		display: flex;
+		width: 100%;
+	}
+}

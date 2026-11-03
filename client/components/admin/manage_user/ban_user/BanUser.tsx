@@ -2,7 +2,8 @@ import React from 'react';
 import './BanUser.scss';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import Input from '../../../common/inputs/input/Input';
-import Select from '../../../common/inputs/select/Select';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
+import InputLegend from '../../../common/inputs/input/input_legend/InputLegend';
 import { gql, useMutation } from '@apollo/client';
 import { toastSuccess } from '../../../../util/toast';
 import TextArea from '../../../common/inputs/textarea/TextArea';
@@ -137,20 +138,24 @@ export default function BanUser(props: Props) {
 					value={durationCount}
 					onChange={setDurationCount}
 				/>
-				<Select
-					disabled={forever}
-					legend={t('admin_users.duration_unit')}
-					name="durationType"
-					value={durationUnit}
-					onChange={setDurationUnit}
-				>
-					<option value="minute">{t('admin_users.minute')}</option>
-					<option value="hour">{t('admin_users.hour')}</option>
-					<option value="day">{t('admin_users.day')}</option>
-					<option value="week">{t('admin_users.week')}</option>
-					<option value="month">{t('admin_users.month')}</option>
-					<option value="year">{t('admin_users.year')}</option>
-				</Select>
+				<div>
+					<InputLegend text={t('admin_users.duration_unit')} />
+					<SelectMenu
+						fullWidth
+						disabled={forever}
+						value={durationUnit}
+						onChange={setDurationUnit}
+						ariaLabel={t('admin_users.duration_unit')}
+						options={[
+							{value: 'minute', label: t('admin_users.minute')},
+							{value: 'hour', label: t('admin_users.hour')},
+							{value: 'day', label: t('admin_users.day')},
+							{value: 'week', label: t('admin_users.week')},
+							{value: 'month', label: t('admin_users.month')},
+							{value: 'year', label: t('admin_users.year')},
+						]}
+					/>
+				</div>
 			</div>
 			<div className={b('options')}>
 				<Checkbox

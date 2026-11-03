@@ -3697,6 +3697,8 @@
     "save": "保存"
   },
   "theme_options": {
+    "group_dark": "深色",
+    "group_light": "浅色",
     "login_to_choose": "登录后即可选择主题。",
     "themes_title": "主题",
     "themes_desc": "从预定义的主题列表中选择，或在下方自定义你自己的主题。*警告*：选择其中一个主题将重置你可能已设置的任何自定义主题设置。",

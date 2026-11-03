@@ -22,10 +22,13 @@ interface Props {
 	children: ReactNode;
 }
 
-/** Rough height of one row, used to ask for space before the list exists. */
-const ITEM_HEIGHT = 37;
-const LIST_PADDING = 12;
-const GAP = 6;
+/** One row, used to ask for space before the list exists. $zt-menu-row-h in tokens.scss. */
+const ITEM_HEIGHT = 36;
+/** $zt-menu-row-h-phone, and the bp-down($bp-md) where it applies. */
+const ITEM_HEIGHT_PHONE = 34;
+const PHONE_QUERY = '(max-width: 767.98px)';
+const LIST_PADDING = 8;
+const GAP = 4;
 const EDGE = 8;
 
 /**
@@ -56,7 +59,8 @@ export default function TileMenu({ options, align = 'left', title, className, ch
 		// What the whole list would like, and what each side can actually give it. The
 		// list used to be capped at a flat 280px, which cut the last entries off on a
 		// ten-module menu and left no way to reach them.
-		const wanted = options.length * ITEM_HEIGHT + LIST_PADDING;
+		const rowHeight = window.matchMedia(PHONE_QUERY).matches ? ITEM_HEIGHT_PHONE : ITEM_HEIGHT;
+		const wanted = options.length * rowHeight + LIST_PADDING;
 		const spaceBelow = window.innerHeight - rect.bottom - GAP - EDGE;
 		const spaceAbove = rect.top - GAP - EDGE;
 

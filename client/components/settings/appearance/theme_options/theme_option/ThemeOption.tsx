@@ -2,6 +2,7 @@ import React from 'react';
 import './ThemeOption.scss';
 import block from '../../../../../styles/bem';
 import jsonStr from 'json-stable-stringify';
+import {Check} from 'phosphor-react';
 import {setSettings} from '../../../../../db/settings/update';
 import {useMe} from '../../../../../util/hooks/useMe';
 import ProTag from '../../../../common/pro_tag/ProTag';
@@ -43,26 +44,37 @@ export default function ThemeOption(props: Props) {
 		setSettings(theme.values);
 	}
 
+	const {background_color, button_color, module_color, primary_color, secondary_color, text_color} = theme.values;
+	const previewColors = {
+		'--preview-bg': background_color,
+		'--preview-button': button_color,
+		'--preview-module': module_color,
+		'--preview-primary': primary_color,
+		'--preview-secondary': secondary_color,
+		'--preview-text': text_color,
+	} as React.CSSProperties;
+
 	return (
-		<button className={b({selected, locked})} onClick={selectTheme}>
-			<div className={b('preview')}>
-				<div className={b('preview-body')}>
-					<span
-						style={{
-							backgroundColor: 'rgb(' + theme.values.background_color + ')',
-							border: '3px solid rgb(' + theme.values.text_color + ')',
-						}}
-					/>
-					<span
-						style={{
-							backgroundColor: 'rgb(' + theme.values.module_color + ')',
-						}}
-					/>
-				</div>
-			</div>
-			<p>{theme.name}</p>
-			{/* Says why it is locked: a bare lock read as "unavailable", not "comes with Pro". */}
-			{locked ? <span className={b('pro')}><ProTag /></span> : null}
+		<button type="button" className={b({selected})} aria-pressed={selected} onClick={selectTheme}>
+			{/* The theme shown as itself: a tiny timer in its own colours. */}
+			<span className={b('preview')} style={previewColors} aria-hidden="true">
+				<span className={b('strip')}>
+					<span className={b('segment')} />
+					<span className={b('segment')} />
+					<span className={b('segment', {active: true})} />
+				</span>
+				<span className={b('digits')}>14.62</span>
+				<span className={b('foot')}>
+					<span className={b('primary')} />
+					<span className={b('secondary')} />
+				</span>
+			</span>
+			<span className={b('name')}>
+				<span className={b('label')}>{theme.name}</span>
+				{/* Says why it is locked: a bare lock read as "unavailable", not "comes with Pro". */}
+				{locked ? <ProTag /> : null}
+				{selected ? <Check weight="bold" className={b('check')} /> : null}
+			</span>
 		</button>
 	);
 }

@@ -130,10 +130,10 @@ export default function GoalsTab() {
 					</div>
 					<button
 						type="button"
-						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 ${
 							storage.count_room_solves
-								? 'bg-primary border-primary shadow-lg shadow-primary/30'
-								: 'bg-button border-text/[0.1] hover:bg-button'
+								? 'bg-primary border-primary'
+								: 'bg-text/[0.2] border-transparent'
 						} cursor-pointer`}
 						onClick={() => {
 							setCountRoomSolves(!storage.count_room_solves);
@@ -141,8 +141,8 @@ export default function GoalsTab() {
 						}}
 					>
 						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
-								storage.count_room_solves ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
+								storage.count_room_solves ? 'translate-x-5' : 'translate-x-0.5'
 							}`}
 						/>
 					</button>
@@ -170,10 +170,10 @@ export default function GoalsTab() {
 					</div>
 					<button
 						type="button"
-						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 ${
 							storage.count_deleted_solves
-								? 'bg-primary border-primary shadow-lg shadow-primary/30'
-								: 'bg-button border-text/[0.1] hover:bg-button'
+								? 'bg-primary border-primary'
+								: 'bg-text/[0.2] border-transparent'
 						} cursor-pointer`}
 						onClick={() => {
 							setCountDeletedSolves(!storage.count_deleted_solves);
@@ -181,8 +181,8 @@ export default function GoalsTab() {
 						}}
 					>
 						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
-								storage.count_deleted_solves ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
+								storage.count_deleted_solves ? 'translate-x-5' : 'translate-x-0.5'
 							}`}
 						/>
 					</button>
@@ -204,10 +204,10 @@ export default function GoalsTab() {
 					</div>
 					<button
 						type="button"
-						className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+						className={`relative h-6 w-11 rounded-full border transition-all duration-300 ${
 							storage.reminder_enabled
-								? 'bg-primary border-primary shadow-lg shadow-primary/30'
-								: 'bg-button border-text/[0.1] hover:bg-button'
+								? 'bg-primary border-primary'
+								: 'bg-text/[0.2] border-transparent'
 						} cursor-pointer`}
 						onClick={async () => {
 							const newVal = !storage.reminder_enabled;
@@ -222,8 +222,8 @@ export default function GoalsTab() {
 						}}
 					>
 						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
-								storage.reminder_enabled ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
+								storage.reminder_enabled ? 'translate-x-5' : 'translate-x-0.5'
 							}`}
 						/>
 					</button>
@@ -273,12 +273,12 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 							className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
 								goal.enabled
 									? 'bg-primary border-primary shadow-sm shadow-primary/30'
-									: 'bg-button border-text/[0.1]'
+									: 'bg-text/[0.2] border-transparent'
 							} cursor-pointer`}
 							onClick={onToggle}
 						>
 							<div
-								className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-300 ${
+								className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
 									goal.enabled ? 'translate-x-4' : 'translate-x-0.5'
 								}`}
 							/>
@@ -395,12 +395,12 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 					className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
 						goal.enabled
 							? 'bg-primary border-primary shadow-sm shadow-primary/30'
-							: 'bg-button border-text/[0.1]'
+							: 'bg-text/[0.2] border-transparent'
 					} cursor-pointer`}
 					onClick={onToggle}
 				>
 					<div
-						className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all duration-300 ${
+						className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
 							goal.enabled ? 'translate-x-4' : 'translate-x-0.5'
 						}`}
 					/>

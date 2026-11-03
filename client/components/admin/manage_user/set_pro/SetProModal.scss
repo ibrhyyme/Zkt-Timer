@@ -80,8 +80,7 @@ $pro-violet-light: #a78bfa;
 		color: rgba(var(--text-color), 0.45);
 	}
 
-	&__input,
-	&__select {
+	&__input {
 		width: 100%;
 		padding: 10px 12px;
 		border-radius: 10px;
@@ -100,11 +99,6 @@ $pro-violet-light: #a78bfa;
 		&:disabled {
 			opacity: 0.5;
 		}
-	}
-
-	&__select {
-		cursor: pointer;
-		appearance: auto;
 	}
 
 	// ─── Options ────────────────────────────────────

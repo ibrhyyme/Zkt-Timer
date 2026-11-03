@@ -20,11 +20,13 @@ interface Props {
 	warning?: boolean;
 	// Pinned to the bottom of the card, separated by a rule — use for the submit button.
 	footer?: ReactNode;
+	// Text fields side by side on a wide screen, so a short form uses the sheet's width.
+	columns?: boolean;
 	children?: ReactNode;
 }
 
 export default function SettingsCard(props: Props) {
-	const {title, description, icon, danger, warning, footer, children} = props;
+	const {title, description, icon, danger, warning, footer, columns, children} = props;
 
 	return (
 		<section className={b({danger: !!danger, warning: !!warning})}>
@@ -38,7 +40,7 @@ export default function SettingsCard(props: Props) {
 				</header>
 			) : null}
 
-			{children ? <div className={b('body')}>{children}</div> : null}
+			{children ? <div className={b('body', {columns: !!columns})}>{children}</div> : null}
 
 			{footer ? <footer className={b('footer')}>{footer}</footer> : null}
 		</section>

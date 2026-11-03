@@ -1844,24 +1844,15 @@ function FriendlyRoomContent() {
                                 <List size={20} weight="bold" />
                             </button>
 
-                            {/* Dropdown Menu — glassmorphism */}
                             {hostMenuOpen && (
-                                <div
-                                    className="absolute top-full left-0 mt-2 w-60 rounded-xl border border-text/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.6)] z-50 overflow-hidden"
-                                    style={{
-                                        background: 'rgba(var(--background-color), 0.92)',
-                                        backdropFilter: 'blur(20px) saturate(180%)',
-                                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-                                        animation: 'host-menu-in 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
-                                    }}
-                                >
-                                    <div className="py-1.5 px-1.5">
+                                <div className="zt-room-menu absolute top-full left-0 mt-1 w-60 z-50">
+                                    <div className="flex flex-col">
                                         <button
                                             onClick={() => {
                                                 setEditModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
+                                            className="zt-room-menu__item"
                                         >
                                             <PencilSimple size={18} weight="bold" />
                                             {t('rooms.edit_room')}
@@ -1871,24 +1862,24 @@ function FriendlyRoomContent() {
                                                 setManageUsersModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
+                                            className="zt-room-menu__item"
                                         >
                                             <Users size={18} weight="bold" />
                                             {t('rooms.manage_users')}
                                         </button>
                                         <button
                                             onClick={handleResetRoom}
-                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
+                                            className="zt-room-menu__item"
                                         >
                                             <ArrowCounterClockwise size={18} weight="bold" />
                                             {t('rooms.reset_room')}
                                         </button>
                                         {isHost && (
                                             <>
-                                                <div className="h-px bg-text/[0.1] my-1.5 mx-1" />
+                                                <div className="zt-room-menu__separator" />
                                                 <button
                                                     onClick={handleDeleteRoom}
-                                                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-text flex items-center gap-3 transition-colors"
+                                                    className="zt-room-menu__item zt-room-menu__item--danger"
                                                 >
                                                     <Trash size={18} weight="bold" />
                                                     {t('rooms.delete_room')}
@@ -2559,10 +2550,10 @@ function FriendlyRoomContent() {
                                         </button>
                                     </div>
                                     {smartCubeMenuOpen && (
-                                        <div className="absolute bottom-16 right-4 z-20 flex flex-col items-stretch gap-1 p-2 rounded-lg bg-module border border-text/[0.1] min-w-[190px] shadow-lg">
+                                        <div className="zt-room-menu absolute bottom-16 right-4 z-20 flex flex-col min-w-[190px]">
                                             <button
                                                 type="button"
-                                                className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors disabled:opacity-40"
+                                                className="zt-room-menu__item"
                                                 disabled={smartTiming}
                                                 onClick={() => {
                                                     handleSmartResetCubeState();
@@ -2574,7 +2565,7 @@ function FriendlyRoomContent() {
                                             {reduxSmartGyroSupported && (
                                                 <button
                                                     type="button"
-                                                    className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors"
+                                                    className="zt-room-menu__item"
                                                     onClick={() => {
                                                         roomCubeViewRef.current?.resetGyro();
                                                         setSmartCubeMenuOpen(false);
@@ -2585,7 +2576,7 @@ function FriendlyRoomContent() {
                                             )}
                                             <button
                                                 type="button"
-                                                className="px-3 py-1.5 text-xs font-bold text-left rounded hover:bg-text/[0.06] transition-colors disabled:opacity-40"
+                                                className="zt-room-menu__item"
                                                 disabled={smartTiming}
                                                 onClick={() => {
                                                     disconnectSmartCube();

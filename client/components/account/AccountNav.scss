@@ -1,11 +1,6 @@
 @import '../../styles/config';
 
 .#{$namespace}-account-nav {
-	// The page title collapses to zero height on desktop, so the sidebar only needs
-	// to clear the fixed top nav.
-	position: sticky;
-	top: calc(var(--nav-h) + 1.5rem);
-
 	// ------------------------------------------------------------------
 	// Identity header — anchors the page to whose account this is.
 	// ------------------------------------------------------------------
@@ -165,6 +160,45 @@
 		svg {
 			width: 14px;
 			height: 14px;
+		}
+	}
+
+	// The destructive row stands apart. Desktop only: the mobile list has rules of its own.
+	&__separator {
+		display: none;
+	}
+
+	// ------------------------------------------------------------------
+	// Desktop: rows of the sheet's rail, under the identity block.
+	// ------------------------------------------------------------------
+	@include bp-up($bp-md) {
+		padding-bottom: $zt-space-2;
+
+		&__identity {
+			padding: $zt-space-4 $zt-space-5;
+			margin-bottom: $zt-space-2;
+			border: 0;
+			border-bottom: $zt-sheet-rule;
+			border-radius: 0;
+			background: none;
+		}
+
+		&__list {
+			gap: 0;
+		}
+
+		&__item {
+			@include zt-sheet-rail-item;
+		}
+
+		&__item-highlight {
+			border-radius: 0;
+		}
+
+		&__separator {
+			display: block;
+			@include zt-menu-separator;
+			margin: $zt-space-2 0;
 		}
 	}
 

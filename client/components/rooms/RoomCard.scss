@@ -179,51 +179,33 @@
 
     &__admin-dropdown {
         position: absolute;
-        bottom: 100%;
+        bottom: calc(100% + #{$zt-menu-offset});
         right: 0;
-        margin-bottom: 5px;
-        background: rgb(var(--module-color));
-        border: 1px solid rgba(var(--text-color), 0.1);
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         min-width: 180px;
         z-index: 51;
         overflow: hidden;
+        @include zt-menu-panel;
 
         button {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 1rem;
-            background: transparent;
-            border: none;
-            color: rgba(var(--text-color), 0.8);
-            font-size: 0.9rem;
-            cursor: pointer;
-            text-align: left;
+            @include zt-menu-row;
 
             &:hover {
-                background: rgba(var(--text-color), 0.05);
-                color: rgb(var(--text-color));
+                @include zt-menu-row-hover;
+            }
+
+            svg {
+                flex-shrink: 0;
+                color: $zt-text-muted;
             }
         }
     }
 
     &__admin-divider {
-        height: 1px;
-        background: rgba(var(--text-color), 0.1);
+        @include zt-menu-separator;
     }
 
-    &__admin-danger {
+    // Red on the icon: at this size red text fails contrast on a dark panel.
+    &__admin-danger svg {
         color: rgb(var(--error-color)) !important;
-
-        svg {
-            color: rgb(var(--error-color)) !important;
-        }
-
-        &:hover {
-            background: rgba(var(--error-color), 0.05) !important;
-        }
     }
 }

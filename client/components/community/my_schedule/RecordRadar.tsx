@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
@@ -267,32 +268,26 @@ export default function RecordRadar() {
 					</div>
 
 					{scope === 'CR' && (
-						<select
-							className={b('radar-region-select')}
+						<SelectMenu
+							fullWidth
 							value={region}
-							onChange={(e) => setRegion(e.target.value)}
-						>
-							{WCA_CONTINENTS.map((c) => (
-								<option key={c.id} value={c.id}>
-									{c.name}
-								</option>
-							))}
-						</select>
+							onChange={setRegion}
+							ariaLabel={t('my_schedule.radar_scope_cr')}
+							options={WCA_CONTINENTS.map((c) => ({value: c.id, label: c.name}))}
+						/>
 					)}
 
 					{scope === 'NR' && (
-						<select
-							className={b('radar-region-select')}
+						<SelectMenu
+							fullWidth
 							value={region}
-							onChange={(e) => setRegion(e.target.value)}
-						>
-							<option value="">{t('my_schedule.radar_select_country')}</option>
-							{WCA_COUNTRIES.map((c) => (
-								<option key={c.iso2} value={c.iso2}>
-									{c.name}
-								</option>
-							))}
-						</select>
+							onChange={setRegion}
+							ariaLabel={t('my_schedule.radar_select_country')}
+							options={[
+								{value: '', label: t('my_schedule.radar_select_country')},
+								...WCA_COUNTRIES.map((c) => ({value: c.iso2, label: c.name})),
+							]}
+						/>
 					)}
 
 					<button className={b('radar-save-btn')} onClick={handleSave} disabled={saving}>

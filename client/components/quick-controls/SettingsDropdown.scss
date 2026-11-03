@@ -28,10 +28,11 @@
 		width: 380px;
 		max-width: calc(100vw - 24px);
 		max-height: min(560px, calc(100vh - 100px));
-		// A floating layer like the header's other menus (FancyDropdown, TimerTypePicker):
-		// opaque, one shadow, no glass blur or glow, so the rows inside (the card token in
-		// both tabs) read the same over any timer background.
-		@include zt-float;
+		// The same floating layer as every menu: opaque, so the rows inside (the card token
+		// in both tabs) read the same over any timer background. It holds a form rather
+		// than rows, so the padding is the form's.
+		@include zt-menu-panel;
+		padding: 0;
 		z-index: 10001;
 		overflow: hidden;
 		display: flex;
@@ -43,6 +44,14 @@
 
 		&[data-state='closed'] {
 			animation: settings-dropdown-content-out $motion-instant ease-in;
+		}
+
+		// ExtrasTab and GoalsTab also fill the left drawer, whose cards stay round by the
+		// owner's choice. In this square panel round cards would read as a mistake.
+		.rounded-xl,
+		.rounded-2xl,
+		.rounded-3xl {
+			border-radius: $zt-radius-md;
 		}
 	}
 
@@ -67,7 +76,7 @@
 		font-weight: 600;
 		font-family: inherit;
 		color: rgba(var(--text-color), 0.6);
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		transition:
 			background 0.18s ease,

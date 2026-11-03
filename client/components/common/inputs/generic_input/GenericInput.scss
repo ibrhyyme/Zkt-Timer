@@ -6,7 +6,7 @@ $genericInputMarginBottom: 13px;
 	background-color: rgb(var(--button-color)) !important;
 	padding: 10px;
 	color: rgb(var(--theme-button-opposite));
-	border-radius: 5px !important;
+	border-radius: $zt-radius-md !important;
 	font-size: 0.95rem;
 	width: 100%;
 	box-sizing: border-box;

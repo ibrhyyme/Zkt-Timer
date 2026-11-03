@@ -89,6 +89,7 @@ export default function ColorPicker(props: Props) {
 					}}
 				/>
 				<p>{name || 'Select color'}</p>
+				<span className={b('hex')}>{color.hex.slice(0, 7).toUpperCase()}</span>
 			</button>
 			{resetButton}
 			<div className={b('palette', {hidden: !showPicker, up: openUp, left: openLeft})}>

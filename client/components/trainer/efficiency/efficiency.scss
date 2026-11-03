@@ -170,27 +170,6 @@
 		letter-spacing: 0.06em;
 		color: rgb(var(--text-color));
 	}
-	&__field-select {
-		background: rgb(var(--button-color));
-		border: 1px solid rgba(var(--text-color), 0.15);
-		border-radius: $zt-radius-md;
-		color: rgb(var(--text-color));
-		padding: 7px 12px;
-		font-size: 0.9rem;
-		font-weight: 600;
-		cursor: pointer;
-		outline: none;
-		min-width: 88px;
-
-		&:focus {
-			border-color: rgba(var(--primary-color), 0.5);
-		}
-		option {
-			background: rgb(var(--button-color));
-			color: rgb(var(--text-color));
-		}
-	}
-
 	// ────────── Algorithm (scramble) bar — Back | algorithm | Next ──────────
 	&__scramble-bar {
 		flex-shrink: 0;

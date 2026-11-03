@@ -113,28 +113,30 @@ export default function AccountNav() {
 				{tabs.map((tab) => {
 					const active = current === tab.link;
 					return (
-						<Link
-							key={tab.id}
-							to={tab.link}
-							className={b('item', {active, danger: !!tab.danger})}
-							aria-current={active ? 'page' : undefined}
-						>
-							{/* Shared layoutId means the highlight travels between rows instead of
-							    blinking out and in. Desktop only — on mobile the list is an index,
-							    where nothing is "current" yet. */}
-							{active ? (
-								<motion.span
-									layoutId="account-nav-active"
-									className={b('item-highlight')}
-									transition={{type: 'spring', stiffness: 460, damping: 38}}
-								/>
-							) : null}
-							<span className={b('item-icon')}>{tab.icon}</span>
-							<span className={b('item-label')}>{tab.label}</span>
-							<span className={b('item-chevron')}>
-								<CaretRight weight="bold" />
-							</span>
-						</Link>
+						<React.Fragment key={tab.id}>
+							{tab.danger ? <div className={b('separator')} role="separator" /> : null}
+							<Link
+								to={tab.link}
+								className={b('item', {active, danger: !!tab.danger})}
+								aria-current={active ? 'page' : undefined}
+							>
+								{/* Shared layoutId means the highlight travels between rows instead of
+								    blinking out and in. Desktop only — on mobile the list is an index,
+								    where nothing is "current" yet. */}
+								{active ? (
+									<motion.span
+										layoutId="account-nav-active"
+										className={b('item-highlight')}
+										transition={{type: 'spring', stiffness: 460, damping: 38}}
+									/>
+								) : null}
+								<span className={b('item-icon')}>{tab.icon}</span>
+								<span className={b('item-label')}>{tab.label}</span>
+								<span className={b('item-chevron')}>
+									<CaretRight weight="bold" />
+								</span>
+							</Link>
+						</React.Fragment>
 					);
 				})}
 			</nav>

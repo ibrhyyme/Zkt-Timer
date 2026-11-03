@@ -31,8 +31,9 @@ export default function DropdownOption(props: Props) {
 
 	const body = (
 		<>
-			<span>{text}</span>
-			{icon || (selected && <Check weight="bold" />)}
+			{icon && <span className={b('icon')}>{icon}</span>}
+			<span className={b('label')}>{text}</span>
+			{selected && <Check weight="bold" className={b('check')} />}
 		</>
 	);
 
@@ -55,29 +56,14 @@ export default function DropdownOption(props: Props) {
 			);
 		}
 	} else if (checkbox) {
-		return <Checkbox onChange={onChange} text={text} checked={on} />;
+		return (
+			<div className={b('checkbox')}>
+				<Checkbox onChange={onChange} text={text} checked={on} />
+			</div>
+		);
 	} else {
 		if (header) {
-			return (
-				<div
-					className={`${b({})} cursor-default select-none`}
-					style={{
-						pointerEvents: 'none',
-						padding: '6px 12px',
-						fontSize: '0.7rem',
-						fontWeight: 700,
-						letterSpacing: '0.08em',
-						textAlign: 'center',
-						color: 'var(--tm-c-text-tertiary, #888)',
-						borderTop: '1px solid rgba(255,255,255,0.08)',
-						borderBottom: '1px solid rgba(255,255,255,0.08)',
-						background: 'rgba(255,255,255,0.03)',
-						marginTop: '4px',
-					}}
-				>
-					=== {text} ===
-				</div>
-			);
+			return <div className={b('header')}>{text}</div>;
 		}
 
 		return (

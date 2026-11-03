@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import { Plus, Trash, PencilSimple, Eye, BellRinging } from 'phosphor-react';
 import { GetAllAnnouncementsDocument, DeleteAnnouncementDocument, Announcement } from '../../../@types/generated/graphql';
@@ -75,27 +76,29 @@ export default function AdminAnnouncements() {
 
 			{/* Filters */}
 			<div className="flex gap-4 mb-6 bg-[#1e1e24] p-2 rounded-xl border border-white/5 w-fit">
-				<select
+				<SelectMenu
 					value={filter.category}
-					onChange={(e) => setFilter({ ...filter, category: e.target.value })}
-					className="px-4 py-2 bg-transparent text-gray-300 border-r border-white/5 focus:outline-none focus:text-white"
-				>
-					<option value="">{t('admin_announcements.filter_all_categories')}</option>
-					<option value="FEATURE">{t('admin_announcements.filter_feature')}</option>
-					<option value="BUGFIX">{t('admin_announcements.filter_bugfix')}</option>
-					<option value="IMPORTANT">{t('admin_announcements.filter_important')}</option>
-					<option value="INFO">{t('admin_announcements.filter_info')}</option>
-				</select>
+					onChange={(value) => setFilter({ ...filter, category: value })}
+					ariaLabel={t('admin_announcements.filter_all_categories')}
+					options={[
+						{ value: '', label: t('admin_announcements.filter_all_categories') },
+						{ value: 'FEATURE', label: t('admin_announcements.filter_feature') },
+						{ value: 'BUGFIX', label: t('admin_announcements.filter_bugfix') },
+						{ value: 'IMPORTANT', label: t('admin_announcements.filter_important') },
+						{ value: 'INFO', label: t('admin_announcements.filter_info') },
+					]}
+				/>
 
-				<select
+				<SelectMenu
 					value={filter.isDraft === undefined ? '' : filter.isDraft.toString()}
-					onChange={(e) => setFilter({ ...filter, isDraft: e.target.value === '' ? undefined : e.target.value === 'true' })}
-					className="px-4 py-2 bg-transparent text-gray-300 focus:outline-none focus:text-white"
-				>
-					<option value="">{t('admin_announcements.filter_all')}</option>
-					<option value="true">{t('admin_announcements.filter_drafts')}</option>
-					<option value="false">{t('admin_announcements.filter_published')}</option>
-				</select>
+					onChange={(value) => setFilter({ ...filter, isDraft: value === '' ? undefined : value === 'true' })}
+					ariaLabel={t('admin_announcements.filter_all')}
+					options={[
+						{ value: '', label: t('admin_announcements.filter_all') },
+						{ value: 'true', label: t('admin_announcements.filter_drafts') },
+						{ value: 'false', label: t('admin_announcements.filter_published') },
+					]}
+				/>
 			</div>
 
 			{/* Table Card */}

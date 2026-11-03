@@ -1,6 +1,6 @@
 /**
  * Small pieces the set screens share (trainer-sets 7): owner chip, visibility tag, category
- * badges, the action sheet behind "..." / long press, and the long press hook.
+ * badges and the long press hook.
  */
 import React, {useCallback, useRef} from 'react';
 import {Link} from 'react-router-dom';
@@ -75,52 +75,7 @@ export function CategoryBadges({categories, max = 3}: {categories: string[]; max
 	);
 }
 
-export interface SheetAction {
-	key: string;
-	label: string;
-	icon?: React.ReactNode;
-	danger?: boolean;
-	disabled?: boolean;
-	/** Shown under a disabled action (e.g. "Internet connection needed"). */
-	note?: string;
-	onSelect: () => void;
-}
-
-/** A list of actions in a modal ("..." menu, long press). Closes before running the action. */
-export function ActionSheet({
-	actions,
-	message,
-	onClose,
-}: {
-	actions: SheetAction[];
-	/** A sentence above the actions. */
-	message?: string;
-	onClose?: () => void;
-}) {
-	return (
-		<div className={b('action-sheet')}>
-			{message ? <p className={b('sheet-message')}>{message}</p> : null}
-			{actions.map((action) => (
-				<button
-					key={action.key}
-					type="button"
-					className={b('action', {danger: !!action.danger})}
-					disabled={action.disabled}
-					onClick={() => {
-						if (onClose) onClose();
-						action.onSelect();
-					}}
-				>
-					{action.icon ? <span className={b('action-icon')}>{action.icon}</span> : null}
-					<span className={b('action-text')}>
-						<span>{action.label}</span>
-						{action.disabled && action.note ? <span className={b('action-note')}>{action.note}</span> : null}
-					</span>
-				</button>
-			))}
-		</div>
-	);
-}
+export type {ActionMenuItem as SheetAction} from '../../common/action_menu/ActionMenu';
 
 const LONG_PRESS_MS = 500;
 const MOVE_TOLERANCE_PX = 10;
@@ -129,7 +84,7 @@ const MOVE_TOLERANCE_PX = 10;
  * Long press on touch (scrolling cancels it) and right click on desktop. The click that ends a
  * long press is swallowed, so the card does not also open.
  */
-export function useLongPress(onLongPress: (() => void) | null) {
+export function useLongPress(onLongPress: ((point: {x: number; y: number}) => void) | null) {
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const start = useRef<{x: number; y: number} | null>(null);
 	const fired = useRef(false);
@@ -145,11 +100,12 @@ export function useLongPress(onLongPress: (() => void) | null) {
 			if (!onLongPress) return;
 			fired.current = false;
 			const touch = e.touches[0];
-			start.current = {x: touch.clientX, y: touch.clientY};
+			const point = {x: touch.clientX, y: touch.clientY};
+			start.current = point;
 			timer.current = setTimeout(() => {
 				fired.current = true;
 				timer.current = null;
-				onLongPress();
+				onLongPress(point);
 			}, LONG_PRESS_MS);
 		},
 		[onLongPress]
@@ -180,7 +136,7 @@ export function useLongPress(onLongPress: (() => void) | null) {
 				cancel();
 				fired.current = true;
 			}
-			onLongPress();
+			onLongPress({x: e.clientX, y: e.clientY});
 		},
 		[onLongPress, cancel]
 	);

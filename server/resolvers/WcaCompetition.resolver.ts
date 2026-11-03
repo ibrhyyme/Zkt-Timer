@@ -39,7 +39,7 @@ export class WcaCompetitionResolver {
 		@Arg('filter', () => WcaCompetitionFilterInput, {nullable: true}) filter?: WcaCompetitionFilterInput
 	): Promise<WcaCompetition[]> {
 		const country = filter?.country_iso2 || '';
-		const cacheKey = createRedisKey(RedisNamespace.WCA_COMPETITIONS, country || 'all2');
+		const cacheKey = createRedisKey(RedisNamespace.WCA_COMPETITIONS, country || 'all3');
 
 		// Cache hit?
 		const cached = await getValueFromRedis(cacheKey);

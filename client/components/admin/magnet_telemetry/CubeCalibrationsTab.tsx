@@ -1,4 +1,5 @@
 import React, {useMemo, useState} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
@@ -275,41 +276,35 @@ export default function CubeCalibrationsTab() {
 						placeholder={t('magnet_telemetry.filter_username')}
 						aria-label={t('magnet_telemetry.filter_username')}
 					/>
-					<select
-						className={b('filter-select')}
+					<SelectMenu
 						value={filters.puzzle}
-						onChange={(e) => applyFilters({puzzle: e.target.value})}
-						aria-label={t('admin_cube_calibrations.col_puzzle')}
-					>
-						<option value="">{t('admin_cube_calibrations.filter_all_puzzles')}</option>
-						{PUZZLE_KEYS.map((key) => (
-							<option key={key} value={key}>{puzzleLabel(key)}</option>
-						))}
-						{customPuzzleOptions.map((key: string) => (
-							<option key={key} value={key}>{puzzleLabel(key)}</option>
-						))}
-					</select>
-					<select
-						className={b('filter-select')}
+						onChange={(value) => applyFilters({puzzle: value})}
+						ariaLabel={t('admin_cube_calibrations.col_puzzle')}
+						options={[
+							{value: '', label: t('admin_cube_calibrations.filter_all_puzzles')},
+							...PUZZLE_KEYS.map((key) => ({value: key, label: puzzleLabel(key)})),
+							...customPuzzleOptions.map((key: string) => ({value: key, label: puzzleLabel(key)})),
+						]}
+					/>
+					<SelectMenu
 						value={filters.platform}
-						onChange={(e) => applyFilters({platform: e.target.value})}
-						aria-label={t('admin_cube_calibrations.filter_platform')}
-					>
-						<option value="">{t('admin_cube_calibrations.filter_all_platforms')}</option>
-						<option value="ios">iOS</option>
-						<option value="android">Android</option>
-					</select>
-					<select
-						className={b('filter-select')}
+						onChange={(value) => applyFilters({platform: value})}
+						ariaLabel={t('admin_cube_calibrations.filter_platform')}
+						options={[
+							{value: '', label: t('admin_cube_calibrations.filter_all_platforms')},
+							{value: 'ios', label: 'iOS'},
+							{value: 'android', label: 'Android'},
+						]}
+					/>
+					<SelectMenu
 						value={filters.deviceModel}
-						onChange={(e) => applyFilters({deviceModel: e.target.value})}
-						aria-label={t('magnet_telemetry.filter_device')}
-					>
-						<option value="">{t('magnet_telemetry.filter_all_devices')}</option>
-						{modelOptions.map((model: string) => (
-							<option key={model} value={model}>{model}</option>
-						))}
-					</select>
+						onChange={(value) => applyFilters({deviceModel: value})}
+						ariaLabel={t('magnet_telemetry.filter_device')}
+						options={[
+							{value: '', label: t('magnet_telemetry.filter_all_devices')},
+							...modelOptions.map((model: string) => ({value: model, label: model})),
+						]}
+					/>
 					<Button gray onClick={() => applyFilters()}>{t('magnet_telemetry.search')}</Button>
 					<Button
 						gray

@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
@@ -254,17 +255,15 @@ export default function SmartCubeTelemetryPanel() {
 						placeholder={t('smart_telemetry.filter_username')}
 						aria-label={t('smart_telemetry.filter_username')}
 					/>
-					<select
-						className={b('filter-select')}
+					<SelectMenu
 						value={filters.eventType}
-						onChange={(e) => applyFilters(e.target.value)}
-						aria-label={t('smart_telemetry.filter_event')}
-					>
-						<option value="">{t('smart_telemetry.filter_all_events')}</option>
-						{EVENT_TYPES.map((type) => (
-							<option key={type} value={type}>{type}</option>
-						))}
-					</select>
+						onChange={applyFilters}
+						ariaLabel={t('smart_telemetry.filter_event')}
+						options={[
+							{value: '', label: t('smart_telemetry.filter_all_events')},
+							...EVENT_TYPES.map((type) => ({value: type, label: type})),
+						]}
+					/>
 					<Button gray onClick={() => applyFilters()}>{t('smart_telemetry.search')}</Button>
 				</div>
 

@@ -1,43 +1,63 @@
 @import '../../../../../styles/config';
 
 .#{$namespace}-dropdown-option {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 4px;
+	@include zt-menu-row;
+	flex-shrink: 0;
 
-	span {
-		display: table;
+	&:hover:not(:disabled),
+	&:focus-visible {
+		@include zt-menu-row-hover;
 	}
 
-	&--on {
-		background-color: rgb(var(--text-color)) !important;
-		color: rgb(var(--background-color)) !important;
-	}
-
+	&--on,
 	&--selected {
-		background-color: rgb(var(--primary-color)) !important;
-		color: #fff !important;
-		font-weight: 500;
-		opacity: 1 !important;
-		justify-content: space-between !important;
-		cursor: default;
-		padding: 6px 12px !important;
-
-		svg {
-			color: #fff;
-			flex-shrink: 0;
-			width: 14px;
-			height: 14px;
+		&,
+		&:hover:not(:disabled),
+		&:focus-visible {
+			@include zt-menu-row-selected;
 		}
 	}
 
-	&:hover {
-		background-color: rgb(var(--button-color));
+	&:disabled {
+		@include zt-menu-row-disabled;
 	}
 
-	&--selected:hover {
-		background-color: rgb(var(--primary-color)) !important;
-		filter: brightness(1.1);
+	&__icon {
+		@include zt-menu-icon;
+	}
+
+	&__label {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	&__check {
+		flex-shrink: 0;
+		width: 14px;
+		height: 14px;
+	}
+
+	&__header {
+		@include zt-menu-group-label;
+
+		&:not(:first-child) {
+			margin-top: 6px;
+			border-top: 1px solid $zt-menu-separator;
+		}
+	}
+
+	&__checkbox {
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+		min-height: $zt-menu-row-h;
+		padding: 0 $zt-space-3;
+
+		@include bp-down($bp-md) {
+			min-height: $zt-menu-row-h-phone;
+			padding: 0 10px;
+		}
 	}
 }

@@ -93,7 +93,7 @@ export default function CubeFilterPicker(props: Props) {
 				</button>
 			</Popover.Trigger>
 			<Popover.Portal>
-				<Popover.Content className={b('panel')} align={align} sideOffset={6} collisionPadding={12}>
+				<Popover.Content className={b('panel')} align={align} sideOffset={4} collisionPadding={12}>
 					{searchable && (
 						<label className={b('search')}>
 							<MagnifyingGlass weight="bold" className={b('search-icon')} />

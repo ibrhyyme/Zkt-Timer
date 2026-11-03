@@ -1,4 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import {useQuery, useApolloClient} from '@apollo/client';
 import block from '../../../styles/bem';
@@ -345,28 +346,24 @@ function StudyTab() {
 						placeholder={t('magnet_telemetry.filter_username')}
 						aria-label={t('magnet_telemetry.filter_username')}
 					/>
-					<select
-						className={b('filter-select')}
+					<SelectMenu
 						value={filters.eventType}
-						onChange={(e) => applyFilters({eventType: e.target.value})}
-						aria-label={t('magnet_telemetry.filter_event')}
-					>
-						<option value="">{t('magnet_telemetry.filter_all_events')}</option>
-						{EVENT_TYPES.map((type) => (
-							<option key={type} value={type}>{type}</option>
-						))}
-					</select>
-					<select
-						className={b('filter-select')}
+						onChange={(value) => applyFilters({eventType: value})}
+						ariaLabel={t('magnet_telemetry.filter_event')}
+						options={[
+							{value: '', label: t('magnet_telemetry.filter_all_events')},
+							...EVENT_TYPES.map((type) => ({value: type, label: type})),
+						]}
+					/>
+					<SelectMenu
 						value={filters.deviceModel}
-						onChange={(e) => applyFilters({deviceModel: e.target.value})}
-						aria-label={t('magnet_telemetry.filter_device')}
-					>
-						<option value="">{t('magnet_telemetry.filter_all_devices')}</option>
-						{modelOptions.map((model) => (
-							<option key={model} value={model}>{model}</option>
-						))}
-					</select>
+						onChange={(value) => applyFilters({deviceModel: value})}
+						ariaLabel={t('magnet_telemetry.filter_device')}
+						options={[
+							{value: '', label: t('magnet_telemetry.filter_all_devices')},
+							...modelOptions.map((model) => ({value: model, label: model})),
+						]}
+					/>
 					<Button gray onClick={() => applyFilters()}>{t('magnet_telemetry.search')}</Button>
 				</div>
 

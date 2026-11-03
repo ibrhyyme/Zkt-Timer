@@ -1,4 +1,5 @@
 import React from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import './SetProModal.scss';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import block from '../../../../styles/bem';
@@ -125,19 +126,21 @@ export default function SetProModal(props: Props) {
 				</div>
 				<div className={b('field')}>
 					<label className={b('label')}>{t('pro_duration_unit')}</label>
-					<select
+					<SelectMenu
+						fullWidth
 						disabled={forever}
-						className={b('select')}
 						value={durationUnit}
-						onChange={(e) => setDurationUnit(e.target.value)}
-					>
-						<option value="minute">{t('duration_minute')}</option>
-						<option value="hour">{t('duration_hour')}</option>
-						<option value="day">{t('duration_day')}</option>
-						<option value="week">{t('duration_week')}</option>
-						<option value="month">{t('duration_month')}</option>
-						<option value="year">{t('duration_year')}</option>
-					</select>
+						onChange={setDurationUnit}
+						ariaLabel={t('pro_duration_unit')}
+						options={[
+							{value: 'minute', label: t('duration_minute')},
+							{value: 'hour', label: t('duration_hour')},
+							{value: 'day', label: t('duration_day')},
+							{value: 'week', label: t('duration_week')},
+							{value: 'month', label: t('duration_month')},
+							{value: 'year', label: t('duration_year')},
+						]}
+					/>
 				</div>
 			</div>
 

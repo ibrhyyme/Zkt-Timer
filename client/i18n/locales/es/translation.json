@@ -3729,6 +3729,8 @@
     "save": "Guardar"
   },
   "theme_options": {
+    "group_dark": "Oscuros",
+    "group_light": "Claros",
     "login_to_choose": "Inicia sesión para elegir un tema.",
     "themes_title": "Temas",
     "themes_desc": "Elige de una lista predefinida de temas o personaliza el tuyo en la sección de abajo. *Advertencia*: Seleccionar uno de estos temas restablecerá cualquier configuración de tema personalizada que hayas establecido.",

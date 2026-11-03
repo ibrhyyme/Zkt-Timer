@@ -3,6 +3,7 @@
  * "Herhangi" + ture gore uzunluklar. Nadir uzunlukta opsiyonda ⚠ isareti.
  */
 import React from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {LENGTH_RANGES, RARE_LENGTHS} from '../../../../util/trainer/efficiency/constants';
@@ -24,19 +25,15 @@ export default function TargetLengthPicker({type, value, onChange}: Props) {
 	return (
 		<label className={b('field')}>
 			<span className={b('field-label')}>{t('trainer.efficiency.length_label', {defaultValue: 'Length'})}</span>
-			<select
-				className={b('field-select')}
+			<SelectMenu
 				value={value ?? ''}
-				onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-			>
-				<option value="">{t('trainer.efficiency.length_any', {defaultValue: 'Any'})}</option>
-				{range.map((len) => (
-					<option key={len} value={len}>
-						{len}
-						{rare.includes(len) ? ' ⚠' : ''}
-					</option>
-				))}
-			</select>
+				onChange={(next) => onChange(next === '' ? undefined : Number(next))}
+				ariaLabel={t('trainer.efficiency.length_any', {defaultValue: 'Any'})}
+				options={[
+					{value: '', label: t('trainer.efficiency.length_any', {defaultValue: 'Any'})},
+					...range.map((len) => ({value: String(len), label: `${len}${rare.includes(len) ? ' ⚠' : ''}`})),
+				]}
+			/>
 		</label>
 	);
 }

@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import '../wca_results/WcaResults.scss';
 import block from '../../../styles/bem';
@@ -142,18 +143,17 @@ export default function ZktResults({data}: Props) {
 			<div className={b('header')}>
 				<h3>{t('profile.zkt_results_title')}</h3>
 				<div className={b('filter')}>
-					<select
+					<SelectMenu
 						value={eventFilter}
-						onChange={(e) => setEventFilter(e.target.value)}
+						onChange={setEventFilter}
 						className={b('filter-select')}
-					>
-						<option value="all">{t('profile.wca_all_events')}</option>
-						{events.map((ev) => (
-							<option key={ev.eventId} value={ev.eventId}>
-								{t(`wca_events.${ev.eventId}`, ev.eventId)}
-							</option>
-						))}
-					</select>
+						ariaLabel={t('profile.wca_all_events')}
+						align="end"
+						options={[
+							{value: 'all', label: t('profile.wca_all_events')},
+							...events.map((ev) => ({value: ev.eventId, label: t(`wca_events.${ev.eventId}`, ev.eventId)})),
+						]}
+					/>
 				</div>
 			</div>
 

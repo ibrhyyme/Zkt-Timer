@@ -1,96 +1,124 @@
 @import '../../../../../styles/config';
 
+// A preset is shown as itself. Its colours arrive as --preview-* on the preview, so the
+// tile reads the same whichever theme the page around it is in.
 .#{$namespace}-theme-option {
-	$self: &;
-
-	border: 4px solid rgb(var(--button-color), 0.9);
-	background-color: rgb(var(--button-color), 0.4);
-	border-radius: 30px;
-	padding: 12px 20px;
 	display: flex;
-	position: relative;
-	margin: 0;
-	width: 100%;
+	flex-direction: column;
 	box-sizing: border-box;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
-
-	&--selected {
-		border-color: rgb(var(--primary-color));
-	}
-
-	&__pro {
-		display: inline-flex;
-		margin-left: auto;
-	}
-
-	> p {
-		opacity: 1;
-		color: rgb(var(--text-color));
-		font-weight: bold;
-		transition: all 0.1s ease-in-out;
-		font-size: 1.2rem;
-		margin: 0 !important;
-	}
-
-	// A tap opens the Pro page, so the row stays clickable rather than "not allowed". The
-	// preview and the name fade; the gold Pro tag keeps its full colour. After `> p`, which
-	// has the same specificity and would otherwise put the name back to full opacity.
-	&--locked {
-		> #{$self}__preview,
-		> p {
-			opacity: 0.5;
-		}
-	}
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border: 0;
+	border-radius: $zt-radius-md;
+	background: $zt-card-bg;
+	box-shadow: 0 0 0 1px $zt-menu-frame;
+	color: rgb(var(--text-color));
+	font-family: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: box-shadow $zt-transition;
 
 	&:hover {
-		opacity: 0.8;
+		box-shadow: 0 0 0 1px $zt-control-border-hover;
+	}
+
+	@include zt-focus-ring;
+
+	&--selected,
+	&--selected:hover {
+		box-shadow: 0 0 0 2px rgb(var(--primary-color));
 	}
 
 	&__preview {
-		$previewWidth: 40px;
-
-		border: 2px solid rgb(var(--theme-background-opposite), 0.3);
-		margin-right: 10px;
-		border-radius: 5px;
-		overflow: hidden;
 		position: relative;
-		width: $previewWidth;
-		height: 30px;
-		display: table;
+		display: block;
+		box-sizing: border-box;
+		height: 96px;
+		padding: $zt-space-2 10px;
+		background: rgb(var(--preview-bg));
+		color: rgb(var(--preview-text));
+	}
 
-		&-body {
-			display: flex;
-			flex-direction: row;
-			align-items: center;
-			position: absolute;
-			top: 50%;
-			left: 57%;
-			transform: translate(-50%, -50%) rotate(25deg);
+	&__strip {
+		display: flex;
+		gap: 3px;
+	}
 
-			> span {
-				box-sizing: border-box;
-				width: calc(#{$previewWidth} * 1.5);
-				height: calc(#{$previewWidth} * 1.5);
-				display: table;
-			}
+	&__segment {
+		display: block;
+		width: 26px;
+		height: 9px;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--preview-module));
+		box-shadow: inset 0 0 0 1px rgba(var(--preview-text), 0.14);
+
+		&--active {
+			background: rgb(var(--preview-button));
 		}
 	}
 
-	@include bp-down($bp-md) {
-		padding: 8px 12px;
-		border-width: 3px;
-		border-radius: 20px;
+	&__digits {
+		display: block;
+		margin-top: 12px;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 1.625rem;
+		font-weight: 500;
+		line-height: 1;
+		text-align: center;
+	}
 
-		> p {
-			font-size: 0.95rem;
-		}
+	&__foot {
+		position: absolute;
+		left: 10px;
+		right: 10px;
+		bottom: $zt-space-2;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
 
-		&__preview {
-			width: 30px;
-			height: 22px;
-			margin-right: 6px;
-		}
+	&__primary {
+		display: block;
+		width: 34px;
+		height: 10px;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--preview-primary));
+	}
+
+	&__secondary {
+		display: block;
+		width: 10px;
+		height: 10px;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--preview-secondary));
+	}
+
+	&__name {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		box-sizing: border-box;
+		min-height: $zt-menu-row-h;
+		padding: 0 10px;
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	&__label {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	// The text colour, not the accent: the frame already carries the accent, and an accent
+	// tick all but disappears on a theme with a light one (Save the Bees).
+	&__check {
+		flex-shrink: 0;
+		width: 14px;
+		height: 14px;
 	}
 }

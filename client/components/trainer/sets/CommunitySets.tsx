@@ -7,9 +7,11 @@
  * between pages). Open to signed out visitors (2.4); needs a connection.
  */
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import ChoiceGroup from '../../common/choice_group/ChoiceGroup';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useHistory, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {CaretDown, CircleNotch, MagnifyingGlass, WifiSlash, X} from 'phosphor-react';
+import {CircleNotch, MagnifyingGlass, WifiSlash, X} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import {useOnlineStatus} from '../../../util/hooks/useOnlineStatus';
@@ -159,39 +161,27 @@ export default function CommunitySets() {
 					) : null}
 				</label>
 
-				<div className={b('chips')} role="radiogroup" aria-label={t('trainer.sets.sort_label')}>
-					{ALG_SET_COMMUNITY_SORTS.map((sort) => (
-						<button
-							key={sort}
-							type="button"
-							role="radio"
-							aria-checked={filters.sort === sort}
-							className={b('chip', {active: filters.sort === sort})}
-							onClick={() => setFilters({sort})}
-						>
-							{t(`trainer.sets.sort_${sort}`)}
-						</button>
-					))}
-				</div>
+				<ChoiceGroup
+					label={t('trainer.sets.sort_label')}
+					value={filters.sort}
+					onChange={(sort) => setFilters({sort})}
+					options={ALG_SET_COMMUNITY_SORTS.map((sort) => ({value: sort, label: t(`trainer.sets.sort_${sort}`)}))}
+				/>
 
 				{/* Puzzle filter: one dropdown instead of a chip per puzzle (owner, 2026-10-13). */}
 				<label className={b('puzzle-select')}>
-					<select
+					<SelectMenu
 						value={filters.puzzle || ''}
-						aria-label={t('trainer.sets.puzzle_label')}
-						onChange={(e) => {
-							const picked = COMMUNITY_PUZZLES.find((p) => p.key === e.target.value);
+						ariaLabel={t('trainer.sets.puzzle_label')}
+						onChange={(value) => {
+							const picked = COMMUNITY_PUZZLES.find((p) => p.key === value);
 							setFilters({puzzle: picked ? picked.key : null});
 						}}
-					>
-						<option value="">{t('trainer.sets.puzzle_all')}</option>
-						{COMMUNITY_PUZZLES.map((p) => (
-							<option key={p.key} value={p.key}>
-								{p.label}
-							</option>
-						))}
-					</select>
-					<CaretDown className={b('puzzle-caret')} size={14} weight="bold" aria-hidden="true" />
+						options={[
+							{value: '', label: t('trainer.sets.puzzle_all')},
+							...COMMUNITY_PUZZLES.map((p) => ({value: p.key, label: p.label})),
+						]}
+					/>
 				</label>
 			</div>
 

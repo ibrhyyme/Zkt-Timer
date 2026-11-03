@@ -60,7 +60,7 @@ async function addToSet(set: {id: string; name: string; item_count: number}, ite
 /** Opens the sheet over whatever is open (the detail window stays underneath). */
 export function openAddToSet(dispatch: (action: any) => void, t: Translate, items: AddItemInput[]) {
 	if (!items.length) return;
-	dispatch(openModal(<AddToSetSheet items={items} />, {title: t('trainer.sets.add_to.title'), width: 460, compact: true}));
+	dispatch(openModal(<AddToSetSheet items={items} />, {title: t('trainer.sets.add_to.title'), width: 460}));
 }
 
 export default function AddToSetSheet({items, onClose}: Props) {

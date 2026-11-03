@@ -1,226 +1,23 @@
 @import '../../../styles/config';
 
-// Styles for Radix Select primitives: data-state, data-side, data-highlighted attributes.
-// Flat like FancyDropdown (tokens.scss design language): a neutral control that opens a
-// floating panel. No gradient, shimmer, lift, glow, glass blur or staggered rows.
+// The timer type menu is a FancyDropdown; only what is particular to it lives here.
+
+// A locked row spells out why under its name, which needs more room than a plain list.
+.#{$namespace}-fancy-dropdown__panel.#{$namespace}-timer-type-picker__panel {
+	min-width: 280px;
+	max-width: 320px;
+}
 
 .#{$namespace}-timer-type-picker {
-	&__trigger {
-		all: unset;
-		box-sizing: border-box;
-		display: inline-flex;
-		align-items: center;
-		gap: $zt-space-2;
-		height: 36px;
-		padding: 0 10px 0 12px;
-		@include zt-control;
-		font-size: 0.85rem;
-		font-weight: 500;
-		font-family: inherit;
-		cursor: pointer;
-		white-space: nowrap;
-		min-width: 0;
-		position: relative;
-		overflow: hidden;
-
-		&[data-state='open'] {
-			background: $zt-control-bg-active;
-			border-color: rgb(var(--primary-color));
-
-			.#{$namespace}-timer-type-picker__trigger-caret {
-				transform: rotate(180deg);
-				color: rgb(var(--primary-color));
-			}
-
-			.#{$namespace}-timer-type-picker__trigger-icon {
-				color: rgb(var(--primary-color));
-			}
-		}
-	}
-
-	&__trigger-icon {
-		display: inline-flex;
-		align-items: center;
-		color: rgb(var(--text-color));
-		transition: color $zt-transition;
-	}
-
-	&__trigger-label {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	&__trigger-caret {
-		display: inline-flex;
-		align-items: center;
-		color: rgb(var(--text-color));
-		transition: transform $motion-fast $ease-standard, color $zt-transition;
-	}
-
-	&__panel {
-		min-width: 280px;
-		max-width: 340px;
-		@include zt-float;
-		padding: 6px;
-		z-index: 10001;
-		overflow: hidden;
-
-		&[data-state='open'] {
-			animation: timer-type-picker-content-in $motion-fast $ease-standard;
-		}
-
-		&[data-state='closed'] {
-			animation: timer-type-picker-content-out $motion-instant ease-in;
-		}
-	}
-
-	&__option {
-		all: unset;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 12px;
-		border-radius: 8px;
-		color: rgba(var(--text-color), 0.85);
-		font-size: 0.85rem;
-		font-weight: 500;
-		font-family: inherit;
-		cursor: pointer;
-		user-select: none;
-		width: 100%;
-		position: relative;
-		transition: background $zt-transition, color $zt-transition;
-		z-index: 1;
-
-		// Hover / keyboard highlight: a soft tint of the whole row. It used to be a
-		// 3x10px grey stripe at the row's left edge plus a 2px nudge, which read as a
-		// stray vertical line next to the label (most visibly on "Klavye", the first row
-		// the pointer crosses on the way down from the trigger).
-		&[data-highlighted] {
-			background: rgba(var(--text-color), 0.08);
-			color: rgb(var(--text-color));
-			outline: none;
-		}
-
-		// The accent fill, in the text colour that reads on it.
-		&--active {
-			background: rgb(var(--primary-color));
-			color: rgb(var(--theme-primary-opposite));
-
-			.#{$namespace}-timer-type-picker__option-icon {
-				color: rgb(var(--theme-primary-opposite));
-			}
-
-			// Active + hover: solid bg remains
-			&[data-highlighted] {
-				background: rgb(var(--primary-color));
-				color: rgb(var(--theme-primary-opposite));
-			}
-		}
-
-		&[data-disabled],
-		&--disabled {
-			cursor: not-allowed;
-			color: rgba(var(--text-color), 0.4);
-			pointer-events: none;
-
-			.#{$namespace}-timer-type-picker__option-icon {
-				color: rgba(var(--text-color), 0.3);
-			}
-		}
-	}
-
-	&__option-icon {
-		display: inline-flex;
-		align-items: center;
-		flex-shrink: 0;
-		color: rgba(var(--text-color), 0.7);
-		transition: color 0.15s ease;
-	}
-
-	&__option-label {
-		flex: 1;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	&__option-badges {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		flex-shrink: 0;
-		margin-left: auto;
-	}
-
-	&__badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 2px 6px;
-		border-radius: 5px;
-		font-size: 0.65rem;
-		font-weight: 700;
-		letter-spacing: 0.02em;
-
-		&--pro {
-			@include zt-pro-tag;
-		}
-
-		&--locked {
-			color: rgb(239, 68, 68);
-			background: rgba(239, 68, 68, 0.16);
-			box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
-		}
-
-		// Magnet Timer is still in beta (K-1): a quiet outline, not a second Pro badge.
-		&--beta {
-			color: rgb(var(--text-color));
-			background: transparent;
-			box-shadow: 0 0 0 1px rgba(var(--text-color), 0.25);
-		}
-	}
-
-	&__check {
-		display: inline-flex;
-		align-items: center;
-		color: rgb(var(--theme-primary-opposite));
-	}
-
-	@include reduced-motion {
-		&__panel[data-state='open'],
-		&__panel[data-state='closed'] {
-			animation: none;
-		}
+	// Magnet Timer is still in beta: a quiet outline, not a second Pro badge.
+	&__beta {
+		@include zt-menu-tag;
 	}
 }
 
-// The panel fades in and out. It used to spring, scale and stagger its rows in.
-@keyframes timer-type-picker-content-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-@keyframes timer-type-picker-content-out {
-	from {
-		opacity: 1;
-	}
-	to {
-		opacity: 0;
-	}
-}
-
-// Mobile: trigger hidden (modal Timer tab used)
+// Mobile: trigger hidden, the left drawer's grid replaces this menu.
 @include bp-down($bp-lg) {
-	.#{$namespace}-timer-type-picker {
-		&__trigger {
-			display: none;
-		}
+	.#{$namespace}-fancy-dropdown__trigger.#{$namespace}-timer-type-picker__trigger {
+		display: none;
 	}
 }

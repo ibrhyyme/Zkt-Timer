@@ -4,14 +4,16 @@
 	width: 100%;
 	position: relative;
 
-	// Same shape as the help page's search field. Shares the layout's centred track
-	// below so the field lines up with the nav column rather than floating off the
-	// page's left edge on a wide monitor.
+	// Phones draw the heading through PageTitle.
+	&__title {
+		display: none;
+	}
+
 	&__search {
 		position: relative;
 		width: 100%;
-		max-width: 1180px;
-		margin: 0 auto 24px;
+		max-width: 420px;
+		margin-bottom: 24px;
 	}
 
 	&__search-icon {
@@ -21,51 +23,24 @@
 		transform: translateY(-50%);
 		width: 16px;
 		height: 16px;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		pointer-events: none;
 	}
 
 	&__search-input {
-		width: 100%;
-		max-width: 420px;
-		padding: 10px 14px 10px 36px;
-		border-radius: 12px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgba(var(--text-color), 0.04);
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 0.95rem;
-
-		&::placeholder {
-			color: rgba(var(--text-color), 0.45);
-		}
-
-		&:focus {
-			outline: none;
-			border-color: rgba(var(--primary-color), 0.6);
-		}
+		@include zt-search-input;
 	}
 
 	&__layout {
-		display: grid;
-		grid-template-columns: 244px minmax(0, 1fr);
-		gap: 2.5rem;
-		align-items: start;
 		width: 100%;
-		// Without a ceiling the sidebar hugs the left edge of a wide monitor and leaves
-		// a dead column on the right; centring the pair keeps the page balanced.
-		max-width: 1180px;
-		margin: 0 auto;
-
-		// While searching the nav is not rendered, so the results take the full width
-		// instead of being squeezed into the second grid track.
-		&--searching {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 
 	&__content {
 		min-width: 0;
+	}
+
+	&__tabs {
+		display: none;
 	}
 
 	// Drill-down header: back arrow plus the section name on one line. The page title
@@ -90,6 +65,95 @@
 	// The shared bare BackButton, pulled left so the caret lines up with the title edge.
 	&__back {
 		margin-left: -$zt-space-2;
+	}
+
+	// ------------------------------------------------------------------
+	// Desktop: the framed sheet.
+	// ------------------------------------------------------------------
+	@include bp-up($bp-md) {
+		&__sheet {
+			@include zt-sheet;
+		}
+
+		&__band {
+			@include zt-sheet-band;
+		}
+
+		&__title {
+			display: block;
+			@include zt-sheet-title;
+		}
+
+		&__search {
+			width: 340px;
+			margin: 0;
+		}
+
+		&__layout {
+			@include zt-sheet-layout;
+
+			// While searching the nav is not rendered, so the results take the full width
+			// instead of being squeezed into the second grid track.
+			&--searching {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+
+		&__rail {
+			@include zt-sheet-rail;
+			padding: $zt-space-2 0;
+		}
+
+		&__content {
+			@include zt-sheet-content;
+		}
+
+		// Pinned to the top of the column while the section scrolls beneath it, so it needs
+		// the sheet's own ground, opaque.
+		&__tabs {
+			display: block;
+			position: sticky;
+			top: 0;
+			z-index: 5;
+			padding: $zt-space-1 $zt-space-6 0;
+			background: rgb(var(--background-color));
+			box-shadow: inset 0 0 0 999px $zt-sheet-lift;
+
+			&:empty {
+				display: none;
+			}
+		}
+
+		&__section {
+			padding: $zt-space-6;
+		}
+
+		// Blocks split by a rule, like the sheet itself. The Tailwind margin on a group
+		// loses to these on specificity.
+		[data-settings-group] {
+			scroll-margin-top: 72px;
+		}
+
+		// One height for every row, so a row without a description does not read as a
+		// different kind of thing from the one above it.
+		[data-settings-group] > div > .group {
+			box-sizing: border-box;
+			min-height: 88px;
+		}
+
+		[data-settings-group] + [data-settings-group] {
+			margin-top: $zt-space-6;
+			padding-top: $zt-space-6;
+			border-top: $zt-sheet-rule;
+		}
+
+		// The rows are shared with the left drawer, whose cards stay round by the owner's
+		// choice. On this square sheet round cards would read as a mistake.
+		.rounded-xl,
+		.rounded-2xl,
+		.rounded-3xl {
+			border-radius: $zt-radius-md;
+		}
 	}
 
 	// ------------------------------------------------------------------

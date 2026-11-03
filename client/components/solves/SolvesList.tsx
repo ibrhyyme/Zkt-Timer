@@ -483,32 +483,32 @@ export default function SolvesList() {
 										theme={hasTimeFilter ? CommonType.PRIMARY : undefined}
 									/>
 									{showTimeFilter && (
-										<div className="absolute top-full left-0 mt-2 z-50 bg-gray-800 border border-gray-700 shadow-xl rounded-lg p-3 min-w-[280px] flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-100">
+										<div className={b('time-panel')}>
 											<div className="flex flex-col gap-1">
-												<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.min_time')}</label>
+												<label className={b('time-label')}>{t('solves_list.min_time')}</label>
 												<input
 													type="text"
 													inputMode="numeric"
 													placeholder="700 = 7.00"
-													className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+													className={b('time-input')}
 													value={minTime}
 													onChange={(e) => setMinTime(e.target.value)}
 													onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
 												/>
 											</div>
 											<div className="flex flex-col gap-1">
-												<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.max_time')}</label>
+												<label className={b('time-label')}>{t('solves_list.max_time')}</label>
 												<input
 													type="text"
 													inputMode="numeric"
 													placeholder="1152 = 11.52"
-													className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+													className={b('time-input')}
 													value={maxTime}
 													onChange={(e) => setMaxTime(e.target.value)}
 													onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
 												/>
 											</div>
-											<div className="h-[1px] bg-gray-700 my-1" />
+											<div className={b('time-separator')} />
 											<div className="flex gap-2">
 												<Button
 													text={t('solves_list.clear')}

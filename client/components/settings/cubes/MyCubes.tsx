@@ -11,7 +11,7 @@ import { LocalCube, puzzlesWithCubes } from '../../../lib/cubes/active_cube';
 import { getCustomCubeTypes } from '../../../util/cubes/util';
 import { orderPuzzles, parseAddLink, puzzleLabel } from './cube_labels';
 import { useCubeActions } from './cube_actions';
-import { useCubeMenu } from './CubeMenu';
+import { useActionMenu } from '../../common/action_menu/ActionMenu';
 import CubeSection from './CubeSection';
 import CubeRow from './CubeRow';
 
@@ -34,7 +34,7 @@ export default function MyCubes() {
 	const location = useLocation();
 	const state = useCubes();
 	const actions = useCubeActions();
-	const menu = useCubeMenu();
+	const menu = useActionMenu();
 
 	const [loading, setLoading] = useState(true);
 	const [archiveOpen, setArchiveOpen] = useState(false);

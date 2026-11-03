@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import { useTranslation } from 'react-i18next';
 import { MagnifyingGlass } from 'phosphor-react';
 import block from '../../../styles/bem';
@@ -6,7 +7,7 @@ import { CubeSort, cubesForPuzzle, CubeState, mainCubeFor } from '../../../lib/c
 import { formatInteger } from '../../../util/locale_format';
 import { filterCubes, SECTION_SEARCH_THRESHOLD } from './cube_labels';
 import { CubeActions } from './cube_actions';
-import { CubeMenuOpenArgs } from './CubeMenu';
+import type { ActionMenuOpenArgs } from '../../common/action_menu/ActionMenu';
 import CubeRow from './CubeRow';
 
 const b = block('my-cubes');
@@ -18,7 +19,7 @@ interface Props {
 	label: string;
 	state: Pick<CubeState, 'cubes' | 'mains'>;
 	actions: CubeActions;
-	openMenu: (args: CubeMenuOpenArgs) => void;
+	openMenu: (args: ActionMenuOpenArgs) => void;
 }
 
 /**
@@ -61,17 +62,12 @@ export default function CubeSection({ puzzle, label, state, actions, openMenu }:
 						</label>
 						<label className={b('sort')}>
 							<span className={b('sort-label')}>{t('cubes.sort_label')}</span>
-							<select
-								className={b('sort-select')}
+							<SelectMenu
 								value={sort}
-								onChange={(e) => setSort(e.target.value as CubeSort)}
-							>
-								{SORTS.map((option) => (
-									<option key={option} value={option}>
-										{t(`cubes.sort_${option}`)}
-									</option>
-								))}
-							</select>
+								onChange={(value) => setSort(value as CubeSort)}
+								ariaLabel={t('cubes.sort_label')}
+								options={SORTS.map((option) => ({value: option, label: t(`cubes.sort_${option}`)}))}
+							/>
 						</label>
 					</div>
 				) : null}

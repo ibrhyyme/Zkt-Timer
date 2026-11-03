@@ -1,4 +1,5 @@
 import React, {useMemo, Component, ErrorInfo, ReactNode} from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {Info, Warning, ArrowClockwise} from 'phosphor-react';
@@ -125,22 +126,22 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 			{/* Event selector: dropdown on mobile, wrapped chips on web */}
 			{isMobile ? (
 				<div className={b('wca-live-event-select-wrapper')}>
-					<select
-						className={b('wca-live-event-select')}
+					<SelectMenu
+						fullWidth
 						value={eventId || ''}
-						onChange={(e) => {
-							const val = e.target.value;
-							if (val) handleEventClick(val);
+						onChange={(value) => {
+							if (value) handleEventClick(value);
 							else history.push(`/competitions/${detail.competitionId}/wca-live`);
 						}}
-					>
-						<option value="">{t('my_schedule.wca_live_select_event')}</option>
-						{overview.events.map((event) => (
-							<option key={event.eventId} value={event.eventId}>
-								{localEventName(t, event.eventId, event.eventName)}
-							</option>
-						))}
-					</select>
+						ariaLabel={t('my_schedule.wca_live_select_event')}
+						options={[
+							{value: '', label: t('my_schedule.wca_live_select_event')},
+							...overview.events.map((event) => ({
+								value: event.eventId,
+								label: localEventName(t, event.eventId, event.eventName),
+							})),
+						]}
+					/>
 				</div>
 			) : (
 				<div className={b('wca-live-event-chips')}>

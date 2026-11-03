@@ -135,8 +135,8 @@ export default function DataSettings() {
 							onClick={exportData}
 							disabled={exportingData}
 							className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${exportingData
-								? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-								: 'bg-button border-text/[0.1] text-text hover:bg-button/70 hover:border-text/[0.15] cursor-pointer'
+								? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
+								: 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.14] cursor-pointer'
 								}`}
 						>
 							{exportingData ? '...' : t('data_settings.export_button')}

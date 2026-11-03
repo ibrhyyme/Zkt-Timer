@@ -80,6 +80,9 @@ export function SelectionBar({items, panelOpen, onTogglePanel, onClear, onAdd, a
 	const count = items.length;
 	const note = !online ? t('trainer.sets.offline_needed') : limitHit ? t('trainer.sets.limit_items') : null;
 
+	// Nothing picked, nothing to say: "0 selected" over a dead Add button was the whole bar.
+	if (count === 0 && !note) return null;
+
 	return (
 		<div className={b('bar')}>
 			{note ? (
@@ -88,34 +91,26 @@ export function SelectionBar({items, panelOpen, onTogglePanel, onClear, onAdd, a
 					{note}
 				</p>
 			) : null}
-			<div className={b('bar-row')}>
-				<button
-					type="button"
-					className={b('bar-count')}
-					onClick={onTogglePanel}
-					disabled={count === 0}
-					aria-expanded={panelOpen}
-				>
-					<span className={b('bar-count-text')}>{t('trainer.sets.selected_count', {count})}</span>
-					{wide && count > 0 ? (
-						<span className={b('bar-names')}>{items.map((item) => item.case_name).join(', ')}</span>
-					) : null}
-					{count > 0 ? (panelOpen ? <CaretDown size={16} aria-hidden="true" /> : <CaretUp size={16} aria-hidden="true" />) : null}
-				</button>
-				{wide && count > 0 ? (
-					<Button gray text={t('trainer.sets.picker.clear')} onClick={onClear} disabled={adding} />
-				) : null}
-				<Button
-					primary
-					icon={<Plus weight="bold" />}
-					iconFirst
-					text={t('trainer.sets.picker.add')}
-					onClick={onAdd}
-					loading={adding}
-					disabled={count === 0 || !online || adding}
-					title={!online ? t('trainer.sets.offline_needed') : undefined}
-				/>
-			</div>
+			{count > 0 ? (
+				<div className={b('bar-row')}>
+					<button type="button" className={b('bar-count')} onClick={onTogglePanel} aria-expanded={panelOpen}>
+						<span className={b('bar-count-text')}>{t('trainer.sets.selected_count', {count})}</span>
+						{wide ? <span className={b('bar-names')}>{items.map((item) => item.case_name).join(', ')}</span> : null}
+						{panelOpen ? <CaretDown size={16} aria-hidden="true" /> : <CaretUp size={16} aria-hidden="true" />}
+					</button>
+					{wide ? <Button gray text={t('trainer.sets.picker.clear')} onClick={onClear} disabled={adding} /> : null}
+					<Button
+						primary
+						icon={<Plus weight="bold" />}
+						iconFirst
+						text={t('trainer.sets.picker.add')}
+						onClick={onAdd}
+						loading={adding}
+						disabled={!online || adding}
+						title={!online ? t('trainer.sets.offline_needed') : undefined}
+					/>
+				</div>
+			) : null}
 		</div>
 	);
 }

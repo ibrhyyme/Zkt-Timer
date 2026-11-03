@@ -447,3 +447,35 @@
 .zt-modal__center:has(> .zt-history-modal--mobile) > button {
 	display: none !important;
 }
+
+// Phones: the modal rises from the bottom (Modal --sheet) instead of this body filling the
+// screen by itself. The card's own ground stays, so the rows inside keep their contrast.
+.zt-modal--sheet .zt-modal__center:has(> .zt-history-modal--mobile),
+.zt-modal--sheet .zt-modal__center:has(> .zt-history-modal--card) {
+	display: block !important;
+	padding: 14px 0 0 !important;
+	border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
+	background: rgb(var(--background-color)) !important;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.zt-modal--sheet .zt-history-modal--mobile {
+	position: static;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+	padding-bottom: calc(#{sa(bottom)} + #{$zt-space-5});
+}
+
+.zt-modal--sheet .zt-history-modal__mobile-header {
+	padding-top: 0;
+}
+
+.zt-modal--sheet .zt-history-modal--card {
+	margin: 0;
+	padding-bottom: calc(#{sa(bottom)} + #{$zt-space-5});
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}

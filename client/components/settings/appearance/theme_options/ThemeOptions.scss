@@ -7,16 +7,26 @@
 		gap: 15px;
 	}
 
+	&__group-label {
+		@include zt-menu-group-label;
+		padding: 0;
+		margin: $zt-space-4 0 10px;
+
+		&:first-child {
+			margin-top: 0;
+		}
+	}
+
 	&__presets {
 		display: grid;
 		box-sizing: border-box;
 		width: 100%;
-		grid-gap: 10px;
-		grid-template-columns: repeat(2, 1fr);
-		justify-items: stretch;
+		grid-gap: $zt-space-3;
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 
 		@include bp-down($bp-md) {
-			grid-gap: 6px;
+			grid-gap: $zt-space-2;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
@@ -53,11 +63,11 @@
 		// The two buttons plus padding come to ~377px; on a 360px phone they used to run
 		// off the edge and widen the page. Wrapping puts the second one underneath.
 		flex-wrap: wrap;
-		gap: 15px;
-		justify-content: center;
-		margin-top: 20px;
-		padding: 15px;
-		border-top: 1px solid rgba(var(--text-color), 0.1);
+		gap: $zt-space-3;
+		justify-content: flex-end;
+		margin-top: $zt-space-5;
+		padding-top: $zt-space-5;
+		border-top: $zt-sheet-rule;
 
 		.#{$namespace}-button {
 			min-width: 180px;

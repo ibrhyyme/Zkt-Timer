@@ -4,6 +4,7 @@
  * tum gerekli state snapshot + callback'ler props olarak gelir.
  */
 import React, {useMemo, useState} from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import block from '../../../../styles/bem';
 import PllPic from './PllPic';
 import Note from './Note';
@@ -88,17 +89,12 @@ export default function CaseVariationsModal({
 				<div className={b('variations-meta')}>
 					<div className={b('variations-cross-row')}>
 						<label className={b('variations-cross-label')}>{labels?.crossColor || 'Cross color'}</label>
-						<select
+						<SelectMenu
 							value={crossColor}
-							onChange={(e) => setCrossColor(e.target.value)}
-							className={b('select')}
-						>
-							{CubeColors.map((c) => (
-								<option key={c} value={c}>
-									{c}
-								</option>
-							))}
-						</select>
+							onChange={setCrossColor}
+							ariaLabel={labels?.crossColor || 'Cross color'}
+							options={CubeColors.map((c) => ({value: c, label: c}))}
+						/>
 					</div>
 					<Note
 						value={note}

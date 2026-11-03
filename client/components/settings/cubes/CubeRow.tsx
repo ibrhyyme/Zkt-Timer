@@ -8,7 +8,7 @@ import { hapticImpact } from '../../../util/native-plugins';
 import { formatInteger } from '../../../util/locale_format';
 import { cubeProfileLink, formatLastUsed } from './cube_labels';
 import { CubeMenuItem } from './cube_actions';
-import { CubeMenuOpenArgs } from './CubeMenu';
+import type { ActionMenuOpenArgs } from '../../common/action_menu/ActionMenu';
 
 const b = block('my-cubes');
 
@@ -21,7 +21,7 @@ interface Props {
 	/** Puzzle name shown in the meta line (archive list, where puzzles are mixed). */
 	puzzleName?: string | null;
 	menuItems: CubeMenuItem[];
-	openMenu: (args: CubeMenuOpenArgs) => void;
+	openMenu: (args: ActionMenuOpenArgs) => void;
 }
 
 /**

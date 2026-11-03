@@ -73,6 +73,8 @@ export function findHorizontalOverflow(root: Document = document): string[] {
 	for (let i = 0; i < all.length && offenders.length < 10; i++) {
 		const el = all[i] as HTMLElement;
 		if (!isOutsideViewport(el.getBoundingClientRect(), width)) continue;
+		// Nothing to cut off: react-textarea-autosize parks an invisible measuring box here.
+		if (getComputedStyle(el).visibility === 'hidden') continue;
 		if (insideClipOrFixed(el)) continue;
 		offenders.push(describe(el));
 	}

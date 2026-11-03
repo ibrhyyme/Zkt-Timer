@@ -1,4 +1,5 @@
 import React from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import './CreatePromoCodeModal.scss';
 import Checkbox from '../../common/checkbox/Checkbox';
 import block from '../../../styles/bem';
@@ -98,14 +99,16 @@ export default function CreatePromoCodeModal(props: IModalProps) {
 
 				<div className={b('field')}>
 					<label className={b('label')}>{t('type_label')}</label>
-					<select
-						className={b('select')}
+					<SelectMenu
+						fullWidth
 						value={membershipType}
-						onChange={(e) => setMembershipType(e.target.value)}
-					>
-						<option value="pro">{t('type_pro')}</option>
-						<option value="premium">{t('type_premium')}</option>
-					</select>
+						onChange={setMembershipType}
+						ariaLabel={t('type_label')}
+						options={[
+							{value: 'pro', label: t('type_pro')},
+							{value: 'premium', label: t('type_premium')},
+						]}
+					/>
 				</div>
 
 				<div className={b('duration', {forever})}>
@@ -123,19 +126,21 @@ export default function CreatePromoCodeModal(props: IModalProps) {
 					</div>
 					<div className={b('field')}>
 						<label className={b('label')}>{t('unit_label')}</label>
-						<select
+						<SelectMenu
+							fullWidth
 							disabled={forever}
-							className={b('select')}
 							value={durationUnit}
-							onChange={(e) => setDurationUnit(e.target.value)}
-						>
-							<option value="minute">{t('unit_minute')}</option>
-							<option value="hour">{t('unit_hour')}</option>
-							<option value="day">{t('unit_day')}</option>
-							<option value="week">{t('unit_week')}</option>
-							<option value="month">{t('unit_month')}</option>
-							<option value="year">{t('unit_year')}</option>
-						</select>
+							onChange={setDurationUnit}
+							ariaLabel={t('unit_label')}
+							options={[
+								{value: 'minute', label: t('unit_minute')},
+								{value: 'hour', label: t('unit_hour')},
+								{value: 'day', label: t('unit_day')},
+								{value: 'week', label: t('unit_week')},
+								{value: 'month', label: t('unit_month')},
+								{value: 'year', label: t('unit_year')},
+							]}
+						/>
 					</div>
 				</div>
 

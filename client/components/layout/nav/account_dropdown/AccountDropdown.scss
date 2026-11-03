@@ -78,57 +78,30 @@
 		}
 	}
 
-	// ============================================================
-	// PANEL — FancyDropdown estetigi (blur + soft border + glow)
-	// ============================================================
 	&__panel {
-		min-width: 180px;
-		max-width: 240px;
-		background: rgba(var(--background-color), 0.85);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 12px;
-		box-shadow:
-			0 20px 50px rgba(0, 0, 0, 0.6),
-			0 8px 20px rgba(0, 0, 0, 0.4),
-			0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-		padding: 6px;
+		min-width: 220px;
+		max-width: 260px;
+		@include zt-menu-panel;
 		z-index: 10001;
 		position: relative;
-		overflow: hidden;
-		transform-origin: var(--radix-popover-content-transform-origin);
-		will-change: transform, opacity;
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background: radial-gradient(
-				120% 60% at 50% 0%,
-				rgba(var(--primary-color), 0.06) 0%,
-				transparent 60%
-			);
-			border-radius: inherit;
-			pointer-events: none;
-			z-index: 0;
-		}
 
 		&[data-state='open'] {
-			animation: account-dropdown-content-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+			animation: account-dropdown-content-in $motion-fast $ease-standard;
 		}
 
 		&[data-state='closed'] {
-			animation: account-dropdown-content-out 0.1s ease-in;
+			animation: account-dropdown-content-out $motion-instant ease-in;
+		}
+
+		@include bp-down($bp-md) {
+			min-width: 170px;
+			max-width: $zt-menu-max-w-phone;
 		}
 	}
 
 	&__options {
-		position: relative;
-		z-index: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
 
 		// Reversed use: the list turns with the rotated timer; the panel stays physical
 		// because its transform-origin is the trigger's anchor point.
@@ -137,82 +110,27 @@
 		}
 	}
 
-	// ============================================================
-	// OPTION ROW — Fancy hover stripe + stagger entrance
-	// ============================================================
-	&__option {
-		all: unset;
-		box-sizing: border-box;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 10px;
-		border-radius: 7px;
-		color: rgb(var(--text-color));
-		font-size: 0.8rem;
-		font-weight: 500;
-		font-family: inherit;
-		cursor: pointer;
-		user-select: none;
-		width: 100%;
-		position: relative;
-		transition:
-			color 0.15s ease,
-			background 0.15s ease,
-			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-		animation: account-dropdown-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+	&__separator {
+		@include zt-menu-separator;
+	}
 
-		// Sol yan stripe (hover'da uzar)
-		&::before {
-			content: '';
-			position: absolute;
-			left: 4px;
-			top: 50%;
-			width: 3px;
-			height: 0;
-			background: rgba(var(--text-color), 0.4);
-			border-radius: 2px;
-			transform: translateY(-50%);
-			transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-		}
+	&__option {
+		@include zt-menu-row;
 
 		&:hover,
 		&:focus-visible {
-			color: rgb(var(--text-color));
-			transform: translateX(2px);
-			outline: none;
-
-			&::before {
-				height: 10px;
-			}
+			@include zt-menu-row-hover;
 		}
 
-		// Pro item (the upsell, shown to non-Pro users): Pro's gold, flat, like the Pro page's
-		// panel: a gold hairline and a gold crown. The violet glow, the gradient line and the
-		// fixed violet text it had are gone; it hovers like every other row.
+		// Pro's gold on the crown, the only colour in the list.
 		&--pro {
 			@include zt-pro-accent;
-
-			border: 1px solid $zt-pro-frame;
-			margin: 2px 0;
-
-			.#{$namespace}-nav-account-dropdown__option-icon svg {
-				color: rgb(var(--primary-color));
-			}
+			--zt-menu-icon-color: rgb(var(--primary-color));
 		}
 	}
 
 	&__option-icon {
-		display: inline-flex;
-		align-items: center;
-		flex-shrink: 0;
-		color: rgba(var(--text-color), 0.7);
-
-		> img,
-		> svg {
-			max-width: 18px;
-			max-height: 18px;
-		}
+		@include zt-menu-icon;
 	}
 
 	&__option-label {
@@ -221,63 +139,30 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-}
 
-// Mobile'da panel ve option'lar daha kompakt
-@include bp-down($bp-md) {
-	.#{$namespace}-nav-account-dropdown {
-		&__panel {
-			min-width: 150px;
-			max-width: 200px;
-			padding: 4px;
-		}
-
-		&__option {
-			gap: 7px;
-			padding: 7px 9px;
-			font-size: 0.75rem;
-		}
-
-		&__option-icon {
-			> img,
-			> svg {
-				max-width: 16px;
-				max-height: 16px;
-			}
+	@include reduced-motion {
+		&__panel[data-state='open'],
+		&__panel[data-state='closed'] {
+			animation: none;
 		}
 	}
 }
 
-// Animations
+// The panel fades in and out. It used to spring and scale in, row by row.
 @keyframes account-dropdown-content-in {
 	from {
 		opacity: 0;
-		transform: scale(0.88) translateY(-8px);
 	}
 	to {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 }
 
 @keyframes account-dropdown-content-out {
 	from {
 		opacity: 1;
-		transform: scale(1) translateY(0);
 	}
 	to {
 		opacity: 0;
-		transform: scale(0.94) translateY(-4px);
-	}
-}
-
-@keyframes account-dropdown-item-in {
-	from {
-		opacity: 0;
-		transform: translateX(-8px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
 	}
 }

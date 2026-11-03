@@ -1,13 +1,34 @@
-// Migrated to Tailwind CSS in FriendlyRoom.tsx
+@import '../../styles/config';
 
-// Host menu (hamburger dropdown) open animation — referenced via inline style
-@keyframes host-menu-in {
-	from {
-		opacity: 0;
-		transform: scale(0.92) translateY(-6px);
+// Most of this page lives in Tailwind in FriendlyRoom.tsx. Its two menus (the host's and the
+// smart cube's) take their shape from the shared source.
+.#{$namespace}-room-menu {
+	@include zt-menu-panel;
+
+	&__item {
+		@include zt-menu-row;
+
+		&:hover:not(:disabled),
+		&:focus-visible {
+			@include zt-menu-row-hover;
+		}
+
+		&:disabled {
+			@include zt-menu-row-disabled;
+		}
+
+		svg {
+			flex-shrink: 0;
+			color: $zt-text-muted;
+		}
+
+		// Red on the icon: at this size red text fails contrast on a dark panel.
+		&--danger svg {
+			color: rgb(var(--error-color));
+		}
 	}
-	to {
-		opacity: 1;
-		transform: scale(1) translateY(0);
+
+	&__separator {
+		@include zt-menu-separator;
 	}
 }

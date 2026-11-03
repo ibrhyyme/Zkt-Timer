@@ -1,3 +1,5 @@
+@import '../../../styles/config';
+
 .zt-feature-access-control {
 	padding: 0.2rem 0 0.65rem 0;
 
@@ -82,36 +84,23 @@
 
 	&__dropdown {
 		position: absolute;
-		top: calc(100% + 4px);
+		top: calc(100% + #{$zt-menu-offset});
 		left: 0;
 		min-width: 180px;
-		background: #1e2433;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		border-radius: 0.4rem;
-		overflow: hidden;
 		z-index: 100;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+		overflow: hidden;
+		@include zt-menu-panel;
 	}
 
 	&__dropdown-item {
-		display: block;
-		width: 100%;
-		text-align: left;
-		padding: 0.45rem 0.7rem;
-		background: none;
-		border: none;
-		color: #fff;
-		font-size: 0.82rem;
-		cursor: pointer;
-		transition: background 0.12s;
+		@include zt-menu-row;
 
 		&:hover {
-			background: rgba(74, 158, 255, 0.12);
+			@include zt-menu-row-hover;
 		}
 
 		&--loading {
-			color: rgba(255, 255, 255, 0.45);
-			cursor: default;
+			@include zt-menu-row-disabled;
 
 			&:hover {
 				background: none;

@@ -1,5 +1,5 @@
 import React from 'react';
-import {hasVisibleSettingsRow} from '../TimerSettingsRow';
+import {hasVisibleSettingsRow} from '../visible_settings_row';
 
 // TimerSettingsGroup (client/components/settings/timer/TimerSettingsRow.tsx) used to render
 // its header unconditionally even when every row inside it was individually hidden (e.g.

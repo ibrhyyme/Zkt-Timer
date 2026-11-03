@@ -115,21 +115,6 @@
 	}
 
 	&__search-input,
-	&__sort-select {
-		min-height: 38px;
-		border-radius: 10px;
-		border: 1px solid rgba(var(--text-color), 0.14);
-		background: rgba(var(--text-color), 0.04);
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 0.9rem;
-
-		&:focus {
-			outline: none;
-			border-color: rgba(var(--primary-color), 0.7);
-		}
-	}
-
 	&__search-input {
 		width: 100%;
 		padding: 8px 12px 8px 32px;
@@ -141,15 +126,6 @@
 		gap: 8px;
 		font-size: 0.85rem;
 		font-weight: 600;
-	}
-
-	&__sort-select {
-		padding: 6px 10px;
-
-		option {
-			background: rgb(var(--module-color));
-			color: rgb(var(--text-color));
-		}
 	}
 
 	// --- Rows --------------------------------------------------------------
@@ -364,90 +340,6 @@
 
 		@media (prefers-reduced-motion: reduce) {
 			transition: none;
-		}
-	}
-}
-
-// --- Menu (popover on desktop, bottom sheet on phones) ---------------------------
-
-.#{$namespace}-cube-menu {
-	display: flex;
-	flex-direction: column;
-	color: rgb(var(--text-color));
-
-	&--popover {
-		position: fixed;
-		z-index: 1000;
-		min-width: 200px;
-		padding: 6px;
-		border-radius: 12px;
-		border: 1px solid rgba(var(--text-color), 0.12);
-		background: rgb(var(--module-color));
-		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
-	}
-
-	&--sheet {
-		gap: 2px;
-		padding: 14px 12px 20px;
-		padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-		border-radius: 28px 28px 0 0;
-		background: rgb(var(--module-color));
-	}
-
-	&__grabber {
-		align-self: center;
-		width: 40px;
-		height: 4px;
-		margin-bottom: 8px;
-		border-radius: 2px;
-		background: rgba(var(--text-color), 0.18);
-	}
-
-	&__title {
-		padding: 4px 12px 10px;
-		font-size: 1.05rem;
-		font-weight: 700;
-		overflow-wrap: anywhere;
-	}
-
-	&__item {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		min-height: 40px;
-		padding: 8px 12px;
-		border: 0;
-		border-radius: 8px;
-		background: transparent;
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		font-size: 0.95rem;
-		font-weight: 500;
-		text-align: left;
-		cursor: pointer;
-
-		&:hover,
-		&:focus-visible {
-			outline: none;
-			background: rgba(var(--text-color), 0.07);
-		}
-
-		&--danger {
-			color: rgb(var(--error-color));
-		}
-	}
-
-	&--sheet &__item {
-		min-height: 52px;
-		font-size: 1rem;
-	}
-
-	&__icon {
-		display: inline-flex;
-
-		svg {
-			width: 18px;
-			height: 18px;
 		}
 	}
 }

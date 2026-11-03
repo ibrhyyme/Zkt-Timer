@@ -7,43 +7,60 @@
 	align-items: flex-end;
 
 	&__toggle {
-		width: 100%;
-		border: 4px solid rgb(var(--button-color), 0.9);
-		background-color: rgb(var(--button-color), 0.4);
-		border-radius: 5px;
-		padding: 10px 15px;
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
+		gap: 10px;
+		width: 100%;
+		height: 48px;
+		padding: 0 $zt-space-3;
+		border: 1px solid $zt-menu-frame;
+		border-radius: $zt-radius-md;
+		background-color: $zt-card-bg;
+		font-family: inherit;
+		cursor: pointer;
+		transition: background $zt-transition;
 
 		> p {
-			opacity: 1;
+			min-width: 0;
+			overflow: hidden;
 			color: rgb(var(--text-color));
-			font-weight: bold;
-			transition: all 0.1s ease-in-out;
-			font-size: 1.1rem;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 			margin: 0 !important;
 		}
 
 		&:hover {
-			background-color: rgba(var(--theme-background-opposite), 0.07);
+			background-color: $zt-control-bg;
 		}
+
+		@include zt-focus-ring;
 	}
 
 	&__color {
-		$colorSize: 26px;
-		border: 2px solid rgb(var(--theme-background-opposite), 0.3);
-		width: $colorSize;
-		height: $colorSize;
-		border-radius: 50%;
-		display: inline-block;
-		margin-right: 10px;
+		flex-shrink: 0;
+		width: 24px;
+		height: 24px;
+		border-radius: $zt-radius-md;
+		box-shadow: inset 0 0 0 1px rgba(var(--text-color), 0.3);
+	}
+
+	&__hex {
+		flex-shrink: 0;
+		margin-left: auto;
+		color: $zt-text-muted;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.8125rem;
+		font-weight: 500;
 	}
 
 	&__palette {
 		position: absolute;
 		z-index: 1000;
-		top: calc(100% + 5px);
+		top: calc(100% + #{$zt-menu-offset});
 		right: 0;
 		opacity: 1;
 		transition: all 0.1s ease-in-out;
@@ -52,6 +69,9 @@
 		// it inside a narrow phone instead of widening the page.
 		width: 350px;
 		max-width: calc(100vw - 32px);
+		@include zt-menu-panel;
+		padding: 0;
+		overflow: hidden;
 
 		input {
 			max-width: unset;
@@ -75,7 +95,7 @@
 
 		&--up {
 			top: unset;
-			bottom: calc(100% + 5px);
+			bottom: calc(100% + #{$zt-menu-offset});
 		}
 
 		&--left {

@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuid } from 'uuid';
 import './CubeForm.scss';
@@ -123,13 +124,13 @@ export default function CubeForm(props: CubeFormProps) {
 						<span className={b('note')}>{t('cubes.form_puzzle_locked')}</span>
 					</>
 				) : (
-					<select className={b('input')} value={puzzle} onChange={(e) => setPuzzle(e.target.value)}>
-						{puzzleOptions.map((option) => (
-							<option key={option.id} value={option.id}>
-								{option.label}
-							</option>
-						))}
-					</select>
+					<SelectMenu
+						fullWidth
+						value={puzzle}
+						onChange={setPuzzle}
+						ariaLabel={t('cubes.form_puzzle')}
+						options={puzzleOptions.map((option) => ({value: option.id, label: option.label}))}
+					/>
 				)}
 			</label>
 

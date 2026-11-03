@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useMemo, useCallback, useRef} from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useDispatch as useReduxDispatch} from 'react-redux';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
@@ -12,7 +13,7 @@ import {openModal} from '../../../../actions/general';
 import AlgorithmCard from './AlgorithmCard';
 import type {CheckedAlgorithm, CubeFace} from '../../types';
 import {useTranslation} from 'react-i18next';
-import {CaretDown, Play, Info, X, DownloadSimple, Plus} from 'phosphor-react';
+import {Play, Info, X, DownloadSimple, Plus} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro} from '../../../../lib/pro';
 import {openProOnlyModal} from '../../../common/pro_only/openProOnlyModal';
@@ -316,8 +317,8 @@ export default function AlgorithmSelector() {
 	}, [me, checkedAlgorithms, filteredAlgorithmsWithSubset, selectedCategory, options.topFace, effectiveFrontFace, reduxDispatch, t]);
 
 	const handleTopFaceChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
-			const newTop = e.target.value as CubeFace;
+		(value: string) => {
+			const newTop = value as CubeFace;
 			const adjacent = getAdjacentFaces(newTop);
 			const currentFront = state.options.frontFace;
 			const newFront = adjacent.includes(currentFront) ? currentFront : getDefaultFrontFace(newTop);
@@ -327,8 +328,8 @@ export default function AlgorithmSelector() {
 	);
 
 	const handleFrontFaceChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
-			dispatch({type: 'SET_OPTIONS', payload: {frontFace: e.target.value as CubeFace}});
+		(value: string) => {
+			dispatch({type: 'SET_OPTIONS', payload: {frontFace: value as CubeFace}});
 		},
 		[dispatch]
 	);
@@ -369,36 +370,32 @@ export default function AlgorithmSelector() {
 								<div className={b('selector-face-group')}>
 									<label className={b('selector-face-label')}>{t('trainer.top_layer')}</label>
 									<div className={b('selector-dropdown')}>
-										<select
+										<SelectMenu
+											fullWidth
 											value={options.topFace}
 											onChange={handleTopFaceChange}
-											className={b('selector-select')}
-										>
-											{(['U', 'D', 'F', 'B', 'R', 'L'] as CubeFace[]).map((face) => (
-												<option key={face} value={face}>
-													{t(`trainer.face_${face.toLowerCase()}`)}
-												</option>
-											))}
-										</select>
-										<CaretDown size={16} className={b('selector-caret')} />
+											ariaLabel={t('trainer.top_layer')}
+											options={(['U', 'D', 'F', 'B', 'R', 'L'] as CubeFace[]).map((face) => ({
+												value: face,
+												label: t(`trainer.face_${face.toLowerCase()}`),
+											}))}
+										/>
 									</div>
 								</div>
 								{!isTopFaceOnlyCategory(selectedCategory) && (
 									<div className={b('selector-face-group')}>
 										<label className={b('selector-face-label')}>{t('trainer.front_layer')}</label>
 										<div className={b('selector-dropdown')}>
-											<select
+											<SelectMenu
+												fullWidth
 												value={options.frontFace}
 												onChange={handleFrontFaceChange}
-												className={b('selector-select')}
-											>
-												{adjacentFaces.map((face) => (
-													<option key={face} value={face}>
-														{t(`trainer.face_${face.toLowerCase()}`)}
-													</option>
-												))}
-											</select>
-											<CaretDown size={16} className={b('selector-caret')} />
+												ariaLabel={t('trainer.front_layer')}
+												options={adjacentFaces.map((face) => ({
+													value: face,
+													label: t(`trainer.face_${face.toLowerCase()}`),
+												}))}
+											/>
 										</div>
 									</div>
 								)}
@@ -408,19 +405,19 @@ export default function AlgorithmSelector() {
 									<div className={b('selector-face-group')}>
 										<label className={b('selector-face-label')}>{t('trainer.f2l_slot')}</label>
 										<div className={b('selector-dropdown')}>
-											<select
+											<SelectMenu
+												fullWidth
 												value={slotFilter}
-												onChange={(e) => setSlotFilter(e.target.value)}
-												className={b('selector-select')}
-											>
-												<option value="all">{t('trainer.f2l_slot_all')}</option>
-												{F2L_SLOTS.map((slot) => (
-													<option key={slot} value={slot}>
-														{t(`trainer.f2l_slot_${slot.toLowerCase().replace(' ', '_')}`)}
-													</option>
-												))}
-											</select>
-											<CaretDown size={16} className={b('selector-caret')} />
+												onChange={setSlotFilter}
+												ariaLabel={t('trainer.f2l_slot_all')}
+												options={[
+													{value: 'all', label: t('trainer.f2l_slot_all')},
+													...F2L_SLOTS.map((slot) => ({
+														value: slot,
+														label: t(`trainer.f2l_slot_${slot.toLowerCase().replace(' ', '_')}`),
+													})),
+												]}
+											/>
 										</div>
 									</div>
 								</div>

@@ -3,6 +3,7 @@
  * Desktop: 2-column grid layout: left form column + right preview/toggle column.
  */
 import React, {useMemo} from 'react';
+import SelectMenu from '../../../common/select_menu/SelectMenu';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {Lightning} from 'phosphor-react';
@@ -148,34 +149,26 @@ export default function SettingsView() {
 							<label className={b('settings-row-label')}>
 								{t('trainer.recognition.settings_view', {defaultValue: 'View'})}
 							</label>
-							<select
+							<SelectMenu
 								value={viewKeyByValue(settings.puzzleRotations)}
-								onChange={(e) => updateSettings({puzzleRotations: CubeViews[e.target.value]})}
-								className={b('select')}
-							>
-								{Object.keys(CubeViews).map((vn) => (
-									<option key={vn} value={vn}>
-										{vn}
-									</option>
-								))}
-							</select>
+								onChange={(next) => updateSettings({puzzleRotations: CubeViews[next]})}
+								ariaLabel={t('trainer.recognition.settings_view', {defaultValue: 'View'})}
+								align="end"
+								options={Object.keys(CubeViews).map((vn) => ({value: vn, label: vn}))}
+							/>
 						</div>
 
 						<div className={b('settings-row')}>
 							<label className={b('settings-row-label')}>
 								{t('trainer.recognition.settings_stroke', {defaultValue: 'Stroke'})}
 							</label>
-							<select
+							<SelectMenu
 								value={String(settings.strokeWidth)}
-								onChange={(e) => updateSettings({strokeWidth: Number(e.target.value)})}
-								className={b('select')}
-							>
-								{Object.entries(strokeWidthOptions).map(([label, val]) => (
-									<option key={label} value={String(val)}>
-										{label}
-									</option>
-								))}
-							</select>
+								onChange={(next) => updateSettings({strokeWidth: Number(next)})}
+								ariaLabel={t('trainer.recognition.settings_stroke', {defaultValue: 'Stroke'})}
+								align="end"
+								options={Object.entries(strokeWidthOptions).map(([label, val]) => ({value: String(val), label}))}
+							/>
 						</div>
 
 						<div className={b('settings-row')}>

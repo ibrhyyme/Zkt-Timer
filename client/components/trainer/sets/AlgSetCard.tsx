@@ -14,6 +14,7 @@ import {useTranslation} from 'react-i18next';
 import {DotsThreeVertical, EyeSlash} from 'phosphor-react';
 import block from '../../../styles/bem';
 import CasePattern from '../common/CasePattern';
+import {anchorOf, type ActionMenuAnchor} from '../../common/action_menu/ActionMenu';
 import {facesFor, usePatternFaces} from './picker/PickerCards';
 import {trainerAlgText} from '../../../util/trainer/set_queue';
 import {CategoryBadges, OwnerChip, VisibilityTag, useLongPress} from './parts';
@@ -27,12 +28,12 @@ interface Props {
 	set: AlgSetSummaryData;
 	variant: AlgSetCardVariant;
 	onOpen: (set: AlgSetSummaryData) => void;
-	onMenu?: (set: AlgSetSummaryData) => void;
+	onMenu?: (set: AlgSetSummaryData, anchor: ActionMenuAnchor) => void;
 }
 
 export default function AlgSetCard({set, variant, onOpen, onMenu}: Props) {
 	const {t} = useTranslation();
-	const openMenu = onMenu ? () => onMenu(set) : null;
+	const openMenu = onMenu ? (anchor: ActionMenuAnchor) => onMenu(set, anchor) : null;
 	const {handlers, consumeClick} = useLongPress(openMenu);
 
 	const faces = usePatternFaces();
@@ -87,7 +88,7 @@ export default function AlgSetCard({set, variant, onOpen, onMenu}: Props) {
 				<button
 					type="button"
 					className={b('card-menu')}
-					onClick={openMenu}
+					onClick={(e) => openMenu(anchorOf(e.currentTarget))}
 					onTouchStart={(e) => e.stopPropagation()}
 					onContextMenu={(e) => e.stopPropagation()}
 					aria-label={t('trainer.sets.more_actions')}

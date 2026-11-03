@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Archive, ArrowCounterClockwise, PencilSimple, Star, Trash } from 'phosphor-react';
 import { openModal } from '../../../actions/general';
 import { IModalProps } from '../../common/modal/Modal';
+import type { ActionMenuItem } from '../../common/action_menu/ActionMenu';
 import { toastError } from '../../../util/toast';
 import { LocalCube } from '../../../lib/cubes/active_cube';
 import { chooseMainCube, setCubeArchivedOnline } from '../../../lib/cubes/sync';
@@ -20,13 +21,7 @@ export function sheetOptions(extra: IModalProps = {}): IModalProps {
 	return phone ? { position: 'bottom', ...extra } : { width: 460, ...extra };
 }
 
-export interface CubeMenuItem {
-	id: string;
-	label: string;
-	icon: React.ReactNode;
-	danger?: boolean;
-	onSelect: () => void;
-}
+export type CubeMenuItem = ActionMenuItem;
 
 export interface CubeActions {
 	openAdd: (options?: { puzzle?: string | null; onSaved?: (cube: LocalCube) => void }) => void;

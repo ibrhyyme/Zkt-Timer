@@ -15,16 +15,13 @@
 		text-transform: uppercase;
 	}
 
+	// Phones draw the heading through PageTitle.
+	&__title {
+		display: none;
+	}
+
 	&__layout {
-		display: grid;
-		grid-template-columns: 244px minmax(0, 1fr);
-		gap: 2.5rem;
-		align-items: start;
 		width: 100%;
-		// Without a ceiling the sidebar hugs the left edge of a wide monitor and leaves
-		// a dead column on the right; centring the pair keeps the page balanced.
-		max-width: 1180px;
-		margin: 0 auto;
 	}
 
 	&__content {
@@ -55,15 +52,33 @@
 		margin-left: -$zt-space-2;
 	}
 
-	// The Pro page reuses this shell but lays itself out full width.
-	&:has(.#{$namespace}-pro-page) {
-		&::before {
-			display: none;
+	// ------------------------------------------------------------------
+	// Desktop: the framed sheet. SettingsCard turns into blocks of it.
+	// ------------------------------------------------------------------
+	@include bp-up($bp-md) {
+		&__sheet {
+			@include zt-sheet;
 		}
 
-		.#{$namespace}-account__layout {
+		&__band {
+			@include zt-sheet-band;
+		}
+
+		&__title {
 			display: block;
-			max-width: unset;
+			@include zt-sheet-title;
+		}
+
+		&__layout {
+			@include zt-sheet-layout;
+		}
+
+		&__rail {
+			@include zt-sheet-rail;
+		}
+
+		&__content {
+			@include zt-sheet-content;
 		}
 	}
 

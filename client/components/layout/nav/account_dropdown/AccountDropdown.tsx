@@ -25,6 +25,8 @@ interface Item {
 	link?: string;
 	onClick?: () => void;
 	pro?: boolean;
+	// Opens a new block in the list: a separator above this row.
+	startsBlock?: boolean;
 }
 
 export default function AccountDropdown() {
@@ -69,7 +71,7 @@ export default function AccountDropdown() {
 		label: userIsPro ? t('account_dropdown.pro_subscription') : t('account_dropdown.pro_subscription_cta'),
 		icon: <Crown weight="fill" />,
 		link: '/pro',
-		pro: !userIsPro,
+		pro: true,
 	});
 	items.push({
 		key: 'account',
@@ -86,6 +88,7 @@ export default function AccountDropdown() {
 		icon: <Gear weight="bold" />,
 		// /settings is the section index, same shape as /account above.
 		link: '/settings',
+		startsBlock: true,
 	});
 	// The only in-app entry point to /help; the landing footer is the other one, and
 	// a signed-in user never sees that footer.
@@ -108,6 +111,7 @@ export default function AccountDropdown() {
 		label: t('account_dropdown.logout'),
 		icon: <SignOut weight="bold" />,
 		onClick: logOut,
+		startsBlock: true,
 	});
 
 	function handleOpenChange(next: boolean) {
@@ -141,21 +145,22 @@ export default function AccountDropdown() {
 					className={b('panel')}
 					side={placement.side}
 					align={placement.align}
-					sideOffset={8}
+					sideOffset={4}
 					collisionPadding={12}
 				>
 					<div className={b('options', { reversed })}>
-						{items.map((item, i) => (
-							<button
-								key={item.key}
-								type="button"
-								className={b('option', { pro: !!item.pro })}
-								style={{ animationDelay: `${30 + i * 25}ms` }}
-								onClick={() => handleItemClick(item)}
-							>
-								{item.icon && <span className={b('option-icon')}>{item.icon}</span>}
-								<span className={b('option-label')}>{item.label}</span>
-							</button>
+						{items.map((item) => (
+							<React.Fragment key={item.key}>
+								{item.startsBlock && <div className={b('separator')} role="separator" />}
+								<button
+									type="button"
+									className={b('option', { pro: !!item.pro })}
+									onClick={() => handleItemClick(item)}
+								>
+									{item.icon && <span className={b('option-icon')}>{item.icon}</span>}
+									<span className={b('option-label')}>{item.label}</span>
+								</button>
+							</React.Fragment>
 						))}
 					</div>
 				</Popover.Content>

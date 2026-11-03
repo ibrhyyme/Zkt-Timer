@@ -11,6 +11,9 @@ import { useBackdropClose } from '../../../util/hooks/useBackdropClose';
 import { isUiReversed } from '../../../util/reversed-ui';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { isAndroidNative } from '../../../util/platform';
+import { MOBILE_BREAKPOINT } from '../../../util/hooks/useIsMobile';
+import { useKeyboardInset } from '../../../util/hooks/useKeyboardInset';
+import { useSheetDrag } from '../../../util/hooks/useSheetDrag';
 
 const b = block('modal');
 
@@ -38,6 +41,12 @@ export interface IModalProps {
 	compact?: boolean;
 	disableBackdropClick?: boolean;
 	position?: 'center' | 'bottom';
+	/**
+	 * On a phone every modal rises from the bottom with its own title and frame (owner,
+	 * 2026-11-03). false keeps it a full screen; fullSize never rises. position 'bottom' is for
+	 * a body that draws its own card.
+	 */
+	sheetOnPhone?: boolean;
 	/** A Pro surface: the frame wears Pro's gold instead of the user's theme colour. */
 	pro?: boolean;
 }
@@ -59,10 +68,22 @@ export default function Modal(props: IModalProps) {
 		onComplete,
 		disableBackdropClick,
 		position,
+		sheetOnPhone,
 		pro,
 	} = props;
 
 	const isBottomSheet = position === 'bottom';
+	// Read once: a sheet does not turn into a dialog if the window is resized under it.
+	const [phoneSheet] = useState(
+		() =>
+			sheetOnPhone !== false &&
+			!fullSize &&
+			!isBottomSheet &&
+			typeof window !== 'undefined' &&
+			window.innerWidth < MOBILE_BREAKPOINT
+	);
+	const centerRef = useRef<HTMLDivElement>(null);
+	const keyboardInset = useKeyboardInset();
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [active, setActive] = useState(false);
@@ -132,6 +153,9 @@ export default function Modal(props: IModalProps) {
 		threshold: 100,
 	});
 
+	// A modal that turned the casual ways out off keeps this one off too.
+	useSheetDrag(centerRef, clickClose, (phoneSheet || isBottomSheet) && !hideCloseButton && !disableBackdropClick);
+
 	const backdropClose = useBackdropClose(() => {
 		if (!disableBackdropClick) {
 			clickClose();
@@ -149,6 +173,10 @@ export default function Modal(props: IModalProps) {
 
 	if (noPadding) {
 		centerStyle.padding = '0';
+	}
+
+	if (phoneSheet && keyboardInset) {
+		centerStyle.marginBottom = keyboardInset + 'px';
 	}
 
 	if (swipePhase !== 'idle') {
@@ -181,8 +209,9 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet, pro })} style={style} {...backdropClose}>
-			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
+		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet, sheet: phoneSheet, pro })} style={style} {...backdropClose}>
+			<div ref={centerRef} className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
+				{phoneSheet ? <div className={b('grabber')} aria-hidden="true" /> : null}
 				{/* Close before the header: on phones it floats right and stays sticky, and a
 				    float only sits beside the content that follows it. */}
 				{!isBottomSheet && closeButton}

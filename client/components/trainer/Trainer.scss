@@ -163,35 +163,6 @@
 		min-width: 200px;
 	}
 
-	&__selector-select {
-		width: 100%;
-		padding: 0.5rem 2rem 0.5rem 0.75rem;
-		border-radius: $zt-radius-md;
-		border: 1px solid rgba(var(--text-color), 0.1);
-		background: rgba(var(--button-color), 0.3);
-		color: rgb(var(--text-color));
-		font-size: 0.9rem;
-		appearance: none;
-		cursor: pointer;
-
-		&:focus {
-			outline: none;
-			border-color: rgb(var(--primary-color));
-		}
-
-		option {
-			background: rgb(var(--module-color));
-			color: rgb(var(--text-color));
-		}
-	}
-
-	&__selector-caret {
-		position: absolute;
-		right: 0.75rem;
-		pointer-events: none;
-		color: rgba(var(--text-color), 0.5);
-	}
-
 	&__selector-options {
 		display: flex;
 		flex-direction: column;
@@ -2249,18 +2220,6 @@
 		}
 	}
 
-	&__settings-select {
-		padding: 0.4rem 0.6rem;
-		border-radius: $zt-radius-md;
-		border: 1px solid rgba(var(--text-color), 0.15);
-		background: rgb(var(--background-color));
-		color: rgb(var(--text-color));
-		font-size: 0.9rem;
-		cursor: pointer;
-		min-width: 140px;
-		max-width: 50%;
-	}
-
 	// Mobile: settings modal compact — reduce section padding and font size
 	@include bp-down($bp-sm) {
 		&__settings-modal {
@@ -2284,10 +2243,6 @@
 			font-size: 0.75rem;
 		}
 
-		&__settings-select {
-			min-width: 110px;
-			font-size: 0.85rem;
-		}
 	}
 }
 

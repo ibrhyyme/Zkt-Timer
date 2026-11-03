@@ -1,4 +1,5 @@
 import React from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import block from '../../../styles/bem';
 
 const b = block('trainer');
@@ -21,15 +22,13 @@ export default function SettingSelect<T extends string>({label, value, options, 
 			<div className={b('settings-row-text')}>
 				<div className={b('settings-row-label')}>{label}</div>
 			</div>
-			<select
-				className={b('settings-select')}
+			<SelectMenu
 				value={value}
-				onChange={(e) => onChange(e.target.value as T)}
-			>
-				{options.map((opt) => (
-					<option key={opt.value} value={opt.value}>{opt.label}</option>
-				))}
-			</select>
+				onChange={(next) => onChange(next as T)}
+				ariaLabel={label}
+				align="end"
+				options={options.map((opt) => ({value: opt.value, label: opt.label}))}
+			/>
 		</div>
 	);
 }

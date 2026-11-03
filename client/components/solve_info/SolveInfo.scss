@@ -82,6 +82,26 @@
 	overflow: hidden;
 }
 
+// Phones: the card rises from the bottom (Modal --sheet) instead of filling the screen by itself.
+// The frame scrolls, so the card's own height caps come off.
+.zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--mobile) {
+	padding: 14px 0 0 !important;
+	border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
+	background: rgb(var(--background-color)) !important;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.zt-modal--sheet .zt-solve-info--mobile {
+	position: static;
+	width: 100%;
+	height: auto;
+	max-height: none;
+	overflow: visible;
+	padding-top: 0;
+	border-radius: 0;
+}
+
 // The shell's X is hidden: the card has its own Done in its title bar.
 .zt-modal__center:has(> .zt-solve-info)>button,
 .zt-modal__center:has(> .zt-solve-info--mobile)>button {

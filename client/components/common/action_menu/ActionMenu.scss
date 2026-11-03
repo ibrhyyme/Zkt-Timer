@@ -1,0 +1,134 @@
+@import '../../../styles/config';
+
+.#{$namespace}-action-menu {
+	display: flex;
+	flex-direction: column;
+	color: rgb(var(--text-color));
+
+	&--popover {
+		position: fixed;
+		z-index: 1000;
+		min-width: 200px;
+		max-width: 300px;
+		@include zt-menu-panel;
+	}
+
+	&--sheet {
+		gap: 2px;
+		padding: 14px 12px 20px;
+		padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+		border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0;
+		background: rgb(var(--module-color));
+	}
+
+	&__grabber {
+		align-self: center;
+		width: 40px;
+		height: 4px;
+		margin-bottom: 8px;
+		border-radius: 2px;
+		background: rgba(var(--text-color), 0.18);
+	}
+
+	&__title {
+		padding: 4px 12px 10px;
+		font-size: 1.05rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__message {
+		margin: 0;
+		padding: $zt-space-2 $zt-space-3;
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+		line-height: 1.45;
+	}
+
+	&__separator {
+		@include zt-menu-separator;
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 52px;
+		padding: 8px 12px;
+		border: 0;
+		border-radius: 8px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 500;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover:not(:disabled),
+		&:focus-visible {
+			outline: none;
+			background: rgba(var(--text-color), 0.07);
+		}
+
+		&:disabled {
+			color: $zt-text-muted;
+			cursor: not-allowed;
+		}
+
+		&--danger {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&--popover &__item {
+		@include zt-menu-row;
+
+		&:hover:not(:disabled),
+		&:focus-visible {
+			@include zt-menu-row-hover;
+		}
+
+		&:disabled {
+			@include zt-menu-row-disabled;
+		}
+	}
+
+	// Red on the icon: at this size red text fails contrast on a dark panel.
+	&--popover &__item--danger {
+		--zt-menu-icon-color: rgb(var(--error-color));
+	}
+
+	&__icon {
+		display: inline-flex;
+		flex-shrink: 0;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	&--popover &__icon {
+		@include zt-menu-icon;
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+	}
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__note {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		font-weight: 400;
+		white-space: normal;
+	}
+}

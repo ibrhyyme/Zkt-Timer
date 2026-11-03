@@ -91,6 +91,45 @@
 		border-top: 1px solid rgba(var(--text-color), 0.08);
 	}
 
+	// From the desktop up the page is a framed sheet, and a card inside a frame is a box in
+	// a box. Each card becomes a block of the sheet, split by a rule.
+	@include bp-up($bp-md) {
+		padding: $zt-space-6;
+		margin-bottom: 0;
+		border: 0;
+		border-bottom: $zt-sheet-rule;
+		border-radius: 0;
+		background: none;
+
+		&:last-child {
+			border-bottom: 0;
+		}
+
+		&__footer {
+			justify-content: flex-end;
+			padding-top: 0;
+			border-top: 0;
+		}
+	}
+
+	@include bp-up($bp-lg) {
+		&__body--columns {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			column-gap: $zt-space-5;
+
+			.#{$namespace}-common-generic-input {
+				max-width: none;
+			}
+
+			// Input wraps the field in a plain div, so "is it a field" is a question about
+			// what the child holds. Everything else (the password rules) takes the full row.
+			> :not(:has(.#{$namespace}-common-generic-input)) {
+				grid-column: 1 / -1;
+			}
+		}
+	}
+
 	// Destructive and pending states earn colour; nothing else on the card does.
 	&--danger {
 		border-color: rgba(var(--error-color), 0.4);

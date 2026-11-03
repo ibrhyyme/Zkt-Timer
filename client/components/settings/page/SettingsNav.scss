@@ -1,10 +1,6 @@
 @import '../../../styles/config';
 
 .#{$namespace}-settings-nav {
-	// The page title collapses to zero height on desktop, so the sidebar only needs
-	// to clear the fixed top nav.
-	position: sticky;
-	top: calc(var(--nav-h) + 1.5rem);
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
@@ -83,6 +79,21 @@
 		svg {
 			width: 14px;
 			height: 14px;
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Desktop: rows of the sheet's rail.
+	// ------------------------------------------------------------------
+	@include bp-up($bp-md) {
+		gap: 0;
+
+		&__item {
+			@include zt-sheet-rail-item;
+		}
+
+		&__item-highlight {
+			border-radius: 0;
 		}
 	}
 

@@ -548,15 +548,28 @@
 		display: flex;
 		flex-direction: column;
 		max-height: 45%;
-		border-top: 1px solid rgba(var(--text-color), 0.1);
-		background: rgb(var(--module-color));
+		border-top: $zt-sheet-rule;
+		background: rgb(var(--background-color));
+		box-shadow: inset 0 0 0 999px $zt-sheet-lift;
+		animation: set-picker-rise $motion-fast $ease-standard;
+
+		@include reduced-motion {
+			animation: none;
+		}
+
+		@include bp-down($bp-md) {
+			border-top: 0;
+			border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0;
+			background: rgb(var(--module-color));
+			box-shadow: none;
+		}
 	}
 
 	&__panel-head {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.25rem 0.5rem 0 1rem;
+		padding: $zt-space-2 $zt-space-2 0 $zt-space-4;
 	}
 
 	&__panel-title {
@@ -568,13 +581,13 @@
 	&__panel-body {
 		overflow-y: auto;
 		overscroll-behavior: contain;
-		padding: 0 1rem 0.5rem;
+		padding: 0 $zt-space-4 $zt-space-2;
 	}
 
 	&__panel-group-title {
-		margin: 0.5rem 0 0.25rem;
-		font-size: 0.8rem;
-		font-weight: 700;
+		@include zt-menu-group-label;
+		margin: 0;
+		padding-left: 0;
 	}
 
 	&__panel-rows {
@@ -587,7 +600,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+		border-bottom: 1px solid $zt-card-border;
 	}
 
 	&__panel-row-body {
@@ -605,8 +618,10 @@
 
 	&__panel-row-alg {
 		overflow-x: auto;
-		white-space: nowrap;
+		color: $zt-text-muted;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
 		font-size: 0.78rem;
+		white-space: nowrap;
 	}
 
 	&__bar {
@@ -614,9 +629,15 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.35rem;
-		padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
-		border-top: 1px solid rgba(var(--text-color), 0.1);
-		background: var(--zt-surface-float, rgb(var(--module-color)));
+		padding: $zt-space-2 $zt-space-3 calc(#{$zt-space-2} + env(safe-area-inset-bottom, 0px));
+		border-top: $zt-sheet-rule;
+		background: rgb(var(--background-color));
+		box-shadow: inset 0 0 0 999px $zt-sheet-lift;
+		animation: set-picker-rise $motion-fast $ease-standard;
+
+		@include reduced-motion {
+			animation: none;
+		}
 	}
 
 	&__bar-note {
@@ -648,8 +669,8 @@
 		gap: 0.5rem;
 		flex: 1;
 		min-width: 0;
-		min-height: 44px;
-		padding: 0 0.5rem;
+		min-height: $zt-control-h-md;
+		padding: 0 $zt-space-2;
 		border: none;
 		border-radius: $zt-radius-md;
 		background: transparent;
@@ -657,9 +678,18 @@
 		font: inherit;
 		text-align: left;
 		cursor: pointer;
+		transition: background $zt-transition;
 
-		&:disabled {
-			cursor: default;
+		&:hover {
+			background: $zt-menu-hover;
+		}
+
+		@include zt-focus-ring;
+
+		> svg {
+			flex-shrink: 0;
+			margin-left: auto;
+			color: $zt-text-muted;
 		}
 	}
 
@@ -674,6 +704,19 @@
 		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
+		color: $zt-text-muted;
 		font-size: 0.88rem;
+	}
+}
+
+// The bar and the list come up when there is something to show.
+@keyframes set-picker-rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }

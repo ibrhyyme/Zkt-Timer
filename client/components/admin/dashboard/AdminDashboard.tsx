@@ -1,4 +1,5 @@
 import React from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import { gql } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -249,24 +250,18 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 		<div className="zt-admin-dashboard__expand-panel">
 			{period === 'month' && monthOptions.length > 0 && (
 				<div className="zt-admin-dashboard__month-controls">
-					<label className="zt-admin-dashboard__month-label" htmlFor="zt-admin-dashboard-month-select">
+					<span className="zt-admin-dashboard__month-label">
 						{t('admin_dashboard.select_month')}
-					</label>
-					<select
-						id="zt-admin-dashboard-month-select"
-						className="zt-admin-dashboard__month-select"
+					</span>
+					<SelectMenu
 						value={effectiveMonth ?? currentMonth}
-						onChange={(e) => {
-							const v = e.target.value;
-							setSelectedMonth(v === currentMonth ? null : v);
-						}}
-					>
-						{monthOptions.map((ym) => (
-							<option key={ym} value={ym}>
-								{ym === currentMonth ? t('admin_dashboard.this_month') : formatMonthLabel(ym, i18n.language)}
-							</option>
-						))}
-					</select>
+						onChange={(value) => setSelectedMonth(value === currentMonth ? null : value)}
+						ariaLabel={t('admin_dashboard.select_month')}
+						options={monthOptions.map((ym) => ({
+							value: ym,
+							label: ym === currentMonth ? t('admin_dashboard.this_month') : formatMonthLabel(ym, i18n.language),
+						}))}
+					/>
 				</div>
 			)}
 

@@ -168,17 +168,6 @@
 	}
 
 	&__filter-input,
-	&__filter-select {
-		height: 38px;
-		padding: 0 12px;
-		border-radius: 8px;
-		border: 1px solid rgba(var(--text-color), 0.18);
-		background: rgb(var(--module-color));
-		color: rgb(var(--text-color));
-		font-size: 14px;
-		font-weight: 600;
-	}
-
 	&__filter-input {
 		min-width: 220px;
 	}

@@ -145,6 +145,30 @@
 		padding: 0.6rem 0.75rem 0;
 	}
 
+	// The trainer's pages sit on the same framed sheet as Settings, and already scroll inside
+	// it. The shell gives the height; the hairline is drawn inward because the shell clips.
+	&__sheet {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		min-height: 0;
+		width: 100%;
+
+		@include bp-up($bp-md) {
+			@include zt-sheet;
+			height: auto;
+			min-height: 0;
+			box-shadow: inset 0 0 0 1px $zt-menu-frame;
+
+			.#{$namespace}-trainer-header {
+				border-bottom: $zt-sheet-rule;
+				border-radius: $zt-radius-md $zt-radius-md 0 0;
+				background: transparent;
+			}
+		}
+	}
+
 	// A tab's (or the set page's) own scroll container: the trainer page body does not scroll
 	// (Trainer.tsx locks it), so lists scroll here. Same rule as the 2.0 page scroll work.
 	&__scroll {

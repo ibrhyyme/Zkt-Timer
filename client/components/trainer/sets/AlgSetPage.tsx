@@ -68,6 +68,7 @@ import {loadAlgSet, peekCachedAlgSet, rememberAlgSet, forgetAlgSet, toStudySet} 
 import {addSavedSet, removeSavedSet, upsertOwnSet} from '../../../lib/alg_sets/store';
 import {algSetSsrKey, type AlgSetSsrPreview} from './ssr';
 import {CategoryBadges, OwnerChip, VisibilityTag, type SheetAction} from './parts';
+import {anchorOf} from '../../common/action_menu/ActionMenu';
 import {groupItemsByCategory, loginRedirectPath, moveId, moveIdTo, progressCounts} from './set_ui';
 import {useSetActions} from './set_actions';
 import {useShareAlgSet} from './ShareButton';
@@ -255,14 +256,14 @@ export default function AlgSetPage() {
 		actions.openEdit(set, set.items, (next) => setView((prev) => ({...prev, set: {...next, items: set.items}})));
 	}
 
-	function shareOwn() {
+	function shareOwn(e: React.MouseEvent<HTMLElement>) {
 		if (!set) return;
 		if (set.visibility === 'private') {
 			actions.openMenu(
 				t('trainer.sets.share'),
 				[
 					{
-						key: 'open',
+						id: 'open',
 						label: t('trainer.sets.open_sharing'),
 						icon: <LinkSimple size={18} weight="bold" />,
 						disabled: !canWrite,
@@ -270,6 +271,7 @@ export default function AlgSetPage() {
 						onSelect: edit,
 					},
 				],
+				anchorOf(e.currentTarget),
 				t('trainer.sets.share_private_hint')
 			);
 			return;
@@ -277,11 +279,11 @@ export default function AlgSetPage() {
 		share(set);
 	}
 
-	function ownerMenu() {
+	function ownerMenu(e: React.MouseEvent<HTMLElement>) {
 		if (!set) return;
 		const list: SheetAction[] = [
 			{
-				key: 'edit',
+				id: 'edit',
 				label: t('trainer.sets.edit'),
 				icon: <PencilSimple size={18} weight="bold" />,
 				disabled: !canWrite,
@@ -289,7 +291,7 @@ export default function AlgSetPage() {
 				onSelect: edit,
 			},
 			{
-				key: 'reorder',
+				id: 'reorder',
 				label: t('trainer.sets.reorder'),
 				icon: <ArrowsDownUp size={18} weight="bold" />,
 				disabled: !canWrite || items.length < 2,
@@ -299,7 +301,7 @@ export default function AlgSetPage() {
 		];
 		if (set.visibility !== 'private') {
 			list.push({
-				key: 'reset',
+				id: 'reset',
 				label: t('trainer.sets.reset_link'),
 				icon: <LinkSimple size={18} weight="bold" />,
 				disabled: !canWrite,
@@ -313,7 +315,7 @@ export default function AlgSetPage() {
 			});
 		}
 		list.push({
-			key: 'delete',
+			id: 'delete',
 			label: t('trainer.sets.delete'),
 			icon: <Trash size={18} weight="bold" />,
 			danger: true,
@@ -321,14 +323,15 @@ export default function AlgSetPage() {
 			note: offlineNote,
 			onSelect: () => actions.confirmDelete(set, () => history.push(MY_SETS_PATH)),
 		});
-		actions.openMenu(set.name, list);
+		actions.openMenu(set.name, list, anchorOf(e.currentTarget));
 	}
 
-	function rowMenu(item: AlgSetItemData) {
+	function rowMenu(item: AlgSetItemData, e: React.MouseEvent<HTMLElement>) {
 		if (!set) return;
+		const anchor = anchorOf(e.currentTarget);
 		actions.openMenu(item.case_name, [
 			{
-				key: 'variant',
+				id: 'variant',
 				label: t('trainer.sets.change_algorithm'),
 				icon: <Swap size={18} weight="bold" />,
 				disabled: !canWrite,
@@ -336,7 +339,7 @@ export default function AlgSetPage() {
 				onSelect: () => changeAlgorithm(item),
 			},
 			{
-				key: 'remove',
+				id: 'remove',
 				label: t('trainer.sets.remove_from_set'),
 				icon: <X size={18} weight="bold" />,
 				danger: true,
@@ -344,7 +347,7 @@ export default function AlgSetPage() {
 				note: offlineNote,
 				onSelect: () => removeItem(item),
 			},
-		]);
+		], anchor);
 	}
 
 	function changeAlgorithm(item: AlgSetItemData) {
@@ -409,7 +412,7 @@ export default function AlgSetPage() {
 
 	function openRow(item: AlgSetItemData) {
 		reduxDispatch(
-			openModal(<RowDetailSheet item={item} faces={faces} />, {title: item.case_name, width: 460, compact: true})
+			openModal(<RowDetailSheet item={item} faces={faces} />, {title: item.case_name, width: 460})
 		);
 	}
 
@@ -537,7 +540,7 @@ export default function AlgSetPage() {
 					<button
 						type="button"
 						className={b('icon-button')}
-						onClick={() => rowMenu(item)}
+						onClick={(e) => rowMenu(item, e)}
 						disabled={rowBusy}
 						aria-label={t('trainer.sets.more_actions')}
 						title={t('trainer.sets.more_actions')}
@@ -571,7 +574,7 @@ export default function AlgSetPage() {
 						<button
 							type="button"
 							className={b('icon-button')}
-							onClick={isOwner ? ownerMenu : () => actions.openMenu(set.name, otherMenu())}
+							onClick={isOwner ? ownerMenu : (e) => actions.openMenu(set.name, otherMenu(), anchorOf(e.currentTarget))}
 							aria-label={t('trainer.sets.more_actions')}
 							title={t('trainer.sets.more_actions')}
 							hidden={!isOwner && !me}
@@ -698,13 +701,15 @@ export default function AlgSetPage() {
 					) : null}
 				</section>
 			</div>
+
+			{actions.menuElement}
 		</div>
 	);
 
 	function otherMenu(): SheetAction[] {
 		return [
 			{
-				key: 'report',
+				id: 'report',
 				label: reported ? t('trainer.sets.reported') : t('trainer.sets.report'),
 				icon: <Flag size={18} weight="bold" />,
 				disabled: reported || !canWrite,

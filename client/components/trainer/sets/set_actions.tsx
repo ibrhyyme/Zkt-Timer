@@ -1,6 +1,6 @@
 /**
  * The set actions My Sets and the set page share: create, edit, delete, reset link, the "..."
- * menu. Sheets open through openModal (outside the trainer provider), so every request is
+ * menu (render `menuElement` in the page). Sheets open through openModal (outside the trainer provider), so every request is
  * passed in as a callback from here, and the list state (lib/alg_sets/store) and the device copy
  * (loader.rememberAlgSet / forgetAlgSet) are kept in step in one place.
  */
@@ -14,7 +14,7 @@ import {forgetAlgSet, rememberAlgSet} from '../../../lib/alg_sets/loader';
 import {removeOwnSet, removeSavedSet, upsertOwnSet} from '../../../lib/alg_sets/store';
 import {getGqlErrorMessage} from '../../../util/gql-error';
 import EditSetSheet, {type EditSetValues} from './EditSetSheet';
-import {ActionSheet, type SheetAction} from './parts';
+import {useActionMenu, type ActionMenuAnchor, type ActionMenuItem} from '../../common/action_menu/ActionMenu';
 import type {AlgSetData, AlgSetItemData, AlgSetSummaryData} from '../../../lib/alg_sets/types';
 
 const SHEET_WIDTH = 460;
@@ -23,13 +23,14 @@ export function useSetActions() {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 
+	const menu = useActionMenu();
+	const openActionMenu = menu.open;
+
 	const openMenu = useCallback(
-		(title: string, actions: SheetAction[], message?: string) => {
-			dispatch(
-				openModal(<ActionSheet actions={actions} message={message} />, {title, width: SHEET_WIDTH, compact: true})
-			);
+		(title: string, items: ActionMenuItem[], anchor: ActionMenuAnchor, message?: string) => {
+			openActionMenu({title, items, message, ...anchor});
 		},
-		[dispatch]
+		[openActionMenu]
 	);
 
 	/** "New set": creates it and hands the new set over (the caller opens the picker). */
@@ -148,5 +149,5 @@ export function useSetActions() {
 		[]
 	);
 
-	return {openMenu, openCreate, openEdit, confirmDelete, confirmResetLink, unsave};
+	return {openMenu, menuElement: menu.element, openCreate, openEdit, confirmDelete, confirmResetLink, unsave};
 }

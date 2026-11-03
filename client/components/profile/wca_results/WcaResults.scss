@@ -30,26 +30,6 @@
 		}
 	}
 
-	&__filter-select {
-		background: rgba(var(--text-color), 0.08);
-		color: rgb(var(--text-color));
-		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 8px;
-		padding: 8px 12px;
-		font-size: 0.85rem;
-		cursor: pointer;
-		outline: none;
-
-		&:focus {
-			border-color: rgb(var(--primary-color));
-		}
-
-		option {
-			background: rgb(var(--background-color));
-			color: rgb(var(--text-color));
-		}
-	}
-
 	&__competition {
 		@include dark-glass(0.4, 12px, 0.08);
 		border-radius: 12px;

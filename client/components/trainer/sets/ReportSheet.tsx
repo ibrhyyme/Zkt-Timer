@@ -115,6 +115,15 @@ export default function ReportSheet({onSend, onReported, onClose}: Props) {
 
 			<div className={b('sheet-actions')}>
 				<Button
+					gray
+					large
+					fullWidth
+					type="button"
+					text={t('trainer.sets.cancel')}
+					disabled={busy}
+					onClick={() => onClose && onClose()}
+				/>
+				<Button
 					primary
 					large
 					fullWidth

@@ -30,24 +30,32 @@ export default function Account(props: Props) {
 		<div className={b({index: isIndex})}>
 			<PageTitle pageName={t('account_nav.page_title')} />
 
-			<div className={b('layout')}>
-				<AccountNav />
+			<div className={b('sheet')}>
+				<header className={b('band')}>
+					<h1 className={b('title')}>{t('account_nav.page_title')}</h1>
+				</header>
 
-				<div className={b('content')}>
-					{/* Mobile drill-down header. Hidden on desktop, where the sidebar already
-					    shows both where you are and how to get back. */}
-					{activeTab ? (
-						<div className={b('section-header')}>
-							<BackButton
-								to="/account"
-								className={b('back')}
-								label={t('account_nav.back_to_account')}
-							/>
-							<h2 className={b('section-title')}>{activeTab.label}</h2>
-						</div>
-					) : null}
+				<div className={b('layout')}>
+					<div className={b('rail')}>
+						<AccountNav />
+					</div>
 
-					<OfflineGuard>{props.children}</OfflineGuard>
+					<div className={b('content')}>
+						{/* Mobile drill-down header. Hidden on desktop, where the sidebar already
+						    shows both where you are and how to get back. */}
+						{activeTab ? (
+							<div className={b('section-header')}>
+								<BackButton
+									to="/account"
+									className={b('back')}
+									label={t('account_nav.back_to_account')}
+								/>
+								<h2 className={b('section-title')}>{activeTab.label}</h2>
+							</div>
+						) : null}
+
+						<OfflineGuard>{props.children}</OfflineGuard>
+					</div>
 				</div>
 			</div>
 		</div>

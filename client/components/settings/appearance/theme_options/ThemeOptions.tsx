@@ -18,6 +18,13 @@ type BasicColorKey = 'primary_color' | 'secondary_color';
 
 const b = block('settings-theme-options');
 
+// A preset files itself by its own background. The PhD Student lands with the light themes,
+// which is what tinycolor makes of its pink.
+const isDarkPreset = (key: typeof Preset[number]) =>
+	tinycolor(getAnyColorStringAsRgbString(APP_THEME_PRESETS[key].values.background_color)).isDark();
+const DARK_PRESETS = Preset.filter((key) => isDarkPreset(key));
+const LIGHT_PRESETS = Preset.filter((key) => !isDarkPreset(key));
+
 // RGB string'i HEX'e çevir (ColorPicker için)
 function rgbToHex(rgbString: string): string {
 	const rgbStringFormatted = getAnyColorStringAsRgbString(rgbString);
@@ -156,8 +163,15 @@ export default function ThemeOptions() {
 				title={t('theme_options.themes_title')}
 				description={t('theme_options.themes_desc')}
 			>
+				<div className={b('group-label')}>{t('theme_options.group_dark')}</div>
 				<div className={b('presets')}>
-					{Preset.map((key) => (
+					{DARK_PRESETS.map((key) => (
+						<ThemeOption key={key} theme={key} />
+					))}
+				</div>
+				<div className={b('group-label')}>{t('theme_options.group_light')}</div>
+				<div className={b('presets')}>
+					{LIGHT_PRESETS.map((key) => (
 						<ThemeOption key={key} theme={key} />
 					))}
 				</div>
@@ -233,16 +247,16 @@ export default function ThemeOptions() {
 					/>
 				</div>
 				<div className={b('actions')}>
-					<Button 
+					<Button
+						gray
+						text={t('theme_options.reset_to_defaults')}
+						onClick={resetToDefaults}
+					/>
+					<Button
 						primary
 						text={t('theme_options.apply_changes')}
 						disabled={!hasChanges}
 						onClick={applyChanges}
-					/>
-					<Button 
-						warning
-						text={t('theme_options.reset_to_defaults')}
-						onClick={resetToDefaults}
 					/>
 				</div>
 			</SettingRow>

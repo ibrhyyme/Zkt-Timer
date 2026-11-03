@@ -137,7 +137,6 @@ export default function CubePicker(props: Props) {
 			ariaLabel={t('stats.select_cube')}
 			maxHeight={500}
 			triggerMaxWidth={160}
-			panelClassName="cube-picker-panel"
 		/>
 	);
 }

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import { Minus, Plus } from 'phosphor-react';
+import FancyDropdown from '../../timer/header_control/FancyDropdown';
+import { hasVisibleSettingsRow } from './visible_settings_row';
 import { useSettingsSearch, matchesSearch } from '../SettingsSearchContext';
 
 // --- Group ---
@@ -16,19 +18,6 @@ interface TimerSettingsGroupProps {
 	 */
 	searchText?: string[];
 	children: React.ReactNode;
-}
-
-/**
- * True when at least one of `children` would actually render: not a React element with
- * `hidden` truthy, and not stripped out by React.Children.toArray in the first place
- * (null/false/undefined, e.g. a `{cond && <Row/>}` whose cond is false). Exported (pure,
- * no rendering needed) so the group-collapsing rule below is unit-testable on its own.
- */
-export function hasVisibleSettingsRow(children: React.ReactNode): boolean {
-	return React.Children.toArray(children).some((child) => {
-		if (!React.isValidElement(child)) return true;
-		return !(child.props as { hidden?: boolean }).hidden;
-	});
 }
 
 export function TimerSettingsGroup({ label, id, searchText, children }: TimerSettingsGroupProps) {
@@ -58,10 +47,9 @@ export function TimerSettingsGroup({ label, id, searchText, children }: TimerSet
 	if (!hasVisibleSettingsRow(visibleChildren)) return null;
 
 	return (
-		<div id={id} data-settings-group className="mt-6 first:mt-0">
-			<div className="flex items-center space-x-1.5 mb-2">
-				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
-				<span className="text-text text-xs font-semibold uppercase tracking-wider">
+		<div id={id} data-settings-group data-settings-label={label} className="mt-6 first:mt-0">
+			<div className="mb-3">
+				<span className="text-text/70 text-xs font-semibold uppercase tracking-wider">
 					{label}
 				</span>
 			</div>
@@ -99,14 +87,14 @@ export function TimerSettingsToggle({ label, description, isActive, disabled = f
 			<button
 				type="button"
 				disabled={disabled}
-				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 shrink-0 ${isActive
-					? 'bg-primary border-primary shadow-lg shadow-primary/30'
-					: 'bg-button border-text/[0.1] hover:bg-button'
-					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
+				className={`relative h-6 w-11 rounded-full border transition-colors duration-200 shrink-0 ${isActive
+					? 'bg-primary border-primary'
+					: 'bg-text/[0.2] border-transparent'
+					} ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
 				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0.5'
 						}`}
 				/>
 			</button>
@@ -160,8 +148,8 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 					onClick={decrement}
 					disabled={value <= min}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
-						? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
+						? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
+						: 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.14] cursor-pointer'
 						}`}
 				>
 					<Minus weight="bold" size={12} />
@@ -174,8 +162,8 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 					onClick={increment}
 					disabled={max !== undefined && value >= max}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${max !== undefined && value >= max
-						? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
+						? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
+						: 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.14] cursor-pointer'
 						}`}
 				>
 					<Plus weight="bold" size={12} />
@@ -232,8 +220,8 @@ export function TimerSettingsDecimal({ label, description, value, step, min, max
 
 	const buttonClass = (disabled: boolean) =>
 		`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${disabled
-			? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-			: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
+			? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
+			: 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.14] cursor-pointer'
 		}`;
 
 	return (
@@ -264,7 +252,7 @@ export function TimerSettingsDecimal({ label, description, value, step, min, max
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
 					}}
-					className="w-16 px-2 py-1 rounded-lg bg-button border border-text/[0.1] text-sm font-medium text-text text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
+					className="w-16 px-2 py-1 rounded-lg bg-text/[0.08] border border-transparent text-sm font-medium text-text text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
 				/>
 				<button type="button" onClick={() => nudge(1)} disabled={current >= max} className={buttonClass(current >= max)}>
 					<Plus weight="bold" size={12} />
@@ -287,22 +275,6 @@ interface TimerSettingsSelectProps {
 }
 
 export function TimerSettingsSelect({ label, description, value, placeholder, options, hidden, onChange }: TimerSettingsSelectProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const containerRef = React.useRef<HTMLDivElement>(null);
-
-	React.useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
-
 	if (hidden) return null;
 
 	const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
@@ -317,41 +289,16 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
-			<div className="relative shrink-0" ref={containerRef}>
-				<button
-					type="button"
-					onClick={() => setIsOpen(!isOpen)}
-					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[120px] justify-between border ${isOpen
-						? 'bg-button border-primary/50 text-text'
-						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15]'
-						}`}
-				>
-					<span>{selectedLabel}</span>
-					{isOpen ? <CaretUp weight="bold" className="text-primary" /> : <CaretDown weight="bold" className="text-text" />}
-				</button>
-
-				{isOpen && (
-					<div className="absolute right-0 mt-2 w-48 rounded-xl bg-module border border-text/[0.1] shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-						<div className="py-1">
-							{options.map((option) => (
-								<button
-									key={option.value}
-									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between ${option.value === value
-										? 'bg-primary/10 text-text font-medium'
-										: 'text-text hover:bg-text/[0.05]'
-										}`}
-									onClick={() => {
-										onChange(option.value);
-										setIsOpen(false);
-									}}
-								>
-									<span>{option.label}</span>
-									{option.value === value && <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-color),0.5)]"></div>}
-								</button>
-							))}
-						</div>
-					</div>
-				)}
+			<div className="shrink-0">
+				<FancyDropdown
+					value={value}
+					onValueChange={onChange}
+					options={options}
+					triggerLabel={selectedLabel}
+					ariaLabel={label}
+					align="end"
+					triggerMinWidth={120}
+				/>
 			</div>
 		</div>
 	);
@@ -522,7 +469,7 @@ export function TimerSettingsText({ label, description, value, placeholder, maxL
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
 				}}
-				className="w-36 px-3 py-1.5 rounded-lg bg-button border border-text/[0.1] text-sm text-text text-center focus:border-primary focus:outline-none transition-colors"
+				className="w-36 px-3 py-1.5 rounded-lg bg-text/[0.08] border border-transparent text-sm text-text text-center focus:border-primary focus:outline-none transition-colors"
 			/>
 		</div>
 	);

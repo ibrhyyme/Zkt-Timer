@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
@@ -9,8 +9,9 @@ import { useMe } from '../../../util/hooks/useMe';
 import { isProEnabled, isNotPro } from '../../../lib/pro';
 import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
 import { isNative } from '../../../util/platform';
-import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import { Minus, Plus } from 'phosphor-react';
 import ProTag from '../../common/pro_tag/ProTag';
+import FancyDropdown from '../../timer/header_control/FancyDropdown';
 import { useSlamStop } from '../../../util/slam-stop/settings';
 import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared/util/solve/multiphase';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
@@ -54,7 +55,7 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 					onClick={decrement}
 					disabled={value <= min}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
-						? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
+						? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
 						: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] cursor-pointer'
 					}`}
 				>
@@ -96,14 +97,14 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 			<button
 				type="button"
 				disabled={disabled}
-				className={`relative shrink-0 h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
-					? 'bg-primary border-primary shadow-lg shadow-primary/30'
-					: 'bg-button border-text/[0.1] hover:bg-button'
-					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
+				className={`relative shrink-0 h-6 w-11 rounded-full border transition-all duration-300 ${isActive
+					? 'bg-primary border-primary'
+					: 'bg-text/[0.2] border-transparent'
+					} ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
 				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0.5'
 						}`}
 				/>
 			</button>
@@ -121,22 +122,6 @@ interface ExtrasSelectProps {
 }
 
 function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: ExtrasSelectProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const containerRef = React.useRef<HTMLDivElement>(null);
-
-	React.useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
-			}
-		};
-
-		document.addEventListener('mousedown', handleClickOutside);
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, []);
-
 	if (hidden) return null;
 
 	const selectedLabel = options.find(o => o.value === value)?.label || value;
@@ -146,41 +131,18 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 			<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
 				{label}
 			</span>
-			<div className="relative shrink-0" ref={containerRef}>
-				<button
-					type="button"
-					onClick={() => setIsOpen(!isOpen)}
-					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[96px] justify-between border ${isOpen
-							? 'bg-button border-primary/50 text-text'
-							: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15]'
-						}`}
-				>
-					<span>{selectedLabel}</span>
-					{isOpen ? <CaretUp weight="bold" className="text-primary" /> : <CaretDown weight="bold" className="text-text/50 group-hover:text-text/80" />}
-				</button>
-
-				{isOpen && (
-					<div className={`absolute right-0 w-48 rounded-xl bg-module border border-text/[0.1] shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 ${openUp ? 'bottom-full mb-2 origin-bottom-right' : 'mt-2 origin-top-right'}`}>
-						<div className="py-1">
-							{options.map((option) => (
-								<button
-									key={option.value}
-									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between group/item ${option.value === value
-											? 'bg-primary/10 text-text font-medium'
-											: 'text-text/70 hover:bg-text/[0.05] hover:text-text'
-										}`}
-									onClick={() => {
-										onChange(option.value);
-										setIsOpen(false);
-									}}
-								>
-									<span>{option.label}</span>
-									{option.value === value && <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-color),0.5)]"></div>}
-								</button>
-							))}
-						</div>
-					</div>
-				)}
+			<div className="shrink-0">
+				<FancyDropdown
+					nested
+					value={value}
+					onValueChange={onChange}
+					options={options}
+					triggerLabel={selectedLabel}
+					ariaLabel={label}
+					align="end"
+					side={openUp ? 'top' : 'bottom'}
+					triggerMinWidth={96}
+				/>
 			</div>
 		</div>
 	);

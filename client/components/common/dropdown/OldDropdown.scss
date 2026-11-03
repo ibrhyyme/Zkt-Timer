@@ -17,14 +17,11 @@
 		max-height: 400px;
 		overflow-y: auto;
 		display: flex;
+		@include zt-menu-panel;
 		padding: 5px;
-		border-radius: 5px;
-		box-sizing: border-box;
 		min-width: 160px;
-		box-shadow: 0 4px 13px rgba(black, 0.2);
 		flex-direction: column;
 		z-index: 1000000;
-		background-color: rgb(var(--button-color));
 
 		> *:not(:last-child) {
 			margin-bottom: 6px;

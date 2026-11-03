@@ -158,6 +158,7 @@ export default function PersonalInfo() {
 				description={t('personal_info.profile_description')}
 				icon={<IdentificationCard weight="bold" />}
 				footer={<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />}
+				columns
 			>
 				<Input value={firstName} legend={t('personal_info.first_name')} onChange={setFirstName} name="firstName" />
 				<Input value={lastName} legend={t('personal_info.last_name')} onChange={setLastName} name="lastName" />
@@ -197,6 +198,7 @@ export default function PersonalInfo() {
 				title={hasPassword ? t('personal_info.change_password') : t('personal_info.set_password')}
 				description={hasPassword ? undefined : t('personal_info.set_password_description')}
 				icon={<Lock weight="bold" />}
+				columns
 				footer={
 					<Button
 						primary

@@ -18,89 +18,29 @@
 	&__body {
 		position: absolute;
 		right: 0;
-		top: calc(100% + 5px);
-		max-height: 400px;
-		overflow-y: auto;
-		display: flex;
-		padding: 6px;
-		border-radius: 12px;
-		box-sizing: border-box;
-		min-width: 160px;
-		background: rgb(var(--background-color)) !important;
-		backdrop-filter: blur(16px) !important;
-		-webkit-backdrop-filter: blur(16px) !important;
-		border: 1px solid rgba(var(--text-color), 0.25) !important;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-		flex-direction: column;
+		top: calc(100% + #{$zt-menu-offset});
 		z-index: 1000000;
-		// Removed previous background/border styles as they are in mixin
+		display: flex;
+		flex-direction: column;
+		min-width: 180px;
+		max-height: 400px;
+		@include zt-menu-panel;
+		@include zt-menu-scroll;
 
-		>button,
-		>.#{$namespace}-common-button__wrapper>button,
-		>a {
-			display: flex;
-			flex-direction: row;
-			width: 100%;
-			align-items: center;
-			color: rgba(var(--text-color), 0.8) !important;
-			text-align: left !important;
-			border-radius: 8px;
-			justify-content: flex-start;
-			padding: 10px 12px;
-			box-sizing: border-box;
-			white-space: nowrap;
-			transition: all 0.15s ease-in-out;
-			font-size: 0.95rem;
-			font-weight: 500;
-			background-color: transparent;
-			border: none;
-
-			&:disabled {
-				opacity: 0.4 !important;
-				background-color: transparent !important;
-				cursor: unset !important;
-			}
-
-			i {
-				opacity: 0.8;
-				margin-right: 8px;
-				width: 20px;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				color: rgba(var(--text-color), 0.5) !important;
-			}
-
-			span {
-				display: table;
-				color: inherit;
-			}
-
-			&:hover:not(:disabled) {
-				background-color: rgba(var(--text-color), 0.1) !important;
-				color: rgb(var(--text-color)) !important;
-				transform: translateY(-1px);
-				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-
-				i {
-					color: rgba(var(--text-color), 0.9) !important;
-				}
-			}
-
-			&:active:not(:disabled) {
-				transform: translateY(0);
-				background-color: rgba(var(--text-color), 0.05) !important;
-			}
+		@include bp-down($bp-md) {
+			min-width: 160px;
+			max-width: $zt-menu-max-w-phone;
+			max-height: $zt-menu-max-h-phone;
 		}
 
 		&--up {
-			top: unset !important;
-			bottom: calc(100% + 5px);
+			top: unset;
+			bottom: calc(100% + #{$zt-menu-offset});
 		}
 
 		&--left {
 			right: unset;
-			left: 0 !important;
+			left: 0;
 		}
 
 		&--fullwidth {

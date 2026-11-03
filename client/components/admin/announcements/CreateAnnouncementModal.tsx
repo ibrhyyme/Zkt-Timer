@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SelectMenu from '../../common/select_menu/SelectMenu';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { X, Translate, CircleNotch } from 'phosphor-react';
@@ -298,16 +299,18 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								<label className="block text-sm font-medium text-zinc-300 mb-1.5">
 									{t('create_announcement.field_category')}
 								</label>
-								<select
+								<SelectMenu
+									fullWidth
 									value={formData.category}
-									onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-									className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm focus:border-blue-500 focus:outline-none"
-								>
-									<option value="FEATURE">{t('create_announcement.category_feature')}</option>
-									<option value="BUGFIX">{t('create_announcement.category_bugfix')}</option>
-									<option value="IMPORTANT">{t('create_announcement.category_important')}</option>
-									<option value="INFO">{t('create_announcement.category_info')}</option>
-								</select>
+									onChange={(value) => setFormData({ ...formData, category: value })}
+									ariaLabel={t('create_announcement.field_category')}
+									options={[
+										{ value: 'FEATURE', label: t('create_announcement.category_feature') },
+										{ value: 'BUGFIX', label: t('create_announcement.category_bugfix') },
+										{ value: 'IMPORTANT', label: t('create_announcement.category_important') },
+										{ value: 'INFO', label: t('create_announcement.category_info') },
+									]}
+								/>
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-zinc-300 mb-1.5">
