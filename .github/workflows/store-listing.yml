@@ -64,8 +64,9 @@ jobs:
     name: App Store listing
     runs-on: macos-15
     # deliver waits until Apple finishes processing every uploaded screenshot,
-    # which took over 15 minutes for the 50-image set on 2026-11-02.
-    timeout-minutes: 45
+    # which took over 15 minutes for the 50-image set on 2026-11-02. The listing
+    # aliases (en-GB, en-CA, es-MX) raise the set to 128 images.
+    timeout-minutes: 90
 
     steps:
       - name: Checkout

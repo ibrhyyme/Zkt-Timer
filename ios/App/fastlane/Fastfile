@@ -22,6 +22,11 @@ def listing_language(code)
   c.split("-").first
 end
 
+# Apple searches English (U.K.) in most storefronts, Turkey's default language
+# included, and English (U.S.) only in the US and Japan; Latin America reads
+# Spanish (Mexico). One folder also feeds these locales, text and screenshots alike.
+LISTING_ALIASES = { "en-US" => %w[en-GB en-CA], "es-ES" => %w[es-MX] }.freeze
+
 # Copies each locale folder into a temp dir under the codes the store already
 # uses for that language, so an existing localization is updated instead of a
 # second one opening beside it. A language the store does not have keeps its code.
@@ -31,6 +36,7 @@ def stage_listing_locales(src, live_codes)
     next unless File.directory?(File.join(src, local))
     targets = live_codes.select { |c| listing_language(c) == listing_language(local) }
     targets = [local] if targets.empty?
+    targets |= LISTING_ALIASES.fetch(local, [])
     targets.each do |target|
       FileUtils.cp_r(File.join(src, local), File.join(staged, target))
       UI.message("Listing #{local} -> #{target}")

@@ -1,1 +1,1 @@
-Zeka küpü için timer: smart küp bağlantısı, algoritma çalışma ve Online Battle.
+Zeka küpü için cube timer: smart küp, algoritma çalışma ve Online Battle.

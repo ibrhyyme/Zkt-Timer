@@ -1,4 +1,4 @@
-ZKT Timer times your cube solves, keeps every result and shows you where the time goes. You can time with touch, StackMat, GAN Timer, QiYi Timer or a smart cube. Inspection, +2 and DNF follow WCA rules, and a new scramble comes up after every solve.
+ZKT Timer is a speed cube timer that keeps every solve and shows you where the time goes. You can time with touch, StackMat, GAN Timer, QiYi Timer or a smart cube. Inspection, +2 and DNF follow WCA rules, and a new scramble comes up after every solve.
 
 Smart cubes
 GAN, MoYu, QiYi, Giiker and Particula smart cubes connect over Bluetooth. The cube turns on screen in 3D as you turn it. The time starts on your first move and stops when the cube is solved. With Pro you see the Cross, F2L, OLL and PLL times, move count and TPS for every solve, and you can replay it move by move. Your stats also show which OLL and PLL cases slow you down.

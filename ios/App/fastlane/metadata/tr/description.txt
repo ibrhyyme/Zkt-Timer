@@ -25,3 +25,6 @@ En iyi süreni sıralamada yayınlama.
 Aylık, yıllık ve ömür boyu seçenekleri var.
 
 Uygulama Türkçe, İngilizce, İspanyolca, Rusça ve Çince. Aynı hesapla zktimer.app adresinden tarayıcıda da kullanabilirsin.
+
+Kullanım Koşulları (EULA): https://zktimer.app/terms
+Gizlilik Politikası: https://zktimer.app/privacy

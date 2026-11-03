@@ -25,3 +25,6 @@ Publishing your best times to the leaderboard.
 Monthly, yearly and lifetime plans.
 
 The app is in English, Turkish, Spanish, Russian and Chinese. You can also use the same account in the browser at zktimer.app.
+
+Terms of Use (EULA): https://zktimer.app/terms
+Privacy Policy: https://zktimer.app/privacy

@@ -105,12 +105,21 @@ platform :android do
 
     # supply only empties a slot it has files for, so old tablet images would stay
     # next to the new phone set on the Play page. This repo keeps no tablet set.
+    # A Play language with no folder here would keep its old phone set too, so its
+    # screenshots are emptied and it falls back to the default listing's images.
     if upload_screenshots
+      staged = Dir.children(metadata_path)
       client.begin_edit(package_name: PACKAGE_NAME)
-      (Dir.children(metadata_path) & live_codes).each do |language|
+      (staged & live_codes).each do |language|
         TABLET_SCREENSHOT_TYPES.each do |type|
           client.clear_screenshots(image_type: type, language: language)
           UI.message("Cleared #{type} for #{language}")
+        end
+      end
+      (live_codes - staged).each do |language|
+        (["phoneScreenshots"] + TABLET_SCREENSHOT_TYPES).each do |type|
+          client.clear_screenshots(image_type: type, language: language)
+          UI.message("Cleared #{type} for #{language} (no folder here)")
         end
       end
       client.commit_current_edit!

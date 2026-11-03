@@ -1,4 +1,4 @@
-ZKT Timer küp çözerken süre tutmak, çözümlerini saklamak ve zamanın nereye gittiğini görmek için yapıldı. Süreyi ekrana dokunarak, StackMat, GAN Timer, QiYi Timer ya da smart küple tutabilirsin. 15 saniyelik inceleme, +2 ve DNF kuralları hazır gelir, her çözümden sonra yeni bir karıştırma çıkar.
+ZKT Timer, küp çözerken süre tutmak, çözümlerini saklamak ve zamanın nereye gittiğini görmek için yapılmış bir cube timer. Süreyi ekrana dokunarak, StackMat, GAN Timer, QiYi Timer ya da smart küple tutabilirsin. 15 saniyelik inceleme, +2 ve DNF kuralları hazır gelir, her çözümden sonra yeni bir karıştırma çıkar.
 
 Smart küp
 GAN, MoYu, QiYi, Giiker ve Particula smart küpler Bluetooth ile bağlanır. Küp ekranda 3B olarak senin çevirdiğin gibi döner. Süre ilk hamlede başlar, küp çözülünce kendiliğinden durur. Pro ile her çözümün Cross, F2L, OLL ve PLL sürelerini, hamle sayısını ve TPS değerini ayrı ayrı görebilir, çözümü hamle hamle yeniden izleyebilirsin. İstatistikler hangi OLL ve PLL vakalarında yavaşladığını da gösterir.
