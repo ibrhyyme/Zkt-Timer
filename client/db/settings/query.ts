@@ -144,6 +144,15 @@ export interface AllSettings {
 	scramble_color_neutral: 'none' | 'dual' | 'six';
 	highlight_pbs: 'off' | 'color' | 'bold';
 	/**
+	 * Ready-made timer background (Appearance), an id from
+	 * components/timer/timer_background/presets, or null for none. Overrides an uploaded
+	 * background while set. Platform setting (prefs blob), so a phone and a computer each
+	 * keep their own and no schema change is needed.
+	 */
+	timer_bg_preset: string | null;
+	/** Whether the ready-made background moves. Off, it is drawn once as a still picture. */
+	timer_bg_motion: boolean;
+	/**
 	 * Solve list colours (Appearance > Lists), RGB triplets like the theme colours. Null
 	 * follows the theme: the list keeps the secondary colour for a time and the primary
 	 * colour for a PB, which is what it always used. Platform settings (prefs blob), so
@@ -290,6 +299,8 @@ const defaultSettings: AllSettings = {
 	scramble_click_action: 'none',
 	scramble_color_neutral: 'none',
 	highlight_pbs: 'color',
+	timer_bg_preset: null,
+	timer_bg_motion: true,
 	solve_time_color: null,
 	solve_pb_color: null,
 	inspection_except_bld: false,

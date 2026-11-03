@@ -1678,7 +1678,19 @@
     "timer_layout_left": "Sola Hizala",
     "timer_layout_bottom": "Ortaya Hizala",
     "timer_layout_right": "Sağa Hizala",
-    "timer_background_reset": "Arka planı kaldır"
+    "timer_background_reset": "Arka planı kaldır",
+    "preset_bg": "Hazır arka planlar",
+    "preset_bg_desc": "Temanın renklerini alır. Seçtiğinde yüklediğin arka planın yerine geçer.",
+    "preset_bg_none": "Yok",
+    "preset_bg_own": "Yüklediğin",
+    "preset_bg_motion": "Hareketli arka plan",
+    "preset_bg_motion_desc": "Kapalıyken arka plan durgun bir resim olarak kalır. Çözüm sırasında hareket her zaman durur.",
+    "preset_bg_aurora": "Kuzey Işığı",
+    "preset_bg_liquid": "Akışkan",
+    "preset_bg_galaxy": "Galaksi",
+    "preset_bg_horizon": "Neon Ufuk",
+    "preset_bg_topo": "Topografya",
+    "preset_bg_bokeh": "Bokeh"
   },
   "timer_settings": {
     "decimal_points": "Timer ondalık basamakları",
@@ -5759,5 +5771,11 @@
     "clock_pin_up": "Kalkık pim",
     "reset_group": "Varsayılana dön",
     "reset_all": "Tüm renkleri sıfırla"
+  },
+  "feature_tips": {
+    "new": "Yeni",
+    "look": "Göz at",
+    "preset_backgrounds_title": "Hazır arka planlar",
+    "preset_backgrounds": "Timer'ının arkasına canlı bir sahne koy. Temanın renklerini alır."
   }
 }

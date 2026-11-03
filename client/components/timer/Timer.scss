@@ -596,6 +596,12 @@ body.timer-immersive-bg {
 		top: 50%;
 		z-index: 0;
 		transform: translate(-50%, -50%);
+
+		// A ready-made background is already blended with the theme colour; dimming it
+		// again would wash it out.
+		&--preset {
+			opacity: 1;
+		}
 	}
 
 	&--started {

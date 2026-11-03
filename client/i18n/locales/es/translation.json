@@ -1691,7 +1691,19 @@
     "timer_layout_left": "Alinear a la izquierda",
     "timer_layout_bottom": "Alinear al centro",
     "timer_layout_right": "Alinear a la derecha",
-    "timer_background_reset": "Quitar el fondo"
+    "timer_background_reset": "Quitar el fondo",
+    "preset_bg": "Fondos listos",
+    "preset_bg_desc": "Toma los colores de tu tema. Al elegir uno, sustituye al fondo que subiste.",
+    "preset_bg_none": "Ninguno",
+    "preset_bg_own": "Tu fondo",
+    "preset_bg_motion": "Fondo animado",
+    "preset_bg_motion_desc": "Si lo apagas, el fondo queda como una imagen fija. El movimiento siempre se detiene durante una resolución.",
+    "preset_bg_aurora": "Aurora boreal",
+    "preset_bg_liquid": "Líquido",
+    "preset_bg_galaxy": "Galaxia",
+    "preset_bg_horizon": "Horizonte neón",
+    "preset_bg_topo": "Topografía",
+    "preset_bg_bokeh": "Bokeh"
   },
   "timer_settings": {
     "decimal_points": "Puntos decimales del timer",
@@ -5779,5 +5791,11 @@
     "clock_pin_up": "Pin levantado",
     "reset_group": "Restablecer",
     "reset_all": "Restablecer todos los colores"
+  },
+  "feature_tips": {
+    "new": "Nuevo",
+    "look": "Echar un vistazo",
+    "preset_backgrounds_title": "Fondos listos",
+    "preset_backgrounds": "Pon una escena animada detrás de tu timer. Toma los colores de tu tema."
   }
 }

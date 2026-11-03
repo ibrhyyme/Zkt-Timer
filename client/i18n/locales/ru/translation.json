@@ -1739,7 +1739,19 @@
     "timer_layout_left": "Слева",
     "timer_layout_bottom": "По центру",
     "timer_layout_right": "Справа",
-    "timer_background_reset": "Убрать фон"
+    "timer_background_reset": "Убрать фон",
+    "preset_bg": "Готовые фоны",
+    "preset_bg_desc": "Берут цвета вашей темы. Выбранный фон заменяет загруженный.",
+    "preset_bg_none": "Нет",
+    "preset_bg_own": "Ваш фон",
+    "preset_bg_motion": "Анимированный фон",
+    "preset_bg_motion_desc": "Если выключить, фон останется неподвижной картинкой. Во время сборки движение всегда останавливается.",
+    "preset_bg_aurora": "Северное сияние",
+    "preset_bg_liquid": "Жидкость",
+    "preset_bg_galaxy": "Галактика",
+    "preset_bg_horizon": "Неоновый горизонт",
+    "preset_bg_topo": "Топография",
+    "preset_bg_bokeh": "Боке"
   },
   "timer_settings": {
     "decimal_points": "Десятичные знаки таймера",
@@ -5831,5 +5843,11 @@
     "clock_pin_up": "Поднятый штырь",
     "reset_group": "Сбросить",
     "reset_all": "Сбросить все цвета"
+  },
+  "feature_tips": {
+    "new": "Новое",
+    "look": "Посмотреть",
+    "preset_backgrounds_title": "Готовые фоны",
+    "preset_backgrounds": "Поставьте живую сцену за таймером. Она берёт цвета вашей темы."
   }
 }

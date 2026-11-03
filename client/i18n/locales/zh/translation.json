@@ -1667,7 +1667,19 @@
     "timer_layout_left": "靠左对齐",
     "timer_layout_bottom": "居中对齐",
     "timer_layout_right": "靠右对齐",
-    "timer_background_reset": "移除背景"
+    "timer_background_reset": "移除背景",
+    "preset_bg": "预设背景",
+    "preset_bg_desc": "使用你的主题颜色。选择后会替换你上传的背景。",
+    "preset_bg_none": "无",
+    "preset_bg_own": "你上传的",
+    "preset_bg_motion": "动态背景",
+    "preset_bg_motion_desc": "关闭后背景保持为静态图片。计时过程中动画始终暂停。",
+    "preset_bg_aurora": "极光",
+    "preset_bg_liquid": "流体",
+    "preset_bg_galaxy": "星系",
+    "preset_bg_horizon": "霓虹地平线",
+    "preset_bg_topo": "等高线",
+    "preset_bg_bokeh": "散景"
   },
   "timer_settings": {
     "decimal_points": "计时器小数位数",
@@ -5744,5 +5756,11 @@
     "clock_pin_up": "抬起的针",
     "reset_group": "恢复默认",
     "reset_all": "重置所有颜色"
+  },
+  "feature_tips": {
+    "new": "新",
+    "look": "看看",
+    "preset_backgrounds_title": "预设背景",
+    "preset_backgrounds": "给计时器换上动态背景，颜色跟随你的主题。"
   }
 }

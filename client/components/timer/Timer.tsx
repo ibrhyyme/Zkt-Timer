@@ -19,6 +19,9 @@ import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { useSettings } from '../../util/hooks/useSettings';
 import TimerVideoBackground from './timer_background/TimerVideoBackground';
+import PresetBackground from './timer_background/presets/PresetBackground';
+import FeatureTip from './feature_tip/FeatureTip';
+import { isPresetBackgroundId } from './timer_background/presets/preset_shaders';
 import { resolveTimerBackground } from '../../../shared/timer_background';
 import { smartCubePuzzleFor } from './helpers/util';
 import { useNormalizeTimerType } from './helpers/timer_type_support';
@@ -174,7 +177,17 @@ export default function Timer(props: TimerProps) {
 	// Desktop and mobile layouts each read their own slot of the account's background row;
 	// the mobile layout follows the desktop slot until "use the same on mobile" is off.
 	const backgroundMedia = resolveTimerBackground(me?.timer_background, mobileMode ? 'mobile' : 'desktop');
-	const hasBackgroundImage = !!backgroundMedia;
+	// A ready-made background (free, drawn live in the theme colours) wins over an upload.
+	// Read after mount only: the setting lives on the device, so the server render cannot
+	// know it, and drawing it in the first pass would not match the server's markup.
+	const presetSetting = useSettings('timer_bg_preset');
+	const presetMotion = useSettings('timer_bg_motion');
+	const [clientReady, setClientReady] = useState(false);
+	useEffect(() => {
+		setClientReady(true);
+	}, []);
+	const backgroundPreset = clientReady && isPresetBackgroundId(presetSetting) ? presetSetting : null;
+	const hasBackgroundImage = !!backgroundMedia || !!backgroundPreset;
 	useEffect(() => {
 		const immersive = hasBackgroundImage && !mobileMode;
 		document.body.classList.toggle('timer-immersive-bg', immersive);
@@ -358,7 +371,16 @@ export default function Timer(props: TimerProps) {
 	}
 
 	let background: ReactNode = null;
-	if (backgroundMedia) {
+	if (backgroundPreset) {
+		background = (
+			<PresetBackground
+				preset={backgroundPreset}
+				moving={presetMotion !== false}
+				paused={!!context.timeStartedAt}
+				className={b('background', { preset: true })}
+			/>
+		);
+	} else if (backgroundMedia) {
 		const backgroundUrl = getStorageURL(backgroundMedia.storage_path);
 		background = backgroundMedia.is_video ? (
 			<TimerVideoBackground
@@ -392,6 +414,11 @@ export default function Timer(props: TimerProps) {
 					<KeyWatcher>
 						<HeaderControl />
 						{isStreamer && <StreamerOverlay />}
+						{/* "New feature" bubble (lib/feature_tips). Only on the plain timer, gone
+						    the moment a solve or inspection starts. */}
+						{!props.inModal && (
+							<FeatureTip blocked={!!context.timeStartedAt || !!context.inInspection || isStreamer} />
+						)}
 						{/* Mobile: catches touches across the whole screen while the timer runs or
 							inspection counts down, so KeyWatcher sees them wherever they land. Its
 							own handler does one thing: the swipe that abandons inspection. */}

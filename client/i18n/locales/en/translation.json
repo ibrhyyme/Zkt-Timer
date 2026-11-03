@@ -1691,7 +1691,19 @@
     "timer_layout_left": "Align Left",
     "timer_layout_bottom": "Align Centre",
     "timer_layout_right": "Align Right",
-    "timer_background_reset": "Reset background"
+    "timer_background_reset": "Reset background",
+    "preset_bg": "Ready-made backgrounds",
+    "preset_bg_desc": "Takes your theme colours. Once you pick one, it replaces the background you uploaded.",
+    "preset_bg_none": "None",
+    "preset_bg_own": "Your upload",
+    "preset_bg_motion": "Moving background",
+    "preset_bg_motion_desc": "When off, the background stays a still picture. Motion always stops during a solve.",
+    "preset_bg_aurora": "Aurora",
+    "preset_bg_liquid": "Liquid",
+    "preset_bg_galaxy": "Galaxy",
+    "preset_bg_horizon": "Neon Horizon",
+    "preset_bg_topo": "Topography",
+    "preset_bg_bokeh": "Bokeh"
   },
   "timer_settings": {
     "decimal_points": "Timer decimal points",
@@ -5778,5 +5790,11 @@
     "clock_pin_up": "Raised pin",
     "reset_group": "Reset to default",
     "reset_all": "Reset all colors"
+  },
+  "feature_tips": {
+    "new": "New",
+    "look": "Take a look",
+    "preset_backgrounds_title": "Ready-made backgrounds",
+    "preset_backgrounds": "Put a live scene behind your timer. It takes your theme colours."
   }
 }

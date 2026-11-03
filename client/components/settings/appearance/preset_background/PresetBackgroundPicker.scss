@@ -1,0 +1,78 @@
+@import '../../../../styles/config';
+
+// Tiles in the theme cards' manner (theme_option/ThemeOption.scss): a hairline frame, the
+// accent ring when chosen.
+.#{$namespace}-preset-background {
+	display: grid;
+	// Three across on a phone keeps the seven tiles to three short rows.
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: $zt-space-2;
+	width: 100%;
+
+	@include bp-up($bp-lg) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		width: 520px;
+	}
+
+	&__tile {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		border: 0;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+		box-shadow: 0 0 0 1px $zt-menu-frame;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: box-shadow $zt-transition;
+
+		&:hover {
+			box-shadow: 0 0 0 1px $zt-control-border-hover;
+		}
+
+		@include zt-focus-ring;
+
+		&--selected,
+		&--selected:hover {
+			box-shadow: 0 0 0 2px rgb(var(--primary-color));
+		}
+	}
+
+	&__thumb {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		background: rgb(var(--background-color));
+
+		// "None" is the plain theme background the timer falls back to.
+		&--none {
+			box-shadow: inset 0 -1px 0 $zt-menu-frame;
+		}
+	}
+
+	// The user's own picture or video in the first tile.
+	&__upload {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&__name {
+		padding: 6px $zt-space-2;
+		overflow: hidden;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+}

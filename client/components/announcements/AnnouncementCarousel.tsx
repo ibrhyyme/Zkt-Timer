@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Announcement } from '../../@types/generated/graphql';
 import AnnouncementModal from './AnnouncementModal';
 import { markAnnouncementViewed } from '../../util/announcements';
+import { noteAnnouncementShown } from '../../lib/feature_tips/store';
 
 interface AnnouncementCarouselProps {
 	announcements: Announcement[];
@@ -12,6 +13,11 @@ export default function AnnouncementCarousel(props: AnnouncementCarouselProps) {
 	const { announcements, onClose } = props;
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isClosing, setIsClosing] = useState(false);
+
+	// This app open belongs to the announcement: a feature tip waits for the next one.
+	useEffect(() => {
+		noteAnnouncementShown();
+	}, []);
 
 	const currentAnnouncement = announcements[currentIndex];
 	const isLast = currentIndex === announcements.length - 1;

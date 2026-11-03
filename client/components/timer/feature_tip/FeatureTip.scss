@@ -1,0 +1,131 @@
+@import '../../../styles/config';
+
+// A card at the top of the timer, under the nav on a computer and under the header strip on
+// a phone. It stands out by what it holds (a live picture of the feature) and by an accent
+// hairline, not by effects: no gradient, glow or blur.
+.#{$namespace}-feature-tip {
+	$self: &;
+
+	position: fixed;
+	left: 50%;
+	// Clear of the nav and of the one-line banner a visitor gets under it ("you have N
+	// solves on this device"), which the card covered at a smaller offset.
+	top: calc(var(--nav-h, 5.333rem) + 4rem);
+	z-index: 90;
+	display: flex;
+	align-items: center;
+	gap: $zt-space-4;
+	box-sizing: border-box;
+	width: min(540px, calc(100vw - #{$zt-space-6}));
+	padding: $zt-space-3 $zt-space-6 $zt-space-3 $zt-space-3;
+	border: 1px solid rgba(var(--primary-color), 0.5);
+	border-radius: $zt-radius-md;
+	background: rgb(var(--module-color));
+	box-shadow: $zt-shadow-float;
+	color: rgb(var(--text-color));
+	transform: translateX(-50%);
+	animation: zt-feature-tip-in 260ms ease-out;
+
+	@include reduced-motion {
+		animation: none;
+	}
+
+	// No picture: the text gets the room and the left padding matches the right.
+	&:not(#{$self}--visual) {
+		padding-left: $zt-space-4;
+	}
+
+	&__visual {
+		position: relative;
+		flex-shrink: 0;
+		width: 148px;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--background-color));
+		box-shadow: inset 0 0 0 1px rgba(var(--text-color), 0.12);
+	}
+
+	&__canvas {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgb(var(--primary-color));
+
+		svg {
+			width: 13px;
+			height: 13px;
+		}
+	}
+
+	&__title {
+		margin-top: 2px;
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.25;
+	}
+
+	&__text {
+		font-size: 0.8125rem;
+		line-height: 1.4;
+		color: $zt-text-muted;
+	}
+
+	&__actions {
+		margin-top: $zt-space-2;
+	}
+
+	&__close {
+		position: absolute;
+		top: $zt-space-1;
+		right: $zt-space-1;
+	}
+
+	// Phone and small tablet: there is no top nav; the timer's own header strip is there.
+	@include bp-down($bp-lg) {
+		top: calc(env(safe-area-inset-top, 0px) + 72px);
+		gap: $zt-space-3;
+		width: calc(100vw - #{$zt-space-5});
+
+		&__visual {
+			width: 108px;
+		}
+
+		&__title {
+			font-size: 1rem;
+		}
+	}
+}
+
+@keyframes zt-feature-tip-in {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+}
