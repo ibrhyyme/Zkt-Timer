@@ -49,10 +49,11 @@ function TrainerContent() {
 
 	const otherTrainer = state.mode === 'recognition' || state.mode === 'efficiency' || state.mode === 'ollcp';
 
-	// The hub and the Trainers page stay open to everyone (an SEO surface), but a training
-	// session records attempts against an account, so this is where the line is.
-	// The Community Sets list and a shared set's page stay open too (trainer-sets 2.4); the rest
-	// says what it needs inside the shell, and My Sets keeps its Community Sets entry for visitors.
+	// The hub, the Trainers page and the algorithm catalog with its category pages stay open to
+	// everyone (an SEO surface), but a training session records attempts against an account, so
+	// this is where the line is. The Community Sets list and a shared set's page stay open too
+	// (trainer-sets 2.4, hub_rules.isPublicTrainerView); the rest says what it needs inside the
+	// shell, and My Sets keeps its Community Sets entry for visitors.
 	if (!me && otherTrainer) {
 		return <AccountRequired descriptionKey="account_required.trainer" />;
 	}

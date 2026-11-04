@@ -6,11 +6,22 @@
 import type {StudyMode, TrainerView} from '../types';
 
 /**
- * Views a signed-out visitor may open (2.4): the hub, the Trainers page, the Community Sets list
- * and a shared set's page (read only; its Study and Save buttons ask for a login themselves).
+ * Views a signed-out visitor may open (2.4): the hub, the Trainers page, the algorithm catalog
+ * and each category's page (owner decision 2026-11-04: browsing algorithms needs no account,
+ * and it is the page search and AI crawlers should see), the Community Sets list and a shared
+ * set's page. Their account-bound actions ask for a login themselves: Start training leads to
+ * the locked `training` view, Add to set is hidden, PDF opens the Pro screen, and the detail
+ * modal shows only the public alternatives. Training and My Sets stay signed in.
  */
 export function isPublicTrainerView(view: TrainerView): boolean {
-	return view === 'landing' || view === 'modes' || view === 'community' || view === 'set';
+	return (
+		view === 'landing' ||
+		view === 'modes' ||
+		view === 'catalog' ||
+		view === 'selection' ||
+		view === 'community' ||
+		view === 'set'
+	);
 }
 
 /** Text of the sign-in screen for a view that needs an account. */

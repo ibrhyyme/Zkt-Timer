@@ -4,9 +4,15 @@ import type {TrainerView} from '../types';
 const ALL_VIEWS: TrainerView[] = ['landing', 'modes', 'catalog', 'selection', 'training', 'sets', 'set', 'set-add', 'community'];
 
 describe('signed-out access (2.4)', () => {
-	it('opens the hub, the Trainers page, Community Sets and a set page to visitors', () => {
+	it('opens the hub, the Trainers page, the catalog, category pages, Community Sets and a set page to visitors', () => {
 		const open = ALL_VIEWS.filter(isPublicTrainerView);
-		expect(open.sort()).toEqual(['community', 'landing', 'modes', 'set']);
+		expect(open.sort()).toEqual(['catalog', 'community', 'landing', 'modes', 'selection', 'set']);
+	});
+
+	it('keeps training, My Sets and the set picker signed in', () => {
+		expect(isPublicTrainerView('training')).toBe(false);
+		expect(isPublicTrainerView('sets')).toBe(false);
+		expect(isPublicTrainerView('set-add')).toBe(false);
 	});
 
 	it('explains sets on My Sets and the picker, training elsewhere', () => {
