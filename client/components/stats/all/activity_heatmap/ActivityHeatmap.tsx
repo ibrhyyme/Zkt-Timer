@@ -112,10 +112,14 @@ export default function ActivityHeatmap() {
 
 		const active = data.filter((d) => d.y > 0).length;
 
-		// The first, partial month can start a week or two before the next month's label; on a
-		// phone (about 6 px a week) the two names ran together ("EkiKas"). A label is kept only
-		// with three weeks of room before the next one, which full months always have.
-		const spaced = markers.filter((m, i) => i === markers.length - 1 || markers[i + 1].col - m.col >= 3);
+		// A month name is about three weeks wide on a phone (6 px a week). The first, partial
+		// month can start a week or two before the next label, and three weeks of room still let
+		// the names touch ("KasAra"), so a label needs four weeks before the next one, which full
+		// months always have. The current month starts in the last week or two early in the
+		// month and its name ran past the card; it is shown once three weeks of it are on the grid.
+		const spaced = markers.filter((m, i) =>
+			i === markers.length - 1 ? WEEKS - m.col >= 3 : markers[i + 1].col - m.col >= 4
+		);
 
 		return {grid: cells, activeDays: active, monthMarkers: spaced, max: maxCount};
 	}, [filterOptions, solveUpdate, extraDailyCounts]);

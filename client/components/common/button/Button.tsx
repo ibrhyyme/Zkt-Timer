@@ -44,7 +44,6 @@ export interface ButtonProps {
 	backgroundColor?: string;
 	hidden?: boolean;
 	iconFirst?: boolean;
-	glow?: boolean;
 	title?: string;
 	alignRight?: boolean;
 	type?: 'reset' | 'submit' | 'button';
@@ -89,7 +88,6 @@ export default function Button(props: ButtonProps) {
 		iconFirst,
 		title,
 		onMouseOut,
-		glow,
 		noMargin,
 		to,
 		target,
@@ -159,7 +157,6 @@ export default function Button(props: ButtonProps) {
 			openModal(<ConfirmModal {...rest} />, {
 				title: modalTitle,
 				description: modalDescription,
-				closeButtonText: t('solve_info.done'),
 				compact: true,
 				width: 420,
 			})
@@ -187,7 +184,6 @@ export default function Button(props: ButtonProps) {
 		loading,
 		flat,
 		disabled,
-		glow: glow && !disabled,
 		fullWidth,
 		round,
 		error,

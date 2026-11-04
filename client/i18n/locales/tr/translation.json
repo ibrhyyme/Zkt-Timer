@@ -151,7 +151,6 @@
     "ics": "Apple Takvim, Outlook ve diğerleri",
     "ics_hint": ".ics dosyası indirilir",
     "note": "Yarışma takvime tüm gün etkinliği olarak eklenir. Tur saatleri yarışma günü değişebildiği için programı uygulamadan takip et.",
-    "done": "Bitti",
     "event_description": "Program ve sonuçlar ZKT Timer'da:",
     "native_saved": "Yarışma takvimine eklendi.",
     "native_denied": "Takvim izni verilmedi. Diğer seçeneklerle ekleyebilirsin.",
@@ -251,8 +250,7 @@
     "all_sessions": "Tüm Sezonlar",
     "select_cube": "Küp türü",
     "hero": {
-      "title": "İstatistikler",
-      "subtitle": "Her çözümün, her saniyenin ve her küçük ilerlemenin özeti."
+      "title": "İstatistikler"
     },
     "heatmap": {
       "less": "Az",

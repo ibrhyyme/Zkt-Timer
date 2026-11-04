@@ -419,7 +419,7 @@ export default function Stats() {
 				<div className={b('shell')}>
 					{all ? (
 						mobileMode ? (
-							<HeroBand title={t('stats.hero.title')} subtitle={t('stats.hero.subtitle')}>
+							<HeroBand title={t('stats.hero.title')}>
 								{filtersBody}
 							</HeroBand>
 						) : (

@@ -50,7 +50,6 @@ export function useLegacyMagnetNotice(active: boolean): void {
 				compact: true,
 				width: 420,
 				title: t('time_display.magnet_moved_title'),
-				closeButtonText: t('solve_info.done'),
 			})
 		);
 		// Once per mount of the timer page; t is stable for the language in use.

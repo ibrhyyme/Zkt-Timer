@@ -12,7 +12,6 @@ export default function CsTimerInstructions() {
 	const context = useContext(ImportDataContext);
 
 	const dropdownButtonProps: ButtonProps = {
-		glow: true,
 		primary: true,
 		large: true,
 		disabled: context.importing || !!context.file,

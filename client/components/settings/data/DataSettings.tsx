@@ -48,7 +48,6 @@ export default function DataSettings() {
 		dispatch(
 			openModal(<ImportData importType={importType} />, {
 				title: t('data_settings.import_modal_title', { name: IMPORT_TYPE_NAMES[importType] }),
-				closeButtonText: t('solve_info.done'),
 				compact: true,
 				width: 560,
 			})
@@ -101,7 +100,6 @@ export default function DataSettings() {
 				{
 					title: t('data_settings.reset_settings'),
 					description: t('data_settings.reset_settings_confirm_desc'),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}

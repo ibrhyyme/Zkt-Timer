@@ -41,6 +41,14 @@
 		&--accent {
 			color: rgb(var(--primary-color));
 		}
+
+		// A time or a count reads in the numbers face, as in the cards above; a day name
+		// is a word and keeps the text face.
+		&--numeric {
+			font-family: $zt-font-mono;
+			font-variant-numeric: tabular-nums;
+			letter-spacing: -0.04em;
+		}
 	}
 
 	&__sub {

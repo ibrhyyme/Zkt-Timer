@@ -198,7 +198,6 @@ export default function TrainerToolbar() {
 				title: t('trainer.settings'),
 				width: 560,
 				compact: true,
-				closeButtonText: t('solve_info.done'),
 			}
 		));
 	}, [reduxDispatch, t, state.options, state.mode, dispatch]);

@@ -149,7 +149,7 @@ export default function InputSettings() {
 
 	function openStackMatPickerModal() {
 		const { title, description } = getAudioPickerModalProps(t);
-		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
+		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title, description }));
 	}
 
 	return (

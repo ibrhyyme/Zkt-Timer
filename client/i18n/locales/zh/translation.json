@@ -147,7 +147,6 @@
     "ics": "Apple 日历、Outlook 及其他",
     "ics_hint": "下载 .ics 文件",
     "note": "比赛将作为全天活动添加到日历。比赛当天各轮次时间可能变动，请在应用中查看最新赛程。",
-    "done": "完成",
     "event_description": "赛程与成绩请见 ZKT Timer：",
     "native_saved": "比赛已添加到日历。",
     "native_denied": "未授予日历权限。你可以用其他方式添加。",
@@ -247,8 +246,7 @@
     "all_sessions": "所有赛季",
     "select_cube": "魔方类型",
     "hero": {
-      "title": "统计",
-      "subtitle": "每一次还原、每一秒、每一点进步的总览。"
+      "title": "统计"
     },
     "heatmap": {
       "less": "少",

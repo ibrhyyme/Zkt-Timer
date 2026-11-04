@@ -495,7 +495,6 @@ function ProfileContent() {
 			openModal(<PublishSolves />, {
 				title: t('profile.publish_pbs'),
 				description: t('profile.publish_pbs_desc'),
-				closeButtonText: t('solve_info.done'),
 				onComplete: () => window.location.reload(),
 			})
 		);

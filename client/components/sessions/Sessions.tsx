@@ -215,7 +215,6 @@ export default function Sessions() {
 				width: 420,
 				title: t('sessions.create_new_session_title'),
 				description: t('sessions.create_new_session_desc'),
-				closeButtonText: t('solve_info.done'),
 				onComplete: (session) => {
 					showSession(session.id);
 				},
@@ -246,7 +245,6 @@ export default function Sessions() {
 				width: 480,
 				title: t('sessions.split_session'),
 				description: t('sessions.split_session_desc'),
-				closeButtonText: t('solve_info.done'),
 				onComplete: (result) => {
 					const created = result?.session;
 					if (!created) return;
@@ -287,7 +285,6 @@ export default function Sessions() {
 				{
 					title: t('sessions.merge_sessions_title'),
 					description: t('sessions.merge_confirm_desc', { source: session.name, target: currentSession.name }),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}
@@ -333,7 +330,6 @@ export default function Sessions() {
 				{
 					title: t('sessions.delete_session'),
 					description: t('sessions.delete_confirm_desc', { name: session.name }),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}
@@ -373,7 +369,6 @@ export default function Sessions() {
 				{
 					title: t('sessions.delete_selected_title'),
 					description: t('sessions.delete_selected_desc', { count: idsToDelete.length, names: sessionNames }),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 					// Runs after this modal is closed. Closing pops the newest modal, so a second
@@ -453,7 +448,6 @@ export default function Sessions() {
 				{
 					title: t('sessions.are_you_sure'),
 					description: t('sessions.bulk_delete_confirm'),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}

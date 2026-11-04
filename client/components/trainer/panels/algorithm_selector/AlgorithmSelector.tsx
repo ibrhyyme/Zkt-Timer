@@ -216,7 +216,7 @@ export default function AlgorithmSelector() {
 							topFace={state.options.topFace}
 							frontFace={effectiveFrontFace}
 						/>,
-						{width: ALG_DETAIL_MODAL_WIDTH, title: name, closeButtonText: t('solve_info.done')}
+						{width: ALG_DETAIL_MODAL_WIDTH, title: name}
 					)
 				);
 			});

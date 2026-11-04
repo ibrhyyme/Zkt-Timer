@@ -295,7 +295,6 @@ export default function WcaSection() {
 					<Button
 						large
 						primary
-						glow
 						onClick={() => (window.location.href = '/competitions')}
 					>
 						{t('welcome_wca.cta')}

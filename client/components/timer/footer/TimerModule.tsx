@@ -75,7 +75,6 @@ export default function TimerModule(props: Props) {
 					noMargin
 					dropdownButtonProps={{
 						primary: true,
-						glow: true,
 					}}
 					dropdownMaxHeight={200}
 					icon={<CaretDown />}

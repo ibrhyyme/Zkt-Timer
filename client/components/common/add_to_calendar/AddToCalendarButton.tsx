@@ -52,7 +52,6 @@ export default function AddToCalendarButton(props: Props) {
 			openModal(<AddToCalendarModal competitionId={competitionId} />, {
 				compact: true,
 				width: 420,
-				closeButtonText: t('add_to_calendar.done'),
 			})
 		);
 	}

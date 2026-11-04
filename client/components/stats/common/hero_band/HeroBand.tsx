@@ -8,12 +8,11 @@ const b = block('stats-hero');
 
 interface Props {
 	title: string;
-	subtitle?: string;
 	children?: ReactNode;
 }
 
 export default function HeroBand(props: Props) {
-	const {title, subtitle, children} = props;
+	const {title, children} = props;
 
 	return (
 		<div className={b()}>
@@ -28,7 +27,6 @@ export default function HeroBand(props: Props) {
 							</span>
 						</span>
 					</h1>
-					{subtitle ? <p className={b('subtitle')}>{subtitle}</p> : null}
 				</div>
 				{children ? <div className={b('filters')}>{children}</div> : null}
 			</div>

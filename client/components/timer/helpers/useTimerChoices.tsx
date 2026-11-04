@@ -181,7 +181,6 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 				compact: true,
 				title,
 				description,
-				closeButtonText: t('solve_info.done'),
 			})
 		);
 	}

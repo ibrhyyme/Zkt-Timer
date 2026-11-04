@@ -97,7 +97,7 @@
 	&__icon {
 		width: 28px;
 		height: 28px;
-		border-radius: 5px;
+		border-radius: $zt-radius-sm;
 		display: flex;
 		font-size: 1.2rem;
 		color: rgb(var(--theme-background-opposite));

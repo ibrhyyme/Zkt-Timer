@@ -76,7 +76,6 @@ export default function SupportTickets() {
 			dispatch(
 				openModal(<SupportTicketModal ticketId={ticketId} isAdminView onUpdate={() => refetch()} />, {
 					width: 720,
-					closeButtonText: t('solve_info.done'),
 				})
 			);
 		},

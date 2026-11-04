@@ -151,7 +151,6 @@
     "ics": "Apple Calendar, Outlook y otros",
     "ics_hint": "Descarga un archivo .ics",
     "note": "La competición se añade como evento de todo el día. Los horarios de las rondas pueden cambiar ese día, así que sigue el programa en la aplicación.",
-    "done": "Hecho",
     "event_description": "Horario y resultados en ZKT Timer:",
     "native_saved": "Competición añadida a tu calendario.",
     "native_denied": "No se concedió acceso al calendario. Puedes añadirla de otra forma.",
@@ -251,8 +250,7 @@
     "all_sessions": "Todas las sesiones",
     "select_cube": "Tipo de cubo",
     "hero": {
-      "title": "Estadísticas",
-      "subtitle": "Resumen de cada resolución, cada segundo y cada pequeña mejora."
+      "title": "Estadísticas"
     },
     "heatmap": {
       "less": "Menos",

@@ -94,7 +94,6 @@ export default function Support() {
 			dispatch(
 				openModal(<SupportTicketModal ticketId={ticketId} onUpdate={() => refetch()} />, {
 					width: 720,
-					closeButtonText: t('solve_info.done'),
 				})
 			);
 		},

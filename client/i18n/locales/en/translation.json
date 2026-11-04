@@ -151,7 +151,6 @@
     "ics": "Apple Calendar, Outlook and others",
     "ics_hint": "Downloads an .ics file",
     "note": "The competition is added as an all-day event. Round times can shift on the day, so follow the schedule in the app.",
-    "done": "Done",
     "event_description": "Schedule and results on ZKT Timer:",
     "native_saved": "Competition added to your calendar.",
     "native_denied": "Calendar access was not granted. You can add it another way.",
@@ -251,8 +250,7 @@
     "all_sessions": "All Sessions",
     "select_cube": "Cube type",
     "hero": {
-      "title": "Statistics",
-      "subtitle": "A summary of every solve, every second, and every small win."
+      "title": "Statistics"
     },
     "heatmap": {
       "less": "Less",

@@ -73,7 +73,6 @@ export default function EvalResultsView() {
 						title: `${result.pllCase.name} perm`,
 						width: 760,
 						compact: true,
-						closeButtonText: t('solve_info.done', {defaultValue: 'Done'}),
 					}
 				)
 			);

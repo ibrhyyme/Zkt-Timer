@@ -77,7 +77,6 @@ export default function CaseSection() {
 			/>,
 			{
 				title,
-				closeButtonText: t('solve_info.done'),
 				width: 1100,
 			}
 		));

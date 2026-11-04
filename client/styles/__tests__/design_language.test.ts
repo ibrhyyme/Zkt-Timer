@@ -17,6 +17,13 @@ const BASELINE = {
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
+	// Design unity plan, section 6 (2026-11-04). Counted at the end of phases 0-4.
+	scssHandRadius: 558,
+	scssDropShadow: 120,
+	tsxFixedTailwindColor: 67,
+	scssButtonColor: 117,
+	tsxButtonColor: 25,
+	tsxRoundedXl: 66,
 };
 
 function stripComments(src: string): string {
@@ -44,6 +51,41 @@ function count(paths: string[], re: RegExp, strip = true): number {
 		n += ((strip ? stripComments(src) : src).match(re) || []).length;
 	}
 	return n;
+}
+
+/** Counts the declarations captured by `re` (group 1 = the value) that `bad` flags. */
+function countDecls(paths: string[], re: RegExp, bad: (value: string) => boolean): number {
+	let n = 0;
+	for (const p of paths) {
+		for (const m of stripComments(fs.readFileSync(p, 'utf8')).matchAll(re)) {
+			if (bad(m[1].trim())) n++;
+		}
+	}
+	return n;
+}
+
+// A corner is a token, 0, a circle or the pill value. A calc() built on a token (an inner
+// corner one hairline smaller) is still the token.
+const RADIUS_OK = /^(\$zt-radius-[\w-]+|0(px)?|50%|999px|inherit|initial|unset|!important)$/;
+
+function isHandRadius(value: string): boolean {
+	if (/calc\([^)]*\$zt-radius-/.test(value)) return false;
+	return value.split(/[\s/]+/).some((part) => part && !RADIUS_OK.test(part));
+}
+
+// A shadow layer with a blur radius that is not inset: what makes a flat surface float or
+// glow. Hairline frames (0 0 0 1px) and inset tints have no blur and are not counted; the
+// float token ($zt-shadow-float) is a variable and is not a literal here.
+function isDropShadow(value: string): boolean {
+	const layers = value.split(/,(?![^(]*\))/);
+	return layers.some((layer) => {
+		const l = layer.trim();
+		if (/^inset\b/.test(l) || /\binset$/.test(l)) return false;
+		// Colours (rgba(...), var(...)) out; a $variable length reads as a non-zero length.
+		const lengths = l.replace(/[\w-]*\([^()]*(\([^()]*\)[^()]*)*\)/g, ' ').replace(/\$[\w-]+/g, '1px');
+		const nums = lengths.match(/-?\d*\.?\d+(px|rem|em)?/g) || [];
+		return nums.length >= 3 && parseFloat(nums[2]) > 0;
+	});
 }
 
 const read = (rel: string) => stripComments(fs.readFileSync(path.join(CLIENT, rel), 'utf8'));
@@ -179,5 +221,49 @@ describe('design language: no new effects (ratchet)', () => {
 
 	it('inline blur or gradient styles in TSX do not grow', () => {
 		expect(count(tsx, /backdropFilter|linear-gradient\(/g, false)).toBeLessThanOrEqual(BASELINE.tsxInlineEffect);
+	});
+
+	it('hand-written corners in SCSS do not grow', () => {
+		expect(countDecls(scss, /border(?:-[a-z]+)*-radius\s*:\s*([^;{}]+)/g, isHandRadius)).toBeLessThanOrEqual(
+			BASELINE.scssHandRadius
+		);
+	});
+
+	it('drop shadows outside the float token do not grow', () => {
+		expect(countDecls(scss, /box-shadow\s*:\s*([^;{}]+)/g, isDropShadow)).toBeLessThanOrEqual(
+			BASELINE.scssDropShadow
+		);
+	});
+
+	it('fixed Tailwind palette colours in TSX do not grow', () => {
+		expect(count(tsx, /\bbg-(?:blue|green|red|yellow)-\d{2,3}\b/g, false)).toBeLessThanOrEqual(
+			BASELINE.tsxFixedTailwindColor
+		);
+	});
+
+	it('--button-color does not spread to new surfaces', () => {
+		expect(count(scss, /var\(--button-color\)/g)).toBeLessThanOrEqual(BASELINE.scssButtonColor);
+		expect(count(tsx, /var\(--button-color\)|\b(?:bg|border|ring|from|to)-button\b/g, false)).toBeLessThanOrEqual(
+			BASELINE.tsxButtonColor
+		);
+	});
+
+	it('card-sized Tailwind corners in TSX do not grow', () => {
+		expect(count(tsx, /\brounded(?:-[a-z]{1,2})?-(?:xl|2xl|3xl)\b/g, false)).toBeLessThanOrEqual(
+			BASELINE.tsxRoundedXl
+		);
+	});
+});
+
+describe('design language: one close, one button', () => {
+	it('the shared Button has no glow prop', () => {
+		expect(read('components/common/button/Button.tsx')).not.toMatch(/\bglow\b/);
+	});
+
+	it('a modal closes with the X; the written "Done" is the Pro modal\'s alone', () => {
+		const users = tsx.filter((p) => /closeButtonText\s*:/.test(fs.readFileSync(p, 'utf8')));
+		expect(users.map((p) => path.relative(CLIENT, p).replace(/\\/g, '/'))).toEqual([
+			'components/common/pro_only/openProOnlyModal.tsx',
+		]);
 	});
 });

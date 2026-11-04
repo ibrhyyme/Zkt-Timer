@@ -37,12 +37,12 @@ export default function TimeFocus() {
 		<div className={b()}>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.total_time')}</span>
-				<span className={b('value')}>{formatDurationText(totalTime, t)}</span>
+				<span className={b('value', {numeric: true})}>{formatDurationText(totalTime, t)}</span>
 				<span className={b('sub')}>{t('stats.focus.total_solves_count', {value: formatInteger(hourly.total, i18n.language)})}</span>
 			</div>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.peak_hour')}</span>
-				<span className={b('value', {accent: !!peakHourLabel})}>
+				<span className={b('value', {accent: !!peakHourLabel, numeric: true})}>
 					{peakHourLabel || '—'}
 				</span>
 				<span className={b('sub')}>
@@ -64,7 +64,7 @@ export default function TimeFocus() {
 			</div>
 			<div className={b('cell')}>
 				<span className={b('label')}>{t('stats.focus.sessions')}</span>
-				<span className={b('value')}>{formatInteger(sessions, i18n.language)}</span>
+				<span className={b('value', {numeric: true})}>{formatInteger(sessions, i18n.language)}</span>
 				<span className={b('sub')}>
 					{avgSolvesPerSession > 0
 						? t('stats.focus.sessions_sub', {avg: formatInteger(avgSolvesPerSession, i18n.language)})

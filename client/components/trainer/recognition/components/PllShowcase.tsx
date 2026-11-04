@@ -105,7 +105,6 @@ export default function PllShowcase() {
 						title: `${pllCase.name} perm`,
 						width: 760,
 						compact: true,
-						closeButtonText: t('solve_info.done', {defaultValue: 'Done'}),
 					}
 				)
 			);

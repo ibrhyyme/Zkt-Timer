@@ -113,7 +113,6 @@ export default function AdminPromoCodes() {
 				{
 					title: t('delete_confirm_title'),
 					description: t('delete_confirm_desc', {code: code.code}),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}
@@ -124,7 +123,6 @@ export default function AdminPromoCodes() {
 	function openManage(code: PromoCodeItem) {
 		dispatch(
 			openModal(<ManagePromoCodeModal promoCodeId={code.id} code={code.code} />, {
-				closeButtonText: 'Bitti',
 			})
 		);
 	}
@@ -132,7 +130,6 @@ export default function AdminPromoCodes() {
 	function openCreate() {
 		dispatch(
 			openModal(<CreatePromoCodeModal />, {
-				closeButtonText: 'Bitti',
 				onComplete: fetchCodes,
 			})
 		);

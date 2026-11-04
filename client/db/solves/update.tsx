@@ -186,7 +186,6 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false): P
 					{
 						title: i18n.t('common.delete_solve'),
 						description: i18n.t('common.delete_solve_confirm'),
-						closeButtonText: i18n.t('solve_info.done'),
 						compact: true,
 						width: 420,
 						// Backdrop, Escape, swipe back and the close button all land here
@@ -403,7 +402,6 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 				{
 					title: i18n.t('common.clear_season'),
 					description: i18n.t('common.clear_season_confirm'),
-					closeButtonText: i18n.t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}
@@ -458,7 +456,6 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 				{
 					title: i18n.t('common.delete_solves'),
 					description: i18n.t('common.delete_solves_confirm', { count: solves.length }),
-					closeButtonText: i18n.t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}

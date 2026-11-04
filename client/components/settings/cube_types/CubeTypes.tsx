@@ -60,7 +60,6 @@ export default function CubeTypes() {
 				{
 					title: t('timer_settings.cube_types_delete_title'),
 					description: t('timer_settings.cube_types_delete_desc', {name: cubeType.name}),
-					closeButtonText: t('solve_info.done'),
 					compact: true,
 					width: 420,
 				}

@@ -77,7 +77,6 @@ export default function HeroSection() {
 				<Button
 					primary
 					large
-					glow
 					onClick={() => (window.location.href = '/timer')}
 				>
 					{t('welcome_hero.cta_try')}
@@ -100,7 +99,6 @@ export default function HeroSection() {
 					<motion.div whileHover={hoverScale} whileTap={tapScale}>
 						<Button
 							large
-							glow
 							onClick={() => (window.location.href = '/signup')}
 						>
 							{t('welcome_hero.cta_signup')}

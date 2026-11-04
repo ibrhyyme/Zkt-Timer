@@ -62,7 +62,6 @@ export default function AvatarDropdown(props: Props) {
 		dispatch(
 			openModal(<EditProfile profile={profile} />, {
 				title: t('profile.edit_profile'),
-				closeButtonText: t('solve_info.done'),
 				disableBackdropClick: true,
 			})
 		);
