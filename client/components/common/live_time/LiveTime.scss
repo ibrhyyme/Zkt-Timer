@@ -1,0 +1,37 @@
+@import '../../../styles/config';
+
+// The timer digits' shape, shared by every timer (LiveTime.tsx), after csTimer's display
+// (owner, 2026-11-04): the decimals smaller than the seconds, the digits closer together
+// and the point pulled in. Roboto Mono gives every glyph, the point too, the same 0.6 em
+// cell, which is what spread "12.34" so wide; letter-spacing and the point's margins close
+// those gaps. time_shape.ts measures the same shape to fit the phone digits (GLYPH_EM,
+// POINT_EM, FRACTION_SCALE); change both together.
+//
+// Letter-spacing is set on the spans, not inherited, so a timer's own letter-spacing on the
+// outer element does not change the shape. The decimals' value is the whole digits' 0.05 em
+// in their own, smaller em, so both parts close up by the same distance.
+.#{$namespace}-live-time {
+	// The global reset (styles/reset.scss) gives every span the UI face, Archivo, at 500. The
+	// digits take the timer's own face and weight instead: in a proportional face the pulled-in
+	// point sinks under the digits, and the time slides sideways as digit widths change.
+	&__whole,
+	&__point,
+	&__fraction {
+		font-family: inherit;
+		font-weight: inherit;
+	}
+
+	&__whole,
+	&__point {
+		letter-spacing: -0.05em;
+	}
+
+	&__point {
+		margin: 0 -0.14em;
+	}
+
+	&__fraction {
+		font-size: 0.75em;
+		letter-spacing: calc(-0.05em / 0.75);
+	}
+}

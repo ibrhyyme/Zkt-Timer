@@ -612,7 +612,6 @@ function FriendlyRoomContent() {
     const [smartInspectionTime, setSmartInspectionTime] = useState(15);
     const [smartTiming, setSmartTiming] = useState(false);
     const [smartTimerStartedAt, setSmartTimerStartedAt] = useState<number | null>(null);
-    const [smartElapsedTime, setSmartElapsedTime] = useState(0);
     const [smartReviewing, setSmartReviewing] = useState(false);
     const [smartFinalTime, setSmartFinalTime] = useState(0);
     const [smartStats, setSmartStats] = useState<{ turns: number; tps: number } | null>(null);
@@ -625,7 +624,6 @@ function FriendlyRoomContent() {
     const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const INACTIVITY_TIMEOUT_MS = 5000;
     const smartInspectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const smartTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     // Correction hint produced by the engine ("do D2 to get back on track").
     const [smartUndoMoves, setSmartUndoMoves] = useState<string[] | null>(null);
     const [smartOutOfSync, setSmartOutOfSync] = useState(false);
@@ -742,17 +740,12 @@ function FriendlyRoomContent() {
                 setSmartScrambleCompletedAt(null);
                 setSmartTiming(true);
                 setSmartTimerStartedAt(event.startedAt);
-                setSmartElapsedTime(0);
                 break;
 
             case 'SOLVE_COMPLETE': {
                 const { result } = event;
                 setSmartTiming(false);
                 setSmartTimerStartedAt(null);
-                if (smartTimerIntervalRef.current) {
-                    clearInterval(smartTimerIntervalRef.current);
-                    smartTimerIntervalRef.current = null;
-                }
                 // timeMs is already corrected for BLE lag and stamped from the cube's own
                 // clock, so a late detection no longer inflates the displayed time.
                 // The user's smart cube time offset goes on here, as on the timer page:
@@ -828,7 +821,6 @@ function FriendlyRoomContent() {
         setSmartReviewing(false);
         setSmartFinalTime(0);
         setSmartStats(null);
-        setSmartElapsedTime(0);
         setSmartInspecting(false);
         setSmartInspectionTime(inspectionDelay ?? 15);
         setSmartUndoMoves(null);
@@ -836,10 +828,6 @@ function FriendlyRoomContent() {
         if (smartInspectionIntervalRef.current) {
             clearInterval(smartInspectionIntervalRef.current);
             smartInspectionIntervalRef.current = null;
-        }
-        if (smartTimerIntervalRef.current) {
-            clearInterval(smartTimerIntervalRef.current);
-            smartTimerIntervalRef.current = null;
         }
     }, [room?.current_scramble]);
 
@@ -920,25 +908,8 @@ function FriendlyRoomContent() {
     }, [smartTiming, smartInspecting, smartScrambleCompletedAt, smartReviewing, smartCubeConnected, handleStatusChange]);
 
 
-    // Timer interval for timing phase
-    useEffect(() => {
-        if (smartTiming && smartTimerStartedAt) {
-            smartTimerIntervalRef.current = setInterval(() => {
-                setSmartElapsedTime(Date.now() - smartTimerStartedAt);
-            }, 33);
-        } else {
-            if (smartTimerIntervalRef.current) {
-                clearInterval(smartTimerIntervalRef.current);
-                smartTimerIntervalRef.current = null;
-            }
-        }
-
-        return () => {
-            if (smartTimerIntervalRef.current) {
-                clearInterval(smartTimerIntervalRef.current);
-            }
-        };
-    }, [smartTiming, smartTimerStartedAt]);
+    // The running smart cube time is drawn by RoomTimerOverlay from smartTimerStartedAt
+    // (LiveTime). It used to tick into state here every 33 ms, re-rendering the whole room.
 
     // Scramble-change reset lives in the engine input effect above; keeping a second copy
     // here raced with it (both cleared the same intervals from different render passes).
@@ -1619,8 +1590,6 @@ function FriendlyRoomContent() {
         // Timer state'i sıfırla
         setSmartTiming(false);
         setSmartTimerStartedAt(null);
-        setSmartElapsedTime(0);
-        if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
         setShowAbortDialog(false);
         setSmartAbortVisible(false);
         setNeedsCubeReset(true);
@@ -1630,11 +1599,9 @@ function FriendlyRoomContent() {
         // Timer'ı sıfırla, submit yapma (redo gibi)
         setSmartTiming(false);
         setSmartTimerStartedAt(null);
-        setSmartElapsedTime(0);
         setSmartFinalTime(0);
         setSmartStats(null);
         setSmartScrambleCompletedAt(null);
-        if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
         // Abandon the attempt without committing; the engine rewinds to the scramble phase.
         engineRef.current?.abort();
         setSmartUndoMoves(null);
@@ -2634,7 +2601,6 @@ function FriendlyRoomContent() {
                     setSmartFinalTime(0);
                     setSmartStats(null);
                     setSmartTiming(false);
-                    setSmartElapsedTime(0);
                     setSmartUndoMoves(null);
                     // Rewind the engine to the scramble phase so the round can be re-solved.
                     engineRef.current?.abort();
@@ -2645,7 +2611,7 @@ function FriendlyRoomContent() {
                 smartInspecting={smartInspecting}
                 smartInspectionTime={smartInspectionTime}
                 smartTiming={smartTiming}
-                smartElapsedTime={smartElapsedTime}
+                smartTimerStartedAt={smartTimerStartedAt}
                 smartReviewing={smartReviewing}
                 smartFinalTime={smartFinalTime}
                 smartStats={smartStats || undefined}

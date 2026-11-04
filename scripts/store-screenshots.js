@@ -14,6 +14,8 @@
 // Microsoft YaHei (Windows system fonts). The "ipadPro129" file name tells deliver
 // the images belong to the 12.9/13-inch iPad slot.
 // Usage: node scripts/store-screenshots.js <projectRoot> <rawDir> <fontDir> [play,iphone,ipad]
+// <fontDir> is scripts/store-fonts/poppins: the caption face lives there, outside public/,
+// since the app itself no longer uses Poppins and public/ ships in every app bundle.
 // STORE_SHOTS_OUT=<dir> writes the same tree under <dir> instead of the repo, for a preview;
 // STORE_SHOTS_LANGS=tr,en limits the languages.
 const path = require('path');

@@ -129,7 +129,10 @@ export interface TrainerSessionState {
 
 	// Training State
 	timerState: TimerState;
+	/** The stopped time in ms. While RUNNING it stays at 0: the digits read timerStartedAt. */
 	currentTimerValue: number;
+	/** Date.now() when the running solve started; meaningful only while timerState is RUNNING. */
+	timerStartedAt: number;
 	userAlg: string[];
 	originalUserAlg: string[];
 	isMoveMasked: boolean;
@@ -170,6 +173,8 @@ export type TrainerAction =
 	| {type: 'SET_ALGORITHM_QUEUE'; payload: CheckedAlgorithm[]}
 	| {type: 'SET_TIMER_STATE'; payload: TimerState}
 	| {type: 'SET_TIMER_VALUE'; payload: number}
+	/** payload: Date.now() at the start. Puts the timer in RUNNING from zero. */
+	| {type: 'START_TIMER'; payload: number}
 	| {type: 'SET_USER_ALG'; payload: string[]}
 	| {type: 'SET_ORIGINAL_USER_ALG'; payload: string[]}
 	| {type: 'SET_MOVE_MASKED'; payload: boolean}

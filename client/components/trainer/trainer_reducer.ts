@@ -59,6 +59,7 @@ export function createTrainerState(
 		pendingSetCode: nav.pendingSetCode ?? null,
 		timerState: 'IDLE',
 		currentTimerValue: 0,
+		timerStartedAt: 0,
 		userAlg: [],
 		originalUserAlg: [],
 		isMoveMasked: false,
@@ -202,6 +203,9 @@ export function trainerReducer(state: TrainerSessionState, action: TrainerAction
 
 		case 'SET_TIMER_VALUE':
 			return {...state, currentTimerValue: action.payload};
+
+		case 'START_TIMER':
+			return {...state, timerState: 'RUNNING', currentTimerValue: 0, timerStartedAt: action.payload};
 
 		case 'SET_USER_ALG':
 			return {...state, userAlg: action.payload};

@@ -363,9 +363,9 @@ body.timer-immersive-bg {
 			&--folded,
 			&--stacked {
 				> .#{$namespace}-smart-cube:not(.#{$namespace}-smart-cube--mobile) .#{$namespace}-smart-cube__cube {
-					// 0.3 against the 0.4 of SmartCube.scss: FOLDED_CUBE_SCALE in
+					// Three quarters of the drawn size: FOLDED_CUBE_SCALE in
 					// helpers/time_row_fit.ts, keep the two in step.
-					zoom: 0.3;
+					zoom: 0.75;
 				}
 			}
 
@@ -877,7 +877,6 @@ body.timer-immersive-bg {
 			width: 100%;
 
 			&__cube {
-				zoom: 1 !important; // Override desktop's zoom: 0.4
 				margin: 0 !important;
 				width: 100%;
 				display: flex;
@@ -967,9 +966,8 @@ body.timer-immersive-bg {
 		max-height: 30vh; // Don't crush dashboard/stats on small phones
 		overflow: visible;
 
-		// Desktop has zoom: 0.4 — on mobile JS effectiveCubeSize is already viewport-aware
+		// On mobile JS effectiveCubeSize is already viewport-aware (cube_size.ts)
 		.zt-smart-cube__cube {
-			zoom: 1 !important;
 			margin: 0 !important;
 		}
 

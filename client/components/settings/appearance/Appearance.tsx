@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getTimeString } from '../../../util/time';
 import Button from '../../common/button/Button';
 import { useTiles } from '../../timer/tiles/useTiles';
 import TimerBackground, { useTimerBackgroundMobileSame } from './timer_background/TimerBackground';
@@ -15,41 +14,21 @@ import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
 import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro } from '../../../lib/pro';
-import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
+import { AllSettings } from '../../../db/settings/query';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import {
 	TimerSettingsGroup,
 	TimerSettingsSelect,
 	TimerSettingsAction,
-	TimerSettingsSlider,
 	TimerSettingsToggle,
 } from '../timer/TimerSettingsRow';
-
-const DEFAULT_FONT_FAMILY = 'Roboto Mono';
 
 // Preset names are not translated, so searching "tokyo" or "cyberpunk" has to reach
 // the theme block through the group's own searchable text.
 const THEME_SEARCH_TEXT = Object.values(APP_THEME_PRESETS).map((preset) => preset.name);
 
-const FONT_FAMILIES = [
-	DEFAULT_FONT_FAMILY,
-	'Fira Sans',
-	'Fira Mono',
-	'Kiwi Maru',
-	'JetBrains Mono',
-	'Poppins',
-	'Montserrat',
-	'Space Mono',
-	'Arial',
-	'monospace',
-];
-
 export default function Appearance() {
 	const { t } = useTranslation();
-	const timerTimeSize = useSettings('timer_time_size');
-	const timerTimeSizeUserDefault = useSettings('timer_time_size_user_default');
-	const timerDecimalPoints = useSettings('timer_decimal_points');
-	const timerFontFamily = useSettings('timer_font_family');
 	const { resetLayout } = useTiles();
 	const highlightPbs = useSettings('highlight_pbs');
 	const streamerMode = useSettings('streamer_mode');
@@ -62,9 +41,6 @@ export default function Appearance() {
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
 	}
-
-	// Kullanicinin kayitli default'i varsa onu, yoksa factory/mobile default'i don
-	const timeSizeDefault = timerTimeSizeUserDefault ?? getDefaultSetting('timer_time_size');
 
 	return (
 		<div className="space-y-2">
@@ -147,47 +123,6 @@ export default function Appearance() {
 				>
 					<Button gray text={t('timer_tiles.reset_layout')} onClick={resetLayout} />
 				</TimerSettingsAction>
-			</TimerSettingsGroup>
-
-			{/* Yazı Tipi */}
-			<TimerSettingsGroup id="appearance-typography" label={t('appearance.category_typography')}>
-				<TimerSettingsSelect
-					label={t('appearance.timer_font')}
-					description={t('appearance.timer_font_desc')}
-					value={timerFontFamily}
-					options={FONT_FAMILIES.map((ff) => ({
-						label: ff,
-						value: ff,
-					}))}
-					onChange={(v) => updateSetting('timer_font_family', v)}
-				/>
-				<TimerSettingsSlider
-					label={t('appearance.timer_font_size')}
-					description={t('appearance.timer_font_size_desc')}
-					hidden={!!mobileMode}
-					value={timerTimeSize}
-					min={35}
-					max={300}
-					showReset={timerTimeSize !== timeSizeDefault}
-					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('timer_time_size', timeSizeDefault)}
-					restoreDefaultLabel={t('appearance.save_as_default')}
-					onRestoreDefault={() => updateSetting('timer_time_size_user_default', timerTimeSize)}
-					onChange={(v) => updateSetting('timer_time_size', v)}
-				>
-					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
-						<span
-							style={{
-								fontWeight: '500',
-								fontFamily: timerFontFamily,
-								fontSize: `${Math.min(timerTimeSize, 80)}px`,
-							}}
-							className="text-text"
-						>
-							{getTimeString(23.074, timerDecimalPoints)}
-						</span>
-					</div>
-				</TimerSettingsSlider>
 			</TimerSettingsGroup>
 
 			{/* Listeler */}

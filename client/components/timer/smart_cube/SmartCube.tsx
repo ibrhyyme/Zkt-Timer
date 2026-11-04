@@ -57,6 +57,7 @@ import { useSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import SmartCubeView, { SmartCubeViewHandle } from './cube_view/SmartCubeView';
 import { useSmartPuzzleMatch, smartPuzzleLabel } from '../helpers/smart_puzzle';
 import StartInstructions from '../time_display/start_instructions/StartInstructions';
+import { drawnCubeSize } from './cube_size';
 
 const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
@@ -192,9 +193,9 @@ export default function SmartCube() {
 		window.addEventListener('resize', onResize);
 		return () => window.removeEventListener('resize', onResize);
 	}, []);
-	const effectiveCubeSize = mobileMode
-		? Math.floor(Math.min(smartCubeSize, viewportH * 0.30, viewportW * 0.52))
-		: smartCubeSize;
+	// Drawn at its real size: the desktop setting is 2.5 times the drawn size, the phone's is
+	// capped by the screen (cube_size.ts).
+	const effectiveCubeSize = drawnCubeSize(smartCubeSize, !!mobileMode, viewportW, viewportH);
 
 	const {
 		scramble,

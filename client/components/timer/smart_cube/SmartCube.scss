@@ -7,7 +7,11 @@
 	position: relative;
 
 	&__cube {
-		zoom: 0.4;
+		// No zoom: the cube is drawn at its real size (cube_size.ts). It used to be drawn at
+		// the stored size and zoomed to 0.4, which made the slider's number 2.5 times what
+		// the screen showed and drew 6 times the pixels. The margins trim the canvas's empty
+		// band above and below the cube; as a share of the cube's own width they are the
+		// same with or without the zoom.
 		margin-top: -8%;
 		margin-bottom: -8%;
 

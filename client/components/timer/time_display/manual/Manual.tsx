@@ -9,7 +9,6 @@ import block from '../../../../styles/bem';
 import { resetScramble } from '../../helpers/scramble';
 import { saveSolve } from '../../helpers/save';
 import StartInstructions from '../start_instructions/StartInstructions';
-import { useSettings } from '../../../../util/hooks/useSettings';
 import { useActiveSessionId } from '../../../../util/hooks/useActiveSessionId';
 import { useElementListener } from '../../../../util/hooks/useListener';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
@@ -40,7 +39,6 @@ export default function Manual({ cubeLabel }: Props) {
 	const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
 
 	const mobileMode = useGeneral('mobile_mode');
-	const timerFontFamily = useSettings('timer_font_family');
 	const sessionId = useActiveSessionId();
 
 	useSolveDb();
@@ -194,7 +192,6 @@ export default function Manual({ cubeLabel }: Props) {
 			disabled={disabled}
 			style={{
 				fontSize: '42px',
-				fontFamily: timerFontFamily,
 			}}
 			onChange={handleManualEntryChange}
 			value={manualTime}

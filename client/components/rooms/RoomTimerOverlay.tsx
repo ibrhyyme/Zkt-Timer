@@ -12,6 +12,7 @@ import { hapticImpact } from '../../util/native-plugins';
 import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
+import LiveTime from '../common/live_time/LiveTime';
 import './RoomTimerOverlay.scss';
 
 // Timer phases
@@ -51,7 +52,8 @@ interface RoomTimerOverlayProps {
     smartInspecting?: boolean;
     smartInspectionTime?: number;
     smartTiming?: boolean;
-    smartElapsedTime?: number;
+    /** Date.now() when the smart cube solve started; the running digits are drawn from it. */
+    smartTimerStartedAt?: number | null;
     smartReviewing?: boolean;
     smartFinalTime?: number;
     smartStats?: { turns: number; tps: number };
@@ -80,7 +82,7 @@ export default function RoomTimerOverlay({
     smartInspecting = false,
     smartInspectionTime = 15,
     smartTiming = false,
-    smartElapsedTime = 0,
+    smartTimerStartedAt = null,
     smartReviewing = false,
     smartFinalTime = 0,
     smartStats,
@@ -338,6 +340,10 @@ export default function RoomTimerOverlay({
             case QiyiTimerState.STOPPED:
                 if (event.recordedTime) {
                     setTime(event.recordedTime.asTimestamp);
+                } else if (startedAtRef.current !== null) {
+                    // No time in the packet: the running clock used to leave its last tick in
+                    // `time`; nothing ticks into it any more, so take the stop from the start.
+                    setTime(now() - startedAtRef.current);
                 }
                 stopTimer();
                 break;
@@ -399,8 +405,11 @@ export default function RoomTimerOverlay({
         setStartedAt(startNow);
         startedAtRef.current = startNow;
         setTime(0);
+        // The inspection interval ends here. The running digits need no interval: LiveTime
+        // draws them from startedAtRef every screen frame (renderTiming), and every stop path
+        // sets `time` to the final value itself.
         if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => tickTiming(), 33);
+        timerRef.current = null;
     };
 
     const stopTimer = () => {
@@ -463,15 +472,6 @@ export default function RoomTimerOverlay({
                 setPenalties((prev) => ({ ...prev, inspection: true }));
             }
 
-            return prevStarted;
-        });
-    };
-
-    const tickTiming = () => {
-        setStartedAt((prevStarted) => {
-            if (!prevStarted) return prevStarted;
-            const elapsed = now() - prevStarted;
-            setTime(elapsed);
             return prevStarted;
         });
     };
@@ -1178,8 +1178,7 @@ export default function RoomTimerOverlay({
         if (status === STATUS.TIMING && hideTimeWhenSolving) {
             return t('time_display.solve');
         }
-        const activeDp = (isMobile && status === STATUS.TIMING) ? 1 : dp;
-        return formatTime(time, activeDp);
+        return formatTime(time, dp);
     };
 
     // Get timer color based on status
@@ -1351,10 +1350,15 @@ export default function RoomTimerOverlay({
 
     // Render timing screen
     const renderTiming = () => {
+        const running = status === STATUS.TIMING && !hideTimeWhenSolving;
         return (
-            <div className={`room-timer-overlay__time room-timer-overlay__time--${getTimerColor()}`}>
-                {getTimerText()}
-            </div>
+            <LiveTime
+                as="div"
+                className={`room-timer-overlay__time room-timer-overlay__time--${getTimerColor()}${running ? ' room-timer-overlay__time--running' : ''}`}
+                running={running}
+                read={() => formatTime(now() - (startedAtRef.current ?? now()), dp)}
+                text={getTimerText()}
+            />
         );
     };
 
@@ -1525,9 +1529,13 @@ export default function RoomTimerOverlay({
                                             truncateToDp(smartInspectionTime, dp)}
                                 </div>
                             ) : (
-                                <div className="room-timer-overlay__time">
-                                    {formatTime(smartElapsedTime, isMobile ? 1 : dp)}
-                                </div>
+                                <LiveTime
+                                    as="div"
+                                    className="room-timer-overlay__time room-timer-overlay__time--running"
+                                    running={smartTiming && smartTimerStartedAt != null}
+                                    read={() => formatTime(Date.now() - smartTimerStartedAt, dp)}
+                                    text={formatTime(0, dp)}
+                                />
                             )}
                         </div>
                     )}

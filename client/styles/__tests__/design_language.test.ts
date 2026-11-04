@@ -17,7 +17,7 @@ const BASELINE = {
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
-	// Design unity plan, section 6 (2026-11-04). Counted at the end of phases 0-4.
+	// Added 2026-11-04, counted after the Timer, Sessions, Solves and Stats pass.
 	scssHandRadius: 558,
 	scssDropShadow: 120,
 	tsxFixedTailwindColor: 67,

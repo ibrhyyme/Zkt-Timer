@@ -22,8 +22,8 @@ export const REFERENCE_GLYPHS = 5;
 export const GLYPH_ADVANCE_EM = 0.6;
 
 /**
- * Size of the folded smart cube against the cube in a row: zoom 0.3 against 0.4
- * (SmartCube.scss `__cube`, Timer.scss `&--folded`).
+ * Size of the folded smart cube against the cube in a row: the zoom of Timer.scss
+ * `&--folded` / `&--stacked` on the cube drawn at its size (smart_cube/cube_size.ts).
  */
 export const FOLDED_CUBE_SCALE = 0.75;
 

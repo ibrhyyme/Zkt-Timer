@@ -9,6 +9,7 @@ import SmartCubeView, { SmartCubeViewHandle } from '../timer/smart_cube/cube_vie
 import { useSettings } from '../../util/hooks/useSettings';
 import { useTranslation } from 'react-i18next';
 import block from '../../styles/bem';
+import LiveTime from '../common/live_time/LiveTime';
 import { BATTLE_KEYS, BattleLayout, battleKeyPlayer, isTypingTarget } from './battle_layout';
 
 const b = block('battle');
@@ -48,7 +49,6 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 	const useBlueMatch = isGreenBaseColor(useSettings('text_color'));
 
 	const startTimeRef = useRef<number>(0);
-	const rafRef = useRef<number>(0);
 	const touchActiveRef = useRef(false);
 	const statusRef = useRef<TimerStatus>('RESTING');
 	const finalTimeRef = useRef(0);
@@ -102,7 +102,6 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 		setUndoMoves(null);
 		setMatchStatus([]);
 		setOutOfSync(false);
-		if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
 		if (touchActiveRef.current) {
 			// Player still holding down — go straight to PRIMING
@@ -113,14 +112,7 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 		}
 	}, [currentRound, currentScramble, dispatch, player, updateStatus]);
 
-	const tick = useCallback(() => {
-		const elapsed = (performance.now() - startTimeRef.current) / 1000;
-		setDisplayTime(elapsed);
-		rafRef.current = requestAnimationFrame(tick);
-	}, []);
-
 	const stopTimer = useCallback(() => {
-		if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		const finalTime = (performance.now() - startTimeRef.current) / 1000;
 		finalTimeRef.current = finalTime;
 		setDisplayTime(finalTime);
@@ -211,14 +203,11 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 				// already happened before the packet reached us.
 				startTimeRef.current = performance.now() - Math.max(0, Date.now() - event.startedAt);
 				updateStatus('TIMING');
-				if (rafRef.current) cancelAnimationFrame(rafRef.current);
-				rafRef.current = requestAnimationFrame(tick);
 				dispatch({ type: 'PLAYER_START', player, startTime: startTimeRef.current });
 				break;
 			}
 
 			case 'SOLVE_COMPLETE': {
-				if (rafRef.current) cancelAnimationFrame(rafRef.current);
 				// The engine's time is corrected for BLE lag and stamped from the cube's own
 				// clock, so it is the number to record — not what the screen happened to show
 				// when the last packet arrived.
@@ -264,7 +253,6 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 		setMatchStatus([]);
 		setOutOfSync(false);
 		if (statusRef.current === 'TIMING') {
-			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 			updateStatus('RESTING');
 			setDisplayTime(0);
 		} else if (statusRef.current === 'PRIMING') {
@@ -327,7 +315,6 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 					const startTime = performance.now();
 					startTimeRef.current = startTime;
 					updateStatus('TIMING');
-					rafRef.current = requestAnimationFrame(tick);
 					dispatch({ type: 'PLAYER_START', player, startTime });
 				} else {
 					updateStatus('RESTING');
@@ -338,7 +325,7 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 				updateStatus('RESTING');
 			}
 		},
-		[smartActive, dispatch, player, tick, updateStatus]
+		[smartActive, dispatch, player, updateStatus]
 	);
 
 	/**
@@ -840,7 +827,16 @@ export default function BattleTimer({ player, onSolve, layout = 'facing' }: Batt
 			)}
 
 			{/* Time — lang="en" locale-based dot->comma font substitution prevention */}
-			<div className={b('time', timeMod)} lang="en">{timeText}</div>
+			{/* While timing, LiveTime draws the digits every screen frame from startTimeRef; the
+			    half does not re-render for the clock. */}
+			<LiveTime
+				as="div"
+				className={b('time', timeMod)}
+				lang="en"
+				running={status === 'TIMING' && settings.showTimeWhenSolving}
+				read={() => getTimeString((performance.now() - startTimeRef.current) / 1000)}
+				text={timeText}
+			/>
 
 			{/* Scramble — hide when round is active (someone solving). With a cube connected
 			    this area doubles as the correction display: see scrambleBody above. */}

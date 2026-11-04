@@ -210,9 +210,14 @@ $bottom-corner-clearance: 210px;
 		font-size: clamp(2.6rem, 13vw, 4.6rem);
 		line-height: 1.05;
 		color: rgb(var(--on-surface));
-		transition: font-size 0.15s ease;
+		// The shared grow and landing (tokens.scss), with the font-size fade it already had.
+		@include timer-digits($extra: font-size 0.15s ease);
 		pointer-events: none;
 		touch-action: none;
+
+		.zt-battle__timer--timing & {
+			@include timer-digits-running;
+		}
 
 		// A penalty is only ever on screen while the half is filled for "done", so painting the
 		// digits in the penalty colour meant the result was unreadable every single time it

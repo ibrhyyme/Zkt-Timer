@@ -73,8 +73,15 @@
         font-family: 'Roboto Mono', 'Courier New', monospace;
         font-variant-numeric: tabular-nums;
         user-select: none;
-        transition: color 0.1s ease;
         letter-spacing: -0.02em;
+        // The shared grow and landing (tokens.scss). The colour fade keeps its own entry:
+        // the mixin's transition would otherwise replace it.
+        @include timer-digits($extra: color 0.1s ease);
+
+        // A running solve (RoomTimerOverlay.tsx: normal and smart cube).
+        &--running {
+            @include timer-digits-running;
+        }
 
         &--white {
             color: rgb(var(--text-color));

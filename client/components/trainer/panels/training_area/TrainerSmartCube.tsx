@@ -109,7 +109,6 @@ export default function TrainerSmartCube() {
 	// Timer refs
 	const solutionMovesRef = useRef<SmartTurn[]>([]);
 	const timerStartRef = useRef<number>(0);
-	const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	// State refs (stale closure prevention)
 	const smartPhaseRef = useRef(state.smartPhase);
@@ -122,27 +121,15 @@ export default function TrainerSmartCube() {
 	optionsRef.current = options;
 
 	// -- Timer helpers --
-	const startTimerInterval = useCallback(() => {
-		if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+	// TrainerTimer draws the running digits from the start time in the state (LiveTime), so
+	// nothing ticks here while the solve runs.
+	const startTimer = useCallback(() => {
 		timerStartRef.current = Date.now();
-		dispatch({type: 'SET_TIMER_STATE', payload: 'RUNNING'});
-		dispatch({type: 'SET_TIMER_VALUE', payload: 0});
-		timerIntervalRef.current = setInterval(() => {
-			dispatch({type: 'SET_TIMER_VALUE', payload: Date.now() - timerStartRef.current});
-		}, 30);
+		dispatch({type: 'START_TIMER', payload: timerStartRef.current});
 	}, [dispatch]);
-
-	const stopTimerInterval = useCallback(() => {
-		if (timerIntervalRef.current) {
-			clearInterval(timerIntervalRef.current);
-			timerIntervalRef.current = null;
-		}
-	}, []);
 
 	// -- Solve complete --
 	const handleSolveComplete = useCallback(() => {
-		stopTimerInterval();
-
 		let finalTime = Date.now() - timerStartRef.current;
 		if (solutionMovesRef.current.length > 0) {
 			const hasCubeTimestamps = solutionMovesRef.current.some(m => m.cubeTimestamp != null);
@@ -178,7 +165,7 @@ export default function TrainerSmartCube() {
 		setTimeout(() => {
 			dispatch({type: 'ADVANCE_ALGORITHM'});
 		}, 150);
-	}, [dispatch, stopTimerInterval]);
+	}, [dispatch]);
 
 	// -- Core move processing (KPattern matching, see SmartAlgTracker) --
 	const processMove = useCallback((smartTurn: SmartTurn) => {
@@ -203,7 +190,7 @@ export default function TrainerSmartCube() {
 		if (result.started) {
 			solutionMovesRef.current = [smartTurn];
 			dispatch({type: 'SMART_SET_PHASE', payload: 'solving'});
-			startTimerInterval();
+			startTimer();
 		} else {
 			solutionMovesRef.current.push(smartTurn);
 		}
@@ -226,7 +213,7 @@ export default function TrainerSmartCube() {
 		if (result.completed) {
 			handleSolveComplete();
 		}
-	}, [dispatch, startTimerInterval, handleSolveComplete]);
+	}, [dispatch, startTimer, handleSolveComplete]);
 
 	// -- patternStates rebuilder (also called on FACELETS update) --
 	// Re-anchors the tracker's expected states on its current cube state.
@@ -474,16 +461,6 @@ export default function TrainerSmartCube() {
 		setupPatterns();
 	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch]);
 
-	// Clean up timer on unmount or external phase change (manual stop)
-	useEffect(() => {
-		if (state.smartPhase === 'completed') {
-			stopTimerInterval();
-		}
-		return () => {
-			stopTimerInterval();
-		};
-	}, [state.smartPhase, stopTimerInterval]);
-
 	// -- Partial/wide match detection (CubeDex approach) --
 	// GAN cubes only report 6 face moves (URFDLB). Wide (r,l,f,b,u,d),
 	// slice (M,E,S), and rotation (x,y,z) moves are physically performed but
@@ -534,13 +511,12 @@ export default function TrainerSmartCube() {
 		solveHasMistakeRef.current = false;
 		// Reset → allow FACELETS baseline sync until the first physical move.
 		awaitingBaselineRef.current = true;
-		stopTimerInterval();
 		dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 		dispatch({type: 'SET_BAD_ALG', payload: []});
 		dispatch({type: 'SET_TIMER_STATE', payload: 'IDLE'});
 		dispatch({type: 'SET_TIMER_VALUE', payload: 0});
 		dispatch({type: 'SMART_SET_PHASE', payload: 'ready'});
-	}, [dispatch, stopTimerInterval]);
+	}, [dispatch]);
 
 	const handleResetGyro = useCallback(() => {
 		gyroBasisRef.current = null;

@@ -20,7 +20,7 @@ import { initStatsModuleStore } from '../../actions/stats';
 import { Session } from '../../../server/schemas/Session.schema';
 import { Setting } from '../../../server/schemas/Setting.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
-import { getAllLocalSettings } from '../../db/settings/local';
+import { applyVisitorFirstLook, getAllLocalSettings } from '../../db/settings/local';
 import { syncPlatformPrefs } from '../../db/settings/update';
 import { deleteLocalStorage, getLocalStorage, setLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
 import { getStore } from '../store';
@@ -129,6 +129,7 @@ export function initAnonymousAppData(callback) {
 		if (finished) return;
 		finished = true;
 
+		applyVisitorFirstLook();
 		const localSettings = getAllLocalSettings('_anon');
 		const settingValues = Object.keys(localSettings).map((key) => ({
 			id: key,

@@ -149,9 +149,19 @@ $motion-land: 280ms; // timer digits: landing after the stop
 
 // How much the timer digits grow while a solve is running. Kept as one variable
 // because it is tuned by feel, not by formula — never inline this number elsewhere.
-// Was 1.06: on a phone that is a few pixels, and the running time also drops to
-// one decimal there, so the shorter string hid the growth completely (2.1-b).
-$timer-running-scale: 1.1;
+// 1.3 was picked by the owner on a phone from 1.1 to 1.4 (2026-11-04). The TS side
+// that sizes the phone digits so the grown time still fits reads the same number from
+// TIMER_RUNNING_SCALE (components/common/live_time/time_shape.ts); change both together.
+$timer-running-scale: 1.3;
+
+// CubeTime's two springs (HelperUI.swift) sampled into linear() easings, so the grow
+// overshoots and settles the way the reference does instead of approximating it with a
+// bezier. Durations run until the spring is within 0.2% of rest. Browsers without
+// linear() (Safari < 17.2, Chrome < 113) fall back to $ease-out-spring / $ease-out-land.
+$motion-timer-grow: 629ms; // .spring(response: 0.42, dampingFraction: 0.66)
+$ease-timer-grow: linear(0, 0.038, 0.132, 0.258, 0.396, 0.533, 0.659, 0.768, 0.859, 0.931, 0.985, 1.022, 1.046, 1.059, 1.063, 1.062, 1.056, 1.049, 1.04, 1.031, 1.023, 1.016, 1.01, 1.005, 1.002, 0.999, 0.997, 0.996, 0.996, 0.996, 0.996, 0.997, 1);
+$motion-timer-land: 412ms; // .spring(response: 0.3, dampingFraction: 0.72)
+$ease-timer-land: linear(0, 0.032, 0.112, 0.219, 0.338, 0.459, 0.573, 0.676, 0.766, 0.84, 0.9, 0.947, 0.982, 1.007, 1.023, 1.033, 1.037, 1.038, 1.037, 1.033, 1.029, 1.024, 1.02, 1.015, 1.012, 1.008, 1.006, 1.003, 1.002, 1, 1, 0.999, 1);
 
 // Status badge fills (E-30, the 2.9-i rule). A small status badge is a full fill
 // with contrasting text, never a tint with text of the same hue. The text follows
@@ -166,6 +176,49 @@ $status-fill-text-light: rgb(255, 255, 255);
 @mixin reduced-motion {
 	@media (prefers-reduced-motion: reduce) {
 		@content;
+	}
+}
+
+/// Running-time digits, at rest: every timer in the app (timer page, trainer, rooms,
+/// battle) uses this pair so they all grow and land the same way. Include on the digits,
+/// then `timer-digits-running` on their running state. The transform is left to the
+/// compositor and there is deliberately no will-change: a layer pinned with will-change
+/// keeps the bitmap it was drawn at and stretches it, which blurred the grown digits.
+/// `$extra` adds a transition of the consumer's own (the timer page keeps its font-size one).
+@mixin timer-digits($extra: null) {
+	transform: scale(1);
+	transform-origin: center;
+	@if $extra {
+		transition: $extra, transform $motion-land $ease-out-land;
+		@supports (transition-timing-function: linear(0, 1)) {
+			transition: $extra, transform $motion-timer-land $ease-timer-land;
+		}
+	} @else {
+		transition: transform $motion-land $ease-out-land;
+		@supports (transition-timing-function: linear(0, 1)) {
+			transition: transform $motion-timer-land $ease-timer-land;
+		}
+	}
+
+	@include reduced-motion {
+		@if $extra {
+			transition: $extra;
+		} @else {
+			transition: none;
+		}
+	}
+}
+
+@mixin timer-digits-running {
+	transform: scale($timer-running-scale);
+	transition: transform $motion-grow $ease-out-spring;
+	@supports (transition-timing-function: linear(0, 1)) {
+		transition: transform $motion-timer-grow $ease-timer-grow;
+	}
+
+	@include reduced-motion {
+		transform: scale(1);
+		transition: none;
 	}
 }
 

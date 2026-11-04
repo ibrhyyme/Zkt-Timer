@@ -112,7 +112,6 @@ export interface AllSettings {
 	/** Outline every net and dial is drawn with. Settable because a dark sticker on a black
 	 * outline loses its borders, which is what happens the moment a user picks black. */
 	cube_outline_color: string;
-	timer_font_family: string;
 	primary_color: string;
 	secondary_color: string;
 	text_color: string;
@@ -241,7 +240,6 @@ const defaultSettings: AllSettings = {
 	stackmat_id: '',
 	timer_time_size: 90,
 	timer_scramble_size: 19,
-	timer_font_family: 'Roboto Mono',
 	timer_modules: [
 		TimerModuleType.HISTORY,
 		TimerModuleType.STATS,

@@ -62,6 +62,8 @@
     &__value {
         font-size: 1rem;
         font-weight: 600;
+        // The timer's own digits face, fixed (there is no timer font setting any more).
+        font-family: 'Roboto Mono', monospace;
         color: rgb(var(--text-color));
         letter-spacing: 0;
         text-shadow: none;

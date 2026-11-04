@@ -1,6 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
+import { getDefaultSetting } from '../../../db/settings/query';
+import { useGeneral } from '../../../util/hooks/useGeneral';
+import { getTimeString } from '../../../util/time';
+import LiveTime from '../../common/live_time/LiveTime';
 import { useSettings } from '../../../util/hooks/useSettings';
 import {
 	isMultiPhaseActive,
@@ -19,6 +23,7 @@ import {
 	TimerSettingsNumber,
 	TimerSettingsSelect,
 	TimerSettingsText,
+	TimerSettingsSlider,
 } from './TimerSettingsRow';
 
 export default function TimerSettings() {
@@ -26,6 +31,11 @@ export default function TimerSettings() {
 
 	// General
 	const timerDecimalPoints = useSettings('timer_decimal_points');
+	const timerTimeSize = useSettings('timer_time_size');
+	const timerTimeSizeUserDefault = useSettings('timer_time_size_user_default');
+	const mobileMode = useGeneral('mobile_mode');
+	// The user's saved default if there is one, otherwise the factory (or phone) default.
+	const timeSizeDefault = timerTimeSizeUserDefault ?? getDefaultSetting('timer_time_size');
 	const freezeTime = useSettings('freeze_time');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
@@ -82,6 +92,39 @@ export default function TimerSettings() {
 					}))}
 					onChange={(v) => setSetting('timer_decimal_points', parseInt(v))}
 				/>
+				{/* The size of the digits, here with the rest of the timer since the digits have one
+				    fixed face (it used to sit under Appearance next to the font picker). Desktop
+				    only: the phone sizes its digits to the screen. */}
+				<TimerSettingsSlider
+					label={t('appearance.timer_font_size')}
+					description={t('appearance.timer_font_size_desc')}
+					hidden={!!mobileMode}
+					value={timerTimeSize}
+					min={35}
+					max={300}
+					showReset={timerTimeSize !== timeSizeDefault}
+					resetLabel={t('appearance.reset')}
+					onReset={() => setSetting('timer_time_size', timeSizeDefault)}
+					restoreDefaultLabel={t('appearance.save_as_default')}
+					onRestoreDefault={() => setSetting('timer_time_size_user_default', timerTimeSize)}
+					onChange={(v) => setSetting('timer_time_size', v)}
+				>
+					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
+						{/* Drawn by LiveTime, so the preview has the timer's own shape. */}
+						<LiveTime
+							running={false}
+							read={() => ''}
+							text={getTimeString(23.074, timerDecimalPoints)}
+							className="text-text"
+							style={{
+								fontWeight: 500,
+								fontFamily: "'Roboto Mono', monospace",
+								fontSize: `${Math.min(timerTimeSize, 80)}px`,
+								lineHeight: 1,
+							}}
+						/>
+					</div>
+				</TimerSettingsSlider>
 				<TimerSettingsNumber
 					label={t('timer_settings.freeze_time')}
 					description={t('timer_settings.freeze_time_desc')}

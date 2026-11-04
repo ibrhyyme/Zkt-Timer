@@ -1256,6 +1256,7 @@
 		&--running {
 			.#{$namespace}-trainer__timer-value {
 				color: rgb(var(--primary-color));
+				@include timer-digits-running;
 			}
 		}
 
@@ -1274,6 +1275,11 @@
 		font-variant-numeric: tabular-nums;
 		color: rgb(var(--text-color));
 		line-height: 1;
+		// As wide as the digits, so the grow scales them and not a full-width box that would
+		// spill past the panel edges.
+		width: fit-content;
+		margin: 0 auto;
+		@include timer-digits;
 	}
 
 	&__timer-hint {

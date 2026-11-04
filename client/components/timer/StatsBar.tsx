@@ -63,7 +63,6 @@ export default function StatsBar() {
     const mobileMode = useGeneral('mobile_mode');
 
     const sessionId = useActiveSessionId();
-    const timerFontFamily = useSettings('timer_font_family');
     const manualEntry = useSettings('manual_entry');
     const keyboardOpen = useKeyboardOpen();
     const stats = useSelector((state: RootStateOrAny) => state?.stats);
@@ -119,12 +118,7 @@ export default function StatsBar() {
         return (
             <div key={index} className={b('item')} onClick={handleClick} style={{ cursor: isSessionMean ? 'default' : 'pointer' }}>
                 <span className={b('label')}>{label}</span>
-                <span
-                    className={b('value')}
-                    style={{ fontFamily: timerFontFamily ? `${timerFontFamily}, monospace` : 'inherit' }}
-                >
-                    {timeStr}
-                </span>
+                <span className={b('value')}>{timeStr}</span>
             </div>
         );
     });

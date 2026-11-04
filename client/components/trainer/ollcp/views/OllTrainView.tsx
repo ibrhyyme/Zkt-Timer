@@ -16,6 +16,7 @@ import {addTime} from '../../hooks/useAlgorithmData';
 import {useTrainerStats, formatTimeShort} from '../../hooks/useTrainerStats';
 import TrainerBarChart from '../../panels/stats_panel/TrainerBarChart';
 import OllcpCard from '../components/OllcpCard';
+import LiveTime from '../../../common/live_time/LiveTime';
 
 const b = block('trainer-ollcp');
 type Phase = 'idle' | 'ready' | 'running' | 'stopped';
@@ -39,7 +40,6 @@ export default function OllTrainView() {
 	phaseRef.current = phase;
 	const [display, setDisplay] = useState(0);
 	const startRef = useRef(0);
-	const rafRef = useRef<number | null>(null);
 	const [cur, setCur] = useState<Pick | null>(null);
 	const curRef = useRef(cur);
 	curRef.current = cur;
@@ -87,24 +87,17 @@ export default function OllTrainView() {
 		lastKeyRef.current = '';
 		pickNext();
 		setPhase('idle');
-		return () => {
-			if (rafRef.current) cancelAnimationFrame(rafRef.current);
-		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [olls]);
 
+	// The running digits are drawn by LiveTime from startRef; the view does not re-render
+	// while the clock runs.
 	const start = useCallback(() => {
 		startRef.current = Date.now();
 		setPhase('running');
-		const tick = () => {
-			setDisplay(Date.now() - startRef.current);
-			rafRef.current = requestAnimationFrame(tick);
-		};
-		rafRef.current = requestAnimationFrame(tick);
 	}, []);
 
 	const stop = useCallback(() => {
-		if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		const t = Date.now() - startRef.current;
 		setDisplay(t);
 		setPhase('stopped');
@@ -245,7 +238,13 @@ export default function OllTrainView() {
 
 			<div className={b('scramble')}>{cur ? cur.s : '…'}</div>
 
-			<div className={b('timer', {[phase]: true})}>{liveTime}</div>
+			<LiveTime
+				as="div"
+				className={b('timer', {[phase]: true})}
+				running={phase === 'running'}
+				read={() => ((Date.now() - startRef.current) / 1000).toFixed(2)}
+				text={liveTime}
+			/>
 
 			{/* Full-screen invisible surface: hold ANYWHERE to start, tap ANYWHERE to stop (normal-timer
 			    feel). Not mounted while stopped, so the reveal buttons/card stay tappable. Sits below the

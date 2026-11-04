@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {ArrowsClockwise, BatteryMedium, CheckSquare, Flag} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
+import LiveTime from '../../common/live_time/LiveTime';
 import {getTimeString} from '../../../util/time';
 import ScrambleMoveList from '../../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
 import SmartCubeView, {SmartCubeViewHandle} from '../../timer/smart_cube/cube_view/SmartCubeView';
@@ -173,6 +174,8 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 	let headline: string | null = null;
 	let bigTime: string | null = null;
 	let bigMod: string | null = null;
+	// The solve is running: LiveTime draws bigTime every screen frame instead of the 100 ms ticker.
+	let bigTimeLive = false;
 	let showScramble = false;
 	let note: string | null = null;
 	const penalties: string[] = [];
@@ -220,6 +223,7 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 		phaseLabel = t('online_battle.phase.solve', {seconds: SOLVE_CUTOFF_SEC});
 		bigTime = getTimeString(elapsed / 1000, 1);
 		bigMod = 'running';
+		bigTimeLive = true;
 		if (cube.scrambleDoneAt != null && cube.solveStartedAt != null) {
 			if (inspectionPenalty(cube.solveStartedAt - cube.scrambleDoneAt) === 'PLUS_TWO') {
 				penalties.push(t('online_battle.inspection_penalty'));
@@ -369,7 +373,15 @@ export default function MatchScreen({match, myName, myAvatar, cube, toLocal, fir
 				)}
 				{showScramble && <div className={b('scramble')}>{scrambleBody}</div>}
 				{headline && <div className={b('headline')}>{headline}</div>}
-				{bigTime && <div className={b('big-time', bigMod ? {[bigMod]: true} : {})}>{bigTime}</div>}
+				{bigTime && (
+					<LiveTime
+						as="div"
+						className={b('big-time', bigMod ? {[bigMod]: true} : {})}
+						running={bigTimeLive}
+						read={() => getTimeString(Math.max(0, Date.now() - (cube.solveStartedAt || Date.now())) / 1000, 1)}
+						text={bigTime}
+					/>
+				)}
 				{note && <div className={b('note')}>{note}</div>}
 				{!current && matched.preview && (
 					<div className={b('preview')} lang="en">

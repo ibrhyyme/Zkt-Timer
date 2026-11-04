@@ -237,15 +237,24 @@
 	}
 	/* Plain centred number — no background box (the whole screen is the start/stop surface). */
 	&__timer {
-		width: 100%;
+		/* As wide as the digits and centred, so the running grow scales the number itself and
+		   not a full-width box that would spill past the screen edges. */
+		width: fit-content;
+		margin: 0 auto;
+		/* The timer digits' face everywhere (LiveTime): its point and spacing assume it. */
+		font-family: $zt-font-mono;
 		font-variant-numeric: tabular-nums;
 		font-size: 64px;
 		font-weight: 800;
 		padding: 28px 0; /* breathing room ("pay") so the number sits centred with space around it */
 		user-select: none;
 		color: rgb(var(--text-color));
+		@include timer-digits;
 		&--ready { color: #46cf72; }
-		&--running { color: rgb(var(--primary-color)); }
+		&--running {
+			color: rgb(var(--primary-color));
+			@include timer-digits-running;
+		}
 	}
 	/* Full-screen invisible surface (idle/ready/running) → hold anywhere to start, tap anywhere to
 	   stop. Below the sticky header (z=20, so "Geri" stays usable) and the reset button (z=11). */

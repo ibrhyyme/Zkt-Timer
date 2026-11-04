@@ -15,7 +15,8 @@ import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useTimerStore } from '../../../util/hooks/useTimerStore';
-import { onVisibilityChange } from '../../../util/app-visibility';
+import LiveTime from '../../common/live_time/LiveTime';
+import { TIMER_RUNNING_SCALE, timeWidthEm } from '../../common/live_time/time_shape';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
@@ -45,6 +46,18 @@ const bi = block('timer-bottom-info');
 function smartFrozenSeconds(measuredSeconds: number): number {
 	if (!timerPageAppliesSmartOffset()) return measuredSeconds;
 	return applySmartCubeTimeOffset(measuredSeconds * 1000, getSmartCubeTimeOffset()) / 1000;
+}
+
+/**
+ * The phone digits' font size: the auto-fit size, capped so the time still fits the screen
+ * once it has grown by TIMER_RUNNING_SCALE. The width is the shape LiveTime draws
+ * (timeWidthEm), which keeps room for two whole seconds, so the digits do not shrink at ten
+ * seconds; the 0.15 em and the 32px are the side margins. Pure CSS, so the server render
+ * and the first client frame agree and nothing has to be measured.
+ */
+function phoneDigitsSize(autoFitPx: number, text: string): string {
+	const ems = TIMER_RUNNING_SCALE * (timeWidthEm(text) + 0.15);
+	return `min(${autoFitPx}px, calc((100vw - 32px) / ${ems.toFixed(3)}))`;
 }
 
 /**
@@ -83,9 +96,12 @@ function SmartStartHint({ scramble, cubeType, scrambleSubset }: { scramble: stri
 export default function TimeDisplay() {
 	const {t} = useTranslation();
 	const context = useContext(TimerContext);
+	// The resting and stopped time. A running solve does not go through it: LiveTime draws
+	// those digits itself, once per screen frame (see readLive below).
 	const [time, setTime] = useState(0);
-	const timerCounter = useRef<NodeJS.Timeout>(null);
-	const timerLocked = useRef<boolean>(false);
+	// The running text as of its last change in length (a new minute), reported by LiveTime,
+	// so the phone auto-fit below can size the digits while React does not see the text.
+	const [liveText, setLiveText] = useState('');
 
 	const {
 		disabled,
@@ -108,13 +124,12 @@ export default function TimeDisplay() {
 	const inspectionOn = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
-	const timerFontFamily = useSettings('timer_font_family');
+	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerType = useSettings('timer_type');
 	const stackMatOn = timerType === 'stackmat';
 	const ganTimerOn = timerType === 'gantimer';
 	const qiyiTimerOn = timerType === 'qiyitimer';
 	// QiYi wired (QYtoys) uses the standard StackMat audio protocol (mode '')
-	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 
 	const mobileMode = useGeneral('mobile_mode');
 	let timerTimeSize = useSettings('timer_time_size');
@@ -144,18 +159,15 @@ export default function TimeDisplay() {
 	wasSolvingRef.current = !!solving;
 
 	useEffect(() => {
-		if (timerCounter.current && !solving) {
-			stopInterval();
-		} else if (!timerCounter.current && timeStartedAt) {
-			startInterval();
-		}
 		if (!solving && finalTime < 0) {
 			setTime(0);
 		}
-	}, [solving, finalTime, timeStartedAt]);
+	}, [solving, finalTime]);
 
-	// Smart cube: BLE solved tespiti anında display'i dondur (33ms interval tick'ini bekleme)
-	// Bu olmadan timer "ileri kaçıp geri düşme" efekti yaşanır
+	// The stop freezes the digits at once, before Redux and React catch up: endTimer and the
+	// BLE layer publish the final time first and announce it with these events. The running
+	// digits already read the same values every frame (readLive); setting the state here is
+	// what React shows once the run is over, so the two never disagree.
 	useEffect(() => {
 		const handleFreeze = () => {
 			const solveEnd = getSmartSolveEndTime();
@@ -163,11 +175,6 @@ export default function TimeDisplay() {
 				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
 				if (frozenTime > 0) {
 					setTime(smartFrozenSeconds(frozenTime));
-					// Interval'ı durdur — artık ticking gereksiz
-					if (timerCounter.current) {
-						clearInterval(timerCounter.current);
-						timerCounter.current = null;
-					}
 				}
 			}
 		};
@@ -175,34 +182,16 @@ export default function TimeDisplay() {
 		return () => window.removeEventListener('smartSolveFreeze', handleFreeze);
 	}, [timeStartedAt]);
 
-	// Touch/keyboard: endTimer aninda display'i dondur ve interval'i temizle
 	useEffect(() => {
 		const handleEndFreeze = () => {
 			const endFinal = getTimerEndFinalTime();
 			if (endFinal !== null && endFinal > 0) {
 				setTime(endFinal / 1000);
-				if (timerCounter.current) {
-					clearInterval(timerCounter.current);
-					timerCounter.current = null;
-				}
 			}
 		};
 		window.addEventListener('timerEndFreeze', handleEndFreeze);
 		return () => window.removeEventListener('timerEndFreeze', handleEndFreeze);
 	}, []);
-
-	// Arka plana gecildiginde timer display interval'ini durdur
-	useEffect(() => {
-		const unsub = onVisibilityChange((visible) => {
-			if (!visible && timerCounter.current) {
-				clearInterval(timerCounter.current);
-				timerCounter.current = null;
-			} else if (visible && !timerCounter.current && timeStartedAt && solving) {
-				startInterval();
-			}
-		});
-		return unsub;
-	}, [solving, timeStartedAt]);
 
 	useEffect(() => {
 		if (!timeStartedAt && !solving && finalTime >= 0) {
@@ -210,76 +199,30 @@ export default function TimeDisplay() {
 		}
 	}, [finalTime]);
 
-	function stopInterval() {
-		// Smart cube: freeze handler interval'ı zaten temizledi
-		// finalTime ile display'i doğru değere güncelle (freeze yaklaşık, linear fit doğru)
-		if (!timerCounter.current && getSmartSolveEndTime() !== null) {
-			if (finalTime > 0) {
-				setTime(finalTime / 1000);
-			}
-			return;
+	// The running digits, once per screen frame. The stop sources come first, in the order the
+	// old 33 ms interval checked them, so the digits stop on the time the solve gets instead
+	// of running a frame past it.
+	const readLive = (): string => {
+		const started = timeStartedAt.getTime();
+
+		// Smart cube: the BLE layer saw the cube solved.
+		const solveEnd = getSmartSolveEndTime();
+		if (solveEnd !== null && solveEnd > 0) {
+			const frozenTime = (solveEnd - started) / 1000;
+			if (frozenTime > 0) return getTimeString(smartFrozenSeconds(frozenTime), timerDecimalPoints);
 		}
 
-		timerLocked.current = true;
+		// Touch, keyboard and the Bluetooth timers: endTimer has the final time.
+		const endFinalTime = getTimerEndFinalTime();
+		if (endFinalTime !== null && endFinalTime > 0) return getTimeString(endFinalTime / 1000, timerDecimalPoints);
 
-		if (!finalTime || finalTime <= 0) {
-			setTime(0);
-		} else {
-			setTime(finalTime / 1000);
-		}
+		// Kamera Timer: both hands are back on the pads and the stop is being confirmed.
+		// Freeze at the time it will get; if the pose breaks, the clock runs on.
+		const cameraFrozen = frozenSeconds(getCameraPendingStop(), started);
+		if (cameraFrozen !== null) return getTimeString(cameraFrozen, timerDecimalPoints);
 
-		if (timerCounter.current) {
-			clearInterval(timerCounter.current);
-		}
-		timerCounter.current = null;
-		timerLocked.current = false;
-
-		if (zeroOutTimeAfterSolve && finalTime > 0) {
-			setTime(0);
-		}
-	}
-
-	function startInterval() {
-		if (timerCounter.current) {
-			return;
-		}
-		timerCounter.current = setInterval(() => {
-			const now = new Date();
-
-			if (timerLocked.current || (!solving && !finalTime) || !timeStartedAt) {
-				return;
-			}
-
-			// Smart cube: BLE katmanında solved tespit edildiyse display'i dondur
-			const solveEnd = getSmartSolveEndTime();
-			if (solveEnd !== null && solveEnd > 0) {
-				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
-				if (frozenTime > 0) {
-					setTime(smartFrozenSeconds(frozenTime));
-					return;
-				}
-			}
-
-			// Touch/keyboard: endTimer cagrildiginda display'i dondur
-			// Redux dispatch ve React re-render beklemeden overshoot'u engeller
-			const endFinalTime = getTimerEndFinalTime();
-			if (endFinalTime !== null && endFinalTime > 0) {
-				setTime(endFinalTime / 1000);
-				return;
-			}
-
-			// Kamera Timer: both hands are back on the pads and the stop is being confirmed.
-			// Freeze at the time it will get; if the pose breaks, the clock runs on.
-			const cameraFrozen = frozenSeconds(getCameraPendingStop(), timeStartedAt.getTime());
-			if (cameraFrozen !== null) {
-				setTime(cameraFrozen);
-				return;
-			}
-
-			const runningTime = (now.getTime() - timeStartedAt.getTime()) / 1000;
-			setTime(runningTime);
-		}, 33);
-	}
+		return getTimeString((Date.now() - started) / 1000, timerDecimalPoints);
+	};
 
 	// The cube the next solve is stamped with (magnet-cubes 5.5). Not in rooms and
 	// matches (no stamp there), not for the smart cube (its own panel names the
@@ -311,7 +254,7 @@ export default function TimeDisplay() {
 			timeStr = Math.ceil(inspectionTimer - 2).toString();
 		}
 	} else {
-		timeStr = getTimeString(time, (mobileMode && solving) ? 1 : undefined);
+		timeStr = getTimeString(time);
 	}
 
 	if (dnfTime && inInspection) {
@@ -322,9 +265,17 @@ export default function TimeDisplay() {
 		timeStr = t('time_display.solve');
 	}
 
+	// A running solve: LiveTime draws the digits every screen frame and React stays out of it.
+	// Hidden time ("Solve") and inspection are plain text, so they stay with React.
+	const live = !!solving && !!timeStartedAt && !inInspection && !hideTimeWhenSolving;
+
+	// Set by the phone auto-fit below; everything else uses the size as a plain pixel value.
+	let fontSize: string | null = null;
+
 	// Mobilde karakter sayisina gore font boyutunu dinamik ayarla
 	if (mobileMode) {
-		const charCount = timeStr.length;
+		const fitText = live && liveText ? liveText : timeStr;
+		const charCount = fitText.length;
 		// Virtual cube, before the attempt starts: the cube is what the user is
 		// looking at, and a full-size clock reading 0.00 just pushes it off a short
 		// phone. Once armed the chrome is gone and the digits get their size back.
@@ -346,7 +297,12 @@ export default function TimeDisplay() {
 			} else {
 				timerTimeSize = maxSize;
 			}
+			fontSize = phoneDigitsSize(timerTimeSize, fitText);
 		}
+	}
+
+	if (!fontSize) {
+		fontSize = timerTimeSize + 'px';
 	}
 
 	// bottomInfo always sits under the digits, centred, on every width. StackMat's line and
@@ -399,10 +355,14 @@ export default function TimeDisplay() {
 		<>
 			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 				<OfflineModeIndicator />
-				<h1
+				<LiveTime
+					as="h1"
+					running={live}
+					read={readLive}
+					text={timeStr}
+					onLengthChange={setLiveText}
 					style={{
-						fontSize: timerTimeSize + 'px',
-						fontFamily: timerFontFamily + ', monospace',
+						fontSize,
 						marginBottom: mobileMode ? '0px' : '10px', // Reduce bottom margin on mobile
 						lineHeight: '1',
 					}}
@@ -421,9 +381,7 @@ export default function TimeDisplay() {
 						// Reduced motion only: a short colour cue on the stop (no movement).
 						landed: landedRef.current,
 					})}
-				>
-					{timeStr}
-				</h1>
+				/>
 
 				{/* Magnet Timer: live field bar while idle and inspecting (keeps its height
 				    during the solve, so the digits do not move). */}

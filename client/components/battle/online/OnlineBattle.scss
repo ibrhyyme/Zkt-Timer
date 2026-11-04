@@ -930,6 +930,13 @@
 	&__big-time {
 		@include number(min(27vw, 15vh, 9rem));
 		letter-spacing: -0.02em;
+		// The shared grow and landing (tokens.scss). The running time keeps one decimal here:
+		// the size is set for four glyphs, and grown by $timer-running-scale they still fit.
+		@include timer-digits;
+
+		&--running {
+			@include timer-digits-running;
+		}
 
 		@include bp-up($bp-lg) {
 			font-size: min(10vw, 17vh, 9.5rem);

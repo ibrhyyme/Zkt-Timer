@@ -1,6 +1,7 @@
 import {AllSettings, getDefaultSettings} from './query';
-import {getLocalStorage, setLocalStorageObject} from '../../util/data/local_storage';
+import {getLocalStorage, setLocalStorage, setLocalStorageObject} from '../../util/data/local_storage';
 import {getMe} from '../../components/store';
+import {VISITOR_FIRST_LOOK_MARKER, visitorFirstLookPatch} from './visitor_first_look';
 
 export function getAllLocalSettings(userId: string): AllSettings {
 	const settingsVal = getLocalStorage('settings');
@@ -56,6 +57,29 @@ export function setLocalSettingValue<T extends keyof AllSettings>(key: T, value:
 	allSettingsVal[userId] = stored;
 
 	setLocalStorageObject('settings', allSettingsVal);
+}
+
+/**
+ * The visitor's first look (visitor_first_look.ts), written once into their stored
+ * settings before the anonymous boot reads them. Never throws: storage may be blocked,
+ * and the timer must boot either way.
+ */
+export function applyVisitorFirstLook(): void {
+	try {
+		if (getLocalStorage(VISITOR_FIRST_LOOK_MARKER)) return;
+		// Seeds the visitor's entry on a first visit, so there is one to write into.
+		getAllLocalSettings('_anon');
+		const allSettingsVal = getLocalStorage('settings') || {};
+		const stored = allSettingsVal._anon && typeof allSettingsVal._anon === 'object' ? allSettingsVal._anon : {};
+		const patch = visitorFirstLookPatch(stored);
+		if (Object.keys(patch).length) {
+			allSettingsVal._anon = {...stored, ...patch};
+			setLocalStorageObject('settings', allSettingsVal);
+		}
+		setLocalStorage(VISITOR_FIRST_LOOK_MARKER, '1');
+	} catch (e) {
+		// Storage unavailable: the visitor gets the plain defaults.
+	}
 }
 
 function findLegacyLocalSettings() {

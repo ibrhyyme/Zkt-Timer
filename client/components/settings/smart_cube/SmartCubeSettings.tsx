@@ -5,7 +5,7 @@
 // quick controls (ExtrasTab), which is the in-solve shortcut; this is where they live
 // permanently, so they are reachable with no cube connected.
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -25,6 +25,23 @@ import {
 	SMART_CUBE_TIME_OFFSET_MIN,
 	SMART_CUBE_TIME_OFFSET_STEP,
 } from '../../timer/helpers/smart_time_offset';
+import { STORED_MAX, STORED_MIN, drawnCubeRange, drawnCubeSize, storedCubeSize } from '../../timer/smart_cube/cube_size';
+
+/**
+ * The window size, read after mount: the phone's cube cap depends on it, and reading it
+ * during the first render would give the server render and the hydration different slider
+ * attributes (React 17 keeps the server's on a mismatch). 0 until measured.
+ */
+function useViewportSize(): { width: number; height: number } {
+	const [size, setSize] = useState({ width: 0, height: 0 });
+	useEffect(() => {
+		const read = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+		read();
+		window.addEventListener('resize', read);
+		return () => window.removeEventListener('resize', read);
+	}, []);
+	return size;
+}
 
 export default function SmartCubeSettings() {
 	const { t } = useTranslation();
@@ -41,6 +58,20 @@ export default function SmartCubeSettings() {
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
 	const smartCubeTimeOffset = useSettings('smart_cube_time_offset');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
+
+	// The slider works in the size the cube is drawn at (cube_size.ts), so its number is what
+	// the timer screen shows and, on a phone, it stops where the screen stops the cube.
+	const viewport = useViewportSize();
+	const cubeLayoutMobile = !!mobileMode;
+	// On a phone the cap needs the window; until it is measured (the server render and the
+	// first client frame) the slider shows the stored size, which is the phone's drawn size.
+	const cubeViewportKnown = !cubeLayoutMobile || viewport.width > 0;
+	const cubeRange = cubeViewportKnown
+		? drawnCubeRange(cubeLayoutMobile, viewport.width, viewport.height)
+		: { min: STORED_MIN, max: STORED_MAX };
+	const drawnSize = cubeViewportKnown
+		? drawnCubeSize(smartCubeSize, cubeLayoutMobile, viewport.width, viewport.height)
+		: smartCubeSize;
 
 	const solveMethod = smartCubeMethod || 'auto';
 
@@ -119,16 +150,16 @@ export default function SmartCubeSettings() {
 				<TimerSettingsSlider
 					label={t('timer_settings.smart_cube_size')}
 					description={t('timer_settings.smart_cube_size_desc')}
-					value={smartCubeSize}
-					min={100}
-					max={600}
+					value={drawnSize}
+					min={cubeRange.min}
+					max={cubeRange.max}
 					hidden={!smartCubeShow}
 					showReset={smartCubeSize !== cubeSizeDefault}
 					resetLabel={t('appearance.reset')}
 					onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
 					restoreDefaultLabel={t('appearance.save_as_default')}
 					onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
-					onChange={(v) => updateSetting('smart_cube_size', v)}
+					onChange={(v) => updateSetting('smart_cube_size', storedCubeSize(v, cubeLayoutMobile))}
 				/>
 			</TimerSettingsGroup>
 
