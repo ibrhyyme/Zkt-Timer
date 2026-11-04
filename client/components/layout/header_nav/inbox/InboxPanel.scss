@@ -21,7 +21,7 @@
 		transition: background-color 0.15s ease;
 
 		&:hover {
-			background-color: rgb(var(--button-color));
+			background-color: $zt-menu-hover;
 		}
 	}
 
@@ -92,7 +92,7 @@
 		transition: background-color 0.14s ease;
 
 		&:hover {
-			background-color: rgb(var(--button-color));
+			background-color: $zt-menu-hover;
 		}
 	}
 
@@ -103,7 +103,7 @@
 		margin: 0 12px 8px;
 		padding: 0 10px;
 		border-radius: 10px;
-		background: rgb(var(--button-color));
+		background: $zt-control-bg;
 		color: rgb(var(--text-color));
 		font-size: 15px;
 	}
@@ -157,7 +157,7 @@
 		transition: background-color 0.14s ease;
 
 		&:hover {
-			background-color: rgb(var(--button-color));
+			background-color: $zt-menu-hover;
 		}
 	}
 
@@ -216,7 +216,7 @@
 		transition: transform 0.18s ease, background-color 0.14s ease;
 
 		&:hover {
-			background-color: rgb(var(--button-color));
+			background-color: $zt-menu-hover;
 		}
 
 		// While the pointer is down the row must track the cursor exactly, so the

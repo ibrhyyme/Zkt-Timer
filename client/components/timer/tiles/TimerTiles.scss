@@ -186,7 +186,7 @@
 		gap: 8px;
 		padding: 8px;
 		border: 1px dashed rgba(var(--text-color), 0.18);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 	}
 
 	&__empty-label {
@@ -280,7 +280,7 @@
 	&__slot {
 		flex: 0 0 auto;
 		border: 2px dashed rgba(var(--primary-color), 0.85);
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--primary-color), 0.12);
 		// Grows out of nothing, so the neighbouring modules are visibly pushed aside
 		// rather than the slot simply being there. A mounting element cannot transition,
@@ -306,7 +306,7 @@
 		justify-content: center;
 		width: 26px;
 		height: 26px;
-		border-radius: 8px;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--primary-color), 0.9);
 		// Sits on the primary colour, so the text has to be the theme's opposite, never a
 		// hard-coded white.
@@ -359,7 +359,7 @@
 		top: 8px;
 		left: 8px;
 		padding: 3px 9px;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		background: rgba(var(--primary-color), 0.95);
 		color: rgb(var(--theme-text-opposite));
 		font-size: 11px;

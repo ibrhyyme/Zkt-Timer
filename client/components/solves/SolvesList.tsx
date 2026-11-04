@@ -385,7 +385,7 @@ export default function SolvesList() {
 
 	return (
 		<div className={b()}>
-			<PageTitle pageName={t('solves_list.page_title')}>
+			<PageTitle desktop pageName={t('solves_list.page_title')}>
 					<div className="w-full mb-2 flex flex-row flex-wrap items-center justify-center gap-2">
 						{/* Bulk Selection Toolbar */}
 						{isSelectionMode ? (

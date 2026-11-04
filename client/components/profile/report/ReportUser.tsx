@@ -84,7 +84,6 @@ export default function ReportUser(props: Props) {
 			<Button
 				danger
 				large
-				glow
 				primary
 				disabled={disabled}
 				loading={reportUserData?.loading}

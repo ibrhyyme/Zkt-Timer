@@ -209,17 +209,12 @@
 	}
 	// "Pro" next to a feature (Smart Cube study). Filled purple (the Smart Cube accent) with the
 	// contrasting text colour, never purple on purple.
+	// Pro is gold everywhere (zt-pro-tag), never the card's own accent.
 	&__landing-card-pro {
-		display: inline-block;
+		@include zt-pro-tag;
+
 		margin-left: 6px;
-		padding: 1px 6px;
-		border-radius: $zt-radius-md;
-		font-size: 10.5px;
-		font-weight: 800;
-		letter-spacing: 0.04em;
 		vertical-align: 1px;
-		background: rgb(var(--trainer-accent-purple));
-		color: rgb(var(--trainer-accent-on));
 	}
 	&__landing-card-check {
 		flex: 0 0 auto;

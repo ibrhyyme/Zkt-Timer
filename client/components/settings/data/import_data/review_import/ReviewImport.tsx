@@ -580,7 +580,6 @@ export default function ReviewImport() {
 						}
 						primary
 						large
-						glow
 						disabled={context.importing}
 						onClick={importData}
 					/>

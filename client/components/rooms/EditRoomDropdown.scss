@@ -183,13 +183,14 @@
 			background: rgba(var(--text-color), 0.07);
 		}
 
+		// Selected option (K7): accent hairline, a light accent tint and the tick. The
+		// label stays in the text colour: accent text on an accent tint failed contrast.
 		&--active {
-			background: rgba(var(--primary-color), 0.1);
-			border-color: rgba(var(--primary-color), 0.45);
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
 
 			&:hover {
-				background: rgba(var(--primary-color), 0.15);
-				border-color: rgba(var(--primary-color), 0.6);
+				background: rgba(var(--primary-color), 0.12);
 			}
 		}
 	}
@@ -200,10 +201,10 @@
 		gap: 8px;
 		font-size: 0.85rem;
 		font-weight: 500;
-		color: rgba(var(--text-color), 0.55);
+		color: $zt-text-muted;
 
 		.#{$namespace}-edit-room-dropdown__timer-type--active & {
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -224,7 +225,7 @@
 
 		&--active {
 			background: rgb(var(--primary-color));
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 

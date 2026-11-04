@@ -117,6 +117,7 @@
 
 	&__selector-actions {
 		display: flex;
+		align-items: center;
 		gap: 0.5rem;
 		flex-wrap: wrap;
 	}
@@ -339,24 +340,35 @@
 		height: 1px;
 	}
 
+	// The page's main action, so it reads as one (owner's rule: the main choice stands out).
+	// It was a 24px chip the size of "PDF" beside it, while the set page gives the same
+	// action a full-size button. Sized and shaded like the shared primary Button.
 	&__selector-start-inline {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		padding: 4px 12px;
+		gap: $zt-space-2;
+		height: $zt-control-h-md;
+		padding: 0 $zt-space-4;
 		border-radius: $zt-radius-md;
 		border: none;
 		background: rgb(var(--primary-color));
-		color: white;
-		font-size: 0.75rem;
+		color: rgb(var(--theme-primary-opposite));
+		font-family: inherit;
+		font-size: 0.9375rem;
 		font-weight: 600;
 		cursor: pointer;
-		transition: opacity 0.2s;
+		transition: background-color $zt-transition;
 		white-space: nowrap;
 
 		&:hover {
-			opacity: 0.85;
+			background: rgba(var(--primary-color), 0.88);
 		}
+
+		&:active {
+			background: rgba(var(--primary-color), 0.76);
+		}
+
+		@include zt-focus-ring;
 	}
 
 	// ==================== Algorithm Card ====================
@@ -366,22 +378,20 @@
 		border-radius: $zt-radius-md;
 		padding: 14px;
 		cursor: pointer;
-		transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		// Flat: no resting shadow, no lift and no accent glow (design language). Hover and
+		// selection speak through the frame and the tint.
+		transition: border-color $zt-transition, background-color $zt-transition;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 
 		&:hover {
 			border-color: rgba(var(--primary-color), 0.4);
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-			transform: translateY(-1px);
 		}
 
 		&--checked {
 			border-color: rgb(var(--primary-color));
 			background: rgba(var(--primary-color), 0.12);
-			box-shadow: 0 4px 16px rgba(var(--primary-color), 0.2);
 		}
 	}
 
@@ -1256,13 +1266,14 @@
 		}
 	}
 
+	// The numbers face, as on the timer page (it was Archivo here).
 	&__timer-value {
 		font-size: 3.5rem;
 		font-weight: 700;
-		font-family: 'Archivo', monospace;
+		font-family: $zt-font-mono;
+		font-variant-numeric: tabular-nums;
 		color: rgb(var(--text-color));
 		line-height: 1;
-		letter-spacing: -1px;
 	}
 
 	&__timer-hint {
@@ -1350,19 +1361,20 @@
 		font-family: monospace;
 		font-size: 0.75rem;
 
+		// One table style in the app: row hairlines and a header row, no cell grid.
 		th, td {
 			padding: 0.3rem 0.4rem;
-			border: 1px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-divider;
 			text-align: center;
 		}
 
 		th {
 			font-size: 0.65rem;
 			font-weight: 600;
-			color: rgba(var(--text-color), 0.5);
+			color: $zt-text-muted;
 			text-transform: uppercase;
 			letter-spacing: 0.3px;
-			background: rgba(var(--button-color), 0.2);
+			border-bottom-color: $zt-control-border;
 		}
 
 		td {
@@ -1370,7 +1382,7 @@
 		}
 
 		td:first-child {
-			color: rgba(var(--text-color), 0.4);
+			color: $zt-text-muted;
 			width: 30px;
 		}
 
@@ -1493,6 +1505,7 @@
 	}
 
 	&__solve-info-time {
+		font-family: $zt-font-mono;
 		font-size: 3rem;
 		font-weight: 700;
 		color: rgb(var(--text-color));
@@ -2173,45 +2186,8 @@
 		padding: 0;
 		margin: 0;
 
-		&::-webkit-slider-thumb {
-			-webkit-appearance: none;
-			appearance: none;
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
-			background: rgb(var(--primary-color));
-			cursor: pointer;
-			border: 2px solid rgb(var(--background-color));
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-			transition: transform 0.15s ease;
-
-			&:hover {
-				transform: scale(1.1);
-			}
-
-			&:active {
-				transform: scale(1.15);
-			}
-		}
-
-		&::-moz-range-thumb {
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
-			background: rgb(var(--primary-color));
-			cursor: pointer;
-			border: 2px solid rgb(var(--background-color));
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-			transition: transform 0.15s ease;
-
-			&:hover {
-				transform: scale(1.1);
-			}
-
-			&:active {
-				transform: scale(1.15);
-			}
-		}
+		// The app's one thumb (zt-range-thumb): no shadow, no grow on hover.
+		@include zt-range-thumb(20px);
 
 		&::-moz-range-track {
 			background: rgba(var(--text-color), 0.12);

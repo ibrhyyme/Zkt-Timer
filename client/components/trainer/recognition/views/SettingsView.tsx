@@ -229,7 +229,6 @@ export default function SettingsView() {
 				<Button
 					primary
 					large
-					glow
 					icon={<Lightning weight="fill" />}
 					className={b('settings-start-cta')}
 					text={t('trainer.recognition.settings_start_training', {defaultValue: 'Start Training'})}

@@ -242,6 +242,10 @@ $zt-shadow-float: 0 16px 40px rgba(0, 0, 0, 0.32);
 
 $zt-transition: 120ms ease;
 
+// Numbers: every time, average and count the app shows reads in this face, so a 12.34
+// looks the same on the timer, a solve card, the stats page and a profile.
+$zt-font-mono: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
 /// Keyboard focus, identical on every control.
 @mixin zt-focus-ring {
 	&:focus-visible {
@@ -380,6 +384,87 @@ $zt-pro-frame: rgba(var(--primary-color), 0.55);
 	}
 
 	@include zt-focus-ring;
+}
+
+// ---------------------------------------------------------------------------
+// The on/off switch. One shape for every toggle in the app, taken from the Settings
+// toggles: a 44x24 pill, the user's accent when on, a quiet track when off, a white knob.
+// Before this the same control was an orange pill in Settings, a purple glowing pill on
+// Account and a square switch in the Cross trainer.
+// ---------------------------------------------------------------------------
+$zt-switch-w: 44px;
+$zt-switch-h: 24px;
+$zt-switch-knob: 20px;
+$zt-switch-track-off: rgba(var(--text-color), 0.2);
+
+@mixin zt-switch-track($w: $zt-switch-w, $h: $zt-switch-h) {
+	position: relative;
+	flex-shrink: 0;
+	box-sizing: border-box;
+	width: $w;
+	height: $h;
+	margin: 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: $zt-radius-full;
+	background: $zt-switch-track-off;
+	box-shadow: none;
+	cursor: pointer;
+	transition: background-color $zt-transition, border-color $zt-transition;
+
+	@include zt-focus-ring;
+}
+
+@mixin zt-switch-track-on {
+	background: rgb(var(--primary-color));
+	border-color: rgb(var(--primary-color));
+}
+
+/// The knob, centred on the track's height. `$w`/`$knob` must match the track's.
+@mixin zt-switch-knob($w: $zt-switch-w, $knob: $zt-switch-knob) {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: $knob;
+	height: $knob;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: none;
+	transform: translate(1px, -50%);
+	transition: transform 200ms ease;
+	pointer-events: none;
+}
+
+@mixin zt-switch-knob-on($w: $zt-switch-w, $knob: $zt-switch-knob) {
+	// The track's 1px border on each side leaves $w - 2px inside it.
+	transform: translate($w - 2px - $knob - 1px, -50%);
+}
+
+/// The thumb of a range slider: the accent, a ring in the page colour, nothing that grows
+/// or glows. Include it inside the input's rule (it writes both engines' pseudo-elements).
+@mixin zt-range-thumb($size: 18px) {
+	&::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: $size;
+		height: $size;
+		border-radius: 50%;
+		background: rgb(var(--primary-color));
+		border: 2px solid rgb(var(--background-color));
+		box-shadow: none;
+		cursor: pointer;
+	}
+
+	&::-moz-range-thumb {
+		width: $size;
+		height: $size;
+		box-sizing: border-box;
+		border-radius: 50%;
+		background: rgb(var(--primary-color));
+		border: 2px solid rgb(var(--background-color));
+		box-shadow: none;
+		cursor: pointer;
+	}
 }
 
 /// A layer above the page: modal body, dropdown menu, popover.
@@ -538,6 +623,18 @@ $zt-shadow-float-light: 0 12px 32px rgba(0, 0, 0, 0.12);
 	text-transform: uppercase;
 	user-select: none;
 	-webkit-user-select: none;
+}
+
+/// The small capital label over a field or a group ("SCRAMBLE", "NAME", "PB"): one face
+/// for it everywhere. It was mono on some pages, Archivo on others and plain words on a few.
+@mixin zt-eyebrow {
+	color: $zt-text-muted;
+	font-family: $zt-font-mono;
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	line-height: 1.3;
+	text-transform: uppercase;
 }
 
 /// A quiet outlined tag on a row (Beta, Main, Official). Pro uses zt-pro-tag.

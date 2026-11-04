@@ -14,13 +14,16 @@ export interface TagProps {
 	small?: boolean;
 	info?: boolean;
 	backgroundColor?: ColorName;
+	/** The neutral chip: the control surface with the text colour. Use it for a plain
+	 * label (cube type, cube name, category); a named background is for a meaning. */
+	neutral?: boolean;
 	textColor?: ColorName;
 	loading?: boolean;
 	hideBorder?: boolean;
 }
 
 export default function Tag(props: TagProps) {
-	const { textColor, text, backgroundColor, bold, loading, title, icon, small, large, glow } = props;
+	const { textColor, text, backgroundColor, neutral, bold, loading, title, icon, small, large, glow } = props;
 
 	const backgroundColorProps = useColor(backgroundColor);
 	const textColorProps = useColor(textColor);
@@ -47,7 +50,14 @@ export default function Tag(props: TagProps) {
 	const wrapperStyle: CSS.Properties = {};
 	const bodyStyle: CSS.Properties = {};
 
-	if (backgroundColorProps) {
+	if (neutral) {
+		// The control surface (text colour at 8%), not --button-color: that token is for
+		// buttons, and on the Light theme it painted chips as heavy grey blocks.
+		wrapperStyle.backgroundColor = 'rgba(var(--text-color), 0.08)';
+		bodyStyle.color = 'rgb(var(--text-color))';
+
+		containerClass.push('rounded');
+	} else if (backgroundColorProps) {
 		// Has background
 		wrapperStyle.backgroundColor = backgroundColorProps.hex;
 		wrapperStyle.color = backgroundColorProps.hex;

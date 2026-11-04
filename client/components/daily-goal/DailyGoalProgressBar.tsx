@@ -40,6 +40,22 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 	if (!progress) return null;
 
 	const cubeName = getCubeTypeBucketLabel(cubeType, scrambleSubset) || getCubeTypeInfoById(cubeType)?.name || cubeType;
+	const textSize = compact ? 'text-[10px]' : 'text-xs';
+
+	// The label runs across the fill. In the text colour it vanished into the accent fill
+	// (white on orange at 10px read as the fill covering "3x3"), so the part of the label
+	// that sits on the fill is drawn a second time in the fill's own contrast colour,
+	// clipped to the fill's width.
+	const label = (onFill: boolean) => (
+		<>
+			<span className={`font-medium ${onFill ? '' : 'text-text/90'} ${textSize}`}>
+				{cubeName} &middot; {t('quick_controls.solves_progress', {current: progress.current, target: progress.target})}
+			</span>
+			<span className={`font-semibold ${onFill ? '' : 'text-text/80'} ${textSize}`}>
+				{progress.percentage}%
+			</span>
+		</>
+	);
 
 	return (
 		// Compact is the phone timer: px-2 is the 0.5rem side margin of the action row and
@@ -54,13 +70,16 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 					style={{width: `${progress.percentage}%`}}
 				/>
 				{/* Text overlay */}
-				<div className="absolute inset-0 flex items-center justify-between px-3">
-					<span className={`font-medium text-text/90 ${compact ? 'text-[10px]' : 'text-xs'}`}>
-						{cubeName} &middot; {t('quick_controls.solves_progress', {current: progress.current, target: progress.target})}
-					</span>
-					<span className={`font-semibold text-text/70 ${compact ? 'text-[10px]' : 'text-xs'}`}>
-						{progress.percentage}%
-					</span>
+				<div className="absolute inset-0 flex items-center justify-between px-3">{label(false)}</div>
+				{/* The same text over the filled part, in the fill's contrast colour */}
+				<div
+					aria-hidden="true"
+					className={`absolute inset-0 flex items-center justify-between px-3 transition-[clip-path] duration-500 ease-out ${
+						progress.completed ? 'text-[rgb(18,20,26)]' : 'text-[rgb(var(--theme-primary-opposite))]'
+					}`}
+					style={{clipPath: `inset(0 ${100 - progress.percentage}% 0 0)`}}
+				>
+					{label(true)}
 				</div>
 			</div>
 		</div>

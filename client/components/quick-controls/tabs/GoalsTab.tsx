@@ -306,7 +306,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={(e) => e.key === 'Enter' && handleSave()}
 						placeholder={t('quick_controls.target_solves')}
-						className="flex-1 bg-button border border-text/[0.1] rounded-lg px-3 py-2 text-text text-sm placeholder-text/30 focus:border-primary/50 focus:outline-none transition-colors"
+						className="flex-1 bg-text/[0.035] border border-text/[0.14] rounded-lg px-3 py-2 text-text text-sm placeholder-text/70 focus:border-primary focus:outline-none transition-colors"
 					/>
 					<button
 						type="button"
@@ -328,7 +328,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 						</span>
 						<span>{progress?.percentage || 0}%</span>
 					</div>
-					<div className="h-2 w-full bg-button rounded-full overflow-hidden">
+					<div className="h-2 w-full bg-text/[0.12] rounded-full overflow-hidden">
 						<div
 							className={`h-full rounded-full transition-all duration-500 ease-out ${
 								progress?.completed ? 'bg-green-500' : 'bg-primary'
@@ -381,7 +381,7 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 				)}
 				{/* Mini progress bar */}
 				{progress && (
-					<div className="h-1 w-16 bg-button rounded-full overflow-hidden">
+					<div className="h-1 w-16 bg-text/[0.12] rounded-full overflow-hidden">
 						<div
 							className={`h-full rounded-full ${progress.completed ? 'bg-green-500' : 'bg-primary'}`}
 							style={{width: `${progress.percentage}%`}}

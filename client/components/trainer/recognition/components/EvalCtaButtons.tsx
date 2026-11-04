@@ -46,7 +46,6 @@ export default function EvalCtaButtons({
 					<Button
 						primary
 						large
-						glow
 						fullWidth
 						icon={<ArrowRight weight="fill" />}
 						text={t('trainer.recognition.results_cta_next_step', {label: nextQuestStep.label, defaultValue: `Next: ${nextQuestStep.label}`})}
@@ -59,7 +58,6 @@ export default function EvalCtaButtons({
 					<Button
 						success
 						large
-						glow
 						fullWidth
 						icon={<Trophy weight="fill" />}
 						text={t('trainer.recognition.results_cta_journey_complete', {defaultValue: 'Journey Complete!'})}
@@ -71,7 +69,6 @@ export default function EvalCtaButtons({
 				<Button
 					primary
 					large
-					glow
 					fullWidth
 					icon={<ArrowCounterClockwise />}
 					text={t('trainer.recognition.results_cta_try_again', {defaultValue: 'Try Again'})}
@@ -84,7 +81,6 @@ export default function EvalCtaButtons({
 				<Button
 					primary
 					large
-					glow
 					fullWidth
 					icon={<Lightning weight="fill" />}
 					text={t('trainer.recognition.results_cta_personalized', {count: personalizedCount, defaultValue: `Personalized Training (${personalizedCount})`})}

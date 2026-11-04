@@ -55,46 +55,49 @@
 		}
 	}
 
+	// The panel's two views as words over a hairline, the chosen one underlined in the
+	// accent: the shared TabBar look (K7). They were tinted boxes, a selected style no
+	// other tab in the app used.
 	&__tabs {
 		position: relative;
 		z-index: 1;
 		display: flex;
-		gap: 4px;
-		padding: 8px 8px 0;
+		gap: $zt-space-5;
+		margin: 0 $zt-space-3;
+		padding-top: $zt-space-1;
+		border-bottom: 1px solid $zt-card-border;
 		flex-shrink: 0;
 	}
 
 	&__tab {
 		all: unset;
 		box-sizing: border-box;
-		flex: 1;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		padding: 9px 14px;
-		font-size: 0.85rem;
+		height: $zt-control-h-md;
+		// Sits on the bar's hairline, so the underline replaces it under the chosen tab.
+		margin-bottom: -1px;
+		border-bottom: 2px solid transparent;
+		font-size: 0.9375rem;
 		font-weight: 600;
 		font-family: inherit;
-		color: rgba(var(--text-color), 0.6);
-		border-radius: $zt-radius-md;
+		color: $zt-text-muted;
+		white-space: nowrap;
 		cursor: pointer;
-		transition:
-			background 0.18s ease,
-			color 0.18s ease;
+		transition: color $zt-transition, border-color $zt-transition;
 
-		&:hover:not(&--active) {
-			background: rgba(var(--text-color), 0.06);
-			color: rgba(var(--text-color), 0.9);
+		&:hover {
+			color: rgb(var(--text-color));
 		}
 
-		&--active {
-			background: rgba(var(--primary-color), 0.15);
-			// Blue text on a blue-tinted fill reads as almost unreadable. This is the
-			// same "on primary" token primary-filled buttons use for their label
-			// (Button.scss's --theme-primary), so it stays correct in every theme
-			// instead of a hardcoded white.
-			color: rgb(var(--theme-primary-opposite));
-			box-shadow: inset 0 0 0 1px rgba(var(--primary-color), 0.25);
+		@include zt-focus-ring;
+
+		&--active,
+		&--active:hover {
+			color: rgb(var(--text-color));
+			border-bottom-color: rgb(var(--primary-color));
+			cursor: default;
 		}
 	}
 
@@ -104,6 +107,26 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: 12px 12px 14px;
+
+		// K1 (owner-approved): a list of settings is one card split by hairlines, not a box
+		// per row. Scoped to this panel: the same rows fill the left drawer, which keeps a
+		// card per row by the owner's choice. The rows are Tailwind boxes, hence !important.
+		.#{$namespace}-quick-extras {
+			background: $zt-card-bg;
+			border: 1px solid $zt-card-border;
+			border-radius: $zt-radius-md;
+
+			> * {
+				margin-top: 0 !important;
+				background: transparent !important;
+				border: 0 !important;
+				border-radius: 0 !important;
+			}
+
+			> * + * {
+				box-shadow: inset 0 1px 0 $zt-divider;
+			}
+		}
 
 		// Subtle scrollbar
 		scrollbar-width: thin;

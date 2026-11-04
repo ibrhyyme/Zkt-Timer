@@ -75,7 +75,6 @@ function Swatch({id, label, color, openKey, setOpenKey, onPick}: SwatchProps) {
 					if (hex) onPick(hex);
 				}}
 			/>
-			<span className={b('swatch-label')}>{label}</span>
 		</div>
 	);
 }

@@ -1,21 +1,11 @@
 @import '../../../styles/config';
 
+// The shared switch (Account notifications and social, solve replay, settings rows). Its
+// shape comes from the zt-switch mixins in tokens.scss, so it matches the Settings
+// toggles. It used to turn the theme's secondary colour with a coloured glow when on
+// (purple on Tokyo) and sit on --button-color when off.
 .#{$namespace}-common-switch {
-	$switchSize: 25px;
-	$switchSizeSmall: 15px;
-
-	background-color: rgba(var(--button-color), 0.8) !important;
-	border: 1px solid rgba(var(--text-color), 0.15);
-	border-radius: 20px;
-	position: relative;
-	transition: all 0.3s ease;
-
-	width: calc(#{$switchSize} * 2.4);
-	height: calc(#{$switchSize} + 5px);
-
-	&:hover {
-		background-color: rgba(var(--button-color), 1) !important;
-	}
+	@include zt-switch-track;
 
 	&__wrapper {
 		display: flex;
@@ -24,38 +14,28 @@
 	}
 
 	span {
-		position: absolute;
-		display: table;
-		height: $switchSize;
-		width: $switchSize;
-		background-color: rgb(var(--theme-button-opposite));
-		border-radius: 50px;
-		top: 50%;
-		left: 4px;
-		right: 0;
-		transform: translate(0, -50%);
-		box-shadow: 0 2px 10px rgba(black, 0.15);
-		transition: all 0.3s ease;
-	}
-
-	&--small {
-		width: calc(#{$switchSizeSmall} * 2.6);
-		height: calc(#{$switchSizeSmall} + 5px);
-
-		span {
-			height: $switchSizeSmall;
-			width: $switchSizeSmall;
-		}
+		@include zt-switch-knob;
 	}
 
 	&--on {
-		background: linear-gradient(to right, rgb(var(--secondary-color)), rgb(var(--secondary-color))) !important;
-		border-color: rgb(var(--secondary-color));
-		box-shadow: 0 4px 15px rgba(var(--secondary-color), 0.3);
+		@include zt-switch-track-on;
 
 		span {
-			right: 3px;
-			left: unset;
+			@include zt-switch-knob-on;
+		}
+	}
+
+	&--small {
+		width: 36px;
+		height: 20px;
+
+		span {
+			width: 16px;
+			height: 16px;
+		}
+
+		&.#{$namespace}-common-switch--on span {
+			@include zt-switch-knob-on(36px, 16px);
 		}
 	}
 }

@@ -99,7 +99,7 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 		font-weight: 600;
 		color: #fff;
 		background: rgba(var(--warning-color), 0.85);
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		animation: lockedBannerPulse 2s ease-in-out infinite;
 	}
 
@@ -242,7 +242,7 @@ transform $scrambleTurnDuration $scrambleTurnEasing;
 			opacity: 1;
 			border: 2px solid transparent;
 			box-sizing: border-box;
-			border-radius: 7px;
+			border-radius: $zt-radius-md;
 			padding: 7px;
 			display: table;
 			transition: all 0.1s ease-in-out;

@@ -170,7 +170,6 @@ export default function BanUser(props: Props) {
 				disabled={disabled}
 				danger
 				large
-				glow
 				onClick={submitBan}
 				loading={loading}
 				error={error}

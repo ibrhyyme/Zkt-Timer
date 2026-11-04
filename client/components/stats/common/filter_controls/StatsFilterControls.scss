@@ -13,7 +13,7 @@
 		align-items: center;
 		gap: 0.35rem;
 		padding: 0.45rem 0.85rem;
-		background-color: rgba(var(--button-color), 0.5);
+		background-color: $zt-control-bg;
 		border: 1px solid transparent;
 		// The control corner, like the Solves page filters and the timer header strip; the
 		// pill read as a different app (owner, 2026-10-31).
@@ -29,12 +29,13 @@
 		box-sizing: border-box;
 
 		&:hover {
-			background-color: rgba(var(--button-color), 0.75);
+			background-color: $zt-control-bg-hover;
 		}
 
+		// K7: a chosen option is a 1px accent frame on a light accent tint.
 		&--active {
-			background-color: rgba(var(--primary-color), 0.18);
-			border-color: rgba(var(--primary-color), 0.45);
+			background-color: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
 		}
 
 		&--all {

@@ -118,16 +118,23 @@ html {
 	}
 }
 
+// A range input drawn with Tailwind (the settings sliders). With `appearance: none` on
+// the input and nothing on its thumb, Chrome drew its own blue default thumb next to an
+// accent-coloured track.
+.zt-range {
+	@include zt-range-thumb;
+}
+
 .zt-table {
 	width: 100%;
 	border-collapse: separate;
-	border: 1px solid rgb(var(--button-color));
+	border: 1px solid $zt-divider;
 	border-radius: 4px;
 
 	td,
 	th {
-		border-left: 1px solid rgb(var(--button-color));
-		border-top: 1px solid rgb(var(--button-color));
+		border-left: 1px solid $zt-divider;
+		border-top: 1px solid $zt-divider;
 	}
 
 	td:first-child,

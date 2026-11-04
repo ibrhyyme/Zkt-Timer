@@ -151,7 +151,7 @@
 	}
 
 	&__inspection {
-		background-color: rgb(var(--button-color));
+		background-color: $zt-control-bg;
 		color: rgb(var(--text-color));
 		font-size: 0.85rem;
 		padding: 4px 10px;

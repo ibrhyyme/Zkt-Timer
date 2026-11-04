@@ -126,7 +126,9 @@
 			line-height: 2.2rem;
 			font-weight: bold;
 			border-bottom: 3px solid transparent;
-			font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			// Numbers read in the numbers face, as on the timer and the solve card.
+			font-family: $zt-font-mono;
+			font-variant-numeric: tabular-nums;
 		}
 
 		p {

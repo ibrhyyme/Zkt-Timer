@@ -20,7 +20,7 @@
 		flex-direction: column;
 		gap: 0.267rem;
 		padding: 0.733rem 0.867rem;
-		background-color: rgba(var(--button-color), 0.4);
+		background-color: $zt-card-bg;
 		border-radius: 8px;
 		min-width: 0;
 	}

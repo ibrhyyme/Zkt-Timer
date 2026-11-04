@@ -422,7 +422,10 @@ export default function Stats() {
 							<HeroBand title={t('stats.hero.title')} subtitle={t('stats.hero.subtitle')}>
 								{filtersBody}
 							</HeroBand>
-						) : null
+						) : (
+							// K6: the page keeps one title on a computer too.
+							<PageTitle desktop pageName={t('stats.hero.title')} />
+						)
 					) : (
 						<CubeStatHero>{filtersBody}</CubeStatHero>
 					)}

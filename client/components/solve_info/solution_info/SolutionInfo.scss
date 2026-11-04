@@ -75,11 +75,11 @@
 			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 
 			&:nth-child(odd) {
-				background-color: rgba(var(--button-color), 0.3);
+				background-color: transparent;
 			}
 
 			&:nth-child(even) {
-				background-color: rgb(var(--module-color));
+				background-color: transparent;
 			}
 
 			&:last-child {

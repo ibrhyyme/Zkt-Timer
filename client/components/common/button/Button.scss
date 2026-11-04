@@ -41,13 +41,6 @@
 		gap: $zt-space-1;
 	}
 
-	&:disabled,
-	&--disabled {
-		cursor: default;
-		pointer-events: none;
-		opacity: 0.5;
-	}
-
 	&_confirm {
 		display: table;
 		margin-right: 4px;
@@ -219,6 +212,28 @@
 		&:active:not(:disabled) {
 			background-color: $zt-control-bg-hover !important;
 		}
+	}
+
+	// Unavailable, not faded (owner's rule: a disabled button stays readable). It used to
+	// drop the whole button to half opacity, which left a dim fill under dim text. Every
+	// theme now turns into the neutral control with the muted label, so "cannot press"
+	// reads the same everywhere and no text goes below $zt-text-muted. Declared last and
+	// at (0,2,0), so it outranks the theme fills above. Boxless themes (flat, transparent)
+	// keep no box.
+	&:disabled,
+	&#{$self}--disabled {
+		cursor: default;
+		pointer-events: none;
+		background-color: $zt-control-bg !important;
+		border-color: transparent;
+		color: $zt-text-muted;
+	}
+
+	&#{$self}--flat:disabled,
+	&#{$self}--flat#{$self}--disabled,
+	&#{$self}--theme-transparent:disabled,
+	&#{$self}--theme-transparent#{$self}--disabled {
+		background-color: transparent !important;
 	}
 
 	@include reduced-motion {

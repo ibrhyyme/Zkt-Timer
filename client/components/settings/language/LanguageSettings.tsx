@@ -47,9 +47,12 @@ export default function LanguageSettings() {
 								key={lang.code}
 								type="button"
 								onClick={() => changeLanguage(lang.code)}
+								// Selected option (K7): accent hairline, light accent tint, tick. The
+								// others sit on the quiet card surface: on the button fill they read
+								// heavier than the selected row.
 								className={`w-full flex items-center justify-between py-4 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${isActive
-									? 'bg-primary/10 border-primary text-text'
-									: 'bg-button border-text/[0.08] text-text hover:border-text/[0.15]'
+									? 'bg-primary/[0.08] border-primary text-text'
+									: 'bg-text/[0.035] border-text/[0.09] text-text hover:bg-text/[0.06] hover:border-text/[0.15]'
 									}`}
 							>
 								<span className="flex items-center gap-3">

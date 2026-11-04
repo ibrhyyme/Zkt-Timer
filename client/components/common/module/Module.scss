@@ -1,8 +1,11 @@
 @import '../../../styles/config';
 
 .#{$namespace}-module {
+	// The card corner and hairline (K1). The fill stays the user's own module colour: the
+	// card token's text tint would ignore a colour the user picked in Appearance.
 	background-color: rgb(var(--module-color));
-	border-radius: 15px;
+	border: 1px solid $zt-card-border;
+	border-radius: $zt-radius-lg;
 	padding: 22px;
 	overflow: visible;
 	position: relative;

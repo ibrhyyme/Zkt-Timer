@@ -143,8 +143,9 @@ export default function CreateRoomModal() {
                 </button>
 
                 {/* Always in place, disabled for a public room: a field that appeared on
-                    "Private" made the modal grow and jump. */}
-                <label className={b('field')}>
+                    "Private" made the modal grow and jump. While disabled it says why
+                    instead of asking for a password it will not take. */}
+                <label className={b('field', { off: !isPrivate })}>
                     <span className={b('label')}>
                         <Lock weight="fill" size={14} />
                         {t('create_room.room_password')}
@@ -154,7 +155,7 @@ export default function CreateRoomModal() {
                         className={b('input')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder={t('create_room.password_placeholder')}
+                        placeholder={isPrivate ? t('create_room.password_placeholder') : t('create_room.password_public_hint')}
                         disabled={!isPrivate}
                         // A new secret for the room, not the account's: keeps the browser
                         // from filling in the saved login password.

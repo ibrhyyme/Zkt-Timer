@@ -110,8 +110,11 @@ Disallow: /zkt-rankings
 Disallow: /zkt-rankings/
 
 # Teknik ve API endpointleri - Engelle
+# /graphql is deliberately NOT disallowed. Googlebot obeys robots.txt for the XHRs it
+# makes while rendering, so blocking it starved every client-rendered page: Search
+# Console's live test showed /trainer as nothing but the nav menu, and /competitions
+# was flagged Soft 404. A GET without a query answers 400 with no body worth indexing.
 Disallow: /api/
-Disallow: /graphql
 Disallow: /public/uploads/temp/
 
 # LLM-friendly summary

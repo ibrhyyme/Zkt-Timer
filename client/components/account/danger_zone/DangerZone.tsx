@@ -96,7 +96,6 @@ export default function DangerZone() {
 					<Button
 						danger
 						large
-						glow
 						text={t('danger_zone.delete_account_button')}
 						confirmModalProps={{
 							title: t('danger_zone.delete_account_title'),

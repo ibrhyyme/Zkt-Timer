@@ -145,7 +145,7 @@ export default function AdminPromoCodes() {
 					<h2 className={b('title')}>{t('title')}</h2>
 					<p className={b('subtitle')}>{t('subtitle')}</p>
 				</div>
-				<Button primary glow text={t('create_button')} icon={<Plus weight="bold" />} onClick={openCreate} />
+				<Button primary text={t('create_button')} icon={<Plus weight="bold" />} onClick={openCreate} />
 			</div>
 
 			{loading ? (

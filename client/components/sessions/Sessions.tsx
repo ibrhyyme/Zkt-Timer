@@ -525,10 +525,13 @@ export default function Sessions() {
 								noMargin
 							/>
 						) : (
+							// One primary in the row: Rename on the current season, Make current
+							// (the main action there) on any other. Split is secondary, Delete danger.
 							<Button
 								text={t('sessions.rename')}
 								onClick={startEditingName}
-								primary
+								primary={isCurrentSession}
+								gray={!isCurrentSession}
 								noMargin
 							/>
 						)}
@@ -536,7 +539,7 @@ export default function Sessions() {
 							<Button
 								text={t('sessions.split_session')}
 								onClick={openSplitSession}
-								primary
+								gray
 								noMargin
 							/>
 						)}
@@ -637,7 +640,7 @@ export default function Sessions() {
 
 	return (
 		<div className={b({ mobile: mobileMode })}>
-			<PageTitle pageName={t('sessions.page_title')} />
+			<PageTitle desktop pageName={t('sessions.page_title')} />
 			<div className={b('body')}>
 				<div className={b('sessions-container')}>
 					{selecting ? (
@@ -669,7 +672,6 @@ export default function Sessions() {
 						<div className={b('list-head')}>
 							<Button
 								primary
-								glow
 								large={!mobileMode}
 								text={t('sessions.new_session')}
 								onClick={openCreateNewSession}

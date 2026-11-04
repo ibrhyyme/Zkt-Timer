@@ -1,3 +1,5 @@
+@import '../../../styles/config';
+
 .zt-competitions {
 	width: 100%;
 	padding: 0.5rem;
@@ -21,7 +23,7 @@
 		max-width: 20rem;
 		padding: 0.5rem 0.75rem;
 		border-radius: 0.35rem;
-		border: 1px solid rgb(var(--button-color));
+		border: 1px solid $zt-control-border;
 		background: rgb(var(--module-color));
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
@@ -69,7 +71,7 @@
 		transition: background 0.1s;
 
 		&:hover {
-			background: rgb(var(--button-color));
+			background: $zt-control-bg-hover;
 		}
 	}
 
@@ -161,7 +163,7 @@
 			}
 
 			&:hover {
-				background: rgba(var(--button-color), 0.8);
+				background: $zt-menu-hover;
 			}
 		}
 	}

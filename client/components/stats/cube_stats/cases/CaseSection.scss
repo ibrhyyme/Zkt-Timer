@@ -15,7 +15,7 @@
 		justify-content: center;
 		gap: 12px;
 		padding: 24px 16px;
-		background: rgb(var(--button-color));
+		background: $zt-card-bg;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 14px;
 		cursor: pointer;

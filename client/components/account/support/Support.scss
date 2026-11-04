@@ -14,18 +14,19 @@
 		gap: 6px;
 	}
 
+	// The shared field label (zt-eyebrow), as on Personal info; these were plain words.
 	&__label {
-		font-size: 0.9rem;
-		font-weight: 600;
-		color: rgb(var(--text-color));
+		@include zt-eyebrow;
 	}
 
+	// The shared text field look (genericInputStyling): card surface, hairline frame.
 	&__textarea {
+		box-sizing: border-box;
 		width: 100%;
 		padding: 12px 14px;
-		background-color: rgb(var(--button-color));
-		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 10px;
+		background-color: $zt-card-bg;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-family: inherit;
 		font-size: 0.95rem;
@@ -65,7 +66,7 @@
 		text-align: center;
 		font-size: 0.9rem;
 		color: rgb(var(--text-color));
-		background-color: rgb(var(--button-color));
+		background-color: $zt-card-bg;
 		border-radius: 10px;
 	}
 
@@ -81,7 +82,7 @@
 		justify-content: space-between;
 		gap: 12px;
 		padding: 12px 14px;
-		background-color: rgb(var(--button-color));
+		background-color: $zt-card-bg;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 10px;
 		cursor: pointer;

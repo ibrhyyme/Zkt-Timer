@@ -1,6 +1,8 @@
+@import '../../../styles/config';
+
 .zt-common__emblem {
-	background-color: rgb(var(--button-color));
-	border-radius: 15px;
+	background-color: $zt-control-bg;
+	border-radius: $zt-radius-sm;
 	width: auto;
 	margin-bottom: 5px;
 	padding: 5px 11px;

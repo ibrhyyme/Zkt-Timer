@@ -64,7 +64,6 @@ export default function Password() {
 			<PasswordStrength password={password} />
 			<Button
 				primary
-				glow
 				large
 				text={t('password_page.change_button')}
 				error={error}

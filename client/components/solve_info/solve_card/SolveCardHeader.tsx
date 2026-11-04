@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Cube } from 'phosphor-react';
 import Avatar from '../../common/avatar/Avatar';
 import Button from '../../common/button/Button';
+import { CloseButton } from '../../common/icon_button/IconButton';
 import Tag from '../../common/tag/Tag';
 import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import block from '../../../styles/bem';
@@ -59,9 +60,8 @@ export default function SolveCardHeader({ layout, canShareLink, editable = true 
 		<>
 			<div className={b('bar')}>
 				<span className={b('title')}>{t('solve_info.solve_detail')}</span>
-				<button type="button" className={b('done')} onClick={handleDone}>
-					{t('solve_info.done')}
-				</button>
+				{/* The app's one close: a bare X (it was an iOS-style orange "Done" text). */}
+				<CloseButton onClick={handleDone} />
 			</div>
 
 			<div className={b('head')}>
@@ -70,7 +70,7 @@ export default function SolveCardHeader({ layout, canShareLink, editable = true 
 					{standing}
 					<div className={b('meta')}>
 						<Avatar small user={user} hideBadges profile={user?.profile} />
-						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo?.name} />
+						<Tag icon={<Cube weight="bold" />} neutral text={cubeTypeInfo?.name} />
 						{cubeTag}
 						<span className={b('date')}>{getFullFormattedDate(endedAt)}</span>
 					</div>

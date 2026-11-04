@@ -157,7 +157,7 @@ export default function PersonalInfo() {
 				title={t('personal_info.profile_title')}
 				description={t('personal_info.profile_description')}
 				icon={<IdentificationCard weight="bold" />}
-				footer={<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />}
+				footer={<Button primary large text={t('personal_info.update_button')} onClick={clickUpdate} />}
 				columns
 			>
 				<Input value={firstName} legend={t('personal_info.first_name')} onChange={setFirstName} name="firstName" />
@@ -176,7 +176,6 @@ export default function PersonalInfo() {
 						<Button
 							primary
 							large
-							glow
 							text={t('personal_info.email_change_confirm_button')}
 							loading={confirmEmailChangeData?.loading}
 							onClick={clickConfirmEmailChange}
@@ -203,7 +202,6 @@ export default function PersonalInfo() {
 					<Button
 						primary
 						large
-						glow
 						text={hasPassword ? t('personal_info.change_password_button') : t('personal_info.set_password_button')}
 						error={passwordError}
 						loading={passwordLoading}

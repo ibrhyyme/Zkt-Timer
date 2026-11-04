@@ -10,7 +10,7 @@
 	justify-content: center;
 	width: 36px;
 	height: 36px;
-	border-radius: 10px;
+	border-radius: $zt-radius-md;
 	cursor: pointer;
 	color: rgb(var(--text-color));
 	background: rgba(var(--text-color), 0.06);

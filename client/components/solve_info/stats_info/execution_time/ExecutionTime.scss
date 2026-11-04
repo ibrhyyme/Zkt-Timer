@@ -20,7 +20,7 @@
 
 		&--rec {
 			> span {
-				background-color: rgb(var(--button-color)) !important;
+				background-color: $zt-control-bg !important;
 			}
 		}
 

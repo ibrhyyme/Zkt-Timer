@@ -20,20 +20,20 @@
 	flex-direction: column;
 	gap: 0.667rem;
 	padding: 1.067rem 1.2rem;
-	border-radius: 12px;
-	background-color: rgba(var(--text-color), 0.06);
-	border: 1px solid rgba(var(--text-color), 0.06);
+	// Each puzzle is a card on the page (K1); the module that used to hold them is gone,
+	// so there is no card inside a card. Hover changes the frame only, nothing lifts.
+	border-radius: $zt-radius-lg;
+	background-color: rgb(var(--module-color));
+	border: 1px solid $zt-card-border;
 	color: rgb(var(--text-color));
 	font-family: inherit;
 	cursor: pointer;
-	transition: transform 0.18s, border-color 0.18s, background-color 0.18s;
+	transition: border-color $zt-transition;
 	text-align: left;
 	width: 100%;
 
 	&:hover {
-		transform: translateY(-2px);
 		border-color: rgba(var(--primary-color), 0.35);
-		background-color: rgba(var(--text-color), 0.06);
 	}
 
 	&__head {
@@ -67,15 +67,10 @@
 			display: block;
 		}
 
+		// No data yet: a flat placeholder strip (it was a decorative gradient).
 		&--empty {
-			background: linear-gradient(
-				90deg,
-				rgba(var(--text-color), 0.04),
-				rgba(var(--text-color), 0.08),
-				rgba(var(--text-color), 0.04)
-			);
-			border-radius: 4px;
-			opacity: 0.4;
+			background: $zt-card-bg;
+			border-radius: $zt-radius-sm;
 		}
 	}
 

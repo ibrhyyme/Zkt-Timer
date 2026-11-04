@@ -281,8 +281,7 @@
 		border-radius: $zt-radius-md;
 		background: rgba(var(--module-color), 0.55);
 		border: 1px solid rgba(var(--text-color), 0.08);
-		backdrop-filter: blur(10px);
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+		// No blur and no resting shadow: a panel on the page, not a floating layer.
 		overflow: hidden;
 
 		// Mobile before reveal: BEFORE cube (order:-1) — "Show Solution" appears
@@ -473,19 +472,13 @@
 		color: rgb(var(--text-color));
 		line-height: 1.4;
 	}
-	// Toggle switch (on/off clearly visible)
+	// Toggle switch: the app's one switch shape (zt-switch in tokens.scss). It was a square
+	// switch here and a pill everywhere else.
 	&__switch {
-		position: relative;
-		width: 48px;
-		height: 28px;
-		border-radius: $zt-radius-md;
-		background: rgba(var(--text-color), 0.2);
-		flex-shrink: 0;
-		cursor: pointer;
-		transition: background 0.2s ease;
+		@include zt-switch-track;
 
 		&--on {
-			background: rgb(var(--primary-color));
+			@include zt-switch-track-on;
 		}
 	}
 	&__switch-input {
@@ -497,19 +490,10 @@
 		cursor: pointer;
 	}
 	&__switch-knob {
-		position: absolute;
-		top: 3px;
-		left: 3px;
-		width: 22px;
-		height: 22px;
-		border-radius: 50%;
-		background: #fff;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-		transition: transform 0.2s ease;
-		pointer-events: none;
+		@include zt-switch-knob;
 	}
 	&__switch--on &__switch-knob {
-		transform: translateX(20px);
+		@include zt-switch-knob-on;
 	}
 }
 

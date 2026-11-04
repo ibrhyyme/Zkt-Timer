@@ -226,6 +226,11 @@
 			color: #f97316;
 		}
 
+		// Pro is the app-wide gold tag, not a colour of this list.
+		&--pro {
+			@include zt-pro-tag;
+		}
+
 		&--purple {
 			background-color: rgba(168, 85, 247, 0.15);
 			color: #a855f7;

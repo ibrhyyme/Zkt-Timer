@@ -93,7 +93,6 @@ export default function ReportSummary(props: Props) {
 						loading={resolveReportsData?.loading}
 						onClick={markAsResolved}
 						primary
-						glow
 					/>
 				</div>
 			</div>

@@ -162,7 +162,7 @@ export default function CustomizeSolves() {
 
 			<div className={b('footer')}>
 				<Button small gray onClick={() => save(DEFAULT_HISTORY_COLUMNS.slice())} text={t('timer_modules.reset_to_defaults')} />
-				<Button small primary glow onClick={() => dispatch(closeModal())} text={t('timer_modules.solves_done')} />
+				<Button small primary onClick={() => dispatch(closeModal())} text={t('timer_modules.solves_done')} />
 			</div>
 		</div>
 	);

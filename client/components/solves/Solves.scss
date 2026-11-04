@@ -1,6 +1,29 @@
 @import '../../styles/config';
 
 .#{$namespace}-solves-list {
+	// The desktop title (K6) lines up with the list under it, not with the page edge. Same
+	// column as the list's wrapper in SolvesList.tsx (max-w-2xl, lg:max-w-6xl, px-2).
+	@include content-desktop {
+		> .#{$namespace}-page-title {
+			box-sizing: border-box;
+			max-width: 42rem;
+			margin-left: auto;
+			margin-right: auto;
+			padding-left: 0.5rem;
+			padding-right: 0.5rem;
+
+			@include bp-up($bp-lg) {
+				max-width: 72rem;
+			}
+		}
+	}
+
+	// The bucket picker in the toolbar is the header strip's FancyDropdown (36px there);
+	// in this row it matches the 40px buttons beside it.
+	.#{$namespace}-page-title__content .#{$namespace}-fancy-dropdown__trigger {
+		height: $zt-control-h-md;
+	}
+
 	&__header {
 		margin: 20px 0 30px;
 		display: flex;

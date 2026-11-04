@@ -26,4 +26,15 @@
 		width: 100%;
 		box-sizing: border-box;
 	}
+
+	// The bar graph fills its card and has no height of its own (a floor of its own
+	// overflowed the phone timer's module slot), so its card here gives it one. Without
+	// it the section was an empty strip.
+	&__consistency {
+		height: 16rem;
+
+		@include bp-down($bp-md) {
+			height: 13rem;
+		}
+	}
 }

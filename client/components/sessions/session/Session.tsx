@@ -129,6 +129,12 @@ export default function Session(props: Props) {
 					{isMultiSelected && <Check weight="bold" />}
 				</span>
 			)}
+			{/* K7: a chosen card shows a tick beside its accent frame and tint. */}
+			{!selecting && sessionIsSelected && (
+				<span className={b('tick')} aria-hidden="true">
+					<Check weight="bold" />
+				</span>
+			)}
 			<div className={b('info')}>
 				<h4>{session.name}</h4>
 				<span className={b('created-at')}>{t('sessions.created')} {getDateFromNow(session.created_at)}</span>

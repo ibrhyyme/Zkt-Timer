@@ -172,7 +172,6 @@ export default function PublishSolves(props: IModalProps) {
 					<div className={b('actions')}>
 						<Button
 							primary
-							glow
 							large
 							text={t('profile.publish_to_profile')}
 							error={error}

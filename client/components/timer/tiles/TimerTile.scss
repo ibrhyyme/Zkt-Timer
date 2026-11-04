@@ -49,7 +49,7 @@
 		gap: 4px;
 		margin-left: -6px;
 		padding: 3px 6px;
-		border-radius: 7px;
+		border-radius: $zt-radius-md;
 		font-size: 12px;
 		font-weight: 600;
 		letter-spacing: 0.01em;
@@ -72,7 +72,7 @@
 		justify-content: center;
 		width: 22px;
 		height: 22px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		font-size: 14px;
 		color: rgb(var(--text-color));
 		transition: background 0.12s ease;
@@ -99,7 +99,7 @@
 		justify-content: center;
 		width: 20px;
 		height: 20px;
-		border-radius: 6px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		opacity: 0;

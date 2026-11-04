@@ -9,8 +9,10 @@
 	background-color: rgba(var(--module-color), 0.55);
 	padding: 0.9rem 1.1rem;
 	box-sizing: border-box;
-	border-radius: 0;
-	border-left: 3px solid rgba(var(--text-color), 0.22);
+	// A solve is a card (K1): the card corner. The leading edge speaks only when it has
+	// something to say (+2, DNF); a plain solve's edge is clear, not a grey stripe.
+	border-radius: $zt-radius-lg;
+	border-left: 3px solid transparent;
 	position: relative;
 	margin-bottom: 4px;
 	display: grid;
@@ -86,6 +88,9 @@
 
 	&__left {
 		h4 {
+			// Times read in the numbers face, as on the timer and the solve card.
+			font-family: $zt-font-mono;
+			font-variant-numeric: tabular-nums;
 			font-weight: bold;
 			font-size: 1.6rem;
 			color: rgb(var(--text-color));

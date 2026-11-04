@@ -2,28 +2,41 @@
 
 $genericInputMarginBottom: 13px;
 
+// The one text field: the quiet card surface, a hairline frame, the accent frame on focus.
+// It was a borderless block of --button-color, the button token, with its text in the
+// button's opposite colour and a placeholder at 35%, so the same field looked different
+// from the Create Room and New set fields and turned into a heavy grey slab on Light.
 @mixin genericInputStyling {
-	background-color: rgb(var(--button-color)) !important;
-	padding: 10px;
-	color: rgb(var(--theme-button-opposite));
+	background-color: $zt-card-bg !important;
+	padding: 10px 12px;
+	min-height: $zt-control-h-md;
+	color: rgb(var(--text-color));
 	border-radius: $zt-radius-md !important;
 	font-size: 0.95rem;
 	width: 100%;
 	box-sizing: border-box;
-	border: none;
-	transition: all 0.1s ease-in-out, height 0ms;
+	border: 1px solid $zt-control-border;
+	outline: none;
+	transition: border-color $zt-transition, background-color $zt-transition, height 0ms;
 
-	&:focus {
-		border-color: rgb(var(--theme-button-opposite));
+	&:hover:not(:disabled):not(:focus) {
+		border-color: $zt-control-border-hover;
 	}
 
+	&:focus {
+		border-color: rgb(var(--primary-color));
+	}
+
+	// Unavailable, not faded: the value stays readable.
 	&:disabled {
-		opacity: 0.6;
+		background-color: transparent !important;
+		border-style: dashed;
+		cursor: not-allowed;
 	}
 
 	&::placeholder {
-		color: rgb(var(--theme-button-opposite)) !important;
-		opacity: 0.35;
+		color: $zt-text-muted !important;
+		opacity: 1;
 	}
 }
 

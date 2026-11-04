@@ -8,7 +8,7 @@
 
 	// ─── Steps card ──────────────────────────────────
 	&__steps {
-		background-color: rgb(var(--button-color));
+		background-color: $zt-card-bg;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 14px;
 		padding: 16px 20px;

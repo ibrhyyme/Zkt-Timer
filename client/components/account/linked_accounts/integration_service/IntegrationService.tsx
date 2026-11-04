@@ -225,7 +225,6 @@ export default function IntegrationService(props: Props) {
 							fullWidth
 							large
 							danger
-							glow
 							text={t('integration.disconnect_button')}
 							loading={disconnecting}
 							onClick={handleConfirmDisconnect}

@@ -72,7 +72,6 @@ export default function HorizontalNav(props: Props) {
 				gray={unselected}
 				large
 				primary={selected}
-				glow={selected}
 				text={tab.value}
 				onClick={() => clickTab(tab)}
 			/>

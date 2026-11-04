@@ -123,7 +123,9 @@ export default function HeaderNav(props: Props = {}) {
 	const mobileMode = useGeneral('mobile_mode');
 	// Pill nav state
 	const navRef = useRef<HTMLElement>(null);
-	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false });
+	// `animate`: whether this move slides. Only the user moving between tabs (route,
+	// hover) slides; a re-measure because the strip's layout changed jumps.
+	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false, animate: false });
 
 	// Label/icon switch. See measureFit below for why this is measured rather than
 	// hung off a breakpoint.
@@ -190,9 +192,20 @@ export default function HeaderNav(props: Props = {}) {
 	// screen narrow enough for the icon-only strip (every tablet) the pill took the
 	// width of the LABELLED tab and then sat across Timer and Battle until a mouse
 	// hover re-measured it. Touch never hovers, so it stayed there.
-	const measurePill = useCallback(() => {
+	//
+	// On a hard load the first measure ran on the fallback font. When the web font
+	// arrived the tabs changed width, the observer re-measured, and the pill slid
+	// across the strip from where the fallback had put it, so every full load showed
+	// it under the wrong tab for a moment. Now it stays hidden until the fonts are in,
+	// and a re-measure caused by layout jumps instead of sliding.
+	const measurePill = useCallback((animate = false) => {
 		const nav = navRef.current;
 		if (!nav) return;
+		const fonts = typeof document !== 'undefined' ? (document as any).fonts : null;
+		if (fonts && fonts.status !== 'loaded') {
+			fonts.ready.then(() => measurePill(false));
+			return;
+		}
 		const hovered = hoveredElRef.current;
 		const target =
 			hovered && nav.contains(hovered) ? hovered : (nav.querySelector('[data-active]') as HTMLElement | null);
@@ -200,22 +213,24 @@ export default function HeaderNav(props: Props = {}) {
 			setPillPos((prev) => (prev.ready ? { ...prev, ready: false } : prev));
 			return;
 		}
-		const next = {
-			left: target.offsetLeft,
-			top: target.offsetTop,
-			width: target.offsetWidth,
-			height: target.offsetHeight,
-			ready: true,
-		};
-		setPillPos((prev) =>
-			prev.ready &&
-			prev.left === next.left &&
-			prev.top === next.top &&
-			prev.width === next.width &&
-			prev.height === next.height
+		setPillPos((prev) => {
+			const next = {
+				left: target.offsetLeft,
+				top: target.offsetTop,
+				width: target.offsetWidth,
+				height: target.offsetHeight,
+				ready: true,
+				// The first placement never slides in from the corner.
+				animate: animate && prev.ready,
+			};
+			return prev.ready &&
+				prev.left === next.left &&
+				prev.top === next.top &&
+				prev.width === next.width &&
+				prev.height === next.height
 				? prev
-				: next
-		);
+				: next;
+		});
 	}, []);
 
 	// Decide whether the labelled strip still fits.
@@ -321,21 +336,28 @@ export default function HeaderNav(props: Props = {}) {
 
 	// After measureFit on purpose: layout effects run in declaration order, so the
 	// pill is measured against the strip in its settled compact state.
+	// Slides only when the user moved: a new route or a hover. The other deps re-measure
+	// for a layout change and jump.
+	const pillRouteRef = useRef({ pathname, hoveredLink });
 	useIsomorphicLayoutEffect(() => {
-		measurePill();
+		const prev = pillRouteRef.current;
+		const moved = prev.pathname !== pathname || prev.hoveredLink !== hoveredLink;
+		pillRouteRef.current = { pathname, hoveredLink };
+		measurePill(moved);
 	}, [measurePill, pathname, hoveredLink, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
 
 	// Anything else that moves the tabs (window resize, the 14/15px rem switch, a
 	// late web font) changes the strip's size, so watch the strip itself.
 	useEffect(() => {
-		window.addEventListener('resize', measurePill);
+		const remeasure = () => measurePill(false);
+		window.addEventListener('resize', remeasure);
 		let observer: ResizeObserver | null = null;
 		if (typeof ResizeObserver !== 'undefined' && navRef.current) {
-			observer = new ResizeObserver(() => measurePill());
+			observer = new ResizeObserver(remeasure);
 			observer.observe(navRef.current);
 		}
 		return () => {
-			window.removeEventListener('resize', measurePill);
+			window.removeEventListener('resize', remeasure);
 			if (observer) observer.disconnect();
 		};
 	}, [measurePill, mobileMode]);
@@ -430,12 +452,16 @@ export default function HeaderNav(props: Props = {}) {
 								height: pillPos.height,
 								opacity: pillPos.ready ? 1 : 0,
 							}}
-							transition={{
-								type: 'spring',
-								stiffness: 500,
-								damping: 35,
-								opacity: { duration: 0.15 },
-							}}
+							transition={
+								pillPos.animate
+									? {
+										type: 'spring',
+										stiffness: 500,
+										damping: 35,
+										opacity: { duration: 0.15 },
+									}
+									: { duration: 0, opacity: { duration: 0.15 } }
+							}
 						/>
 						{navLinks}
 					</nav>

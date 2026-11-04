@@ -2,14 +2,16 @@
 
 .#{$namespace}-session-row {
 	display: flex;
-	padding: 13px;
-	border-radius: 10px;
+	// 16 + 1px frame = the old 13 + 4px, so the row keeps its size.
+	padding: 16px;
+	// A season is a card (K1): the card corner and hairline on the user's module colour.
+	border-radius: $zt-radius-lg;
 	cursor: pointer;
 	position: relative;
 	box-sizing: border-box;
 	background-color: rgb(var(--module-color));
 	width: 100%;
-	border: 4px solid transparent;
+	border: 1px solid $zt-card-border;
 	margin-bottom: 10px;
 
 	h4 {
@@ -76,8 +78,9 @@
 		&--types {
 			padding: 0 0.4rem;
 			border: 0;
-			border-radius: 0.4rem;
-			background-color: rgba(var(--primary-color), 0.16);
+			// The shared chip: 4px, the neutral control surface.
+			border-radius: $zt-radius-sm;
+			background-color: $zt-control-bg;
 			color: rgb(var(--text-color)) !important;
 			font-family: inherit;
 			line-height: inherit;
@@ -113,13 +116,31 @@
 		font-weight: 500;
 	}
 
+	// K7: the chosen card is a 1px accent frame, an 8% accent tint and a tick. It was a
+	// 4px accent outline, a selected style used nowhere else. The tint sits on an inset
+	// layer so the user's module colour stays underneath.
 	&--selected {
-		border: 4px solid rgb(var(--primary-color)) !important;
+		border-color: rgb(var(--primary-color)) !important;
+		box-shadow: inset 0 0 0 999px rgba(var(--primary-color), 0.08);
 	}
 
+	&--selected &__info {
+		padding-right: 1.75rem;
+	}
+
+	&__tick {
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		display: flex;
+		color: rgb(var(--primary-color));
+		font-size: 1rem;
+	}
+
+	// Marked for bulk delete: the danger colour in the same shape, never faded.
 	&--multi-selected {
-		border: 4px dashed rgb(var(--error-color)) !important;
-		opacity: 0.85;
+		border: 1px dashed rgb(var(--error-color)) !important;
+		box-shadow: inset 0 0 0 999px rgba(var(--error-color), 0.08);
 	}
 
 	// Bulk delete mode: room for the check mark in the top right corner

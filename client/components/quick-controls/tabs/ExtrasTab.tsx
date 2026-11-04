@@ -55,8 +55,8 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 					onClick={decrement}
 					disabled={value <= min}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
-						? 'bg-text/[0.04] border-transparent text-text/30 cursor-not-allowed'
-						: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] cursor-pointer'
+						? 'bg-transparent border-dashed border-text/[0.14] text-text/70 cursor-not-allowed'
+						: 'bg-text/[0.08] border-transparent text-text hover:bg-text/[0.12] cursor-pointer'
 					}`}
 				>
 					<Minus weight="bold" size={12} />
@@ -67,7 +67,7 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 				<button
 					type="button"
 					onClick={increment}
-					className="h-7 w-7 rounded-lg flex items-center justify-center bg-button border border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] transition-all duration-200 cursor-pointer"
+					className="h-7 w-7 rounded-lg flex items-center justify-center bg-text/[0.08] border border-transparent text-text hover:bg-text/[0.12] transition-all duration-200 cursor-pointer"
 				>
 					<Plus weight="bold" size={12} />
 				</button>
@@ -91,7 +91,7 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 
 	return (
 		<div className="group flex items-center justify-between gap-3 py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-			<span className={`min-w-0 truncate font-medium transition-colors ${disabled ? 'text-text/30' : 'text-text/80 group-hover:text-text'}`}>
+			<span className={`min-w-0 truncate font-medium transition-colors ${disabled ? 'text-text/70' : 'text-text/80 group-hover:text-text'}`}>
 				{label}
 			</span>
 			<button
@@ -264,7 +264,9 @@ export default function ExtrasTab({
 	}));
 
 	return (
-		<div className="space-y-3">
+		// zt-quick-extras: the gear panel draws this list as one card with hairline rows
+		// (SettingsDropdown.scss); the left drawer keeps a card per row.
+		<div className="zt-quick-extras space-y-3">
 			{/* Slam-to-stop first (owner request, 1.6): it is the Pro option of the touch timer,
 			    so members find it at once and everyone else sees what Pro adds (Pro badge, opens
 			    the Pro dialog). */}

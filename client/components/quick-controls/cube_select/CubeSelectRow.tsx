@@ -220,7 +220,7 @@ export default function CubeSelectRow({ magnetOwnsInput }: RowProps) {
 					type="button"
 					aria-expanded={open}
 					onClick={() => setOpen(!open)}
-					className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm min-w-[96px] max-w-[180px] justify-between border bg-button text-text ${open ? 'border-primary/50' : 'border-text/[0.1] hover:border-text/[0.15]'
+					className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm min-w-[96px] max-w-[180px] justify-between border bg-text/[0.035] text-text ${open ? 'border-primary' : 'border-text/[0.14] hover:border-text/[0.26]'
 						}`}
 				>
 					<span className="truncate">{main ? main.name : t('cube_select.not_chosen')}</span>

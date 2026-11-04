@@ -62,7 +62,7 @@
 		padding: 0 12px;
 		height: 38px;
 		border-radius: 19px;
-		background: rgb(var(--button-color));
+		background: $zt-control-bg;
 		color: rgb(var(--text-color));
 
 		input {
@@ -123,7 +123,7 @@
 		cursor: pointer;
 
 		&:hover {
-			background: rgb(var(--button-color));
+			background: $zt-menu-hover;
 		}
 	}
 
@@ -133,7 +133,7 @@
 		gap: 10px;
 		padding: 10px;
 		border-radius: 10px;
-		background: rgb(var(--button-color));
+		background: $zt-control-bg;
 	}
 
 	&__picked-name {

@@ -88,7 +88,7 @@ function UserTableRow({user, onUpdated}: {user: UserAccountData; onUpdated: () =
 	const badges = [];
 	if (user.admin) badges.push({label: 'Admin', color: 'red'});
 	if (user.mod) badges.push({label: 'Mod', color: 'orange'});
-	if (user.is_pro) badges.push({label: 'Pro', color: 'purple'});
+	if (user.is_pro) badges.push({label: 'Pro', color: 'pro'});
 	if (user.email_verified) badges.push({label: t('admin_users.verified'), color: 'green'});
 	if (user.verified) badges.push({label: t('admin_users.approved'), color: 'blue'});
 	if (user.banned_forever || user.banned_until) badges.push({label: t('admin_users.banned'), color: 'gray'});

@@ -23,7 +23,7 @@
 		transition: border-color 0.14s ease, background-color 0.14s ease;
 
 		&:hover {
-			background-color: rgb(var(--button-color));
+			background-color: $zt-control-bg-hover;
 		}
 
 		&--active {

@@ -19,20 +19,6 @@
 		color: rgb(var(--text-color));
 	}
 
-	&__done {
-		height: $zt-control-h-md;
-		padding: 0 $zt-space-1;
-		border: none;
-		background: none;
-		color: rgb(var(--primary-color));
-		font-family: inherit;
-		font-size: 1rem;
-		font-weight: 600;
-		cursor: pointer;
-
-		@include zt-focus-ring;
-	}
-
 	// --- The time, what it means, and who, what and when ---
 	&__head {
 		display: flex;

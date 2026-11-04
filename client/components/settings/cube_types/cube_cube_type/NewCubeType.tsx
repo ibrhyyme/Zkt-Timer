@@ -64,7 +64,6 @@ export default function NewCubeType(props: IModalProps) {
 			<Button
 				large
 				primary
-				glow
 				loading={loading}
 				error={error}
 				text={t('timer_settings.cube_type_create')}

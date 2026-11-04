@@ -119,5 +119,19 @@
 		&__title {
 			display: none;
 		}
+
+		// K6: a content page keeps one title on a computer too, at the size of the Battle
+		// and Trainer headings. Not sticky here: the top nav already stays.
+		&--desktop {
+			position: static;
+			padding-bottom: $zt-space-4;
+
+			.#{$namespace}-page-title__title {
+				display: flex;
+				font-size: 2rem;
+				font-weight: 800;
+				letter-spacing: -0.025em;
+			}
+		}
 	}
 }

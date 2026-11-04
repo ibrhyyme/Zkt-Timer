@@ -72,7 +72,7 @@ export default function TrainerSolveInfo({record: initialRecord, index, algId, c
 					<h2 className={b('solve-info-time', {dnf: record.dnf})}>{timeDisplay}</h2>
 
 					<div className={b('solve-info-actions')}>
-						<Tag text={category} backgroundColor="button" />
+						<Tag text={category} neutral />
 						<Button gray text="+2" onClick={handlePlusTwo} warning={!!record.p2} />
 						<Button gray text="DNF" onClick={handleDnf} danger={!!record.dnf} />
 					</div>

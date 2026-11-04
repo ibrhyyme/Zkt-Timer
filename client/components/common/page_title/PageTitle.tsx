@@ -11,10 +11,13 @@ interface Props {
 	children?: ReactNode;
 	icon?: string;
 	inline?: boolean;
+	/** Keep the title on a computer too (K6: a content page carries one 30px title on
+	 * every screen). Without it the title is phone-only, as the top nav names the page. */
+	desktop?: boolean;
 }
 
 export default function PageTitle(props: Props) {
-	const { pageName, children, icon, inline } = props;
+	const { pageName, children, icon, inline, desktop } = props;
 
 	let iconBody = null;
 	if (icon) {
@@ -22,7 +25,7 @@ export default function PageTitle(props: Props) {
 	}
 
 	return (
-		<div className={b({ inline: !!inline })}>
+		<div className={b({ inline: !!inline, desktop: !!desktop })}>
 			<h1 className={b('title')}>
 				<span className={b('title-text')}>
 					{iconBody}

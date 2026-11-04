@@ -137,7 +137,6 @@ export default function Support() {
 						text={loading ? t('support.sending') : t('support.send')}
 						primary
 						large
-						glow
 						disabled={!canSubmit}
 						onClick={handleSubmit}
 					/>
@@ -149,7 +148,7 @@ export default function Support() {
 					value={subject}
 					onChange={(e) => setSubject(e.target.value)}
 					placeholder={t('support.subject_placeholder')}
-					maxWidth
+					fullWidth
 					maxLength={200}
 				/>
 			</div>

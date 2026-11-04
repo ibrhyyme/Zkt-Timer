@@ -19,7 +19,7 @@
 
 		& + label:before {
 			content: '';
-			background-color: rgb(var(--button-color));
+			background-color: $zt-control-bg-active;
 			margin-right: 8px;
 			display: inline-block;
 			vertical-align: text-top;

@@ -191,7 +191,6 @@ export default function SplitSession(props: Props) {
 
 			<div className={b('actions')}>
 				<Button
-					glow
 					primary
 					large
 					fullWidth

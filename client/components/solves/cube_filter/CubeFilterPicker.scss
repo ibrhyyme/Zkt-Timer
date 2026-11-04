@@ -5,36 +5,23 @@
 // (FancyDropdown), theme variables only.
 
 .#{$namespace}-cube-filter-picker {
+	// The same neutral control as the toolbar buttons beside it (zt-control, 40px). It
+	// used dark-glass, whose !important fill painted it --button-color, unlike its row.
 	&__trigger {
-		@include dark-glass(0.1, 10px, 0.08);
-
 		all: unset;
+		@include zt-control;
+
 		box-sizing: border-box;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		height: 38px;
+		height: $zt-control-h-md;
 		padding: 0 14px;
 		max-width: 16rem;
-		border-radius: $zt-radius-md;
-		border: 1px solid rgba(var(--text-color), 0.08);
-		background: rgba(var(--text-color), 0.1);
-		color: rgb(var(--text-color));
 		font-family: inherit;
 		font-size: 0.875rem;
 		font-weight: 600;
 		cursor: pointer;
-		transition: background-color 0.15s ease, border-color 0.15s ease;
-
-		&:hover {
-			background: rgba(var(--text-color), 0.15);
-			border-color: rgba(var(--text-color), 0.2);
-		}
-
-		&:focus-visible {
-			outline: 2px solid rgba(var(--primary-color), 0.8);
-			outline-offset: 2px;
-		}
 
 		&--active {
 			background: rgba(var(--primary-color), 0.18);

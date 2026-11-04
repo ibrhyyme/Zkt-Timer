@@ -92,21 +92,8 @@ export default function TimeChart(props: Props) {
 
 					return (
 						<svg width={parent.width} height={parent.height}>
-							<filter id="dropshadow" height="150%">
-								<feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur" />
-								<feOffset in="blur" dx="0" dy="0" result="offsetBlur" />
-								<feFlood
-									floodColor={hexToRgba(chartColor, Math.max(chartColorOpacity * 0.6, 0.6))}
-									floodOpacity="1"
-									result="offsetColor"
-								/>
-								<feComposite in="offsetColor" in2="offsetBlur" operator="in" result="offsetBlur" />
-								<feMerge>
-									<feMergeNode />
-									<feMergeNode in="SourceGraphic" />
-								</feMerge>
-							</filter>
-
+							{/* The line used to carry a coloured glow (an SVG blur filter); the
+							    design language has no glow, so it is a plain stroke now. */}
 							<AxisLeft
 								scale={yScale}
 								tickLabelProps={() => ({
@@ -133,7 +120,6 @@ export default function TimeChart(props: Props) {
 									x={(d) => xScale(getX(d)) || (0 as any)}
 									y={(d) => yScale(getY(d)) || (0 as any)}
 									strokeLinecap="round"
-									style={{filter: 'url(#dropshadow)'}}
 									stroke={hexToRgba(chartColor, chartColorOpacity)}
 									strokeWidth={5}
 								/>

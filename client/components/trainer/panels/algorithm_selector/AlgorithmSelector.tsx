@@ -482,7 +482,7 @@ export default function AlgorithmSelector() {
 									className={b('selector-start-inline')}
 									onClick={() => dispatch({type: 'SET_VIEW', payload: 'training'})}
 								>
-									<Play size={14} weight="fill" />
+									<Play size={16} weight="fill" />
 									{t('trainer.start_training')} ({checkedAlgorithms.length})
 								</button>
 							)}

@@ -235,6 +235,19 @@ function ProfileContent() {
 	const headerImage = profileData?.headerImage;
 	const pbs = profileData?.pbs;
 
+	// A cover whose file does not load (a stale record, a storage miss) drew the browser's
+	// broken-image glyph in an empty frame. Such a profile falls back to the no-cover
+	// layout. The image can fail before hydration attaches onError, so mount checks it too.
+	const [coverBroken, setCoverBroken] = useState(false);
+	const coverImgRef = useRef<HTMLImageElement>(null);
+	const coverPath = headerImage?.storage_path;
+	useEffect(() => {
+		setCoverBroken(false);
+		const img = coverImgRef.current;
+		if (img && img.complete && img.naturalWidth === 0) setCoverBroken(true);
+	}, [coverPath]);
+	const hasCover = !!headerImage && !coverBroken;
+
 	useEffect(() => {
 		if (profileData && profileData?.user?.username === matchUsername) {
 			return null;
@@ -797,16 +810,16 @@ function ProfileContent() {
 			<h1 className="sr-only">{t('seo.user_profile_title', { username: user.username })}</h1>
 			<div className={b({ me: myProfile })}>
 				{/* Banner — show only if header image exists and on desktop */}
-				{headerImage && !mobileMode && (
+				{hasCover && !mobileMode && (
 					<div className={b('banner')}>
 						{myProfile && <UploadCover upload={uploadProfileHeader} />}
-						<img src={headerUrl} alt="" />
+						<img ref={coverImgRef} src={headerUrl} alt="" onError={() => setCoverBroken(true)} />
 						<div className={b('banner-gradient')} />
 					</div>
 				)}
 
 				{/* Identity Block — if no banner use centered layout */}
-				{headerImage && !mobileMode ? (
+				{hasCover && !mobileMode ? (
 					<div className={b('identity')}>
 						<div className={b('identity-pfp')}>
 							<PFP profile={profile} allowChange={myProfile} />

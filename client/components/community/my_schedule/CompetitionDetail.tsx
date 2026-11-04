@@ -522,11 +522,11 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 						<tr>
 							<th>#</th>
 							<th>{t('my_schedule.col_name')}</th>
-							<th>Single</th>
-							<th>Average</th>
+							<th>{t('my_schedule.col_single')}</th>
+							<th>{t('my_schedule.col_average')}</th>
 							{/* World ranking is a WCA fact. On a ZKT competition the column
 							    exists only to print a dash on every row. */}
-							{!isZkt && <th>WR</th>}
+							{!isZkt && <th>{t('my_schedule.col_world_rank')}</th>}
 						</tr>
 					</thead>
 					<tbody>

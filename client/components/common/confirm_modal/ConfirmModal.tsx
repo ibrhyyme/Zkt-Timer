@@ -111,7 +111,6 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 					<div className={b('input')}>{input}</div>
 					<div className={b('actions')}>
 						<Button
-							glow
 							large
 							type={hideInput ? 'submit' : 'button'}
 							text={buttonText}

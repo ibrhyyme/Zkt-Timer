@@ -44,13 +44,12 @@ export default function AllStats(props: Props) {
 			</StatSection>
 			{hasSolves && (
 				<>
+					{/* K1: each puzzle is its own card, so no module around them (no card in a card). */}
 					<StatSection colSpan={3} title={t('stats_page.puzzles')}>
-						<StatModule>
-							<PuzzleRow />
-						</StatModule>
+						<PuzzleRow />
 					</StatSection>
 					<StatSection colSpan={3} title={t('stats_page.consistency')}>
-						<StatModule>
+						<StatModule className={b('consistency')}>
 							<SolvesPerDay filterOptions={filterOptions} days={30} />
 						</StatModule>
 					</StatSection>

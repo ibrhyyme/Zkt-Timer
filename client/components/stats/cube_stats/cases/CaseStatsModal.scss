@@ -124,7 +124,7 @@ $case-stats-grid: 84px minmax(120px, 1.4fr) repeat(7, minmax(64px, 1fr)) $case-s
 		align-items: center;
 		gap: 12px;
 		padding: 14px 18px;
-		background: rgb(var(--button-color));
+		background: $zt-card-bg;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: $zt-radius-lg;
 		transition: border-color 0.15s;

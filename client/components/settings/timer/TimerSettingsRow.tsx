@@ -390,7 +390,9 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 						<button
 							type="button"
 							onClick={handleRestoreDefault}
-							className={`text-xs transition-colors cursor-pointer ${savedFlash ? 'text-green-400' : 'text-blue-400 hover:text-blue-300'}`}
+							// Text actions share one colour, the accent ("Default" was a fixed
+							// blue next to an orange "Reset").
+							className={`text-xs transition-colors cursor-pointer ${savedFlash ? 'text-[rgb(var(--success-color))]' : 'text-primary hover:text-primary/80'}`}
 						>
 							{savedFlash ? '✓' : (restoreDefaultLabel || 'Default')}
 						</button>
@@ -399,7 +401,7 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 						<button
 							type="button"
 							onClick={onReset}
-							className="text-xs text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
+							className="text-xs text-primary hover:text-primary/80 transition-colors cursor-pointer"
 						>
 							{resetLabel || 'Reset'}
 						</button>
@@ -412,9 +414,9 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 				max={max}
 				value={value}
 				onChange={(e) => onChange(parseInt(e.target.value, 10))}
-				className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+				className="zt-range w-full h-1.5 rounded-full appearance-none cursor-pointer"
 				style={{
-					background: `linear-gradient(to right, rgb(var(--primary-color)) 0%, rgb(var(--primary-color)) ${percentage}%, rgb(var(--button-color)) ${percentage}%, rgb(var(--button-color)) 100%)`,
+					background: `linear-gradient(to right, rgb(var(--primary-color)) 0%, rgb(var(--primary-color)) ${percentage}%, rgba(var(--text-color), 0.2) ${percentage}%, rgba(var(--text-color), 0.2) 100%)`,
 				}}
 			/>
 			{children && <div className="mt-3">{children}</div>}

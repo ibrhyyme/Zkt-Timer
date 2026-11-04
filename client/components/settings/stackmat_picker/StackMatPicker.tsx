@@ -180,7 +180,7 @@ export default function StackMatPicker(props: StackMatPickerProps) {
 					})}
 				</div>
 				<div className={b('actions')}>
-					<Button large glow primary text={t('stackmat.save')} disabled={!hasSelection} onClick={saveSelectedAudio} />
+					<Button large primary text={t('stackmat.save')} disabled={!hasSelection} onClick={saveSelectedAudio} />
 				</div>
 			</>
 		);
