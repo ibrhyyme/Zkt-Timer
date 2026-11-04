@@ -1,6 +1,7 @@
 import {CronJob} from 'cron';
 import {logger} from './logger';
 import {initSiteMapGeneration} from './sitemap';
+import {scheduleIndexNowSubmission} from './indexnow';
 import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
 import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
@@ -27,6 +28,7 @@ const CUBE_NAMES: Record<string, string> = {
 
 export function initCronJobs() {
 	initSiteMapGenerationCronJob();
+	scheduleIndexNowSubmission();
 	initUnverifiedAccountCleanupCronJob();
 	initAuthArtifactCleanupCronJob();
 	initDailyGoalReminderCronJob();

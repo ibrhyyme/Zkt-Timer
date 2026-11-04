@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import './App.scss';
 import Wrapper from './wrapper/Wrapper';
 import LoadingCover from './loading_cover/LoadingCover';
+import PageSummary from './page_summary/PageSummary';
 import Modal from '../common/modal/Modal';
 import { initPageTitleBlink } from '../../util/page_title_blink';
 import Banned from './banned/Banned';
@@ -550,7 +551,7 @@ export default function App(props: Props = {}) {
 					onClose={() => setUnseenAnnouncements([])}
 				/>
 			)}
-			{appLoaded ? <Wrapper {...wrapperProps}>{children}</Wrapper> : null}
+			{appLoaded ? <Wrapper {...wrapperProps}>{children}</Wrapper> : <PageSummary path={location.pathname} />}
 			{appLoaded && <PendingSyncBadge />}
 		</>
 	);

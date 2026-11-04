@@ -249,6 +249,9 @@
 		background: $zt-control-bg;
 		border: 1px solid rgba(var(--text-color), 0.06);
 		color: rgb(var(--text-color));
+		text-decoration: none;
+		// Items are <a href> (crawlable nav); no iOS link preview on long press.
+		-webkit-touch-callout: none;
 		cursor: pointer;
 		transition: all 0.15s ease;
 

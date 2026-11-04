@@ -51,6 +51,29 @@ export function renderLanguageAlternates(path: string) {
 	));
 }
 
+export interface SiteNavItem {
+	name: string;
+	description: string;
+	path: string;
+}
+
+/**
+ * The site's main sections: the SiteNavigationElement list in JSON-LD, and the links
+ * PageSummary prints in the body, so the two never disagree.
+ */
+export function getSiteNavItems(t: TFunction, rankingsLaunched: boolean): SiteNavItem[] {
+	return [
+		{ name: 'Timer', description: t('seo.nav_timer_desc'), path: '/timer' },
+		{ name: t('seo.nav_competitions_name'), description: t('seo.nav_competitions_desc'), path: '/competitions' },
+		{ name: t('seo.nav_rooms_name'), description: t('seo.nav_rooms_desc'), path: '/rooms' },
+		{ name: t('seo.nav_trainer_name'), description: t('seo.nav_trainer_desc'), path: '/trainer' },
+		...(rankingsLaunched
+			? [{ name: t('seo.nav_leaderboards_name'), description: t('seo.nav_leaderboards_desc'), path: '/ranks' }]
+			: []),
+		{ name: t('seo.nav_signup_name'), description: t('seo.nav_signup_desc'), path: '/signup' },
+	];
+}
+
 export function getPageKeywords(currentPath: string, t: TFunction): string {
 	const fallback = t('seo.keywords');
 
@@ -221,52 +244,13 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	const navigationSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'ItemList',
-		'itemListElement': [
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 1,
-				'name': 'Timer',
-				'description': t('seo.nav_timer_desc'),
-				'url': `${SITE_URL}/timer`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 2,
-				'name': t('seo.nav_competitions_name'),
-				'description': t('seo.nav_competitions_desc'),
-				'url': `${SITE_URL}/competitions`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 3,
-				'name': t('seo.nav_rooms_name'),
-				'description': t('seo.nav_rooms_desc'),
-				'url': `${SITE_URL}/rooms`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 4,
-				'name': t('seo.nav_trainer_name'),
-				'description': t('seo.nav_trainer_desc'),
-				'url': `${SITE_URL}/trainer`
-			},
-			...(rankingsLaunched
-				? [
-						{
-							'@type': 'SiteNavigationElement',
-							'name': t('seo.nav_leaderboards_name'),
-							'description': t('seo.nav_leaderboards_desc'),
-							'url': `${SITE_URL}/ranks`
-						}
-					]
-				: []),
-			{
-				'@type': 'SiteNavigationElement',
-				'name': t('seo.nav_signup_name'),
-				'description': t('seo.nav_signup_desc'),
-				'url': `${SITE_URL}/signup`
-			}
-		].map((item, i) => ({ ...item, position: i + 1 }))
+		'itemListElement': getSiteNavItems(t, rankingsLaunched).map((item, i) => ({
+			'@type': 'SiteNavigationElement',
+			'position': i + 1,
+			'name': item.name,
+			'description': item.description,
+			'url': `${SITE_URL}${item.path}`
+		}))
 	};
 
 	// CollectionPage schema for competitions list page
@@ -329,6 +313,158 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	return { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema, collectionPageSchema, iosAppSchema, androidAppSchema };
 };
 
+// Pages that should not be indexed (NoIndex)
+// ZKT competitions private — accessible only to registered users
+const NO_INDEX_PATHS = [
+	'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
+	'/verify-email', '/wca-signup', '/zkt-signup',
+	// Private conversations — never a search result.
+	'/messages',
+	// Link-in-bio page: reached from a social profile, never from search.
+	'/links',
+];
+// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
+// Main competition page (`/competitions/:id`) and list remain indexable.
+// These patterns match the REAL routes: `/competitions/...`, with no
+// `/community` prefix (Routes.ts). The old prefixed patterns matched nothing,
+// so every one of these pages was being served as indexable.
+const NO_INDEX_PATTERNS = [
+	// ZKT competitions stay private wherever they are rendered — including the
+	// WCA-shaped route `/competitions/zkt-<slug>`.
+	/^\/competitions\/zkt-/,
+	/^\/competitions\/[^/]+\/wca-live/,
+	/^\/competitions\/[^/]+\/persons/,
+	/^\/competitions\/[^/]+\/activities/,
+	/^\/competitions\/[^/]+\/personal-bests/,
+	// Trainer sets: single set pages carry user-written names and stay out of search for
+	// now (trainer-sets.md Q4, link previews still work); My Sets and the study screen are
+	// per user. /trainer/algorithms and the Community Sets list stay indexable.
+	/^\/trainer\/sets(\/|$)/,
+	/^\/trainer\/algorithms\/train(\/|$)/,
+];
+
+/**
+ * True for pages kept out of search (noindex in Header, and no PageSummary body).
+ * /battle/online always; /ranks until the Online Battle leaderboard is public.
+ */
+export function isNoIndexPath(currentPath: string, launched: boolean | null): boolean {
+	return (
+		NO_INDEX_PATHS.some((p) => currentPath.startsWith(p)) ||
+		NO_INDEX_PATTERNS.some((re) => re.test(currentPath)) ||
+		isLaunchNoIndexPath(currentPath, launched)
+	);
+}
+
+/**
+ * The title and description a path gets in <head>, or none when the path has no copy of
+ * its own. Shared with PageSummary, which prints the same text in the page body.
+ */
+export function resolvePageSeo(currentPath: string, t: TFunction, launched: boolean | null): {title?: string; description?: string} {
+	let title: string | undefined;
+	let description: string | undefined;
+	if (currentPath === '/' || currentPath === '') {
+		title = t('seo.home_title');
+		description = t('seo.home_description');
+	} else if (currentPath === '/timer') {
+		title = t('seo.timer_title');
+		description = t('seo.timer_description');
+	} else if (currentPath === '/login') {
+		title = t('seo.login_title');
+		description = t('seo.login_description');
+	} else if (currentPath === '/signup') {
+		title = t('seo.signup_title');
+		description = t('seo.signup_description');
+	} else if (currentPath === '/forgot') {
+		title = t('seo.forgot_password_title');
+		description = t('seo.forgot_password_description');
+	} else if (currentPath.startsWith('/rooms')) {
+		title = t('seo.rooms_title');
+		description = t('seo.rooms_description');
+	} else if (currentPath.startsWith('/settings')) {
+		title = t('seo.settings_title');
+		description = t('seo.settings_description');
+	} else if (currentPath.startsWith('/user/')) {
+		const parts = currentPath.split('/');
+		// SSR meta tag XSS protection: username limited to alphanumeric + underscore
+		// (already enforced in signup). Other characters from URL are stripped.
+		const rawUsername = parts[2] ? decodeURIComponent(parts[2]) : '';
+		const sanitizedUsername = rawUsername.replace(/[^a-zA-Z0-9_]/g, '');
+		const username = sanitizedUsername || t('seo.user_fallback');
+		title = t('seo.user_profile_title', { username });
+		description = t('seo.user_profile_description', { username });
+	} else if (currentPath === '/trainer/community') {
+		title = t('seo.trainer_community_title');
+		description = t('seo.trainer_community_description');
+	} else if (currentPath.startsWith('/trainer/algorithms') || currentPath.startsWith('/trainer/sets')) {
+		// A set page's own title and description come from its SSR meta (trainer/sets/ssr.ts).
+		title = t('seo.trainer_algorithms_title');
+		description = t('seo.trainer_algorithms_description');
+	} else if (currentPath.startsWith('/trainer')) {
+		title = t('seo.trainer_title');
+		description = t('seo.trainer_description');
+	} else if (currentPath === '/stats') {
+		title = t('seo.stats_title');
+		description = t('seo.stats_description');
+	} else if (currentPath === '/solves') {
+		title = t('seo.solves_title');
+		description = t('seo.solves_description');
+	} else if (currentPath === '/community/leaderboards' || currentPath === '/ranks') {
+		title = t('seo.leaderboards_title');
+		description = t('seo.leaderboards_description');
+	} else if (currentPath === '/competitions') {
+		title = t('seo.wca_competitions_title');
+		description = t('seo.wca_competitions_description');
+	} else if (currentPath.startsWith('/competitions/zkt-')) {
+		// A ZKT competition rendered through the WCA components — same route
+		// prefix, different federation, so it must not read "WCA competition".
+		title = t('seo.zkt_competition_detail_title');
+		description = t('seo.zkt_competition_detail_description');
+	} else if (currentPath === '/competitions/records') {
+		title = t('seo.wca_records_title');
+		description = t('seo.wca_records_description');
+	} else if (/^\/competitions\/[^/]+\/wca-live/.test(currentPath)) {
+		title = t('seo.wca_live_title');
+		description = t('seo.wca_live_description');
+	} else if (/^\/competitions\/[^/]+\/persons/.test(currentPath)) {
+		title = t('seo.wca_person_title');
+		description = t('seo.wca_person_description');
+	} else if (/^\/competitions\/[^/]+\/activities/.test(currentPath)) {
+		title = t('seo.wca_activity_title');
+		description = t('seo.wca_activity_description');
+	} else if (/^\/competitions\/[^/]+\/personal-bests/.test(currentPath)) {
+		title = t('seo.wca_personal_bests_title');
+		description = t('seo.wca_personal_bests_description');
+	} else if (currentPath.startsWith('/competitions/')) {
+		title = t('seo.wca_competition_detail_title');
+		description = t('seo.wca_competition_detail_description');
+	} else if (currentPath === '/pro' || currentPath === '/account/pro') {
+		title = t('seo.pro_title');
+		description = t('seo.pro_description');
+	} else if (currentPath === '/battle' && launched === true) {
+		title = t('seo.battle_launch_title');
+		description = t('seo.battle_launch_description');
+	} else if (currentPath === '/battle/online') {
+		title = t('seo.battle_online_title');
+		description = t('seo.battle_online_description');
+	} else if (currentPath === '/battle' || currentPath === '/battle/offline') {
+		title = t('seo.battle_title');
+		description = t('seo.battle_description');
+	} else if (currentPath === '/terms') {
+		title = t('seo.terms_title');
+		description = t('seo.terms_description');
+	} else if (currentPath === '/privacy') {
+		title = t('seo.privacy_title');
+		description = t('seo.privacy_description');
+	} else if (currentPath === '/delete-account') {
+		title = t('seo.delete_account_title');
+		description = t('seo.delete_account_description');
+	} else if (currentPath === '/credits') {
+		title = t('seo.credits_title');
+		description = t('seo.credits_description');
+	}
+	return {title, description};
+}
+
 export default function Header(props: Props) {
 	const { t, i18n } = useTranslation();
 	const lang = matchSupportedLanguage(i18n.language) || FALLBACK_LANGUAGE;
@@ -346,105 +482,10 @@ export default function Header(props: Props) {
 
 	// If no custom title/desc passed to component, determine by path
 	if (!pageTitle) {
-		if (currentPath === '/' || currentPath === '') {
-			pageTitle = t('seo.home_title');
-			pageDesc = t('seo.home_description');
-		} else if (currentPath === '/timer') {
-			pageTitle = t('seo.timer_title');
-			pageDesc = t('seo.timer_description');
-		} else if (currentPath === '/login') {
-			pageTitle = t('seo.login_title');
-			pageDesc = t('seo.login_description');
-		} else if (currentPath === '/signup') {
-			pageTitle = t('seo.signup_title');
-			pageDesc = t('seo.signup_description');
-		} else if (currentPath === '/forgot') {
-			pageTitle = t('seo.forgot_password_title');
-			pageDesc = t('seo.forgot_password_description');
-		} else if (currentPath.startsWith('/rooms')) {
-			pageTitle = t('seo.rooms_title');
-			pageDesc = t('seo.rooms_description');
-		} else if (currentPath.startsWith('/settings')) {
-			pageTitle = t('seo.settings_title');
-			pageDesc = t('seo.settings_description');
-		} else if (currentPath.startsWith('/user/')) {
-			const parts = currentPath.split('/');
-			// SSR meta tag XSS protection: username limited to alphanumeric + underscore
-			// (already enforced in signup). Other characters from URL are stripped.
-			const rawUsername = parts[2] ? decodeURIComponent(parts[2]) : '';
-			const sanitizedUsername = rawUsername.replace(/[^a-zA-Z0-9_]/g, '');
-			const username = sanitizedUsername || t('seo.user_fallback');
-			pageTitle = t('seo.user_profile_title', { username });
-			pageDesc = t('seo.user_profile_description', { username });
-		} else if (currentPath === '/trainer/community') {
-			pageTitle = t('seo.trainer_community_title');
-			pageDesc = t('seo.trainer_community_description');
-		} else if (currentPath.startsWith('/trainer/algorithms') || currentPath.startsWith('/trainer/sets')) {
-			// A set page's own title and description come from its SSR meta (trainer/sets/ssr.ts).
-			pageTitle = t('seo.trainer_algorithms_title');
-			pageDesc = t('seo.trainer_algorithms_description');
-		} else if (currentPath.startsWith('/trainer')) {
-			pageTitle = t('seo.trainer_title');
-			pageDesc = t('seo.trainer_description');
-		} else if (currentPath === '/stats') {
-			pageTitle = t('seo.stats_title');
-			pageDesc = t('seo.stats_description');
-		} else if (currentPath === '/solves') {
-			pageTitle = t('seo.solves_title');
-			pageDesc = t('seo.solves_description');
-		} else if (currentPath === '/community/leaderboards' || currentPath === '/ranks') {
-			pageTitle = t('seo.leaderboards_title');
-			pageDesc = t('seo.leaderboards_description');
-		} else if (currentPath === '/competitions') {
-			pageTitle = t('seo.wca_competitions_title');
-			pageDesc = t('seo.wca_competitions_description');
-		} else if (currentPath.startsWith('/competitions/zkt-')) {
-			// A ZKT competition rendered through the WCA components — same route
-			// prefix, different federation, so it must not read "WCA competition".
-			pageTitle = t('seo.zkt_competition_detail_title');
-			pageDesc = t('seo.zkt_competition_detail_description');
-		} else if (currentPath === '/competitions/records') {
-			pageTitle = t('seo.wca_records_title');
-			pageDesc = t('seo.wca_records_description');
-		} else if (/^\/competitions\/[^/]+\/wca-live/.test(currentPath)) {
-			pageTitle = t('seo.wca_live_title');
-			pageDesc = t('seo.wca_live_description');
-		} else if (/^\/competitions\/[^/]+\/persons/.test(currentPath)) {
-			pageTitle = t('seo.wca_person_title');
-			pageDesc = t('seo.wca_person_description');
-		} else if (/^\/competitions\/[^/]+\/activities/.test(currentPath)) {
-			pageTitle = t('seo.wca_activity_title');
-			pageDesc = t('seo.wca_activity_description');
-		} else if (/^\/competitions\/[^/]+\/personal-bests/.test(currentPath)) {
-			pageTitle = t('seo.wca_personal_bests_title');
-			pageDesc = t('seo.wca_personal_bests_description');
-		} else if (currentPath.startsWith('/competitions/')) {
-			pageTitle = t('seo.wca_competition_detail_title');
-			pageDesc = t('seo.wca_competition_detail_description');
-		} else if (currentPath === '/pro' || currentPath === '/account/pro') {
-			pageTitle = t('seo.pro_title');
-			pageDesc = t('seo.pro_description');
-		} else if (currentPath === '/battle' && launched === true) {
-			pageTitle = t('seo.battle_launch_title');
-			pageDesc = t('seo.battle_launch_description');
-		} else if (currentPath === '/battle/online') {
-			pageTitle = t('seo.battle_online_title');
-			pageDesc = t('seo.battle_online_description');
-		} else if (currentPath === '/battle' || currentPath === '/battle/offline') {
-			pageTitle = t('seo.battle_title');
-			pageDesc = t('seo.battle_description');
-		} else if (currentPath === '/terms') {
-			pageTitle = t('seo.terms_title');
-			pageDesc = t('seo.terms_description');
-		} else if (currentPath === '/privacy') {
-			pageTitle = t('seo.privacy_title');
-			pageDesc = t('seo.privacy_description');
-		} else if (currentPath === '/delete-account') {
-			pageTitle = t('seo.delete_account_title');
-			pageDesc = t('seo.delete_account_description');
-		} else if (currentPath === '/credits') {
-			pageTitle = t('seo.credits_title');
-			pageDesc = t('seo.credits_description');
+		const seo = resolvePageSeo(currentPath, t, launched);
+		if (seo.title) {
+			pageTitle = seo.title;
+			pageDesc = seo.description;
 		}
 	}
 
@@ -454,40 +495,7 @@ export default function Header(props: Props) {
 	const rawImage = props.featuredImage || DEFAULT_FEATURED_IMAGE;
 	const secureImage = rawImage.startsWith('http') ? rawImage : `${SITE_URL}${rawImage}`;
 
-	// Pages that should not be indexed (NoIndex)
-	// ZKT competitions private — accessible only to registered users
-	const noIndexPaths = [
-		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
-		'/verify-email', '/wca-signup', '/zkt-signup',
-		// Private conversations — never a search result.
-		'/messages',
-		// Link-in-bio page: reached from a social profile, never from search.
-		'/links',
-	];
-	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
-	// Main competition page (`/competitions/:id`) and list remain indexable.
-	// These patterns match the REAL routes: `/competitions/...`, with no
-	// `/community` prefix (Routes.ts). The old prefixed patterns matched nothing,
-	// so every one of these pages was being served as indexable.
-	const noIndexPatterns = [
-		// ZKT competitions stay private wherever they are rendered — including the
-		// WCA-shaped route `/competitions/zkt-<slug>`.
-		/^\/competitions\/zkt-/,
-		/^\/competitions\/[^/]+\/wca-live/,
-		/^\/competitions\/[^/]+\/persons/,
-		/^\/competitions\/[^/]+\/activities/,
-		/^\/competitions\/[^/]+\/personal-bests/,
-		// Trainer sets: single set pages carry user-written names and stay out of search for
-		// now (trainer-sets.md Q4, link previews still work); My Sets and the study screen are
-		// per user. /trainer/algorithms and the Community Sets list stay indexable.
-		/^\/trainer\/sets(\/|$)/,
-		/^\/trainer\/algorithms\/train(\/|$)/,
-	];
-	const shouldNoIndex =
-		noIndexPaths.some((p) => currentPath.startsWith(p)) ||
-		noIndexPatterns.some((re) => re.test(currentPath)) ||
-		// /battle/online always; /ranks until the Online Battle leaderboard is public.
-		isLaunchNoIndexPath(currentPath, launched);
+	const shouldNoIndex = isNoIndexPath(currentPath, launched);
 
 	// Structured Data
 	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema, collectionPageSchema, iosAppSchema, androidAppSchema } = getStructuredData(currentPath, finalTitle, finalDesc, t, lang, launched === true);

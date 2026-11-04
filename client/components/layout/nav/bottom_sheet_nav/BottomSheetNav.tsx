@@ -7,7 +7,7 @@
 // yuksekligini asiyordu (son satirda tek oge kalip panel uzuyordu).
 
 import React from 'react';
-import {useRouteMatch, useHistory} from 'react-router-dom';
+import {Link, useRouteMatch} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import EdgeDrawer from '../edge_drawer/EdgeDrawer';
 import {NAV_LINKS, visibleNavLinks} from '../nav_links';
@@ -23,7 +23,6 @@ const MESSAGES_LINK = '/messages';
 
 export default function BottomSheetNav() {
 	const match = useRouteMatch();
-	const history = useHistory();
 	const {t} = useTranslation();
 	const inbox = useInbox();
 	// Sıralama joins the grid only once Online Battle is public (nav_links launchOnly).
@@ -46,17 +45,23 @@ export default function BottomSheetNav() {
 				const isActive = link.match.test(match.path);
 				const showCount = link.link === MESSAGES_LINK && unread > 0;
 				return (
-					<button
+					// A real <a href>, not a button with history.push: Google indexes mobile first,
+					// and on a phone viewport this drawer is the only site nav in the DOM.
+					<Link
 						key={link.link}
+						to={link.link}
 						className={b('item', {active: isActive})}
-						onClick={() => !isActive && history.push(link.link)}
+						aria-current={isActive ? 'page' : undefined}
+						onClick={(e) => {
+							if (isActive) e.preventDefault();
+						}}
 					>
 						<div className={b('item-icon')}>
 							{React.cloneElement(link.icon, {size: 24})}
 							{showCount && <span className={b('item-badge')}>{unread > 99 ? '99+' : unread}</span>}
 						</div>
 						<span className={b('item-label')}>{t(link.name)}</span>
-					</button>
+					</Link>
 				);
 			})}
 		</EdgeDrawer>

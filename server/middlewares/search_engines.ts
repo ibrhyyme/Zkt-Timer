@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { getSiteConfig } from '../models/site_config';
 import { applyLaunchBlocks, isOnlineBattleLaunched } from '../../client/components/battle/battle_landing_modes';
+import { INDEXNOW_KEY, INDEXNOW_KEY_PATH } from '../services/indexnow_key';
 
 async function pipeRemote(url: string, res: any, contentType?: string) {
 	try {
@@ -19,6 +20,11 @@ async function pipeRemote(url: string, res: any, contentType?: string) {
 }
 
 export function exposeResourcesForSearchEngines() {
+	// IndexNow ownership proof: the key, as plain text, at /<key>.txt (services/indexnow.ts).
+	global.app.get(INDEXNOW_KEY_PATH, (req, res) => {
+		res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+		res.send(INDEXNOW_KEY);
+	});
 	global.app.get('/robots.txt', (req, res) => {
 		pipeRemote('https://zktimer.app/public/robots.txt', res, 'text/plain; charset=utf-8');
 	});

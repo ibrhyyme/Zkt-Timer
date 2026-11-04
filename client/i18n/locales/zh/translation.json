@@ -3021,7 +3021,7 @@
     "select_people": "选择 {{count}} 人"
   },
   "seo": {
-    "home_title": "ZKT Timer — 速拧计时器、WCA Live、公式训练器与智能魔方平台",
+    "home_title": "ZKT Timer: 魔方计时器、WCA Live、公式训练器与智能魔方平台",
     "home_description": "专业速拧平台：魔方计时器、OLL/PLL/ZBLL公式训练器、WCA比赛实时追踪、1v1对战模式、智能魔方支持与分阶段分析。所有WCA项目，一站式专业体验。",
     "timer_title": "支持智能魔方与WCA打乱的魔方计时器 - ZKT Timer",
     "timer_description": "专业魔方计时器：毫秒级精度、符合WCA标准的打乱、智能魔方（GAN）支持、分阶段分析（Cross/F2L/OLL/PLL）与详细还原追踪。",

@@ -10,6 +10,8 @@ export enum RedisNamespace {
 	PRO_DATA = 'cd:pro',
 	PLAY = 'cd:play',
 	SITEMAP = 'cd:site:sitemap_lock',
+	// IndexNow: one submission per release (services/indexnow.ts), hash = RELEASE_NAME.
+	INDEXNOW = 'cd:site:indexnow',
 	MATCH_CACHE = 'cd:match:cache',
 	MATCH_ACTIVITY = 'cd:match:activity',
 	SOCKET_IO_CLIENT_USER = 'cd:socketio:client:user',

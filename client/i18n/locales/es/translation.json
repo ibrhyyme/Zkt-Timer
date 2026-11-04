@@ -3052,7 +3052,7 @@
     "select_people": "Seleccionar {{count}} personas"
   },
   "seo": {
-    "home_title": "ZKT Timer — Cronómetro de Speedcube, WCA Live, Entrenador de Algoritmos y Plataforma Smart Cube",
+    "home_title": "ZKT Timer: Cronómetro de cubo, WCA Live, Entrenador de Algoritmos y Plataforma Smart Cube",
     "home_description": "Plataforma profesional de speedcubing: cronómetro de cubo, entrenador OLL/PLL/ZBLL, seguimiento en vivo de competiciones WCA, modo battle 1v1, soporte para cubos inteligentes y análisis por fases. Todos los puzzles WCA en un solo lugar.",
     "timer_title": "Cronómetro de Cubo Rubik con Smart Cube y Mezclas WCA - ZKT Timer",
     "timer_description": "Cronómetro profesional de cubo Rubik con precisión de milisegundos, mezclas conformes a WCA, soporte para cubos inteligentes (GAN), análisis por fases (Cross/F2L/OLL/PLL) y seguimiento detallado de resoluciones.",

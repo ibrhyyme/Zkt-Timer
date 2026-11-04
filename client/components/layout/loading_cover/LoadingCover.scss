@@ -68,3 +68,17 @@
 		}
 	}
 }
+
+// PageSummary (layout/page_summary): the crawlable stand-in body rendered while this
+// cover is up. Pinned to the viewport and clipped, under the cover, so it adds no
+// scrollbar and never shows through while the app boots.
+.#{$namespace}-page-summary {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	overflow: hidden;
+	padding: 1.5rem;
+	color: rgb(var(--text-color));
+}
