@@ -315,6 +315,13 @@ export default function TimeDisplay() {
 	// The diff sits on the module surface like the label (TimeDisplay.scss), except next to
 	// the smart and virtual cubes, where the digits are small and the room tight.
 	const diffChip = !smartCubeSelected(context) && !virtualCubeSelected(context);
+	// The phone timer page, plain time area (Timer.tsx mobile stage): the cube label and the
+	// diff leave the row under the digits for the bottom corners of the time area, label left
+	// and diff right, so the middle of the screen around the digits stays free (owner,
+	// 2026-11-04). Same layout test as Timer.tsx and KeyWatcher. The Bluetooth timers keep the
+	// label beside their connect button; the smart and virtual cubes have layouts of their own.
+	const mobileLayout = (context.forceMobileLayout ?? mobileMode) && !context.inModal;
+	const corners = mobileLayout && !matchMode && diffChip && !cubeLabelBesideConnect;
 
 	if (stackMatOn) {
 		bottomInfo = <StackMat />;
@@ -394,7 +401,7 @@ export default function TimeDisplay() {
 				    pinned to the digits' edges, label left and diff right, so the middle under the
 				    time stays free: that is where a finger lands to start the touch timer, and a
 				    press on the label never primes it (touch_target.ts). */}
-				{cubeLabel && !cubeLabelBesideConnect ? (
+				{corners ? null : cubeLabel && !cubeLabelBesideConnect ? (
 					<div className={b('under', { mobile: mobileMode })}>
 						{cubeLabel}
 						{!matchMode && <SolveDiff />}
@@ -414,6 +421,12 @@ export default function TimeDisplay() {
 			</div>
 			<div className={bi()}>{bottomInfo}</div>
 			{subTimerActions}
+			{corners && (
+				<div className={b('corners')}>
+					{cubeLabel}
+					<SolveDiff />
+				</div>
+			)}
 		</>
 	);
 
@@ -425,6 +438,7 @@ export default function TimeDisplay() {
 		<div
 			className={b({
 				smart: smartCubeSelected(context),
+				corners: corners && !hideTime,
 			})}
 		>
 			{body}

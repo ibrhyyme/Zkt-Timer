@@ -296,6 +296,51 @@
 	}
 }
 
+// Phone timer page, plain time area (TimeDisplay.tsx `corners`): the cube label sits in the
+// bottom left corner of the time area and the diff in the bottom right, so the middle around
+// the digits stays free (owner, 2026-11-04). The side inset is the 0.5rem margin of the goal
+// bar, the action row and the modules under it, so the corners line up with their edges.
+//
+// The block fills the time area down to its bottom edge (Timer.scss drops the box's bottom
+// padding and margin for it) and keeps a strip there for the corner boxes. 72px is what lay
+// under the digits before: the old row (44px), the box's bottom padding (1vh) and its 20px
+// margin. The digits are centred in what is left, so moving the pair does not move them
+// (within a pixel), and on a short phone they can never be drawn over the corners.
+.#{$namespace}-time-display--corners {
+	flex: 1 1 auto;
+	align-self: stretch;
+	padding-bottom: $zt-control-h-md + $zt-space-6;
+}
+
+.#{$namespace}-time-display__corners {
+	position: absolute;
+	left: $zt-space-2;
+	right: $zt-space-2;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	gap: $zt-space-3;
+	height: $zt-control-h-md;
+	// The strip between the two boxes is part of the start surface.
+	pointer-events: none;
+
+	// Capped short of the centre, as in the old row: a long name ellipsizes before it
+	// reaches the middle, and the picker it opens shows it in full.
+	> .#{$namespace}-timer-cube-label {
+		min-width: 0;
+		max-width: calc(50% - #{$zt-space-5});
+		margin-top: 0;
+		pointer-events: auto;
+	}
+
+	// Right corner with or without a label (no main cube, rooms).
+	> .#{$namespace}-solve-diff {
+		@extend %diff-chip;
+		flex: 0 0 auto;
+		margin-left: auto;
+	}
+}
+
 // GAN Timer / QiYi Timer / StackMat connect controls render into this block.
 // It had no rule of its own anywhere in the codebase: the only place the class
 // was mentioned was Timer.scss's "hide while solving" list. With no layout of

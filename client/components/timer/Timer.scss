@@ -775,6 +775,16 @@ body.timer-immersive-bg {
 			padding: 1vh 0;
 			overflow: visible;
 		}
+
+		// Cube label and diff in the corners (TimeDisplay.scss `--corners`): the time display
+		// reaches the bottom of the stage, so the two boxes sit on the goal bar (or the action
+		// row) at the layout's own gap. The bottom padding and the old `__main--mobile`
+		// margin move into the time display's bottom strip, so the digits stay put. Without
+		// `:has` the boxes just sit higher.
+		> #{$self}__mobile-timer:not(#{$self}__mobile-timer--manual):has(> .#{$namespace}-time-display--corners) {
+			padding-bottom: 0;
+			margin-bottom: 0;
+		}
 	}
 
 	// PB badge over the top of the time area. Out of flow, so showing and clearing it
