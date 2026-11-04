@@ -49,9 +49,10 @@ const V2 = '/public/welcome/v2';
 
 // Every image here is a real screen from the app, except the hands chapter: Drop to
 // Stop and Magnet Timer have no screen worth showing, so that one is a frame of the
-// animation that explains them (the film itself left the page on 2026-10-27). Timer,
-// smart cube and stats come from the owner's own account (the September 2026 promo
-// shoot); the trainer grid and the battle round were captured live on 2026-09-30.
+// animation that explains them (the film itself left the page on 2026-10-27). Every
+// other still (timer in Smart Cube mode, smart cube replay, stats, trainer grid, battle
+// round, the phone screens and WCA Live) was captured live from the owner's account on
+// 2026-11-04, after the theme and smart cube redesign.
 export const CHAPTERS: Chapter[] = [
 	{id: 'timer', face: 'U', image: `${V2}/stage-timer.webp`},
 	{id: 'smart', face: 'F', image: `${V2}/stage-smart.webp`},

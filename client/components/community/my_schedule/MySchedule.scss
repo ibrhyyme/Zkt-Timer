@@ -3294,6 +3294,19 @@
 	&__wca-live-person-name {
 		color: rgb(var(--text-color));
 		font-weight: 500;
+
+		// The table lays out on content (table-layout: auto) and names never wrap, so one
+		// long name ("Thamaneeswar Sathesh Kumar") widened the name column until the five
+		// attempts no longer fit the 600px column and the last one scrolled out of view.
+		// Capped on desktop; the full name stays in the cell's title. Mobile uses a fixed
+		// layout with no attempt columns, so the name keeps the whole remaining width there.
+		@include bp-up($bp-md) {
+			min-width: 0;
+			max-width: 8.5rem;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 	}
 
 	&__wca-live-flag {

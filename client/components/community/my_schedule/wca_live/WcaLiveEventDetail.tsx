@@ -505,7 +505,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												</td>
 											)}
 											<td className={b('wca-live-person')}>
-												<span className={b('wca-live-person-name')}>{r.personName}</span>
+												<span className={b('wca-live-person-name')} title={r.personName}>{r.personName}</span>
 												{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
 											</td>
 											{showChances
