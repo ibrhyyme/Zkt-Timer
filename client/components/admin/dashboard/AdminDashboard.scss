@@ -12,7 +12,7 @@
 	&__loading {
 		text-align: center;
 		padding: 60px 20px;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 	}
 
 	&__header {
@@ -38,7 +38,7 @@
 		align-items: baseline;
 		gap: 10px;
 		padding: 7px 14px;
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.12);
 	}
@@ -54,14 +54,14 @@
 	}
 
 	&__version-value {
-		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-family: $zt-font-mono;
 		font-size: 1.05rem;
 		font-weight: 700;
 		color: rgb(var(--primary-color));
 	}
 
 	&__version-build {
-		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-family: $zt-font-mono;
 		font-size: 0.75rem;
 		font-weight: 500;
 		color: rgb(var(--text-color));
@@ -76,7 +76,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		margin-bottom: 12px;
 	}
 
@@ -93,10 +93,9 @@
 
 		.#{$namespace}-admin-dashboard__card {
 			cursor: pointer;
-			transition: transform 0.15s ease, background-color 0.15s ease;
+			transition: background-color 0.15s ease;
 
 			&:hover {
-				transform: translateY(-2px);
 				background-color: rgba(var(--text-color), 0.05);
 			}
 		}
@@ -110,12 +109,17 @@
 		font-family: inherit;
 
 		.#{$namespace}-admin-dashboard__card {
-			transition: transform 0.15s ease, background-color 0.15s ease;
+			transition: background-color 0.15s ease;
 		}
 
 		&:hover .#{$namespace}-admin-dashboard__card {
-			transform: translateY(-2px);
 			background-color: rgba(var(--text-color), 0.05);
+		}
+
+		// all: unset drops the browser ring, so the card carries the shared one.
+		&:focus-visible .#{$namespace}-admin-dashboard__card {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
 		}
 	}
 
@@ -125,7 +129,7 @@
 		right: 12px;
 		display: flex;
 		align-items: center;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 		pointer-events: none;
 	}
 
@@ -133,7 +137,7 @@
 		margin-top: 14px;
 		background-color: rgba(var(--text-color), 0.03);
 		border: 1px solid rgba(var(--text-color), 0.06);
-		border-radius: 14px;
+		border-radius: $zt-radius-lg;
 		padding: 14px;
 		animation: dashboardExpand 0.2s ease;
 	}
@@ -155,7 +159,7 @@
 		padding: 10px 12px;
 		margin-bottom: 8px;
 		background-color: rgba(var(--primary-color), 0.08);
-		border-radius: 10px;
+		border-radius: $zt-radius-md;
 		font-size: 0.95rem;
 		font-weight: 600;
 		color: rgb(var(--text-color));
@@ -191,7 +195,7 @@
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		border-bottom: 1px solid rgba(var(--text-color), 0.06);
 	}
 
@@ -240,7 +244,7 @@
 	}
 
 	&__table-last {
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		font-size: 0.8rem;
 	}
 
@@ -248,8 +252,183 @@
 	&__table-empty {
 		padding: 24px;
 		text-align: center;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		font-size: 0.9rem;
+	}
+
+	// Growth report (signups / solves), opened in place from the users and solve cards.
+	&__report-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: $zt-space-3;
+		margin-bottom: $zt-space-3;
+	}
+
+	&__report-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__report-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-3;
+	}
+
+	&__report-field {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		min-width: 150px;
+	}
+
+	&__report-field-label {
+		@include zt-eyebrow;
+	}
+
+	&__report-scroll {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	&__report-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.875rem;
+		color: rgb(var(--text-color));
+
+		th,
+		td {
+			padding: $zt-space-2 $zt-space-3;
+			text-align: left;
+			white-space: nowrap;
+			border-bottom: 1px solid $zt-card-border;
+		}
+
+		thead th {
+			@include zt-eyebrow;
+			padding-top: 0;
+		}
+
+		tbody th {
+			font-weight: 600;
+		}
+
+		tfoot th,
+		tfoot td {
+			font-weight: 700;
+			border-bottom: none;
+			border-top: 1px solid rgba(var(--text-color), 0.2);
+		}
+
+		.#{$namespace}-admin-dashboard__report-cell--num {
+			text-align: right;
+			font-family: $zt-font-mono;
+		}
+
+		.#{$namespace}-admin-dashboard__report-cell--wide {
+			width: 40%;
+			min-width: 180px;
+		}
+
+		&--matrix th,
+		&--matrix td {
+			padding-left: $zt-space-2;
+			padding-right: $zt-space-2;
+		}
+	}
+
+	&__report-cell--peak {
+		color: rgb(var(--primary-color));
+		font-weight: 700;
+	}
+
+	&__report-cell--total {
+		font-weight: 700;
+	}
+
+	&__report-count {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+	}
+
+	&__report-bar {
+		flex: 1;
+		min-width: 60px;
+		height: 8px;
+		overflow: hidden;
+		border-radius: $zt-radius-sm;
+		background: $zt-control-bg;
+	}
+
+	&__report-bar-fill {
+		display: block;
+		height: 100%;
+		background: rgb(var(--primary-color));
+	}
+
+	&__report-num {
+		min-width: 3.5em;
+		text-align: right;
+		font-family: $zt-font-mono;
+		font-weight: 600;
+	}
+
+	&__report-share {
+		margin-left: $zt-space-2;
+		font-size: 0.8em;
+		color: $zt-text-muted;
+	}
+
+	&__report-muted {
+		color: $zt-text-muted;
+	}
+
+	&__report-change {
+		font-family: $zt-font-mono;
+		font-weight: 600;
+
+		&--up {
+			color: rgb(var(--success-color));
+		}
+
+		&--down {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&__report-tag {
+		margin-left: $zt-space-2;
+		padding: 1px 6px;
+		border-radius: $zt-radius-sm;
+		background: $zt-control-bg;
+		font-size: 0.72rem;
+		font-weight: 600;
+		vertical-align: middle;
+	}
+
+	&__report-notes {
+		margin-top: $zt-space-3;
+		font-size: 0.8rem;
+		color: $zt-text-muted;
+
+		p {
+			margin: 0 0 $zt-space-1;
+		}
+	}
+
+	&__report-countries {
+		margin-top: $zt-space-5;
+	}
+
+	&__report-subtitle {
+		@include zt-eyebrow;
+		margin: 0 0 $zt-space-2;
 	}
 
 	@keyframes dashboardExpand {
@@ -264,7 +443,7 @@
 		padding: 18px 20px;
 		background-color: rgba(var(--text-color), 0.03);
 		border: 1px solid rgba(var(--text-color), 0.06);
-		border-radius: 14px;
+		border-radius: $zt-radius-lg;
 		position: relative;
 		min-height: 92px;
 		box-sizing: border-box;
@@ -282,7 +461,7 @@
 		width: 44px;
 		height: 44px;
 		flex-shrink: 0;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		background-color: rgba(var(--text-color), 0.06);
 		color: rgb(var(--text-color));
 	}
@@ -296,7 +475,7 @@
 
 	&__card-label {
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		font-weight: 500;
 	}
 
@@ -309,7 +488,7 @@
 
 	&__card-sub {
 		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.45);
+		color: $zt-text-muted;
 		margin-top: 2px;
 	}
 

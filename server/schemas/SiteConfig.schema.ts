@@ -297,6 +297,10 @@ export class AdminDashboardStats {
 	@Field(() => Int)
 	pro_users_count: number;
 
+	/** Pro bought in a store (iap_product_id set), as opposed to an admin or promo grant. */
+	@Field(() => Int)
+	pro_paid_count: number;
+
 	@Field(() => Int)
 	pending_reports_count: number;
 

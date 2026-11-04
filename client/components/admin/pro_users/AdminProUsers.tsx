@@ -1,36 +1,56 @@
 import React from 'react';
-import {gqlQueryTyped} from '../../api';
-import Input from '../../common/inputs/input/Input';
-import {useInput} from '../../../util/hooks/useInput';
+import {gql} from '@apollo/client';
 import dayjs from 'dayjs';
-import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {useDispatch} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import {gqlQuery} from '../../api';
+import Input from '../../common/inputs/input/Input';
+import Button from '../../common/button/Button';
+import ChoiceGroup from '../../common/choice_group/ChoiceGroup';
+import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
+import {useInput} from '../../../util/hooks/useInput';
 import {openModal} from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
-import {gql} from '@apollo/client';
+import {
+	DEFAULT_FACETS,
+	EXPIRING_DAYS,
+	ProFacet,
+	ProFacetFilters,
+	ProFilters,
+	ProRow,
+	facetCounts,
+	filterRows,
+	isExpiringSoon,
+	isStoreSource,
+	rowPlatform,
+	sortRows,
+} from './pro_user_filters';
+import '../users/AdminUsers.scss';
+import './AdminProUsers.scss';
+
+dayjs.extend(relativeTime);
 
 const ADMIN_PRO_USERS_QUERY = gql`
-	query AdminProUsers($pageArgs: PaginationArgsInput) {
-		adminUserSearch(pageArgs: $pageArgs, filters: { is_pro: true }) {
-			hasMore
-			total
-			items {
+	query AdminProUsers {
+		adminProUsers {
+			tier
+			source
+			status
+			expires_at
+			last_event_at
+			promo_code
+			user {
 				id
 				username
 				email
 				created_at
-				is_pro
-				pro_expires_at
 				iap_platform
 				iap_product_id
-				iap_cancellation_at
-				iap_billing_issue_at
-				iap_paused_until
-				iap_latest_event_at
 				revenuecat_user_id
 				profile {
 					pfp_image {
+						id
 						storage_path
 					}
 				}
@@ -39,72 +59,41 @@ const ADMIN_PRO_USERS_QUERY = gql`
 	}
 `;
 
-dayjs.extend(relativeTime);
+const PAGE_SIZE = 50;
 
-interface ProUserData {
-	id: string;
-	username: string;
-	email: string;
-	created_at: string;
-	is_pro: boolean;
-	pro_expires_at?: string | null;
-	iap_platform?: string | null;
-	iap_product_id?: string | null;
-	iap_cancellation_at?: string | null;
-	iap_billing_issue_at?: string | null;
-	iap_paused_until?: string | null;
-	iap_latest_event_at?: string | null;
-	revenuecat_user_id?: string | null;
-	profile?: {pfp_image?: {storage_path?: string}};
-}
+const SOURCE_VALUES = ['all', 'lifetime', 'yearly', 'monthly', 'promo', 'admin', 'other'];
+const TIER_VALUES = ['all', 'pro', 'premium'];
+const PLATFORM_VALUES = ['all', 'ios', 'android', 'none'];
+const STATUS_VALUES = ['all', 'active', 'cancelled', 'billing_issue', 'expiring'];
 
-function subscriptionType(user: ProUserData): {label: string; color: string} {
-	const pid = user.iap_product_id;
-	if (!pid) return {label: 'Admin / Promo', color: '#a855f7'};
-	if (pid.endsWith('lifetime')) return {label: 'Lifetime', color: '#f59e0b'};
-	if (pid.endsWith('yearly')) return {label: 'Yearly', color: '#3b82f6'};
-	if (pid.endsWith('monthly')) return {label: 'Monthly', color: '#22c55e'};
-	return {label: pid, color: '#6b7280'};
-}
-
-function subscriptionStatus(user: ProUserData): {label: string; color: string} {
-	if (user.iap_paused_until) return {label: 'Paused', color: '#f97316'};
-	if (user.iap_billing_issue_at) return {label: 'Billing Issue', color: '#ef4444'};
-	if (user.iap_cancellation_at) return {label: 'Cancelled', color: '#6b7280'};
-	return {label: 'Active', color: '#22c55e'};
-}
-
-function expiryLabel(user: ProUserData): string {
-	if (!user.pro_expires_at) return 'Unlimited';
-	return dayjs(user.pro_expires_at).format('DD MMM YYYY');
-}
-
-function startLabel(user: ProUserData): string {
-	if (!user.iap_latest_event_at) return '—';
-	return dayjs(user.iap_latest_event_at).format('DD MMM YYYY');
-}
-
-function ProUserRow({user, onUpdated}: {user: ProUserData; onUpdated: () => void}) {
+function ProUserRow({row, now, onUpdated}: {row: ProRow; now: Date; onUpdated: () => void}) {
+	const {t} = useTranslation();
 	const dispatch = useDispatch();
-	const type = subscriptionType(user);
-	const status = subscriptionStatus(user);
+	const [copied, setCopied] = React.useState(false);
+	const {user} = row;
+	const platform = rowPlatform(row);
+	const expiring = isExpiringSoon(row, now);
 
 	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} onUserUpdated={onUpdated} />, {width: 1100}));
 
-	const [copied, setCopied] = React.useState(false);
-	function copyRcId() {
-		if (!user.revenuecat_user_id) return;
-		navigator.clipboard.writeText(user.revenuecat_user_id);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 1500);
+	function copyRcId(e: React.MouseEvent) {
+		e.stopPropagation();
+		if (!user.revenuecat_user_id || typeof navigator === 'undefined' || !navigator.clipboard) return;
+		navigator.clipboard.writeText(user.revenuecat_user_id).then(() => {
+			setCopied(true);
+			setTimeout(() => setCopied(false), 1500);
+		});
 	}
 
+	const sourceLabel =
+		row.source === 'other' && user.iap_product_id ? user.iap_product_id : t(`admin_pro_users.source_${row.source}`);
+
 	return (
-		<tr className="zt-admin-users__row" style={{cursor: 'pointer'}} onClick={handleManage}>
+		<tr className="zt-admin-users__row" onClick={handleManage}>
 			<td className="zt-admin-users__cell zt-admin-users__cell--user">
 				<div className="zt-admin-users__user-info">
 					<div className="zt-admin-users__avatar-wrapper">
-						<AvatarImage user={user} profile={user.profile} />
+						<AvatarImage user={user as any} profile={user.profile} />
 					</div>
 					<div className="zt-admin-users__user-details">
 						<div className="zt-admin-users__username">{user.username}</div>
@@ -113,139 +102,230 @@ function ProUserRow({user, onUpdated}: {user: ProUserData; onUpdated: () => void
 				</div>
 			</td>
 			<td className="zt-admin-users__cell">
-				<span className="zt-admin-users__badge" style={{background: type.color + '22', color: type.color, border: `1px solid ${type.color}55`}}>
-					{type.label}
-				</span>
-			</td>
-			<td className="zt-admin-users__cell">
-				{user.iap_platform ? (
-					<span className="zt-admin-users__badge" style={{background: '#ffffff11', color: '#ccc', border: '1px solid #ffffff22'}}>
-						{user.iap_platform === 'ios' ? 'iOS' : 'Android'}
+				<div className="zt-admin-pro-users__tags">
+					{row.tier === 'premium' && <span className="zt-admin-pro-users__tier">{t('admin_pro_users.tier_premium')}</span>}
+					<span className={`zt-admin-pro-users__tag${isStoreSource(row.source) ? ' zt-admin-pro-users__tag--store' : ''}`}>
+						{sourceLabel}
 					</span>
-				) : (
-					<span style={{color: '#666'}}>—</span>
-				)}
-			</td>
-			<td className="zt-admin-users__cell zt-admin-users__cell--date">
-				<div className="zt-admin-users__date-main">{startLabel(user)}</div>
-				{user.iap_latest_event_at && (
-					<div className="zt-admin-users__date-sub">{dayjs(user.iap_latest_event_at).fromNow()}</div>
-				)}
-			</td>
-			<td className="zt-admin-users__cell zt-admin-users__cell--date">
-				<div className="zt-admin-users__date-main">{expiryLabel(user)}</div>
-				{user.pro_expires_at && (
-					<div className="zt-admin-users__date-sub">{dayjs(user.pro_expires_at).fromNow()}</div>
+				</div>
+				{row.promo_code && (
+					<div className="zt-admin-pro-users__sub">{t('admin_pro_users.promo_code_label', {code: row.promo_code})}</div>
 				)}
 			</td>
 			<td className="zt-admin-users__cell">
-				<span className="zt-admin-users__badge" style={{background: status.color + '22', color: status.color, border: `1px solid ${status.color}55`}}>
-					{status.label}
+				{platform === 'none' ? (
+					<span className="zt-admin-pro-users__muted">-</span>
+				) : (
+					<span className="zt-admin-pro-users__tag">{t(`admin_pro_users.platform_${platform}`)}</span>
+				)}
+			</td>
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
+				{row.last_event_at ? (
+					<>
+						<div className="zt-admin-users__date-main">{dayjs(row.last_event_at).format('DD MMM YYYY')}</div>
+						<div className="zt-admin-users__date-sub">{dayjs(row.last_event_at).fromNow()}</div>
+					</>
+				) : (
+					<span className="zt-admin-pro-users__muted">-</span>
+				)}
+			</td>
+			<td className="zt-admin-users__cell zt-admin-users__cell--date">
+				{row.expires_at ? (
+					<>
+						<div className={`zt-admin-users__date-main${expiring ? ' zt-admin-pro-users__expiring' : ''}`}>
+							{dayjs(row.expires_at).format('DD MMM YYYY')}
+						</div>
+						<div className="zt-admin-users__date-sub">{dayjs(row.expires_at).fromNow()}</div>
+					</>
+				) : (
+					<div className="zt-admin-users__date-main">{t('admin_pro_users.unlimited')}</div>
+				)}
+			</td>
+			<td className="zt-admin-users__cell">
+				<span className={`zt-admin-pro-users__status zt-admin-pro-users__status--${row.status}`}>
+					{t(`admin_pro_users.status_${row.status}`)}
 				</span>
 			</td>
-			<td className="zt-admin-users__cell" onClick={(e) => e.stopPropagation()}>
+			<td className="zt-admin-users__cell">
 				{user.revenuecat_user_id ? (
-					<button
-						style={{fontFamily: 'monospace', fontSize: '11px', background: 'transparent', border: '1px solid #444', borderRadius: '4px', color: '#aaa', cursor: 'pointer', padding: '2px 6px'}}
-						onClick={copyRcId}
-					>
-						{copied ? 'Copied' : user.revenuecat_user_id.slice(0, 12) + '...'}
+					<button type="button" className="zt-admin-pro-users__copy" onClick={copyRcId} title={user.revenuecat_user_id}>
+						{copied ? t('admin_pro_users.copied') : user.revenuecat_user_id.slice(0, 12) + '...'}
 					</button>
 				) : (
-					<span style={{color: '#666'}}>—</span>
+					<span className="zt-admin-pro-users__muted">-</span>
 				)}
 			</td>
 		</tr>
 	);
 }
 
-const PAGE_SIZE = 50;
-
 export default function AdminProUsers() {
+	const {t} = useTranslation();
 	const [query, setQuery] = useInput('');
-	const [users, setUsers] = React.useState<ProUserData[]>([]);
-	const [loading, setLoading] = React.useState(false);
+	const [rows, setRows] = React.useState<ProRow[] | null>(null);
+	const [loading, setLoading] = React.useState(true);
+	const [failed, setFailed] = React.useState(false);
+	const [filters, setFilters] = React.useState<ProFacetFilters>(DEFAULT_FACETS);
 	const [page, setPage] = React.useState(0);
-	const [hasMore, setHasMore] = React.useState(true);
-	const [total, setTotal] = React.useState(0);
+	// One clock per load, so "expires within 7 days" and its count agree on every row.
+	const [now, setNow] = React.useState(() => new Date());
 
-	async function fetchData(currentPage: number, currentQuery?: string) {
+	const fetchData = React.useCallback(async () => {
 		setLoading(true);
+		setFailed(false);
 		try {
-			const res = await gqlQueryTyped(ADMIN_PRO_USERS_QUERY, {
-				pageArgs: {page: currentPage, searchQuery: currentQuery ?? query, pageSize: PAGE_SIZE},
-			}, {fetchPolicy: 'network-only'});
-
-			const data = res.data?.adminUserSearch;
-			if (!data) return;
-			setUsers(data.items as ProUserData[]);
-			setHasMore(data.hasMore);
-			setTotal(data.total);
+			const res = await gqlQuery<{adminProUsers: ProRow[]}>(ADMIN_PRO_USERS_QUERY, {}, 'no-cache');
+			setRows(sortRows(res.data?.adminProUsers || []));
+			setNow(new Date());
 		} catch (err) {
 			console.error('[AdminProUsers] fetch error', err);
+			setFailed(true);
 		} finally {
 			setLoading(false);
 		}
-	}
+	}, []);
+
+	React.useEffect(() => {
+		fetchData();
+	}, [fetchData]);
+
+	const fullFilters: ProFilters = {...filters, query};
 
 	React.useEffect(() => {
 		setPage(0);
-		fetchData(0, query);
-	}, [query]);
+	}, [filters, query]);
 
-	function prevPage() {
-		if (page === 0) return;
-		const next = page - 1;
-		setPage(next);
-		fetchData(next);
+	const all = rows || [];
+	const visible = filterRows(all, fullFilters, now);
+	const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+	const safePage = Math.min(page, pageCount - 1);
+	const pageRows = visible.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+	const hasOther = all.some((r) => r.source === 'other');
+	const filtersActive =
+		query.trim() !== '' || (Object.keys(DEFAULT_FACETS) as ProFacet[]).some((k) => filters[k] !== 'all');
+
+	function facetOptions(facet: ProFacet, values: string[], labelPrefix: string) {
+		const counts = facetCounts(all, fullFilters, facet, values, now);
+		return values
+			.filter((v) => facet !== 'source' || v !== 'other' || hasOther)
+			.map((v) => ({
+				value: v,
+				label: (
+					<>
+						{v === 'all'
+							? t('admin_pro_users.all')
+							: v === 'expiring'
+								? t('admin_pro_users.status_expiring', {days: EXPIRING_DAYS})
+								: t(`admin_pro_users.${labelPrefix}_${v}`)}
+						<span className="zt-admin-pro-users__count">{counts[v]}</span>
+					</>
+				),
+				disabled: counts[v] === 0 && filters[facet] !== v,
+			}));
 	}
 
-	function nextPage() {
-		if (!hasMore) return;
-		const next = page + 1;
-		setPage(next);
-		fetchData(next);
+	function setFacet(facet: ProFacet, value: string) {
+		setFilters((prev) => ({...prev, [facet]: value}));
 	}
 
-	const startIdx = page * PAGE_SIZE + 1;
-	const endIdx = page * PAGE_SIZE + users.length;
+	const facetRows: Array<{facet: ProFacet; values: string[]; prefix: string; label: string}> = [
+		{facet: 'source', values: SOURCE_VALUES, prefix: 'source', label: t('admin_pro_users.filter_source')},
+		{facet: 'tier', values: TIER_VALUES, prefix: 'tier', label: t('admin_pro_users.filter_tier')},
+		{facet: 'platform', values: PLATFORM_VALUES, prefix: 'platform', label: t('admin_pro_users.filter_platform')},
+		{facet: 'status', values: STATUS_VALUES, prefix: 'status', label: t('admin_pro_users.filter_status')},
+	];
 
 	return (
-		<div className="zt-admin-users">
-			<div className="zt-admin-users__controls">
-				<Input value={query} onChange={setQuery} placeholder="Search users..." />
-				<span className="zt-admin-users__total">{total} pro users</span>
-			</div>
+		<div className="zt-admin-users zt-admin-pro-users">
+			<div className="zt-admin-users__container">
+				<div className="zt-admin-pro-users__toolbar">
+					<div className="zt-admin-pro-users__search">
+						<Input value={query} onChange={setQuery} placeholder={t('admin_pro_users.search_placeholder')} />
+					</div>
+					<div className="zt-admin-pro-users__total">
+						{t('admin_pro_users.showing', {shown: visible.length, total: all.length})}
+					</div>
+				</div>
 
-			<div className="zt-admin-users__table-wrapper">
-				<table className="zt-admin-users__table">
-					<thead>
-						<tr>
-							<th className="zt-admin-users__th">User</th>
-							<th className="zt-admin-users__th">Subscription</th>
-							<th className="zt-admin-users__th">Platform</th>
-							<th className="zt-admin-users__th">Started</th>
-							<th className="zt-admin-users__th">Expires</th>
-							<th className="zt-admin-users__th">Status</th>
-							<th className="zt-admin-users__th">RevenueCat ID</th>
-						</tr>
-					</thead>
-					<tbody>
-						{loading ? (
-							<tr><td colSpan={7} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Loading...</td></tr>
-						) : users.length === 0 ? (
-							<tr><td colSpan={7} style={{textAlign: 'center', padding: '32px', color: '#666'}}>No pro users found</td></tr>
-						) : (
-							users.map((u) => <ProUserRow key={u.id} user={u} onUpdated={() => fetchData(page)} />)
-						)}
-					</tbody>
-				</table>
-			</div>
+				<div className="zt-admin-pro-users__filters">
+					{facetRows.map(({facet, values, prefix, label}) => (
+						<div key={facet} className="zt-admin-pro-users__filter">
+							<span className="zt-admin-pro-users__filter-label">{label}</span>
+							<ChoiceGroup<string>
+								label={label}
+								value={filters[facet]}
+								onChange={(v) => setFacet(facet, v)}
+								options={facetOptions(facet, values, prefix)}
+							/>
+						</div>
+					))}
+					{filtersActive && (
+						<div className="zt-admin-pro-users__clear">
+							<Button
+								small
+								text={t('admin_pro_users.clear_filters')}
+								onClick={() => {
+									setFilters(DEFAULT_FACETS);
+									setQuery('');
+								}}
+							/>
+						</div>
+					)}
+				</div>
 
-			<div className="zt-admin-users__pagination">
-				<button className="zt-admin-users__page-btn" onClick={prevPage} disabled={page === 0}>← Previous</button>
-				<span className="zt-admin-users__page-info">{startIdx}–{endIdx} / {total}</span>
-				<button className="zt-admin-users__page-btn" onClick={nextPage} disabled={!hasMore}>Next →</button>
+				<div className="zt-admin-users__table-wrapper">
+					<table className="zt-admin-users__table">
+						<thead>
+							<tr className="zt-admin-users__header-row">
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_user')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_source')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_platform')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_last_event')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_expires')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_status')}</th>
+								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_revenuecat')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{loading && !rows ? (
+								<tr>
+									<td colSpan={7} className="zt-admin-pro-users__state">
+										{t('admin_pro_users.loading')}
+									</td>
+								</tr>
+							) : failed ? (
+								<tr>
+									<td colSpan={7} className="zt-admin-pro-users__state">
+										{t('admin_pro_users.failed')}
+									</td>
+								</tr>
+							) : pageRows.length === 0 ? (
+								<tr>
+									<td colSpan={7} className="zt-admin-pro-users__state">
+										{t('admin_pro_users.empty')}
+									</td>
+								</tr>
+							) : (
+								pageRows.map((row) => <ProUserRow key={row.user.id} row={row} now={now} onUpdated={fetchData} />)
+							)}
+						</tbody>
+					</table>
+				</div>
+
+				{visible.length > PAGE_SIZE && (
+					<div className="zt-admin-users__pagination">
+						<Button small text={t('admin_pro_users.prev')} disabled={safePage === 0} onClick={() => setPage(safePage - 1)} />
+						<span className="zt-admin-users__pagination-info">
+							{safePage * PAGE_SIZE + 1}-{safePage * PAGE_SIZE + pageRows.length} / {visible.length}
+						</span>
+						<Button
+							small
+							text={t('admin_pro_users.next')}
+							disabled={safePage >= pageCount - 1}
+							onClick={() => setPage(safePage + 1)}
+						/>
+					</div>
+				)}
 			</div>
 		</div>
 	);

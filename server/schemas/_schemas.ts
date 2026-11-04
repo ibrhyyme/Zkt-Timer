@@ -55,3 +55,4 @@ export * from './MagnetTelemetry.schema';
 export * from './Cube.schema';
 export * from './AlgSet.schema';
 export * from './Battle.schema';
+export * from './AdminReport.schema';

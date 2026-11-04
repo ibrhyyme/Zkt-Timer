@@ -372,6 +372,8 @@ type Query {
   battleHeadToHead(userId: String): BattleHeadToHead
   battleMatch(id: String): BattleMatchDetail
   adminFlaggedBattleMatches(page: Int = 0): AdminBattleMatchPage
+  adminGrowthReport(includeMonths: Boolean = true, month: Int, year: Int, metric: String): AdminGrowthReport
+  adminProUsers: [AdminProUserRow]
 }
 
 type Mutation {
@@ -1467,6 +1469,7 @@ type AdminDashboardStats {
   solves_week: Int
   solves_total: Int
   pro_users_count: Int
+  pro_paid_count: Int
   pending_reports_count: Int
   pending_support_tickets_count: Int
   online_users: Int
@@ -2999,6 +3002,36 @@ type BattleChallengeInfo {
   restricted: Boolean
   own: Boolean
   for_you: Boolean
+}
+
+type GrowthBucket {
+  key: String
+  count: Int
+  activated: Int
+  pro: Int
+}
+
+type GrowthCountry {
+  country: String
+  count: Int
+}
+
+type AdminGrowthReport {
+  metric: String
+  months: [GrowthBucket]
+  days: [GrowthBucket]
+  countries: [GrowthCountry]
+  scope_total: Int
+}
+
+type AdminProUserRow {
+  user: UserAccountForAdmin
+  tier: String
+  source: String
+  status: String
+  expires_at: DateTime
+  last_event_at: DateTime
+  promo_code: String
 }
 
 type Notification {

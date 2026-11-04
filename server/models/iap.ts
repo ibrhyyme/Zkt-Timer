@@ -7,22 +7,14 @@ import MembershipGrantedNotification from '../resources/notification_types/membe
 import {UserAccount, InternalUserAccount} from '../schemas/UserAccount.schema';
 import {createI18nInstance} from '../i18n_server';
 import {notifyAdminsOfProPurchase} from '../services/admin_notification';
+import {planFromProductId, ProductPlan} from '../util/pro_membership';
+
+// Lives in util/pro_membership so the admin Pro list classifies with the same rule.
+export {planFromProductId};
 
 const SUPPORTED_LOCALES = ['tr', 'en', 'es', 'ru', 'zh'];
 
 export type IapPushKind = 'initial' | 'change' | 'silent';
-
-interface ProductPlan {
-	tier: 'monthly' | 'yearly' | 'lifetime' | 'unknown';
-}
-
-export function planFromProductId(productId: string | null | undefined): ProductPlan {
-	if (!productId) return {tier: 'unknown'};
-	if (productId.endsWith('lifetime')) return {tier: 'lifetime'};
-	if (productId.endsWith('yearly')) return {tier: 'yearly'};
-	if (productId.endsWith('monthly')) return {tier: 'monthly'};
-	return {tier: 'unknown'};
-}
 
 const PLAN_RANK: Record<string, number> = {monthly: 1, yearly: 2, lifetime: 3, unknown: 0};
 

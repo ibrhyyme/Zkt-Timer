@@ -235,6 +235,7 @@ export type AdminDashboardStats = {
   online_users?: Maybe<Scalars['Int']>;
   pending_reports_count?: Maybe<Scalars['Int']>;
   pending_support_tickets_count?: Maybe<Scalars['Int']>;
+  pro_paid_count?: Maybe<Scalars['Int']>;
   pro_users_count?: Maybe<Scalars['Int']>;
   signups_today?: Maybe<Scalars['Int']>;
   signups_week?: Maybe<Scalars['Int']>;
@@ -245,6 +246,26 @@ export type AdminDashboardStats = {
   wau?: Maybe<Scalars['Int']>;
   wca_connected?: Maybe<Scalars['Int']>;
   zkt_connected?: Maybe<Scalars['Int']>;
+};
+
+export type AdminGrowthReport = {
+  __typename?: 'AdminGrowthReport';
+  countries?: Maybe<Array<Maybe<GrowthCountry>>>;
+  days?: Maybe<Array<Maybe<GrowthBucket>>>;
+  metric?: Maybe<Scalars['String']>;
+  months?: Maybe<Array<Maybe<GrowthBucket>>>;
+  scope_total?: Maybe<Scalars['Int']>;
+};
+
+export type AdminProUserRow = {
+  __typename?: 'AdminProUserRow';
+  expires_at?: Maybe<Scalars['DateTime']>;
+  last_event_at?: Maybe<Scalars['DateTime']>;
+  promo_code?: Maybe<Scalars['String']>;
+  source?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  tier?: Maybe<Scalars['String']>;
+  user?: Maybe<UserAccountForAdmin>;
 };
 
 export type AdminSendPushResult = {
@@ -877,6 +898,20 @@ export type FollowCompetitorInput = {
   name?: InputMaybe<Scalars['String']>;
   registrant_id?: InputMaybe<Scalars['Int']>;
   wca_id?: InputMaybe<Scalars['String']>;
+};
+
+export type GrowthBucket = {
+  __typename?: 'GrowthBucket';
+  activated?: Maybe<Scalars['Int']>;
+  count?: Maybe<Scalars['Int']>;
+  key?: Maybe<Scalars['String']>;
+  pro?: Maybe<Scalars['Int']>;
+};
+
+export type GrowthCountry = {
+  __typename?: 'GrowthCountry';
+  count?: Maybe<Scalars['Int']>;
+  country?: Maybe<Scalars['String']>;
 };
 
 export type IapStatus = {
@@ -2619,7 +2654,9 @@ export type Query = {
   adminDashboardStats?: Maybe<AdminDashboardStats>;
   adminExportUserData?: Maybe<Scalars['String']>;
   adminFlaggedBattleMatches?: Maybe<AdminBattleMatchPage>;
+  adminGrowthReport?: Maybe<AdminGrowthReport>;
   adminMyPushTokens?: Maybe<Array<Maybe<PushTokenInfo>>>;
+  adminProUsers?: Maybe<Array<Maybe<AdminProUserRow>>>;
   adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
   adminUserDailyActivity?: Maybe<UserDailyActivityResult>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
@@ -2761,6 +2798,14 @@ export type QueryAdminExportUserDataArgs = {
 
 export type QueryAdminFlaggedBattleMatchesArgs = {
   page?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryAdminGrowthReportArgs = {
+  includeMonths?: InputMaybe<Scalars['Boolean']>;
+  metric?: InputMaybe<Scalars['String']>;
+  month?: InputMaybe<Scalars['Int']>;
+  year?: InputMaybe<Scalars['Int']>;
 };
 
 

@@ -18,7 +18,8 @@ const BASELINE = {
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
 	// Added 2026-11-04, counted after the Timer, Sessions, Solves and Stats pass.
-	scssHandRadius: 558,
+	// 553: the admin dashboard's five corners went onto tokens with the growth report (2026-11-04).
+	scssHandRadius: 553,
 	scssDropShadow: 120,
 	tsxFixedTailwindColor: 67,
 	scssButtonColor: 117,

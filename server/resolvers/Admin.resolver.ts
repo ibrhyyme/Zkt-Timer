@@ -430,6 +430,7 @@ export class AdminResolver {
 			solves_week,
 			solves_total,
 			pro_users_count,
+			pro_paid_count,
 			pending_reports_count,
 			pending_support_tickets_count,
 			online,
@@ -446,6 +447,9 @@ export class AdminResolver {
 			prisma.solve.count({ where: { created_at: { gte: weekStart }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
 			prisma.solve.count({ where: { OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
 			prisma.userAccount.count({ where: { OR: [{ is_pro: true }, { is_premium: true }] } }),
+			// Same rule as classifyMembership: a store product only counts under Pro, since
+			// granting Premium clears is_pro but leaves the old product id behind.
+			prisma.userAccount.count({ where: { is_pro: true, is_premium: false, iap_product_id: { not: null } } }),
 			prisma.report.count({ where: { resolved_at: null } }),
 			prisma.supportTicket.count({ where: { resolved_at: null } }),
 			getOnlineCounts(),
@@ -464,6 +468,7 @@ export class AdminResolver {
 			solves_week,
 			solves_total,
 			pro_users_count,
+			pro_paid_count,
 			pending_reports_count,
 			pending_support_tickets_count,
 			online_users: online.uniqueUsers,

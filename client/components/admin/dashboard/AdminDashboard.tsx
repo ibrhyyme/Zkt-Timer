@@ -10,7 +10,22 @@ import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import { openModal } from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
 import { socketClient } from '../../../util/socket/socketio';
+import GrowthReportPanel from './GrowthReportPanel';
 import './AdminDashboard.scss';
+
+type ActivityPanel = 'day' | 'week' | 'month' | 'online';
+// "New today" and the solve cards open a growth report in place. A total starts on
+// the all-years table; a "today"/"this week" card starts on this month's days.
+// "Total users" keeps its link to /admin/users: the report is one card away.
+type ReportPanel = 'signups_today' | 'solves_today' | 'solves_week' | 'solves_total';
+type ExpandedPanel = ActivityPanel | ReportPanel;
+
+const REPORT_PRESET: Record<ReportPanel, { metric: 'signups' | 'solves'; thisMonth: boolean }> = {
+	signups_today: { metric: 'signups', thisMonth: true },
+	solves_today: { metric: 'solves', thisMonth: true },
+	solves_week: { metric: 'solves', thisMonth: true },
+	solves_total: { metric: 'solves', thisMonth: false },
+};
 
 interface DashboardStats {
 	total_users: number;
@@ -23,6 +38,8 @@ interface DashboardStats {
 	solves_week: number;
 	solves_total: number;
 	pro_users_count: number;
+	// Optional for the same reason as app_version: a cached bundle may meet an older server.
+	pro_paid_count?: number;
 	pending_reports_count: number;
 	pending_support_tickets_count: number;
 	online_users: number;
@@ -47,6 +64,7 @@ const STATS_QUERY = gql`
 			solves_week
 			solves_total
 			pro_users_count
+			pro_paid_count
 			pending_reports_count
 			pending_support_tickets_count
 			online_users
@@ -416,7 +434,7 @@ export default function AdminDashboard() {
 	const { t } = useTranslation();
 	const [stats, setStats] = React.useState<DashboardStats | null>(null);
 	const [loading, setLoading] = React.useState(true);
-	const [expanded, setExpanded] = React.useState<'day' | 'week' | 'month' | 'online' | null>(null);
+	const [expanded, setExpanded] = React.useState<ExpandedPanel | null>(null);
 
 	React.useEffect(() => {
 		fetchStats();
@@ -445,8 +463,28 @@ export default function AdminDashboard() {
 		}
 	}
 
-	function toggleExpand(period: 'day' | 'week' | 'month' | 'online') {
-		setExpanded((prev) => (prev === period ? null : period));
+	function toggleExpand(panel: ExpandedPanel) {
+		setExpanded((prev) => (prev === panel ? null : panel));
+	}
+
+	// Expand state for a card that opens a report in place.
+	function reportCard(panel: ReportPanel) {
+		return { onClick: () => toggleExpand(panel), expanded: expanded === panel, expandable: true };
+	}
+
+	function renderReport(metric: 'signups' | 'solves') {
+		if (!expanded || !(expanded in REPORT_PRESET)) return null;
+		const preset = REPORT_PRESET[expanded as ReportPanel];
+		if (preset.metric !== metric) return null;
+		const [y, m] = getCurrentIstanbulMonthYear().split('-').map(Number);
+		return (
+			<GrowthReportPanel
+				key={expanded}
+				metric={metric}
+				initialYear={preset.thisMonth ? y : null}
+				initialMonth={preset.thisMonth ? m : null}
+			/>
+		);
 	}
 
 	if (loading || !stats) {
@@ -512,7 +550,7 @@ export default function AdminDashboard() {
 						/>
 					</div>
 					{expanded === 'online' && <OnlineUsersPanel />}
-					{expanded && expanded !== 'online' && <ActiveUsersPanel period={expanded} />}
+					{(expanded === 'day' || expanded === 'week' || expanded === 'month') && <ActiveUsersPanel period={expanded} />}
 				</div>
 
 				<div className="zt-admin-dashboard__section">
@@ -530,12 +568,13 @@ export default function AdminDashboard() {
 							value={stats.signups_today}
 							subValue={t('admin_dashboard.new_week_count', { count: stats.signups_week })}
 							color="#22c55e"
-							to="/admin/users"
+							{...reportCard('signups_today')}
 						/>
 						<StatCard
 							icon={<CrownSimple size={28} weight="bold" />}
 							label={t('admin_dashboard.pro_users')}
 							value={stats.pro_users_count}
+							subValue={stats.pro_paid_count != null ? t('admin_dashboard.pro_paid_sub', { n: stats.pro_paid_count }) : undefined}
 							color="#a855f7"
 							to="/admin/pro-users"
 						/>
@@ -556,6 +595,7 @@ export default function AdminDashboard() {
 							to="/admin/users"
 						/>
 					</div>
+					{renderReport('signups')}
 				</div>
 
 				<div className="zt-admin-dashboard__section">
@@ -566,12 +606,14 @@ export default function AdminDashboard() {
 							label={t('admin_dashboard.solves_today')}
 							value={stats.solves_today}
 							color="#f59e0b"
+							{...reportCard('solves_today')}
 						/>
 						<StatCard
 							icon={<Cube size={28} weight="bold" />}
 							label={t('admin_dashboard.solves_week')}
 							value={stats.solves_week}
 							color="#f97316"
+							{...reportCard('solves_week')}
 						/>
 						<StatCard
 							icon={<Cube size={28} weight="bold" />}
@@ -579,8 +621,10 @@ export default function AdminDashboard() {
 							value={stats.solves_total}
 							subValue={t('admin_dashboard.solves_total_sub')}
 							color="#ea580c"
+							{...reportCard('solves_total')}
 						/>
 					</div>
+					{renderReport('solves')}
 				</div>
 
 				<div className="zt-admin-dashboard__section">

@@ -229,6 +229,8 @@ describe('private user types stay behind me and admin roots', () => {
 		'Query.me',
 		'Query.getUserAccountForAdmin',
 		'PaginatedUserAccountsForAdmin.items',
+		// Only returned by Query.adminProUsers (ADMIN), the Pro list's classified rows.
+		'AdminProUserRow.user',
 		'Mutation.unbanUserAccount',
 		'Mutation.setVerifiedStatus',
 		'Mutation.setModStatus',
