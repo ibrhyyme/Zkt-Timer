@@ -13,9 +13,15 @@
  *                                                 subset of reference `Game`)
  *
  * Reference line ranges in script.js are noted inline.
+ *
+ * The look is not the reference's: each piece wears the smart-cube view's plastic, caps and
+ * logo under the same studio light (skin.ts). The reference's rounded body and stickers are
+ * still built, hidden, because the mechanics read them (raycast and solved check).
  */
 
 import * as THREE from 'three';
+import { pickQuality } from '../../../../timer/smart_cube/cube_view/render/stage';
+import { CubeSkin } from './skin';
 import { Animation, Tween, Easing, animationEngine } from './tween';
 
 // ============================================
@@ -27,15 +33,8 @@ const PREPARING = 1;
 const ROTATING = 2;
 const ANIMATING = 3;
 
-const COLORS: Record<string, number> = {
-	P: 0x08101a,  // Piece body
-	U: 0xffffff,  // Up = White
-	D: 0xffd500,  // Down = Yellow
-	L: 0xff5800,  // Left = Orange
-	R: 0xb71234,  // Right = Red
-	F: 0x009b48,  // Front = Green
-	B: 0x0046ad,  // Back = Blue
-};
+/** The camera looks at the cube from this corner, at the distance resize() works out. */
+const VIEW_FROM = new THREE.Vector3(1, 1, 1);
 
 // ============================================
 // RoundedBoxGeometry  (script.js 211-674)
@@ -530,8 +529,6 @@ class Cube {
 			if (node.frustumCulled) node.frustumCulled = false;
 		});
 
-		this.updateColors(COLORS);
-
 		this.sizeGenerated = this.size;
 	}
 
@@ -575,6 +572,7 @@ class Cube {
 		this.edges = [];
 
 		const pieceSize = 1 / 3;
+		const hi = (this.size - 1) / 2;
 		const mainMaterial = new THREE.MeshLambertMaterial();
 
 		const pieceMesh = new THREE.Mesh(
@@ -592,6 +590,11 @@ class Cube {
 			const piece = new THREE.Object3D();
 			const pieceCube = pieceMesh.clone();
 			const pieceEdges: string[] = [];
+
+			// The body and stickers stay as invisible stand-ins: the drag raycasts the bodies
+			// (r125 raycasts hidden meshes too) and checkIsSolved reads the stickers. What
+			// shows is the skin dressed on below.
+			pieceCube.visible = false;
 
 			piece.position.copy(position.clone().divideScalar(3));
 			piece.add(pieceCube);
@@ -622,6 +625,7 @@ class Cube {
 				);
 
 				edge.name = name;
+				edge.visible = false;
 
 				piece.add(edge);
 				pieceEdges.push(name);
@@ -636,18 +640,10 @@ class Cube {
 				rotation: piece.rotation.clone(),
 			};
 
+			this.game.world.skin.dress(piece, new THREE.Vector3().copy(position), pieceEdges, pieceSize, hi);
+
 			this.pieces.push(piece);
 		});
-	}
-
-	updateColors(colors: Record<string, number>) {
-		if (!this.pieces || !this.edges) return;
-		this.pieces.forEach((piece: any) =>
-			(piece.userData.cube.material as THREE.MeshLambertMaterial).color.setHex(colors.P),
-		);
-		this.edges.forEach((edge) =>
-			(edge.material as THREE.MeshLambertMaterial).color.setHex(colors[edge.name]),
-		);
 	}
 }
 
@@ -1192,7 +1188,7 @@ class Controls {
 }
 
 // ============================================
-// World  (script.js 94-182) — scene/camera/renderer/lights
+// World  (script.js 94-182) — scene/camera/renderer; light and look from skin.ts
 // ============================================
 
 class World extends Animation {
@@ -1201,19 +1197,14 @@ class World extends Animation {
 	scene: THREE.Scene;
 	renderer: THREE.WebGLRenderer;
 	camera: THREE.PerspectiveCamera;
+	/** Studio light, reflections and the pieces' plastic: the smart-cube view's look. */
+	skin: CubeSkin;
 
 	stage = { width: 2, height: 3 };
 	fov = 10;
 
 	width = 0;
 	height = 0;
-
-	lights: {
-		holder: THREE.Object3D;
-		ambient: THREE.AmbientLight;
-		front: THREE.DirectionalLight;
-		back: THREE.DirectionalLight;
-	};
 
 	onResize: Array<() => void> = [];
 
@@ -1224,8 +1215,12 @@ class World extends Animation {
 		this.container = this.game.dom.game;
 		this.scene = new THREE.Scene();
 
-		this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		const quality = pickQuality();
+		this.renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			alpha: true,
+			powerPreference: quality === 'low' ? 'low-power' : 'default',
+		});
 		this.container.appendChild(this.renderer.domElement);
 		this.renderer.domElement.style.width = '100%';
 		this.renderer.domElement.style.height = '100%';
@@ -1235,27 +1230,27 @@ class World extends Animation {
 		this.camera = new THREE.PerspectiveCamera(2, 1, 0.1, 10000);
 		this.scene.add(this.camera);
 
-		this.lights = {
-			holder: new THREE.Object3D(),
-			ambient: new THREE.AmbientLight(0xffffff, 0.69),
-			front: new THREE.DirectionalLight(0xffffff, 0.36),
-			back: new THREE.DirectionalLight(0xffffff, 0.19),
-		};
-
-		this.lights.front.position.set(1.5, 5, 3);
-		this.lights.back.position.set(-1.5, -5, -3);
-
-		this.lights.holder.add(this.lights.ambient);
-		this.lights.holder.add(this.lights.front);
-		this.lights.holder.add(this.lights.back);
-
-		this.scene.add(this.lights.holder);
+		// The studio is placed for this camera's view, which never turns: resize() only moves
+		// the camera along VIEW_FROM. The skin also sets the pixel ratio (by quality tier).
+		this.camera.position.copy(VIEW_FROM);
+		this.camera.lookAt(this.scene.position);
+		this.skin = new CubeSkin(this.renderer, this.scene, this.camera.quaternion, quality);
 
 		this.resize();
 		window.addEventListener('resize', this.boundResize, false);
 	}
 
-	update() {
+	update(delta: number) {
+		const { cube, controls } = this.game;
+		if (cube && controls) {
+			this.skin.update({
+				pieces: cube.pieces,
+				turning: controls.flipLayer,
+				group: controls.group,
+				axis: controls.flipAxis,
+			});
+		}
+		this.skin.adapt(delta);
 		this.renderer.render(this.scene, this.camera);
 	}
 
@@ -1281,7 +1276,7 @@ class World extends Animation {
 
 		distance *= 0.5;
 
-		this.camera.position.set(distance, distance, distance);
+		this.camera.position.copy(VIEW_FROM).multiplyScalar(distance);
 		this.camera.lookAt(this.scene.position);
 		this.camera.updateProjectionMatrix();
 
@@ -1291,6 +1286,7 @@ class World extends Animation {
 	dispose() {
 		window.removeEventListener('resize', this.boundResize, false);
 		this.stop();
+		this.skin.dispose();
 		this.renderer.dispose();
 		if (this.renderer.domElement.parentElement) {
 			this.renderer.domElement.parentElement.removeChild(this.renderer.domElement);

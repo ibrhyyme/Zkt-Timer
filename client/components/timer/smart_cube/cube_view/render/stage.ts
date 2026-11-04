@@ -16,7 +16,7 @@ import { HOME_TILT_DEG, HOME_TURN_DEG } from '../view_defaults';
 
 export type CubeQuality = 'low' | 'medium' | 'high';
 
-interface QualityConfig {
+export interface QualityConfig {
 	maxPixelRatio: number;
 	/** Pieces shadowing each other (visible inside an open turn). */
 	selfShadows: boolean;
@@ -28,7 +28,7 @@ interface QualityConfig {
 	liteCaps: boolean;
 }
 
-const QUALITY: Record<CubeQuality, QualityConfig> = {
+export const QUALITY: Record<CubeQuality, QualityConfig> = {
 	low: { maxPixelRatio: 1.5, selfShadows: false, shadowMapSize: 512, softShadows: false, floor: 'blob', liteCaps: true },
 	medium: { maxPixelRatio: 2, selfShadows: true, shadowMapSize: 1024, softShadows: false, floor: 'contact', liteCaps: false },
 	high: { maxPixelRatio: 2.5, selfShadows: true, shadowMapSize: 2048, softShadows: true, floor: 'contact', liteCaps: false },
@@ -103,6 +103,51 @@ function studioScene(): THREE.Scene {
 	softbox(6, 6, 0.9, [0, 15, 3]);
 	softbox(16, 4, 0.6, [0, -11, 6], '#d6ddf5');
 	return scene;
+}
+
+/**
+ * The studio baked into a reflection map for `renderer` (a map belongs to one context).
+ * Everything here is placed for a camera on +z looking at the cube; `turn` turns the studio
+ * with a camera that looks from elsewhere, so the softboxes stay where that camera sees them.
+ * The landing cube's camera looks down from a corner.
+ */
+export function bakeStudio(renderer: THREE.WebGLRenderer, turn?: THREE.Quaternion): THREE.WebGLRenderTarget {
+	const pmrem = new THREE.PMREMGenerator(renderer);
+	const studio = studioScene();
+	if (turn) {
+		const rig = new THREE.Group();
+		rig.quaternion.copy(turn);
+		for (const child of [...studio.children]) rig.add(child);
+		studio.add(rig);
+	}
+	const target = pmrem.fromScene(studio, 0.03);
+	pmrem.dispose();
+	// Only needed for the bake; left alive, its buffers sit on the GPU for the view's life.
+	studio.traverse((o) => {
+		const mesh = o as THREE.Mesh;
+		if (!mesh.isMesh) return;
+		mesh.geometry.dispose();
+		(mesh.material as THREE.Material).dispose();
+	});
+	return target;
+}
+
+/**
+ * Key, fill and rim, placed like the studio for a camera on +z. The key is the one that casts
+ * shadows; fitting its shadow camera to the cube is the caller's job.
+ */
+export function studioLights(): { rig: THREE.Group; key: THREE.DirectionalLight } {
+	const rig = new THREE.Group();
+	const key = new THREE.DirectionalLight(0xffffff, 2.6);
+	key.position.set(-4.5, 7.5, 6);
+	rig.add(key);
+	const fill = new THREE.DirectionalLight(0xe4ebff, 1.4);
+	fill.position.set(7, 1.5, 4);
+	rig.add(fill);
+	const rim = new THREE.DirectionalLight(0xffffff, 1.0);
+	rim.position.set(2.5, 5, -8);
+	rig.add(rim);
+	return { rig, key };
 }
 
 const blurVertex = `
@@ -282,7 +327,7 @@ export class Stage {
 	private config: QualityConfig;
 	private key: THREE.DirectionalLight;
 	/** Key, fill and rim; turned upside down for the back view (see render). */
-	private lights = new THREE.Group();
+	private lights: THREE.Group;
 	private floor = new THREE.Group();
 	private contact: ContactShadow | null = null;
 	private blob: THREE.Mesh | null = null;
@@ -316,7 +361,7 @@ export class Stage {
 		// Tone mapping happens in the materials, see materials.ts.
 		renderer.toneMapping = THREE.NoToneMapping;
 		// r125's legacy mode multiplies every lamp by pi, which washed the colours towards white.
-		// Per renderer, so the landing cube on the same three copy keeps its own lighting.
+		// Per renderer, not global: the landing cube's renderer opts in the same way (its skin.ts).
 		renderer.physicallyCorrectLights = true;
 		renderer.shadowMap.enabled = true;
 		this.renderer = renderer;
@@ -336,8 +381,9 @@ export class Stage {
 		while (Math.atan(drop / distance) + Math.asin(this.reach / distance) > halfFov) distance += 0.05;
 		this.camera.position.set(0, -drop, distance);
 
-		this.key = new THREE.DirectionalLight(0xffffff, 2.6);
-		this.key.position.set(-4.5, 7.5, 6);
+		const { rig, key } = studioLights();
+		this.lights = rig;
+		this.key = key;
 		const shadowCamera = this.key.shadow.camera;
 		shadowCamera.left = shadowCamera.bottom = -this.reach;
 		shadowCamera.right = shadowCamera.top = this.reach;
@@ -346,13 +392,6 @@ export class Stage {
 		shadowCamera.far = keyDistance + this.reach + 0.5;
 		this.key.shadow.bias = -0.0004;
 		this.key.shadow.normalBias = 0.012;
-		this.lights.add(this.key);
-		const fill = new THREE.DirectionalLight(0xe4ebff, 1.4);
-		fill.position.set(7, 1.5, 4);
-		this.lights.add(fill);
-		const rim = new THREE.DirectionalLight(0xffffff, 1.0);
-		rim.position.set(2.5, 5, -8);
-		this.lights.add(rim);
 		this.scene.add(this.lights);
 
 		this.scene.add(this.cubeRoot);
@@ -380,17 +419,7 @@ export class Stage {
 	}
 
 	private bakeEnvironment(): THREE.WebGLRenderTarget {
-		const pmrem = new THREE.PMREMGenerator(this.renderer);
-		const studio = studioScene();
-		const target = pmrem.fromScene(studio, 0.03);
-		pmrem.dispose();
-		// Only needed for the bake; left alive, its buffers sit on the GPU for the view's life.
-		studio.traverse((o) => {
-			const mesh = o as THREE.Mesh;
-			if (!mesh.isMesh) return;
-			mesh.geometry.dispose();
-			(mesh.material as THREE.Material).dispose();
-		});
+		const target = bakeStudio(this.renderer);
 		this.scene.environment = target.texture;
 		return target;
 	}

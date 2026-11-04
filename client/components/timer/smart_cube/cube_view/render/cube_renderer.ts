@@ -16,11 +16,11 @@ import { TurnAnimator } from './turn_animator';
  * reported states and the orientation; nothing here decides anything about a solve.
  */
 
-const LOGO_URL = '/public/images/zkt-logo.png';
+export const LOGO_URL = '/public/images/zkt-logo.png';
 /** Per frame, how far the drawn orientation moves towards the gyro's. */
 const ORIENTATION_EASE = 0.25;
 /** How far a turn has to open a gap (radians off a quarter) for its inside to show fully. */
-const GAP_FULLY_OPEN = 0.2;
+export const GAP_FULLY_OPEN = 0.2;
 /** Frame times that mean the device cannot keep up. 30 fps throttling (iOS low power) stays under it. */
 const SLOW_FRAME_MS = 38;
 const FAST_FRAME_MS = 20;

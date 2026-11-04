@@ -5,8 +5,8 @@ import * as THREE from 'three';
  *
  * Tone mapping is done per material instead of by the renderer: r125 has no hue-preserving
  * operator (ACES turns saturated red and yellow orange-ish), so the renderer runs without
- * one and these materials apply Khronos PBR Neutral themselves. Nothing global changes,
- * so the landing cube, which shares this copy of three, is untouched.
+ * one and these materials apply Khronos PBR Neutral themselves. Nothing global changes:
+ * each renderer that draws them sets itself up (Stage here, the landing cube's skin.ts).
  */
 
 // Khronos PBR Neutral tone mapping, written from the published specification.
