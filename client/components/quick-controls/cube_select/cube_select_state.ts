@@ -13,7 +13,7 @@ export type CubeSelectView =
 	| { kind: 'hidden' }
 	/** Smart cube input: the stamp comes from the connected cube, read only (5.4). */
 	| { kind: 'smart'; cube: LocalCube }
-	/** Magnet Timer without a cube of this puzzle: "Bu türde küpün yok · Ekle". */
+	/** Magnet Timer without a cube of this puzzle: "Bu türde küpün yok · Ekle". Other inputs get 'select' with no cubes. */
 	| { kind: 'empty'; puzzle: string }
 	/** The cubes of the puzzle (main first), the main, and whether "no cube" is allowed. */
 	| { kind: 'select'; puzzle: string; cubes: LocalCube[]; mainId: string | null; allowNone: boolean };
@@ -55,11 +55,10 @@ export function cubeSelectView(input: CubeSelectInput): CubeSelectView {
 	}
 
 	const cubes = cubesForPuzzle(puzzle, state);
-	if (!cubes.length) {
-		// Other inputs keep the quick settings short (1.9-j): the row only appears once there is
-		// a cube to choose. The Magnet Timer needs one, so it points to adding it.
-		return magnetOwnsInput ? { kind: 'empty', puzzle } : { kind: 'hidden' };
-	}
+	// The Magnet Timer cannot run without a cube, so it points to adding one. Every other input
+	// still shows the row with "no cube" chosen and My Cubes under it, so a puzzle without cubes
+	// reads as "no cube selected" instead of the row silently missing (owner, 2026-11-04).
+	if (!cubes.length && magnetOwnsInput) return { kind: 'empty', puzzle };
 
 	return {
 		kind: 'select',

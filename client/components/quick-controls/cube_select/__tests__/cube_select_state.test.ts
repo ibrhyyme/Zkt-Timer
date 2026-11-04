@@ -83,8 +83,14 @@ describe('cubeSelectView', () => {
 		expect(view.kind === 'select' && view.allowNone).toBe(false);
 	});
 
-	it('hides the row without cubes, except in the Magnet Timer which points to adding one', () => {
-		expect(cubeSelectView(input({ cubeType: '444' })).kind).toBe('hidden');
+	it('shows "no cube" chosen for a puzzle without cubes, and the add prompt in the Magnet Timer', () => {
+		expect(cubeSelectView(input({ cubeType: '444' }))).toEqual({
+			kind: 'select',
+			puzzle: '444',
+			cubes: [],
+			mainId: null,
+			allowNone: true,
+		});
 		expect(cubeSelectView(input({ cubeType: '444', timerType: 'magnet', magnetOwnsInput: true }))).toEqual({
 			kind: 'empty',
 			puzzle: '444',
@@ -92,7 +98,7 @@ describe('cubeSelectView', () => {
 	});
 
 	it('treats a Magnet selection running as the touch timer like any other input', () => {
-		expect(cubeSelectView(input({ cubeType: '444', timerType: 'magnet', magnetOwnsInput: false })).kind).toBe('hidden');
+		expect(cubeSelectView(input({ cubeType: '444', timerType: 'magnet', magnetOwnsInput: false })).kind).toBe('select');
 	});
 
 	it('hides the row for visitors, the virtual cube and buckets without a puzzle', () => {

@@ -69,6 +69,7 @@ interface ListProps {
 export function CubeSelectList({ view, onDone, inset }: ListProps) {
 	const { t, i18n } = useTranslation();
 	const openMyCubes = useOpenMyCubes();
+	const { openAdd } = useCubeActions();
 	const [query, setQuery] = useState('');
 
 	const searchable = view.cubes.length > CUBE_SELECT_SEARCH_THRESHOLD;
@@ -83,6 +84,13 @@ export function CubeSelectList({ view, onDone, inset }: ListProps) {
 		const count = cube.solve_count || 0;
 		const solves = t('cubes.solve_count', { count, n: formatInteger(count, i18n.language) });
 		return [cube.brand, solves].filter(Boolean).join(' · ');
+	}
+
+	// A puzzle without cubes: add one right here, for this puzzle, without leaving the timer. The
+	// new cube becomes the main, since adding it from this picker is choosing it (owner, 2026-11-04).
+	function addCube() {
+		if (onDone) onDone();
+		openAdd({ puzzle: view.puzzle, onSaved: (cube) => chooseMainCube(cube.puzzle, cube.id) });
 	}
 
 	const noneSelected = view.mainId === null;
@@ -143,6 +151,18 @@ export function CubeSelectList({ view, onDone, inset }: ListProps) {
 					</button>
 				)}
 			</div>
+
+			{!view.cubes.length && (
+				<Button
+					primary
+					fullWidth
+					noMargin
+					text={t('cubes.add')}
+					icon={<Plus weight="bold" />}
+					iconFirst
+					onClick={addCube}
+				/>
+			)}
 
 			<button
 				type="button"
