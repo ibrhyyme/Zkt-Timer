@@ -207,8 +207,8 @@
     "help": "Ayuda"
   },
   "signup": {
-    "consent_label": "He leído y acepto la <priv>Política de Privacidad</priv> y los <terms>Términos de Servicio</terms>.",
-    "consent_required": "Debes aceptar la Política de Privacidad y los Términos de Servicio para continuar.",
+    "consent_label": "He leído la <priv>Política de Privacidad</priv> y los <terms>Términos de Servicio</terms>.",
+    "consent_required": "Para continuar, confirma que has leído la Política de Privacidad y los Términos de Servicio.",
     "first_name": "Nombre",
     "last_name": "Apellido",
     "email": "Correo electrónico",
@@ -3884,7 +3884,8 @@
       "region_hint": "El precio puede variar según tu región",
       "yearly_cycle": "/ año",
       "monthly_cycle": "/ mes",
-      "lifetime_cycle": ""
+      "lifetime_cycle": "",
+      "lifetime_terms_note": "El acceso de por vida dura mientras ZKT Timer ofrezca el servicio Pro y su duración no está garantizada. Detalles: Términos de Servicio, artículo 10."
     },
     "iap": {
       "purchase_cta": "Comprar",
@@ -4172,7 +4173,7 @@
   },
   "terms": {
     "title": "Términos de Servicio",
-    "last_update": "Última actualización: 26 de octubre de 2026",
+    "last_update": "Última actualización: 6 de noviembre de 2026",
     "intro": "Lea atentamente estos Términos de Servicio (\"Acuerdo\") antes de utilizar los servicios de ZKT Timer (\"Plataforma\"). Al acceder o utilizar la Plataforma, usted acepta estar sujeto a este Acuerdo.",
     "section_1_title": "1. Partes",
     "section_1_text": "Este Contrato se celebra entre İbrahim Yıldız, desarrollador de ZKT Timer (\"ZKT Timer\"), y el usuario de la Plataforma (\"Usuario\").",
@@ -4201,13 +4202,15 @@
     "section_5_text": "ZKT Timer no será responsable por la pérdida de datos, errores de conexión o incompatibilidades de hardware que puedan ocurrir durante el uso de la Plataforma. El acceso a enlaces de terceros es responsabilidad exclusiva del Usuario.",
     "section_6_title": "9. Servicios de pago y reembolsos",
     "section_6_text": "Algunos servicios de la Plataforma son de pago. Las compras de la membresía Pro se realizan a través de Apple App Store o Google Play Store; el pago, la gestión de la suscripción y los reembolsos se rigen por la política de la tienda correspondiente. Los nuevos suscriptores disponen de una prueba gratuita de 7 días. Para solicitar un reembolso, póngase en contacto directamente con el soporte de App Store o Google Play. Eliminar su cuenta no cancela una suscripción activa; debe cancelarla por separado en los ajustes de App Store o Google Play.",
-    "deletion_title": "10. Eliminación de la cuenta",
+    "lifetime_title": "10. Pro de por vida",
+    "lifetime_text": "Pro de por vida se adquiere con un pago único y es válido mientras ZKT Timer ofrezca el servicio Pro; no se garantiza que dure toda la vida de la persona. ZKT Timer puede cerrar, su desarrollador puede dejar de poder continuar o los costes del servidor pueden quedar sin cubrir. La aplicación puede transferirse a otra persona, que también podrá tomar las decisiones descritas en este artículo. El plan de por vida puede retirarse de la venta y sustituirse por suscripciones mensuales o anuales, y el acceso de por vida existente puede finalizar. En estos casos, los reembolsos se rigen por las políticas de las tiendas indicadas en el artículo 9. Sus derechos legales como consumidor no se ven afectados.",
+    "deletion_title": "11. Eliminación de la cuenta",
     "deletion_text": "Puede eliminar su cuenta en cualquier momento con \"Eliminar cuenta\" en la sección \"Zona de peligro\" de los ajustes de su cuenta. La eliminación es permanente; sus resoluciones, sesiones, estadísticas y mensajes no se pueden recuperar. Antes de eliminarla, puede exportar sus datos desde Ajustes.",
-    "section_7_title": "11. Modificaciones del Contrato",
+    "section_7_title": "12. Modificaciones del Contrato",
     "section_7_text": "ZKT Timer se reserva el derecho de actualizar este Acuerdo en cualquier momento. Los términos actualizados entran en vigor en la fecha de su publicación en la Plataforma. Se recomienda a los usuarios revisar periódicamente esta página.",
-    "section_8_title": "12. Resolución de conflictos",
+    "section_8_title": "13. Resolución de conflictos",
     "section_8_text": "Este Contrato se rige por la legislación turca. En los conflictos que surjan en su condición de consumidor, son competentes las Juntas Arbitrales de Consumo dentro de los límites económicos fijados por la Ley n.º 6502 de Protección del Consumidor y, por encima de esos límites, los Tribunales de Consumo.",
-    "section_9_title": "13. Contacto",
+    "section_9_title": "14. Contacto",
     "section_9_text": "Para cualquier pregunta o sugerencia sobre este Acuerdo, puede contactarnos en <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>.",
     "legal_notice": "La versión legalmente vinculante de este documento está en turco."
   },

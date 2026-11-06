@@ -503,6 +503,12 @@ function ProPageContent() {
 							</div>
 
 							<div className={b('terms')}>
+								{activePlan.id === 'lifetime' && (
+									<p className={b('terms-line')}>
+										<Info />
+										<span>{t('pro_page.plan.lifetime_terms_note')}</span>
+									</p>
+								)}
 								{activePlan.hasTrial && (
 									<p className={b('terms-line')}>
 										<CheckCircle weight="fill" />

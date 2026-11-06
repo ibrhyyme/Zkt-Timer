@@ -203,8 +203,8 @@
     "help": "帮助"
   },
   "signup": {
-    "consent_label": "我已阅读并同意<priv>隐私政策</priv>和<terms>服务条款</terms>。",
-    "consent_required": "你必须接受隐私政策和服务条款才能继续。",
+    "consent_label": "我已阅读<priv>隐私政策</priv>和<terms>服务条款</terms>。",
+    "consent_required": "如需继续，请确认您已阅读隐私政策和服务条款。",
     "first_name": "名字",
     "last_name": "姓氏",
     "email": "邮箱",
@@ -3852,7 +3852,8 @@
       "region_hint": "价格可能因地区而异",
       "yearly_cycle": "/年",
       "monthly_cycle": "/月",
-      "lifetime_cycle": ""
+      "lifetime_cycle": "",
+      "lifetime_terms_note": "永久访问在 ZKT Timer 提供 Pro 服务期间有效，期限不作保证。详情：服务条款，第 10 条。"
     },
     "iap": {
       "purchase_cta": "购买",
@@ -4140,7 +4141,7 @@
   },
   "terms": {
     "title": "服务条款",
-    "last_update": "最后更新：2026年10月26日",
+    "last_update": "最后更新：2026年11月6日",
     "intro": "在使用 ZKT Timer（“平台”）服务之前，请仔细阅读本服务条款协议（“协议”）。通过访问或使用本平台，即表示您同意受本协议的约束。",
     "section_1_title": "1. 各方",
     "section_1_text": "本协议由 ZKT Timer 的开发者 İbrahim Yıldız（\"ZKT Timer\"）与平台用户（\"用户\"）订立。",
@@ -4169,13 +4170,15 @@
     "section_5_text": "ZKT Timer 对在使用平台过程中可能发生的数据丢失、连接错误或硬件不兼容不承担任何责任。访问第三方链接由用户自行负责。",
     "section_6_title": "9. 付费服务与退款",
     "section_6_text": "平台上的部分服务为付费服务。Pro 会员通过 Apple App Store 或 Google Play Store 购买；付款、订阅管理和退款均适用相应商店的政策。新订阅用户可享受7天免费试用。如需退款，请直接联系 App Store 或 Google Play 客服。删除账户不会取消有效订阅；您需要在 App Store 或 Google Play 设置中另行取消订阅。",
-    "deletion_title": "10. 删除账户",
+    "lifetime_title": "10. 永久 Pro",
+    "lifetime_text": "永久 Pro 通过一次性付款购买，在 ZKT Timer 提供 Pro 服务期间有效，不保证在用户一生中持续有效。ZKT Timer 可能关闭，其开发者可能无法继续运营，服务器费用也可能无法支付。应用可能转让给他人，受让方同样可以作出本条所述的决定。永久方案可能停止销售并由月度或年度订阅取代，现有的永久访问也可能终止。在这些情况下，退款适用第 9 条所述的应用商店政策。您依法享有的消费者权利不受影响。",
+    "deletion_title": "11. 删除账户",
     "deletion_text": "您可以随时在账户设置的\"危险区域\"中使用\"删除账户\"删除您的账户。删除是永久性的；您的还原记录、会话、统计和私信无法恢复。删除前，您可以在设置中导出您的数据。",
-    "section_7_title": "11. 协议变更",
+    "section_7_title": "12. 协议变更",
     "section_7_text": "ZKT Timer 保留随时更新本协议的权利。更新后的条款在平台上发布之日生效。建议用户定期查看此页面。",
-    "section_8_title": "12. 争议解决",
+    "section_8_title": "13. 争议解决",
     "section_8_text": "本协议适用土耳其法律。对于您以消费者身份产生的争议，在第6502号《消费者保护法》规定的金额限度内由消费者仲裁委员会管辖，超出该限度的由消费者法院管辖。",
-    "section_9_title": "13. 联系方式",
+    "section_9_title": "14. 联系方式",
     "section_9_text": "有关本协议的任何问题或建议，请通过 <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> 联系我们。",
     "legal_notice": "本文件的法律约束版本为土耳其语。"
   },

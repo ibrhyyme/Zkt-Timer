@@ -207,8 +207,8 @@
     "help": "Yardım"
   },
   "signup": {
-    "consent_label": "<priv>Gizlilik Politikası</priv> ve <terms>Kullanım Koşulları</terms>'nı okudum, kabul ediyorum.",
-    "consent_required": "Devam etmek için Gizlilik Politikası ve Kullanım Koşulları'nı kabul etmelisin.",
+    "consent_label": "<priv>Gizlilik Politikası</priv> ve <terms>Kullanım Koşulları</terms>'nı okudum.",
+    "consent_required": "Devam etmek için Gizlilik Politikası ve Kullanım Koşulları'nı okuduğunu işaretlemelisin.",
     "first_name": "Ad",
     "last_name": "Soyad",
     "email": "E-posta",
@@ -3867,7 +3867,8 @@
       "region_hint": "Fiyat bulunduğun ülkeye göre değişebilir",
       "yearly_cycle": "/ yıl",
       "monthly_cycle": "/ ay",
-      "lifetime_cycle": ""
+      "lifetime_cycle": "",
+      "lifetime_terms_note": "Ömür boyu erişim, ZKT Timer Pro hizmetini sunduğu sürece geçerlidir ve süresi garanti edilmez. Ayrıntı: Kullanıcı Sözleşmesi, 10. madde."
     },
     "iap": {
       "purchase_cta": "Satın al",
@@ -4155,7 +4156,7 @@
   },
   "terms": {
     "title": "Kullanıcı Sözleşmesi",
-    "last_update": "Son güncelleme: 26 Ekim 2026",
+    "last_update": "Son güncelleme: 6 Kasım 2026",
     "intro": "Lütfen ZKT Timer (\"Platform\") hizmetlerini kullanmadan önce bu Kullanıcı Sözleşmesi'ni (\"Sözleşme\") dikkatlice okuyunuz. Platforma erişmeniz veya kullanmanız, bu Sözleşme'yi kabul ettiğiniz anlamına gelir.",
     "section_1_title": "1. Taraflar",
     "section_1_text": "Bu Sözleşme, ZKT Timer'ın geliştiricisi İbrahim Yıldız (\"ZKT Timer\") ile Platformu kullanan kullanıcı (\"Kullanıcı\") arasında akdedilmiştir.",
@@ -4184,13 +4185,15 @@
     "section_5_text": "ZKT Timer, Platformun kullanımı sırasında oluşabilecek veri kayıpları, bağlantı hataları veya donanım uyuşmazlıklarından sorumlu tutulamaz. Üçüncü taraf bağlantılarına (linkler) erişim Kullanıcı'nın kendi sorumluluğundadır.",
     "section_6_title": "9. Ücretli Hizmetler ve İadeler",
     "section_6_text": "Platform üzerindeki bazı hizmetler ücretlidir. Pro üyelik satın alımları Apple App Store veya Google Play Store aracılığıyla gerçekleştirilir; ödeme, abonelik yönetimi ve iade işlemleri ilgili mağazanın politikasına tabidir. Yeni abonelere 7 günlük ücretsiz deneme süresi sunulmaktadır. İade talepleri için doğrudan App Store veya Google Play destek kanallarına başvurmanız gerekmektedir. Hesabınızı silmek aktif aboneliğinizi iptal etmez; aboneliği App Store veya Google Play ayarlarınızdan ayrıca iptal etmeniz gerekir.",
-    "deletion_title": "10. Hesabın Silinmesi",
+    "lifetime_title": "10. Ömür Boyu Pro",
+    "lifetime_text": "Ömür boyu Pro tek seferlik ödemeyle alınır ve ZKT Timer Pro hizmetini sunduğu sürece geçerlidir; kişinin ömrü boyunca süreceği garanti edilmez. ZKT Timer kapanabilir, geliştiricisi görevini sürdüremeyebilir veya sunucu giderleri karşılanamayabilir. Uygulama başka birine devredilebilir; devralan kişi de bu maddedeki kararları alabilir. Ömür boyu plan satıştan kaldırılabilir, yerine aylık veya yıllık abonelik getirilebilir ve mevcut ömür boyu erişim sona erdirilebilir. Bu durumlarda iade, 9. maddedeki mağaza politikalarına tabidir. Tüketici mevzuatından doğan haklarınız saklıdır.",
+    "deletion_title": "11. Hesabın Silinmesi",
     "deletion_text": "Hesabınızı dilediğiniz zaman hesap ayarlarındaki \"Riskli Alan\" bölümünden \"Hesabı Sil\" ile silebilirsiniz. Silme işlemi kalıcıdır; çözümleriniz, seanslarınız, istatistikleriniz ve mesajlarınız geri getirilemez. Silmeden önce verilerinizi Ayarlar'dan dışa aktarabilirsiniz.",
-    "section_7_title": "11. Sözleşme Değişiklikleri",
+    "section_7_title": "12. Sözleşme Değişiklikleri",
     "section_7_text": "ZKT Timer, bu Sözleşme'yi dilediği zaman güncelleme hakkını saklı tutar. Güncellenen şartlar, Platformda yayınlandığı tarihte yürürlüğe girer. Kullanıcıların periyodik olarak bu sayfayı kontrol etmesi önerilir.",
-    "section_8_title": "12. Uyuşmazlık Çözümü",
+    "section_8_title": "13. Uyuşmazlık Çözümü",
     "section_8_text": "İşbu Sözleşme'ye Türk Hukuku uygulanır. Tüketici sıfatıyla doğan uyuşmazlıklarda, 6502 sayılı Tüketicinin Korunması Hakkında Kanun'da belirlenen parasal sınırlar dahilinde Tüketici Hakem Heyetleri, bu sınırların üzerinde Tüketici Mahkemeleri yetkilidir.",
-    "section_9_title": "13. İletişim",
+    "section_9_title": "14. İletişim",
     "section_9_text": "Sözleşme ile ilgili her türlü soru ve öneriniz için <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> adresi üzerinden bizimle iletişime geçebilirsiniz."
   },
   "privacy": {

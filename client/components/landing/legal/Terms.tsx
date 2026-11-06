@@ -67,6 +67,9 @@ export default function Terms() {
 			<h2>{t('terms.section_6_title')}</h2>
 			<p>{t('terms.section_6_text')}</p>
 
+			<h2>{t('terms.lifetime_title')}</h2>
+			<p>{t('terms.lifetime_text')}</p>
+
 			<h2>{t('terms.deletion_title')}</h2>
 			<p>{t('terms.deletion_text')}</p>
 

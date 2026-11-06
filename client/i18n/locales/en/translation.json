@@ -207,8 +207,8 @@
     "help": "Help"
   },
   "signup": {
-    "consent_label": "I have read and agree to the <priv>Privacy Policy</priv> and <terms>Terms of Service</terms>.",
-    "consent_required": "You must accept the Privacy Policy and Terms of Service to continue.",
+    "consent_label": "I have read the <priv>Privacy Policy</priv> and <terms>Terms of Service</terms>.",
+    "consent_required": "To continue, confirm that you have read the Privacy Policy and Terms of Service.",
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email",
@@ -3884,7 +3884,8 @@
       "region_hint": "Price may vary based on your region",
       "yearly_cycle": "/ year",
       "monthly_cycle": "/ month",
-      "lifetime_cycle": ""
+      "lifetime_cycle": "",
+      "lifetime_terms_note": "Lifetime access lasts as long as ZKT Timer offers the Pro service, and its length is not guaranteed. Details: Terms of Service, section 10."
     },
     "iap": {
       "purchase_cta": "Buy",
@@ -4172,7 +4173,7 @@
   },
   "terms": {
     "title": "Terms of Service",
-    "last_update": "Last updated: October 26, 2026",
+    "last_update": "Last updated: November 6, 2026",
     "intro": "Please read this Terms of Service agreement (\"Agreement\") carefully before using ZKT Timer (\"Platform\") services. By accessing or using the Platform, you agree to be bound by this Agreement.",
     "section_1_title": "1. Parties",
     "section_1_text": "This Agreement is concluded between İbrahim Yıldız, the developer of ZKT Timer (\"ZKT Timer\"), and the user of the Platform (\"User\").",
@@ -4201,13 +4202,15 @@
     "section_5_text": "ZKT Timer shall not be held liable for data loss, connection errors, or hardware incompatibilities that may occur during Platform use. Access to third-party links is at the User's own responsibility.",
     "section_6_title": "9. Paid Services and Refunds",
     "section_6_text": "Some services on the Platform are paid. Pro membership purchases are made through the Apple App Store or Google Play Store; payment, subscription management and refunds are subject to the policy of the relevant store. New subscribers are offered a 7-day free trial. For refund requests, please contact App Store or Google Play support directly. Deleting your account does not cancel an active subscription; you must cancel it separately in your App Store or Google Play settings.",
-    "deletion_title": "10. Account Deletion",
+    "lifetime_title": "10. Lifetime Pro",
+    "lifetime_text": "Lifetime Pro is a one-time purchase and stays valid for as long as ZKT Timer offers the Pro service; it is not guaranteed to last for a person's lifetime. ZKT Timer may shut down, its developer may become unable to continue, or server costs may go unpaid. The app may be transferred to someone else, who can also make the decisions described in this section. The lifetime plan may be withdrawn from sale and replaced with monthly or yearly subscriptions, and existing lifetime access may end. In these cases, refunds follow the store policies in section 9. Your statutory consumer rights are not affected.",
+    "deletion_title": "11. Account Deletion",
     "deletion_text": "You can delete your account at any time with \"Delete Account\" in the \"Danger Zone\" section of your account settings. Deletion is permanent; your solves, sessions, statistics and messages cannot be restored. Before deleting, you can export your data from Settings.",
-    "section_7_title": "11. Changes to the Agreement",
+    "section_7_title": "12. Changes to the Agreement",
     "section_7_text": "ZKT Timer reserves the right to update this Agreement at any time. Updated terms take effect on the date they are published on the Platform. Users are advised to periodically review this page.",
-    "section_8_title": "12. Dispute Resolution",
+    "section_8_title": "13. Dispute Resolution",
     "section_8_text": "This Agreement is governed by Turkish law. For disputes arising in your capacity as a consumer, the Consumer Arbitration Committees are competent within the monetary limits set under Law No. 6502 on Consumer Protection, and the Consumer Courts above those limits.",
-    "section_9_title": "13. Contact",
+    "section_9_title": "14. Contact",
     "section_9_text": "For any questions or suggestions regarding this Agreement, you may contact us at <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>.",
     "legal_notice": "The legally binding version of this document is in Turkish."
   },
