@@ -86,7 +86,7 @@
 // The frame scrolls, so the card's own height caps come off.
 .zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--mobile),
 .zt-modal--sheet .zt-modal__center:has(> .zt-solve-info--loading) {
-	padding: 14px 0 0 !important;
+	padding: 0 !important;
 	border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
 	background: rgb(var(--background-color)) !important;
 	overflow-x: hidden;
@@ -113,9 +113,9 @@
 	border-radius: 0;
 }
 
-// The shell's X is hidden: the card has its own Done in its title bar.
-.zt-modal__center:has(> .zt-solve-info)>button,
-.zt-modal__center:has(> .zt-solve-info--mobile)>button {
+// The shell's X is hidden: the card has its own in its title bar. The phone sheet's handle stays.
+.zt-modal__center:has(> .zt-solve-info)>button:not(.zt-modal__grabber),
+.zt-modal__center:has(> .zt-solve-info--mobile)>button:not(.zt-modal__grabber) {
 	display: none !important;
 }
 

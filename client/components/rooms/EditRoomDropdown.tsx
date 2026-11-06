@@ -9,6 +9,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useTranslation } from 'react-i18next';
 import { Lock, Check, Crown, PencilSimple } from 'phosphor-react';
 import Button from '../common/button/Button';
+import Switch from '../common/switch/Switch';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
@@ -183,14 +184,7 @@ export default function EditRoomDropdown({
 
 						{/* Private Toggle */}
 						<div className={b('toggle-row')}>
-							<button
-								type="button"
-								onClick={() => setPrivateRoom(!privateRoom)}
-								className={b('toggle', { on: privateRoom })}
-								aria-pressed={privateRoom}
-							>
-								<span className={b('toggle-knob')} />
-							</button>
+							<Switch on={privateRoom} ariaLabel={t('rooms.private_room_q')} onChange={setPrivateRoom} />
 							<span className={b('toggle-label')}>{t('rooms.private_room_q')}</span>
 						</div>
 

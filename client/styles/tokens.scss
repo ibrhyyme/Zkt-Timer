@@ -439,60 +439,6 @@ $zt-pro-frame: rgba(var(--primary-color), 0.55);
 	@include zt-focus-ring;
 }
 
-// ---------------------------------------------------------------------------
-// The on/off switch. One shape for every toggle in the app, taken from the Settings
-// toggles: a 44x24 pill, the user's accent when on, a quiet track when off, a white knob.
-// Before this the same control was an orange pill in Settings, a purple glowing pill on
-// Account and a square switch in the Cross trainer.
-// ---------------------------------------------------------------------------
-$zt-switch-w: 44px;
-$zt-switch-h: 24px;
-$zt-switch-knob: 20px;
-$zt-switch-track-off: rgba(var(--text-color), 0.2);
-
-@mixin zt-switch-track($w: $zt-switch-w, $h: $zt-switch-h) {
-	position: relative;
-	flex-shrink: 0;
-	box-sizing: border-box;
-	width: $w;
-	height: $h;
-	margin: 0;
-	padding: 0;
-	border: 1px solid transparent;
-	border-radius: $zt-radius-full;
-	background: $zt-switch-track-off;
-	box-shadow: none;
-	cursor: pointer;
-	transition: background-color $zt-transition, border-color $zt-transition;
-
-	@include zt-focus-ring;
-}
-
-@mixin zt-switch-track-on {
-	background: rgb(var(--primary-color));
-	border-color: rgb(var(--primary-color));
-}
-
-/// The knob, centred on the track's height. `$w`/`$knob` must match the track's.
-@mixin zt-switch-knob($w: $zt-switch-w, $knob: $zt-switch-knob) {
-	position: absolute;
-	top: 50%;
-	left: 0;
-	width: $knob;
-	height: $knob;
-	border-radius: 50%;
-	background: #fff;
-	box-shadow: none;
-	transform: translate(1px, -50%);
-	transition: transform 200ms ease;
-	pointer-events: none;
-}
-
-@mixin zt-switch-knob-on($w: $zt-switch-w, $knob: $zt-switch-knob) {
-	// The track's 1px border on each side leaves $w - 2px inside it.
-	transform: translate($w - 2px - $knob - 1px, -50%);
-}
-
 /// The thumb of a range slider: the accent, a ring in the page colour, nothing that grows
 /// or glows. Include it inside the input's rule (it writes both engines' pseudo-elements).
 @mixin zt-range-thumb($size: 18px) {

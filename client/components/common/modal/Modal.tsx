@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import CSS from 'csstype';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import './Modal.scss';
 import { closeModal } from '../../../actions/general';
 import { CloseButton } from '../icon_button/IconButton';
@@ -88,6 +89,7 @@ export default function Modal(props: IModalProps) {
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [active, setActive] = useState(false);
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 	const mobileMode = useGeneral('mobile_mode');
 
 	useEffect(() => {
@@ -147,14 +149,15 @@ export default function Modal(props: IModalProps) {
 		containerRef: modalRef,
 		onSwipeBack: clickClose,
 		// Reversed use turns the modal 180°, so the physical left edge and translateX would
-		// move the content against the finger. Closing still works through the backdrop/Done.
+		// move the content against the finger. Closing still works through the backdrop/handle.
 		disabled: !mobileMode || isAndroidNative() || isUiReversed(),
 		edgeWidth: 24,
 		threshold: 100,
 	});
 
-	// A modal that turned the casual ways out off keeps this one off too.
-	useSheetDrag(centerRef, clickClose, (phoneSheet || isBottomSheet) && !hideCloseButton && !disableBackdropClick);
+	// The handle replaces the close button on a phone, so a modal that had either way out (button or backdrop)
+	// gets it. Only a modal with neither (a running Bluetooth scan) stays shut.
+	useSheetDrag(centerRef, clickClose, (phoneSheet || isBottomSheet) && !(hideCloseButton && disableBackdropClick));
 
 	const backdropClose = useBackdropClose(() => {
 		if (!disableBackdropClick) {
@@ -204,14 +207,16 @@ export default function Modal(props: IModalProps) {
 		<CloseButton className={b('close-button')} onClick={clickClose} />
 	);
 
-	if (hideCloseButton) {
+	// A phone sheet closes by its handle, so it carries no second close, X or written.
+	if (hideCloseButton || phoneSheet) {
 		closeButton = null;
 	}
 
 	return (
 		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet, sheet: phoneSheet, pro })} style={style} {...backdropClose}>
 			<div ref={centerRef} className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
-				{phoneSheet ? <div className={b('grabber')} aria-hidden="true" /> : null}
+				{/* A real button: it is the sheet's only close, for a screen reader too. */}
+				{phoneSheet ? <button type="button" className={b('grabber')} data-sheet-handle aria-label={t('common.close')} /> : null}
 				{/* Close before the header: on phones it floats right and stays sticky, and a
 				    float only sits beside the content that follows it. */}
 				{!isBottomSheet && closeButton}

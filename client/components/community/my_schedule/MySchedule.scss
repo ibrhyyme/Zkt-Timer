@@ -1118,49 +1118,6 @@
 		flex-shrink: 0;
 	}
 
-	&__radar-toggle {
-		position: relative;
-		display: inline-block;
-		width: 2.2rem;
-		height: 1.25rem;
-		cursor: pointer;
-
-		input {
-			position: absolute;
-			opacity: 0;
-			width: 0;
-			height: 0;
-		}
-
-		input:checked + .zt-my-schedule__radar-toggle-track {
-			background: rgb(var(--primary-color));
-		}
-
-		input:checked + .zt-my-schedule__radar-toggle-track::before {
-			transform: translateX(0.95rem);
-		}
-	}
-
-	&__radar-toggle-track {
-		position: absolute;
-		inset: 0;
-		border-radius: 1rem;
-		background: rgba(var(--text-color), 0.3);
-		transition: background 0.15s ease;
-
-		&::before {
-			content: '';
-			position: absolute;
-			top: 0.15rem;
-			left: 0.15rem;
-			width: 0.95rem;
-			height: 0.95rem;
-			border-radius: 50%;
-			background: #fff;
-			transition: transform 0.15s ease;
-		}
-	}
-
 	&__radar-item-delete {
 		display: inline-flex;
 		align-items: center;

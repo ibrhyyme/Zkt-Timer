@@ -5,6 +5,13 @@
 //
 // Backdrop, grid, item, item-icon, item-label stilleri side-agnostic.
 
+// One panel width for both drawers. Left to its content the panel grew with its longest label,
+// so the two menus differed in width and the width changed with the language.
+$edge-drawer-w: 168px;
+$edge-drawer-cell-h: 66px;
+// The left menu has one row fewer: at the right menu's cell height it reads wider than it is.
+$edge-drawer-cell-h-left: 72px;
+
 .#{$namespace}-edge-drawer {
 	&__notch {
 		position: fixed;
@@ -211,14 +218,17 @@
 		}
 	}
 
+	// Cells sit edge to edge, split by hairlines. The panel clips what falls outside it: the
+	// selected cell's corners and the hairlines of the last column and row.
 	&__grid {
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 8px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		width: $edge-drawer-w;
+		box-sizing: border-box;
+		overflow: hidden;
 		background: rgb(var(--background-color));
 		border: 1px solid rgba(var(--text-color), 0.1);
 		border-radius: 18px;
-		padding: 12px;
 		pointer-events: auto;
 		position: relative;
 
@@ -228,13 +238,6 @@
 		}
 		.#{$namespace}-edge-drawer__drawer--left & {
 			box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
-
-			// Content-sized, as it always was: the panel is as wide as its widest
-			// card needs. A ceiling rather than a fixed width, so a label that grows
-			// past what the layout can take is capped instead of stretching the whole
-			// drawer, which is what happened when one input was renamed.
-			max-width: 248px;
-			box-sizing: border-box;
 		}
 	}
 
@@ -243,35 +246,40 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 5px;
-		padding: 12px 8px;
-		border-radius: 12px;
-		background: $zt-control-bg;
-		border: 1px solid rgba(var(--text-color), 0.06);
+		gap: 6px;
+		min-height: $edge-drawer-cell-h;
+		padding: 4px;
+		box-sizing: border-box;
+		border: 0;
+		background: transparent;
+		// Hairlines as zero-blur shadows, so no rule has to work out the last row or column.
+		box-shadow: 1px 0 0 $zt-card-border, 0 1px 0 $zt-card-border;
 		color: rgb(var(--text-color));
 		text-decoration: none;
 		// Items are <a href> (crawlable nav); no iOS link preview on long press.
 		-webkit-touch-callout: none;
 		cursor: pointer;
-		transition: all 0.15s ease;
+		transition: background $motion-fast $ease-standard, color $motion-fast $ease-standard;
 
 		&:active {
-			transform: scale(0.95);
+			background: $zt-control-bg;
 		}
 
-		// Aktif kart — solid bg + beyaz text/ikon. Side-aware renk:
-		//   sag drawer (nav)        → mavi (primary)
-		//   sol drawer (settings)   → yesil (success / "secili" semantigi)
-		&--active {
+		// An odd count (a phone browser's six inputs + Quick Settings, the nav before Online
+		// Battle opens) would leave an empty cell in the grid. The last item takes the row.
+		&:last-child:nth-child(odd) {
+			grid-column: 1 / -1;
+		}
+
+		&--active,
+		&--active:active {
 			background: rgb(var(--primary-color));
-			border-color: transparent;
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 
-	// Side-aware aktif renk override (sol drawer = koyu yesil)
-	&__drawer--left &__item--active {
-		background: rgb(var(--secondary-color));
+	&__drawer--left &__item {
+		min-height: $edge-drawer-cell-h-left;
 	}
 
 	&__item-icon {
@@ -279,13 +287,6 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		opacity: 0.9;
-		color: rgb(var(--text-color));
-
-		.#{$namespace}-edge-drawer__item--active & {
-			color: #fff;
-			opacity: 1;
-		}
 	}
 
 	// Okunmamis sayisi. Ikonun sag ustune oturur; kart aktifken de okunur kalmasi
@@ -299,7 +300,7 @@
 		padding: 0 4px;
 		border-radius: 9px;
 		background: rgb(var(--primary-color));
-		color: #fff;
+		color: rgb(var(--theme-primary-opposite));
 		font-size: 0.62rem;
 		font-weight: 700;
 		line-height: 17px;
@@ -308,7 +309,7 @@
 		box-shadow: 0 0 0 2px rgb(var(--background-color));
 
 		.#{$namespace}-edge-drawer__item--active & {
-			background: #fff;
+			background: rgb(var(--theme-primary-opposite));
 			color: rgb(var(--primary-color));
 			box-shadow: none;
 		}
@@ -317,15 +318,12 @@
 	&__item-label {
 		font-size: 0.78rem;
 		font-weight: 500;
-		// Two-word labels wrap rather than stretch the card. The grid is fixed width
-		// now, so without this a long label would overflow instead.
+		// A long label (es, ru) wraps rather than stretching the cell: the panel is fixed width.
 		text-align: center;
 		line-height: 1.15;
 		overflow-wrap: anywhere;
 
 		.#{$namespace}-edge-drawer__item--active & {
-			color: #fff;
-			opacity: 1;
 			font-weight: 600;
 		}
 	}

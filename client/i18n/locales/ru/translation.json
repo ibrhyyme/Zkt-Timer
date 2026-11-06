@@ -2152,9 +2152,6 @@
     "view_as_stats": "Показать как статистику",
     "tps": "TPS",
     "turns": "Ходы",
-    "inspection": "Осмотр",
-    "pick_up": "Поднятие",
-    "put_down": "Опускание",
     "scramble_label": "Скрамбл",
     "copy_moves": "Копировать ходы",
     "copy_scramble": "Скрамбл",
@@ -2212,7 +2209,6 @@
     "send_change": "Изменить",
     "send_sent": "Сборка отправлена: {{name}}",
     "send_recent": "Недавние чаты",
-    "chart_by": "Показать на диаграмме",
     "link_copied": "Ссылка скопирована",
     "standing_pb": "Личный рекорд",
     "standing_faster": "На {{diff}} с быстрее среднего за {{count}} предыдущих сборок",
@@ -3534,7 +3530,7 @@
     "camera_timer": "Таймер с камерой",
     "qiyi_wired": "QiYi проводной",
     "beta": "Beta",
-    "back": "Назад"
+    "device_connected": "Подключено"
   },
   "room_timer": {
     "save": "СОХРАНИТЬ",

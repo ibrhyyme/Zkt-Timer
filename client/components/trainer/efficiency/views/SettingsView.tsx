@@ -4,6 +4,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
+import Switch from '../../../common/switch/Switch';
 import {useEfficiencyContext} from '../EfficiencyContext';
 
 const b = block('trainer-efficiency');
@@ -26,15 +27,10 @@ export default function SettingsView() {
 							})}
 						</div>
 					</div>
-					<span className={b('switch', {on: state.settings.showAllSolutions})}>
-						<input
-							type="checkbox"
-							className={b('switch-input')}
-							checked={state.settings.showAllSolutions}
-							onChange={(e) => updateSettings({showAllSolutions: e.target.checked})}
-						/>
-						<span className={b('switch-knob')} />
-					</span>
+					<Switch
+						on={state.settings.showAllSolutions}
+						onChange={(on) => updateSettings({showAllSolutions: on})}
+					/>
 				</label>
 			</div>
 		</div>

@@ -4,6 +4,7 @@ import {gql} from '@apollo/client';
 import {IModalProps} from '../../common/modal/Modal';
 import {gqlMutate, gqlQuery} from '../../api';
 import Button from '../../common/button/Button';
+import Switch from '../../common/switch/Switch';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {Eye, EyeSlash} from 'phosphor-react';
 import block from '../../../styles/bem';
@@ -243,12 +244,10 @@ export default function PublishWcaRecords(props: IModalProps) {
 				<h4>{t('profile.wca_visibility_title')}</h4>
 				<div className={b('toggle-list')}>
 					{toggleItems.map(item => (
-						<div key={item.key} className={b('toggle-item')} onClick={() => toggleVisibility(item.key)}>
+						<label key={item.key} className={b('toggle-item')}>
 							<span>{item.label}</span>
-							<div className={b('toggle', { active: visibility[item.key] })}>
-								<div className={b('toggle-knob')} />
-							</div>
-						</div>
+							<Switch on={!!visibility[item.key]} onChange={() => toggleVisibility(item.key)} />
+						</label>
 					))}
 				</div>
 			</div>

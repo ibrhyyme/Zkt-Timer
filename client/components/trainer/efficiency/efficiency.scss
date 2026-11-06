@@ -472,29 +472,6 @@
 		color: rgb(var(--text-color));
 		line-height: 1.4;
 	}
-	// Toggle switch: the app's one switch shape (zt-switch in tokens.scss). It was a square
-	// switch here and a pill everywhere else.
-	&__switch {
-		@include zt-switch-track;
-
-		&--on {
-			@include zt-switch-track-on;
-		}
-	}
-	&__switch-input {
-		position: absolute;
-		opacity: 0;
-		width: 100%;
-		height: 100%;
-		margin: 0;
-		cursor: pointer;
-	}
-	&__switch-knob {
-		@include zt-switch-knob;
-	}
-	&__switch--on &__switch-knob {
-		@include zt-switch-knob-on;
-	}
 }
 
 // ────────── Modern solution player (ReplayPlayer-inspired) ──────────

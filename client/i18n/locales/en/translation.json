@@ -2104,9 +2104,6 @@
     "view_as_stats": "View as Stats",
     "tps": "TPS",
     "turns": "Turns",
-    "inspection": "Inspection",
-    "pick_up": "Pick Up",
-    "put_down": "Put Down",
     "scramble_label": "Scramble",
     "copy_moves": "Copy moves",
     "copy_scramble": "Scramble",
@@ -2164,7 +2161,6 @@
     "send_change": "Change",
     "send_sent": "Solve sent to {{name}}",
     "send_recent": "Recent chats",
-    "chart_by": "Chart by",
     "link_copied": "Link copied",
     "standing_pb": "Personal best",
     "standing_faster": "{{diff}}s faster than the average of your previous {{count}} solves",
@@ -3466,7 +3462,7 @@
     "camera_timer": "Camera Timer",
     "qiyi_wired": "QiYi Wired",
     "beta": "Beta",
-    "back": "Back"
+    "device_connected": "Connected"
   },
   "room_timer": {
     "save": "SAVE",

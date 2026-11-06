@@ -125,36 +125,6 @@
 		gap: 12px;
 	}
 
-	&__toggle {
-		all: unset;
-		position: relative;
-		width: 40px;
-		height: 22px;
-		background: rgba(var(--text-color), 0.15);
-		border-radius: 999px;
-		cursor: pointer;
-		transition: background 0.2s ease;
-
-		&--on {
-			background: rgb(var(--primary-color));
-		}
-	}
-
-	&__toggle-knob {
-		position: absolute;
-		top: 3px;
-		left: 3px;
-		width: 16px;
-		height: 16px;
-		background: #fff;
-		border-radius: 50%;
-		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-
-		.#{$namespace}-edit-room-dropdown__toggle--on & {
-			transform: translateX(18px);
-		}
-	}
-
 	&__toggle-label {
 		font-size: 0.85rem;
 		font-weight: 500;

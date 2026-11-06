@@ -20,6 +20,7 @@ import {
 	sendTestRecordNotification,
 } from './recordWatchApi';
 import RecentRecordsFeed from './RecentRecordsFeed';
+import Switch from '../../common/switch/Switch';
 
 type Scope = 'WR' | 'CR' | 'NR';
 type Tab = 'recent' | 'watches';
@@ -315,14 +316,7 @@ export default function RecordRadar() {
 									<span className={b('radar-item-scope')}>{scopeRegionLabel(w)}</span>
 								</div>
 								<div className={b('radar-item-actions')}>
-									<label className={b('radar-toggle')}>
-										<input
-											type="checkbox"
-											checked={w.enabled}
-											onChange={() => handleToggle(w)}
-										/>
-										<span className={b('radar-toggle-track')} />
-									</label>
+									<Switch small on={w.enabled} ariaLabel={t('my_schedule.radar_my_watches')} onChange={() => handleToggle(w)} />
 									<button
 										className={b('radar-item-delete')}
 										onClick={() => handleDelete(w)}

@@ -15,6 +15,7 @@
 	overflow: hidden;
 	isolation: isolate;
 	color: rgb(var(--text-color));
+	transition: transform 220ms ease-out;
 
 	&::before {
 		content: '';
@@ -43,6 +44,10 @@
 		margin-bottom: 8px;
 		z-index: 1;
 		flex-shrink: 0;
+		padding: 0;
+		border: none;
+		cursor: pointer;
+		touch-action: none;
 	}
 
 	&__close {
@@ -60,6 +65,11 @@
 		justify-content: center;
 		cursor: pointer;
 		z-index: 5;
+
+		// On a phone the handle is the close.
+		@include bp-down($bp-md) {
+			display: none;
+		}
 		transition: background 0.2s ease, transform 0.12s ease;
 
 		&:hover {

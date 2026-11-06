@@ -60,8 +60,8 @@ export default function SolveCardHeader({ layout, canShareLink, editable = true 
 		<>
 			<div className={b('bar')}>
 				<span className={b('title')}>{t('solve_info.solve_detail')}</span>
-				{/* The app's one close: a bare X (it was an iOS-style orange "Done" text). */}
-				<CloseButton onClick={handleDone} />
+				{/* A bare X on a desktop and on the shared solve page; a phone sheet closes by its handle. */}
+				<CloseButton className={b('close')} onClick={handleDone} />
 			</div>
 
 			<div className={b('head')}>

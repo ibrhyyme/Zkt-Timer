@@ -49,9 +49,6 @@ interface Props {
 	storageKeyUsed: string;
 	notchHintText: string;
 	notchHintSubText: string;
-	// Sabit grid yuksekligi (sag drawer NAV_LINKS icin 310). Verilmezse
-	// auto-measure (drawerRef icindeki .edge-drawer__grid clientHeight'i okunur).
-	gridHeightPx?: number;
 	// Centige "iceride yeni bir sey var" noktasi koyar. Centik 8px genisliginde,
 	// oraya rakam sigmaz; sayi cekmece acildiginda ilgili oge uzerinde gosterilir.
 	notchBadge?: boolean;
@@ -72,7 +69,7 @@ function loadNotchY(key: string): number {
 }
 
 export default function EdgeDrawer(props: Props) {
-	const {side, storageKeyY, storageKeyUsed, notchHintText, notchHintSubText, gridHeightPx, notchBadge, children} = props;
+	const {side, storageKeyY, storageKeyUsed, notchHintText, notchHintSubText, notchBadge, children} = props;
 	const isLeft = side === 'left';
 
 	const [open, setOpen] = useState(false);
@@ -144,12 +141,11 @@ export default function EdgeDrawer(props: Props) {
 	}
 
 	// Grid Y pozisyonu — centik konumuna gore, ekran disina tasmaz.
-	// gridHeightPx verilmezse drawer ici grid clientHeight'i kullanilir (auto-measure).
 	function gridTop(): number {
 		if (typeof window === 'undefined') return 200;
 		const vh = window.innerHeight;
 		const gridEl = drawerRef.current?.querySelector(`.${b('grid')}`);
-		const gridH = gridHeightPx ?? gridEl?.clientHeight ?? 310;
+		const gridH = gridEl?.clientHeight ?? 310;
 		const pad = 20;
 		const center = (notchY / 100) * vh;
 		return Math.max(pad, Math.min(vh - gridH - pad, center - gridH / 2));
@@ -372,12 +368,6 @@ export default function EdgeDrawer(props: Props) {
 				return;
 			}
 
-			// Cancel long-press on any movement
-			if (longPressTimer.current) {
-				clearTimeout(longPressTimer.current);
-				longPressTimer.current = null;
-			}
-
 			// Swipe detection — SIDE-AWARE
 			// Sag drawer: parmak SOLA giderse (tx < startX) drawer acilir → dx = startX - tx
 			// Sol drawer: parmak SAGA giderse (tx > startX) drawer acilir → dx = tx - startX
@@ -385,9 +375,17 @@ export default function EdgeDrawer(props: Props) {
 			const dy = Math.abs(ty - startY.current);
 
 			if (!locked.current) {
+				// A resting finger is not perfectly still. onStart's preventDefault turns off
+				// Chromium's touch slop suppression, so Android delivers every jitter of a held
+				// finger as a touchmove; iOS holds them back. Only movement past this threshold
+				// may cancel the long-press, or it can never fire on Android.
 				if (Math.abs(dx) < 10 && dy < 10) return;
 				locked.current = true;
 				horizontal.current = dx > 0 && Math.abs(dx) > dy;
+				if (longPressTimer.current) {
+					clearTimeout(longPressTimer.current);
+					longPressTimer.current = null;
+				}
 			}
 
 			if (!horizontal.current) return;
@@ -444,23 +442,48 @@ export default function EdgeDrawer(props: Props) {
 			locked.current = false;
 		}
 
+		// The OS took the touch away. No touchend follows, so everything the gesture armed
+		// has to be released here; otherwise the long-press still fires after the finger is
+		// gone and leaves the notch stuck in reposition mode.
+		function onCancel() {
+			clearNotchFlag();
+			if (longPressTimer.current) {
+				clearTimeout(longPressTimer.current);
+				longPressTimer.current = null;
+			}
+			if (repositioning) {
+				setRepositioning(false);
+				try { localStorage.setItem(storageKeyY, String(notchY)); } catch {}
+			}
+			openedBySwipe.current = false;
+			locked.current = false;
+			setSwipeOffset(null);
+		}
+
 		const opts = {passive: false} as AddEventListenerOptions;
 		notch.addEventListener('touchstart', onStart, opts);
 		notch.addEventListener('touchmove', onMove, opts);
 		notch.addEventListener('touchend', onEnd, opts);
-		notch.addEventListener('touchcancel', clearNotchFlag);
+		notch.addEventListener('touchcancel', onCancel);
 
 		return () => {
 			notch.removeEventListener('touchstart', onStart);
 			notch.removeEventListener('touchmove', onMove);
 			notch.removeEventListener('touchend', onEnd);
-			notch.removeEventListener('touchcancel', clearNotchFlag);
-			clearNotchFlag();
-			if (longPressTimer.current) {
-				clearTimeout(longPressTimer.current);
-			}
+			notch.removeEventListener('touchcancel', onCancel);
 		};
 	});
+
+	// Unmount only. The listener effect above re-runs on every render, so anything torn down
+	// in its cleanup dies with any render that lands mid-gesture: the long-press timer and
+	// the Android back-button guard must both survive those.
+	useEffect(() => () => {
+		(window as any)[notchTouchingFlag] = false;
+		if (longPressTimer.current) {
+			clearTimeout(longPressTimer.current);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	// --- Drawer: swipe to CLOSE ---
 	useEffect(() => {

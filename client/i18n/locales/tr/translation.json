@@ -2091,9 +2091,6 @@
     "view_as_stats": "İstatistik Olarak Görüntüle",
     "tps": "TPS",
     "turns": "Hamleler",
-    "inspection": "İnceleme",
-    "pick_up": "Alma",
-    "put_down": "Bırakma",
     "scramble_label": "Karıştırma",
     "copy_moves": "Hamleleri kopyala",
     "copy_scramble": "Karıştırma",
@@ -2151,7 +2148,6 @@
     "send_change": "Değiştir",
     "send_sent": "Çözüm {{name}} adlı kişiye gönderildi",
     "send_recent": "Son sohbetler",
-    "chart_by": "Grafikte göster",
     "link_copied": "Link kopyalandı",
     "standing_pb": "Kişisel rekor",
     "standing_faster": "Önceki {{count}} çözümünün ortalamasından {{diff}} sn hızlı",
@@ -3449,7 +3445,7 @@
     "camera_timer": "Kamera Timer",
     "qiyi_wired": "QiYi Kablolu",
     "beta": "Beta",
-    "back": "Geri"
+    "device_connected": "Bağlı"
   },
   "room_timer": {
     "save": "KAYDET",

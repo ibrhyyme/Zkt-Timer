@@ -178,14 +178,6 @@
 		}
 	}
 
-	&__grabber {
-		width: 40px;
-		height: 4px;
-		margin: 0 auto $zt-space-3;
-		border-radius: $zt-radius-full;
-		background: rgba(var(--text-color), 0.18);
-	}
-
 	// sheetOnPhone: the modal's own title and body, rising from the bottom. Only a phone ever
 	// gets this class. Doubled for weight: the phone rules further down fill the screen.
 	&--sheet#{$self} {
@@ -198,7 +190,7 @@
 			height: auto;
 			max-height: 90vh;
 			max-height: 90dvh;
-			padding: 14px 20px 24px;
+			padding: 0 20px 24px;
 			padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 			border: none;
 			// !important: --compact sets its corner that way, and a compact modal is a sheet here too.
@@ -211,6 +203,42 @@
 
 		&#{$self}--active #{$self}__center {
 			transform: translateY(0);
+		}
+
+		// The handle, and the sheet's only close: a full-width row pinned to the top, so it is
+		// still there after the content scrolls. Wider than the body's side padding (a body with
+		// none clips the overflow). useSheetDrag takes both the tap and the pull.
+		#{$self}__grabber {
+			@include zt-focus-ring;
+
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+			display: block;
+			width: calc(100% + 40px);
+			max-width: none;
+			height: 36px;
+			margin: 0 -20px;
+			padding: 0;
+			border: none;
+			background: inherit;
+			cursor: pointer;
+			touch-action: none;
+
+			&::before {
+				content: '';
+				display: block;
+				width: 40px;
+				height: 4px;
+				margin: 12px auto 0;
+				border-radius: $zt-radius-full;
+				background: rgba(var(--text-color), 0.18);
+			}
+		}
+
+		// No close button beside the title any more, so it takes the room kept for one.
+		#{$self}__grabber + .#{$namespace}-modal-header {
+			width: 100%;
 		}
 	}
 

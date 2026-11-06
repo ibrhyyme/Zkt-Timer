@@ -24,6 +24,7 @@ import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 import {requestMacFromUser} from '../../smart_cube/mac_input/requestMacFromUser';
 import {setTimerParams} from '../../helpers/params';
 import {macFromNativeDeviceId} from '../../../../util/ble/native-mac';
+import {trackTimerLink} from '../../../../util/timer_link_state';
 
 // ===========================================================================
 // AES-128-ECB (cstimer sha256.js:107-218 ported line-by-line)
@@ -564,6 +565,10 @@ function clearCachedMacForDevice(deviceName: string): void {
 // ===========================================================================
 
 export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
+	return trackTimerLink('qiyitimer', await openQiyiTimer());
+}
+
+async function openQiyiTimer(): Promise<QiyiTimerConnection> {
 	if (_connection) {
 		return _connection;
 	}

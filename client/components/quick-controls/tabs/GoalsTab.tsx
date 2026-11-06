@@ -16,6 +16,7 @@ import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
 import {initPushNotifications} from '../../../util/push-notifications';
 import {useEventListener} from '../../../util/event_handler';
 import {Trash, Bell, BellSlash, Target, UsersThree, ClockCounterClockwise} from 'phosphor-react';
+import Switch from '../../common/switch/Switch';
 
 function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
 	return `${g.cube_type}::${g.scramble_subset ?? ''}`;
@@ -45,12 +46,8 @@ export default function GoalsTab() {
 	}
 
 	return (
-		<div className="space-y-3">
-			{/* Title */}
-			<div className="flex items-center space-x-1.5 mb-1">
-				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
-				<p className="text-text/50 text-xs font-medium">{t('quick_controls.goals_description')}</p>
-			</div>
+		<div className="zt-quick-goals space-y-3">
+			<p className="mb-1 text-text/70 text-xs font-medium">{t('quick_controls.goals_description')}</p>
 
 			{/* Goal for active cube type */}
 			<CurrentCubeGoal
@@ -76,12 +73,9 @@ export default function GoalsTab() {
 			{/* Goals for other cube types */}
 			{otherGoals.length > 0 && (
 				<>
-					<div className="flex items-center space-x-2 mt-6 mb-3">
-						<div className="h-1.5 w-1.5 bg-text/50 rounded-full"></div>
-						<p className="text-text/40 text-xs font-medium uppercase tracking-wider">
-							{t('quick_controls.other_goals')}
-						</p>
-					</div>
+					<p className="zt-quick-goals__heading mt-6 mb-3 text-text/70 text-xs font-medium uppercase tracking-wider">
+						{t('quick_controls.other_goals')}
+					</p>
 					{otherGoals.map((goal) => {
 						const label = getCubeTypeBucketLabel(goal.cube_type, goal.scramble_subset)
 							|| getCubeTypeInfoById(goal.cube_type)?.name
@@ -115,7 +109,7 @@ export default function GoalsTab() {
 						<UsersThree
 							size={18}
 							weight={storage.count_room_solves ? 'fill' : 'regular'}
-							className={`shrink-0 ${storage.count_room_solves ? 'text-primary' : 'text-text/30'}`}
+							className={`shrink-0 ${storage.count_room_solves ? 'text-primary' : 'text-text/70'}`}
 						/>
 						<div className="flex flex-col min-w-0">
 							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
@@ -123,29 +117,19 @@ export default function GoalsTab() {
 							</span>
 							{/* Spells out where these solves actually land. Without it the label reads as
 							    "count them everywhere" and people expect them in their session too. */}
-							<span className="text-xs text-text mt-0.5">
+							<span className="text-xs text-text/70 mt-0.5">
 								{t('quick_controls.count_room_solves_desc')}
 							</span>
 						</div>
 					</div>
-					<button
-						type="button"
-						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 ${
-							storage.count_room_solves
-								? 'bg-primary border-primary'
-								: 'bg-text/[0.2] border-transparent'
-						} cursor-pointer`}
-						onClick={() => {
-							setCountRoomSolves(!storage.count_room_solves);
+					<Switch
+						on={storage.count_room_solves}
+						ariaLabel={t('quick_controls.count_room_solves')}
+						onChange={(on) => {
+							setCountRoomSolves(on);
 							refresh();
 						}}
-					>
-						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
-								storage.count_room_solves ? 'translate-x-5' : 'translate-x-0.5'
-							}`}
-						/>
-					</button>
+					/>
 				</div>
 			</div>
 
@@ -157,35 +141,25 @@ export default function GoalsTab() {
 						<ClockCounterClockwise
 							size={18}
 							weight={storage.count_deleted_solves ? 'fill' : 'regular'}
-							className={`shrink-0 ${storage.count_deleted_solves ? 'text-primary' : 'text-text/30'}`}
+							className={`shrink-0 ${storage.count_deleted_solves ? 'text-primary' : 'text-text/70'}`}
 						/>
 						<div className="flex flex-col min-w-0">
 							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 								{t('quick_controls.count_deleted_solves')}
 							</span>
-							<span className="text-xs text-text mt-0.5">
+							<span className="text-xs text-text/70 mt-0.5">
 								{t('quick_controls.count_deleted_solves_desc')}
 							</span>
 						</div>
 					</div>
-					<button
-						type="button"
-						className={`relative h-6 w-11 shrink-0 rounded-full border transition-all duration-300 ${
-							storage.count_deleted_solves
-								? 'bg-primary border-primary'
-								: 'bg-text/[0.2] border-transparent'
-						} cursor-pointer`}
-						onClick={() => {
-							setCountDeletedSolves(!storage.count_deleted_solves);
+					<Switch
+						on={storage.count_deleted_solves}
+						ariaLabel={t('quick_controls.count_deleted_solves')}
+						onChange={(on) => {
+							setCountDeletedSolves(on);
 							refresh();
 						}}
-					>
-						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
-								storage.count_deleted_solves ? 'translate-x-5' : 'translate-x-0.5'
-							}`}
-						/>
-					</button>
+					/>
 				</div>
 			</div>
 
@@ -196,37 +170,26 @@ export default function GoalsTab() {
 						{storage.reminder_enabled ? (
 							<Bell size={18} weight="fill" className="text-primary" />
 						) : (
-							<BellSlash size={18} className="text-text/30" />
+							<BellSlash size={18} className="text-text/70" />
 						)}
 						<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 							{t('quick_controls.reminders')}
 						</span>
 					</div>
-					<button
-						type="button"
-						className={`relative h-6 w-11 rounded-full border transition-all duration-300 ${
-							storage.reminder_enabled
-								? 'bg-primary border-primary'
-								: 'bg-text/[0.2] border-transparent'
-						} cursor-pointer`}
-						onClick={async () => {
-							const newVal = !storage.reminder_enabled;
+					<Switch
+						on={storage.reminder_enabled}
+						ariaLabel={t('quick_controls.reminders')}
+						onChange={async (on) => {
 							// Turning on: ensure a push token is registered for this device in
 							// the same session. Boot-time registration is skipped if permission
 							// was denied/unasked, so without this the toggle is a no-op until reload.
-							if (newVal) {
+							if (on) {
 								await initPushNotifications();
 							}
-							setReminderEnabled(newVal);
+							setReminderEnabled(on);
 							refresh();
 						}}
-					>
-						<div
-							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${
-								storage.reminder_enabled ? 'translate-x-5' : 'translate-x-0.5'
-							}`}
-						/>
-					</button>
+					/>
 				</div>
 			</div>
 		</div>
@@ -268,26 +231,12 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 				{goal && (
 					<div className="flex items-center space-x-2">
 						{/* Enable/Disable toggle */}
-						<button
-							type="button"
-							className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
-								goal.enabled
-									? 'bg-primary border-primary shadow-sm shadow-primary/30'
-									: 'bg-text/[0.2] border-transparent'
-							} cursor-pointer`}
-							onClick={onToggle}
-						>
-							<div
-								className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
-									goal.enabled ? 'translate-x-4' : 'translate-x-0.5'
-								}`}
-							/>
-						</button>
+						<Switch small on={goal.enabled} ariaLabel={label} onChange={() => onToggle()} />
 						{/* Delete */}
 						<button
 							type="button"
 							onClick={onRemove}
-							className="p-1 rounded-lg text-text/30 hover:text-text hover:bg-red-400/10 transition-all"
+							className="p-1 rounded-lg text-text/70 hover:text-text hover:bg-red-400/10 transition-all"
 						>
 							<Trash size={16} />
 						</button>
@@ -311,7 +260,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 					<button
 						type="button"
 						onClick={handleSave}
-						className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/80 transition-colors"
+						className="px-4 py-2 rounded-lg bg-primary text-[rgb(var(--theme-primary-opposite))] text-sm font-medium hover:bg-primary/80 transition-colors"
 					>
 						{t('quick_controls.set_goal')}
 					</button>
@@ -319,7 +268,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 			) : (
 				<div className="space-y-2">
 					{/* Progress bar */}
-					<div className="flex items-center justify-between text-xs text-text/50">
+					<div className="flex items-center justify-between text-xs text-text/70">
 						<span>
 							{t('quick_controls.solves_progress', {
 								current: progress?.current || 0,
@@ -355,7 +304,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 
 			{/* Message if no goal is set */}
 			{!goal && !editing && (
-				<p className="text-text/30 text-sm">{t('quick_controls.no_goal_set')}</p>
+				<p className="text-text/70 text-sm">{t('quick_controls.no_goal_set')}</p>
 			)}
 		</div>
 	);
@@ -373,7 +322,7 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 	return (
 		<div className="group flex items-center justify-between py-3 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center space-x-3 flex-1 min-w-0">
-				<span className={`font-medium text-sm ${goal.enabled ? 'text-text/80' : 'text-text/30'}`}>{name}</span>
+				<span className={`font-medium text-sm ${goal.enabled ? 'text-text/80' : 'text-text/70'}`}>{name}</span>
 				{progress && (
 					<span className="text-xs text-text/40">
 						{progress.current}/{goal.target}
@@ -390,25 +339,11 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 				)}
 			</div>
 			<div className="flex items-center space-x-2">
-				<button
-					type="button"
-					className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
-						goal.enabled
-							? 'bg-primary border-primary shadow-sm shadow-primary/30'
-							: 'bg-text/[0.2] border-transparent'
-					} cursor-pointer`}
-					onClick={onToggle}
-				>
-					<div
-						className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
-							goal.enabled ? 'translate-x-4' : 'translate-x-0.5'
-						}`}
-					/>
-				</button>
+				<Switch small on={goal.enabled} ariaLabel={name} onChange={() => onToggle()} />
 				<button
 					type="button"
 					onClick={onRemove}
-					className="p-1 rounded-lg text-text/30 hover:text-text hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
+					className="p-1 rounded-lg text-text/70 hover:text-text hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
 				>
 					<Trash size={14} />
 				</button>

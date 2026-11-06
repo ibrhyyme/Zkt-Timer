@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Minus, Plus } from 'phosphor-react';
 import FancyDropdown from '../../timer/header_control/FancyDropdown';
+import Switch from '../../common/switch/Switch';
 import { hasVisibleSettingsRow } from './visible_settings_row';
 import { useSettingsSearch, matchesSearch } from '../SettingsSearchContext';
 
@@ -84,20 +85,7 @@ export function TimerSettingsToggle({ label, description, isActive, disabled = f
 					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
-			<button
-				type="button"
-				disabled={disabled}
-				className={`relative h-6 w-11 rounded-full border transition-colors duration-200 shrink-0 ${isActive
-					? 'bg-primary border-primary'
-					: 'bg-text/[0.2] border-transparent'
-					} ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
-				onClick={onClick}
-			>
-				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0.5'
-						}`}
-				/>
-			</button>
+			<Switch on={isActive} disabled={disabled} ariaLabel={label} onChange={() => onClick()} />
 		</div>
 	);
 }

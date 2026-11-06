@@ -13,6 +13,11 @@
 		margin-bottom: $zt-space-4;
 	}
 
+	// Inside a phone sheet the handle is the close.
+	.#{$namespace}-modal--sheet &__close {
+		display: none;
+	}
+
 	&__title {
 		font-size: 1.0625rem;
 		font-weight: 700;

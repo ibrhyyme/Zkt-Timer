@@ -849,6 +849,7 @@ $bottom-corner-clearance: 210px;
 		align-items: center;
 		gap: 12px;
 		padding: 13px 2px;
+		cursor: pointer;
 		border-bottom: 1px solid rgba(var(--text-color), 0.06);
 		-webkit-tap-highlight-color: transparent;
 
@@ -860,38 +861,6 @@ $bottom-corner-clearance: 210px;
 	&__toggle-label {
 		font-size: 0.9rem;
 		font-weight: 500;
-	}
-
-	&__toggle-track {
-		width: 44px;
-		height: 24px;
-		border-radius: 12px;
-		position: relative;
-		transition: background 0.2s $ease-standard;
-		background: rgba(var(--text-color), 0.16);
-		flex-shrink: 0;
-
-		&--on {
-			background: rgb(var(--primary-color));
-		}
-	}
-
-	&__toggle-thumb {
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: rgb(var(--text-color));
-		position: absolute;
-		top: 2px;
-		left: 2px;
-		transition: left 0.2s $ease-out-snap, background 0.2s $ease-standard;
-
-		&--on {
-			left: 22px;
-			// The thumb sits on the primary fill once it is on, so it has to be the colour that
-			// reads on primary, not the page text colour.
-			background: rgb(var(--theme-primary-opposite));
-		}
 	}
 
 	// =====================
@@ -1410,9 +1379,7 @@ $bottom-corner-clearance: 210px;
 		#{$self}__history-row,
 		#{$self}__overlay-close,
 		#{$self}__overlay-action,
-		#{$self}__cube-panel-btn,
-		#{$self}__toggle-track,
-		#{$self}__toggle-thumb {
+		#{$self}__cube-panel-btn {
 			transition: none;
 		}
 

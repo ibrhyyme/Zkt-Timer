@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Bluetooth, CircleNotch, WarningCircle, X, ArrowClockwise, CaretRight, MagnifyingGlass } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import { getBleAdapter } from '../../../../util/ble';
+import { useSheetDrag } from '../../../../util/hooks/useSheetDrag';
 import './BleScanningModal.scss';
 
 const b = block('ble-scanning-modal');
@@ -88,7 +89,12 @@ function CubeGlyph({ size = 14 }: { size?: number }) {
 export default function BleScanningModal({ mode, onCancel, onRetry, onShowAllDevices }: BleScanningModalProps) {
 	const { t } = useTranslation();
 
-	const smartCubeScanning = useSelector((state: any) => state.timer.smartCubeScanning);
+	// Modal keeps its own handle off here: closing has to go through onCancel, which stops the
+	// scan. So this sheet moves itself.
+	const rootRef = useRef<HTMLDivElement>(null);
+	useSheetDrag(rootRef, onCancel, true);
+
+	const smartCubeScanning =useSelector((state: any) => state.timer.smartCubeScanning);
 	const smartCubeConnecting = useSelector((state: any) => state.timer.smartCubeConnecting);
 	const smartCubeScanError = useSelector((state: any) => state.timer.smartCubeScanError);
 	const smartCubeConnectStep: Step | null = useSelector((state: any) => state.timer.smartCubeConnectStep);
@@ -210,8 +216,8 @@ export default function BleScanningModal({ mode, onCancel, onRetry, onShowAllDev
 				: t(errorDescKey);
 
 	return (
-		<div className={b({ 'is-error': phase === 'error' })}>
-			<span className={b('grabber')} />
+		<div ref={rootRef} className={b({ 'is-error': phase === 'error' })}>
+			<button type="button" className={b('grabber')} data-sheet-handle aria-label={t('common.close')} />
 			<button className={b('close')} type="button" onClick={onCancel} aria-label="Kapat">
 				<X size={18} weight="bold" />
 			</button>

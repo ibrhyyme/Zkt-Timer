@@ -11,6 +11,7 @@ import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
 import { isNative } from '../../../util/platform';
 import { Minus, Plus } from 'phosphor-react';
 import ProTag from '../../common/pro_tag/ProTag';
+import Switch from '../../common/switch/Switch';
 import FancyDropdown from '../../timer/header_control/FancyDropdown';
 import { useSlamStop } from '../../../util/slam-stop/settings';
 import { MULTI_PHASE_MAX_COUNT, MULTI_PHASE_MIN_COUNT } from '../../../../shared/util/solve/multiphase';
@@ -61,7 +62,7 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 				>
 					<Minus weight="bold" size={12} />
 				</button>
-				<span className="text-sm font-medium text-primary min-w-[40px] text-center tabular-nums">
+				<span className="zt-quick-extras__value text-sm font-medium text-primary min-w-[40px] text-center tabular-nums">
 					{value.toFixed(1)}
 				</span>
 				<button
@@ -94,20 +95,7 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 			<span className={`min-w-0 truncate font-medium transition-colors ${disabled ? 'text-text/70' : 'text-text/80 group-hover:text-text'}`}>
 				{label}
 			</span>
-			<button
-				type="button"
-				disabled={disabled}
-				className={`relative shrink-0 h-6 w-11 rounded-full border transition-all duration-300 ${isActive
-					? 'bg-primary border-primary'
-					: 'bg-text/[0.2] border-transparent'
-					} ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
-				onClick={onClick}
-			>
-				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200 ${isActive ? 'translate-x-5' : 'translate-x-0.5'
-						}`}
-				/>
-			</button>
+			<Switch on={isActive} disabled={disabled} ariaLabel={label} onChange={() => onClick()} />
 		</div>
 	);
 }
@@ -264,8 +252,8 @@ export default function ExtrasTab({
 	}));
 
 	return (
-		// zt-quick-extras: the gear panel draws this list as one card with hairline rows
-		// (SettingsDropdown.scss); the left drawer keeps a card per row.
+		// zt-quick-extras: both panels flatten these rows into hairline rows, the gear panel in
+		// SettingsDropdown.scss and the left drawer in TimerTypeGrid.scss.
 		<div className="zt-quick-extras space-y-3">
 			{/* Slam-to-stop first (owner request, 1.6): it is the Pro option of the touch timer,
 			    so members find it at once and everyone else sees what Pro adds (Pro badge, opens

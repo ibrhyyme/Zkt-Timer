@@ -5,13 +5,14 @@ import {
 	Bluetooth,
 	Cube,
 	HandPointing,
+	IconWeight,
 	Keyboard,
 	Magnet,
-	Microphone,
 	Monitor,
 	PencilSimple,
 	VideoCamera,
 } from 'phosphor-react';
+import AudioJackIcon from '../../common/audio_jack_icon/AudioJackIcon';
 import { setSetting, setSettings } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
@@ -42,7 +43,7 @@ import {
 export interface TimerChoiceOption {
 	key: TimerChoice;
 	label: string;
-	icon: (size: number) => React.ReactNode;
+	icon: (size: number, weight?: IconWeight) => React.ReactNode;
 	isActive: boolean;
 	/** Cannot be chosen: room rule or the puzzle rules it out. A Pro lock stays tappable. */
 	disabled: boolean;
@@ -131,19 +132,19 @@ export function useTimerChoices({ layout, allowedTimerTypes: rawAllowed, require
 		camera: t('quick_controls.camera_timer'),
 	};
 
-	const ICONS: Record<TimerChoice, (size: number) => React.ReactNode> = {
-		keyboard: (s) => (touchLabel ? <HandPointing weight="bold" size={s} /> : <Keyboard weight="bold" size={s} />),
-		smart: (s) => <Cube weight="bold" size={s} />,
-		manual: (s) => <PencilSimple weight="bold" size={s} />,
-		magnet: (s) => <Magnet weight="bold" size={s} />,
+	const ICONS: Record<TimerChoice, (size: number, weight?: IconWeight) => React.ReactNode> = {
+		keyboard: (s, w = 'bold') => (touchLabel ? <HandPointing weight={w} size={s} /> : <Keyboard weight={w} size={s} />),
+		smart: (s, w = 'bold') => <Cube weight={w} size={s} />,
+		manual: (s, w = 'bold') => <PencilSimple weight={w} size={s} />,
+		magnet: (s, w = 'bold') => <Magnet weight={w} size={s} />,
 		// The virtual cube lives on the screen; a second cube icon made it look like the smart cube.
-		virtual: (s) => <Monitor weight="bold" size={s} />,
-		gantimer: (s) => <Bluetooth weight="bold" size={s} />,
-		qiyitimer: (s) => <Bluetooth weight="bold" size={s} />,
-		stackmat: (s) => <Microphone weight="bold" size={s} />,
-		// Read through the audio input like StackMat, so it carries the same microphone.
-		qiyiwired: (s) => <Microphone weight="bold" size={s} />,
-		camera: (s) => <VideoCamera weight="bold" size={s} />,
+		virtual: (s, w = 'bold') => <Monitor weight={w} size={s} />,
+		gantimer: (s, w = 'bold') => <Bluetooth weight={w} size={s} />,
+		qiyitimer: (s, w = 'bold') => <Bluetooth weight={w} size={s} />,
+		stackmat: (s, w = 'bold') => <AudioJackIcon weight={w} size={s} />,
+		// Read through the audio input like StackMat, so it carries the same jack.
+		qiyiwired: (s, w = 'bold') => <AudioJackIcon weight={w} size={s} />,
+		camera: (s, w = 'bold') => <VideoCamera weight={w} size={s} />,
 	};
 
 	const options: TimerChoiceOption[] = offered.map((key) => {

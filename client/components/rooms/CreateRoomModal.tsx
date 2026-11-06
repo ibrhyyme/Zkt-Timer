@@ -10,6 +10,7 @@ import { closeModal } from '../../actions/general';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import Button from '../common/button/Button';
 import ModalHeader from '../common/modal/modal_header/ModalHeader';
+import { SwitchFace } from '../common/switch/Switch';
 import block from '../../styles/bem';
 import { maxPlayerChoices } from './max_players';
 import './CreateRoomModal.scss';
@@ -137,9 +138,7 @@ export default function CreateRoomModal() {
                             {isPrivate ? t('create_room.private_desc') : t('create_room.public_desc')}
                         </span>
                     </span>
-                    <span className={b('switch', { on: isPrivate })}>
-                        <span className={b('switch-knob')} />
-                    </span>
+                    <SwitchFace on={isPrivate} />
                 </button>
 
                 {/* Always in place, disabled for a public room: a field that appeared on

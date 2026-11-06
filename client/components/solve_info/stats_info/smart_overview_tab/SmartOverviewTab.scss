@@ -1,29 +1,235 @@
 @import '../../../../styles/config';
 
+// Fixed on purpose: they name two kinds of time, so they read the same on every theme and
+// never collide with the user's accent. Both carry white text at 4.5:1 or better.
+$rec-color: #3d74ad;
+$exec-color: #d2470f;
+
+// Keep in step with SEGMENT_MIN_H in the component.
+$segment-min-h: 16px;
+$track-h: 280px;
+$track-h-phone: 260px;
+
 .#{$namespace}-solve-info-smart-overview {
 	width: 100%;
 
-	&__charts {
+	&__legend {
+		display: flex;
+		gap: $zt-space-3;
+		margin-bottom: $zt-space-3;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: $zt-text-muted;
+	}
+
+	&__legend-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+
+		&::before {
+			content: '';
+			width: 8px;
+			height: 8px;
+		}
+
+		&--rec::before {
+			background-color: $rec-color;
+		}
+
+		&--exec::before {
+			background-color: $exec-color;
+		}
+	}
+
+	&__chart {
+		position: relative;
+	}
+
+	&__axis {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		height: $track-h;
+		pointer-events: none;
+
+		@include bp-down($bp-sm) {
+			height: $track-h-phone;
+		}
+	}
+
+	&__tick {
+		position: absolute;
+		right: 0;
+		height: 0;
+		border-top: 1px solid $zt-control-border;
+
+		&--base {
+			border-top-color: $zt-control-border-hover;
+		}
+	}
+
+	&__tick-label {
+		position: absolute;
+		top: 0;
+		right: calc(100% + #{$zt-space-1});
+		font-family: $zt-font-mono;
+		font-size: 0.75rem;
+		font-weight: 500;
+		line-height: 1;
+		white-space: nowrap;
+		color: $zt-text-muted;
+		transform: translateY(-50%);
+	}
+
+	&__plot {
+		position: relative;
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 16px;
-		align-items: start;
 	}
 
-	&__timeline {
+	&__column {
 		min-width: 0;
+		outline: none;
+
+		&:focus-visible {
+			@include zt-focus-ring;
+		}
 	}
 
-	&__donut {
-		min-width: 0;
+	&__track {
+		display: flex;
+		justify-content: center;
+		height: $track-h;
+		padding: 0 $zt-space-1;
+
+		@include bp-down($bp-sm) {
+			height: $track-h-phone;
+			padding: 0 2px;
+		}
+	}
+
+	// As wide as the column on a phone, a slim bar with air around it on a wide screen.
+	&__stack {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		width: 100%;
+		max-width: 72px;
+	}
+
+	&__bar {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		gap: 2px;
+		width: 100%;
+		overflow: hidden;
+		border-radius: $zt-radius-sm $zt-radius-sm 0 0;
 	}
 
-	@include bp-down($bp-sm) {
-		&__charts {
-			grid-template-columns: 1fr;
+	&__segment {
+		display: flex;
+		flex: 0 1 0;
+		align-items: center;
+		justify-content: center;
+		min-height: $segment-min-h;
+		font-family: $zt-font-mono;
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1;
+		white-space: nowrap;
+		color: #fff;
+
+		&--rec {
+			background-color: $rec-color;
+		}
+
+		&--exec {
+			background-color: $exec-color;
+		}
+	}
+
+	&__label {
+		padding: $zt-space-2 2px 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1.25;
+		text-align: center;
+		color: $zt-text-muted;
+	}
+
+	// Desktop only: a phone reads the same figures on the Statistics tab.
+	&__tooltip {
+		@include zt-menu-panel;
+		position: absolute;
+		left: calc(100% + #{$zt-space-1});
+		z-index: 2;
+		display: none;
+		width: 168px;
+		padding: $zt-space-2 $zt-space-3;
+		pointer-events: none;
+
+		&--before {
+			right: calc(100% + #{$zt-space-1});
+			left: auto;
+		}
+	}
+
+	@media (hover: hover) {
+		&__column:hover &__bar,
+		&__column:focus-visible &__bar {
+			filter: brightness(1.15);
+		}
+
+		&__column:hover &__label,
+		&__column:focus-visible &__label {
+			color: rgb(var(--text-color));
+		}
+
+		&__column:hover &__tooltip,
+		&__column:focus-visible &__tooltip {
+			display: block;
+		}
+	}
+
+	&__tooltip-title {
+		margin-bottom: $zt-space-1;
+		font-size: 0.8125rem;
+		font-weight: 700;
+	}
+
+	&__tooltip-row {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		padding: 2px 0;
+		font-size: 0.8125rem;
+		color: $zt-text-muted;
+
+		span {
+			flex: 1;
+		}
+
+		strong {
+			font-family: $zt-font-mono;
+			font-weight: 600;
+			font-variant-numeric: tabular-nums;
+			color: rgb(var(--text-color));
+		}
+
+		&--rec::before,
+		&--exec::before {
+			content: '';
+			width: 8px;
+			height: 2px;
+		}
+
+		&--rec::before {
+			background-color: $rec-color;
+		}
+
+		&--exec::before {
+			background-color: $exec-color;
 		}
 	}
 }

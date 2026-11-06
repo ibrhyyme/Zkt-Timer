@@ -16,6 +16,7 @@ import {
 import gql from 'graphql-tag';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
+import Switch from '../../common/switch/Switch';
 import FeatureAccessControl from './FeatureAccessControl';
 import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
@@ -316,15 +317,13 @@ export default function SiteConfigPanel() {
 							Login/signup remain open.
 						</div>
 					</div>
-					<button
-						className={b('toggle', {on: config.maintenance_mode, danger: true})}
-						onClick={() => handleToggle('maintenance_mode', config.maintenance_mode)}
+					<Switch
+						on={config.maintenance_mode}
+						danger
 						disabled={saving === 'maintenance_mode'}
-					>
-						<span className={b('toggle-track')}>
-							<span className={b('toggle-thumb')} />
-						</span>
-					</button>
+						ariaLabel="Full Site Maintenance"
+						onChange={() => handleToggle('maintenance_mode', config.maintenance_mode)}
+					/>
 				</div>
 			</div>
 
@@ -343,15 +342,12 @@ export default function SiteConfigPanel() {
 									<div className={b('row-label')}>{labelKey ? t(labelKey) : label}</div>
 									<div className={b('row-desc')}>{descriptionKey ? t(descriptionKey) : description}</div>
 								</div>
-								<button
-									className={b('toggle', {on: value})}
-									onClick={() => handleToggle(key, value)}
+								<Switch
+									on={value}
 									disabled={saving === key}
-								>
-									<span className={b('toggle-track')}>
-										<span className={b('toggle-thumb')} />
-									</span>
-								</button>
+									ariaLabel={labelKey ? t(labelKey) : label}
+									onChange={() => handleToggle(key, value)}
+								/>
 							</div>
 							<FeatureAccessControl
 								feature={key}
@@ -419,15 +415,12 @@ export default function SiteConfigPanel() {
 							Can disable for WCA API rate-limit or emergency.
 						</div>
 					</div>
-					<button
-						className={b('toggle', {on: (config as any).wca_backfill_enabled !== false})}
-						onClick={() => handleToggle('wca_backfill_enabled', (config as any).wca_backfill_enabled !== false)}
+					<Switch
+						on={(config as any).wca_backfill_enabled !== false}
 						disabled={saving === 'wca_backfill_enabled'}
-					>
-						<span className={b('toggle-track')}>
-							<span className={b('toggle-thumb')} />
-						</span>
-					</button>
+						ariaLabel="Automatic Backfill Cron"
+						onChange={() => handleToggle('wca_backfill_enabled', (config as any).wca_backfill_enabled !== false)}
+					/>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
@@ -438,15 +431,12 @@ export default function SiteConfigPanel() {
 							competition is published without having to sign in with ZKT again.
 						</div>
 					</div>
-					<button
-						className={b('toggle', {on: (config as any).zkt_backfill_enabled !== false})}
-						onClick={() => handleToggle('zkt_backfill_enabled', (config as any).zkt_backfill_enabled !== false)}
+					<Switch
+						on={(config as any).zkt_backfill_enabled !== false}
 						disabled={saving === 'zkt_backfill_enabled'}
-					>
-						<span className={b('toggle-track')}>
-							<span className={b('toggle-thumb')} />
-						</span>
-					</button>
+						ariaLabel="ZKT ID Backfill Cron"
+						onChange={() => handleToggle('zkt_backfill_enabled', (config as any).zkt_backfill_enabled !== false)}
+					/>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
@@ -457,15 +447,12 @@ export default function SiteConfigPanel() {
 							days at a time, then be switched off. Results: /admin/smart-telemetry
 						</div>
 					</div>
-					<button
-						className={b('toggle', {on: !!(config as any).smart_telemetry_enabled})}
-						onClick={() => handleToggle('smart_telemetry_enabled', !!(config as any).smart_telemetry_enabled)}
+					<Switch
+						on={!!(config as any).smart_telemetry_enabled}
 						disabled={saving === 'smart_telemetry_enabled'}
-					>
-						<span className={b('toggle-track')}>
-							<span className={b('toggle-thumb')} />
-						</span>
-					</button>
+						ariaLabel="Smart Cube Telemetry"
+						onChange={() => handleToggle('smart_telemetry_enabled', !!(config as any).smart_telemetry_enabled)}
+					/>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
@@ -476,15 +463,12 @@ export default function SiteConfigPanel() {
 							ones. Switch on for a study, then off again. Results: /admin/magnet-telemetry
 						</div>
 					</div>
-					<button
-						className={b('toggle', {on: !!(config as any).magnet_telemetry_enabled})}
-						onClick={() => handleToggle('magnet_telemetry_enabled', !!(config as any).magnet_telemetry_enabled)}
+					<Switch
+						on={!!(config as any).magnet_telemetry_enabled}
 						disabled={saving === 'magnet_telemetry_enabled'}
-					>
-						<span className={b('toggle-track')}>
-							<span className={b('toggle-thumb')} />
-						</span>
-					</button>
+						ariaLabel="Magnet Timer Telemetry"
+						onChange={() => handleToggle('magnet_telemetry_enabled', !!(config as any).magnet_telemetry_enabled)}
+					/>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>

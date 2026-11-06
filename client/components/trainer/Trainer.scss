@@ -2138,47 +2138,6 @@
 		font-variant-numeric: tabular-nums;
 	}
 
-	&__settings-toggle {
-		position: relative;
-		width: 42px;
-		height: 24px;
-		border-radius: 12px;
-		border: none;
-		cursor: pointer;
-		flex-shrink: 0;
-		transition: background-color 0.2s ease;
-		padding: 0;
-
-		&--on {
-			background: rgb(var(--primary-color));
-		}
-
-		&--off {
-			background: rgba(var(--text-color), 0.2);
-		}
-
-		&:disabled {
-			cursor: not-allowed;
-			opacity: 0.5;
-		}
-	}
-
-	&__settings-toggle-knob {
-		position: absolute;
-		top: 2px;
-		left: 2px;
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: #fff;
-		transition: transform 0.2s ease;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-	}
-
-	&__settings-toggle--on &__settings-toggle-knob {
-		transform: translateX(18px);
-	}
-
 	&__settings-slider {
 		width: 100%;
 		display: block;

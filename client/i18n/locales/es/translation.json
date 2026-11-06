@@ -2104,9 +2104,6 @@
     "view_as_stats": "Ver como estadísticas",
     "tps": "TPS",
     "turns": "Giros",
-    "inspection": "Inspección",
-    "pick_up": "Levantar",
-    "put_down": "Soltar",
     "scramble_label": "Mezcla",
     "copy_moves": "Copiar movimientos",
     "copy_scramble": "Mezcla",
@@ -2164,7 +2161,6 @@
     "send_change": "Cambiar",
     "send_sent": "Resolución enviada a {{name}}",
     "send_recent": "Chats recientes",
-    "chart_by": "Mostrar en el gráfico",
     "link_copied": "Enlace copiado",
     "standing_pb": "Mejor marca personal",
     "standing_faster": "{{diff}} s más rápido que la media de tus {{count}} resoluciones anteriores",
@@ -3466,7 +3462,7 @@
     "camera_timer": "Temporizador con cámara",
     "qiyi_wired": "QiYi con cable",
     "beta": "Beta",
-    "back": "Atrás"
+    "device_connected": "Conectado"
   },
   "room_timer": {
     "save": "GUARDAR",

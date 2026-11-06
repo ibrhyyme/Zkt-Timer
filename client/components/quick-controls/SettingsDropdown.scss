@@ -109,8 +109,8 @@
 		padding: 12px 12px 14px;
 
 		// K1 (owner-approved): a list of settings is one card split by hairlines, not a box
-		// per row. Scoped to this panel: the same rows fill the left drawer, which keeps a
-		// card per row by the owner's choice. The rows are Tailwind boxes, hence !important.
+		// per row. Scoped to this panel: the left drawer flattens the same rows its own way
+		// (TimerTypeGrid.scss). The rows are Tailwind boxes, hence !important.
 		.#{$namespace}-quick-extras {
 			background: $zt-card-bg;
 			border: 1px solid $zt-card-border;

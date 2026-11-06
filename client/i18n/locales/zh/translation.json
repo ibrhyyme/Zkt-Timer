@@ -2080,9 +2080,6 @@
     "view_as_stats": "查看统计",
     "tps": "TPS",
     "turns": "步数",
-    "inspection": "观察",
-    "pick_up": "拿起",
-    "put_down": "放下",
     "scramble_label": "打乱",
     "copy_moves": "复制步法",
     "copy_scramble": "打乱",
@@ -2140,7 +2137,6 @@
     "send_change": "更改",
     "send_sent": "解法已发送给 {{name}}",
     "send_recent": "最近聊天",
-    "chart_by": "图表显示",
     "link_copied": "链接已复制",
     "standing_pb": "个人最佳",
     "standing_faster": "比前 {{count}} 次还原的平均快 {{diff}} 秒",
@@ -3434,7 +3430,7 @@
     "camera_timer": "摄像头计时器",
     "qiyi_wired": "QiYi 有线",
     "beta": "Beta",
-    "back": "返回"
+    "device_connected": "已连接"
   },
   "room_timer": {
     "save": "保存",

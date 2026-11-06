@@ -13,14 +13,18 @@ const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
 	scssBackdropBlur: 28,
-	scssGradient: 161,
+	scssGradient: 160,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
 	// Added 2026-11-04, counted after the Timer, Sessions, Solves and Stats pass.
 	// 553: the admin dashboard's five corners went onto tokens with the growth report (2026-11-04).
-	scssHandRadius: 553,
-	scssDropShadow: 120,
+	// 548: the edge drawer cells, the Beta tag and Quick Settings' tabs, back button and
+	// scrollbar lost their own corners (hairline grid, 2026-11-07).
+	// 544: the switch copies went onto common/switch/Switch (2026-11-07).
+	// 535: the solve card's old charts went with the new Overview chart (2026-11-07).
+	scssHandRadius: 535,
+	scssDropShadow: 117,
 	tsxFixedTailwindColor: 67,
 	scssButtonColor: 117,
 	tsxButtonColor: 25,
@@ -260,15 +264,44 @@ describe('design language: no new effects (ratchet)', () => {
 	});
 });
 
+describe('design language: one on/off switch', () => {
+	// The switch was once written by hand in 13 places, so a redesign left old ones behind.
+	it('no stylesheet draws its own switch', () => {
+		expect(count(scss, /(toggle|switch)-(knob|thumb|track)\b/g)).toBe(0);
+	});
+
+	it('no component draws a switch out of Tailwind classes', () => {
+		expect(count(tsx, /\bh-[56] w-(9|11)\b[^`]*\brounded-full\b/g)).toBe(0);
+	});
+
+	it('the switch says it is one, and its state', () => {
+		const src = read('components/common/switch/Switch.tsx');
+		expect(src).toMatch(/role="switch"/);
+		expect(src).toMatch(/aria-checked=\{on\}/);
+	});
+});
+
 describe('design language: one close, one button', () => {
 	it('the shared Button has no glow prop', () => {
 		expect(read('components/common/button/Button.tsx')).not.toMatch(/\bglow\b/);
 	});
 
-	it('a modal closes with the X; the written "Done" is the Pro modal\'s alone', () => {
+	it('a desktop modal closes with the X; the written "Done" is the Pro modal\'s alone', () => {
 		const users = tsx.filter((p) => /closeButtonText\s*:/.test(fs.readFileSync(p, 'utf8')));
 		expect(users.map((p) => path.relative(CLIENT, p).replace(/\\/g, '/'))).toEqual([
 			'components/common/pro_only/openProOnlyModal.tsx',
 		]);
+	});
+
+	it('a phone sheet has no close button, X or written: its handle closes it', () => {
+		const modal = read('components/common/modal/Modal.tsx');
+		expect(modal).toMatch(/hideCloseButton \|\| phoneSheet\)/);
+		expect(modal).toMatch(/<button[^>]*b\('grabber'\)[^>]*data-sheet-handle/);
+		const history = read('components/modules/history/history_modal/HistoryModal.scss');
+		expect(history).toMatch(/\.zt-modal--sheet \.zt-history-modal__mobile-done,\s*\.zt-modal--sheet \.zt-history-modal__card-bar \{\s*display: none/);
+		// The solve and history bodies hide the shell's X by `> button`: never the handle with it.
+		for (const rel of ['components/solve_info/SolveInfo.scss', 'components/modules/history/history_modal/HistoryModal.scss']) {
+			expect(read(rel)).not.toMatch(/modal__center:has\([^)]*\)\s*>\s*button(?!:not\(\.zt-modal__grabber\))/);
+		}
 	});
 });

@@ -3,8 +3,7 @@
 // render edilir.
 //
 // Profil burada DEGIL: sag ustteki avatar zaten profilin kendisi, cekmecede ikinci
-// kez durmasi hem fazlaliktı hem de grid'i 11 ogeye cikarip sabit gridHeightPx=310
-// yuksekligini asiyordu (son satirda tek oge kalip panel uzuyordu).
+// kez durmasi fazlalikti.
 
 import React from 'react';
 import {Link, useRouteMatch} from 'react-router-dom';
@@ -13,6 +12,7 @@ import EdgeDrawer from '../edge_drawer/EdgeDrawer';
 import {NAV_LINKS, visibleNavLinks} from '../nav_links';
 import {useBattleLaunch} from '../../../battle/useBattleLaunch';
 import {useInbox} from '../../../../util/hooks/useInbox';
+import {hapticImpact} from '../../../../util/native-plugins';
 import block from '../../../../styles/bem';
 
 const b = block('edge-drawer');
@@ -38,7 +38,6 @@ export default function BottomSheetNav() {
 			storageKeyUsed="zkt_notch_used"
 			notchHintText={t('nav.notch_swipe')}
 			notchHintSubText={t('nav.notch_hold')}
-			gridHeightPx={310}
 			notchBadge={unread > 0}
 		>
 			{links.map((link) => {
@@ -53,11 +52,15 @@ export default function BottomSheetNav() {
 						className={b('item', {active: isActive})}
 						aria-current={isActive ? 'page' : undefined}
 						onClick={(e) => {
-							if (isActive) e.preventDefault();
+							if (isActive) {
+								e.preventDefault();
+								return;
+							}
+							hapticImpact('light');
 						}}
 					>
 						<div className={b('item-icon')}>
-							{React.cloneElement(link.icon, {size: 24})}
+							{React.cloneElement(link.icon, {size: 22, weight: 'regular'})}
 							{showCount && <span className={b('item-badge')}>{unread > 99 ? '99+' : unread}</span>}
 						</div>
 						<span className={b('item-label')}>{t(link.name)}</span>

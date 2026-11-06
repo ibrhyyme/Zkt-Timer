@@ -4,6 +4,7 @@ import { useBattle } from './BattleContext';
 import { useBattleCubes } from './smart/BattleCubesProvider';
 import { X, ArrowsDownUp, ArrowClockwise, Trash, ArrowCounterClockwise } from 'phosphor-react';
 import block from '../../styles/bem';
+import Switch from '../common/switch/Switch';
 
 const b = block('battle');
 
@@ -65,11 +66,9 @@ export default function BattleMenu() {
 
 function ToggleRow({ label, value, onChange }: { label: string; value: boolean; onChange: () => void }) {
 	return (
-		<div className={b('toggle-row')} onClick={onChange}>
+		<label className={b('toggle-row')}>
 			<span className={b('toggle-label')}>{label}</span>
-			<div className={b('toggle-track', { on: value })}>
-				<div className={b('toggle-thumb', { on: value })} />
-			</div>
-		</div>
+			<Switch on={value} onChange={() => onChange()} />
+		</label>
 	);
 }

@@ -2,6 +2,7 @@ import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 import {isNative} from '../../../../util/platform';
 import {setTimerParams} from '../../helpers/params';
+import {trackTimerLink} from '../../../../util/timer_link_state';
 
 const GAN_TIMER_SERVICE = '0000fff0-0000-1000-8000-00805f9b34fb';
 const GAN_TIMER_TIME_CHARACTERISTIC = '0000fff2-0000-1000-8000-00805f9b34fb';
@@ -106,6 +107,10 @@ export function abortGanTimerScan(): void {
 }
 
 export async function connectGanTimer(): Promise<GanTimerConnection> {
+	return trackTimerLink('gantimer', await openGanTimer());
+}
+
+async function openGanTimer(): Promise<GanTimerConnection> {
 	// Web'de cubedesk'ten port edilen ve calistigi bilinen orijinal `gan-web-bluetooth`
 	// npm paketini direkt kullan. Capacitor BLE adapter port'unda race/cleanup bug'lari
 	// vardi (commit f02bc11 ile sizdi); web tarafini eski calisan path'e geri aldik.

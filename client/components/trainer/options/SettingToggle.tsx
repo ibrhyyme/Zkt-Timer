@@ -1,5 +1,6 @@
 import React from 'react';
 import block from '../../../styles/bem';
+import Switch from '../../common/switch/Switch';
 
 const b = block('trainer');
 
@@ -18,16 +19,7 @@ export default function SettingToggle({label, description, checked, onChange, di
 				<div className={b('settings-row-label')}>{label}</div>
 				{description && <div className={b('settings-row-desc')}>{description}</div>}
 			</div>
-			<button
-				type="button"
-				className={b('settings-toggle', {on: checked, off: !checked})}
-				onClick={() => !disabled && onChange(!checked)}
-				disabled={disabled}
-				role="switch"
-				aria-checked={checked}
-			>
-				<span className={b('settings-toggle-knob')} />
-			</button>
+			<Switch on={checked} disabled={disabled} ariaLabel={label} onChange={onChange} />
 		</div>
 	);
 }

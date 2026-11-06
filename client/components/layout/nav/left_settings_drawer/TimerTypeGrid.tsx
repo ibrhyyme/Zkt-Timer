@@ -1,5 +1,5 @@
-// Left drawer Timer tab: the timer inputs as a 2-column grid of 8 cells (7 inputs + Quick
-// Settings), the same visual pattern as the right drawer. The active card is solid green.
+// Left drawer Timer tab: the timer inputs as a 2-column grid of up to 8 cells (inputs + Quick
+// Settings), the same visual pattern as the right drawer. The active cell is the accent fill.
 //
 // Order, names, icons and locks come from helpers/useTimerChoices.tsx, shared with the
 // desktop dropdown (TimerTypePicker), so the two can no longer list the inputs differently.
@@ -10,19 +10,24 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
-import {CaretLeft, Crown, Gear, Lock} from 'phosphor-react';
+import {CaretRight, Crown, Gear, Lock} from 'phosphor-react';
 import {useTimerChoices, TimerChoiceOption} from '../../../timer/helpers/useTimerChoices';
+import {BackButton} from '../../../common/icon_button/IconButton';
+import TabBar from '../../../common/tab_bar/TabBar';
 import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
 import GoalsTab from '../../../quick-controls/tabs/GoalsTab';
+import {TimerChoice} from '../../../timer/helpers/timer_type_catalog';
+import {useSmartCubeStore} from '../../../../util/hooks/useSmartCubeStore';
+import {useTimerLinkConnected} from '../../../../util/timer_link_state';
+import {hapticImpact} from '../../../../util/native-plugins';
 import block from '../../../../styles/bem';
 import './TimerTypeGrid.scss';
 
-// Same BEM classes as the right drawer: the green active colour comes from EdgeDrawer.scss
-// (.drawer--left __item--active = success-color).
+// Same BEM classes as the right drawer (EdgeDrawer.scss).
 const itemBlock = block('edge-drawer');
 const b = block('timer-type-grid');
 
-const ICON_SIZE = 24;
+const ICON_SIZE = 22;
 
 interface Props {
 	// Room: the input types the host allows. undefined: every input is open.
@@ -72,7 +77,18 @@ export default function TimerTypeGrid({
 
 	const {options, choose} = useTimerChoices({layout: 'grid', allowedTimerTypes, requireProForSmart, puzzle});
 
+	// The inputs with a device behind them: a dot on the cell while that device is on the link.
+	const smartConnected = useSmartCubeStore('smartCubeConnected');
+	const ganConnected = useTimerLinkConnected('gantimer');
+	const qiyiConnected = useTimerLinkConnected('qiyitimer');
+	const linked: Partial<Record<TimerChoice, boolean>> = {
+		smart: smartConnected,
+		gantimer: ganConnected,
+		qiyitimer: qiyiConnected,
+	};
+
 	function handleSelect(opt: TimerChoiceOption) {
+		hapticImpact('light');
 		// A Pro-locked Magnet Timer is tappable: choose() opens the Pro dialog and the drawer
 		// stays where it is underneath it.
 		const applied = choose(opt.key);
@@ -89,34 +105,18 @@ export default function TimerTypeGrid({
 	if (view === 'extras') {
 		return (
 			<>
-				{/* A small back button in the top-left corner and the two tabs on one line next to
-				    it. The full-size back button used to push the tabs right until "Hızlı Ayarlar"
-				    broke into two lines. */}
 				<header className={b('extras-header')}>
-					<button
-						type="button"
-						className={b('extras-back')}
-						onClick={() => setView('grid')}
-						aria-label={t('quick_controls.back')}
-					>
-						<CaretLeft weight="bold" size={14} />
-					</button>
-					<div className={b('extras-tabs')}>
-						<button
-							type="button"
-							className={b('extras-tab', {active: extrasTab === 'extras'})}
-							onClick={() => setExtrasTab('extras')}
-						>
-							{t('quick_controls.extras')}
-						</button>
-						<button
-							type="button"
-							className={b('extras-tab', {active: extrasTab === 'goals'})}
-							onClick={() => setExtrasTab('goals')}
-						>
-							{t('quick_controls.goals')}
-						</button>
-					</div>
+					<BackButton size="sm" onClick={() => setView('grid')} />
+					<TabBar<'extras' | 'goals'>
+						className={b('extras-tabs')}
+						label={t('quick_controls.extras')}
+						value={extrasTab}
+						onChange={setExtrasTab}
+						tabs={[
+							{id: 'extras', label: t('quick_controls.extras')},
+							{id: 'goals', label: t('quick_controls.goals')},
+						]}
+					/>
 				</header>
 				<div className={b('extras-content')}>
 					{extrasTab === 'extras' ? (
@@ -134,8 +134,9 @@ export default function TimerTypeGrid({
 								className={b('all-settings')}
 								onClick={() => window.dispatchEvent(new Event('timerInteractionStart'))}
 							>
-								<Gear weight="bold" size={16} />
+								<Gear weight="regular" size={18} />
 								<span>{t('settings.all_settings')}</span>
+								<CaretRight weight="bold" size={10} aria-hidden="true" />
 							</Link>
 						</>
 					) : (
@@ -160,7 +161,12 @@ export default function TimerTypeGrid({
 					onClick={() => handleSelect(opt)}
 					disabled={opt.disabled}
 				>
-					<div className={itemBlock('item-icon')}>{opt.icon(ICON_SIZE)}</div>
+					<div className={itemBlock('item-icon')}>
+						{opt.icon(ICON_SIZE, 'regular')}
+						{linked[opt.key] && (
+							<span className={b('linked')} role="img" aria-label={t('quick_controls.device_connected')} />
+						)}
+					</div>
 					<span className={itemBlock('item-label')}>{opt.label}</span>
 
 					{opt.beta && <span className={b('beta')}>{t('quick_controls.beta')}</span>}
@@ -175,7 +181,7 @@ export default function TimerTypeGrid({
 							className={b('badge', {locked: true})}
 							aria-label={t('room_settings.not_allowed')}
 						>
-							<Lock weight="fill" size={10} />
+							<Lock weight="fill" size={12} />
 						</span>
 					)}
 					{opt.unsupportedReason && (
@@ -184,7 +190,7 @@ export default function TimerTypeGrid({
 							aria-label={t(opt.unsupportedReason)}
 							title={t(opt.unsupportedReason)}
 						>
-							<Lock weight="fill" size={10} />
+							<Lock weight="fill" size={12} />
 						</span>
 					)}
 				</button>
@@ -194,12 +200,17 @@ export default function TimerTypeGrid({
 			<button
 				type="button"
 				className={[itemBlock('item'), b('card'), b('settings-trigger')].join(' ')}
-				onClick={() => setView('extras')}
+				onClick={() => {
+					hapticImpact('light');
+					setView('extras');
+				}}
 			>
 				<div className={itemBlock('item-icon')}>
-					<Gear weight="bold" size={ICON_SIZE} />
+					<Gear weight="regular" size={ICON_SIZE} />
 				</div>
 				<span className={itemBlock('item-label')}>{t('quick_controls.extras')}</span>
+				{/* The one cell that opens a second screen instead of making a choice. */}
+				<CaretRight className={b('more')} size={10} weight="bold" aria-hidden="true" />
 			</button>
 		</>
 	);

@@ -16,8 +16,9 @@
 		position: relative;
 		text-align: inherit;
 
-		&--disabled {
-			opacity: 0.4;
+		// Locked stays readable: a muted colour and the lock say it, never a faded cell.
+		&--disabled.#{$namespace}-edge-drawer__item {
+			color: $zt-text-muted;
 			cursor: not-allowed;
 			pointer-events: none;
 		}
@@ -25,8 +26,8 @@
 
 	&__badge {
 		position: absolute;
-		top: 6px;
-		right: 6px;
+		top: 4px;
+		right: 4px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -41,178 +42,211 @@
 		}
 
 		&--locked {
-			background: rgba(239, 68, 68, 0.18);
-			color: rgb(239, 68, 68);
-			border: 1px solid rgba(239, 68, 68, 0.4);
+			color: rgb(var(--text-color));
 		}
 	}
 
 	// Magnet Timer is still in beta (K-1). Top-left corner, so it never sits on the Pro
-	// crown (top-right). currentColor keeps it readable on the green active card too.
+	// crown (top-right). currentColor keeps it readable on the active cell too.
 	&__beta {
 		position: absolute;
-		top: 6px;
-		left: 6px;
-		padding: 1px 5px;
-		border-radius: 6px;
+		top: 4px;
+		left: 4px;
+		padding: 0 4px;
+		border-radius: $zt-radius-sm;
 		border: 1px solid currentColor;
-		font-size: 0.6rem;
+		font-size: 0.56rem;
 		font-weight: 700;
 		line-height: 1.3;
 		letter-spacing: 0.02em;
 		pointer-events: none;
 	}
 
-	// 8. kare (Hizli Ayarlar trigger) ekstra stil gerektirmiyor — .edge-drawer__item
-	// default davranisi (bg/border/hover/active) yeterli. b('settings-trigger') class'i
-	// TSX'te tutuldu (ileride modifier gerekirse), ama bos SCSS kurali eklenmedi.
+	// The device behind this input is connected. Beside the icon, clear of the corner badges.
+	&__linked {
+		position: absolute;
+		top: -1px;
+		right: -4px;
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: rgb(var(--success-color));
+		box-shadow: 0 0 0 2px rgb(var(--background-color));
+
+		.#{$namespace}-edge-drawer__item--active & {
+			background: rgb(var(--theme-primary-opposite));
+			box-shadow: none;
+		}
+	}
+
+	// Quick Settings opens a second screen. Between the icon and label rows, so the longest
+	// label still has the whole cell width.
+	&__more {
+		position: absolute;
+		top: 50%;
+		right: 5px;
+		transform: translateY(-50%);
+		color: $zt-text-muted;
+	}
 
 	// ===== EXTRAS VIEW (drawer ic-icine gecisli sayfa) =====
 
-	// Header tek hucre boyunca yayilir (EdgeDrawer __grid 2-col)
+	// Back and the two tabs on one strip, its hairline running to the panel's edges. The empty
+	// slot mirrors the back button, so the line between the tabs falls on the panel's centre.
 	&__extras-header {
 		grid-column: 1 / -1;
 		display: flex;
-		align-items: flex-start;
-		gap: 6px;
-		padding: 0 0 10px;
-		border-bottom: 1px solid rgba(var(--text-color), 0.08);
-		margin-bottom: 6px;
-	}
-
-	&__extras-back {
-		all: unset;
-		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		// Small and pinned to the top-left corner (2.4-c): it used to be a 32px square that
-		// took the room the first tab needed.
-		flex-shrink: 0;
-		width: 24px;
-		height: 30px;
-		border-radius: 6px;
-		color: rgb(var(--text-color));
-		cursor: pointer;
-		transition: background 0.15s ease, transform 0.15s ease;
 
-		&:hover {
-			background: rgba(var(--text-color), 0.08);
+		> :first-child {
+			flex: 0 0 $zt-control-h-sm;
 		}
 
-		&:active {
-			transform: scale(0.92);
+		&::after {
+			content: '';
+			flex: 0 0 $zt-control-h-sm;
 		}
+
+		border-bottom: 1px solid $zt-card-border;
 	}
 
-	// Extras view header'inda geri butonunun sagindaki iki-sekme switcher
-	// (Hizli Ayarlar / Hedefler) — masaustu SettingsDropdown __tab pattern'i.
-	&__extras-tabs {
+	// Two equal halves, each label centred on its own and underlined edge to edge, whatever the
+	// length of the words. A long label (es, ru) takes a second line inside its half.
+	&__extras-tabs.#{$namespace}-tab-bar {
 		flex: 1;
-		display: flex;
-		gap: 4px;
 		min-width: 0;
-	}
+		gap: 0;
+		overflow: visible;
+		border-bottom: 0;
 
-	&__extras-tab {
-		all: unset;
-		box-sizing: border-box;
-		// Sized by their text, so the longer "Hızlı Ayarlar" gets the wider share and stays
-		// on one line; ellipsis only as a last resort in a very narrow panel.
-		flex: 1 1 auto;
-		min-width: 0;
-		display: block;
-		text-align: center;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		padding: 7px 8px;
-		font-size: 0.85rem;
-		font-weight: 600;
-		font-family: inherit;
-		color: rgba(var(--text-color), 0.6);
-		border-radius: 8px;
-		cursor: pointer;
-		transition:
-			background 0.18s ease,
-			color 0.18s ease;
-
-		&:hover:not(&--active) {
-			background: rgba(var(--text-color), 0.06);
-			color: rgba(var(--text-color), 0.9);
-		}
-
-		// The label carries the full text colour, not the accent: on a tinted fill of
-		// the same hue the accent-on-accent pairing left the active tab unreadable.
-		// Text colour also stays correct in both themes, which a hardcoded white does not.
-		&--active {
-			background: rgba(var(--primary-color), 0.15);
-			color: rgb(var(--text-color));
-			box-shadow: inset 0 0 0 1px rgba(var(--primary-color), 0.45);
+		button {
+			flex: 1 1 0;
+			min-width: 0;
+			margin-bottom: 0;
+			font-size: 0.875rem;
+			line-height: 1.15;
+			text-align: center;
+			white-space: normal;
 		}
 	}
 
-	// Extras/Hedefler ortak kapsayici — SABIT en + boy: sekme degisince panel
-	// boyutu birebir ayni kalir (kullanici sarti) ve EdgeDrawer'in icerik-boyut
-	// degisimine bagli reposition (ResizeObserver) mantigi tetiklenmez.
-	//
-	// width WAS a literal 248px, copied from __grid's own max-width instead of its
-	// content-box. __grid is box-sizing:border-box with 12px padding + 1px border
-	// per side, so its content-box is ~26px narrower than 248px. This child then
-	// rendered 26px wider than the space it had, and every row inside it poked
-	// past the panel's rounded edge. 100% fills whatever content-box __grid
-	// actually resolves to (still a single fixed value per render, so the
-	// "size does not change between tabs" contract above still holds).
+	// One fixed size: the panel stays the same when the tab changes (owner's condition), and
+	// EdgeDrawer's reposition on a content resize never fires. Rows run edge to edge, split by
+	// hairlines, the same language as the cell grid. The gear panel on a computer draws these
+	// same rows its own way, hence the scoping; they are Tailwind boxes, hence !important.
 	&__extras-content {
 		grid-column: 1 / -1;
 		width: 100%;
 		box-sizing: border-box;
-		height: min(440px, calc(100vh - 200px));
+		height: min(360px, calc(100vh - 200px));
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
 		overflow-y: auto;
-		padding-right: 2px;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(var(--text-color), 0.2) transparent;
 
-		// Thin scrollbar
-		&::-webkit-scrollbar {
-			width: 6px;
+		.#{$namespace}-quick-extras,
+		.#{$namespace}-quick-goals {
+			> * {
+				margin-top: 0 !important;
+				margin-bottom: 0 !important;
+			}
+
+			> * + * {
+				box-shadow: inset 0 1px 0 $zt-divider;
+			}
 		}
-		&::-webkit-scrollbar-thumb {
-			background: rgba(var(--text-color), 0.15);
-			border-radius: 3px;
+
+		.#{$namespace}-quick-goals > p,
+		.#{$namespace}-quick-goals__heading {
+			padding: $zt-space-3;
 		}
-		&::-webkit-scrollbar-track {
-			background: transparent;
+
+		.rounded-xl {
+			background: transparent !important;
+			border: 0 !important;
+			border-radius: 0 !important;
+		}
+
+		// A row's own padding, on the row or (the cube row) on the line inside it.
+		.py-4.px-4 {
+			min-height: 44px;
+			box-sizing: border-box;
+			padding: $zt-space-1 $zt-space-3 !important;
+			font-size: 0.875rem;
+		}
+
+		.p-4 {
+			padding: $zt-space-3 !important;
+			font-size: 0.875rem;
+
+			// The goal field and its button share the row: both give up side padding so the
+			// field's hint is not cut.
+			input {
+				min-width: 0;
+				padding-inline: $zt-space-2;
+				font-size: 0.8125rem;
+
+				+ button {
+					flex-shrink: 0;
+					padding-inline: $zt-space-2;
+					font-size: 0.8125rem;
+					white-space: nowrap;
+				}
+			}
+		}
+
+		// The rows' labels are full colour here: nothing behind them competes on a flat row.
+		.text-text\/80 {
+			color: rgb(var(--text-color));
+		}
+
+		// A long label (es, ru) takes a second line rather than being cut.
+		.py-4.px-4 > .truncate {
+			white-space: normal;
+			overflow: visible;
+		}
+
+		.#{$namespace}-quick-extras__value {
+			min-width: 32px;
+			color: rgb(var(--text-color));
+			font-family: $zt-font-mono;
 		}
 	}
 
-	// Way out of the quick panel and into the full settings page. Sits at the end of
-	// the extras list, separated by a rule so it does not read as one more toggle.
+	// Way out of the quick panel and into the full settings page. Held to the panel's foot
+	// while the list is short, one more row after it when the list scrolls.
 	&__all-settings {
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		gap: 8px;
+		gap: $zt-space-2;
 		flex-shrink: 0;
-		margin-top: 4px;
-		padding: 12px;
-		border-top: 1px solid rgba(var(--text-color), 0.1);
+		min-height: 44px;
+		margin-top: auto;
+		padding: $zt-space-1 $zt-space-3;
+		box-sizing: border-box;
+		border-top: 1px solid $zt-card-border;
 		color: rgb(var(--text-color));
-		font-size: 0.85rem;
-		font-weight: 600;
+		font-size: 0.875rem;
+		font-weight: 500;
 
-		&:hover {
-			color: rgb(var(--primary-color));
+		> span {
+			flex: 1;
+		}
+
+		> svg:last-child {
+			color: $zt-text-muted;
+		}
+
+		&:active {
+			background: $zt-control-bg;
 		}
 	}
 }
 
-// The Quick Settings view needs more width than the 8 cards: each row holds a label and its
-// control on one line (2.4-a), and at the cards' 248px cap the labels broke into two or three
-// lines. Widened only while that view is on screen. :has() is in every WebView the app
-// supports (iOS 15.4+, evergreen Android WebView); without it the panel keeps 248px and the
-// labels truncate instead of wrapping.
+// Quick Settings is a panel of its own, not the cell grid: each row holds a label and its control
+// on one line (2.4-a), so it takes more width than the cells. It still clips to the rounded panel.
+// :has() is in every WebView the app supports (iOS 15.4+, evergreen Android WebView).
 .#{$namespace}-edge-drawer__drawer--left .#{$namespace}-edge-drawer__grid:has(> .#{$namespace}-timer-type-grid__extras-content) {
-	width: min(320px, calc(100vw - 48px));
-	max-width: min(320px, calc(100vw - 48px));
+	width: min(264px, calc(100vw - 48px));
 }

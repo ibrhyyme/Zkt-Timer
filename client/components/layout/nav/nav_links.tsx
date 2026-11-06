@@ -6,10 +6,10 @@
 
 import React from 'react';
 import {
+	Barbell,
 	ChatCircleDots,
 	Handshake,
 	ChartPie,
-	LadderSimple,
 	Users,
 	ListBullets,
 	Rows,
@@ -87,7 +87,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 	},
 	{
 		name: 'nav.trainer',
-		icon: <LadderSimple weight="bold" />,
+		icon: <Barbell weight="bold" />,
 		match: /^\/trainer/,
 		link: '/trainer',
 		loginRequired: true,

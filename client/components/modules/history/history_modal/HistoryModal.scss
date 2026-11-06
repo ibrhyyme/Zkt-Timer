@@ -442,9 +442,9 @@
 }
 
 // X butonunu gizle - bileşenin kendi "Bitti" butonunu kullanıyoruz
-.zt-modal__center:has(> .zt-history-modal) > button,
-.zt-modal__center:has(> .zt-history-modal--card) > button,
-.zt-modal__center:has(> .zt-history-modal--mobile) > button {
+.zt-modal__center:has(> .zt-history-modal) > button:not(.zt-modal__grabber),
+.zt-modal__center:has(> .zt-history-modal--card) > button:not(.zt-modal__grabber),
+.zt-modal__center:has(> .zt-history-modal--mobile) > button:not(.zt-modal__grabber) {
 	display: none !important;
 }
 
@@ -453,7 +453,7 @@
 .zt-modal--sheet .zt-modal__center:has(> .zt-history-modal--mobile),
 .zt-modal--sheet .zt-modal__center:has(> .zt-history-modal--card) {
 	display: block !important;
-	padding: 14px 0 0 !important;
+	padding: 0 !important;
 	border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0 !important;
 	background: rgb(var(--background-color)) !important;
 	overflow-x: hidden;
@@ -470,6 +470,12 @@
 
 .zt-modal--sheet .zt-history-modal__mobile-header {
 	padding-top: 0;
+}
+
+// Inside a phone sheet the handle is the close. A card bar holds nothing else.
+.zt-modal--sheet .zt-history-modal__mobile-done,
+.zt-modal--sheet .zt-history-modal__card-bar {
+	display: none;
 }
 
 .zt-modal--sheet .zt-history-modal--card {
