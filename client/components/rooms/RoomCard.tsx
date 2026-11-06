@@ -114,14 +114,16 @@ export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom
 
             <div className="room-card__footer">
                 <Button
-                    primary={isMyActiveRoom || !isFull}
-                    disabled={!isMyActiveRoom && atHardLimit}
+                    primary={isMyActiveRoom || isAdmin || !isFull}
+                    disabled={!isMyActiveRoom && !isAdmin && atHardLimit}
                     small
                     onClick={onJoin}
                 >
                     {isMyActiveRoom
                         ? t('rooms.return_to_room')
-                        : atHardLimit
+                        : isAdmin
+                            ? t('rooms.join')
+                            : atHardLimit
                             ? t('rooms.full')
                             : isFull
                                 ? t('rooms.request_to_join')

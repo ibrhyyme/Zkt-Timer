@@ -1782,9 +1782,10 @@ function FriendlyRoomContent() {
     const myParticipant = room.participants.find((p) => p.user_id === me?.id);
     const myRole = getFriendlyRoomRole(room.created_by.id, me?.id, myParticipant?.is_moderator);
     const isHost = myRole === FriendlyRoomRole.OWNER;
-    // Owner and moderators share the room controls (edit, start, next scramble, manage
-    // users). Deleting the room and assigning roles stay owner-only.
-    const canManage = canManageRoom(myRole);
+    const isSiteAdmin = me?.admin === true;
+    // Owner, moderators and site admins share the room controls (edit, start, next scramble,
+    // manage users). Deleting the room and assigning roles leave out moderators.
+    const canManage = isSiteAdmin || canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
 
     // The bottom panel's singles and averages live in RoomStatsPanel (room_stats.ts does the
@@ -1841,7 +1842,7 @@ function FriendlyRoomContent() {
                                             <ArrowCounterClockwise size={18} weight="bold" />
                                             {t('rooms.reset_room')}
                                         </button>
-                                        {isHost && (
+                                        {(isHost || isSiteAdmin) && (
                                             <>
                                                 <div className="zt-room-menu__separator" />
                                                 <button
@@ -2665,6 +2666,7 @@ function FriendlyRoomContent() {
                 ownerId={room.created_by.id}
                 viewerId={me?.id ?? ''}
                 viewerRole={myRole}
+                isSiteAdmin={isSiteAdmin}
                 onKick={(userId) => {
                     getSocket().emit(FriendlyRoomClientEvent.KICK_USER, roomId, userId);
                 }}

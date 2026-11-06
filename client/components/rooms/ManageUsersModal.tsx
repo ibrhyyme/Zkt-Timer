@@ -100,9 +100,8 @@ export default function ManageUsersModal({
     };
 
     const canAssign = isSiteAdmin || canAssignRoles(viewerRole);
-    // The server refuses ownership transfer for anyone but the current owner, so the
-    // button must not appear for site admins either.
-    const canTransfer = canAssignRoles(viewerRole) && !!onTransferOwnership;
+    // The lobby path passes no onTransferOwnership: the viewer is not in the room there.
+    const canTransfer = (isSiteAdmin || canAssignRoles(viewerRole)) && !!onTransferOwnership;
 
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" {...backdropClose}>
@@ -166,7 +165,7 @@ export default function ManageUsersModal({
                                                         : t('rooms.make_moderator')}
                                                 </button>
                                             )}
-                                            {canTransfer && !isSelf && targetRole !== FriendlyRoomRole.OWNER && (
+                                            {canTransfer && (!isSelf || isSiteAdmin) && targetRole !== FriendlyRoomRole.OWNER && (
                                                 <button
                                                     onClick={() => handleTransfer(p.user_id, p.username)}
                                                     className="text-xs font-bold text-orange-400 hover:text-text uppercase tracking-wider px-2 py-1 hover:bg-orange-500/10 rounded transition-colors"

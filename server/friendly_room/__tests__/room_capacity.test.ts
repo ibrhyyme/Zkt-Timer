@@ -90,6 +90,24 @@ describe('addParticipant capacity', () => {
 		expect(create).toHaveBeenCalled();
 	});
 
+	it('lets a site admin into a private room without the password', async () => {
+		const {create} = stub(roomRow(3, {is_private: true, password: PASSWORD_HASH}));
+		await addParticipant('room1', newcomer, undefined, {siteAdmin: true});
+		expect(create).toHaveBeenCalled();
+	});
+
+	it('lets a site admin into a full room without asking the owner', async () => {
+		const {create} = stub(roomRow(8, {is_private: true, password: PASSWORD_HASH}));
+		await addParticipant('room1', newcomer, undefined, {siteAdmin: true});
+		expect(create).toHaveBeenCalled();
+	});
+
+	it('lets a site admin past the system ceiling', async () => {
+		const {create} = stub(roomRow(FriendlyRoomConst.MAX_PLAYERS, {max_players: FriendlyRoomConst.MAX_PLAYERS}));
+		await addParticipant('room1', newcomer, undefined, {siteAdmin: true});
+		expect(create).toHaveBeenCalled();
+	});
+
 	it('never goes past the system ceiling, approved or not', async () => {
 		stub(roomRow(FriendlyRoomConst.MAX_PLAYERS, {max_players: FriendlyRoomConst.MAX_PLAYERS}));
 		await expect(addParticipant('room1', newcomer, undefined, {approved: true})).rejects.toThrow(

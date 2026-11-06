@@ -38,6 +38,7 @@ import {
     isUserBanned,
     unbanParticipant,
     getBannedUsersForRoom,
+    getSiteAdminIds,
     toggleSpectator,
     deleteRoom,
     setModerator,
@@ -100,7 +101,8 @@ const GRACE_PERIOD_MS = FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS;
 // Stored in Redis — multi-instance (cluster/k8s) safe.
 // Guarantees that the same user plays from one room, one socket at a time.
 // When a new device joins the same room, the old socket is dropped with "takeover".
-// Attempt to join a different room is rejected (ALREADY_IN_OTHER_ROOM).
+// Attempt to join a different room is rejected (ALREADY_IN_OTHER_ROOM), except for site
+// admins, who can sit in several rooms. Their session records the latest one.
 type ActiveSession = { roomId: string; socketId: string };
 
 // 4-hour security TTL — auto-cleaned if leaked.
@@ -151,8 +153,10 @@ async function emitJoinRequestsToManagers(roomId: string): Promise<void> {
     if (!room) return;
     const requests = toPublicRequests(await listJoinRequests(roomId));
 
+    const siteAdminIds = await getSiteAdminIds(room.participants.map((p) => p.user_id));
+
     for (const participant of room.participants) {
-        if (!isRoomManager(room, participant.user_id)) continue;
+        if (!isRoomManager(room, participant.user_id) && !siteAdminIds.has(participant.user_id)) continue;
         const session = await getActiveSession(participant.user_id);
         if (session && session.roomId === roomId) {
             io().to(session.socketId).emit(FriendlyRoomServerEvent.JOIN_REQUESTS, { room_id: roomId, requests });
@@ -172,6 +176,15 @@ async function requestToJoin(client: Socket, roomId: string, user: { id: string;
     (client as any).pendingJoinRoomId = roomId;
     client.emit(FriendlyRoomServerEvent.JOIN_REQUEST_PENDING, { room_id: roomId });
     await emitJoinRequestsToManagers(roomId);
+}
+
+// A site admin can be a participant of several rooms, but one socket follows only the room
+// on screen: the client's ROOM_DATA and chat handlers assume a single room per page.
+function followOnlyRoom(client: Socket, socketRoom: string): void {
+    for (const name of Array.from(client.rooms)) {
+        if (name === socketRoom || name === FriendlyRoomSocketRoom.LOBBY) continue;
+        if (name.startsWith(FriendlyRoomSocketRoom.ROOM_PREFIX)) leaveRoom(client, name);
+    }
 }
 
 function getOrCreateEntry(userId: string): DisconnectEntry {
@@ -313,7 +326,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Single active session control: if user is in another room, creation is rejected.
             const existingSession = await getActiveSession(user.id);
             if (existingSession) {
-                const existingRoom = await getRoomForClient(existingSession.roomId);
+                const existingRoom = user.admin === true ? null : await getRoomForClient(existingSession.roomId);
                 if (existingRoom) {
                     logger.info('Friendly room create blocked: user already in another room', {
                         userId: user.id,
@@ -327,7 +340,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     });
                     return;
                 }
-                // Stale entry — no active room, clean up and continue
+                // Stale entry (no active room) or a site admin: clean up and continue
                 await clearActiveSession(user.id);
             }
 
@@ -341,6 +354,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const socketRoom = getFriendlyRoomSocketRoom(room.id);
 
             // Join the socket room
+            if (user.admin === true) followOnlyRoom(client, socketRoom);
             joinRoom(client, socketRoom);
 
             // Record active session
@@ -381,7 +395,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             (client as any).userId = user.id;
 
             // Check if user is banned from this room
-            const banned = await isUserBanned(input.room_id, user.id);
+            const banned = user.admin !== true && (await isUserBanned(input.room_id, user.id));
             if (banned) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Bu odadan yasaklandınız');
                 return;
@@ -392,8 +406,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             let didTakeover = false;
             if (existingSession) {
                 if (existingSession.roomId !== input.room_id) {
-                    // Open session in different room: block
-                    const existingRoom = await getRoomForClient(existingSession.roomId);
+                    // Open session in different room: block, unless a site admin
+                    const existingRoom = user.admin === true ? null : await getRoomForClient(existingSession.roomId);
                     if (existingRoom) {
                         logger.info('Friendly room join blocked: user already in another room', {
                             userId: user.id,
@@ -408,7 +422,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                         });
                         return;
                     }
-                    // Stale entry: clean up and proceed with normal flow
+                    // Stale entry or a site admin: clean up and proceed with normal flow
                     await clearActiveSession(user.id);
                 } else if (existingSession.socketId !== client.id) {
                     // Same room, different device/tab: takeover
@@ -448,7 +462,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             let result: Awaited<ReturnType<typeof addParticipant>>;
             try {
-                result = await addParticipant(input.room_id, user, input.password, { approved });
+                result = await addParticipant(input.room_id, user, input.password, { approved, siteAdmin: user.admin === true });
             } catch (joinError) {
                 if ((joinError as Error).message === FriendlyRoomJoinSignal.REQUEST_REQUIRED) {
                     await requestToJoin(client, input.room_id, user);
@@ -472,6 +486,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const socketRoom = getFriendlyRoomSocketRoom(result.room.id);
 
             // Join the socket room
+            if (user.admin === true) followOnlyRoom(client, socketRoom);
             joinRoom(client, socketRoom);
 
             // Mark active session with new socket (map overwrites after takeover)
@@ -488,8 +503,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Send room data to joining user
             client.emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
 
-            // An owner or moderator arriving (or coming back) sees who is already waiting.
-            if (isRoomManager(result.room, user.id)) {
+            // An owner, moderator or site admin arriving (or coming back) sees who is already waiting.
+            if (isRoomManager(result.room, user.id) || user.admin === true) {
                 const requests = toPublicRequests(await listJoinRequests(result.room.id));
                 client.emit(FriendlyRoomServerEvent.JOIN_REQUESTS, { room_id: result.room.id, requests });
             }
@@ -721,7 +736,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
 
-            const room = await nextScramble(roomId, user.id);
+            const room = await nextScramble(roomId, user.id, user.admin === true);
             if (room) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.SCRAMBLE_UPDATED, {
@@ -747,7 +762,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
 
-            const room = await startRoom(roomId, user.id);
+            const room = await startRoom(roomId, user.id, user.admin === true);
             if (room) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_STARTED, {
@@ -1067,8 +1082,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
-    // Transfer room ownership (current owner only — site admins deliberately excluded,
-    // taking over someone's room is not a moderation action)
+    // Transfer room ownership (current owner or site admin)
     client.on(FriendlyRoomClientEvent.TRANSFER_OWNERSHIP, async (roomId: string, targetUserId: string) => {
         try {
             if (typeof roomId !== 'string' || !roomId) return;
@@ -1079,7 +1093,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             if (!(await socketRateLimit(client, 'transfer_ownership', 10, 60, user.id))) return;
 
-            const result = await transferOwnership(roomId, user.id, targetUserId);
+            const result = await transferOwnership(roomId, user.id, targetUserId, user.admin === true);
             if (!result) {
                 client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Sahiplik devredilemedi' });
                 return;
@@ -1105,7 +1119,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
-    // Owner delete room (room creator only — unconditional, kicks all participants)
+    // Delete room from inside it (room creator or site admin; unconditional, kicks all participants)
     client.on(FriendlyRoomClientEvent.DELETE_ROOM, async (roomId: string) => {
         try {
             const { user } = await getDetailedClientInfo(client);
@@ -1121,15 +1135,14 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            if (roomBeforeDelete.created_by.id !== user.id) {
+            if (roomBeforeDelete.created_by.id !== user.id && user.admin !== true) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Sadece oda sahibi silebilir');
                 return;
             }
 
             const participantIds = roomBeforeDelete.participants.map((p) => p.user_id);
 
-            // isAdmin=false; deleteRoom already performs owner control
-            const success = await deleteRoom(roomId, user.id, false);
+            const success = await deleteRoom(roomId, user.id, user.admin === true);
 
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);

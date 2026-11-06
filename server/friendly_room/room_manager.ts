@@ -296,17 +296,30 @@ export async function getRoomsForUser(userId: string): Promise<FriendlyRoomData[
     return rooms.map(mapRoomToData);
 }
 
+// Which of these users are site admins. The room row does not carry the flag on purpose:
+// it is sent to every client in the room.
+export async function getSiteAdminIds(userIds: string[]): Promise<Set<string>> {
+    if (userIds.length === 0) return new Set();
+    const admins = await prisma().userAccount.findMany({
+        where: { id: { in: userIds }, admin: true },
+        select: { id: true },
+    });
+    return new Set(admins.map((a) => a.id));
+}
+
 // Add participant to room
 //
 // `approved` is set when the room's owner or a moderator accepted this user's request to
 // join a full room (see join_requests.ts). It lets them in past the room's own capacity and
 // skips the password, which was already checked when the request was made. It never lifts
 // the system ceiling, MAX_PLAYERS.
+//
+// `siteAdmin` skips the password, the room's capacity and the system ceiling.
 export async function addParticipant(
     roomId: string,
     user: PublicUserAccount,
     password?: string,
-    options: { approved?: boolean } = {}
+    options: { approved?: boolean; siteAdmin?: boolean } = {}
 ): Promise<{ room: FriendlyRoomData | null; isNew: boolean; newAdminId?: string }> {
     const room = await getRoom(roomId);
     if (!room) {
@@ -327,7 +340,7 @@ export async function addParticipant(
     // Password before capacity. A full room answers with a join request rather than a
     // refusal, and a request must only ever come from someone who knows the password, or
     // anyone could flood the owner with requests for a private room.
-    if (!options.approved && room.is_private && room.password && room.created_by_id !== user.id) {
+    if (!options.approved && !options.siteAdmin && room.is_private && room.password && room.created_by_id !== user.id) {
         if (!password) {
             throw new Error('Password required');
         }
@@ -339,12 +352,12 @@ export async function addParticipant(
 
     // The ceiling no approval can lift: the room table grows a column per person and every
     // event resends every participant's solves, and MAX_PLAYERS is the load that was built for.
-    if (room.participants.length >= FriendlyRoomConst.MAX_PLAYERS) {
+    if (!options.siteAdmin && room.participants.length >= FriendlyRoomConst.MAX_PLAYERS) {
         throw new Error(FriendlyRoomJoinSignal.HARD_LIMIT);
     }
 
     // At the room's own capacity: the owner decides. The socket layer turns this into a request.
-    if (!options.approved && room.participants.length >= room.max_players) {
+    if (!options.approved && !options.siteAdmin && room.participants.length >= room.max_players) {
         throw new Error(FriendlyRoomJoinSignal.REQUEST_REQUIRED);
     }
 
@@ -575,12 +588,12 @@ export async function deleteRoomSolve(roomId: string, userId: string, solveId: s
 }
 
 // Generate next scramble (only room creator can do this)
-export async function nextScramble(roomId: string, userId: string): Promise<FriendlyRoomData | null> {
+export async function nextScramble(roomId: string, userId: string, isAdmin: boolean = false): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    // Owner or moderator can advance scramble
-    if (!canManageRoom(getRoleInRoom(room, userId))) return null;
+    // Owner, moderator or site admin can advance scramble
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, userId))) return null;
 
     const newScramble = generateScrambleForCubeType(room.cube_type);
     const newIndex = room.scramble_index + 1;
@@ -607,12 +620,12 @@ export async function nextScramble(roomId: string, userId: string): Promise<Frie
 }
 
 // Start the room (only room creator)
-export async function startRoom(roomId: string, userId: string): Promise<FriendlyRoomData | null> {
+export async function startRoom(roomId: string, userId: string, isAdmin: boolean = false): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    // Owner or moderator can start
-    if (!canManageRoom(getRoleInRoom(room, userId))) return null;
+    // Owner, moderator or site admin can start
+    if (!isAdmin && !canManageRoom(getRoleInRoom(room, userId))) return null;
 
     // Need at least 1 participant
     if (room.participants.length < 1) return null;
@@ -889,13 +902,14 @@ export async function setModerator(
 export async function transferOwnership(
     roomId: string,
     requesterId: string,
-    targetUserId: string
+    targetUserId: string,
+    isAdmin: boolean = false
 ): Promise<{ room: FriendlyRoomData; new_owner_username: string } | null> {
     const room = await getRoom(roomId);
     if (!room) return null;
 
-    if (room.created_by_id !== requesterId) return null;
-    if (targetUserId === requesterId) return null;
+    if (!isAdmin && room.created_by_id !== requesterId) return null;
+    if (targetUserId === room.created_by_id) return null;
 
     const target = room.participants.find((p) => p.user_id === targetUserId);
     if (!target) return null;
