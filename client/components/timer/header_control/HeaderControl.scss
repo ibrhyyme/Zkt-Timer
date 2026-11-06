@@ -71,7 +71,16 @@
 	// pills, each with its own gradient fill and border: a box in a box that took the most
 	// room exactly where a narrow phone has the least (owner, 2026-10-29). The surface is
 	// the timer modules' own, readable over a background image without a blur.
+	// Computer: the strip with the warm-up toggle beside it. The cell's own child rule above gives
+	// the gap between them.
+	&__left-cell {
+		min-width: 0;
+	}
+
 	&__left-controls {
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-start;
 		height: $zt-control-h-md;
 		background: var(--zt-surface);
 		border: 1px solid var(--zt-surface-border);
@@ -163,7 +172,8 @@
 // While solving the whole bar is inert (Timer.scss sets pointer-events: none +
 // opacity: 0 on --started). Don't let the base auto rules above re-enable the now
 // invisible controls — keep every cell non-interactive during a solve.
-.#{$namespace}-timer--started .#{$namespace}-timer-header-control > div {
+.#{$namespace}-timer--started .#{$namespace}-timer-header-control > div,
+.#{$namespace}-timer--started .#{$namespace}-timer-header-control > div > * {
 	pointer-events: none;
 }
 

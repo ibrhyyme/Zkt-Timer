@@ -37,6 +37,22 @@ describe('isFeatureTipLive', () => {
 	});
 });
 
+describe('the warm-up tip', () => {
+	const warmup = FEATURE_TIPS.find((t) => t.id === 'warmup_mode');
+
+	it('is on the timer page itself, so it has no page to open', () => {
+		expect(warmup.to).toBeUndefined();
+	});
+
+	it('comes before an older tip, and that one gets its turn once it is answered', () => {
+		const now = Date.parse('2026-11-07T12:00:00Z');
+		const oldUser = Date.parse('2026-01-01T00:00:00Z');
+		expect(pickFeatureTip(FEATURE_TIPS, emptyFeatureTipState(), now, () => true, oldUser).id).toBe('warmup_mode');
+		const answered = { seen: ['warmup_mode'], views: {} };
+		expect(pickFeatureTip(FEATURE_TIPS, answered, now, () => true, oldUser).id).toBe('preset_backgrounds');
+	});
+});
+
 describe('pickFeatureTip', () => {
 	const now = release + DAY;
 

@@ -9,6 +9,7 @@ import { FilterSolvesOptions, fetchSolves, fetchLastSolve } from '../../../db/so
 import HistorySolveRow from './solve_row/HistorySolveRow';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb, setOkSolveDb } from '../../../db/solves/operations';
 import { deleteSolveDb } from '../../../db/solves/update';
+import { isWarmupActive } from '../../../lib/warmup/store';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../../util/hooks/useGeneral';
@@ -241,7 +242,8 @@ export default function History(props: Props) {
 
 	// allow hotkey actions only when explicitly enabled and no any modal windows active
 	function isHotKeysEnabled() {
-		return hotKeysEnabled && (!modals || modals.length == 0);
+		// Warm-up solves are not in the database, so "the last solve" would be an older, real one.
+		return hotKeysEnabled && (!modals || modals.length == 0) && !isWarmupActive();
 	}
 
 	function okLastSolve() {

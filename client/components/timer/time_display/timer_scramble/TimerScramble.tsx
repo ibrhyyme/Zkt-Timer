@@ -19,6 +19,7 @@ import { useSmartCubeStore } from '../../../../util/hooks/useSmartCubeStore';
 import { setSetting } from '../../../../db/settings/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
 import { useLatestSolve } from '../../../../util/hooks/useLatestSolve';
+import { useWarmup } from '../../../../lib/warmup/store';
 import useIsomorphicLayoutEffect from '../../../../util/hooks/useIsomorphicLayoutEffect';
 import {
 	countMoves,
@@ -62,7 +63,10 @@ export default function TimerScramble() {
 		isSmart && !!smartCubeConnected && (!!context.smartScrambleStarted || !!context.smartCanStart) && !timeStartedAt;
 
 	// +2 and DNF for latest solve
-	const latestSolve = useLatestSolve();
+	// In warm-up mode the newest saved solve is not the one just made: they must not land on it.
+	const warmupActive = useWarmup().active;
+	const savedLatestSolve = useLatestSolve();
+	const latestSolve = warmupActive ? null : savedLatestSolve;
 
 	// Scramble and Previous / Next history live in the timer store, shared with the mobile
 	// layout, so a tablet rotating across 1024px keeps both.

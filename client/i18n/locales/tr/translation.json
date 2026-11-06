@@ -3762,6 +3762,16 @@
     "signup": "Kayıt Ol",
     "open_app": "Uygulamaya dön"
   },
+  "warmup": {
+    "label": "Isınma",
+    "turn_on": "Isınma modunu aç",
+    "turn_off": "Isınma modunu kapat",
+    "on_notice": "Isınma açık. Çözümlerin kaydedilmez.",
+    "save": "Kaydet",
+    "save_title": "Bu çözümü kaydet",
+    "save_pb_title": "Bu süre yeni PB'n. Kaydetmek için bas.",
+    "saved": "Kaydedildi"
+  },
   "time_display": {
     "inspection_on": "İnceleme Açık",
     "solve": "ÇÖZ",
@@ -5519,7 +5529,8 @@
           "Timer'ın hemen altındaki +2 ve DNF düğmeleri her zaman son çözüme uygulanır.",
           "Çözümler sayfası bütün çözümlerini tek listede toplar. Süre aralığına, cezaya, smart küple yapılıp yapılmadığına ve dışarıdan aktarılıp aktarılmadığına göre süzebilir, süreye ya da tarihe göre sıralayabilirsin.",
           "Aynı sayfada çoklu seçim var: birden fazla çözümü işaretleyip tek seferde silebilirsin.",
-          "Oturum, çözümlerini ayırdığın listedir: ısınma, 3x3 antrenman, tek el gibi. Üstteki oturum menüsünden aralarında geçiş yaparsın. Oturumlar sayfasında yeni oturum açar, ad değiştirir, sırayı sürükleyerek düzenler, iki oturumu birleştirir ya da birkaçını seçip silersin. Ortalamalar her oturum için ayrı hesaplanır."
+          "Oturum, çözümlerini ayırdığın listedir: ısınma, 3x3 antrenman, tek el gibi. Üstteki oturum menüsünden aralarında geçiş yaparsın. Oturumlar sayfasında yeni oturum açar, ad değiştirir, sırayı sürükleyerek düzenler, iki oturumu birleştirir ya da birkaçını seçip silersin. Ortalamalar her oturum için ayrı hesaplanır.",
+          "Isınma modunu üstteki alev düğmesiyle açarsın. Açıkken yaptığın çözümler ne cihaza ne sunucuya yazılır, günlük hedefe ve istatistiklere de girmez. Son çözümü saklamak istersen sürenin altındaki Kaydet düğmesine basarsın. Mod açıkken +2, DNF ve sil düğmeleri kapalıdır. Uygulamayı yeniden açınca ya da 30 dakika çözüm yapmayınca mod kendiliğinden kapanır."
         ]
       },
       "stats": {
@@ -5871,6 +5882,8 @@
   "feature_tips": {
     "new": "Yeni",
     "look": "Göz at",
+    "warmup_mode_title": "Isınma modu",
+    "warmup_mode": "Alev düğmesine bas, ısınırken yaptığın çözümler kaydedilmesin.",
     "preset_backgrounds_title": "Hazır arka planlar",
     "preset_backgrounds": "Timer'ının arkasına canlı bir sahne koy. Temanın renklerini alır."
   }

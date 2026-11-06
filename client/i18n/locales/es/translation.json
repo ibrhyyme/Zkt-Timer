@@ -3779,6 +3779,16 @@
     "signup": "Registrarse",
     "open_app": "Abrir la aplicación"
   },
+  "warmup": {
+    "label": "Calentamiento",
+    "turn_on": "Activar el modo calentamiento",
+    "turn_off": "Desactivar el modo calentamiento",
+    "on_notice": "Calentamiento activado. Tus resuelves no se guardarán.",
+    "save": "Guardar",
+    "save_title": "Guardar este resuelve",
+    "save_pb_title": "Este tiempo es un nuevo PB. Pulsa para guardarlo.",
+    "saved": "Guardado"
+  },
   "time_display": {
     "inspection_on": "Inspección activada",
     "solve": "RESOLVER",
@@ -5539,7 +5549,8 @@
           "Los botones de +2 y DNF que están justo debajo del cronómetro se aplican siempre a tu último resuelve.",
           "La página de resuelves reúne todos tus resuelves en una sola lista. Puedes filtrar por rango de tiempo, por penalización, por si se hizo con cubo inteligente y por si viene importado, y ordenar por tiempo o por fecha.",
           "En esa misma página hay selección múltiple: marcas varios resuelves y los borras de una vez.",
-          "Una sesión es una lista donde separas tus resuelves: calentamiento, práctica de 3x3, a una mano y demás. Cambias entre ellas desde el menú de sesión de arriba. En la página de sesiones creas una sesión, la renombras, reordenas arrastrando, fusionas dos o seleccionas varias y las borras. Las medias se calculan por sesión."
+          "Una sesión es una lista donde separas tus resuelves: calentamiento, práctica de 3x3, a una mano y demás. Cambias entre ellas desde el menú de sesión de arriba. En la página de sesiones creas una sesión, la renombras, reordenas arrastrando, fusionas dos o seleccionas varias y las borras. Las medias se calculan por sesión.",
+          "El modo calentamiento se activa con el botón de la llama, arriba. Mientras esté activo, tus resuelves no se guardan en el dispositivo ni en el servidor, y tampoco cuentan para la meta diaria ni para las estadísticas. Si quieres conservar el último, pulsa Guardar debajo del tiempo. Los botones de +2, DNF y borrar quedan desactivados. El modo se apaga solo cuando vuelves a abrir la app o pasas 30 minutos sin resolver."
         ]
       },
       "stats": {
@@ -5891,6 +5902,8 @@
   "feature_tips": {
     "new": "Nuevo",
     "look": "Echar un vistazo",
+    "warmup_mode_title": "Modo calentamiento",
+    "warmup_mode": "Pulsa el botón de la llama y tus resuelves de calentamiento no se guardarán.",
     "preset_backgrounds_title": "Fondos listos",
     "preset_backgrounds": "Pon una escena animada detrás de tu timer. Toma los colores de tu tema."
   }

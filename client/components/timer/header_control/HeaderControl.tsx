@@ -18,6 +18,7 @@ import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
 import TimerTypePicker from './TimerTypePicker';
 import SettingsDropdown from '../../quick-controls/SettingsDropdown';
+import WarmupToggle from './WarmupToggle';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { generateTimerScramble } from '../helpers/scramble';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
@@ -157,6 +158,7 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 	const timerTypeDropdown = !matchMode && <TimerTypePicker />;
 
 	const sessionSwitcher = !headerOptions.hideSessionSelector && <SessionSwitcher />;
+	const warmupToggle = !matchMode && !headerOptions.hideSessionSelector && <WarmupToggle compact={!!mobileMode} />;
 
 	// Desktop gear: SettingsDropdown (Popover panel + tab switcher).
 	// Mobile gear: kaldirildi — sol drawer (LeftSettingsDrawer) bunun yerini aldi.
@@ -170,6 +172,7 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 					<div className={b('left-controls')}>
 						{cubePicker}
 						{sessionSwitcher}
+						{warmupToggle}
 					</div>
 					<div />
 					<div className={b('right-controls')}>
@@ -185,12 +188,15 @@ const HeaderControlBody = React.memo(function HeaderControlBody(props: HeaderCon
 	return (
 		<GlobalHotKeys handlers={handlers} keyMap={HOTKEY_MAP}>
 			<div className={b()}>
-				<div className={b('left-controls')}>
-					{headerOptions?.customHeadersLeft}
-					{cubePicker}
-					{sessionSwitcher}
-					{timerTypeDropdown}
-					{gearButtonDesktop}
+				<div className={b('left-cell')}>
+					<div className={b('left-controls')}>
+						{headerOptions?.customHeadersLeft}
+						{cubePicker}
+						{sessionSwitcher}
+						{timerTypeDropdown}
+						{gearButtonDesktop}
+					</div>
+					{warmupToggle}
 				</div>
 				<div />
 				<div>

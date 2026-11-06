@@ -4,6 +4,7 @@
 import { getSetting } from '../../db/settings/query';
 import { getSolveDb } from '../../db/solves/init';
 import { isPresetBackgroundId } from '../../components/timer/timer_background/presets/preset_shaders';
+import { isWarmupActive } from '../warmup/store';
 import { FeatureTip } from './feature_tips';
 
 export function isFeatureTipRelevant(tip: FeatureTip): boolean {
@@ -11,6 +12,8 @@ export function isFeatureTipRelevant(tip: FeatureTip): boolean {
 		switch (tip.id) {
 			case 'preset_backgrounds':
 				return !isPresetBackgroundId(getSetting('timer_bg_preset'));
+			case 'warmup_mode':
+				return !isWarmupActive();
 			default:
 				return true;
 		}

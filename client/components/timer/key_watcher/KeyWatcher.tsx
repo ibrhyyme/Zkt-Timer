@@ -17,6 +17,7 @@ import { virtualCubeOwnsKeyboard, virtualCubeSelected } from '../helpers/virtual
 import { setTimerParam, setTimerParams } from '../helpers/params';
 import block from '../../../styles/bem';
 import { endTimer, resetTimerParams, startTimer, startInspection } from '../helpers/events';
+import { isWarmupActive } from '../../../lib/warmup/store';
 import { useDocumentListener, useWindowListener } from '../../../util/hooks/useListener';
 import { hapticImpact } from '../../../util/native-plugins';
 import { isMultiPhaseActive } from '../../../../shared/util/solve/multiphase';
@@ -940,6 +941,11 @@ export default function KeyWatcher(props: Props) {
 
 		// Block shortcuts only during active timer/inspection (not when smart cube is idle)
 		if (timeStartedAt || inInspection || spaceTimerStarted) {
+			return;
+		}
+
+		// Warm-up solves are not in the database, so "the last solve" would be an older, real one.
+		if (isWarmupActive()) {
 			return;
 		}
 

@@ -10,6 +10,7 @@ import { getTimeString } from '../../../util/time';
 import { fetchLastSolve, fetchSolve, FilterSolvesOptions } from '../../../db/solves/query';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { deleteSolveDb } from '../../../db/solves/update';
+import { useWarmup } from '../../../lib/warmup/store';
 import block from '../../../styles/bem';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
@@ -26,6 +27,8 @@ function LastSolve(props: Props) {
 	const dispatch = useDispatch();
 
 	useSolveDb();
+	// In warm-up mode the card shows an older, real solve; a +2 meant for the warm-up must not hit it.
+	const warmupActive = useWarmup().active;
 
 	const { filterOptions } = props;
 	const lastSolve = fetchLastSolve(filterOptions);
@@ -77,11 +80,11 @@ function LastSolve(props: Props) {
 			<div className={b('actions')}>
 				<div>
 					<Button gray icon={<Info weight="bold" />} onClick={showSolveInfo} />
-					<Button gray text="+2" onClick={plusTwoAction} warning={plusTwo} />
-					<Button gray text="DNF" onClick={dnfAction} danger={dnf} />
+					<Button gray text="+2" onClick={plusTwoAction} warning={plusTwo} disabled={warmupActive} />
+					<Button gray text="DNF" onClick={dnfAction} danger={dnf} disabled={warmupActive} />
 				</div>
 				<div>
-					<Button danger flat title="Delete solve" text="Delete" onClick={deleteAction} />
+					<Button danger flat title="Delete solve" text="Delete" onClick={deleteAction} disabled={warmupActive} />
 				</div>
 			</div>
 		</div>

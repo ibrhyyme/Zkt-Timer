@@ -3779,6 +3779,16 @@
     "signup": "Sign Up",
     "open_app": "Open the app"
   },
+  "warmup": {
+    "label": "Warm-up",
+    "turn_on": "Turn warm-up mode on",
+    "turn_off": "Turn warm-up mode off",
+    "on_notice": "Warm-up is on. Your solves won't be saved.",
+    "save": "Save",
+    "save_title": "Save this solve",
+    "save_pb_title": "This time is a new PB. Press to save it.",
+    "saved": "Saved"
+  },
   "time_display": {
     "inspection_on": "Inspection On",
     "solve": "SOLVE",
@@ -5538,7 +5548,8 @@
           "The +2 and DNF buttons right below the timer always apply to your last solve.",
           "The solves page gathers every solve into one list. You can filter by time range, by penalty, by whether the solve was done with a smart cube and by whether it was imported, and sort by time or by date.",
           "The same page has multi-select: tick several solves and delete them in one go.",
-          "A session is a list you keep your solves apart in: warm-up, 3x3 practice, one-handed and so on. You switch between them from the session menu at the top. On the sessions page you create a session, rename it, drag to reorder, merge two of them, or select several and delete them. Averages are worked out per session."
+          "A session is a list you keep your solves apart in: warm-up, 3x3 practice, one-handed and so on. You switch between them from the session menu at the top. On the sessions page you create a session, rename it, drag to reorder, merge two of them, or select several and delete them. Averages are worked out per session.",
+          "Warm-up mode is the flame button at the top. While it's on, your solves aren't written to the device or the server, and they don't count toward your daily goal or stats. To keep the last solve, press Save under the time. The +2, DNF and delete buttons are off in this mode. It turns itself off when you reopen the app or go 30 minutes without a solve."
         ]
       },
       "stats": {
@@ -5890,6 +5901,8 @@
   "feature_tips": {
     "new": "New",
     "look": "Take a look",
+    "warmup_mode_title": "Warm-up mode",
+    "warmup_mode": "Press the flame button and your warm-up solves won't be saved.",
     "preset_backgrounds_title": "Ready-made backgrounds",
     "preset_backgrounds": "Put a live scene behind your timer. It takes your theme colours."
   }

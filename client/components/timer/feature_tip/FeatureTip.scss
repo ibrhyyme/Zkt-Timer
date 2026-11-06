@@ -30,6 +30,15 @@
 		animation: none;
 	}
 
+	// Points at a control on the timer page itself: on a computer the card sits under the header
+	// row, or it would cover the very button its sentence names. On a phone it is under the strip
+	// already.
+	&--on-page {
+		@include bp-up($bp-lg) {
+			top: calc(var(--nav-h, 5.333rem) + 4rem + #{$zt-control-h-md} + #{$zt-space-7});
+		}
+	}
+
 	// No picture: the text gets the room and the left padding matches the right.
 	&:not(#{$self}--visual) {
 		padding-left: $zt-space-4;

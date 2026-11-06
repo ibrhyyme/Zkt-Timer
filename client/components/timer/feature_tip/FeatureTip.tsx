@@ -18,6 +18,7 @@ import {
 	readFeatureTipPreview,
 	readFeatureTipState,
 } from '../../../lib/feature_tips/store';
+import { useWarmup } from '../../../lib/warmup/store';
 import PresetBackground from '../timer_background/presets/PresetBackground';
 import { PRESET_BACKGROUND_IDS } from '../timer_background/presets/preset_shaders';
 
@@ -54,6 +55,7 @@ export default function FeatureTip({ blocked }: Props) {
 	const history = useHistory();
 	const modals = useGeneral('modals');
 	const [tip, setTip] = useState<FeatureTipDef | null>(null);
+	const warmupActive = useWarmup().active;
 
 	const blockedRef = useRef(blocked);
 	blockedRef.current = blocked;
@@ -94,6 +96,11 @@ export default function FeatureTip({ blocked }: Props) {
 		if (blocked) setTip(null);
 	}, [blocked]);
 
+	// The warm-up card has done its job the moment the flame button is pressed.
+	useEffect(() => {
+		if (warmupActive && tip?.id === 'warmup_mode') setTip(null);
+	}, [warmupActive, tip]);
+
 	if (!tip) return null;
 
 	function close() {
@@ -108,7 +115,7 @@ export default function FeatureTip({ blocked }: Props) {
 	}
 
 	return (
-		<div className={b({ visual: !!tip.visual })} role="status">
+		<div className={b({ visual: !!tip.visual, 'on-page': !tip.to })} role="status">
 			{tip.visual === 'preset_backgrounds' && (
 				<div className={b('visual')} aria-hidden="true">
 					<PresetBackgroundsVisual />
@@ -121,9 +128,11 @@ export default function FeatureTip({ blocked }: Props) {
 				</span>
 				<strong className={b('title')}>{t(tip.titleKey)}</strong>
 				<span className={b('text')}>{t(tip.textKey)}</span>
-				<div className={b('actions')}>
-					<Button small primary text={t('feature_tips.look')} icon={<ArrowRight weight="bold" />} onClick={look} />
-				</div>
+				{tip.to && (
+					<div className={b('actions')}>
+						<Button small primary text={t('feature_tips.look')} icon={<ArrowRight weight="bold" />} onClick={look} />
+					</div>
+				)}
 			</div>
 			<CloseButton size="sm" className={b('close')} onClick={close} />
 		</div>

@@ -1,0 +1,47 @@
+@import '../../../styles/config';
+
+// While the mode is on this is a solid fill: forgetting it costs every solve made after that.
+.#{$namespace}-warmup-toggle {
+	flex: 0 0 auto;
+	gap: $zt-space-1;
+
+	// The phone: a square segment of the timer header strip (HeaderControl.scss).
+	&--compact {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: $zt-control-h-md;
+		height: 100%;
+		padding: 0;
+		border: none;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 1.15rem;
+		cursor: pointer;
+
+		&:hover {
+			background: $zt-control-bg;
+		}
+
+		// The strip clips anything drawn outside it.
+		@include zt-focus-ring;
+
+		&:focus-visible {
+			outline-offset: -2px;
+		}
+	}
+
+	// The computer: a control of its own, right of the strip, as tall as the strip.
+	&--lone {
+		@include zt-surface-control;
+		@include zt-focus-ring;
+		pointer-events: auto;
+	}
+
+	&--active,
+	&--active:hover {
+		background: rgb(var(--warning-color));
+		border-color: rgb(var(--warning-color));
+		color: $status-fill-text-dark;
+	}
+}

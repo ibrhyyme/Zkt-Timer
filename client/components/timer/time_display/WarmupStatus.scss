@@ -1,0 +1,77 @@
+@import '../../../styles/config';
+
+// Warm-up mode's chip in the diff's slot under the digits. Same surface and height as the diff and
+// the cube label, so the row reads as before. Like the diff it lets a press through to the timer;
+// only its button takes one, and that button fills the chip's height for a finger.
+.#{$namespace}-warmup-status {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: stretch;
+	height: $zt-control-h-md;
+	margin-top: $zt-space-1;
+	overflow: hidden;
+	box-sizing: border-box;
+	background: var(--zt-surface);
+	border: 1px solid var(--zt-surface-border);
+	border-radius: $zt-radius-md;
+	color: rgb(var(--text-color));
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+	pointer-events: none;
+
+	&__info,
+	&__saved {
+		display: inline-flex;
+		align-items: center;
+		gap: $zt-space-1;
+		padding: 0 $zt-space-3;
+	}
+
+	&__saved {
+		box-shadow: inset 1px 0 0 $zt-divider;
+	}
+
+	&__icon {
+		color: rgb(var(--warning-color));
+	}
+
+	&__count {
+		font-family: $zt-font-mono;
+	}
+
+	&__pb {
+		font-family: $zt-font-mono;
+		font-weight: 700;
+	}
+
+	&__save {
+		padding: 0 $zt-space-3;
+		border: none;
+		background: $zt-control-bg;
+		box-shadow: inset 1px 0 0 $zt-divider;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+		pointer-events: auto;
+
+		&:hover {
+			background: $zt-control-bg-hover;
+		}
+
+		// Would be a new PB. The fill goes on hover too, so the button keeps saying it.
+		&--pb,
+		&--pb:hover {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+		}
+
+		@include zt-focus-ring;
+
+		// The chip clips anything drawn outside it.
+		&:focus-visible {
+			outline-offset: -2px;
+		}
+	}
+}

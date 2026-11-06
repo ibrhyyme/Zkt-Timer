@@ -289,6 +289,17 @@
 			max-width: 100%;
 			justify-content: center;
 		}
+
+		// Warm-up chip (WarmupStatus.scss): wider than a diff, and it has to stay whole.
+		&:has(> .#{$namespace}-warmup-status) {
+			grid-template-columns: minmax(0, 1fr) auto;
+			column-gap: $zt-space-3;
+			max-width: 420px;
+
+			> .#{$namespace}-warmup-status {
+				margin-top: 0;
+			}
+		}
 	}
 
 	&--mobile {
@@ -338,6 +349,10 @@
 		@extend %diff-chip;
 		flex: 0 0 auto;
 		margin-left: auto;
+	}
+
+	> .#{$namespace}-warmup-status {
+		margin: 0 0 0 auto;
 	}
 }
 

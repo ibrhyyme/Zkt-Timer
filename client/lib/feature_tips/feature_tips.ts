@@ -22,13 +22,22 @@ export interface FeatureTip {
 	titleKey: string;
 	/** i18n key of the sentence under it. */
 	textKey: string;
-	/** Where "Take a look" goes. */
-	to: string;
+	/**
+	 * Where "Take a look" goes. Left out for a feature on the timer page itself: the sentence
+	 * points at it and the card has only its close button.
+	 */
+	to?: string;
 	/** A live picture of the feature beside the text (timer/feature_tip/FeatureTip.tsx). */
 	visual?: 'preset_backgrounds';
 }
 
 export const FEATURE_TIPS: FeatureTip[] = [
+	{
+		id: 'warmup_mode',
+		releasedAt: '2026-11-06',
+		titleKey: 'feature_tips.warmup_mode_title',
+		textKey: 'feature_tips.warmup_mode',
+	},
 	{
 		id: 'preset_backgrounds',
 		releasedAt: '2026-11-03',

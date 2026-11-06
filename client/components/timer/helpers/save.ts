@@ -9,6 +9,7 @@ import { normalizeWcaEventBucket } from '../../../../shared/solve';
 import { getCubeState, noteCubeSolve } from '../../../lib/cubes/store';
 import { getSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import { cubeIdForSolve, CubeStampSolve } from './cube_stamp';
+import { isWarmupActive, noteWarmupSolve, warmupAppliesTo } from '../../../lib/warmup/store';
 
 /**
  * The physical cube a solve saved now is made with (design magnet-cubes 4.3): the connected
@@ -67,6 +68,13 @@ export function saveSolve(
 	// Room solves (onSolve) carry no cube (K-3). An explicit cube_id from the caller wins.
 	if (!onSolve && solveObject.cube_id === undefined) {
 		solveObject.cube_id = activeCubeIdForSave(solveObject);
+	}
+
+	// Warm-up mode: nothing is written, nothing counts. Every input method ends up here, so this
+	// one branch covers them all. The object stays in memory for the Save button.
+	if (warmupAppliesTo(context) && isWarmupActive()) {
+		noteWarmupSolve(solveObject);
+		return;
 	}
 
 	if (onSolve) {

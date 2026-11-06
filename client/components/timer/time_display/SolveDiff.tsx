@@ -5,6 +5,8 @@ import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { fetchSolves } from '../../../db/solves/query';
 import { TimerContext } from '../Timer';
 import { smartCubeSelected } from '../helpers/util';
+import { useWarmup } from '../../../lib/warmup/store';
+import WarmupStatus from './WarmupStatus';
 import block from '../../../styles/bem';
 import './SolveDiff.scss';
 
@@ -17,6 +19,7 @@ function SolveDiff() {
     // FAST_TIMER_FIELDS); only whether any of it is left matters here.
     const inspectionLeft = useSelector((state: RootStateOrAny) => state.timer.inspectionTimer > 0);
     const sessionId = useActiveSessionId();
+    const warmupActive = useWarmup().active;
 
     // Subscribe to DB updates
     useSolveDb();
@@ -27,6 +30,10 @@ function SolveDiff() {
     // under it described neither (feedback 2.3-c, "0.00 (+4.58)").
     if (timeStartedAt || solving || (context.inInspection && inspectionLeft) || (smartCubeSelected(context) && context.smartNeedsCubeReset)) {
         return <div className={b()} style={{ visibility: 'hidden' }}>&nbsp;</div>;
+    }
+
+    if (warmupActive) {
+        return <WarmupStatus />;
     }
 
     const solves = fetchSolves({ session_id: sessionId }, { limit: 20 });
