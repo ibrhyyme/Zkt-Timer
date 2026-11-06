@@ -32,17 +32,25 @@ import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEf
 
 const b = block('header-nav');
 
+// Keep in step with `&__indicator` in HeaderNav.scss.
+const INDICATOR_HEIGHT = 2;
+
+// The app mounts anew on every route, and this nav with it, so a position kept in
+// component state is gone by the time the new route renders and the line could only
+// ever jump. Kept here it outlives the instance. Written from layout effects only,
+// which never run on the server, so requests cannot share it and hydration still
+// starts from nothing.
+let lastIndicatorPlace: { left: number; top: number; width: number } | null = null;
+let lastIndicatorPathname: string | null = null;
+
 interface HeaderNavLinkProps extends NavLinkProps {
 	selected?: boolean;
-	hovered?: boolean;
 	// Icon only, no label. Set by HeaderNav when the labelled strip cannot fit.
 	compact?: boolean;
-	onHoverStart?: (e: React.PointerEvent<HTMLAnchorElement>) => void;
-	onHoverEnd?: (e: React.PointerEvent<HTMLAnchorElement>) => void;
 }
 
 function HeaderNavLink(props: HeaderNavLinkProps) {
-	const { name, icon, newTag, loginRequired, selected, hovered, compact, onHoverStart, onHoverEnd } = props;
+	const { name, icon, newTag, loginRequired, selected, compact } = props;
 	let link = props.link;
 	const { t } = useTranslation();
 	const me = useMe();
@@ -54,8 +62,7 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		'h-9',
 		'px-3',
 		'rounded-lg',
-		'border',
-		'transition-all',
+		'transition-colors',
 		'focus:outline-none',
 		'focus-visible:ring-2',
 		'focus-visible:ring-primary',
@@ -63,20 +70,16 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		'z-[1]',
 	];
 
-	if (selected || hovered) {
-		linkClasses.push(
-			'text-tmo-primary',
-			'border-transparent',
-		);
+	if (selected) {
+		// Bold and full colour carry the state on their own: on Save the Bees and Norman
+		// the accent line alone has too little contrast against the page.
+		linkClasses.push('text-text', 'font-bold');
 	} else {
 		linkClasses.push(
-			'text-text/90',
-			// Hover tint only where a real hover exists: on a touch screen `:hover` latches
+			'text-text/[0.72]',
+			// Hover only where a real hover exists: on a touch screen `:hover` latches
 			// onto the last tapped tab and stays there until the next tap elsewhere.
 			'[@media(hover:hover)]:hover:text-text',
-			'bg-text/5',
-			'[@media(hover:hover)]:hover:bg-text/10',
-			'border-text/10'
 		);
 	}
 
@@ -93,11 +96,9 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 			// it away from screen readers, so name the link itself while compact.
 			title={compact ? label : undefined}
 			aria-label={compact ? label : undefined}
-			onPointerEnter={onHoverStart}
-			onPointerLeave={onHoverEnd}
 		>
 			<span className="text-lg">{icon}</span>
-			<span>{label}</span>
+			<span className={b('label')} data-label={label}>{label}</span>
 		</Link>
 	);
 }
@@ -121,11 +122,17 @@ export default function HeaderNav(props: Props = {}) {
 	const rankingsLaunched = useBattleLaunch()?.launched === true;
 
 	const mobileMode = useGeneral('mobile_mode');
-	// Pill nav state
+	// Active tab indicator state
 	const navRef = useRef<HTMLElement>(null);
-	// `animate`: whether this move slides. Only the user moving between tabs (route,
-	// hover) slides; a re-measure because the strip's layout changed jumps.
-	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false, animate: false });
+	// `animate`: whether this move slides. Only the user moving between tabs slides; a
+	// re-measure because the strip's layout changed jumps.
+	const [indicatorPos, setIndicatorPos] = useState(() => ({
+		left: lastIndicatorPlace?.left ?? 0,
+		top: lastIndicatorPlace?.top ?? 0,
+		width: lastIndicatorPlace?.width ?? 0,
+		ready: lastIndicatorPlace !== null,
+		animate: false,
+	}));
 
 	// Label/icon switch. See measureFit below for why this is measured rather than
 	// hung off a breakpoint.
@@ -156,69 +163,48 @@ export default function HeaderNav(props: Props = {}) {
 		pathname = match.path;
 	}
 
-	// Hover state for the sliding pill. Mouse only, read from pointer events.
-	//
-	// It used to listen to mouseenter/mouseleave. A tap on a touch screen fires a
-	// compatibility mouseenter and no mouseleave until the next tap lands somewhere
-	// else, so on a tablet the tapped tab stayed "hovered" and kept the pill.
-	// Pointer events say which device it was, and a touch pointer has no hover.
-	const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-	const hoveredElRef = useRef<HTMLElement | null>(null);
-
-	const handleHoverStart = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
-		if (e.pointerType !== 'mouse') return;
-		hoveredElRef.current = e.currentTarget;
-		setHoveredLink(e.currentTarget.getAttribute('href') || '');
-	}, []);
-
-	const handleHoverEnd = useCallback((e: React.PointerEvent<HTMLAnchorElement>) => {
-		if (e.pointerType !== 'mouse') return;
-		hoveredElRef.current = null;
-		setHoveredLink(null);
-	}, []);
-
-	// A route change always starts from the active tab.
-	useEffect(() => {
-		hoveredElRef.current = null;
-		setHoveredLink(null);
-	}, [pathname]);
-
-	// Put the pill under the hovered tab, or the active one.
+	// Put the line under the active tab. Hover never moves it: when it followed the
+	// mouse, the page you were on lost its mark.
 	//
 	// Measured in a layout effect that re-runs whenever the strip's layout can
-	// change (route, hover, compact switch, language, sign-in). It used to be
-	// measured once in a passive effect on mount. That effect is flushed before
-	// the compact re-render that measureFit's layout effect schedules, so on any
-	// screen narrow enough for the icon-only strip (every tablet) the pill took the
-	// width of the LABELLED tab and then sat across Timer and Battle until a mouse
-	// hover re-measured it. Touch never hovers, so it stayed there.
+	// change (route, compact switch, language, sign-in). It used to be measured once
+	// in a passive effect on mount. That effect is flushed before the compact
+	// re-render that measureFit's layout effect schedules, so on any screen narrow
+	// enough for the icon-only strip (every tablet) it took the width of the LABELLED
+	// tab and then sat across Timer and Battle.
 	//
 	// On a hard load the first measure ran on the fallback font. When the web font
-	// arrived the tabs changed width, the observer re-measured, and the pill slid
+	// arrived the tabs changed width, the observer re-measured, and the indicator slid
 	// across the strip from where the fallback had put it, so every full load showed
 	// it under the wrong tab for a moment. Now it stays hidden until the fonts are in,
 	// and a re-measure caused by layout jumps instead of sliding.
-	const measurePill = useCallback((animate = false) => {
+	const measureIndicator = useCallback((animate = false) => {
 		const nav = navRef.current;
 		if (!nav) return;
 		const fonts = typeof document !== 'undefined' ? (document as any).fonts : null;
 		if (fonts && fonts.status !== 'loaded') {
-			fonts.ready.then(() => measurePill(false));
+			fonts.ready.then(() => measureIndicator(false));
 			return;
 		}
-		const hovered = hoveredElRef.current;
-		const target =
-			hovered && nav.contains(hovered) ? hovered : (nav.querySelector('[data-active]') as HTMLElement | null);
+		const target = nav.querySelector('[data-active]') as HTMLElement | null;
 		if (!target) {
-			setPillPos((prev) => (prev.ready ? { ...prev, ready: false } : prev));
+			// A page with no tab (settings, profile): the next tab fades in where it is
+			// instead of sliding from whichever tab came before.
+			lastIndicatorPlace = null;
+			setIndicatorPos((prev) => (prev.ready ? { ...prev, ready: false } : prev));
 			return;
 		}
-		setPillPos((prev) => {
+		const place = {
+			left: target.offsetLeft,
+			// Inside the tab's own box: the strip is a scroll container and would clip
+			// anything hanging below it.
+			top: target.offsetTop + target.offsetHeight - INDICATOR_HEIGHT,
+			width: target.offsetWidth,
+		};
+		lastIndicatorPlace = place;
+		setIndicatorPos((prev) => {
 			const next = {
-				left: target.offsetLeft,
-				top: target.offsetTop,
-				width: target.offsetWidth,
-				height: target.offsetHeight,
+				...place,
 				ready: true,
 				// The first placement never slides in from the corner.
 				animate: animate && prev.ready,
@@ -226,8 +212,7 @@ export default function HeaderNav(props: Props = {}) {
 			return prev.ready &&
 				prev.left === next.left &&
 				prev.top === next.top &&
-				prev.width === next.width &&
-				prev.height === next.height
+				prev.width === next.width
 				? prev
 				: next;
 		});
@@ -335,21 +320,19 @@ export default function HeaderNav(props: Props = {}) {
 	}, [measureFit, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
 
 	// After measureFit on purpose: layout effects run in declaration order, so the
-	// pill is measured against the strip in its settled compact state.
-	// Slides only when the user moved: a new route or a hover. The other deps re-measure
-	// for a layout change and jump.
-	const pillRouteRef = useRef({ pathname, hoveredLink });
+	// indicator is measured against the strip in its settled compact state.
+	// Slides only when the user moved to a new route. The other deps re-measure for a
+	// layout change and jump.
 	useIsomorphicLayoutEffect(() => {
-		const prev = pillRouteRef.current;
-		const moved = prev.pathname !== pathname || prev.hoveredLink !== hoveredLink;
-		pillRouteRef.current = { pathname, hoveredLink };
-		measurePill(moved);
-	}, [measurePill, pathname, hoveredLink, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
+		const moved = lastIndicatorPathname !== null && lastIndicatorPathname !== pathname;
+		lastIndicatorPathname = pathname;
+		measureIndicator(moved);
+	}, [measureIndicator, pathname, compact, mobileMode, !!me, i18n.language, rankingsLaunched]);
 
 	// Anything else that moves the tabs (window resize, the 14/15px rem switch, a
 	// late web font) changes the strip's size, so watch the strip itself.
 	useEffect(() => {
-		const remeasure = () => measurePill(false);
+		const remeasure = () => measureIndicator(false);
 		window.addEventListener('resize', remeasure);
 		let observer: ResizeObserver | null = null;
 		if (typeof ResizeObserver !== 'undefined' && navRef.current) {
@@ -360,7 +343,7 @@ export default function HeaderNav(props: Props = {}) {
 			window.removeEventListener('resize', remeasure);
 			if (observer) observer.disconnect();
 		};
-	}, [measurePill, mobileMode]);
+	}, [measureIndicator, mobileMode]);
 
 	let notifications = <InboxPanel />;
 	if (!me) {
@@ -372,10 +355,7 @@ export default function HeaderNav(props: Props = {}) {
 			{...link}
 			key={link.name}
 			selected={link.match.test(pathname)}
-			hovered={hoveredLink === link.link}
 			compact={compact}
-			onHoverStart={handleHoverStart}
-			onHoverEnd={handleHoverEnd}
 		/>
 	));
 
@@ -441,19 +421,18 @@ export default function HeaderNav(props: Props = {}) {
 				{/* Center - Navigation Links */}
 				<div ref={centerRef} className={b('center')}>
 					<nav ref={navRef} className={b('nav')} data-compact={compact ? 'true' : 'false'}>
-						{/* Sliding pill indicator */}
+						{/* Sliding line under the active tab */}
 						<motion.div
-							className={b('pill')}
+							className={b('indicator')}
 							initial={false}
 							animate={{
-								x: pillPos.left,
-								y: pillPos.top,
-								width: pillPos.width,
-								height: pillPos.height,
-								opacity: pillPos.ready ? 1 : 0,
+								x: indicatorPos.left,
+								y: indicatorPos.top,
+								width: indicatorPos.width,
+								opacity: indicatorPos.ready ? 1 : 0,
 							}}
 							transition={
-								pillPos.animate
+								indicatorPos.animate
 									? {
 										type: 'spring',
 										stiffness: 500,

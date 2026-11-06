@@ -125,13 +125,27 @@
 		}
 	}
 
-	&__pill {
+	// A hidden bold copy of the label holds the tab's width, so the row does not shift
+	// when the active tab goes bold. HeaderNav.tsx also measures the strip with it.
+	&__label {
+		display: inline-grid;
+
+		&::after {
+			content: attr(data-label);
+			height: 0;
+			overflow: hidden;
+			visibility: hidden;
+			font-weight: 700;
+		}
+	}
+
+	// The active tab's line, in the user's own accent. Height stays in step with
+	// INDICATOR_HEIGHT in HeaderNav.tsx.
+	&__indicator {
 		position: absolute;
 		top: 0;
 		left: 0;
-		border-radius: $zt-radius-md;
-		// The user's own accent, flat. Was an indigo-to-fuchsia gradient with a coloured
-		// glow, the same on every theme and every custom palette.
+		height: 2px;
 		background: rgb(var(--primary-color));
 		pointer-events: none;
 		z-index: 0;

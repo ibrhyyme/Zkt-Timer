@@ -121,10 +121,14 @@ describe('design language: shared primitives stay flat', () => {
 		expect(mixin.slice(0, mixin.indexOf('}'))).not.toMatch(/backdrop-filter/);
 	});
 
-	it('the nav pill is the user accent, not a fixed gradient', () => {
+	it('the nav indicator is the user accent, not a fixed gradient', () => {
 		const nav = read('components/layout/header_nav/HeaderNav.scss');
-		const pill = nav.slice(nav.indexOf('&__pill'));
-		expect(pill.slice(0, pill.indexOf('}'))).not.toMatch(/gradient|box-shadow/);
+		const start = nav.indexOf('&__indicator');
+		expect(start).toBeGreaterThan(-1);
+		const indicator = nav.slice(start);
+		const rule = indicator.slice(0, indicator.indexOf('}'));
+		expect(rule).toMatch(/rgb\(var\(--primary-color\)\)/);
+		expect(rule).not.toMatch(/gradient|box-shadow/);
 	});
 });
 
