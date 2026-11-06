@@ -35,11 +35,26 @@ float hash(vec2 p) {
 	p += dot(p, p + 45.32);
 	return fract(p.x * p.y);
 }
+// The value of one corner of the noise grid. Neighbouring cells read each shared corner
+// through separate calls, and they have to agree or a hard seam shows along the cell edge.
+// Float arithmetic can't promise that: GPU compilers may round each call differently (seen
+// on Adreno), and the float hash above turns one rounding step into a different value.
+// Integers have no rounding, so every GPU gets the same answer.
+float cornerHash(ivec2 c) {
+	uvec2 v = uvec2(c) * 1664525u + 1013904223u;
+	v.x += v.y * 1664525u;
+	v.y += v.x * 1664525u;
+	v ^= v >> 16u;
+	v.x += v.y * 1664525u;
+	v.y += v.x * 1664525u;
+	v ^= v >> 16u;
+	return float(v.x >> 8u) / 16777216.0;
+}
 float noise(vec2 p) {
-	vec2 i = floor(p);
+	ivec2 i = ivec2(floor(p));
 	vec2 f = fract(p);
 	vec2 u = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+	return mix(mix(cornerHash(i), cornerHash(i + ivec2(1, 0)), u.x), mix(cornerHash(i + ivec2(0, 1)), cornerHash(i + ivec2(1, 1)), u.x), u.y);
 }
 float fbm(vec2 p) {
 	float v = 0.0;
@@ -210,6 +225,7 @@ vec3 scene(vec2 fc) {
 export function presetFragmentSource(id: PresetBackgroundId): string {
 	return `#version 300 es
 precision highp float;
+precision highp int;
 out vec4 o;
 ${COMMON}
 ${BODIES[id]}

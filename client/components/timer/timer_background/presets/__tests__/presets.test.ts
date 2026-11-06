@@ -42,6 +42,17 @@ describe('shader sources', () => {
 			expect(src.match(/void main\(\)/g)).toHaveLength(1);
 		}
 	});
+
+	it('read the noise corners through integers, so no GPU draws seams between cells', () => {
+		for (const id of PRESET_BACKGROUND_IDS) {
+			const src = presetFragmentSource(id);
+			// Integers default to mediump in a fragment shader: 16 bits on many phones.
+			expect(src).toContain('precision highp int;');
+			const noise = src.slice(src.indexOf('float noise(vec2 p)'), src.indexOf('float fbm(vec2 p)'));
+			expect(noise.match(/cornerHash\(/g)).toHaveLength(4);
+			expect(noise).not.toMatch(/\bhash\(/);
+		}
+	});
 });
 
 describe('theme colours', () => {
