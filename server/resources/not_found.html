@@ -4,15 +4,33 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 	<meta name="robots" content="noindex, follow" />
 	<meta name="description" content="Page not found. Return to ZKT Timer, the advanced online Rubik's cube timer and speedcubing platform." />
-	<link rel="icon" type="image/png" href="https://zktimer.app/public/images/zkt-logo.png" />
+	<link rel="icon" type="image/png" href="/public/images/zkt-logo.png" />
+	<title>Sayfa bulunamadı | ZKT Timer</title>
 
-	<title>404 - Sayfa Bulunamadı | ZKT Timer</title>
+	<!-- This file is sent as it is, so everything lives here: no server rendering, no
+	     bundle, nothing from a third party. The language and theme come from the
+	     visitor's browser, which also keeps the page safe to cache at the edge. -->
+	<script>
+		// Same snapshot the app's <head> script reads (server/html_template.ts).
+		try {
+			var t = JSON.parse(localStorage.getItem('zkt_theme'));
+			if (t) {
+				var s = document.documentElement.style;
+				if (t.bg) s.setProperty('--background-color', t.bg);
+				if (t.txt) s.setProperty('--text-color', t.txt);
+				if (t.pri) {
+					s.setProperty('--primary-color', t.pri);
+					// A light accent (some Pro themes) needs dark text on its fill.
+					var c = t.pri.split(',').map(Number);
+					if (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] > 170) s.setProperty('--on-primary', '12, 13, 23');
+				}
+			}
+		} catch (e) {}
+	</script>
 
 	<style>
-		/* The app's own self-hosted face; nothing here loads from a third party. */
 		@font-face {
 			font-family: 'Archivo';
 			src: url('/public/fonts/archivo/archivo-latin.woff2') format('woff2-variations');
@@ -27,6 +45,19 @@
 			font-display: swap;
 			unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+2C60-2C7F, U+A720-A7FF;
 		}
+		@font-face {
+			font-family: 'Roboto Mono';
+			src: url('/public/fonts/google/roboto-mono/roboto-mono-400-latin.woff2') format('woff2');
+			font-weight: 400;
+			font-display: swap;
+		}
+
+		:root {
+			--background-color: 18, 20, 28;
+			--text-color: 255, 255, 255;
+			--primary-color: 36, 107, 253;
+			--on-primary: 255, 255, 255;
+		}
 
 		* {
 			margin: 0;
@@ -34,530 +65,233 @@
 			box-sizing: border-box;
 		}
 
-		body,
-		html {
-			height: 100%;
-			width: 100%;
-			font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
-			overflow: hidden;
-		}
-
-		.container {
-			width: 100%;
-			height: 100%;
-			background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+		body {
+			min-height: 100vh;
+			min-height: 100dvh;
 			display: flex;
-			justify-content: center;
 			align-items: center;
-			position: relative;
-			overflow: hidden;
+			justify-content: center;
+			padding: 32px 16px;
+			background: rgb(var(--background-color));
+			color: rgb(var(--text-color));
+			font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+			font-weight: 500;
 		}
 
-		/* Animated background particles */
-		.particles {
-			position: absolute;
+		main {
 			width: 100%;
-			height: 100%;
-			overflow: hidden;
-		}
-
-		.particle {
-			position: absolute;
-			width: 4px;
-			height: 4px;
-			background: rgba(0, 217, 90, 0.3);
-			border-radius: 50%;
-			animation: float 15s infinite;
-		}
-
-		.particle:nth-child(1) {
-			left: 10%;
-			animation-delay: 0s;
-			animation-duration: 12s;
-		}
-
-		.particle:nth-child(2) {
-			left: 20%;
-			animation-delay: 2s;
-			animation-duration: 14s;
-		}
-
-		.particle:nth-child(3) {
-			left: 30%;
-			animation-delay: 4s;
-			animation-duration: 16s;
-		}
-
-		.particle:nth-child(4) {
-			left: 40%;
-			animation-delay: 1s;
-			animation-duration: 13s;
-		}
-
-		.particle:nth-child(5) {
-			left: 50%;
-			animation-delay: 3s;
-			animation-duration: 15s;
-		}
-
-		.particle:nth-child(6) {
-			left: 60%;
-			animation-delay: 5s;
-			animation-duration: 11s;
-		}
-
-		.particle:nth-child(7) {
-			left: 70%;
-			animation-delay: 2.5s;
-			animation-duration: 17s;
-		}
-
-		.particle:nth-child(8) {
-			left: 80%;
-			animation-delay: 0.5s;
-			animation-duration: 14s;
-		}
-
-		.particle:nth-child(9) {
-			left: 90%;
-			animation-delay: 3.5s;
-			animation-duration: 12s;
-		}
-
-		.particle:nth-child(10) {
-			left: 15%;
-			animation-delay: 1.5s;
-			animation-duration: 16s;
-		}
-
-		@keyframes float {
-			0% {
-				transform: translateY(100vh) scale(0);
-				opacity: 0;
-			}
-
-			10% {
-				opacity: 1;
-			}
-
-			90% {
-				opacity: 1;
-			}
-
-			100% {
-				transform: translateY(-100vh) scale(1);
-				opacity: 0;
-			}
-		}
-
-		/* Glowing orb */
-		.glow-orb {
-			position: absolute;
-			width: 400px;
-			height: 400px;
-			background: radial-gradient(circle, rgba(0, 217, 90, 0.15) 0%, transparent 70%);
-			border-radius: 50%;
-			animation: pulse 4s ease-in-out infinite;
-		}
-
-		@keyframes pulse {
-
-			0%,
-			100% {
-				transform: scale(1);
-				opacity: 0.5;
-			}
-
-			50% {
-				transform: scale(1.2);
-				opacity: 0.8;
-			}
-		}
-
-		.content {
+			max-width: 560px;
 			text-align: center;
-			z-index: 10;
-			max-width: 600px;
-			padding: 40px;
-			animation: fadeInUp 0.8s ease-out;
-		}
-
-		@keyframes fadeInUp {
-			from {
-				opacity: 0;
-				transform: translateY(30px);
-			}
-
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
-
-		/* 3D Cube Animation */
-		.cube-container {
-			perspective: 600px;
-			width: 120px;
-			height: 120px;
-			margin: 0 auto 40px;
 		}
 
 		.cube {
-			width: 100%;
-			height: 100%;
-			position: relative;
-			transform-style: preserve-3d;
-			animation: rotateCube 8s linear infinite;
+			display: block;
+			width: 148px;
+			height: auto;
+			margin: 0 auto 24px;
 		}
 
-		@keyframes rotateCube {
-			0% {
-				transform: rotateX(-20deg) rotateY(0deg);
-			}
-
-			100% {
-				transform: rotateX(-20deg) rotateY(360deg);
-			}
+		.code {
+			font-family: 'Roboto Mono', ui-monospace, Menlo, Consolas, monospace;
+			font-size: 5.5rem;
+			font-weight: 400;
+			line-height: 1;
+			letter-spacing: -0.02em;
+			font-variant-numeric: tabular-nums;
 		}
 
-		.cube-face {
-			position: absolute;
-			width: 100px;
-			height: 100px;
-			border: 3px solid rgba(255, 255, 255, 0.15);
-			border-radius: 12px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			font-size: 2.5rem;
-			font-weight: 900;
-			color: rgba(255, 255, 255, 0.9);
-			box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
-		}
-
-		.cube-face--front {
-			background: linear-gradient(135deg, #00d95a, #00b74a);
-			transform: translateZ(50px);
-		}
-
-		.cube-face--back {
-			background: linear-gradient(135deg, #246bfd, #0052cc);
-			transform: rotateY(180deg) translateZ(50px);
-		}
-
-		.cube-face--right {
-			background: linear-gradient(135deg, #ff4757, #cc2f2f);
-			transform: rotateY(90deg) translateZ(50px);
-		}
-
-		.cube-face--left {
-			background: linear-gradient(135deg, #ff9500, #cc7700);
-			transform: rotateY(-90deg) translateZ(50px);
-		}
-
-		.cube-face--top {
-			background: linear-gradient(135deg, #ffffff, #e6e6e6);
-			transform: rotateX(90deg) translateZ(50px);
-			color: #333;
-		}
-
-		.cube-face--bottom {
-			background: linear-gradient(135deg, #ffeb3b, #ffd600);
-			transform: rotateX(-90deg) translateZ(50px);
-			color: #333;
-		}
-
-		.error-code {
-			font-size: 8rem;
-			font-weight: 900;
-			letter-spacing: -0.05em;
-			margin-bottom: 10px;
-			display: flex;
-			justify-content: center;
-			gap: 5px;
-		}
-
-		.error-code span:nth-child(1),
-		.error-code span:nth-child(3) {
-			color: #00d95a;
-			text-shadow: 0 0 40px rgba(0, 217, 90, 0.4);
-		}
-
-		.error-code span:nth-child(2) {
-			background: linear-gradient(135deg, #ff4757, #ff9500);
-			-webkit-background-clip: text;
-			-webkit-text-fill-color: transparent;
-			background-clip: text;
-		}
-
-		.title {
-			font-size: 1.8rem;
+		h1 {
+			margin-top: 12px;
+			font-size: 1.5rem;
 			font-weight: 700;
-			color: #ffffff;
-			margin-bottom: 15px;
 		}
 
-		.description {
-			font-size: 1.1rem;
-			color: rgba(255, 255, 255, 0.6);
-			line-height: 1.6;
-			margin-bottom: 40px;
+		.lead {
+			margin-top: 8px;
+			line-height: 1.5;
+			color: rgba(var(--text-color), 0.72);
 		}
 
-		.buttons {
+		.actions {
 			display: flex;
-			gap: 15px;
-			justify-content: center;
 			flex-wrap: wrap;
+			justify-content: center;
+			gap: 8px;
+			margin-top: 24px;
 		}
 
 		.btn {
 			display: inline-flex;
 			align-items: center;
-			gap: 10px;
-			padding: 14px 28px;
-			border-radius: 12px;
-			font-size: 1rem;
+			justify-content: center;
+			gap: 8px;
+			min-height: 40px;
+			padding: 0 16px;
+			border: 0;
+			border-radius: 4px;
+			background: rgba(var(--text-color), 0.08);
+			color: rgb(var(--text-color));
+			font: inherit;
+			font-size: 0.9375rem;
 			font-weight: 600;
 			text-decoration: none;
-			transition: all 0.3s ease;
 			cursor: pointer;
-			border: none;
 		}
 
-		.btn--primary {
-			background: linear-gradient(135deg, #00d95a, #00b74a);
-			color: #fff;
-			box-shadow: 0 4px 20px rgba(0, 217, 90, 0.3);
+		.btn:hover {
+			background: rgba(var(--text-color), 0.12);
+		}
+
+		.btn--primary,
+		.btn--primary:hover {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--on-primary));
 		}
 
 		.btn--primary:hover {
-			transform: translateY(-3px);
-			box-shadow: 0 8px 30px rgba(0, 217, 90, 0.4);
+			box-shadow: inset 0 0 0 100px rgba(0, 0, 0, 0.12);
 		}
 
-		.btn--secondary {
-			background: rgba(255, 255, 255, 0.08);
-			color: rgba(255, 255, 255, 0.8);
-			border: 1px solid rgba(255, 255, 255, 0.15);
+		.btn[hidden] {
+			display: none;
 		}
 
-		.btn--secondary:hover {
-			background: rgba(255, 255, 255, 0.12);
-			transform: translateY(-3px);
-			border-color: rgba(255, 255, 255, 0.25);
-		}
-
-		.quick-links {
-			margin-top: 50px;
-			padding-top: 30px;
-			border-top: 1px solid rgba(255, 255, 255, 0.1);
-		}
-
-		.quick-links-title {
-			font-size: 0.85rem;
-			color: rgba(255, 255, 255, 0.4);
-			text-transform: uppercase;
-			letter-spacing: 0.15em;
-			margin-bottom: 20px;
-		}
-
-		.quick-links-list {
+		nav {
 			display: flex;
-			gap: 10px;
-			justify-content: center;
 			flex-wrap: wrap;
+			justify-content: center;
+			gap: 4px;
+			margin-top: 32px;
+			padding-top: 16px;
+			border-top: 1px solid rgba(var(--text-color), 0.09);
 		}
 
-		.quick-link {
-			display: flex;
+		nav a {
+			display: inline-flex;
 			align-items: center;
 			gap: 8px;
-			padding: 10px 18px;
-			background: rgba(255, 255, 255, 0.05);
-			border: 1px solid rgba(255, 255, 255, 0.08);
-			border-radius: 8px;
-			color: rgba(255, 255, 255, 0.6);
-			font-size: 0.9rem;
+			min-height: 32px;
+			padding: 0 8px;
+			border-radius: 4px;
+			color: rgba(var(--text-color), 0.72);
+			font-size: 0.875rem;
 			text-decoration: none;
-			transition: all 0.2s ease;
 		}
 
-		.quick-link:hover {
-			background: rgba(0, 217, 90, 0.1);
-			border-color: rgba(0, 217, 90, 0.3);
-			color: #00d95a;
-			transform: translateY(-2px);
+		nav a:hover {
+			color: rgb(var(--text-color));
 		}
 
-		.quick-link svg {
-			width: 18px;
-			height: 18px;
+		a:focus-visible,
+		button:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
 		}
 
-		/* Responsive */
-		@media (max-width: 600px) {
-			.error-code {
-				font-size: 5rem;
+		@media (max-width: 767.98px) {
+			.cube {
+				width: 120px;
 			}
 
-			.title {
-				font-size: 1.4rem;
+			.code {
+				font-size: 4.5rem;
 			}
 
-			.description {
-				font-size: 1rem;
+			.btn {
+				min-height: 48px;
 			}
 
-			.cube-container {
-				width: 100px;
-				height: 100px;
-			}
-
-			.cube-face {
-				width: 80px;
-				height: 80px;
-				font-size: 1.8rem;
-			}
-
-			.cube-face--front {
-				transform: translateZ(40px);
-			}
-
-			.cube-face--back {
-				transform: rotateY(180deg) translateZ(40px);
-			}
-
-			.cube-face--right {
-				transform: rotateY(90deg) translateZ(40px);
-			}
-
-			.cube-face--left {
-				transform: rotateY(-90deg) translateZ(40px);
-			}
-
-			.cube-face--top {
-				transform: rotateX(90deg) translateZ(40px);
-			}
-
-			.cube-face--bottom {
-				transform: rotateX(-90deg) translateZ(40px);
+			.actions .btn {
+				flex: 1 1 100%;
 			}
 		}
 	</style>
 </head>
 
 <body>
-	<div class="container">
-		<!-- Background particles -->
-		<div class="particles">
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
-			<div class="particle"></div>
+	<main>
+		<svg class="cube" viewBox="-86 -96 172 192" aria-hidden="true">
+			<g stroke-linejoin="round" stroke-width="3">
+				<polygon points="0.00,-90.00 77.94,-45.00 77.94,45.00 0.00,90.00 -77.94,45.00 -77.94,-45.00" fill="#0b0c0f" stroke="#0b0c0f" stroke-width="6"/>
+				<polygon points="0.00,0.00 -25.98,15.00 0.00,30.00 25.98,15.00" fill="#25272d"/>
+				<polygon points="0.00,0.00 25.98,15.00 25.98,-15.00 0.00,-30.00" fill="#191b1f"/>
+				<polygon points="0.00,0.00 -25.98,15.00 -25.98,-15.00 0.00,-30.00" fill="#1f2126"/>
+				<polygon points="-25.98,-18.40 -46.07,-30.00 -25.98,-41.60 -5.89,-30.00" fill="#ff801f" stroke="#ff801f"/>
+				<polygon points="-51.96,-33.40 -72.05,-45.00 -51.96,-56.60 -31.87,-45.00" fill="#1abe57" stroke="#1abe57"/>
+				<polygon points="25.98,-18.40 5.89,-30.00 25.98,-41.60 46.07,-30.00" fill="#3d7ce0" stroke="#3d7ce0"/>
+				<polygon points="0.00,-33.40 -20.09,-45.00 0.00,-56.60 20.09,-45.00" fill="#ece8e2" stroke="#ece8e2"/>
+				<polygon points="-25.98,-48.40 -46.07,-60.00 -25.98,-71.60 -5.89,-60.00" fill="#eb4242" stroke="#eb4242"/>
+				<polygon points="51.96,-33.40 31.87,-45.00 51.96,-56.60 72.05,-45.00" fill="#eb4242" stroke="#eb4242"/>
+				<polygon points="25.98,-48.40 5.89,-60.00 25.98,-71.60 46.07,-60.00" fill="#ffe62a" stroke="#ffe62a"/>
+				<polygon points="0.00,-63.40 -20.09,-75.00 0.00,-86.60 20.09,-75.00" fill="#ff801f" stroke="#ff801f"/>
+				<polygon points="-28.93,-13.30 -49.02,-24.90 -49.02,-1.70 -28.93,9.90" fill="#3368bc" stroke="#3368bc"/>
+				<polygon points="-54.91,-28.30 -75.00,-39.90 -75.00,-16.70 -54.91,-5.10" fill="#c6c3be" stroke="#c6c3be"/>
+				<polygon points="-2.94,31.70 -23.04,20.10 -23.04,43.30 -2.94,54.90" fill="#c6c3be" stroke="#c6c3be"/>
+				<polygon points="-28.93,16.70 -49.02,5.10 -49.02,28.30 -28.93,39.90" fill="#16a049" stroke="#16a049"/>
+				<polygon points="-54.91,1.70 -75.00,-9.90 -75.00,13.30 -54.91,24.90" fill="#d6c123" stroke="#d6c123"/>
+				<polygon points="-2.94,61.70 -23.04,50.10 -23.04,73.30 -2.94,84.90" fill="#d6c123" stroke="#d6c123"/>
+				<polygon points="-28.93,46.70 -49.02,35.10 -49.02,58.30 -28.93,69.90" fill="#d66c1a" stroke="#d66c1a"/>
+				<polygon points="-54.91,31.70 -75.00,20.10 -75.00,43.30 -54.91,54.90" fill="#c53737" stroke="#c53737"/>
+				<polygon points="28.93,-13.30 49.02,-24.90 49.02,-1.70 28.93,9.90" fill="#ad9c1d" stroke="#ad9c1d"/>
+				<polygon points="54.91,-28.30 75.00,-39.90 75.00,-16.70 54.91,-5.10" fill="#ad9c1d" stroke="#ad9c1d"/>
+				<polygon points="2.94,31.70 23.04,20.10 23.04,43.30 2.94,54.90" fill="#ad5715" stroke="#ad5715"/>
+				<polygon points="28.93,16.70 49.02,5.10 49.02,28.30 28.93,39.90" fill="#a02d2d" stroke="#a02d2d"/>
+				<polygon points="54.91,1.70 75.00,-9.90 75.00,13.30 54.91,24.90" fill="#12813b" stroke="#12813b"/>
+				<polygon points="2.94,61.70 23.04,50.10 23.04,73.30 2.94,84.90" fill="#295498" stroke="#295498"/>
+				<polygon points="28.93,46.70 49.02,35.10 49.02,58.30 28.93,69.90" fill="#a09e9a" stroke="#a09e9a"/>
+				<polygon points="54.91,31.70 75.00,20.10 75.00,43.30 54.91,54.90" fill="#295498" stroke="#295498"/>
+			</g>
+		</svg>
+		<div class="code">404</div>
+		<h1 data-t="title">Sayfa bulunamadı</h1>
+		<p class="lead" data-t="lead">Bu adres yanlış ya da sayfa artık yok.</p>
+
+		<div class="actions">
+			<a href="/" class="btn btn--primary"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><path d="M152,208V160a8,8,0,0,0-8-8H112a8,8,0,0,0-8,8v48a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V115.5a8.3,8.3,0,0,1,2.6-5.9l80-72.7a8,8,0,0,1,10.8,0l80,72.7a8.3,8.3,0,0,1,2.6,5.9V208a8,8,0,0,1-8,8H160A8,8,0,0,1,152,208Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path></svg><span data-t="home">Ana sayfaya dön</span></a>
+			<button type="button" class="btn" id="back" hidden><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><polyline points="160 208 80 128 160 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></polyline></svg><span data-t="back">Geri dön</span></button>
 		</div>
 
-		<!-- Glowing orb -->
-		<div class="glow-orb"></div>
+		<nav>
+			<a href="/timer"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><circle cx="128" cy="140" r="88" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></circle><line x1="128" y1="140" x2="161.9" y2="106.1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><line x1="104" y1="12" x2="152" y2="12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line></svg><span data-t="timer">Timer</span></a>
+			<a href="/trainer"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><line x1="64" y1="32" x2="64" y2="224" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><line x1="192" y1="32" x2="192" y2="224" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><line x1="64" y1="72" x2="192" y2="72" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><line x1="64" y1="128" x2="192" y2="128" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><line x1="64" y1="184" x2="192" y2="184" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line></svg><span data-t="trainer">Trainer</span></a>
+			<a href="/rooms"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><path d="M236.7,121.8,212,134.1,180,72.9l25-12.5a7.9,7.9,0,0,1,10.6,3.4l24.6,47.1A8,8,0,0,1,236.7,121.8Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M44,133.1,19.3,120.7a7.9,7.9,0,0,1-3.5-10.8L40.4,62.8A8,8,0,0,1,51,59.3L76,71.8Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M212,134.1l-12,18.8-36.8,36.8a8.5,8.5,0,0,1-7.6,2.1l-58-14.5a8,8,0,0,1-2.9-1.5L44,133.1" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M200,152.9l-44-32-12.8,9.6a32.1,32.1,0,0,1-38.4,0l-5.4-4.1a8.1,8.1,0,0,1-.9-12.1l39.2-39.1a7.9,7.9,0,0,1,5.6-2.3H180" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M76.6,71.8l47.3-15a8,8,0,0,1,5.5.4L164,72.9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M108,220.9l-30.1-7.6a7.4,7.4,0,0,1-3.3-1.7L52,192" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path></svg><span data-t="rooms">Odalar</span></a>
+			<a href="/competitions"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><circle cx="88" cy="108" r="52" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></circle><path d="M155.4,57.9A54.5,54.5,0,0,1,169.5,56a52,52,0,0,1,0,104" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M16,197.4a88,88,0,0,1,144,0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path><path d="M169.5,160a87.9,87.9,0,0,1,72,37.4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path></svg><span data-t="competitions">Yarışmalar</span></a>
+			<a href="/battle"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true" fill="currentColor" viewBox="0 0 256 256"><polyline points="72.2 128.2 152.2 40.2 216 40 215.8 103.8 127.8 183.8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></polyline><line x1="100" y1="156" x2="160" y2="96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></line><path d="M82.1,205.5,60.2,227.4a8,8,0,0,1-11.3,0L28.6,207.1a8,8,0,0,1,0-11.3l21.9-21.9a8,8,0,0,0,0-11.4L33.7,145.7a8,8,0,0,1,0-11.4l16.6-16.6a8,8,0,0,1,11.4,0l76.6,76.6a8,8,0,0,1,0,11.4l-16.6,16.6a8,8,0,0,1-11.4,0L93.5,205.5A8,8,0,0,0,82.1,205.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="24"></path></svg><span data-t="battle">Battle</span></a>
+		</nav>
+	</main>
 
-		<div class="content">
-			<!-- 3D Cube -->
-			<div class="cube-container">
-				<div class="cube">
-					<div class="cube-face cube-face--front">?</div>
-					<div class="cube-face cube-face--back">!</div>
-					<div class="cube-face cube-face--right">×</div>
-					<div class="cube-face cube-face--left">∅</div>
-					<div class="cube-face cube-face--top">404</div>
-					<div class="cube-face cube-face--bottom">⚠</div>
-				</div>
-			</div>
+	<script>
+		(function () {
+			var TEXT = {"tr":{"title":"Sayfa bulunamadı","lead":"Bu adres yanlış ya da sayfa artık yok.","home":"Ana sayfaya dön","back":"Geri dön","timer":"Timer","trainer":"Trainer","rooms":"Odalar","competitions":"Yarışmalar","battle":"Battle"},"en":{"title":"Page not found","lead":"This address is wrong or the page no longer exists.","home":"Back to home","back":"Go back","timer":"Timer","trainer":"Trainer","rooms":"Rooms","competitions":"Competitions","battle":"Battle"},"es":{"title":"Página no encontrada","lead":"Esta dirección es incorrecta o la página ya no existe.","home":"Volver al inicio","back":"Volver","timer":"Timer","trainer":"Entrenador","rooms":"Salas","competitions":"Competiciones","battle":"Batalla"},"ru":{"title":"Страница не найдена","lead":"Этот адрес неверен, или страницы больше нет.","home":"На главную","back":"Назад","timer":"Таймер","trainer":"Тренажёр","rooms":"Комнаты","competitions":"Соревнования","battle":"Битва"},"zh":{"title":"页面未找到","lead":"这个地址有误,或者页面已不存在。","home":"返回首页","back":"返回","timer":"计时器","trainer":"训练器","rooms":"房间","competitions":"比赛","battle":"对战"}};
 
-			<!-- Error code -->
-			<div class="error-code">
-				<span>4</span>
-				<span>0</span>
-				<span>4</span>
-			</div>
+			// Same order as the app: the saved language, then the browser's list, then English.
+			function pick() {
+				var saved = document.cookie.match(/(?:^|; )zkt_language=([^;]*)/);
+				var tags = (saved ? [saved[1]] : []).concat(navigator.languages || [navigator.language || '']);
+				for (var i = 0; i < tags.length; i++) {
+					var code = String(tags[i]).toLowerCase().split('-')[0];
+					if (TEXT[code]) return code;
+				}
+				return 'en';
+			}
 
-			<h1 class="title">Sayfa Bulunamadı</h1>
-			<p class="description">
-				Aradığınız sayfa mevcut değil veya taşınmış olabilir.<br>
-				Belki de karıştırma algoritması bu sefer yanlış çalıştı? 🎲
-			</p>
+			var lang = pick();
+			var text = TEXT[lang];
+			document.documentElement.lang = lang;
+			document.title = text.title + ' | ZKT Timer';
+			var nodes = document.querySelectorAll('[data-t]');
+			for (var i = 0; i < nodes.length; i++) nodes[i].textContent = text[nodes[i].getAttribute('data-t')];
 
-			<div class="buttons">
-				<a href="/" class="btn btn--primary">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-						viewBox="0 0 256 256">
-						<path
-							d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V168h32v48a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68Z" />
-					</svg>
-					Ana Sayfaya Dön
-				</a>
-				<a href="javascript:history.back()" class="btn btn--secondary">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-						viewBox="0 0 256 256">
-						<path
-							d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
-					</svg>
-					Geri Dön
-				</a>
-			</div>
-
-			<div class="quick-links">
-				<div class="quick-links-title">Hızlı Erişim</div>
-				<div class="quick-links-list">
-					<a href="/timer" class="quick-link">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-							viewBox="0 0 256 256">
-							<path
-								d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z" />
-						</svg>
-						Timer
-					</a>
-					<a href="/trainer" class="quick-link">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-							viewBox="0 0 256 256">
-							<path
-								d="M224,80v96a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V80A16,16,0,0,1,48,64H208A16,16,0,0,1,224,80Zm-96,40a32,32,0,1,0-32-32A32,32,0,0,0,128,120Zm0,16c-21.65,0-40,14.33-40,32v8h80v-8C168,150.33,149.65,136,128,136Z" />
-						</svg>
-						Trainer
-					</a>
-					<a href="/rooms" class="quick-link">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-							viewBox="0 0 256 256">
-							<path
-								d="M244.8,150.4a8,8,0,0,1-11.2-1.6A51.6,51.6,0,0,0,192,128a8,8,0,0,1-7.59-5.47,8,8,0,0,1,1.54-8.23A24,24,0,1,0,144.29,84a8,8,0,1,1-13.55-8.51A40,40,0,1,1,208.5,104a68.5,68.5,0,0,1,38.64,24.88A8,8,0,0,1,244.8,150.4ZM190.9,218a8,8,0,1,1-13.87,8c-12-20.7-32.59-33-55-33s-43,12.34-55.06,33a8,8,0,1,1-13.84-8c10-17.26,25.27-29.51,43.28-35.11a48,48,0,1,1,51.22,0C165.63,188.5,180.88,200.74,190.9,218Z" />
-						</svg>
-						Live Rooms
-					</a>
-					<a href="/competitions" class="quick-link">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-							viewBox="0 0 256 256">
-							<path
-								d="M232,64H208V56a16,16,0,0,0-16-16H64A16,16,0,0,0,48,56v8H24A16,16,0,0,0,8,80V96a40,40,0,0,0,40,40h3.65A80.13,80.13,0,0,0,120,191.61V216H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V191.58c31.94-3.23,58.44-25.64,68.08-55.58H208a40,40,0,0,0,40-40V80A16,16,0,0,0,232,64Z" />
-						</svg>
-						WCA Competitions
-					</a>
-					<a href="/battle" class="quick-link">
-						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
-							viewBox="0 0 256 256">
-							<path
-								d="M216,32H152a8,8,0,0,0-6.34,3.12l-64,83.21L72,108.69a16,16,0,0,0-22.64,0l-12.69,12.7a16,16,0,0,0,0,22.63l20,20-28,28a16,16,0,0,0,0,22.63l12.69,12.68a16,16,0,0,0,22.62,0l28-28,20,20a16,16,0,0,0,22.64,0l12.69-12.7a16,16,0,0,0,0-22.63l-9.64-9.64,83.21-64A8,8,0,0,0,224,104V40A8,8,0,0,0,216,32Zm-8,68.06-81.74,62.88L115.32,152l50.34-50.34a8,8,0,0,0-11.32-11.31L104,140.68,93.07,129.74,155.94,48H208Z" />
-						</svg>
-						Battle
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
+			// A page opened from an outside link has nowhere to go back to.
+			if (history.length > 1) {
+				var back = document.getElementById('back');
+				back.hidden = false;
+				back.addEventListener('click', function () {
+					history.back();
+				});
+			}
+		})();
+	</script>
 </body>
 
 </html>

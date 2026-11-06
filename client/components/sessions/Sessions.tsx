@@ -501,6 +501,7 @@ export default function Sessions() {
 								noMargin
 								maxWidth
 								placeholder={t('sessions.session_name_placeholder')}
+								maxLength={200}
 								value={tempSessionName}
 								onChange={handleNameChange}
 							/>
@@ -515,6 +516,7 @@ export default function Sessions() {
 							<Button
 								text={t('sessions.done')}
 								onClick={saveSessionName}
+								disabled={!tempSessionName.trim()}
 								primary
 								noMargin
 							/>

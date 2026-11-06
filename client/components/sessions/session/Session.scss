@@ -19,6 +19,14 @@
 		font-size: 1rem;
 		font-weight: 500;
 		text-align: left;
+		// A name can be 200 characters with no space in it. It breaks inside the card and
+		// stops at three lines, so the row stays a row; the settings panel shows all of it.
+		overflow-wrap: anywhere;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	// Count, best and mean on one line under the name. Full contrast and its own

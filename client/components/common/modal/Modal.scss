@@ -65,6 +65,8 @@
 		color: $zt-text-muted;
 		margin: $zt-space-3 0;
 		line-height: 1.5;
+		// Descriptions quote user-written names, which may have no space to break at.
+		overflow-wrap: anywhere;
 	}
 
 	&__center {
