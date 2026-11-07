@@ -1,9 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="public/images/zkt-logo.png">
-  <img src="public/images/zkt-logo-white.png" alt="Zkt Timer" width="300">
-</picture>
+<img src="docs/images/zkt-timer-logo.png" alt="ZKT Timer" width="200">
 
 ### A complete speedcubing ecosystem, all in one place
 
@@ -23,7 +20,7 @@ Timer · Magnet Timer · Smart Cube · Algorithm Trainer · Puzzle Solvers · On
 
 ## Overview
 
-Zkt Timer is a full-stack speedcubing platform I have been building for the cubing community since 2025. It
+ZKT Timer is a full-stack speedcubing platform I have been building for the cubing community since 2025. It
 brings everything a cuber needs into a single product: a precision timer with Bluetooth smart-cube support and
 a hands-free Magnet Timer, an algorithm trainer with shareable algorithm sets, a full suite of puzzle solvers,
 real-time rooms and rated 1v1 online battles, direct messages, and live tracking of WCA and ZKT competitions.
@@ -36,13 +33,13 @@ everything lives under one roof, with your solves, sessions, and progress synced
 
 <p align="center">
   <img src="docs/images/screenshots/timer.png" alt="Timer" width="260">
-  <img src="docs/images/screenshots/trainer.png" alt="Trainer" width="260">
+  <img src="docs/images/screenshots/smart-cube.png" alt="Smart cube solve breakdown" width="260">
   <img src="docs/images/screenshots/algorithms.png" alt="Algorithm Trainer" width="260">
 </p>
 <p align="center">
-  <img src="docs/images/screenshots/battle.png" alt="Battle" width="260">
-  <img src="docs/images/screenshots/competitions.png" alt="Competitions" width="260">
-  <img src="docs/images/screenshots/profile.png" alt="Profile" width="260">
+  <img src="docs/images/screenshots/rooms.png" alt="Rooms" width="260">
+  <img src="docs/images/screenshots/competitions.png" alt="Competition schedule" width="260">
+  <img src="docs/images/screenshots/stats.png" alt="Statistics" width="260">
 </p>
 
 ## Features
@@ -65,7 +62,7 @@ cube, gyroscope orientation, MAC discovery, and full move replay. Scramble moves
 a wrong move shows its fix. After a solve you get a Cross / F2L / OLL / PLL breakdown with move count and TPS,
 plus per-case statistics for OLL and PLL. The connection stays alive as you move between the timer, rooms, and
 the trainer. The protocol parsing logic is adapted from csTimer; the connection layer, reconnect handling,
-native BLE adapter for iOS and Android, and the visualization are built for Zkt Timer.
+native BLE adapter for iOS and Android, and the visualization are built for ZKT Timer.
 
 ### Algorithm Trainer
 Drill OLL, PLL, F2L, ZBLL, OLLCP, and many more algorithm sets, each with its own statistics, smart queue
@@ -112,14 +109,14 @@ three-tier membership model (Free, Pro, Premium), push notifications, and offlin
 
 ## Architecture
 
-How Zkt Timer fits together, from a user's request to the response and from a commit to the app stores: web
+How ZKT Timer fits together, from a user's request to the response and from a commit to the app stores: web
 and mobile entry points, Cloudflare and Nginx, the Node.js server (Express, GraphQL, Socket.IO, SSR) with its
 PostgreSQL, Redis, and Elasticsearch data layer, the external services it calls, the device-side pieces
 (Bluetooth sensors, offline sync, over-the-air updates), push notifications, in-app purchases, and the CI/CD
 pipeline.
 
 <div align="center">
-  <img src="docs/images/architecture.png" alt="Zkt Timer request flow architecture" width="900">
+  <img src="docs/images/architecture.png" alt="ZKT Timer request flow architecture" width="900">
 </div>
 
 **Stack:** React 17 · custom esbuild SSR · type-graphql + Apollo Server · Prisma + PostgreSQL · Redis ·
@@ -139,12 +136,12 @@ The full stack (PostgreSQL, Redis, app server) runs with `docker compose up`.
 
 ## Credits & References
 
-Zkt Timer was built by bringing together work from many open-source projects. Some parts were ported and
+ZKT Timer was built by bringing together work from many open-source projects. Some parts were ported and
 adapted, some were rewritten in a different language, and some were designed from scratch for this project.
 Each reference is documented individually, stating both what was taken from it and what was built on top.
 
 Full attribution is on the **[Credits page](https://zktimer.app/credits)**, along with the features that were
-designed for Zkt Timer itself. My thanks go to the authors and developers of every project listed there.
+designed for ZKT Timer itself. My thanks go to the authors and developers of every project listed there.
 
 ## License
 
