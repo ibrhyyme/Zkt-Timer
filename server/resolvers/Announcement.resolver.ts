@@ -11,8 +11,9 @@ import { TranslateAnnouncementResult } from '../schemas/Translation.schema';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
-import { sendPushToAll, sendPushToPlatforms } from '../services/push';
+import { sendPushToAll, sendPushToAllLocalized, sendPushToPlatforms } from '../services/push';
 import { translateAnnouncement } from '../util/gemini';
+import { SUPPORTED_LANGUAGES, matchSupportedLanguage } from '../../shared/i18n_language';
 
 const ANNOUNCEMENT_CATEGORIES = ['FEATURE', 'BUGFIX', 'IMPORTANT', 'INFO'];
 const MAX_ANNOUNCEMENT_TITLE_LENGTH = 200;
@@ -45,8 +46,19 @@ function validateAnnouncementFields(title?: string, content?: string, category?:
 	}
 }
 
-function getLocale(context: GraphQLContext): string {
-	return context.req.cookies?.zkt_language || 'en';
+// The user's settings.locale first: the client keeps it equal to the app's language
+// (client/i18n/server-locale-sync.ts). The zkt_language cookie alone is not enough,
+// because the native app's cookie lives on its local origin and never reaches the API.
+async function getLocale(context: GraphQLContext): Promise<string> {
+	if (context.user?.id) {
+		const settings = await context.prisma.setting.findUnique({
+			where: { user_id: context.user.id },
+			select: { locale: true },
+		});
+		const fromSettings = matchSupportedLanguage(settings?.locale);
+		if (fromSettings) return fromSettings;
+	}
+	return matchSupportedLanguage(context.req.cookies?.zkt_language) || 'en';
 }
 
 function resolveLocale(announcement: any, lang: string) {
@@ -70,7 +82,7 @@ export class AnnouncementResolver {
 		}
 
 		try {
-			const lang = getLocale(context);
+			const lang = await getLocale(context);
 
 			// Using include to prevent N+1 problem
 			const announcements = await context.prisma.announcement.findMany({
@@ -183,7 +195,7 @@ export class AnnouncementResolver {
 		}
 
 		try {
-			const lang = getLocale(context);
+			const lang = await getLocale(context);
 
 			const viewedAnnouncements = await context.prisma.announcementView.findMany({
 				where: { userId: context.user.id },
@@ -250,9 +262,25 @@ export class AnnouncementResolver {
 				if (announcement.targetUrl) {
 					pushData.link = announcement.targetUrl;
 				}
-				const pushPromise = input.notificationPlatforms && input.notificationPlatforms.length > 0
-					? sendPushToPlatforms(input.notificationPlatforms, announcement.title, body, pushData)
-					: sendPushToAll(announcement.title, body, pushData);
+				const platforms = input.notificationPlatforms && input.notificationPlatforms.length > 0
+					? input.notificationPlatforms
+					: undefined;
+				// Translated: every device gets the push in its owner's language, the same
+				// text resolveLocale shows in the app. Untranslated: the original for all.
+				const pushPromise = announcement.translations
+					? sendPushToAllLocalized({
+						platforms,
+						locales: SUPPORTED_LANGUAGES,
+						fallbackLocale: 'en',
+						build: (locale) => {
+							const localized = resolveLocale(announcement, locale);
+							return { title: localized.title, body: localized.content.substring(0, 200) };
+						},
+						data: pushData,
+					})
+					: platforms
+						? sendPushToPlatforms(platforms, announcement.title, body, pushData)
+						: sendPushToAll(announcement.title, body, pushData);
 				// Persist delivery stats once the push finishes (still non-blocking)
 				pushPromise
 					.then((res) =>

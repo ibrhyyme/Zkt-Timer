@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { useSelector } from 'react-redux';
 import { useEventListener } from '../util/event_handler';
 import { startActivityHeartbeat, stopActivityHeartbeat } from '../util/activity-heartbeat';
+import { startServerLocaleSync, stopServerLocaleSync } from '../i18n/server-locale-sync';
 
 // One context per counter, each holding a bare number. When all four shared one
 // context object, saving a solve re-rendered every component that reads a setting.
@@ -63,6 +64,14 @@ export function DataProvider({ children }: DataProviderProps) {
 		if (!meId) return;
 		startActivityHeartbeat();
 		return () => stopActivityHeartbeat();
+	}, [meId]);
+
+	// Notifications are written in settings.locale on the server: keep it equal to the
+	// app's language, whichever way the app picked it.
+	useEffect(() => {
+		if (!meId) return;
+		startServerLocaleSync(meId);
+		return () => stopServerLocaleSync();
 	}, [meId]);
 
 	return (

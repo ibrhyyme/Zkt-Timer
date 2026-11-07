@@ -96,6 +96,11 @@ export class Setting {
 	@Field({ nullable: true })
 	trainer_options?: string;
 
+	// The language every notification for this user is written in. The client keeps it
+	// equal to the app's language (client/i18n/server-locale-sync.ts).
+	@Field({ nullable: true })
+	locale?: string;
+
 	@Field(() => [CustomCubeType])
 	custom_cube_types?: CustomCubeType[];
 }

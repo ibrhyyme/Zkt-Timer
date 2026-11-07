@@ -791,6 +791,7 @@ type Setting {
   desktop_prefs: String
   mobile_prefs: String
   trainer_options: String
+  locale: String
   custom_cube_types: [CustomCubeType]
 }
 

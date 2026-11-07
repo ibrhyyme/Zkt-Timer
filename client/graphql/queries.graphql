@@ -151,6 +151,15 @@ query TrainerOptionsSetting {
 	}
 }
 
+# The language the server sends this user's notifications in. Compared against the app's
+# language at boot, see client/i18n/server-locale-sync.ts.
+query SettingsLocale {
+	settings {
+		id
+		locale
+	}
+}
+
 query siteConfig {
 	siteConfig {
 		id

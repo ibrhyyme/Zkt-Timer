@@ -1,33 +1,19 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'phosphor-react';
-import { useSelector } from 'react-redux';
-import { useMutation, gql } from '@apollo/client';
 import { TimerSettingsGroup } from '../timer/TimerSettingsRow';
 import { FlagIcon, LANG_OPTIONS } from '../../common/language_switcher/LanguageSwitcher';
-
-const UPDATE_LOCALE = gql`
-	mutation UpdateLocale($locale: String!) {
-		setSetting(input: { locale: $locale }) {
-			id
-		}
-	}
-`;
 
 const LANGUAGE_SEARCH_TEXT = LANG_OPTIONS.map((lang) => lang.label);
 
 export default function LanguageSettings() {
 	const { t, i18n } = useTranslation();
-	const me = useSelector((state: any) => state.account.me);
-	const [updateLocale] = useMutation(UPDATE_LOCALE);
 
 	const currentLang = LANG_OPTIONS.find((l) => i18n.language?.startsWith(l.code))?.code || 'en';
 
+	// The server copy (settings.locale) follows through client/i18n/server-locale-sync.ts.
 	function changeLanguage(lng: string) {
 		i18n.changeLanguage(lng);
-		if (me?.id) {
-			updateLocale({ variables: { locale: lng } }).catch(() => {});
-		}
 	}
 
 	return (

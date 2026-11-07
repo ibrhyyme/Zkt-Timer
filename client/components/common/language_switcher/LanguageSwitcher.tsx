@@ -2,16 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlagSvg, FlagCode } from './flag-icons.generated';
 import FancyDropdown, { FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
-import { useSelector } from 'react-redux';
-import { useMutation, gql } from '@apollo/client';
-
-const UPDATE_LOCALE = gql`
-	mutation UpdateLocale($locale: String!) {
-		setSetting(input: { locale: $locale }) {
-			id
-		}
-	}
-`;
 
 interface Props {
 	// Which edge of the panel lines up with the trigger. 'end' (default) opens
@@ -57,14 +47,10 @@ export function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: nu
 export default function LanguageSwitcher(props: Props = {}) {
 	const {align = 'end'} = props;
 	const { t, i18n } = useTranslation();
-	const me = useSelector((state: any) => state.account.me);
-	const [updateLocale] = useMutation(UPDATE_LOCALE);
 
+	// The server copy (settings.locale) follows through client/i18n/server-locale-sync.ts.
 	function changeLanguage(lng: string) {
 		i18n.changeLanguage(lng);
-		if (me?.id) {
-			updateLocale({ variables: { locale: lng } }).catch(() => {});
-		}
 	}
 
 	const currentLang = LANG_OPTIONS.find((s) => i18n.language?.startsWith(s.code)) ?? LANG_OPTIONS[1];

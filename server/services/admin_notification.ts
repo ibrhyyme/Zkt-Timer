@@ -173,10 +173,16 @@ export async function notifyUserOfTicketReply(
 		// Email is on for this one: the reporter is not necessarily in the app when the
 		// answer lands, and a support reply nobody sees is a support reply that failed.
 		// Opt-out lives in notification preferences (`support_ticket_reply`).
+		// Read here, not from the caller's user row: that row does not carry settings.
+		const settings = await getPrisma().setting.findUnique({
+			where: {user_id: user.id},
+			select: {locale: true},
+		});
 		const notification = new SupportTicketReplyNotification(
 			{user: user as UserAccount, triggeringUser: admin, sendEmail: true},
 			ticketSubject,
-			ticketId
+			ticketId,
+			settings?.locale
 		);
 		await notification.send();
 		await sendPushToUser(user.id, 'ZKT Timer', notification.inAppMessage());

@@ -185,13 +185,15 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
  * who switched this notification type off.
  *
  * `prefKey` is a NotificationPreference column. A user with no preference row
- * has never changed anything and counts as opted in. Tokens are grouped by the
- * owner's `settings.locale` (unknown or missing: `fallbackLocale`) and `build`
- * runs once per language.
+ * has never changed anything and counts as opted in. Without `prefKey` nobody is
+ * skipped (admin announcements). `platforms` limits the send to those device
+ * platforms. Tokens are grouped by the owner's `settings.locale` (unknown or
+ * missing: `fallbackLocale`) and `build` runs once per language.
  */
 export async function sendPushToAllLocalized(args: {
-	prefKey: string;
-	locales: string[];
+	prefKey?: string;
+	platforms?: string[];
+	locales: readonly string[];
 	fallbackLocale: string;
 	build: (locale: string) => { title: string; body: string };
 	data?: Record<string, string>;
@@ -202,12 +204,15 @@ export async function sendPushToAllLocalized(args: {
 	}
 
 	try {
+		const where: Record<string, any> = {};
+		if (args.prefKey) {
+			where.user = { NOT: { notification_preferences: { is: { [args.prefKey]: false } as any } } };
+		}
+		if (args.platforms && args.platforms.length > 0) {
+			where.platform = { in: args.platforms as any[] };
+		}
 		const rows = await getPrisma().pushToken.findMany({
-			where: {
-				user: {
-					NOT: { notification_preferences: { is: { [args.prefKey]: false } as any } },
-				},
-			},
+			where,
 			select: { token: true, user: { select: { settings: { select: { locale: true } } } } },
 		});
 
