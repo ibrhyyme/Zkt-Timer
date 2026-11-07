@@ -49,8 +49,8 @@ export const FEATURE_TIPS: FeatureTip[] = [
 ];
 
 export const FEATURE_TIP_LIFETIME_DAYS = 30;
-/** Shown this many times without an answer, a tip counts as seen. */
-export const FEATURE_TIP_MAX_VIEWS = 3;
+/** Shown this many times without an answer, a tip counts as seen. Owner rule: a tip shows once. */
+export const FEATURE_TIP_MAX_VIEWS = 1;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

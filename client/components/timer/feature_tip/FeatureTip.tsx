@@ -26,7 +26,7 @@ const b = block('feature-tip');
 
 // Long enough for the page and any announcement window to settle first.
 const SHOW_DELAY_MS = 4000;
-// Unanswered, it leaves on its own; it may come back on a later open.
+// Unanswered, it leaves on its own and does not come back (FEATURE_TIP_MAX_VIEWS).
 const VISIBLE_MS = 15000;
 // The ready-made background preview moves on to the next scene this often.
 const PREVIEW_STEP_MS = 2500;
