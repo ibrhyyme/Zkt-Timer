@@ -2415,7 +2415,56 @@
     "music_volume": "Ses Seviyesi",
     "music_stop": "Durdur",
     "music_rate_limit": "Tekrar aramadan önce bekle",
-    "scramble_the_cube": "Küpü karıştır"
+    "scramble_the_cube": "Küpü karıştır",
+    "climate": {
+      "chip_title": "Oda sıcaklığı",
+      "level": {
+        "freezing": "Buz gibi",
+        "cool": "Serin",
+        "normal": "Normal",
+        "hot": "Sıcak",
+        "fire": "Oda yanıyor"
+      },
+      "remote_title": "Klima kumandası",
+      "mode_off": "KAPALI",
+      "mode_cool": "SOĞUTMA",
+      "mode_heat": "ISITMA",
+      "fan": "FAN",
+      "room_now": "Oda şu an",
+      "complaints": "Şikayet",
+      "complaints_none": "yok",
+      "complaints_cold": "{{count}} kişi üşüyor",
+      "complaints_hot": "{{count}} kişi pişiyor",
+      "holder_label": "Kumanda",
+      "holder_you": "sende",
+      "holder_nobody": "kimsede",
+      "swaps": "El değiştirdi",
+      "key_power": "Aç / kapat",
+      "key_down": "Dereceyi düşür",
+      "key_up": "Dereceyi yükselt",
+      "key_fan": "Fan hızı",
+      "wait_holder": "Kumanda <b>{{holder_loc}}</b>. Sonraki turu kazan, kumanda senin olsun.",
+      "wait_empty": "Kumanda boşta. Turu kazanan Pro alır.",
+      "you_hold": "Kumanda sende. Klima artık senin elinde.",
+      "basic_locked": "Kumanda Pro üyelerde. Sen sadece üşüyorsun. Ama şikayet edebilirsin.",
+      "basic_won": "Turu sen kazandın. Pro olsaydın kumanda senindi.",
+      "no_pro": "Bu odada Pro yok, klimayı açacak kimse yok. Oda sadece yarışla ısınır.",
+      "react_cold": "Üşüdüm",
+      "react_hot": "Pişiyorum",
+      "go_pro": "Pro'ya geç",
+      "effects": "Efektler",
+      "sound": "Klima sesi",
+      "remote_mark": "kumanda",
+      "ev_ac_on": "{{actor}} klimayı açtı, {{value}}°C",
+      "ev_ac_off": "{{actor}} klimayı kapattı",
+      "ev_set_down": "{{actor}} klimayı {{value}}°C'ye düşürdü",
+      "ev_set_up": "{{actor}} klimayı {{value}}°C'ye yükseltti",
+      "ev_holder": "Kumanda {{target_dat}} geçti",
+      "ev_holder_leave": "Kumanda son turun en hızlı Pro'su {{target_dat}} geçti",
+      "ev_basic_win": "Turu {{winner}} kazandı ama Pro değil, kumanda {{holder_loc}} kaldı.",
+      "ev_basic_win_empty": "Turu {{winner}} kazandı ama Pro değil, kumanda Pro üyelerde.",
+      "ev_no_pro_off": "Kumandayı alacak Pro kalmadı, klima kapandı."
+    }
   },
   "profile": {
     "remove": "Kaldır",
@@ -3843,7 +3892,8 @@
       "analysis": "Analiz ve veri",
       "practice": "Antrenman ve timer",
       "community": "Odalar ve yarışmalar",
-      "personal": "Kişiselleştirme"
+      "personal": "Kişiselleştirme",
+      "fun": "Eğlenceli özellikler"
     },
     "mobile_only_hint": "Pro'yu iOS ve Android uygulamasından satın alabilirsin",
     "basic_hint": "Şu an Basic plandasın",
@@ -3973,6 +4023,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Küpü telefonun arka kamerasının yanına koy. Kaldırınca süre başlar, masaya koyunca durur. Mıknatıslı bir küp ve mobil uygulama yeterli."
+      },
+      "room_climate": {
+        "title": "Odada klima kumandası",
+        "desc": "Odada bir klima ve tek bir kumanda var. Turu kazanan Pro kumandayı alır, odayı istediği gibi soğutur ya da ısıtır. Oda buz kesince kar yağar, yanınca süreler eriyip ekrandan akar, turun en yavaşı da düşer. Bunlar sadece görüntü, süreler ve sonuçlar olduğu gibi kalır."
       }
     },
     "promo": {
@@ -4562,6 +4616,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Küpü telefonun arka kamerasının yanına koy, kaldırınca süre başlar. StackMat gibi, ekrana dokunman gerekmez."
+      },
+      "room_climate": {
+        "title": "Odada klima kumandası",
+        "desc": "Turu kazanırsan kumanda senin, odanın havasını sen belirlersin."
       }
     },
     "highlights": {
@@ -4598,7 +4656,10 @@
       "slam_stackmat": "Ek donanım gerekmez",
       "magnet_lift": "Küpü kaldırdığın anda süre başlar",
       "magnet_drop": "Masaya bıraktığında süre durur",
-      "magnet_setup": "Mıknatıslı bir küp ve mobil uygulama yeterli"
+      "magnet_setup": "Mıknatıslı bir küp ve mobil uygulama yeterli",
+      "climate_remote": "Turu kazanan Pro kumandayı alır",
+      "climate_effects": "Kar, buz, sıcak dalgası ve alev",
+      "climate_readable": "Süreler ve karıştırma her zaman okunur"
     }
   },
   "online_battle": {

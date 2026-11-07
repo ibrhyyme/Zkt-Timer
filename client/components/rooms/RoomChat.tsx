@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { socketClient } from '../../util/socket/socketio';
 import {
@@ -7,6 +7,14 @@ import {
     FriendlyRoomChatMessage,
 } from '../../../shared/friendly_room';
 import { useMe } from '../../util/hooks/useMe';
+import './RoomChat.scss';
+
+/** A line the room writes itself (Klima Kavgası), shown between the messages by time. */
+export interface RoomChatSystemLine {
+    id: string;
+    at: number;
+    text: string;
+}
 
 interface RoomChatProps {
     roomId: string;
@@ -17,9 +25,14 @@ interface RoomChatProps {
      * room does not need a competing socket listener of its own.
      */
     onMessage?: (message: FriendlyRoomChatMessage) => void;
+    systemLines?: RoomChatSystemLine[];
 }
 
-export default function RoomChat({ roomId, onMessage }: RoomChatProps) {
+type ChatEntry =
+    | { kind: 'message'; at: number; message: FriendlyRoomChatMessage }
+    | { kind: 'system'; at: number; line: RoomChatSystemLine };
+
+export default function RoomChat({ roomId, onMessage, systemLines }: RoomChatProps) {
     const { t } = useTranslation();
     const [messages, setMessages] = useState<FriendlyRoomChatMessage[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -48,9 +61,21 @@ export default function RoomChat({ roomId, onMessage }: RoomChatProps) {
         };
     }, []);
 
+    // Messages and system lines in one timeline. Server messages carry the server's clock and
+    // system lines the client's; both are only ever compared for order within this room.
+    const entries = useMemo<ChatEntry[]>(() => {
+        const list: ChatEntry[] = messages.map((message) => ({
+            kind: 'message',
+            at: Date.parse(message.created_at) || 0,
+            message,
+        }));
+        for (const line of systemLines ?? []) list.push({ kind: 'system', at: line.at, line });
+        return list.sort((a, b) => a.at - b.at);
+    }, [messages, systemLines]);
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [entries.length]);
 
     function handleSend() {
         if (!inputValue.trim()) return;
@@ -72,33 +97,43 @@ export default function RoomChat({ roomId, onMessage }: RoomChatProps) {
                 {t('rooms.chat_title')}
             </div>
 
-            <div className="flex-1 overflow-y-auto w-full p-2 space-y-2 scroll-smooth">
-                {messages.length === 0 ? (
+            <div data-climate-text className="flex-1 overflow-y-auto w-full p-2 space-y-2 scroll-smooth">
+                {entries.length === 0 ? (
                     <div className="flex h-full items-center justify-center text-text text-sm italic">
                         {t('rooms.chat_empty')}
                     </div>
                 ) : (
-                    messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`flex flex-col max-w-[85%] ${msg.user_id === me?.id ? 'ml-auto items-end' : 'mr-auto items-start'}`}
-                        >
-                            <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-text'}`}>
-                                {msg.username}
-                            </span>
-                            <div className={`px-3 py-2 rounded-lg text-sm break-words ${msg.user_id === me?.id
-                                    ? 'bg-blue-600 text-white rounded-br-none'
-                                    : 'bg-button text-text rounded-bl-none'
-                                }`}>
-                                {msg.message}
+                    entries.map((entry) => {
+                        if (entry.kind === 'system') {
+                            return (
+                                <div key={entry.line.id} className="zt-room-chat__system">
+                                    {entry.line.text}
+                                </div>
+                            );
+                        }
+                        const msg = entry.message;
+                        return (
+                            <div
+                                key={msg.id}
+                                className={`flex flex-col max-w-[85%] ${msg.user_id === me?.id ? 'ml-auto items-end' : 'mr-auto items-start'}`}
+                            >
+                                <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-text'}`}>
+                                    {msg.username}
+                                </span>
+                                <div className={`px-3 py-2 rounded-lg text-sm break-words ${msg.user_id === me?.id
+                                        ? 'bg-blue-600 text-white rounded-br-none'
+                                        : 'bg-button text-text rounded-bl-none'
+                                    }`}>
+                                    {msg.message}
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="shrink-0 p-2 border-t border-text/[0.1] bg-background">
+            <div className="shrink-0 p-2 border-t border-text/[0.1] bg-background" data-climate-protect>
                 <div className="flex gap-2">
                     <input
                         type="text"

@@ -14,6 +14,7 @@ import {
 	PaintBrush,
 	ShareNetwork,
 	Sliders,
+	Thermometer,
 	Trophy,
 	Users,
 } from 'phosphor-react';
@@ -40,7 +41,7 @@ import {
  * Where a feature sits on the Pro page. Order here is the order the groups are shown;
  * the i18n label is `pro_page.groups.<group>`.
  */
-export const PRO_FEATURE_GROUPS = ['analysis', 'practice', 'community', 'personal'] as const;
+export const PRO_FEATURE_GROUPS = ['analysis', 'practice', 'community', 'fun', 'personal'] as const;
 export type ProFeatureGroup = (typeof PRO_FEATURE_GROUPS)[number];
 
 export interface ProFeature {
@@ -92,7 +93,11 @@ export const PRO_FEATURES: readonly ProFeature[] = [
 	feature('magnet_start', Magnet, 'practice'),
 	// Gate: client FriendlyRoom music button -> openProOnlyModal('room_music'),
 	// server YouTubeSearch.resolver.ts @Authorized([Role.PRO]).
-	feature('room_music', MusicNote, 'community'),
+	feature('room_music', MusicNote, 'fun'),
+	// Gate: server friendly_room/climate.ts: only a competing Pro (resolveProIds, read from
+	// the database) can be handed the remote or press it (`ac:set`); client
+	// RoomClimateControl's Basic panel -> openProOnlyModal('room_climate').
+	feature('room_climate', Thermometer, 'fun'),
 	// Gate: client only. PRO_GATED_TIMER_TYPES in timer/helpers/pro_timer_types.ts,
 	// applied by TimerTypeGrid / TimerTypePicker (`requireProForSmart`) and by
 	// FriendlyRoom, which downgrades an already-selected gated type back to keyboard.

@@ -1,1 +1,16 @@
-// Migrated to Tailwind CSS in RoomChat.tsx
+@import '../../styles/config';
+
+// The rest of the chat lives in Tailwind in RoomChat.tsx.
+
+// A line the room writes itself (Klima Kavgasi). The climate is a Pro feature, so its
+// lines wear the Pro gold.
+.#{$namespace}-room-chat__system {
+	@include zt-pro-accent;
+
+	padding: 6px 10px;
+	border-left: 2px solid $zt-pro-frame;
+	color: rgb(var(--primary-color));
+	font-size: 0.82rem;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}

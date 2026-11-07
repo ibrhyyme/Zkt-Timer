@@ -2429,7 +2429,56 @@
     "music_volume": "Volumen",
     "music_stop": "Detener",
     "music_rate_limit": "Espere antes de buscar de nuevo",
-    "scramble_the_cube": "Mezcla el cubo"
+    "scramble_the_cube": "Mezcla el cubo",
+    "climate": {
+      "chip_title": "Temperatura de la sala",
+      "level": {
+        "freezing": "Helada",
+        "cool": "Fresca",
+        "normal": "Normal",
+        "hot": "Calurosa",
+        "fire": "La sala arde"
+      },
+      "remote_title": "Mando del aire",
+      "mode_off": "APAGADO",
+      "mode_cool": "FRÍO",
+      "mode_heat": "CALOR",
+      "fan": "VENT",
+      "room_now": "Sala ahora",
+      "complaints": "Quejas",
+      "complaints_none": "ninguna",
+      "complaints_cold": "{{count}} con frío",
+      "complaints_hot": "{{count}} asándose",
+      "holder_label": "Mando",
+      "holder_you": "tú",
+      "holder_nobody": "nadie",
+      "swaps": "Cambió de manos",
+      "key_power": "Encender / apagar",
+      "key_down": "Bajar temperatura",
+      "key_up": "Subir temperatura",
+      "key_fan": "Velocidad del ventilador",
+      "wait_holder": "El mando lo tiene <b>{{holder}}</b>. Gana la próxima ronda y será tuyo.",
+      "wait_empty": "El mando está libre. Se lo lleva el Pro que gane la ronda.",
+      "you_hold": "Tienes el mando. El aire está en tus manos.",
+      "basic_locked": "El mando es de los miembros Pro. Tú solo pasas frío. Pero puedes quejarte.",
+      "basic_won": "Ganaste la ronda. Si fueras Pro, el mando sería tuyo.",
+      "no_pro": "No hay ningún Pro en esta sala, nadie puede encender el aire. La sala solo se calienta con la carrera.",
+      "react_cold": "Tengo frío",
+      "react_hot": "Me aso",
+      "go_pro": "Hazte Pro",
+      "effects": "Efectos",
+      "sound": "Sonido del aire",
+      "remote_mark": "mando",
+      "ev_ac_on": "{{actor}} encendió el aire, {{value}}°C",
+      "ev_ac_off": "{{actor}} apagó el aire",
+      "ev_set_down": "{{actor}} bajó el aire a {{value}}°C",
+      "ev_set_up": "{{actor}} subió el aire a {{value}}°C",
+      "ev_holder": "El mando pasó a {{target}}",
+      "ev_holder_leave": "El mando pasó a {{target}}, el Pro más rápido de la última ronda",
+      "ev_basic_win": "{{winner}} ganó la ronda pero no es Pro, así que el mando sigue con {{holder}}.",
+      "ev_basic_win_empty": "{{winner}} ganó la ronda pero no es Pro, así que el mando sigue con los miembros Pro.",
+      "ev_no_pro_off": "No queda ningún Pro para el mando, el aire se apagó."
+    }
   },
   "profile": {
     "remove": "Quitar",
@@ -3860,7 +3909,8 @@
       "analysis": "Análisis y datos",
       "practice": "Práctica y timer",
       "community": "Salas y competiciones",
-      "personal": "Personalización"
+      "personal": "Personalización",
+      "fun": "Funciones divertidas"
     },
     "mobile_only_hint": "Puedes comprar Pro en las apps de iOS y Android",
     "basic_hint": "Actualmente tienes el plan Basic",
@@ -3990,6 +4040,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Pon el cubo junto a la cámara trasera del teléfono. El tiempo empieza cuando lo levantas y se detiene cuando lo dejas sobre la mesa. Solo necesitas un cubo magnético y la app móvil."
+      },
+      "room_climate": {
+        "title": "Mando del aire en las salas",
+        "desc": "Las salas tienen un aire acondicionado y un solo mando. El Pro que gana la ronda se lo lleva y enfría o calienta la sala como quiera. Si la sala se congela, nieva; si arde, los tiempos se derriten pantalla abajo y el más lento de la ronda se cae. Es solo visual: los tiempos y los resultados no cambian."
       }
     },
     "promo": {
@@ -4581,6 +4635,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Pon el cubo junto a la cámara trasera del teléfono y el tiempo empieza cuando lo levantas. Como en un StackMat, sin tocar la pantalla."
+      },
+      "room_climate": {
+        "title": "Mando del aire en las salas",
+        "desc": "Gana la ronda y el mando es tuyo. El clima de la sala lo decides tú."
       }
     },
     "highlights": {
@@ -4617,7 +4675,10 @@
       "slam_stackmat": "Sin hardware extra",
       "magnet_lift": "El cronómetro arranca en cuanto levantas el cubo",
       "magnet_drop": "Se para al dejar el cubo sobre la mesa",
-      "magnet_setup": "Solo necesitas un cubo magnético y la app móvil"
+      "magnet_setup": "Solo necesitas un cubo magnético y la app móvil",
+      "climate_remote": "El Pro que gana la ronda se lleva el mando",
+      "climate_effects": "Nieve, hielo, ola de calor y llamas",
+      "climate_readable": "Tiempos y mezclas siempre legibles"
     }
   },
   "online_battle": {

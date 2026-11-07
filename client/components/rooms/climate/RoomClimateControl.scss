@@ -1,0 +1,458 @@
+@import '../../../styles/config';
+
+// Klima Kavgası: the wall AC in the room header, the temperature chip and the Pro remote.
+// The remote is a Pro surface, so it wears the gold (zt-pro-accent, ui-design exception).
+
+// Temperature colours: a fixed scale, like status colours, darker on a light page so the
+// chip text keeps its contrast.
+$climate-cold: rgb(159, 211, 255);
+$climate-cold-on-light: rgb(25, 110, 190);
+$climate-hot: rgb(255, 138, 61);
+$climate-hot-on-light: rgb(190, 80, 10);
+
+.#{$namespace}-room-climate {
+	display: inline-flex;
+	align-items: center;
+	gap: $zt-space-2;
+	flex: 0 0 auto;
+
+	// A white split unit on the wall. An illustration of a device, so it keeps its own
+	// colours on every theme; the hairline keeps it visible on a light header.
+	&__unit {
+		position: relative;
+		display: inline-flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		width: 84px;
+		height: 26px;
+		padding: 5px 8px;
+		border-radius: $zt-radius-sm $zt-radius-sm $zt-radius-lg $zt-radius-lg;
+		background: #e8ebf1;
+		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+
+		@include bp-down($bp-lg) {
+			display: none;
+		}
+	}
+
+	&__brand {
+		font-family: $zt-font-mono;
+		font-size: 7px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: #8a909b;
+	}
+
+	&__led {
+		width: 5px;
+		height: 5px;
+		margin-top: 1px;
+		border-radius: 50%;
+		background: #a7adb8;
+		transition: background $motion-fast $ease-standard;
+	}
+
+	&__slot {
+		position: absolute;
+		left: 7px;
+		right: 7px;
+		bottom: 4px;
+		height: 3px;
+		border-radius: $zt-radius-sm;
+		background: #2a2e38;
+		opacity: 0;
+		transition: opacity 0.5s $ease-standard;
+	}
+
+	&__flap {
+		position: absolute;
+		left: 6px;
+		right: 6px;
+		bottom: 3px;
+		height: 4px;
+		border-radius: $zt-radius-sm;
+		background: #bcc2cc;
+		transition: transform 0.6s $ease-standard;
+	}
+
+	&__unit--on &__led {
+		background: rgb(var(--success-color));
+	}
+
+	&__unit--on &__slot {
+		opacity: 1;
+	}
+
+	// Switching on, the flap swings down.
+	&__unit--on &__flap {
+		transform: translateY(5px);
+	}
+
+	// Its own surface, so it reads on the phone's blue header and the desktop strip alike.
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: $zt-space-2;
+		height: $zt-control-h-sm;
+		padding: 0 10px;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		white-space: nowrap;
+		transition: color 0.4s $ease-standard, border-color 0.4s $ease-standard;
+		@include zt-focus-ring;
+
+		svg {
+			width: 16px;
+			height: 16px;
+			flex: 0 0 auto;
+		}
+
+		&:hover {
+			border-color: $zt-control-border-hover;
+		}
+
+		// The phone header is already full (menu, event, compete, music, scramble, exit):
+		// a slim chip, just the temperature. The holder keeps the remote icon.
+		@include bp-down($bp-md) {
+			height: 28px;
+			gap: $zt-space-1;
+			padding: 0 7px;
+			font-size: 0.8rem;
+
+			svg {
+				width: 13px;
+				height: 13px;
+			}
+		}
+	}
+
+	&__chip:not(&__chip--holder) svg {
+		@include bp-down($bp-md) {
+			display: none;
+		}
+	}
+
+	&__temp {
+		font-family: $zt-font-mono;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__label {
+		color: $zt-text-muted;
+		font-size: 0.85rem;
+		font-weight: 600;
+
+		@include bp-down($bp-sm) {
+			display: none;
+		}
+	}
+
+	&__chip--level-freezing {
+		border-color: rgba($climate-cold, 0.45);
+		color: $climate-cold;
+
+		.theme-light & {
+			border-color: rgba($climate-cold-on-light, 0.5);
+			color: $climate-cold-on-light;
+		}
+	}
+
+	&__chip--level-hot {
+		border-color: rgba($climate-hot, 0.5);
+		color: $climate-hot;
+
+		.theme-light & {
+			border-color: rgba($climate-hot-on-light, 0.5);
+			color: $climate-hot-on-light;
+		}
+	}
+
+	&__chip--level-fire {
+		border-color: rgb(var(--error-color));
+		color: rgb(var(--error-color));
+
+		.#{$namespace}-room-climate__label {
+			color: rgb(var(--error-color));
+			font-weight: 800;
+		}
+	}
+
+	// The holder's chip carries the gold: it opens their remote.
+	&__chip--holder {
+		@include zt-pro-accent;
+		border-color: $zt-pro-frame;
+	}
+
+	// ---- The remote (popover) ----
+
+	&__panel {
+		@include zt-pro-accent;
+		@include zt-float;
+		z-index: 10001;
+		width: 272px;
+		max-width: calc(100vw - 32px);
+		max-height: min(640px, calc(100dvh - 120px));
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		border-color: $zt-pro-frame;
+
+		&[data-state='open'] {
+			animation: room-climate-in $motion-fast $ease-standard;
+		}
+
+		@include reduced-motion {
+			&[data-state='open'] {
+				animation: none;
+			}
+		}
+	}
+
+	&__remote {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 14px;
+	}
+
+	&__remote-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__eyebrow {
+		@include zt-eyebrow;
+	}
+
+	&__lcd {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: 6px $zt-space-3;
+		align-items: center;
+		padding: 10px $zt-space-3;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		background: rgba(var(--text-color), 0.05);
+	}
+
+	&__set {
+		font-family: $zt-font-mono;
+		font-size: 2.2rem;
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__set--off {
+		color: rgba(var(--text-color), 0.3);
+	}
+
+	&__mode {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 6px;
+		font-family: $zt-font-mono;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		color: $zt-text-muted;
+	}
+
+	&__mode-icon {
+		width: 20px;
+		height: 20px;
+	}
+
+	&__mode-icon--cool {
+		color: $climate-cold;
+
+		.theme-light & {
+			color: $climate-cold-on-light;
+		}
+	}
+
+	&__mode-icon--heat {
+		color: $climate-hot;
+
+		.theme-light & {
+			color: $climate-hot-on-light;
+		}
+	}
+
+	&__fan {
+		display: inline-flex;
+		align-items: flex-end;
+		gap: 3px;
+		height: 14px;
+	}
+
+	&__fan-bar {
+		display: block;
+		width: 4px;
+		background: rgba(var(--text-color), 0.18);
+	}
+
+	&__fan-bar--n-1 {
+		height: 6px;
+	}
+
+	&__fan-bar--n-2 {
+		height: 10px;
+	}
+
+	&__fan-bar--n-3 {
+		height: 14px;
+	}
+
+	&__fan-bar--on {
+		background: rgb(var(--text-color));
+	}
+
+	&__lcd-row {
+		grid-column: 1 / -1;
+		display: flex;
+		justify-content: space-between;
+		gap: $zt-space-2;
+		font-size: 0.8rem;
+		color: $zt-text-muted;
+
+		b {
+			font-family: $zt-font-mono;
+			font-weight: 600;
+			color: rgb(var(--text-color));
+			text-align: right;
+		}
+	}
+
+	&__keys {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: $zt-space-2;
+	}
+
+	&__key {
+		@include zt-control;
+		@include zt-focus-ring;
+		display: grid;
+		place-items: center;
+		height: 36px;
+		font-weight: 700;
+		cursor: pointer;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:disabled {
+			color: $zt-text-muted;
+			cursor: not-allowed;
+		}
+	}
+
+	&__key--text {
+		font-family: $zt-font-mono;
+		font-size: 0.75rem;
+		letter-spacing: 0.06em;
+	}
+
+	&__key--power#{&}__key--on {
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+
+		&:hover:not(:disabled) {
+			background: rgba(var(--primary-color), 0.88);
+		}
+	}
+
+	&__meta {
+		display: flex;
+		justify-content: space-between;
+		gap: $zt-space-2;
+		font-size: 0.82rem;
+		color: $zt-text-muted;
+
+		b {
+			color: rgb(var(--text-color));
+			font-weight: 600;
+		}
+	}
+
+	&__mono {
+		font-family: $zt-font-mono;
+	}
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+		padding-top: 10px;
+		border-top: 1px solid $zt-card-border;
+	}
+
+	&__text {
+		margin: 0;
+		font-size: 0.88rem;
+		line-height: 1.45;
+	}
+
+	&__gold {
+		color: rgb(var(--primary-color));
+		font-weight: 700;
+	}
+
+	&__reactions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $zt-space-2;
+	}
+
+	&__react {
+		@include zt-control;
+		@include zt-focus-ring;
+		height: $zt-control-h-sm + 4px;
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: pointer;
+
+		&:disabled {
+			color: $zt-text-muted;
+			cursor: default;
+		}
+	}
+
+	&__settings {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		padding-top: 10px;
+		border-top: 1px solid $zt-card-border;
+	}
+
+	&__setting {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-2;
+		font-size: 0.85rem;
+		color: $zt-text-muted;
+		cursor: pointer;
+	}
+}
+
+@keyframes room-climate-in {
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

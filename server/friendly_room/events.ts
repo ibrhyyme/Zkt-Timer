@@ -65,6 +65,7 @@ import {
 } from '../services/redis';
 import { checkRateLimit } from '../services/rate_limit';
 import { isClientInRoom } from '../services/socket_util';
+import { deleteClimate, listenForClimateEvents, onRoundClosed, refreshClimate } from './climate';
 
 // Helper to get untyped socket.io server for friendly room events
 const io = (): any => getSocketIO();
@@ -217,6 +218,9 @@ function unregisterActiveSocket(userId: string, socketId: string): boolean {
 }
 
 export function listenForFriendlyRoomEvents(client: Socket) {
+    // Klima Kavgası: remote, reactions, climate reads.
+    listenForClimateEvents(client);
+
     // Generic join/leave room for Lobby updates
     client.on('joinRoom', (roomName: string) => {
         if (roomName === FriendlyRoomSocketRoom.LOBBY) {
@@ -503,6 +507,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Send room data to joining user
             client.emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
 
+            // Climate for everyone: the joiner gets the state, the room an updated Pro list.
+            void refreshClimate(result.room.id);
+
             // An owner, moderator or site admin arriving (or coming back) sees who is already waiting.
             if (isRoomManager(result.room, user.id) || user.admin === true) {
                 const requests = toPublicRequests(await listJoinRequests(result.room.id));
@@ -569,7 +576,11 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (result.deleted) {
                 // Room was deleted (no more participants)
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, roomId);
+                void deleteClimate(roomId);
             } else if (result.room) {
+                // A leaving remote holder hands it on (or the AC goes off).
+                void refreshClimate(roomId);
+
                 // Notify remaining participants
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
                     room_id: roomId,
@@ -750,6 +761,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     type: 'INFO',
                     message: `Karıştırma ${room.scramble_index}`
                 });
+
+                // A manager moved the round on: it closes with whoever finished it.
+                void onRoundClosed(room, room.scramble_index - 1);
             }
         } catch (error) {
             logger.error('Error generating next scramble', { error });
@@ -899,6 +913,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
                 // Force clean the kicked user's active session (so they can join a new room immediately)
                 await clearActiveSession(targetUserId);
+                void refreshClimate(roomId);
 
                 // Notify everyone (including kicked user)
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
@@ -946,6 +961,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
                 // Force clean the banned user's active session
                 await clearActiveSession(targetUserId);
+                void refreshClimate(roomId);
 
                 // Notify everyone (including banned user)
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
@@ -1037,6 +1053,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     user_id: user.id,
                     is_spectator: result.is_spectator,
                 });
+                // A holder who starts watching hands the remote on (rule 4).
+                void refreshClimate(roomId);
             }
         } catch (error) {
             logger.error('Error toggling spectator mode', { error });
@@ -1156,6 +1174,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 }
 
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, roomId);
+                void deleteClimate(roomId);
 
                 const rooms = await getAllActiveRooms();
                 io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, rooms);
@@ -1210,6 +1229,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
                 // Notify everyone in the room that it was deleted
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, roomId);
+                void deleteClimate(roomId);
 
                 // Update lobby
                 const rooms = await getAllActiveRooms();
@@ -1413,7 +1433,9 @@ async function startGracePeriod(user: any) {
 
                 if (result.deleted) {
                     io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, room.id);
+                    void deleteClimate(room.id);
                 } else if (result.room) {
+                    void refreshClimate(room.id);
                     io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
                         room_id: room.id,
                         user_id: user.id,
@@ -1515,6 +1537,9 @@ async function checkAllSolvedAndNextScramble(roomId: string, ioServer: any) {
                     type: 'INFO',
                     message: `Karıştırma ${updatedRoom.scramble_index}`
                 });
+
+                // Everyone finished: the round closes and the remote is decided.
+                void onRoundClosed(updatedRoom, currentScrambleIndex);
             }
         }
     }

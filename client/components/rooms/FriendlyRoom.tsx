@@ -74,6 +74,13 @@ import ReactDOM from 'react-dom';
 import { isPro } from '../../lib/pro';
 import { PRO_GATED_TIMER_TYPES } from '../timer/helpers/pro_timer_types';
 import ScrambleMoveList, { isGreenBaseColor } from '../timer/time_display/timer_scramble/smart_scramble/ScrambleMoveList';
+import { useRoomClimate } from './climate/useRoomClimate';
+import { useClimateMood } from './climate/useClimateMood';
+import { climateEventText } from './climate/climate_text';
+import RoomClimateControl from './climate/RoomClimateControl';
+import RoomClimateEffects from './climate/RoomClimateEffects';
+import RoomClimateDrama from './climate/RoomClimateDrama';
+import { RoomChatSystemLine } from './RoomChat';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -109,7 +116,7 @@ export default function FriendlyRoom() {
 }
 
 function FriendlyRoomContent() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { roomId: roomKey } = useParams<ParamsType>();
     const history = useHistory();
     const me = useMe();
@@ -174,6 +181,27 @@ function FriendlyRoomContent() {
     // was never mounted, so quick settings were unreachable. mobile_mode is kept in sync
     // at 1024 by HeaderNav (see util/is-mobile-viewport.ts), so this stays consistent.
     const mobileMode = useGeneral('mobile_mode');
+
+    // Klima Kavgası: the room's climate, its chat lines and the name-row mood.
+    const climateEffectsOn = useSettings('room_climate_effects') !== false;
+    const climateSoundOn = useSettings('room_climate_sound') !== false;
+    const joinedRoom = !!room && !!me && room.participants.some((p) => p.user_id === me.id);
+    const climate = useRoomClimate(roomId, me?.id, joinedRoom, climateSoundOn);
+    const climateMood = useClimateMood(climate.state, climate.serverNow, climateEffectsOn);
+    const climateLines = useMemo<RoomChatSystemLine[]>(
+        () =>
+            climate.lines.flatMap((line) => {
+                const text = climateEventText(t, i18n.language, line.event);
+                return text ? [{ id: line.id, at: line.at, text }] : [];
+            }),
+        [climate.lines, t, i18n.language]
+    );
+    const climateHolderId = climate.state?.holder_id ?? null;
+    const climateProKey = climate.state?.pro_user_ids.join() ?? '';
+    const tableClimate = useMemo(
+        () => ({ holderId: climateHolderId, proIds: climateProKey ? climateProKey.split(',') : [], mood: climateMood }),
+        [climateHolderId, climateProKey, climateMood]
+    );
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1794,10 +1822,19 @@ function FriendlyRoomContent() {
 
     return (
         <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-background text-text overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+            {/* Klima Kavgası effects: the edges never cover the scramble, times or results; the
+                round-end drama moves only copies of them, the real values stay put */}
+            {isActive && climateEffectsOn && (
+                <>
+                    <RoomClimateEffects state={climate.state} serverNow={climate.serverNow} enabled={climateEffectsOn} />
+                    <RoomClimateDrama roundIndex={room.scramble_index} participants={room.participants} mood={climateMood} />
+                </>
+            )}
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style (mobile blue, desktop dark glassmorphism — distinct tone from scramble area + clear border) */}
-                <div className="flex items-center justify-between bg-blue-600 md:bg-text/[0.04] md:backdrop-blur-2xl md:border-b md:border-text/[0.15] px-3 md:px-4 py-2 md:py-3 shadow-lg md:shadow-[0_6px_24px_rgba(0,0,0,0.35)] z-30 relative gap-2">
+                {/* The top bar's bottom is the climate effects' ceiling (icicles hang from it). */}
+                <div data-climate-ceiling className="flex items-center justify-between bg-blue-600 md:bg-text/[0.04] md:backdrop-blur-2xl md:border-b md:border-text/[0.15] px-3 md:px-4 py-2 md:py-3 shadow-lg md:shadow-[0_6px_24px_rgba(0,0,0,0.35)] z-30 relative gap-2">
                     {/* Hamburger Menu (Host + moderators) — glassmorphism */}
                     {canManage ? (
                         <div className="relative z-50 shrink-0" ref={hostMenuRef}>
@@ -1926,6 +1963,11 @@ function FriendlyRoomContent() {
                         )}
                     </div>
                     <div className="flex items-center gap-1 md:gap-2 shrink-0">
+                        {/* Klima Kavgası: wall AC, temperature chip, the Pro remote */}
+                        {isActive && (
+                            <RoomClimateControl climate={climate} participants={room.participants} showUnit={!mobileMode} />
+                        )}
+
                         {/* Timer Type Picker (desktop only, mobile uses modal Timer tab) */}
                         <TimerTypePicker
                             allowedTimerTypes={room.allowed_timer_types}
@@ -2033,7 +2075,7 @@ function FriendlyRoomContent() {
 
                 {/* Mobile Tabs - Only show on lg and below */}
                 {isActive && isMobile && (
-                    <div className="flex border-b border-text/[0.1] bg-background">
+                    <div data-climate-text className="flex border-b border-text/[0.1] bg-background">
                         <button
                             className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === 'timer' ? 'text-blue-400' : 'text-text hover:text-text'
                                 }`}
@@ -2071,7 +2113,7 @@ function FriendlyRoomContent() {
 
                 {/* Scramble Area */}
                 {isActive && (
-                    <div className="flex items-center flex-col justify-center bg-module py-4 px-4 border-b border-text/[0.05]">
+                    <div data-climate-text className="flex items-center flex-col justify-center bg-module py-4 px-4 border-b border-text/[0.05]">
                         {/* Scramble Display - colored for smart cube */}
                         <div className="text-center font-mono text-base md:text-3xl leading-relaxed font-medium select-all px-1">
                             {alreadySolvedThisRound ? (
@@ -2173,6 +2215,7 @@ function FriendlyRoomContent() {
                                     <>
                                         {/* Show input field */}
                                         <form
+                                            data-climate-protect
                                             className="w-full flex gap-2"
                                             noValidate
                                             onSubmit={(e) => {
@@ -2359,12 +2402,13 @@ function FriendlyRoomContent() {
                                     hostId={room.created_by.id}
                                     myLastSolveId={myLastSolve?.id}
                                     onEditSolve={setEditingSolve}
+                                    climate={tableClimate}
                                 />
                             </div>
 
                             {/* Mobile Timer Touch Area - Fixed at bottom of Timer Tab */}
                             {isMobile && timerType === 'keyboard' && !isManualMode && (
-                                <div className="timer-touch-area shrink-0 h-32 w-full bg-background border-t border-text/[0.1] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-module transition-colors relative z-20"
+                                <div data-climate-text className="timer-touch-area shrink-0 h-32 w-full bg-background border-t border-text/[0.1] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-module transition-colors relative z-20"
                                      style={{ WebkitTouchCallout: 'none' }}>
                                     <span className="text-6xl font-mono font-medium text-text tracking-tight">
                                         {(() => {
@@ -2391,7 +2435,7 @@ function FriendlyRoomContent() {
                             }
                             transition-opacity duration-200
                         `}>
-                            <RoomChat roomId={roomId} onMessage={handleChatMessage} />
+                            <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} />
                         </div>
 
                         {/* Notification Log - Right (10% on desktop) - Hidden on mobile */}
@@ -2468,7 +2512,7 @@ function FriendlyRoomContent() {
 
                             {/* Right: Chat */}
                             <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-background rounded-2xl border border-text/[0.1] overflow-hidden flex flex-col shadow-2xl relative group">
-                                <RoomChat roomId={roomId} onMessage={handleChatMessage} />
+                                <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} />
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500/20 rounded-2xl pointer-events-none transition-colors" />
                             </div>
 
@@ -2479,7 +2523,7 @@ function FriendlyRoomContent() {
 
             {/* 3. Bottom Panel (Stats & Preview) - Fixed Sticky */}
             {isActive && mobileTab === 'timer' && (
-                <div className="shrink-0 bg-module border-t border-text/[0.1] p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full">
+                <div data-climate-text data-climate-floor className="shrink-0 bg-module border-t border-text/[0.1] p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full">
                     <div className="flex items-center justify-between w-full px-2 md:px-6">
                         {/* Compact Stats */}
                         <RoomStatsPanel solves={mySolves} decimalPoints={timerDecimalPoints ?? 2} />

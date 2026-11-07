@@ -1,0 +1,239 @@
+@import '../../../styles/config';
+
+// Klima Kavgası round-end drama (climate_drama.ts): copies of the times melt or freeze and
+// fall off the screen, the slowest name faints or slips. Only copies move; the real values
+// stay where they are. Fixed effect colours, like the canvas: they depict heat and ice.
+
+$drama-hot: rgb(255, 138, 61);
+$drama-fire: rgb(226, 51, 67);
+$drama-ice: rgb(159, 211, 255);
+$drama-ice-edge: rgba(220, 240, 255, 0.75);
+
+.#{$namespace}-room-climate-drama {
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	overflow: hidden;
+	pointer-events: none;
+
+	&__ghost {
+		position: absolute;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		white-space: nowrap;
+		transform-origin: 50% 0;
+		animation-fill-mode: both;
+	}
+
+	// Hot: the time goes orange, stretches, drips and runs down off the screen.
+	&__ghost--melt {
+		animation-name: room-drama-melt;
+		animation-duration: 2.8s;
+		animation-timing-function: ease-in;
+	}
+
+	// Cold: the time freezes into a block, cracks and drops.
+	&__ghost--shatter {
+		padding: 0 4px;
+		border: 1px solid transparent;
+		border-radius: $zt-radius-sm;
+		animation-name: room-drama-shatter;
+		animation-duration: 2.4s;
+		animation-timing-function: linear;
+	}
+
+	// The slowest name in the heat: sways, faints over and sinks.
+	&__ghost--faint {
+		animation-name: room-drama-faint;
+		animation-duration: 3s;
+		animation-timing-function: linear;
+	}
+
+	// The slowest name on the ice: its feet go, it spins and falls.
+	&__ghost--slip {
+		padding: 0 4px;
+		border: 1px solid transparent;
+		border-radius: $zt-radius-sm;
+		animation-name: room-drama-slip;
+		animation-duration: 2.6s;
+		animation-timing-function: linear;
+	}
+
+	&__ghost-drip {
+		position: absolute;
+		top: 85%;
+		width: 4px;
+		height: 0;
+		border-radius: 999px;
+		background: $drama-hot;
+		animation: room-drama-drip 1.4s ease-in both;
+	}
+
+	&__ghost--faint &__ghost-drip {
+		background: rgb(124, 196, 255);
+	}
+
+	// Slower, not still: the owner's Windows runs with animations off (see climate_effects.ts).
+	@include reduced-motion {
+		&__ghost--melt {
+			animation-duration: 4.4s;
+		}
+
+		&__ghost--shatter {
+			animation-duration: 3.8s;
+		}
+
+		&__ghost--faint {
+			animation-duration: 4.8s;
+		}
+
+		&__ghost--slip {
+			animation-duration: 4.2s;
+		}
+
+		&__ghost-drip {
+			animation-duration: 2.2s;
+		}
+	}
+}
+
+@keyframes room-drama-melt {
+	0% {
+		transform: none;
+	}
+
+	18% {
+		color: $drama-hot;
+		transform: scale(1.25, 1.4);
+	}
+
+	40% {
+		color: $drama-fire;
+		transform: translateY(10px) scale(1.4, 2) skewX(-5deg);
+	}
+
+	100% {
+		color: $drama-fire;
+		opacity: 0.85;
+		transform: translateY(var(--zt-drama-fall)) scale(1.8, 3.2) skewX(8deg);
+	}
+}
+
+@keyframes room-drama-shatter {
+	0% {
+		transform: none;
+	}
+
+	12% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translateX(-2px);
+	}
+
+	17% {
+		transform: translateX(2px) rotate(1deg);
+	}
+
+	22% {
+		transform: translateX(-2px) rotate(-1deg);
+	}
+
+	28% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translateX(0);
+		animation-timing-function: ease-in;
+	}
+
+	100% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translate(var(--zt-drama-drift), var(--zt-drama-fall)) rotate(var(--zt-drama-spin)) scale(1.7);
+	}
+}
+
+@keyframes room-drama-faint {
+	0% {
+		transform: none;
+	}
+
+	12% {
+		color: $drama-hot;
+		transform: rotate(-7deg);
+	}
+
+	24% {
+		transform: rotate(8deg);
+	}
+
+	36% {
+		color: $drama-fire;
+		transform: translateY(8px) rotate(-4deg);
+	}
+
+	48% {
+		color: $drama-fire;
+		transform: translateY(14px) rotate(88deg);
+		animation-timing-function: ease-in;
+	}
+
+	100% {
+		color: $drama-fire;
+		opacity: 0.9;
+		transform: translate(var(--zt-drama-drift), var(--zt-drama-fall)) rotate(110deg) scale(1.5);
+	}
+}
+
+@keyframes room-drama-slip {
+	0% {
+		transform: none;
+	}
+
+	14% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translateX(10px) rotate(6deg);
+	}
+
+	24% {
+		transform: translateX(-14px) rotate(-18deg);
+	}
+
+	32% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translateX(-6px) translateY(6px) rotate(-40deg);
+		animation-timing-function: ease-in;
+	}
+
+	100% {
+		color: $drama-ice;
+		background: rgba(159, 211, 255, 0.22);
+		border-color: $drama-ice-edge;
+		transform: translate(var(--zt-drama-drift), var(--zt-drama-fall)) rotate(-320deg) scale(1.5);
+	}
+}
+
+@keyframes room-drama-drip {
+	0% {
+		height: 0;
+		opacity: 1;
+	}
+
+	60% {
+		height: 44px;
+		opacity: 1;
+	}
+
+	100% {
+		height: 60px;
+		opacity: 0;
+		transform: translateY(28px);
+	}
+}

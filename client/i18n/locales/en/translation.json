@@ -2429,7 +2429,56 @@
     "music_volume": "Volume",
     "music_stop": "Stop",
     "music_rate_limit": "Please wait before searching again",
-    "scramble_the_cube": "Scramble the cube"
+    "scramble_the_cube": "Scramble the cube",
+    "climate": {
+      "chip_title": "Room temperature",
+      "level": {
+        "freezing": "Freezing",
+        "cool": "Cool",
+        "normal": "Normal",
+        "hot": "Hot",
+        "fire": "Room on fire"
+      },
+      "remote_title": "AC remote",
+      "mode_off": "OFF",
+      "mode_cool": "COOL",
+      "mode_heat": "HEAT",
+      "fan": "FAN",
+      "room_now": "Room now",
+      "complaints": "Complaints",
+      "complaints_none": "none",
+      "complaints_cold": "{{count}} freezing",
+      "complaints_hot": "{{count}} boiling",
+      "holder_label": "Remote",
+      "holder_you": "you",
+      "holder_nobody": "nobody",
+      "swaps": "Changed hands",
+      "key_power": "Power",
+      "key_down": "Lower temperature",
+      "key_up": "Raise temperature",
+      "key_fan": "Fan speed",
+      "wait_holder": "<b>{{holder}}</b> has the remote. Win the next round and it's yours.",
+      "wait_empty": "Nobody has the remote. The Pro who wins the round takes it.",
+      "you_hold": "You have the remote. The AC is in your hands now.",
+      "basic_locked": "The remote belongs to Pro members. You just get cold. But you can complain.",
+      "basic_won": "You won the round. If you were Pro, the remote would be yours.",
+      "no_pro": "No Pro in this room, nobody to turn the AC on. The room only heats up from the race.",
+      "react_cold": "I'm cold",
+      "react_hot": "I'm boiling",
+      "go_pro": "Go Pro",
+      "effects": "Effects",
+      "sound": "AC sound",
+      "remote_mark": "remote",
+      "ev_ac_on": "{{actor}} turned the AC on, {{value}}°C",
+      "ev_ac_off": "{{actor}} turned the AC off",
+      "ev_set_down": "{{actor}} lowered the AC to {{value}}°C",
+      "ev_set_up": "{{actor}} raised the AC to {{value}}°C",
+      "ev_holder": "{{target}} has the remote now",
+      "ev_holder_leave": "The remote went to {{target}}, the last round's fastest Pro",
+      "ev_basic_win": "{{winner}} won the round but isn't Pro, so the remote stays with {{holder}}.",
+      "ev_basic_win_empty": "{{winner}} won the round but isn't Pro, so the remote stays with the Pro members.",
+      "ev_no_pro_off": "No Pro left to take the remote, the AC turned off."
+    }
   },
   "profile": {
     "remove": "Remove",
@@ -3860,7 +3909,8 @@
       "analysis": "Analysis and data",
       "practice": "Practice and timer",
       "community": "Rooms and competitions",
-      "personal": "Personalization"
+      "personal": "Personalization",
+      "fun": "Fun features"
     },
     "mobile_only_hint": "You can buy Pro in the iOS and Android apps",
     "basic_hint": "You're currently on Basic plan",
@@ -3990,6 +4040,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Put the cube next to the phone's rear camera. The time starts when you lift it and stops when you put it back on the table. All you need is a magnetic cube and the mobile app."
+      },
+      "room_climate": {
+        "title": "AC remote in rooms",
+        "desc": "Rooms have an AC and a single remote. The Pro who wins the round takes it and cools or heats the room however they like. When the room freezes, snow falls; when it burns, times melt down the screen and the round's slowest player falls. It's only visual: times and results stay as they are."
       }
     },
     "promo": {
@@ -4581,6 +4635,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "Put the cube next to the phone's rear camera and the time starts when you lift it. Like a StackMat, no need to touch the screen."
+      },
+      "room_climate": {
+        "title": "AC remote in rooms",
+        "desc": "Win the round and the remote is yours. You decide the room's weather."
       }
     },
     "highlights": {
@@ -4617,7 +4675,10 @@
       "slam_stackmat": "No extra hardware needed",
       "magnet_lift": "The timer starts the moment you lift the cube",
       "magnet_drop": "It stops when you put the cube down on the table",
-      "magnet_setup": "All you need is a magnetic cube and the mobile app"
+      "magnet_setup": "All you need is a magnetic cube and the mobile app",
+      "climate_remote": "The Pro who wins the round takes the remote",
+      "climate_effects": "Snow, ice, heat haze and flames",
+      "climate_readable": "Times and scrambles always stay readable"
     }
   },
   "online_battle": {

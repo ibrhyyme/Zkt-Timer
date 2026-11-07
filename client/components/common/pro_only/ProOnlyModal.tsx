@@ -24,6 +24,7 @@ const DEFAULT_HIGHLIGHTS = ['sync', 'themes', 'stats_customize'] as const;
 // feature, which turned out not to be gated on either side.
 const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	room_music: ['music_youtube', 'music_friends', 'music_unlimited'],
+	room_climate: ['climate_remote', 'climate_effects', 'climate_readable'],
 	leaderboard: ['leaderboard_publish', 'leaderboard_profile', 'leaderboard_compete'],
 	smart_cube: ['smart_analysis', 'smart_steps', 'smart_animation'],
 	themes: ['themes_six', 'themes_colors', 'themes_atmosphere'],

@@ -152,6 +152,12 @@ export interface AllSettings {
 	/** Whether the ready-made background moves. Off, it is drawn once as a still picture. */
 	timer_bg_motion: boolean;
 	/**
+	 * Klima Kavgası in friendly rooms: the frost / heat effects and the AC beep on this
+	 * screen. Platform settings (prefs blob): a phone and a computer each keep their own.
+	 */
+	room_climate_effects: boolean;
+	room_climate_sound: boolean;
+	/**
 	 * Solve list colours (Appearance > Lists), RGB triplets like the theme colours. Null
 	 * follows the theme: the list keeps the secondary colour for a time and the primary
 	 * colour for a PB, which is what it always used. Platform settings (prefs blob), so
@@ -304,6 +310,8 @@ const defaultSettings: AllSettings = {
 	highlight_pbs: 'color',
 	timer_bg_preset: null,
 	timer_bg_motion: true,
+	room_climate_effects: true,
+	room_climate_sound: true,
 	solve_time_color: null,
 	solve_pb_color: null,
 	inspection_except_bld: false,

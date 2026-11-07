@@ -2,8 +2,18 @@ import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendlyRoomParticipantData, FriendlyRoomScrambleHistoryEntry, FriendlyRoomSolveData } from '../../../shared/friendly_room';
 import { getTimeString } from '../../util/time';
-import { WifiSlash, PencilSimple } from 'phosphor-react';
+import { WifiSlash, PencilSimple, Crown, DeviceMobileSpeaker } from 'phosphor-react';
 import ScrambleViewModal from './ScrambleViewModal';
+import './climate/RoomClimateMarks.scss';
+
+/** Klima Kavgası marks on the name row: the remote holder, Pro crowns, cold or hot names. */
+export interface RoomTableClimate {
+    holderId: string | null;
+    proIds: string[];
+    // Shiver and breath when the room is freezing, a sweat drop when it is hot. Null when
+    // the room is comfortable or the viewer turned the effects off.
+    mood: 'cold' | 'hot' | null;
+}
 
 interface RoomTableProps {
     participants: FriendlyRoomParticipantData[];
@@ -18,6 +28,7 @@ interface RoomTableProps {
     // instead of the scramble modal. Absent in read-only views (e.g. admin stats).
     myLastSolveId?: string;
     onEditSolve?: (solve: FriendlyRoomSolveData) => void;
+    climate?: RoomTableClimate;
 }
 
 // Timer component for dynamic countdown
@@ -36,7 +47,7 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [], hostId, myLastSolveId, onEditSolve }: RoomTableProps) {
+function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [], hostId, myLastSolveId, onEditSolve, climate }: RoomTableProps) {
     const { t } = useTranslation();
     const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
@@ -217,7 +228,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                 className="flex-1 w-full overflow-auto bg-button text-text font-sans border border-text/[0.1] text-sm min-h-0 room-table-custom-scroll"
                 style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
             >
-                <div ref={contentRef} className="flex flex-col min-w-full w-max">
+                <div ref={contentRef} className="flex flex-col min-w-full w-max" data-climate-text>
 
                     {/* Header (Sticky) */}
                     <div
@@ -234,7 +245,21 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                             const isMe = p.user_id === currentUserId;
                             return (
                                 <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center gap-1 py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'} ${p.is_spectator ? 'opacity-70' : ''}`}>
-                                    <span className="truncate">{p.username}</span>
+                                    {climate?.proIds.includes(p.user_id) && (
+                                        <Crown weight="fill" className="zt-room-climate-mark__crown" aria-label="Pro" />
+                                    )}
+                                    <span data-climate-name={p.user_id} className={`truncate${climate?.mood === 'cold' && !p.is_spectator ? ' zt-room-climate-mark__shiver' : ''}`}>
+                                        {p.username}
+                                    </span>
+                                    {climate?.mood && !p.is_spectator && (
+                                        <span className={`zt-room-climate-mark__mood zt-room-climate-mark__mood--${climate.mood}`} aria-hidden="true" />
+                                    )}
+                                    {climate?.holderId === p.user_id && (
+                                        <span className="zt-room-climate-mark__remote" title={t('rooms.climate.remote_mark')}>
+                                            <DeviceMobileSpeaker weight="fill" />
+                                            <span className="zt-room-climate-mark__remote-label">{t('rooms.climate.remote_mark')}</span>
+                                        </span>
+                                    )}
                                     {p.is_moderator && p.user_id !== hostId && (
                                         <span className="text-[9px] font-bold uppercase tracking-wider text-text bg-sky-400/15 px-1.5 py-0.5 rounded-sm shrink-0">
                                             {t('rooms.role_moderator_short')}
@@ -346,7 +371,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                             const solveTime = solve.plus_two ? solve.time + 2 : solve.time;
 
                                             cellContent = (
-                                                <span className={`inline-flex items-center gap-1 font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
+                                                <span data-climate-cell={`${p.user_id}:${round}`} className={`inline-flex items-center gap-1 font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
                                                     isBest ? 'text-emerald-400 font-bold' :
                                                         'text-text'
                                                     }`}>
@@ -411,6 +436,9 @@ function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
     if (prev.myLastSolveId !== next.myLastSolveId) return false;
     if (prev.onEditSolve !== next.onEditSolve) return false;
     if ((prev.scrambleHistory?.length ?? 0) !== (next.scrambleHistory?.length ?? 0)) return false;
+    if (prev.climate?.holderId !== next.climate?.holderId) return false;
+    if (prev.climate?.mood !== next.climate?.mood) return false;
+    if ((prev.climate?.proIds ?? []).join() !== (next.climate?.proIds ?? []).join()) return false;
 
     const a = prev.participants;
     const b = next.participants;

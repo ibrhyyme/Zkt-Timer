@@ -1,0 +1,147 @@
+@import '../../../styles/config';
+
+// Klima Kavgası marks in the room table's name row. Gold is Pro's (zt-pro-accent).
+
+.#{$namespace}-room-climate-mark {
+	&__crown {
+		@include zt-pro-accent;
+		flex: 0 0 auto;
+		width: 12px;
+		height: 12px;
+		color: rgb(var(--primary-color));
+	}
+
+	// The remote holder: a gold remote and the word, the word dropped on a phone.
+	&__remote {
+		@include zt-pro-accent;
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		flex: 0 0 auto;
+		color: rgb(var(--primary-color));
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-transform: none;
+
+		svg {
+			width: 13px;
+			height: 13px;
+		}
+	}
+
+	&__remote-label {
+		@include bp-down($bp-md) {
+			display: none;
+		}
+	}
+
+	// Freezing: the name shivers.
+	&__shiver {
+		animation: room-climate-shiver 0.16s linear infinite;
+	}
+
+	// Beside the name: a breath puff when freezing, a sweat drop when hot.
+	&__mood {
+		position: relative;
+		flex: 0 0 auto;
+		width: 10px;
+		height: 12px;
+
+		&::after {
+			content: '';
+			position: absolute;
+			pointer-events: none;
+		}
+	}
+
+	&__mood--cold::after {
+		left: 0;
+		top: 3px;
+		width: 10px;
+		height: 7px;
+		border-radius: 999px;
+		background: rgba(235, 245, 255, 0.85);
+		opacity: 0;
+		animation: room-climate-breath 2.2s ease-out infinite;
+
+		.theme-light & {
+			background: rgba(120, 170, 220, 0.6);
+		}
+	}
+
+	&__mood--hot::after {
+		left: 2px;
+		top: 0;
+		width: 6px;
+		height: 8px;
+		border-radius: 50%;
+		background: rgb(124, 196, 255);
+		animation: room-climate-drip 1.6s ease-in infinite;
+	}
+
+	// Slower, not still: the owner's Windows runs with animations off (see climate_effects.ts).
+	@include reduced-motion {
+		&__shiver {
+			animation-duration: 0.45s;
+		}
+
+		&__mood--cold::after {
+			animation-duration: 3.6s;
+		}
+
+		&__mood--hot::after {
+			animation-duration: 2.6s;
+		}
+	}
+}
+
+@keyframes room-climate-shiver {
+	0% {
+		transform: translate(0, 0);
+	}
+
+	25% {
+		transform: translate(-1px, 0.5px);
+	}
+
+	50% {
+		transform: translate(1px, 0);
+	}
+
+	75% {
+		transform: translate(-0.5px, -0.5px);
+	}
+}
+
+@keyframes room-climate-breath {
+	0% {
+		opacity: 0;
+		transform: translate(0, 0) scale(0.4);
+	}
+
+	15% {
+		opacity: 0.9;
+	}
+
+	100% {
+		opacity: 0;
+		transform: translate(12px, -6px) scale(1.6);
+	}
+}
+
+@keyframes room-climate-drip {
+	0% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	80% {
+		opacity: 1;
+	}
+
+	100% {
+		transform: translateY(10px);
+		opacity: 0;
+	}
+}

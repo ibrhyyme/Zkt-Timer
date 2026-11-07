@@ -49,6 +49,8 @@ export enum RedisNamespace {
 	// approval a manager's "accept" leaves behind. See friendly_room/join_requests.ts.
 	FRIENDLY_ROOM_JOIN_REQUESTS = 'cd:friendly_room:join_requests',
 	FRIENDLY_ROOM_JOIN_APPROVAL = 'cd:friendly_room:join_approval',
+	// Klima Kavgası: one JSON climate state per room (friendly_room/climate.ts).
+	FRIENDLY_ROOM_CLIMATE = 'cd:friendly_room:climate',
 	SUPPORT_TICKET_RATE = 'cd:support:rate',
 	NATIVE_MIGRATE_STASH = 'cd:native_migrate:stash',
 	NATIVE_MIGRATE_RATE = 'cd:native_migrate:rate',

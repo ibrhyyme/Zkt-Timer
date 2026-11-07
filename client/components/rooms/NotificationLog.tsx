@@ -29,7 +29,7 @@ export default function NotificationLog({ notifications }: NotificationLogProps)
                 <h3 className="text-xs font-bold text-text uppercase tracking-wider">{t('rooms.log_title')}</h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+            <div data-climate-text className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
                 {notifications.length === 0 ? (
                     <div className="text-[10px] text-text italic text-center mt-4">{t('rooms.log_empty')}</div>
                 ) : (

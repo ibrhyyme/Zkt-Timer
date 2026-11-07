@@ -2404,7 +2404,56 @@
     "music_volume": "音量",
     "music_stop": "停止",
     "music_rate_limit": "请稍后再试",
-    "scramble_the_cube": "打乱魔方"
+    "scramble_the_cube": "打乱魔方",
+    "climate": {
+      "chip_title": "室温",
+      "level": {
+        "freezing": "冰冷",
+        "cool": "凉爽",
+        "normal": "正常",
+        "hot": "炎热",
+        "fire": "房间着火了"
+      },
+      "remote_title": "空调遥控器",
+      "mode_off": "关闭",
+      "mode_cool": "制冷",
+      "mode_heat": "制热",
+      "fan": "风速",
+      "room_now": "当前室温",
+      "complaints": "抱怨",
+      "complaints_none": "无",
+      "complaints_cold": "{{count}} 人觉得冷",
+      "complaints_hot": "{{count}} 人热坏了",
+      "holder_label": "遥控器",
+      "holder_you": "在你手上",
+      "holder_nobody": "无人持有",
+      "swaps": "易手次数",
+      "key_power": "开 / 关",
+      "key_down": "调低温度",
+      "key_up": "调高温度",
+      "key_fan": "风速",
+      "wait_holder": "遥控器在 <b>{{holder}}</b> 手上。赢下一轮，遥控器就归你。",
+      "wait_empty": "遥控器无人持有。赢得本轮的 Pro 拿走它。",
+      "you_hold": "遥控器在你手上。空调由你掌控。",
+      "basic_locked": "遥控器归 Pro 会员。你只能挨冻，但可以抱怨。",
+      "basic_won": "你赢了这一轮。如果你是 Pro，遥控器就是你的。",
+      "no_pro": "这个房间没有 Pro，没人能开空调。房间只会因比赛升温。",
+      "react_cold": "好冷",
+      "react_hot": "热死了",
+      "go_pro": "升级 Pro",
+      "effects": "特效",
+      "sound": "空调声音",
+      "remote_mark": "遥控器",
+      "ev_ac_on": "{{actor}} 打开了空调，{{value}}°C",
+      "ev_ac_off": "{{actor}} 关闭了空调",
+      "ev_set_down": "{{actor}} 把空调调低到 {{value}}°C",
+      "ev_set_up": "{{actor}} 把空调调高到 {{value}}°C",
+      "ev_holder": "遥控器交给了 {{target}}",
+      "ev_holder_leave": "遥控器交给了上一轮最快的 Pro：{{target}}",
+      "ev_basic_win": "{{winner}} 赢了这一轮，但不是 Pro，遥控器仍在 {{holder}} 手上。",
+      "ev_basic_win_empty": "{{winner}} 赢了这一轮，但不是 Pro，遥控器仍归 Pro 会员。",
+      "ev_no_pro_off": "没有 Pro 可以接手遥控器，空调已关闭。"
+    }
   },
   "profile": {
     "remove": "移除",
@@ -3828,7 +3877,8 @@
       "analysis": "分析与数据",
       "practice": "练习与计时",
       "community": "房间与比赛",
-      "personal": "个性化"
+      "personal": "个性化",
+      "fun": "趣味功能"
     },
     "mobile_only_hint": "可以在 iOS 和 Android 应用中购买 Pro",
     "basic_hint": "你当前使用的是 Basic 套餐",
@@ -3958,6 +4008,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "把魔方放在手机后置摄像头旁边。拿起时开始计时，放回桌上时停止。只需要一个磁力魔方和手机应用。"
+      },
+      "room_climate": {
+        "title": "房间空调遥控器",
+        "desc": "房间里有一台空调，遥控器只有一个。赢得本轮的 Pro 拿到遥控器，想冷就冷，想热就热。房间结冰时会下雪，着火时成绩会融化流下屏幕，本轮最慢的人还会摔倒。这些只是视觉效果，成绩和结果保持不变。"
       }
     },
     "promo": {
@@ -4549,6 +4603,10 @@
       "magnet_start": {
         "title": "Magnet Timer",
         "desc": "把魔方放在手机后置摄像头旁边，拿起时开始计时。和 StackMat 一样，不用碰屏幕。"
+      },
+      "room_climate": {
+        "title": "房间空调遥控器",
+        "desc": "赢下这一轮，遥控器就归你，房间的天气由你决定。"
       }
     },
     "highlights": {
@@ -4585,7 +4643,10 @@
       "slam_stackmat": "不需要额外硬件",
       "magnet_lift": "拿起魔方的那一刻计时开始",
       "magnet_drop": "放回桌上计时就停止",
-      "magnet_setup": "只需要一个磁力魔方和手机应用"
+      "magnet_setup": "只需要一个磁力魔方和手机应用",
+      "climate_remote": "赢得本轮的 Pro 拿到遥控器",
+      "climate_effects": "雪、冰、热浪和火焰",
+      "climate_readable": "成绩和打乱始终清晰可读"
     }
   },
   "online_battle": {
