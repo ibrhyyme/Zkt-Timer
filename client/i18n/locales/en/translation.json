@@ -5976,7 +5976,7 @@
     "error_in_use": "Another app is using the camera. Close it and try again.",
     "error_camera": "The camera feed stopped. Open the camera again.",
     "error_brain": "Hand tracking couldn't start. Reload the page and try again.",
-    "warning_low_fps": "The camera gives {{fps}} frames per second and needs at least {{min}}. Most cameras speed up with more light.",
+    "warning_low_fps": "The camera gives {{fps}} frames per second and needs at least {{min}}. With a phone camera, set the resolution to 1080p or lower, and add more light.",
     "warning_dark": "The picture is dark and your hands are hard to make out. Add more light.",
     "warning_low_res": "The camera resolution is low ({{height}}p). Try a higher-resolution camera.",
     "warning_slow": "Your computer can't keep up with hand tracking ({{ms}} ms per frame). Try closing other tabs.",

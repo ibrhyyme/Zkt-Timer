@@ -5957,7 +5957,7 @@
     "error_in_use": "Kamera başka bir uygulamada açık. O uygulamayı kapatıp tekrar dene.",
     "error_camera": "Kamera görüntüsü kesildi. Kamerayı tekrar aç.",
     "error_brain": "El takibi başlatılamadı. Sayfayı yenileyip tekrar dene.",
-    "warning_low_fps": "Kamera saniyede {{fps}} kare veriyor, en az {{min}} olmalı. Çoğu kamera ışık artınca hızlanır.",
+    "warning_low_fps": "Kamera saniyede {{fps}} kare veriyor, en az {{min}} olmalı. Telefon kamerası kullanıyorsan çözünürlüğü 1080p ya da altına indir, ışığı da artır.",
     "warning_dark": "Görüntü karanlık, ellerin net seçilmiyor. Işığı artır.",
     "warning_low_res": "Kamera çözünürlüğü düşük ({{height}}p). Daha yüksek çözünürlüklü bir kamera dene.",
     "warning_slow": "Bilgisayar el takibine yetişmiyor (kare başına {{ms}} ms). Diğer sekmeleri kapatmayı dene.",
