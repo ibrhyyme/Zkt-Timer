@@ -89,5 +89,12 @@ describe('Google Play listing', () => {
 			expect(shots.length).toBeGreaterThanOrEqual(4);
 			expect(shots.length).toBeLessThanOrEqual(8);
 		});
+
+		it('has a 1024x500 feature graphic without alpha', () => {
+			// Play rejects any other size and any PNG with an alpha channel.
+			const png = fs.readFileSync(path.join(PLAY_METADATA, locale, 'images/featureGraphic.png'));
+			expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1024, 500]);
+			expect(png[25]).toBe(2); // IHDR colour type 2 = truecolour RGB
+		});
 	});
 });

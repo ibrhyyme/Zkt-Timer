@@ -10,9 +10,14 @@ export interface CameraTimerStatus {
 	engaged: boolean;
 	/** Both hands rest on the pads: lifting one starts (digits green, like a StackMat). */
 	green: boolean;
+	/**
+	 * The camera missed a stop and the solve was ended by hand (decision.ts cameraMissedStop): say
+	 * to hold the hands on the table. Shown during the next solves until a camera stop lands.
+	 */
+	holdHint: boolean;
 }
 
-const INITIAL: CameraTimerStatus = { engaged: false, green: false };
+const INITIAL: CameraTimerStatus = { engaged: false, green: false, holdHint: false };
 
 let status: CameraTimerStatus = INITIAL;
 const listeners = new Set<() => void>();

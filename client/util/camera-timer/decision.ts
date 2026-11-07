@@ -147,6 +147,31 @@ export function frozenSeconds(pendingStopEpoch: number | null, timeStartedAt: nu
 	return s > 0 ? s : null;
 }
 
+/** The brain's stop confirmation (pad timer stopMs) when an older brain does not report it. */
+export const DEFAULT_STOP_MS = 400;
+
+/**
+ * How far the stop confirmation has got, 0..1, while the hands sit in the stop pose of a running
+ * solve (the ring drawn around each hand); null otherwise.
+ */
+export function stopHoldProgress(snap: Pick<BrainSnap, 'state' | 'pendingStopT' | 'stopRunMs'> | null, stopMs: number): number | null {
+	if (!snap || snap.state !== 'solving' || snap.pendingStopT === null) return null;
+	if (!(stopMs > 0)) return 1;
+	return Math.max(0, Math.min(1, snap.stopRunMs / stopMs));
+}
+
+/**
+ * A solve ended some other way (Space, Escape) while the brain still waited for the hands: the
+ * camera missed the stop. The usual cause is a StackMat habit, slapping the pads and leaving at
+ * once (YouTube test 2026-11-07: ~150-230 ms, mostly too brief to even freeze the digits). A
+ * touch that short cannot be told from hands held low around the cube mid-solve, so the stop is
+ * not shortened; the user is told to hold instead. Hands leaving a frozen display is no signal:
+ * mid-solve the display freezes and resumes for 15-95 ms many times a solve.
+ */
+export function cameraMissedStop(brainState: PadState | null | undefined, timerRunning: boolean): boolean {
+	return !timerRunning && brainState === 'solving';
+}
+
 // ---------- Quality warnings ----------
 
 export type CameraWarning = 'unsupported_rate' | 'low_fps' | 'dark' | 'low_res' | 'slow' | 'no_hands';

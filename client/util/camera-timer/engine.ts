@@ -1,5 +1,5 @@
 import { CameraTimerManifest, cameraBrainUrl } from './availability';
-import { BrainSnap, cameraWarnings, CameraWarning, meanLuma, PadEvent } from './decision';
+import { BrainSnap, cameraWarnings, CameraWarning, DEFAULT_STOP_MS, meanLuma, PadEvent } from './decision';
 
 /**
  * The Kamera Timer's moving parts on the page: the camera stream, the brain worker and the
@@ -121,6 +121,8 @@ export class CameraTimerEngine {
 	/** Latest hands and pad timer readout, for the overlay (read per animation frame, no React). */
 	latest: { seq: number; hands: number[][]; snap: BrainSnap | null } = { seq: 0, hands: [], snap: null };
 	leaveFar = 0.5;
+	/** The brain's stop confirmation in ms (pad timer stopMs), for the hold ring. */
+	stopMs = DEFAULT_STOP_MS;
 
 	onResult: ((r: BrainResult) => void) | null = null;
 
@@ -300,6 +302,7 @@ export class CameraTimerEngine {
 			this.ready = true;
 			this.readyAt = performance.now();
 			if (m.config && typeof m.config.leaveFar === 'number') this.leaveFar = m.config.leaveFar;
+			if (m.config && typeof m.config.stopMs === 'number') this.stopMs = m.config.stopMs;
 			this.note('ready', { delegate: m.delegate });
 			this.setStatus({ stage: this.stream ? 'running' : 'loading', delegate: m.delegate || null });
 			return;

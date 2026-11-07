@@ -28,11 +28,14 @@ import {
 	EARLY_LEAVE,
 	padDisplacement,
 	QUALITY,
+	cameraMissedStop,
+	stopHoldProgress,
 } from '../../../../util/camera-timer/decision';
 import {
 	resetCameraTimerStatus,
 	setCameraPendingStop,
 	setCameraTimerStatus,
+	useCameraTimerStatus,
 } from '../../../../util/camera-timer/status_store';
 import { startBlockReason } from '../../../../util/magnet-start/start_guard';
 import { useCameraViewSlot } from './view_slot';
@@ -41,6 +44,9 @@ import './CameraTimer.scss';
 const b = block('camera-timer');
 
 const BLIND_SUBSET = /(ni|bld)$/;
+
+// Hold ring radius around a palm, in hand sizes (wrist to middle knuckle): clear of the fingers.
+const HOLD_RING = 1.3;
 
 // MediaPipe's 21 hand points, joined as bones.
 const BONES: [number, number][] = [
@@ -128,6 +134,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 				const solving = !!getTimerStore('timeStartedAt');
 				if (cameraStopApplies(solving, ev)) {
 					setCameraPendingStop(null);
+					setCameraTimerStatus({ holdHint: false });
 					endTimer(ctx, ev.timeMs, undefined, captureToEpoch(ev.t, origin));
 					engine.note('stopped', { timeMs: ev.timeMs, frame: ev.frame });
 				}
@@ -143,8 +150,10 @@ function themeRgb(el: Element, name: string, fallback: string): string {
 }
 
 // What the timer sees: each hand's points and bones in the colour of the pad timer's state
-// and, while armed, a ring around each pad: a hand leaving its ring starts the timer. The ring
-// is an ellipse because the timer measures in normalized image units, as the model reports.
+// and, while armed, a ring around each pad: a hand leaving its ring starts the timer. While the
+// hands sit in the stop pose, a ring around each hand fills over the stop confirmation: the
+// digits froze, and leaving before it is full lets the time run on. Rings are ellipses because
+// the timer measures in normalized image units, as the model reports.
 function drawOverlay(canvas: HTMLCanvasElement, engine: CameraTimerEngine, colors: Record<string, string>): void {
 	const w = canvas.clientWidth;
 	const h = canvas.clientHeight;
@@ -176,6 +185,25 @@ function drawOverlay(canvas: HTMLCanvasElement, engine: CameraTimerEngine, color
 			ctx.stroke();
 		}
 		ctx.setLineDash([]);
+	}
+	const hold = stopHoldProgress(snap, engine.stopMs);
+	if (hold !== null && snap) {
+		ctx.save();
+		ctx.strokeStyle = colors.ready || color;
+		ctx.lineWidth = 3;
+		for (const p of snap.palms) {
+			const rx = HOLD_RING * p.scale * w;
+			const ry = HOLD_RING * p.scale * h;
+			ctx.globalAlpha = 0.3;
+			ctx.beginPath();
+			ctx.ellipse(p.x * w, p.y * h, rx, ry, 0, 0, Math.PI * 2);
+			ctx.stroke();
+			ctx.globalAlpha = 1;
+			ctx.beginPath();
+			ctx.ellipse(p.x * w, p.y * h, rx, ry, 0, -Math.PI / 2, -Math.PI / 2 + hold * Math.PI * 2);
+			ctx.stroke();
+		}
+		ctx.restore();
 	}
 	ctx.lineWidth = 2;
 	for (const lm of hands) {
@@ -219,6 +247,7 @@ export default function CameraTimer() {
 	const allowed = canUseCameraTimer(me);
 	const manifest = useCameraTimerAvailability(allowed);
 	const inspectionOn = useSettings('inspection');
+	const { holdHint } = useCameraTimerStatus();
 
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -282,12 +311,17 @@ export default function CameraTimer() {
 	}, [slot]);
 
 	// A solve that ended some other way (Space, Escape) while the brain still waits for the
-	// hands: back to idle so its late stop does not land on the next attempt.
+	// hands: back to idle so its late stop does not land on the next attempt, and tell the user
+	// to hold the hands on the table next time (the camera missed the stop).
 	const timeStartedAt = context.timeStartedAt;
 	useEffect(() => {
 		if (!engine || timeStartedAt) return;
 		setCameraPendingStop(null);
-		if (engine.latest.snap?.state === 'solving') engine.reset();
+		if (cameraMissedStop(engine.latest.snap?.state, !!timeStartedAt)) {
+			setCameraTimerStatus({ holdHint: true });
+			engine.note('missed_stop', {});
+			engine.reset();
+		}
 	}, [timeStartedAt, engine]);
 
 	// The overlay follows the brain's results, drawn once per new result.
@@ -357,6 +391,9 @@ export default function CameraTimer() {
 		} else {
 			line = inInspection ? t('camera_timer.place_hands_inspection') : t('camera_timer.place_hands');
 		}
+	} else if (holdHint) {
+		// The camera missed the last stop (ended by hand): say to hold the hands on the table.
+		line = t('camera_timer.hold_to_stop');
 	}
 
 	const warning = running && !solving && status.warnings.length ? status.warnings[0] : null;

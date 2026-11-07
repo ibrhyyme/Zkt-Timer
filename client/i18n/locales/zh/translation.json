@@ -5914,6 +5914,7 @@
     "ready": "准备就绪。抬起一只手开始计时",
     "ready_inspection": "准备就绪。抬起一只手开始观察",
     "lift_to_rearm": "双手离开桌面片刻，即可开始新的复原",
+    "hold_to_stop": "双手放在桌面上，等圆环填满后计时停止",
     "download_log": "下载最近一分钟的记录",
     "error_unsupported": "此浏览器无法运行摄像头计时器。请使用 Chrome 或 Edge。",
     "error_permission": "摄像头权限被拒绝。请点击地址栏中的摄像头图标允许访问，然后重试。",

@@ -5949,6 +5949,7 @@
     "ready": "Listo. Levanta una mano para empezar",
     "ready_inspection": "Listo. Levanta una mano para empezar la inspección",
     "lift_to_rearm": "Levanta las manos de la mesa un momento para empezar otra resolución",
+    "hold_to_stop": "Deja las dos manos en la mesa. El tiempo se para cuando se llena el anillo",
     "download_log": "Descargar el registro del último minuto",
     "error_unsupported": "Este navegador no puede usar el temporizador con cámara. Usa Chrome o Edge.",
     "error_permission": "No se permitió el acceso a la cámara. Actívalo desde el icono de la cámara en la barra de direcciones y vuelve a intentarlo.",

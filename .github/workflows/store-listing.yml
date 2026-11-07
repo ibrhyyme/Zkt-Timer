@@ -17,7 +17,7 @@ on:
           - ios
         default: both
       screenshots:
-        description: 'Also replace the screenshots (untick for a text-only update)'
+        description: 'Also replace the screenshots and the Play feature graphic (untick for a text-only update)'
         type: boolean
         default: true
 

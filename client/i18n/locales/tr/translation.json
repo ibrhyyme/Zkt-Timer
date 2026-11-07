@@ -5929,6 +5929,7 @@
     "ready": "Hazır. Elini kaldırınca süre başlar",
     "ready_inspection": "Hazır. Elini kaldırınca inceleme başlar",
     "lift_to_rearm": "Yeni çözüm için ellerini bir an masadan kaldır",
+    "hold_to_stop": "İki elini masada tut, halka dolunca süre durur",
     "download_log": "Son dakikanın kaydını indir",
     "error_unsupported": "Bu tarayıcı Kamera Timer'ı çalıştıramıyor. Chrome ya da Edge kullan.",
     "error_permission": "Kamera izni verilmedi. Adres çubuğundaki kamera simgesinden izin verip tekrar dene.",

@@ -1,5 +1,6 @@
 import {
 	cameraGreen,
+	cameraMissedStop,
 	cameraStopApplies,
 	CameraTimerSide,
 	cameraWarnings,
@@ -11,6 +12,7 @@ import {
 	meanLuma,
 	padDisplacement,
 	QUALITY,
+	stopHoldProgress,
 } from '../decision';
 import { parseCameraTimerManifest } from '../availability';
 import { startBlockReason, StartGuardInput } from '../../magnet-start/start_guard';
@@ -113,6 +115,25 @@ describe('stop and display', () => {
 		expect(frozenSeconds(null, NOW)).toBeNull();
 		expect(frozenSeconds(NOW, null)).toBeNull();
 		expect(frozenSeconds(NOW - 5, NOW)).toBeNull();
+	});
+
+	it('fills the hold ring over the stop confirmation, only in the stop pose of a solve', () => {
+		const pose = { state: 'solving' as const, pendingStopT: 5000, stopRunMs: 100 };
+		expect(stopHoldProgress(pose, 400)).toBeCloseTo(0.25, 5);
+		expect(stopHoldProgress({ ...pose, stopRunMs: 900 }, 400)).toBe(1);
+		expect(stopHoldProgress({ ...pose, pendingStopT: null }, 400)).toBeNull();
+		expect(stopHoldProgress({ ...pose, state: 'ready' }, 400)).toBeNull();
+		expect(stopHoldProgress(null, 400)).toBeNull();
+		expect(stopHoldProgress(pose, 0)).toBe(1);
+	});
+
+	it('counts a stop as missed only when the solve ended while the brain still waited', () => {
+		expect(cameraMissedStop('solving', false)).toBe(true);
+		// The camera's own stop: the brain already reports stopped.
+		expect(cameraMissedStop('stopped', false)).toBe(false);
+		expect(cameraMissedStop('solving', true)).toBe(false);
+		expect(cameraMissedStop(null, false)).toBe(false);
+		expect(cameraMissedStop('idle', false)).toBe(false);
 	});
 });
 

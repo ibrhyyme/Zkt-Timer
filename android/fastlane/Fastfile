@@ -78,7 +78,7 @@ platform :android do
     )
   end
 
-  desc "Upload the store listing from fastlane/metadata/android (screenshots only with screenshots:true)"
+  desc "Upload the store listing from fastlane/metadata/android (screenshots and feature graphic only with screenshots:true)"
   lane :listing do |options|
     # Only languages with a folder under metadata/android are touched; every other
     # Play translation stays as it is. A field without a .txt file keeps its
@@ -133,7 +133,9 @@ platform :android do
       skip_upload_aab: true,
       skip_upload_changelogs: true,
       skip_upload_metadata: false,
-      skip_upload_images: true,
+      # images/ holds only featureGraphic.png (1024x500): supply uploads the image
+      # types it finds a file for, so the icon and other slots stay as they are.
+      skip_upload_images: !upload_screenshots,
       skip_upload_screenshots: !upload_screenshots
     )
   end

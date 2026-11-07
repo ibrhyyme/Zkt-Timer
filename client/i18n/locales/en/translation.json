@@ -5948,6 +5948,7 @@
     "ready": "Ready. Lift a hand to start",
     "ready_inspection": "Ready. Lift a hand to start inspection",
     "lift_to_rearm": "Lift your hands off the table for a moment to start a new solve",
+    "hold_to_stop": "Keep both hands on the table. The time stops when the ring fills",
     "download_log": "Download the last minute's log",
     "error_unsupported": "This browser can't run the Camera Timer. Use Chrome or Edge.",
     "error_permission": "Camera access was blocked. Allow it from the camera icon in the address bar and try again.",
