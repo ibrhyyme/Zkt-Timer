@@ -8,6 +8,7 @@ import type { TileMap } from '../../components/timer/tiles/layout';
 import { effectiveTimerType } from '../../components/timer/helpers/timer_type_catalog';
 import type { WiredBrand } from '../../components/timer/helpers/timer_type_catalog';
 import { getDeviceProfile } from '../../util/device-profile';
+import type { WarmupAutoSaveMode, WarmupThresholds } from '../../lib/warmup/auto_save';
 import {
 	DEFAULT_NXN_COLORS,
 	DEFAULT_SQ1_COLORS,
@@ -67,6 +68,14 @@ export interface AllSettings {
 	 * components/timer/helpers/key_release.ts.
 	 */
 	remote_input_compat: boolean;
+	/**
+	 * Warm-up mode auto-save (rules in lib/warmup/auto_save.ts). 'pb' saves a warm-up solve
+	 * that would be a new single PB; 'threshold' also saves one at or under the bucket's time
+	 * in `warmup_auto_save_thresholds`. Platform settings (prefs blob), so no schema change.
+	 */
+	warmup_auto_save: WarmupAutoSaveMode;
+	/** Seconds per bucket, keyed by warmupBucketKey (cube type + subset). */
+	warmup_auto_save_thresholds: WarmupThresholds;
 
 	// Virtual cube (cstimer's vrc* options). All platform settings, so they live
 	// in the desktop_prefs / mobile_prefs blob and need no schema change.
@@ -243,6 +252,8 @@ const defaultSettings: AllSettings = {
 	timer_type: 'keyboard',
 	wired_timer_brand: 'stackmat',
 	remote_input_compat: false,
+	warmup_auto_save: 'pb',
+	warmup_auto_save_thresholds: {},
 	timer_module_count: 3,
 	timer_layout: 'bottom',
 	timer_tiles: null,

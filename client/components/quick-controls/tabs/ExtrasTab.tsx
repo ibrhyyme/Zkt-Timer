@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
@@ -22,6 +22,7 @@ import MagnetPanel from './MagnetPanel';
 import CubeSelectRow from '../cube_select/CubeSelectRow';
 import { useMagnetStartSettings } from '../../../util/magnet-start/settings';
 import { useMagnetTimerOwnsInput } from '../../../util/magnet-start/useMagnetTimer';
+import { useWarmupThreshold } from '../../../lib/warmup/useWarmupThreshold';
 
 interface ExtrasNumberInputProps {
 	label: string;
@@ -74,6 +75,52 @@ function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: Extras
 				</button>
 			</div>
 		</div>
+	);
+}
+
+/**
+ * Warm-up auto-save threshold of the puzzle on the timer, shown only while the setting is
+ * "under a time": switch the puzzle, set its time here, without a trip to the settings page.
+ * No surface of its own: both panels draw these rows as flat hairline rows (zt-quick-extras).
+ * Typed text is held while focused and committed on blur or Enter, as on the settings page.
+ */
+function WarmupThresholdRow() {
+	const { t } = useTranslation();
+	const warmupThreshold = useWarmupThreshold();
+	const [draft, setDraft] = useState('');
+	const [focused, setFocused] = useState(false);
+
+	if (warmupThreshold.mode !== 'threshold') return null;
+
+	const label = t('quick_controls.warmup_threshold', { cube: warmupThreshold.cubeName });
+
+	return (
+		<label className="group flex items-center justify-between gap-3 py-4 px-4 cursor-text">
+			<span className="min-w-0 truncate font-medium text-text/80 group-hover:text-text transition-colors">
+				{label}
+			</span>
+			<input
+				type="text"
+				inputMode="decimal"
+				value={focused ? draft : warmupThreshold.text}
+				placeholder="12.99"
+				maxLength={9}
+				aria-label={label}
+				onFocus={() => {
+					setDraft(warmupThreshold.text);
+					setFocused(true);
+				}}
+				onChange={(e) => setDraft(e.target.value)}
+				onBlur={() => {
+					setFocused(false);
+					if (draft !== warmupThreshold.text) warmupThreshold.setFromText(draft);
+				}}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+				}}
+				className="zt-quick-extras__value shrink-0 w-20 px-2 py-1.5 rounded-md bg-text/[0.08] border border-transparent text-sm text-text text-center tabular-nums focus:border-primary focus:outline-none transition-colors"
+			/>
+		</label>
 	);
 }
 
@@ -298,6 +345,9 @@ export default function ExtrasTab({
 					onClick={option.onClick}
 				/>
 			))}
+
+			{/* Warm-up mode never runs in rooms (hideSlamStop marks the room panel). */}
+			{!hideSlamStop && <WarmupThresholdRow />}
 
 			{magnetOptionsVisible && (
 				<>

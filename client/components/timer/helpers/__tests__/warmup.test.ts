@@ -1,17 +1,19 @@
 /**
  * Warm-up mode: while it is on, saveSolve writes nothing and counts nothing, for the timer page
  * only. The newest solve stays in memory for the Save button, which saves it once. A mode left on
- * ends by itself after WARMUP_IDLE_MS, but never under a running solve.
+ * ends by itself after WARMUP_IDLE_MS, but never under a running solve. With auto-save on, a
+ * solve that would be a new single PB is saved by itself and can be undone until the next solve.
  */
 
 const mockStore: Record<string, any> = {};
+const mockSettings: Record<string, any> = {};
 
-jest.mock('../../../../db/solves/update', () => ({ createSolveDb: jest.fn() }));
+jest.mock('../../../../db/solves/update', () => ({ createSolveDb: jest.fn(), deleteSolveDb: jest.fn() }));
 jest.mock('../../../../db/solves/query', () => ({
 	buildBucketFilter: jest.fn(() => ({})),
 	fetchLastSolve: jest.fn(() => null),
 }));
-jest.mock('../../../../db/settings/query', () => ({ getSetting: () => undefined }));
+jest.mock('../../../../db/settings/query', () => ({ getSetting: (key: string) => mockSettings[key] }));
 jest.mock('../../../../db/solves/stats/solves/single/single_pb', () => ({ getSinglePB: jest.fn(() => null) }));
 jest.mock('../../../../db/sessions/active', () => ({ getActiveSessionId: () => 's1' }));
 jest.mock('../../../../lib/cubes/store', () => ({ getCubeState: () => ({}), noteCubeSolve: jest.fn() }));
@@ -23,20 +25,21 @@ jest.mock('../params', () => ({
 	setTimerParam: jest.fn((key: string, value: any) => { mockStore[key] = value; }),
 }));
 
-import { createSolveDb } from '../../../../db/solves/update';
+import { createSolveDb, deleteSolveDb } from '../../../../db/solves/update';
 import { fetchLastSolve } from '../../../../db/solves/query';
 import { getSinglePB } from '../../../../db/solves/stats/solves/single/single_pb';
 import { noteCubeSolve } from '../../../../lib/cubes/store';
 import { emitEvent } from '../../../../util/event_handler';
 import { setTimerParam } from '../params';
 import { saveSolve } from '../save';
-import { saveLastWarmupSolve, sweepWarmup, toggleWarmup, warmupSolveBeatsPb } from '../warmup';
+import { saveLastWarmupSolve, sweepWarmup, toggleWarmup, undoWarmupAutoSave, warmupSolveBeatsPb } from '../warmup';
 import {
 	getWarmupState,
 	isWarmupActive,
 	stopWarmup,
 	startWarmup,
 	WARMUP_IDLE_MS,
+	warmupLocksSolve,
 } from '../../../../lib/warmup/store';
 
 function context(overrides: Record<string, any> = {}): any {
@@ -59,6 +62,8 @@ beforeEach(() => {
 	stopWarmup();
 	jest.clearAllMocks();
 	Object.keys(mockStore).forEach((key) => delete mockStore[key]);
+	Object.keys(mockSettings).forEach((key) => delete mockSettings[key]);
+	(getSinglePB as jest.Mock).mockReturnValue(null);
 });
 
 describe('saveSolve in warm-up mode', () => {
@@ -115,7 +120,7 @@ describe('the Save button', () => {
 		expect(saved.cube_type).toBe('wca');
 		expect(saved.session_id).toBe('s1');
 		expect(noteCubeSolve).toHaveBeenCalledTimes(1);
-		expect(getWarmupState()).toMatchObject({ active: true, last: null, lastSaved: true });
+		expect(getWarmupState()).toMatchObject({ active: true, last: null, saved, autoSaved: null });
 	});
 
 	it('is available again for the next solve', () => {
@@ -124,7 +129,7 @@ describe('the Save button', () => {
 		saveLastWarmupSolve();
 		solveOnce();
 
-		expect(getWarmupState()).toMatchObject({ lastSaved: false, count: 2 });
+		expect(getWarmupState()).toMatchObject({ saved: null, count: 2 });
 		expect(getWarmupState().last).not.toBeNull();
 	});
 
@@ -133,7 +138,138 @@ describe('the Save button', () => {
 		saveLastWarmupSolve();
 
 		expect(createSolveDb).not.toHaveBeenCalled();
-		expect(getWarmupState().lastSaved).toBe(false);
+		expect(getWarmupState().saved).toBeNull();
+	});
+});
+
+describe('auto-save', () => {
+	beforeEach(() => {
+		mockSettings.warmup_auto_save = 'pb';
+		(getSinglePB as jest.Mock).mockReturnValue({ time: 10 });
+		startWarmup();
+	});
+
+	it('saves a solve that would be a new PB, once, and offers Undo', () => {
+		solveOnce(context(), 9_500);
+
+		expect(createSolveDb).toHaveBeenCalledTimes(1);
+		const saved = (createSolveDb as jest.Mock).mock.calls[0][0];
+		expect(saved.time).toBe(9.5);
+		expect(noteCubeSolve).toHaveBeenCalledTimes(1);
+		expect(getWarmupState()).toMatchObject({ count: 1, last: null, saved, autoSaved: 'pb' });
+
+		// The Save button has nothing left to save.
+		saveLastWarmupSolve();
+		expect(createSolveDb).toHaveBeenCalledTimes(1);
+	});
+
+	it('leaves a slower solve and a DNF to the Save button', () => {
+		solveOnce(context(), 10_500);
+		solveOnce(context(), 8_000, true);
+
+		expect(createSolveDb).not.toHaveBeenCalled();
+		expect(getWarmupState().autoSaved).toBeNull();
+	});
+
+	it('does nothing while the setting is off', () => {
+		mockSettings.warmup_auto_save = 'off';
+		solveOnce(context(), 9_000);
+
+		expect(createSolveDb).not.toHaveBeenCalled();
+		expect(getWarmupState().last).not.toBeNull();
+	});
+
+	it('Undo deletes the solve without asking and hands it back to the Save button', () => {
+		solveOnce(context(), 9_500);
+		const saved = (createSolveDb as jest.Mock).mock.calls[0][0];
+
+		undoWarmupAutoSave();
+		undoWarmupAutoSave();
+
+		expect(deleteSolveDb).toHaveBeenCalledTimes(1);
+		expect(deleteSolveDb).toHaveBeenCalledWith(saved, true);
+		expect(getWarmupState()).toMatchObject({ last: saved, saved: null, autoSaved: null });
+	});
+
+	it('Undo is gone after the next solve', () => {
+		solveOnce(context(), 9_500);
+		solveOnce(context(), 11_000);
+
+		undoWarmupAutoSave();
+		expect(deleteSolveDb).not.toHaveBeenCalled();
+	});
+
+	it('Undo never deletes a solve saved with the button', () => {
+		mockSettings.warmup_auto_save = 'off';
+		solveOnce(context(), 9_500);
+		saveLastWarmupSolve();
+
+		undoWarmupAutoSave();
+		expect(deleteSolveDb).not.toHaveBeenCalled();
+	});
+});
+
+describe('auto-save under a threshold', () => {
+	beforeEach(() => {
+		mockSettings.warmup_auto_save = 'threshold';
+		// The bucket saveSolve writes for cubeType 'wca' + subset '333'.
+		mockSettings.warmup_auto_save_thresholds = { 'wca::333': 12.99 };
+		(getSinglePB as jest.Mock).mockReturnValue({ time: 9 });
+		startWarmup();
+	});
+
+	it('saves a time at or under the threshold, not over it', () => {
+		solveOnce(context(), 13_000);
+		expect(createSolveDb).not.toHaveBeenCalled();
+
+		solveOnce(context(), 12_990);
+		expect(createSolveDb).toHaveBeenCalledTimes(1);
+		expect(getWarmupState().autoSaved).toBe('threshold');
+	});
+
+	it('still saves a PB above the threshold, and says PB', () => {
+		mockSettings.warmup_auto_save_thresholds = { 'wca::333': 5 };
+		solveOnce(context(), 8_000);
+
+		expect(createSolveDb).toHaveBeenCalledTimes(1);
+		expect(getWarmupState().autoSaved).toBe('pb');
+	});
+
+	it('counts the +2 in the time it compares', () => {
+		solveOnce(context({ addTwoToSolve: true }), 11_500);
+		expect(createSolveDb).not.toHaveBeenCalled();
+	});
+
+	it('uses the threshold of the solve bucket only', () => {
+		(getSinglePB as jest.Mock).mockReturnValue(null);
+		solveOnce(context({ cubeType: '222', scrambleSubset: null }), 3_000);
+		expect(createSolveDb).not.toHaveBeenCalled();
+	});
+
+	it('can be undone like a PB', () => {
+		solveOnce(context(), 12_000);
+		undoWarmupAutoSave();
+
+		expect(deleteSolveDb).toHaveBeenCalledTimes(1);
+		expect(getWarmupState()).toMatchObject({ saved: null, autoSaved: null });
+	});
+});
+
+describe('warmupLocksSolve', () => {
+	it('locks every solve in warm-up but the one just saved from it', () => {
+		startWarmup();
+		solveOnce();
+		const id = getWarmupState().last!.id;
+		expect(warmupLocksSolve(getWarmupState(), id)).toBe(true);
+
+		saveLastWarmupSolve();
+		expect(warmupLocksSolve(getWarmupState(), id)).toBe(false);
+		expect(warmupLocksSolve(getWarmupState(), 'older')).toBe(true);
+		expect(warmupLocksSolve(getWarmupState(), undefined)).toBe(true);
+	});
+
+	it('locks nothing outside warm-up', () => {
+		expect(warmupLocksSolve(getWarmupState(), 'any')).toBe(false);
 	});
 });
 
@@ -194,7 +330,7 @@ describe('toggleWarmup', () => {
 		toggleWarmup();
 		startWarmup();
 
-		expect(getWarmupState()).toMatchObject({ count: 0, last: null, lastSaved: false });
+		expect(getWarmupState()).toMatchObject({ count: 0, last: null, saved: null });
 	});
 
 	it('puts the last saved time back on the digits after thrown-away solves', () => {

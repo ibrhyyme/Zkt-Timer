@@ -1733,6 +1733,13 @@
     "confirm_delete_season_desc": "Show a confirmation dialog before deleting all solves in the selected session",
     "pb_confetti": "Personal best confetti",
     "pb_confetti_desc": "Show confetti when you beat your personal best",
+    "warmup_auto_save": "Auto-save in warm-up",
+    "warmup_auto_save_desc": "In warm-up mode, the solves you pick are saved on their own. You can undo it until your next solve.",
+    "warmup_auto_save_off": "Off",
+    "warmup_auto_save_pb": "On a PB",
+    "warmup_auto_save_threshold": "Under a time",
+    "warmup_threshold": "Threshold ({{cube}})",
+    "warmup_threshold_desc": "Solves at or under this time are saved, and PBs always are. Each puzzle has its own time: this one is for the puzzle selected on the timer.",
     "use_3d_scramble_visual": "3D scramble preview",
     "use_3d_scramble_visual_desc": "Show 3D preview for supported puzzles",
     "inspection": "Inspection",
@@ -3476,6 +3483,7 @@
     "magnet_log_count": "{{events}} events, {{windows}} windows",
     "show_recognition_split": "Show Recognition/Execution (desktop)",
     "freeze_time": "Freeze Time (s)",
+    "warmup_threshold": "Warm-up threshold · {{cube}}",
     "none": "None",
     "multi_phase": "Manual phases",
     "timer_type_description": "Select timer type (only one can be active)",
@@ -3832,10 +3840,15 @@
     "turn_on": "Turn warm-up mode on",
     "turn_off": "Turn warm-up mode off",
     "on_notice": "Warm-up is on. Your solves won't be saved.",
+    "on_notice_auto_pb": "Warm-up is on. Only PBs are saved.",
+    "on_notice_auto_threshold": "Warm-up is on. Solves of {{time}} or faster are saved.",
     "save": "Save",
     "save_title": "Save this solve",
     "save_pb_title": "This time is a new PB. Press to save it.",
-    "saved": "Saved"
+    "saved": "Saved",
+    "auto_saved_pb": "PB saved",
+    "undo": "Undo",
+    "undo_title": "Undo this save"
   },
   "time_display": {
     "inspection_on": "Inspection On",
@@ -5087,6 +5100,13 @@
       "plan_yearly": "Yearly Pro",
       "plan_lifetime": "Lifetime Pro",
       "plan_unknown": "Pro"
+    },
+    "support_ticket_reply": {
+      "subject": "Support replied to your request",
+      "in_app": "Your request \"{{subject}}\" has a new reply",
+      "message": "There is a new reply to your support request: \"{{subject}}\"",
+      "link_text": "View support requests",
+      "category": "Support"
     }
   },
   "case_stats": {

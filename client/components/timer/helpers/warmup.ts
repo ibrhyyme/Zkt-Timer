@@ -1,4 +1,4 @@
-import { createSolveDb } from '../../../db/solves/update';
+import { createSolveDb, deleteSolveDb } from '../../../db/solves/update';
 import { buildBucketFilter, fetchLastSolve } from '../../../db/solves/query';
 import { getSetting } from '../../../db/settings/query';
 import { getActiveSessionId } from '../../../db/sessions/active';
@@ -9,10 +9,12 @@ import {
 	isWarmupActive,
 	startWarmup,
 	stopWarmup,
+	takeAutoSavedWarmupSolve,
 	takeLastWarmupSolve,
 	warmupIdleExpired,
 } from '../../../lib/warmup/store';
 import { hapticImpact } from '../../../util/native-plugins';
+import { warmupAutoSaveReason } from '../../../lib/warmup/auto_save';
 import type { Solve } from '../../../../server/schemas/Solve.schema';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { setTimerParam } from './params';
@@ -82,7 +84,43 @@ export function warmupSolveBeatsPb(solve: Solve): boolean {
 
 /** The Save button: from here on the solve is an ordinary one, PB check included. */
 export function saveLastWarmupSolve() {
-	const solve = takeLastWarmupSolve();
+	persistWarmupSolve(takeLastWarmupSolve());
+}
+
+/**
+ * Auto-save (settings `warmup_auto_save`, `warmup_auto_save_thresholds`): called by saveSolve
+ * right after a warm-up solve was noted. The rules are in lib/warmup/auto_save.ts; the PB test
+ * is the one the Save button's PB mark uses, so the chip and the save never disagree. The PB
+ * lookup is lazy: a solve that is not a candidate never touches the PB cache. Returns whether
+ * it saved.
+ */
+export function autoSaveWarmupSolve(solve: Solve): boolean {
+	const reason = warmupAutoSaveReason(
+		solve,
+		getSetting('warmup_auto_save'),
+		getSetting('warmup_auto_save_thresholds'),
+		() => warmupSolveBeatsPb(solve)
+	);
+	if (!reason) return false;
+
+	persistWarmupSolve(takeLastWarmupSolve(reason));
+	return true;
+}
+
+/**
+ * Undo on the chip: takes the auto-saved solve out again (no confirm, the press is the
+ * confirmation) and puts it back under the Save button. A solve already deleted from the
+ * last solve card is simply gone; deleteSolveDb finds nothing and does nothing.
+ */
+export function undoWarmupAutoSave() {
+	const solve = takeAutoSavedWarmupSolve();
+	if (!solve) return;
+
+	hapticImpact('light');
+	void deleteSolveDb(solve, true);
+}
+
+function persistWarmupSolve(solve: Solve | null) {
 	if (!solve) return;
 
 	hapticImpact('light');

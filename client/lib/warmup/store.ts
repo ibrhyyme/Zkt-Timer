@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Solve } from '../../../server/schemas/Solve.schema';
+import type { WarmupAutoSaveReason } from './auto_save';
 
 /**
  * Warm-up mode: while it is on, the timer's solves are written nowhere. The state lives in this
@@ -19,8 +20,14 @@ export interface WarmupState {
 	count: number;
 	/** The newest of them, held in memory only until the next solve or the end of the mode. */
 	last: Solve | null;
-	/** The newest solve was saved with the Save button. */
-	lastSaved: boolean;
+	/**
+	 * The newest solve once it was saved, by the Save button or by auto-save. Kept so the
+	 * last solve card can unlock +2 / DNF for it and auto-save can be undone. Cleared by
+	 * the next solve.
+	 */
+	saved: Solve | null;
+	/** Why auto-save saved `saved`; null when the button did. Set, the chip offers Undo. */
+	autoSaved: WarmupAutoSaveReason | null;
 	lastActivityAt: number;
 }
 
@@ -28,7 +35,8 @@ const OFF: WarmupState = Object.freeze({
 	active: false,
 	count: 0,
 	last: null,
-	lastSaved: false,
+	saved: null,
+	autoSaved: null,
 	lastActivityAt: 0,
 });
 
@@ -53,6 +61,15 @@ export function warmupAppliesTo(context: { onSolve?: unknown; inModal?: unknown;
 	return !context.onSolve && !context.inModal && !context.matchMode;
 }
 
+/**
+ * Whether +2 / DNF / delete must stay off this saved solve. In warm-up mode the newest saved
+ * solve is an older, real one, except right after a warm-up solve was saved (button or
+ * auto-save): then it is that very solve and can be corrected.
+ */
+export function warmupLocksSolve(warmup: WarmupState, solveId: string | null | undefined): boolean {
+	return warmup.active && (!solveId || solveId !== warmup.saved?.id);
+}
+
 export function startWarmup(now: number = Date.now()) {
 	setState({ ...OFF, active: true, lastActivityAt: now });
 }
@@ -62,15 +79,30 @@ export function stopWarmup() {
 }
 
 export function noteWarmupSolve(solve: Solve, now: number = Date.now()) {
-	setState({ ...state, count: state.count + 1, last: solve, lastSaved: false, lastActivityAt: now });
+	setState({
+		...state,
+		count: state.count + 1,
+		last: solve,
+		saved: null,
+		autoSaved: null,
+		lastActivityAt: now,
+	});
 }
 
 /** Hands the newest solve over once, so a double press cannot save it twice. */
-export function takeLastWarmupSolve(): Solve | null {
+export function takeLastWarmupSolve(auto: WarmupAutoSaveReason | null = null): Solve | null {
 	const { last } = state;
 	if (!last) return null;
-	setState({ ...state, last: null, lastSaved: true });
+	setState({ ...state, last: null, saved: last, autoSaved: auto });
 	return last;
+}
+
+/** Hands an auto-saved solve back for Undo, once, and puts it under the Save button again. */
+export function takeAutoSavedWarmupSolve(): Solve | null {
+	const { saved, autoSaved } = state;
+	if (!saved || !autoSaved) return null;
+	setState({ ...state, last: saved, saved: null, autoSaved: null });
+	return saved;
 }
 
 export function warmupIdleExpired(now: number = Date.now()): boolean {

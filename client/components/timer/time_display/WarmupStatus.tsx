@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, Fire } from 'phosphor-react';
 import { useWarmup } from '../../../lib/warmup/store';
 import block from '../../../styles/bem';
-import { saveLastWarmupSolve, warmupSolveBeatsPb } from '../helpers/warmup';
+import { saveLastWarmupSolve, undoWarmupAutoSave, warmupSolveBeatsPb } from '../helpers/warmup';
 import './WarmupStatus.scss';
 
 const b = block('warmup-status');
@@ -14,11 +14,14 @@ const b = block('warmup-status');
  * every timer layout. A DNF cannot be saved: nobody wants one back.
  *
  * Warm-up has no PB celebration, so a record would be easy to miss and gone with the next solve.
- * The Save button says so instead: an accent fill and "PB".
+ * The Save button says so instead: an accent fill and "PB". With auto-save on (setting
+ * `warmup_auto_save`: PBs, or PBs and times under the user's threshold) such a solve is saved by
+ * itself and the chip offers Undo until the next solve: a timer stopped by accident gives a fast
+ * time that would otherwise stay as a fake PB.
  */
 export default function WarmupStatus() {
 	const { t } = useTranslation();
-	const { count, last, lastSaved } = useWarmup();
+	const { count, last, saved, autoSaved } = useWarmup();
 	const isPb = useMemo(() => !!last && warmupSolveBeatsPb(last), [last]);
 
 	return (
@@ -44,11 +47,21 @@ export default function WarmupStatus() {
 					{t('warmup.save')}
 				</button>
 			)}
-			{lastSaved && (
+			{saved && (
 				<span className={b('saved')}>
 					<Check weight="bold" />
-					{t('warmup.saved')}
+					{t(autoSaved === 'pb' ? 'warmup.auto_saved_pb' : 'warmup.saved')}
 				</span>
+			)}
+			{saved && autoSaved && (
+				<button
+					type="button"
+					className={b('save')}
+					title={t('warmup.undo_title')}
+					onClick={undoWarmupAutoSave}
+				>
+					{t('warmup.undo')}
+				</button>
 			)}
 		</div>
 	);

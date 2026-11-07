@@ -10,6 +10,7 @@ import { getCubeState, noteCubeSolve } from '../../../lib/cubes/store';
 import { getSmartCubeStore } from '../../../util/hooks/useSmartCubeStore';
 import { cubeIdForSolve, CubeStampSolve } from './cube_stamp';
 import { isWarmupActive, noteWarmupSolve, warmupAppliesTo } from '../../../lib/warmup/store';
+import { autoSaveWarmupSolve } from './warmup';
 
 /**
  * The physical cube a solve saved now is made with (design magnet-cubes 4.3): the connected
@@ -71,9 +72,11 @@ export function saveSolve(
 	}
 
 	// Warm-up mode: nothing is written, nothing counts. Every input method ends up here, so this
-	// one branch covers them all. The object stays in memory for the Save button.
+	// one branch covers them all. The object stays in memory for the Save button, unless
+	// auto-save takes a PB straight to the database.
 	if (warmupAppliesTo(context) && isWarmupActive()) {
 		noteWarmupSolve(solveObject);
+		autoSaveWarmupSolve(solveObject);
 		return;
 	}
 

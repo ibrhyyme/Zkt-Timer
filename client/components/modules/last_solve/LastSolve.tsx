@@ -10,7 +10,7 @@ import { getTimeString } from '../../../util/time';
 import { fetchLastSolve, fetchSolve, FilterSolvesOptions } from '../../../db/solves/query';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { deleteSolveDb } from '../../../db/solves/update';
-import { useWarmup } from '../../../lib/warmup/store';
+import { useWarmup, warmupLocksSolve } from '../../../lib/warmup/store';
 import block from '../../../styles/bem';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
@@ -28,7 +28,8 @@ function LastSolve(props: Props) {
 
 	useSolveDb();
 	// In warm-up mode the card shows an older, real solve; a +2 meant for the warm-up must not hit it.
-	const warmupActive = useWarmup().active;
+	// A warm-up solve that was saved (button or auto-save) is the card's own solve, so it unlocks.
+	const warmup = useWarmup();
 
 	const { filterOptions } = props;
 	const lastSolve = fetchLastSolve(filterOptions);
@@ -36,6 +37,8 @@ function LastSolve(props: Props) {
 	if (!lastSolve) {
 		return null;
 	}
+
+	const editLocked = warmupLocksSolve(warmup, lastSolve.id);
 
 	const dnf = lastSolve.dnf;
 	const plusTwo = lastSolve.plus_two;
@@ -80,11 +83,11 @@ function LastSolve(props: Props) {
 			<div className={b('actions')}>
 				<div>
 					<Button gray icon={<Info weight="bold" />} onClick={showSolveInfo} />
-					<Button gray text="+2" onClick={plusTwoAction} warning={plusTwo} disabled={warmupActive} />
-					<Button gray text="DNF" onClick={dnfAction} danger={dnf} disabled={warmupActive} />
+					<Button gray text="+2" onClick={plusTwoAction} warning={plusTwo} disabled={editLocked} />
+					<Button gray text="DNF" onClick={dnfAction} danger={dnf} disabled={editLocked} />
 				</div>
 				<div>
-					<Button danger flat title="Delete solve" text="Delete" onClick={deleteAction} disabled={warmupActive} />
+					<Button danger flat title="Delete solve" text="Delete" onClick={deleteAction} disabled={editLocked} />
 				</div>
 			</div>
 		</div>

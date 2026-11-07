@@ -17,6 +17,8 @@ import {
 } from '../../../../shared/util/solve/multiphase';
 import { getPhaseLabels } from '../../../util/solve/multiphase_labels';
 import { isNative } from '../../../util/platform';
+import type { WarmupAutoSaveMode } from '../../../lib/warmup/auto_save';
+import { useWarmupThreshold } from '../../../lib/warmup/useWarmupThreshold';
 import {
 	TimerSettingsGroup,
 	TimerSettingsToggle,
@@ -40,6 +42,9 @@ export default function TimerSettings() {
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 	const pbConfetti = useSettings('pb_confetti');
+	// The threshold row edits the bucket the timer is on: one number cannot fit every puzzle.
+	const warmupThreshold = useWarmupThreshold();
+	const warmupAutoSave = warmupThreshold.mode;
 	const hapticFeedback = useSettings('haptic_feedback');
 
 	// Inspection
@@ -149,6 +154,26 @@ export default function TimerSettings() {
 					description={t('timer_settings.pb_confetti_desc')}
 					isActive={pbConfetti}
 					onClick={() => toggleSetting('pb_confetti')}
+				/>
+				<TimerSettingsSelect
+					label={t('timer_settings.warmup_auto_save')}
+					description={t('timer_settings.warmup_auto_save_desc')}
+					value={warmupAutoSave}
+					options={[
+						{ label: t('timer_settings.warmup_auto_save_off'), value: 'off' },
+						{ label: t('timer_settings.warmup_auto_save_pb'), value: 'pb' },
+						{ label: t('timer_settings.warmup_auto_save_threshold'), value: 'threshold' },
+					]}
+					onChange={(v) => setSetting('warmup_auto_save', v as WarmupAutoSaveMode)}
+				/>
+				<TimerSettingsText
+					label={t('timer_settings.warmup_threshold', { cube: warmupThreshold.cubeName })}
+					description={t('timer_settings.warmup_threshold_desc')}
+					hidden={warmupAutoSave !== 'threshold'}
+					value={warmupThreshold.text}
+					placeholder="12.99"
+					maxLength={9}
+					onChange={warmupThreshold.setFromText}
 				/>
 				<TimerSettingsToggle
 					label={t('timer_settings.haptic_feedback')}

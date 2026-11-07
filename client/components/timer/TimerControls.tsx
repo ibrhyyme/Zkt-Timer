@@ -6,7 +6,7 @@ import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useLatestSolve } from '../../util/hooks/useLatestSolve';
-import { useWarmup } from '../../lib/warmup/store';
+import { useWarmup, warmupLocksSolve } from '../../lib/warmup/store';
 import { useSmartCubeStore } from '../../util/hooks/useSmartCubeStore';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
@@ -29,9 +29,10 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     // In warm-up mode the newest saved solve is not the one just made: +2, DNF and delete must
     // not land on it.
-    const warmupActive = useWarmup().active;
+    // Right after a warm-up solve was saved it is the latest solve itself, so they unlock.
+    const warmup = useWarmup();
     const savedLatestSolve = useLatestSolve();
-    const latestSolve = warmupActive ? null : savedLatestSolve;
+    const latestSolve = warmupLocksSolve(warmup, savedLatestSolve?.id) ? null : savedLatestSolve;
     const rowRef = useRef<HTMLDivElement>(null);
     // Önceki / Sonraki carry their labels wherever the phone's row has room for them.
     const navLabels = useNavLabelFit(rowRef, !!mobileMode, i18n.language);

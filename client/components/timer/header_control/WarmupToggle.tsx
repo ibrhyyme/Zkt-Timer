@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Fire } from 'phosphor-react';
+import { getSetting } from '../../../db/settings/query';
 import { markFeatureTipSeen } from '../../../lib/feature_tips/store';
+import { getWarmupThreshold } from '../../../lib/warmup/auto_save';
+import { getTimeString } from '../../../util/time';
 import { isWarmupActive, useWarmup } from '../../../lib/warmup/store';
 import block from '../../../styles/bem';
 import { displayTimerAlert } from '../helpers/notification';
@@ -41,8 +44,25 @@ export default function WarmupToggle(props: Props) {
 	function handleClick() {
 		if (toggleWarmup() && isWarmupActive()) {
 			markFeatureTipSeen('warmup_mode');
-			displayTimerAlert({ text: t('warmup.on_notice'), backgroundColor: 'orange' });
+			displayTimerAlert({ text: warmupOnNotice(), backgroundColor: 'orange' });
 		}
+	}
+
+	/** What the mode will keep, for the bucket on the timer right now. */
+	function warmupOnNotice(): string {
+		const mode = getSetting('warmup_auto_save');
+		if (mode === 'off') return t('warmup.on_notice');
+
+		const threshold =
+			mode === 'threshold'
+				? getWarmupThreshold(
+						getSetting('warmup_auto_save_thresholds'),
+						getSetting('cube_type'),
+						getSetting('scramble_subset')
+					)
+				: null;
+		if (threshold === null) return t('warmup.on_notice_auto_pb');
+		return t('warmup.on_notice_auto_threshold', { time: getTimeString(threshold, 2) });
 	}
 
 	const title = active ? t('warmup.turn_off') : t('warmup.turn_on');

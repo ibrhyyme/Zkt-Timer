@@ -1720,6 +1720,13 @@
     "confirm_delete_season_desc": "Seçili sezondaki tüm çözümleri silmeden önce onay kutusu göster",
     "pb_confetti": "Kişisel rekor konfetisi",
     "pb_confetti_desc": "Kişisel rekor kırdığında konfeti göster",
+    "warmup_auto_save": "Isınmada otomatik kaydet",
+    "warmup_auto_save_desc": "Isınma modunda seçtiğin çözümler kendiliğinden kaydedilir. Bir sonraki çözüme kadar geri alabilirsin.",
+    "warmup_auto_save_off": "Kapalı",
+    "warmup_auto_save_pb": "PB olursa",
+    "warmup_auto_save_threshold": "Süreden hızlıysa",
+    "warmup_threshold": "Eşik süresi ({{cube}})",
+    "warmup_threshold_desc": "Bu süre ve altındaki çözümler kaydedilir, PB'ler her zaman. Her küp türünün kendi süresi var: burada timer'da seçili küpün süresi görünür.",
     "use_3d_scramble_visual": "3D karıştırma önizlemesi",
     "use_3d_scramble_visual_desc": "Desteklenen bulmacalar için 3B önizleme göster",
     "inspection": "İnceleme",
@@ -3459,6 +3466,7 @@
     "magnet_log_count": "{{events}} olay, {{windows}} pencere",
     "show_recognition_split": "Tanıma/Uygulama Gösterimi (masaüstü)",
     "freeze_time": "Dondurma (sn)",
+    "warmup_threshold": "Isınma eşiği · {{cube}}",
     "none": "Yok",
     "multi_phase": "Elle faz bölme",
     "timer_type_description": "Timer türünü seçin (sadece bir tane aktif olabilir)",
@@ -3815,10 +3823,15 @@
     "turn_on": "Isınma modunu aç",
     "turn_off": "Isınma modunu kapat",
     "on_notice": "Isınma açık. Çözümlerin kaydedilmez.",
+    "on_notice_auto_pb": "Isınma açık. Sadece PB'ler kaydedilir.",
+    "on_notice_auto_threshold": "Isınma açık. {{time}} ve altındaki çözümler kaydedilir.",
     "save": "Kaydet",
     "save_title": "Bu çözümü kaydet",
     "save_pb_title": "Bu süre yeni PB'n. Kaydetmek için bas.",
-    "saved": "Kaydedildi"
+    "saved": "Kaydedildi",
+    "auto_saved_pb": "PB kaydedildi",
+    "undo": "Geri al",
+    "undo_title": "Bu kaydı geri al"
   },
   "time_display": {
     "inspection_on": "İnceleme Açık",
@@ -5068,6 +5081,13 @@
       "plan_yearly": "Yıllık Pro",
       "plan_lifetime": "Ömür Boyu Pro",
       "plan_unknown": "Pro"
+    },
+    "support_ticket_reply": {
+      "subject": "Destek talebine cevap geldi",
+      "in_app": "\"{{subject}}\" konulu talebine yanıt yazıldı",
+      "message": "Destek talebine bir yanıt yazıldı: \"{{subject}}\"",
+      "link_text": "Destek taleplerini gör",
+      "category": "Destek"
     }
   },
   "case_stats": {

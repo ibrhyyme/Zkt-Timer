@@ -1733,6 +1733,13 @@
     "confirm_delete_season_desc": "Mostrar un diálogo de confirmación antes de eliminar todas las resoluciones en la sesión seleccionada",
     "pb_confetti": "Confeti de récord personal",
     "pb_confetti_desc": "Mostrar confeti cuando superes tu récord personal",
+    "warmup_auto_save": "Guardado automático en calentamiento",
+    "warmup_auto_save_desc": "En el modo calentamiento, los resuelves que elijas se guardan solos. Puedes deshacerlo hasta tu siguiente resuelve.",
+    "warmup_auto_save_off": "Desactivado",
+    "warmup_auto_save_pb": "Si es PB",
+    "warmup_auto_save_threshold": "Por debajo de un tiempo",
+    "warmup_threshold": "Tiempo límite ({{cube}})",
+    "warmup_threshold_desc": "Se guardan los resuelves con este tiempo o menos, y los PB siempre. Cada puzzle tiene su propio tiempo: este es el del puzzle elegido en el timer.",
     "use_3d_scramble_visual": "Vista previa 3D del scramble",
     "use_3d_scramble_visual_desc": "Mostrar vista previa 3D para puzzles compatibles",
     "inspection": "Inspección",
@@ -3476,6 +3483,7 @@
     "magnet_log_count": "{{events}} eventos, {{windows}} ventanas",
     "show_recognition_split": "Mostrar Reconocimiento/Ejecución (escritorio)",
     "freeze_time": "Espera (s)",
+    "warmup_threshold": "Límite de calentamiento · {{cube}}",
     "none": "Ninguno",
     "multi_phase": "Fases manuales",
     "timer_type_description": "Seleccionar tipo de timer (solo uno puede estar activo)",
@@ -3832,10 +3840,15 @@
     "turn_on": "Activar el modo calentamiento",
     "turn_off": "Desactivar el modo calentamiento",
     "on_notice": "Calentamiento activado. Tus resuelves no se guardarán.",
+    "on_notice_auto_pb": "Calentamiento activado. Solo se guardan los PB.",
+    "on_notice_auto_threshold": "Calentamiento activado. Se guardan los resuelves de {{time}} o menos.",
     "save": "Guardar",
     "save_title": "Guardar este resuelve",
     "save_pb_title": "Este tiempo es un nuevo PB. Pulsa para guardarlo.",
-    "saved": "Guardado"
+    "saved": "Guardado",
+    "auto_saved_pb": "PB guardado",
+    "undo": "Deshacer",
+    "undo_title": "Deshacer este guardado"
   },
   "time_display": {
     "inspection_on": "Inspección activada",
@@ -5088,6 +5101,13 @@
       "plan_yearly": "Pro Anual",
       "plan_lifetime": "Pro de por vida",
       "plan_unknown": "Pro"
+    },
+    "support_ticket_reply": {
+      "subject": "Soporte ha respondido a tu solicitud",
+      "in_app": "Tu solicitud \"{{subject}}\" tiene una nueva respuesta",
+      "message": "Hay una nueva respuesta a tu solicitud de soporte: \"{{subject}}\"",
+      "link_text": "Ver solicitudes de soporte",
+      "category": "Soporte"
     }
   },
   "case_stats": {

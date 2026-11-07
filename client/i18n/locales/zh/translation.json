@@ -1709,6 +1709,13 @@
     "confirm_delete_season_desc": "在删除所选阶段的所有还原前显示确认对话框",
     "pb_confetti": "个人最好成绩礼花",
     "pb_confetti_desc": "打破个人最好成绩时显示礼花",
+    "warmup_auto_save": "热身时自动保存",
+    "warmup_auto_save_desc": "热身模式下，符合条件的还原会自动保存，在下一次还原前都可以撤销。",
+    "warmup_auto_save_off": "关闭",
+    "warmup_auto_save_pb": "创 PB 时",
+    "warmup_auto_save_threshold": "快于设定时间",
+    "warmup_threshold": "时间阈值（{{cube}}）",
+    "warmup_threshold_desc": "等于或快于此时间的还原会被保存，PB 始终会被保存。每种魔方有各自的阈值：这里显示的是计时器当前所选魔方的。",
     "use_3d_scramble_visual": "3D 打乱预览",
     "use_3d_scramble_visual_desc": "为支持的魔方显示 3D 预览",
     "inspection": "观察",
@@ -3444,6 +3451,7 @@
     "magnet_log_count": "{{events}} 个事件，{{windows}} 个窗口",
     "show_recognition_split": "显示识别/执行（桌面）",
     "freeze_time": "冻结时间 (秒)",
+    "warmup_threshold": "热身阈值 · {{cube}}",
     "none": "无",
     "multi_phase": "手动分阶段",
     "timer_type_description": "选择计时器类型 (一次只能激活一个)",
@@ -3800,10 +3808,15 @@
     "turn_on": "开启热身模式",
     "turn_off": "关闭热身模式",
     "on_notice": "热身已开启，还原不会被保存。",
+    "on_notice_auto_pb": "热身已开启，只保存 PB。",
+    "on_notice_auto_threshold": "热身已开启，{{time}} 及以内的还原会被保存。",
     "save": "保存",
     "save_title": "保存这次还原",
     "save_pb_title": "这是新的 PB，点击保存。",
-    "saved": "已保存"
+    "saved": "已保存",
+    "auto_saved_pb": "PB 已保存",
+    "undo": "撤销",
+    "undo_title": "撤销这次保存"
   },
   "time_display": {
     "inspection_on": "观察中",
@@ -5054,6 +5067,13 @@
       "plan_yearly": "年度 Pro",
       "plan_lifetime": "终身 Pro",
       "plan_unknown": "Pro"
+    },
+    "support_ticket_reply": {
+      "subject": "客服已回复你的工单",
+      "in_app": "你的工单“{{subject}}”有新回复",
+      "message": "你的客服工单有新回复：“{{subject}}”",
+      "link_text": "查看工单",
+      "category": "客服"
     }
   },
   "case_stats": {
