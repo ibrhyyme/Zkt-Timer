@@ -1,7 +1,7 @@
 import React, {useRef} from 'react';
 import block from '../../../styles/bem';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
-import {TimeParts, splitTime} from './time_shape';
+import {RollCell, TimeParts, TimeRoll, rollTime, splitTime} from './time_shape';
 import './LiveTime.scss';
 
 const b = block('live-time');
@@ -18,6 +18,30 @@ interface Props extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {
 	as?: LiveTimeTag;
 	/** The running text changed length (a new digit, a new minute), with the new text. Rare, so a parent may re-render on it. */
 	onLengthChange?: (text: string) => void;
+	/** Change it together with `text` and the digits that differ roll to their new value. Any other change of `text` is instant, so a stop stays a hard stop. */
+	rollKey?: number;
+}
+
+function RollingDigits({cells, rollKey}: {cells: RollCell[]; rollKey: number}) {
+	return (
+		<>
+			{cells.map((cell, i) =>
+				cell.from === null ? (
+					cell.char
+				) : (
+					// Keyed by the roll, so a second change during a roll starts over.
+					<span key={`${rollKey}-${i}`} className={b('digit')}>
+						{cell.from && (
+							<span className={b('digit-from')} aria-hidden="true">
+								{cell.from}
+							</span>
+						)}
+						<span className={b('digit-to')}>{cell.char}</span>
+					</span>
+				)
+			)}
+		</>
+	);
 }
 
 /**
@@ -38,7 +62,7 @@ interface Props extends Omit<React.HTMLAttributes<HTMLElement>, 'children'> {
  * last. The first frame is written in a layout effect, before the browser paints, so the
  * digits never flash empty at the start.
  */
-export default function LiveTime({running, read, text, as: Tag = 'span', onLengthChange, ...rest}: Props) {
+export default function LiveTime({running, read, text, as: Tag = 'span', onLengthChange, rollKey = 0, ...rest}: Props) {
 	const wholeRef = useRef<HTMLSpanElement>(null);
 	const pointRef = useRef<HTMLSpanElement>(null);
 	const fractionRef = useRef<HTMLSpanElement>(null);
@@ -46,6 +70,20 @@ export default function LiveTime({running, read, text, as: Tag = 'span', onLengt
 	readRef.current = read;
 	const lengthRef = useRef(onLengthChange);
 	lengthRef.current = onLengthChange;
+
+	// Worked out during render so the digits and the roll land in one commit. The finished roll
+	// stays in the DOM until the text next changes: it is the same text in the same shape.
+	const restingTextRef = useRef(text);
+	const rollKeyRef = useRef(rollKey);
+	const rollRef = useRef<TimeRoll | null>(null);
+	if (running) {
+		rollRef.current = null;
+	} else if (text !== restingTextRef.current) {
+		rollRef.current = rollKey !== rollKeyRef.current ? rollTime(restingTextRef.current, text) : null;
+		restingTextRef.current = text;
+	}
+	rollKeyRef.current = rollKey;
+	const roll = rollRef.current;
 
 	useIsomorphicLayoutEffect(() => {
 		const whole = wholeRef.current;
@@ -81,13 +119,13 @@ export default function LiveTime({running, read, text, as: Tag = 'span', onLengt
 	return (
 		<Tag {...rest}>
 			<span ref={wholeRef} className={b('whole')}>
-				{parts ? parts.whole : null}
+				{roll ? <RollingDigits cells={roll.whole} rollKey={rollKey} /> : parts ? parts.whole : null}
 			</span>
 			<span ref={pointRef} className={b('point')}>
 				{parts ? parts.point : null}
 			</span>
 			<span ref={fractionRef} className={b('fraction')}>
-				{parts ? parts.fraction : null}
+				{roll ? <RollingDigits cells={roll.fraction} rollKey={rollKey} /> : parts ? parts.fraction : null}
 			</span>
 		</Tag>
 	);

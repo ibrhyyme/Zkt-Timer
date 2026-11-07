@@ -1,4 +1,40 @@
-import {splitTime, timeWidthEm} from '../time_shape';
+import {rollTime, splitTime, timeWidthEm} from '../time_shape';
+
+describe('rollTime', () => {
+	it('marks only the digits that changed', () => {
+		expect(rollTime('12.95', '13.24')).toEqual({
+			whole: [
+				{char: '1', from: null},
+				{char: '3', from: '2'},
+			],
+			point: '.',
+			fraction: [
+				{char: '2', from: '9'},
+				{char: '4', from: '5'},
+			],
+		});
+	});
+
+	it('lines the digits up from the right when the length changes', () => {
+		expect(rollTime('9.50', '12.50')?.whole).toEqual([
+			{char: '1', from: ''},
+			{char: '2', from: '9'},
+		]);
+		expect(rollTime('12.50', '9.50')?.whole).toEqual([{char: '9', from: '2'}]);
+		expect(rollTime('59.99', '1:03.24')?.whole).toEqual([
+			{char: '1', from: ''},
+			{char: ':', from: ''},
+			{char: '0', from: '5'},
+			{char: '3', from: '9'},
+		]);
+	});
+
+	it('does not roll anything that is not a time', () => {
+		expect(rollTime('DNF', '12.34')).toBeNull();
+		expect(rollTime('12.34', '+2')).toBeNull();
+		expect(rollTime('15', '14')).toBeNull();
+	});
+});
 
 describe('splitTime', () => {
 	it('splits seconds from the decimals', () => {

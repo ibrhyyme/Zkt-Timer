@@ -15,7 +15,7 @@ import { checkForWorst } from './stats/solves/worst';
 import { sanitizeSolve } from '../../../shared/solve';
 import { checkForCurrentAverageUpdate } from './stats/solves/cache/average_cache';
 import { fetchLastSolve, buildBucketFilter } from './query';
-import { setTimerParam } from '../../components/timer/helpers/params';
+import { setTimerParams } from '../../components/timer/helpers/params';
 import { addToQueue, releaseInFlight, removeFromQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
 import i18n from '../../i18n/i18n';
@@ -227,6 +227,8 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false): P
 	return true;
 }
 
+let timeRollId = 0;
+
 /**
  * Point the timer's "last time" at whatever is now the newest solve of the bucket the
  * change touched (session + cube_type + subset), never at the session-global last solve:
@@ -241,7 +243,10 @@ function refreshBucketLastSolve(solve: Solve) {
 		})
 	);
 
-	setTimerParam('finalTime', newLastSolve ? newLastSolve.time * 1000 : 0);
+	setTimerParams({
+		finalTime: newLastSolve ? newLastSolve.time * 1000 : 0,
+		timeRollId: ++timeRollId,
+	});
 }
 
 /** The delete the undo window was waiting on, now going out for real. */

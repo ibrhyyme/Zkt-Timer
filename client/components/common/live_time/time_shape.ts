@@ -30,6 +30,43 @@ export function splitTime(text: string): TimeParts {
 	return {whole: match[1], point: '.', fraction: match[2]};
 }
 
+/** One character of a rolling time. `from` is null when it did not change, '' when it is new. */
+export interface RollCell {
+	char: string;
+	from: string | null;
+}
+
+export interface TimeRoll {
+	whole: RollCell[];
+	point: string;
+	fraction: RollCell[];
+}
+
+// Lined up from the right, where the digits mean the same thing: going from 9.50 to 12.30 the
+// 2 replaces the 9 and the 1 is new.
+function rollCells(from: string, to: string): RollCell[] {
+	const offset = from.length - to.length;
+	return Array.from(to, (char, i) => {
+		const previous = from[i + offset] ?? '';
+		return {char, from: previous === char ? null : previous};
+	});
+}
+
+/**
+ * What LiveTime draws when one resting time gives way to another. Null when either side is
+ * not a time: a word has no digits to roll, so it simply changes.
+ */
+export function rollTime(from: string, to: string): TimeRoll | null {
+	const before = splitTime(from);
+	const after = splitTime(to);
+	if (!before.point || !after.point) return null;
+	return {
+		whole: rollCells(before.whole, after.whole),
+		point: after.point,
+		fraction: rollCells(before.fraction, after.fraction),
+	};
+}
+
 /**
  * Width of a time in em of the full-size digits, as LiveTime draws it. Room is kept for
  * two whole digits, so a time does not get narrower and jump in size below ten seconds.

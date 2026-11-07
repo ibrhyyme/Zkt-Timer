@@ -34,4 +34,82 @@
 		font-size: 0.75em;
 		letter-spacing: calc(-0.05em / 0.75);
 	}
+
+	// A digit rolling to its new value (LiveTime.tsx `rollKey`): the old one leaves upwards as
+	// the new one comes up from below. Not clipped: both are nearly gone at the far end of the
+	// move, and a clip would also cut the digits' text-shadow.
+	&__digit {
+		position: relative;
+		display: inline-block;
+	}
+
+	&__digit,
+	&__digit-from,
+	&__digit-to {
+		font-family: inherit;
+		font-weight: inherit;
+	}
+
+	&__digit-to {
+		display: inline-block;
+		animation: zt-live-time-roll-in $motion-land $ease-out-snap both;
+	}
+
+	&__digit-from {
+		position: absolute;
+		top: 0;
+		left: 0;
+		animation: zt-live-time-roll-out $motion-land $ease-out-snap both;
+	}
+
+	// No movement, but the change is still seen: the digits cross-fade.
+	@include reduced-motion {
+		&__digit-to {
+			animation-name: zt-live-time-fade-in;
+		}
+
+		&__digit-from {
+			animation-name: zt-live-time-fade-out;
+		}
+	}
+}
+
+@keyframes zt-live-time-roll-in {
+	from {
+		opacity: 0;
+		transform: translateY(0.45em);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes zt-live-time-roll-out {
+	from {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: translateY(-0.45em);
+	}
+}
+
+@keyframes zt-live-time-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes zt-live-time-fade-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
 }

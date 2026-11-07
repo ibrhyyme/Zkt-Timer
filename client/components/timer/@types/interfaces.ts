@@ -62,6 +62,8 @@ export interface TimerProps {
 export interface TimerStore {
 	timeStartedAt?: Date | null;
 	finalTime?: number;
+	/** Changes in the same write as finalTime when a delete brought an older time back: the digits roll to it (TimeDisplay). */
+	timeRollId?: number;
 	solving?: boolean;
 	sessionSolveCount?: number;
 	spaceTimerStarted?: number;

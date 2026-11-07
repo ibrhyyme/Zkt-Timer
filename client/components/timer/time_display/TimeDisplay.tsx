@@ -193,11 +193,19 @@ export default function TimeDisplay() {
 		return () => window.removeEventListener('timerEndFreeze', handleEndFreeze);
 	}, []);
 
+	// A delete brought an older time back: the digits roll to it (the new time and the roll
+	// land in one render). Every other change of the resting time stays instant.
+	const timeRollId = context.timeRollId;
+	const seenTimeRollRef = useRef(timeRollId);
+	const [rollKey, setRollKey] = useState(0);
+
 	useEffect(() => {
-		if (!timeStartedAt && !solving && finalTime >= 0) {
-			setTime(finalTime / 1000);
-		}
-	}, [finalTime]);
+		const rollRequested = timeRollId !== seenTimeRollRef.current;
+		seenTimeRollRef.current = timeRollId;
+		if (timeStartedAt || solving) return;
+		if (rollRequested) setRollKey((key) => key + 1);
+		if (finalTime >= 0) setTime(finalTime / 1000);
+	}, [finalTime, timeRollId]);
 
 	// The running digits, once per screen frame. The stop sources come first, in the order the
 	// old 33 ms interval checked them, so the digits stop on the time the solve gets instead
@@ -368,6 +376,7 @@ export default function TimeDisplay() {
 					read={readLive}
 					text={timeStr}
 					onLengthChange={setLiveText}
+					rollKey={rollKey}
 					style={{
 						fontSize,
 						marginBottom: mobileMode ? '0px' : '10px', // Reduce bottom margin on mobile
