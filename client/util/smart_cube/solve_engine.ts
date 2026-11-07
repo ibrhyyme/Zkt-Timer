@@ -47,6 +47,12 @@ export type SmartEngineEvent =
 	/** Cube is solved. Times are already corrected for BLE lag. */
 	| { type: 'SOLVE_COMPLETE'; result: SolveResult }
 	/**
+	 * The solve just reported was overturned: another turn landed right after the solving one
+	 * and the cube settled unsolved (a U2 where a U finished it). On a stop pad that cube is
+	 * one move away, a +2 (WCA 10e3). What to do with it is the caller's choice.
+	 */
+	| { type: 'OVERTURN' }
+	/**
 	 * A turn arrived that belongs to the scramble, not the solve. The caller should drop
 	 * its recorded turns so the tracker can be rebuilt from the scramble.
 	 */
@@ -168,6 +174,16 @@ const MOVE_ORDER_FIX_DELAY_MS = 1000;
 const SOLVED_MOVE_IN_FLIGHT_MS = 100;
 
 /**
+ * A turn this close to the solving turn, on the cube's clock, carried on from it. 74% of
+ * same-direction double turns finish inside this (5000 production solves, 22 people,
+ * 2026-11-07). Kept narrow on purpose: a missed +2 costs nothing compared with today, a
+ * wrong one costs a record.
+ */
+const OVERTURN_WINDOW_MS = 200;
+/** When the cube's position is judged. A quick turn back to solved is no penalty (WCA 10b). */
+const OVERTURN_SETTLE_MS = 500;
+
+/**
  * Shares the timer page's runtime flag: set `window.__SMART_DEBUG__ = true` in the console
  * to watch what the engine decides. Off by default, so this costs nothing in production.
  */
@@ -252,6 +268,13 @@ export class SmartSolveEngine {
 	private outOfSyncTimer: ReturnType<typeof setTimeout> | null = null;
 	private pollTimer: ReturnType<typeof setInterval> | null = null;
 	private moveOrderTimer: ReturnType<typeof setTimeout> | null = null;
+	/** Set for a moment after a solve; outlives the stream clear and the next setScramble. */
+	private overturnWatch: {
+		solvingTurn: SmartTurn;
+		after: SmartTurn[];
+		overturned: boolean;
+		timer: ReturnType<typeof setTimeout>;
+	} | null = null;
 	private disposed = false;
 
 	constructor(emit: (event: SmartEngineEvent) => void, options: SmartSolveEngineOptions = {}) {
@@ -457,6 +480,7 @@ export class SmartSolveEngine {
 			this.arrivals = turns.map(() => arrivedAt);
 		} else {
 			for (let i = previous.length; i < turns.length; i++) this.arrivals[i] = arrivedAt;
+			this.observeOverturn(turns.slice(previous.length));
 		}
 
 		if (turns.length < previous.length) {
@@ -607,6 +631,7 @@ export class SmartSolveEngine {
 	dispose(): void {
 		this.disposed = true;
 		this.clearTimers();
+		this.endOverturnWatch();
 	}
 
 	// ── Read-only view, for callers that render engine state ──────────────────
@@ -1029,7 +1054,61 @@ export class SmartSolveEngine {
 		// Consumed: the next attempt must stamp its own finish.
 		this.solvedFaceletsAt = null;
 
+		// Tracker path only: on a recovery path the solving turn never arrived, so nothing
+		// here can say how soon a later turn followed it.
+		if (source === 'tracker') this.watchForOverturn(lastTurn, this.turns.slice(solutionEnd));
+
 		this.emit({ type: 'SOLVE_COMPLETE', result });
+	}
+
+	// ── Overturn ──────────────────────────────────────────────────────────────
+
+	/**
+	 * Watch what follows the solving turn. `laterInBatch`: Bluetooth can deliver the overshoot
+	 * with the solving turn. Turns without a cube timestamp are never judged: arrival times
+	 * bunch up on a connection event, and a penalty cannot rest on them.
+	 */
+	private watchForOverturn(solvingTurn: SmartTurn | undefined, laterInBatch: SmartTurn[]): void {
+		this.endOverturnWatch();
+		if (!solvingTurn || cubeStamp(solvingTurn) == null) return;
+		this.overturnWatch = {
+			solvingTurn,
+			after: [],
+			overturned: false,
+			timer: setTimeout(() => this.settleOverturn(), OVERTURN_SETTLE_MS),
+		};
+		this.observeOverturn(laterInBatch);
+	}
+
+	private observeOverturn(turns: SmartTurn[]): void {
+		const watch = this.overturnWatch;
+		if (!watch) return;
+		const solvedAt = cubeStamp(watch.solvingTurn) as number;
+		for (const turn of turns) {
+			// A stale turn is already in the state the cube reported, so nothing moved.
+			if (turn.stale) continue;
+			watch.after.push(turn);
+			const at = cubeStamp(turn);
+			if (at == null || turn.recovered) continue;
+			// Zero or less is the same report again, not a second turn.
+			const gap = at - solvedAt;
+			if (gap > 0 && gap <= OVERTURN_WINDOW_MS) watch.overturned = true;
+		}
+	}
+
+	private settleOverturn(): void {
+		const watch = this.overturnWatch;
+		this.overturnWatch = null;
+		if (!watch || !watch.overturned) return;
+
+		const rest = new CubeTracker(this.opts.puzzle);
+		rest.applyNew(watch.after);
+		if (!rest.isSolved(this.opts.solvedState)) this.emit({ type: 'OVERTURN' });
+	}
+
+	private endOverturnWatch(): void {
+		if (this.overturnWatch) clearTimeout(this.overturnWatch.timer);
+		this.overturnWatch = null;
 	}
 
 	// ── Reconciliation ────────────────────────────────────────────────────────
@@ -1249,6 +1328,12 @@ export class SmartSolveEngine {
 			this.pollTimer = null;
 		}
 	}
+}
+
+/** The turn's stamp from the cube's own clock, when the cube sent one. */
+function cubeStamp(turn: SmartTurn): number | null {
+	const stamp = (turn as any).cubeTimestamp;
+	return typeof stamp === 'number' ? stamp : null;
 }
 
 function moveTime(turn: SmartTurn | undefined): number {

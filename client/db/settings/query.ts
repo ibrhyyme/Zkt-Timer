@@ -178,6 +178,11 @@ export interface AllSettings {
 	 */
 	smart_cube_move_order_fix: boolean;
 	/**
+	 * +2 when a turn right after the solving one leaves the cube unsolved. Only where the cube
+	 * stops the timer; solve_engine.ts decides.
+	 */
+	smart_cube_overturn_penalty: boolean;
+	/**
 	 * Seconds added to every smart cube solve ("İlave süre", 0 to 5 in hundredths), for
 	 * users who do not trust the cube's own stop. Not a penalty and not stored anywhere
 	 * else: the recorded time simply includes it. A platform setting, so no schema
@@ -315,6 +320,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_show_recognition: false,
 	smart_cube_show: true,
 	smart_cube_move_order_fix: false,
+	smart_cube_overturn_penalty: true,
 	smart_cube_time_offset: 0,
 	streamer_mode: false,
 

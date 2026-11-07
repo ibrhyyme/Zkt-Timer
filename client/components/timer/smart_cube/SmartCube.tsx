@@ -24,7 +24,8 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
-import { toastError } from '../../../util/toast';
+import { toastError, toastInfo } from '../../../util/toast';
+import { applyOverturnPenalty } from './overturn_penalty';
 import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
 import {
 	analyzeCurrentState,
@@ -158,6 +159,7 @@ export default function SmartCube() {
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
+	const overturnPenalty = useSettings('smart_cube_overturn_penalty');
 	const inspectionEnabled = useSettings('inspection');
 	const mobileMode = useGeneral('mobile_mode');
 
@@ -279,6 +281,8 @@ export default function SmartCube() {
 	// client/util/smart_cube now, so the timer, friendly rooms and any future surface make
 	// the same decisions from the same code instead of drifting copies.
 	const engineRef = useRef<SmartSolveEngine | null>(null);
+	// The solve an OVERTURN would land on: set when the save is chosen, used once.
+	const overturnSolveIdRef = useRef<string | null>(null);
 	const engineEventRef = useRef<(event: SmartEngineEvent) => void>(() => { /* set below */ });
 
 	// Scramble navigation locks while the cube has left the scramble's starting state. Read
@@ -451,8 +455,18 @@ export default function SmartCube() {
 				break;
 			}
 
+			case 'OVERTURN': {
+				const solveId = overturnSolveIdRef.current;
+				overturnSolveIdRef.current = null;
+				if (solveId && overturnPenalty) {
+					applyOverturnPenalty(solveId, () => toastInfo(t('smart_cube.overturn_penalty')));
+				}
+				break;
+			}
+
 			case 'SOLVE_COMPLETE': {
 				const { result } = event;
+				overturnSolveIdRef.current = null;
 				if (needsCubeResetRef.current) {
 					// Post-abort: the physical cube is solved again, so take a fresh scramble.
 					resetMoves(true, false, result);
@@ -674,6 +688,7 @@ export default function SmartCube() {
 
 			// Chosen here so the stats below can point at the solve endTimer saves.
 			const solveId = uuid();
+			overturnSolveIdRef.current = solveId;
 
 			endTimer(context, finalTimeMilli, {
 				id: solveId,

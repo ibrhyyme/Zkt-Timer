@@ -56,6 +56,7 @@ export default function SmartCubeSettings() {
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
 	const smartCubeMoveOrderFix = useSettings('smart_cube_move_order_fix');
+	const overturnPenalty = useSettings('smart_cube_overturn_penalty');
 	const smartCubeTimeOffset = useSettings('smart_cube_time_offset');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
@@ -179,6 +180,12 @@ export default function SmartCubeSettings() {
 					description={t('timer_settings.smart_cube_move_order_fix_desc')}
 					isActive={smartCubeMoveOrderFix}
 					onClick={() => updateSetting('smart_cube_move_order_fix', !smartCubeMoveOrderFix)}
+				/>
+				<TimerSettingsToggle
+					label={t('timer_settings.smart_cube_overturn_penalty')}
+					description={t('timer_settings.smart_cube_overturn_penalty_desc')}
+					isActive={overturnPenalty}
+					onClick={() => updateSetting('smart_cube_overturn_penalty', !overturnPenalty)}
 				/>
 				<TimerSettingsDecimal
 					label={t('timer_settings.smart_cube_time_offset')}

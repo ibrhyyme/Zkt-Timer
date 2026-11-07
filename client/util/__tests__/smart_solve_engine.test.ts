@@ -1216,3 +1216,200 @@ describe('SmartSolveEngine — resume after a stretch it was not fed', () => {
 		expect(of('SCRAMBLE_COMPLETE')).toHaveLength(1);
 	});
 });
+
+describe('SmartSolveEngine: overturn', () => {
+	const SETTLED = 550;
+	const SOLVING = "R'";
+
+	/** Scrambled and two turns into the solve; only the solving turn is missing. */
+	function nearlySolved(options?: ConstructorParameters<typeof SmartSolveEngine>[1]) {
+		const h = harness(options);
+		const stream: SmartTurn[] = [turn('R', 1000), turn('U', 1100), turn('F', 1200)];
+		h.engine.setScramble(SCRAMBLE);
+		h.engine.setConnected(true);
+		h.engine.pushTurns(stream.slice());
+		const scrambleEnd = (h.events.find((e) => e.type === 'SCRAMBLE_COMPLETE') as any).at;
+		const start = scrambleEnd + 1000;
+		stream.push(turn("F'", start), turn("U'", start + 1000));
+		h.engine.pushTurns(stream.slice());
+		/** The solving turn, on the cube's clock. */
+		const solvedAt = start + 2000;
+		return {
+			...h,
+			stream,
+			solvedAt,
+			/** The solving turn; `later` come in the same packet. */
+			solve(...later: SmartTurn[]) {
+				stream.push(turn(SOLVING, solvedAt), ...later);
+				h.engine.pushTurns(stream.slice());
+				expect(h.of('SOLVE_COMPLETE')).toHaveLength(1);
+			},
+			more(...turns: SmartTurn[]) {
+				stream.push(...turns);
+				h.engine.pushTurns(stream.slice());
+			},
+			/** What the timer page does: empties its stream at the stop. */
+			clear() {
+				stream.length = 0;
+				h.engine.pushTurns([]);
+			},
+		};
+	}
+
+	it('reports a double turn where a single one finished the solve', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt + 80));
+
+		expect(of('OVERTURN')).toHaveLength(0);
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('takes the overshoot from the solving turn\'s own packet and keeps it out of the solve', async () => {
+		const { solve, solvedAt, of } = nearlySolved();
+		solve(turn(SOLVING, solvedAt + 32));
+
+		const moves = of('SOLVE_COMPLETE')[0].result.solutionTurns.map((t) => t.turn);
+		expect(moves).toEqual(["F'", "U'", SOLVING]);
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('counts a move on any face, as the cube at rest would', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn('U', solvedAt + 150));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('counts a turn exactly at the end of the window and none after it', async () => {
+		const inside = nearlySolved();
+		inside.solve();
+		inside.clear();
+		inside.more(turn(SOLVING, inside.solvedAt + 200));
+
+		const outside = nearlySolved();
+		outside.solve();
+		outside.clear();
+		outside.more(turn(SOLVING, outside.solvedAt + 201));
+
+		await wait(SETTLED);
+		expect(inside.of('OVERTURN')).toHaveLength(1);
+		expect(outside.of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('says nothing when nothing follows the solve', async () => {
+		const { solve, of } = nearlySolved();
+		solve();
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('forgives a quick turn back to solved', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt + 80));
+		more(turn('R', solvedAt + 300));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('still penalises when the later turn does not bring the cube back', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt + 80));
+		more(turn('U', solvedAt + 300));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('reports once however many turns follow', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt + 40), turn('U', solvedAt + 90), turn('F', solvedAt + 130));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('never rests a penalty on a turn without a cube stamp', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more({ turn: SOLVING, completedAt: solvedAt + 80, cubeTimestamp: null, localTimestamp: solvedAt + 80 } as any);
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('does not watch when the solving turn has no cube stamp', async () => {
+		const h = nearlySolved();
+		h.stream.push({ turn: SOLVING, completedAt: h.solvedAt, cubeTimestamp: null, localTimestamp: h.solvedAt } as any);
+		h.engine.pushTurns(h.stream.slice());
+		expect(h.of('SOLVE_COMPLETE')).toHaveLength(1);
+		h.clear();
+		h.more(turn(SOLVING, h.solvedAt + 80));
+
+		await wait(SETTLED);
+		expect(h.of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('ignores the same report again, a stale turn and a recovered one', async () => {
+		const { solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt));
+		more({ ...turn(SOLVING, solvedAt + 60), stale: true } as any);
+		more({ ...turn(SOLVING, solvedAt + 70), recovered: true } as any);
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('survives the next scramble arriving before the wait ends', async () => {
+		const { engine, solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		engine.setScramble('D L B');
+		more(turn(SOLVING, solvedAt + 80));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(1);
+	});
+
+	it('stays silent once disposed', async () => {
+		const { engine, solve, more, clear, solvedAt, of } = nearlySolved();
+		solve();
+		clear();
+		more(turn(SOLVING, solvedAt + 80));
+		engine.dispose();
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+
+	it('does not judge a solve that ended on a recovery path', async () => {
+		const { engine, stream, clear, more, solvedAt, of } = nearlySolved({ graceMs: 20, pollMs: 10_000 });
+		// The solving turn's packet is lost: only the cube's report says it is solved.
+		engine.pushFacelets(DEFAULT_SOLVED_STATE);
+		await wait(60);
+		expect(of('SOLVE_COMPLETE')[0].result.source).toBe('facelets-grace');
+		expect(stream.length).toBeGreaterThan(0);
+		clear();
+		more(turn(SOLVING, solvedAt + 80));
+
+		await wait(SETTLED);
+		expect(of('OVERTURN')).toHaveLength(0);
+	});
+});
