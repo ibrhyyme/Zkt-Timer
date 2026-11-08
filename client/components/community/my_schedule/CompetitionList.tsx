@@ -438,42 +438,76 @@ export default function CompetitionList() {
 		history.push(`/competitions/${compId}`);
 	}
 
-	const showSearchResults = compSearch.trim().length >= 3 && searchResults;
-	const displayList = showSearchResults
-		? (eventFilter.length > 0 ? searchResults.filter(matchesEventFilter) : searchResults)
-		: filteredCompetitions;
+	// Page layout (owner-approved, 2026-11-09): My Competitions on top, untouched
+	// by search and filter; below it one discovery block whose search box and
+	// event filter drive BOTH sections under it, ZKT first, then WCA. Before, the
+	// controls sat between the two and the filter only reached the WCA list, so
+	// picking 3x3 left the ZKT section above unchanged.
+	const query = compSearch.trim();
+	const searchActive = query.length > 0;
+	const showSearchResults = query.length >= 3 && searchResults;
 
-	// ZKT competitions live in their OWN section below — they're not WCA comps,
-	// so keep them separate to avoid confusion. Reuse the WCA card shape so the
-	// page stays visually consistent. Normalize to the WCA card fields here.
-	const zktCards = useMemo(() => {
-		if (showSearchResults) return [];
+	// Search results: what is still ahead first (soonest on top), then finished
+	// competitions, most recent first. A search for "zkt" used to list them in
+	// whatever order each federation answered, the next competition among the old.
+	function searchOrder(list: any[]): any[] {
+		const ahead = list
+			.filter((c: any) => !isPastCompetition(c, todayStr))
+			.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''));
+		const past = list
+			.filter((c: any) => isPastCompetition(c, todayStr))
+			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
+		return [...ahead, ...past];
+	}
+
+	// ZKT section. Normalized to the WCA card fields so both sections share cards.
+	const zktList = useMemo(() => {
+		if (showSearchResults) {
+			return searchOrder(searchResults.filter((c: any) => c.__zkt).filter(matchesEventFilter));
+		}
 		// A competition the viewer is registered for already has its own card in My
-		// Competitions above, with their day and countdown on it. Repeating it here
-		// as a plain "discover this" card is pure noise now that both sections draw
-		// the same shape.
-		const registeredIds = new Set((myZktComps || []).map((c: any) => c.id));
+		// Competitions above, with their day and countdown on it. While a search is
+		// typed that section is hidden, so the competition belongs here again.
+		const registeredIds = searchActive ? new Set<string>() : new Set((myZktComps || []).map((c: any) => c.id));
+		const q = query.toLowerCase();
 		return (
 			(zktComps || [])
 				.filter((c: any) => !registeredIds.has(c.id))
 				.map(normalizeZktComp)
-				// Finished competitions drop out, the same rule the WCA section above
+				// Finished competitions drop out, the same rule the WCA section
 				// follows: this list is what is still ahead, not an archive. A comp
 				// stays until the day after it ends, so results are still one tap away
 				// on the last day. Past ZKT competitions remain reachable by search
 				// and from the federation site.
 				.filter((c: any) => !isPastCompetition(c, todayStr))
+				.filter((c: any) => !q || c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q))
+				.filter(matchesEventFilter)
 				// Soonest first — the next competition is the one people look for.
 				.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''))
 		);
-	}, [showSearchResults, zktComps, myZktComps, todayStr]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [showSearchResults, searchResults, searchActive, query, zktComps, myZktComps, todayStr, eventFilter]);
+
+	// Upcoming ZKT competitions before the event filter: tells "the filter hid
+	// them" apart from "there are none".
+	const zktUpcomingCount = useMemo(
+		() => (zktComps || []).filter((c: any) => !isPastCompetition(normalizeZktComp(c), todayStr)).length,
+		[zktComps, todayStr]
+	);
+
+	// WCA section.
+	const wcaList = showSearchResults
+		? searchOrder(searchResults.filter((c: any) => !c.__zkt).filter(matchesEventFilter))
+		: filteredCompetitions;
 
 	// Compact row for the long discovery lists (upcoming + search results), where
 	// dozens of competitions have to stay scannable. Cards the viewer has a stake
-	// in use renderShowcaseCard below instead.
+	// in use renderShowcaseCard below instead. No federation badge: every row sits
+	// under a "ZKT" or "WCA" heading.
 	function renderCompCard(comp: any) {
-		// Only search results reach this in a finished state — the lists above are
-		// filtered — but the card still has to show it as over when they do.
+		// Only search results reach this in a finished state — the lists are
+		// filtered — and the row says so with a tag. It used to fade to 45%, which
+		// left most of a search for "zkt" unreadable.
 		const isFinished = isPastCompetition(comp, todayStr);
 		const isOngoing = !isFinished && comp.start_date <= todayStr && comp.end_date >= todayStr;
 		return (
@@ -492,15 +526,17 @@ export default function CompetitionList() {
 					<span className={b('country-code')}>{comp.country_iso2}</span>
 				)}
 				<div className={b('comp-info')}>
-					{comp.__zkt && <span className={b('zkt-badge')}>ZKT</span>}
 					<span className={b('comp-title')}>{comp.name}</span>
 					<span className={b('comp-sub')}>
 						{formatDateRange(comp.start_date, comp.end_date, locale)}
-						{comp.city && ` \u2013 ${comp.city}`}
+						{comp.city && ` \u00b7 ${comp.city}`}
 					</span>
 				</div>
 				{isOngoing && (
 					<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
+				)}
+				{isFinished && (
+					<span className={b('finished-tag')}>{t('zkt_comp.status_finished')}</span>
 				)}
 			</div>
 		);
@@ -723,58 +759,73 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* ZKT competitions — their OWN section (not WCA comps, avoid confusion),
-			     on the same showcase card as My Competitions above. */}
+			{/* Discovery: the controls head the block and drive every section under
+			    it (search reaches both federations; so does the event filter). My
+			    Competitions above is the viewer's own list and is never filtered. */}
+			<div className={b('discover')}>
+				<h3 className={b('section-title')}>{t('my_schedule.find_competition')}</h3>
+				<div className={b('search-box')}>
+					<MagnifyingGlass size={18} weight="bold" />
+					<input
+						type="text"
+						className={b('search-input')}
+						placeholder={t('my_schedule.search_competitions')}
+						aria-label={t('my_schedule.search_competitions')}
+						value={compSearch}
+						onChange={(e) => handleSearchChange(e.target.value)}
+					/>
+					{searching && <div className={b('search-progress')} />}
+				</div>
+				<CompEventFilter
+					selected={eventFilter}
+					onToggle={toggleEventFilter}
+					onClear={clearEventFilter}
+				/>
+			</div>
+
+			{/* ZKT first: a Turkish competitor is far more likely to mean the ZKT
+			    competition. Upcoming ones use the showcase card; search results use
+			    the compact row, like the WCA list, so a long result list stays
+			    scannable. */}
 			{/* While the ZKT list has never loaded (first visit, or the federation
-			     was unreachable with nothing cached), say so in place instead of
-			     leaving the section out: an absent section reads as "no ZKT
-			     competitions", which on competition day is the wrong message. */}
-			{!compSearch.trim() && zktCards.length === 0 && (zktComps === null || zktError) && (
+			    was unreachable with nothing cached), say so in place instead of
+			    leaving the section out: an absent section reads as "no ZKT
+			    competitions", which on competition day is the wrong message. */}
+			{!searchActive && zktList.length === 0 && (zktComps === null || zktError) && (
 				<div className={b('zkt-competitions')}>
-					<h3 className={b('section-title')}>
-						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
-						{t('my_schedule.zkt_competitions')}
-					</h3>
+					<h3 className={b('section-title')}>{t('my_schedule.zkt_competitions')}</h3>
 					<p className={b('my-competitions-empty')}>
 						{zktError ? t('my_schedule.zkt_list_unavailable') : t('my_schedule.loading_competitions')}
 					</p>
 				</div>
 			)}
 
-			{!compSearch.trim() && zktCards.length > 0 && (
+			{/* The filter hid every upcoming ZKT competition: say so, or the section
+			    simply vanishing reads as "the federation has nothing planned". */}
+			{!searchActive && zktList.length === 0 && zktComps !== null && !zktError && eventFilter.length > 0 && zktUpcomingCount > 0 && (
 				<div className={b('zkt-competitions')}>
-					<h3 className={b('section-title')}>
-						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
-						{t('my_schedule.zkt_competitions')}
-					</h3>
-					<div className={b('comp-list')}>
-						{zktCards.map((comp: any) => renderShowcaseCard(comp))}
-					</div>
+					<h3 className={b('section-title')}>{t('my_schedule.zkt_competitions')}</h3>
+					<p className={b('my-competitions-empty')}>{t('my_schedule.zkt_filter_empty')}</p>
 				</div>
 			)}
 
-
-			{/* Search */}
-			<div className={b('search-box')}>
-				<MagnifyingGlass size={18} weight="bold" />
-				<input
-					type="text"
-					className={b('search-input')}
-					placeholder={t('my_schedule.search_competitions')}
-					value={compSearch}
-					onChange={(e) => handleSearchChange(e.target.value)}
-				/>
-				{searching && <div className={b('search-progress')} />}
-			</div>
-
-			{/* Event filter — discovery tool for the WCA list + search results.
-			    My Competitions / ZKT sections above are intentionally NOT filtered:
-			    they are curated/personal lists that should stay visible. */}
-			<CompEventFilter
-				selected={eventFilter}
-				onToggle={toggleEventFilter}
-				onClear={clearEventFilter}
-			/>
+			{zktList.length > 0 && (
+				<div className={b('zkt-competitions')}>
+					<div className={b('section-head')}>
+						<h3 className={b('section-title')}>{t('my_schedule.zkt_competitions')}</h3>
+						{searchActive && (
+							<span className={b('section-count')}>
+								{t('my_schedule.competition_count', {count: zktList.length})}
+							</span>
+						)}
+					</div>
+					<div className={b('comp-list')}>
+						{searchActive
+							? zktList.map((comp: any) => renderCompCard(comp))
+							: zktList.map((comp: any) => renderShowcaseCard(comp))}
+					</div>
+				</div>
+			)}
 
 			{competitions === null && !searching && !loadError && (
 				<div className={b('wca-loading')}>
@@ -802,22 +853,22 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{!searching && displayList.length === 0 && competitions !== null && !loadError && (
+			{!searching && zktList.length === 0 && wcaList.length === 0 && competitions !== null && !loadError && (
 				<p className={b('empty')}>{t('my_schedule.no_competitions')}</p>
 			)}
 
-			{displayList.length > 0 && (
-				<>
-					{!showSearchResults && (
-						<h3 className={b('section-title')}>{t('my_schedule.upcoming_competitions')}</h3>
-					)}
-					<span className={b('competitor-count')}>
-						{t('my_schedule.competition_count', {count: displayList.length})}
-					</span>
-					<div className={b('comp-list')}>
-						{displayList.map((comp: any) => renderCompCard(comp))}
+			{wcaList.length > 0 && (
+				<div className={b('wca-competitions')}>
+					<div className={b('section-head')}>
+						<h3 className={b('section-title')}>{t('my_schedule.wca_competitions')}</h3>
+						<span className={b('section-count')}>
+							{t('my_schedule.competition_count', {count: wcaList.length})}
+						</span>
 					</div>
-				</>
+					<div className={b('comp-list')}>
+						{wcaList.map((comp: any) => renderCompCard(comp))}
+					</div>
+				</div>
 			)}
 		</div>
 	);

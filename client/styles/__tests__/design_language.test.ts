@@ -23,10 +23,12 @@ const BASELINE = {
 	// scrollbar lost their own corners (hairline grid, 2026-11-07).
 	// 544: the switch copies went onto common/switch/Switch (2026-11-07).
 	// 535: the solve card's old charts went with the new Overview chart (2026-11-07).
-	scssHandRadius: 535,
+	// 533: the competition list row and its old ZKT badge went onto tokens (2026-11-09).
+	scssHandRadius: 533,
 	scssDropShadow: 117,
 	tsxFixedTailwindColor: 67,
-	scssButtonColor: 117,
+	// 116: the competition list row's hover lost --button-color (2026-11-09).
+	scssButtonColor: 116,
 	tsxButtonColor: 25,
 	tsxRoundedXl: 66,
 };

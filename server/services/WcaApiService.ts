@@ -297,6 +297,13 @@ export class WcaApiService {
 	/**
 	 * Fetch user's registered competitions using OAuth token
 	 * Uses /api/v0/competitions/mine endpoint
+	 *
+	 * "mine" is not only registrations: WCA adds every competition the user
+	 * organizes or delegates, unannounced ones included (User#my_competitions).
+	 * Those are dropped here via `visible?`: a test competition someone once added
+	 * the user to as organizer sat in "Yarışmalarım" as "Kayıtlısın" forever, and
+	 * its page cannot open anyway because the public WCIF of a hidden competition
+	 * is a 404. A missing field keeps the competition.
 	 */
 	static async fetchMyCompetitions(authToken: string): Promise<any[]> {
 		try {
@@ -309,7 +316,7 @@ export class WcaApiService {
 				...(data?.future_competitions || []),
 				...(data?.ongoing_competitions || []),
 			];
-			return comps.filter((c: any) => !c['cancelled?']);
+			return comps.filter((c: any) => !c['cancelled?'] && c['visible?'] !== false);
 		} catch (error) {
 			console.error('Failed to fetch my competitions:', error.message);
 			return [];

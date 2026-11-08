@@ -101,6 +101,43 @@
 		letter-spacing: 0.03em;
 	}
 
+	// Section heading with its count on the same line ("WCA YARIŞMALARI  439 yarışma").
+	&__section-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		margin-bottom: 0.5rem;
+
+		.zt-my-schedule__section-title {
+			margin-bottom: 0;
+		}
+	}
+
+	&__section-count {
+		font-size: 0.8rem;
+		color: $zt-text-muted;
+	}
+
+	// Discovery block: search + event filter, heading the ZKT and WCA sections they drive.
+	&__discover {
+		margin-bottom: 1.5rem;
+		padding: 1rem;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: $zt-radius-md;
+
+		.zt-my-schedule__search-box {
+			margin-bottom: 0.75rem;
+		}
+
+		.zt-my-schedule__event-filter {
+			margin-bottom: 0;
+		}
+	}
+
+	&__wca-competitions {
+		margin-bottom: 1.5rem;
+	}
+
 	// My competitions
 	&__my-competitions {
 		margin-bottom: 1.5rem;
@@ -137,17 +174,13 @@
 		padding: 1rem 1rem;
 		min-height: 5.5rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.06);
 		cursor: pointer;
-		transition: background 0.1s;
+		transition: border-color 0.1s;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
-		}
-
-		&--finished {
-			opacity: 0.45;
+			border-color: $zt-control-border-hover;
 		}
 
 		&--ongoing {
@@ -415,21 +448,17 @@
 	}
 
 
-	&__zkt-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		// Direct child of a flex column: without this it stretches into a
-		// full-width bar instead of hugging its label.
-		align-self: flex-start;
-		margin-bottom: 0.2rem;
-		padding: 0.25rem 0.65rem;
-		background: rgb(var(--primary-color));
-		color: #fff;
-		font-size: 0.7rem;
-		font-weight: 800;
-		border-radius: 4px;
-		letter-spacing: 0.8px;
+	// A finished competition in search results. Neutral, and the row's text stays
+	// at full strength: the old 45% fade made past results hard to read.
+	&__finished-tag {
+		font-size: 0.68rem;
+		font-weight: 700;
+		padding: 2px 8px;
+		border-radius: $zt-radius-sm;
+		background: rgba(var(--text-color), 0.1);
+		color: $zt-text-muted;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 
 	&__zkt-status {
@@ -515,7 +544,7 @@
 
 	&__comp-sub {
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	// Back button
