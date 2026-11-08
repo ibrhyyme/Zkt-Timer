@@ -9,12 +9,15 @@ import { setTimerParam } from './params';
 import { resetScramble } from './scramble';
 import { getSolveDb } from '../../../db/solves/init';
 import { migrateLokiSettingToWcaSubset } from '../../../db/solves/migrate_wca_subset';
+import { getActiveSessionId } from '../../../db/sessions/active';
+import { followSessionBucket } from './session_bucket';
 
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
 	const { inModal } = context;
 	const sessionId = getSetting('session_id');
 	const cubeType = getSetting('cube_type');
 	const ct = getCubeTypeInfoById(cubeType);
+	let bucketMoved = false;
 
 	if (!inModal) {
 		if (!sessionId || (sessionId && !fetchSessionById(sessionId))) {
@@ -49,11 +52,16 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 		if (currentCubeType === 'wca' && !currentSubset) {
 			setSetting('scramble_subset', '333');
 		}
+
+		// After the repairs above, so the check sees the canonical selection. A launch puts the
+		// timer back on the main session while the stored bucket may still be the one of the
+		// session it was last switched to (session_bucket.ts).
+		bucketMoved = followSessionBucket(getActiveSessionId());
 	}
 
-	// On page load, load last solve's time into timer — scoped to the current
-	// bucket so the display matches the active cube_type/subset, not the global last.
-	const currentSessionId = getSetting('session_id');
+	// On page load, load last solve's time into timer — scoped to the timer's session and
+	// current bucket so the display matches the active cube_type/subset, not the global last.
+	const currentSessionId = getActiveSessionId();
 	const lastSolve = fetchLastSolve(
 		buildBucketFilter({
 			session_id: currentSessionId,
@@ -65,8 +73,11 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 		setTimerParam('finalTime', lastSolve.time * 1000);
 	}
 
-	// Generate scramble on initial page load
-	resetScramble(context);
+	// Generate scramble on initial page load. A moved bucket already asked for its own; one
+	// built from this mount's context (the old bucket) could land after it and win.
+	if (!bucketMoved) {
+		resetScramble(context);
+	}
 }
 
 function migrateOrphanSolves(newSessionId: string) {

@@ -2,15 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Rows } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setCubeType, setScrambleSubset } from '../../db/settings/update';
 import { fetchSessionById, fetchSessions } from '../../db/sessions/query';
 import { setTimerSession } from '../../db/sessions/active';
 import { fetchLastBucketForSession } from '../../db/solves/query';
 import { useActiveSessionId } from '../../util/hooks/useActiveSessionId';
-import { getSetting } from '../../db/settings/query';
-import { getCubeTypeInfoById } from '../../util/cubes/util';
-import { generateTimerScramble } from '../timer/helpers/scramble';
-import { setTimerParam, setTimerParams } from '../timer/helpers/params';
+import { applyTimerBucket, markBucketSession } from '../timer/helpers/session_bucket';
 import FancyDropdown, { FancyDropdownGroup } from '../timer/header_control/FancyDropdown';
 import { Session } from '../../../server/schemas/Session.schema';
 import { openModal } from '../../actions/general';
@@ -94,31 +90,10 @@ export default function SessionPicker(props: Props) {
 		// making every subsequent solve land in the wrong bucket). See cube-subset-bucket.
 		const lastBucket = fetchLastBucketForSession(session.id);
 		const lastCubeType = lastBucket?.cube_type || 'wca';
-		const currentCubeType = getSetting('cube_type');
-		const currentSubset = getSetting('scramble_subset');
-		const newSubset = lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null);
-		const cubeTypeChanged = lastCubeType !== currentCubeType;
-		const subsetChanged = newSubset !== (currentSubset ?? null);
-
-		if (cubeTypeChanged) {
-			setCubeType(lastCubeType);
-		}
-		if (subsetChanged) {
-			setScrambleSubset(newSubset);
-		}
-
-		if (cubeTypeChanged || subsetChanged) {
-			const ct = getCubeTypeInfoById(lastCubeType);
-			if (ct) {
-				setTimerParam('scrambleSubset', newSubset);
-				setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-				generateTimerScramble(lastCubeType, newSubset, getSetting('scramble_top_color')).then((newScramble) => {
-					setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
-				}).catch((e) => {
-					console.error('[scramble] switchSession failed:', e);
-				});
-			}
-		}
+		applyTimerBucket(lastCubeType, lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
+		// The bucket now belongs to this session: a cube type picked in it afterwards survives
+		// moving between pages instead of being checked against the session again.
+		markBucketSession(session.id);
 	}
 
 	function handleValueChange(value: string) {
