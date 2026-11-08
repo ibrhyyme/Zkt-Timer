@@ -35,6 +35,27 @@ export function createEmailVerification(user) {
 	});
 }
 
+// How long a sent code keeps being re-sent instead of replaced. Codes live for 30
+// minutes, so re-sending one younger than this still leaves the user at least 15.
+export const REUSE_CODE_WINDOW_MS = 15 * 60 * 1000;
+
+export function canReuseEmailVerification(emailVerification, now = Date.now()) {
+	if (!emailVerification || emailVerification.claimed) return false;
+	return now - new Date(emailVerification.created_at).getTime() < REUSE_CODE_WINDOW_MS;
+}
+
+/**
+ * The code to mail to a user who is waiting to verify. Only the newest code is
+ * accepted, so replacing it on every "resend" made the code in the first mail
+ * fail ("invalid or expired") and cost a wrong attempt for anyone who opened
+ * that mail. Re-sending the same code makes every mail in the inbox work.
+ * A burned code (claimed after MAX_CODE_ATTEMPTS) is never reused.
+ */
+export async function getOrCreateEmailVerification(user) {
+	const [latest] = await getEmailVerification(user);
+	return canReuseEmailVerification(latest) ? latest : createEmailVerification(user);
+}
+
 export function registerFailedEmailVerificationAttempt(emailVerification) {
 	const attempts = (emailVerification.attempts || 0) + 1;
 	const data = {attempts};

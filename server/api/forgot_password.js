@@ -6,7 +6,7 @@ import {
 import { sendEmail, sendEmailWithTemplate } from '../services/ses';
 import {
 	claimForgotPassword,
-	createForgotPassword,
+	getOrCreateForgotPassword,
 	getForgotPassword,
 	registerFailedForgotPasswordAttempt,
 	MAX_WRONG_CODES_PER_DAY,
@@ -55,7 +55,7 @@ export const mutateActions = {
 		// Unverified hesaplara forgot password kodu gondermiyoruz — silently OK donuyoruz
 		// boylece email enumeration sizdirma yok
 		if (user && user.email_verified) {
-			const fp = await createForgotPassword(user);
+			const fp = await getOrCreateForgotPassword(user);
 			const emailStrings = getEmailStrings(language);
 
 			sendEmailWithTemplate(user, emailStrings.forgot_subject, 'forgot_password',

@@ -39,6 +39,7 @@ export default function EmailVerification() {
 	const [error, setError] = useState('');
 	const [resend, setResend] = useState(30);
 	const [resent, setResent] = useState(false);
+	const resendingRef = useRef(false);
 
 	// guard async setState after the animation delays if the user leaves the page
 	const mountedRef = useRef(true);
@@ -99,7 +100,10 @@ export default function EmailVerification() {
 	}
 
 	async function handleResend() {
-		if (resend > 0) return;
+		// The countdown only restarts when the request returns, so a second tap
+		// before that used to send a second mail.
+		if (resend > 0 || resendingRef.current) return;
+		resendingRef.current = true;
 		try {
 			await resendCode({variables: {email, language: i18n.language}});
 			setResend(30);
@@ -111,6 +115,8 @@ export default function EmailVerification() {
 			setTimeout(() => setResent(false), 4000);
 		} catch (e) {
 			setError(e.message);
+		} finally {
+			resendingRef.current = false;
 		}
 	}
 

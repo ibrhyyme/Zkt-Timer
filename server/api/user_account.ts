@@ -17,7 +17,7 @@ import { createDefaultSession } from '../models/session';
 import { checkLoggedIn, getJwtString, setSessionCookie } from '../util/auth';
 import { checkPassword, hashPassword } from '../util/password';
 import { createNotificationPreference } from '../models/notification_preference';
-import { createEmailVerification } from '../models/email_verification';
+import { createEmailVerification, getOrCreateEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
 import { getEmailStrings, buildVerificationEmailData, buildEmailChangeWarningData } from '../util/email_translations';
@@ -186,8 +186,9 @@ export const mutateActions = {
 			await createDefaultSession(user, language || 'en');
 		}
 
-		// Create verification code and send email
-		const ev = await createEmailVerification(user);
+		// Create verification code and send email. Submitting the form again for an
+		// unverified account re-sends the live code instead of voiding the first mail.
+		const ev = await getOrCreateEmailVerification(user);
 		const emailStrings = getEmailStrings(language);
 		sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification',
 			buildVerificationEmailData(user, ev.code, language)

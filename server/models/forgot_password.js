@@ -30,6 +30,25 @@ export function createForgotPassword(user) {
 	});
 }
 
+// How long a sent code keeps being re-sent instead of replaced. Codes live for 15
+// minutes, so re-sending one younger than this still leaves the user at least 10.
+export const REUSE_CODE_WINDOW_MS = 5 * 60 * 1000;
+
+export function canReuseForgotPassword(forgotPassword, now = Date.now()) {
+	if (!forgotPassword || forgotPassword.claimed) return false;
+	return now - new Date(forgotPassword.created_at).getTime() < REUSE_CODE_WINDOW_MS;
+}
+
+/**
+ * Only the newest code is accepted, so replacing it on every request made the
+ * code in an earlier mail fail. See getOrCreateEmailVerification. A used or
+ * burned code is never reused.
+ */
+export async function getOrCreateForgotPassword(user) {
+	const [latest] = await getForgotPassword(user);
+	return canReuseForgotPassword(latest) ? latest : createForgotPassword(user);
+}
+
 export function registerFailedForgotPasswordAttempt(forgotPassword) {
 	const attempts = (forgotPassword.attempts || 0) + 1;
 	const data = {attempts};

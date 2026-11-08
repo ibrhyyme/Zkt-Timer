@@ -2,7 +2,7 @@ import GraphQLError from '../util/graphql_error';
 import {getUserByEmail, getUserById, sanitizeUser} from '../models/user_account';
 import {updateUserAccountWithParams} from '../models/user_account';
 import {
-	createEmailVerification,
+	getOrCreateEmailVerification,
 	getEmailVerification,
 	claimEmailVerification,
 	registerFailedEmailVerificationAttempt,
@@ -55,7 +55,7 @@ export const mutateActions = {
 		const user = await getUserByEmail(email);
 
 		if (user && !user.email_verified) {
-			const ev = await createEmailVerification(user);
+			const ev = await getOrCreateEmailVerification(user);
 			const emailStrings = getEmailStrings(language);
 
 			sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification',

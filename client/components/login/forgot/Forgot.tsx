@@ -69,6 +69,7 @@ export default function Forgot() {
 	const [resend, setResend] = useState(30);
 	const [codeVerified, setCodeVerified] = useState(false);
 	const [done, setDone] = useState(false);
+	const resendingRef = useRef(false);
 
 	// guard async setState after the animation delays if the user leaves the page
 	const mountedRef = useRef(true);
@@ -193,7 +194,10 @@ export default function Forgot() {
 	}
 
 	async function doResend() {
-		if (resend > 0) return;
+		// The countdown only restarts when the request returns, so a second tap
+		// before that used to send a second mail.
+		if (resend > 0 || resendingRef.current) return;
+		resendingRef.current = true;
 		try {
 			await forgotCode({variables: {email: email.trim(), language: i18n.language}});
 			setResend(30);
@@ -202,6 +206,8 @@ export default function Forgot() {
 			setFocusKey((k) => k + 1);
 		} catch (err) {
 			setError(err.message);
+		} finally {
+			resendingRef.current = false;
 		}
 	}
 
