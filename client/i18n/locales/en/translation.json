@@ -3728,6 +3728,7 @@
     "verifying": "Verifying…",
     "error_retry": "Incorrect code. Try again.",
     "didnt_get_code": "Didn't get the code?",
+    "check_spam": "If it hasn't arrived, check your spam folder too.",
     "resend": "Resend",
     "resend_in": "Resend ({{seconds}}s)",
     "auto_verify_hint": "It verifies automatically once entered.",

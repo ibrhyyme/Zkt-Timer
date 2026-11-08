@@ -170,7 +170,7 @@ export default function PersonalInfo() {
 				<SettingsCard
 					warning
 					title={t('personal_info.email_change_title')}
-					description={t('personal_info.email_change_description')}
+					description={`${t('personal_info.email_change_description')} ${t('otp.check_spam')}`}
 					icon={<Warning weight="bold" />}
 					footer={
 						<Button

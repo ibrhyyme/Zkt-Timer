@@ -3728,6 +3728,7 @@
     "verifying": "Verificando…",
     "error_retry": "Código incorrecto. Inténtalo de nuevo.",
     "didnt_get_code": "¿No recibiste el código?",
+    "check_spam": "Si no te llega, revisa también la carpeta de spam.",
     "resend": "Reenviar",
     "resend_in": "Reenviar ({{seconds}}s)",
     "auto_verify_hint": "Se verifica automáticamente al introducirlo.",

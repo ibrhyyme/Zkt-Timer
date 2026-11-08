@@ -136,7 +136,7 @@ export default function EmailVerification() {
 	return (
 		<div className={n('stack').toString()}>
 			<p className={z('subtitle').toString()}>
-				<strong className={n('sub-strong').toString()}>{maskEmail(email)}</strong> {t('email_verification.check_email')}{' '}
+				<strong className={n('sub-strong').toString()}>{maskEmail(email)}</strong> {t('email_verification.check_email')} {t('otp.check_spam')}{' '}
 				{t('otp.auto_verify_hint')}
 			</p>
 

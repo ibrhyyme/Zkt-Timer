@@ -304,7 +304,7 @@ export default function Forgot() {
 		return (
 			<div className={n('stack').toString()}>
 				<p className={z('subtitle').toString()}>
-					<strong className={n('sub-strong').toString()}>{maskEmail(email.trim())}</strong> {t('forgot.check_email')}{' '}
+					<strong className={n('sub-strong').toString()}>{maskEmail(email.trim())}</strong> {t('forgot.check_email')} {t('otp.check_spam')}{' '}
 					{t('otp.auto_verify_hint')}
 				</p>
 

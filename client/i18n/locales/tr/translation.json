@@ -3711,6 +3711,7 @@
     "verifying": "Doğrulanıyor…",
     "error_retry": "Kod hatalı. Tekrar dene.",
     "didnt_get_code": "Kodu almadın mı?",
+    "check_spam": "Gelmediyse spam klasörüne de bak.",
     "resend": "Tekrar gönder",
     "resend_in": "Tekrar gönder ({{seconds}}s)",
     "auto_verify_hint": "Kod girilince otomatik doğrulanır.",

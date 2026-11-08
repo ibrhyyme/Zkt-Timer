@@ -3696,6 +3696,7 @@
     "verifying": "验证中…",
     "error_retry": "验证码错误，请重试。",
     "didnt_get_code": "没有收到验证码？",
+    "check_spam": "如果没有收到，也请查看垃圾邮件文件夹。",
     "resend": "重新发送",
     "resend_in": "重新发送（{{seconds}}秒）",
     "auto_verify_hint": "输入后将自动验证。",
