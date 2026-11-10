@@ -1,0 +1,75 @@
+@import '../../../styles/config';
+
+// Theme colours are RGB triplets (styles/index.scss), so every use goes through rgb()/rgba().
+.#{$namespace}-admin-qr-test {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-width: 560px;
+	color: rgb(var(--text-color));
+
+	&__title {
+		font-size: 20px;
+		font-weight: 700;
+		margin: 0;
+	}
+
+	&__intro {
+		margin: 0;
+		font-size: 14px;
+		line-height: 1.5;
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+	}
+
+	&__status {
+		font-size: 14px;
+		font-weight: 600;
+
+		&--error {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&__camera {
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: $zt-radius-md;
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		background: rgba(var(--text-color), 0.05);
+
+		&--on {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__video {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	&__report {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: 6px 16px;
+		margin: 0;
+		font-size: 13px;
+
+		dt {
+			font-weight: 600;
+		}
+	}
+
+	&__value {
+		margin: 0;
+		font-family: 'Roboto Mono', monospace;
+		word-break: break-all;
+	}
+}

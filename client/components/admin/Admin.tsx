@@ -24,6 +24,7 @@ const SECONDARY_TABS = [
 	{id: 'smart-telemetry', link: '/admin/smart-telemetry', labelKey: 'admin_nav.smart_telemetry'},
 	{id: 'magnet-telemetry', link: '/admin/magnet-telemetry', labelKey: 'admin_nav.magnet_telemetry'},
 	{id: 'online-battle', link: '/admin/online-battle', labelKey: 'admin_nav.online_battle'},
+	{id: 'qr-test', link: '/admin/qr-test', labelKey: 'admin_nav.qr_test'},
 ];
 
 interface Props {

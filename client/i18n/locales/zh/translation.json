@@ -2688,7 +2688,27 @@
     "got_it": "知道了",
     "view_details": "查看详情"
   },
+  "admin_qr_test": {
+    "title": "二维码扫描测试",
+    "intro": "在页面内打开相机并读取看到的二维码，用来确认应用内扫描在这台设备上是否可用。",
+    "start": "打开相机",
+    "stop": "关闭相机",
+    "status_idle": "相机已关闭",
+    "status_starting": "正在打开相机",
+    "status_scanning": "正在寻找二维码",
+    "status_unsupported": "此设备无法在页面内打开相机",
+    "status_denied": "未授予相机权限",
+    "status_no_camera": "未找到相机",
+    "status_failed": "无法打开相机",
+    "result": "最近一次读取",
+    "count": "读取次数",
+    "open_time": "打开相机用时",
+    "first_read_time": "首次读取用时",
+    "detail": "错误详情",
+    "environment": "环境"
+  },
   "admin_nav": {
+    "qr_test": "二维码扫描测试",
     "other_pages": "其他页面",
     "dashboard": "仪表盘",
     "reports": "举报",

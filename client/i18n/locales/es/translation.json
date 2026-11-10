@@ -2716,7 +2716,27 @@
     "got_it": "Entendido",
     "view_details": "Ver detalles"
   },
+  "admin_qr_test": {
+    "title": "Prueba del lector QR",
+    "intro": "Abre la cámara dentro de la página y lee el código QR que ve. Muestra si el lector de la app funciona en este dispositivo.",
+    "start": "Abrir cámara",
+    "stop": "Cerrar cámara",
+    "status_idle": "Cámara apagada",
+    "status_starting": "Abriendo la cámara",
+    "status_scanning": "Buscando un código QR",
+    "status_unsupported": "Este dispositivo no puede abrir la cámara dentro de la página",
+    "status_denied": "No se concedió el permiso de cámara",
+    "status_no_camera": "No se encontró ninguna cámara",
+    "status_failed": "No se pudo abrir la cámara",
+    "result": "Última lectura",
+    "count": "Lecturas",
+    "open_time": "Tiempo de apertura de la cámara",
+    "first_read_time": "Tiempo hasta la primera lectura",
+    "detail": "Detalle del error",
+    "environment": "Entorno"
+  },
   "admin_nav": {
+    "qr_test": "Prueba del lector QR",
     "other_pages": "Otras páginas",
     "dashboard": "Panel",
     "reports": "Informes",

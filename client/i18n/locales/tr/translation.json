@@ -2700,7 +2700,27 @@
     "got_it": "Anladım",
     "view_details": "Detayları Gör"
   },
+  "admin_qr_test": {
+    "title": "QR okuyucu testi",
+    "intro": "Kamerayı sayfanın içinde açar ve gördüğü QR kodunu okur. Uygulama içi okuyucunun bu cihazda çalışıp çalışmadığını gösterir.",
+    "start": "Kamerayı aç",
+    "stop": "Kamerayı kapat",
+    "status_idle": "Kamera kapalı",
+    "status_starting": "Kamera açılıyor",
+    "status_scanning": "QR aranıyor",
+    "status_unsupported": "Bu cihaz sayfa içinde kamera açmayı desteklemiyor",
+    "status_denied": "Kamera izni verilmedi",
+    "status_no_camera": "Kamera bulunamadı",
+    "status_failed": "Kamera açılamadı",
+    "result": "Son okunan",
+    "count": "Okuma sayısı",
+    "open_time": "Kameranın açılma süresi",
+    "first_read_time": "İlk okuma süresi",
+    "detail": "Hata ayrıntısı",
+    "environment": "Ortam"
+  },
   "admin_nav": {
+    "qr_test": "QR Okuyucu Testi",
     "other_pages": "Diğer Sayfalar",
     "dashboard": "Pano",
     "reports": "Raporlar",

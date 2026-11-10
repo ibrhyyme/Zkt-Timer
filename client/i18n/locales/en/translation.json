@@ -2716,7 +2716,27 @@
     "got_it": "Got It",
     "view_details": "View Details"
   },
+  "admin_qr_test": {
+    "title": "QR scanner test",
+    "intro": "Opens the camera inside the page and reads the QR code it sees. Shows whether the in-app scanner works on this device.",
+    "start": "Open camera",
+    "stop": "Close camera",
+    "status_idle": "Camera is off",
+    "status_starting": "Opening camera",
+    "status_scanning": "Looking for a QR code",
+    "status_unsupported": "This device cannot open the camera inside the page",
+    "status_denied": "Camera permission was not granted",
+    "status_no_camera": "No camera found",
+    "status_failed": "Could not open the camera",
+    "result": "Last read",
+    "count": "Reads",
+    "open_time": "Time to open the camera",
+    "first_read_time": "Time to first read",
+    "detail": "Error detail",
+    "environment": "Environment"
+  },
   "admin_nav": {
+    "qr_test": "QR Scanner Test",
     "other_pages": "Other Pages",
     "dashboard": "Dashboard",
     "reports": "Reports",
