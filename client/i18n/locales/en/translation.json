@@ -1737,6 +1737,10 @@
     "confirm_delete_season_desc": "Show a confirmation dialog before deleting all solves in the selected session",
     "pb_confetti": "Personal best confetti",
     "pb_confetti_desc": "Show confetti when you beat your personal best",
+    "shortcut_hint": "Shortcut hint",
+    "shortcut_hint_desc": "Tell me after the solve when the scramble had a very short cross or XCross",
+    "shortcut_hint_voice": "Say it out loud",
+    "shortcut_hint_voice_desc": "The shortcut hint also speaks its line",
     "warmup_auto_save": "Auto-save in warm-up",
     "warmup_auto_save_desc": "In warm-up mode, the solves you pick are saved on their own. You can undo it until your next solve.",
     "warmup_auto_save_off": "Off",
@@ -1945,6 +1949,24 @@
     "single": "New {{cube}} single PB!",
     "average": "New {{cube}} average of 5 PB!",
     "single_and_average": "New {{cube}} single and average of 5 PB!"
+  },
+  "shortcut_hint": {
+    "step": {
+      "cross": "cross",
+      "xcross": "XCross"
+    },
+    "fact": "The last scramble had a {{n}}-move {{step}}.",
+    "fact_short": "There was a {{n}}-move {{step}}",
+    "punch": {
+      "missed_1": "You missed it.",
+      "missed_2": "Didn't see it, did you?",
+      "missed_3": "Next time.",
+      "spotted_1": "Looks like you saw it.",
+      "spotted_2": "Nicely spotted.",
+      "dnf_1": "And you got a DNF.",
+      "dnf_2": "Still a DNF."
+    },
+    "pro_shows_moves": "Pro shows the moves"
   },
   "timer_modules": {
     "history": "Solves",
@@ -4082,6 +4104,10 @@
       "room_climate": {
         "title": "AC remote in rooms",
         "desc": "Rooms have an AC and a single remote. The Pro who wins the round takes it and cools or heats the room however they like. When the room freezes, snow falls; when it burns, times melt down the screen and the round's slowest player falls. It's only visual: times and results stay as they are."
+      },
+      "shortcut_hint": {
+        "title": "Missed shortcuts",
+        "desc": "When a scramble hides a very short cross or XCross, the timer tells you after the solve and shows the moves. Solve it fast and it assumes you saw it. Solve it slow and you will hear about it. It says the line out loud too, and you can turn the voice off in settings."
       }
     },
     "promo": {

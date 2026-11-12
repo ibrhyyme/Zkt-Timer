@@ -1737,6 +1737,10 @@
     "confirm_delete_season_desc": "Mostrar un diálogo de confirmación antes de eliminar todas las resoluciones en la sesión seleccionada",
     "pb_confetti": "Confeti de récord personal",
     "pb_confetti_desc": "Mostrar confeti cuando superes tu récord personal",
+    "shortcut_hint": "Aviso de atajo",
+    "shortcut_hint_desc": "Avisar después de la resolución si la mezcla tenía una cruz o XCross muy corta",
+    "shortcut_hint_voice": "Decirlo en voz alta",
+    "shortcut_hint_voice_desc": "El aviso de atajo también dice la frase en voz alta",
     "warmup_auto_save": "Guardado automático en calentamiento",
     "warmup_auto_save_desc": "En el modo calentamiento, los resuelves que elijas se guardan solos. Puedes deshacerlo hasta tu siguiente resuelve.",
     "warmup_auto_save_off": "Desactivado",
@@ -1945,6 +1949,24 @@
     "single": "¡Nuevo PB single de {{cube}}!",
     "average": "¡Nuevo PB de media de 5 en {{cube}}!",
     "single_and_average": "¡Nuevo PB single y de media de 5 en {{cube}}!"
+  },
+  "shortcut_hint": {
+    "step": {
+      "cross": "cruz",
+      "xcross": "XCross"
+    },
+    "fact": "La mezcla anterior tenía una {{step}} de {{n}} movimientos.",
+    "fact_short": "Había una {{step}} de {{n}} movimientos",
+    "punch": {
+      "missed_1": "Se te pasó.",
+      "missed_2": "No la viste, ¿verdad?",
+      "missed_3": "Para la próxima.",
+      "spotted_1": "Parece que la viste.",
+      "spotted_2": "Bien visto.",
+      "dnf_1": "Y te salió DNF.",
+      "dnf_2": "Aun así, DNF."
+    },
+    "pro_shows_moves": "Pro te muestra los movimientos"
   },
   "timer_modules": {
     "history": "Resoluciones",
@@ -4082,6 +4104,10 @@
       "room_climate": {
         "title": "Mando del aire en las salas",
         "desc": "Las salas tienen un aire acondicionado y un solo mando. El Pro que gana la ronda se lo lleva y enfría o calienta la sala como quiera. Si la sala se congela, nieva; si arde, los tiempos se derriten pantalla abajo y el más lento de la ronda se cae. Es solo visual: los tiempos y los resultados no cambian."
+      },
+      "shortcut_hint": {
+        "title": "Atajos que se te escaparon",
+        "desc": "Si la mezcla esconde una cruz o una XCross muy corta, el timer te lo dice al terminar y te muestra los movimientos. Si resolviste rápido, entiende que la viste. Si fuiste lento, te lo recuerda. También dice la frase en voz alta, y puedes quitar la voz en los ajustes."
       }
     },
     "promo": {

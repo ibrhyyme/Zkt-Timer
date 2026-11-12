@@ -69,6 +69,14 @@ export interface AllSettings {
 	 */
 	remote_input_compat: boolean;
 	/**
+	 * After a 3x3 solve, say when the scramble hid an unusually short cross or XCross
+	 * (components/timer/helpers/shortcut_hint.tsx). On by default. A platform setting
+	 * (prefs blob), so no schema change.
+	 */
+	shortcut_hint: boolean;
+	/** The hint also speaks its punch (public/audio/shortcut/). Platform setting, on. */
+	shortcut_hint_voice: boolean;
+	/**
 	 * Warm-up mode auto-save (rules in lib/warmup/auto_save.ts). 'pb' saves a warm-up solve
 	 * that would be a new single PB; 'threshold' also saves one at or under the bucket's time
 	 * in `warmup_auto_save_thresholds`. Platform settings (prefs blob), so no schema change.
@@ -252,6 +260,8 @@ const defaultSettings: AllSettings = {
 	timer_type: 'keyboard',
 	wired_timer_brand: 'stackmat',
 	remote_input_compat: false,
+	shortcut_hint: true,
+	shortcut_hint_voice: true,
 	warmup_auto_save: 'pb',
 	warmup_auto_save_thresholds: {},
 	timer_module_count: 3,

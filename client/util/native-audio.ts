@@ -144,6 +144,60 @@ export function preloadTimerSounds(): void {
 	});
 }
 
+/*
+ * Clips outside the fixed timer set (the shortcut hint's voice lines): loaded on first
+ * use, then played through the same two paths as the timer sounds, so they behave the
+ * same on a phone. iOS: the AVAudioPlayer plugin (.ambient + .mixWithOthers), which keeps
+ * the user's music playing and honours the silent switch. It reads from the app bundle
+ * (ios/App/App/audio/, a folder reference), so a clip added there only exists from the
+ * next native build on; until then preload rejects and the clip stays silent, never
+ * falling back to web audio, which would cut the music off. Elsewhere: a decoded
+ * AudioBuffer on the shared, gesture-unlocked context.
+ */
+const clipFailed = new Set<string>();
+const clipLoading = new Map<string, Promise<boolean>>();
+
+function loadClip(assetId: string, webPath: string, iosFileName: string): Promise<boolean> {
+	if (loadedAssets.has(assetId)) return Promise.resolve(true);
+	if (clipFailed.has(assetId)) return Promise.resolve(false);
+	const pending = clipLoading.get(assetId);
+	if (pending) return pending;
+
+	const load = (async () => {
+		try {
+			if (NativeAudio) {
+				await NativeAudio.preload({assetId, fileName: iosFileName});
+			} else {
+				const ctx = getAudioContext();
+				if (!ctx) throw new Error('no audio context');
+				const response = await fetch(resourceUri(webPath));
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				buffers.set(assetId, await ctx.decodeAudioData(await response.arrayBuffer()));
+			}
+			loadedAssets.add(assetId);
+			return true;
+		} catch (e) {
+			clipFailed.add(assetId);
+			return false;
+		} finally {
+			clipLoading.delete(assetId);
+		}
+	})();
+	clipLoading.set(assetId, load);
+	return load;
+}
+
+/** Warms a set of clips (decode or native preload) so the first play has no wait. */
+export function preloadClips(clips: {assetId: string; webPath: string; iosFileName: string}[]): void {
+	for (const c of clips) void loadClip(c.assetId, c.webPath, c.iosFileName);
+}
+
+/** Loads the clip if needed and plays it. Resolves false when it could not play. */
+export async function playClip(assetId: string, webPath: string, iosFileName: string): Promise<boolean> {
+	if (!(await loadClip(assetId, webPath, iosFileName))) return false;
+	return playNativeSound(assetId);
+}
+
 /** Plays a preloaded sound. Returns false when the caller must fall back to `new Audio()`. */
 export function playNativeSound(assetId: string, rate?: number): boolean {
 	if (!loadedAssets.has(assetId)) return false;

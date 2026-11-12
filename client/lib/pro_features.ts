@@ -13,6 +13,7 @@ import {
 	MusicNote,
 	PaintBrush,
 	ShareNetwork,
+	Signpost,
 	Sliders,
 	Thermometer,
 	Trophy,
@@ -98,6 +99,10 @@ export const PRO_FEATURES: readonly ProFeature[] = [
 	// the database) can be handed the remote or press it (`ac:set`); client
 	// RoomClimateControl's Basic panel -> openProOnlyModal('room_climate').
 	feature('room_climate', Thermometer, 'fun'),
+	// Gate: client only. timer/helpers/shortcut_hint.tsx `full`: Pro sees the moves on every
+	// shortcut, Basic a once-a-day line with the moves locked. Nothing to gate on the server:
+	// the solver runs in the browser on the solve's own scramble.
+	feature('shortcut_hint', Signpost, 'fun'),
 	// Gate: client only. PRO_GATED_TIMER_TYPES in timer/helpers/pro_timer_types.ts,
 	// applied by TimerTypeGrid / TimerTypePicker (`requireProForSmart`) and by
 	// FriendlyRoom, which downgrades an already-selected gated type back to keyboard.

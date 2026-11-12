@@ -42,6 +42,8 @@ export default function TimerSettings() {
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 	const pbConfetti = useSettings('pb_confetti');
+	const shortcutHint = useSettings('shortcut_hint');
+	const shortcutHintVoice = useSettings('shortcut_hint_voice');
 	// The threshold row edits the bucket the timer is on: one number cannot fit every puzzle.
 	const warmupThreshold = useWarmupThreshold();
 	const warmupAutoSave = warmupThreshold.mode;
@@ -154,6 +156,19 @@ export default function TimerSettings() {
 					description={t('timer_settings.pb_confetti_desc')}
 					isActive={pbConfetti}
 					onClick={() => toggleSetting('pb_confetti')}
+				/>
+				<TimerSettingsToggle
+					label={t('timer_settings.shortcut_hint')}
+					description={t('timer_settings.shortcut_hint_desc')}
+					isActive={shortcutHint}
+					onClick={() => setSetting('shortcut_hint', !shortcutHint)}
+				/>
+				<TimerSettingsToggle
+					label={t('timer_settings.shortcut_hint_voice')}
+					description={t('timer_settings.shortcut_hint_voice_desc')}
+					hidden={!shortcutHint}
+					isActive={shortcutHintVoice}
+					onClick={() => setSetting('shortcut_hint_voice', !shortcutHintVoice)}
 				/>
 				<TimerSettingsSelect
 					label={t('timer_settings.warmup_auto_save')}

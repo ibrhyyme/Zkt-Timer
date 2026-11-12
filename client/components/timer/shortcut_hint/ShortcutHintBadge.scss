@@ -1,0 +1,63 @@
+@import '../../../styles/config';
+
+// Compact card in the timer notification slot, close to the PB tag's height: the line and
+// the moves run on together, one row on desktop, two at most on a phone. Taller, it was
+// clipped above the scramble on desktop and covered the time on a phone.
+// Opaque on purpose: on desktop the slot sits over the top of the scramble, and a tinted
+// card let the scramble text read through.
+.#{$namespace}-shortcut-hint {
+	max-width: min(40rem, 100%);
+	margin: 0;
+	padding: 6px $zt-space-3;
+	border: 1px solid $zt-card-border;
+	border-radius: $zt-radius-md;
+	background: rgb(var(--module-color));
+	color: rgb(var(--text-color));
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.35;
+	text-align: center;
+
+	&--pro {
+		@include zt-pro-accent;
+		border-color: $zt-pro-frame;
+	}
+
+	// Phone: one line, the PB tag's footprint.
+	&--compact {
+		padding: 5px 10px;
+		font-size: 0.8125rem;
+	}
+
+	// The moves (Pro) or the Pro tag (Basic) follow the line in the same flow and only
+	// wrap as one piece.
+	&__moves,
+	&__locked {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-left: 10px;
+		white-space: nowrap;
+		vertical-align: baseline;
+	}
+
+	&__moves {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-weight: 500;
+	}
+
+	&__locked {
+		font-size: 0.8125rem;
+		font-weight: 500;
+	}
+
+	// The face the shortcut starts on, in the user's sticker colours. The thin edge keeps a
+	// white or yellow face visible on the light theme (same rule as the cross solver module).
+	&__swatch {
+		width: 0.75em;
+		height: 0.75em;
+		border-radius: 0;
+		flex-shrink: 0;
+		box-shadow: 0 0 0 1px rgba(var(--text-color), 0.45);
+	}
+}

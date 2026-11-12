@@ -1713,6 +1713,10 @@
     "confirm_delete_season_desc": "在删除所选阶段的所有还原前显示确认对话框",
     "pb_confetti": "个人最好成绩礼花",
     "pb_confetti_desc": "打破个人最好成绩时显示礼花",
+    "shortcut_hint": "捷径提示",
+    "shortcut_hint_desc": "复原后提示打乱中是否有很短的十字或 XCross",
+    "shortcut_hint_voice": "语音播报",
+    "shortcut_hint_voice_desc": "捷径提示同时读出这句话",
     "warmup_auto_save": "热身时自动保存",
     "warmup_auto_save_desc": "热身模式下，符合条件的还原会自动保存，在下一次还原前都可以撤销。",
     "warmup_auto_save_off": "关闭",
@@ -1921,6 +1925,24 @@
     "single": "新的 {{cube}} 单次 PB！",
     "average": "新的 {{cube}} 五次平均 PB！",
     "single_and_average": "新的 {{cube}} 单次和五次平均 PB！"
+  },
+  "shortcut_hint": {
+    "step": {
+      "cross": "十字",
+      "xcross": "XCross"
+    },
+    "fact": "上一个打乱里有 {{n}} 步的{{step}}。",
+    "fact_short": "有 {{n}} 步的{{step}}",
+    "punch": {
+      "missed_1": "你错过了。",
+      "missed_2": "没看到吧？",
+      "missed_3": "下次留意。",
+      "spotted_1": "看来你发现了。",
+      "spotted_2": "眼力不错。",
+      "dnf_1": "结果你 DNF 了。",
+      "dnf_2": "还是 DNF。"
+    },
+    "pro_shows_moves": "Pro 显示具体步骤"
   },
   "timer_modules": {
     "history": "还原记录",
@@ -4050,6 +4072,10 @@
       "room_climate": {
         "title": "房间空调遥控器",
         "desc": "房间里有一台空调，遥控器只有一个。赢得本轮的 Pro 拿到遥控器，想冷就冷，想热就热。房间结冰时会下雪，着火时成绩会融化流下屏幕，本轮最慢的人还会摔倒。这些只是视觉效果，成绩和结果保持不变。"
+      },
+      "shortcut_hint": {
+        "title": "错过的捷径",
+        "desc": "打乱里藏着很短的十字或 XCross 时，计时器会在复原后告诉你并给出步骤。复原得快，它就当你看到了；复原得慢，它会调侃你一句。这句话还会读出来，语音可以在设置里关闭。"
       }
     },
     "promo": {

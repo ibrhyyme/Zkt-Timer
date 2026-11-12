@@ -13,17 +13,25 @@ const HIDE_NOTIF_FADE_MS = 350;
 
 // This is for the notification that shows up above the scramble
 export function displayTimerAlert(tagProps: TagProps, dontHide?: boolean) {
+	showTimerNotification(<Tag glow {...tagProps} />, dontHide ? null : HIDE_NOTIF_TIMEOUT);
+}
+
+/**
+ * Same place and fade as displayTimerAlert, for content that is not a single Tag (the
+ * shortcut hint carries a line and the moves). holdMs: how long it stays before fading.
+ */
+export function displayTimerContent(content: React.ReactElement, holdMs: number = HIDE_NOTIF_TIMEOUT) {
+	showTimerNotification(content, holdMs);
+}
+
+function showTimerNotification(content: React.ReactElement, holdMs: number | null) {
 	setTimerParams({
-		notification: (
-			<div className={b({ static: dontHide })}>
-				<Tag glow {...tagProps} />
-			</div>
-		),
+		notification: <div className={b({ static: holdMs === null })}>{content}</div>,
 	});
 
 	stopTimer(NOTIFICATION_TIMEOUT);
 
-	if (dontHide) {
+	if (holdMs === null) {
 		return;
 	}
 
@@ -55,7 +63,7 @@ export function displayTimerAlert(tagProps: TagProps, dontHide?: boolean) {
 					}
 				}, HIDE_NOTIF_FADE_MS)
 			);
-		}, HIDE_NOTIF_TIMEOUT)
+		}, holdMs)
 	);
 }
 

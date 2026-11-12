@@ -30,6 +30,7 @@ import { useVirtualCubeSize } from '../../util/virtual_cube/useVirtualCubeSize';
 import { useTimeRowFit } from './helpers/useTimeRowFit';
 import VirtualCube from './virtual_cube/VirtualCube';
 import { listenForPbEvents } from './helpers/pb';
+import { useShortcutHint } from './helpers/shortcut_hint';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
@@ -118,6 +119,8 @@ export default function Timer(props: TimerProps) {
 
 	// Event listeners for single and AVG PBs
 	listenForPbEvents(context);
+	// "There was a shortcut" card after a 3x3 solve (helpers/shortcut_hint.tsx).
+	useShortcutHint(context);
 
 	// Switching to a puzzle the selected input cannot handle resets the input to the
 	// keyboard, so the pickers always show something real as selected. The smart cube is

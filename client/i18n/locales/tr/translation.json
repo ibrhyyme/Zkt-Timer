@@ -1724,6 +1724,10 @@
     "confirm_delete_season_desc": "Seçili sezondaki tüm çözümleri silmeden önce onay kutusu göster",
     "pb_confetti": "Kişisel rekor konfetisi",
     "pb_confetti_desc": "Kişisel rekor kırdığında konfeti göster",
+    "shortcut_hint": "Kısa yol bildirimi",
+    "shortcut_hint_desc": "Karıştırmada çok kısa bir cross ya da XCross varsa çözümden sonra haber ver",
+    "shortcut_hint_voice": "Sesli söylesin",
+    "shortcut_hint_voice_desc": "Kısa yol bildirimindeki lafı sesli de söyler",
     "warmup_auto_save": "Isınmada otomatik kaydet",
     "warmup_auto_save_desc": "Isınma modunda seçtiğin çözümler kendiliğinden kaydedilir. Bir sonraki çözüme kadar geri alabilirsin.",
     "warmup_auto_save_off": "Kapalı",
@@ -1932,6 +1936,24 @@
     "single": "Yeni {{cube}} Single PB!",
     "average": "Yeni {{cube}} Average of 5 PB!",
     "single_and_average": "Yeni {{cube}} Single ve Average of 5 PB!"
+  },
+  "shortcut_hint": {
+    "step": {
+      "cross": "cross",
+      "xcross": "XCross"
+    },
+    "fact": "Az önceki karıştırmada {{n}} hamlelik {{step}} vardı.",
+    "fact_short": "{{n}} hamlelik {{step}} vardı",
+    "punch": {
+      "missed_1": "Kısa yolu kaçırdın.",
+      "missed_2": "Görmedin, değil mi?",
+      "missed_3": "Bir dahakine artık.",
+      "spotted_1": "Gördün galiba.",
+      "spotted_2": "İyi yakaladın.",
+      "dnf_1": "Ama sen DNF yaptın.",
+      "dnf_2": "Yine de DNF."
+    },
+    "pro_shows_moves": "Hamleleri Pro gösterir"
   },
   "timer_modules": {
     "history": "Çözümler",
@@ -4065,6 +4087,10 @@
       "room_climate": {
         "title": "Odada klima kumandası",
         "desc": "Odada bir klima ve tek bir kumanda var. Turu kazanan Pro kumandayı alır, odayı istediği gibi soğutur ya da ısıtır. Oda buz kesince kar yağar, yanınca süreler eriyip ekrandan akar, turun en yavaşı da düşer. Bunlar sadece görüntü, süreler ve sonuçlar olduğu gibi kalır."
+      },
+      "shortcut_hint": {
+        "title": "Kaçırdığın kısa yollar",
+        "desc": "Karıştırmada çok kısa bir cross ya da XCross varsa, çözüm bitince timer söyler ve hamleleri gösterir. Hızlı çözdüysen gördüğünü anlar, yavaş kaldıysan laf sokar. Lafını sesli de söyler, sesi ayarlardan kapatabilirsin."
       }
     },
     "promo": {
