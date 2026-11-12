@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, CalendarBlank, Users, Info, Warning} from 'phosphor-react';
+import {CaretLeft, CalendarBlank, Users, Info, Warning} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
 import FollowBellButton from './FollowBellButton';
 import {
@@ -56,7 +56,7 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 	return (
 		<div className={b('competitor-detail')}>
 			<button className={b('back-sm')} onClick={() => history.goBack()}>
-				<ArrowLeft size={16} />
+				<CaretLeft size={16} weight="bold" />
 				{t('my_schedule.back_to_competitors')}
 			</button>
 

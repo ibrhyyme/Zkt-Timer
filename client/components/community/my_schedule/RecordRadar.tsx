@@ -3,7 +3,7 @@ import SelectMenu from '../../common/select_menu/SelectMenu';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, Trash, Plus, Bell, Crown} from 'phosphor-react';
+import {CaretLeft, Trash, Plus, Bell, Crown} from 'phosphor-react';
 import {WCA_EVENT_IDS, WCA_CONTINENTS, WCA_COUNTRIES, COUNTRY_TO_CONTINENT} from '../../../../shared/wca_geo';
 import {Consts} from '../../../../shared/consts';
 import {useMe} from '../../../util/hooks/useMe';
@@ -186,7 +186,7 @@ export default function RecordRadar() {
 	return (
 		<div className={b('content')}>
 				<button className={b('back')} onClick={() => history.push('/competitions')}>
-					<ArrowLeft size={18} />
+					<CaretLeft size={18} weight="bold" />
 					{t('my_schedule.back_to_list')}
 				</button>
 

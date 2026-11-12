@@ -1,0 +1,1067 @@
+@import '../../../../styles/config';
+
+// Online score entry ("Hakem Ol"). Flat, token-only. The entry card is typed
+// on the phone's own keyboard, so it stays short: the row being entered has to
+// fit above the keyboard on a small phone.
+.#{$namespace}-judge {
+	display: flex;
+	flex-direction: column;
+	gap: $zt-space-4;
+	width: 100%;
+	max-width: 560px;
+	margin: 0 auto;
+	color: rgb(var(--text-color));
+
+	&__title {
+		margin: 0;
+		font-size: 1.375rem;
+		font-weight: 700;
+	}
+
+	&__home,
+	&__picker,
+	&__request,
+	&__empty {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-4;
+		align-items: stretch;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	&__label {
+		@include zt-eyebrow;
+	}
+
+	// The chosen event next to the eyebrow, as written ("4x4", not "4X4").
+	&__label-value {
+		text-transform: none;
+	}
+
+	&__hint {
+		margin: 0;
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+		line-height: 1.45;
+	}
+
+	&__input {
+		height: $zt-control-h-lg;
+		padding: 0 $zt-space-3;
+		background: $zt-card-bg;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
+		color: rgb(var(--text-color));
+		font: inherit;
+		font-size: 1rem;
+
+		&:focus {
+			outline: none;
+			border-color: rgb(var(--primary-color));
+		}
+
+		&--short {
+			max-width: 160px;
+			font-family: $zt-font-mono;
+		}
+	}
+
+	&__notice {
+		margin: 0;
+		padding: $zt-space-3;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+		font-size: 0.9375rem;
+		line-height: 1.45;
+
+		&--warning {
+			border-color: rgb(var(--warning-color));
+		}
+
+		&--error {
+			border-color: rgb(var(--error-color));
+		}
+	}
+
+	&__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-2;
+	}
+
+	&__link {
+		padding: 0;
+		background: none;
+		border: 0;
+		color: rgb(var(--primary-color));
+		font: inherit;
+		text-decoration: underline;
+		cursor: pointer;
+	}
+
+	// Competitor rows and the member's own cards share one row shape.
+	&__people {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+
+		li + li {
+			border-top: 1px solid $zt-card-border;
+		}
+	}
+
+	&__person {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		width: 100%;
+		min-height: $zt-control-h-lg;
+		padding: $zt-space-2 $zt-space-3;
+		background: none;
+		border: 0;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			background: $zt-card-bg;
+		}
+
+		@include zt-focus-ring;
+	}
+
+	&__person-station {
+		flex: 0 0 2rem;
+		font-family: $zt-font-mono;
+		font-size: 1.125rem;
+		font-weight: 700;
+		text-align: center;
+	}
+
+	&__person-main {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__person-name {
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__person-number {
+		margin-right: $zt-space-2;
+		color: $zt-text-muted;
+		font-family: $zt-font-mono;
+	}
+
+	&__person-sub {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+	}
+
+	&__person-progress {
+		font-family: $zt-font-mono;
+		font-size: 0.875rem;
+		white-space: nowrap;
+	}
+
+	&__summary {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		gap: $zt-space-1 $zt-space-4;
+		margin: 0;
+		padding: $zt-space-3;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+
+		dt {
+			color: $zt-text-muted;
+		}
+
+		dd {
+			margin: 0;
+			font-weight: 600;
+			overflow-wrap: anywhere;
+		}
+	}
+
+	&__qr-title {
+		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 700;
+		text-align: center;
+	}
+
+	// Always black on white, whatever the theme: an inverted code does not scan.
+	&__qr {
+		align-self: center;
+		width: min(100%, 340px);
+		background: #fff;
+		border-radius: $zt-radius-md;
+		line-height: 0;
+
+		svg {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	// --- Entry card -----------------------------------------------------------
+	// Laid out like the paper scorecard it mirrors: a header with the event,
+	// the competitor and the facts the desk checks, then the attempt lines in a
+	// numbered column, then the two extra lines set apart under their own title.
+
+	&__card {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-5;
+
+		// Room under the last row for the dock, so nothing hides behind it.
+		&--docked {
+			padding-bottom: calc(#{$zt-control-h-lg} + #{$zt-space-6});
+		}
+
+		.#{$namespace}-my-schedule__back {
+			align-self: flex-start;
+			margin-bottom: -#{$zt-space-3};
+		}
+	}
+
+	&__sc-head {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	// Not the capital eyebrow: Turkish capitals turn "Pyraminx" into "PYRAMİNX".
+	&__sc-event {
+		color: $zt-text-muted;
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	&__sc-name {
+		margin: 0;
+		font-size: 1.5rem;
+		font-weight: 700;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+	}
+
+	// Group, station, judge: label over value, split by hairlines.
+	&__facts {
+		display: flex;
+		margin: $zt-space-1 0 0;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+	}
+
+	&__fact {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+		padding: $zt-space-2 $zt-space-3;
+
+		& + & {
+			border-left: 1px solid $zt-card-border;
+		}
+
+		dt {
+			@include zt-eyebrow;
+		}
+
+		dd {
+			margin: 0;
+			font-family: $zt-font-mono;
+			font-size: 1.125rem;
+			font-weight: 700;
+			line-height: 1.3;
+		}
+
+		&--wide {
+			flex: 1;
+		}
+	}
+
+	&__fact &__fact-text {
+		overflow: hidden;
+		font-family: inherit;
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.45;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__sc-rules {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-1 $zt-space-4;
+		margin: 0;
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+
+		strong {
+			color: rgb(var(--text-color));
+			font-family: $zt-font-mono;
+			font-weight: 600;
+		}
+	}
+
+	&__section {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-2;
+	}
+
+	&__section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $zt-space-3;
+	}
+
+	&__section-title {
+		@include zt-eyebrow;
+		margin: 0;
+	}
+
+	&__section-hint {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		text-align: right;
+	}
+
+	&__rows {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		list-style: none;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
+	}
+
+	&__row {
+		& + & {
+			border-top: 1px solid $zt-control-border;
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.08);
+		}
+	}
+
+	&__row-main {
+		display: flex;
+		align-items: stretch;
+		width: 100%;
+		min-height: 56px;
+		padding: 0;
+		background: none;
+		border: 0;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+
+		&--tap {
+			cursor: pointer;
+			touch-action: manipulation;
+
+			&:hover,
+			&:active {
+				background: $zt-card-bg;
+			}
+
+			@include zt-focus-ring;
+		}
+	}
+
+	// The printed number column of the paper card.
+	&__row-no {
+		display: flex;
+		flex: 0 0 48px;
+		align-items: center;
+		justify-content: center;
+		background: $zt-control-bg;
+		border-right: 1px solid $zt-control-border;
+		font-family: $zt-font-mono;
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	&__row--active &__row-no {
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+	}
+
+	&__row-body {
+		display: flex;
+		// A line that does not fit breaks after the time instead of squeezing the tag:
+		// on a 368px phone "DNF (15.00)" left the "Ekstra → E2" tag 18px, and its arrow
+		// ran over "Gönderildi". The state then drops under it, pinned right.
+		flex-wrap: wrap;
+		flex: 1;
+		align-items: center;
+		gap: $zt-space-1 $zt-space-2;
+		min-width: 0;
+		padding: $zt-space-1 $zt-space-3;
+	}
+
+	&__row-value {
+		// Never narrower than the time itself: a squeezed time ran under the tag
+		// next to it once an extra line also carried the "more" dots.
+		flex: 1 0 auto;
+		font-family: $zt-font-mono;
+		font-size: 1.5rem;
+		font-weight: 600;
+		line-height: 1.2;
+	}
+
+	&__row-state {
+		display: inline-flex;
+		flex-shrink: 0;
+		// Right edge whether it shares the line with the time or wrapped below it.
+		margin-left: auto;
+		align-items: center;
+		gap: $zt-space-1;
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	&__row--state-pending &__row-state {
+		color: rgb(var(--warning-color));
+	}
+
+	&__row--state-accepted &__row-state {
+		color: rgb(var(--success-color));
+	}
+
+	&__row--state-conflict &__row-state,
+	&__row--state-blocked &__row-state,
+	&__row--state-invalid &__row-state {
+		color: rgb(var(--error-color));
+	}
+
+	&__row-more {
+		flex-shrink: 0;
+		color: $zt-text-muted;
+	}
+
+	// The extra tag on the attempt line and on the extra line.
+	&__row-tag {
+		// Shrinks only when it has a line to itself and still does not fit; otherwise
+		// the row wraps (see __row-body).
+		flex-shrink: 1;
+		min-width: 0;
+		padding: 2px $zt-space-2;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-sm;
+		font-size: 0.75rem;
+		font-weight: 600;
+		line-height: 1.25;
+		text-align: center;
+	}
+
+	&__row-note {
+		margin: 0;
+		padding: $zt-space-2 $zt-space-3 $zt-space-3 calc(48px + #{$zt-space-3});
+		font-size: 0.875rem;
+		line-height: 1.4;
+
+		&--error {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	// The line being typed: a framed field for the phone's own keyboard.
+	&__entry {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		gap: $zt-space-2;
+		min-width: 0;
+		height: $zt-control-h-md;
+		padding: 0 $zt-space-2 0 $zt-space-3;
+		background: rgb(var(--background-color));
+		border: 1px solid rgb(var(--primary-color));
+		border-radius: $zt-radius-md;
+	}
+
+	&__entry-input {
+		flex: 1;
+		min-width: 0;
+		height: 100%;
+		padding: 0;
+		background: none;
+		border: 0;
+		color: rgb(var(--text-color));
+		font-family: $zt-font-mono;
+		font-size: 1.5rem;
+		font-weight: 600;
+
+		&:focus {
+			outline: none;
+		}
+
+		&::placeholder {
+			color: $zt-text-muted;
+			font-family: 'Archivo', sans-serif;
+			font-size: 0.9375rem;
+			font-weight: 500;
+		}
+	}
+
+	&__entry-penalty {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		gap: 2px;
+		height: 28px;
+		padding: 0 $zt-space-2;
+		background: none;
+		border: 1px solid rgb(var(--warning-color));
+		border-radius: $zt-radius-sm;
+		color: rgb(var(--warning-color));
+		font-family: $zt-font-mono;
+		font-size: 0.875rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	// No-show and end judging: rows in one card, an icon, a name and
+	// what the action does.
+	&__actions-list {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+
+		li + li {
+			border-top: 1px solid $zt-card-border;
+		}
+	}
+
+	&__action-row {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		width: 100%;
+		min-height: 60px;
+		padding: $zt-space-2 $zt-space-4;
+		background: none;
+		border: 0;
+		color: rgb(var(--text-color));
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover {
+			background: $zt-card-bg;
+		}
+
+		@include zt-focus-ring;
+
+		svg {
+			flex-shrink: 0;
+		}
+
+		&--danger {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	&__action-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__action-label {
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	&__action-desc {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		line-height: 1.35;
+	}
+
+	// DNF, DNS, +2 and Send in one place. Fixed to the bottom of the screen
+	// and lifted by the keyboard's height while it is open, so the keys sit
+	// right on top of the keyboard.
+	&__dock {
+		position: fixed;
+		right: 0;
+		left: 0;
+		z-index: 900;
+		background: rgb(var(--background-color));
+		border-top: 1px solid $zt-control-border;
+	}
+
+	&__dock-inner {
+		display: flex;
+		gap: $zt-space-2;
+		max-width: 560px;
+		margin: 0 auto;
+		padding: $zt-space-2 $zt-space-4;
+		padding-bottom: max(#{$zt-space-2}, #{sa(bottom)});
+	}
+
+	&__dock-key {
+		@include zt-control;
+		flex: 1;
+		height: $zt-control-h-lg;
+		font-family: $zt-font-mono;
+		font-size: 1rem;
+		font-weight: 700;
+		cursor: pointer;
+		touch-action: manipulation;
+
+		&:disabled {
+			color: $zt-text-muted;
+			cursor: default;
+		}
+
+		&--on {
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
+		}
+
+		&--send {
+			flex: 1.8;
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+			font-family: inherit;
+
+			&:hover:not(:disabled),
+			&:active:not(:disabled) {
+				background: rgba(var(--primary-color), 0.85);
+			}
+
+			&:disabled {
+				background: $zt-control-bg;
+			}
+		}
+	}
+
+	// The "send this time?" and "are you sure?" questions rise from the bottom.
+	&__sheet {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		background: $zt-overlay;
+	}
+
+	&__sheet-body {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+		width: 100%;
+		max-width: 560px;
+		padding: $zt-space-3 $zt-space-4 $zt-space-5;
+		padding-bottom: max(#{$zt-space-5}, #{sa(bottom)});
+		background: rgb(var(--module-color));
+		border-radius: $zt-radius-bottom-sheet $zt-radius-bottom-sheet 0 0;
+
+		// The same grabber as the app's other phone sheets.
+		&::before {
+			content: '';
+			align-self: center;
+			width: 40px;
+			height: 4px;
+			margin-bottom: $zt-space-2;
+			border-radius: 999px;
+			background: rgba(var(--text-color), 0.18);
+		}
+
+		.#{$namespace}-judge__actions {
+			flex-wrap: nowrap;
+
+			> * {
+				flex: 1;
+				margin: 0;
+			}
+		}
+	}
+
+	&__sheet-title {
+		font-size: 1.0625rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__sheet-text {
+		margin: 0;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	&__big {
+		font-family: $zt-font-mono;
+		font-size: 3rem;
+		font-weight: 700;
+		line-height: 1.1;
+		text-align: center;
+	}
+
+	// --- Organiser side: approval, reader, panel ------------------------------
+
+	&__approval {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-4;
+	}
+
+	// What the QR asks for, in words: the first thing the organiser reads.
+	&__approval-kind {
+		align-self: flex-start;
+		padding: 2px $zt-space-2;
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-sm;
+		font-size: 0.8125rem;
+		font-weight: 700;
+
+		&--purpose-extra {
+			border-color: rgb(var(--warning-color));
+			color: rgb(var(--warning-color));
+		}
+	}
+
+	&__requester {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+	}
+
+	&__requester-avatar {
+		flex-shrink: 0;
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		object-fit: cover;
+
+		&--empty {
+			color: $zt-text-muted;
+		}
+	}
+
+	&__requester-main {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__requester-name {
+		font-size: 1.25rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	&__requester-id {
+		color: $zt-text-muted;
+		font-family: $zt-font-mono;
+		font-size: 0.875rem;
+	}
+
+	&__notice--strong {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		border-color: rgb(var(--warning-color));
+	}
+
+	&__approval-judge {
+		font-size: 1.125rem;
+	}
+
+	// Warning lines carry their icon in front of the text.
+	&__notice--icon {
+		display: flex;
+		align-items: flex-start;
+		gap: $zt-space-2;
+
+		> svg {
+			flex-shrink: 0;
+			margin-top: 2px;
+			color: rgb(var(--warning-color));
+		}
+	}
+
+	// The approval's facts wrap onto rows: competitor and round full width,
+	// group, station, chance and attempt side by side.
+	&__facts--grid {
+		flex-wrap: wrap;
+
+		.#{$namespace}-judge__fact {
+			flex: 1 1 0;
+			border-left: 0;
+			border-top: 1px solid $zt-card-border;
+
+			& + .#{$namespace}-judge__fact:not(.#{$namespace}-judge__fact--full) {
+				border-left: 1px solid $zt-card-border;
+			}
+
+			&--full {
+				flex-basis: 100%;
+			}
+
+			&:first-child {
+				border-top: 0;
+			}
+		}
+
+		.#{$namespace}-judge__fact--full + .#{$namespace}-judge__fact:not(.#{$namespace}-judge__fact--full) {
+			border-left: 0;
+		}
+	}
+
+	&__fact--full &__fact-text {
+		white-space: normal;
+	}
+
+	&__decide {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: $zt-space-2;
+
+		> * {
+			margin: 0;
+		}
+	}
+
+	&__link--quiet {
+		align-self: center;
+		min-height: $zt-control-h-sm;
+		color: $zt-text-muted;
+		text-decoration: none;
+	}
+
+	&__input--area {
+		height: auto;
+		padding: $zt-space-2 $zt-space-3;
+		line-height: 1.45;
+		resize: none;
+	}
+
+	&__verdict {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: $zt-space-2;
+		padding: $zt-space-4 0;
+		font-size: 1.25rem;
+		font-weight: 700;
+
+		&--approved svg {
+			color: rgb(var(--success-color));
+		}
+
+		&--rejected svg {
+			color: rgb(var(--error-color));
+		}
+	}
+
+	// "Hakem ata" on the panel: the one big action of the page.
+	&__scan-cta {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		width: 100%;
+		min-height: 72px;
+		padding: $zt-space-3 $zt-space-4;
+		background: rgb(var(--primary-color));
+		border: 0;
+		border-radius: $zt-radius-md;
+		color: rgb(var(--theme-primary-opposite));
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+
+		&:hover,
+		&:active {
+			background: rgba(var(--primary-color), 0.88);
+		}
+
+		@include zt-focus-ring;
+
+		.#{$namespace}-judge__action-desc {
+			color: inherit;
+			opacity: 1;
+		}
+	}
+
+	&__group-title {
+		margin: 0;
+		font-size: 1.0625rem;
+		font-weight: 700;
+	}
+
+	// Per attempt, how many open cards have it in: 1 6/6 | 2 5/6 | 3 4/6 ...
+	&__reach {
+		display: flex;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+	}
+
+	&__reach-cell {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		padding: $zt-space-1 0;
+		font-family: $zt-font-mono;
+
+		& + & {
+			border-left: 1px solid $zt-card-border;
+		}
+
+		&--done {
+			background: rgba(var(--success-color), 0.1);
+		}
+	}
+
+	&__reach-no {
+		color: $zt-text-muted;
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	&__reach-count {
+		font-size: 0.9375rem;
+		font-weight: 700;
+	}
+
+	&__person--static {
+		cursor: default;
+
+		&:hover {
+			background: none;
+		}
+	}
+
+	// --- Reader ---------------------------------------------------------------
+
+	&__scanner {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: flex;
+		flex-direction: column;
+		background: #000;
+		color: #fff;
+	}
+
+	&__scanner-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-3;
+		padding: $zt-space-3 $zt-space-4;
+		padding-top: max(#{$zt-space-3}, #{sa(top)});
+	}
+
+	&__scanner-title {
+		font-size: 1.125rem;
+		font-weight: 700;
+	}
+
+	&__scanner-close {
+		min-height: $zt-control-h-md;
+		padding: 0 $zt-space-2;
+		background: none;
+		border: 0;
+		color: #fff;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+
+		@include zt-focus-ring;
+	}
+
+	&__scanner-view {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	&__scanner-video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	// Where to hold the code. A plain square of hairline corners, no animation.
+	&__scanner-frame {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: min(70vw, 300px);
+		aspect-ratio: 1;
+		border: 2px solid rgba(255, 255, 255, 0.9);
+		border-radius: $zt-radius-md;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+	}
+
+	&__scanner-failure {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: $zt-space-3;
+		padding: $zt-space-5;
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+	}
+
+	&__scanner-hint {
+		margin: 0;
+		padding: $zt-space-4;
+		padding-bottom: max(#{$zt-space-4}, #{sa(bottom)});
+		font-size: 0.9375rem;
+		text-align: center;
+
+		&--warning {
+			color: rgb(var(--warning-color));
+			font-weight: 600;
+		}
+	}
+
+	&__sheet-body--tall {
+		max-height: 88vh;
+		overflow-y: auto;
+		color: rgb(var(--text-color));
+	}
+}

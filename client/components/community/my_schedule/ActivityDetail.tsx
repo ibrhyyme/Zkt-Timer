@@ -1,7 +1,7 @@
 import React, {useMemo, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, ArrowRight, Info, MapPin} from 'phosphor-react';
+import {CaretLeft, ArrowLeft, ArrowRight, Info, MapPin} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime, getRoleLabel,
@@ -179,7 +179,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 	return (
 		<div className={b('activity-detail')}>
 			<button className={b('back-sm')} onClick={() => history.goBack()}>
-				<ArrowLeft size={16} />
+				<CaretLeft size={16} weight="bold" />
 				{t('my_schedule.back_to_competitors')}
 			</button>
 

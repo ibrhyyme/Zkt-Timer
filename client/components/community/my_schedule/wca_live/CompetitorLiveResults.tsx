@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, ArrowClockwise, Warning, Info} from 'phosphor-react';
+import {CaretLeft, ArrowClockwise, Warning, Info} from 'phosphor-react';
 import {b, formatResult, formatAttempts, formatTimeAgo, countryFlag, EventIcon, RecordTag, WcaIdLink, localEventName, liveRoundLabel} from '../shared';
 import {useCompetitionData} from '../CompetitionLoader';
 import {useCompetitorLiveResults} from '../useLiveResults';
@@ -87,7 +87,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 		return (
 			<div className={b('competitor-detail')}>
 				<button className={b('back-sm')} onClick={() => history.goBack()}>
-					<ArrowLeft size={16} />
+					<CaretLeft size={16} weight="bold" />
 					{t('my_schedule.back_to_competitor')}
 				</button>
 				<div className={b('info-banner')}>
@@ -127,7 +127,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 	return (
 		<div className={b('competitor-detail')}>
 			<button className={b('back-sm')} onClick={() => history.goBack()}>
-				<ArrowLeft size={16} />
+				<CaretLeft size={16} weight="bold" />
 				{t('my_schedule.back_to_competitor')}
 			</button>
 

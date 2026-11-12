@@ -4,9 +4,10 @@
 	width: 100%;
 	padding: 0.5rem;
 
+	// Same column as the page title above it (community/Community.scss).
 	&__content {
 		width: 100%;
-		max-width: 40rem;
+		max-width: 48rem;
 		margin: 0 auto;
 	}
 
@@ -50,13 +51,9 @@
 		left: 0;
 		height: 100%;
 		width: 35%;
-		background: linear-gradient(90deg,
-			rgba(74, 158, 255, 0) 0%,
-			rgba(74, 158, 255, 1) 50%,
-			rgba(120, 200, 255, 0) 100%
-		);
+		// Flat accent, no glow: the movement alone says "loading".
+		background: rgb(var(--primary-color));
 		border-radius: 999px;
-		box-shadow: 0 0 10px rgba(74, 158, 255, 0.6);
 		animation: zt-wca-loading-bar 1.4s ease-in-out infinite;
 	}
 
@@ -88,17 +85,13 @@
 	&__empty {
 		text-align: center;
 		padding: 2rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
-	// Section titles
+	// Section titles: the app's one small-capital label face.
 	&__section-title {
-		font-size: 0.85rem;
-		font-weight: 600;
-		color: rgb(var(--text-color));
-		margin: 0 0 0.5rem;
-		text-transform: uppercase;
-		letter-spacing: 0.03em;
+		@include zt-eyebrow;
+		margin: 0 0 $zt-space-2;
 	}
 
 	// Section heading with its count on the same line ("WCA YARIŞMALARI  439 yarışma").
@@ -147,7 +140,7 @@
 
 	&__my-competitions-empty {
 		font-size: 0.875rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		margin: 0;
 		padding: 4px 0;
 	}
@@ -197,7 +190,7 @@
 		justify-content: center;
 		min-width: 3.2rem;
 		padding: 0.32rem 0.45rem;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.08);
 		border: 1px solid rgba(var(--text-color), 0.16);
 		color: rgb(var(--text-color));
@@ -245,15 +238,14 @@
 		position: relative;
 		display: flex;
 		align-items: stretch;
-		border-radius: 12px;
+		border-radius: $zt-radius-md;
 		overflow: hidden;
 		cursor: pointer;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.1);
-		transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+		transition: border-color 0.15s ease, background 0.15s ease;
 
 		&:hover {
-			transform: translateY(-1px);
 			border-color: rgba(var(--text-color), 0.22);
 			background: rgba(var(--text-color), 0.03);
 		}
@@ -391,7 +383,7 @@
 		display: inline-flex;
 		align-items: center;
 		padding: 0.14rem 0.45rem 0.14rem 0.38rem;
-		border-radius: 999px;
+		border-radius: $zt-radius-sm;
 		font-size: 0.58rem;
 		font-weight: 800;
 		letter-spacing: 0.5px;
@@ -463,7 +455,7 @@
 
 	&__zkt-status {
 		padding: 0.2rem 0.6rem;
-		border-radius: 5px;
+		border-radius: $zt-radius-sm;
 		font-size: 0.68rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -512,7 +504,7 @@
 		font-size: 0.68rem;
 		font-weight: 700;
 		padding: 2px 8px;
-		border-radius: 4px;
+		border-radius: $zt-radius-sm;
 		background: rgb(var(--primary-color));
 		color: rgb(var(--theme-primary-opposite));
 		white-space: nowrap;
@@ -522,7 +514,7 @@
 	&__country-code {
 		font-size: 0.78rem;
 		font-weight: 700;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 		letter-spacing: 0.02em;
 		flex-shrink: 0;
 		min-width: 1.8rem;
@@ -547,46 +539,34 @@
 		color: $zt-text-muted;
 	}
 
-	// Back button
-	&__back {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		padding: 0.5rem 1rem;
-		background: rgba(var(--text-color), 0.08);
-		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.5rem;
-		color: rgb(var(--text-color));
-		font-size: 0.85rem;
-		font-weight: 500;
-		cursor: pointer;
-		margin-bottom: 1rem;
-		transition: all 0.15s;
-
-		&:hover {
-			background: rgba(var(--text-color), 0.12);
-			border-color: rgba(var(--text-color), 0.18);
-		}
-	}
-
+	// Back: a bare caret and its words, like a breadcrumb. No filled box around
+	// it (the owner's standing rule for back and close controls).
+	&__back,
 	&__back-sm {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		padding: 0.4rem 0.85rem;
-		background: rgba(var(--text-color), 0.08);
-		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.4rem;
-		color: rgb(var(--text-color));
-		font-size: 0.8rem;
-		font-weight: 500;
+		gap: $zt-space-1;
+		min-height: $zt-control-h-sm;
+		margin-bottom: $zt-space-3;
+		padding: 0 $zt-space-2 0 0;
+		background: none;
+		border: 0;
+		border-radius: $zt-radius-md;
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+		font-weight: 600;
 		cursor: pointer;
-		margin-bottom: 0.75rem;
-		transition: all 0.15s;
+		transition: color $zt-transition;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.12);
+			color: rgb(var(--text-color));
 		}
+
+		@include zt-focus-ring;
+	}
+
+	&__back-sm {
+		font-size: 0.8125rem;
 	}
 
 	// Info banner
@@ -595,8 +575,9 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.75rem 1rem;
-		background: rgba(var(--primary-color), 0.08);
-		border-radius: 0.5rem;
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
 		margin-bottom: 1rem;
@@ -626,9 +607,9 @@
 	&__info-banner-detail {
 		display: block;
 		padding: 0.4rem 0.5rem;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.08);
-		font-family: 'Space Mono', monospace;
+		font-family: $zt-font-mono;
 		font-size: 0.72rem;
 		word-break: break-word;
 	}
@@ -638,7 +619,7 @@
 		align-self: flex-start;
 		padding: 0.35rem 0.75rem;
 		border: 1px solid rgba(var(--text-color), 0.18);
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.1);
 		color: rgb(var(--text-color));
 		font-size: 0.82rem;
@@ -669,89 +650,110 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		margin-top: $zt-space-3;
 	}
 
+	// Registration state: a 4px tag, its meaning carried by a hairline in the
+	// theme's own success / warning colour and the words, not by a loud fill.
 	&__status {
+		display: inline-flex;
+		align-items: center;
+		padding: 2px $zt-space-2;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-sm;
+		color: rgb(var(--text-color));
 		font-size: 0.75rem;
 		font-weight: 600;
-		padding: 0.15rem 0.5rem;
-		border-radius: 0.25rem;
 
 		&--type-accepted {
-			background: rgb(80, 180, 80);
-			color: $status-fill-text-dark;
+			border-color: rgb(var(--success-color));
 		}
 
 		&--type-pending {
-			background: rgb(220, 180, 50);
-			color: $status-fill-text-dark;
+			border-color: rgb(var(--warning-color));
 		}
 	}
 
-	// Tabs — web: single row (flex 1), mobile: 2 rows (3 column grid)
+	// In-page tabs, the app's one shape for them (common/tab_bar): words over a
+	// hairline, the current one underlined in the accent. A phone scrolls the
+	// row sideways instead of stacking filled boxes into a grid.
 	&__tabs {
 		display: flex;
-		flex-wrap: nowrap;
-		background: rgba(var(--module-color), 0.6);
-		border-radius: 10px;
-		padding: 4px;
-		margin-bottom: 1.25rem;
-		gap: 2px;
+		gap: $zt-space-1;
+		margin-bottom: $zt-space-5;
+		border-bottom: 1px solid $zt-card-border;
+		overflow-x: auto;
+		scrollbar-width: none;
 
-		@include bp-down($bp-md) {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 4px;
+		&::-webkit-scrollbar {
+			display: none;
 		}
 	}
 
 	&__tab {
-		background: none;
-		border: none;
-		padding: 8px 12px;
-		opacity: 0.75;
-		cursor: pointer;
-		border-radius: 8px;
-		transition: all 0.15s;
 		display: flex;
+		flex-shrink: 0;
 		align-items: center;
-		justify-content: center;
-		gap: 5px;
-		font-size: 0.78rem;
+		gap: $zt-space-2;
+		min-height: $zt-control-h-md;
+		margin-bottom: -1px;
+		padding: 0 $zt-space-3;
+		background: none;
+		border: 0;
+		border-bottom: 2px solid transparent;
+		color: $zt-text-muted;
+		font-size: 0.875rem;
 		font-weight: 600;
-		color: rgb(var(--text-color));
 		white-space: nowrap;
-		flex: 1 1 0;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-
-		@include bp-down($bp-md) {
-			flex: none;
-			padding: 10px 8px;
-			font-size: 0.8rem;
-		}
+		cursor: pointer;
+		transition: color $zt-transition, border-color $zt-transition;
 
 		&:hover {
-			opacity: 1;
+			color: rgb(var(--text-color));
 		}
 
 		&--active {
-			opacity: 1;
-			background: rgba(var(--primary-color), 0.2);
+			color: rgb(var(--text-color));
+			border-bottom-color: rgb(var(--primary-color));
+		}
+
+		@include zt-focus-ring;
+	}
+
+	// A phone: two rows of three, nothing to scroll (owner, 11 Nov). Words only;
+	// each tab carries its own hairline so both rows read as tabs.
+	@include bp-down($bp-md) {
+		&__tabs {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 0;
+			border-bottom: 0;
+			overflow: visible;
+		}
+
+		&__tab {
+			justify-content: center;
+			min-width: 0;
+			margin-bottom: 0;
+			padding: 0 $zt-space-1;
+			border-bottom: 1px solid $zt-card-border;
+			font-size: 0.8125rem;
+
+			&--active {
+				border-bottom: 2px solid rgb(var(--primary-color));
+			}
+
+			svg {
+				display: none;
+			}
 		}
 	}
 
 	&__tab-count {
+		font-family: $zt-font-mono;
 		font-size: 0.75rem;
-		padding: 1px 6px;
-		border-radius: 10px;
-		background: rgba(var(--text-color), 0.1);
-	}
-
-	&__tab--active &__tab-count {
-		background: rgb(var(--primary-color));
-		color: rgb(var(--theme-primary-opposite));
+		font-weight: 600;
+		color: $zt-text-muted;
 	}
 
 	// WCA banner
@@ -767,7 +769,7 @@
 		width: 100%;
 		padding: 0.7rem 0.9rem;
 		margin-bottom: 0.6rem;
-		border-radius: 0.7rem;
+		border-radius: $zt-radius-md;
 		text-align: left;
 		cursor: pointer;
 		background: rgb(var(--module-color));
@@ -804,7 +806,7 @@
 	// One line, ellipsised: the sentence is a nudge, not documentation.
 	&__connect-row-desc {
 		font-size: 0.75rem;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -812,7 +814,7 @@
 
 	&__connect-row-caret {
 		flex-shrink: 0;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	&__wca-banner-btn {
@@ -823,11 +825,11 @@
 		background: rgba(var(--text-color), 0.1);
 		border: 1px solid rgba(var(--text-color), 0.18);
 		color: rgb(var(--text-color));
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		font-weight: 600;
 		font-size: 0.85rem;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
 			background: rgba(var(--text-color), 0.16);
@@ -867,7 +869,7 @@
 		bottom: 0;
 		height: 2px;
 		width: 40%;
-		background: linear-gradient(90deg, transparent, rgb(var(--primary-color)), transparent);
+		background: rgb(var(--primary-color));
 		animation: zt-search-progress 1.1s linear infinite;
 	}
 
@@ -918,7 +920,7 @@
 		width: 2.1rem;
 		height: 2.1rem;
 		padding: 0;
-		border-radius: 0.45rem;
+		border-radius: $zt-radius-md;
 		border: 2px solid rgba(var(--text-color), 0.15);
 		background: rgb(var(--module-color));
 		color: rgb(var(--text-color));
@@ -946,18 +948,21 @@
 		width: 100%;
 		margin-bottom: 1rem;
 		padding: 0.85rem 1rem;
-		border-radius: 0.6rem;
-		border: 1px solid rgba(var(--primary-color), 0.35);
-		background: rgba(var(--primary-color), 0.08);
+		border-radius: $zt-radius-md;
+		// A card that opens a page: the module surface and a hairline; the accent
+		// lives in the bell. The tinted frame read as a brown slab on warm themes.
+		border: 1px solid $zt-card-border;
+		background: rgb(var(--module-color));
 		color: rgb(var(--text-color));
 		cursor: pointer;
 		text-align: left;
-		transition: border-color 0.12s ease, background 0.12s ease;
+		transition: border-color $zt-transition;
 
 		&:hover {
-			border-color: rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.14);
+			border-color: $zt-control-border-hover;
 		}
+
+		@include zt-focus-ring;
 	}
 
 	&__radar-entry-icon {
@@ -1013,7 +1018,7 @@
 		gap: $zt-space-2;
 		width: 100%;
 		padding: 0.7rem 0.9rem;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid $zt-pro-frame;
 		background: transparent;
 		color: rgb(var(--text-color));
@@ -1037,7 +1042,7 @@
 		flex-direction: column;
 		gap: 0.6rem;
 		padding: 1rem;
-		border-radius: 0.6rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgb(var(--module-color));
 		margin-bottom: 1.5rem;
@@ -1058,7 +1063,7 @@
 	&__radar-scope-btn {
 		flex: 1;
 		padding: 0.5rem 0.4rem;
-		border-radius: 0.45rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.25);
 		background: transparent;
 		color: rgb(var(--text-color));
@@ -1085,10 +1090,10 @@
 		gap: 0.4rem;
 		margin-top: 0.5rem;
 		padding: 0.6rem 1rem;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: none;
 		background: rgb(var(--primary-color));
-		color: #fff;
+		color: rgb(var(--theme-primary-opposite));
 		font-size: 0.9rem;
 		font-weight: 700;
 		cursor: pointer;
@@ -1111,7 +1116,7 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		padding: 0.7rem 0.85rem;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.15);
 		background: rgb(var(--module-color));
 
@@ -1153,15 +1158,15 @@
 		justify-content: center;
 		width: 2rem;
 		height: 2rem;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		border: none;
 		background: transparent;
 		color: rgb(var(--text-color));
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(239, 83, 80, 0.15);
-			color: #ef5350;
+			background: rgba(var(--error-color), 0.15);
+			color: rgb(var(--error-color));
 		}
 	}
 
@@ -1197,7 +1202,7 @@
 		gap: 0.4rem;
 		margin-bottom: 1rem;
 		padding: 0.5rem 0.85rem;
-		border-radius: 0.45rem;
+		border-radius: $zt-radius-md;
 		border: 1px dashed rgba(var(--primary-color), 0.6);
 		background: none;
 		color: rgb(var(--primary-color));
@@ -1243,8 +1248,8 @@
 		min-width: 2.1rem;
 		text-align: center;
 		padding: 0.2rem 0.35rem;
-		border-radius: 0.3rem;
-		color: #fff;
+		border-radius: $zt-radius-sm;
+		color: $status-fill-text-light;
 		font-size: 0.7rem;
 		font-weight: 800;
 		letter-spacing: 0.02em;
@@ -1307,7 +1312,7 @@
 		flex-direction: column;
 		gap: 0.15rem;
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 		margin-bottom: 0.5rem;
 		font-style: italic;
 	}
@@ -1323,10 +1328,14 @@
 		opacity: 0.5;
 	}
 
+	// A list is rows in one card split by hairlines, not a stack of cards.
 	&__competitor-list {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		background: rgb(var(--module-color));
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		overflow: hidden;
 	}
 
 	&__competitor-card {
@@ -1335,17 +1344,20 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		padding: 0.6rem 0.75rem;
-		background: rgb(var(--module-color));
-		border-radius: 0.35rem;
+		border-left: 3px solid transparent;
 		cursor: pointer;
-		transition: background 0.1s;
+		transition: background $zt-transition;
+
+		& + & {
+			border-top: 1px solid $zt-card-border;
+		}
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-card-bg;
 		}
 
 		&--me {
-			border-left: 3px solid rgb(var(--primary-color));
+			border-left-color: rgb(var(--primary-color));
 		}
 	}
 
@@ -1357,9 +1369,10 @@
 		gap: 0.35rem;
 		margin-top: 0.75rem;
 		padding: 0.75rem 0.9rem;
-		border-radius: 0.6rem;
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-card-border;
 		border-left: 3px solid rgb(var(--primary-color));
-		background: rgba(var(--primary-color), 0.1);
+		background: $zt-card-bg;
 		font-size: 0.85rem;
 		// Full colour, never inherited dimming: this block answers "which morning
 		// is mine", and a washed-out answer is worse than none.
@@ -1405,7 +1418,7 @@
 		min-height: 2.5rem;
 		padding: 0.5rem 0.85rem;
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 999px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		font-size: 0.78rem;
@@ -1419,14 +1432,14 @@
 
 		&--active {
 			border-color: rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.14);
+			background: rgba(var(--primary-color), 0.08);
 			color: rgb(var(--text-color));
 		}
 	}
 
 	&__day-chip-count {
 		padding: 0.05rem 0.35rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		background: rgba(var(--text-color), 0.1);
 		font-size: 0.7rem;
 		font-weight: 700;
@@ -1435,7 +1448,7 @@
 	&__competitor-day {
 		margin-left: 0.5rem;
 		padding: 0.1rem 0.45rem;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		font-size: 0.7rem;
 		font-weight: 700;
 		white-space: nowrap;
@@ -1447,11 +1460,12 @@
 		flex-shrink: 0;
 		min-width: 2.25rem;
 		padding: 0.3rem 0.5rem;
-		border-radius: 6px;
-		background: rgba(var(--primary-color), 0.12);
+		border-radius: $zt-radius-sm;
+		background: $zt-control-bg;
 		color: rgb(var(--text-color));
+		font-family: $zt-font-mono;
 		font-weight: 700;
-		font-size: 0.9rem;
+		font-size: 0.875rem;
 		text-align: center;
 		font-variant-numeric: tabular-nums;
 	}
@@ -1477,7 +1491,7 @@
 		font-size: 0.7rem;
 		font-weight: 600;
 		padding: 1px 6px;
-		border-radius: 4px;
+		border-radius: $zt-radius-sm;
 		background: rgb(var(--primary-color));
 		color: rgb(var(--theme-primary-opposite));
 	}
@@ -1487,7 +1501,7 @@
 		display: inline-block;
 		margin-left: 0.4rem;
 		padding: 1px 6px;
-		border-radius: 4px;
+		border-radius: $zt-radius-sm;
 		font-size: 0.7rem;
 		font-weight: 600;
 		line-height: 1.4;
@@ -1499,22 +1513,22 @@
 
 	&__competitor-id {
 		font-size: 0.75rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__event-chip {
 		font-size: 0.7rem;
 		padding: 2px 5px;
-		border-radius: 3px;
+		border-radius: $zt-radius-sm;
 		background: rgba(var(--text-color), 0.08);
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		cursor: pointer;
 		border: none;
-		transition: all 0.1s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&--active {
 			background: rgb(var(--primary-color));
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 
@@ -1536,9 +1550,10 @@
 		gap: 8px;
 		padding: 8px 12px;
 		margin: 8px 0 12px;
-		background: rgba(var(--warning-color), 0.08);
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
 		border-left: 3px solid rgb(var(--warning-color));
-		border-radius: 4px;
+		border-radius: $zt-radius-sm;
 		color: rgb(var(--text-color));
 		font-size: 0.85rem;
 		line-height: 1.4;
@@ -1557,10 +1572,10 @@
 		padding: 6px;
 		background: transparent;
 		border: 1px solid rgba(var(--text-color), 0.15);
-		border-radius: 999px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover:not(:disabled) {
 			background: rgba(var(--primary-color), 0.1);
@@ -1579,7 +1594,7 @@
 
 		&--large {
 			padding: 8px 14px;
-			border-radius: 8px;
+			border-radius: $zt-radius-md;
 			font-size: 0.85rem;
 			font-weight: 600;
 		}
@@ -1604,7 +1619,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__competitor-header {
@@ -1628,7 +1643,7 @@
 		padding: 0.6rem 0.75rem;
 		background: rgb(var(--module-color));
 		border: none;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		font-size: 0.9rem;
 		font-weight: 700;
@@ -1636,11 +1651,11 @@
 		transition: background 0.1s;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-control-bg;
 		}
 
 		&--open {
-			border-radius: 0.4rem 0.4rem 0 0;
+			border-radius: $zt-radius-md $zt-radius-md 0 0;
 		}
 	}
 
@@ -1652,7 +1667,7 @@
 
 	&__assignment-day-arrow {
 		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__competitor-name {
@@ -1669,7 +1684,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		color: rgb(var(--primary-color));
 		text-decoration: underline;
 		text-underline-offset: 2px;
@@ -1696,13 +1711,13 @@
 		flex-wrap: wrap;
 		gap: 0.4rem;
 		margin-bottom: 1rem;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 	}
 
 	// Assignment table
 	&__assignment-table-wrapper {
 		overflow-x: auto;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 	}
 
@@ -1717,7 +1732,7 @@
 			font-weight: 600;
 			color: rgb(var(--text-color));
 			background: rgb(var(--module-color));
-			border-bottom: 2px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-card-border;
 			white-space: nowrap;
 		}
 
@@ -1728,7 +1743,7 @@
 		}
 
 		tbody tr:hover {
-			background: rgba(var(--button-color), 0.5);
+			background: $zt-control-bg;
 		}
 	}
 
@@ -1752,7 +1767,7 @@
 		font-size: 0.75rem;
 		font-weight: 600;
 		padding: 0.15rem 0.5rem;
-		border-radius: 0.25rem;
+		border-radius: $zt-radius-sm;
 		display: inline-block;
 		white-space: nowrap;
 
@@ -1778,14 +1793,14 @@
 
 		&--type-gray {
 			background: rgba(var(--text-color), 0.08);
-			color: rgba(var(--text-color), 0.6);
+			color: $zt-text-muted;
 		}
 	}
 
 	// Events tab - table
 	&__events-table-wrapper {
 		overflow-x: auto;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 	}
 
@@ -1800,7 +1815,7 @@
 			font-weight: 600;
 			color: rgb(var(--text-color));
 			background: rgb(var(--module-color));
-			border-bottom: 2px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-card-border;
 			white-space: nowrap;
 		}
 
@@ -1813,14 +1828,11 @@
 
 	&__events-row {
 		cursor: pointer;
-		transition: background 0.1s;
+		transition: background $zt-transition;
 
-		&:hover {
-			background: rgba(var(--button-color), 0.5);
-		}
-
+		&:hover,
 		&--active {
-			background: rgba(var(--primary-color), 0.05);
+			background: $zt-card-bg;
 		}
 	}
 
@@ -1864,16 +1876,16 @@
 		font-size: 0.82rem;
 		padding: 0.25rem 0.6rem;
 		background: rgba(var(--text-color), 0.06);
-		border-radius: 0.3rem;
+		border-radius: $zt-radius-sm;
 		color: rgba(var(--text-color), 0.8);
 		font-weight: 500;
 	}
 
 	// Group cards
 	&__group-cards {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: $zt-space-2;
 	}
 
 	&__group-card {
@@ -1883,14 +1895,12 @@
 		padding: 0.65rem 1rem;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
-		transition: all 0.15s;
-		min-width: 140px;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
-			border-color: rgba(var(--primary-color), 0.2);
+			border-color: $zt-control-border-hover;
 		}
 	}
 
@@ -1901,8 +1911,9 @@
 	}
 
 	&__group-card-time {
+		font-family: $zt-font-mono;
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	&__role-dot {
@@ -1934,7 +1945,7 @@
 
 	&__role-label {
 		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 		margin-left: 2px;
 	}
 
@@ -1954,16 +1965,16 @@
 		padding: 0.6rem 0.75rem;
 		background: rgb(var(--module-color));
 		border: none;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		transition: background 0.1s;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-control-bg;
 		}
 
 		&--open {
-			border-radius: 0.4rem 0.4rem 0 0;
+			border-radius: $zt-radius-md $zt-radius-md 0 0;
 		}
 	}
 
@@ -1975,7 +1986,7 @@
 
 	&__day-header-arrow {
 		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__assignments {
@@ -1991,7 +2002,7 @@
 		gap: 0.75rem;
 		padding: 0.55rem 0.75rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		font-size: 0.88rem;
 		transition: background 0.1s;
 
@@ -1999,7 +2010,7 @@
 			cursor: pointer;
 
 			&:hover {
-				background: rgba(var(--button-color), 0.8);
+				background: $zt-control-bg;
 			}
 
 			&:active {
@@ -2030,7 +2041,7 @@
 		align-items: center;
 		gap: 0.3rem;
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		white-space: nowrap;
 	}
 
@@ -2060,7 +2071,7 @@
 		width: 2.4rem;
 		height: 2.4rem;
 		padding: 0;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 2px solid rgba(var(--text-color), 0.15);
 		background: rgb(var(--module-color));
 		color: rgb(var(--text-color));
@@ -2076,13 +2087,13 @@
 		&--active {
 			border-color: rgb(var(--primary-color));
 			background: rgb(var(--primary-color));
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 		}
 	}
 
 	&__ranking-table-wrapper {
 		overflow-x: auto;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 	}
 
@@ -2097,7 +2108,7 @@
 			font-weight: 600;
 			color: rgb(var(--text-color));
 			background: rgb(var(--module-color));
-			border-bottom: 2px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-card-border;
 			white-space: nowrap;
 		}
 
@@ -2115,7 +2126,7 @@
 
 	&__rank-num {
 		font-weight: 600;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		width: 2rem;
 	}
 
@@ -2127,16 +2138,16 @@
 
 	&__rank-id {
 		font-size: 0.75rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__rank-time {
-		font-family: monospace;
+		font-family: $zt-font-mono;
 		font-weight: 500;
 	}
 
 	&__rank-wr {
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		font-size: 0.85rem;
 	}
 
@@ -2153,7 +2164,7 @@
 		gap: 0.5rem;
 		padding: 0.65rem 1rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		text-decoration: none;
 		font-weight: 500;
@@ -2161,7 +2172,7 @@
 		transition: background 0.15s;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-control-bg;
 		}
 	}
 
@@ -2187,7 +2198,7 @@
 		gap: 0.6rem;
 		padding: 0.6rem 0.75rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 	}
 
@@ -2197,14 +2208,14 @@
 		gap: 0.6rem;
 		padding: 0.6rem 0.75rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		text-decoration: none;
 		transition: background 0.15s;
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-control-bg;
 		}
 	}
 
@@ -2215,7 +2226,7 @@
 		gap: 0.6rem;
 		padding: 0.5rem 0.75rem;
 		background: rgb(var(--module-color));
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		text-decoration: none;
 		transition: background 0.15s;
@@ -2225,7 +2236,7 @@
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.8);
+			background: $zt-control-bg;
 		}
 	}
 
@@ -2250,7 +2261,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 	}
 
 	&__info-name {
@@ -2263,7 +2274,7 @@
 	&__info-sub {
 		display: block;
 		font-size: 0.75rem;
-		color: rgba(var(--text-color), 0.45);
+		color: $zt-text-muted;
 	}
 
 	// Cross-linking
@@ -2296,7 +2307,7 @@
 		gap: 1rem;
 		margin-bottom: 0.75rem;
 		font-size: 0.88rem;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 	}
 
 	&__activity-time {
@@ -2320,8 +2331,8 @@
 		justify-content: center;
 		gap: 0.5rem;
 		padding: 0.55rem 0.75rem;
-		border-radius: 0.35rem;
-		border-bottom: 3px solid #6b7280;
+		border-radius: $zt-radius-md;
+		border-bottom: 3px solid rgba(var(--text-color), 0.3);
 		margin-bottom: 0;
 	}
 
@@ -2334,13 +2345,13 @@
 	&__activity-section-count {
 		font-size: 0.82rem;
 		font-weight: 400;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 	}
 
 	&__activity-role-count {
 		font-size: 0.8rem;
 		font-weight: 400;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	// Single column list (scrambler, runner, judge)
@@ -2358,7 +2369,7 @@
 			background: rgba(249, 115, 22, 0.06);
 		}
 		&--judge .zt-my-schedule__activity-role-row:nth-child(even) {
-			background: rgba(59, 130, 246, 0.06);
+			background: rgba(var(--primary-color), 0.08);
 		}
 	}
 
@@ -2371,7 +2382,7 @@
 		transition: background 0.1s;
 
 		&:hover {
-			background: rgba(var(--button-color), 0.5);
+			background: $zt-control-bg;
 		}
 
 		&:active {
@@ -2385,7 +2396,7 @@
 
 	&__activity-table-wrapper {
 		overflow-x: auto;
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 	}
 
@@ -2400,7 +2411,7 @@
 			font-weight: 600;
 			color: rgb(var(--text-color));
 			background: rgb(var(--module-color));
-			border-bottom: 2px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-card-border;
 			white-space: nowrap;
 		}
 
@@ -2415,12 +2426,12 @@
 		}
 
 		tbody tr:hover {
-			background: rgba(var(--button-color), 0.5);
+			background: $zt-control-bg;
 		}
 	}
 
 	&__seed-result {
-		font-family: monospace;
+		font-family: $zt-font-mono;
 		font-weight: 500;
 		text-align: center;
 	}
@@ -2440,12 +2451,12 @@
 		padding: 0.45rem 0.85rem;
 		background: rgba(var(--text-color), 0.06);
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.4rem;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.82rem;
 		font-weight: 500;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover:not(:disabled) {
 			background: rgba(var(--text-color), 0.12);
@@ -2453,7 +2464,7 @@
 
 		&--disabled,
 		&:disabled {
-			opacity: 0.3;
+			color: $zt-text-muted;
 			cursor: default;
 		}
 	}
@@ -2512,12 +2523,12 @@
 
 	&__pb-wca-id {
 		font-size: 0.85rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	&__pb-table-wrapper {
 		overflow-x: auto;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 		margin-bottom: 1rem;
 	}
@@ -2537,7 +2548,7 @@
 		th {
 			font-weight: 600;
 			background: rgb(var(--module-color));
-			border-bottom: 2px solid rgba(var(--text-color), 0.1);
+			border-bottom: 1px solid $zt-card-border;
 		}
 
 		th:first-child, td:first-child {
@@ -2560,17 +2571,17 @@
 	}
 
 	&__pb-type {
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 	}
 
 	&__pb-best {
-		font-family: monospace;
+		font-family: $zt-font-mono;
 		font-weight: 600;
 	}
 
 	&__pb-rank {
 		text-align: center;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 
 		&--top {
 			color: rgb(234, 179, 8);
@@ -2584,17 +2595,17 @@
 		justify-content: center;
 		width: 100%;
 		padding: 0.65rem 1rem;
-		background: rgba(100, 160, 255, 0.1);
-		border: 1px solid rgba(100, 160, 255, 0.2);
-		border-radius: 0.5rem;
-		color: rgb(100, 160, 255);
+		background: rgba(var(--primary-color), 0.08);
+		border: 1px solid rgb(var(--primary-color));
+		border-radius: $zt-radius-md;
+		color: rgb(var(--text-color));
 		font-weight: 600;
 		font-size: 0.88rem;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
-			background: rgba(100, 160, 255, 0.18);
+			background: rgba(var(--primary-color), 0.14);
 		}
 	}
 
@@ -2622,13 +2633,13 @@
 		padding: 0.5rem 0.85rem;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 999px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.82rem;
 		font-weight: 600;
 		cursor: pointer;
 		white-space: nowrap;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
 			background: rgba(var(--text-color), 0.1);
@@ -2636,8 +2647,8 @@
 		}
 
 		&--active {
-			background: rgba(100, 160, 255, 0.25);
-			border-color: rgba(100, 160, 255, 0.55);
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
 			color: rgb(var(--text-color));
 		}
 	}
@@ -2668,7 +2679,7 @@
 	&__wca-live-empty {
 		padding: 2rem;
 		text-align: center;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 		font-size: 0.9rem;
 	}
 
@@ -2703,16 +2714,16 @@
 		cursor: pointer;
 		flex-shrink: 0;
 		margin-left: auto;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
-			background: rgba(100, 160, 255, 0.18);
-			border-color: rgba(100, 160, 255, 0.4);
+			background: rgba(var(--primary-color), 0.14);
+			border-color: rgb(var(--primary-color));
 		}
 
 		&:disabled {
 			cursor: default;
-			opacity: 0.6;
+			color: $zt-text-muted;
 		}
 
 		&--spinning svg {
@@ -2726,10 +2737,10 @@
 		gap: 0.55rem;
 		padding: 0.65rem 0.85rem;
 		margin-bottom: 0.85rem;
-		background: rgba(234, 179, 8, 0.12);
-		border: 1px solid rgba(234, 179, 8, 0.35);
-		border-radius: 0.5rem;
-		color: #facc15;
+		background: $zt-card-bg;
+		border: 1px solid rgb(var(--warning-color));
+		border-radius: $zt-radius-md;
+		color: rgb(var(--text-color));
 		font-size: 0.82rem;
 		font-weight: 500;
 	}
@@ -2737,10 +2748,10 @@
 	&__wca-live-stale-retry {
 		margin-left: auto;
 		padding: 0.25rem 0.4rem;
-		background: rgba(234, 179, 8, 0.2);
+		background: $zt-control-bg;
 		border: none;
-		border-radius: 0.3rem;
-		color: #facc15;
+		border-radius: $zt-radius-sm;
+		color: rgb(var(--text-color));
 		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
@@ -2751,7 +2762,7 @@
 		align-items: center;
 		gap: 0.4rem;
 		font-size: 0.72rem;
-		color: rgba(var(--text-color), 0.55);
+		color: $zt-text-muted;
 		margin-bottom: 0.65rem;
 	}
 
@@ -2760,7 +2771,7 @@
 		width: 0.5rem;
 		height: 0.5rem;
 		border-radius: 50%;
-		background: #22c55e;
+		background: rgb(var(--success-color));
 		animation: zt-live-pulse 1.5s ease-in-out infinite;
 	}
 
@@ -2773,15 +2784,15 @@
 
 	&__wca-live-skeleton-row {
 		height: 2.75rem;
-		background: linear-gradient(
-			90deg,
-			rgba(255, 255, 255, 0.04) 0%,
-			rgba(255, 255, 255, 0.09) 50%,
-			rgba(255, 255, 255, 0.04) 100%
-		);
-		background-size: 200% 100%;
-		border-radius: 0.4rem;
-		animation: zt-skeleton-shimmer 1.4s linear infinite;
+		// A flat placeholder that breathes; the white sweep did not follow a light theme.
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		animation: zkt-pulse 1.4s ease-in-out infinite;
+
+		@include reduced-motion {
+			animation: none;
+		}
 	}
 
 	&__wca-live-show-more {
@@ -2789,17 +2800,17 @@
 		width: 100%;
 		margin-top: 0.85rem;
 		padding: 0.75rem 1rem;
-		background: rgba(100, 160, 255, 0.12);
-		border: 1px solid rgba(100, 160, 255, 0.3);
-		border-radius: 0.5rem;
+		background: rgba(var(--primary-color), 0.08);
+		border: 1px solid rgb(var(--primary-color));
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-weight: 600;
 		font-size: 0.85rem;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
-			background: rgba(100, 160, 255, 0.2);
+			background: rgba(var(--primary-color), 0.14);
 		}
 	}
 
@@ -2823,7 +2834,7 @@
 	&__wca-live-flag-iso {
 		font-size: 0.7rem;
 		font-weight: 600;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 		margin-left: 0.2rem;
 	}
 
@@ -2858,26 +2869,28 @@
 	&__competitor-country-code {
 		font-size: 0.7rem;
 		font-weight: 600;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		padding: 0.15rem 0.4rem;
 		background: rgba(var(--text-color), 0.06);
-		border-radius: 0.25rem;
+		border-radius: $zt-radius-sm;
 	}
 
 	// Assignment row current/past states
 	&__assignment-row--current {
 		background: rgba(34, 197, 94, 0.12) !important;
-		border-left: 3px solid #22c55e;
+		border-left: 3px solid rgb(var(--success-color));
 	}
 
-	&__assignment-row--past {
-		opacity: 0.55;
+	// Past: marked, not faded (no text fainter than the muted token). The time
+	// column goes muted; the rest stays readable.
+	&__assignment-row--past td {
+		color: $zt-text-muted;
 	}
 
 	// Schedule assignment ongoing
 	&__assignment--ongoing {
 		background: rgba(34, 197, 94, 0.1) !important;
-		border-left: 3px solid #22c55e;
+		border-left: 3px solid rgb(var(--success-color));
 		position: relative;
 
 		&::after {
@@ -2885,7 +2898,7 @@
 			position: absolute;
 			top: 0.5rem;
 			right: 0.5rem;
-			color: #22c55e;
+			color: rgb(var(--success-color));
 			font-size: 0.6rem;
 			animation: zt-live-pulse 1.5s ease-in-out infinite;
 		}
@@ -2899,16 +2912,16 @@
 		width: 100%;
 		margin-top: 1rem;
 		padding: 0.75rem 1rem;
-		background: rgba(100, 160, 255, 0.18);
-		border: 1px solid rgba(100, 160, 255, 0.4);
-		border-radius: 0.5rem;
+		background: rgba(var(--primary-color), 0.08);
+		border: 1px solid rgb(var(--primary-color));
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-weight: 600;
 		font-size: 0.85rem;
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(100, 160, 255, 0.28);
+			background: rgba(var(--primary-color), 0.14);
 		}
 	}
 
@@ -2922,7 +2935,7 @@
 	&__wca-live-event-subtitle {
 		font-size: 1.05rem;
 		font-weight: 500;
-		color: rgba(var(--text-color), 0.65);
+		color: $zt-text-muted;
 	}
 
 	&__wca-live-round-info {
@@ -2933,7 +2946,7 @@
 		padding: 0.65rem 0.85rem;
 		background: rgba(var(--text-color), 0.04);
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 0.45rem;
+		border-radius: $zt-radius-md;
 	}
 
 	&__wca-live-round-info-item {
@@ -2944,7 +2957,7 @@
 		font-weight: 600;
 		color: rgb(var(--text-color));
 		background: rgba(var(--text-color), 0.06);
-		border-radius: 0.3rem;
+		border-radius: $zt-radius-sm;
 
 		&--accent {
 			background: rgb(var(--primary-color));
@@ -2963,14 +2976,14 @@
 		flex: 1;
 		height: 0.4rem;
 		background: rgba(var(--text-color), 0.1);
-		border-radius: 0.2rem;
+		border-radius: $zt-radius-sm;
 		overflow: hidden;
 	}
 
 	&__wca-live-progress-fill {
 		height: 100%;
 		background: rgb(var(--primary-color));
-		border-radius: 0.2rem;
+		border-radius: $zt-radius-sm;
 		transition: width 0.4s ease;
 	}
 
@@ -2985,7 +2998,7 @@
 	&__wca-live-result-row--questionable {
 		.zt-my-schedule__wca-live-rank {
 			background: rgba(234, 179, 8, 0.85);
-			color: #000;
+			color: $status-fill-text-dark;
 		}
 	}
 
@@ -3005,7 +3018,7 @@
 		}
 		&::-webkit-scrollbar-thumb {
 			background: rgba(var(--text-color), 0.15);
-			border-radius: 2px;
+			border-radius: $zt-radius-sm;
 		}
 	}
 
@@ -3024,7 +3037,7 @@
 		min-height: 40px;
 		padding: 8px 16px;
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 999px;
+		border-radius: $zt-radius-md;
 		background: transparent;
 		color: rgb(var(--text-color));
 		font-size: 0.85rem;
@@ -3058,22 +3071,22 @@
 		padding: 0.55rem 0.95rem;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-radius: 999px;
+		border-radius: $zt-radius-md;
 		color: rgb(var(--text-color));
 		font-size: 0.85rem;
 		font-weight: 600;
 		cursor: pointer;
 		flex-shrink: 0;
 		white-space: nowrap;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
 			background: rgba(var(--text-color), 0.1);
 		}
 
 		&--active {
-			background: rgba(100, 160, 255, 0.25);
-			border-color: rgba(100, 160, 255, 0.55);
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
 			color: rgb(var(--text-color));
 		}
 	}
@@ -3085,33 +3098,35 @@
 	&__wca-live-status-badge {
 		display: inline-flex;
 		padding: 0.1rem 0.4rem;
-		border-radius: 0.25rem;
+		border-radius: $zt-radius-sm;
 		font-size: 0.65rem;
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
-		background: rgba(107, 114, 128, 0.2);
-		color: #888;
+		background: $zt-control-bg;
+		color: $zt-text-muted;
 
+		// Finished is the quiet state: most rounds of a running competition are
+		// done, and an accent fill on each of them drowned the live one.
 		&--done {
-			background: rgb(var(--primary-color));
-			color: rgb(var(--theme-primary-opposite));
+			background: $zt-control-bg;
+			color: rgb(var(--text-color));
 		}
 
 		&--live {
-			background: #ef4444;
+			background: rgb(var(--error-color));
 			color: $status-fill-text-light;
 			animation: zt-live-pulse 1.5s ease-in-out infinite;
 		}
 
 		&--open {
-			background: #22c55e;
+			background: rgb(var(--success-color));
 			color: $status-fill-text-dark;
 		}
 
 		&--upcoming {
-			background: rgba(107, 114, 128, 0.15);
-			color: #999;
+			background: $zt-control-bg;
+			color: $zt-text-muted;
 		}
 	}
 
@@ -3123,7 +3138,7 @@
 		overflow-y: hidden;
 		height: 10px;
 		margin-bottom: 4px;
-		border-radius: 5px;
+		border-radius: $zt-radius-sm;
 		background: rgba(var(--text-color), 0.07);
 		scrollbar-width: thin;
 		scrollbar-color: rgba(var(--text-color), 0.45) transparent;
@@ -3142,7 +3157,7 @@
 
 		&::-webkit-scrollbar-thumb {
 			background: rgba(var(--text-color), 0.35);
-			border-radius: 5px;
+			border-radius: $zt-radius-sm;
 
 			&:hover {
 				background: rgba(var(--text-color), 0.55);
@@ -3158,7 +3173,7 @@
 		// last columns (attempts 7-12, and on narrow screens Average/Best).
 		overflow-x: auto;
 		overflow-y: hidden;
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 
 		// A long-format round (ZKT Ao12) has twelve attempt columns, which do not
 		// fit the 600px reading column this view is built around. Only that case
@@ -3304,12 +3319,12 @@
 		font-size: 0.65rem;
 		font-weight: 700;
 		background: rgba(var(--text-color), 0.1);
-		border-radius: 0.2rem;
+		border-radius: $zt-radius-sm;
 		color: rgb(var(--text-color));
 	}
 
 	&__wca-live-time {
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		font-weight: 600;
 		color: rgb(var(--text-color));
 		position: relative;
@@ -3336,6 +3351,141 @@
 		color: rgb(var(--text-color));
 	}
 
+	// ZKT online skor girişi: "Resmi sonuçlar" / "Anlık durum" and the judges'
+	// unchecked times, one card per group split by hairlines.
+	&__wca-live-view-tabs {
+		margin-bottom: $zt-space-4;
+	}
+
+	&__wca-live-status-note {
+		margin: 0 0 $zt-space-4;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	// The table form of "Anlık durum": the note, then why some rows show fewer
+	// attempts than the judges have entered.
+	&__wca-live-status-note + &__wca-live-status-rule {
+		margin-top: -$zt-space-3;
+	}
+
+	&__wca-live-status-rule {
+		margin: 0 0 $zt-space-4;
+		font-size: 0.8rem;
+		color: rgb(var(--text-color));
+	}
+
+	// "Resmi", "Gelmedi" or "3/5" under the name in the "Anlık durum" table: next
+	// to it, a phone's name column cut the tag to "5/".
+	&__wca-live-person--stacked {
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 2px;
+	}
+
+	&__wca-live-status-group {
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-lg;
+		margin-bottom: $zt-space-4;
+		overflow: hidden;
+	}
+
+	&__wca-live-status-group-head {
+		@include zt-eyebrow;
+		display: flex;
+		justify-content: space-between;
+		gap: $zt-space-3;
+		padding: $zt-space-3 $zt-space-4;
+		border-bottom: 1px solid $zt-card-border;
+	}
+
+	&__wca-live-status-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	// Station | name | progress on the first line; the times run under the
+	// name to the right edge, so five of them fit on a phone.
+	&__wca-live-status-row {
+		display: grid;
+		grid-template-columns: 2rem minmax(0, 1fr) auto;
+		grid-template-areas:
+			'station name side'
+			'. times times';
+		align-items: center;
+		column-gap: $zt-space-3;
+		row-gap: $zt-space-1;
+		padding: $zt-space-3 $zt-space-4;
+		border-top: 1px solid $zt-card-border;
+
+		&:first-child {
+			border-top: 0;
+		}
+
+		// The viewer's own row, as in the results table.
+		&--me {
+			background: rgba(var(--primary-color), 0.08);
+		}
+	}
+
+	&__wca-live-status-station {
+		grid-area: station;
+		font-family: $zt-font-mono;
+		font-size: 0.85rem;
+		color: $zt-text-muted;
+	}
+
+	// Its children take their own grid cells.
+	&__wca-live-status-main {
+		display: contents;
+	}
+
+	&__wca-live-status-side {
+		grid-area: side;
+	}
+
+	&__wca-live-status-name {
+		grid-area: name;
+		min-width: 0;
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		.zt-my-schedule__me-badge {
+			margin-left: $zt-space-2;
+		}
+	}
+
+	&__wca-live-status-times {
+		grid-area: times;
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: $zt-space-3;
+		row-gap: $zt-space-1;
+		font-family: $zt-font-mono;
+		font-size: 0.9rem;
+	}
+
+	&__wca-live-status-progress {
+		font-family: $zt-font-mono;
+		font-size: 0.85rem;
+		color: $zt-text-muted;
+	}
+
+	&__wca-live-status-tag {
+		display: inline-flex;
+		padding: 0.15rem 0.5rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		background: $zt-control-bg;
+		border-radius: $zt-radius-sm;
+	}
+
 	&__wca-live-time-inner {
 		position: relative;
 		display: inline-block;
@@ -3349,14 +3499,14 @@
 	}
 
 	&__wca-live-attempt {
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		font-size: 0.76rem;
 		color: rgba(var(--text-color), 0.82);
 	}
 
 	&__wca-live-result-row--me {
-		background: rgba(59, 130, 246, 0.18) !important;
-		border-left: 3px solid rgb(59, 130, 246);
+		background: rgba(var(--primary-color), 0.08) !important;
+		border-left: 3px solid rgb(var(--primary-color));
 
 		td {
 			color: rgb(var(--text-color));
@@ -3364,7 +3514,7 @@
 		}
 
 		@include bp-down($bp-sm) {
-			background: rgba(59, 130, 246, 0.25) !important;
+			background: rgba(var(--primary-color), 0.08) !important;
 
 			.zt-my-schedule__me-badge {
 				display: none;
@@ -3394,7 +3544,7 @@
 		max-width: 500px;
 		background: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.85rem 0.85rem 0.5rem 0.5rem;
+		border-radius: $zt-radius-md $zt-radius-md $zt-radius-md $zt-radius-md;
 		padding: 1.25rem;
 		color: rgb(var(--text-color));
 		animation: zt-slide-up 0.2s ease-out;
@@ -3410,7 +3560,7 @@
 	&__wca-live-modal-rank {
 		font-size: 0.75rem;
 		font-weight: 700;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
@@ -3424,7 +3574,7 @@
 
 	&__wca-live-modal-country {
 		font-size: 0.78rem;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 	}
 
 	&__wca-live-modal-close {
@@ -3450,7 +3600,7 @@
 		padding: 0.75rem 0.85rem;
 		background: rgba(var(--text-color), 0.04);
 		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 
 		&--full {
 			grid-column: 1 / -1;
@@ -3467,12 +3617,12 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		color: rgba(var(--text-color), 0.55);
+		color: $zt-text-muted;
 		margin-bottom: 0.35rem;
 	}
 
 	&__wca-live-modal-stat-value {
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		font-size: 1.2rem;
 		font-weight: 700;
 		color: rgb(var(--text-color));
@@ -3485,12 +3635,12 @@
 	}
 
 	&__wca-live-modal-attempt {
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		font-size: 0.9rem;
 		font-weight: 600;
 		padding: 0.35rem 0.6rem;
 		background: rgba(var(--text-color), 0.06);
-		border-radius: 0.3rem;
+		border-radius: $zt-radius-sm;
 		color: rgb(var(--text-color));
 	}
 
@@ -3532,16 +3682,16 @@
 		padding: 0.85rem 1rem;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.55rem;
-		transition: all 0.15s;
+		border-radius: $zt-radius-md;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 		color: rgb(var(--text-color));
 
 		&--clickable {
 			cursor: pointer;
 
 			&:hover {
-				background: rgba(100, 160, 255, 0.12);
-				border-color: rgba(100, 160, 255, 0.4);
+				background: rgba(var(--primary-color), 0.14);
+				border-color: rgb(var(--primary-color));
 			}
 		}
 	}
@@ -3589,8 +3739,8 @@
 		padding: 0.85rem 1rem;
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.12);
-		border-left: 3px solid #ef4444;
-		border-radius: 0.5rem;
+		border-left: 3px solid rgb(var(--error-color));
+		border-radius: $zt-radius-md;
 		cursor: pointer;
 		transition: background 0.15s ease;
 		color: rgb(var(--text-color));
@@ -3620,15 +3770,15 @@
 	&__wca-live-podium-card {
 		background: rgba(var(--text-color), 0.05);
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.55rem;
+		border-radius: $zt-radius-md;
 		padding: 0.85rem 0.95rem;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 		color: rgb(var(--text-color));
 
 		&:hover {
-			background: rgba(100, 160, 255, 0.12);
-			border-color: rgba(100, 160, 255, 0.4);
+			background: rgba(var(--primary-color), 0.14);
+			border-color: rgb(var(--primary-color));
 		}
 	}
 
@@ -3658,7 +3808,7 @@
 		align-items: center;
 		gap: 0.55rem;
 		padding: 0.35rem 0.5rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		font-size: 0.85rem;
 
 		&--rank-1 {
@@ -3694,7 +3844,7 @@
 	}
 
 	&__wca-live-podium-time {
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 		font-weight: 700;
 		color: rgb(var(--text-color));
 		flex-shrink: 0;
@@ -3718,17 +3868,17 @@
 		gap: 0.85rem;
 		padding: 0.75rem 0.95rem;
 		background: rgba(var(--text-color), 0.05);
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid rgba(var(--text-color), 0.1);
 		color: rgb(var(--text-color));
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&--clickable {
 			cursor: pointer;
 
 			&:hover {
-				background: rgba(100, 160, 255, 0.12);
-				border-color: rgba(100, 160, 255, 0.4);
+				background: rgba(var(--primary-color), 0.14);
+				border-color: rgb(var(--primary-color));
 			}
 		}
 	}
@@ -3739,7 +3889,7 @@
 		justify-content: center;
 		min-width: 2.5rem;
 		padding: 0.3rem 0.55rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		font-size: 0.72rem;
 		font-weight: 800;
 		color: rgb(var(--text-color));
@@ -3759,7 +3909,7 @@
 
 	&__wca-live-record-person {
 		font-size: 0.78rem;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 		margin-top: 0.1rem;
 	}
 
@@ -3793,9 +3943,9 @@
 
 	&__competitor-results-subtitle {
 		font-size: 0.78rem;
-		color: rgba(var(--text-color), 0.6);
+		color: $zt-text-muted;
 		margin-top: 0.15rem;
-		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-family: $zt-font-mono;
 	}
 
 	&__competitor-results-event {
@@ -3948,10 +4098,5 @@
 }
 
 @keyframes zt-edge-right { 0% {} 100% {} }
-
-@keyframes zt-skeleton-shimmer {
-	0%   { background-position: 200% 0; }
-	100% { background-position: -200% 0; }
-}
 
 @keyframes zt-edge-left { 0% {} 100% {} }

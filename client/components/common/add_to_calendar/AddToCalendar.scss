@@ -8,39 +8,27 @@
 	text-align: center;
 	width: 100%;
 
+	// The competition page's secondary action: the neutral control, its icon in
+	// the accent. Hover shades the fill; it no longer turns into a primary button.
 	&__trigger {
+		@include zt-control;
 		display: inline-flex;
 		align-items: center;
-		gap: 0.4rem;
-		padding: 0 12px;
-		height: 30px;
-		border: none;
-		border-radius: 15px;
-		background: rgb(var(--button-color));
-		color: rgb(var(--text-color));
+		gap: $zt-space-2;
+		height: $zt-control-h-sm;
+		padding: 0 $zt-space-3;
 		font-family: inherit;
-		font-size: 0.85rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		cursor: pointer;
-		transition: background 0.15s ease, color 0.15s ease;
 
 		svg {
 			color: rgb(var(--primary-color));
 			flex-shrink: 0;
-			transition: color 0.15s ease;
-		}
-
-		&:hover {
-			background: rgb(var(--primary-color));
-			color: #fff;
-
-			svg {
-				color: #fff;
-			}
 		}
 
 		&--pending {
-			opacity: 0.6;
+			color: $zt-text-muted;
 			pointer-events: none;
 		}
 	}

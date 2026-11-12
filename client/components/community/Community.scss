@@ -1,5 +1,8 @@
 @import '../../styles/tokens';
 
+// The competitions pages' one column: the title and the content share it.
+$community-column: 48rem;
+
 .zt-community {
 	position: relative;
 
@@ -12,6 +15,17 @@
 
 			.zt-page-title__title {
 				font-size: 2.2rem;
+			}
+		}
+
+		// The computer title sits over the list's column, not at the page edge.
+		@include content-desktop {
+			&--list {
+				width: 100%;
+				// The list's own column sits inside a 0.5rem gutter; the title's
+				// block brings its own, so this one adds none.
+				max-width: $community-column;
+				margin: 0 auto;
 			}
 		}
 	}

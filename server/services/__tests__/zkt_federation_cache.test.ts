@@ -1,4 +1,7 @@
 import {
+	budgetCapsFor,
+	DEFAULT_BUDGET,
+	TRUSTED_BUDGET,
 	createBackoff,
 	createRequestBudget,
 	createResilientCache,
@@ -48,6 +51,28 @@ describe('createRequestBudget', () => {
 		c.advance(60_001);
 		expect(budget.used()).toBe(0);
 		expect(budget.tryAcquire('low')).toBe(true);
+	});
+});
+
+describe('budgetCapsFor', () => {
+	it('uses the trusted allowance only with the federation secret configured', () => {
+		expect(budgetCapsFor({})).toBe(DEFAULT_BUDGET);
+		expect(budgetCapsFor({ZKT_INTERNAL_API_SECRET: ''})).toBe(DEFAULT_BUDGET);
+		expect(budgetCapsFor({ZKT_INTERNAL_API_SECRET: 'x'})).toBe(TRUSTED_BUDGET);
+		// Under the federation's 600 a minute for the trusted backend, and five
+		// polled rounds (about 43 a minute) fit in the background class.
+		expect(TRUSTED_BUDGET.high).toBeLessThan(600);
+		expect(TRUSTED_BUDGET.normal).toBeGreaterThan(5 * (60 / 7));
+	});
+
+	it('reads lazy caps on every call', () => {
+		const c = clock();
+		let caps = {high: 1, normal: 1, low: 1};
+		const budget = createRequestBudget(() => caps, c.now);
+		expect(budget.tryAcquire('high')).toBe(true);
+		expect(budget.tryAcquire('high')).toBe(false);
+		caps = {high: 2, normal: 2, low: 2};
+		expect(budget.tryAcquire('high')).toBe(true);
 	});
 });
 

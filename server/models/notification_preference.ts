@@ -85,6 +85,7 @@ const ALLOWED_PREFERENCE_KEYS = [
 	'competition_schedule_changed',
 	'competition_results_official',
 	'battle_challenge',
+	'zkt_judge_group_progress',
 ];
 
 export type PushPreferenceKey =
@@ -92,7 +93,8 @@ export type PushPreferenceKey =
 	| 'competition_groups_published'
 	| 'competition_schedule_changed'
 	| 'competition_results_official'
-	| 'battle_challenge';
+	| 'battle_challenge'
+	| 'zkt_judge_group_progress';
 
 /**
  * Of these users, who switched `key` off. One query for a whole batch, and it

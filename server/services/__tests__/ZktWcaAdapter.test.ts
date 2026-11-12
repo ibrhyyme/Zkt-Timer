@@ -438,3 +438,66 @@ describe('Dual Chance', () => {
 		expect(detail.events[0].rounds[0].dualChance).toBeUndefined();
 	});
 });
+
+describe('zktRoundToWcaLiveResults: judges\' unchecked times (online skor girişi)', () => {
+	const round = {eventId: '333', roundNumber: 1, format: 'AO5', status: 'ACTIVE', results: []};
+
+	it('leaves liveEntries out when the federation sends none, as before', () => {
+		expect(zktRoundToWcaLiveResults(round).liveEntries).toBeUndefined();
+	});
+
+	it('maps each card as the federation cut it, without touching results', () => {
+		const out = zktRoundToWcaLiveResults({
+			...round,
+			liveEntries: [
+				{
+					competitor: {id: 'k1', name: 'A', country: 'TR'},
+					group: 1,
+					chance: 1,
+					station: 3,
+					attempts: [1224, -1],
+					extras: [2],
+					done: 4,
+					expected: 5,
+					level: 2,
+					noShow: false,
+					official: false,
+				},
+				{competitor: {id: 'k2', name: 'B'}, group: null, chance: 1, station: null, attempts: [], done: 0, expected: 5, level: 2, noShow: true, official: false},
+			],
+		});
+		expect(out.results).toEqual([]);
+		expect(out.liveEntries).toEqual([
+			{
+				personName: 'A',
+				personLiveId: 'k1',
+				personCountryIso2: 'TR',
+				groupNumber: 1,
+				chance: 1,
+				station: 3,
+				attempts: [{result: 1224}, {result: -1}],
+				extras: [2],
+				done: 4,
+				expected: 5,
+				level: 2,
+				noShow: false,
+				official: false,
+			},
+			{
+				personName: 'B',
+				personLiveId: 'k2',
+				personCountryIso2: undefined,
+				groupNumber: undefined,
+				chance: 1,
+				station: undefined,
+				attempts: [],
+				extras: [],
+				done: 0,
+				expected: 5,
+				level: 2,
+				noShow: true,
+				official: false,
+			},
+		]);
+	});
+});

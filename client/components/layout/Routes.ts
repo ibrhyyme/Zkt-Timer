@@ -313,9 +313,17 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule, false),
 	route('/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule, false),
 	route('/competitions/:competitionId/wca-live', App, Community, MySchedule, false),
+	// Online score entry (ZKT competitions): the judge's entry card.
+	route('/competitions/:competitionId/judge', App, Community, MySchedule, false),
+	// The organisers' panel: the QR reader and who judges whom.
+	route('/competitions/:competitionId/judge/staff', App, Community, MySchedule, false),
 	// Record radar — must precede the :competitionId param route so "records" is
 	// not treated as a competition id.
 	route('/competitions/records', App, Community, MySchedule, false),
+	// The address inside a judge's QR, for a QR read with the phone's own camera.
+	// Open, not restricted: the client-side login bounce keeps only the path and
+	// would drop the token; the page asks for an account itself.
+	route('/judge/approve', App, Community, MySchedule, false),
 	route('/competitions/:competitionId', App, Community, MySchedule, false),
 	route('/competitions', App, Community, MySchedule, false),
 

@@ -11,7 +11,12 @@
 	left: 0;
 	opacity: 0;
 	width: 100vw;
+	// dvh, not vh: in a phone browser 100vh is the height with the URL bar hidden, so
+	// while the bar shows the frame runs past the screen and a bottom sheet loses its
+	// last ~56px (the judge row menu's "Ekstra iste" was cut in half). vh stays as the
+	// fallback for engines without dvh.
 	height: 100vh;
+	height: 100dvh;
 	// Flat dim, no blur: see $zt-overlay.
 	background: $zt-overlay;
 	will-change: opacity;

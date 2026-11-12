@@ -305,6 +305,9 @@ model NotificationPreference {
   competition_results_official Boolean @default(true)
   // Push opt-out for Online Battle duel invites sent from a profile.
   battle_challenge             Boolean @default(true)
+  // Push opt-out for online score entry progress: a group's 3rd and 4th
+  // attempts are in (ZKT delegates and organisers only, cron_zkt_judge_progress.ts).
+  zkt_judge_group_progress     Boolean @default(true)
   user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
@@ -1585,6 +1588,30 @@ model CompetitionLifecycleWatch {
   @@index([next_check_at])
   @@index([end_date])
   @@map("competition_lifecycle_watch")
+}
+
+// Online score entry (ZKT), plan K10: the federation reports each group's
+// level (GET /api/internal/v1/judge/progress/) and cron_zkt_judge_progress.ts
+// tells the competition's delegates and organisers when a group's 3rd and 4th
+// attempts are in. One row per notification level reached; the unique key is
+// the claim, so a notice goes once even with two servers and across restarts.
+// `since` is when the group's first card opened: clearing a rehearsal's cards
+// on the federation gives the group a new value, so the real day notifies again.
+model ZktJudgeProgressNotice {
+  id             String   @id @default(uuid())
+  competition_id String
+  round_id       String
+  group_key      String
+  since          String
+  threshold      Int
+  // The group's level when it was claimed (a jump past two thresholds claims both, sends one).
+  level          Int
+  sent           Boolean  @default(false)
+  created_at     DateTime @default(now())
+
+  @@unique([round_id, group_key, since, threshold])
+  @@index([created_at])
+  @@map("zkt_judge_progress_notice")
 }
 
 // One row per (user, competition) for an accepted registrant whose linked WCA

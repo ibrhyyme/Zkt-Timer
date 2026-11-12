@@ -646,6 +646,23 @@ query wcaLiveRoundResults($input: WcaLiveRoundInput!) {
 				counting
 			}
 		}
+		liveEntries {
+			personName
+			personLiveId
+			personCountryIso2
+			groupNumber
+			chance
+			station
+			attempts {
+				result
+			}
+			extras
+			done
+			expected
+			level
+			noShow
+			official
+		}
 	}
 }
 

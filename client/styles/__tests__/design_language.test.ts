@@ -13,7 +13,8 @@ const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
 	scssBackdropBlur: 28,
-	scssGradient: 160,
+	// 157: the competitions pages lost their loading-bar, search and skeleton gradients (2026-11-11).
+	scssGradient: 157,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
@@ -24,11 +25,15 @@ const BASELINE = {
 	// 544: the switch copies went onto common/switch/Switch (2026-11-07).
 	// 535: the solve card's old charts went with the new Overview chart (2026-11-07).
 	// 533: the competition list row and its old ZKT badge went onto tokens (2026-11-09).
-	scssHandRadius: 533,
-	scssDropShadow: 117,
+	// 443: the whole competitions section (list, competition, live, schedule) and the
+	// calendar button went onto tokens (2026-11-11).
+	scssHandRadius: 443,
+	// 116: the WCA loading bar's glow went (2026-11-11).
+	scssDropShadow: 116,
 	tsxFixedTailwindColor: 67,
 	// 116: the competition list row's hover lost --button-color (2026-11-09).
-	scssButtonColor: 116,
+	// 103: the competitions section's rows and the calendar button left --button-color (2026-11-11).
+	scssButtonColor: 103,
 	tsxButtonColor: 25,
 	tsxRoundedXl: 66,
 };

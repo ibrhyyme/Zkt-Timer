@@ -254,6 +254,7 @@ export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 		competition_schedule_changed
 		competition_results_official
 		battle_challenge
+		zkt_judge_group_progress
 	}
 `;
 

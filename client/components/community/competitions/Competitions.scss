@@ -22,7 +22,7 @@
 		flex: 1;
 		max-width: 20rem;
 		padding: 0.5rem 0.75rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		border: 1px solid $zt-control-border;
 		background: rgb(var(--module-color));
 		color: rgb(var(--text-color));
@@ -30,7 +30,7 @@
 		outline: none;
 
 		&::placeholder {
-			color: rgba(var(--text-color), 0.4);
+			color: $zt-text-muted;
 		}
 
 		&:focus {
@@ -40,7 +40,7 @@
 
 	&__search-hint {
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 		margin-bottom: 0.75rem;
 	}
 
@@ -56,7 +56,7 @@
 		flex-direction: column;
 		gap: 2px;
 		margin-bottom: 0.75rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		overflow: hidden;
 	}
 
@@ -85,7 +85,7 @@
 	&__results-count {
 		display: block;
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.4);
+		color: $zt-text-muted;
 		margin-bottom: 0.5rem;
 		font-style: italic;
 	}
@@ -93,7 +93,7 @@
 	&__empty {
 		text-align: center;
 		padding: 2rem;
-		color: rgba(var(--text-color), 0.5);
+		color: $zt-text-muted;
 	}
 
 	// Event filter chips
@@ -106,14 +106,14 @@
 
 	&__event-chip {
 		padding: 0.3rem 0.65rem;
-		border-radius: 0.35rem;
+		border-radius: $zt-radius-md;
 		font-size: 0.8rem;
 		font-weight: 500;
 		border: 1px solid rgba(var(--primary-color), 0.5);
 		color: rgb(var(--primary-color));
 		background: transparent;
 		cursor: pointer;
-		transition: all 0.15s;
+		transition: background $zt-transition, border-color $zt-transition, color $zt-transition;
 
 		&:hover {
 			background: rgba(var(--primary-color), 0.1);
@@ -121,7 +121,7 @@
 
 		&--active {
 			background: rgb(var(--primary-color));
-			color: #fff;
+			color: rgb(var(--theme-primary-opposite));
 			border-color: rgb(var(--primary-color));
 		}
 	}
@@ -130,7 +130,7 @@
 	&__table-wrapper {
 		overflow-x: auto;
 		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 0.5rem;
+		border-radius: $zt-radius-md;
 	}
 
 	&__table {
@@ -180,7 +180,7 @@
 
 	&__events-cell {
 		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.7);
+		color: $zt-text-muted;
 	}
 
 	&__km-cell {

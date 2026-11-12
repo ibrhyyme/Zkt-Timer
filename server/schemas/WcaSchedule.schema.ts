@@ -731,6 +731,57 @@ export class WcaLiveCompetitionOverview {
 	podiums: WcaLivePodium[];
 }
 
+/**
+ * One judge card on ZKT Live's "Anlık durum" (federation `liveEntries`). The
+ * federation already cut it to what may be public (plan K4): `attempts` holds
+ * only the first `level` attempts, or the desk's attempts once `official`.
+ */
+@ObjectType()
+export class WcaLiveProvisionalEntry {
+	@Field()
+	personName: string;
+
+	/** Same key as WcaLiveResult.personLiveId. */
+	@Field()
+	personLiveId: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field(() => Int, {nullable: true})
+	groupNumber?: number;
+
+	/** 1 on an ordinary round; the chance on a Çift Şans round. */
+	@Field(() => Int)
+	chance: number;
+
+	@Field(() => Int, {nullable: true})
+	station?: number;
+
+	@Field(() => [WcaLiveAttempt])
+	attempts: WcaLiveAttempt[];
+
+	/** 1-based attempt numbers whose time came from an extra. */
+	@Field(() => [Int])
+	extras: number[];
+
+	@Field(() => Int)
+	done: number;
+
+	@Field(() => Int)
+	expected: number;
+
+	/** How many attempts of every card in the group are public. */
+	@Field(() => Int)
+	level: number;
+
+	@Field()
+	noShow: boolean;
+
+	@Field()
+	official: boolean;
+}
+
 @ObjectType()
 export class WcaLiveRoundResults {
 	@Field()
@@ -761,6 +812,14 @@ export class WcaLiveRoundResults {
 
 	@Field(() => [WcaLiveResult])
 	results: WcaLiveResult[];
+
+	/**
+	 * ZKT online skor girişi only: the judges' unchecked times ("Anlık durum"),
+	 * present while the competition shows them and the round is running. Never
+	 * mixed into `results`, which stay the desk's official rows.
+	 */
+	@Field(() => [WcaLiveProvisionalEntry], {nullable: true})
+	liveEntries?: WcaLiveProvisionalEntry[];
 }
 
 // All round results for a competitor (for in-app display)

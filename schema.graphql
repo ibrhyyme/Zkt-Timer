@@ -374,6 +374,8 @@ type Query {
   adminFlaggedBattleMatches(page: Int = 0): AdminBattleMatchPage
   adminGrowthReport(includeMonths: Boolean = true, month: Int, year: Int, metric: String): AdminGrowthReport
   adminProUsers: [AdminProUserRow]
+  zktJudgeMe(jti: String, competitionId: String): JSON
+  zktJudgeBoard(roundId: String, competitionId: String): JSON
 }
 
 type Mutation {
@@ -545,6 +547,12 @@ type Mutation {
   reportAlgSet(note: String, reason: String, set_id: String): Boolean
   adminSetAlgSetHidden(reason: String, hidden: Boolean, set_id: String): AlgSet
   adminVoidBattleMatch(id: String): VoidBattleMatchResult
+  zktJudgeRequest(input: ZktJudgeRequestInput): JSON
+  zktJudgeSelfGrant(input: ZktJudgeRequestInput): JSON
+  zktJudgeApprovalPreview(token: String): JSON
+  zktJudgeDecide(reason: String, decision: String, token: String): JSON
+  zktJudgeSubmitEntries(items: [ZktJudgeEntryInput]): JSON
+  zktJudgeEndGrant(all: Boolean, cardId: String, grantId: String, competitionId: String): JSON
 }
 
 type SmartDevice {
@@ -923,6 +931,7 @@ type NotificationPreference {
   competition_schedule_changed: Boolean
   competition_results_official: Boolean
   battle_challenge: Boolean
+  zkt_judge_group_progress: Boolean
   created_at: DateTime
 }
 
@@ -2031,6 +2040,22 @@ type WcaLiveCompetitionOverview {
   podiums: [WcaLivePodium]
 }
 
+type WcaLiveProvisionalEntry {
+  personName: String
+  personLiveId: String
+  personCountryIso2: String
+  groupNumber: Int
+  chance: Int
+  station: Int
+  attempts: [WcaLiveAttempt]
+  extras: [Int]
+  done: Int
+  expected: Int
+  level: Int
+  noShow: Boolean
+  official: Boolean
+}
+
 type WcaLiveRoundResults {
   roundActivityCode: String
   roundName: String
@@ -2040,6 +2065,7 @@ type WcaLiveRoundResults {
   sortBy: String
   dualChance: Boolean
   results: [WcaLiveResult]
+  liveEntries: [WcaLiveProvisionalEntry!]
 }
 
 type WcaLiveCompetitorResultEntry {
@@ -3403,6 +3429,31 @@ input CubeCalibrationInput {
   rate_hz: Float
   algo_version: Int
   measured_at: DateTime
+}
+
+input ZktJudgeRequestInput {
+  competitionId: String
+  purpose: String
+  groupId: String
+  competitorKey: String
+  stationNumber: Int
+  judgeKind: String
+  judgeKey: String
+  judgeName: String
+  cardId: String
+  attemptNo: Int
+}
+
+input ZktJudgeEntryInput {
+  submissionId: String
+  cardId: String
+  kind: String
+  attemptNo: Int
+  value: Int
+  rawValue: Int
+  penalty: Int
+  permit: String
+  deviceSeq: Int
 }
 
 input PaginationArgsInput {

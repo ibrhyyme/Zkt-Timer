@@ -13,6 +13,7 @@ import TopNav from './top_nav/TopNav';
 import Header from './header/Header';
 import { initAnonymousAppData, initAppData, setBrowserSessionId } from './init';
 import { useGeneral } from '../../util/hooks/useGeneral';
+import { useJudgeBoot } from '../../util/hooks/useJudgeBoot';
 import { useMe } from '../../util/hooks/useMe';
 import { setGeneral, closeModal } from '../../actions/general';
 import { getMe } from '../../actions/account';
@@ -144,6 +145,10 @@ export default function App(props: Props = {}) {
 	// appLoaded: App remounts on route changes, and if a previous mount already booted
 	// (redux state survives) there is no pending attempt to wait for.
 	const [authResolved, setAuthResolved] = useState<boolean>(() => Boolean(appLoaded));
+
+	// Online score entry: send what a judge typed before the app closed and take
+	// them back to their entry card. Does nothing for a member who is not judging.
+	useJudgeBoot(me?.id, Boolean(appLoaded));
 
 	// Record a heartbeat for the page the user settles on (debounced in the helper),
 	// so short visits between 60s ticks still register in the admin daily breakdown.

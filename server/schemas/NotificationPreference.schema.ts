@@ -31,6 +31,10 @@ export class NotificationPreference {
 	@Field()
 	battle_challenge: boolean;
 
+	// Push opt-out for online score entry progress (ZKT delegates and organisers).
+	@Field()
+	zkt_judge_group_progress: boolean;
+
 	@Field()
 	created_at: Date;
 }

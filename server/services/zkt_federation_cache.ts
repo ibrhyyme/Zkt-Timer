@@ -95,6 +95,26 @@ export const DEFAULT_BUDGET: Record<FetchPriority, number> = {
 	low: 24,
 };
 
+/**
+ * The ceilings once this server proves itself with ZKT_INTERNAL_API_SECRET:
+ * the federation then counts it in its own bucket of 600 a minute
+ * (zekakuputurkiye-site lib/attempt-limit.ts TRUSTED_API_LIMITS) instead of
+ * the per-IP 60. The live poller alone spends about 8.6 a minute per watched
+ * round (one read every 7 s), so on a competition day with judges' live times
+ * five running rounds already passed the old 36. Half of the federation's
+ * allowance, so a misjudged estimate still ends in our own pause, not a 429.
+ */
+export const TRUSTED_BUDGET: Record<FetchPriority, number> = {
+	high: 300,
+	normal: 240,
+	low: 120,
+};
+
+/** The ceilings this server may use: trusted only with the secret configured. */
+export function budgetCapsFor(env: Record<string, string | undefined>): Record<FetchPriority, number> {
+	return env.ZKT_INTERNAL_API_SECRET ? TRUSTED_BUDGET : DEFAULT_BUDGET;
+}
+
 const BUDGET_WINDOW_MS = 60 * 1000;
 
 export interface RequestBudget {
@@ -105,9 +125,12 @@ export interface RequestBudget {
 }
 
 export function createRequestBudget(
-	caps: Record<FetchPriority, number> = DEFAULT_BUDGET,
+	caps: Record<FetchPriority, number> | (() => Record<FetchPriority, number>) = DEFAULT_BUDGET,
 	now: () => number = Date.now
 ): RequestBudget {
+	// A function is read on every call, so the caps follow the environment even
+	// when it is filled in after this module loaded.
+	const capOf = (priority: FetchPriority) => (typeof caps === 'function' ? caps() : caps)[priority];
 	let hits: number[] = [];
 	const prune = (at: number) => {
 		const cutoff = at - BUDGET_WINDOW_MS;
@@ -116,7 +139,7 @@ export function createRequestBudget(
 	return {
 		tryAcquire(priority, at = now()) {
 			prune(at);
-			if (hits.length >= caps[priority]) return false;
+			if (hits.length >= capOf(priority)) return false;
 			hits.push(at);
 			return true;
 		},
@@ -233,7 +256,7 @@ export function createResilientCache(deps: {
 	keepSeconds?: number;
 }): ResilientCache {
 	const now = deps.now || Date.now;
-	const budget = deps.budget || createRequestBudget(DEFAULT_BUDGET, now);
+	const budget = deps.budget || createRequestBudget(() => budgetCapsFor(process.env), now);
 	const backoff = deps.backoff || createBackoff(now);
 	const keepSeconds = deps.keepSeconds || KEEP_SECONDS;
 	const inflight = new Map<string, Promise<unknown>>();

@@ -1,18 +1,21 @@
 import React, {useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast, CalendarBlank} from 'phosphor-react';
+import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast, CalendarBlank, PencilSimpleLine} from 'phosphor-react';
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
 import FollowBellButton from './FollowBellButton';
 import AddToCalendarButton from '../../common/add_to_calendar/AddToCalendarButton';
 import CompetitionSchedule from './CompetitionSchedule';
+import {useMe} from '../../../util/hooks/useMe';
+import {useJudgeMe} from './judge/useJudgeMe';
+import {judgePath} from '../../../util/judge-session';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
 	getEventShortName, formatRoundFormat, localEventName, ChanceTag,
 } from './shared';
 
-type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live' | 'schedule';
+type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live' | 'schedule' | 'judge';
 
 export default function CompetitionDetail() {
 	const {t, i18n} = useTranslation();
@@ -27,6 +30,13 @@ export default function CompetitionDetail() {
 	// Which federation runs this competition. Every "WCA …" label on the page is
 	// keyed off this — the components are shared, the wording must not be.
 	const isZktCompetition = !!detail.competitionId?.startsWith('zkt-');
+
+	// Online score entry. The tab exists only while the federation has the switch
+	// on for this competition; with it off (or for a viewer without a linked ZKT
+	// account, for whom the switch cannot be read) the page is exactly as before.
+	const viewer = useMe();
+	const {me: judgeMe} = useJudgeMe(detail.competitionId || '', viewer?.id, {skip: !isZktCompetition});
+	const judgeEnabled = isZktCompetition && !!judgeMe?.linked && !!judgeMe?.enabled;
 
 	const TABS: {id: TabId; label: string; icon: any; count?: number}[] = [
 		{id: 'groups', label: t('my_schedule.tab_groups'), icon: Users, count: detail.competitors.length},
@@ -59,9 +69,17 @@ export default function CompetitionDetail() {
 
 	TABS.push({id: 'info', label: t('my_schedule.tab_info'), icon: Globe});
 
+	if (judgeEnabled) {
+		TABS.push({id: 'judge', label: t('zkt_comp.judge_tab'), icon: PencilSimpleLine});
+	}
+
 	function handleTabClick(tabId: TabId) {
 		if (tabId === 'wca-live') {
 			history.push(`/competitions/${detail.competitionId}/wca-live`);
+			return;
+		}
+		if (tabId === 'judge') {
+			history.push(judgePath(detail.competitionId));
 			return;
 		}
 		setActiveTab(tabId);

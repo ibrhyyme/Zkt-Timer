@@ -24,6 +24,9 @@ export enum NotificationType {
 	COMPETITION_RESULTS_OFFICIAL = 'competition_results_official',
 	// Online Battle duel challenge from a profile. Also a NotificationPreference column.
 	BATTLE_CHALLENGE = 'battle_challenge',
+	// Online score entry: a group's 3rd and 4th attempts are in (ZKT delegates and
+	// organisers). Also a NotificationPreference column.
+	ZKT_JUDGE_GROUP_PROGRESS = 'zkt_judge_group_progress',
 }
 
 export enum MetricLogType {

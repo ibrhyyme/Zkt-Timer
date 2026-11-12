@@ -43,6 +43,7 @@ export * from './WcaResult.schema';
 export * from './WcaSchedule.schema';
 export * from './PromoCode.schema';
 export * from './ZktPublic.schema';
+export * from './ZktJudge.schema';
 export * from './IAP.schema';
 export * from './CompetitionFollow.schema';
 export * from './RecordWatch.schema';

@@ -402,7 +402,33 @@ export function zktRoundToWcaLiveResults(r: any): any {
 			advancingQuestionable: !!res.questionable,
 			chances: chancesOf(res),
 		})),
+		liveEntries: liveEntriesOf(r),
 	};
+}
+
+/**
+ * The judges' unchecked times (federation `liveEntries`, online skor girişi).
+ * Absent unless the competition shows them and the round is running; the
+ * federation has already cut every card to what may be public, so nothing is
+ * filtered here.
+ */
+function liveEntriesOf(r: any): any[] | undefined {
+	if (!Array.isArray(r?.liveEntries)) return undefined;
+	return r.liveEntries.map((e: any) => ({
+		personName: e.competitor?.name || '',
+		personLiveId: String(e.competitor?.id ?? ''),
+		personCountryIso2: e.competitor?.country || undefined,
+		groupNumber: e.group ?? undefined,
+		chance: e.chance ?? 1,
+		station: e.station ?? undefined,
+		attempts: (e.attempts || []).map((a: number) => ({result: a})),
+		extras: Array.isArray(e.extras) ? e.extras : [],
+		done: e.done ?? 0,
+		expected: e.expected ?? 0,
+		level: e.level ?? 0,
+		noShow: !!e.noShow,
+		official: !!e.official,
+	}));
 }
 
 /** federation PublicCompetitorDetail → WcaLiveCompetitorResults */

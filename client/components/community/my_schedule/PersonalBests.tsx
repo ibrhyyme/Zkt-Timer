@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, Info} from 'phosphor-react';
+import {CaretLeft, Info} from 'phosphor-react';
 import {gqlQueryTyped} from '../../api';
 import {ZktPersonBestsDocument} from '../../../@types/generated/graphql';
 import {useCompetitionData} from './CompetitionLoader';
@@ -154,7 +154,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 		return (
 			<div className={b('personal-bests')}>
 				<button className={b('back-sm')} onClick={() => history.goBack()}>
-					<ArrowLeft size={16} />
+					<CaretLeft size={16} weight="bold" />
 					{t('my_schedule.back_to_competitors')}
 				</button>
 				<div className={b('info-banner')}>
@@ -231,7 +231,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 	return (
 		<div className={b('personal-bests')}>
 			<button className={b('back-sm')} onClick={() => history.goBack()}>
-				<ArrowLeft size={16} />
+				<CaretLeft size={16} weight="bold" />
 				{t('my_schedule.back_to_competitors')}
 			</button>
 

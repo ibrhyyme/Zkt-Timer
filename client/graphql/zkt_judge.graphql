@@ -1,0 +1,31 @@
+query zktJudgeMe($competitionId: String!, $jti: String) {
+	zktJudgeMe(competitionId: $competitionId, jti: $jti)
+}
+
+query zktJudgeBoard($competitionId: String!, $roundId: String) {
+	zktJudgeBoard(competitionId: $competitionId, roundId: $roundId)
+}
+
+mutation zktJudgeRequest($input: ZktJudgeRequestInput!) {
+	zktJudgeRequest(input: $input)
+}
+
+mutation zktJudgeSelfGrant($input: ZktJudgeRequestInput!) {
+	zktJudgeSelfGrant(input: $input)
+}
+
+mutation zktJudgeApprovalPreview($token: String!) {
+	zktJudgeApprovalPreview(token: $token)
+}
+
+mutation zktJudgeDecide($token: String!, $decision: String!, $reason: String) {
+	zktJudgeDecide(token: $token, decision: $decision, reason: $reason)
+}
+
+mutation zktJudgeSubmitEntries($items: [ZktJudgeEntryInput!]!) {
+	zktJudgeSubmitEntries(items: $items)
+}
+
+mutation zktJudgeEndGrant($competitionId: String!, $grantId: String, $cardId: String, $all: Boolean) {
+	zktJudgeEndGrant(competitionId: $competitionId, grantId: $grantId, cardId: $cardId, all: $all)
+}

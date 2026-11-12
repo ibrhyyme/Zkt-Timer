@@ -9,6 +9,7 @@ import SettingsCard from '../common/settings_card/SettingsCard';
 import SettingsRow from '../common/settings_row/SettingsRow';
 import {NotificationPreference} from '../../../@types/generated/graphql';
 import {useBattleLaunch} from '../../battle/useBattleLaunch';
+import {useMe} from '../../../util/hooks/useMe';
 
 const NOTIFICATION_PREFERENCES_QUERY = gql`
 	${NOTIFICATION_PREFERENCE_FRAGMENT}
@@ -22,6 +23,8 @@ const NOTIFICATION_PREFERENCES_QUERY = gql`
 export default function NotificationPreferences() {
 	const {t} = useTranslation();
 	const battleOpen = !!useBattleLaunch()?.open;
+	// Score entry progress goes only to ZKT delegates and organisers, who all have a linked ZKT account.
+	const zktLinked = !!useMe()?.integrations?.some((i: any) => i.service_name === 'zkt');
 	const [prefs, setPrefs] = useState({});
 	const {data} = useQuery<{notificationPreferences: NotificationPreference}>(NOTIFICATION_PREFERENCES_QUERY);
 
@@ -80,6 +83,14 @@ export default function NotificationPreferences() {
 			key: 'competition_results_official',
 			label: t('notification_prefs.competition_results_official'),
 		},
+		...(zktLinked
+			? [
+					{
+						key: 'zkt_judge_group_progress',
+						label: t('notification_prefs.zkt_judge_group_progress'),
+					},
+				]
+			: []),
 	];
 
 	// Online Battle: shown only to those who can play it.

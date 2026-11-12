@@ -48,7 +48,9 @@ async function pollRound(liveRoundId: string, competitionId: string) {
 		const sub = subscriptions.get(liveRoundId);
 		if (!sub) return;
 
-		const newHash = data ? JSON.stringify(data.results) : '';
+		// The judges' unchecked times change between official results, so they
+		// are part of what counts as an update.
+		const newHash = data ? JSON.stringify([data.results, data.liveEntries ?? null]) : '';
 		if (newHash !== sub.lastHash) {
 			sub.lastHash = newHash;
 			// The ZKT branch read through the federation cache key its resolver

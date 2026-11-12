@@ -1,7 +1,7 @@
 import React, {Suspense} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useRouteMatch, useHistory} from 'react-router-dom';
-import {ArrowLeft} from 'phosphor-react';
+import {CaretLeft} from 'phosphor-react';
 import CompetitionLoader from './CompetitionLoader';
 import CompetitionList from './CompetitionList';
 import CompetitionDetail from './CompetitionDetail';
@@ -10,6 +10,9 @@ import ActivityDetail from './ActivityDetail';
 import PersonalBests from './PersonalBests';
 import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
 import RecordRadar from './RecordRadar';
+import JudgePage from './judge/JudgePage';
+import JudgeStaffPanel from './judge/JudgeStaffPanel';
+import JudgeApprovePage from './judge/JudgeApprovePage';
 
 // Code splitting: WCA Live tab should load only when used
 const WcaLiveTab = React.lazy(() => import('./wca_live/WcaLiveTab'));
@@ -45,6 +48,15 @@ function MyScheduleInner() {
 		'/competitions/:competitionId/wca-live'
 	);
 	const matchRecords = useRouteMatch({path: '/competitions/records', exact: true});
+	const matchJudge = useRouteMatch<{competitionId: string}>({
+		path: '/competitions/:competitionId/judge',
+		exact: true,
+	});
+	const matchJudgeStaff = useRouteMatch<{competitionId: string}>({
+		path: '/competitions/:competitionId/judge/staff',
+		exact: true,
+	});
+	const matchJudgeApprove = useRouteMatch({path: '/judge/approve', exact: true});
 	const matchCompetition = useRouteMatch<{competitionId: string}>(
 		'/competitions/:competitionId'
 	);
@@ -55,6 +67,38 @@ function MyScheduleInner() {
 		return (
 			<div className={b()}>
 				<RecordRadar />
+			</div>
+		);
+	}
+
+	// Online score entry sits outside CompetitionLoader: a judge with a card open
+	// must reach it even when the competition page itself cannot load.
+	if (matchJudgeApprove) {
+		return (
+			<div className={b()}>
+				<div className={b('content')}>
+					<JudgeApprovePage />
+				</div>
+			</div>
+		);
+	}
+
+	if (matchJudgeStaff) {
+		return (
+			<div className={b()}>
+				<div className={b('content')}>
+					<JudgeStaffPanel competitionId={matchJudgeStaff.params.competitionId} />
+				</div>
+			</div>
+		);
+	}
+
+	if (matchJudge) {
+		return (
+			<div className={b()}>
+				<div className={b('content')}>
+					<JudgePage competitionId={matchJudge.params.competitionId} />
+				</div>
 			</div>
 		);
 	}
@@ -91,12 +135,12 @@ function MyScheduleInner() {
 				<>
 					{isRoot ? (
 						<button className={b('back')} onClick={() => history.push(`/competitions/${competitionId}`)}>
-							<ArrowLeft size={18} />
+							<CaretLeft size={18} weight="bold" />
 							{t('my_schedule.back_to_competition')}
 						</button>
 					) : (
 						<button className={b('back')} onClick={() => history.goBack()}>
-							<ArrowLeft size={18} />
+							<CaretLeft size={18} weight="bold" />
 							{t('my_schedule.back')}
 						</button>
 					)}
@@ -111,7 +155,7 @@ function MyScheduleInner() {
 			child = (
 				<>
 					<button className={b('back')} onClick={() => history.push('/competitions')}>
-						<ArrowLeft size={18} />
+						<CaretLeft size={18} weight="bold" />
 						{t('my_schedule.back_to_list')}
 					</button>
 					<CompetitionDetail />

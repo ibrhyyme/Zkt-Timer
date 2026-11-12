@@ -8,7 +8,7 @@ import {
 import {b} from './shared';
 import {resourceUri} from '../../../util/storage';
 import AccountRequired from '../../common/account_required/AccountRequired';
-import {Info, ArrowLeft} from 'phosphor-react';
+import {CaretLeft, Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {prefetchWcaLiveOverview} from './useLiveResults';
 import {useMe} from '../../../util/hooks/useMe';
@@ -446,7 +446,7 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		return (
 			<>
 				<button className={b('back')} onClick={() => history.push('/competitions')}>
-					<ArrowLeft size={18} />
+					<CaretLeft size={18} weight="bold" />
 					{t('my_schedule.back_to_list')}
 				</button>
 				<div className={b('info-banner', {error: retrying})}>

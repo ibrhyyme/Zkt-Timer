@@ -6,6 +6,9 @@ import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMe
 import {useLiveRoundResults} from '../useLiveResults';
 import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
+import ZktLiveStatus from './ZktLiveStatus';
+import {buildLiveStatusRows} from './live-status-rows';
+import TabBar from '../../../common/tab_bar/TabBar';
 import {useDelayedFlag} from '../useDelayedFlag';
 
 interface Props {
@@ -132,8 +135,13 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		}
 	}, [roundNumber, defaultRound, visibleRounds, history, roundPath]);
 
+	// "Resmi sonuçlar" / "Anlık durum" (ZKT online skor girişi). null = automatic:
+	// the official table, unless it is still empty while judges' times exist.
+	const [liveView, setLiveView] = useState<'official' | 'status' | null>(null);
+
 	useEffect(() => {
 		setModalRow(null);
+		setLiveView(null);
 	}, [selectedRound?.liveRoundId]);
 
 	const liveRoundId = selectedRound?.liveRoundId || null;
@@ -257,7 +265,31 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 
 	const allResults = roundResults?.results || [];
 	const isFinished = selectedRound.finished;
-	const showChances = dualChance && allResults.some((r: any) => (r.chances?.length || 0) > 0);
+	// Judges' unchecked times: only a ZKT round whose competition shows them
+	// carries any. Without them the page is exactly what it was.
+	const liveEntries = (isZkt && roundResults?.liveEntries) || [];
+	const hasLiveStatus = liveEntries.length > 0;
+	// A later round lists everyone who advanced with empty attempts, so "has an
+	// official result" means a row with at least one attempt in.
+	const hasOfficialTimes = allResults.some((r: any) => (r.attempts || []).some((a: any) => a?.result));
+	const view: 'official' | 'status' = hasLiveStatus
+		? (liveView ?? (hasOfficialTimes ? 'official' : 'status'))
+		: 'official';
+	// "Anlık durum" is the results table itself, ranked from the judges' visible
+	// times (owner's call: a separate group layout was hard to read). A Çift Şans
+	// round keeps the group layout: its chances do not fit one row per person yet.
+	const statusTable = view === 'status' && !dualChance;
+	const tableRows: any[] = statusTable
+		? buildLiveStatusRows(liveEntries, allResults, {
+				numAttempts,
+				sortBy,
+				eventId: event.eventId,
+				cutoff: selectedRound.cutoff
+					? {attempts: selectedRound.cutoff.numberOfAttempts, result: selectedRound.cutoff.attemptResult}
+					: null,
+			})
+		: allResults;
+	const showChances = !statusTable && dualChance && allResults.some((r: any) => (r.chances?.length || 0) > 0);
 	// On a phone four time columns leave a name its first word; with both
 	// chances on screen the best single moves to the row's detail sheet.
 	const showBest = !(isMobile && showChances);
@@ -406,6 +438,29 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</div>
 			)}
 
+			{hasLiveStatus && (
+				<TabBar<'official' | 'status'>
+					className={b('wca-live-view-tabs')}
+					label={t('zkt_comp.live_tabs_label')}
+					value={view}
+					onChange={setLiveView}
+					tabs={[
+						{id: 'official', label: t('zkt_comp.live_tab_official')},
+						{id: 'status', label: t('zkt_comp.live_tab_status')},
+					]}
+				/>
+			)}
+
+			{view === 'status' &&
+				(statusTable ? (
+					<>
+						<p className={b('wca-live-status-note')}>{t('zkt_comp.live_status_note')}</p>
+						<p className={b('wca-live-status-rule')}>{t('zkt_comp.live_status_rule')}</p>
+					</>
+				) : (
+					<ZktLiveStatus entries={liveEntries} eventId={event.eventId} dualChance={dualChance} myName={myName} />
+				))}
+
 			{/* Loading skeleton */}
 			{showSkeleton && (
 				<div className={b('wca-live-skeleton')}>
@@ -416,7 +471,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 			)}
 
 			{/* Results table */}
-			{roundResults && (roundResults.results?.length || 0) > 0 && numAttempts > 0 ? (
+			{view !== 'official' && !statusTable ? null : roundResults && tableRows.length > 0 && numAttempts > 0 ? (
 				<>
 					{scrollWidth > 0 && (
 						<div
@@ -450,11 +505,12 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 								</tr>
 							</thead>
 							<tbody>
-								{allResults.map((r: any) => {
+								{tableRows.map((r: any) => {
 									const attempts = formatAttempts(r.attempts || [], numAttempts, event.eventId);
 									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
 									const clickable = isMobile || hasTarget;
-									const medal = isFinished ? rankingMedal(r.ranking) : '';
+									// Unchecked times win no medal, set no record and advance nobody.
+									const medal = isFinished && !statusTable ? rankingMedal(r.ranking) : '';
 									const isMe = !!(
 										(detail?.myWcaId && r.personWcaId && detail.myWcaId === r.personWcaId) ||
 										(myName && r.personName && myName === r.personName)
@@ -463,8 +519,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 										<tr
 											key={r.personLiveId || `${r.ranking}-${r.personName}`}
 											className={b('wca-live-result-row', {
-												advancing: r.advancing && !r.advancingQuestionable,
-												questionable: r.advancing && r.advancingQuestionable,
+												advancing: !statusTable && r.advancing && !r.advancingQuestionable,
+												questionable: !statusTable && r.advancing && r.advancingQuestionable,
 												clickable,
 												me: isMe,
 												[`rank-${r.ranking}`]: isFinished && r.ranking && r.ranking <= 3,
@@ -504,9 +560,19 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 													)}
 												</td>
 											)}
-											<td className={b('wca-live-person')}>
+											<td className={b('wca-live-person', {stacked: statusTable})}>
 												<span className={b('wca-live-person-name')} title={r.personName}>{r.personName}</span>
 												{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
+												{/* No "Resmi" here, even on a row the desk accepted: in a ranked
+												    table it read as a final place. Everyone gets the count. */}
+												{statusTable &&
+													(r.tag === 'noShow' ? (
+														<span className={b('wca-live-status-tag')}>{t('zkt_comp.live_no_show')}</span>
+													) : (
+														<span className={b('wca-live-status-progress')}>
+															{r.done}/{r.expected}
+														</span>
+													))}
 											</td>
 											{showChances
 												? [1, 2].map((n) => {
@@ -525,7 +591,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 													<td className={b('wca-live-time', {strong: true})}>
 														<span className={b('wca-live-time-inner')}>
 															{formatResult(r.average, event.eventId, true)}
-															<RecordTag tag={r.averageRecordTag} />
+															{!statusTable && <RecordTag tag={r.averageRecordTag} />}
 														</span>
 													</td>
 												)}
@@ -533,7 +599,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												<td className={b('wca-live-time')}>
 													<span className={b('wca-live-time-inner')}>
 														{formatResult(r.best, event.eventId, false)}
-														<RecordTag tag={r.singleRecordTag} />
+														{!statusTable && <RecordTag tag={r.singleRecordTag} />}
 													</span>
 												</td>
 											)}

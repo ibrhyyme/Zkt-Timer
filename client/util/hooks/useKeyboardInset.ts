@@ -107,14 +107,24 @@ function useKeyboardState(): KeyboardState {
 		function measure(): void {
 			if (!vv) return;
 			refreshBaseline();
-			// The part of the layout viewport that survived but has the keyboard drawn over
-			// it. A browser that shrinks the viewport instead reports ~0 here, which is
-			// correct: those pixels are already gone from `100dvh`.
-			const covered = window.innerHeight - vv.height - vv.offsetTop;
-			const inset = covered > KEYBOARD_MIN_HEIGHT ? Math.round(covered) : 0;
+			// The keyboard drawn over a layout viewport that kept its height. A browser that
+			// shrinks the viewport instead reports ~0 here, which is correct: those pixels
+			// are already gone from `100dvh`.
+			const overlay = window.innerHeight - vv.height;
 			// Both routes hide the same keyboard, so together they are its real height.
-			const height = inset + viewportShrink();
-			publish(height > KEYBOARD_MIN_HEIGHT ? { inset, height: Math.round(height) } : CLOSED);
+			const height = Math.max(0, overlay) + viewportShrink();
+			if (height <= KEYBOARD_MIN_HEIGHT) {
+				publish(CLOSED);
+				return;
+			}
+			// How far a bottom-anchored fixed element has to rise to sit on the keyboard.
+			// When the page cannot scroll a focused field into view (a judge card's last
+			// lines), Chrome pans the visual viewport down instead, and offsetTop eats into
+			// the gap: 813 - 498 - 285 left 30px on a Fold. That is small but real, so it is
+			// not held against the open/closed threshold; doing so read an open keyboard as
+			// closed and left the judge dock under it.
+			const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+			publish({ inset, height: Math.round(height) });
 		}
 
 		measure();
