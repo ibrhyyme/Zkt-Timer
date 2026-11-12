@@ -504,6 +504,8 @@
       "retry": "Tekrar dene",
       "add_algorithms": "Algoritma ekle",
       "study": "Çalış",
+      "study_selected": "Seçilenleri çalış ({{count}})",
+      "row_details": "Ayrıntılar",
       "save": "Setlerime ekle",
       "unsave": "Setlerimden çıkar",
       "share": "Paylaş",

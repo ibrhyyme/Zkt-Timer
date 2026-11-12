@@ -7,6 +7,7 @@ import {
 	checkedKey,
 	distinctCategoryCount,
 	filterForMode,
+	pickSetRows,
 	setRowsToChecked,
 	smartSkipSummary,
 	startSetStudyPayload,
@@ -165,5 +166,33 @@ describe('startSetStudyPayload', () => {
 			is_owner: false,
 		});
 		expect(payload.items.map(checkedKey)).toEqual(MIXED.map((r) => algSetCaseKey(r.category, r.case_name)));
+	});
+
+	it('runs only the picked rows, in set order', () => {
+		const picked = [MIXED[2], MIXED[0]].map((r) => algSetCaseKey(r.category, r.case_name));
+		const payload = startSetStudyPayload(
+			{id: 'set-1', code: 'AbCdEfGhIj', name: 'x', owner_name: 'u', is_owner: true, items: MIXED},
+			undefined,
+			picked
+		);
+		expect(payload.items.map(checkedKey)).toEqual(
+			[MIXED[0], MIXED[2]].map((r) => algSetCaseKey(r.category, r.case_name))
+		);
+	});
+});
+
+describe('pickSetRows', () => {
+	it('keeps every row without a pick', () => {
+		expect(pickSetRows(MIXED, null)).toEqual(MIXED);
+		expect(pickSetRows(MIXED, [])).toEqual(MIXED);
+	});
+
+	it('falls back to the whole set when no picked key matches a row', () => {
+		expect(pickSetRows(MIXED, ['PLL::No such case'])).toEqual(MIXED);
+	});
+
+	it('ignores picked keys that left the set', () => {
+		const key = algSetCaseKey(MIXED[1].category, MIXED[1].case_name);
+		expect(pickSetRows(MIXED, [key, 'PLL::No such case'])).toEqual([MIXED[1]]);
 	});
 });

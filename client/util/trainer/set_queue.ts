@@ -112,13 +112,33 @@ export function distinctCategoryCount(items: {category: string}[]): number {
 	return new Set(items.map((item) => item.category)).size;
 }
 
-/** A loaded set as the START_SET_STUDY payload (every row as a card, in set order). */
+/**
+ * The rows the user picked on the set page (`category::case_name` keys, like the normal trainer's
+ * checks). No pick means the whole set. A pick that matches no row any more (the owner removed
+ * those cases) also means the whole set: an empty study screen would be a dead end.
+ */
+export function pickSetRows<T extends {category: string; case_name: string}>(
+	rows: T[],
+	pickedKeys?: Iterable<string> | null
+): T[] {
+	const picked = new Set(pickedKeys || []);
+	if (picked.size === 0) return rows;
+	const chosen = rows.filter((row) => picked.has(algSetCaseKey(row.category, row.case_name)));
+	return chosen.length > 0 ? chosen : rows;
+}
+
+/**
+ * A loaded set as the START_SET_STUDY payload, in set order: every row, or only the picked ones.
+ * The picked rows become `activeSet.items` too, so a study mode switch re-filters the pick and
+ * never brings the rest of the set back.
+ */
 export function startSetStudyPayload(
 	set: {id: string; code: string; name: string; owner_name: string; is_owner: boolean; items: SetStudyRow[]},
-	bestTimeOf?: BestTimeLookup
+	bestTimeOf?: BestTimeLookup,
+	pickedKeys?: Iterable<string> | null
 ): StartSetStudyPayload {
 	return {
 		set: {id: set.id, code: set.code, name: set.name, owner_name: set.owner_name, is_owner: set.is_owner},
-		items: setRowsToChecked(set.items || [], bestTimeOf),
+		items: setRowsToChecked(pickSetRows(set.items || [], pickedKeys), bestTimeOf),
 	};
 }

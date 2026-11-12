@@ -21,8 +21,9 @@
  * screen); the cube tracking lock itself stays in TrainingArea.
  *
  * Cold `?set=` open: the set is loaded (device cache first, then network, see
- * lib/alg_sets/types.ts loadSetForStudy) and START_SET_STUDY starts the session. A set that cannot
- * be opened sends the user to its page, which says why.
+ * lib/alg_sets/types.ts loadSetForStudy) and START_SET_STUDY starts the session with the rows
+ * picked on the set page in this tab (lib/alg_sets/selection.ts), or the whole set. A set that
+ * cannot be opened sends the user to its page, which says why.
  *
  * OWNERSHIP: while the mode is recognition / efficiency / ollcp this hook writes no URL (their
  * own hooks do); it still reads the entry segment. Anti-echo: idempotent diffs.
@@ -48,6 +49,7 @@ import {categoryToSlug, slugToCategory} from '../../../util/trainer/url/category
 import {resolveStudyMode, smartModeAllowed} from '../../../util/trainer/study_mode';
 import {canStudyWithSmartCube, startSetStudyPayload} from '../../../util/trainer/set_queue';
 import {loadSetForStudy} from '../../../lib/alg_sets/types';
+import {readSetSelection} from '../../../lib/alg_sets/selection';
 import {useMe} from '../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../lib/pro';
 import type {StudyMode, TrainerSessionState} from '../types';
@@ -200,7 +202,8 @@ export function useTrainerUrlSync() {
 					history.replace(buildSetPath({code}));
 					return;
 				}
-				dispatch({type: 'START_SET_STUDY', payload: startSetStudyPayload(set, getBestTime)});
+				// The rows picked on the set page (same tab): a reload keeps studying the pick.
+				dispatch({type: 'START_SET_STUDY', payload: startSetStudyPayload(set, getBestTime, readSetSelection(set.id))});
 			};
 
 			loadSetForStudy(code).then(finish, () => finish(null));

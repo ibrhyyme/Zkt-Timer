@@ -500,6 +500,8 @@
       "retry": "重试",
       "add_algorithms": "添加公式",
       "study": "练习",
+      "study_selected": "练习所选 ({{count}})",
+      "row_details": "详情",
       "save": "加入我的公式集",
       "unsave": "从我的公式集移除",
       "share": "分享",

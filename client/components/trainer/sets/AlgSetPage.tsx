@@ -25,10 +25,12 @@ import {
 	ArrowsDownUp,
 	ArrowUp,
 	BookmarkSimple,
+	Check,
 	CircleNotch,
 	DotsThreeVertical,
 	EyeSlash,
 	Flag,
+	Info,
 	LinkSimple,
 	PencilSimple,
 	Play,
@@ -65,6 +67,8 @@ import {
 	updateAlgSetItem,
 } from '../../../lib/alg_sets/api';
 import {loadAlgSet, peekCachedAlgSet, rememberAlgSet, forgetAlgSet, toStudySet} from '../../../lib/alg_sets/loader';
+import {readSetSelection, writeSetSelection} from '../../../lib/alg_sets/selection';
+import {algSetCaseKey} from '../../../../shared/trainer/alg_sets';
 import {addSavedSet, removeSavedSet, upsertOwnSet} from '../../../lib/alg_sets/store';
 import {algSetSsrKey, type AlgSetSsrPreview} from './ssr';
 import {CategoryBadges, OwnerChip, VisibilityTag, type SheetAction} from './parts';
@@ -99,6 +103,11 @@ export function formatBestTime(ms: number | null): string {
 
 function statsKey(item: AlgSetItemData): string {
 	return algToId(trainerAlgText(item.algorithm));
+}
+
+/** A row's pick key: the case, not the algorithm (a changed algorithm keeps the pick). */
+function pickKey(item: AlgSetItemData): string {
+	return algSetCaseKey(item.category, item.case_name);
 }
 
 export default function AlgSetPage() {
@@ -200,6 +209,43 @@ export default function AlgSetPage() {
 	const groups = useMemo(() => groupItemsByCategory(items), [items]);
 	const progress = progressCounts(items.map(statsKey), getLearnedStatus);
 
+	// Picked rows for the next study, like the normal trainer's checks. Nothing picked = the
+	// whole set (Study works as before). Kept per tab (lib/alg_sets/selection.ts) so the way back
+	// from training and a reload of the study screen keep the same pick.
+	const setId = set?.id || null;
+	const [picked, setPicked] = useState<string[]>(() => readSetSelection(setId));
+	useEffect(() => {
+		setPicked(readSetSelection(setId));
+	}, [setId]);
+	// A row the owner removed drops out of the pick on its own.
+	const pickedKeys = useMemo(() => {
+		const present = new Set(items.map(pickKey));
+		return picked.filter((key) => present.has(key));
+	}, [picked, items]);
+	const pickedSet = useMemo(() => new Set(pickedKeys), [pickedKeys]);
+	const pickedCount = pickedKeys.length;
+
+	function updatePicked(next: string[]) {
+		setPicked(next);
+		writeSetSelection(setId, next);
+	}
+
+	function togglePick(item: AlgSetItemData) {
+		const key = pickKey(item);
+		updatePicked(pickedSet.has(key) ? pickedKeys.filter((k) => k !== key) : [...pickedKeys, key]);
+	}
+
+	function toggleGroupPick(groupItems: AlgSetItemData[]) {
+		const keys = groupItems.map(pickKey);
+		const allPicked = keys.every((key) => pickedSet.has(key));
+		if (allPicked) {
+			const drop = new Set(keys);
+			updatePicked(pickedKeys.filter((key) => !drop.has(key)));
+		} else {
+			updatePicked([...pickedKeys, ...keys.filter((key) => !pickedSet.has(key))]);
+		}
+	}
+
 	function applySet(next: AlgSetData) {
 		setView((prev) => ({...prev, set: next, status: 'ready', fromCache: false}));
 		rememberAlgSet(next);
@@ -218,7 +264,7 @@ export default function AlgSetPage() {
 			history.push(loginRedirectPath(here));
 			return;
 		}
-		dispatch({type: 'START_SET_STUDY', payload: startSetStudyPayload(toStudySet(set), getBestTime)});
+		dispatch({type: 'START_SET_STUDY', payload: startSetStudyPayload(toStudySet(set), getBestTime, pickedKeys)});
 	}
 
 	async function toggleSave() {
@@ -344,6 +390,12 @@ export default function AlgSetPage() {
 		if (!set) return;
 		const anchor = anchorOf(e.currentTarget);
 		actions.openMenu(item.case_name, [
+			{
+				id: 'details',
+				label: t('trainer.sets.row_details'),
+				icon: <Info size={18} weight="bold" />,
+				onSelect: () => openRow(item),
+			},
 			{
 				id: 'variant',
 				label: t('trainer.sets.change_algorithm'),
@@ -480,10 +532,16 @@ export default function AlgSetPage() {
 		const best = me ? getBestTime(key) : null;
 		const changed = view.changed.has(item.id);
 		const rowBusy = busy === `row:${item.id}`;
+		const isPicked = !sorting && pickedSet.has(pickKey(item));
 		return (
 			<li
 				key={item.id}
-				className={b('row', {sorting: !!sorting, dragging: dragId === item.id, added: justAdded.has(item.id)})}
+				className={b('row', {
+					sorting: !!sorting,
+					dragging: dragId === item.id,
+					added: justAdded.has(item.id),
+					picked: isPicked,
+				})}
 				draggable={!!sorting}
 				onDragStart={sorting ? () => setDragId(item.id) : undefined}
 				onDragOver={sorting ? (e) => e.preventDefault() : undefined}
@@ -498,7 +556,19 @@ export default function AlgSetPage() {
 				}
 				onDragEnd={sorting ? () => setDragId(null) : undefined}
 			>
-				<button type="button" className={b('row-main')} onClick={() => !sorting && openRow(item)} disabled={!!sorting}>
+				{/* A tap picks the row for the next study, as a card does in the normal trainer. */}
+				<button
+					type="button"
+					className={b('row-main')}
+					onClick={() => !sorting && togglePick(item)}
+					disabled={!!sorting}
+					aria-pressed={sorting ? undefined : isPicked}
+				>
+					{!sorting ? (
+						<span className={b('row-check', {checked: isPicked})} aria-hidden="true">
+							{isPicked ? <Check size={14} weight="bold" /> : <Plus size={14} />}
+						</span>
+					) : null}
 					<span className={b('row-pattern')}>
 						<CasePattern category={item.category} algorithm={trainerAlgText(item.algorithm)} {...facesFor(item.category, faces)} fit />
 					</span>
@@ -561,7 +631,17 @@ export default function AlgSetPage() {
 					>
 						{rowBusy ? <CircleNotch className="spin" size={18} /> : <DotsThreeVertical size={20} weight="bold" />}
 					</button>
-				) : null}
+				) : (
+					<button
+						type="button"
+						className={b('icon-button')}
+						onClick={() => openRow(item)}
+						aria-label={`${item.case_name}: ${t('trainer.sets.row_details')}`}
+						title={t('trainer.sets.row_details')}
+					>
+						<Info size={20} weight="bold" />
+					</button>
+				)}
 			</li>
 		);
 	};
@@ -620,10 +700,18 @@ export default function AlgSetPage() {
 							fullWidth
 							icon={<Play weight="fill" />}
 							iconFirst
-							text={t('trainer.sets.study')}
+							text={pickedCount > 0 ? t('trainer.sets.study_selected', {count: pickedCount}) : t('trainer.sets.study')}
 							disabled={items.length === 0 || !!sorting}
 							onClick={study}
 						/>
+						{pickedCount > 0 && !sorting ? (
+							<p className={b('pick-note')}>
+								<span>{t('trainer.sets.selected_count', {count: pickedCount})}</span>
+								<button type="button" className={b('text-button')} onClick={() => updatePicked([])}>
+									{t('trainer.deselect_all')}
+								</button>
+							</p>
+						) : null}
 						<div className={b('set-actions-row')}>
 							{isOwner ? (
 								<Button
@@ -697,15 +785,23 @@ export default function AlgSetPage() {
 					) : sortingItems ? (
 						<ol className={b('rows')}>{sortingItems.map(renderRow)}</ol>
 					) : (
-						groups.map((group) => (
-							<div key={group.category} className={b('group')}>
-								<h2 className={b('group-title')}>
-									{group.category}
-									<span className={b('group-count')}>{group.items.length}</span>
-								</h2>
-								<ul className={b('rows')}>{group.items.map(renderRow)}</ul>
-							</div>
-						))
+						groups.map((group) => {
+							const groupAllPicked = group.items.every((item) => pickedSet.has(pickKey(item)));
+							return (
+								<div key={group.category} className={b('group')}>
+									<div className={b('group-head')}>
+										<h2 className={b('group-title')}>
+											{group.category}
+											<span className={b('group-count')}>{group.items.length}</span>
+										</h2>
+										<button type="button" className={b('group-pick')} onClick={() => toggleGroupPick(group.items)}>
+											{groupAllPicked ? t('trainer.deselect_all') : t('trainer.select_all')}
+										</button>
+									</div>
+									<ul className={b('rows')}>{group.items.map(renderRow)}</ul>
+								</div>
+							);
+						})
 					)}
 
 					{!me ? (
@@ -715,6 +811,17 @@ export default function AlgSetPage() {
 					) : null}
 				</section>
 			</div>
+
+			{/* Phone and tablet: the Study button sits above the rows, out of sight while picking. */}
+			{pickedCount > 0 && !sorting ? (
+				<div className={b('pick-bar')}>
+					<span className={b('pick-bar-count')}>{t('trainer.sets.selected_count', {count: pickedCount})}</span>
+					<span className={b('pick-bar-actions')}>
+						<Button gray text={t('trainer.deselect_all')} onClick={() => updatePicked([])} />
+						<Button primary icon={<Play weight="fill" />} iconFirst text={t('trainer.sets.study')} onClick={study} />
+					</span>
+				</div>
+			) : null}
 
 			{actions.menuElement}
 		</div>
