@@ -12,8 +12,12 @@ import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {toastSuccess, toastError} from '../../../util/toast';
 import CreatePromoCodeModal from './CreatePromoCodeModal';
 import ManagePromoCodeModal from './ManagePromoCodeModal';
+import TabBar from '../../common/tab_bar/TabBar';
+import CompetitionProGifts from './CompetitionProGifts';
 
 const b = block('admin-promo-codes');
+
+type PromoTab = 'codes' | 'competition';
 
 const GET_PROMO_CODES = gql`
 	query GetPromoCodes {
@@ -58,6 +62,7 @@ export default function AdminPromoCodes() {
 	const dispatch = useDispatch();
 	const [codes, setCodes] = useState<PromoCodeItem[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [tab, setTab] = useState<PromoTab>('codes');
 
 	async function fetchCodes() {
 		try {
@@ -135,8 +140,31 @@ export default function AdminPromoCodes() {
 		);
 	}
 
+	const tabs = (
+		<TabBar<PromoTab>
+			className={b('tabs')}
+			label={t('title')}
+			value={tab}
+			onChange={setTab}
+			tabs={[
+				{id: 'codes', label: t('tab_codes')},
+				{id: 'competition', label: t('tab_competition')},
+			]}
+		/>
+	);
+
+	if (tab === 'competition') {
+		return (
+			<div className={b()}>
+				{tabs}
+				<CompetitionProGifts />
+			</div>
+		);
+	}
+
 	return (
 		<div className={b()}>
+			{tabs}
 			<div className={b('header')}>
 				<div>
 					<h2 className={b('title')}>{t('title')}</h2>

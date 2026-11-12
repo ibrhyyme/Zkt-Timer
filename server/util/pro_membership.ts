@@ -1,7 +1,7 @@
 // Where a member's Pro or Premium comes from, decided from the account row alone.
 // Pure on purpose: the IAP webhook and the admin Pro list both read it, and the
-// rules (a store product wins, then a promo window still running, else an admin
-// grant) are easier to pin in a test than in a resolver.
+// rules (a store product wins, then a promo or competition gift still running,
+// else an admin grant) are easier to pin in a test than in a resolver.
 
 export type IapPlanTier = 'monthly' | 'yearly' | 'lifetime' | 'unknown';
 
@@ -19,7 +19,7 @@ export function planFromProductId(productId: string | null | undefined): Product
 
 export type MembershipTier = 'pro' | 'premium';
 /** `other` is a store product whose id names no known plan. */
-export type MembershipSource = 'lifetime' | 'yearly' | 'monthly' | 'other' | 'promo' | 'admin';
+export type MembershipSource = 'lifetime' | 'yearly' | 'monthly' | 'other' | 'promo' | 'competition' | 'admin';
 /** Store state only; a promo or admin grant is always `active` until it expires. */
 export type MembershipStatus = 'active' | 'cancelled' | 'billing_issue';
 
@@ -43,6 +43,8 @@ export interface MembershipAccount {
 	iap_billing_issue_at: Date | null;
 	iap_latest_event_at: Date | null;
 	redemptions: MembershipRedemption[];
+	/** Competition Pro gifts handed out (services/competition_pro_gift.ts). Optional for older callers. */
+	competition_gifts?: {granted_at: Date | null; pro_until: Date | null}[];
 }
 
 export interface MembershipInfo {
@@ -89,6 +91,26 @@ export function classifyMembership(account: MembershipAccount, now: Date = new D
 	const running = account.redemptions
 		.filter((r) => r.promo_code.membership_type === tier && promoStillRunning(r, now))
 		.sort((a, b) => b.redeemed_at.getTime() - a.redeemed_at.getTime());
+
+	// A competition gift whose window is still open, Pro only. When a promo also
+	// runs, the more recent of the two is the one that set the end date.
+	const gift =
+		tier === 'pro'
+			? (account.competition_gifts ?? [])
+					.filter((g) => g.granted_at && g.pro_until && g.pro_until > now)
+					.sort((a, b) => (b.granted_at as Date).getTime() - (a.granted_at as Date).getTime())[0]
+			: undefined;
+
+	if (gift && (running.length === 0 || (gift.granted_at as Date) > running[0].redeemed_at)) {
+		return {
+			tier,
+			source: 'competition',
+			status: 'active',
+			expires_at,
+			last_event_at: gift.granted_at,
+			promo_code: null,
+		};
+	}
 
 	if (running.length > 0) {
 		return {

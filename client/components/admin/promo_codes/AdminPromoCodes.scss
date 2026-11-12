@@ -6,6 +6,10 @@ $pro-violet-light: #a78bfa;
 .#{$namespace}-admin-promo-codes {
 	padding: 0 10px;
 
+	&__tabs {
+		margin-bottom: 20px;
+	}
+
 	&__header {
 		display: flex;
 		justify-content: space-between;

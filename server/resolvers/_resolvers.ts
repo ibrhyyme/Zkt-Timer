@@ -35,6 +35,7 @@ export * from './ZktAuth.resolver';
 export * from './WcaResult.resolver';
 export * from './WcaSchedule.resolver';
 export * from './PromoCode.resolver';
+export * from './CompetitionProGift.resolver';
 export * from './SiteConfig.resolver';
 export * from './ZktPublic.resolver';
 export * from './LandingStats.resolver';

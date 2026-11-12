@@ -11,6 +11,7 @@ import {sendPushToUser} from '../services/push';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
 import {logger} from '../services/logger';
+import {expiryAtLeast, isPremiumActive, isProActive} from '../util/pro_gift_rules';
 
 @Resolver()
 export class PromoCodeResolver {
@@ -114,11 +115,19 @@ export class PromoCodeResolver {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'already_used');
 		}
 
-		// Calculate expiry
-		let expires_at: Date | null = null;
-		if (promoCode.duration_minutes > 0) {
-			expires_at = new Date(Date.now() + promoCode.duration_minutes * 60000);
-		}
+		// The code's own end date, then never shorter than what the member already
+		// has: a lifetime buyer redeeming a 7-day code used to end up with 7 days
+		// and lose Pro to the expiry cron.
+		const codeExpiry =
+			promoCode.duration_minutes > 0 ? new Date(Date.now() + promoCode.duration_minutes * 60000) : null;
+		const current = await getPrisma().userAccount.findUnique({
+			where: {id: userId},
+			select: {is_pro: true, pro_expires_at: true, is_premium: true, premium_expires_at: true},
+		});
+		const expires_at =
+			promoCode.membership_type === 'pro'
+				? expiryAtLeast(isProActive(current), current?.pro_expires_at ?? null, codeExpiry)
+				: expiryAtLeast(isPremiumActive(current), current?.premium_expires_at ?? null, codeExpiry);
 
 		// Apply membership + create redemption atomically
 		await getPrisma().$transaction([

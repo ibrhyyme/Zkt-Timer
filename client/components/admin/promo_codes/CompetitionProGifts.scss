@@ -1,0 +1,275 @@
+@import '../../../styles/config';
+
+// Admin > Promo > Competition (CompetitionProGifts.tsx) and its two modals. Flat:
+// hairlines and text, no fills or shadows, like the codes table next to it.
+
+.#{$namespace}-competition-pro-gifts {
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
+		margin-bottom: 24px;
+	}
+
+	&__title {
+		font-family: 'Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		font-size: 1.4rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin: 0;
+	}
+
+	&__subtitle {
+		font-size: 0.88rem;
+		color: $zt-text-muted;
+		margin: 4px 0 0;
+		max-width: 560px;
+	}
+
+	&__empty {
+		text-align: center;
+		color: $zt-text-muted;
+		padding: 40px 0;
+		font-size: 0.9rem;
+	}
+
+	&__table {
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-lg;
+		overflow: hidden;
+	}
+
+	&__row {
+		display: grid;
+		grid-template-columns: 2fr 1.2fr 0.8fr 0.9fr 1.1fr 0.9fr 1fr;
+		gap: 8px;
+		align-items: center;
+		padding: 12px 16px;
+		border-bottom: 1px solid $zt-divider;
+		font-size: 0.88rem;
+		color: rgb(var(--text-color));
+
+		&:last-child {
+			border-bottom: none;
+		}
+
+		&--head {
+			font-size: 0.75rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: $zt-text-muted;
+			background: $zt-card-bg;
+		}
+	}
+
+	&__name {
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__status {
+		font-weight: 600;
+
+		&--armed {
+			color: rgb(var(--text-color));
+		}
+
+		&--processing {
+			color: #22c55e;
+		}
+
+		&--done {
+			color: $zt-text-muted;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 6px;
+	}
+
+	&__action {
+		width: 32px;
+		height: 32px;
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-control-border;
+		background: transparent;
+		color: rgb(var(--text-color));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		font-family: inherit;
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		&:hover {
+			border-color: $zt-control-border-hover;
+		}
+
+		&--delete {
+			color: #ef4444;
+		}
+	}
+
+	@include bp-down($bp-md) {
+		&__row {
+			grid-template-columns: 1.6fr 1fr 1fr 1fr;
+
+			span:nth-child(2),
+			span:nth-child(5),
+			span:nth-child(6) {
+				display: none;
+			}
+		}
+	}
+}
+
+.#{$namespace}-competition-gift-modal {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: $zt-text-muted;
+	}
+
+	&__fixed {
+		margin: 0;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__note {
+		margin: 0;
+		font-size: 0.88rem;
+		color: $zt-text-muted;
+	}
+
+	&__days {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+
+		@include bp-down($bp-xxs) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__input {
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-control-border;
+		background: $zt-control-bg;
+		color: rgb(var(--text-color));
+		font-size: 0.95rem;
+		font-family: inherit;
+		outline: none;
+
+		&:focus {
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__rules {
+		border-top: 1px solid $zt-divider;
+		padding-top: 12px;
+		font-size: 0.85rem;
+		color: rgba(var(--text-color), 0.85);
+
+		ul {
+			margin: 0;
+			padding-left: 18px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+	}
+
+	&__rules-title {
+		margin: 0 0 6px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+}
+
+.#{$namespace}-competition-gift-list {
+	max-height: 60vh;
+	overflow-y: auto;
+
+	&__empty {
+		margin: 0;
+		padding: 24px 0;
+		text-align: center;
+		color: $zt-text-muted;
+		font-size: 0.9rem;
+	}
+
+	&__row {
+		display: grid;
+		grid-template-columns: 1.6fr 1.2fr 1fr 0.5fr 1.6fr 1fr;
+		gap: 8px;
+		align-items: center;
+		padding: 10px 4px;
+		border-bottom: 1px solid $zt-divider;
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
+
+		&--head {
+			position: sticky;
+			top: 0;
+			background: rgb(var(--module-color));
+			font-size: 0.72rem;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: $zt-text-muted;
+		}
+	}
+
+	&__name {
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	&__status {
+		&--granted {
+			color: #22c55e;
+			font-weight: 600;
+		}
+
+		&--skipped,
+		&--expired {
+			color: $zt-text-muted;
+		}
+	}
+
+	@include bp-down($bp-md) {
+		&__row {
+			grid-template-columns: 1.4fr 1fr 1.4fr;
+
+			span:nth-child(2),
+			span:nth-child(4),
+			span:nth-child(6) {
+				display: none;
+			}
+		}
+	}
+}

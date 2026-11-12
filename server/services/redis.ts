@@ -44,6 +44,8 @@ export enum RedisNamespace {
 	ZKT_JUDGE_PROGRESS = 'cd:zktjudge:progress',
 	// A judge's correction / extra request notices (zkt_judge_request.ts): one per request per window.
 	ZKT_JUDGE_REQUEST = 'cd:zktjudge:request',
+	// Competition Pro gift (cron_competition_pro_gift.ts): the tick lock only.
+	COMPETITION_PRO_GIFT = 'cd:compprogift',
 	// Competition lifecycle notifications: cron locks, discovery gates and the
 	// crons' own caches (never the page's WCIF key, see cron_competition_lifecycle.ts).
 	COMPETITION_LIFECYCLE = 'cd:lifecycle',

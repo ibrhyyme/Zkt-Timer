@@ -101,4 +101,42 @@ describe('classifyMembership', () => {
 		const pro = new Date('2026-12-01T00:00:00Z');
 		expect(classifyMembership(account({pro_expires_at: pro}), NOW).expires_at).toEqual(pro);
 	});
+	it('reads a running competition gift as its source', () => {
+		const granted = new Date('2026-11-01T00:00:00Z');
+		const info = classifyMembership(
+			account({
+				pro_expires_at: new Date('2026-12-01T00:00:00Z'),
+				competition_gifts: [{granted_at: granted, pro_until: new Date('2026-12-01T00:00:00Z')}],
+			}),
+			NOW
+		);
+		expect(info.source).toBe('competition');
+		expect(info.last_event_at).toEqual(granted);
+	});
+
+	it('picks the more recent of a running promo and a running gift', () => {
+		const info = classifyMembership(
+			account({
+				pro_expires_at: new Date('2026-12-20T00:00:00Z'),
+				redemptions: [redemption('LATER', 'pro', 30 * DAY_MIN, '2026-11-03T00:00:00Z')],
+				competition_gifts: [
+					{granted_at: new Date('2026-11-01T00:00:00Z'), pro_until: new Date('2026-12-01T00:00:00Z')},
+				],
+			}),
+			NOW
+		);
+		expect(info.source).toBe('promo');
+	});
+
+	it('ignores a gift that has run out', () => {
+		const info = classifyMembership(
+			account({
+				competition_gifts: [
+					{granted_at: new Date('2026-09-01T00:00:00Z'), pro_until: new Date('2026-10-01T00:00:00Z')},
+				],
+			}),
+			NOW
+		);
+		expect(info.source).toBe('admin');
+	});
 });

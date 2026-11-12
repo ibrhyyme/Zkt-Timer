@@ -177,14 +177,21 @@ export class AdminReportResolver {
 						promo_code: {select: {code: true, membership_type: true, duration_minutes: true}},
 					},
 				},
+				competition_pro_gifts: {
+					where: {status: 'granted'},
+					select: {granted_at: true, pro_until: true},
+				},
 			},
 			orderBy: {created_at: 'desc'},
 		});
 
 		const now = new Date();
 		return users.map((u) => {
-			const info = classifyMembership({...u, redemptions: u.promo_code_redemptions}, now);
-			const {promo_code_redemptions, ...user} = u;
+			const info = classifyMembership(
+				{...u, redemptions: u.promo_code_redemptions, competition_gifts: u.competition_pro_gifts},
+				now
+			);
+			const {promo_code_redemptions, competition_pro_gifts, ...user} = u;
 			return {
 				user: user as any,
 				tier: info.tier,

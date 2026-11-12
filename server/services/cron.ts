@@ -13,6 +13,7 @@ import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {initZktBackfillCronJob} from './cron_zkt_backfill';
 import {initZktRegistrationNotifyCronJob} from './cron_zkt_registration_notify';
 import {initZktJudgeProgressCronJob} from './cron_zkt_judge_progress';
+import {initCompetitionProGiftCronJob} from './cron_competition_pro_gift';
 import {initEmailLogRetentionCronJob} from './cron_email_log_retention';
 import {initLogRetentionCronJob} from './cron_log_retention';
 import {initMessageRetentionCronJob} from './cron_message_retention';
@@ -43,6 +44,7 @@ export function initCronJobs() {
 	initZktBackfillCronJob();
 	initZktRegistrationNotifyCronJob();
 	initZktJudgeProgressCronJob();
+	initCompetitionProGiftCronJob();
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();

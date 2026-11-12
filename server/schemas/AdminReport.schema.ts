@@ -61,7 +61,7 @@ export class AdminProUserRow {
 	@Field()
 	tier: string;
 
-	/** 'lifetime' | 'yearly' | 'monthly' | 'other' | 'promo' | 'admin' */
+	/** 'lifetime' | 'yearly' | 'monthly' | 'other' | 'promo' | 'competition' | 'admin' */
 	@Field()
 	source: string;
 

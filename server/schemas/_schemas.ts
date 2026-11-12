@@ -42,6 +42,7 @@ export * from './ZktOAuthResult.schema';
 export * from './WcaResult.schema';
 export * from './WcaSchedule.schema';
 export * from './PromoCode.schema';
+export * from './CompetitionProGift.schema';
 export * from './ZktPublic.schema';
 export * from './ZktJudge.schema';
 export * from './IAP.schema';
