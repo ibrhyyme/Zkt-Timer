@@ -1,1 +1,5 @@
-ZKT Timer now lists all five of its languages on the App Store: English, Turkish, Spanish, Russian and Chinese. iOS system dialogs and buttons inside the app now follow your phone's language.
+Missed shortcuts, with Pro. When a scramble hides a very short cross or XCross, the timer tells you after the solve and shows the moves. It says the line out loud too, and you can turn the voice off in settings.
+
+AC remote in rooms, with Pro. The Pro who wins the round takes the remote and cools or heats the room however they like.
+
+Warm-up mode. Warm-up solves stay out of your stats and averages.

@@ -1,1 +1,5 @@
-ZKT Timer artık App Store'da desteklediği beş dili gösteriyor: Türkçe, İngilizce, İspanyolca, Rusça ve Çince. Uygulamanın içindeki iOS pencereleri ve düğmeleri de telefonunun diline göre açılıyor.
+Kaçırdığın kısa yollar, Pro ile. Karıştırmada çok kısa bir cross ya da XCross varsa çözüm bitince timer haber verir ve hamleleri gösterir. Lafını sesli de söyler, sesi ayarlardan kapatabilirsin.
+
+Odada klima kumandası, Pro ile. Turu kazanan Pro kumandayı alır ve odayı istediği gibi soğutur ya da ısıtır.
+
+Isınma modu. Isınma çözümleri istatistiklerine ve ortalamalarına karışmaz.
