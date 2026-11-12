@@ -1610,7 +1610,8 @@
     "battle_notifications": "Online Battle notifications",
     "battle_notifications_description": "Choose which Online Battle notifications you get.",
     "battle_challenge": "When someone challenges me from my profile",
-    "zkt_judge_group_progress": "When a group's 3rd and 4th attempts are done at a competition I run"
+    "zkt_judge_group_progress": "When a group's 3rd and 4th attempts are done at a competition I run",
+    "zkt_judge_request": "When a judge asks for a time correction or an extra at a competition I run"
   },
   "orientation_warning": {
     "title": "Please Rotate Your Device",
@@ -5146,6 +5147,9 @@
     "judge_progress_body": "{{where}}: everyone has finished attempt {{n}}.",
     "judge_progress_category": "Score entry",
     "judge_progress_link_text": "Open the organiser panel",
+    "judge_request_where_station": "{{where}}, Station {{station}}",
+    "judge_request_body_extra": "{{where}}: an extra is requested for attempt {{n}}.",
+    "judge_request_body_correct": "{{where}}: a time correction is requested for attempt {{n}}.",
     "judge_pick_competitor": "Competitor",
     "judge_number_placeholder": "Competitor or station number",
     "judge_person_judge": "Judge: {{name}}",

@@ -1586,7 +1586,8 @@
     "battle_notifications": "Online Battle 通知",
     "battle_notifications_description": "选择要接收的 Online Battle 通知。",
     "battle_challenge": "有人从我的主页向我发起挑战时",
-    "zkt_judge_group_progress": "我负责的比赛中某一组完成第 3 次和第 4 次还原时"
+    "zkt_judge_group_progress": "我负责的比赛中某一组完成第 3 次和第 4 次还原时",
+    "zkt_judge_request": "我负责的比赛中有裁判申请更正成绩或补赛时"
   },
   "orientation_warning": {
     "title": "请旋转你的设备",
@@ -5113,6 +5114,9 @@
     "judge_progress_body": "{{where}}：所有人已完成第 {{n}} 次还原。",
     "judge_progress_category": "成绩录入",
     "judge_progress_link_text": "打开组织者面板",
+    "judge_request_where_station": "{{where}} 第 {{station}} 号站位",
+    "judge_request_body_extra": "{{where}}：第 {{n}} 次还原申请补赛。",
+    "judge_request_body_correct": "{{where}}：第 {{n}} 次还原申请更正成绩。",
     "judge_pick_competitor": "选手",
     "judge_number_placeholder": "选手编号或站位号",
     "judge_person_judge": "裁判：{{name}}",

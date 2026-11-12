@@ -1658,7 +1658,8 @@
     "battle_notifications": "Уведомления Online Battle",
     "battle_notifications_description": "Выберите, какие уведомления Online Battle получать.",
     "battle_challenge": "Когда меня вызывают на дуэль из профиля",
-    "zkt_judge_group_progress": "Когда группа заканчивает 3-ю и 4-ю попытки на соревновании, которое я провожу"
+    "zkt_judge_group_progress": "Когда группа заканчивает 3-ю и 4-ю попытки на соревновании, которое я провожу",
+    "zkt_judge_request": "Когда судья запрашивает исправление времени или экстру на соревновании, которое я провожу"
   },
   "orientation_warning": {
     "title": "Пожалуйста, поверните устройство",
@@ -5215,6 +5216,9 @@
     "judge_progress_body": "{{where}}: все закончили попытку {{n}}.",
     "judge_progress_category": "Ввод результатов",
     "judge_progress_link_text": "Открыть панель организатора",
+    "judge_request_where_station": "{{where}}, станция {{station}}",
+    "judge_request_body_extra": "{{where}}: запрошена экстра для попытки {{n}}.",
+    "judge_request_body_correct": "{{where}}: запрошено исправление времени попытки {{n}}.",
     "judge_pick_competitor": "Участник",
     "judge_number_placeholder": "Номер участника или станции",
     "judge_person_judge": "Судья: {{name}}",

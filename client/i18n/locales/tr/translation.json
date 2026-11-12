@@ -1597,7 +1597,8 @@
     "battle_notifications": "Online Battle bildirimleri",
     "battle_notifications_description": "Hangi Online Battle bildirimlerini almak istediğini seç.",
     "battle_challenge": "Biri profilimden bana meydan okuduğunda",
-    "zkt_judge_group_progress": "Yönettiğim yarışmada bir grubun 3. ve 4. çözümleri bittiğinde"
+    "zkt_judge_group_progress": "Yönettiğim yarışmada bir grubun 3. ve 4. çözümleri bittiğinde",
+    "zkt_judge_request": "Yönettiğim yarışmada bir hakem süre düzeltme ya da ekstra istediğinde"
   },
   "orientation_warning": {
     "title": "Cihazını döndür",
@@ -5127,6 +5128,9 @@
     "judge_progress_body": "{{where}}: {{n}}. çözümler bitti.",
     "judge_progress_category": "Skor girişi",
     "judge_progress_link_text": "Yönetim panelini aç",
+    "judge_request_where_station": "{{where}}, İstasyon {{station}}",
+    "judge_request_body_extra": "{{where}}: {{n}}. çözüm için ekstra isteniyor.",
+    "judge_request_body_correct": "{{where}}: {{n}}. çözüm için süre düzeltme isteniyor.",
     "judge_pick_competitor": "Yarışmacı",
     "judge_number_placeholder": "Yarışmacı ya da istasyon numarası",
     "judge_person_judge": "Hakem: {{name}}",

@@ -1610,7 +1610,8 @@
     "battle_notifications": "Notificaciones de Online Battle",
     "battle_notifications_description": "Elige qué notificaciones de Online Battle quieres recibir.",
     "battle_challenge": "Cuando alguien me reta desde mi perfil",
-    "zkt_judge_group_progress": "Cuando un grupo termina el 3.er y el 4.º intento en una competición que organizo"
+    "zkt_judge_group_progress": "Cuando un grupo termina el 3.er y el 4.º intento en una competición que organizo",
+    "zkt_judge_request": "Cuando un juez pide corregir un tiempo o un extra en una competición que organizo"
   },
   "orientation_warning": {
     "title": "Por favor rota tu dispositivo",
@@ -5147,6 +5148,9 @@
     "judge_progress_body": "{{where}}: todos terminaron el intento {{n}}.",
     "judge_progress_category": "Registro de tiempos",
     "judge_progress_link_text": "Abrir el panel de organización",
+    "judge_request_where_station": "{{where}}, Estación {{station}}",
+    "judge_request_body_extra": "{{where}}: se pide un extra para el intento {{n}}.",
+    "judge_request_body_correct": "{{where}}: se pide corregir el tiempo del intento {{n}}.",
     "judge_pick_competitor": "Competidor",
     "judge_number_placeholder": "Número de competidor o de estación",
     "judge_person_judge": "Juez: {{name}}",
