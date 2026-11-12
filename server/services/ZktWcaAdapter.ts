@@ -315,13 +315,26 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 				// calendar. That is how the second day of a day-split event is usually
 				// laid out (groups get times only once assignments are made), and
 				// ignoring it made those rounds disappear from the programme.
-				if (!r.startTime) continue;
-				roomBucket(r.roomId ?? null).activities.push({
-					activityId: activityId++,
-					...roundFields(ev, r, null),
-					startTime: r.startTime,
-					endTime: r.endTime || r.startTime,
-				});
+				// A Dual Chance round placed this way has a second slot of its own
+				// (chance2StartTime); the round's slot is then chance 1. Without it the
+				// second chance vanished from the programme until groups got times.
+				const second = r.dualChance === true && r.chance2StartTime;
+				if (r.startTime) {
+					roomBucket(r.roomId ?? null).activities.push({
+						activityId: activityId++,
+						...roundFields(ev, r, second ? 1 : null),
+						startTime: r.startTime,
+						endTime: r.endTime || r.startTime,
+					});
+				}
+				if (second) {
+					roomBucket(r.chance2RoomId ?? r.roomId ?? null).activities.push({
+						activityId: activityId++,
+						...roundFields(ev, r, 2),
+						startTime: r.chance2StartTime,
+						endTime: r.chance2EndTime || r.chance2StartTime,
+					});
+				}
 				continue;
 			}
 			// One block per room the round actually runs in: a round split across two

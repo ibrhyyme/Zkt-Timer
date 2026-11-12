@@ -352,6 +352,58 @@ describe('Dual Chance', () => {
 		expect(acts[0].isFinal).toBe(false);
 	});
 
+	it('draws both chances from the round slots before its groups are timed', () => {
+		// Bursa Sonbahar 2026, before groups existed: only Şans 1 reached the
+		// programme and the afternoon Şans 2 block was missing.
+		const r1 = dualDetail.events[0].rounds[0];
+		const untimed = {
+			...dualDetail,
+			events: [
+				{
+					...dualDetail.events[0],
+					rounds: [
+						{
+							...r1,
+							groups: [],
+							startTime: '2026-11-14T08:15:00.000Z',
+							endTime: '2026-11-14T09:45:00.000Z',
+							roomId: null,
+							chance2StartTime: '2026-11-14T11:45:00.000Z',
+							chance2EndTime: '2026-11-14T13:15:00.000Z',
+							chance2RoomId: null,
+						},
+					],
+				},
+			],
+		};
+		const acts = zktDetailToLiveOverview(untimed, 'zkt-dual')
+			.schedule.flatMap((v: any) => v.rooms)
+			.flatMap((r: any) => r.activities)
+			.filter((a: any) => a.activityCode === '333-r1');
+		expect(acts.map((a: any) => [a.chance, a.startTime, a.endTime, a.name])).toEqual([
+			[1, '2026-11-14T08:15:00.000Z', '2026-11-14T09:45:00.000Z', '3x3 1. Tur, Şans 1'],
+			[2, '2026-11-14T11:45:00.000Z', '2026-11-14T13:15:00.000Z', '3x3 1. Tur, Şans 2'],
+		]);
+	});
+
+	it('keeps one unlabelled block when a dual round has no second slot yet', () => {
+		const r1 = dualDetail.events[0].rounds[0];
+		const oneSlot = {
+			...dualDetail,
+			events: [
+				{
+					...dualDetail.events[0],
+					rounds: [{...r1, groups: [], startTime: '2026-11-14T08:15:00.000Z', endTime: '2026-11-14T09:45:00.000Z'}],
+				},
+			],
+		};
+		const acts = zktDetailToLiveOverview(oneSlot, 'zkt-dual')
+			.schedule.flatMap((v: any) => v.rooms)
+			.flatMap((r: any) => r.activities)
+			.filter((a: any) => a.activityCode === '333-r1');
+		expect(acts.map((a: any) => [a.chance, a.name])).toEqual([[undefined, '3x3 1. Tur']]);
+	});
+
 	it('carries both chances on a round result, attempts shaped like the row', () => {
 		const out = zktRoundToWcaLiveResults({
 			eventId: '333',
