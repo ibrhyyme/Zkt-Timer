@@ -15,6 +15,7 @@ const SECONDARY_TABS = [
 	{id: 'reports', link: '/admin/reports', labelKey: 'admin_nav.reports'},
 	{id: 'users', link: '/admin/users', labelKey: 'admin_nav.users'},
 	{id: 'pro-users', link: '/admin/pro-users', labelKey: 'admin_nav.pro_users'},
+	{id: 'pro-grants', link: '/admin/pro-grants', labelKey: 'admin_nav.pro_grants'},
 	{id: 'announcements', link: '/admin/announcements', labelKey: 'admin_nav.announcements'},
 	{id: 'email', link: '/admin/email', labelKey: 'admin_nav.email'},
 	{id: 'algorithms', link: '/admin/algorithms', labelKey: 'admin_nav.algorithms'},

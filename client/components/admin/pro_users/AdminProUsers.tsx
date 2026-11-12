@@ -13,18 +13,18 @@ import {useInput} from '../../../util/hooks/useInput';
 import {openModal} from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
 import {
-	DEFAULT_FACETS,
-	EXPIRING_DAYS,
-	ProFacet,
-	ProFacetFilters,
-	ProFilters,
+	DEFAULT_PAID_FACETS,
+	PaidFacet,
+	PaidFacetFilters,
 	ProRow,
-	facetCounts,
-	filterRows,
+	filterPaidRows,
 	isExpiringSoon,
 	isStoreSource,
+	matchesQuery,
+	paidFacetCounts,
 	rowPlatform,
 	sortRows,
+	splitRows,
 } from './pro_user_filters';
 import '../users/AdminUsers.scss';
 import './AdminProUsers.scss';
@@ -61,18 +61,20 @@ const ADMIN_PRO_USERS_QUERY = gql`
 
 const PAGE_SIZE = 50;
 
-const SOURCE_VALUES = ['all', 'lifetime', 'yearly', 'monthly', 'promo', 'admin', 'other'];
-const TIER_VALUES = ['all', 'pro', 'premium'];
-const PLATFORM_VALUES = ['all', 'ios', 'android', 'none'];
-const STATUS_VALUES = ['all', 'active', 'cancelled', 'billing_issue', 'expiring'];
+const SOURCE_VALUES = ['all', 'lifetime', 'yearly', 'monthly'];
+const PLATFORM_VALUES = ['all', 'ios', 'android'];
 
-function ProUserRow({row, now, onUpdated}: {row: ProRow; now: Date; onUpdated: () => void}) {
+/** 'paid' = store purchases (/admin/pro-users), 'granted' = promo code or admin (/admin/pro-grants). */
+export type ProListKind = 'paid' | 'granted';
+
+function ProUserRow({kind, row, now, onUpdated}: {kind: ProListKind; row: ProRow; now: Date; onUpdated: () => void}) {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const [copied, setCopied] = React.useState(false);
 	const {user} = row;
 	const platform = rowPlatform(row);
 	const expiring = isExpiringSoon(row, now);
+	const paid = kind === 'paid';
 
 	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} onUserUpdated={onUpdated} />, {width: 1100}));
 
@@ -112,13 +114,15 @@ function ProUserRow({row, now, onUpdated}: {row: ProRow; now: Date; onUpdated: (
 					<div className="zt-admin-pro-users__sub">{t('admin_pro_users.promo_code_label', {code: row.promo_code})}</div>
 				)}
 			</td>
-			<td className="zt-admin-users__cell">
-				{platform === 'none' ? (
-					<span className="zt-admin-pro-users__muted">-</span>
-				) : (
-					<span className="zt-admin-pro-users__tag">{t(`admin_pro_users.platform_${platform}`)}</span>
-				)}
-			</td>
+			{paid && (
+				<td className="zt-admin-users__cell">
+					{platform === 'none' ? (
+						<span className="zt-admin-pro-users__muted">-</span>
+					) : (
+						<span className="zt-admin-pro-users__tag">{t(`admin_pro_users.platform_${platform}`)}</span>
+					)}
+				</td>
+			)}
 			<td className="zt-admin-users__cell zt-admin-users__cell--date">
 				{row.last_event_at ? (
 					<>
@@ -141,41 +145,47 @@ function ProUserRow({row, now, onUpdated}: {row: ProRow; now: Date; onUpdated: (
 					<div className="zt-admin-users__date-main">{t('admin_pro_users.unlimited')}</div>
 				)}
 			</td>
-			<td className="zt-admin-users__cell">
-				<span className={`zt-admin-pro-users__status zt-admin-pro-users__status--${row.status}`}>
-					{t(`admin_pro_users.status_${row.status}`)}
-				</span>
-			</td>
-			<td className="zt-admin-users__cell">
-				{user.revenuecat_user_id ? (
-					<button type="button" className="zt-admin-pro-users__copy" onClick={copyRcId} title={user.revenuecat_user_id}>
-						{copied ? t('admin_pro_users.copied') : user.revenuecat_user_id.slice(0, 12) + '...'}
-					</button>
-				) : (
-					<span className="zt-admin-pro-users__muted">-</span>
-				)}
-			</td>
+			{paid && (
+				<td className="zt-admin-users__cell">
+					<span className={`zt-admin-pro-users__status zt-admin-pro-users__status--${row.status}`}>
+						{t(`admin_pro_users.status_${row.status}`)}
+					</span>
+				</td>
+			)}
+			{paid && (
+				<td className="zt-admin-users__cell">
+					{user.revenuecat_user_id ? (
+						<button type="button" className="zt-admin-pro-users__copy" onClick={copyRcId} title={user.revenuecat_user_id}>
+							{copied ? t('admin_pro_users.copied') : user.revenuecat_user_id.slice(0, 12) + '...'}
+						</button>
+					) : (
+						<span className="zt-admin-pro-users__muted">-</span>
+					)}
+				</td>
+			)}
 		</tr>
 	);
 }
 
-export default function AdminProUsers() {
+export function ProUsersList({kind}: {kind: ProListKind}) {
 	const {t} = useTranslation();
 	const [query, setQuery] = useInput('');
 	const [rows, setRows] = React.useState<ProRow[] | null>(null);
 	const [loading, setLoading] = React.useState(true);
 	const [failed, setFailed] = React.useState(false);
-	const [filters, setFilters] = React.useState<ProFacetFilters>(DEFAULT_FACETS);
+	const [filters, setFilters] = React.useState<PaidFacetFilters>(DEFAULT_PAID_FACETS);
 	const [page, setPage] = React.useState(0);
-	// One clock per load, so "expires within 7 days" and its count agree on every row.
+	// One clock per load, so the "expires soon" highlight agrees on every row.
 	const [now, setNow] = React.useState(() => new Date());
+	const paid = kind === 'paid';
 
 	const fetchData = React.useCallback(async () => {
 		setLoading(true);
 		setFailed(false);
 		try {
 			const res = await gqlQuery<{adminProUsers: ProRow[]}>(ADMIN_PRO_USERS_QUERY, {}, 'no-cache');
-			setRows(sortRows(res.data?.adminProUsers || []));
+			const split = splitRows(res.data?.adminProUsers || []);
+			setRows(sortRows(paid ? split.paid : split.granted));
 			setNow(new Date());
 		} catch (err) {
 			console.error('[AdminProUsers] fetch error', err);
@@ -183,56 +193,44 @@ export default function AdminProUsers() {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [paid]);
 
 	React.useEffect(() => {
 		fetchData();
 	}, [fetchData]);
 
-	const fullFilters: ProFilters = {...filters, query};
+	const fullFilters = {...filters, query};
 
 	React.useEffect(() => {
 		setPage(0);
 	}, [filters, query]);
 
 	const all = rows || [];
-	const visible = filterRows(all, fullFilters, now);
+	const visible = paid ? filterPaidRows(all, fullFilters) : all.filter((row) => matchesQuery(row, query));
 	const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
 	const safePage = Math.min(page, pageCount - 1);
 	const pageRows = visible.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
-	const hasOther = all.some((r) => r.source === 'other');
 	const filtersActive =
-		query.trim() !== '' || (Object.keys(DEFAULT_FACETS) as ProFacet[]).some((k) => filters[k] !== 'all');
+		query.trim() !== '' || (paid && (Object.keys(DEFAULT_PAID_FACETS) as PaidFacet[]).some((k) => filters[k] !== 'all'));
+	const colCount = paid ? 7 : 4;
 
-	function facetOptions(facet: ProFacet, values: string[], labelPrefix: string) {
-		const counts = facetCounts(all, fullFilters, facet, values, now);
-		return values
-			.filter((v) => facet !== 'source' || v !== 'other' || hasOther)
-			.map((v) => ({
-				value: v,
-				label: (
-					<>
-						{v === 'all'
-							? t('admin_pro_users.all')
-							: v === 'expiring'
-								? t('admin_pro_users.status_expiring', {days: EXPIRING_DAYS})
-								: t(`admin_pro_users.${labelPrefix}_${v}`)}
-						<span className="zt-admin-pro-users__count">{counts[v]}</span>
-					</>
-				),
-				disabled: counts[v] === 0 && filters[facet] !== v,
-			}));
+	function facetOptions(facet: PaidFacet, values: string[]) {
+		const counts = paidFacetCounts(all, fullFilters, facet, values);
+		return values.map((v) => ({
+			value: v,
+			label: (
+				<>
+					{v === 'all' ? t('admin_pro_users.all') : t(`admin_pro_users.${facet}_${v}`)}
+					<span className="zt-admin-pro-users__count">{counts[v]}</span>
+				</>
+			),
+			disabled: counts[v] === 0 && filters[facet] !== v,
+		}));
 	}
 
-	function setFacet(facet: ProFacet, value: string) {
-		setFilters((prev) => ({...prev, [facet]: value}));
-	}
-
-	const facetRows: Array<{facet: ProFacet; values: string[]; prefix: string; label: string}> = [
-		{facet: 'source', values: SOURCE_VALUES, prefix: 'source', label: t('admin_pro_users.filter_source')},
-		{facet: 'tier', values: TIER_VALUES, prefix: 'tier', label: t('admin_pro_users.filter_tier')},
-		{facet: 'platform', values: PLATFORM_VALUES, prefix: 'platform', label: t('admin_pro_users.filter_platform')},
-		{facet: 'status', values: STATUS_VALUES, prefix: 'status', label: t('admin_pro_users.filter_status')},
+	const facetRows: Array<{facet: PaidFacet; values: string[]; label: string}> = [
+		{facet: 'source', values: SOURCE_VALUES, label: t('admin_pro_users.filter_source')},
+		{facet: 'platform', values: PLATFORM_VALUES, label: t('admin_pro_users.filter_platform')},
 	];
 
 	return (
@@ -245,33 +243,33 @@ export default function AdminProUsers() {
 					<div className="zt-admin-pro-users__total">
 						{t('admin_pro_users.showing', {shown: visible.length, total: all.length})}
 					</div>
-				</div>
-
-				<div className="zt-admin-pro-users__filters">
-					{facetRows.map(({facet, values, prefix, label}) => (
-						<div key={facet} className="zt-admin-pro-users__filter">
-							<span className="zt-admin-pro-users__filter-label">{label}</span>
-							<ChoiceGroup<string>
-								label={label}
-								value={filters[facet]}
-								onChange={(v) => setFacet(facet, v)}
-								options={facetOptions(facet, values, prefix)}
-							/>
-						</div>
-					))}
 					{filtersActive && (
-						<div className="zt-admin-pro-users__clear">
-							<Button
-								small
-								text={t('admin_pro_users.clear_filters')}
-								onClick={() => {
-									setFilters(DEFAULT_FACETS);
-									setQuery('');
-								}}
-							/>
-						</div>
+						<Button
+							small
+							text={t('admin_pro_users.clear_filters')}
+							onClick={() => {
+								setFilters(DEFAULT_PAID_FACETS);
+								setQuery('');
+							}}
+						/>
 					)}
 				</div>
+
+				{paid && (
+					<div className="zt-admin-pro-users__filters">
+						{facetRows.map(({facet, values, label}) => (
+							<div key={facet} className="zt-admin-pro-users__filter">
+								<span className="zt-admin-pro-users__filter-label">{label}</span>
+								<ChoiceGroup<string>
+									label={label}
+									value={filters[facet]}
+									onChange={(v) => setFilters((prev) => ({...prev, [facet]: v}))}
+									options={facetOptions(facet, values)}
+								/>
+							</div>
+						))}
+					</div>
+				)}
 
 				<div className="zt-admin-users__table-wrapper">
 					<table className="zt-admin-users__table">
@@ -279,34 +277,36 @@ export default function AdminProUsers() {
 							<tr className="zt-admin-users__header-row">
 								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_user')}</th>
 								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_source')}</th>
-								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_platform')}</th>
+								{paid && <th className="zt-admin-users__header-cell">{t('admin_pro_users.col_platform')}</th>}
 								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_last_event')}</th>
 								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_expires')}</th>
-								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_status')}</th>
-								<th className="zt-admin-users__header-cell">{t('admin_pro_users.col_revenuecat')}</th>
+								{paid && <th className="zt-admin-users__header-cell">{t('admin_pro_users.col_status')}</th>}
+								{paid && <th className="zt-admin-users__header-cell">{t('admin_pro_users.col_revenuecat')}</th>}
 							</tr>
 						</thead>
 						<tbody>
 							{loading && !rows ? (
 								<tr>
-									<td colSpan={7} className="zt-admin-pro-users__state">
+									<td colSpan={colCount} className="zt-admin-pro-users__state">
 										{t('admin_pro_users.loading')}
 									</td>
 								</tr>
 							) : failed ? (
 								<tr>
-									<td colSpan={7} className="zt-admin-pro-users__state">
+									<td colSpan={colCount} className="zt-admin-pro-users__state">
 										{t('admin_pro_users.failed')}
 									</td>
 								</tr>
 							) : pageRows.length === 0 ? (
 								<tr>
-									<td colSpan={7} className="zt-admin-pro-users__state">
+									<td colSpan={colCount} className="zt-admin-pro-users__state">
 										{t('admin_pro_users.empty')}
 									</td>
 								</tr>
 							) : (
-								pageRows.map((row) => <ProUserRow key={row.user.id} row={row} now={now} onUpdated={fetchData} />)
+								pageRows.map((row) => (
+									<ProUserRow key={row.user.id} kind={kind} row={row} now={now} onUpdated={fetchData} />
+								))
 							)}
 						</tbody>
 					</table>
@@ -329,4 +329,9 @@ export default function AdminProUsers() {
 			</div>
 		</div>
 	);
+}
+
+/** Paid members: store purchases, filtered by plan and platform. */
+export default function AdminProUsers() {
+	return <ProUsersList kind="paid" />;
 }

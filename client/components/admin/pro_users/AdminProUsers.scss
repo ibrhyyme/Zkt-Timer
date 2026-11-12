@@ -1,7 +1,7 @@
 @import '../../../styles/config';
 
-// The Pro list borrows the user table from AdminUsers.scss and adds its filter bar
-// and the tags of its own columns.
+// The two Pro lists (paid, granted) borrow the user table from AdminUsers.scss and
+// add the paid list's filter bar and the tags of their own columns.
 .#{$namespace}-admin-pro-users {
 	&__toolbar {
 		display: flex;
@@ -46,10 +46,6 @@
 		margin-left: 6px;
 		font-family: $zt-font-mono;
 		font-weight: 500;
-	}
-
-	&__clear {
-		align-self: flex-start;
 	}
 
 	&__tags {

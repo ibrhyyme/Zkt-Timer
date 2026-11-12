@@ -1,9 +1,7 @@
-// Filters for the admin Pro list. The server returns every member already classified
-// (server/util/pro_membership.ts), so filtering and the per-option counts run here.
+// Filters for the two admin Pro lists. The server returns every member already
+// classified (server/util/pro_membership.ts); the client splits them into paid
+// (store purchases) and granted (promo code or admin), then filters here.
 
-export type ProSource = 'lifetime' | 'yearly' | 'monthly' | 'other' | 'promo' | 'admin';
-export type ProTier = 'pro' | 'premium';
-export type ProStatus = 'active' | 'cancelled' | 'billing_issue';
 export type ProPlatform = 'ios' | 'android' | 'none';
 
 export interface ProRow {
@@ -25,28 +23,34 @@ export interface ProRow {
 	};
 }
 
-export interface ProFilters {
-	source: ProSource | 'all';
-	tier: ProTier | 'all';
-	platform: ProPlatform | 'all';
-	/** `expiring` = an end date within EXPIRING_DAYS. */
-	status: ProStatus | 'expiring' | 'all';
+/** Paid list only. Store purchases of an unknown product ('other') show under 'all'. */
+export interface PaidFilters {
+	source: 'all' | 'lifetime' | 'yearly' | 'monthly';
+	platform: 'all' | 'ios' | 'android';
 	query: string;
 }
 
-export type ProFacet = 'source' | 'tier' | 'platform' | 'status';
+export type PaidFacet = 'source' | 'platform';
+
+export type PaidFacetFilters = Omit<PaidFilters, 'query'>;
+
+export const DEFAULT_PAID_FACETS: PaidFacetFilters = {source: 'all', platform: 'all'};
 
 export const EXPIRING_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export type ProFacetFilters = Omit<ProFilters, 'query'>;
-
-export const DEFAULT_FACETS: ProFacetFilters = {source: 'all', tier: 'all', platform: 'all', status: 'all'};
 
 const STORE_SOURCES = new Set(['lifetime', 'yearly', 'monthly', 'other']);
 
 export function isStoreSource(source: string): boolean {
 	return STORE_SOURCES.has(source);
+}
+
+/** Store purchases go to the paid list, promo and admin grants to the other one. */
+export function splitRows(rows: ProRow[]): {paid: ProRow[]; granted: ProRow[]} {
+	const paid: ProRow[] = [];
+	const granted: ProRow[] = [];
+	for (const row of rows) (isStoreSource(row.source) ? paid : granted).push(row);
+	return {paid, granted};
 }
 
 /** A store the purchase came through; promo and admin grants have none. */
@@ -63,21 +67,12 @@ export function isExpiringSoon(row: ProRow, now: Date): boolean {
 	return end > now.getTime() && end - now.getTime() <= EXPIRING_DAYS * DAY_MS;
 }
 
-function matchesFacet(row: ProRow, facet: ProFacet, value: string, now: Date): boolean {
+function matchesFacet(row: ProRow, facet: PaidFacet, value: string): boolean {
 	if (value === 'all') return true;
-	switch (facet) {
-		case 'source':
-			return row.source === value;
-		case 'tier':
-			return row.tier === value;
-		case 'platform':
-			return rowPlatform(row) === value;
-		case 'status':
-			return value === 'expiring' ? isExpiringSoon(row, now) : row.status === value;
-	}
+	return facet === 'source' ? row.source === value : rowPlatform(row) === value;
 }
 
-function matchesQuery(row: ProRow, query: string): boolean {
+export function matchesQuery(row: ProRow, query: string): boolean {
 	const q = query.trim().toLocaleLowerCase();
 	if (!q) return true;
 	return (
@@ -87,14 +82,14 @@ function matchesQuery(row: ProRow, query: string): boolean {
 	);
 }
 
-const FACETS: ProFacet[] = ['source', 'tier', 'platform', 'status'];
+const PAID_FACETS: PaidFacet[] = ['source', 'platform'];
 
 /** Rows passing every filter, except the one facet named in `skip`. */
-export function filterRows(rows: ProRow[], filters: ProFilters, now: Date, skip?: ProFacet): ProRow[] {
+export function filterPaidRows(rows: ProRow[], filters: PaidFilters, skip?: PaidFacet): ProRow[] {
 	return rows.filter(
 		(row) =>
 			matchesQuery(row, filters.query) &&
-			FACETS.every((facet) => facet === skip || matchesFacet(row, facet, filters[facet], now)),
+			PAID_FACETS.every((facet) => facet === skip || matchesFacet(row, facet, filters[facet])),
 	);
 }
 
@@ -102,17 +97,16 @@ export function filterRows(rows: ProRow[], filters: ProFilters, now: Date, skip?
  * How many rows each option of a facet would show, given the other filters. The
  * chip counts then always add up to what selecting them would list.
  */
-export function facetCounts(
+export function paidFacetCounts(
 	rows: ProRow[],
-	filters: ProFilters,
-	facet: ProFacet,
+	filters: PaidFilters,
+	facet: PaidFacet,
 	values: string[],
-	now: Date,
 ): Record<string, number> {
-	const base = filterRows(rows, filters, now, facet);
+	const base = filterPaidRows(rows, filters, facet);
 	const out: Record<string, number> = {};
 	for (const value of values) {
-		out[value] = value === 'all' ? base.length : base.filter((row) => matchesFacet(row, facet, value, now)).length;
+		out[value] = value === 'all' ? base.length : base.filter((row) => matchesFacet(row, facet, value)).length;
 	}
 	return out;
 }
