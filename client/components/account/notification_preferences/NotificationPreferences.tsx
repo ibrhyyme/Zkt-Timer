@@ -89,6 +89,10 @@ export default function NotificationPreferences() {
 						key: 'zkt_judge_group_progress',
 						label: t('notification_prefs.zkt_judge_group_progress'),
 					},
+					{
+						key: 'zkt_judge_request',
+						label: t('notification_prefs.zkt_judge_request'),
+					},
 				]
 			: []),
 	];

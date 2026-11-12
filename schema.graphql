@@ -932,6 +932,7 @@ type NotificationPreference {
   competition_results_official: Boolean
   battle_challenge: Boolean
   zkt_judge_group_progress: Boolean
+  zkt_judge_request: Boolean
   created_at: DateTime
 }
 

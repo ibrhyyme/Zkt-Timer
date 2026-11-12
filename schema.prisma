@@ -308,7 +308,10 @@ model NotificationPreference {
   // Push opt-out for online score entry progress: a group's 3rd and 4th
   // attempts are in (ZKT delegates and organisers only, cron_zkt_judge_progress.ts).
   zkt_judge_group_progress     Boolean @default(true)
-  user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Push opt-out for a judge asking for a correction or an extra (ZKT staff who
+  // can approve it, server/services/zkt_judge_request.ts).
+  zkt_judge_request            Boolean @default(true)
+  user                UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@map("notification_preference")

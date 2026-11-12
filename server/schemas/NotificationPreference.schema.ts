@@ -35,6 +35,10 @@ export class NotificationPreference {
 	@Field()
 	zkt_judge_group_progress: boolean;
 
+	// Push opt-out for a judge asking for a correction or an extra (ZKT staff who can approve it).
+	@Field()
+	zkt_judge_request: boolean;
+
 	@Field()
 	created_at: Date;
 }

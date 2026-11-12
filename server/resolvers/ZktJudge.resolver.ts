@@ -20,6 +20,7 @@ import {ErrorCode} from '../constants/errors';
 import {isZktCompetitionId} from '../services/ZktWcaAdapter';
 import {JudgeRelayError, ZktJudgeRelay, judgeCompetitionRef} from '../services/ZktJudgeRelay';
 import {ZktJudgeEntryInput, ZktJudgeRequestInput} from '../schemas/ZktJudge.schema';
+import {notifyJudgeRequest, splitJudgeRequestAnswer} from '../services/zkt_judge_request';
 
 const MAX_ENTRIES_PER_CALL = 50;
 const MAX_TOKEN_LENGTH = 1024;
@@ -129,7 +130,15 @@ export class ZktJudgeResolver {
 	): Promise<Record<string, unknown>> {
 		const memberId = await requireMember(ctx);
 		const body = requestBody(input);
-		return relay(() => ZktJudgeRelay.request(memberId, body));
+		const answer = await relay(() => ZktJudgeRelay.request(memberId, body));
+		// The site names who can approve a correction or an extra; that list is
+		// for this server only. The notice goes in the background so the QR shows now.
+		const {response, notify} = splitJudgeRequestAnswer(answer);
+		const purpose = body.purpose;
+		if (notify && (purpose === 'CORRECT' || purpose === 'EXTRA') && typeof body.cardId === 'string') {
+			void notifyJudgeRequest(purpose, body.cardId, notify);
+		}
+		return response;
 	}
 
 	/** An approver judging on their own phone authorises it without a QR. */

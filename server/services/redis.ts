@@ -42,6 +42,8 @@ export enum RedisNamespace {
 	ZKT_FED_REGISTRATIONS = 'cd:zktfed:registrations',
 	// Online score entry progress notices (cron_zkt_judge_progress.ts): the tick lock only.
 	ZKT_JUDGE_PROGRESS = 'cd:zktjudge:progress',
+	// A judge's correction / extra request notices (zkt_judge_request.ts): one per request per window.
+	ZKT_JUDGE_REQUEST = 'cd:zktjudge:request',
 	// Competition lifecycle notifications: cron locks, discovery gates and the
 	// crons' own caches (never the page's WCIF key, see cron_competition_lifecycle.ts).
 	COMPETITION_LIFECYCLE = 'cd:lifecycle',

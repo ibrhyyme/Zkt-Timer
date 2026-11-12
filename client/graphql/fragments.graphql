@@ -205,6 +205,7 @@ fragment NotificationPreferenceFragment on NotificationPreference {
 	competition_results_official
 	battle_challenge
 	zkt_judge_group_progress
+	zkt_judge_request
 }
 
 fragment NotificationFragment on Notification {

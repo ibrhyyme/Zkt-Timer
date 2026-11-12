@@ -27,6 +27,9 @@ export enum NotificationType {
 	// Online score entry: a group's 3rd and 4th attempts are in (ZKT delegates and
 	// organisers). Also a NotificationPreference column.
 	ZKT_JUDGE_GROUP_PROGRESS = 'zkt_judge_group_progress',
+	// Online score entry: a judge asks for a correction or an extra (the staff who
+	// can approve it). Also a NotificationPreference column.
+	ZKT_JUDGE_REQUEST = 'zkt_judge_request',
 }
 
 export enum MetricLogType {
