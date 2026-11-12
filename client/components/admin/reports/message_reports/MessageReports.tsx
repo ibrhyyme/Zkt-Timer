@@ -21,6 +21,7 @@ import Empty from '../../../common/empty/Empty';
 import Button from '../../../common/button/Button';
 import {getFullFormattedDate} from '../../../../util/dates';
 import {toastError} from '../../../../util/toast';
+import GifMedia from '../../../common/gif/GifMedia';
 import block from '../../../../styles/bem';
 import './MessageReports.scss';
 
@@ -118,6 +119,9 @@ export default function MessageReports() {
 									<span className={b('snapshot-sender')}>{m.sender_username || m.sender_id}</span>
 									<span className={b('snapshot-body')}>
 										{m.body || (m.has_solve ? t('admin_message_reports.solve_only') : '')}
+										{/* Resolved from the id like any reader's screen: the evidence row
+										    holds no KLIPY media, only which GIF it was. */}
+										{m.gif_id && <GifMedia provider={m.gif_provider} gifId={m.gif_id} maxWidth={160} />}
 									</span>
 								</div>
 							))}

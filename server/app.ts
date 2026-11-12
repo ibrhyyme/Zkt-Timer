@@ -172,6 +172,10 @@ app.use(helmet({
 				"https://firebaseinstallations.googleapis.com", // FCM web push - installation token
 				"https://fcmregistrations.googleapis.com",      // FCM web push - registration
 				"https://fcm.googleapis.com",                   // FCM legacy endpoint
+				// GIF search (KLIPY). Their terms require the call to come from the user's
+				// own device, so it cannot go through our server like /api/yt-thumb does.
+				// The media itself loads under imgSrc's https:.
+				"https://api.klipy.com",
 				"wss:",
 				"ws:",
 			],
@@ -442,6 +446,10 @@ global.siteUrl = process.env.BASE_URI;
 			const rejectedList = Array.isArray(rejected) && rejected.every((r: unknown) => typeof r === 'string')
 				? rejected.slice(0, 500)
 				: null;
+			// Seconds until a cooldown lifts (the GIF spam brake), so the client can say
+			// "wait 5 minutes" instead of a bare refusal. A number only, nothing else.
+			const retryAfter = err?.extensions?.retry_after;
+			const safeRetryAfter = typeof retryAfter === 'number' && Number.isFinite(retryAfter) ? Math.max(0, Math.round(retryAfter)) : null;
 			// Expected errors are logged too, at warn: a solve that keeps failing to sync
 			// usually fails on one of these, and without a line here the only evidence is
 			// on the user's screen.
@@ -452,6 +460,7 @@ global.siteUrl = process.env.BASE_URI;
 					code,
 					...(i18nKey ? { i18nKey } : {}),
 					...(rejectedList ? { rejected: rejectedList } : {}),
+					...(safeRetryAfter !== null ? { retry_after: safeRetryAfter } : {}),
 				},
 				path: err.path,
 			};

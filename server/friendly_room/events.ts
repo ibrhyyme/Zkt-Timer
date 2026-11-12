@@ -13,6 +13,7 @@ import {
     FriendlyRoomConst,
     FriendlyRoomJoinSignal,
     FriendlyRoomData,
+    FriendlyRoomGifBlocked,
     RespondJoinRequestInput,
     canManageRoom,
     getFriendlyRoomRole,
@@ -44,7 +45,8 @@ import {
     setModerator,
     transferOwnership,
 } from './room_manager';
-import { sendChatMessage } from './chat';
+import { roomAllowsGifs, sendChatMessage } from './chat';
+import { checkGifSend } from '../services/gif_spam';
 import {
     addJoinRequest,
     clearJoinApproval,
@@ -739,6 +741,48 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
+    // Send a GIF. Same room check and the same rate bucket as text, so switching to
+    // GIFs is not a way around the chat limit.
+    client.on(FriendlyRoomClientEvent.SEND_CHAT_GIF, async (roomId: string, gif: unknown) => {
+        try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (!gif || typeof gif !== 'object') return;
+            const { provider, id } = gif as { provider?: unknown; id?: unknown };
+            if (typeof provider !== 'string' || typeof id !== 'string') return;
+
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            if (!(await socketRateLimit(client, 'chat', 20, 10, user.id))) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Çok hızlı mesaj gönderiyorsunuz.');
+                return;
+            }
+
+            // The room's own switch first: a GIF refused because the room has them off
+            // must not count toward the sender's cooldown.
+            if (!(await roomAllowsGifs(roomId))) {
+                const blocked: FriendlyRoomGifBlocked = { reason: 'disabled', retry_after: 0 };
+                client.emit(FriendlyRoomServerEvent.GIF_BLOCKED, blocked);
+                return;
+            }
+
+            const gate = await checkGifSend(user.id);
+            if (!gate.allowed) {
+                const blocked: FriendlyRoomGifBlocked = { reason: 'cooldown', retry_after: gate.retryAfter };
+                client.emit(FriendlyRoomServerEvent.GIF_BLOCKED, blocked);
+                return;
+            }
+
+            const chatMessage = await sendChatMessage(roomId, user, '', { provider, id });
+            if (chatMessage) {
+                const socketRoom = getFriendlyRoomSocketRoom(roomId);
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.CHAT_MESSAGE, chatMessage);
+            }
+        } catch (error) {
+            logger.error('Error sending chat GIF', { error });
+        }
+    });
+
     // Next scramble (only room creator)
     client.on(FriendlyRoomClientEvent.NEXT_SCRAMBLE, async (roomId: string) => {
         try {
@@ -833,7 +877,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     });
 
     // Update room settings (room creator or site admin)
-    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number }) => {
+    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number, gifs_enabled?: boolean }) => {
         try {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;

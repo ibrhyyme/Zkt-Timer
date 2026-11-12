@@ -16,6 +16,7 @@ import {
 	PencilSimple,
 	BellSimple,
 	BellSimpleSlash,
+	Gif,
 } from 'phosphor-react';
 import Header from '../layout/header/Header';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
@@ -57,6 +58,10 @@ import {getTimeString} from '../../util/time';
 import {getCubeTypeBucketLabel} from '../../util/cubes/util';
 import {toastError} from '../../util/toast';
 import SolvePicker from './SolvePicker';
+import GifPicker from '../common/gif/GifPicker';
+import GifMedia from '../common/gif/GifMedia';
+import {GifItem, gifWaitMinutes, isGifSearchAvailable} from '../../lib/klipy';
+import {GIF_PROVIDER_KLIPY} from '../../../shared/gif';
 import MessageBody from './message_body/MessageBody';
 import block from '../../styles/bem';
 import './Messages.scss';
@@ -109,7 +114,7 @@ function QuotedMessage({quote, mine}: {quote: any; mine: boolean}) {
 
 	const text = quote.deleted_at
 		? t('messages.quote_removed')
-		: quote.body || (quote.solve_id ? t('inbox.sent_a_solve') : '');
+		: quote.body || (quote.gif_id ? 'GIF' : quote.solve_id ? t('inbox.sent_a_solve') : '');
 
 	return (
 		<div className={b('quote', {mine})}>
@@ -167,6 +172,11 @@ function MessagesPage() {
 	const [searching, setSearching] = useState(false);
 	const [sending, setSending] = useState(false);
 	const [pickerOpen, setPickerOpen] = useState(false);
+	const [gifOpen, setGifOpen] = useState(false);
+	// Decided after mount: the key is a client build define, so SSR cannot know it and
+	// rendering the button there would break hydration.
+	const [gifAvailable, setGifAvailable] = useState(false);
+	useEffect(() => setGifAvailable(isGifSearchAvailable()), []);
 	const [picked, setPicked] = useState<RecipientHit | null>(null);
 	// Tapping your own bubble reveals its actions; there is no hover on a phone and a
 	// long-press would fight the browser's own text selection.
@@ -453,6 +463,41 @@ function MessagesPage() {
 			void refreshInbox();
 		} catch (e) {
 			toastError(e as Error);
+		} finally {
+			setSending(false);
+		}
+	}
+
+	// A GIF goes out on its own, the moment it is tapped, like every messenger does.
+	// Whatever is typed stays in the box for the next message.
+	async function sendGif(item: GifItem) {
+		if (sending || !activeId) return;
+
+		setGifOpen(false);
+		setSending(true);
+		try {
+			const res = await gqlMutateTyped(SendMessageDocument, {
+				body: '',
+				conversationId: activeId,
+				replyToId: replyTo?.id,
+				gifProvider: GIF_PROVIDER_KLIPY,
+				gifId: item.slug,
+			});
+			const sent = res?.data?.sendMessage as DmMessage;
+			if (sent) {
+				setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
+			}
+			setReplyTo(null);
+			void loadConversations(showRequests);
+			void refreshInbox();
+		} catch (e) {
+			// The spam brake answers with how long is left; say it in the user's language.
+			const extensions = (e as any)?.graphQLErrors?.[0]?.extensions;
+			if (extensions?.i18nKey === 'gif.cooldown') {
+				toastError(t('gif.cooldown', {minutes: gifWaitMinutes(Number(extensions.retry_after) || 60)}));
+			} else {
+				toastError(e as Error);
+			}
 		} finally {
 			setSending(false);
 		}
@@ -798,6 +843,9 @@ function MessagesPage() {
 		if (last.body) {
 			return last.body;
 		}
+		if (last.gif_id) {
+			return 'GIF';
+		}
 		if (last.solve) {
 			return t('messages.solve_preview', {
 				time: last.solve.dnf ? 'DNF' : getTimeString(last.solve.time),
@@ -1069,6 +1117,9 @@ function MessagesPage() {
 										)
 									)}
 									{m.solve && <SolveCard solve={m.solve} />}
+									{m.gif_id && (
+										<GifMedia className={b('bubble-gif')} provider={m.gif_provider} gifId={m.gif_id} />
+									)}
 									<div className={b('bubble-time')} title={getFullFormattedDate(m.created_at)}>
 										{getDateFromNow(m.created_at, true)}
 										{/* Both sides see this. A silent edit would let someone change
@@ -1151,7 +1202,7 @@ function MessagesPage() {
 								{replyTo.sender_id === me?.id ? t('messages.reply_to_self') : threadOther?.username}
 							</span>
 							<span className={b('reply-bar-text')}>
-								{replyTo.body || (replyTo.solve ? t('inbox.sent_a_solve') : '')}
+								{replyTo.body || (replyTo.gif_id ? 'GIF' : replyTo.solve ? t('inbox.sent_a_solve') : '')}
 							</span>
 						</div>
 						<button
@@ -1170,13 +1221,29 @@ function MessagesPage() {
 					{pickerOpen && (
 						<SolvePicker onPick={sendSolve} onClose={() => setPickerOpen(false)} />
 					)}
+					{gifOpen && <GifPicker onPick={(item) => void sendGif(item)} onClose={() => setGifOpen(false)} />}
 					<Button
 						gray
 						title={t('messages.attach_solve')}
 						disabled={sending}
 						icon={<Cube weight="bold" />}
-						onClick={() => setPickerOpen(!pickerOpen)}
+						onClick={() => {
+							setGifOpen(false);
+							setPickerOpen(!pickerOpen);
+						}}
 					/>
+					{gifAvailable && (
+						<Button
+							gray
+							title={t('gif.button')}
+							disabled={sending || awaitingAccept}
+							icon={<Gif weight="bold" />}
+							onClick={() => {
+								setPickerOpen(false);
+								setGifOpen(!gifOpen);
+							}}
+						/>
+					)}
 					<textarea
 						className={b('composer-input')}
 						value={draft}

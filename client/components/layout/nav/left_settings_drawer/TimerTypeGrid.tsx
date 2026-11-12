@@ -14,7 +14,7 @@ import {CaretRight, Crown, Gear, Lock} from 'phosphor-react';
 import {useTimerChoices, TimerChoiceOption} from '../../../timer/helpers/useTimerChoices';
 import {BackButton} from '../../../common/icon_button/IconButton';
 import TabBar from '../../../common/tab_bar/TabBar';
-import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
+import ExtrasTab, {RoomGifsControl} from '../../../quick-controls/tabs/ExtrasTab';
 import GoalsTab from '../../../quick-controls/tabs/GoalsTab';
 import {TimerChoice} from '../../../timer/helpers/timer_type_catalog';
 import {useSmartCubeStore} from '../../../../util/hooks/useSmartCubeStore';
@@ -42,6 +42,8 @@ interface Props {
 	hideSlamStop?: boolean;
 	// Room: the room's puzzle decides which inputs fit (see useTimerChoices).
 	puzzle?: {cubeType: string; scrambleSubset?: string | null};
+	// Forwarded to ExtrasTab: the room's GIF switch for its owner or a moderator.
+	roomGifs?: RoomGifsControl;
 }
 
 export default function TimerTypeGrid({
@@ -51,6 +53,7 @@ export default function TimerTypeGrid({
 	hideMobileModules,
 	hideSlamStop,
 	puzzle,
+	roomGifs,
 }: Props) {
 	const {t} = useTranslation();
 
@@ -125,6 +128,7 @@ export default function TimerTypeGrid({
 								hideSmartCubeFeatures={hideSmartCubeFeatures}
 								hideMobileModules={hideMobileModules}
 								hideSlamStop={hideSlamStop}
+								roomGifs={roomGifs}
 							/>
 							{/* This panel is the in-solve shortcut; the full settings live on
 							    their own page, which mobile could otherwise only reach through

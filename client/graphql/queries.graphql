@@ -822,6 +822,8 @@ query messageReports($status: ReportStatus, $page: Int) {
 				sender_username
 				body
 				has_solve
+				gif_provider
+				gif_id
 				created_at
 			}
 		}

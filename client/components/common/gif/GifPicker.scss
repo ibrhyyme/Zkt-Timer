@@ -1,0 +1,107 @@
+@import '../../../styles/config';
+@import '../inputs/generic_input/GenericInput';
+
+// A popover above a chat composer, the same placement as the solve picker. Flat: the
+// float surface and hairline, no blur, no tinted header.
+.#{$namespace}-gif-picker {
+	@include zt-float;
+
+	position: absolute;
+	left: $zt-space-3;
+	right: $zt-space-3;
+	bottom: 100%;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	height: 360px;
+	max-height: 60vh;
+	margin-bottom: $zt-space-2;
+	overflow: hidden;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-2;
+		padding: $zt-space-2 $zt-space-2 $zt-space-2 $zt-space-3;
+	}
+
+	&__search {
+		@include genericInputStyling;
+
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__list {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		padding: 0 $zt-space-2 $zt-space-2;
+		overscroll-behavior: contain;
+	}
+
+	// Rows left to right at one height, each tile as wide as its picture: KLIPY's order
+	// reads straight across, which a column masonry would scramble.
+	&__grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $zt-space-1;
+
+		// Stops the last row's few tiles from stretching across the whole width.
+		&::after {
+			content: '';
+			flex-grow: 999;
+		}
+	}
+
+	&__item {
+		position: relative;
+		height: 96px;
+		min-width: 64px;
+		max-width: 100%;
+		padding: 0;
+		border: 0;
+		border-radius: $zt-radius-sm;
+		overflow: hidden;
+		background-color: $zt-control-bg;
+		cursor: pointer;
+
+		img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+
+		&:focus-visible {
+			@include zt-focus-ring;
+		}
+	}
+
+	&__empty,
+	&__status {
+		margin: $zt-space-3 $zt-space-1;
+		font-size: 0.85rem;
+		color: $zt-text-muted;
+		text-align: center;
+	}
+
+	&__credit {
+		margin: 0;
+		padding: $zt-space-1 $zt-space-3 $zt-space-2;
+		border-top: 1px solid $zt-card-border;
+		font-size: 0.72rem;
+		line-height: 1.4;
+		color: $zt-text-muted;
+	}
+
+	@include bp-down($bp-md) {
+		left: $zt-space-2;
+		right: $zt-space-2;
+		height: 320px;
+
+		&__item {
+			height: 84px;
+		}
+	}
+}

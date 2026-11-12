@@ -15,6 +15,8 @@ export interface FriendlyRoomData {
     // 'qiyiwired'; normalizeAllowedTimerTypes maps it on read rather than migrating
     // the stored rows.
     allowed_timer_types: string[];
+    // Owner/moderator switch for GIFs in this room's chat (see shared/gif.ts).
+    gifs_enabled: boolean;
     current_scramble: string | null;
     scramble_index: number;
     status: FriendlyRoomStatus;
@@ -72,7 +74,17 @@ export interface FriendlyRoomChatMessage {
     user_id: string;
     username: string;
     message: string;
+    /** A GIF line carries an empty `message` and these two (see shared/gif.ts). */
+    gif_provider?: string | null;
+    gif_id?: string | null;
     created_at: string;
+}
+
+/** Why a GIF did not go out: the room has them off, or the sender is cooling down. */
+export interface FriendlyRoomGifBlocked {
+    reason: 'disabled' | 'cooldown';
+    /** Seconds until the sender may post a GIF again; 0 for 'disabled'. */
+    retry_after: number;
 }
 
 export type FriendlyRoomStatus = 'WAITING' | 'ACTIVE' | 'CLOSED';

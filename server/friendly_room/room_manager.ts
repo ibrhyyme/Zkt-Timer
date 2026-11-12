@@ -691,7 +691,7 @@ export async function resetRoom(roomId: string, userId: string, isAdmin: boolean
 export async function updateRoom(
     roomId: string,
     userId: string,
-    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number },
+    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string, max_players?: number, gifs_enabled?: boolean },
     isAdmin: boolean = false
 ): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
@@ -703,6 +703,7 @@ export async function updateRoom(
     const data: any = {};
     if (updates.name) data.name = updates.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH);
     if (updates.is_private !== undefined) data.is_private = updates.is_private;
+    if (typeof updates.gifs_enabled === 'boolean') data.gifs_enabled = updates.gifs_enabled;
     if (typeof updates.max_players === 'number' && Number.isFinite(updates.max_players)) {
         // Never below the people already inside: lowering capacity must not strand anyone,
         // and a room that took people in past its capacity can only be set to at least that.
@@ -956,6 +957,7 @@ function mapRoomToData(room: any): FriendlyRoomData {
         max_players: room.max_players,
         is_private: room.is_private,
         allowed_timer_types: room.allowed_timer_types || ['keyboard', 'stackmat', 'smart', 'gantimer', 'manual'],
+        gifs_enabled: room.gifs_enabled !== false,
         current_scramble: room.current_scramble,
         scramble_index: room.scramble_index,
         status: room.status,

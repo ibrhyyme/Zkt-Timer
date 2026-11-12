@@ -11,6 +11,8 @@ import {broadcastEdit, broadcastReaction, broadcastRead, broadcastTyping, broadc
 import {broadcastPresence, forcePresenceOff, visibleOnlineUsers} from '../services/dm_presence';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
+import {isValidGifRef} from '../../shared/gif';
+import {checkGifSend} from '../services/gif_spam';
 import {
 	MAX_MESSAGE_LENGTH,
 	CONVERSATION_PAGE_SIZE,
@@ -215,13 +217,27 @@ export class MessagingResolver {
 		@Arg('recipientId', {nullable: true}) recipientId?: string,
 		@Arg('conversationId', {nullable: true}) conversationId?: string,
 		@Arg('solveId', {nullable: true}) solveId?: string,
-		@Arg('replyToId', {nullable: true}) replyToId?: string
+		@Arg('replyToId', {nullable: true}) replyToId?: string,
+		@Arg('gifProvider', {nullable: true}) gifProvider?: string,
+		@Arg('gifId', {nullable: true}) gifId?: string
 	): Promise<Message> {
 		await assertMessagingEnabled(context);
 		const senderId = context.user.id;
 
-		const trimmed = (body || '').trim();
-		if (!trimmed && !solveId) {
+		// Only a well-formed provider id is stored: it ends up in a request URL on the
+		// reader's device, so anything else is refused rather than cleaned up.
+		const hasGif = Boolean(gifProvider || gifId);
+		if (hasGif && !isValidGifRef(gifProvider, gifId)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid GIF');
+		}
+
+		// A GIF goes out on its own, the way every messenger sends one: no caption and no
+		// solve riding along, so a GIF message is always exactly one thing to render.
+		const trimmed = hasGif ? '' : (body || '').trim();
+		if (hasGif && solveId) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid GIF');
+		}
+		if (!trimmed && !solveId && !hasGif) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Message is empty');
 		}
 		if (trimmed.length > MAX_MESSAGE_LENGTH) {
@@ -231,6 +247,18 @@ export class MessagingResolver {
 		const rate = await checkRateLimit(`dm:send:${senderId}`, MESSAGE_RATE_MAX, MESSAGE_RATE_WINDOW);
 		if (!rate.allowed) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Too many messages, slow down');
+		}
+
+		// The same escalating cooldown as room chat: one counter per person, so moving a
+		// GIF spree from a room into DMs does not start it over.
+		if (hasGif) {
+			const gate = await checkGifSend(senderId);
+			if (!gate.allowed) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Too many GIFs, wait a moment', {
+					i18nKey: 'gif.cooldown',
+					retry_after: gate.retryAfter,
+				});
+			}
 		}
 
 		// Only the owner may attach a solve — otherwise anyone could paste someone
@@ -323,6 +351,7 @@ export class MessagingResolver {
 			body: trimmed,
 			solveId,
 			replyToId: safeReplyToId,
+			gif: hasGif ? {provider: gifProvider, id: gifId} : null,
 		});
 
 		// Fire and forget: the message is already persisted, so a socket or push

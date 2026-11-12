@@ -463,6 +463,8 @@ fragment MessageFragment on Message {
 	conversation_id
 	sender_id
 	body
+	gif_provider
+	gif_id
 	created_at
 	edited_at
 	reactions {
@@ -475,6 +477,7 @@ fragment MessageFragment on Message {
 		body
 		deleted_at
 		solve_id
+		gif_id
 		sender {
 			username
 		}

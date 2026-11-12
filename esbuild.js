@@ -101,6 +101,11 @@ require('esbuild')
 			// keys are inlined at build time as a fallback (see client/lib/iap.ts).
 			'process.env.REVENUECAT_IOS_KEY': JSON.stringify(process.env.REVENUECAT_IOS_KEY || ''),
 			'process.env.REVENUECAT_ANDROID_KEY': JSON.stringify(process.env.REVENUECAT_ANDROID_KEY || ''),
+			// KLIPY GIF search. A client key by KLIPY's own design: their terms require
+			// search requests to come from the user's device, never through our server,
+			// so it ends up in the bundle no matter where it is configured. Empty means
+			// the GIF button does not render (client/lib/klipy.ts).
+			'process.env.KLIPY_API_KEY': JSON.stringify(process.env.KLIPY_API_KEY || ''),
 		},
 		pure: !dev ? ['console.log', 'console.warn', 'console.info'] : [],
 		loader: {'.js': 'jsx'},

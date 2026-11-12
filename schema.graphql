@@ -328,6 +328,9 @@ type Query {
   wcaLiveCompetitorResults(input: WcaLiveCompetitorInput): WcaLiveCompetitorResults
   getPromoCodes: [PromoCode]
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
+  proGiftCompetitions: [ProGiftCompetitionOption]
+  competitionProCampaigns: [CompetitionProCampaignInfo]
+  competitionProGifts(campaignId: String): [CompetitionProGiftInfo]
   siteConfig: SiteConfig
   zktPublicCompetitions(q: String, pageSize: Int, page: Int): ZktPublicCompetitionList
   zktPublicMyCompetitions: [ZktPublicMyListItem]
@@ -500,6 +503,9 @@ type Mutation {
   redeemPromoCode(code: String): RedeemPromoCodeResult
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
   deletePromoCode(id: String): Boolean
+  createCompetitionProCampaign(input: CompetitionProCampaignInput): Boolean
+  updateCompetitionProCampaign(returningDays: Int, newcomerDays: Int, id: String): Boolean
+  deleteCompetitionProCampaign(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
@@ -509,7 +515,7 @@ type Mutation {
   sendTestRecordNotification(source: String, locale: String): Boolean
   deleteRecordWatch(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
-  sendMessage(replyToId: String, solveId: String, conversationId: String, recipientId: String, body: String): Message
+  sendMessage(gifId: String, gifProvider: String, replyToId: String, solveId: String, conversationId: String, recipientId: String, body: String): Message
   markConversationRead(conversationId: String): Boolean
   setTyping(typing: Boolean, conversationId: String): Boolean
   acceptConversationRequest(conversationId: String): Boolean
@@ -2136,6 +2142,45 @@ type RedeemPromoCodeResult {
   expires_at: DateTime
 }
 
+type ProGiftCompetitionOption {
+  zkt_competition_id: String
+  slug: String
+  name: String
+  date_start: String
+  date_end: String
+  status: String
+  results_published: Boolean
+  campaign_id: String
+}
+
+type CompetitionProCampaignInfo {
+  id: String
+  zkt_competition_id: String
+  competition_slug: String
+  competition_name: String
+  competition_date: DateTime
+  newcomer_days: Int
+  returning_days: Int
+  status: String
+  processed_at: DateTime
+  created_at: DateTime
+  granted_count: Int
+  waiting_count: Int
+  other_count: Int
+}
+
+type CompetitionProGiftInfo {
+  id: String
+  name: String
+  username: String
+  kind: String
+  days: Int
+  status: String
+  skip_reason: String
+  granted_at: DateTime
+  pro_until: DateTime
+}
+
 type ZktRankPosition {
   rank: Int
   total: Int
@@ -2577,6 +2622,7 @@ type ReplyPreview {
   body: String
   deleted_at: DateTime
   solve_id: String
+  gif_id: String
   sender: ReplyPreviewSender
 }
 
@@ -2587,6 +2633,8 @@ type Message {
   body: String
   sender: PublicUserAccount
   solve: Solve
+  gif_provider: String
+  gif_id: String
   edited_at: DateTime
   reactions: [MessageReaction!]
   reply_to: ReplyPreview
@@ -2643,6 +2691,8 @@ type ReportSnapshotMessage {
   sender_username: String
   body: String
   has_solve: Boolean
+  gif_provider: String
+  gif_id: String
   created_at: String
 }
 
@@ -3336,6 +3386,12 @@ input CreatePromoCodeInput {
   membership_type: String
   duration_minutes: Int
   max_uses: Int = 1
+}
+
+input CompetitionProCampaignInput {
+  zkt_competition_id: String
+  newcomer_days: Int
+  returning_days: Int
 }
 
 input FollowCompetitorInput {

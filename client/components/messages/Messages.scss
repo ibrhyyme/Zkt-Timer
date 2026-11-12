@@ -542,6 +542,16 @@
 		word-break: break-word;
 	}
 
+	// The picture sits inside the bubble's padding with the time under it, the way a
+	// photo does in any messenger.
+	&__bubble-gif {
+		margin: 2px 0 4px;
+	}
+
+	.#{$namespace}-messages__bubble-inner--mine .#{$namespace}-gif-media--state-missing {
+		color: rgb(var(--theme-primary-opposite));
+	}
+
 
 	// The "edited" marker rides along with the timestamp rather than taking its own
 	// line, so a corrected message does not become visually louder than a fresh one.

@@ -24,10 +24,13 @@ interface Props {
 	isPrivate: boolean;
 	currentAllowedTypes?: string[];
 	cubeType?: string;
-	/** `maxPlayers` is only passed when the owner changed it, so saving a name never moves capacity. */
-	onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number) => void;
+	/** `maxPlayers` and `gifsEnabled` are only passed when changed, so saving a name never
+	 * overwrites a GIF switch someone flipped from the chat header in the meantime. */
+	onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number, gifsEnabled?: boolean) => void;
 	currentMaxPlayers?: number;
 	participantCount?: number;
+	/** The room's GIF switch. Undefined hides the row (a build without GIF search). */
+	gifsEnabled?: boolean;
 	// Optional controlled open state — lets a sibling trigger (e.g. the cube-type chip) open this same popover
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
@@ -44,6 +47,7 @@ export default function EditRoomDropdown({
 	onSubmit,
 	currentMaxPlayers,
 	participantCount = 0,
+	gifsEnabled,
 	open: controlledOpen,
 	onOpenChange,
 }: Props) {
@@ -65,6 +69,7 @@ export default function EditRoomDropdown({
 	const [allowedTypes, setAllowedTypes] = useState<string[]>(
 		currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : ALL_TYPES
 	);
+	const [gifs, setGifs] = useState(gifsEnabled !== false);
 
 	// When panel opens, synchronize to current values (reflect external room changes)
 	React.useEffect(() => {
@@ -77,8 +82,9 @@ export default function EditRoomDropdown({
 				currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : ALL_TYPES
 			);
 			setMaxPlayers(initialMaxPlayers);
+			setGifs(gifsEnabled !== false);
 		}
-	}, [open, currentName, cubeType, isPrivate, currentAllowedTypes, initialMaxPlayers]);
+	}, [open, currentName, cubeType, isPrivate, currentAllowedTypes, initialMaxPlayers, gifsEnabled]);
 
 	const toggleType = (type: string) => {
 		if (allowedTypes.includes(type)) {
@@ -109,7 +115,15 @@ export default function EditRoomDropdown({
 				return;
 			}
 		}
-		onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType, maxPlayers !== initialMaxPlayers ? maxPlayers : undefined);
+		onSubmit(
+			name,
+			privateRoom,
+			password.trim(),
+			allowedTypes,
+			selectedCubeType,
+			maxPlayers !== initialMaxPlayers ? maxPlayers : undefined,
+			gifsEnabled !== undefined && gifs !== (gifsEnabled !== false) ? gifs : undefined
+		);
 		setOpen(false);
 	}
 
@@ -187,6 +201,14 @@ export default function EditRoomDropdown({
 							<Switch on={privateRoom} ariaLabel={t('rooms.private_room_q')} onChange={setPrivateRoom} />
 							<span className={b('toggle-label')}>{t('rooms.private_room_q')}</span>
 						</div>
+
+						{/* GIFs in this room's chat: off also hides those already sent. */}
+						{gifsEnabled !== undefined && (
+							<div className={b('toggle-row')}>
+								<Switch on={gifs} ariaLabel={t('gif.room_setting')} onChange={setGifs} />
+								<span className={b('toggle-label')}>{t('gif.room_setting')}</span>
+							</div>
+						)}
 
 						{/* Password Input */}
 						{privateRoom && (

@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslation } from 'react-i18next';
 import { Gear } from 'phosphor-react';
-import ExtrasTab from './tabs/ExtrasTab';
+import ExtrasTab, { RoomGifsControl } from './tabs/ExtrasTab';
 import GoalsTab from './tabs/GoalsTab';
 import block from '../../styles/bem';
 import useExclusiveDropdown from '../../util/hooks/useExclusiveDropdown';
@@ -28,6 +28,8 @@ interface Props {
 	hideSlamStop?: boolean;
 	// Hide goals tab (goal system is not used in room flow)
 	hideGoals?: boolean;
+	// Room: the GIF switch for its owner or a moderator (see ExtrasTab).
+	roomGifs?: RoomGifsControl;
 }
 
 export default function SettingsDropdown({
@@ -36,6 +38,7 @@ export default function SettingsDropdown({
 	hideSmartCubeFeatures,
 	hideSlamStop,
 	hideGoals,
+	roomGifs,
 }: Props) {
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<Tab>('extras');
@@ -93,6 +96,7 @@ export default function SettingsDropdown({
 								hideMobileModules={hideMobileModules}
 								hideSmartCubeFeatures={hideSmartCubeFeatures}
 								hideSlamStop={hideSlamStop}
+								roomGifs={roomGifs}
 							/>
 						)}
 						{tab === 'goals' && !hideGoals && <GoalsTab />}

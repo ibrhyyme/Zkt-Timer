@@ -599,7 +599,12 @@ export default function InboxPanel() {
 					: row.data.notification_category_name;
 
 		const text = isMessage
-			? row.data.last_message?.body || (row.data.last_message?.solve ? t('inbox.sent_a_solve') : '')
+			? row.data.last_message?.body ||
+				(row.data.last_message?.gif_id
+					? 'GIF'
+					: row.data.last_message?.solve
+						? t('inbox.sent_a_solve')
+						: '')
 			: row.kind === 'announcement'
 				? row.data.title
 				: row.data.in_app_message || row.data.message;

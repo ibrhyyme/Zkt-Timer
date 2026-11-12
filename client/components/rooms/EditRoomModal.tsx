@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Lock, Check } from 'phosphor-react';
 import Button from '../common/button/Button';
 import ProTag from '../common/pro_tag/ProTag';
+import Switch from '../common/switch/Switch';
 import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
@@ -20,13 +21,16 @@ interface EditRoomModalProps {
     isPrivate: boolean;
     currentAllowedTypes?: string[];
     cubeType?: string;
-    /** `maxPlayers` is only passed when the owner changed it, so saving a name never moves capacity. */
-    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number) => void;
+    /** `maxPlayers` and `gifsEnabled` are only passed when changed, so saving a name never
+     * overwrites a GIF switch someone flipped from the chat header in the meantime. */
+    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string, maxPlayers?: number, gifsEnabled?: boolean) => void;
     currentMaxPlayers?: number;
     participantCount?: number;
+    /** The room's GIF switch. Undefined hides the row (a build without GIF search). */
+    gifsEnabled?: boolean;
 }
 
-export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, cubeType, onSubmit, currentMaxPlayers, participantCount = 0 }: EditRoomModalProps) {
+export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, cubeType, onSubmit, currentMaxPlayers, participantCount = 0, gifsEnabled }: EditRoomModalProps) {
     const { t } = useTranslation();
     const backdropClose = useBackdropClose(onClose);
     const [name, setName] = useState(currentName);
@@ -37,11 +41,15 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
     // A room that took people in past its capacity starts from its head count.
     const initialMaxPlayers = Math.max(currentMaxPlayers ?? playerChoices[0], playerChoices[0]);
     const [maxPlayers, setMaxPlayers] = useState(initialMaxPlayers);
+    const [gifs, setGifs] = useState(gifsEnabled !== false);
     // The modal stays mounted between openings, and approvals can grow the room while it is
     // closed: start each opening from the room as it is now.
     useEffect(() => {
-        if (isOpen) setMaxPlayers(initialMaxPlayers);
-    }, [isOpen, initialMaxPlayers]);
+        if (isOpen) {
+            setMaxPlayers(initialMaxPlayers);
+            setGifs(gifsEnabled !== false);
+        }
+    }, [isOpen, initialMaxPlayers, gifsEnabled]);
 
     // Default all allowed if undefined
     const allTypes = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'smart', 'manual'];
@@ -145,6 +153,14 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         <span className="text-sm font-medium text-text">{t('rooms.private_room_q')}</span>
                     </div>
 
+                    {/* GIFs in this room's chat: off also hides those already sent. */}
+                    {gifsEnabled !== undefined && (
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <Switch on={gifs} onChange={setGifs} />
+                            <span className="text-sm font-medium text-text">{t('gif.room_setting')}</span>
+                        </label>
+                    )}
+
                     {/* Password Input */}
                     {privateRoom && (
                         <div className="space-y-2 animate-fadeIn">
@@ -200,7 +216,15 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                 return;
                             }
                         }
-                        onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType, maxPlayers !== initialMaxPlayers ? maxPlayers : undefined);
+                        onSubmit(
+                            name,
+                            privateRoom,
+                            password.trim(),
+                            allowedTypes,
+                            selectedCubeType,
+                            maxPlayers !== initialMaxPlayers ? maxPlayers : undefined,
+                            gifsEnabled !== undefined && gifs !== (gifsEnabled !== false) ? gifs : undefined
+                        );
                         onClose();
                     }} primary className="px-6 py-2">
                         {t('rooms.save')}

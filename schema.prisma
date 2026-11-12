@@ -133,6 +133,8 @@ model UserAccount {
   // Promo codes
   promo_codes_created           PromoCode[]            @relation("promo_code_creator")
   promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
+  competition_pro_campaigns     CompetitionProCampaign[] @relation("competition_pro_campaign_creator")
+  competition_pro_gifts         CompetitionProGift[]     @relation("competition_pro_gift_user")
 
   // Activity heartbeats — admin gorunurlugu icin dakika bucket'lari
   activity_heartbeats           UserActivityHeartbeat[] @relation("activity_heartbeat_user")
@@ -1292,6 +1294,9 @@ model FriendlyRoom {
   created_by_id    String
   is_private       Boolean                   @default(false)
   allowed_timer_types String[]               @default(["keyboard", "stackmat", "smart", "gantimer", "qiyitimer", "qiyiwired", "manual"])
+  /// Whether participants may post GIFs in the chat. The owner or a moderator turns it
+  /// off when a room's chat is being buried; already-sent GIFs then collapse too.
+  gifs_enabled     Boolean                   @default(true)
   original_creator_id String?
   current_scramble String?
   scramble_subset  String?
@@ -1370,6 +1375,9 @@ model FriendlyRoomChat {
   room_id    String
   user_id    String
   message    String
+  /// Same contract as Message.gif_provider / gif_id: provider + id only, empty message.
+  gif_provider String?
+  gif_id       String?
   created_at DateTime     @default(now())
 
   room       FriendlyRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
@@ -1805,6 +1813,60 @@ model PromoCodeRedemption {
   @@map("promo_code_redemption")
 }
 
+// Competition Pro gift (admin > Promo > Competition): Pro for competing at a ZKT
+// competition, handed out once its results are published. One campaign per
+// competition; the federation decides who competed and who was a first-timer
+// (server/services/competition_pro_gift.ts).
+model CompetitionProCampaign {
+  id                 String               @id @default(uuid())
+  // Federation competition UUID.
+  zkt_competition_id String               @unique
+  competition_slug   String?
+  competition_name   String
+  competition_date   DateTime
+  newcomer_days      Int
+  returning_days     Int
+  // armed: waiting for results. processing: results seen, still picking up late
+  // corrections for a while. done: closed.
+  status             String               @default("armed")
+  processed_at       DateTime?
+  created_at         DateTime             @default(now())
+  created_by_id      String?
+  created_by         UserAccount?         @relation("competition_pro_campaign_creator", fields: [created_by_id], references: [id], onDelete: SetNull)
+  gifts              CompetitionProGift[]
+
+  @@index([status])
+  @@map("competition_pro_campaign")
+}
+
+// One row per person who earned a competition gift. Both uniques are the
+// once-in-a-life rule: `identity_sub` is the federation person (a second
+// account maps to the first), `zkt_user_id` the account that competed.
+model CompetitionProGift {
+  id           String                 @id @default(uuid())
+  campaign_id  String
+  identity_sub String                 @unique
+  zkt_user_id  String                 @unique
+  name         String
+  kind         String // newcomer | returning
+  days         Int
+  // pending_link: no Timer account linked yet. deferred_store: paying store
+  // subscriber, starts when the subscription ends. granted. skipped. expired.
+  status       String
+  skip_reason  String? // lifetime | premium
+  user_id      String?
+  granted_at   DateTime?
+  pro_until    DateTime?
+  created_at   DateTime               @default(now())
+  campaign     CompetitionProCampaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  user         UserAccount?           @relation("competition_pro_gift_user", fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([campaign_id])
+  @@index([status])
+  @@index([user_id])
+  @@map("competition_pro_gift")
+}
+
 // Kullanici basina dakika bucket'i: idempotent heartbeat. Ayni dakika 1 satir.
 // minute_bucket = floor(unix_ms / 60000). 90 gun sonra cron temizler.
 model UserActivityHeartbeat {
@@ -1902,6 +1964,12 @@ model Message {
   /// it was answering. Soft-deleted (unsent) parents keep their row, so the quote can
   /// still render "message removed" instead of vanishing.
   reply_to_id     String?
+  /// A GIF picked from the provider's search (see shared/gif.ts). Only the provider
+  /// name and its id are kept, never a URL or the media: KLIPY's terms forbid storing
+  /// their content, so the reader's device resolves the id when it renders. A GIF
+  /// message carries an empty body.
+  gif_provider    String?
+  gif_id          String?
   created_at      DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)

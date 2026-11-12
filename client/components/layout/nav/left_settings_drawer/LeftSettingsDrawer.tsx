@@ -11,6 +11,7 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import EdgeDrawer from '../edge_drawer/EdgeDrawer';
 import TimerTypeGrid from './TimerTypeGrid';
+import {RoomGifsControl} from '../../../quick-controls/tabs/ExtrasTab';
 
 interface Props {
 	allowedTimerTypes?: string[];
@@ -19,6 +20,8 @@ interface Props {
 	hideMobileModules?: boolean;
 	hideSlamStop?: boolean;
 	puzzle?: {cubeType: string; scrambleSubset?: string | null};
+	// Room: the GIF switch for its owner or a moderator (see ExtrasTab).
+	roomGifs?: RoomGifsControl;
 }
 
 export default function LeftSettingsDrawer(props: Props) {

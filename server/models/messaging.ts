@@ -40,6 +40,7 @@ const messageInclude = {
 			body: true,
 			deleted_at: true,
 			solve_id: true,
+			gif_id: true,
 			sender: {select: {username: true}},
 		},
 	},
@@ -204,8 +205,9 @@ export async function insertMessage(params: {
 	body: string;
 	solveId?: string | null;
 	replyToId?: string | null;
+	gif?: {provider: string; id: string} | null;
 }) {
-	const {conversationId, senderId, body, solveId, replyToId} = params;
+	const {conversationId, senderId, body, solveId, replyToId, gif} = params;
 	const now = new Date();
 
 	const [message] = await getPrisma().$transaction([
@@ -216,6 +218,8 @@ export async function insertMessage(params: {
 				body,
 				solve_id: solveId || null,
 				reply_to_id: replyToId || null,
+				gif_provider: gif?.provider || null,
+				gif_id: gif?.id || null,
 			},
 			include: messageInclude,
 		}),
@@ -291,7 +295,7 @@ export async function acceptConversation(conversationId: string, userId: string)
 export async function unsendMessage(messageId: string, userId: string) {
 	const result = await getPrisma().message.updateMany({
 		where: {id: messageId, sender_id: userId, deleted_at: null},
-		data: {deleted_at: new Date(), body: '', solve_id: null},
+		data: {deleted_at: new Date(), body: '', solve_id: null, gif_provider: null, gif_id: null},
 	});
 
 	return result.count > 0;
@@ -328,10 +332,12 @@ export interface EditResult {
 export async function editMessage(messageId: string, userId: string, body: string): Promise<EditResult> {
 	const existing = await getPrisma().message.findFirst({
 		where: {id: messageId, sender_id: userId},
-		select: {id: true, deleted_at: true, created_at: true, solve_id: true},
+		select: {id: true, deleted_at: true, created_at: true, solve_id: true, gif_id: true},
 	});
 
-	if (!existing) {
+	// A GIF message has no text to correct, and turning it into a captioned one after
+	// the fact would be the same "different thing under a message they already read".
+	if (!existing || existing.gif_id) {
 		return {message: null, reason: 'not_found'};
 	}
 	if (existing.deleted_at) {
@@ -408,6 +414,10 @@ export async function createMessageReport(params: {
 			sender_username: m.sender?.username ?? null,
 			body: m.body,
 			has_solve: Boolean(m.solve_id),
+			// The id, not a URL: a moderator's screen resolves it the same way a reader's
+			// does, and nothing of KLIPY's is stored in the evidence row.
+			gif_provider: m.gif_provider ?? null,
+			gif_id: m.gif_id ?? null,
 			created_at: m.created_at.toISOString(),
 		}));
 

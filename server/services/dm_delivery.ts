@@ -219,11 +219,12 @@ async function shouldSendPush(recipientId: string, conversationId: string, accep
 	return true;
 }
 
-function previewOf(body: string, hasSolve: boolean): string {
+function previewOf(body: string, hasSolve: boolean, hasGif = false): string {
 	const trimmed = (body || '').trim();
 	if (trimmed) {
 		return trimmed.length > 120 ? `${trimmed.slice(0, 117)}...` : trimmed;
 	}
+	if (hasGif) return 'GIF';
 	return hasSolve ? '📊' : '';
 }
 
@@ -257,6 +258,8 @@ function toWireMessage(message: any) {
 		conversation_id: message.conversation_id,
 		sender_id: message.sender_id,
 		body: message.body,
+		gif_provider: message.gif_provider ?? null,
+		gif_id: message.gif_id ?? null,
 		created_at: message.created_at,
 		// Null on everything that has never been touched, which is almost every message.
 		edited_at: message.edited_at ?? null,
@@ -272,6 +275,7 @@ function toWireMessage(message: any) {
 					body: message.reply_to.body,
 					deleted_at: message.reply_to.deleted_at ?? null,
 					solve_id: message.reply_to.solve_id ?? null,
+					gif_id: message.reply_to.gif_id ?? null,
 					sender: {username: message.reply_to.sender?.username ?? null},
 			  }
 			: null,
@@ -359,7 +363,7 @@ export async function deliverMessage(params: {
 				await sendPushToUser(
 					recipient.id,
 					senderUsername,
-					previewOf(message.body, Boolean(message.solve_id)),
+					previewOf(message.body, Boolean(message.solve_id), Boolean(message.gif_id)),
 					// `link` is what both tap handlers actually read: the Capacitor
 					// listener in push-notifications.ts and the service worker's
 					// notificationclick. Without it a tapped notification dropped

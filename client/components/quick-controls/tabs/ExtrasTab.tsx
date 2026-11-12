@@ -194,11 +194,20 @@ interface ExtrasTabProps {
 	// Hide slam-to-stop in FriendlyRoom — the room stops via RoomTimerOverlay,
 	// not KeyWatcher, so the setting would be ineffective there.
 	hideSlamStop?: boolean;
+	// Room only, and only for its owner or a moderator: the room's GIF switch, the same one
+	// as in the edit window and the chat header. Undefined everywhere else.
+	roomGifs?: RoomGifsControl;
+}
+
+export interface RoomGifsControl {
+	enabled: boolean;
+	onChange: (enabled: boolean) => void;
 }
 
 export default function ExtrasTab({
 	hideSmartCubeFeatures = false,
 	hideSlamStop = false,
+	roomGifs,
 }: ExtrasTabProps = {}) {
 	const { t } = useTranslation();
 	const inspection = useSettings('inspection');
@@ -302,6 +311,15 @@ export default function ExtrasTab({
 		// zt-quick-extras: both panels flatten these rows into hairline rows, the gear panel in
 		// SettingsDropdown.scss and the left drawer in TimerTypeGrid.scss.
 		<div className="zt-quick-extras space-y-3">
+			{/* A room setting, not a personal one, so it leads the panel where a manager
+			    looking for it lands first. */}
+			{roomGifs && (
+				<ExtrasOption
+					label={t('gif.room_setting')}
+					isActive={roomGifs.enabled}
+					onClick={() => roomGifs.onChange(!roomGifs.enabled)}
+				/>
+			)}
 			{/* Slam-to-stop first (owner request, 1.6): it is the Pro option of the touch timer,
 			    so members find it at once and everyone else sees what Pro adds (Pro badge, opens
 			    the Pro dialog). */}

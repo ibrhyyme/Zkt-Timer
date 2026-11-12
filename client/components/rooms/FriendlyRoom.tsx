@@ -81,6 +81,7 @@ import RoomClimateControl from './climate/RoomClimateControl';
 import RoomClimateEffects from './climate/RoomClimateEffects';
 import RoomClimateDrama from './climate/RoomClimateDrama';
 import { RoomChatSystemLine } from './RoomChat';
+import { isGifSearchAvailable } from '../../lib/klipy';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -188,6 +189,9 @@ function FriendlyRoomContent() {
     const joinedRoom = !!room && !!me && room.participants.some((p) => p.user_id === me.id);
     const climate = useRoomClimate(roomId, me?.id, joinedRoom, climateSoundOn);
     const climateMood = useClimateMood(climate.state, climate.serverNow, climateEffectsOn);
+    // The GIF row in the room settings. After mount only: the key is a client build define.
+    const [gifSearchOn, setGifSearchOn] = useState(false);
+    useEffect(() => setGifSearchOn(isGifSearchAvailable()), []);
     const climateLines = useMemo<RoomChatSystemLine[]>(
         () =>
             climate.lines.flatMap((line) => {
@@ -1816,6 +1820,17 @@ function FriendlyRoomContent() {
     const canManage = isSiteAdmin || canManageRoom(myRole);
     const isActive = room.status === 'ACTIVE';
 
+    // The chat header's GIF switch. Only this one field is sent, so flipping it never
+    // touches the name, password or capacity; the server checks the role again.
+    const setRoomGifsEnabled = (enabled: boolean) => {
+        getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, { gifs_enabled: enabled });
+    };
+    // The same switch in the gear panel (computer) and the left drawer (phone): managers
+    // only, and only in a build with GIF search.
+    const roomGifsControl = canManage && gifSearchOn
+        ? { enabled: room.gifs_enabled !== false, onChange: setRoomGifsEnabled }
+        : undefined;
+
     // The bottom panel's singles and averages live in RoomStatsPanel (room_stats.ts does the
     // maths with the timer's own average rules).
     const mySolves = myParticipant?.solves || [];
@@ -1919,9 +1934,10 @@ function FriendlyRoomContent() {
                                         cubeType={room.cube_type}
                                         currentMaxPlayers={room.max_players}
                                         participantCount={room.participants.length}
+                                        gifsEnabled={gifSearchOn ? room.gifs_enabled !== false : undefined}
                                         open={editPopoverOpen}
                                         onOpenChange={setEditPopoverOpen}
-                                        onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers) => {
+                                        onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers, gifsEnabled) => {
                                             getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                                                 name,
                                                 is_private: isPrivate,
@@ -1929,6 +1945,7 @@ function FriendlyRoomContent() {
                                                 allowed_timer_types: allowedTypes,
                                                 cube_type: cubeType,
                                                 max_players: maxPlayers,
+                                                gifs_enabled: gifsEnabled,
                                             });
                                         }}
                                     />
@@ -2034,6 +2051,7 @@ function FriendlyRoomContent() {
                                 hideSmartCubeFeatures
                                 hideSlamStop
                                 hideGoals
+                                roomGifs={roomGifsControl}
                             />
                         )}
                         <button
@@ -2435,7 +2453,7 @@ function FriendlyRoomContent() {
                             }
                             transition-opacity duration-200
                         `}>
-                            <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} />
+                            <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} gifsEnabled={room.gifs_enabled !== false} canManageGifs={canManage} onSetGifsEnabled={setRoomGifsEnabled} />
                         </div>
 
                         {/* Notification Log - Right (10% on desktop) - Hidden on mobile */}
@@ -2512,7 +2530,7 @@ function FriendlyRoomContent() {
 
                             {/* Right: Chat */}
                             <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-background rounded-2xl border border-text/[0.1] overflow-hidden flex flex-col shadow-2xl relative group">
-                                <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} />
+                                <RoomChat roomId={roomId} onMessage={handleChatMessage} systemLines={climateLines} gifsEnabled={room.gifs_enabled !== false} canManageGifs={canManage} onSetGifsEnabled={setRoomGifsEnabled} />
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500/20 rounded-2xl pointer-events-none transition-colors" />
                             </div>
 
@@ -2678,6 +2696,7 @@ function FriendlyRoomContent() {
                     hideSmartCubeFeatures
                     hideMobileModules
                     hideSlamStop
+                    roomGifs={roomGifsControl}
                 />
             )}
             {canManage && <JoinRequestBanner requests={joinRequests} onRespond={respondToJoinRequest} />}
@@ -2691,7 +2710,8 @@ function FriendlyRoomContent() {
                 cubeType={room.cube_type}
                 currentMaxPlayers={room.max_players}
                 participantCount={room.participants.length}
-                onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers) => {
+                gifsEnabled={gifSearchOn ? room.gifs_enabled !== false : undefined}
+                onSubmit={(name, isPrivate, password, allowedTypes, cubeType, maxPlayers, gifsEnabled) => {
                     getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                         name,
                         is_private: isPrivate,
@@ -2699,6 +2719,7 @@ function FriendlyRoomContent() {
                         allowed_timer_types: allowedTypes,
                         cube_type: cubeType,
                         max_players: maxPlayers,
+                        gifs_enabled: gifsEnabled,
                     });
                 }}
             />

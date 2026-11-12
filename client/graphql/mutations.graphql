@@ -205,8 +205,8 @@ mutation recordActivityHeartbeat {
 	}
 }
 
-mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String, $replyToId: String) {
-	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId, replyToId: $replyToId) {
+mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String, $replyToId: String, $gifProvider: String, $gifId: String) {
+	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId, replyToId: $replyToId, gifProvider: $gifProvider, gifId: $gifId) {
 		...MessageFragment
 	}
 }

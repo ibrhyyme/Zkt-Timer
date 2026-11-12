@@ -53,6 +53,10 @@ export class ReplyPreview {
 	@Field({nullable: true})
 	solve_id?: string;
 
+	/** Set when the quoted line was a GIF; the quote then reads "GIF". */
+	@Field({nullable: true})
+	gif_id?: string;
+
 	@Field(() => ReplyPreviewSender, {nullable: true})
 	sender?: ReplyPreviewSender;
 }
@@ -77,6 +81,16 @@ export class Message {
 	/** Attached solve, if the sender shared one. */
 	@Field(() => Solve, {nullable: true})
 	solve?: Solve;
+
+	/**
+	 * A GIF attachment: the provider and its id, never a media URL. The reader's client
+	 * resolves the id with the provider directly (see shared/gif.ts for why).
+	 */
+	@Field({nullable: true})
+	gif_provider?: string;
+
+	@Field({nullable: true})
+	gif_id?: string;
 
 	/** Set once the sender changed the text. Null on everything untouched. */
 	@Field({nullable: true})
@@ -239,6 +253,13 @@ export class ReportSnapshotMessage {
 
 	@Field()
 	has_solve: boolean;
+
+	/** Null on snapshots filed before GIFs existed, and on every non-GIF line. */
+	@Field({nullable: true})
+	gif_provider?: string;
+
+	@Field({nullable: true})
+	gif_id?: string;
 
 	@Field()
 	created_at: string;

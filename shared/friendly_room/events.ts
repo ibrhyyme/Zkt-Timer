@@ -13,6 +13,9 @@ export enum FriendlyRoomClientEvent {
     EDIT_SOLVE = 'friendlyRoomEditSolve', // Fix your own most recent solve (time / penalties)
     DELETE_SOLVE = 'friendlyRoomDeleteSolve', // Remove your own most recent solve
     SEND_CHAT = 'friendlyRoomSendChat',
+    // Separate from SEND_CHAT so a client that predates GIFs keeps sending plain strings
+    // to the handler it already knows. Payload: (roomId, {provider, id}).
+    SEND_CHAT_GIF = 'friendlyRoomSendChatGif',
     NEXT_SCRAMBLE = 'friendlyRoomNextScramble',
     START_ROOM = 'friendlyRoomStart',
     SEND_STATUS = 'friendlyRoomSendStatus',
@@ -51,6 +54,8 @@ export enum FriendlyRoomServerEvent {
     SOLVE_UPDATED = 'friendlyRoomSolveUpdated',
     SOLVE_DELETED = 'friendlyRoomSolveDeleted',
     CHAT_MESSAGE = 'friendlyRoomChatMessage',
+    // To the sender only: a GIF was refused. Payload FriendlyRoomGifBlocked.
+    GIF_BLOCKED = 'friendlyRoomGifBlocked',
     ROOM_STARTED = 'friendlyRoomStarted',
     ADMIN_CHANGED = 'friendlyRoomAdminChanged',
     MODERATOR_CHANGED = 'friendlyRoomModeratorChanged',

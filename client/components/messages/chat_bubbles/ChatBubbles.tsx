@@ -16,6 +16,7 @@ import {Link, useHistory, useLocation} from 'react-router-dom';
 import {X, PaperPlaneRight, ArrowSquareOut} from 'phosphor-react';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import MessageBody from '../message_body/MessageBody';
+import GifMedia from '../../common/gif/GifMedia';
 import PresenceDot from '../presence_dot/PresenceDot';
 import {OPEN_CHAT_BUBBLE_EVENT, OpenChatBubbleDetail} from '../../../util/chat-bubbles';
 import {gqlMutateTyped, gqlQueryTyped} from '../../api';
@@ -674,6 +675,9 @@ export default function ChatBubbles() {
 										<MessageBody body={m.body} compact trusted={threadAccepted} />
 									</div>
 								)}
+									{m.gif_id && (
+										<GifMedia className={b('msg-gif')} provider={m.gif_provider} gifId={m.gif_id} maxWidth={180} />
+									)}
 									{/* Without this a shared solve arrived as an empty bubble, which
 									    is now the common case: sending happens from the solve card. */}
 									{m.solve && (
