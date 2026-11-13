@@ -8,7 +8,7 @@ import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
 import ZktLiveStatus from './ZktLiveStatus';
 import {buildLiveStatusRows} from './live-status-rows';
-import TabBar from '../../../common/tab_bar/TabBar';
+import type {ZktAdvancementType} from './live-advancement';
 import {useDelayedFlag} from '../useDelayedFlag';
 
 interface Props {
@@ -135,13 +135,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		}
 	}, [roundNumber, defaultRound, visibleRounds, history, roundPath]);
 
-	// "Resmi sonuçlar" / "Anlık durum" (ZKT online skor girişi). null = automatic:
-	// the official table, unless it is still empty while judges' times exist.
-	const [liveView, setLiveView] = useState<'official' | 'status' | null>(null);
-
 	useEffect(() => {
 		setModalRow(null);
-		setLiveView(null);
 	}, [selectedRound?.liveRoundId]);
 
 	const liveRoundId = selectedRound?.liveRoundId || null;
@@ -269,12 +264,24 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	// carries any. Without them the page is exactly what it was.
 	const liveEntries = (isZkt && roundResults?.liveEntries) || [];
 	const hasLiveStatus = liveEntries.length > 0;
-	// A later round lists everyone who advanced with empty attempts, so "has an
-	// official result" means a row with at least one attempt in.
-	const hasOfficialTimes = allResults.some((r: any) => (r.attempts || []).some((a: any) => a?.result));
-	const view: 'official' | 'status' = hasLiveStatus
-		? (liveView ?? (hasOfficialTimes ? 'official' : 'status'))
-		: 'official';
+	// One view at a time, never both (organizer's call): while the round runs and
+	// judges' times exist, "Anlık durum" stands in for the results; once the desk
+	// finishes the round (after the double check) the official table replaces it.
+	const view: 'official' | 'status' = hasLiveStatus && !isFinished ? 'status' : 'official';
+	// The live standings carry the advancement colours too. A final advances
+	// nobody, whatever condition the round row still holds.
+	const cond = selectedRound.advancementCondition;
+	const liveAdvancement =
+		cond && !selectedRound.isFinal
+			? {
+					type: (cond.type === 'percent'
+						? 'PERCENT'
+						: cond.type === 'attemptResult'
+							? 'ATTEMPT_RESULT'
+							: 'RANKING') as ZktAdvancementType,
+					level: cond.level,
+				}
+			: null;
 	// "Anlık durum" is the results table itself, ranked from the judges' visible
 	// times (owner's call: a separate group layout was hard to read). A Çift Şans
 	// round keeps the group layout: its chances do not fit one row per person yet.
@@ -287,6 +294,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				cutoff: selectedRound.cutoff
 					? {attempts: selectedRound.cutoff.numberOfAttempts, result: selectedRound.cutoff.attemptResult}
 					: null,
+				advancement: liveAdvancement,
+				fieldSize: selectedRound.numResults || 0,
 			})
 		: allResults;
 	const showChances = !statusTable && dualChance && allResults.some((r: any) => (r.chances?.length || 0) > 0);
@@ -438,19 +447,6 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</div>
 			)}
 
-			{hasLiveStatus && (
-				<TabBar<'official' | 'status'>
-					className={b('wca-live-view-tabs')}
-					label={t('zkt_comp.live_tabs_label')}
-					value={view}
-					onChange={setLiveView}
-					tabs={[
-						{id: 'official', label: t('zkt_comp.live_tab_official')},
-						{id: 'status', label: t('zkt_comp.live_tab_status')},
-					]}
-				/>
-			)}
-
 			{view === 'status' &&
 				(statusTable ? (
 					<>
@@ -509,7 +505,9 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 									const attempts = formatAttempts(r.attempts || [], numAttempts, event.eventId);
 									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
 									const clickable = isMobile || hasTarget;
-									// Unchecked times win no medal, set no record and advance nobody.
+									// Unchecked times win no medal and set no record. Their
+									// advancement colours are the live forecast (green clinched,
+									// orange may still change), like the official table's mid-round.
 									const medal = isFinished && !statusTable ? rankingMedal(r.ranking) : '';
 									const isMe = !!(
 										(detail?.myWcaId && r.personWcaId && detail.myWcaId === r.personWcaId) ||
@@ -519,8 +517,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 										<tr
 											key={r.personLiveId || `${r.ranking}-${r.personName}`}
 											className={b('wca-live-result-row', {
-												advancing: !statusTable && r.advancing && !r.advancingQuestionable,
-												questionable: !statusTable && r.advancing && r.advancingQuestionable,
+												advancing: r.advancing && !r.advancingQuestionable,
+												questionable: r.advancing && r.advancingQuestionable,
 												clickable,
 												me: isMe,
 												[`rank-${r.ranking}`]: isFinished && r.ranking && r.ranking <= 3,

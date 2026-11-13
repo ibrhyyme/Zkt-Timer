@@ -4,6 +4,7 @@ import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse, getEffectiveOrientation, buildRandomAUFAlg, cleanAlgorithmForCubing, ensureCubingReady} from '../../../../util/trainer/algorithm_engine';
 import {generateLLPattern} from '../../../../util/trainer/pattern_utils';
+import {caseScramble} from '../../../../util/trainer/case_scramble';
 import {fetchDefaultAlgs, getLastTimes, getEffectiveTime, deleteTrainerSolve} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
@@ -53,8 +54,9 @@ export default function TrainingArea() {
 		}
 
 		let cancelled = false;
+		const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
 		// AUF sadece 3x3 kategorilerinde anlamli (U-yuzu ayari)
-		const useAUF = options.randomizeAUF && getPuzzleType(currentAlgorithm.category) === '3x3x3';
+		const useAUF = options.randomizeAUF && is3x3;
 
 		const run = async () => {
 			if (useAUF) {
@@ -63,9 +65,11 @@ export default function TrainingArea() {
 				const cleaned = cleanAlgorithmForCubing(currentAlgorithm.algorithm);
 				const algMoves = buildRandomAUFAlg(cleaned.split(/\s+/), currentAlgorithm.category, true);
 				const effAlg = algMoves.join(' ');
-				const inverse = await computeSetupInverse(effAlg);
+				// A solver's scramble, not the algorithm backwards (case_scramble.ts).
+				const scramble = await caseScramble(effAlg);
+				const setup = scramble !== null ? scramble : await computeSetupInverse(effAlg);
 				if (cancelled) return;
-				setSetupAlg(inverse);
+				setSetupAlg(setup || null);
 				// LL kategorilerde AUF'lu alg pattern JSON'unda bulunmaz — runtime uret ki 2D korunsun
 				const pattern = isLLCategory(currentAlgorithm.category)
 					? await generateLLPattern(effAlg)
@@ -80,8 +84,18 @@ export default function TrainingArea() {
 				return;
 			}
 
-			// AUF kapali: mevcut davranis (primary → entry.setup, alt → runtime inverse)
 			setAufState(null);
+			if (is3x3) {
+				const scramble = await caseScramble(currentAlgorithm.algorithm);
+				if (cancelled) return;
+				if (scramble !== null) {
+					setSetupAlg(scramble || null);
+					return;
+				}
+			}
+
+			// Other puzzles (and a 3x3 algorithm the solver could not take): primary → entry.setup,
+			// alternative → runtime inverse
 			const defaults = await fetchDefaultAlgs();
 			if (cancelled) return;
 			const subsets = defaults[currentAlgorithm.category];
@@ -352,7 +366,7 @@ export default function TrainingArea() {
 					<>
 						{setupAlg && (
 							<div className={b('training-setup')}>
-								<code>Setup: {setupAlg}</code>
+								<code>{t('trainer.scramble_label')}: {setupAlg}</code>
 							</div>
 						)}
 						<div className={b('training-cube')}>

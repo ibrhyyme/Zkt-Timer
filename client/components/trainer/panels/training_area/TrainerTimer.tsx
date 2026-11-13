@@ -157,6 +157,9 @@ export default function TrainerTimer() {
 			{isSmartMode && state.smartPhase === 'ready' && (
 				<div className={b('timer-hint')}>{t('trainer.ble_make_first_move')}</div>
 			)}
+			{isSmartMode && state.smartPhase === 'scrambling' && (
+				<div className={b('timer-hint')}>{t('trainer.ble_scramble_first')}</div>
+			)}
 		</div>
 	);
 }

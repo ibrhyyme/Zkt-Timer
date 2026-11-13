@@ -1,4 +1,4 @@
-import { isCancelSwipe, SWIPE_UP_CANCEL_PX } from '../touch_gesture';
+import { isCancelSwipe, isEdgeSwipe, SWIPE_UP_CANCEL_PX, EDGE_SWIPE_ZONE_PX, EDGE_SWIPE_MIN_PX } from '../touch_gesture';
 import { orientDelta } from '../../../../util/reversed-ui';
 
 // This gesture has been broken once already: a refactor swapped the upward-swipe test
@@ -52,5 +52,43 @@ describe('isCancelSwipe on the reversed (180°) timer', () => {
 
 	it('never cancels on a physical upward swipe, which is down for the reader', () => {
 		expect(cancel(0, -200)).toBe(false);
+	});
+});
+
+describe('isEdgeSwipe', () => {
+	// A phone in portrait: the side menus open from the physical left and right edges.
+	const W = 390;
+	const IN = EDGE_SWIPE_MIN_PX + 10;
+
+	it('a swipe in from beside the right notch is a reach for the menu', () => {
+		expect(isEdgeSwipe(W - 40, -IN, 5, W)).toBe(true);
+	});
+
+	it('a swipe in from beside the left notch is a reach for the menu', () => {
+		expect(isEdgeSwipe(40, IN, -5, W)).toBe(true);
+	});
+
+	it('moving towards the edge is not a reach for the menu', () => {
+		expect(isEdgeSwipe(W - 40, IN, 0, W)).toBe(false);
+		expect(isEdgeSwipe(40, -IN, 0, W)).toBe(false);
+	});
+
+	it('a press in the middle of the screen never counts, however far it slides', () => {
+		expect(isEdgeSwipe(W / 2, -200, 0, W)).toBe(false);
+		expect(isEdgeSwipe(W / 2, 200, 0, W)).toBe(false);
+	});
+
+	it('only presses inside the edge band count', () => {
+		expect(isEdgeSwipe(EDGE_SWIPE_ZONE_PX - 1, IN, 0, W)).toBe(true);
+		expect(isEdgeSwipe(EDGE_SWIPE_ZONE_PX, IN, 0, W)).toBe(false);
+	});
+
+	it('ignores the jitter of a thumb resting near the edge', () => {
+		expect(isEdgeSwipe(W - 30, -6, 3, W)).toBe(false);
+		expect(isEdgeSwipe(30, EDGE_SWIPE_MIN_PX, 0, W)).toBe(false);
+	});
+
+	it('a mostly vertical movement near the edge is not a menu swipe', () => {
+		expect(isEdgeSwipe(W - 30, -IN, -(IN + 20), W)).toBe(false);
 	});
 });

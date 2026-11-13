@@ -46,7 +46,8 @@ export interface SmartTurn {
 	localTimestamp: number | null;
 }
 
-export type SmartPhase = 'idle' | 'ready' | 'solving' | 'completed';
+/** `scrambling`: the cube is being taken to the case; `ready`: it shows the case, waiting for the first move. */
+export type SmartPhase = 'idle' | 'scrambling' | 'ready' | 'solving' | 'completed';
 
 export type CubeFace = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 

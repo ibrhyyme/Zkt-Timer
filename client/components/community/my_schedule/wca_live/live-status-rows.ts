@@ -6,6 +6,7 @@
 // the desk's own numbers.
 
 import {cardAverage} from '../../../../../shared/zkt_judge';
+import {computeAdvancementStates, type ZktAdvancementType, type ZktFormat} from './live-advancement';
 
 export interface LiveStatusEntryInput {
 	personName?: string | null;
@@ -43,6 +44,9 @@ export interface LiveStatusRow {
 	tag: LiveStatusTag;
 	done: number;
 	expected: number;
+	/** Green (advancing, not questionable) / orange (advancing, questionable), as on the official table. */
+	advancing: boolean;
+	advancingQuestionable: boolean;
 }
 
 interface Options {
@@ -52,6 +56,10 @@ interface Options {
 	eventId: string;
 	/** The round's cutoff: a row that missed it is done after `attempts`. */
 	cutoff?: {attempts: number; result: number} | null;
+	/** Who goes to the next round; null on a final or a round without one. */
+	advancement?: {type: ZktAdvancementType; level: number} | null;
+	/** The round's field size; competitors not on the table yet count as rivals. */
+	fieldSize?: number;
 }
 
 function results(list: ({result?: number | null} | null)[] | null | undefined): {result: number}[] {
@@ -72,6 +80,15 @@ function formatOf(numAttempts: number): string | null {
 	return null;
 }
 
+/** The round's format for the advancement math; null for a shape ZKT has no format for. */
+function zktFormatOf(numAttempts: number, byAverage: boolean): ZktFormat | null {
+	if (byAverage) return formatOf(numAttempts) as ZktFormat | null;
+	if (numAttempts === 1) return 'BO1';
+	if (numAttempts === 2) return 'BO2';
+	if (numAttempts === 3) return 'BO3';
+	return null;
+}
+
 // Successes first, fastest first; then DNF/DNS; then nothing at all.
 function bestKey(v: number | null): number {
 	if (v === null) return Number.POSITIVE_INFINITY;
@@ -81,7 +98,7 @@ function bestKey(v: number | null): number {
 export function buildLiveStatusRows(
 	entries: readonly LiveStatusEntryInput[],
 	official: readonly OfficialResultInput[],
-	{numAttempts, sortBy, eventId, cutoff}: Options
+	{numAttempts, sortBy, eventId, cutoff, advancement, fieldSize}: Options
 ): LiveStatusRow[] {
 	const byAverage = sortBy === 'average';
 	// How many attempts a desk row stands for: the whole format, or the cutoff's
@@ -116,6 +133,8 @@ export function buildLiveStatusRows(
 			tag: noShow ? 'noShow' : 'official',
 			done: attempts.length,
 			expected: expectedFor(values),
+			advancing: false,
+			advancingQuestionable: false,
 		};
 	};
 
@@ -143,6 +162,8 @@ export function buildLiveStatusRows(
 			tag: e.official ? 'official' : e.noShow ? 'noShow' : 'progress',
 			done,
 			expected,
+			advancing: false,
+			advancingQuestionable: false,
 		});
 	}
 
@@ -164,5 +185,34 @@ export function buildLiveStatusRows(
 		rank = i > 0 && rows[i - 1].best !== null && cmp(rows[i - 1], r) === 0 ? rank : i + 1;
 		r.ranking = rank;
 	});
+
+	// Advancement over exactly what the table shows, never the hidden attempts.
+	// A Gelmedi row is a finished DNS row (no threat, never advances); a card
+	// with nothing visible yet is left to the field-size padding, as a
+	// competitor who has not gone yet.
+	const advFormat = zktFormatOf(numAttempts, byAverage);
+	if (advancement && advFormat) {
+		const inputs = rows
+			.map((r, i) => ({
+				id: String(i),
+				attempts: r.tag === 'noShow' ? Array<number>(numAttempts).fill(-2) : r.attempts.map((a) => a.result),
+			}))
+			.filter((x) => x.attempts.length > 0);
+		const states = computeAdvancementStates(
+			inputs,
+			advancement.type,
+			advancement.level,
+			advFormat,
+			cutoff?.result ?? null,
+			cutoff?.attempts ?? null,
+			false,
+			Math.max(fieldSize ?? 0, rows.length)
+		);
+		rows.forEach((r, i) => {
+			const st = states.get(String(i));
+			r.advancing = !!st?.advancing;
+			r.advancingQuestionable = !!st?.questionable;
+		});
+	}
 	return rows;
 }

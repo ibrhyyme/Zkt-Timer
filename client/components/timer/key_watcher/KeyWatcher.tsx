@@ -54,7 +54,7 @@ import { beginHoldStopPress, clearHoldStopPress } from '../../../util/magnet-sta
 import { markMagnetHoldHintSeen } from '../../../util/magnet-start/settings';
 import { isUiReversed, orientDelta } from '../../../util/reversed-ui';
 import { classifyTouchTarget } from '../helpers/touch_target';
-import { isCancelSwipe } from '../helpers/touch_gesture';
+import { isCancelSwipe, isEdgeSwipe } from '../helpers/touch_gesture';
 import {
 	cancelPendingRelease,
 	deferRelease,
@@ -492,6 +492,20 @@ export default function KeyWatcher(props: Props) {
 
 		const touch = e.touches[0];
 		if (!touch) return;
+
+		// A thumb reaching for a side menu from beside its notch: the swipe that follows must
+		// not start a solve on release.
+		if (isEdgeSwipe(
+			touchStartX.current,
+			touch.clientX - touchStartX.current,
+			touch.clientY - touchStartY.current,
+			window.innerWidth
+		)) {
+			cancelPriming();
+			touchStartX.current = null;
+			touchStartY.current = null;
+			return;
+		}
 
 		// In the reader's frame: with the page rotated for reversed use, physically down is up.
 		const [diffX, diffY] = orientDelta(

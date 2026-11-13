@@ -207,6 +207,21 @@ describe('zktDetailToLiveOverview', () => {
 	});
 });
 
+describe('zktDetailToLiveOverview: advancement condition', () => {
+	const condOf = (advancementType: string) =>
+		zktDetailToLiveOverview(
+			{events: [{eventId: '333', rounds: [{roundNumber: 1, format: 'AO5', advancementType, advancementLevel: 1500}]}]},
+			'zkt-adv'
+		).events[0].rounds[0].advancementCondition;
+
+	it('keeps each ZKT condition type, an attempt result included', () => {
+		expect(condOf('RANKING')).toEqual({type: 'ranking', level: 1500});
+		expect(condOf('PERCENT')).toEqual({type: 'percent', level: 1500});
+		// Read as "top 1500" before; it is "faster than 15.00".
+		expect(condOf('ATTEMPT_RESULT')).toEqual({type: 'attemptResult', level: 1500});
+	});
+});
+
 describe('zktRecordsToRecordEntries', () => {
 	const entry = (over: any = {}) => ({
 		id: 'rec-1',

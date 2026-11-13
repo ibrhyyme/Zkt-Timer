@@ -1969,6 +1969,13 @@
 		text-decoration: line-through;
 	}
 
+	&__smart-scramble-label {
+		color: $zt-text-muted;
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-align: center;
+	}
+
 	&__smart-correction {
 		color: $primaryOrange;
 		font-family: 'JetBrains Mono', monospace;

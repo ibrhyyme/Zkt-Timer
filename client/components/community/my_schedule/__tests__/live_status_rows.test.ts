@@ -107,6 +107,112 @@ describe('buildLiveStatusRows', () => {
 	});
 });
 
+describe('buildLiveStatusRows advancement colours', () => {
+	const colour = (r: {advancing: boolean; advancingQuestionable: boolean}) =>
+		r.advancing ? (r.advancingQuestionable ? 'orange' : 'green') : '-';
+	const five = (v: number) => att(v, v, v, v, v);
+
+	it('paints the standings like the official table: clinched green, catchable orange', () => {
+		// Field of 4, top 2. Three complete, one card with nothing visible yet
+		// (a rival who has not gone, counted through the field size).
+		const rows = buildLiveStatusRows(
+			[
+				{personLiveId: 'a', personName: 'A', done: 5, expected: 5, attempts: five(1000)},
+				{personLiveId: 'b', personName: 'B', done: 5, expected: 5, attempts: five(1100)},
+				{personLiveId: 'c', personName: 'C', done: 5, expected: 5, attempts: five(1200)},
+				{personLiveId: 'd', personName: 'D', done: 0, expected: 5, attempts: []},
+			],
+			[],
+			{...opts, advancement: {type: 'RANKING', level: 2}, fieldSize: 4}
+		);
+		// One rival left can pass one person at most: A is safe, B is not.
+		expect(rows.map((r) => [r.personName, colour(r)])).toEqual([
+			['A', 'green'],
+			['B', 'orange'],
+			['C', '-'],
+			['D', '-'],
+		]);
+	});
+
+	it('turns green once nobody can catch up, and a Gelmedi is no rival', () => {
+		const rows = buildLiveStatusRows(
+			[
+				{personLiveId: 'a', personName: 'A', done: 5, expected: 5, attempts: five(1000)},
+				{personLiveId: 'b', personName: 'B', done: 5, expected: 5, attempts: five(1100)},
+				{personLiveId: 'c', personName: 'C', done: 5, expected: 5, attempts: five(1200)},
+				{personLiveId: 'd', personName: 'D', noShow: true, attempts: []},
+			],
+			[],
+			{...opts, advancement: {type: 'RANKING', level: 2}, fieldSize: 4}
+		);
+		expect(rows.map((r) => [r.personName, colour(r)])).toEqual([
+			['A', 'green'],
+			['B', 'green'],
+			['C', '-'],
+			['D', '-'],
+		]);
+	});
+
+	it('never clinches on attempts the table hides', () => {
+		// The group shows only the first 3 attempts (K3): nobody's average is
+		// visible, so nobody is green even though all are in.
+		const rows = buildLiveStatusRows(
+			[
+				{personLiveId: 'a', personName: 'A', done: 5, expected: 5, attempts: att(1000, 1000, 1000)},
+				{personLiveId: 'b', personName: 'B', done: 5, expected: 5, attempts: att(1100, 1100, 1100)},
+				{personLiveId: 'c', personName: 'C', done: 5, expected: 5, attempts: att(1200, 1200, 1200)},
+				{personLiveId: 'd', personName: 'D', done: 5, expected: 5, attempts: att(1300, 1300, 1300)},
+			],
+			[],
+			{...opts, advancement: {type: 'RANKING', level: 2}, fieldSize: 4}
+		);
+		expect(rows.map(colour)).toEqual(['orange', 'orange', '-', '-']);
+	});
+
+	it('counts the desk rows and uses their numbers', () => {
+		const official = [{personLiveId: 'o', personName: 'Desk', best: 900, average: 900, attempts: five(900)}];
+		const rows = buildLiveStatusRows(
+			[
+				{personLiveId: 'o', personName: 'Desk', official: true, done: 5, expected: 5, attempts: att(900)},
+				{personLiveId: 'a', personName: 'A', done: 5, expected: 5, attempts: five(1000)},
+				{personLiveId: 'b', personName: 'B', done: 5, expected: 5, attempts: five(1100)},
+				{personLiveId: 'c', personName: 'C', done: 5, expected: 5, attempts: five(1200)},
+			],
+			official,
+			{...opts, advancement: {type: 'RANKING', level: 2}, fieldSize: 4}
+		);
+		expect(rows.map((r) => [r.personName, colour(r)])).toEqual([
+			['Desk', 'green'],
+			['A', 'green'],
+			['B', '-'],
+			['C', '-'],
+		]);
+	});
+
+	it('paints nothing without an advancement condition (a final)', () => {
+		const rows = buildLiveStatusRows(
+			[{personLiveId: 'a', personName: 'A', done: 5, expected: 5, attempts: five(1000)}],
+			[],
+			{...opts, advancement: null, fieldSize: 1}
+		);
+		expect(colour(rows[0])).toBe('-');
+	});
+
+	it('handles a best-of round and a percent condition', () => {
+		const rows = buildLiveStatusRows(
+			[
+				{personLiveId: 'a', personName: 'A', attempts: att(3000, 3100, 3200)},
+				{personLiveId: 'b', personName: 'B', attempts: att(4000, 4100, 4200)},
+				{personLiveId: 'c', personName: 'C', attempts: att(5000, 5100, 5200)},
+				{personLiveId: 'd', personName: 'D', attempts: att(6000, 6100, 6200)},
+			],
+			[],
+			{numAttempts: 3, sortBy: 'best', eventId: '333bf', advancement: {type: 'PERCENT', level: 50}, fieldSize: 4}
+		);
+		expect(rows.map(colour)).toEqual(['green', 'green', '-', '-']);
+	});
+});
+
 describe('liveBest', () => {
 	it('is the fastest success, DNF when all failed, null with nothing', () => {
 		expect(liveBest([3000, -1, 2900])).toBe(2900);

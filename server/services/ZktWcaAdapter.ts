@@ -21,7 +21,8 @@ const ATTEMPTS: Record<string, number> = {BO1: 1, BO2: 2, BO3: 3, MO3: 3, AO5: 5
 const attemptsOf = (f: string): number => ATTEMPTS[f] ?? 5;
 const AVERAGE_FORMATS = new Set(['AO5', 'MO3', 'AO12']);
 const sortByOf = (f: string): string => (AVERAGE_FORMATS.has(f) ? 'average' : 'best');
-const advTypeOf = (t: string | null | undefined): string => (t === 'PERCENT' ? 'percent' : 'ranking');
+const advTypeOf = (t: string | null | undefined): string =>
+	t === 'PERCENT' ? 'percent' : t === 'ATTEMPT_RESULT' ? 'attemptResult' : 'ranking';
 const roundName = (n: number): string => `${n}. Tur`;
 
 /**

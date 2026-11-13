@@ -37,8 +37,24 @@ import {CubeRenderer} from '../../../timer/smart_cube/cube_view/render/cube_rend
 import {useCubePalette} from '../../../../util/cube_colors/useCubePalette';
 import {getSmartCubeManager} from '../../../../util/smart_cube/connection_manager';
 import {SmartAlgTracker, CubeStateOps} from '../../../../util/trainer/smart_alg_tracker';
+import {caseTarget, scrambleBetween} from '../../../../util/trainer/case_scramble';
+import {useTranslation} from 'react-i18next';
 
 const b = block('trainer');
+
+/**
+ * Wrong turns off the scramble that still get an undo hint. One more and the cube gets a new
+ * scramble from where it is: past this the hint is longer than the way to the case.
+ */
+const MAX_SCRAMBLE_DETOUR = 2;
+
+/** The scramble being turned: its moves, how many are done, the turns off it. */
+interface ScrambleView {
+	moves: string[];
+	done: number;
+	bad: string[];
+	partial: boolean;
+}
 
 // The move matching rules live in util/trainer/smart_alg_tracker.ts (tested in node). Here they
 // run on cubing.js KPatterns: centers are ignored and orientation fixed, which is what makes
@@ -50,6 +66,7 @@ const KPATTERN_OPS: CubeStateOps<KPattern> = {
 };
 
 export default function TrainerSmartCube() {
+	const {t} = useTranslation();
 	const {state, dispatch} = useTrainerContext();
 	const {currentAlgorithm, options} = state;
 
@@ -105,6 +122,21 @@ export default function TrainerSmartCube() {
 	// intermediate state of a multi-move turn (e.g. the single-M of an M2 = R' L) would re-anchor
 	// patternStates mid-sequence and desync the match permanently.
 	const awaitingBaselineRef = useRef<boolean>(true);
+
+	// Scramble phase. Each case starts with a scramble: a solver's face turns from wherever the
+	// cube is to the case (case_scramble.ts), followed by a second tracker. The attempt waits for
+	// its first move only once the cube shows the case. Before, the algorithm was followed from
+	// whatever state the cube was in, so it was drilled on a solved cube and the case was never
+	// set up or recognised.
+	const scrambleTrackerRef = useRef<SmartAlgTracker<KPattern> | null>(null);
+	if (scrambleTrackerRef.current === null) scrambleTrackerRef.current = new SmartAlgTracker<KPattern>(KPATTERN_OPS);
+	/** The case, orientation fixed: the state the scramble must reach. */
+	const caseTargetRef = useRef<KPattern | null>(null);
+	/** Synchronous twin of phase 'scrambling': a move can arrive before the phase re-renders. */
+	const scramblingRef = useRef(false);
+	/** A turn was made since the scramble was planned (the plan's start is then history). */
+	const scrambleMovedRef = useRef(false);
+	const [scrambleView, setScrambleView] = useState<ScrambleView | null>(null);
 
 	// Timer refs
 	const solutionMovesRef = useRef<SmartTurn[]>([]);
@@ -167,9 +199,102 @@ export default function TrainerSmartCube() {
 		}, 150);
 	}, [dispatch]);
 
+	// -- Scramble phase --
+	// The cube shows the case: the algorithm's expectations are anchored there and the attempt
+	// waits for its first move.
+	const enterReady = useCallback(() => {
+		const tracker = trackerRef.current;
+		const physical = scrambleTrackerRef.current?.getCurrent();
+		scramblingRef.current = false;
+		setScrambleView(null);
+		if (physical) tracker?.setCurrent(physical);
+		tracker?.rebuild();
+		tracker?.resetProgress();
+		// The cube's state report may still anchor the attempt until its first move (see the
+		// FACELETS callback).
+		awaitingBaselineRef.current = true;
+		dispatch({type: 'SMART_SET_PHASE', payload: 'ready'});
+	}, [dispatch]);
+
+	// Plans a scramble from where the cube is now to the case.
+	const beginScramble = useCallback(() => {
+		const scrambleTracker = scrambleTrackerRef.current;
+		const target = caseTargetRef.current;
+		const from = trackerRef.current?.getCurrent() ?? getKPuzzle()?.defaultPattern() ?? null;
+		if (!scrambleTracker || !target || !from) {
+			enterReady();
+			return;
+		}
+		let scramble: string | null;
+		try {
+			scramble = scrambleBetween(from, target);
+		} catch {
+			scramble = null;
+		}
+		scrambleTracker.setCurrent(from);
+		// '' : the cube already shows the case. null: the solver refused the state, so the
+		// algorithm is drilled from where the cube is, as it was before the scramble phase.
+		if (!scramble) {
+			enterReady();
+			return;
+		}
+		const moves = scramble.split(' ');
+		scrambleTracker.load(moves, from);
+		scramblingRef.current = true;
+		scrambleMovedRef.current = false;
+		setScrambleView({moves, done: 0, bad: [], partial: false});
+		dispatch({type: 'SMART_SET_PHASE', payload: 'scrambling'});
+	}, [dispatch, enterReady]);
+
+	const processScrambleMove = useCallback((move: string) => {
+		const scrambleTracker = scrambleTrackerRef.current;
+		if (!scrambleTracker) return;
+		scrambleMovedRef.current = true;
+		const result = scrambleTracker.push(move);
+		// The algorithm's tracker follows the cube too, so it is in place when the case is reached.
+		const physical = scrambleTracker.getCurrent();
+		if (physical) trackerRef.current?.setCurrent(physical);
+		if (!result) return;
+		if (result.completed) {
+			enterReady();
+			return;
+		}
+		if (result.verdict === 'wrong' && result.bad.length > MAX_SCRAMBLE_DETOUR) {
+			beginScramble();
+			return;
+		}
+		setScrambleView((view) => view && {...view, done: result.matchedCount, bad: result.bad, partial: result.partial});
+	}, [enterReady, beginScramble]);
+
+	// The cube's own state report while scrambling.
+	const processScrambleFacelets = useCallback((pattern: KPattern) => {
+		const scrambleTracker = scrambleTrackerRef.current;
+		const target = caseTargetRef.current;
+		if (!scrambleTracker) return;
+		const fixed = fixOrientation(pattern);
+		// The cube says it shows the case: a lost move packet cannot keep the attempt waiting.
+		if (target && isIdenticalIgnoringCenters(fixed, target)) {
+			scrambleTracker.setCurrent(pattern);
+			enterReady();
+			return;
+		}
+		// Before the first turn the report is where the scramble starts. A cube that is not
+		// where the plan assumed (connected unsolved, turned while the case loaded) gets a new
+		// plan. Once turning, the move stream leads and the report is not used.
+		if (scrambleMovedRef.current) return;
+		const planned = scrambleTracker.getCurrent();
+		if (planned && isIdenticalIgnoringCenters(fixOrientation(planned), fixed)) return;
+		trackerRef.current?.setCurrent(pattern);
+		beginScramble();
+	}, [enterReady, beginScramble]);
+
 	// -- Core move processing (KPattern matching, see SmartAlgTracker) --
 	const processMove = useCallback((smartTurn: SmartTurn) => {
 		const move = smartTurn.turn;
+		if (scramblingRef.current) {
+			processScrambleMove(move);
+			return;
+		}
 		const tracker = trackerRef.current;
 		if (!tracker || !tracker.isReady()) return;
 		// User is physically turning → the tracked state is move-driven from here on.
@@ -213,7 +338,7 @@ export default function TrainerSmartCube() {
 		if (result.completed) {
 			handleSolveComplete();
 		}
-	}, [dispatch, startTimer, handleSolveComplete]);
+	}, [dispatch, startTimer, handleSolveComplete, processScrambleMove]);
 
 	// -- patternStates rebuilder (also called on FACELETS update) --
 	// Re-anchors the tracker's expected states on its current cube state.
@@ -288,6 +413,11 @@ export default function TrainerSmartCube() {
 		const unsubFacelets = manager.subscribeFacelets((faceletStr: string) => {
 			const pattern = faceletsToPattern(faceletStr);
 
+			if (scramblingRef.current) {
+				if (pattern) processScrambleFacelets(pattern);
+				return;
+			}
+
 			if (smartPhaseRef.current === 'solving') {
 				// No overwrite during solving — only the end state safety net
 				if (pattern && trackerRef.current?.reportState(pattern)) {
@@ -328,7 +458,7 @@ export default function TrainerSmartCube() {
 			unsubGyroRef.current?.();
 			unsubGyroRef.current = null;
 		};
-	}, [processMove, subscribeToGyro, rebuildPatternStates]);
+	}, [processMove, processScrambleFacelets, subscribeToGyro, rebuildPatternStates]);
 
 	// -- 3D cube --
 	// Built once, on the client. It draws only when something changes (a turn, the gyro, the
@@ -428,7 +558,6 @@ export default function TrainerSmartCube() {
 			dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 			dispatch({type: 'SET_TOTAL_EXPECTED_MOVES', payload: algMoves.length});
 			dispatch({type: 'SET_BAD_ALG', payload: []});
-			dispatch({type: 'SMART_SET_PHASE', payload: 'ready'});
 			dispatch({type: 'SET_USER_ALG', payload: algMoves});
 			dispatch({type: 'SET_ORIGINAL_USER_ALG', payload: algMoves});
 
@@ -456,10 +585,14 @@ export default function TrainerSmartCube() {
 			setupLooksRef.current = drawing ? drawing.looks : null;
 			cubeRef.current?.setMoves(setupTurnsRef.current);
 			cubeRef.current?.setCapLooks(setupLooksRef.current);
+
+			// The 3D cube shows the case to reach; the scramble takes the real one there.
+			caseTargetRef.current = await caseTarget(algMoves.join(' '));
+			beginScramble();
 		};
 
 		setupPatterns();
-	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch]);
+	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch, beginScramble]);
 
 	// -- Partial/wide match detection (CubeDex approach) --
 	// GAN cubes only report 6 face moves (URFDLB). Wide (r,l,f,b,u,d),
@@ -473,10 +606,21 @@ export default function TrainerSmartCube() {
 	// wide, slice or rotation move) while the same move flashed red and was counted.
 	const isHalfMatch = state.badAlg.length > 0 && pendingPartial;
 
-	// -- Correction moves display --
-	const correctionText = (state.badAlg.length > 0 && !isHalfMatch)
-		? simplifyAlg(state.badAlg.map(m => getInverseMove(m)).reverse().join(' '))
+	// -- Correction moves display (the scramble's own while scrambling) --
+	const offMoves = scrambleView
+		? (scrambleView.partial ? [] : scrambleView.bad)
+		: (isHalfMatch ? [] : state.badAlg);
+	const correctionText = offMoves.length > 0
+		? simplifyAlg(offMoves.map(m => getInverseMove(m)).reverse().join(' '))
 		: '';
+
+	const scrambleMatchStatus = scrambleView
+		? sequenceMatchStatus(
+			scrambleView.moves.length,
+			scrambleView.done,
+			scrambleView.bad.length > 0 ? (scrambleView.partial ? 'half' : 'wrong') : undefined
+		)
+		: [];
 
 	// -- Algorithm move list --
 	// Drawn by the same component as the timer's smart scramble, so a move being
@@ -515,8 +659,10 @@ export default function TrainerSmartCube() {
 		dispatch({type: 'SET_BAD_ALG', payload: []});
 		dispatch({type: 'SET_TIMER_STATE', payload: 'IDLE'});
 		dispatch({type: 'SET_TIMER_VALUE', payload: 0});
-		dispatch({type: 'SMART_SET_PHASE', payload: 'ready'});
-	}, [dispatch]);
+		// A new scramble from the solved cube. The cube's next state report corrects that
+		// start if it was not solved, and skips the scramble if it already shows the case.
+		beginScramble();
+	}, [dispatch, beginScramble]);
 
 	const handleResetGyro = useCallback(() => {
 		gyroBasisRef.current = null;
@@ -584,8 +730,15 @@ export default function TrainerSmartCube() {
 				)}
 			</div>
 
-			{/* Solution moves */}
-			{state.userAlg.length > 0 && !state.isMoveMasked && (
+			{/* Scramble first, then the solution moves */}
+			{scrambleView ? (
+				<>
+					<div className={b('smart-scramble-label')}>{t('trainer.scramble_label')}</div>
+					<div className={b('smart-moves')}>
+						<ScrambleMoveList moves={scrambleView.moves} matchStatus={scrambleMatchStatus} useBlueMatch={useBlueMatch} />
+					</div>
+				</>
+			) : state.userAlg.length > 0 && !state.isMoveMasked && (
 				<div className={b('smart-moves')}>
 					<ScrambleMoveList moves={state.userAlg} matchStatus={algMatchStatus} useBlueMatch={useBlueMatch} />
 				</div>

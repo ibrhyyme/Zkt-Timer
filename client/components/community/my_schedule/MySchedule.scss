@@ -3351,12 +3351,8 @@
 		color: rgb(var(--text-color));
 	}
 
-	// ZKT online skor girişi: "Resmi sonuçlar" / "Anlık durum" and the judges'
-	// unchecked times, one card per group split by hairlines.
-	&__wca-live-view-tabs {
-		margin-bottom: $zt-space-4;
-	}
-
+	// ZKT online skor girişi: "Anlık durum", the judges' unchecked times, shown
+	// instead of the official table while the round runs.
 	&__wca-live-status-note {
 		margin: 0 0 $zt-space-4;
 		font-size: 0.85rem;
