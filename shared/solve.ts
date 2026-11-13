@@ -80,6 +80,13 @@ export const DNF_TIME = -1;
 export const SOLVE_SESSION_MISSING_I18N_KEY = 'offline.solve_session_missing';
 
 /**
+ * Error i18nKey of createSolve for a solve id the caller already deleted (server tombstone,
+ * server/models/deleted_record.ts). A device that had not caught up with the deletion is
+ * trying to put it back; the queue drops its copy instead of retrying.
+ */
+export const SOLVE_DELETED_I18N_KEY = 'offline.solve_deleted';
+
+/**
  * Whether a solve time field may be stored.
  *
  * Lives in shared/ deliberately: the server rejects on this rule and the client filters

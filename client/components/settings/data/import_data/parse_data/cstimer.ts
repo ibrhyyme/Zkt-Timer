@@ -1,11 +1,8 @@
 import {IImportDataContext, ImportableData} from '../ImportData';
-import {v4 as uuid, v5 as uuidv5} from 'uuid';
+import {v4 as uuid} from 'uuid';
 import {SessionInput, SolveInput} from '../../../../../@types/generated/graphql';
 import {normalizeBucketForImport} from './normalize-bucket';
 import {detectCubeFromScramble} from './detect-cube-from-scramble';
-
-// Namespace UUID for csTimer sessions (randomly generated, constant for this app)
-const CSTIMER_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
 // csTimer scrType -> Zkt-Timer flat WCA event ID.
 // All WCA variants (oh/bld/fm/mirror/cll/eg/method-trainers) fall back to parent event.
@@ -274,12 +271,16 @@ function getSessionData(sesData: string | object) {
 		const ses = sessionData[sessionId];
 
 		const srcType = ses?.opt?.scrType;
-		const deterministicId = uuidv5(`cstimer-session-${sessionId}`, CSTIMER_NAMESPACE);
+		// A fresh id per import, like the Zkt-Timer importer. Derived from the csTimer key alone
+		// ("1", "2", ...), it was the same for every account: the first account to import
+		// owned it, and every later one had that session's solves refused. It also could not be
+		// imported again after a deletion, the server keeps deleted ids (DeletedRecord).
+		const importId = uuid();
 
 		// srcType exists but not in map -> non-WCA puzzle (gear/fto/relay/15p etc). Skip.
 		if (srcType && !CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType]) {
 			sessionInput.push({
-				id: deterministicId,
+				id: importId,
 				key: String(sessionId),
 				name: String(ses.name),
 				rank: ses.rank,
@@ -301,7 +302,7 @@ function getSessionData(sesData: string | object) {
 		if (!normalized) {
 			// Should not reach here (all map values are WCA events); defensive skip.
 			sessionInput.push({
-				id: deterministicId,
+				id: importId,
 				key: String(sessionId),
 				name: String(ses.name),
 				rank: ses.rank,
@@ -313,7 +314,7 @@ function getSessionData(sesData: string | object) {
 		}
 
 		sessionInput.push({
-			id: deterministicId,
+			id: importId,
 			key: String(sessionId),
 			name: String(ses.name),
 			rank: ses.rank,

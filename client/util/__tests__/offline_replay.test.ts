@@ -16,7 +16,7 @@ import {
 	runReplayLoop,
 	selectRunnable,
 } from '../offline-replay';
-import {SOLVE_SESSION_MISSING_I18N_KEY} from '../../../shared/solve';
+import {SOLVE_DELETED_I18N_KEY, SOLVE_SESSION_MISSING_I18N_KEY} from '../../../shared/solve';
 import type {QueuedMutation} from '../offline-queue';
 
 function gqlError(code: string, i18nKey?: string) {
@@ -90,6 +90,13 @@ describe('classifyReplayError', () => {
 	it('recognises a create whose session the server lacks', () => {
 		const err = gqlError('NOT_FOUND', SOLVE_SESSION_MISSING_I18N_KEY);
 		expect(classifyReplayError('createSolve', err)).toBe('session_missing');
+	});
+
+	it('recognises a create of a solve deleted on another device', () => {
+		const err = gqlError('NOT_FOUND', SOLVE_DELETED_I18N_KEY);
+		expect(classifyReplayError('createSolve', err)).toBe('solve_deleted');
+		// Only a create can be refused that way; anything else keeps its usual handling.
+		expect(classifyReplayError('updateSolve', err)).toBe('server');
 	});
 
 	it('treats session renames and reorders of vanished sessions as done', () => {

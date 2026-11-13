@@ -439,7 +439,12 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		try {
 			await gqlMutate(query, { sessionId });
 		} catch (e) {
-			// Log
+			// Queued as the solves it removed: a failed clear used to be forgotten, so the server
+			// kept them and every other device went on showing them.
+			if (solvesToRemove.length) {
+				await addToQueue('deleteSolves', { ids: solvesToRemove.map((s) => s.id) });
+			}
+			reportSaveFailure(e);
 		}
 	}
 

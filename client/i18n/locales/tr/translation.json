@@ -1331,6 +1331,7 @@
     "save_queued": "Çözüm kaydedilemedi, kuyruğa alındı. Otomatik olarak tekrar denenecek.",
     "pending_badge_title": "Senkronize edilmeyi bekleyen çözümler",
     "solve_session_missing": "Çözümün sezonu sunucuda bulunamadı.",
+    "solve_deleted": "Bu çözüm başka bir cihazda silindi.",
     "go_back": "Geri dön"
   },
   "my_schedule": {

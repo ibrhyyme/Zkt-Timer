@@ -1,7 +1,7 @@
-import { Arg, Authorized, Ctx, Mutation, Query, Resolver, Int } from 'type-graphql';
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver, Int, Float } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
-import { Solve, SolveInput, SolveReplayData } from '../schemas/Solve.schema';
+import { DeletedRecords, Solve, SolveInput, SolveReplayData } from '../schemas/Solve.schema';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
 import { getSolveSteps, bucketHasMethodSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps, replaceSolveMethodSteps } from '../models/solve_method_step';
@@ -12,7 +12,13 @@ import { GraphQLVoid } from 'graphql-scalars';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
-import { invalidSolveTimeFields, solveFingerprint, SOLVE_SESSION_MISSING_I18N_KEY } from '../../shared/solve';
+import {
+	invalidSolveTimeFields,
+	solveFingerprint,
+	SOLVE_DELETED_I18N_KEY,
+	SOLVE_SESSION_MISSING_I18N_KEY,
+} from '../../shared/solve';
+import { findTombstoned, isTombstoned, listDeletedSince, tombstoneWrites } from '../models/deleted_record';
 import { isPro, isProEnabled } from '../lib/pro';
 import { resolveOwnedLinks } from '../util/solve_links';
 import { SYNC_SOLVE_SCALARS } from '../util/solve/sync_select';
@@ -75,6 +81,29 @@ function findOwnSolveWithSteps(context: GraphQLContext, userId: string, id: stri
 		where: { id, user_id: userId },
 		include: { solve_method_steps: { orderBy: { step_index: 'asc' } } },
 	});
+}
+
+/**
+ * Where a solve goes whose session was deleted on another device before the solve arrived:
+ * the user's main session, or else the first one. The solve is new data the user made and
+ * outlives the session; putting the session back instead is what undid deletions.
+ */
+async function fallbackSessionId(context: GraphQLContext, userId: string): Promise<string | null> {
+	const { prisma } = context;
+	const setting = await prisma.setting.findUnique({ where: { user_id: userId }, select: { session_id: true } });
+	if (setting?.session_id) {
+		const main = await prisma.session.findFirst({
+			where: { id: setting.session_id, user_id: userId },
+			select: { id: true },
+		});
+		if (main) return main.id;
+	}
+	const first = await prisma.session.findFirst({
+		where: { user_id: userId },
+		orderBy: [{ order: 'asc' }, { created_at: 'desc' }],
+		select: { id: true },
+	});
+	return first?.id || null;
 }
 
 @Resolver()
@@ -264,6 +293,18 @@ export class SolveResolver {
 		return solves.map((s) => s.id);
 	}
 
+	// Ids of solves and sessions the caller deleted (from any device) after `since`, so a
+	// device can drop its own copies before it reconciles or uploads anything. Ids only, so
+	// gated like mySolveIds; the client applies it only where history is read (Pro).
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => DeletedRecords)
+	async myDeletedRecords(
+		@Ctx() context: GraphQLContext,
+		@Arg('since', () => Float, { nullable: true }) since?: number
+	): Promise<DeletedRecords> {
+		return listDeletedSince(context.prisma, context.user.id, since ?? null);
+	}
+
 	// Content fingerprints of the caller's own solves, used by the importer to skip
 	// rows that are already stored. Import gives every parsed row a fresh id, so an
 	// id-based check (mySolveIds above) cannot recognise a re-imported backup — that
@@ -290,6 +331,13 @@ export class SolveResolver {
 
 		assertValidSolveTimes(input);
 
+		// Deleted on some device: a device that has not caught up is putting it back.
+		if (input.id && (await isTombstoned(context.prisma, user.id, 'solve', input.id))) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Solve was deleted', {
+				i18nKey: SOLVE_DELETED_I18N_KEY,
+			});
+		}
+
 		input.bulk = false;
 		// cube_type='wca' requires subset (cube-subset-bucket rule) — defense in depth
 		if (input.cube_type === 'wca' && !input.scramble_subset) {
@@ -313,9 +361,18 @@ export class SolveResolver {
 					const existing = await findOwnSolveWithSteps(context, user.id, input.id);
 					if (existing) return existing;
 				}
-				throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found', {
-					i18nKey: SOLVE_SESSION_MISSING_I18N_KEY,
-				});
+				// The session was deleted (on another device): the solve moves to the main
+				// session, and the answer carries the session it landed in. Any other missing
+				// session has simply not arrived yet; the queue sends it first.
+				const fallback = (await isTombstoned(context.prisma, user.id, 'session', input.session_id))
+					? await fallbackSessionId(context, user.id)
+					: null;
+				if (!fallback) {
+					throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found', {
+						i18nKey: SOLVE_SESSION_MISSING_I18N_KEY,
+					});
+				}
+				input.session_id = fallback;
 			}
 		}
 
@@ -421,12 +478,9 @@ export class SolveResolver {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found');
 		}
 
-		await prisma.solve.deleteMany({
-			where: {
-				session_id: sessionId,
-				user_id: user.id,
-			},
-		});
+		const where = { session_id: sessionId, user_id: user.id };
+		const ids = (await prisma.solve.findMany({ where, select: { id: true } })).map((s) => s.id);
+		await prisma.$transaction([...tombstoneWrites(prisma, user.id, 'solve', ids), prisma.solve.deleteMany({ where })]);
 
 		await updateUserAccountWithParams(user.id, {
 			last_solve_at: new Date(),
@@ -438,14 +492,19 @@ export class SolveResolver {
 	async deleteSolves(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], { validate: false }) ids: string[]) {
 		const { prisma, user } = context;
 
-		await prisma.solve.deleteMany({
-			where: {
-				id: {
-					in: ids,
+		// Every requested id is recorded, also one the server does not have yet: a create still
+		// on its way from the deleting device must not land after its own delete.
+		await prisma.$transaction([
+			...tombstoneWrites(prisma, user.id, 'solve', ids || []),
+			prisma.solve.deleteMany({
+				where: {
+					id: {
+						in: ids,
+					},
+					user_id: user.id,
 				},
-				user_id: user.id,
-			},
-		});
+			}),
+		]);
 
 		await updateUserAccountWithParams(user.id, {
 			last_solve_at: new Date(),
@@ -485,6 +544,21 @@ export class SolveResolver {
 				})
 			).map((s) => s.id)
 		);
+
+		// Solves deleted on some device are passed over without a word: this is the path a
+		// device that has not caught up (launch backfill, Basic to Pro migration) used to put
+		// them back through. Not a rejection, so a batch made only of them is no error either.
+		const tombstoned = await findTombstoned(
+			context.prisma,
+			user.id,
+			'solve',
+			solves.map((s) => s?.id).filter(Boolean)
+		);
+		if (tombstoned.size) {
+			logger.info('Skipped deleted solves during bulk create', { userId: user.id, count: tombstoned.size });
+			solves = solves.filter((s) => !s?.id || !tombstoned.has(s.id));
+			if (!solves.length) return;
+		}
 
 		const accepted: SolveInput[] = [];
 		const rejected: { id?: string; fields: string[] }[] = [];

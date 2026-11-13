@@ -891,6 +891,13 @@ export type DailyGoalType = {
   target?: Maybe<Scalars['Int']>;
 };
 
+export type DeletedRecords = {
+  __typename?: 'DeletedRecords';
+  cursor?: Maybe<Scalars['Float']>;
+  session_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  solve_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
 /** Who may start a new conversation with this user */
 export enum DmPolicy {
   Everyone = 'EVERYONE',
@@ -2820,6 +2827,7 @@ export type Query = {
   myBattleRating?: Maybe<MyBattleRating>;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
   myCubeState?: Maybe<MyCubeState>;
+  myDeletedRecords?: Maybe<DeletedRecords>;
   myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
   myRecordWatches?: Maybe<Array<Maybe<RecordWatch>>>;
   myRoomSolveEntries?: Maybe<Array<Maybe<RoomSolveEntry>>>;
@@ -3104,6 +3112,11 @@ export type QueryMyBattleRatingArgs = {
 
 export type QueryMyCompetitionFollowsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryMyDeletedRecordsArgs = {
+  since?: InputMaybe<Scalars['Float']>;
 };
 
 

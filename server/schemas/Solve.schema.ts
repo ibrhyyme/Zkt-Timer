@@ -258,3 +258,19 @@ export class SolveList {
 	@Field(() => Int)
 	total_count: number;
 }
+
+/**
+ * Solves and sessions the caller deleted, from any device, since a cursor (myDeletedRecords).
+ * `cursor` is what the next read passes back as `since`.
+ */
+@ObjectType()
+export class DeletedRecords {
+	@Field(() => [String])
+	solve_ids: string[];
+
+	@Field(() => [String])
+	session_ids: string[];
+
+	@Field(() => Float)
+	cursor: number;
+}

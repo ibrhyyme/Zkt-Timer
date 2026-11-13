@@ -64,6 +64,8 @@ function makeContext() {
 			findMany: jest.fn(async () => [{id: SESSION}]),
 		},
 		smartDevice: {findMany: smartDeviceFindMany},
+		// Nothing deleted: the tombstone checks (server/models/deleted_record.ts) pass.
+		deletedRecord: {findUnique: jest.fn(async () => null), findMany: jest.fn(async () => [])},
 		// No cubes: the cube pass (server/util/solve_links.ts) finds nothing to link.
 		cube: {findMany: jest.fn(async () => [])},
 		solve: {

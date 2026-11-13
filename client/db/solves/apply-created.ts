@@ -12,6 +12,7 @@ import { emitEvent } from '../../util/event_handler';
  */
 export const CREATED_SOLVE_SELECTION = `
 	id
+	session_id
 	is_smart_cube
 	smart_device_id
 	solve_method_steps {
@@ -61,6 +62,11 @@ export function applyCreatedSolve(solveId: string, created: any): boolean {
 	// the copy other devices pull, so anything matching solves by device sees one id.
 	if (created.smart_device_id !== undefined && (created.smart_device_id ?? null) !== (existing.smart_device_id ?? null)) {
 		existing.smart_device_id = created.smart_device_id;
+	}
+	// The session the server put it in. A solve whose session was deleted on another device
+	// before it arrived lands in the main session instead (Solve.resolver.ts createSolve).
+	if (created.session_id && created.session_id !== existing.session_id) {
+		existing.session_id = created.session_id;
 	}
 	db.update(existing);
 	emitEvent('solveDbUpdatedEvent', existing);

@@ -12,7 +12,7 @@
  */
 
 import {isNetworkError} from './network-error';
-import {SOLVE_SESSION_MISSING_I18N_KEY} from '../../shared/solve';
+import {SOLVE_DELETED_I18N_KEY, SOLVE_SESSION_MISSING_I18N_KEY} from '../../shared/solve';
 import type {QueuedMutation, QueuedMutationName} from './offline-queue';
 
 export type FlushTrigger = 'online' | 'resume' | 'retry' | 'boot' | 'manual' | 'logout';
@@ -26,9 +26,11 @@ export type FlushTrigger = 'online' | 'resume' | 'retry' | 'boot' | 'manual' | '
  *   local row.
  * - `session_missing`: a create for a solve whose session the server does not have.
  *   Recoverable by sending the session first.
+ * - `solve_deleted`: a create for a solve deleted on some device (server tombstone). The
+ *   local copy is dropped; sending it again would undo the deletion.
  * - `server`: any other refusal. Kept, retried later with a growing delay.
  */
-export type ReplayErrorKind = 'halt' | 'resolved' | 'solve_missing' | 'session_missing' | 'server';
+export type ReplayErrorKind = 'halt' | 'resolved' | 'solve_missing' | 'session_missing' | 'solve_deleted' | 'server';
 
 /** Automatic triggers wait out a record's backoff; these three try everything once. */
 const FORCING_TRIGGERS: FlushTrigger[] = ['manual', 'logout', 'boot'];
@@ -95,6 +97,10 @@ export function classifyReplayError(mutationName: QueuedMutationName, err: any):
 	// fail the same way, so stop and let the next signed-in run send them.
 	if (codes.includes('UNAUTHENTICATED') || codes.includes('FORBIDDEN')) {
 		return 'halt';
+	}
+
+	if (keys.includes(SOLVE_DELETED_I18N_KEY)) {
+		return mutationName === 'createSolve' ? 'solve_deleted' : 'server';
 	}
 
 	if (keys.includes(SOLVE_SESSION_MISSING_I18N_KEY)) {

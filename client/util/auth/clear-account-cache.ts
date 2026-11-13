@@ -1,6 +1,7 @@
 import { clearQueue } from '../offline-queue';
 import { clearAllAlgSetCaches } from '../../lib/alg_sets/cache';
 import { clearCompetitionCaches } from '../../components/community/competition-cache';
+import { clearServerDeletionsCursor } from '../server-deletions';
 
 /**
  * Local state that belongs to the signed-in account and must not outlive it on this device.
@@ -22,6 +23,9 @@ export async function clearAccountCaches(): Promise<void> {
 
 	// Offline copies of the account's algorithm sets (trainer-sets 9.3).
 	clearAllAlgSetCaches();
+
+	// How far this device has applied deletions made elsewhere (util/server-deletions.ts).
+	clearServerDeletionsCursor();
 
 	// Last-seen competitions: the viewer's registrations and their own place in
 	// each competition.

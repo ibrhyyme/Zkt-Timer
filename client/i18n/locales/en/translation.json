@@ -1345,6 +1345,7 @@
     "save_queued": "Solve could not be saved and was queued. It will be retried automatically.",
     "pending_badge_title": "Solves waiting to sync",
     "solve_session_missing": "The solve’s session was not found on the server.",
+    "solve_deleted": "This solve was deleted on another device.",
     "go_back": "Go back"
   },
   "my_schedule": {

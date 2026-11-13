@@ -9,6 +9,7 @@ import uniqid from 'uniqid';
 import {GraphQLVoid} from 'graphql-scalars';
 import {getPrisma} from '../database';
 import {UserAccount} from '../schemas/UserAccount.schema';
+import {findTombstoned, tombstoneWrites} from '../models/deleted_record';
 
 const MAX_SESSION_NAME_LENGTH = 255;
 const MAX_SESSION_ID_BATCH = 1000;
@@ -36,13 +37,25 @@ async function createSession(context: GraphQLContext, input: SessionInput) {
 async function bulkCreateSessions(context: GraphQLContext, input: SessionInput[]) {
 	const {prisma} = context;
 
+	// A session deleted on some device is never put back: a device that had not caught up
+	// sent it ahead of its solves (backfill, offline replay) and undid the deletion.
+	const tombstoned = await findTombstoned(
+		prisma,
+		context.user.id,
+		'session',
+		input.map((s) => s?.id).filter(Boolean)
+	);
+
 	const data = [];
 	for (const ses of input) {
+		if (ses?.id && tombstoned.has(ses.id)) continue;
 		data.push({
 			...ses,
 			user_id: context.user.id,
 		});
 	}
+
+	if (!data.length) return {count: 0};
 
 	const result = await prisma.session.createMany({
 		data,
@@ -50,6 +63,27 @@ async function bulkCreateSessions(context: GraphQLContext, input: SessionInput[]
 	});
 
 	return result;
+}
+
+/**
+ * Deletes sessions and the solves in them (the foreign key cascades), recording both as
+ * deleted in the same transaction. The cascade is invisible to the solve ids, so they are
+ * read first: without their tombstones a device holding them would upload them again.
+ */
+async function deleteSessionsWithTombstones(context: GraphQLContext, sessionIds: string[]) {
+	const {prisma, user} = context;
+	const solveIds = (
+		await prisma.solve.findMany({
+			where: {user_id: user.id, session_id: {in: sessionIds}},
+			select: {id: true},
+		})
+	).map((s) => s.id);
+
+	await prisma.$transaction([
+		...tombstoneWrites(prisma, user.id, 'solve', solveIds),
+		...tombstoneWrites(prisma, user.id, 'session', sessionIds),
+		prisma.session.deleteMany({where: {user_id: user.id, id: {in: sessionIds}}}),
+	]);
 }
 
 export async function getSessionById(id: string) {
@@ -71,16 +105,6 @@ async function updateSession(context: GraphQLContext, session: Session, input: S
 	});
 }
 
-async function deleteSession(context: GraphQLContext, session: Session) {
-	const {prisma} = context;
-
-	return prisma.session.delete({
-		where: {
-			id: session.id,
-		},
-	});
-}
-
 async function getSessionsByUser(user: UserAccount) {
 	return getPrisma().session.findMany({
 		where: {
@@ -99,11 +123,13 @@ async function getSessionsByUser(user: UserAccount) {
 
 // Atomically move the old session's solves into the new session AND delete the old
 // (now empty) session. Doing both in one $transaction prevents a mid-way failure from
-// leaving solves moved while the empty old session lingers (or vice-versa).
+// leaving solves moved while the empty old session lingers (or vice-versa). The old session
+// is recorded as deleted (its solves live on, so they are not).
 async function mergeAndDeleteSession(context: GraphQLContext, oldSession: Session, newSession: Session) {
 	const {prisma} = context;
 
 	return prisma.$transaction([
+		...tombstoneWrites(prisma, context.user.id, 'session', [oldSession.id]),
 		prisma.solve.updateMany({
 			where: {
 				user_id: context.user.id,
@@ -308,7 +334,7 @@ export class SessionResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Son sezonunuzu silemezsiniz');
 		}
 
-		await deleteSession(context, session);
+		await deleteSessionsWithTombstones(context, [session.id]);
 		await updateOrderOfSessionsForUser(context.user);
 
 		return session;
@@ -389,12 +415,7 @@ export class SessionResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Son sezonunuzu silemezsiniz');
 		}
 
-		await getPrisma().session.deleteMany({
-			where: {
-				user_id: context.user.id,
-				id: {in: ids},
-			},
-		});
+		await deleteSessionsWithTombstones(context, ids);
 
 		await updateOrderOfSessionsForUser(context.user);
 	}

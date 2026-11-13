@@ -246,6 +246,20 @@ function persistLocalSolveChange() {
 }
 
 /**
+ * The server refused a create because the solve was deleted on some device (its tombstone).
+ * This device simply had not caught up: its copy goes, and the record with it.
+ */
+function dropDeletedSolve(id: string | undefined): ReplayOutcome {
+    const solveDb = getSolveDb();
+    const row = id ? solveDb?.findOne({ id }) : null;
+    if (row) {
+        solveDb.remove(row);
+        persistLocalSolveChange();
+    }
+    return DONE;
+}
+
+/**
  * Where a solve goes when the session it was made in no longer exists anywhere (deleted on
  * another device while this one was offline): the session the timer is on, or else the
  * first one. The solve itself is the user's data and must survive the session.
@@ -342,6 +356,7 @@ async function recoverMissingSolve(mutation: QueuedMutation): Promise<ReplayOutc
     } catch (e) {
         const kind = classifyReplayError('createSolve', e);
         if (kind === 'halt') return HALT;
+        if (kind === 'solve_deleted') return dropDeletedSolve(id);
         if (kind === 'session_missing') return recoverMissingSession(asCreate);
         return rejected(e);
     }
@@ -361,6 +376,8 @@ async function replayOne(mutation: QueuedMutation): Promise<ReplayOutcome> {
                 return recoverMissingSolve(mutation);
             case 'session_missing':
                 return recoverMissingSession(mutation);
+            case 'solve_deleted':
+                return dropDeletedSolve(mutation.variables?.input?.id);
             default:
                 console.error(`Mutation ${mutation.id} başarısız:`, e);
                 return rejected(e);

@@ -81,6 +81,7 @@ model UserAccount {
   support_tickets               SupportTicket[]         @relation("support_ticket_created_by")
   support_ticket_messages       SupportTicketMessage[]  @relation("support_ticket_message_sender")
   sessions                      Session[]
+  deleted_records               DeletedRecord[]
   settings                      Setting?
   smart_device                  SmartDevice[]
   cubes                         Cube[]
@@ -988,6 +989,21 @@ model Session {
 
   @@index([user_id])
   @@map("session")
+}
+
+// Server-side deletion tombstones. A device that has not caught up still holds deleted
+// solves and sessions and would upload them again; the server refuses any id listed here,
+// and devices read the list to drop their own copies (server/models/deleted_record.ts).
+model DeletedRecord {
+  user_id    String
+  kind       String // 'solve' | 'session'
+  record_id  String
+  deleted_at DateTime    @default(now())
+  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, kind, record_id])
+  @@index([user_id, deleted_at])
+  @@map("deleted_record")
 }
 
 model CustomTrainer {

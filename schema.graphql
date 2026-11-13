@@ -270,6 +270,7 @@ type Query {
   solvesByIds(ids: [String]): [Solve]
   solveReplayData(shareCode: String, id: String): SolveReplayData
   mySolveIds: [String]
+  myDeletedRecords(since: Float): DeletedRecords
   mySolveFingerprints: [String]
   sessions: [Session]
   mySessionIds: [String]
@@ -651,6 +652,12 @@ type SolveList {
   solves: [Solve]
   more_results: Boolean
   total_count: Int
+}
+
+type DeletedRecords {
+  solve_ids: [String]
+  session_ids: [String]
+  cursor: Float
 }
 
 type Profile {

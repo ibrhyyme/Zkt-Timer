@@ -24,6 +24,7 @@ import {ErrorCode} from '../constants/errors';
 import {checkRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
 import {resolveOwnedLinks} from '../util/solve_links';
+import {tombstoneWrites} from '../models/deleted_record';
 
 export const gqlType = `
 	enum SolvesSortBy {
@@ -201,6 +202,11 @@ export const mutateActions = {
 		// another user's top_solve / method_steps / solve_views by passing their id
 		// (the id leaks via the public share payload).
 		if (!solve || solve.user_id !== user.id) {
+			// Not on the server yet: the device that deleted it may still have its create on
+			// the way, which must not land after the delete. Recorded for the caller only.
+			if (!solve && id) {
+				await getPrisma().$transaction(tombstoneWrites(getPrisma(), user.id, 'solve', [id]));
+			}
 			throw new GraphQLError(ErrorCode.NOT_FOUND);
 		}
 
@@ -228,7 +234,11 @@ export const mutateActions = {
 			await deleteSolveViewsBySolveId(solve.id);
 		}
 
-		return await deleteSolve(solve);
+		const [, deleted] = await getPrisma().$transaction([
+			...tombstoneWrites(getPrisma(), user.id, 'solve', [solve.id]),
+			deleteSolve(solve),
+		]);
+		return deleted;
 	},
 
 	deleteTrainingSolves: async (_, {id}, {user}) => {

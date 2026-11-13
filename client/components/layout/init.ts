@@ -42,6 +42,7 @@ import { getSolveTombstones } from '../../util/solve-tombstones';
 import { requestQueueFlush } from '../../util/offline-sync';
 import { isConnectivityError } from '../../util/offline-replay';
 import { isSuspiciousMassDeletion, planDeltaSync } from '../../util/sync-plan';
+import { applyServerDeletions } from '../../util/server-deletions';
 import { toSessionInput, toSolveInput } from '../../db/solves/solve-input';
 import { initNetworkListener } from '../../util/native-plugins';
 import { requestPersist } from '../../db/persist';
@@ -366,6 +367,12 @@ async function loadNonCriticalData(
 	}
 
 	try {
+		// Deletions made on other devices go first: the reconcile below would refuse a large
+		// one as a suspicious response, and the backfill after it would upload what is left.
+		if (canSyncUser) {
+			await applyServerDeletions();
+		}
+
 		const bgPromises: Promise<any>[] = [];
 
 		if (passedFromOffline && canSyncUser) {
@@ -612,6 +619,7 @@ async function runDeferredBootReconcile(): Promise<void> {
 	try {
 		// Queued changes first, so the server already has them when the id sets are compared
 		await requestQueueFlush('online');
+		await applyServerDeletions();
 		const [solvesOk] = await Promise.all([syncNewSolves(true), syncNewSessions()]);
 		if (solvesOk) {
 			pendingBootReconcile = false;
@@ -675,7 +683,8 @@ function initVisibilitySyncListener() {
 		// Written out through the scheduler: a full save plus a hash request on every
 		// focus of the tab was the most frequent write of all, and a catch-up from the
 		// server is not something another device needs to hear about right away.
-		Promise.all([syncNewSolves(reconcile), syncNewSessions()])
+		applyServerDeletions()
+			.then(() => Promise.all([syncNewSolves(reconcile), syncNewSessions()]))
 			.then(() => requestPersist())
 			.catch(() => {});
 	});

@@ -1320,6 +1320,7 @@
     "save_queued": "还原保存失败，已加入队列，将自动重试。",
     "pending_badge_title": "等待同步的还原",
     "solve_session_missing": "服务器上找不到该还原所属的会话。",
+    "solve_deleted": "该还原已在另一台设备上删除。",
     "go_back": "返回"
   },
   "my_schedule": {

@@ -43,3 +43,23 @@ describe('applyCreatedSolve: smart_device_id', () => {
 		expect(rows.get('s3').smart_device_id).toBe('row-gan');
 	});
 });
+
+describe('applyCreatedSolve: session_id', () => {
+	it('asks the server for the session it stored the solve in', () => {
+		expect(CREATED_SOLVE_SELECTION).toMatch(/\bsession_id\b/);
+	});
+
+	it('follows the server when it moved the solve out of a session deleted elsewhere', () => {
+		rows.set('s4', {id: 's4', session_id: 'deleted-elsewhere'});
+
+		applyCreatedSolve('s4', {id: 's4', session_id: 'main'});
+		expect(rows.get('s4').session_id).toBe('main');
+	});
+
+	it('keeps the local session when the answer has none (a trainer solve)', () => {
+		rows.set('s5', {id: 's5', session_id: 'local'});
+
+		applyCreatedSolve('s5', {id: 's5', session_id: null});
+		expect(rows.get('s5').session_id).toBe('local');
+	});
+});
