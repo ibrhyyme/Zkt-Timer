@@ -138,15 +138,20 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 
 	const timeInfo = peopleInActivity[0]?.assignment;
 
+	// Stepping to a sibling group or round REPLACES the history entry instead of
+	// pushing one. Otherwise three "Next group" presses left three entries behind,
+	// and "Go back" (history.goBack) walked back through the groups instead of
+	// returning to the page the user came from. The device back button follows
+	// the same history, so it is fixed by the same change.
+	function goToSibling(code: string) {
+		history.replace(`/competitions/${detail.competitionId}/activities/${code}`);
+	}
+
 	// Klavye kisayollari: Sol/Sag ok tuslari
 	useEffect(() => {
 		function handleKeydown(e: KeyboardEvent) {
-			if (e.key === 'ArrowLeft' && prevCode) {
-				history.push(`/competitions/${detail.competitionId}/activities/${prevCode}`);
-			}
-			if (e.key === 'ArrowRight' && nextCode) {
-				history.push(`/competitions/${detail.competitionId}/activities/${nextCode}`);
-			}
+			if (e.key === 'ArrowLeft' && prevCode) goToSibling(prevCode);
+			if (e.key === 'ArrowRight' && nextCode) goToSibling(nextCode);
 		}
 		document.addEventListener('keydown', handleKeydown);
 		return () => document.removeEventListener('keydown', handleKeydown);
@@ -189,7 +194,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 					<button
 						className={b('group-nav-btn', {disabled: !prevCode})}
 						disabled={!prevCode}
-						onClick={() => prevCode && history.push(`/competitions/${detail.competitionId}/activities/${prevCode}`)}
+						onClick={() => prevCode && goToSibling(prevCode)}
 					>
 						<ArrowLeft size={14} />
 						{navLabel === 'round' ? t('my_schedule.prev_round') : t('my_schedule.prev_group')}
@@ -197,7 +202,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 					<button
 						className={b('group-nav-btn', {disabled: !nextCode})}
 						disabled={!nextCode}
-						onClick={() => nextCode && history.push(`/competitions/${detail.competitionId}/activities/${nextCode}`)}
+						onClick={() => nextCode && goToSibling(nextCode)}
 					>
 						{navLabel === 'round' ? t('my_schedule.next_round') : t('my_schedule.next_group')}
 						<ArrowRight size={14} />
