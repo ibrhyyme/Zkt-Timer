@@ -1,5 +1,9 @@
 // ZKT Live "Anlık durum" as the same table as "Resmi sonuçlar": one row per
-// competitor, ranked, average and best columns. The federation already cut every
+// competitor, ranked across every group. The screen shows the visible times
+// only, no single or average columns (owner, 2026-11-14: those come with the
+// official results); the average and best computed here only order the rows.
+// A Çift Şans round lists each competitor once, by the chance that counts now
+// (countingChanceEntries). The federation already cut every
 // phone card to what may be public (the first `level` attempts of its group, K3),
 // so the rows only use what arrives; the average appears once every attempt of
 // the format is visible, by the site's rule (cardAverage). Official rows keep
@@ -17,6 +21,8 @@ export interface LiveStatusEntryInput {
 	noShow?: boolean | null;
 	official?: boolean | null;
 	attempts?: ({result?: number | null} | null)[] | null;
+	/** Çift Şans: which chance this card is (1 on an ordinary round). */
+	chance?: number | null;
 }
 
 export interface OfficialResultInput {
@@ -42,6 +48,8 @@ export interface LiveStatusRow {
 	/** Shared by ties; null for a row with nothing to rank (no attempt yet, Gelmedi). */
 	ranking: number | null;
 	tag: LiveStatusTag;
+	/** The chance the row shows on a Çift Şans round; null for a desk row without a card. */
+	chance: number | null;
 	done: number;
 	expected: number;
 	/** Green (advancing, not questionable) / orange (advancing, questionable), as on the official table. */
@@ -95,6 +103,41 @@ function bestKey(v: number | null): number {
 	return v > 0 ? v : Number.MAX_SAFE_INTEGER;
 }
 
+/**
+ * Çift Şans: each competitor once, by the chance that counts now: the better
+ * one by the round's ranking rule (average when it is complete, then best), a
+ * desk row before a phone card, chance 1 on a tie. The rows then rank across
+ * every group like an ordinary round.
+ */
+export function countingChanceEntries<T extends LiveStatusEntryInput>(
+	entries: readonly T[],
+	{numAttempts, sortBy, eventId}: Pick<Options, 'numAttempts' | 'sortBy' | 'eventId'>
+): T[] {
+	const format = sortBy === 'average' ? formatOf(numAttempts) : null;
+	const keyOf = (e: T): [number, number] => {
+		const values = e.noShow ? [] : results(e.attempts).map((a) => a.result);
+		const avg = format ? cardAverage(values, format, eventId) : null;
+		return [avg !== null && avg > 0 ? avg : Number.POSITIVE_INFINITY, bestKey(liveBest(values))];
+	};
+	const better = (a: T, b: T): boolean => {
+		const [aa, ab] = keyOf(a);
+		const [ba, bb] = keyOf(b);
+		return aa < ba || (aa === ba && ab < bb);
+	};
+	const byPerson = new Map<string, T>();
+	const loose: T[] = [];
+	for (const e of entries) {
+		const id = e.personLiveId;
+		if (!id) {
+			loose.push(e);
+			continue;
+		}
+		const current = byPerson.get(id);
+		if (!current || (!current.official && (e.official || better(e, current)))) byPerson.set(id, e);
+	}
+	return [...byPerson.values(), ...loose];
+}
+
 export function buildLiveStatusRows(
 	entries: readonly LiveStatusEntryInput[],
 	official: readonly OfficialResultInput[],
@@ -131,6 +174,7 @@ export function buildLiveStatusRows(
 			average: typeof r.average === 'number' && r.average !== 0 ? r.average : null,
 			ranking: null,
 			tag: noShow ? 'noShow' : 'official',
+			chance: null,
 			done: attempts.length,
 			expected: expectedFor(values),
 			advancing: false,
@@ -145,7 +189,7 @@ export function buildLiveStatusRows(
 		const expected = e.expected ?? numAttempts;
 		const desk = id ? officialById.get(id) : undefined;
 		if (e.official && desk) {
-			rows.push(fromOfficial(desk, !!e.noShow));
+			rows.push({...fromOfficial(desk, !!e.noShow), chance: e.chance ?? null});
 			continue;
 		}
 		const attempts = e.noShow ? [] : results(e.attempts);
@@ -160,6 +204,7 @@ export function buildLiveStatusRows(
 			average: format ? cardAverage(values, format, eventId) : null,
 			ranking: null,
 			tag: e.official ? 'official' : e.noShow ? 'noShow' : 'progress',
+			chance: e.chance ?? null,
 			done,
 			expected,
 			advancing: false,

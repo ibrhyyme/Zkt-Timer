@@ -6,8 +6,7 @@ import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMe
 import {useLiveRoundResults} from '../useLiveResults';
 import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
-import ZktLiveStatus from './ZktLiveStatus';
-import {buildLiveStatusRows} from './live-status-rows';
+import {buildLiveStatusRows, countingChanceEntries} from './live-status-rows';
 import type {ZktAdvancementType} from './live-advancement';
 import {useDelayedFlag} from '../useDelayedFlag';
 
@@ -282,26 +281,32 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 					level: cond.level,
 				}
 			: null;
-	// "Anlık durum" is the results table itself, ranked from the judges' visible
-	// times (owner's call: a separate group layout was hard to read). A Çift Şans
-	// round keeps the group layout: its chances do not fit one row per person yet.
-	const statusTable = view === 'status' && !dualChance;
+	// "Anlık durum" is the results table itself, ranked across every group from
+	// the judges' visible times, showing those times and no single or average
+	// (owner, 2026-11-14: they come with the official results). A Çift Şans round
+	// lists each competitor once, by the chance that counts now.
+	const statusTable = view === 'status';
+	const statusEntries = dualChance ? countingChanceEntries(liveEntries, {numAttempts, sortBy, eventId: event.eventId}) : liveEntries;
 	const tableRows: any[] = statusTable
-		? buildLiveStatusRows(liveEntries, allResults, {
+		? buildLiveStatusRows(statusEntries, allResults, {
 				numAttempts,
 				sortBy,
 				eventId: event.eventId,
 				cutoff: selectedRound.cutoff
 					? {attempts: selectedRound.cutoff.numberOfAttempts, result: selectedRound.cutoff.attemptResult}
 					: null,
-				advancement: liveAdvancement,
+				// The live forecast does not know Çift Şans (a rival's other chance can
+				// still beat anyone): those rounds stay uncoloured until the official table.
+				advancement: dualChance ? null : liveAdvancement,
 				fieldSize: selectedRound.numResults || 0,
 			})
 		: allResults;
 	const showChances = !statusTable && dualChance && allResults.some((r: any) => (r.chances?.length || 0) > 0);
 	// On a phone four time columns leave a name its first word; with both
 	// chances on screen the best single moves to the row's detail sheet.
-	const showBest = !(isMobile && showChances);
+	// "Anlık durum" shows neither average nor best.
+	const showBest = !statusTable && !(isMobile && showChances);
+	const showAverageColumn = showAverage && !statusTable;
 
 	/**
 	 * One chance of a row. A chance the competitor never entered is not in the
@@ -447,15 +452,12 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</div>
 			)}
 
-			{view === 'status' &&
-				(statusTable ? (
-					<>
-						<p className={b('wca-live-status-note')}>{t('zkt_comp.live_status_note')}</p>
-						<p className={b('wca-live-status-rule')}>{t('zkt_comp.live_status_rule')}</p>
-					</>
-				) : (
-					<ZktLiveStatus entries={liveEntries} eventId={event.eventId} dualChance={dualChance} myName={myName} />
-				))}
+			{statusTable && (
+				<>
+					<p className={b('wca-live-status-note')}>{t('zkt_comp.live_status_note')}</p>
+					<p className={b('wca-live-status-rule')}>{t('zkt_comp.live_status_rule')}</p>
+				</>
+			)}
 
 			{/* Loading skeleton */}
 			{showSkeleton && (
@@ -492,7 +494,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 											<th>{chanceLabel(2)}</th>
 										</>
 									) : (
-										showAverage && <th>{t('my_schedule.col_average')}</th>
+										showAverageColumn && <th>{t('my_schedule.col_average')}</th>
 									)}
 									{showBest && <th>{t('my_schedule.col_best')}</th>}
 									{!isMobile && Array.from({length: numAttempts}).map((_, i) => (
@@ -527,6 +529,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												if (isMobile) {
 													setModalRow({
 														...r,
+														statusRow: statusTable,
 														attempts,
 														numAttempts,
 														eventId: event.eventId,
@@ -569,8 +572,17 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 													) : (
 														<span className={b('wca-live-status-progress')}>
 															{r.done}/{r.expected}
+															{dualChance && r.chance ? ` · ${t('zkt_comp.chance_n', {n: r.chance})}` : ''}
 														</span>
 													))}
+												{/* A phone has no room for the attempt columns: the times run under the name. */}
+												{statusTable && isMobile && r.attempts.length > 0 && (
+													<span className={b('wca-live-status-times')}>
+														{r.attempts.map((a: {result: number}, i: number) => (
+															<span key={i}>{formatResult(a.result, event.eventId, false)}</span>
+														))}
+													</span>
+												)}
 											</td>
 											{showChances
 												? [1, 2].map((n) => {
@@ -585,7 +597,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 														</td>
 													);
 												})
-												: showAverage && (
+												: showAverageColumn && (
 													<td className={b('wca-live-time', {strong: true})}>
 														<span className={b('wca-live-time-inner')}>
 															{formatResult(r.average, event.eventId, true)}
@@ -637,7 +649,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 					competitionId={competitionId}
 					onClose={() => setModalRow(null)}
 					t={t}
-					showAverage={showAverage}
+					showAverage={showAverage && !modalRow.statusRow}
+					showBest={!modalRow.statusRow}
 				/>
 			)}
 		</div>

@@ -3381,84 +3381,10 @@
 		gap: 2px;
 	}
 
-	&__wca-live-status-group {
-		background: $zt-card-bg;
-		border: 1px solid $zt-card-border;
-		border-radius: $zt-radius-lg;
-		margin-bottom: $zt-space-4;
-		overflow: hidden;
-	}
-
-	&__wca-live-status-group-head {
-		@include zt-eyebrow;
-		display: flex;
-		justify-content: space-between;
-		gap: $zt-space-3;
-		padding: $zt-space-3 $zt-space-4;
-		border-bottom: 1px solid $zt-card-border;
-	}
-
-	&__wca-live-status-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	// Station | name | progress on the first line; the times run under the
-	// name to the right edge, so five of them fit on a phone.
-	&__wca-live-status-row {
-		display: grid;
-		grid-template-columns: 2rem minmax(0, 1fr) auto;
-		grid-template-areas:
-			'station name side'
-			'. times times';
-		align-items: center;
-		column-gap: $zt-space-3;
-		row-gap: $zt-space-1;
-		padding: $zt-space-3 $zt-space-4;
-		border-top: 1px solid $zt-card-border;
-
-		&:first-child {
-			border-top: 0;
-		}
-
-		// The viewer's own row, as in the results table.
-		&--me {
-			background: rgba(var(--primary-color), 0.08);
-		}
-	}
-
-	&__wca-live-status-station {
-		grid-area: station;
-		font-family: $zt-font-mono;
-		font-size: 0.85rem;
-		color: $zt-text-muted;
-	}
-
-	// Its children take their own grid cells.
-	&__wca-live-status-main {
-		display: contents;
-	}
-
-	&__wca-live-status-side {
-		grid-area: side;
-	}
-
-	&__wca-live-status-name {
-		grid-area: name;
-		min-width: 0;
-		font-weight: 600;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-
-		.zt-my-schedule__me-badge {
-			margin-left: $zt-space-2;
-		}
-	}
-
+	// The visible times under the name in the "Anlık durum" table on a phone,
+	// where the attempt columns do not fit (owner, 2026-11-14: times, no single
+	// or average, until the round's official results).
 	&__wca-live-status-times {
-		grid-area: times;
 		display: flex;
 		flex-wrap: wrap;
 		column-gap: $zt-space-3;

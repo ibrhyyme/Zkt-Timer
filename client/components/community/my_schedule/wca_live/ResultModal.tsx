@@ -30,9 +30,11 @@ interface Props {
 	t: any;
 	showViewProfile?: boolean; // default: personWcaId varsa true
 	showAverage?: boolean;     // default: true (Bo1/BLD durumunda false)
+	/** False in ZKT "Anlık durum": times only, no single or average until the official results. */
+	showBest?: boolean;
 }
 
-export default function ResultModal({row, competitionId, onClose, t, showViewProfile, showAverage = true}: Props) {
+export default function ResultModal({row, competitionId, onClose, t, showViewProfile, showAverage = true, showBest = true}: Props) {
 	const history = useHistory();
 	const backdropClose = useBackdropClose(onClose);
 
@@ -110,13 +112,15 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 							</div>
 						</div>
 					)}
-					<div className={b('wca-live-modal-stat')}>
-						<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_best')}</div>
-						<div className={b('wca-live-modal-stat-value')}>
-							{formatResult(row.best, row.eventId, false)}
-							<RecordTag tag={row.singleRecordTag} />
+					{showBest && (
+						<div className={b('wca-live-modal-stat')}>
+							<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_best')}</div>
+							<div className={b('wca-live-modal-stat-value')}>
+								{formatResult(row.best, row.eventId, false)}
+								<RecordTag tag={row.singleRecordTag} />
+							</div>
 						</div>
-					</div>
+					)}
 					{!row.chances && (
 						<div className={b('wca-live-modal-stat', {full: true})}>
 							<div className={b('wca-live-modal-stat-label')}>{t('my_schedule.col_attempts')}</div>

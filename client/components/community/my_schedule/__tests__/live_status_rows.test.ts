@@ -1,4 +1,4 @@
-import {buildLiveStatusRows, liveBest} from '../wca_live/live-status-rows';
+import {buildLiveStatusRows, countingChanceEntries, liveBest} from '../wca_live/live-status-rows';
 
 const att = (...v: number[]) => v.map((result) => ({result}));
 const opts = {numAttempts: 5, sortBy: 'average', eventId: '444'};
@@ -218,5 +218,67 @@ describe('liveBest', () => {
 		expect(liveBest([3000, -1, 2900])).toBe(2900);
 		expect(liveBest([-1, -2])).toBe(-1);
 		expect(liveBest([])).toBeNull();
+	});
+});
+
+describe('Çift Şans in the Anlık durum list: one row per competitor, the chance that counts (owner, 2026-11-14)', () => {
+	const e = (id: string, chance: number, values: number[], extra = {}) => ({
+		personLiveId: id,
+		personName: `P ${id}`,
+		chance,
+		done: values.length,
+		expected: 5,
+		attempts: att(...values),
+		...extra,
+	});
+
+	it('keeps the better chance: a complete average first, then the best single', () => {
+		const picked = countingChanceEntries(
+			[
+				e('a', 1, [1300, 1250, 1140, 1390, 1396]),
+				e('a', 2, [1210, 1190, 1302, 1244, 1175]),
+				e('b', 1, [1352, 1254]),
+				e('b', 2, [1500, 1100]),
+				e('c', 1, [2000, 2100, 2200, 2300, 2400]),
+				e('c', 2, [1000]),
+			],
+			opts
+		);
+		expect(picked.map((x) => [x.personLiveId, x.chance])).toEqual([
+			['a', 2],
+			['b', 2],
+			['c', 1],
+		]);
+	});
+
+	it('a chance with times beats an empty or Gelmedi one; a tie stays on chance 1; a desk row wins', () => {
+		const picked = countingChanceEntries(
+			[
+				e('a', 1, [], {noShow: true}),
+				e('a', 2, [3000]),
+				e('b', 1, []),
+				e('b', 2, []),
+				e('c', 1, [900], {official: true}),
+				e('c', 2, [800]),
+			],
+			opts
+		);
+		expect(picked.map((x) => [x.personLiveId, x.chance])).toEqual([
+			['a', 2],
+			['b', 1],
+			['c', 1],
+		]);
+	});
+
+	it('ranks the picked rows across groups and keeps the chance on the row', () => {
+		const rows = buildLiveStatusRows(
+			countingChanceEntries([e('x', 1, [2000]), e('x', 2, [1000]), e('y', 1, [1500])], opts),
+			[],
+			opts
+		);
+		expect(rows.map((r) => [r.personName, r.ranking, r.chance])).toEqual([
+			['P x', 1, 2],
+			['P y', 2, 1],
+		]);
 	});
 });
