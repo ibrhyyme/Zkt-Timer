@@ -25,6 +25,15 @@ interface Props {
  * (JUDGE), change a sent time (CORRECT), write an extra (EXTRA). The site decides
  * who may answer; somebody who may not sees no person and no card.
  */
+/** A profile picture, or the empty face when there is none. */
+function Face({url}: {url?: string | null}) {
+	return url ? (
+		<img className={b('ac-face')} src={url} alt="" />
+	) : (
+		<UserCircle className={b('ac-face', {empty: true})} size={44} weight="light" />
+	);
+}
+
 export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 	const {t} = useTranslation();
 	const [preview, setPreview] = useState<JudgeApprovalPreview | null>(null);
@@ -111,7 +120,11 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 	const round = preview.round;
 	const requester = preview.requester;
 	const judgeName = preview.judge?.name;
-	const judgeDiffers = !!judgeName && !!requester && judgeName !== requester.name;
+	const judgeDiffers = preview.judge?.differsFromHolder ?? (!!judgeName && !!requester && judgeName !== requester.name);
+	// The judge cell: the named judge, else the phone's owner (who judges themselves).
+	const judgeShown = judgeName || requester?.name || null;
+	const judgeFace =
+		preview.judge?.avatarUrl ?? (preview.judge?.external || judgeDiffers ? null : (requester?.avatarUrl ?? null));
 	const attemptValue = preview.attempt ? formatJudgeValue(preview.attempt.value, round?.eventId || '') : '';
 	const reasonOk = purpose !== 'EXTRA' || reason.trim().length >= 2;
 	const decided = preview.decision;
@@ -127,77 +140,77 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 				{t(`zkt_comp.judge_approve_kind_${purpose.toLowerCase()}`)}
 			</span>
 
-			{/* Event, round and group first and large: the approver checked the names
-			    and missed that the judge had picked the last event (owner, 2026-11-14). */}
-			{round && (
-				<div className={b('approval-target')}>
-					<span className={b('approval-target-event')}>
-						{localEventName(t, round.eventId)} · {t('zkt_comp.judge_round_n', {n: round.roundNumber})}
-					</span>
-					{preview.group && (
-						<span className={b('approval-target-group')}>
-							{t('my_schedule.col_group')} {preview.group.number}
+			{/* The paper scorecard's head, faces included (owner, 2026-11-14): event and
+			    round on the band, then who competes, where, and who judges. The approver
+			    once checked only the names and missed that the judge had picked the last
+			    event, so the event leads in large type. */}
+			<div className={b('ac')}>
+				{round && (
+					<div className={b('ac-bar')}>
+						<span className={b('ac-event')}>{localEventName(t, round.eventId)}</span>
+						<span className={b('ac-round')}>
+							{t('zkt_comp.judge_round_n', {n: round.roundNumber})}
 							{round.dualChance && preview.chance != null ? ` · ${t('zkt_comp.chance_n', {n: preview.chance})}` : ''}
 						</span>
+					</div>
+				)}
+				<div className={b('ac-cells')}>
+					{preview.competitor && (
+						<div className={b('ac-cell', {full: true})}>
+							<span className={b('label')}>{t('zkt_comp.judge_competitor')}</span>
+							<span className={b('ac-person')}>
+								<Face url={preview.competitor.avatarUrl} />
+								<span className={b('ac-name')}>
+									{preview.competitor.number != null && <span className={b('person-number')}>{preview.competitor.number}</span>}
+									{preview.competitor.name}
+								</span>
+							</span>
+						</div>
+					)}
+					{preview.group && (
+						<div className={b('ac-cell')}>
+							<span className={b('label')}>{t('my_schedule.col_group')}</span>
+							<span className={b('ac-value')}>{preview.group.number}</span>
+						</div>
+					)}
+					{preview.station != null && (
+						<div className={b('ac-cell')}>
+							<span className={b('label')}>{t('zkt_comp.judge_station')}</span>
+							<span className={b('ac-value')}>{preview.station}</span>
+						</div>
+					)}
+					{judgeShown && (
+						<div className={b('ac-cell', {full: true})}>
+							<span className={b('label')}>{t('zkt_comp.judge_judge')}</span>
+							<span className={b('ac-person')}>
+								<Face url={judgeFace} />
+								<span className={b('ac-who')}>
+									<span className={b('ac-name')}>{judgeShown}</span>
+									{/* A borrowed phone or an outside judge: who judges is not who holds the phone. */}
+									{preview.judge?.external ? (
+										<span className={b('ac-sub')}>{t('zkt_comp.judge_approve_external')}</span>
+									) : judgeDiffers ? (
+										<span className={b('ac-sub')}>{t('zkt_comp.judge_approve_borrowed', {name: requester?.name || ''})}</span>
+									) : (
+										requester?.zktId && <span className={b('ac-sub', {mono: true})}>{requester.zktId}</span>
+									)}
+								</span>
+							</span>
+						</div>
+					)}
+					{preview.attempt && preview.attempt.no != null && (
+						<div className={b('ac-cell', {full: true})}>
+							<span className={b('label')}>{t('zkt_comp.judge_approve_attempt')}</span>
+							<span className={b('ac-value')}>
+								{preview.attempt.no}
+								{/* A correction on an extra line: the time shown is the extra's. */}
+								{preview.purpose === 'CORRECT' && preview.attempt.extra ? ` · ${t('zkt_comp.judge_approve_on_extra')}` : ''}
+								{attemptValue ? ` · ${attemptValue}` : ''}
+							</span>
+						</div>
 					)}
 				</div>
-			)}
-
-			{requester && (
-				<div className={b('requester')}>
-					{requester.avatarUrl ? (
-						<img className={b('requester-avatar')} src={requester.avatarUrl} alt="" />
-					) : (
-						<UserCircle className={b('requester-avatar', {empty: true})} size={56} weight="light" />
-					)}
-					<div className={b('requester-main')}>
-						<span className={b('requester-name')}>{requester.name}</span>
-						{requester.zktId && <span className={b('requester-id')}>{requester.zktId}</span>}
-					</div>
-				</div>
-			)}
-
-			{/* A borrowed phone: who judges is not who holds the phone. */}
-			{judgeName && (judgeDiffers || preview.judge?.external) && (
-				<div className={b('notice', {strong: true})}>
-					<span className={b('label')}>{t('zkt_comp.judge_judge')}</span>
-					<strong className={b('approval-judge')}>{judgeName}</strong>
-					<span className={b('hint')}>
-						{preview.judge?.external
-							? t('zkt_comp.judge_approve_external')
-							: t('zkt_comp.judge_approve_borrowed', {name: requester?.name || ''})}
-					</span>
-				</div>
-			)}
-
-			<dl className={b('facts', {grid: true})}>
-				{preview.competitor && (
-					<div className={b('fact', {full: true})}>
-						<dt>{t('zkt_comp.judge_competitor')}</dt>
-						<dd className={b('fact-text')}>
-							{preview.competitor.number != null && <span className={b('person-number')}>{preview.competitor.number}</span>}
-							{preview.competitor.name}
-						</dd>
-					</div>
-				)}
-				{preview.station != null && (
-					<div className={b('fact')}>
-						<dt>{t('zkt_comp.judge_station')}</dt>
-						<dd>{preview.station}</dd>
-					</div>
-				)}
-				{preview.attempt && preview.attempt.no != null && (
-					<div className={b('fact')}>
-						<dt>{t('zkt_comp.judge_approve_attempt')}</dt>
-						<dd>
-							{preview.attempt.no}
-							{/* A correction on an extra line: the time shown is the extra's. */}
-							{preview.purpose === 'CORRECT' && preview.attempt.extra ? ` · ${t('zkt_comp.judge_approve_on_extra')}` : ''}
-							{attemptValue ? ` · ${attemptValue}` : ''}
-						</dd>
-					</div>
-				)}
-			</dl>
+			</div>
 
 			{cardInfo?.noShow && (
 				<p className={b('notice', {error: true, icon: true})}>

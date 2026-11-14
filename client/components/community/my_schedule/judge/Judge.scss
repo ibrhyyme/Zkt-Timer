@@ -823,34 +823,76 @@
 		}
 	}
 
-	&__approval-target {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
+	// The approval card: the paper scorecard's head (owner's pick "B", 2026-11-14).
+	// A band with event and round, then cells: competitor (face, number, name),
+	// group, station, judge (face, name, whose phone), and the attempt for a
+	// correction or an extra.
+	&__ac {
+		border: 1px solid $zt-control-border;
+		border-radius: $zt-radius-md;
+		overflow: hidden;
 	}
 
-	&__approval-target-event {
+	&__ac-bar {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $zt-space-3;
+		padding: $zt-space-3 $zt-space-4;
+		background: $zt-control-bg;
+	}
+
+	&__ac-event {
 		font-size: 1.375rem;
 		font-weight: 800;
 		line-height: 1.2;
 	}
 
-	&__approval-target-group {
+	&__ac-round {
+		flex-shrink: 0;
 		font-family: $zt-font-mono;
-		font-size: 1.125rem;
 		font-weight: 700;
 	}
 
-	&__requester {
+	&__ac-cells {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	&__ac-cell {
+		display: flex;
+		flex: 1 1 0;
+		flex-direction: column;
+		gap: $zt-space-1;
+		min-width: 0;
+		padding: $zt-space-2 $zt-space-4 $zt-space-3;
+		border-top: 1px solid $zt-card-border;
+
+		& + & {
+			border-left: 1px solid $zt-card-border;
+		}
+
+		&--full {
+			flex-basis: 100%;
+		}
+
+		// A full row starts a line; the cell after it starts one too.
+		&--full,
+		&--full + & {
+			border-left: 0;
+		}
+	}
+
+	&__ac-person {
 		display: flex;
 		align-items: center;
 		gap: $zt-space-3;
 	}
 
-	&__requester-avatar {
+	&__ac-face {
 		flex-shrink: 0;
-		width: 56px;
-		height: 56px;
+		width: 44px;
+		height: 44px;
 		border-radius: 50%;
 		object-fit: cover;
 
@@ -859,34 +901,34 @@
 		}
 	}
 
-	&__requester-main {
+	&__ac-who {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
 		min-width: 0;
 	}
 
-	&__requester-name {
+	&__ac-name {
 		font-size: 1.25rem;
 		font-weight: 700;
+		line-height: 1.25;
 		overflow-wrap: anywhere;
 	}
 
-	&__requester-id {
-		color: $zt-text-muted;
+	&__ac-value {
 		font-family: $zt-font-mono;
-		font-size: 0.875rem;
+		font-size: 1.25rem;
+		font-weight: 700;
 	}
 
-	&__notice--strong {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		border-color: rgb(var(--warning-color));
-	}
+	&__ac-sub {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		line-height: 1.35;
 
-	&__approval-judge {
-		font-size: 1.125rem;
+		&--mono {
+			font-family: $zt-font-mono;
+		}
 	}
 
 	// Warning lines carry their icon in front of the text.
@@ -905,38 +947,6 @@
 		&.#{$namespace}-judge__notice--error > svg {
 			color: rgb(var(--error-color));
 		}
-	}
-
-	// The approval's facts wrap onto rows: competitor and round full width,
-	// group, station, chance and attempt side by side.
-	&__facts--grid {
-		flex-wrap: wrap;
-
-		.#{$namespace}-judge__fact {
-			flex: 1 1 0;
-			border-left: 0;
-			border-top: 1px solid $zt-card-border;
-
-			& + .#{$namespace}-judge__fact:not(.#{$namespace}-judge__fact--full) {
-				border-left: 1px solid $zt-card-border;
-			}
-
-			&--full {
-				flex-basis: 100%;
-			}
-
-			&:first-child {
-				border-top: 0;
-			}
-		}
-
-		.#{$namespace}-judge__fact--full + .#{$namespace}-judge__fact:not(.#{$namespace}-judge__fact--full) {
-			border-left: 0;
-		}
-	}
-
-	&__fact--full &__fact-text {
-		white-space: normal;
 	}
 
 	&__decide {

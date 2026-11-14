@@ -188,9 +188,10 @@ export interface JudgeApprovalPreview {
 	round?: JudgeRound;
 	group?: {id: string; number: number};
 	chance?: number;
-	competitor?: {key?: string; name: string; number?: number | null};
+	/** avatarUrl: the profile picture, when the site sends one (2026-11-14). */
+	competitor?: {key?: string; name: string; number?: number | null; avatarUrl?: string | null};
 	station?: number | null;
-	judge?: {name: string; external: boolean; differsFromHolder?: boolean} | null;
+	judge?: {name: string; external: boolean; differsFromHolder?: boolean; avatarUrl?: string | null} | null;
 	warnings?: JudgeWarning[];
 	/** The judge this approval would replace (JUDGE). */
 	currentJudge?: {name: string; holderName: string} | null;
