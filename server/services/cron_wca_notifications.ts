@@ -10,6 +10,8 @@ import WcaRoundFinishedNotification from '../resources/notification_types/wca_ro
 import WcaFollowResultEnteredNotification from '../resources/notification_types/wca_follow_result_entered';
 import WcaFollowRoundFinishedNotification from '../resources/notification_types/wca_follow_round_finished';
 import {WcaApiService} from './WcaApiService';
+import {isZktCompetitionId} from './ZktWcaAdapter';
+import {resultReadyToNotify} from './result_notify_ready';
 import {createI18nInstance} from '../i18n_server';
 import {archiveCompetition} from './CompetitionArchiveService';
 
@@ -215,7 +217,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 				const existingNr = state.notified_rounds.find((nr) => nr.activity_code === rm.activityCode);
 
 				// --- Result entered notification ---
-				if (result.best && result.best > 0 && !existingNr?.result_notified) {
+				if (resultReadyToNotify(result, round, isZktCompetitionId(compId)) && !existingNr?.result_notified) {
 					try {
 						await sendResultEntered(
 							state,
@@ -276,7 +278,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 					(nr) => nr.activity_code === rm.activityCode,
 				);
 
-				if (result.best && result.best > 0 && !existingFollowNr?.result_notified) {
+				if (resultReadyToNotify(result, round, isZktCompetitionId(compId)) && !existingFollowNr?.result_notified) {
 					try {
 						await sendFollowResultEntered(
 							follow,
