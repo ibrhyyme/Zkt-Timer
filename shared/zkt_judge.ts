@@ -194,6 +194,12 @@ export interface JudgeApprovalPreview {
 	warnings?: JudgeWarning[];
 	/** The judge this approval would replace (JUDGE). */
 	currentJudge?: {name: string; holderName: string} | null;
+	/**
+	 * The card this JUDGE approval reopens, when it exists (site, 2026-11-14): how
+	 * far it got, Gelmedi, and who ended its judging. Null for a card not opened
+	 * yet; absent from older site answers.
+	 */
+	card?: {filled: number; expected: number; noShow: boolean; endedJudge: string | null} | null;
 	/** The attempt a correction or an extra is asked for. */
 	attempt?: {no: number | null; value: number | null; extra: boolean};
 }

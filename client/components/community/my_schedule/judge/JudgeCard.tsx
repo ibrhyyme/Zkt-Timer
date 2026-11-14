@@ -21,6 +21,7 @@ import {anchorOf, useActionMenu} from '../../../common/action_menu/ActionMenu';
 import {allowScreenSleep, keepScreenAwake} from '../../../../util/native-plugins';
 import {useKeyboardInset} from '../../../../util/hooks/useKeyboardInset';
 import {getJudgeOutbox} from '../../../../util/judge-outbox-device';
+import {JudgeCallError, judgeErrorKey, toJudgeError} from '../../../../util/judge-api';
 import {nextDeviceSeq, OutboxSnapshot} from '../../../../util/judge-outbox';
 import {buildRows, EXTRA_LINES, isEditable, isSent, Row} from './judge-rows';
 import {b as scheduleBlock, formatWcaTime, localEventName} from '../shared';
@@ -76,6 +77,7 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 	const [confirming, setConfirming] = useState<DraftValue | null>(null);
 	const [asking, setAsking] = useState<'end' | 'no_show' | null>(null);
 	const [ending, setEnding] = useState(false);
+	const [endError, setEndError] = useState<JudgeCallError | null>(null);
 	// A sent attempt tapped open to show "Süre düzelt" / "Ekstra iste".
 	const menu = useActionMenu();
 	// rowId: the line the request was made from (an attempt line or an extra line).
@@ -93,6 +95,14 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 		};
 	}, []);
 
+	const mounted = useRef(true);
+	useEffect(
+		() => () => {
+			mounted.current = false;
+		},
+		[]
+	);
+
 	const closed = card.cardStatus !== 'OPEN';
 	const usable = mode !== 'unsupported' && !closed;
 	// An approved correction or extra is what the judge is about to type, so it
@@ -108,7 +118,7 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 	const noShowPending = outbox.items.some(
 		(i) => i.cardId === card.cardId && i.userId === userId && i.kind === 'NO_SHOW' && i.state === 'pending'
 	);
-	const nothingEntered = rows.every((r) => r.state === 'empty' || r.state === 'locked' || r.state === 'unused');
+	const nothingEntered = rows.every((r) => r.state === 'empty' || r.state === 'later' || r.state === 'locked' || r.state === 'unused');
 	const value = activeRow && mode !== 'unsupported' ? draftValue(draft, keypadMode) : null;
 
 	function press(key: 'DNF' | 'DNS' | '+2') {
@@ -181,11 +191,18 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 
 	async function end() {
 		setEnding(true);
+		setEndError(null);
 		try {
 			await onEnd();
+		} catch (e) {
+			// Not ended (no signal, the site refused): the card stays, and says so.
+			if (mounted.current) setEndError(toJudgeError(e));
 		} finally {
-			setEnding(false);
-			setAsking(null);
+			// A successful end closes this card: nothing left to update then.
+			if (mounted.current) {
+				setEnding(false);
+				setAsking(null);
+			}
 		}
 	}
 
@@ -212,7 +229,7 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 	function stateText(row: Row): string {
 		if (row.permit === 'CORRECT' && isSent(row)) return t('zkt_comp.judge_state_correct_ready');
 		if (row.state === 'locked') return t('zkt_comp.judge_state_cutoff');
-		if (row.state === 'empty' || row.state === 'unused') return '';
+		if (row.state === 'empty' || row.state === 'later' || row.state === 'unused') return '';
 		return t(`zkt_comp.judge_state_${row.state}`);
 	}
 
@@ -405,11 +422,15 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 	const limit = card.round.timeLimitCs;
 	const cutoff = card.round.cutoffCs && card.round.cutoffAttempts ? card.round.cutoffCs : null;
 	const showNoShow = usable && nothingEntered && !card.noShow && !noShowPending;
+	// Every line the card takes is in (or the competitor did not come): judges
+	// forgot to end their judging here, so the card asks for it (owner, 2026-11-14).
+	const cardDone = usable && (!activeRow || card.noShow || noShowPending);
 	// The dock rides on the keyboard; under it the page keeps room for the dock.
-	const dockOpen = !!activeRow && !confirming && !permitAsk;
+	const dockOpen = !!activeRow && !cardDone && !confirming && !permitAsk;
+	const doneOpen = cardDone && !confirming && !permitAsk && !asking;
 
 	return (
-		<div className={b('card', {docked: dockOpen})} style={keyboardInset ? {paddingBottom: keyboardInset} : undefined}>
+		<div className={b('card', {docked: dockOpen || doneOpen})} style={keyboardInset ? {paddingBottom: keyboardInset} : undefined}>
 			<button type="button" className={scheduleBlock('back')} onClick={onBack}>
 				<CaretLeft size={18} weight="bold" />
 				{t('zkt_comp.judge_other_cards')}
@@ -470,6 +491,7 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 			{card.cardStatus === 'CANCELLED' && <p className={b('notice')}>{t('zkt_comp.judge_card_cancelled')}</p>}
 			{(card.noShow || noShowPending) && <p className={b('notice')}>{t('zkt_comp.judge_no_show_marked')}</p>}
 			{mode === 'unsupported' && <p className={b('notice')}>{t('zkt_comp.judge_event_unsupported')}</p>}
+			{endError && <p className={b('notice', {error: true})}>{t(judgeErrorKey(endError.code))}</p>}
 
 			<section className={b('section')}>
 				<h3 className={b('section-title')}>{t('zkt_comp.judge_section_attempts')}</h3>
@@ -484,8 +506,8 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 				<ol className={b('rows', {extra: true})}>{extraRows.map(renderRow)}</ol>
 			</section>
 
-			<ul className={b('actions-list')}>
-				{showNoShow && (
+			{showNoShow && (
+				<ul className={b('actions-list')}>
 					<li>
 						<button type="button" className={b('action-row')} onClick={() => setAsking('no_show')}>
 							<UserMinus size={22} />
@@ -495,7 +517,11 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 							</span>
 						</button>
 					</li>
-				)}
+				</ul>
+			)}
+
+			{/* Its own red-framed box, not one more row: judges walked past it. */}
+			<ul className={b('actions-list', {end: true})}>
 				<li>
 					<button type="button" className={b('action-row', {danger: true})} onClick={() => setAsking('end')}>
 						<SignOut size={22} />
@@ -506,6 +532,21 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 					</button>
 				</li>
 			</ul>
+
+			{doneOpen && (
+				<div className={b('done')} style={{bottom: keyboardInset}} role="status">
+					<div className={b('done-inner')}>
+						<CheckCircle className={b('done-icon')} size={24} weight="fill" />
+						<span className={b('done-text')}>
+							<span className={b('done-title')}>
+								{t(card.noShow || noShowPending ? 'zkt_comp.judge_done_title_no_show' : 'zkt_comp.judge_done_title')}
+							</span>
+							<span className={b('done-desc')}>{t('zkt_comp.judge_done_desc')}</span>
+						</span>
+						<Button theme={CommonType.PRIMARY} text={t('zkt_comp.judge_end_short')} onClick={() => setAsking('end')} />
+					</div>
+				</div>
+			)}
 
 			{dockOpen && (
 				<div className={b('dock')} style={{bottom: keyboardInset}} role="toolbar" aria-label={confirmTitle}>

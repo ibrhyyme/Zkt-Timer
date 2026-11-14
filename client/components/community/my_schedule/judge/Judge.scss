@@ -452,6 +452,11 @@
 		white-space: nowrap;
 	}
 
+	// Its turn has not come yet (attempts go in order): the number reads faint.
+	&__row--state-later &__row-no {
+		color: $zt-text-muted;
+	}
+
 	&__row--state-pending &__row-state {
 		color: rgb(var(--warning-color));
 	}
@@ -566,6 +571,15 @@
 		li + li {
 			border-top: 1px solid $zt-card-border;
 		}
+
+		// "Hakemliği sonlandır" in its own red frame: judges walked past it as one more row.
+		&--end {
+			border-color: rgba(var(--error-color), 0.6);
+
+			.#{$namespace}-judge__action-label {
+				font-weight: 700;
+			}
+		}
 	}
 
 	&__action-row {
@@ -610,6 +624,56 @@
 	}
 
 	&__action-desc {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		line-height: 1.35;
+	}
+
+	// Card complete: the reminder to end the judging, where the dock was.
+	&__done {
+		position: fixed;
+		right: 0;
+		left: 0;
+		z-index: 900;
+		background: rgb(var(--background-color));
+		border-top: 2px solid rgb(var(--primary-color));
+	}
+
+	&__done-inner {
+		display: flex;
+		align-items: center;
+		gap: $zt-space-3;
+		max-width: 560px;
+		margin: 0 auto;
+		padding: $zt-space-3 $zt-space-4;
+		padding-bottom: max(#{$zt-space-3}, #{sa(bottom)});
+		// A slow breath of the accent: seen from the corner of the eye, never a
+		// flash (owner, 2026-11-14: "yanan sönen ya da minimal bir uyarı").
+		animation: zt-judge-done-breathe 2.4s $ease-standard infinite;
+
+		@include reduced-motion {
+			animation: none;
+			background: rgba(var(--primary-color), 0.08);
+		}
+	}
+
+	&__done-icon {
+		flex-shrink: 0;
+		color: rgb(var(--primary-color));
+	}
+
+	&__done-text {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__done-title {
+		font-weight: 700;
+	}
+
+	&__done-desc {
 		color: $zt-text-muted;
 		font-size: 0.8125rem;
 		line-height: 1.35;
@@ -759,6 +823,24 @@
 		}
 	}
 
+	&__approval-target {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__approval-target-event {
+		font-size: 1.375rem;
+		font-weight: 800;
+		line-height: 1.2;
+	}
+
+	&__approval-target-group {
+		font-family: $zt-font-mono;
+		font-size: 1.125rem;
+		font-weight: 700;
+	}
+
 	&__requester {
 		display: flex;
 		align-items: center;
@@ -817,6 +899,11 @@
 			flex-shrink: 0;
 			margin-top: 2px;
 			color: rgb(var(--warning-color));
+		}
+
+		// A finished card or a Gelmedi competitor: the approval is almost surely wrong.
+		&.#{$namespace}-judge__notice--error > svg {
+			color: rgb(var(--error-color));
 		}
 	}
 
@@ -1067,5 +1154,16 @@
 		max-height: 88vh;
 		overflow-y: auto;
 		color: rgb(var(--text-color));
+	}
+}
+
+@keyframes zt-judge-done-breathe {
+	0%,
+	100% {
+		background: rgba(var(--primary-color), 0.04);
+	}
+
+	50% {
+		background: rgba(var(--primary-color), 0.16);
 	}
 }

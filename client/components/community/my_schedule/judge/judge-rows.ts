@@ -8,7 +8,12 @@ import {cutoffMissed, JUDGE_DNF, JudgeCard as JudgeCardData} from '../../../../.
 /** A paper scorecard has two extra lines under the attempts; so does this one. */
 export const EXTRA_LINES = 2;
 
-export type RowState = 'empty' | 'pending' | 'sent' | 'accepted' | 'conflict' | 'blocked' | 'invalid' | 'locked' | 'unused';
+/**
+ * `later`: an empty attempt line after the first empty one. Attempts go in
+ * order, as on paper (owner, 2026-11-14): a time typed on line 2 while line 1
+ * is blank is the judge's slip, so the line cannot be opened until its turn.
+ */
+export type RowState = 'empty' | 'later' | 'pending' | 'sent' | 'accepted' | 'conflict' | 'blocked' | 'invalid' | 'locked' | 'unused';
 
 export interface Row {
 	/** 'a1'..'a5' for the attempt lines, 'e1' / 'e2' for the extra lines. */
@@ -116,6 +121,13 @@ export function buildRows(card: JudgeCardData, outbox: OutboxSnapshot, userId: s
 		for (const row of attemptRows) {
 			if (row.attemptNo! > (card.round.cutoffAttempts || 0) && row.state === 'empty') row.state = 'locked';
 		}
+	}
+	// Only the first empty attempt line takes a time; the ones after it wait.
+	let firstEmptySeen = false;
+	for (const row of attemptRows) {
+		if (row.state !== 'empty') continue;
+		if (firstEmptySeen) row.state = 'later';
+		firstEmptySeen = true;
 	}
 	return [...attemptRows, ...extraRows];
 }

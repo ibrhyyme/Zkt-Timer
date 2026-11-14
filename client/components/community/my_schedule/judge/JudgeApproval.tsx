@@ -32,6 +32,8 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 	const [reason, setReason] = useState('');
 	const [deciding, setDeciding] = useState<'APPROVE' | 'REJECT' | null>(null);
 	const [result, setResult] = useState<JudgeGrantResult | null>(null);
+	// A finished card asks twice: the first tap only arms the button.
+	const [armed, setArmed] = useState(false);
 	const alive = useRef(true);
 
 	useEffect(() => {
@@ -40,6 +42,7 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 		setError(null);
 		setResult(null);
 		setReason('');
+		setArmed(false);
 		previewJudgeApproval(token)
 			.then((p) => alive.current && setPreview(p))
 			.catch((e) => alive.current && setError(toJudgeError(e)));
@@ -113,12 +116,32 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 	const reasonOk = purpose !== 'EXTRA' || reason.trim().length >= 2;
 	const decided = preview.decision;
 	const blocked = !preview.canApprove && !decided ? preview.reason : null;
+	// The card this approval reopens. A finished one is almost always a judge who
+	// picked the wrong event or group (owner, 2026-11-14), so it is said loudly.
+	const cardInfo = purpose === 'JUDGE' ? preview.card : null;
+	const cardFinished = !!cardInfo && (cardInfo.noShow || (cardInfo.expected > 0 && cardInfo.filled >= cardInfo.expected));
 
 	return (
 		<div className={b('approval')}>
 			<span className={b('approval-kind', {purpose: purpose.toLowerCase()})}>
 				{t(`zkt_comp.judge_approve_kind_${purpose.toLowerCase()}`)}
 			</span>
+
+			{/* Event, round and group first and large: the approver checked the names
+			    and missed that the judge had picked the last event (owner, 2026-11-14). */}
+			{round && (
+				<div className={b('approval-target')}>
+					<span className={b('approval-target-event')}>
+						{localEventName(t, round.eventId)} · {t('zkt_comp.judge_round_n', {n: round.roundNumber})}
+					</span>
+					{preview.group && (
+						<span className={b('approval-target-group')}>
+							{t('my_schedule.col_group')} {preview.group.number}
+							{round.dualChance && preview.chance != null ? ` · ${t('zkt_comp.chance_n', {n: preview.chance})}` : ''}
+						</span>
+					)}
+				</div>
+			)}
 
 			{requester && (
 				<div className={b('requester')}>
@@ -157,30 +180,10 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 						</dd>
 					</div>
 				)}
-				{round && (
-					<div className={b('fact', {full: true})}>
-						<dt>{t('zkt_comp.judge_round')}</dt>
-						<dd className={b('fact-text')}>
-							{localEventName(t, round.eventId)} · {t('zkt_comp.judge_round_n', {n: round.roundNumber})}
-						</dd>
-					</div>
-				)}
-				{preview.group && (
-					<div className={b('fact')}>
-						<dt>{t('my_schedule.col_group')}</dt>
-						<dd>{preview.group.number}</dd>
-					</div>
-				)}
 				{preview.station != null && (
 					<div className={b('fact')}>
 						<dt>{t('zkt_comp.judge_station')}</dt>
 						<dd>{preview.station}</dd>
-					</div>
-				)}
-				{round?.dualChance && preview.chance != null && (
-					<div className={b('fact')}>
-						<dt>{t('zkt_comp.judge_chance')}</dt>
-						<dd>{preview.chance}</dd>
 					</div>
 				)}
 				{preview.attempt && preview.attempt.no != null && (
@@ -196,6 +199,24 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 				)}
 			</dl>
 
+			{cardInfo?.noShow && (
+				<p className={b('notice', {error: true, icon: true})}>
+					<WarningCircle size={18} weight="fill" />
+					{t('zkt_comp.judge_approve_warn_no_show')}
+				</p>
+			)}
+			{cardInfo && !cardInfo.noShow && cardFinished && (
+				<p className={b('notice', {error: true, icon: true})}>
+					<WarningCircle size={18} weight="fill" />
+					{t('zkt_comp.judge_approve_warn_card_done', {filled: cardInfo.filled, expected: cardInfo.expected})}
+				</p>
+			)}
+			{cardInfo?.endedJudge && (
+				<p className={b('notice', {warning: true, icon: true})}>
+					<WarningCircle size={18} weight="fill" />
+					{t('zkt_comp.judge_approve_warn_ended', {name: cardInfo.endedJudge})}
+				</p>
+			)}
 			{(preview.warnings || []).map((w) => (
 				<p key={w} className={b('notice', {warning: true, icon: true})}>
 					<WarningCircle size={18} weight="fill" />
@@ -243,11 +264,11 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 						<Button
 							large
 							fullWidth
-							theme={CommonType.SUCCESS}
-							text={t('zkt_comp.judge_approve_yes')}
+							theme={cardFinished ? CommonType.WARNING : CommonType.SUCCESS}
+							text={t(cardFinished && armed ? 'zkt_comp.judge_approve_yes_anyway' : 'zkt_comp.judge_approve_yes')}
 							disabled={!reasonOk || !!deciding}
 							loading={deciding === 'APPROVE'}
-							onClick={() => decide('APPROVE')}
+							onClick={() => (cardFinished && !armed ? setArmed(true) : decide('APPROVE'))}
 						/>
 						<Button
 							large

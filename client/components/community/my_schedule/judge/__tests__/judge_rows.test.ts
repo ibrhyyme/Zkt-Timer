@@ -148,3 +148,23 @@ describe('a DNF with its time (team, 12 Nov)', () => {
 		expect([by('e1').value, by('e1').dnfTime]).toEqual([1100, null]);
 	});
 });
+
+describe('attempts go in order (owner, 14 Nov)', () => {
+	const states = (rows: Row[]) => rows.filter((r) => r.kind === 'attempt').map((r) => r.state);
+
+	test('only the first empty attempt line takes a time; the rest wait', () => {
+		const rows = buildRows(card([]), outbox(), USER);
+		expect(states(rows)).toEqual(['empty', 'later', 'later', 'later', 'later']);
+		expect(rows.filter(isEditable).map((r) => r.id)).toEqual(['a1']);
+	});
+
+	test('a sent, waiting or refused time counts as written; the next line opens', () => {
+		const rows = buildRows(card([sent(1234)]), outbox([{attemptNo: 2, value: 1300, state: 'blocked'}]), USER);
+		expect(states(rows)).toEqual(['sent', 'blocked', 'empty', 'later', 'later']);
+	});
+
+	test('a missed cutoff locks the rest instead', () => {
+		const cut = card([sent(4000), sent(4100)], {round: {...card([]).round, cutoffCs: 3000, cutoffAttempts: 2}});
+		expect(states(buildRows(cut, outbox(), USER))).toEqual(['sent', 'sent', 'locked', 'locked', 'locked']);
+	});
+});

@@ -131,7 +131,16 @@ export default function JudgePage({competitionId}: Props) {
 	async function endCard(target: JudgeCardData) {
 		await endJudging(competitionId, {grantId: target.grantId});
 		const fresh = await refresh();
-		if (!fresh) setMe((current) => (current ? {...current, cards: (current.cards || []).filter((c) => c.cardId !== target.cardId)} : current));
+		if (!fresh) {
+			// No answer after the end: drop the card from the device copy too, or the
+			// next app open (or the crash return) brings back a card that is over.
+			setMe((current) => {
+				if (!current) return current;
+				const next = {...current, cards: (current.cards || []).filter((c) => c.cardId !== target.cardId)};
+				if (userId) rememberJudgeMe(competitionId, userId, next);
+				return next;
+			});
+		}
 		openCard(null);
 	}
 

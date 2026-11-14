@@ -1,5 +1,5 @@
-import {shownCompetitors} from '../judge-people';
-import {JudgeBoardCompetitor} from '../../../../../../shared/zkt_judge';
+import {chancesOf, groupsOfChance, shownCompetitors} from '../judge-people';
+import {JudgeBoardCompetitor, JudgeBoardGroup} from '../../../../../../shared/zkt_judge';
 
 const person = (key: string, name: string, number: number, station: number, self?: boolean): JudgeBoardCompetitor => ({
 	key,
@@ -41,5 +41,25 @@ describe('the "Hakem ol" competitor list', () => {
 		expect(keys(shownCompetitors(group, 'celik'))).toEqual(['d']);
 		expect(keys(shownCompetitors(group, ' turhan '))).toEqual(['a', 'b']);
 		expect(keys(shownCompetitors(group, 'sarıkaya'))).toEqual(['c']);
+	});
+});
+
+describe('the "Hakem ol" groups of a Çift Şans round', () => {
+	const g = (id: string, number: number, chance: number): JudgeBoardGroup => ({id, number, chance, judges: [], competitors: []});
+	const groups = [g('a', 1, 1), g('b', 2, 1), g('c', 6, 2), g('d', 7, 2)];
+	const ids = (list: JudgeBoardGroup[]) => list.map((x) => x.id);
+
+	it('lists the chances once, in order', () => {
+		expect(chancesOf([groups[3], groups[0], groups[2]])).toEqual([1, 2]);
+	});
+
+	it('shows nothing until a chance is picked, then only its groups', () => {
+		expect(groupsOfChance(groups, true, null)).toEqual([]);
+		expect(ids(groupsOfChance(groups, true, 1))).toEqual(['a', 'b']);
+		expect(ids(groupsOfChance(groups, true, 2))).toEqual(['c', 'd']);
+	});
+
+	it('an ordinary round lists every group', () => {
+		expect(ids(groupsOfChance(groups.slice(0, 2), false, null))).toEqual(['a', 'b']);
 	});
 });

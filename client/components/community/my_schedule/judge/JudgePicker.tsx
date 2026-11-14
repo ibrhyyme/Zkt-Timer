@@ -5,7 +5,7 @@ import ChoiceGroup from '../../../common/choice_group/ChoiceGroup';
 import {fetchJudgeBoard, JudgeCallError, judgeErrorKey, toJudgeError} from '../../../../util/judge-api';
 import {b as scheduleBlock, localEventName} from '../shared';
 import JudgeRoundChooser from './JudgeRoundChooser';
-import {shownCompetitors} from './judge-people';
+import {chancesOf, groupsOfChance, shownCompetitors} from './judge-people';
 import {JudgeBoard, JudgeBoardCompetitor, JudgeBoardGroup, JudgeRound} from '../../../../../shared/zkt_judge';
 
 const b = block('judge');
@@ -42,6 +42,8 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 	const [roundId, setRoundId] = useState<string | null>(initial?.roundId ?? null);
 	const [board, setBoard] = useState<JudgeBoard | null>(null);
 	const [groupId, setGroupId] = useState<string | null>(initial?.groupId ?? null);
+	// Çift Şans: the chance whose groups are listed (until picked: the chosen group's).
+	const [chance, setChance] = useState<number | null>(null);
 	// The group kept from last time survives the first load of its round.
 	const keepGroup = useRef(!!initial?.groupId);
 
@@ -74,7 +76,15 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 	}, [competitionId]);
 
 	useEffect(() => {
-		if (!roundId) return;
+		setChance(null);
+		if (!roundId) {
+			// Another event with no round picked yet: the old event's groups and
+			// competitors must go at once, or the judge reads them as the new
+			// event's (owner, 2026-11-14).
+			setBoard(null);
+			setGroupId(null);
+			return;
+		}
 		let alive = true;
 		setBoard(null);
 		if (keepGroup.current) keepGroup.current = false;
@@ -96,6 +106,15 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 	}, [competitionId, roundId]);
 
 	const group = board?.groups?.find((g) => g.id === groupId) || null;
+	const dualChance = !!board?.round?.dualChance;
+	const shownChance = chance ?? group?.chance ?? null;
+	const chances = useMemo(() => chancesOf(board?.groups || []), [board]);
+	const groupChoices = groupsOfChance(board?.groups || [], dualChance, shownChance);
+
+	function pickChance(next: number) {
+		setChance(next);
+		if (group && group.chance !== next) setGroupId(null);
+	}
 	const people = useMemo(() => {
 		const seen = new Map<string, JudgeBoardCompetitor>();
 		for (const g of board?.groups || []) for (const c of g.competitors) if (!seen.has(c.key)) seen.set(c.key, c);
@@ -125,7 +144,19 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 				)}
 			</div>
 
-			{board?.groups && board.groups.length > 0 && (
+			{board?.groups && board.groups.length > 0 && dualChance && (
+				<div className={b('field')}>
+					<span className={b('label')}>{t('zkt_comp.judge_chance')}</span>
+					<ChoiceGroup<number>
+						label={t('zkt_comp.judge_chance')}
+						value={shownChance}
+						onChange={pickChance}
+						options={chances.map((n) => ({value: n, label: t('zkt_comp.chance_n', {n})}))}
+					/>
+				</div>
+			)}
+
+			{groupChoices.length > 0 && (
 				<div className={b('field')}>
 					<span className={b('label')}>{t('my_schedule.col_group')}</span>
 					<ChoiceGroup<string>
@@ -133,12 +164,7 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 						label={t('my_schedule.col_group')}
 						value={groupId}
 						onChange={setGroupId}
-						options={board.groups.map((g) => ({
-							value: g.id,
-							label: board.round?.dualChance
-								? `${g.number} · ${t('zkt_comp.chance_n', {n: g.chance})}`
-								: String(g.number),
-						}))}
+						options={groupChoices.map((g) => ({value: g.id, label: String(g.number)}))}
 					/>
 				</div>
 			)}
