@@ -131,3 +131,14 @@ export function buildRows(card: JudgeCardData, outbox: OutboxSnapshot, userId: s
 	}
 	return [...attemptRows, ...extraRows];
 }
+
+/**
+ * How far a card is, for the switch between the cards a judge holds at once:
+ * attempt lines written (sent or waiting to be sent) out of the lines the card
+ * still takes (a line closed by a missed cutoff is not owed).
+ */
+export function cardProgress(rows: Row[]): {written: number; total: number} {
+	const attempts = rows.filter((r) => r.kind === 'attempt' && r.state !== 'locked');
+	const written = attempts.filter((r) => r.state !== 'empty' && r.state !== 'later').length;
+	return {written, total: attempts.length};
+}

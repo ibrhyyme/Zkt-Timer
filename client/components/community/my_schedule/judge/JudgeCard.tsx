@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {v4 as uuid} from 'uuid';
 import block from '../../../../styles/bem';
@@ -58,6 +58,17 @@ interface Props {
 	onBack: () => void;
 	/** Ask the site for the card again (a permit was just approved). */
 	onRefresh: () => Promise<unknown>;
+	/** The switch between the cards a judge holds at once, drawn over the card. */
+	switcher?: React.ReactNode;
+	/** Holding several cards: Gönder names the station, so a time never goes to the wrong one. */
+	sendToStation?: boolean;
+	/** Kept mounted behind the card on screen (its draft waits there). */
+	hidden?: boolean;
+}
+
+export interface JudgeCardHandle {
+	/** Put the cursor (and the phone's keyboard) on the line being entered, if any. */
+	focusEntry: () => void;
 }
 
 /**
@@ -66,7 +77,10 @@ interface Props {
  * count) and two extra lines under them. The line being entered is a field for
  * the phone's own keyboard; DNF, DNS and +2 sit under it as buttons.
  */
-export default function JudgeCard({competitionId, userId, card, outbox, onEnd, onBack, onRefresh}: Props) {
+const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
+	{competitionId, userId, card, outbox, onEnd, onBack, onRefresh, switcher, sendToStation, hidden = false},
+	ref
+) {
 	const {t} = useTranslation();
 	const mode = judgeEntryMode(card.round.eventId);
 	// What the keyboard types: a move count for FMC, a time otherwise.
@@ -87,13 +101,18 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 	// being typed scroll clear of it.
 	const keyboardInset = useKeyboardInset();
 
+	useImperativeHandle(ref, () => ({focusEntry: () => field.current?.focus()}), []);
+
 	// The phone lies on the table between attempts; it must not lock itself.
+	// Only the card on screen holds the lock: the plugin does not count, so a
+	// hidden card ending would otherwise let the phone sleep under the other.
 	useEffect(() => {
+		if (hidden) return;
 		void keepScreenAwake();
 		return () => {
 			void allowScreenSleep();
 		};
-	}, []);
+	}, [hidden]);
 
 	const mounted = useRef(true);
 	useEffect(
@@ -436,6 +455,8 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 				{t('zkt_comp.judge_other_cards')}
 			</button>
 
+			{switcher}
+
 			<header className={b('sc-head')}>
 				<span className={b('sc-event')}>
 					{localEventName(t, card.round.eventId)} · {t('zkt_comp.judge_round_n', {n: card.round.roundNumber})}
@@ -580,6 +601,9 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 						)}
 						<button type="button" className={b('dock-key', {send: true})} disabled={!value} onClick={askToSend}>
 							{t('zkt_comp.judge_send')}
+							{sendToStation && card.station != null && (
+								<span className={b('dock-send-to')}>{t('zkt_comp.judge_send_to', {station: card.station})}</span>
+							)}
 						</button>
 					</div>
 				</div>
@@ -668,4 +692,6 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 			)}
 		</div>
 	);
-}
+});
+
+export default JudgeCard;

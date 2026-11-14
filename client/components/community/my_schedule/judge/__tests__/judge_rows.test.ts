@@ -1,4 +1,4 @@
-import {buildRows, isEditable, Row} from '../judge-rows';
+import {buildRows, cardProgress, isEditable, Row} from '../judge-rows';
 import type {OutboxItem, OutboxSnapshot} from '../../../../../util/judge-outbox';
 import type {JudgeCard, JudgeSlot} from '../../../../../../shared/zkt_judge';
 
@@ -166,5 +166,17 @@ describe('attempts go in order (owner, 14 Nov)', () => {
 	test('a missed cutoff locks the rest instead', () => {
 		const cut = card([sent(4000), sent(4100)], {round: {...card([]).round, cutoffCs: 3000, cutoffAttempts: 2}});
 		expect(states(buildRows(cut, outbox(), USER))).toEqual(['sent', 'sent', 'locked', 'locked', 'locked']);
+	});
+});
+
+describe('progress on the card switch (owner, 14 Nov)', () => {
+	test('sent and waiting lines count, empty and later ones do not', () => {
+		const rows = buildRows(card([sent(1200)]), outbox([{attemptNo: 2, value: 1300}]), USER);
+		expect(cardProgress(rows)).toEqual({written: 2, total: 5});
+	});
+
+	test('lines closed by a missed cutoff are not owed', () => {
+		const cut = card([sent(4000), sent(4100)], {round: {...card([]).round, cutoffCs: 3000, cutoffAttempts: 2}});
+		expect(cardProgress(buildRows(cut, outbox(), USER))).toEqual({written: 2, total: 2});
 	});
 });

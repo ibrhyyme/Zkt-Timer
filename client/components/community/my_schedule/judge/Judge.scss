@@ -245,6 +245,91 @@
 		}
 	}
 
+	// One judge, two competitors: the cards in hand, pinned over the card while
+	// it scrolls under the keyboard. The station number leads (the judge reads
+	// the sign at the table); the one on screen takes the accent fill.
+	&__switch {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		display: grid;
+		grid-auto-columns: 1fr;
+		grid-auto-flow: column;
+		gap: $zt-space-2;
+		margin: 0 (-$zt-space-1);
+		padding: $zt-space-1;
+		background: rgb(var(--background-color));
+	}
+
+	&__switch-item {
+		@include zt-control;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+		min-height: $zt-control-h-lg;
+		padding: $zt-space-2 $zt-space-3;
+		color: rgb(var(--text-color));
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		touch-action: manipulation;
+
+		&--active,
+		&--active:hover:not(:disabled),
+		&--active:active:not(:disabled) {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+			cursor: default;
+		}
+
+		@include zt-focus-ring;
+	}
+
+	&__switch-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-2;
+	}
+
+	&__switch-station {
+		display: flex;
+		align-items: baseline;
+		gap: $zt-space-2;
+	}
+
+	&__switch-label {
+		@include zt-eyebrow;
+	}
+
+	&__switch-item--active &__switch-label {
+		color: inherit;
+	}
+
+	&__switch-number {
+		font-family: $zt-font-mono;
+		font-size: 1.375rem;
+		font-weight: 700;
+		line-height: 1.1;
+	}
+
+	&__switch-progress {
+		display: flex;
+		align-items: center;
+		font-family: $zt-font-mono;
+		font-size: 0.875rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	&__switch-name {
+		overflow: hidden;
+		font-weight: 600;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	&__sc-head {
 		display: flex;
 		flex-direction: column;
@@ -722,6 +807,11 @@
 
 		&--send {
 			flex: 1.8;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			line-height: 1.15;
 			background: rgb(var(--primary-color));
 			color: rgb(var(--theme-primary-opposite));
 			font-family: inherit;
@@ -735,6 +825,13 @@
 				background: $zt-control-bg;
 			}
 		}
+	}
+
+	// Holding two cards: the station the time goes to, under "Gönder".
+	&__dock-send-to {
+		font-family: $zt-font-mono;
+		font-size: 0.75rem;
+		font-weight: 600;
 	}
 
 	// The "send this time?" and "are you sure?" questions rise from the bottom.

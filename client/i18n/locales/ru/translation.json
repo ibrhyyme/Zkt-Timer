@@ -5298,6 +5298,7 @@
     "judge_needs_reading_dns": "Для DNS введи 0 (0.00).",
     "judge_penalty_clear": "Убрать штраф",
     "judge_send": "Отправить",
+    "judge_send_to": "Ст. {{station}}",
     "judge_correct": "Исправить время",
     "judge_extra": "Запросить экстру",
     "judge_extra_to": "Экстра → {{line}}",

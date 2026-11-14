@@ -5207,6 +5207,7 @@
     "judge_needs_reading_dns": "DNS için 0 yaz (0.00).",
     "judge_penalty_clear": "Cezayı kaldır",
     "judge_send": "Gönder",
+    "judge_send_to": "İst. {{station}}",
     "judge_correct": "Süre düzelt",
     "judge_extra": "Ekstra iste",
     "judge_extra_to": "Ekstra → {{line}}",

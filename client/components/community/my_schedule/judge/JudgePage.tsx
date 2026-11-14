@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
+import {flushSync} from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import {useHistory, useLocation} from 'react-router-dom';
 import {CaretLeft, QrCode, UsersThree} from 'phosphor-react';
@@ -13,7 +14,8 @@ import {b as scheduleBlock, localEventName} from '../shared';
 import {useJudgeMe, useJudgeOutbox} from './useJudgeMe';
 import JudgePicker, {PickedCard, PickerSelection} from './JudgePicker';
 import JudgeRequest from './JudgeRequest';
-import JudgeCard from './JudgeCard';
+import JudgeCard, {JudgeCardHandle} from './JudgeCard';
+import JudgeSwitch from './JudgeSwitch';
 import JudgeScanner from './JudgeScanner';
 import {JudgeCard as JudgeCardData, JudgeMe} from '../../../../../shared/zkt_judge';
 import './Judge.scss';
@@ -52,6 +54,11 @@ export default function JudgePage({competitionId}: Props) {
 	const cardId = new URLSearchParams(location.search).get('card');
 	const cards = me?.cards || [];
 	const card = cards.find((c) => c.cardId === cardId) || null;
+	// Short of judges, one judge takes two competitors (owner, 2026-11-14): every
+	// card in hand stays mounted, so a time typed but not yet sent on one waits
+	// there while the judge works the other.
+	const switching = !!card && cards.length > 1;
+	const cardHandles = useRef(new Map<string, JudgeCardHandle>());
 
 	useEffect(() => {
 		if (userId) startJudgeOutbox();
@@ -128,6 +135,13 @@ export default function JudgePage({competitionId}: Props) {
 		openCard(approvedCardId);
 	}
 
+	function switchCard(id: string) {
+		// Shown in the same tap, so the focus call below still counts as the
+		// user's: iOS opens the keyboard only for a focus inside the gesture.
+		flushSync(() => history.replace(judgePath(competitionId, id)));
+		cardHandles.current.get(id)?.focusEntry();
+	}
+
 	async function endCard(target: JudgeCardData) {
 		await endJudging(competitionId, {grantId: target.grantId});
 		const fresh = await refresh();
@@ -165,6 +179,29 @@ export default function JudgePage({competitionId}: Props) {
 				<Button theme={CommonType.PRIMARY} text={t('zkt_comp.judge_link_cta')} to="/account/linked-accounts" />
 			</div>
 		);
+	} else if (switching) {
+		body = cards.map((c) => (
+			<div key={c.cardId} hidden={c.cardId !== card!.cardId}>
+				<JudgeCard
+					ref={(handle) => {
+						if (handle) cardHandles.current.set(c.cardId, handle);
+						else cardHandles.current.delete(c.cardId);
+					}}
+					competitionId={competitionId}
+					userId={userId}
+					card={c}
+					outbox={outbox}
+					onEnd={() => endCard(c)}
+					onBack={() => openCard(null)}
+					onRefresh={refresh}
+					sendToStation
+					hidden={c.cardId !== card!.cardId}
+					switcher={
+						<JudgeSwitch cards={cards} activeId={card!.cardId} outbox={outbox} userId={userId} onSwitch={switchCard} />
+					}
+				/>
+			</div>
+		));
 	} else if (card) {
 		body = (
 			<JudgeCard
