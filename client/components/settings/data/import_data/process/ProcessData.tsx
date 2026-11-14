@@ -52,6 +52,10 @@ export default function ProcessData() {
 				toastError(t('data_settings.cubetime_csv_not_supported'));
 				return;
 			}
+			if (e.message === 'LASTCUBEX_INVALID_FILE') {
+				toastError(t('data_settings.lastcubex_invalid_file'));
+				return;
+			}
 			toastError(e.message);
 		}
 	}

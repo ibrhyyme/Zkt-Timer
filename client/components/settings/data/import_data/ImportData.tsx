@@ -11,8 +11,10 @@ import ReviewImport from './review_import/ReviewImport';
 import { parseCsTimerData } from './parse_data/cstimer';
 import { parseTwistyTimerData } from './parse_data/twistytimer';
 import { parseCubeTimeData } from './parse_data/cubetime';
+import { parseLastCubeXData } from './parse_data/lastcubex';
 import TwistyTimerInstructions from './instructions/TwistyTimerInstructions';
 import CubeTimeInstructions from './instructions/CubeTimeInstructions';
+import LastCubeXInstructions from './instructions/LastCubeXInstructions';
 import { ImportProgress, ChunkedImportResult } from './review_import/chunked_import';
 import { ImportDataType, IMPORT_TYPE_NAMES } from './import_sources';
 import type { ExportedCube } from './parse_data/zkttimer_cubes';
@@ -113,6 +115,14 @@ export default function ImportData(props: Props) {
 				getImportableData: parseCubeTimeData,
 				acceptedFileTypes: ['.json', '.txt'],
 				instructions: <CubeTimeInstructions />,
+			};
+			break;
+		case ImportDataType.LAST_CUBE_X:
+			timerImportData = {
+				name: 'Last Cube X',
+				getImportableData: parseLastCubeXData,
+				acceptedFileTypes: ['.csv', '.txt'],
+				instructions: <LastCubeXInstructions />,
 			};
 			break;
 	}

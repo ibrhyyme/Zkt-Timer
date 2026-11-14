@@ -150,6 +150,7 @@ export default function DataSettings() {
 							{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
 							{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
 							{ label: t('data_settings.import_cubetime'), value: 'cubetime' },
+							{ label: t('data_settings.import_lastcubex'), value: 'lastcubex' },
 						]}
 						onChange={(v) => {
 							const typeMap: Record<string, ImportDataType> = {
@@ -157,6 +158,7 @@ export default function DataSettings() {
 								zkttimer: ImportDataType.ZKT_TIMER,
 								twistytimer: ImportDataType.TWISTY_TIMER,
 								cubetime: ImportDataType.CUBE_TIME,
+								lastcubex: ImportDataType.LAST_CUBE_X,
 							};
 							if (typeMap[v] !== undefined) openImportModal(typeMap[v]);
 						}}
