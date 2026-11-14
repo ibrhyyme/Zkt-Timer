@@ -159,6 +159,10 @@
 	&__person-name {
 		font-weight: 600;
 		overflow-wrap: anywhere;
+
+		.zt-my-schedule__me-badge {
+			margin-left: $zt-space-2;
+		}
 	}
 
 	&__person-number {

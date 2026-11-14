@@ -74,12 +74,17 @@ export class ZktPublicResolver {
 	async zktPublicMyCompetitions(@Ctx() ctx: GraphQLContext): Promise<ZktPublicMyListItem[]> {
 		const zktIntegration = await getIntegration(ctx.user, 'zkt');
 		const personKey = zktIntegration?.zkt_id || null;
-		if (!personKey) return [];
+		// A newcomer has no ZKT ID before their first results are published, so
+		// their first competition is found by the account (OAuth subject) instead.
+		const accountKey = !personKey && process.env.ZKT_INTERNAL_API_SECRET ? zktIntegration?.zkt_user_id || null : null;
+		if (!personKey && !accountKey) return [];
 		// A failure is an error, not an empty list: answering [] made the viewer's
 		// own registered competition vanish from "My competitions" while the
 		// federation was refusing us, and the client replaced what it showed.
 		const payload = (await federationRead('my_competitions', () =>
-			ZktFederationService.fetchPersonCompetitions(personKey)
+			personKey
+				? ZktFederationService.fetchPersonCompetitions(personKey)
+				: ZktFederationService.fetchAccountCompetitions(accountKey!)
 		)) as {items?: ZktPublicMyListItem[]} | null;
 		return payload?.items || [];
 	}

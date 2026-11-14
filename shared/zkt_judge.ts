@@ -112,6 +112,8 @@ export interface JudgeBoardCompetitor {
 	name: string;
 	number: number | null;
 	station: number | null;
+	/** The viewer's own line (site, 2026-11-14); absent from older site answers. */
+	self?: boolean;
 	card: {
 		status: 'OPEN' | 'ACCEPTED' | 'CANCELLED';
 		noShow: boolean;
@@ -313,6 +315,13 @@ export interface KeypadDraft {
 
 export const EMPTY_DRAFT: KeypadDraft = {digits: '', penalty: 0, special: null};
 
+/**
+ * The digits of a timer that read 0.00 (it never started). Kept as one "0" on a
+ * timed event: alone it is no time, but a DNF or DNS needs a reading typed with
+ * it (owner, 2026-11-14) and 0.00 is the reading when there was none.
+ */
+export const ZERO_DIGITS = '0';
+
 /** The site refuses a penalty past +16 as a typo. */
 export const MAX_PENALTY_CS = 1600;
 const MAX_DIGITS = 7;
@@ -322,31 +331,42 @@ export type KeypadKey = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9
 /**
  * A DNF keeps the time typed with it on a timed event (the team's ask, 12 Nov:
  * "süreli ama DNF"; the paper scorecard has the time and the DNF on one line).
- * The official result is DNF all the same; the time travels as `rawValue`. DNS
- * has no time, and FMC (moves) none either.
+ * The official result is DNF all the same; the time travels as `rawValue`.
+ * On a timed event a DNF or DNS is sent only with a reading typed beside it
+ * (owner, 2026-11-14): a DNF with the time the timer showed or 0.00, a DNS with
+ * 0.00 and nothing else. FMC (moves) has no time beside either.
  */
 export function pressKey(draft: KeypadDraft, key: KeypadKey, mode: 'time' | 'moves' = 'time'): KeypadDraft {
-	if (key === 'DNF' && mode === 'time') {
-		// Pressed again: the DNF goes, the time stays.
-		if (draft.special === 'DNF') return draft.digits ? {digits: draft.digits, penalty: 0, special: null} : EMPTY_DRAFT;
-		return {digits: draft.special === 'DNS' ? '' : draft.digits, penalty: 0, special: 'DNF'};
+	if (mode === 'time' && (key === 'DNF' || key === 'DNS')) {
+		// Pressed again: the DNF or DNS goes, the time stays.
+		if (draft.special === key) return draft.digits ? {digits: draft.digits, penalty: 0, special: null} : EMPTY_DRAFT;
+		// A DNS keeps only a 0.00; a DNF keeps whatever was typed.
+		const digits = key === 'DNS' && draft.digits !== ZERO_DIGITS ? '' : draft.digits;
+		return {digits, penalty: 0, special: key};
 	}
 	if (key === 'DNF' || key === 'DNS') {
 		return draft.special === key ? EMPTY_DRAFT : {digits: '', penalty: 0, special: key};
 	}
 	if (key === 'DEL') {
-		if (draft.special === 'DNF' && draft.digits) return {...draft, digits: draft.digits.slice(0, -1)};
+		if (draft.special && draft.digits) return {...draft, digits: draft.digits.slice(0, -1)};
 		if (draft.special) return EMPTY_DRAFT;
 		// The last thing typed goes first: a penalty is added after the digits.
 		if (draft.penalty > 0) return {...draft, penalty: draft.penalty - 200};
 		return {...draft, digits: draft.digits.slice(0, -1)};
 	}
 	if (key === '+2') {
-		if (mode !== 'time' || draft.special || !draft.digits) return draft;
+		if (mode !== 'time' || draft.special || !draft.digits || draft.digits === ZERO_DIGITS) return draft;
 		return draft.penalty >= MAX_PENALTY_CS ? draft : {...draft, penalty: draft.penalty + 200};
 	}
-	// A digit after a DNF types its time; after a DNS it starts over.
-	if (draft.special && !(draft.special === 'DNF' && mode === 'time')) return {digits: key === '0' ? '' : key, penalty: 0, special: null};
+	if (mode === 'time' && draft.special === 'DNS') {
+		// A 0 is the DNS's reading; any other digit starts a time over it.
+		return key === '0' ? {...draft, digits: ZERO_DIGITS} : {digits: key, penalty: 0, special: null};
+	}
+	// FMC: a digit after a DNF or DNS starts a move count.
+	if (draft.special && mode !== 'time') return {digits: key === '0' ? '' : key, penalty: 0, special: null};
+	if (mode === 'time' && (!draft.digits || draft.digits === ZERO_DIGITS)) {
+		return {...draft, digits: key === '0' ? ZERO_DIGITS : key};
+	}
 	const maxDigits = mode === 'moves' ? 3 : MAX_DIGITS;
 	if (draft.digits.length >= maxDigits) return draft;
 	if (!draft.digits && key === '0') return draft;
@@ -365,7 +385,17 @@ export function pressKey(draft: KeypadDraft, key: KeypadKey, mode: 'time' | 'mov
 export function draftFromText(text: string, prev: KeypadDraft, mode: 'time' | 'moves' = 'time'): KeypadDraft {
 	const raw = (text || '').trim().toUpperCase();
 	const maxDigits = mode === 'moves' ? 3 : MAX_DIGITS;
-	const cleanDigits = (s: string) => s.replace(/\D/g, '').replace(/^0+/, '').slice(0, maxDigits);
+	// The field shows a 0 reading as "0.00", so a backspace leaves "0.0": still
+	// zeros, but shorter than what was shown. That is the judge deleting it.
+	const shrank = raw.length < formatDraft(prev, mode).length;
+	const cleanDigits = (s: string) => {
+		const all = s.replace(/\D/g, '');
+		const digits = all.replace(/^0+/, '').slice(0, maxDigits);
+		if (digits || !all || mode !== 'time') return digits;
+		return prev.digits === ZERO_DIGITS && shrank ? '' : ZERO_DIGITS;
+	};
+	// A DNS takes no reading but 0.00.
+	const dnsDigits = (s: string) => (mode === 'time' && cleanDigits(s) === ZERO_DIGITS ? ZERO_DIGITS : '');
 
 	if (prev.special === 'DNF' && mode === 'time') {
 		// The field reads "DNF" or "DNF 12.34" (formatDraft). Digits typed or
@@ -375,8 +405,19 @@ export function draftFromText(text: string, prev: KeypadDraft, mode: 'time' | 'm
 			return digits ? {digits, penalty: 0, special: null} : EMPTY_DRAFT;
 		}
 		const typed = raw.replace('DNF', '');
-		if (/[S*]/.test(typed)) return {digits: '', penalty: 0, special: 'DNS'};
+		if (/[S*]/.test(typed)) return {digits: dnsDigits(typed), penalty: 0, special: 'DNS'};
 		return {digits: cleanDigits(typed), penalty: 0, special: 'DNF'};
+	}
+
+	if (prev.special === 'DNS' && mode === 'time') {
+		// The field reads "DNS" or "DNS 0.00". A 0 types its reading, another
+		// digit starts a time over the DNS; deleting into the word drops it.
+		if (!raw.includes('DNS')) return EMPTY_DRAFT;
+		const typed = raw.replace('DNS', '');
+		if (/[DF#/]/.test(typed)) return {digits: cleanDigits(typed), penalty: 0, special: 'DNF'};
+		const digits = cleanDigits(typed);
+		if (digits && digits !== ZERO_DIGITS) return {digits, penalty: 0, special: null};
+		return {digits, penalty: 0, special: 'DNS'};
 	}
 
 	if (prev.special) {
@@ -389,7 +430,7 @@ export function draftFromText(text: string, prev: KeypadDraft, mode: 'time' | 'm
 		return digits ? {digits, penalty: 0, special: null} : prev;
 	}
 
-	if (raw === ',' || /[S*]/.test(raw)) return {digits: '', penalty: 0, special: 'DNS'};
+	if (raw === ',' || /[S*]/.test(raw)) return {digits: dnsDigits(raw), penalty: 0, special: 'DNS'};
 	if (raw === '.' || /[DF#/]/.test(raw)) {
 		// On a timed event the digits already typed stay as the DNF's time.
 		return {digits: mode === 'time' ? cleanDigits(raw) : '', penalty: 0, special: 'DNF'};
@@ -397,6 +438,8 @@ export function draftFromText(text: string, prev: KeypadDraft, mode: 'time' | 'm
 
 	const digits = cleanDigits(raw);
 	if (!digits) return EMPTY_DRAFT;
+	// A 0 reading takes no penalty.
+	if (digits === ZERO_DIGITS) return {digits, penalty: 0, special: null};
 	let penalty = prev.penalty;
 	if (raw.includes('+') && mode === 'time') penalty = Math.min(MAX_PENALTY_CS, penalty + 200);
 	return {digits, penalty, special: null};
@@ -410,9 +453,16 @@ export interface DraftValue {
 
 /** What the draft would send, or null while it is empty or does not read as a time. */
 export function draftValue(draft: KeypadDraft, mode: 'time' | 'moves' = 'time'): DraftValue | null {
-	// The time typed with a DNF goes as the timer reading; the site keeps it, the result stays DNF.
-	if (draft.special === 'DNF') return {value: JUDGE_DNF, rawValue: mode === 'time' ? digitsToCentiseconds(draft.digits) : null, penalty: 0};
-	if (draft.special === 'DNS') return {value: JUDGE_DNS, rawValue: null, penalty: 0};
+	if (draft.special && mode !== 'time') return {value: draft.special === 'DNF' ? JUDGE_DNF : JUDGE_DNS, rawValue: null, penalty: 0};
+	// On a timed event a DNF or DNS needs its reading typed (owner, 2026-11-14).
+	// A 0.00 reading goes as no time: the site takes a reading above zero or none.
+	if (draft.special === 'DNS') return draft.digits === ZERO_DIGITS ? {value: JUDGE_DNS, rawValue: null, penalty: 0} : null;
+	if (draft.special === 'DNF') {
+		if (draft.digits === ZERO_DIGITS) return {value: JUDGE_DNF, rawValue: null, penalty: 0};
+		// The time typed with a DNF goes as the timer reading; the site keeps it, the result stays DNF.
+		const reading = digitsToCentiseconds(draft.digits);
+		return reading === null ? null : {value: JUDGE_DNF, rawValue: reading, penalty: 0};
+	}
 	if (mode === 'moves') {
 		const moves = parseInt(draft.digits, 10);
 		return moves > 0 ? {value: moves, rawValue: null, penalty: 0} : null;
@@ -447,13 +497,13 @@ export function formatJudgeLine(value: number | null | undefined, dnfTime: numbe
  * "DNF 12.24". No brackets in the field: a backspace on ")" would change nothing.
  */
 export function formatDraft(draft: KeypadDraft, mode: 'time' | 'moves' = 'time'): string {
-	if (draft.special === 'DNF' && mode === 'time' && draft.digits) {
-		const raw = digitsToCentiseconds(draft.digits);
-		return `DNF ${raw === null ? draft.digits : formatJudgeValue(raw, '333')}`;
+	if (draft.special && mode === 'time' && draft.digits) {
+		return `${draft.special} ${formatDraft({digits: draft.digits, penalty: 0, special: null})}`;
 	}
 	if (draft.special) return draft.special;
 	if (!draft.digits) return '';
 	if (mode === 'moves') return draft.digits;
+	if (draft.digits === ZERO_DIGITS) return '0.00';
 	const raw = digitsToCentiseconds(draft.digits);
 	// Not a time yet (a 60+ seconds pair): show the digits as typed, not a guess.
 	return raw === null ? draft.digits : formatJudgeValue(raw, '333');

@@ -43,6 +43,7 @@ import {
 	judgeEntryMode,
 	KeypadDraft,
 	pressKey,
+	ZERO_DIGITS,
 } from '../../../../../shared/zkt_judge';
 
 const b = block('judge');
@@ -347,6 +348,12 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 					{row.kind === 'extra' && row.attemptNo !== null && (
 						<span className={b('row-tag')}>{t('zkt_comp.judge_extra_for', {no: row.attemptNo})}</span>
 					)}
+					{/* Why Gönder stays off: a DNF or DNS goes with its reading (owner, 2026-11-14). */}
+					{active && keypadMode === 'time' && draft.special && !draft.digits && (
+						<span className={b('row-tag')}>
+							{t(draft.special === 'DNF' ? 'zkt_comp.judge_needs_reading_dnf' : 'zkt_comp.judge_needs_reading_dns')}
+						</span>
+					)}
 					{!active && state && (
 						<span className={b('row-state')}>
 							{stateIcon(row)}
@@ -523,7 +530,7 @@ export default function JudgeCard({competitionId, userId, card, outbox, onEnd, o
 							<button
 								type="button"
 								className={b('dock-key', {on: draft.penalty > 0})}
-								disabled={!draft.digits || !!draft.special}
+								disabled={!draft.digits || draft.digits === ZERO_DIGITS || !!draft.special}
 								onMouseDown={keepFocus}
 								onClick={() => press('+2')}
 							>

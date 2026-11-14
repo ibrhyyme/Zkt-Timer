@@ -17,6 +17,9 @@ import {
 
 type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live' | 'schedule' | 'judge';
 
+// How often the page asks whether the "Hakem ol" tab is open, while it is not.
+const JUDGE_TAB_POLL_MS = 30 * 1000;
+
 export default function CompetitionDetail() {
 	const {t, i18n} = useTranslation();
 	const history = useHistory();
@@ -35,8 +38,18 @@ export default function CompetitionDetail() {
 	// on for this competition; with it off (or for a viewer without a linked ZKT
 	// account, for whom the switch cannot be read) the page is exactly as before.
 	const viewer = useMe();
-	const {me: judgeMe} = useJudgeMe(detail.competitionId || '', viewer?.id, {skip: !isZktCompetition});
+	// Asked again until the tab shows (and on every return to the app): asked
+	// once, a call lost on the hall Wi-Fi or an answer from before the organiser
+	// turned the switch on kept the tab away until the app was restarted.
+	const [judgeSettled, setJudgeSettled] = useState(false);
+	const {me: judgeMe, loaded: judgeLoaded, error: judgeError} = useJudgeMe(detail.competitionId || '', viewer?.id, {
+		skip: !isZktCompetition,
+		pollMs: judgeSettled ? 0 : JUDGE_TAB_POLL_MS,
+	});
 	const judgeEnabled = isZktCompetition && !!judgeMe?.linked && !!judgeMe?.enabled;
+	// Settled once the tab shows, or the server said for certain there is no ZKT link.
+	const settledNow = judgeEnabled || (judgeLoaded && !judgeError && judgeMe?.linked === false);
+	if (settledNow !== judgeSettled) setJudgeSettled(settledNow);
 
 	const TABS: {id: TabId; label: string; icon: any; count?: number}[] = [
 		{id: 'groups', label: t('my_schedule.tab_groups'), icon: Users, count: detail.competitors.length},

@@ -25,6 +25,8 @@ const DEFAULT_FEDERATION_API =
 		? 'https://zekakuputurkiye.com/api/public/v1'
 		: 'http://localhost:4000/api/public/v1';
 const BASE_URL = (process.env.ZKT_FEDERATION_API || DEFAULT_FEDERATION_API).replace(/\/+$/, '');
+// The machine-to-machine endpoints on the same host (ZKT_INTERNAL_API_SECRET).
+const INTERNAL_BASE_URL = `${BASE_URL.replace(/\/api\/public\/v1$/, '')}/api/internal/v1`;
 
 // How long a cached value counts as fresh (milliseconds). Past this it is still
 // served while one background refresh runs (see zkt_federation_cache.ts), so
@@ -86,9 +88,9 @@ function federationHeaders(): Record<string, string> {
  * Any other failure throws, and the cache layer keeps serving the last good
  * value instead of storing the failure.
  */
-async function fetchJson<T>(path: string): Promise<T | null> {
+async function fetchJson<T>(path: string, base: string = BASE_URL): Promise<T | null> {
 	try {
-		const res = await axios.get(`${BASE_URL}${path}`, {
+		const res = await axios.get(`${base}${path}`, {
 			timeout: REQUEST_TIMEOUT_MS,
 			headers: federationHeaders(),
 		});
@@ -136,9 +138,10 @@ function cached<T>(
 	hash: string,
 	path: string,
 	freshMs: number,
-	options: {mode?: 'swr' | 'refresh'; priority?: FetchPriority; keepSeconds?: number} = {}
+	options: {mode?: 'swr' | 'refresh'; priority?: FetchPriority; keepSeconds?: number; base?: string} = {}
 ): Promise<T | null> {
-	return cache.read<T | null>(cacheKey(namespace, hash), () => fetchJson<T>(path), {freshMs, ...options});
+	const {base, ...readOptions} = options;
+	return cache.read<T | null>(cacheKey(namespace, hash), () => fetchJson<T>(path, base), {freshMs, ...readOptions});
 }
 
 export class ZktFederationService {
@@ -240,6 +243,20 @@ export class ZktFederationService {
 			personKey,
 			`/persons/${encodeURIComponent(personKey)}/competitions/`,
 			FRESH_MY_COMPS
+		);
+	}
+
+	// The same list found by the member's account (Integration.zkt_user_id, the
+	// OAuth subject). A newcomer has no ZKT ID until their first results are
+	// published, so the list above cannot find their first competition. Internal
+	// endpoint: needs ZKT_INTERNAL_API_SECRET (sent by federationHeaders).
+	static async fetchAccountCompetitions(zktUserId: string): Promise<unknown | null> {
+		return cached(
+			RedisNamespace.ZKT_FED_MY_COMPS,
+			`user:${zktUserId}`,
+			`/members/${encodeURIComponent(zktUserId)}/competitions/`,
+			FRESH_MY_COMPS,
+			{base: INTERNAL_BASE_URL}
 		);
 	}
 

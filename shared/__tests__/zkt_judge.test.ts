@@ -71,9 +71,15 @@ describe('keypad', () => {
 		expect(formatDraft(after)).toBe('DNF 12.34');
 		// DNF first, then the time.
 		expect(draftValue(type(['DNF', '1', '2', '3', '4']))).toEqual({value: -1, rawValue: 1234, penalty: 0});
-		// DNF alone is still a DNF, without a time.
-		expect(draftValue(type(['DNF']))).toEqual({value: -1, rawValue: null, penalty: 0});
+		// DNF alone is not sent: its reading is typed with it (owner, 14 Nov).
+		expect(draftValue(type(['DNF']))).toBeNull();
 		expect(formatDraft(type(['DNF']))).toBe('DNF');
+		// 0.00 (the timer never started) is a reading; it goes as no time.
+		expect(draftValue(type(['DNF', '0']))).toEqual({value: -1, rawValue: null, penalty: 0});
+		expect(formatDraft(type(['DNF', '0', '0', '0']))).toBe('DNF 0.00');
+		expect(draftValue(type(['0', 'DNF']))).toEqual({value: -1, rawValue: null, penalty: 0});
+		// A DNF beside something that is not a time is not sent either.
+		expect(draftValue(type(['7', '5', '0', '0', 'DNF']))).toBeNull();
 		// Pressed again: the DNF goes, the time stays.
 		expect(type(['1', '2', 'DNF', 'DNF'])).toEqual({digits: '12', penalty: 0, special: null});
 		expect(type(['DNF', 'DNF'])).toEqual(EMPTY_DRAFT);
@@ -85,15 +91,21 @@ describe('keypad', () => {
 		expect(type(['1', 'DNF', 'DEL', 'DEL'])).toEqual(EMPTY_DRAFT);
 	});
 
-	it('DNS replaces what was typed and a digit replaces it; DNF over DNS has no time', () => {
-		expect(draftValue(type(['1', '2', 'DNS']))).toEqual({value: -2, rawValue: null, penalty: 0});
+	it('DNS replaces what was typed, goes only with 0.00, and another digit replaces it; DNF over DNS has no time', () => {
+		expect(draftValue(type(['1', '2', 'DNS']))).toBeNull();
+		expect(draftValue(type(['1', '2', 'DNS', '0']))).toEqual({value: -2, rawValue: null, penalty: 0});
+		expect(draftValue(type(['0', 'DNS']))).toEqual({value: -2, rawValue: null, penalty: 0});
+		expect(formatDraft(type(['DNS', '0', '0']))).toBe('DNS 0.00');
 		expect(type(['DNS', '7'])).toEqual({digits: '7', penalty: 0, special: null});
+		expect(type(['DNS', '0', 'DEL'])).toEqual({digits: '', penalty: 0, special: 'DNS'});
 		expect(type(['DNS', 'DNF'])).toEqual({digits: '', penalty: 0, special: 'DNF'});
 		expect(type(['1', '2', 'DNF', 'DNS'])).toEqual({digits: '', penalty: 0, special: 'DNS'});
 	});
 
-	it('FMC has no time beside a DNF', () => {
+	it('FMC has no time beside a DNF or DNS, and sends them alone', () => {
 		expect(draftValue(type(['2', '8', 'DNF'], 'moves'), 'moves')).toEqual({value: -1, rawValue: null, penalty: 0});
+		expect(draftValue(type(['DNS'], 'moves'), 'moves')).toEqual({value: -2, rawValue: null, penalty: 0});
+		expect(type(['0'], 'moves').digits).toBe('');
 		expect(type(['DNF', '2'], 'moves')).toEqual({digits: '2', penalty: 0, special: null});
 	});
 
@@ -109,7 +121,11 @@ describe('keypad', () => {
 	it('gives no value for an empty draft or one that is not a time', () => {
 		expect(draftValue(EMPTY_DRAFT)).toBeNull();
 		expect(draftValue(type(['7', '5', '0', '0']))).toBeNull();
-		expect(type(['0']).digits).toBe('');
+		// 0.00 can be typed (for a DNF or DNS) but is no time on its own, and takes no +2.
+		expect(type(['0', '0', '0', '0'])).toEqual({digits: '0', penalty: 0, special: null});
+		expect(draftValue(type(['0']))).toBeNull();
+		expect(type(['0', '+2']).penalty).toBe(0);
+		expect(type(['0', '5']).digits).toBe('5');
 	});
 
 	it('types a move count for FMC', () => {
@@ -185,9 +201,31 @@ describe('phone keyboard', () => {
 		expect(typed(['+'])).toEqual(EMPTY_DRAFT);
 	});
 
+	it('types 0.00 and deletes it with one backspace', () => {
+		expect(formatDraft(typed(['0']))).toBe('0.00');
+		expect(typed(['0', '0.000', '0.0000']).digits).toBe('0');
+		expect(typed(['0', '0.0'])).toEqual(EMPTY_DRAFT);
+		expect(typed(['0', '0.001']).digits).toBe('1');
+		expect(typed(['0', '0.00+']).penalty).toBe(0);
+		// With DNF and DNS, from either side.
+		expect(draftValue(typed(['.', 'DNF0']))).toEqual({value: -1, rawValue: null, penalty: 0});
+		expect(formatDraft(typed(['.', 'DNF0']))).toBe('DNF 0.00');
+		expect(typed(['.', 'DNF0', 'DNF 0.0'])).toEqual({digits: '', penalty: 0, special: 'DNF'});
+		expect(draftValue(typed([',', 'DNS0']))).toEqual({value: -2, rawValue: null, penalty: 0});
+		expect(typed([',', 'DNS0', 'DNS 0.0'])).toEqual({digits: '', penalty: 0, special: 'DNS'});
+		expect(typed([',', 'DNS5'])).toEqual({digits: '5', penalty: 0, special: null});
+		expect(typed([',', 'DN'])).toEqual(EMPTY_DRAFT);
+		expect(typed(['0', '0.00s'])).toEqual({digits: '0', penalty: 0, special: 'DNS'});
+		expect(typed(['12', '12s'])).toEqual({digits: '', penalty: 0, special: 'DNS'});
+		expect(typed(['.', 'DNF0', 'DNF 0.00s'])).toEqual({digits: '0', penalty: 0, special: 'DNS'});
+		// Alone they are not sent.
+		expect(draftValue(typed(['.']))).toBeNull();
+		expect(draftValue(typed([',']))).toBeNull();
+	});
+
 	it('caps the digits, and reads moves for FMC', () => {
 		expect(typed(['123456789']).digits).toBe('1234567');
-		expect(typed(['0']).digits).toBe('');
+		expect(typed(['0'], 'moves').digits).toBe('');
 		expect(draftValue(typed(['28+'], 'moves'), 'moves')).toEqual({value: 28, rawValue: null, penalty: 0});
 	});
 });

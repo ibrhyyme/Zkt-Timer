@@ -3,8 +3,9 @@ import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import ChoiceGroup from '../../../common/choice_group/ChoiceGroup';
 import {fetchJudgeBoard, JudgeCallError, judgeErrorKey, toJudgeError} from '../../../../util/judge-api';
-import {localEventName} from '../shared';
+import {b as scheduleBlock, localEventName} from '../shared';
 import JudgeRoundChooser from './JudgeRoundChooser';
+import {shownCompetitors} from './judge-people';
 import {JudgeBoard, JudgeBoardCompetitor, JudgeBoardGroup, JudgeRound} from '../../../../../shared/zkt_judge';
 
 const b = block('judge');
@@ -101,12 +102,7 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 		return [...seen.values()];
 	}, [board]);
 
-	const shown = useMemo(() => {
-		if (!group) return [];
-		const q = number.trim();
-		if (!q) return group.competitors;
-		return group.competitors.filter((c) => String(c.number ?? '') === q || String(c.station ?? '') === q);
-	}, [group, number]);
+	const shown = useMemo(() => (group ? shownCompetitors(group.competitors, number) : []), [group, number]);
 
 	function pick(competitor: JudgeBoardCompetitor) {
 		if (!board?.round || !group) return;
@@ -156,11 +152,14 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 					<input
 						id="judge-number"
 						className={b('input')}
-						inputMode="numeric"
+						type="text"
+						enterKeyHint="search"
 						autoComplete="off"
+						autoCorrect="off"
+						spellCheck={false}
 						placeholder={t('zkt_comp.judge_number_placeholder')}
 						value={number}
-						onChange={(e) => setNumber(e.target.value.replace(/\D/g, '').slice(0, 4))}
+						onChange={(e) => setNumber(e.target.value.slice(0, 60))}
 					/>
 					<ul className={b('people')}>
 						{shown.map((c) => (
@@ -171,6 +170,7 @@ export default function JudgePicker({competitionId, onPick, initial, onSelection
 										<span className={b('person-name')}>
 											{c.number != null && <span className={b('person-number')}>{c.number}</span>}
 											{c.name}
+											{c.self && <span className={scheduleBlock('me-badge')}>{t('my_schedule.you')}</span>}
 										</span>
 										<span className={b('person-sub')}>
 											{c.card?.status === 'ACCEPTED'
