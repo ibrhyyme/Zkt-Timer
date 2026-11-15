@@ -123,6 +123,28 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 	// "Below" for the reader is physically above; the reader's start edge is the physical end.
 	const placement = reversedPlacement(side, align, reversed);
 
+	// A touch on the trigger of an open panel closes it, decided at touch-down. Radix assumes
+	// the trigger cannot be reached while its panel is open (it sets `pointer-events: none` on
+	// body), but the timer header re-enables pointer events on its control cluster, so the tap
+	// gets through. Left to Radix, three handlers then raced on it: a pointerup listener left
+	// over from the touch that opened the panel (it measures from the first touch, so a second
+	// tap 12 px away with a 1 px jitter closed the panel), the outside-click dismiss (never
+	// fires when the finger drifts into a scroll, so the panel stayed open), and the trigger's
+	// own click, which opened it again right after either of them closed it. Closing here
+	// unmounts the panel and its listeners before they see the tap; the click that follows
+	// is swallowed so Radix does not reopen it. Mouse keeps Radix's own pointerdown path.
+	const closingTapRef = useRef(false);
+	function handleTriggerPointerDown(e: React.PointerEvent<HTMLButtonElement>) {
+		closingTapRef.current = open && e.pointerType !== 'mouse';
+		if (closingTapRef.current) handleOpenChange(false);
+	}
+	function handleTriggerClick(e: React.MouseEvent<HTMLButtonElement>) {
+		if (!closingTapRef.current) return;
+		closingTapRef.current = false;
+		// Radix composes its handler after this one and skips it on defaultPrevented.
+		e.preventDefault();
+	}
+
 	// When panel opens, scroll selected item to viewport center
 	// (Radix default only makes it visible, manual scroll needed to center)
 	useIsomorphicLayoutEffect(() => {
@@ -178,6 +200,8 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 				className={[noTriggerStyles ? null : b('trigger'), className].filter(Boolean).join(' ')}
 				aria-label={ariaLabel}
 				style={triggerStyle}
+				onPointerDown={handleTriggerPointerDown}
+				onClick={handleTriggerClick}
 			>
 				{triggerContent ? (
 					triggerContent
