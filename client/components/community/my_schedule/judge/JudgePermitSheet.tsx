@@ -31,6 +31,11 @@ interface Props {
 	/** Set when the request is for an extra line ("E1"): the time being corrected is that line's. */
 	extraLine?: string | null;
 	eventId: string;
+	/**
+	 * A bulk correction ("Toplu düzelt", owner 2026-11-15): every attempt it asks
+	 * to open with the time on the card now. One QR for all; `attemptNo` is the first.
+	 */
+	bulk?: {no: number; value: number | null}[];
 	onApproved: () => void;
 	onClose: () => void;
 }
@@ -41,7 +46,8 @@ interface Props {
  * the card until it is approved; then the attempt opens for one new time.
  */
 export default function JudgePermitSheet(props: Props) {
-	const {competitionId, cardId, attemptNo, purpose, currentValue, extraLine, eventId, onApproved, onClose} = props;
+	const {competitionId, cardId, attemptNo, purpose, currentValue, extraLine, eventId, bulk, onApproved, onClose} = props;
+	const many = !!bulk && bulk.length > 1;
 	const {t} = useTranslation();
 	const [request, setRequest] = useState<JudgeRequestResult | null>(null);
 	const [error, setError] = useState<JudgeCallError | null>(null);
@@ -71,7 +77,7 @@ export default function JudgePermitSheet(props: Props) {
 
 	async function ask(silent: boolean) {
 		try {
-			const res = await requestPermitQr(cardId, attemptNo, purpose);
+			const res = await requestPermitQr(cardId, many ? bulk!.map((x) => x.no) : [attemptNo], purpose);
 			if (!alive.current) return;
 			jtis.current = [res.jti, ...jtis.current].slice(0, 2);
 			setRequest(res);
@@ -121,10 +127,19 @@ export default function JudgePermitSheet(props: Props) {
 			<div className={b('sheet-body')}>
 				<span className={b('sheet-title')}>
 					{t(purpose === 'EXTRA' ? 'zkt_comp.judge_extra' : 'zkt_comp.judge_correct')} ·{' '}
-					{extraLine
-						? t('zkt_comp.judge_permit_extra_line', {line: extraLine, no: attemptNo, value: shown || '-'})
-						: t('zkt_comp.judge_permit_attempt', {no: attemptNo, value: shown || '-'})}
+					{many
+						? t('zkt_comp.judge_permit_attempts', {list: bulk!.map((x) => x.no).join(', ')})
+						: extraLine
+							? t('zkt_comp.judge_permit_extra_line', {line: extraLine, no: attemptNo, value: shown || '-'})
+							: t('zkt_comp.judge_permit_attempt', {no: attemptNo, value: shown || '-'})}
 				</span>
+				{many && (
+					<ul className={b('permit-list')}>
+						{bulk!.map((x) => (
+							<li key={x.no}>{t('zkt_comp.judge_permit_attempt', {no: x.no, value: formatJudgeValue(x.value, eventId) || '-'})}</li>
+						))}
+					</ul>
+				)}
 				{rejected ? (
 					<p className={b('notice', {error: true})}>{t('zkt_comp.judge_permit_rejected')}</p>
 				) : error ? (
@@ -157,7 +172,7 @@ export default function JudgePermitSheet(props: Props) {
 						) : (
 							<div className={b('qr', {loading: true})} />
 						)}
-						<p className={b('hint')}>{t('zkt_comp.judge_permit_qr_hint')}</p>
+						<p className={b('hint')}>{t(many ? 'zkt_comp.judge_permit_qr_hint_many' : 'zkt_comp.judge_permit_qr_hint')}</p>
 					</>
 				)}
 				<div className={b('actions')}>

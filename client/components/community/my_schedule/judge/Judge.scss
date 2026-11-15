@@ -377,6 +377,28 @@
 		gap: $zt-space-2;
 	}
 
+	// The event line with the bulk correction pencil (or, while picking, Vazgeç and
+	// "Düzelt (n)") at its right end (owner, 2026-11-15).
+	&__sc-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $zt-space-2;
+		min-height: $zt-control-h-sm;
+	}
+
+	&__bulk-pencil {
+		flex-shrink: 0;
+		margin-right: -$zt-space-2;
+	}
+
+	&__bulk-tools {
+		display: flex;
+		flex-shrink: 0;
+		align-items: center;
+		gap: $zt-space-3;
+	}
+
 	// Not the capital eyebrow: Turkish capitals turn "Pyraminx" into "PYRAMİNX".
 	&__sc-event {
 		color: $zt-text-muted;
@@ -494,7 +516,8 @@
 			border-top: 1px solid $zt-control-border;
 		}
 
-		&--active {
+		&--active,
+		&--picked {
 			background: rgba(var(--primary-color), 0.08);
 		}
 	}
@@ -600,6 +623,33 @@
 	&__row-more {
 		flex-shrink: 0;
 		color: $zt-text-muted;
+	}
+
+	// The tick box of a line while picking lines for a bulk correction.
+	&__row-pick {
+		flex-shrink: 0;
+		color: $zt-text-muted;
+
+		&--on {
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__row--picked &__row-no {
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
+	}
+
+	// The lines a bulk correction asks for, on the judge's QR sheet.
+	&__permit-list {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-family: $zt-font-mono;
+		font-weight: 600;
 	}
 
 	// The extra tag on the attempt line and on the extra line.
@@ -1057,6 +1107,22 @@
 		font-family: $zt-font-mono;
 		font-size: 1.25rem;
 		font-weight: 700;
+	}
+
+	// The attempts of a bulk correction on the approval screen: number, then the time now.
+	&__ac-attempts {
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-1;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			display: flex;
+			align-items: baseline;
+			gap: $zt-space-3;
+		}
 	}
 
 	&__ac-sub {

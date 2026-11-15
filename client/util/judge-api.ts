@@ -123,16 +123,18 @@ export async function requestJudgeQr(request: JudgeCardRequest): Promise<JudgeRe
 
 /**
  * A QR for "Süre düzelt" (CORRECT) or "Ekstra iste" (EXTRA) on one attempt of a
- * card the member judges. Once an organiser approves it, one new time may be
- * sent for that attempt, carrying `permit`.
+ * card the member judges, or a correction of several at once ("Toplu düzelt",
+ * one QR for all). Once an organiser approves it, one new time may be sent for
+ * each of those attempts, carrying `permit`.
  */
 export async function requestPermitQr(
 	cardId: string,
-	attemptNo: number,
+	attemptNos: number[],
 	purpose: 'CORRECT' | 'EXTRA'
 ): Promise<JudgeRequestResult> {
+	const input = {purpose, cardId, attemptNo: attemptNos[0], ...(attemptNos.length > 1 ? {attemptNos} : {})};
 	const res = await withTimeout(
-		gqlMutateTyped(ZktJudgeRequestDocument, {input: {purpose, cardId, attemptNo}}, {fetchPolicy: 'no-cache'} as any)
+		gqlMutateTyped(ZktJudgeRequestDocument, {input}, {fetchPolicy: 'no-cache'} as any)
 	);
 	return objectOrFail<JudgeRequestResult>(res.data?.zktJudgeRequest);
 }

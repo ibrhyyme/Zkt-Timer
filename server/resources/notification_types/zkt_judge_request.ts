@@ -52,6 +52,9 @@ export default class ZktJudgeRequestNotification extends Notification {
 		let where = n.groupNumber != null ? this.t('judge_progress_where', vars) : this.t('judge_progress_where_no_group', vars);
 		if (n.dualChance) where = `${where} · ${this.t('chance_n', {n: n.chance})}`;
 		if (n.stationNumber != null) where = this.t('judge_request_where_station', {where, station: n.stationNumber});
+		if (this.meta.purpose !== 'EXTRA' && n.attemptNos.length > 1) {
+			return this.t('judge_request_body_correct_many', {where, list: n.attemptNos.join(', ')});
+		}
 		const key = this.meta.purpose === 'EXTRA' ? 'judge_request_body_extra' : 'judge_request_body_correct';
 		return this.t(key, {where, n: n.attemptNo});
 	}

@@ -4763,6 +4763,7 @@ export type ZktJudgeEntryInput = {
 
 export type ZktJudgeRequestInput = {
   attemptNo?: InputMaybe<Scalars['Int']>;
+  attemptNos?: InputMaybe<Array<Scalars['Int']>>;
   cardId?: InputMaybe<Scalars['String']>;
   competitionId?: InputMaybe<Scalars['String']>;
   competitorKey?: InputMaybe<Scalars['String']>;

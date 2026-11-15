@@ -35,6 +35,8 @@ export interface JudgeRequestNotify {
 	groupNumber: number | null;
 	stationNumber: number | null;
 	attemptNo: number;
+	/** A bulk correction's attempts, ascending; [attemptNo] otherwise. */
+	attemptNos: number[];
 }
 
 export const NOTICE_WINDOW_S = 10 * 60;
@@ -61,6 +63,7 @@ export function readJudgeRequestNotify(raw: unknown): JudgeRequestNotify | null 
 		groupNumber: intOrNull(raw.groupNumber),
 		stationNumber: intOrNull(raw.stationNumber),
 		attemptNo,
+		attemptNos: Array.isArray(raw.attemptNos) && raw.attemptNos.length > 0 && raw.attemptNos.every((n) => intOrNull(n) != null) ? (raw.attemptNos as number[]) : [attemptNo],
 	};
 }
 
@@ -77,8 +80,8 @@ export function splitJudgeRequestAnswer(answer: Record<string, unknown>): {
 }
 
 /** True when this request was not notified within the window (and claims it). */
-async function claimNotice(cardId: string, purpose: JudgeRequestPurpose, attemptNo: number): Promise<boolean> {
-	const {key} = createRedisKey(RedisNamespace.ZKT_JUDGE_REQUEST, `${cardId}:${purpose}:${attemptNo}`);
+async function claimNotice(cardId: string, purpose: JudgeRequestPurpose, attempts: string): Promise<boolean> {
+	const {key} = createRedisKey(RedisNamespace.ZKT_JUDGE_REQUEST, `${cardId}:${purpose}:${attempts}`);
 	try {
 		const client = getRedisPubClient();
 		if (!client) return true;
@@ -93,7 +96,7 @@ async function claimNotice(cardId: string, purpose: JudgeRequestPurpose, attempt
 export async function notifyJudgeRequest(purpose: JudgeRequestPurpose, cardId: string, notify: JudgeRequestNotify): Promise<number> {
 	try {
 		if (notify.recipients.length === 0) return 0;
-		if (!(await claimNotice(cardId, purpose, notify.attemptNo))) return 0;
+		if (!(await claimNotice(cardId, purpose, notify.attemptNos.join(',')))) return 0;
 
 		// Same lookup as cron_zkt_judge_progress.ts: the ZKT identity lives on the
 		// integration row; revoked_at only marks a dead refresh token.

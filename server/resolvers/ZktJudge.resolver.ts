@@ -65,7 +65,12 @@ async function relay<T>(run: () => Promise<T>): Promise<T> {
 function requestBody(input: ZktJudgeRequestInput): Record<string, unknown> {
 	const purpose = input.purpose || 'JUDGE';
 	if (purpose !== 'JUDGE') {
-		return {purpose, cardId: input.cardId, attemptNo: input.attemptNo};
+		return {
+			purpose,
+			cardId: input.cardId,
+			attemptNo: input.attemptNo,
+			...(purpose === 'CORRECT' && input.attemptNos?.length ? {attemptNos: input.attemptNos} : {}),
+		};
 	}
 	if (!input.competitionId || !isZktCompetitionId(input.competitionId)) throw badInput('Yarışma belirtilmedi.');
 	const kind = input.judgeKind || 'self';

@@ -169,6 +169,8 @@ export interface JudgeRequestResult {
 	canSelfAuthorize: boolean;
 	/** The judge "Bu cihazı yetkilendir" would replace; only sent to approvers (JUDGE). */
 	currentJudge?: {name: string; holderName: string} | null;
+	/** CORRECT / EXTRA: every attempt the request opens (several on a bulk correction). */
+	attempts?: {no: number; value: number | null; extra: boolean}[];
 }
 
 /**
@@ -203,6 +205,8 @@ export interface JudgeApprovalPreview {
 	card?: {filled: number; expected: number; noShow: boolean; endedJudge: string | null} | null;
 	/** The attempt a correction or an extra is asked for. */
 	attempt?: {no: number | null; value: number | null; extra: boolean};
+	/** Every attempt it opens: several on a bulk correction ("Toplu düzelt"); absent from older site answers. */
+	attempts?: {no: number; value: number | null; extra: boolean}[];
 }
 
 /** Hosts an approval QR may point at. Anything else is not ours and is refused. */

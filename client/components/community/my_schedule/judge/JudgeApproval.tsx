@@ -198,7 +198,23 @@ export default function JudgeApproval({token, onDone, doneLabel}: Props) {
 							</span>
 						</div>
 					)}
-					{preview.attempt && preview.attempt.no != null && (
+					{/* A bulk correction: every attempt it opens, with the time on the card now. */}
+					{preview.attempts && preview.attempts.length > 1 ? (
+						<div className={b('ac-cell', {full: true})}>
+							<span className={b('label')}>{t('zkt_comp.judge_approve_attempts', {count: preview.attempts.length})}</span>
+							<ul className={b('ac-attempts')}>
+								{preview.attempts.map((a) => (
+									<li key={a.no}>
+										<span className={b('ac-value')}>{a.no}</span>
+										<span className={b('ac-sub', {mono: true})}>
+											{formatJudgeValue(a.value, round?.eventId || '')}
+											{a.extra ? ` · ${t('zkt_comp.judge_approve_on_extra')}` : ''}
+										</span>
+									</li>
+								))}
+							</ul>
+						</div>
+					) : preview.attempt && preview.attempt.no != null && (
 						<div className={b('ac-cell', {full: true})}>
 							<span className={b('label')}>{t('zkt_comp.judge_approve_attempt')}</span>
 							<span className={b('ac-value')}>

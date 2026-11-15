@@ -12,11 +12,14 @@ import {
 	PencilSimple,
 	PlusCircle,
 	SignOut,
+	Square,
+	CheckSquare,
 	UserMinus,
 	WarningCircle,
 	X,
 } from 'phosphor-react';
 import Button, {CommonType} from '../../../common/button/Button';
+import IconButton from '../../../common/icon_button/IconButton';
 import {anchorOf, useActionMenu} from '../../../common/action_menu/ActionMenu';
 import {allowScreenSleep, keepScreenAwake} from '../../../../util/native-plugins';
 import {useKeyboardInset} from '../../../../util/hooks/useKeyboardInset';
@@ -95,7 +98,16 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 	// A sent attempt tapped open to show "Süre düzelt" / "Ekstra iste".
 	const menu = useActionMenu();
 	// rowId: the line the request was made from (an attempt line or an extra line).
-	const [permitAsk, setPermitAsk] = useState<{attemptNo: number; purpose: 'CORRECT' | 'EXTRA'; rowId: string} | null>(null);
+	const [permitAsk, setPermitAsk] = useState<{
+		attemptNo: number;
+		purpose: 'CORRECT' | 'EXTRA';
+		rowId: string;
+		bulk?: {no: number; value: number | null}[];
+	} | null>(null);
+	// "Toplu düzelt" (owner, 2026-11-15): the pencil top right turns the sent
+	// lines into a pick list; the picked attempts go out as one QR.
+	const [picking, setPicking] = useState(false);
+	const [picked, setPicked] = useState<number[]>([]);
 	const field = useRef<HTMLInputElement>(null);
 	// The keyboard is drawn over the page; this much room below lets the line
 	// being typed scroll clear of it.
@@ -132,6 +144,15 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 	const activeId = usable ? (selectedRow && isEditable(selectedRow) ? selected : (firstPermit ?? firstEmpty)) : null;
 	const activeRow = rows.find((r) => r.id === activeId) || null;
 	const extraLinesUsed = rows.filter((r) => r.kind === 'extra' && r.attemptNo !== null).length;
+	// A sent line changes only with an organiser's approval. An attempt line an
+	// extra replaced is closed (the paper keeps it as written); the extra line
+	// takes the correction.
+	const requestable = (row: Row) =>
+		usable &&
+		isSent(row) &&
+		!row.permit &&
+		((row.kind === 'attempt' && !row.replacedBy) || (row.kind === 'extra' && row.attemptNo !== null));
+	const correctable = rows.filter(requestable);
 
 	const waiting = rows.filter((r) => r.state === 'pending').length;
 	const noShowPending = outbox.items.some(
@@ -280,6 +301,33 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 			: t('zkt_comp.judge_permit_attempt', {no: row.attemptNo, value: shown});
 	}
 
+	function startPicking() {
+		field.current?.blur();
+		setPicked([]);
+		setPicking(true);
+	}
+
+	function stopPicking() {
+		setPicking(false);
+		setPicked([]);
+	}
+
+	function togglePick(no: number) {
+		setPicked((list) => (list.includes(no) ? list.filter((n) => n !== no) : [...list, no]));
+	}
+
+	/** One QR for every picked line; a single pick is the ordinary correction. */
+	function askBulk() {
+		const lines = correctable.filter((r) => picked.includes(r.attemptNo!)).sort((x, y) => x.attemptNo! - y.attemptNo!);
+		if (lines.length === 0) return;
+		setPermitAsk({
+			attemptNo: lines[0].attemptNo!,
+			purpose: 'CORRECT',
+			rowId: lines[0].id,
+			...(lines.length > 1 ? {bulk: lines.map((r) => ({no: r.attemptNo!, value: r.value}))} : {}),
+		});
+	}
+
 	function openRequests(row: Row, target: HTMLElement) {
 		const correct = {
 			id: 'correct',
@@ -316,16 +364,13 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 	const keepFocus = (e: React.MouseEvent) => e.preventDefault();
 
 	function renderRow(row: Row) {
-		const active = row.id === activeId;
+		// While picking nothing is typed: no line is open.
+		const active = !picking && row.id === activeId;
 		const selectable = usable && isEditable(row);
-		// A sent line changes only with an organiser's approval: tapping it opens
-		// the requests, never the field. An attempt line an extra replaced is
-		// closed (the paper keeps it as written); the extra line takes a correction.
-		const canRequest =
-			usable &&
-			isSent(row) &&
-			!row.permit &&
-			((row.kind === 'attempt' && !row.replacedBy) || (row.kind === 'extra' && row.attemptNo !== null));
+		// Tapping a sent line opens the requests, never the field.
+		const canRequest = requestable(row);
+		const pickable = picking && canRequest;
+		const isPicked = pickable && picked.includes(row.attemptNo!);
 		const shown = formatJudgeLine(row.value, row.dnfTime, card.round.eventId);
 		const state = stateText(row);
 
@@ -396,14 +441,34 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 							{state}
 						</span>
 					)}
-					{canRequest && <DotsThreeVertical className={b('row-more')} size={20} weight="bold" aria-hidden="true" />}
+					{pickable ? (
+						isPicked ? (
+							<CheckSquare className={b('row-pick', {on: true})} size={22} weight="fill" aria-hidden="true" />
+						) : (
+							<Square className={b('row-pick')} size={22} aria-hidden="true" />
+						)
+					) : (
+						canRequest && !picking && <DotsThreeVertical className={b('row-more')} size={20} weight="bold" aria-hidden="true" />
+					)}
 				</span>
 			</>
 		);
 
 		return (
-			<li key={row.id} className={b('row', {state: row.state, active})}>
-				{canRequest ? (
+			<li key={row.id} className={b('row', {state: row.state, active, picked: isPicked})}>
+				{pickable ? (
+					<button
+						type="button"
+						role="checkbox"
+						aria-checked={isPicked}
+						className={b('row-main', {tap: true})}
+						onClick={() => togglePick(row.attemptNo!)}
+					>
+						{content}
+					</button>
+				) : picking ? (
+					<div className={b('row-main')}>{content}</div>
+				) : canRequest ? (
 					<button type="button" className={b('row-main', {tap: true})} onClick={(e) => openRequests(row, e.currentTarget)}>
 						{content}
 					</button>
@@ -445,8 +510,10 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 	// forgot to end their judging here, so the card asks for it (owner, 2026-11-14).
 	const cardDone = usable && (!activeRow || card.noShow || noShowPending);
 	// The dock rides on the keyboard; under it the page keeps room for the dock.
-	const dockOpen = !!activeRow && !cardDone && !confirming && !permitAsk;
-	const doneOpen = cardDone && !confirming && !permitAsk && !asking;
+	const dockOpen = !!activeRow && !cardDone && !confirming && !permitAsk && !picking;
+	const doneOpen = cardDone && !confirming && !permitAsk && !asking && !picking;
+	// Bulk correction is for more than one line; one line keeps its own menu.
+	const bulkTools = usable && (picking || correctable.length >= 2);
 
 	return (
 		<div className={b('card', {docked: dockOpen || doneOpen})} style={keyboardInset ? {paddingBottom: keyboardInset} : undefined}>
@@ -458,9 +525,35 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 			{switcher}
 
 			<header className={b('sc-head')}>
-				<span className={b('sc-event')}>
-					{localEventName(t, card.round.eventId)} · {t('zkt_comp.judge_round_n', {n: card.round.roundNumber})}
-				</span>
+				<div className={b('sc-top')}>
+					<span className={b('sc-event')}>
+						{localEventName(t, card.round.eventId)} · {t('zkt_comp.judge_round_n', {n: card.round.roundNumber})}
+					</span>
+					{bulkTools &&
+						(picking ? (
+							<span className={b('bulk-tools')}>
+								<button type="button" className={b('link', {quiet: true})} onClick={stopPicking}>
+									{t('zkt_comp.judge_cancel')}
+								</button>
+								<Button
+									small
+									theme={CommonType.PRIMARY}
+									text={t('zkt_comp.judge_bulk_send', {count: picked.length})}
+									disabled={picked.length === 0}
+									onClick={askBulk}
+								/>
+							</span>
+						) : (
+							<IconButton
+								className={b('bulk-pencil')}
+								icon={<PencilSimple size={20} />}
+								label={t('zkt_comp.judge_bulk_start')}
+								variant="ghost"
+								size="sm"
+								onClick={startPicking}
+							/>
+						))}
+				</div>
 				<h2 className={b('sc-name')}>{card.competitor.name}</h2>
 				<dl className={b('facts')}>
 					{card.group?.number != null && (
@@ -516,6 +609,7 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 
 			<section className={b('section')}>
 				<h3 className={b('section-title')}>{t('zkt_comp.judge_section_attempts')}</h3>
+				{picking && <p className={b('hint')}>{t('zkt_comp.judge_bulk_hint')}</p>}
 				<ol className={b('rows')}>{attemptRows.map(renderRow)}</ol>
 			</section>
 
@@ -657,9 +751,11 @@ const JudgeCard = forwardRef<JudgeCardHandle, Props>(function JudgeCard(
 					currentValue={rows.find((r) => r.id === permitAsk.rowId)?.value ?? null}
 					extraLine={rows.find((r) => r.id === permitAsk.rowId && r.kind === 'extra')?.label ?? null}
 					eventId={card.round.eventId}
+					bulk={permitAsk.bulk}
 					onClose={() => setPermitAsk(null)}
 					onApproved={() => {
 						setPermitAsk(null);
+						stopPicking();
 						setSelected(null);
 						setDraft(EMPTY_DRAFT);
 						// The permit arrives with the card; the line it opens becomes the

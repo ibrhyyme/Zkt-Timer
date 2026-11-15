@@ -56,6 +56,7 @@ function notice(over: Partial<JudgeRequestNotify> = {}): JudgeRequestNotify {
 		groupNumber: 2,
 		stationNumber: 5,
 		attemptNo: 2,
+		attemptNos: [over.attemptNo ?? 2],
 		...over,
 	};
 }
@@ -99,6 +100,12 @@ describe('sending', () => {
 	it('a correction says so; a Çift Şans round names the chance', async () => {
 		await notifyJudgeRequest('CORRECT', 'card-1', notice({dualChance: true, chance: 2, attemptNo: 1}));
 		expect(bodies()[0]).toBe('u_org:4x4 1. Tur, Grup 2 · Şans 2, İstasyon 5: 1. çözüm için süre düzeltme isteniyor.');
+	});
+
+	it('a bulk correction names every attempt in one push (Toplu düzelt)', async () => {
+		await notifyJudgeRequest('CORRECT', 'card-9', notice({attemptNo: 2, attemptNos: [2, 3, 5], recipients: ['zkt_org']}));
+		expect(bodies()).toEqual(['u_org:4x4 1. Tur, Grup 2, İstasyon 5: 2, 3, 5. çözümler için süre düzeltme isteniyor.']);
+		expect(readJudgeRequestNotify({...notice(), attemptNos: undefined})?.attemptNos).toEqual([2]);
 	});
 
 	it('the QR refreshing does not send it again; another attempt or the other kind does', async () => {

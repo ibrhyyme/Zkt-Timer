@@ -3506,6 +3506,7 @@ input ZktJudgeRequestInput {
   judgeName: String
   cardId: String
   attemptNo: Int
+  attemptNos: [Int!]
 }
 
 input ZktJudgeEntryInput {

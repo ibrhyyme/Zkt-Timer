@@ -39,6 +39,10 @@ export class ZktJudgeRequestInput {
 
 	@Field(() => Int, {nullable: true})
 	attemptNo?: number;
+
+	/** CORRECT only: the attempts of a bulk correction ("Toplu düzelt"), one QR for all. */
+	@Field(() => [Int], {nullable: true})
+	attemptNos?: number[];
 }
 
 @InputType()
