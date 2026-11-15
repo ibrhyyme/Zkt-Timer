@@ -570,9 +570,24 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 													(r.tag === 'noShow' ? (
 														<span className={b('wca-live-status-tag')}>{t('zkt_comp.live_no_show')}</span>
 													) : (
-														<span className={b('wca-live-status-progress')}>
-															{r.done}/{r.expected}
-															{dualChance && r.chance ? ` · ${t('zkt_comp.chance_n', {n: r.chance})}` : ''}
+														<span className={b('wca-live-status-line')}>
+															<span className={b('wca-live-status-progress')}>
+																{r.done}/{r.expected}
+																{dualChance && r.chance ? ` · ${t('zkt_comp.chance_n', {n: r.chance})}` : ''}
+															</span>
+															{/* Single and average beside the count (owner, 2026-11-15):
+															    from one attempt short, with the average still a range,
+															    and settled once the card is full. */}
+															{r.best !== null && (r.average !== null || r.averageRange || r.done >= r.expected) && (
+																<span className={b('wca-live-status-summary')}>
+																	{t('zkt_comp.live_single')} {formatResult(r.best, event.eventId, false)}
+																	{r.average !== null
+																		? ` · ${t('zkt_comp.live_average')} ${formatResult(r.average, event.eventId, true)}`
+																		: r.averageRange
+																			? ` · ${t('zkt_comp.live_average')} ${formatResult(r.averageRange.best, event.eventId, true)} – ${formatResult(r.averageRange.worst, event.eventId, true)}`
+																			: ''}
+																</span>
+															)}
 														</span>
 													))}
 												{/* A phone has no room for the attempt columns: the times run under the name. */}

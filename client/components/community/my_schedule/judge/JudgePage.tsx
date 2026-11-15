@@ -145,6 +145,9 @@ export default function JudgePage({competitionId}: Props) {
 	async function endCard(target: JudgeCardData) {
 		await endJudging(competitionId, {grantId: target.grantId});
 		const fresh = await refresh();
+		// Two cards in hand: ending one leaves the judge on the other (owner,
+		// 2026-11-15), not on the list, from which they had to tap it open again.
+		const remaining = (fresh?.cards ?? cards).filter((c) => c.cardId !== target.cardId);
 		if (!fresh) {
 			// No answer after the end: drop the card from the device copy too, or the
 			// next app open (or the crash return) brings back a card that is over.
@@ -155,7 +158,7 @@ export default function JudgePage({competitionId}: Props) {
 				return next;
 			});
 		}
-		openCard(null);
+		openCard(remaining.length > 0 ? remaining[0].cardId : null);
 	}
 
 	const back = (

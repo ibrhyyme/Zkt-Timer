@@ -1,4 +1,4 @@
-import {buildLiveStatusRows, countingChanceEntries, liveBest} from '../wca_live/live-status-rows';
+import {buildLiveStatusRows, countingChanceEntries, liveBest, averageRange} from '../wca_live/live-status-rows';
 
 const att = (...v: number[]) => v.map((result) => ({result}));
 const opts = {numAttempts: 5, sortBy: 'average', eventId: '444'};
@@ -280,5 +280,21 @@ describe('Çift Şans in the Anlık durum list: one row per competitor, the chan
 			['P x', 1, 2],
 			['P y', 2, 1],
 		]);
+	});
+});
+
+describe('averageRange: 4/5 shows where the average can still land (owner, 2026-11-15)', () => {
+	it('Ao5 after four: last attempt as good as the best, or a DNF', () => {
+		// 9.01 9.02 9.24 7.62: a fifth 7.62 leaves 7.62 9.01 9.02 (8.55); a DNF leaves 9.01 9.02 9.24 (9.09).
+		expect(averageRange([901, 902, 924, 762], 'AO5', '333')).toEqual({best: 855, worst: 909});
+	});
+	it('one DNF already: the worst case is DNF', () => {
+		expect(averageRange([901, -1, 924, 762], 'AO5', '333')).toEqual({best: 862, worst: -1});
+	});
+	it('only one attempt short, only trimmed averages', () => {
+		expect(averageRange([901, 902, 924], 'AO5', '333')).toBeNull();
+		expect(averageRange([901, 902, 924, 762, 799], 'AO5', '333')).toBeNull();
+		expect(averageRange([901, 902], 'MO3', '333')).toBeNull();
+		expect(averageRange([901, 902, 924, 762], null, '333')).toBeNull();
 	});
 });

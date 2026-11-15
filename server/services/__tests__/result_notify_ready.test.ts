@@ -1,4 +1,4 @@
-import {resultReadyToNotify} from '../result_notify_ready';
+import {judgedOnPhone, resultReadyToNotify} from '../result_notify_ready';
 
 const att = (...values: number[]) => values.map((result) => ({result}));
 const live = {finished: false, numberOfAttempts: 5};
@@ -21,5 +21,17 @@ describe('"your result is in" waits for a full ZKT card (phone times land attemp
 	it('never for a result without a best (all DNF / DNS, or nothing)', () => {
 		expect(resultReadyToNotify({best: -1, attempts: att(-1, -1, -1, -1, -1)}, live, true)).toBe(false);
 		expect(resultReadyToNotify({best: 0, attempts: []}, {...live, finished: true}, false)).toBe(false);
+	});
+});
+
+describe('judgedOnPhone (owner, 2026-11-15)', () => {
+	const round = {liveEntries: [{personLiveId: '12'}, {personLiveId: '30'}]};
+	it('a competitor with a phone card: the unofficial push stands in for "your result is in"', () => {
+		expect(judgedOnPhone({personLiveId: '12'}, round)).toBe(true);
+	});
+	it('no card, no live view (desk-only competition, finished round): the old notice', () => {
+		expect(judgedOnPhone({personLiveId: '7'}, round)).toBe(false);
+		expect(judgedOnPhone({personLiveId: '12'}, {})).toBe(false);
+		expect(judgedOnPhone({personLiveId: ''}, round)).toBe(false);
 	});
 });

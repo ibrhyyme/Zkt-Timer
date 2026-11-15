@@ -321,6 +321,17 @@
 		font-size: 0.875rem;
 		font-weight: 600;
 		white-space: nowrap;
+
+		// An approved extra or correction waits on this (hidden) card.
+		&--alert {
+			color: rgb(var(--primary-color));
+			font-family: inherit;
+		}
+	}
+
+	&__switch-item--alert {
+		border-color: rgb(var(--primary-color));
+		box-shadow: inset 0 0 0 1px rgb(var(--primary-color));
 	}
 
 	&__switch-name {

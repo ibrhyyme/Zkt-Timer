@@ -17,3 +17,20 @@ export function resultReadyToNotify(
 	const filled = result.attempts.filter((a) => a.result !== 0).length;
 	return filled >= round.numberOfAttempts;
 }
+
+/**
+ * A ZKT competitor judged on a phone card gets "RESMİ OLMAYAN SONUÇLARA GÖRE"
+ * when the judge ends the card (zkt_judge_end.ts), so "your result is in" is
+ * not sent to them as well (owner, 2026-11-15: the two went out almost
+ * together with the same times). The round finished and results official
+ * notices stay, and so does the follower copy. A card shows in `liveEntries`
+ * while the round runs (both federation switches on); desk-only competitions
+ * have none and keep the old notice.
+ */
+export function judgedOnPhone(
+	result: {personLiveId?: string | null},
+	round: {liveEntries?: {personLiveId?: string | null}[] | null}
+): boolean {
+	if (!result.personLiveId || !round.liveEntries) return false;
+	return round.liveEntries.some((e) => e.personLiveId === result.personLiveId);
+}

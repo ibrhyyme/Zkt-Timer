@@ -11,7 +11,7 @@ import WcaFollowResultEnteredNotification from '../resources/notification_types/
 import WcaFollowRoundFinishedNotification from '../resources/notification_types/wca_follow_round_finished';
 import {WcaApiService} from './WcaApiService';
 import {isZktCompetitionId} from './ZktWcaAdapter';
-import {resultReadyToNotify} from './result_notify_ready';
+import {judgedOnPhone, resultReadyToNotify} from './result_notify_ready';
 import {createI18nInstance} from '../i18n_server';
 import {archiveCompetition} from './CompetitionArchiveService';
 
@@ -217,7 +217,16 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 				const existingNr = state.notified_rounds.find((nr) => nr.activity_code === rm.activityCode);
 
 				// --- Result entered notification ---
-				if (resultReadyToNotify(result, round, isZktCompetitionId(compId)) && !existingNr?.result_notified) {
+				// Judged on a phone card: the unofficial result push stands in for it.
+				// Marked done without a push, so the round's end does not send it either.
+				// A ZKT round carries the phone cards as `liveEntries` (ZktWcaAdapter), outside this type.
+				if (isZktCompetitionId(compId) && judgedOnPhone(result, round as {liveEntries?: {personLiveId?: string}[]})) {
+					if (!existingNr?.result_notified) {
+						await upsertNotifiedRound(state.id, rm.activityCode, {result_notified: true}).catch((err: any) =>
+							logger.warn('[WcaNotify] phone-card mark failed', {compId, userId: state.user_id, err: err?.message})
+						);
+					}
+				} else if (resultReadyToNotify(result, round, isZktCompetitionId(compId)) && !existingNr?.result_notified) {
 					try {
 						await sendResultEntered(
 							state,

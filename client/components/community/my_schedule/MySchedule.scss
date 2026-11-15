@@ -3399,6 +3399,22 @@
 		color: $zt-text-muted;
 	}
 
+	// The progress count on the left, single and average on the right of the same line.
+	&__wca-live-status-line {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		column-gap: $zt-space-3;
+	}
+
+	&__wca-live-status-summary {
+		font-family: $zt-font-mono;
+		font-size: 0.85rem;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
 	&__wca-live-status-tag {
 		display: inline-flex;
 		padding: 0.15rem 0.5rem;

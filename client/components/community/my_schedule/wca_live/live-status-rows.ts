@@ -45,6 +45,12 @@ export interface LiveStatusRow {
 	attempts: {result: number}[];
 	best: number | null;
 	average: number | null;
+	/**
+	 * One attempt short of a trimmed average (4/5, 11/12): the best and the worst
+	 * average the last attempt can still give (WCA Live's BPA / WPA). Shown beside
+	 * the progress count until the card is full (owner, 2026-11-15).
+	 */
+	averageRange: {best: number; worst: number} | null;
 	/** Shared by ties; null for a row with nothing to rank (no attempt yet, Gelmedi). */
 	ranking: number | null;
 	tag: LiveStatusTag;
@@ -72,6 +78,27 @@ interface Options {
 
 function results(list: ({result?: number | null} | null)[] | null | undefined): {result: number}[] {
 	return (list || []).filter((a): a is {result: number} => !!a && typeof a.result === 'number' && a.result !== 0);
+}
+
+/**
+ * BPA / WPA one attempt before a trimmed average is complete: the last attempt
+ * as good as the best so far (it is then dropped as the best) or a DNF (dropped
+ * as the worst). Through cardAverage, so FMC scaling, DNF counting and the
+ * over-10-minute rounding are the site's. Null for Mo3 (a mean has no bound)
+ * and anything but exactly one attempt short.
+ */
+export function averageRange(
+	values: readonly number[],
+	format: string | null,
+	eventId?: string
+): {best: number; worst: number} | null {
+	const n = format === 'AO5' ? 5 : format === 'AO12' ? 12 : 0;
+	if (!n || values.length !== n - 1) return null;
+	const ok = values.filter((v) => v > 0);
+	const best = cardAverage([...values, ok.length ? Math.min(...ok) : -1], format!, eventId);
+	const worst = cardAverage([...values, -1], format!, eventId);
+	if (best === null || worst === null) return null;
+	return {best, worst};
 }
 
 /** WCA best: the fastest success, DNF when every attempt so far failed, null with none. */
@@ -172,6 +199,7 @@ export function buildLiveStatusRows(
 			attempts,
 			best: typeof r.best === 'number' && r.best !== 0 ? r.best : liveBest(values),
 			average: typeof r.average === 'number' && r.average !== 0 ? r.average : null,
+			averageRange: expectedFor(values) === numAttempts ? averageRange(values, format, eventId) : null,
 			ranking: null,
 			tag: noShow ? 'noShow' : 'official',
 			chance: null,
@@ -202,6 +230,7 @@ export function buildLiveStatusRows(
 			attempts,
 			best: liveBest(values),
 			average: format ? cardAverage(values, format, eventId) : null,
+			averageRange: !e.noShow && expected === numAttempts ? averageRange(values, format, eventId) : null,
 			ranking: null,
 			tag: e.official ? 'official' : e.noShow ? 'noShow' : 'progress',
 			chance: e.chance ?? null,

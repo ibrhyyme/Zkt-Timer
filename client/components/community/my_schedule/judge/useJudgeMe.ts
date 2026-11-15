@@ -27,27 +27,47 @@ export function useJudgeMe(competitionId: string, userId: string | null | undefi
 	const [loaded, setLoaded] = useState(false);
 	const jtiRef = useRef(jti);
 	jtiRef.current = jti;
-	const running = useRef(false);
+	const inflight = useRef<Promise<JudgeMe | null> | null>(null);
+	const again = useRef<Promise<JudgeMe | null> | null>(null);
 	const alive = useRef(true);
 
-	const refresh = useCallback(async (): Promise<JudgeMe | null> => {
-		if (skip || !userId || running.current) return null;
-		running.current = true;
-		try {
-			const fresh = await fetchJudgeMe(competitionId, jtiRef.current);
-			rememberJudgeMe(competitionId, userId, fresh);
-			if (alive.current) {
-				setMe(fresh);
-				setError(null);
-			}
-			return fresh;
-		} catch (e) {
-			if (alive.current) setError(toJudgeError(e));
-			return null;
-		} finally {
-			running.current = false;
-			if (alive.current) setLoaded(true);
+	/**
+	 * Ask the site now. A call made while one is on the way is never dropped: it
+	 * asks once more after it, because the answer on the way may predate what the
+	 * caller just did (an extra approved, a card ended). Dropping it was how an
+	 * approved extra could stay off the screen until the next poll (Bursa, 2026-11-15).
+	 */
+	const refresh = useCallback((): Promise<JudgeMe | null> => {
+		if (skip || !userId) return Promise.resolve(null);
+		const start = (): Promise<JudgeMe | null> => {
+			const run = (async () => {
+				try {
+					const fresh = await fetchJudgeMe(competitionId, jtiRef.current);
+					rememberJudgeMe(competitionId, userId, fresh);
+					if (alive.current) {
+						setMe(fresh);
+						setError(null);
+					}
+					return fresh;
+				} catch (e) {
+					if (alive.current) setError(toJudgeError(e));
+					return null;
+				} finally {
+					inflight.current = null;
+					if (alive.current) setLoaded(true);
+				}
+			})();
+			inflight.current = run;
+			return run;
+		};
+		if (!inflight.current) return start();
+		if (!again.current) {
+			again.current = inflight.current.then(() => {
+				again.current = null;
+				return start();
+			});
 		}
+		return again.current;
 	}, [competitionId, userId, skip]);
 
 	useEffect(() => {
