@@ -5151,6 +5151,7 @@
     "judge_competitor": "选手",
     "judge_round": "轮次",
     "judge_station": "站位",
+    "judge_station_short": "站",
     "judge_judge": "裁判",
     "judge_station_hint": "你所在的站位。如果与选手的站位不同，请修改。",
     "judge_kind_self": "我",

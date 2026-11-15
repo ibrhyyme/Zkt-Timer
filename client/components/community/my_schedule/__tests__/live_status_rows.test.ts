@@ -1,4 +1,4 @@
-import {buildLiveStatusRows, countingChanceEntries, liveBest, averageRange} from '../wca_live/live-status-rows';
+import {buildLiveStatusRows, countingChanceEntries, liveBest, averageRange, droppedAttempts} from '../wca_live/live-status-rows';
 
 const att = (...v: number[]) => v.map((result) => ({result}));
 const opts = {numAttempts: 5, sortBy: 'average', eventId: '444'};
@@ -296,5 +296,32 @@ describe('averageRange: 4/5 shows where the average can still land (owner, 2026-
 		expect(averageRange([901, 902, 924, 762, 799], 'AO5', '333')).toBeNull();
 		expect(averageRange([901, 902], 'MO3', '333')).toBeNull();
 		expect(averageRange([901, 902, 924, 762], null, '333')).toBeNull();
+	});
+});
+
+// The brackets on a full trimmed average (owner's pick C, 2026-11-15).
+describe('droppedAttempts', () => {
+	it('marks the best and the worst of a full Ao5 (Pyraminx final, Bashar)', () => {
+		expect([...droppedAttempts([307, 800, 415, 465, 378], 5, true)].sort()).toEqual([0, 1]);
+	});
+
+	it('takes a DNF as the worst', () => {
+		expect([...droppedAttempts([575, -1, 520, 584, 590], 5, true)].sort()).toEqual([1, 2]);
+	});
+
+	it('gives two different attempts when every time is the same', () => {
+		expect(droppedAttempts([500, 500, 500, 500, 500], 5, true).size).toBe(2);
+	});
+
+	it('works on Ao12', () => {
+		const v = [912, 1045, 878, 1133, 990, 1021, 865, 1210, 954, 1002, 1088, 931];
+		expect([...droppedAttempts(v, 12, true)].sort((a, b) => a - b)).toEqual([6, 7]);
+	});
+
+	it('marks nothing on a card not yet full, a mean or a best-of', () => {
+		expect(droppedAttempts([307, 800, 415, 465], 5, true).size).toBe(0);
+		expect(droppedAttempts([307, 800, 415], 3, true).size).toBe(0);
+		expect(droppedAttempts([307, 800, 415], 3, false).size).toBe(0);
+		expect(droppedAttempts([307, 800, 415, 465, 378], 5, false).size).toBe(0);
 	});
 });

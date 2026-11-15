@@ -6,7 +6,7 @@ import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMe
 import {useLiveRoundResults} from '../useLiveResults';
 import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
-import {buildLiveStatusRows, countingChanceEntries} from './live-status-rows';
+import {buildLiveStatusRows, countingChanceEntries, droppedAttempts} from './live-status-rows';
 import type {ZktAdvancementType} from './live-advancement';
 import {useDelayedFlag} from '../useDelayedFlag';
 
@@ -282,8 +282,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				}
 			: null;
 	// "Anlık durum" is the results table itself, ranked across every group from
-	// the judges' visible times, showing those times and no single or average
-	// (owner, 2026-11-14: they come with the official results). A Çift Şans round
+	// the judges' visible times: the times, then a labelled SINGLE / ORTALAMA strip
+	// (BPA / WPA one attempt short; owner's pick C, 2026-11-15). A Çift Şans round
 	// lists each competitor once, by the chance that counts now.
 	const statusTable = view === 'status';
 	const statusEntries = dualChance ? countingChanceEntries(liveEntries, {numAttempts, sortBy, eventId: event.eventId}) : liveEntries;
@@ -505,6 +505,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 							<tbody>
 								{tableRows.map((r: any) => {
 									const attempts = formatAttempts(r.attempts || [], numAttempts, event.eventId);
+									// The attempts a full trimmed average leaves out, in brackets (Anlık durum only).
+									const dropped = statusTable ? droppedAttempts((r.attempts || []).map((a: {result: number}) => a.result), numAttempts, sortBy === 'average') : new Set<number>();
 									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
 									const clickable = isMobile || hasTarget;
 									// Unchecked times win no medal and set no record. Their
@@ -562,42 +564,90 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												</td>
 											)}
 											<td className={b('wca-live-person', {stacked: statusTable})}>
-												<span className={b('wca-live-person-name')} title={r.personName}>{r.personName}</span>
-												{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
-												{/* No "Resmi" here, even on a row the desk accepted: in a ranked
-												    table it read as a final place. Everyone gets the count. */}
-												{statusTable &&
-													(r.tag === 'noShow' ? (
-														<span className={b('wca-live-status-tag')}>{t('zkt_comp.live_no_show')}</span>
-													) : (
-														<span className={b('wca-live-status-line')}>
+												{statusTable ? (
+													// Name and count on one line (owner's pick C, 2026-11-15).
+													// No "Resmi" here, even on a row the desk accepted: in a
+													// ranked table it read as a final place. Everyone gets the count.
+													<span className={b('wca-live-status-top')}>
+														<span className={b('wca-live-person-name')} title={r.personName}>{r.personName}</span>
+														{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
+														{r.tag !== 'noShow' && (
 															<span className={b('wca-live-status-progress')}>
 																{r.done}/{r.expected}
 																{dualChance && r.chance ? ` · ${t('zkt_comp.chance_n', {n: r.chance})}` : ''}
 															</span>
-															{/* Single and average beside the count (owner, 2026-11-15):
-															    from one attempt short, with the average still a range,
-															    and settled once the card is full. */}
-															{r.best !== null && (r.average !== null || r.averageRange || r.done >= r.expected) && (
-																<span className={b('wca-live-status-summary')}>
-																	{t('zkt_comp.live_single')} {formatResult(r.best, event.eventId, false)}
-																	{r.average !== null
-																		? ` · ${t('zkt_comp.live_average')} ${formatResult(r.average, event.eventId, true)}`
-																		: r.averageRange
-																			? ` · ${t('zkt_comp.live_average')} ${formatResult(r.averageRange.best, event.eventId, true)} – ${formatResult(r.averageRange.worst, event.eventId, true)}`
-																			: ''}
+														)}
+													</span>
+												) : (
+													<>
+														<span className={b('wca-live-person-name')} title={r.personName}>{r.personName}</span>
+														{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
+													</>
+												)}
+												{statusTable &&
+													(r.tag === 'noShow' ? (
+														<span className={b('wca-live-status-tag')}>{t('zkt_comp.live_no_show')}</span>
+													) : (
+														<>
+															{/* A phone has no room for the attempt columns: the times run
+															    under the name, the dropped ones in brackets, a dash for
+															    each attempt still to come. */}
+															{isMobile && r.attempts.length > 0 && (
+																<span className={b('wca-live-status-times')}>
+																	{r.attempts.map((a: {result: number}, i: number) => {
+																		const shown = formatResult(a.result, event.eventId, false);
+																		return (
+																			<span key={i} className={b('wca-live-status-time', {dropped: dropped.has(i)})}>
+																				{dropped.has(i) ? `(${shown})` : shown}
+																			</span>
+																		);
+																	})}
+																	{Array.from({length: Math.max(0, r.expected - r.attempts.length)}).map((_, i) => (
+																		<span key={`w${i}`} className={b('wca-live-status-time', {waiting: true})}>
+																			—
+																		</span>
+																	))}
 																</span>
 															)}
-														</span>
+															{/* Labelled single and average under the times; one attempt
+															    short of a trimmed average, BPA and WPA (WCA Live's terms,
+															    owner 2026-11-15) stand in for the average. */}
+															{r.best !== null && (
+																<span className={b('wca-live-status-strip')}>
+																	<span>
+																		<span className={b('wca-live-status-key')}>{t('zkt_comp.live_single')}</span>
+																		<span className={b('wca-live-status-value')}>{formatResult(r.best, event.eventId, false)}</span>
+																	</span>
+																	{r.average !== null ? (
+																		<span>
+																			<span className={b('wca-live-status-key')}>{t('zkt_comp.live_average')}</span>
+																			<span className={b('wca-live-status-value')}>{formatResult(r.average, event.eventId, true)}</span>
+																		</span>
+																	) : r.averageRange ? (
+																		<>
+																			<span>
+																				<span className={b('wca-live-status-key')}>BPA</span>
+																				<span className={b('wca-live-status-value')}>
+																					{formatResult(r.averageRange.best, event.eventId, true)}
+																				</span>
+																			</span>
+																			<span>
+																				<span className={b('wca-live-status-key')}>WPA</span>
+																				<span className={b('wca-live-status-value')}>
+																					{formatResult(r.averageRange.worst, event.eventId, true)}
+																				</span>
+																			</span>
+																		</>
+																	) : sortBy === 'average' && r.done < r.expected ? (
+																		<span>
+																			<span className={b('wca-live-status-key')}>{t('zkt_comp.live_average')}</span>
+																			<span className={b('wca-live-status-value', {waiting: true})}>—</span>
+																		</span>
+																	) : null}
+																</span>
+															)}
+														</>
 													))}
-												{/* A phone has no room for the attempt columns: the times run under the name. */}
-												{statusTable && isMobile && r.attempts.length > 0 && (
-													<span className={b('wca-live-status-times')}>
-														{r.attempts.map((a: {result: number}, i: number) => (
-															<span key={i}>{formatResult(a.result, event.eventId, false)}</span>
-														))}
-													</span>
-												)}
 											</td>
 											{showChances
 												? [1, 2].map((n) => {
@@ -629,7 +679,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												</td>
 											)}
 											{!isMobile && attempts.map((a, i) => (
-												<td key={i} className={b('wca-live-attempt')}>{a}</td>
+												<td key={i} className={b('wca-live-attempt', {dropped: dropped.has(i)})}>{dropped.has(i) ? `(${a})` : a}</td>
 											))}
 										</tr>
 									);

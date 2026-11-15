@@ -264,11 +264,11 @@
 	&__switch-item {
 		@include zt-control;
 		display: flex;
-		flex-direction: column;
-		gap: 2px;
+		align-items: stretch;
+		gap: $zt-space-2;
 		min-width: 0;
 		min-height: $zt-control-h-lg;
-		padding: $zt-space-2 $zt-space-3;
+		padding: $zt-space-2 $zt-space-3 $zt-space-2 $zt-space-2;
 		color: rgb(var(--text-color));
 		font: inherit;
 		text-align: left;
@@ -286,17 +286,29 @@
 		@include zt-focus-ring;
 	}
 
-	&__switch-top {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: $zt-space-2;
-	}
-
+	// The station as a block on the left (owner's pick B, 2026-11-15): the judge
+	// reads the sign at the table first; the name gets the rest of the segment.
 	&__switch-station {
 		display: flex;
-		align-items: baseline;
-		gap: $zt-space-2;
+		flex: none;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-width: 2.5rem;
+		padding-right: $zt-space-2;
+		border-right: 1px solid $zt-control-border-hover;
+	}
+
+	&__switch-item--active &__switch-station {
+		border-right-color: rgba(var(--theme-primary-opposite), 0.4);
+	}
+
+	&__switch-body {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 2px;
+		min-width: 0;
 	}
 
 	&__switch-label {
@@ -335,10 +347,28 @@
 	}
 
 	&__switch-name {
+		display: -webkit-box;
 		overflow: hidden;
 		font-weight: 600;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		line-height: 1.25;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	// A 360px phone left "Abdurrahman" one letter short: a word cannot wrap, so
+	// the segment gives the name a little more room and a step smaller type.
+	@include bp-down($bp-xxs) {
+		&__switch-item {
+			padding-right: $zt-space-2;
+		}
+
+		&__switch-station {
+			min-width: 2.25rem;
+		}
+
+		&__switch-name {
+			font-size: 0.9375rem;
+		}
 	}
 
 	&__sc-head {

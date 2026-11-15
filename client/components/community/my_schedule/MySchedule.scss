@@ -3381,38 +3381,84 @@
 		gap: 2px;
 	}
 
-	// The visible times under the name in the "Anlık durum" table on a phone,
-	// where the attempt columns do not fit (owner, 2026-11-14: times, no single
-	// or average, until the round's official results).
+	// Name, the "Sen" badge and the "3/5" count on one line (owner's pick C, 2026-11-15).
+	&__wca-live-status-top {
+		display: flex;
+		align-self: stretch;
+		align-items: baseline;
+		gap: $zt-space-2;
+		min-width: 0;
+	}
+
+	&__wca-live-status-top &__wca-live-person-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	// The visible times under the name on a phone, where the attempt columns do
+	// not fit: the ones a full trimmed average leaves out in brackets, a dash for
+	// each attempt still to come.
 	&__wca-live-status-times {
 		display: flex;
 		flex-wrap: wrap;
 		column-gap: $zt-space-3;
 		row-gap: $zt-space-1;
 		font-family: $zt-font-mono;
-		font-size: 0.9rem;
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	// Set on the span itself: an inherited mono face lost to a span rule here.
+	&__wca-live-status-time {
+		font-family: $zt-font-mono;
+
+		&--dropped,
+		&--waiting {
+			color: $zt-text-muted;
+		}
 	}
 
 	&__wca-live-status-progress {
+		margin-left: auto;
 		font-family: $zt-font-mono;
 		font-size: 0.85rem;
 		color: $zt-text-muted;
+		white-space: nowrap;
 	}
 
-	// The progress count on the left, single and average on the right of the same line.
-	&__wca-live-status-line {
+	// Single and average, or BPA / WPA one attempt short, labelled, under the times.
+	&__wca-live-status-strip {
 		display: flex;
 		flex-wrap: wrap;
+		align-self: stretch;
 		align-items: baseline;
-		justify-content: space-between;
-		column-gap: $zt-space-3;
+		column-gap: $zt-space-4;
+		row-gap: $zt-space-1;
+		margin-top: $zt-space-1;
+		padding-top: $zt-space-2;
+		border-top: 1px dashed $zt-card-border;
 	}
 
-	&__wca-live-status-summary {
+	&__wca-live-status-key {
+		margin-right: $zt-space-2;
 		font-family: $zt-font-mono;
-		font-size: 0.85rem;
+		font-size: 0.7rem;
 		font-weight: 600;
-		white-space: nowrap;
+		letter-spacing: 0.06em;
+		color: $zt-text-muted;
+	}
+
+	&__wca-live-status-value {
+		font-family: $zt-font-mono;
+		font-size: 1rem;
+		font-weight: 700;
+
+		&--waiting {
+			color: $zt-text-muted;
+			font-weight: 600;
+		}
 	}
 
 	&__wca-live-status-tag {
@@ -3440,6 +3486,10 @@
 		font-family: $zt-font-mono;
 		font-size: 0.76rem;
 		color: rgba(var(--text-color), 0.82);
+	}
+
+	&__wca-live-attempt--dropped {
+		color: $zt-text-muted;
 	}
 
 	&__wca-live-result-row--me {

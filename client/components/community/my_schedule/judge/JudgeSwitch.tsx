@@ -22,6 +22,9 @@ interface Props {
  * number leads because the judge reads the station sign at the table, not the
  * name. Lower station on the left (owner, 2026-11-15): stations are numbered
  * from the left at the table, so station 9 sits left of station 10 there too.
+ * Inside a segment the station is a block on the left and the name takes the
+ * rest in up to two lines (owner's pick B, 2026-11-15): cut to one line,
+ * "Abdurrahman Ene…" did not tell the judge whose card it was.
  */
 export default function JudgeSwitch({cards, activeId, outbox, userId, onSwitch}: Props) {
 	const {t} = useTranslation();
@@ -49,11 +52,12 @@ export default function JudgeSwitch({cards, activeId, outbox, userId, onSwitch}:
 						onMouseDown={(e) => e.preventDefault()}
 						onClick={() => !active && onSwitch(c.cardId)}
 					>
-						<span className={b('switch-top')}>
-							<span className={b('switch-station')}>
-								<span className={b('switch-label')}>{t('zkt_comp.judge_station')}</span>
-								<span className={b('switch-number')}>{c.station ?? '-'}</span>
-							</span>
+						<span className={b('switch-station')}>
+							<span className={b('switch-label')}>{t('zkt_comp.judge_station_short')}</span>
+							<span className={b('switch-number')}>{c.station ?? '-'}</span>
+						</span>
+						<span className={b('switch-body')}>
+							<span className={b('switch-name')}>{c.competitor.name}</span>
 							<span className={b('switch-progress', {alert: !!opened})}>
 								{opened ? (
 									t(opened === 'EXTRA' ? 'zkt_comp.judge_switch_extra_open' : 'zkt_comp.judge_switch_correct_open')
@@ -66,7 +70,6 @@ export default function JudgeSwitch({cards, activeId, outbox, userId, onSwitch}:
 								)}
 							</span>
 						</span>
-						<span className={b('switch-name')}>{c.competitor.name}</span>
 					</button>
 				);
 			})}

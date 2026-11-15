@@ -47,8 +47,8 @@ export interface LiveStatusRow {
 	average: number | null;
 	/**
 	 * One attempt short of a trimmed average (4/5, 11/12): the best and the worst
-	 * average the last attempt can still give (WCA Live's BPA / WPA). Shown beside
-	 * the progress count until the card is full (owner, 2026-11-15).
+	 * average the last attempt can still give (WCA Live's BPA / WPA). Shown as
+	 * BPA and WPA in the row's strip until the card is full (owner, 2026-11-15).
 	 */
 	averageRange: {best: number; worst: number} | null;
 	/** Shared by ties; null for a row with nothing to rank (no attempt yet, Gelmedi). */
@@ -99,6 +99,27 @@ export function averageRange(
 	const worst = cardAverage([...values, -1], format!, eventId);
 	if (best === null || worst === null) return null;
 	return {best, worst};
+}
+
+/**
+ * The attempts a complete trimmed average leaves out (Ao5, Ao12): the best and
+ * the worst, shown in brackets as on the paper scorecard and WCA Live. A DNF or
+ * DNS is the worst; on a tie the first one. Empty for any other format or a
+ * card that is not full yet.
+ */
+export function droppedAttempts(values: readonly number[], numAttempts: number, byAverage: boolean): Set<number> {
+	if (!byAverage || (numAttempts !== 5 && numAttempts !== 12) || values.length !== numAttempts) return new Set();
+	const key = (v: number) => (v > 0 ? v : Number.MAX_SAFE_INTEGER);
+	let best = 0;
+	values.forEach((v, i) => {
+		if (key(v) < key(values[best])) best = i;
+	});
+	// Two different attempts even when every time is the same.
+	let worst = best === 0 ? 1 : 0;
+	values.forEach((v, i) => {
+		if (i !== best && key(v) > key(values[worst])) worst = i;
+	});
+	return new Set([best, worst]);
 }
 
 /** WCA best: the fastest success, DNF when every attempt so far failed, null with none. */
