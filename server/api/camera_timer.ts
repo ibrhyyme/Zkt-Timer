@@ -64,6 +64,9 @@ export function cameraTimerCacheControl(file: string): string {
 }
 
 export async function cameraTimerHandler(req: Request, res: Response) {
+	// Refusals too: the edge caches cookieless responses, and a cached 403 would keep the brain
+	// from the admins for the edge TTL. The file itself overrides this below.
+	res.setHeader('Cache-Control', 'private, no-store');
 	let me = null;
 	try {
 		// getMe is typed against express-serve-static-core's Request (same object), as in iap_sync.
@@ -90,7 +93,10 @@ export async function cameraTimerHandler(req: Request, res: Response) {
 		res.setHeader('Content-Type', CONTENT_TYPES[path.extname(file).toLowerCase()]);
 		res.setHeader('Cache-Control', cameraTimerCacheControl(file));
 		res.sendFile(file, {cacheControl: false, dotfiles: 'deny'}, (sendErr) => {
-			if (sendErr && !res.headersSent) res.status(404).end();
+			if (sendErr && !res.headersSent) {
+				res.setHeader('Cache-Control', 'private, no-store');
+				res.status(404).end();
+			}
 		});
 	});
 }

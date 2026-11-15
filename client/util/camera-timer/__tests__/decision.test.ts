@@ -66,6 +66,14 @@ describe('decideOnCameraStart', () => {
 		expect(decideOnCameraStart(side(insp), NOW - 900)).toEqual({ kind: 'startTimer', onset: NOW - 900, addTwo: true });
 		expect(decideOnCameraStart(side({ ...insp, dnfTime: true }), NOW - 100)).toEqual({ kind: 'none', reason: 'dnf' });
 	});
+
+	it('judges the inspection DNF by the onset while the DNF waits for the camera', () => {
+		const insp = { inspectionEnabled: true, inInspection: true, inspectionStartedAt: NOW - 17200 };
+		// Lifted at 16.9 s, confirmed at 17.2 s: a +2 start, not a DNF.
+		expect(decideOnCameraStart(side(insp), NOW - 300)).toEqual({ kind: 'startTimer', onset: NOW - 300, addTwo: true });
+		// Lifted at 17.1 s: DNF.
+		expect(decideOnCameraStart(side(insp), NOW - 100)).toEqual({ kind: 'none', reason: 'dnf' });
+	});
 });
 
 describe('green and the early leave', () => {
@@ -101,9 +109,16 @@ describe('green and the early leave', () => {
 
 describe('stop and display', () => {
 	it('applies the camera stop only to a running solve with a time', () => {
-		expect(cameraStopApplies(true, { type: 'stop', t: 1, frame: 1, timeMs: 9876 })).toBe(true);
-		expect(cameraStopApplies(false, { type: 'stop', t: 1, frame: 1, timeMs: 9876 })).toBe(false);
-		expect(cameraStopApplies(true, { type: 'stop', t: 1, frame: 1 })).toBe(false);
+		expect(cameraStopApplies(true, { type: 'stop', t: 10000.5, frame: 1, timeMs: 9876 }, 124.5)).toBe(true);
+		expect(cameraStopApplies(false, { type: 'stop', t: 10000.5, frame: 1, timeMs: 9876 }, 124.5)).toBe(false);
+		expect(cameraStopApplies(true, { type: 'stop', t: 10000.5, frame: 1 }, 124.5)).toBe(false);
+	});
+
+	it('ignores a stop timed from another start (brain reset mid-solve)', () => {
+		// Started at 124.5; after a reset the brain timed a later lift at 20000 instead.
+		expect(cameraStopApplies(true, { type: 'stop', t: 33238, frame: 1, timeMs: 13238 }, 124.5)).toBe(false);
+		expect(cameraStopApplies(true, { type: 'stop', t: 33238, frame: 1, timeMs: 13238 }, null)).toBe(false);
+		expect(cameraStopApplies(true, { type: 'abort', t: 391.5, frame: 1, timeMs: 267 }, 124.5)).toBe(true);
 	});
 
 	it('maps capture times onto the wall clock', () => {

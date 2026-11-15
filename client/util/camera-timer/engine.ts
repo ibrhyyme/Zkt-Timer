@@ -120,6 +120,8 @@ export class CameraTimerEngine {
 	status: EngineStatus = INITIAL_STATUS;
 	/** Latest hands and pad timer readout, for the overlay (read per animation frame, no React). */
 	latest: { seq: number; hands: number[][]; snap: BrainSnap | null } = { seq: 0, hands: [], snap: null };
+	/** Capture time of the brain start that began the running solve; its stop must match it. */
+	solveStartT: number | null = null;
 	leaveFar = 0.5;
 	/** The brain's stop confirmation in ms (pad timer stopMs), for the hold ring. */
 	stopMs = DEFAULT_STOP_MS;

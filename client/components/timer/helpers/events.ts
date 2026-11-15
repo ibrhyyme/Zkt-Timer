@@ -29,6 +29,7 @@ import { countHTM } from '../../../../shared/util/solve/move_counter';
 import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/util/solve/multiphase';
 import { applySmartCubeTimeOffset, timerPageAppliesSmartOffset } from './smart_time_offset';
 import { getCameraTimerStatus } from '../../../util/camera-timer/status_store';
+import { CAMERA_DNF_GRACE_MS } from '../../../util/camera-timer/decision';
 
 let endLocked = false;
 
@@ -464,7 +465,9 @@ export function startInspection(context: ITimerContext, startedAt?: number) {
 				// should be able to retry). For new scramble, user presses ArrowRight or UI button.
 				resetTimerParams(context, true);
 			}, 2000);
-		}, inspectionDelay * 1000 + 2000 - ageMs)
+		// The camera confirms a lift a few frames late: one just before the deadline must not lose
+		// to the DNF (decideOnCameraStart judges it by the onset).
+		}, inspectionDelay * 1000 + 2000 - ageMs + (cameraOn ? CAMERA_DNF_GRACE_MS : 0))
 	);
 
 	setTimer(

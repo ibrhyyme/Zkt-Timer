@@ -5,7 +5,7 @@
 import type { StartBlockReason } from '../magnet-start/start_guard';
 
 /** Events the brain reports (times are frame capture times, performance.now() ms). */
-export type PadEventType = 'ready' | 'start' | 'stop' | 'disarm' | 'idle';
+export type PadEventType = 'ready' | 'start' | 'stop' | 'abort' | 'disarm' | 'idle';
 
 export interface PadEvent {
 	type: PadEventType;
@@ -15,7 +15,10 @@ export interface PadEvent {
 	/** The frame that confirmed the event. */
 	at?: number;
 	atFrame?: number;
-	/** stop only: t - start.t, the solve time the camera measured. */
+	/**
+	 * stop and abort: t - start.t, the solve time the camera measured. An abort is a "solve"
+	 * shorter than the brain's minimum: a hand twitched off its pad and came back.
+	 */
 	timeMs?: number;
 	via?: string;
 }
@@ -51,6 +54,13 @@ export function captureToEpoch(t: number, timeOrigin: number): number {
 /** Never start from an onset older than the touch path accepts (events.ts startTimer). */
 export const MAX_ONSET_AGE_MS = 2000;
 
+/**
+ * How long the inspection DNF waits for the camera while it runs: the brain reports a lift up to
+ * its maxBackdateMs (400) after the onset, plus model and message time. A lift before the
+ * deadline that is confirmed after it is a valid start (+2), as on a StackMat.
+ */
+export const CAMERA_DNF_GRACE_MS = 500;
+
 export interface CameraTimerSide {
 	guard: StartBlockReason | null;
 	solving: boolean;
@@ -79,6 +89,10 @@ export function decideOnCameraStart(c: CameraTimerSide, onset: number): CameraSt
 
 	if (c.inInspection) {
 		if (c.dnfTime) return { kind: 'none', reason: 'dnf' };
+		// The DNF itself waits CAMERA_DNF_GRACE_MS for this event; judge it by the onset too.
+		if (c.inspectionStartedAt !== null && start - c.inspectionStartedAt >= c.inspectionDelayMs + 2000) {
+			return { kind: 'none', reason: 'dnf' };
+		}
 		// The inspection interval flips addTwoToSolve on its own 100 ms tick, and this event
 		// arrives a few frames after the onset. Judge +2 by the onset, as the magnet does.
 		const addTwo = c.inspectionStartedAt !== null && start - c.inspectionStartedAt >= c.inspectionDelayMs;
@@ -132,9 +146,15 @@ export function cameraGreen(snap: Pick<BrainSnap, 'state' | 'pads' | 'palms'>, r
 	return d === null || d <= EARLY_LEAVE * leaveFar;
 }
 
-/** The camera's stop applies only to a solve that is running (Space may have ended it). */
-export function cameraStopApplies(solving: boolean, ev: PadEvent): boolean {
-	return solving && typeof ev.timeMs === 'number' && ev.timeMs > 0;
+/**
+ * The camera's stop (or abort) applies only to the solve it timed: one is running (Space may
+ * have ended it) and it began at this brain start (`solveStartT`, the capture time of the start
+ * that began it). A brain reset mid-solve (the camera reopened) times a later lift instead, and
+ * its stop would save the scrambling as the solve.
+ */
+export function cameraStopApplies(solving: boolean, ev: PadEvent, solveStartT: number | null): boolean {
+	return solving && solveStartT !== null && typeof ev.timeMs === 'number' && ev.timeMs > 0 &&
+		Math.abs(ev.t - ev.timeMs - solveStartT) < 1;
 }
 
 /**

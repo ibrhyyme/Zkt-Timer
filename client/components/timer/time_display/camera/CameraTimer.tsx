@@ -15,7 +15,7 @@ import { getCubeTypeInfoById } from '../../../../util/cubes/util';
 import { isAppVisible, onVisibilityChange } from '../../../../util/app-visibility';
 import { getTimerStore } from '../../../../util/store/getTimer';
 import { setTimerParams } from '../../helpers/params';
-import { endTimer, getInspectionStartedAt, startInspection, startTimer } from '../../helpers/events';
+import { endTimer, getInspectionStartedAt, resetTimerParams, startInspection, startTimer } from '../../helpers/events';
 import { canUseCameraTimer } from '../../../../lib/camera-timer-access';
 import { useCameraTimerAvailability } from '../../../../util/camera-timer/availability';
 import { BrainResult, CameraTimerEngine, EngineStatus, INITIAL_STATUS } from '../../../../util/camera-timer/engine';
@@ -92,7 +92,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 	const origin = performance.timeOrigin;
 	const running = !!getTimerStore('timeStartedAt');
 	setCameraPendingStop(
-		running && r.snap.state === 'solving' && r.snap.pendingStopT !== null
+		running && r.snap.state === 'solving' && r.snap.pendingStopT !== null && r.snap.startT === engine.solveStartT
 			? captureToEpoch(r.snap.pendingStopT, origin)
 			: null
 	);
@@ -121,6 +121,7 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 					setCameraTimerStatus({ green: false });
 					setTimerParams({ canStart: false, spaceTimerStarted: 0 });
 					startTimer(action.onset);
+					engine.solveStartT = ev.t;
 					if (action.addTwo !== undefined) {
 						// startTimer stopped the inspection interval, so nothing overwrites this before save.
 						setTimerParams({ addTwoToSolve: action.addTwo });
@@ -132,11 +133,21 @@ function handleResult(engine: CameraTimerEngine, r: BrainResult, ctx: ITimerCont
 				}
 			} else if (ev.type === 'stop') {
 				const solving = !!getTimerStore('timeStartedAt');
-				if (cameraStopApplies(solving, ev)) {
+				if (cameraStopApplies(solving, ev, engine.solveStartT)) {
 					setCameraPendingStop(null);
 					setCameraTimerStatus({ holdHint: false });
 					endTimer(ctx, ev.timeMs, undefined, captureToEpoch(ev.t, origin));
 					engine.note('stopped', { timeMs: ev.timeMs, frame: ev.frame });
+				} else if (solving) {
+					engine.note('stop_ignored', { timeMs: ev.timeMs, frame: ev.frame });
+				}
+			} else if (ev.type === 'abort') {
+				// A hand twitched off its pad and came back: a false start, never a solve. Dropped
+				// as Escape drops it, keeping the scramble (the cube was never solved).
+				if (cameraStopApplies(!!getTimerStore('timeStartedAt'), ev, engine.solveStartT)) {
+					setCameraPendingStop(null);
+					resetTimerParams(ctx, true);
+					engine.note('aborted', { timeMs: ev.timeMs, frame: ev.frame });
 				}
 			}
 		}
