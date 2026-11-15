@@ -30,6 +30,9 @@ export enum NotificationType {
 	// Online score entry: a judge asks for a correction or an extra (the staff who
 	// can approve it). Also a NotificationPreference column.
 	ZKT_JUDGE_REQUEST = 'zkt_judge_request',
+	// Online score entry: the judge ended a finished card, the competitor gets the
+	// unofficial result. No preference column (like the per-round result notices).
+	ZKT_UNOFFICIAL_RESULT = 'zkt_unofficial_result',
 }
 
 export enum MetricLogType {

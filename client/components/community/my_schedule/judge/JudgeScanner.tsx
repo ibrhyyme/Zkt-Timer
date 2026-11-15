@@ -10,6 +10,9 @@ import JudgeApproval from './JudgeApproval';
 
 const b = block('judge');
 
+// 1x1 transparent GIF.
+const TRANSPARENT_POSTER = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 // How long "this is not a judge QR" stays up before the reader looks again.
 const FOREIGN_NOTICE_MS = 2500;
 
@@ -92,7 +95,9 @@ export default function JudgeScanner({onClose}: Props) {
 			</div>
 
 			<div className={b('scanner-view')}>
-				<video ref={videoRef} className={b('scanner-video')} autoPlay />
+				{/* Android WebView draws a grey play-button poster until the first camera
+				    frame; a transparent poster leaves the dark scanner behind it instead. */}
+				<video ref={videoRef} className={b('scanner-video')} autoPlay poster={TRANSPARENT_POSTER} />
 				{!failure && <div className={b('scanner-frame')} aria-hidden="true" />}
 				{failure && (
 					<div className={b('scanner-failure')}>

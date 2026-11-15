@@ -21,6 +21,7 @@ import {isZktCompetitionId} from '../services/ZktWcaAdapter';
 import {JudgeRelayError, ZktJudgeRelay, judgeCompetitionRef} from '../services/ZktJudgeRelay';
 import {ZktJudgeEntryInput, ZktJudgeRequestInput} from '../schemas/ZktJudge.schema';
 import {notifyJudgeRequest, splitJudgeRequestAnswer} from '../services/zkt_judge_request';
+import {notifyJudgeEndResults, splitJudgeEndAnswer} from '../services/zkt_judge_end';
 
 const MAX_ENTRIES_PER_CALL = 50;
 const MAX_TOKEN_LENGTH = 1024;
@@ -235,8 +236,13 @@ export class ZktJudgeResolver {
 		const memberId = await requireMember(ctx);
 		const target = grantId ? {grantId} : cardId ? {cardId} : all === true ? {all: true} : null;
 		if (!target) throw badInput('Hangi hakemliğin biteceği belirtilmedi.');
-		return relay(() =>
+		const answer = await relay(() =>
 			ZktJudgeRelay.endGrants(memberId, {competition: judgeCompetitionRef(competitionId), ...target})
 		);
+		// A finished card's unofficial result goes to its competitor; the judge's
+		// phone never sees it. In the background so the end answers now.
+		const {response, notify} = splitJudgeEndAnswer(answer);
+		if (notify) void notifyJudgeEndResults(notify);
+		return response;
 	}
 }

@@ -20,14 +20,16 @@ interface Props {
  * One judge, two competitors when judges run short (owner, 2026-11-14): the
  * cards in hand side by side over the open card, one tap apart. The station
  * number leads because the judge reads the station sign at the table, not the
- * name.
+ * name. Lower station on the left (owner, 2026-11-15): stations are numbered
+ * from the left at the table, so station 9 sits left of station 10 there too.
  */
 export default function JudgeSwitch({cards, activeId, outbox, userId, onSwitch}: Props) {
 	const {t} = useTranslation();
+	const ordered = [...cards].sort((x, y) => (x.station ?? Infinity) - (y.station ?? Infinity));
 
 	return (
 		<div className={b('switch')} role="tablist" aria-label={t('zkt_comp.judge_other_cards')}>
-			{cards.map((c) => {
+			{ordered.map((c) => {
 				const active = c.cardId === activeId;
 				const {written, total} = cardProgress(buildRows(c, outbox, userId));
 				const done = c.noShow || written >= total;
