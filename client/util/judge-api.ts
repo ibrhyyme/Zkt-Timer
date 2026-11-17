@@ -8,6 +8,10 @@ import {
 	ZktJudgeBoardDocument,
 	ZktJudgeDecideDocument,
 	ZktJudgeEndGrantDocument,
+	ZktJudgeHelperAddDocument,
+	ZktJudgeHelperRemoveDocument,
+	ZktJudgeHelperSearchDocument,
+	ZktJudgeHelpersDocument,
 	ZktJudgeMeDocument,
 	ZktJudgeRequestDocument,
 	ZktJudgeSelfGrantDocument,
@@ -21,6 +25,8 @@ import {
 	JudgeEntryItem,
 	JudgeEntryResult,
 	JudgeGrantResult,
+	JudgeHelperCandidate,
+	JudgeHelperState,
 	JudgeMe,
 	JudgeRequestResult,
 } from '../../shared/zkt_judge';
@@ -172,6 +178,38 @@ export async function endJudging(competitionId: string, target: {grantId: string
 		gqlMutateTyped(ZktJudgeEndGrantDocument, {competitionId, ...target}, {fetchPolicy: 'no-cache'} as any)
 	);
 	return objectOrFail<{ended: number}>(res.data?.zktJudgeEndGrant).ended;
+}
+
+/** "Yardımcılar": the competition's helpers and the picks waiting for a ZKT link. */
+export async function fetchJudgeHelpers(competitionId: string): Promise<JudgeHelperState> {
+	const res = await withTimeout(gqlQueryTyped(ZktJudgeHelpersDocument, {competitionId}, {fetchPolicy: 'no-cache'}));
+	const state = objectOrFail<JudgeHelperState>(res.data?.zktJudgeHelpers);
+	return {helpers: state.helpers || [], pending: state.pending || []};
+}
+
+export async function searchJudgeHelpers(competitionId: string, query: string): Promise<JudgeHelperCandidate[]> {
+	const res = await withTimeout(
+		gqlQueryTyped(ZktJudgeHelperSearchDocument, {competitionId, query}, {fetchPolicy: 'no-cache'})
+	);
+	return objectOrFail<{results?: JudgeHelperCandidate[]}>(res.data?.zktJudgeHelperSearch).results || [];
+}
+
+export async function addJudgeHelper(competitionId: string, userId: string): Promise<JudgeHelperState> {
+	const res = await withTimeout(
+		gqlMutateTyped(ZktJudgeHelperAddDocument, {competitionId, userId}, {fetchPolicy: 'no-cache'} as any)
+	);
+	return objectOrFail<JudgeHelperState>(res.data?.zktJudgeHelperAdd);
+}
+
+/** `memberId` takes a helper off the list, `userId` drops a pick still waiting for the link. */
+export async function removeJudgeHelper(
+	competitionId: string,
+	target: {memberId: string} | {userId: string}
+): Promise<JudgeHelperState> {
+	const res = await withTimeout(
+		gqlMutateTyped(ZktJudgeHelperRemoveDocument, {competitionId, ...target}, {fetchPolicy: 'no-cache'} as any)
+	);
+	return objectOrFail<JudgeHelperState>(res.data?.zktJudgeHelperRemove);
 }
 
 /**

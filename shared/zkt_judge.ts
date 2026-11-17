@@ -146,10 +146,44 @@ export interface JudgeBoard {
 	competitionId: string;
 	canApprove: boolean;
 	canApproveExtra: boolean;
+	/** May pick the competition's helpers ("Yardımcılar"; the site's judge.assign_helpers). Missing on an older site. */
+	canAssignHelpers?: boolean;
 	/** Without a round: every round of the competition. */
 	rounds?: JudgeRound[];
 	round?: JudgeRound;
 	groups?: JudgeBoardGroup[];
+}
+
+/** A helper on the site's list: approves judges and corrections at this competition, never extras. */
+export interface JudgeHelper {
+	/** The site's User.id. */
+	memberId: string;
+	name: string;
+	zktId: string | null;
+	avatarUrl: string | null;
+	addedAt: string;
+	addedByName: string | null;
+}
+
+/** A Zkt-Timer member picked before linking a ZKT account; becomes a helper once linked. */
+export interface JudgePendingHelper {
+	userId: string;
+	username: string;
+	invitedAt: string;
+}
+
+export interface JudgeHelperState {
+	helpers: JudgeHelper[];
+	pending: JudgePendingHelper[];
+}
+
+export interface JudgeHelperCandidate {
+	userId: string;
+	username: string;
+	zktName: string | null;
+	zktId: string | null;
+	linked: boolean;
+	status: 'helper' | 'pending' | null;
 }
 
 export interface JudgeRequestResult {

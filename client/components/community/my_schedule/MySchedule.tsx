@@ -12,6 +12,7 @@ import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
 import RecordRadar from './RecordRadar';
 import JudgePage from './judge/JudgePage';
 import JudgeStaffPanel from './judge/JudgeStaffPanel';
+import JudgeHelpersPanel from './judge/JudgeHelpersPanel';
 import JudgeApprovePage from './judge/JudgeApprovePage';
 
 // Code splitting: WCA Live tab should load only when used
@@ -56,6 +57,10 @@ function MyScheduleInner() {
 		path: '/competitions/:competitionId/judge/staff',
 		exact: true,
 	});
+	const matchJudgeHelpers = useRouteMatch<{competitionId: string}>({
+		path: '/competitions/:competitionId/judge/helpers',
+		exact: true,
+	});
 	const matchJudgeApprove = useRouteMatch({path: '/judge/approve', exact: true});
 	const matchCompetition = useRouteMatch<{competitionId: string}>(
 		'/competitions/:competitionId'
@@ -78,6 +83,16 @@ function MyScheduleInner() {
 			<div className={b()}>
 				<div className={b('content')}>
 					<JudgeApprovePage />
+				</div>
+			</div>
+		);
+	}
+
+	if (matchJudgeHelpers) {
+		return (
+			<div className={b()}>
+				<div className={b('content')}>
+					<JudgeHelpersPanel competitionId={matchJudgeHelpers.params.competitionId} />
 				</div>
 			</div>
 		);

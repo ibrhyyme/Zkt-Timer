@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {flushSync} from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import {useHistory, useLocation} from 'react-router-dom';
-import {CaretLeft, QrCode, UsersThree} from 'phosphor-react';
+import {CaretLeft, QrCode, UserPlus, UsersThree} from 'phosphor-react';
 import block from '../../../../styles/bem';
 import Button, {CommonType} from '../../../common/button/Button';
 import AccountRequired from '../../../common/account_required/AccountRequired';
@@ -49,6 +49,8 @@ export default function JudgePage({competitionId}: Props) {
 	const [selection, setSelection] = useState<PickerSelection>({roundId: null, groupId: null});
 	// Organisers who may approve judges get the reader and the panel here too.
 	const [canApprove, setCanApprove] = useState(false);
+	// Admins also pick the competition's helpers ("Yardımcılar", owner 2026-11-17).
+	const [canAssignHelpers, setCanAssignHelpers] = useState(false);
 	const [scanning, setScanning] = useState(false);
 
 	const cardId = new URLSearchParams(location.search).get('card');
@@ -69,7 +71,11 @@ export default function JudgePage({competitionId}: Props) {
 		if (!enabled) return;
 		let alive = true;
 		fetchJudgeBoard(competitionId)
-			.then((res) => alive && setCanApprove(!!res.canApprove))
+			.then((res) => {
+				if (!alive) return;
+				setCanApprove(!!res.canApprove);
+				setCanAssignHelpers(!!res.canAssignHelpers);
+			})
 			.catch(() => {});
 		return () => {
 			alive = false;
@@ -261,6 +267,21 @@ export default function JudgePage({competitionId}: Props) {
 									</span>
 								</button>
 							</li>
+							{canAssignHelpers && (
+								<li>
+									<button
+										type="button"
+										className={b('action-row')}
+										onClick={() => history.push(`/competitions/${competitionId}/judge/helpers`)}
+									>
+										<UserPlus size={22} />
+										<span className={b('action-text')}>
+											<span className={b('action-label')}>{t('zkt_comp.judge_helpers_title')}</span>
+											<span className={b('action-desc')}>{t('zkt_comp.judge_helpers_desc')}</span>
+										</span>
+									</button>
+								</li>
+							)}
 						</ul>
 					</div>
 				)}

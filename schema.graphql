@@ -380,6 +380,8 @@ type Query {
   adminProUsers: [AdminProUserRow]
   zktJudgeMe(jti: String, competitionId: String): JSON
   zktJudgeBoard(roundId: String, competitionId: String): JSON
+  zktJudgeHelpers(competitionId: String): JSON
+  zktJudgeHelperSearch(query: String, competitionId: String): JSON
 }
 
 type Mutation {
@@ -560,6 +562,8 @@ type Mutation {
   zktJudgeDecide(reason: String, decision: String, token: String): JSON
   zktJudgeSubmitEntries(items: [ZktJudgeEntryInput]): JSON
   zktJudgeEndGrant(all: Boolean, cardId: String, grantId: String, competitionId: String): JSON
+  zktJudgeHelperAdd(userId: String, competitionId: String): JSON
+  zktJudgeHelperRemove(userId: String, memberId: String, competitionId: String): JSON
 }
 
 type SmartDevice {

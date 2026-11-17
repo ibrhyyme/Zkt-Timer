@@ -318,6 +318,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/competitions/:competitionId/judge', App, Community, MySchedule, false),
 	// The organisers' panel: the QR reader and who judges whom.
 	route('/competitions/:competitionId/judge/staff', App, Community, MySchedule, false),
+	// Admins pick the competition's helpers ("Yardımcılar").
+	route('/competitions/:competitionId/judge/helpers', App, Community, MySchedule, false),
 	// Record radar — must precede the :competitionId param route so "records" is
 	// not treated as a competition id.
 	route('/competitions/records', App, Community, MySchedule, false),

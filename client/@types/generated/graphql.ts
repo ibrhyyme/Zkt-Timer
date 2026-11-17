@@ -1573,6 +1573,8 @@ export type Mutation = {
   zktJudgeApprovalPreview?: Maybe<Scalars['JSON']>;
   zktJudgeDecide?: Maybe<Scalars['JSON']>;
   zktJudgeEndGrant?: Maybe<Scalars['JSON']>;
+  zktJudgeHelperAdd?: Maybe<Scalars['JSON']>;
+  zktJudgeHelperRemove?: Maybe<Scalars['JSON']>;
   zktJudgeRequest?: Maybe<Scalars['JSON']>;
   zktJudgeSelfGrant?: Maybe<Scalars['JSON']>;
   zktJudgeSubmitEntries?: Maybe<Scalars['JSON']>;
@@ -2490,6 +2492,19 @@ export type MutationZktJudgeEndGrantArgs = {
 };
 
 
+export type MutationZktJudgeHelperAddArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationZktJudgeHelperRemoveArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  memberId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationZktJudgeRequestArgs = {
   input?: InputMaybe<ZktJudgeRequestInput>;
 };
@@ -2887,6 +2902,8 @@ export type Query = {
   wcaStats?: Maybe<WcaStats>;
   youtubeSearch?: Maybe<Array<Maybe<YouTubeVideoResult>>>;
   zktJudgeBoard?: Maybe<Scalars['JSON']>;
+  zktJudgeHelpers?: Maybe<Scalars['JSON']>;
+  zktJudgeHelperSearch?: Maybe<Scalars['JSON']>;
   zktJudgeMe?: Maybe<Scalars['JSON']>;
   zktPersonBests?: Maybe<Array<ZktEventPb>>;
   zktPublicCompetition?: Maybe<ZktPublicCompetitionDetail>;
@@ -3306,6 +3323,17 @@ export type QueryYoutubeSearchArgs = {
 export type QueryZktJudgeBoardArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
   roundId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktJudgeHelpersArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktJudgeHelperSearchArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  query?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -6256,6 +6284,38 @@ export type ZktJudgeEndGrantMutationVariables = Exact<{
 
 export type ZktJudgeEndGrantMutation = { __typename?: 'Mutation', zktJudgeEndGrant?: any | null };
 
+export type ZktJudgeHelpersQueryVariables = Exact<{
+  competitionId: Scalars['String'];
+}>;
+
+
+export type ZktJudgeHelpersQuery = { __typename?: 'Query', zktJudgeHelpers?: any | null };
+
+export type ZktJudgeHelperSearchQueryVariables = Exact<{
+  competitionId: Scalars['String'];
+  query: Scalars['String'];
+}>;
+
+
+export type ZktJudgeHelperSearchQuery = { __typename?: 'Query', zktJudgeHelperSearch?: any | null };
+
+export type ZktJudgeHelperAddMutationVariables = Exact<{
+  competitionId: Scalars['String'];
+  userId: Scalars['String'];
+}>;
+
+
+export type ZktJudgeHelperAddMutation = { __typename?: 'Mutation', zktJudgeHelperAdd?: any | null };
+
+export type ZktJudgeHelperRemoveMutationVariables = Exact<{
+  competitionId: Scalars['String'];
+  memberId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type ZktJudgeHelperRemoveMutation = { __typename?: 'Mutation', zktJudgeHelperRemove?: any | null };
+
 export const AlgSetItemFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetItemFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetItem"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"case_name"}},{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"puzzle"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"position"}}]}}]} as unknown as DocumentNode<AlgSetItemFragmentFragment, unknown>;
 export const AlgSetOwnerFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetOwnerFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetOwner"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"verified"}},{"kind":"Field","name":{"kind":"Name","value":"avatar_path"}}]}}]} as unknown as DocumentNode<AlgSetOwnerFragmentFragment, unknown>;
 export const AlgSetSummaryFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgSetSummaryFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgSetSummary"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"item_count"}},{"kind":"Field","name":{"kind":"Name","value":"save_count"}},{"kind":"Field","name":{"kind":"Name","value":"categories"}},{"kind":"Field","name":{"kind":"Name","value":"puzzles"}},{"kind":"Field","name":{"kind":"Name","value":"preview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetItemFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"owner"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AlgSetOwnerFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"published_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"hidden"}}]}}]} as unknown as DocumentNode<AlgSetSummaryFragmentFragment, unknown>;
@@ -6434,3 +6494,7 @@ export const ZktJudgeApprovalPreviewDocument = {"kind":"Document","definitions":
 export const ZktJudgeDecideDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"zktJudgeDecide"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"token"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"decision"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"reason"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeDecide"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"token"},"value":{"kind":"Variable","name":{"kind":"Name","value":"token"}}},{"kind":"Argument","name":{"kind":"Name","value":"decision"},"value":{"kind":"Variable","name":{"kind":"Name","value":"decision"}}},{"kind":"Argument","name":{"kind":"Name","value":"reason"},"value":{"kind":"Variable","name":{"kind":"Name","value":"reason"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeDecideMutation, ZktJudgeDecideMutationVariables>;
 export const ZktJudgeSubmitEntriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"zktJudgeSubmitEntries"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"items"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ZktJudgeEntryInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeSubmitEntries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"items"},"value":{"kind":"Variable","name":{"kind":"Name","value":"items"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeSubmitEntriesMutation, ZktJudgeSubmitEntriesMutationVariables>;
 export const ZktJudgeEndGrantDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"zktJudgeEndGrant"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"cardId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"all"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeEndGrant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"grantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"grantId"}}},{"kind":"Argument","name":{"kind":"Name","value":"cardId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"cardId"}}},{"kind":"Argument","name":{"kind":"Name","value":"all"},"value":{"kind":"Variable","name":{"kind":"Name","value":"all"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeEndGrantMutation, ZktJudgeEndGrantMutationVariables>;
+export const ZktJudgeHelpersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktJudgeHelpers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeHelpers"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeHelpersQuery, ZktJudgeHelpersQueryVariables>;
+export const ZktJudgeHelperSearchDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktJudgeHelperSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeHelperSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeHelperSearchQuery, ZktJudgeHelperSearchQueryVariables>;
+export const ZktJudgeHelperAddDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"zktJudgeHelperAdd"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeHelperAdd"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeHelperAddMutation, ZktJudgeHelperAddMutationVariables>;
+export const ZktJudgeHelperRemoveDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"zktJudgeHelperRemove"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"memberId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktJudgeHelperRemove"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"memberId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"memberId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}]}]}}]} as unknown as DocumentNode<ZktJudgeHelperRemoveMutation, ZktJudgeHelperRemoveMutationVariables>;

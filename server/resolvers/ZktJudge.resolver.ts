@@ -22,6 +22,7 @@ import {JudgeRelayError, ZktJudgeRelay, judgeCompetitionRef} from '../services/Z
 import {ZktJudgeEntryInput, ZktJudgeRequestInput} from '../schemas/ZktJudge.schema';
 import {notifyJudgeRequest, splitJudgeRequestAnswer} from '../services/zkt_judge_request';
 import {notifyJudgeEndResults, splitJudgeEndAnswer} from '../services/zkt_judge_end';
+import {addHelper, claimHelperInvite, helperState, removeHelper, searchHelperCandidates} from '../services/zkt_judge_helpers';
 
 const MAX_ENTRIES_PER_CALL = 50;
 const MAX_TOKEN_LENGTH = 1024;
@@ -110,6 +111,9 @@ export class ZktJudgeResolver {
 		// The site can only be asked on behalf of a member, so without a link the
 		// state of the switch is unknown here; the page shows nothing.
 		if (!memberId) return {linked: false, enabled: false};
+		// Picked as a helper before linking: the site learns it now, before the
+		// page asks the board whether this member may approve.
+		await claimHelperInvite(ctx.user.id, competitionId, memberId);
 		const me = await relay(() => ZktJudgeRelay.me(memberId, competitionId, jti ? jti.slice(0, 128) : null));
 		return {...me, linked: true};
 	}
@@ -249,5 +253,61 @@ export class ZktJudgeResolver {
 		const {response, notify} = splitJudgeEndAnswer(answer);
 		if (notify) void notifyJudgeEndResults(notify);
 		return response;
+	}
+
+	/**
+	 * "Yardımcılar": the competition's helpers and the picks still waiting for a
+	 * ZKT link. Only for a member the site lets pick helpers (judge.assign_helpers).
+	 */
+	@Authorized()
+	@Query(() => GraphQLJSON)
+	async zktJudgeHelpers(
+		@Ctx() ctx: GraphQLContext,
+		@Arg('competitionId') competitionId: string
+	): Promise<Record<string, unknown>> {
+		if (!isZktCompetitionId(competitionId || '')) throw badInput('Yarışma belirtilmedi.');
+		const memberId = await requireMember(ctx);
+		return {...(await relay(() => helperState(memberId, competitionId)))};
+	}
+
+	/** Zkt-Timer members to pick from, by username, ZKT name or ZKT ID. */
+	@Authorized()
+	@Query(() => GraphQLJSON)
+	async zktJudgeHelperSearch(
+		@Ctx() ctx: GraphQLContext,
+		@Arg('competitionId') competitionId: string,
+		@Arg('query') query: string
+	): Promise<Record<string, unknown>> {
+		if (!isZktCompetitionId(competitionId || '')) throw badInput('Yarışma belirtilmedi.');
+		const memberId = await requireMember(ctx);
+		return {results: await relay(() => searchHelperCandidates(memberId, competitionId, query || ''))};
+	}
+
+	@Authorized()
+	@Mutation(() => GraphQLJSON)
+	async zktJudgeHelperAdd(
+		@Ctx() ctx: GraphQLContext,
+		@Arg('competitionId') competitionId: string,
+		@Arg('userId') userId: string
+	): Promise<Record<string, unknown>> {
+		if (!isZktCompetitionId(competitionId || '')) throw badInput('Yarışma belirtilmedi.');
+		if (!userId) throw badInput('Üye belirtilmedi.');
+		const memberId = await requireMember(ctx);
+		return {...(await relay(() => addHelper(memberId, ctx.user.id, competitionId, userId)))};
+	}
+
+	/** `memberId` takes a helper off the site's list, `userId` drops a pick still waiting for the link. */
+	@Authorized()
+	@Mutation(() => GraphQLJSON)
+	async zktJudgeHelperRemove(
+		@Ctx() ctx: GraphQLContext,
+		@Arg('competitionId') competitionId: string,
+		@Arg('memberId', {nullable: true}) helperMemberId?: string,
+		@Arg('userId', {nullable: true}) userId?: string
+	): Promise<Record<string, unknown>> {
+		if (!isZktCompetitionId(competitionId || '')) throw badInput('Yarışma belirtilmedi.');
+		if (!helperMemberId && !userId) throw badInput('Üye belirtilmedi.');
+		const memberId = await requireMember(ctx);
+		return {...(await relay(() => removeHelper(memberId, competitionId, {memberId: helperMemberId, userId})))};
 	}
 }

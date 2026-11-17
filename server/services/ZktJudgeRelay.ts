@@ -152,4 +152,29 @@ export const ZktJudgeRelay = {
 	endGrants(memberId: string, body: Record<string, unknown>) {
 		return call<{ended: number}>(memberId, {path: 'grants/end', method: 'POST', data: body});
 	},
+
+	/** The competition's helpers ("Yardımcılar"); refused unless the member may pick them. */
+	listHelpers(memberId: string, competitionId: string) {
+		return call<{helpers: Record<string, unknown>[]}>(memberId, {
+			path: 'helpers',
+			method: 'GET',
+			params: {competition: judgeCompetitionRef(competitionId)},
+		});
+	},
+
+	addHelper(memberId: string, competitionId: string, helperMemberId: string) {
+		return call<{helpers: Record<string, unknown>[]}>(memberId, {
+			path: 'helpers',
+			method: 'POST',
+			data: {competition: judgeCompetitionRef(competitionId), member: helperMemberId},
+		});
+	},
+
+	removeHelper(memberId: string, competitionId: string, helperMemberId: string) {
+		return call<{helpers: Record<string, unknown>[]}>(memberId, {
+			path: 'helpers/remove',
+			method: 'POST',
+			data: {competition: judgeCompetitionRef(competitionId), member: helperMemberId},
+		});
+	},
 };

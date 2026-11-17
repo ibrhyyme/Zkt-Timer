@@ -29,3 +29,19 @@ mutation zktJudgeSubmitEntries($items: [ZktJudgeEntryInput!]!) {
 mutation zktJudgeEndGrant($competitionId: String!, $grantId: String, $cardId: String, $all: Boolean) {
 	zktJudgeEndGrant(competitionId: $competitionId, grantId: $grantId, cardId: $cardId, all: $all)
 }
+
+query zktJudgeHelpers($competitionId: String!) {
+	zktJudgeHelpers(competitionId: $competitionId)
+}
+
+query zktJudgeHelperSearch($competitionId: String!, $query: String!) {
+	zktJudgeHelperSearch(competitionId: $competitionId, query: $query)
+}
+
+mutation zktJudgeHelperAdd($competitionId: String!, $userId: String!) {
+	zktJudgeHelperAdd(competitionId: $competitionId, userId: $userId)
+}
+
+mutation zktJudgeHelperRemove($competitionId: String!, $memberId: String, $userId: String) {
+	zktJudgeHelperRemove(competitionId: $competitionId, memberId: $memberId, userId: $userId)
+}

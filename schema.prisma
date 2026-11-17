@@ -136,6 +136,8 @@ model UserAccount {
   promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
   competition_pro_campaigns     CompetitionProCampaign[] @relation("competition_pro_campaign_creator")
   competition_pro_gifts         CompetitionProGift[]     @relation("competition_pro_gift_user")
+  zkt_judge_helper_invites      ZktJudgeHelperInvite[]   @relation("zkt_judge_helper_invitee")
+  zkt_judge_helper_invited      ZktJudgeHelperInvite[]   @relation("zkt_judge_helper_inviter")
 
   // Activity heartbeats — admin gorunurlugu icin dakika bucket'lari
   activity_heartbeats           UserActivityHeartbeat[] @relation("activity_heartbeat_user")
@@ -1615,6 +1617,26 @@ model CompetitionLifecycleWatch {
   @@index([next_check_at])
   @@index([end_date])
   @@map("competition_lifecycle_watch")
+}
+
+// Online score entry (ZKT), "Yardımcılar" (owner, 2026-11-17): an admin picked
+// a helper in the judge panel before that member linked a ZKT account. The
+// federation keeps the real helper list and decides every approval; this row
+// only waits for the link. The member's first zktJudgeMe at that competition
+// after linking hands it to the federation as the inviting admin, then deletes it.
+model ZktJudgeHelperInvite {
+  id             String      @id @default(uuid())
+  // zkt-<slug>, as the app addresses the competition.
+  competition_id String
+  user_id        String
+  invited_by_id  String
+  created_at     DateTime    @default(now())
+  user           UserAccount @relation("zkt_judge_helper_invitee", fields: [user_id], references: [id], onDelete: Cascade)
+  invited_by     UserAccount @relation("zkt_judge_helper_inviter", fields: [invited_by_id], references: [id], onDelete: Cascade)
+
+  @@unique([competition_id, user_id])
+  @@index([user_id])
+  @@map("zkt_judge_helper_invite")
 }
 
 // Online score entry (ZKT), plan K10: the federation reports each group's

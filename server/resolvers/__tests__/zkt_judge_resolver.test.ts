@@ -9,6 +9,15 @@ jest.mock('../../services/logger', () => ({logger: {warn: jest.fn(), info: jest.
 const getIntegration = jest.fn();
 jest.mock('../../models/integration', () => ({getIntegration: (...args: any[]) => getIntegration(...args)}));
 
+const claimHelperInvite = jest.fn();
+jest.mock('../../services/zkt_judge_helpers', () => ({
+	claimHelperInvite: (...args: any[]) => claimHelperInvite(...args),
+	helperState: jest.fn(),
+	addHelper: jest.fn(),
+	removeHelper: jest.fn(),
+	searchHelperCandidates: jest.fn(),
+}));
+
 const request = jest.fn();
 jest.mock('axios', () => ({
 	__esModule: true,
@@ -33,6 +42,7 @@ beforeEach(() => {
 	process.env.ZKT_JUDGE_API_SECRET = SECRET;
 	delete process.env.ZKT_FEDERATION_API;
 	getIntegration.mockReset().mockResolvedValue({zkt_user_id: 'site-user-9'});
+	claimHelperInvite.mockReset().mockResolvedValue(undefined);
 	request.mockReset().mockResolvedValue({status: 200, data: {enabled: true, cards: []}});
 });
 
@@ -50,9 +60,17 @@ describe('identity', () => {
 		expect(call.maxRedirects).toBe(0);
 	});
 
+	it('hands a helper pick waiting for the link to the site before asking it (Yardımcılar)', async () => {
+		claimHelperInvite.mockImplementation(async () => expect(request).not.toHaveBeenCalled());
+		await resolver.zktJudgeMe(ctx, 'zkt-bursa-2026');
+		expect(claimHelperInvite).toHaveBeenCalledWith('timer-user-1', 'zkt-bursa-2026', 'site-user-9');
+		expect(request).toHaveBeenCalledTimes(1);
+	});
+
 	it('answers "not linked" without asking the site', async () => {
 		getIntegration.mockResolvedValue(null);
 		expect(await resolver.zktJudgeMe(ctx, 'zkt-bursa-2026')).toEqual({linked: false, enabled: false});
+		expect(claimHelperInvite).not.toHaveBeenCalled();
 		await expect(resolver.zktJudgeBoard(ctx, 'zkt-bursa-2026')).rejects.toMatchObject({extensions: {code: 'ZKT_NOT_LINKED'}});
 		await expect(
 			resolver.zktJudgeSubmitEntries(ctx, [{submissionId: 'sub-00001', cardId: 'c1', attemptNo: 1, value: 1234}])
