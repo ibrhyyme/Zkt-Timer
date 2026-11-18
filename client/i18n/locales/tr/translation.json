@@ -220,8 +220,8 @@
     "help": "Yardım"
   },
   "signup": {
-    "consent_label": "<priv>Gizlilik Politikası</priv> ve <terms>Kullanım Koşulları</terms>'nı okudum.",
-    "consent_required": "Devam etmek için Gizlilik Politikası ve Kullanım Koşulları'nı okuduğunu işaretlemelisin.",
+    "consent_label": "<terms>Kullanım Koşulları</terms>'nı kabul ediyorum, <priv>Gizlilik Politikası</priv>'nı okudum.",
+    "consent_required": "Devam etmek için Kullanım Koşulları'nı kabul ettiğini ve Gizlilik Politikası'nı okuduğunu işaretlemelisin.",
     "first_name": "Ad",
     "last_name": "Soyad",
     "email": "E-posta",

@@ -220,8 +220,8 @@
     "help": "Help"
   },
   "signup": {
-    "consent_label": "I have read the <priv>Privacy Policy</priv> and <terms>Terms of Service</terms>.",
-    "consent_required": "To continue, confirm that you have read the Privacy Policy and Terms of Service.",
+    "consent_label": "I accept the <terms>Terms of Service</terms> and I have read the <priv>Privacy Policy</priv>.",
+    "consent_required": "To continue, tick the box to accept the Terms of Service and confirm you have read the Privacy Policy.",
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email",

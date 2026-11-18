@@ -216,8 +216,8 @@
     "help": "帮助"
   },
   "signup": {
-    "consent_label": "我已阅读<priv>隐私政策</priv>和<terms>服务条款</terms>。",
-    "consent_required": "如需继续，请确认您已阅读隐私政策和服务条款。",
+    "consent_label": "我接受<terms>服务条款</terms>，并已阅读<priv>隐私政策</priv>。",
+    "consent_required": "如需继续，请勾选以接受服务条款并确认您已阅读隐私政策。",
     "first_name": "名字",
     "last_name": "姓氏",
     "email": "邮箱",

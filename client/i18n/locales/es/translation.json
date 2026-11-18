@@ -220,8 +220,8 @@
     "help": "Ayuda"
   },
   "signup": {
-    "consent_label": "He leído la <priv>Política de Privacidad</priv> y los <terms>Términos de Servicio</terms>.",
-    "consent_required": "Para continuar, confirma que has leído la Política de Privacidad y los Términos de Servicio.",
+    "consent_label": "Acepto los <terms>Términos de Servicio</terms> y he leído la <priv>Política de Privacidad</priv>.",
+    "consent_required": "Para continuar, marca la casilla para aceptar los Términos de Servicio y confirmar que has leído la Política de Privacidad.",
     "first_name": "Nombre",
     "last_name": "Apellido",
     "email": "Correo electrónico",
