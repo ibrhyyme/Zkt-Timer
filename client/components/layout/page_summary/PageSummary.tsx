@@ -4,6 +4,7 @@ import {useBattleLaunch} from '../../battle/useBattleLaunch';
 import {getSiteNavItems, isNoIndexPath, resolvePageSeo} from '../header/Header';
 import {FALLBACK_LANGUAGE, matchSupportedLanguage} from '../../../../shared/i18n_language';
 import {localizedPath} from '../../../../shared/seo_language';
+import {useTrainerCategorySeo} from '../../../util/trainer/useTrainerCategorySeo';
 import block from '../../../styles/bem';
 
 // Styles live in LoadingCover.scss: this body only exists under that cover.
@@ -31,10 +32,11 @@ interface Props {
 export default function PageSummary({path}: Props) {
 	const {t, i18n} = useTranslation();
 	const launched = useBattleLaunch()?.launched ?? null;
+	const trainerCategory = useTrainerCategorySeo(path);
 
 	if (isNoIndexPath(path, launched)) return null;
 
-	const {title, description} = resolvePageSeo(path, t, launched);
+	const {title, description} = resolvePageSeo(path, t, launched, trainerCategory);
 	if (!title) return null;
 
 	const lang = matchSupportedLanguage(i18n.language) || FALLBACK_LANGUAGE;

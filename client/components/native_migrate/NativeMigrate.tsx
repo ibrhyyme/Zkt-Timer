@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import Header from '../layout/header/Header';
 
 // One-time data bridge page for the Faz 2 origin switch (see client/util/native-migrate.ts).
 //
@@ -95,6 +96,8 @@ export default function NativeMigrate() {
 				textAlign: 'center',
 			}}
 		>
+			{/* Standalone page outside the App shell: without this it had no title and no noindex. */}
+			<Header path="/native-migrate" />
 			<span style={{fontSize: '1.05rem', fontWeight: 600}}>
 				{failed ? t('common.native_migrate_back') : t('common.native_migrate_title')}
 			</span>

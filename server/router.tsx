@@ -25,6 +25,7 @@ import { fillRedirectParams, mergeRedirectQuery } from '../shared/redirect_query
 import { LANGUAGE_QUERY_PARAM, languageFromQuery } from '../shared/seo_language';
 import { seedBattleLaunch } from './services/battle_launch_ssr';
 import { seedSiteConfig } from './services/site_config_ssr';
+import { seedTrainerCategory } from './services/trainer_category_ssr';
 
 if (process.env.NODE_ENV !== "production") {
 	loadDevMessages();
@@ -221,6 +222,8 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		// Online Battle launch flags for the menu, /ranks noindex and /battle (every page has the menu),
 		// and the site config itself so feature-guarded pages know their flags on the first frame.
 		await Promise.all([seedBattleLaunch(store, me), seedSiteConfig(store, me)]);
+		// A trainer category page names its category in the title, description and h1.
+		seedTrainerCategory(store, req.path);
 
 		let code = 200;
 		try {

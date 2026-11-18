@@ -154,8 +154,10 @@ export async function setSettings(payload: Partial<AllSettings>) {
 	// the offline hash it schedules belongs to an account too. Their settings live in
 	// localStorage (setSettingLocal above), which the anonymous boot rebuilds its rows
 	// from, so skipping the server round trip costs them nothing.
+	// Awaited so a caller that reloads right after (the data import) can wait for the server
+	// copy; everyone else ignores the promise, as before.
 	if (Object.keys(globalPayload).length && getMe()) {
-		setSettingApi(globalPayload);
+		await setSettingApi(globalPayload);
 	}
 }
 

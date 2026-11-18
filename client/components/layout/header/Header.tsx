@@ -7,6 +7,8 @@ import { useBattleLaunch } from '../../battle/useBattleLaunch';
 import { battleCanonicalPath, isLaunchNoIndexPath } from '../../battle/battle_landing_modes';
 import { FALLBACK_LANGUAGE, matchSupportedLanguage } from '../../../../shared/i18n_language';
 import { languageAlternates, localizedPath } from '../../../../shared/seo_language';
+import { TrainerCategorySeo, trainerCategoryCopy } from '../../../util/trainer/category_seo';
+import { useTrainerCategorySeo } from '../../../util/trainer/useTrainerCategorySeo';
 // process.env variables are defined by esbuild, no need to import process
 
 interface Props {
@@ -322,6 +324,10 @@ const NO_INDEX_PATHS = [
 	'/messages',
 	// Link-in-bio page: reached from a social profile, never from search.
 	'/links',
+	// Judge approval tool for competition helpers; nothing for a searcher.
+	'/judge/approve',
+	// One-time data bridge the native app opens in its WebView.
+	'/native-migrate',
 ];
 // WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 // Main competition page (`/competitions/:id`) and list remain indexable.
@@ -358,8 +364,14 @@ export function isNoIndexPath(currentPath: string, launched: boolean | null): bo
 /**
  * The title and description a path gets in <head>, or none when the path has no copy of
  * its own. Shared with PageSummary, which prints the same text in the page body.
+ * `trainerCategory`: the category page's seeded name and case count (useTrainerCategorySeo).
  */
-export function resolvePageSeo(currentPath: string, t: TFunction, launched: boolean | null): {title?: string; description?: string} {
+export function resolvePageSeo(
+	currentPath: string,
+	t: TFunction,
+	launched: boolean | null,
+	trainerCategory: TrainerCategorySeo | null = null
+): {title?: string; description?: string} {
 	let title: string | undefined;
 	let description: string | undefined;
 	if (currentPath === '/' || currentPath === '') {
@@ -395,6 +407,9 @@ export function resolvePageSeo(currentPath: string, t: TFunction, launched: bool
 	} else if (currentPath === '/trainer/community') {
 		title = t('seo.trainer_community_title');
 		description = t('seo.trainer_community_description');
+	} else if (trainerCategory) {
+		// One category's page (/trainer/algorithms/oll): its own name, long name and case count.
+		({title, description} = trainerCategoryCopy(trainerCategory, t));
 	} else if (currentPath.startsWith('/trainer/algorithms') || currentPath.startsWith('/trainer/sets')) {
 		// A set page's own title and description come from its SSR meta (trainer/sets/ssr.ts).
 		title = t('seo.trainer_algorithms_title');
@@ -471,6 +486,7 @@ export default function Header(props: Props) {
 	const currentPath = props.path || '';
 	// Online Battle launch (null until known): /ranks indexing, the /battle copy, canonical.
 	const launched = useBattleLaunch()?.launched ?? null;
+	const trainerCategory = useTrainerCategorySeo(currentPath);
 	const canonicalPath = battleCanonicalPath(currentPath, launched);
 	// Each translation is its own canonical page (?lang=tr), or Google folds it into the
 	// English one and the hreflang links below are ignored.
@@ -482,7 +498,7 @@ export default function Header(props: Props) {
 
 	// If no custom title/desc passed to component, determine by path
 	if (!pageTitle) {
-		const seo = resolvePageSeo(currentPath, t, launched);
+		const seo = resolvePageSeo(currentPath, t, launched, trainerCategory);
 		if (seo.title) {
 			pageTitle = seo.title;
 			pageDesc = seo.description;

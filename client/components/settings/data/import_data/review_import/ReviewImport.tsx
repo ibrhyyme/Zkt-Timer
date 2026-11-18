@@ -24,6 +24,11 @@ import { getCubeState, useCubes } from '../../../../../lib/cubes/store';
 import { createCubeOnline, refreshCubes, setCubeArchivedOnline } from '../../../../../lib/cubes/sync';
 import { linkSolvesToCubes, planCubeImport } from '../parse_data/zkttimer_cubes';
 import { WCA_IMPORT_EVENTS, bucketMapKey, deriveBucket, getImportSubsets } from './session_bucket';
+import Checkbox from '../../../../common/checkbox/Checkbox';
+import { getSetting } from '../../../../../db/settings/query';
+import { setSettings } from '../../../../../db/settings/update';
+import { fetchSolveCount } from '../../../../../db/solves/query';
+import { largestImportedSession, suggestMainByDefault } from './main_session';
 
 const b = block('review-import');
 
@@ -44,9 +49,37 @@ export default function ReviewImport() {
 		if (hasFileCubes) void refreshCubes({ force: true });
 	}, [hasFileCubes]);
 
+	// Solves in the current main session, read once: the review screen does not change them.
+	const currentMainSolveCount = React.useMemo(() => {
+		const mainId = getSetting('session_id');
+		return mainId ? fetchSolveCount({ session_id: mainId }) : 0;
+	}, []);
+	// null until the user touches the box, so the default follows the sessions still in the import.
+	const [makeMainChoice, setMakeMainChoice] = React.useState<boolean | null>(null);
+
 	const data = context.importableData;
 	if (!data) {
 		return null;
+	}
+
+	const mainSuggestion = largestImportedSession(data.sessions, data.solves);
+	const makeMain = mainSuggestion
+		? makeMainChoice ?? suggestMainByDefault(mainSuggestion, currentMainSolveCount)
+		: false;
+
+	/**
+	 * Makes the biggest imported session the main one when the box is ticked. Awaited before
+	 * clearOfflineData: that wipes the local copy, and the reload reads the setting back from
+	 * the server. A failure only costs the main session, never the import.
+	 */
+	async function applyMainSession() {
+		if (!makeMain || !mainSuggestion) return;
+		try {
+			await setSettings({ session_id: mainSuggestion.id });
+		} catch (e) {
+			console.error('[Import] Could not set the main session:', e);
+			toastWarning(t('data_settings.import_main_session_failed'));
+		}
 	}
 
 	function customTypeIds(): Set<string> {
@@ -189,6 +222,7 @@ export default function ReviewImport() {
 			if (combinedResults.failureCount === 0) {
 				// Complete success
 				console.log('[Import] All chunks imported successfully!');
+				await applyMainSession();
 				await clearOfflineData();
 				toastSuccess(t('data_settings.import_success', { sessions: data.sessions.length, solves: solvesToImport.length }));
 				setTimeout(() => {
@@ -290,6 +324,7 @@ export default function ReviewImport() {
 			context.setImportResults(retryResult);
 
 			if (retryResult.failureCount === 0) {
+				await applyMainSession();
 				await clearOfflineData();
 				toastSuccess(t('data_settings.retry_success'));
 				setTimeout(() => {
@@ -526,6 +561,14 @@ export default function ReviewImport() {
 					<ImportErrorSummary
 						results={context.importResults}
 						onRetry={retryFailedChunks}
+					/>
+				)}
+				{mainSuggestion && (
+					<Checkbox
+						text={t('data_settings.import_make_main_session', { name: mainSuggestion.name })}
+						checked={makeMain}
+						disabled={context.importing}
+						onChange={(e) => setMakeMainChoice(e.target.checked)}
 					/>
 				)}
 				<div className={b('actions')}>

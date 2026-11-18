@@ -1,4 +1,9 @@
 jest.mock('../../../battle/useBattleLaunch', () => ({useBattleLaunch: () => null}));
+let mockSeededCategory: unknown = null;
+jest.mock('../../../../util/trainer/useTrainerCategorySeo', () => {
+	const {readTrainerCategorySeo} = jest.requireActual('../../../../util/trainer/category_seo');
+	return {useTrainerCategorySeo: (path: string) => readTrainerCategorySeo(mockSeededCategory, path)};
+});
 
 import React from 'react';
 import ReactDOM from 'react-dom/server';
@@ -30,6 +35,14 @@ describe('PageSummary', () => {
 		expect(html).toContain('href="/trainer?lang=tr"');
 		expect(html).toContain('href="/help?lang=tr"');
 		expect(render('/competitions', 'en')).toContain('href="/timer"');
+	});
+
+	it("prints a category page's own heading", () => {
+		mockSeededCategory = {slug: 'zbls', category: 'ZBLS', caseCount: 42};
+		const html = render('/trainer/algorithms/zbls', 'en');
+		mockSeededCategory = null;
+		expect(html).toContain('<h1 class="zt-page-summary__title">ZBLS Trainer: 42 algorithms | ZKT Timer</h1>');
+		expect(html).toContain('Zborowski-Bruchem Last Slot (ZBLS).');
 	});
 
 	it('renders nothing on noindex pages', () => {

@@ -9,6 +9,10 @@ import { getSiteConfig } from '../models/site_config';
 import { isOnlineBattleLaunched, sitemapLaunchExclusions } from '../../client/components/battle/battle_landing_modes';
 import { FALLBACK_LANGUAGE, SUPPORTED_LANGUAGES } from '../../shared/i18n_language';
 import { languageAlternates, localizedPath } from '../../shared/seo_language';
+import { getTrainerLibrary } from '../util/trainer_library';
+import { trainerCategorySlugs } from '../../client/util/trainer/category_seo';
+
+const TRAINER_CATEGORY_ROUTE = '/trainer/algorithms/:category';
 
 const SITEMAP_REDIS_KEY = createRedisKey(RedisNamespace.SITEMAP);
 const SITEMAP_SCHEMAS_DIR = __dirname + '/sitemap_schemas';
@@ -209,7 +213,17 @@ function getPriorityForPath(path: string): number | null {
 	return highPriorityPaths[path] ?? null;
 }
 
-export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
+/** Category pages of the library the server serves; a visitor sees each one's cases. */
+function servedTrainerCategorySlugs(): string[] {
+	try {
+		return trainerCategorySlugs(getTrainerLibrary().mains);
+	} catch (e) {
+		logger.warn('Sitemap could not read the trainer library, category pages left out', { error: e?.message || e });
+		return [];
+	}
+}
+
+export function getDefaultSiteMapUrls(onlineBattleLaunched = false, categorySlugs: string[] = servedTrainerCategorySlugs()) {
 	const baseUri = process.env.BASE_URI;
 	const urls: SiteMapUrl[] = [];
 	const today = new Date().toISOString().split('T')[0];
@@ -240,6 +254,11 @@ export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 		'/trainer/recognition',
 		'/trainer/efficiency',
 		'/trainer/ollcp',
+		// Judge approval tool, the native app's one-time data bridge, and the link-in-bio
+		// page (noindex on purpose): none of them is a search result.
+		'/judge/approve',
+		'/native-migrate',
+		'/links',
 		// /battle/online always; /ranks and /battle/offline until Online Battle is public
 		...sitemapLaunchExclusions(onlineBattleLaunched),
 	];
@@ -255,7 +274,9 @@ export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 			continue;
 		}
 
-		if (route.admin || route.restricted || route.path.includes(':')) {
+		// The one parameterized route listed: a trainer category page per served category.
+		const isCategoryRoute = route.path === TRAINER_CATEGORY_ROUTE;
+		if (route.admin || route.restricted || (route.path.includes(':') && !isCategoryRoute)) {
 			continue;
 		}
 
@@ -264,27 +285,30 @@ export function getDefaultSiteMapUrls(onlineBattleLaunched = false) {
 			continue;
 		}
 
-		const canonicalPath = localizedPath(route.path, FALLBACK_LANGUAGE);
-		if (listedPaths.has(canonicalPath)) {
-			continue;
-		}
-		listedPaths.add(canonicalPath);
+		const paths = isCategoryRoute ? categorySlugs.map((slug) => `/trainer/algorithms/${slug}`) : [route.path];
+		for (const path of paths) {
+			const canonicalPath = localizedPath(path, FALLBACK_LANGUAGE);
+			if (listedPaths.has(canonicalPath)) {
+				continue;
+			}
+			listedPaths.add(canonicalPath);
 
-		// One entry per language, each carrying the full hreflang set: Google wants every
-		// translation listed as its own <url> (shared/seo_language.ts).
-		const explicitPriority = getPriorityForPath(route.path);
-		const alternates = languageAlternates(route.path).map((alt) => ({
-			hrefLang: alt.hrefLang,
-			location: `${baseUri}${alt.path}`,
-		}));
-		for (const lang of SUPPORTED_LANGUAGES) {
-			urls.push({
-				location: `${baseUri}${localizedPath(route.path, lang)}`,
-				priority: explicitPriority ?? fallbackPriority,
-				changeFrequency: getChangeFrequency(route.path),
-				lastmod: today,
-				alternates,
-			});
+			// One entry per language, each carrying the full hreflang set: Google wants every
+			// translation listed as its own <url> (shared/seo_language.ts).
+			const explicitPriority = getPriorityForPath(path);
+			const alternates = languageAlternates(path).map((alt) => ({
+				hrefLang: alt.hrefLang,
+				location: `${baseUri}${alt.path}`,
+			}));
+			for (const lang of SUPPORTED_LANGUAGES) {
+				urls.push({
+					location: `${baseUri}${localizedPath(path, lang)}`,
+					priority: explicitPriority ?? fallbackPriority,
+					changeFrequency: getChangeFrequency(path),
+					lastmod: today,
+					alternates,
+				});
+			}
 		}
 	}
 

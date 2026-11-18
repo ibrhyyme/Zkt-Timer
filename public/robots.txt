@@ -88,6 +88,11 @@ Allow: /trainer/algorithms$
 Allow: /trainer/algorithms?
 Allow: /trainer/community$
 Allow: /trainer/community?
+# Kategori sayfalari (/trainer/algorithms/oll ve ?lang= hali) ziyaretciye vakalari gosterir.
+# Calisma ekrani ve eski "sets" adresi (My Sets'e 301) kapali kalir: daha uzun kural kazanir.
+Allow: /trainer/algorithms/
+Disallow: /trainer/algorithms/train
+Disallow: /trainer/algorithms/sets
 Disallow: /trainer/
 
 # Online Battle duello davetleri: tek kullanimlik, 15 dakikalik linkler (onizleme SSR meta ile calisir)
