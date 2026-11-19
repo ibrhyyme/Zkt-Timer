@@ -30,6 +30,7 @@ import { isMultiPhaseActive, serializePhaseSplits } from '../../../../shared/uti
 import { applySmartCubeTimeOffset, timerPageAppliesSmartOffset } from './smart_time_offset';
 import { getCameraTimerStatus } from '../../../util/camera-timer/status_store';
 import { CAMERA_DNF_GRACE_MS } from '../../../util/camera-timer/decision';
+import { soundAllowed } from '../../../lib/sounds';
 
 let endLocked = false;
 
@@ -474,7 +475,7 @@ export function startInspection(context: ITimerContext, startedAt?: number) {
 		INSPECTION_INTERVAL,
 		setInterval(() => {
 			const insTimer = getTimerStore('inspectionTimer');
-			if (playInspectionSound) {
+			if (playInspectionSound && soundAllowed('play_inspection_sound')) {
 				// Play sounds at 8 and 12 seconds (inspectionDelay - remaining time)
 				const elapsed = inspectionDelay + 2 - insTimer;
 				if (elapsed >= 8 && elapsed < 8.1) {

@@ -10,6 +10,7 @@ import {
 	UserPageActivityRow,
 } from '../schemas/Activity.schema';
 import {logger} from '../services/logger';
+import {maybeSendWelcomeMessage} from '../services/welcome_message';
 import {normalizeActivityPath} from '../../shared/util/activity_path';
 import {
 	todayBoundsIstanbul,
@@ -68,6 +69,9 @@ export class ActivityResolver {
 		} catch (e) {
 			logger.error('[Heartbeat] upsert failed', {userId, error: (e as any)?.message});
 		}
+
+		// Returns at once for everyone but a member in their first days who has not had it.
+		void maybeSendWelcomeMessage(context.user);
 
 		return {success: true};
 	}

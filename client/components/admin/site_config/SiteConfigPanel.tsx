@@ -12,6 +12,7 @@ import {
 	OnlineStatsQuery,
 	OnlineUsersDocument,
 	OnlineUsersQuery,
+	AdminWelcomeStatsDocument,
 } from '../../../@types/generated/graphql';
 import gql from 'graphql-tag';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
@@ -22,6 +23,35 @@ import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
 
 const b = block('site-config-panel');
+
+/** What new members answered under the welcome message, shown under its switch. */
+function WelcomeStats() {
+	const {t} = useTranslation();
+	const {data} = useQuery(AdminWelcomeStatsDocument, {fetchPolicy: 'no-cache'});
+	const stats = data?.adminWelcomeStats;
+	if (!stats) return null;
+
+	return (
+		<div className={b('welcome-stats')}>
+			<div className={b('row-desc')}>
+				{t('site_config.welcome_stats_summary', {sent: stats.sent, answered: stats.answered})}
+			</div>
+			{stats.sources.length > 0 && (
+				<div className={b('stats-grid')}>
+					{stats.sources.map((s) => (
+						<div key={s.source} className={b('stat-card')}>
+							<div className={b('stat-label')}>{t(`welcome_message.sources.${s.source}`)}</div>
+							<div className={b('stat-value')}>
+								{s.count}
+								<span className={b('stat-share')}> %{Math.round((s.count / stats.answered) * 100)}</span>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
 const BACKFILL_ZKT_IDS = gql`mutation { backfillZktIds { total filled stillNull conflict error } }`;
@@ -50,7 +80,7 @@ const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWi
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'zkt_backfill_enabled' | 'smart_telemetry_enabled' | 'magnet_telemetry_enabled' | 'online_battle_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled' | 'zkt_backfill_enabled' | 'smart_telemetry_enabled' | 'magnet_telemetry_enabled' | 'online_battle_enabled' | 'welcome_message_enabled';
 
 // labelKey / descriptionKey (translated) win over the plain label / description when set.
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string; labelKey?: string; descriptionKey?: string}[] = [
@@ -60,6 +90,13 @@ const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string; labelK
 	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle mode (mobile)'},
 	{key: 'messaging_enabled', label: 'Messaging', description: 'Direct messages. Off blocks sending and hides the inbox; existing messages are kept.'},
 	{key: 'presence_enabled', label: 'Online status', description: 'The green dot in messages. Off keeps messaging fully working and only drops the live presence traffic. First thing to shed if the server is struggling.'},
+	{
+		key: 'welcome_message_enabled',
+		label: 'Welcome message',
+		description: '',
+		labelKey: 'site_config.welcome_message_enabled',
+		descriptionKey: 'site_config.welcome_message_enabled_desc',
+	},
 	{key: 'leaderboards_enabled', label: 'Rankings', description: 'Online Battle ranking page (hidden until launch)'},
 	{
 		key: 'online_battle_enabled',
@@ -349,14 +386,19 @@ export default function SiteConfigPanel() {
 									onChange={() => handleToggle(key, value)}
 								/>
 							</div>
-							<FeatureAccessControl
-								feature={key}
-								currentOverride={override}
-								onSaved={(updated) => {
-									setSiteConfigCache(updated);
-									setConfig(updated);
-								}}
-							/>
+							{/* Not a page, so it has no access list; its answers sit here instead. */}
+							{key === 'welcome_message_enabled' ? (
+								<WelcomeStats />
+							) : (
+								<FeatureAccessControl
+									feature={key}
+									currentOverride={override}
+									onSaved={(updated) => {
+										setSiteConfigCache(updated);
+										setConfig(updated);
+									}}
+								/>
+							)}
 						</div>
 					);
 				})}

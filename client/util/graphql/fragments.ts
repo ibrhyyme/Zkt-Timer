@@ -431,6 +431,7 @@ export const USER_FOR_ME_FRAGMENT = gql`
 		email_verified
 		has_password
 		join_country
+		acquisition_source
 		timer_background {
 			...TimerBackgroundFragment
 		}

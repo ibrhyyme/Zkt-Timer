@@ -2,10 +2,12 @@
 // WebViews only allow audio after a user gesture, so the context is created on the
 // viewer's own key press; someone else's change only beeps once that has happened.
 
+import { soundsEnabled } from '../../../lib/sounds';
+
 let ctx: AudioContext | null = null;
 
 export function climateBeep(kind: 'key' | 'power', fromUser: boolean): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !soundsEnabled()) return;
     try {
         if (!ctx) {
             if (!fromUser) return;

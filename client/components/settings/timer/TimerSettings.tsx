@@ -43,7 +43,6 @@ export default function TimerSettings() {
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 	const pbConfetti = useSettings('pb_confetti');
 	const shortcutHint = useSettings('shortcut_hint');
-	const shortcutHintVoice = useSettings('shortcut_hint_voice');
 	// The threshold row edits the bucket the timer is on: one number cannot fit every puzzle.
 	const warmupThreshold = useWarmupThreshold();
 	const warmupAutoSave = warmupThreshold.mode;
@@ -52,7 +51,6 @@ export default function TimerSettings() {
 	// Inspection
 	const inspection = useSettings('inspection');
 	const inspectionDelay = useSettings('inspection_delay');
-	const playInspectionSound = useSettings('play_inspection_sound');
 	const inspectionAutoStart = useSettings('inspection_auto_start');
 	const inspectionExceptBld = useSettings('inspection_except_bld');
 
@@ -163,13 +161,6 @@ export default function TimerSettings() {
 					isActive={shortcutHint}
 					onClick={() => setSetting('shortcut_hint', !shortcutHint)}
 				/>
-				<TimerSettingsToggle
-					label={t('timer_settings.shortcut_hint_voice')}
-					description={t('timer_settings.shortcut_hint_voice_desc')}
-					hidden={!shortcutHint}
-					isActive={shortcutHintVoice}
-					onClick={() => setSetting('shortcut_hint_voice', !shortcutHintVoice)}
-				/>
 				<TimerSettingsSelect
 					label={t('timer_settings.warmup_auto_save')}
 					description={t('timer_settings.warmup_auto_save_desc')}
@@ -218,13 +209,6 @@ export default function TimerSettings() {
 					hidden={!inspection}
 					formatValue={(v) => `${v}s`}
 					onChange={(v) => setSetting('inspection_delay', v)}
-				/>
-				<TimerSettingsToggle
-					label={t('timer_settings.play_sound')}
-					description={t('timer_settings.play_sound_desc')}
-					isActive={playInspectionSound}
-					hidden={!inspection}
-					onClick={() => toggleSetting('play_inspection_sound')}
 				/>
 				<TimerSettingsToggle
 					label={t('timer_settings.inspection_auto_start')}

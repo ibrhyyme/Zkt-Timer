@@ -182,7 +182,7 @@
 		&--online {
 			.zt-admin-dashboard__table-header,
 			.zt-admin-dashboard__table-row {
-				grid-template-columns: 2fr 1fr;
+				grid-template-columns: 2fr 1fr auto;
 			}
 		}
 	}

@@ -60,6 +60,7 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 		smart_telemetry_enabled
 		magnet_telemetry_enabled
 		online_battle_enabled
+		welcome_message_enabled
 		featureOverrides {
 			feature
 			mode
@@ -207,6 +208,12 @@ mutation recordActivityHeartbeat {
 
 mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String, $replyToId: String, $gifProvider: String, $gifId: String) {
 	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId, replyToId: $replyToId, gifProvider: $gifProvider, gifId: $gifId) {
+		...MessageFragment
+	}
+}
+
+mutation answerWelcomeSurvey($messageId: String!, $source: String!) {
+	answerWelcomeSurvey(messageId: $messageId, source: $source) {
 		...MessageFragment
 	}
 }

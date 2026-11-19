@@ -83,6 +83,61 @@
 		}
 	}
 
+	// Admin: the same frame as Pro in the error red, so a message from the team is told
+	// apart from a member's at a glance. Shares Pro's geometry (ring width per size).
+	&--admin {
+		--zt-avi-ring: 4px;
+
+		padding: var(--zt-avi-ring);
+		border-radius: 50%;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			border: 2px solid rgb(var(--error-color));
+		}
+
+		&#{$self}--large {
+			--zt-avi-ring: 6px;
+
+			&::before {
+				border-width: 3px;
+			}
+		}
+
+		&#{$self}--small,
+		&#{$self}--tiny {
+			--zt-avi-ring: 3px;
+		}
+	}
+
+	// A small filled tag (white on red, the E-30 rule) centred on the ring's top edge, half
+	// above it. Hosts must not clip the avatar box for it to show (see AccountDropdown).
+	&__admin-label {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		z-index: 2;
+		transform: translate(-50%, -50%);
+		padding: 0 4px;
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--error-color));
+		color: $status-fill-text-light;
+		font-size: 8px;
+		font-weight: 600;
+		line-height: 11px;
+		white-space: nowrap;
+		pointer-events: none;
+
+		&--small {
+			padding: 0 3px;
+			font-size: 7px;
+			line-height: 9px;
+		}
+	}
+
 	// Large (profile) avatar only: a crown medallion, the badge premium accounts carry
 	// elsewhere, a disc about a third of the avatar cut out of it by a ring in the page colour.
 	&__pro-badge {

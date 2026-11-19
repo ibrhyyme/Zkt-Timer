@@ -52,6 +52,7 @@ export * from './ArchiveAdmin.schema';
 export * from './Translation.schema';
 export * from './Activity.schema';
 export * from './Messaging.schema';
+export * from './Welcome.schema';
 export * from './SmartCubeTelemetry.schema';
 export * from './MagnetTelemetry.schema';
 export * from './Cube.schema';

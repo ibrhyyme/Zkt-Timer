@@ -109,6 +109,9 @@ export default function SocialSettings() {
 						</button>
 					))}
 				</div>
+				{/* Admins write past this setting (openAdminConversation on the server), so
+				    the card says so instead of promising "nobody" and breaking it. */}
+				<p className={b('policy-note')}>{t('social.policy_admin_note')}</p>
 			</SettingsCard>
 
 			{/* Read receipts, typing and presence are reciprocal on the server: switching

@@ -260,6 +260,7 @@ function toWireMessage(message: any) {
 		body: message.body,
 		gif_provider: message.gif_provider ?? null,
 		gif_id: message.gif_id ?? null,
+		kind: message.kind ?? null,
 		created_at: message.created_at,
 		// Null on everything that has never been touched, which is almost every message.
 		edited_at: message.edited_at ?? null,

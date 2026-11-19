@@ -384,6 +384,7 @@ fragment UserForMeFragment on IUserAccount {
 	email_verified
 	has_password
 	join_country
+	acquisition_source
 	timer_background {
 		...TimerBackgroundFragment
 	}
@@ -465,6 +466,7 @@ fragment MessageFragment on Message {
 	body
 	gif_provider
 	gif_id
+	kind
 	created_at
 	edited_at
 	reactions {

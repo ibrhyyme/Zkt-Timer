@@ -27,6 +27,7 @@ import Landing from '../landing/Landing';
 
 import SettingsPage from '../settings/page/SettingsPage';
 import TimerSettings from '../settings/timer/TimerSettings';
+import SoundSettings from '../settings/sounds/SoundSettings';
 import InputSettings from '../settings/input/InputSettings';
 import SmartCubeSettings from '../settings/smart_cube/SmartCubeSettings';
 import ScrambleSettings from '../settings/scramble/ScrambleSettings';
@@ -216,6 +217,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// so its settings have to as well. The Data section gates itself.
 	route('/settings', App, SettingsPage, TimerSettings, false),
 	route('/settings/timer', App, SettingsPage, TimerSettings, false),
+	route('/settings/sounds', App, SettingsPage, SoundSettings, false),
 	route('/settings/input', App, SettingsPage, InputSettings, false),
 	// My Cubes needs an account (cubes live on the server); a visitor is sent to log in.
 	route('/settings/cubes', App, SettingsPage, MyCubes),

@@ -213,6 +213,7 @@ export default function ExtrasTab({
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const hapticFeedback = useSettings('haptic_feedback');
+	const soundsEnabled = useSettings('sounds_enabled');
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
@@ -262,6 +263,14 @@ export default function ExtrasTab({
 			isActive: hapticFeedback,
 			hidden: !isNative(),
 			onClick: () => toggleSetting('haptic_feedback'),
+		},
+		// The master switch over every timer sound (lib/sounds.ts); each sound's own switch
+		// lives in Settings > Sounds (/settings/sounds).
+		{
+			label: t('quick_controls.sounds'),
+			isActive: soundsEnabled,
+			hidden: false,
+			onClick: () => toggleSetting('sounds_enabled'),
 		},
 		{
 			label: t('quick_controls.show_recognition_split'),

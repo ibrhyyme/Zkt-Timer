@@ -2,13 +2,15 @@ import React from 'react';
 import './UserActions.scss';
 import {gql} from '@apollo/client';
 import {gqlMutate, gqlQuery} from '../../../api';
-import {openModal} from '../../../../actions/general';
+import {closeModal, openModal} from '../../../../actions/general';
+import {openDirectMessage} from '../../../../util/chat-bubbles';
 import BanUser from '../ban_user/BanUser';
 import SetProModal from '../set_pro/SetProModal';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
 import {toastSuccess} from '../../../../util/toast';
 import {useDispatch} from 'react-redux';
+import {useHistory} from 'react-router-dom';
 import {UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
 import {useTranslation} from 'react-i18next';
 import SendPushModal from '../send_push/SendPushModal';
@@ -23,6 +25,7 @@ interface Props {
 
 export default function UserActions(props: Props) {
 	const dispatch = useDispatch();
+	const history = useHistory();
 	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
 	const {user, updateUser} = props;
@@ -210,6 +213,14 @@ export default function UserActions(props: Props) {
 			<div className={b('group')}>
 				<span className={b('group-label')}>{t('group_tools')}</span>
 				<div className={b('grid')}>
+					<Button
+						text={t('send_message')}
+						primary
+						onClick={() => {
+							dispatch(closeModal());
+							openDirectMessage(history, user);
+						}}
+					/>
 					<Button
 						text={t('send_push')}
 						primary

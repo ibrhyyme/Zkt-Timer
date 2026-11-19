@@ -24,6 +24,8 @@ import Avatar from '../common/avatar/Avatar';
 import AvatarImage from '../common/avatar/avatar_image/AvatarImage';
 import PresenceDot from './presence_dot/PresenceDot';
 import SwipeRow, {SwipeAction} from './swipe_row/SwipeRow';
+import WelcomeSurvey from './welcome_survey/WelcomeSurvey';
+import AdminTemplates from './admin_templates/AdminTemplates';
 import MessageBubble from './message_bubble/MessageBubble';
 import Loading from '../common/loading/Loading';
 import Empty from '../common/empty/Empty';
@@ -62,6 +64,7 @@ import GifPicker from '../common/gif/GifPicker';
 import GifMedia from '../common/gif/GifMedia';
 import {GifItem, gifWaitMinutes, isGifSearchAvailable} from '../../lib/klipy';
 import {GIF_PROVIDER_KLIPY} from '../../../shared/gif';
+import {WELCOME_MESSAGE_KIND, insertByTime, reopensThread} from '../../../shared/welcome';
 import MessageBody from './message_body/MessageBody';
 import block from '../../styles/bem';
 import './Messages.scss';
@@ -155,6 +158,8 @@ function MessagesPage() {
 	const [threadAccepted, setThreadAccepted] = useState(false);
 	// The sender's side of the same rule: one message into a request box, then wait.
 	const [awaitingAccept, setAwaitingAccept] = useState(false);
+	// Read-only for this side: the answered welcome message (shared/welcome.ts).
+	const [replyLocked, setReplyLocked] = useState(false);
 	const [threadMuted, setThreadMuted] = useState(false);
 	const [accepting, setAccepting] = useState(false);
 	// Only one row may sit open; the list owns that, not the row.
@@ -271,6 +276,7 @@ function MessagesPage() {
 			setMessages([...rows].reverse());
 			setThreadAccepted(Boolean(res?.data?.messages?.accepted));
 			setAwaitingAccept(Boolean(res?.data?.messages?.awaiting_accept));
+			setReplyLocked(Boolean(res?.data?.messages?.reply_locked));
 			setThreadMuted(Boolean(res?.data?.messages?.muted));
 		} finally {
 			if (mounted.current) setThreadLoading(false);
@@ -282,6 +288,7 @@ function MessagesPage() {
 			setMessages([]);
 			setThreadAccepted(false);
 			setAwaitingAccept(false);
+			setReplyLocked(false);
 			return;
 		}
 
@@ -408,6 +415,7 @@ function MessagesPage() {
 				const reading = incoming.conversation_id === activeId;
 				if (reading) {
 					setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+					if (reopensThread(incoming as any)) setReplyLocked(false);
 					void gqlMutateTyped(MarkConversationReadDocument, {conversationId: activeId}).catch(() => {});
 				}
 
@@ -992,6 +1000,7 @@ function MessagesPage() {
 				{picked && <div className={b('compose-spacer')} />}
 
 				<div className={b('composer')}>
+					{picked && <AdminTemplates username={picked.username || ''} onPick={setDraft} />}
 					<textarea
 						className={b('composer-input')}
 						value={draft}
@@ -1066,8 +1075,8 @@ function MessagesPage() {
 					{messages.map((m) => {
 						const mine = m.sender_id === me?.id;
 						return (
+							<React.Fragment key={m.id}>
 							<MessageBubble
-								key={m.id}
 								mine={mine}
 								myUserId={me?.id}
 								reactions={(m as any).reactions || []}
@@ -1156,6 +1165,16 @@ function MessagesPage() {
 									</div>
 								)}
 							</MessageBubble>
+							{m.kind === WELCOME_MESSAGE_KIND && !mine && (
+								<WelcomeSurvey
+									messageId={m.id}
+									onAnswered={(sent) => {
+										setMessages((prev) => insertByTime(prev, sent));
+										setReplyLocked(true);
+									}}
+								/>
+							)}
+							</React.Fragment>
 						);
 					})}
 					{/* Sits inside the scroll area so it is pinned to the newest message
@@ -1225,7 +1244,7 @@ function MessagesPage() {
 					<Button
 						gray
 						title={t('messages.attach_solve')}
-						disabled={sending}
+						disabled={sending || replyLocked}
 						icon={<Cube weight="bold" />}
 						onClick={() => {
 							setGifOpen(false);
@@ -1236,7 +1255,7 @@ function MessagesPage() {
 						<Button
 							gray
 							title={t('gif.button')}
-							disabled={sending || awaitingAccept}
+							disabled={sending || awaitingAccept || replyLocked}
 							icon={<Gif weight="bold" />}
 							onClick={() => {
 								setPickerOpen(false);
@@ -1244,11 +1263,18 @@ function MessagesPage() {
 							}}
 						/>
 					)}
+					<AdminTemplates username={threadOther?.username || ''} onPick={setDraft} />
 					<textarea
 						className={b('composer-input')}
 						value={draft}
-						disabled={awaitingAccept}
-						placeholder={awaitingAccept ? t('messages.awaiting_accept') : t('messages.placeholder')}
+						disabled={awaitingAccept || replyLocked}
+						placeholder={
+							replyLocked
+								? t('messages.reply_locked')
+								: awaitingAccept
+								? t('messages.awaiting_accept')
+								: t('messages.placeholder')
+						}
 						onChange={(e) => {
 							setDraft(e.target.value);
 							notifyTyping();
@@ -1264,7 +1290,7 @@ function MessagesPage() {
 					/>
 					<Button
 						primary
-						disabled={sending || awaitingAccept || !draft.trim()}
+						disabled={sending || awaitingAccept || replyLocked || !draft.trim()}
 						icon={<PaperPlaneRight weight="bold" />}
 						onClick={handleSend}
 					/>

@@ -189,6 +189,35 @@ export async function createDirectConversation(senderId: string, recipientId: st
 	});
 }
 
+/**
+ * The one-to-one thread an admin writes into, opened or reused.
+ *
+ * An admin's message skips the recipient's dm_policy and the request box: it lands in
+ * the inbox as an accepted conversation, so a member who chose "nobody" or "people I
+ * know" still sees what the team sends them. Blocks are the caller's to check, and they
+ * still win: someone who blocked the account has said so explicitly.
+ */
+export async function openAdminConversation(adminId: string, recipientId: string): Promise<string> {
+	const existing = await findDirectConversation(adminId, recipientId);
+	if (!existing) {
+		const created = await createDirectConversation(adminId, recipientId, true);
+		return created.id;
+	}
+
+	// A thread that is still sitting in their request box (opened before this rule, or
+	// by the member writing first) is moved into the inbox the same way.
+	await acceptForEveryone(existing.id);
+	return existing.id;
+}
+
+/** Marks every participant who has not accepted the thread yet as accepted. */
+export async function acceptForEveryone(conversationId: string) {
+	return getPrisma().conversationParticipant.updateMany({
+		where: {conversation_id: conversationId, accepted_at: null},
+		data: {accepted_at: new Date()},
+	});
+}
+
 export async function getParticipant(conversationId: string, userId: string) {
 	return getPrisma().conversationParticipant.findUnique({
 		where: {conversation_id_user_id: {conversation_id: conversationId, user_id: userId}},
@@ -206,8 +235,10 @@ export async function insertMessage(params: {
 	solveId?: string | null;
 	replyToId?: string | null;
 	gif?: {provider: string; id: string} | null;
+	/** See Message.kind in schema.prisma. Omitted for everything a person typed. */
+	kind?: string | null;
 }) {
-	const {conversationId, senderId, body, solveId, replyToId, gif} = params;
+	const {conversationId, senderId, body, solveId, replyToId, gif, kind} = params;
 	const now = new Date();
 
 	const [message] = await getPrisma().$transaction([
@@ -220,6 +251,7 @@ export async function insertMessage(params: {
 				reply_to_id: replyToId || null,
 				gif_provider: gif?.provider || null,
 				gif_id: gif?.id || null,
+				kind: kind || null,
 			},
 			include: messageInclude,
 		}),

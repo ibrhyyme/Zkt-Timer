@@ -2,15 +2,17 @@ import React from 'react';
 import SelectMenu from '../../common/select_menu/SelectMenu';
 import { gql } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp, Lifebuoy } from 'phosphor-react';
+import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp, Lifebuoy, ChatCircleText } from 'phosphor-react';
 import { gqlQuery } from '../../api';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import { openModal } from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
 import { socketClient } from '../../../util/socket/socketio';
 import GrowthReportPanel from './GrowthReportPanel';
+import IconButton from '../../common/icon_button/IconButton';
+import { openDirectMessage } from '../../../util/chat-bubbles';
 import './AdminDashboard.scss';
 
 type ActivityPanel = 'day' | 'week' | 'month' | 'online';
@@ -346,6 +348,7 @@ function sortOnlineUsers(users: OnlineUserRow[] | null | undefined): OnlineUserR
 }
 
 function OnlineUsersPanel() {
+	const history = useHistory();
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const [rows, setRows] = React.useState<OnlineUserRow[] | null>(null);
@@ -402,6 +405,7 @@ function OnlineUsersPanel() {
 					<div className="zt-admin-dashboard__table-header">
 						<span>{t('admin_dashboard.tbl_user')}</span>
 						<span>{t('admin_dashboard.tbl_tabs')}</span>
+						<span />
 					</div>
 					{rows.map((row) => (
 						<div
@@ -422,6 +426,16 @@ function OnlineUsersPanel() {
 								<span className="zt-admin-dashboard__table-username">{row.user.username}</span>
 							</span>
 							<span className="zt-admin-dashboard__table-time">{row.tabCount}</span>
+							<IconButton
+								icon={<ChatCircleText weight="bold" />}
+								label={t('admin_dashboard.send_message')}
+								size="sm"
+								variant="ghost"
+								onClick={(e) => {
+									e.stopPropagation();
+									openDirectMessage(history, row.user);
+								}}
+							/>
 						</div>
 					))}
 				</div>

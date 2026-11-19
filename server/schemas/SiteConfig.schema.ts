@@ -117,6 +117,10 @@ export class SiteConfig {
 	@Field(() => Int, {nullable: true})
 	method_steps_version?: number;
 
+	/** Welcome message to new members, off by default. Nullable: an older cached config lacks it. */
+	@Field({nullable: true})
+	welcome_message_enabled?: boolean;
+
 	@Field(() => [FeatureOverrideEntry])
 	featureOverrides: FeatureOverrideEntry[];
 
@@ -373,6 +377,9 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	online_battle_enabled?: boolean;
+
+	@Field({nullable: true})
+	welcome_message_enabled?: boolean;
 
 	@Field(() => [FeatureOverrideEntryInput], {nullable: true})
 	featureOverrides?: FeatureOverrideEntryInput[];

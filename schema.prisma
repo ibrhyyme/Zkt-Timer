@@ -52,6 +52,12 @@ model UserAccount {
   // and the policy version accepted. Null = legacy account created before consent gating.
   terms_accepted_at          DateTime?
   consent_version            String?
+  /// When the one-time welcome message from the admin was sent (services/welcome_message.ts).
+  /// Doubles as the claim that keeps two concurrent heartbeats from sending it twice.
+  welcome_sent_at            DateTime?
+  /// The answer to "where did you hear about Zkt-Timer?" under that welcome message, one of
+  /// ACQUISITION_SOURCES in shared/welcome.ts. Null until answered; answered once.
+  acquisition_source         String?
   action_log                 ActionLog[]
 
   algorithm_override            AlgorithmOverride[]
@@ -355,6 +361,11 @@ model SiteConfig {
   /// this flag's feature_overrides list can play while it is off, so it is tried live
   /// before everyone sees it. The Leaderboard nav entry stays hidden until it is on.
   online_battle_enabled Boolean @default(false)
+  /// Sends each new account one welcome message from an admin after their second active
+  /// minute. Off by default. Switching it on records who switched it as the sender.
+  welcome_message_enabled Boolean @default(false)
+  /// The admin the welcome message comes from. Set by updateSiteConfig, never by the client.
+  welcome_sender_id    String?
   /// Bumped by the smart cube method steps reindex when it finishes. Devices only ever
   /// fetch solves they do not have yet, so without this a reindex that repaired a solve's
   /// breakdown on the server never reached the copy the device's stats read from.
@@ -1968,6 +1979,10 @@ model ConversationParticipant {
   /// Muting is invisible to the other side by design: they keep writing normally and
   /// are never told, which is the whole reason it is safer to offer than a block.
   muted           Boolean   @default(false)
+  /// This participant can read but not write. Set on the member once they answer the
+  /// welcome message (the admin thanks them and the thread closes); cleared as soon as
+  /// an admin writes into the thread again (Messaging.resolver sendMessage).
+  reply_locked    Boolean   @default(false)
   created_at      DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
@@ -2008,6 +2023,9 @@ model Message {
   /// message carries an empty body.
   gif_provider    String?
   gif_id          String?
+  /// Null on every message a person typed. 'welcome' marks the automatic welcome message,
+  /// which the client draws with the "where did you hear about us" choices under it.
+  kind            String?
   created_at      DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)

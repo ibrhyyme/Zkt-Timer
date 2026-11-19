@@ -77,6 +77,14 @@ export interface AllSettings {
 	/** The hint also speaks its punch (public/audio/shortcut/). Platform setting, on. */
 	shortcut_hint_voice: boolean;
 	/**
+	 * Master switch over every sound the timer makes: inspection calls, the shortcut hint
+	 * voice and the smart cube scramble beep. Off silences all of them whatever their own
+	 * setting says (lib/sounds.ts). Platform setting, on.
+	 */
+	sounds_enabled: boolean;
+	/** The beep when a smart cube scramble is complete. Platform setting, on. */
+	smart_cube_scramble_sound: boolean;
+	/**
 	 * Warm-up mode auto-save (rules in lib/warmup/auto_save.ts). 'pb' saves a warm-up solve
 	 * that would be a new single PB; 'threshold' also saves one at or under the bucket's time
 	 * in `warmup_auto_save_thresholds`. Platform settings (prefs blob), so no schema change.
@@ -262,6 +270,8 @@ const defaultSettings: AllSettings = {
 	remote_input_compat: false,
 	shortcut_hint: true,
 	shortcut_hint_voice: true,
+	sounds_enabled: true,
+	smart_cube_scramble_sound: true,
 	warmup_auto_save: 'pb',
 	warmup_auto_save_thresholds: {},
 	timer_module_count: 3,

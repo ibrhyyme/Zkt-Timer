@@ -20,6 +20,7 @@ import {
 	MAX_REPORT_REASON_LENGTH,
 	ALLOWED_REACTIONS,
 	acceptConversation,
+	acceptForEveryone,
 	checkDmGate,
 	clearConversation,
 	createDirectConversation,
@@ -37,6 +38,7 @@ import {
 	setConversationMuted,
 	setMessageReaction,
 	markConversationRead,
+	openAdminConversation,
 	totalUnread,
 	unsendMessage,
 } from '../models/messaging';
@@ -155,10 +157,16 @@ export class MessagingResolver {
 				banned_forever: false,
 				id: {notIn: [context.user.id, ...blockedIds]},
 				// No preference row means defaults, which are searchable and reachable.
-				OR: [
-					{social_preference: {is: null}},
-					{social_preference: {searchable: true, dm_policy: {not: DmPolicy.NOBODY}}},
-				],
+				// An admin can write to anyone (openAdminConversation), so the admin's
+				// search does not hide the people who opted out of it.
+				...(context.user.admin
+					? {}
+					: {
+							OR: [
+								{social_preference: {is: null}},
+								{social_preference: {searchable: true, dm_policy: {not: DmPolicy.NOBODY}}},
+							],
+					  }),
 			},
 			orderBy: {username: 'asc'},
 			take: RECIPIENT_SEARCH_LIMIT,
@@ -206,6 +214,7 @@ export class MessagingResolver {
 			accepted: Boolean(participant.accepted_at),
 			awaiting_accept: await requestQuotaUsed(conversationId, context.user.id),
 			muted: Boolean(participant.muted),
+			reply_locked: Boolean(participant.reply_locked),
 		};
 	}
 
@@ -223,6 +232,7 @@ export class MessagingResolver {
 	): Promise<Message> {
 		await assertMessagingEnabled(context);
 		const senderId = context.user.id;
+		const isAdmin = Boolean(context.user.admin);
 
 		// Only a well-formed provider id is stored: it ends up in a request URL on the
 		// reader's device, so anything else is refused rather than cleaned up.
@@ -293,13 +303,22 @@ export class MessagingResolver {
 
 			// Replying to a request is what accepts it.
 			await acceptConversation(targetConversationId, senderId);
+			// An admin's reply moves the thread out of the member's request box too.
+			if (isAdmin) {
+				await acceptForEveryone(targetConversationId);
+			}
 		} else {
 			if (!recipientId) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Recipient is required');
 			}
 
-			const existing = await findDirectConversation(senderId, recipientId);
-			if (existing) {
+			const existing = isAdmin ? null : await findDirectConversation(senderId, recipientId);
+			if (isAdmin) {
+				if (recipientId === senderId || (await isBlockedBetween(senderId, recipientId))) {
+					throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cannot message this user');
+				}
+				targetConversationId = await openAdminConversation(senderId, recipientId);
+			} else if (existing) {
 				targetConversationId = existing.id;
 				await acceptConversation(existing.id, senderId);
 			} else {
@@ -326,7 +345,20 @@ export class MessagingResolver {
 		// rather than at the conversation level so it also covers a thread the recipient
 		// later un-accepted, and so the sender gets a clear refusal instead of a message
 		// that silently goes nowhere.
-		if (await requestQuotaUsed(targetConversationId, senderId)) {
+		// A thread closed for this side (the answered welcome message) takes no more
+		// writing from it. An admin writing in opens it again for everyone else.
+		if (isAdmin) {
+			await getPrisma().conversationParticipant.updateMany({
+				where: {conversation_id: targetConversationId, user_id: {not: senderId}, reply_locked: true},
+				data: {reply_locked: false},
+			});
+		} else if ((await getParticipant(targetConversationId, senderId))?.reply_locked) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'This conversation is closed', {
+				i18nKey: 'messages.reply_locked',
+			});
+		}
+
+		if (!isAdmin && (await requestQuotaUsed(targetConversationId, senderId))) {
 			throw new GraphQLError(
 				ErrorCode.BAD_INPUT,
 				'Wait for them to accept your request',

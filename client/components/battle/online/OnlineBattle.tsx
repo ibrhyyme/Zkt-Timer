@@ -28,6 +28,7 @@ import ResultScreen from './ResultScreen';
 import DuelWaitScreen from './DuelWaitScreen';
 import DuelInviteScreen, {DuelInvite} from './DuelInviteScreen';
 import './OnlineBattle.scss';
+import {soundsEnabled} from '../../../lib/sounds';
 
 const b = block('online-battle');
 
@@ -198,7 +199,7 @@ export function OnlineBattleInner({duelTarget = null, duel}: InnerProps) {
 		if (!matchId || stage !== 'match') return;
 		void hapticNotification('success');
 		const audio = foundSoundRef.current;
-		if (audio) {
+		if (audio && soundsEnabled()) {
 			audio.currentTime = 0;
 			audio.play().catch(() => undefined);
 		}

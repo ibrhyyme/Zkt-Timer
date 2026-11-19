@@ -14,6 +14,7 @@ import { resourceUri } from '../../util/storage';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import LiveTime from '../common/live_time/LiveTime';
 import './RoomTimerOverlay.scss';
+import { soundAllowed } from '../../lib/sounds';
 
 // Timer phases
 const STATUS = {
@@ -438,7 +439,7 @@ export default function RoomTimerOverlay({
             setTime(remaining);
 
             // Inspection sound cues (8s and 12s)
-            if (playInspectionSound) {
+            if (playInspectionSound && soundAllowed('play_inspection_sound')) {
                 const elapsedSec = elapsed / 1000;
                 if (elapsedSec >= 8 && !inspectionSoundsPlayedRef.current.has(8)) {
                     inspectionSoundsPlayedRef.current.add(8);

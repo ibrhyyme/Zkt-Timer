@@ -17,6 +17,7 @@ import { initSmartSolver } from '../../../util/smart_scramble';
 import { initSolverWorker } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { soundAllowed } from '../../../lib/sounds';
 import { useTimerStore } from '../../../util/hooks/useTimerStore';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
 import { LIVE_ANALYSIS_SLOT_ID } from './LiveAnalysisSlot';
@@ -90,6 +91,7 @@ function preloadScrambleCompleteSoundWeb(): void {
 }
 
 function playScrambleCompleteSound() {
+	if (!soundAllowed('smart_cube_scramble_sound')) return;
 	if (playNativeSound('success')) return;
 	try {
 		if (scrambleSoundEl) {

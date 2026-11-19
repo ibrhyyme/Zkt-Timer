@@ -1326,6 +1326,9 @@
     "admin_disabled_banner": "{{page}} is currently disabled — only admin (you) can see this",
     "online_battle_enabled": "Online Battle",
     "online_battle_enabled_desc": "Queue, matches and the Leaderboard. While off, only admins and the users listed below can play. The Leaderboard menu entry also needs Rankings on.",
+    "welcome_message_enabled": "Welcome message",
+    "welcome_message_enabled_desc": "After a new member spends about a minute in the app, your account sends them a one-time welcome message with \"where did you hear about us\" choices under it. The sender is the admin who switches this on. Only accounts created in the last 3 days receive it.",
+    "welcome_stats_summary": "Sent to {{sent}}, answered by {{answered}}",
     "online_battle_enable_confirm": "Online Battle opens to everyone: the Leaderboard appears in the menu and the page becomes indexable. Continue?"
   },
   "offline": {
@@ -1639,6 +1642,7 @@
   "settings": {
     "page_title": "Settings",
     "tab_timer": "Timer",
+    "tab_sounds": "Sounds",
     "tab_appearance": "Appearance",
     "tab_colors": "Colors",
     "tab_data": "Data",
@@ -1759,8 +1763,12 @@
     "pb_confetti_desc": "Show confetti when you beat your personal best",
     "shortcut_hint": "Shortcut hint",
     "shortcut_hint_desc": "Tell me after the solve when the scramble had a very short cross or XCross",
-    "shortcut_hint_voice": "Say it out loud",
+    "shortcut_hint_voice": "Shortcut voice",
     "shortcut_hint_voice_desc": "The shortcut hint also speaks its line",
+    "sounds_enabled": "All sounds",
+    "sounds_enabled_desc": "Turn it off to silence every sound in the app",
+    "smart_cube_scramble_sound": "Smart cube sound",
+    "smart_cube_scramble_sound_desc": "Plays a short beep when a smart cube scramble is done",
     "warmup_auto_save": "Auto-save in warm-up",
     "warmup_auto_save_desc": "In warm-up mode, the solves you pick are saved on their own. You can undo it until your next solve.",
     "warmup_auto_save_off": "Off",
@@ -1772,8 +1780,8 @@
     "use_3d_scramble_visual_desc": "Show 3D preview for supported puzzles",
     "inspection": "Inspection",
     "inspection_desc": "Gives you competition-style inspection before the time starts.",
-    "play_sound": "Play sound",
-    "play_sound_desc": "Play an audio alert when 8 and 12 seconds have passed",
+    "play_sound": "Inspection sound",
+    "play_sound_desc": "Plays an alert at 8 and 12 seconds of inspection",
     "inspection_auto_start": "Auto start inspection",
     "inspection_auto_start_desc": "Automatically start when inspection time runs out",
     "inspection_except_bld": "Skip inspection on BLD",
@@ -1814,6 +1822,7 @@
     "category_input": "Input",
     "category_confirmations": "Confirmations",
     "category_inspection": "Inspection",
+    "category_sounds": "Sounds",
     "category_stackmat": "StackMat",
     "category_qiyi": "QiYi Timer",
     "qiyi_auto_inspection": "Start inspection with the restart button",
@@ -2893,6 +2902,7 @@
     "solves_section": "Solves",
     "action_required": "Action Required",
     "online_now": "Online Now",
+    "send_message": "Send message",
     "dau": "Daily Active",
     "wau": "Weekly Active",
     "mau": "Monthly Active",
@@ -3067,6 +3077,7 @@
       "remove_premium": "Remove Premium",
       "delete_user": "Delete user",
       "send_push": "Send Notification",
+      "send_message": "Send message",
       "export_user_data": "Download solves as JSON",
       "user_data_exported": "User data downloaded",
       "delete_confirm": "Are you sure you want to delete \"{{username}}\"? This action cannot be undone.",
@@ -3532,6 +3543,7 @@
     "inspection": "Inspection",
     "hide_time_when_solving": "Hide Time When Solving",
     "haptic_feedback": "Haptic Feedback",
+    "sounds": "Sounds",
     "slam_to_stop": "Drop to Stop",
     "slam_sensitivity": "Sensitivity",
     "slam_low": "Low",
@@ -5569,12 +5581,57 @@
     "request_accept": "Accept",
     "request_delete": "Delete",
     "awaiting_accept": "Waiting for your request to be accepted",
+    "reply_locked": "You can't reply to this conversation",
     "error_request_pending": "You cannot send another message until they accept your request.",
     "mute": "Mute",
     "unmute": "Unmute",
     "reply": "Reply",
     "reply_to_self": "Yourself",
     "quote_removed": "Message removed"
+  },
+  "admin_templates": {
+    "button": "Quick replies",
+    "title": "Quick replies",
+    "items": {
+      "thanks": {
+        "label": "Thanks",
+        "text": "Hi {{username}}, hope you're doing well. Thank you for using my app. If you run into a problem or have an idea, you can reach me from Account Settings > Support."
+      },
+      "feedback": {
+        "label": "Ask for feedback",
+        "text": "Hi {{username}}, how do you like ZKT Timer? What did you like most, and what would you change?"
+      },
+      "fixed": {
+        "label": "Issue fixed",
+        "text": "Hi {{username}}, I fixed the problem you reported. Could you close and reopen the app and try again? Thanks for letting me know."
+      },
+      "new_feature": {
+        "label": "New feature",
+        "text": "Hi {{username}}, I added some new features to the app. Take a look when you get a chance, I think you'll like them."
+      },
+      "review": {
+        "label": "Ask for a review",
+        "text": "Hi {{username}}, if you like the app, a short review on the App Store or Google Play would help me a lot. Thanks in advance."
+      },
+      "record": {
+        "label": "Record congrats",
+        "text": "Hi {{username}}, I saw your new record, congratulations! Keep it up."
+      }
+    }
+  },
+  "welcome_message": {
+    "body": "Hi {{name}}, how are you? I'm {{sender}}, the developer of the timer. I hope you like my app, there's a lot in it waiting for you. If you run into a problem or have an idea, you can reach me from Account Settings > Support. By the way, where did you hear about ZKT Timer?",
+    "thanks": "Thanks, happy cubing!",
+    "question": "Where did you hear about Zkt-Timer?",
+    "sources": {
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "friend": "From a friend",
+      "search": "Web search",
+      "app_store": "App Store / Google Play",
+      "competition": "At a competition",
+      "other": "Other"
+    }
   },
   "social": {
     "who_can_message": "Who can message me",
@@ -5584,6 +5641,7 @@
     "policy_known_hint": "A stranger's first message lands in your requests",
     "policy_nobody": "Nobody",
     "policy_nobody_hint": "No new conversations; existing ones keep working",
+    "policy_admin_note": "ZKT Timer admins can message you regardless of this setting. If you block an admin, they can't write to you either.",
     "visibility": "Visibility",
     "searchable": "Show me in message search",
     "notifications": "Notifications",

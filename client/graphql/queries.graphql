@@ -178,6 +178,7 @@ query siteConfig {
 		magnet_telemetry_enabled
 		online_battle_enabled
 		method_steps_version
+		welcome_message_enabled
 		featureOverrides {
 			feature
 			mode
@@ -782,6 +783,7 @@ query dmMessages($conversationId: String!, $before: DateTime) {
 		accepted
 		awaiting_accept
 		muted
+		reply_locked
 	}
 }
 
@@ -959,5 +961,16 @@ query zktPersonBests($zktId: String!) {
 		event_id
 		single
 		average
+	}
+}
+
+query adminWelcomeStats {
+	adminWelcomeStats {
+		sent
+		answered
+		sources {
+			source
+			count
+		}
 	}
 }

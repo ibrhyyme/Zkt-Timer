@@ -92,6 +92,10 @@ export class Message {
 	@Field({nullable: true})
 	gif_id?: string;
 
+	/** Null on typed messages; 'welcome' on the automatic welcome message (shared/welcome.ts). */
+	@Field({nullable: true})
+	kind?: string;
+
 	/** Set once the sender changed the text. Null on everything untouched. */
 	@Field({nullable: true})
 	edited_at?: Date;
@@ -172,6 +176,10 @@ export class MessageList {
 	/** Whether the viewer has this conversation muted. */
 	@Field()
 	muted: boolean;
+
+	/** The viewer can read but not write (ConversationParticipant.reply_locked). */
+	@Field({nullable: true})
+	reply_locked?: boolean;
 }
 
 @ObjectType()

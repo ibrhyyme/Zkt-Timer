@@ -31,3 +31,19 @@ export function openChatBubble(detail: OpenChatBubbleDetail) {
 export function bubblesAvailable(): boolean {
 	return typeof window !== 'undefined' && window.innerWidth > 768;
 }
+
+/**
+ * Opens a conversation with someone picked from outside the inbox (the admin's online
+ * list or user panel): a bubble over the current page on a wide screen, the messages
+ * page with the person already searched for on a phone or when already there.
+ */
+export function openDirectMessage(
+	history: {push: (path: string) => void; location: {pathname: string}},
+	user: {id: string; username?: string | null}
+) {
+	if (bubblesAvailable() && !history.location.pathname.startsWith('/messages')) {
+		openChatBubble({conversationId: null, userId: user.id, username: user.username || '', user});
+		return;
+	}
+	history.push(`/messages/new?to=${encodeURIComponent(user.username || '')}`);
+}

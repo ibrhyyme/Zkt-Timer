@@ -1326,6 +1326,9 @@
     "admin_disabled_banner": "{{page}} está desactivado — solo el admin (tú) puede ver esto",
     "online_battle_enabled": "Online Battle",
     "online_battle_enabled_desc": "Cola, partidas y Clasificación. Desactivado, solo pueden jugar los admins y los usuarios de la lista de abajo. Para que Clasificación aparezca en el menú, Rankings también debe estar activado.",
+    "welcome_message_enabled": "Mensaje de bienvenida",
+    "welcome_message_enabled_desc": "Cuando un miembro nuevo lleva un minuto en la app, tu cuenta le envía una sola vez un mensaje de bienvenida con opciones de \"dónde nos conociste\" debajo. Lo envía el admin que activa este interruptor. Solo lo reciben las cuentas creadas en los últimos 3 días.",
+    "welcome_stats_summary": "Enviado a {{sent}}, respondido por {{answered}}",
     "online_battle_enable_confirm": "Online Battle se abrirá a todos: Clasificación aparecerá en el menú y la página será indexable. ¿Continuar?"
   },
   "offline": {
@@ -1639,6 +1642,7 @@
   "settings": {
     "page_title": "Configuración",
     "tab_timer": "Timer",
+    "tab_sounds": "Sonidos",
     "tab_appearance": "Apariencia",
     "tab_colors": "Colores",
     "tab_data": "Datos",
@@ -1759,8 +1763,12 @@
     "pb_confetti_desc": "Mostrar confeti cuando superes tu récord personal",
     "shortcut_hint": "Aviso de atajo",
     "shortcut_hint_desc": "Avisar después de la resolución si la mezcla tenía una cruz o XCross muy corta",
-    "shortcut_hint_voice": "Decirlo en voz alta",
+    "shortcut_hint_voice": "Voz del aviso de atajo",
     "shortcut_hint_voice_desc": "El aviso de atajo también dice la frase en voz alta",
+    "sounds_enabled": "Todos los sonidos",
+    "sounds_enabled_desc": "Desactívalo para silenciar todos los sonidos de la app",
+    "smart_cube_scramble_sound": "Sonido del cubo inteligente",
+    "smart_cube_scramble_sound_desc": "Suena un pitido corto cuando termina la mezcla en un cubo inteligente",
     "warmup_auto_save": "Guardado automático en calentamiento",
     "warmup_auto_save_desc": "En el modo calentamiento, los resuelves que elijas se guardan solos. Puedes deshacerlo hasta tu siguiente resuelve.",
     "warmup_auto_save_off": "Desactivado",
@@ -1772,8 +1780,8 @@
     "use_3d_scramble_visual_desc": "Mostrar vista previa 3D para puzzles compatibles",
     "inspection": "Inspección",
     "inspection_desc": "Te da una inspección como en competición antes de que empiece el tiempo.",
-    "play_sound": "Reproducir sonido",
-    "play_sound_desc": "Reproducir una alerta de audio cuando hayan pasado 8 y 12 segundos",
+    "play_sound": "Sonido de inspección",
+    "play_sound_desc": "Avisa con un sonido a los 8 y 12 segundos de inspección",
     "inspection_auto_start": "Inicio automático de inspección",
     "inspection_auto_start_desc": "Iniciar automáticamente cuando se agote el tiempo de inspección",
     "inspection_except_bld": "Sin inspección en BLD",
@@ -1814,6 +1822,7 @@
     "category_input": "Entrada",
     "category_confirmations": "Confirmaciones",
     "category_inspection": "Inspección",
+    "category_sounds": "Sonidos",
     "category_stackmat": "StackMat",
     "category_qiyi": "QiYi Timer",
     "qiyi_auto_inspection": "Iniciar la inspección con el botón de reinicio",
@@ -2893,6 +2902,7 @@
     "solves_section": "Resoluciones",
     "action_required": "Acción requerida",
     "online_now": "En línea ahora",
+    "send_message": "Enviar mensaje",
     "dau": "Activos diarios",
     "wau": "Activos semanales",
     "mau": "Activos mensuales",
@@ -3067,6 +3077,7 @@
       "remove_premium": "Quitar Premium",
       "delete_user": "Eliminar usuario",
       "send_push": "Enviar notificacion",
+      "send_message": "Enviar mensaje",
       "export_user_data": "Descargar soluciones como JSON",
       "user_data_exported": "Datos del usuario descargados",
       "delete_confirm": "¿Estás seguro de que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer.",
@@ -3532,6 +3543,7 @@
     "inspection": "Inspección",
     "hide_time_when_solving": "Ocultar tiempo",
     "haptic_feedback": "Vibración",
+    "sounds": "Sonidos",
     "slam_to_stop": "Soltar para Detener",
     "slam_sensitivity": "Sensibilidad",
     "slam_low": "Baja",
@@ -5570,12 +5582,57 @@
     "request_accept": "Aceptar",
     "request_delete": "Eliminar",
     "awaiting_accept": "Esperando a que acepten tu solicitud",
+    "reply_locked": "No puedes responder en esta conversación",
     "error_request_pending": "No puedes enviar otro mensaje hasta que acepten tu solicitud.",
     "mute": "Silenciar",
     "unmute": "Activar sonido",
     "reply": "Responder",
     "reply_to_self": "Tú mismo",
     "quote_removed": "Mensaje eliminado"
+  },
+  "admin_templates": {
+    "button": "Respuestas rápidas",
+    "title": "Respuestas rápidas",
+    "items": {
+      "thanks": {
+        "label": "Agradecer",
+        "text": "¡Hola {{username}}! Espero que estés bien. Gracias por usar mi app. Si tienes algún problema o idea, puedes contactarme desde Ajustes de cuenta > Soporte."
+      },
+      "feedback": {
+        "label": "Pedir opinión",
+        "text": "¡Hola {{username}}! ¿Qué te parece ZKT Timer? ¿Qué es lo que más te gustó y qué cambiarías?"
+      },
+      "fixed": {
+        "label": "Problema resuelto",
+        "text": "¡Hola {{username}}! Arreglé el problema que reportaste. ¿Puedes cerrar y volver a abrir la app y probar otra vez? Gracias por avisarme."
+      },
+      "new_feature": {
+        "label": "Novedad",
+        "text": "¡Hola {{username}}! Añadí funciones nuevas a la app. Échales un vistazo cuando puedas, creo que te van a gustar."
+      },
+      "review": {
+        "label": "Pedir reseña",
+        "text": "¡Hola {{username}}! Si te gusta la app, una reseña corta en App Store o Google Play me ayudaría mucho. ¡Gracias de antemano!"
+      },
+      "record": {
+        "label": "Felicitar récord",
+        "text": "¡Hola {{username}}! Vi tu nuevo récord, ¡enhorabuena! Sigue así."
+      }
+    }
+  },
+  "welcome_message": {
+    "body": "¡Hola {{name}}! ¿Qué tal? Soy {{sender}}, el desarrollador del timer. Espero que te guste mi app, tiene muchas funciones esperándote. Si tienes algún problema o idea, puedes contactarme desde Ajustes de cuenta > Soporte. Por cierto, ¿dónde conociste ZKT Timer?",
+    "thanks": "¡Gracias! A disfrutar del cubo.",
+    "question": "¿Dónde conociste Zkt-Timer?",
+    "sources": {
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "friend": "Por amistades",
+      "search": "Búsqueda en internet",
+      "app_store": "App Store / Google Play",
+      "competition": "En una competición",
+      "other": "Otro"
+    }
   },
   "social": {
     "who_can_message": "Quién puede escribirme",
@@ -5585,6 +5642,7 @@
     "policy_known_hint": "El primer mensaje de un desconocido va a solicitudes",
     "policy_nobody": "Nadie",
     "policy_nobody_hint": "Sin conversaciones nuevas; las actuales siguen funcionando",
+    "policy_admin_note": "Los administradores de ZKT Timer pueden escribirte sin importar este ajuste. Si bloqueas a un administrador, tampoco podrá escribirte.",
     "visibility": "Visibilidad",
     "searchable": "Aparecer en la búsqueda de mensajes",
     "notifications": "Notificaciones",

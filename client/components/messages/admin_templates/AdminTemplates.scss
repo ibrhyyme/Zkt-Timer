@@ -1,0 +1,127 @@
+@import '../../../styles/config';
+
+.#{$namespace}-admin-templates {
+	@include zt-menu-panel;
+
+	position: absolute;
+	left: 12px;
+	right: 12px;
+	bottom: 100%;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	max-height: 360px;
+	margin-bottom: $zt-menu-offset;
+	padding: 0;
+
+	&--compact {
+		left: 8px;
+		right: 8px;
+		max-height: 280px;
+	}
+
+	&__trigger {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 34px;
+		height: 34px;
+		border: 0;
+		border-radius: $zt-radius-md;
+		background: rgba(var(--text-color), 0.08);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.14);
+		}
+	}
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: $zt-space-2 $zt-space-2 0 $zt-space-3;
+	}
+
+	&__title {
+		@include zt-eyebrow;
+	}
+
+	&__close {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border: 0;
+		border-radius: $zt-radius-md;
+		background: none;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			background: $zt-menu-hover;
+		}
+	}
+
+	&__langs {
+		display: flex;
+		gap: 4px;
+		padding: $zt-space-2 $zt-space-3;
+	}
+
+	&__lang {
+		@include zt-menu-tag;
+
+		border: 0;
+		background: none;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&--active {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+			box-shadow: none;
+		}
+	}
+
+	&__list {
+		@include zt-menu-scroll;
+
+		flex: 1;
+		min-height: 0;
+		padding-bottom: $zt-space-1;
+	}
+
+	&__row {
+		@include zt-menu-row;
+
+		flex-direction: column;
+		align-items: stretch;
+		gap: 2px;
+		padding-top: $zt-space-2;
+		padding-bottom: $zt-space-2;
+		white-space: normal;
+
+		&:hover,
+		&:focus-visible {
+			@include zt-menu-row-hover;
+		}
+	}
+
+	&__label {
+		font-weight: 600;
+	}
+
+	&__preview {
+		color: $zt-text-muted;
+		font-size: 0.8125rem;
+		font-weight: 400;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+}

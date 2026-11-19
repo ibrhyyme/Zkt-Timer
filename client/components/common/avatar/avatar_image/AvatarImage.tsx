@@ -88,8 +88,17 @@ export default function AvatarImage(props: Props) {
 	const user = props.user || props.profile?.user;
 	const profile = props.profile || props.user?.profile;
 
-	const showProRing = isProEnabled() && isPro(user as UserAccount);
-	const wrapperClass = b({ pro: showProRing, large, small, tiny });
+	// The admin ring wins over Pro: a message from the team should read as the team's.
+	const showAdminRing = Boolean((user as any)?.admin);
+	const showProRing = !showAdminRing && isProEnabled() && isPro(user as UserAccount);
+	const wrapperClass = b({ admin: showAdminRing, pro: showProRing, large, small, tiny });
+
+	// Written on the ring's top edge, where messages show the sender (list rows, thread
+	// header, chat bubbles). Not on tiny avatars, where the word would swamp the photo, and
+	// not on the profile's large one, which already carries the role badge under the name.
+	const adminLabel = showAdminRing && !tiny && !large ? (
+		<span className={b('admin-label', { small })}>Admin</span>
+	) : null;
 
 	// The crown medallion is for the large (profile) avatar only: on list-sized avatars it was
 	// a speck, and a list of Pro users became a row of crowns. There the ring marks Pro and
@@ -122,6 +131,7 @@ export default function AvatarImage(props: Props) {
 					/>
 				</div>
 				{proBadge}
+				{adminLabel}
 			</div>
 		);
 	} else {
@@ -156,13 +166,14 @@ export default function AvatarImage(props: Props) {
 							color: 'white',
 							fontWeight: 'bold',
 							// A tiny Pro avatar gives 6px to the ring, which leaves two letters no room at 12px.
-							fontSize: large ? '24px' : tiny && showProRing ? '9px' : small || tiny ? '12px' : '16px'
+							fontSize: large ? '24px' : tiny && (showProRing || showAdminRing) ? '9px' : small || tiny ? '12px' : '16px'
 						}}
 					>
 						{initials}
 					</div>
 				</div>
 				{proBadge}
+				{adminLabel}
 			</div>
 		);
 	}

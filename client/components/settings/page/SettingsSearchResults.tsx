@@ -9,6 +9,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {SettingsSearchProvider} from '../SettingsSearchContext';
 import TimerSettings from '../timer/TimerSettings';
+import SoundSettings from '../sounds/SoundSettings';
 import InputSettings from '../input/InputSettings';
 import SmartCubeSettings from '../smart_cube/SmartCubeSettings';
 import ScrambleSettings from '../scramble/ScrambleSettings';
@@ -43,6 +44,7 @@ export default function SettingsSearchResults(props: Props) {
 		<SettingsSearchProvider value={{query}}>
 			<div ref={containerRef} className="space-y-2">
 				<TimerSettings />
+				<SoundSettings />
 				<InputSettings />
 				<SmartCubeSettings />
 				<ScrambleSettings />

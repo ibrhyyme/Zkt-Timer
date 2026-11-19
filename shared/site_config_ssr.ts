@@ -26,5 +26,6 @@ export const SITE_CONFIG_SCALAR_FIELDS = [
 	'magnet_telemetry_enabled',
 	'online_battle_enabled',
 	'method_steps_version',
+	'welcome_message_enabled',
 	'updated_at',
 ] as const;

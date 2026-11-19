@@ -329,6 +329,8 @@
 	}
 
 	&__window-composer {
+		// Anchors the admin template panel, which opens upward from here.
+		position: relative;
 		display: flex;
 		align-items: flex-end;
 		gap: 8px;

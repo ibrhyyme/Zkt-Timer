@@ -357,6 +357,7 @@ type Query {
   socialPreference: SocialPreference
   dmPresence(userIds: [String]): [String]
   messageReports(page: Int, status: ReportStatus): MessageReportList
+  adminWelcomeStats: WelcomeStats
   smartCubeTelemetryRows(newestFirst: Boolean, eventType: String, username: String, offset: Int, cubeType: String, limit: Int): [SmartCubeTelemetryRow]
   smartCubeTelemetrySummary(days: Int): [SmartCubeTelemetrySummary]
   magnetTelemetryRows(newestFirst: Boolean, deviceModel: String, eventType: String, username: String, offset: Int, limit: Int): [MagnetTelemetryRow]
@@ -533,6 +534,7 @@ type Mutation {
   unblockUser(userId: String): Boolean
   updateSocialPreference(input: UpdateSocialPreferenceInput): SocialPreference
   resolveMessageReport(note: String, action: ReportStatus, reportId: String): Boolean
+  answerWelcomeSurvey(source: String, messageId: String): Message
   recordSmartCubeTelemetry(events: [SmartCubeTelemetryInput]): SmartCubeTelemetryResult
   recordMagnetTelemetry(events: [MagnetTelemetryInput]): MagnetTelemetryResult
   createCube(input: CubeInput): Cube
@@ -1054,6 +1056,7 @@ type UserAccount implements IPublicUserAccount & IUserAccount {
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
 }
@@ -1086,6 +1089,7 @@ interface IUserAccount implements IPublicUserAccount {
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
 }
@@ -1132,6 +1136,7 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
   join_ip: String
@@ -1177,6 +1182,7 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
   join_ip: String
@@ -1226,6 +1232,7 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
   join_ip: String
@@ -1271,6 +1278,7 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   offline_hash: String
   join_country: String
   has_password: Boolean
+  acquisition_source: String
   timer_background: TimerBackground
   bans: [BanLog]
   join_ip: String
@@ -1432,6 +1440,7 @@ type SiteConfig {
   magnet_telemetry_enabled: Boolean
   online_battle_enabled: Boolean
   method_steps_version: Int
+  welcome_message_enabled: Boolean
   featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
 }
@@ -2646,6 +2655,7 @@ type Message {
   solve: Solve
   gif_provider: String
   gif_id: String
+  kind: String
   edited_at: DateTime
   reactions: [MessageReaction!]
   reply_to: ReplyPreview
@@ -2673,6 +2683,7 @@ type MessageList {
   accepted: Boolean
   awaiting_accept: Boolean
   muted: Boolean
+  reply_locked: Boolean
 }
 
 type InboxSummary {
@@ -2737,6 +2748,17 @@ type BlockedUser {
   id: String
   user: PublicUserAccount
   created_at: DateTime
+}
+
+type AcquisitionSourceCount {
+  source: String
+  count: Int
+}
+
+type WelcomeStats {
+  sent: Int
+  answered: Int
+  sources: [AcquisitionSourceCount]
 }
 
 type SmartCubeTelemetryResult {
@@ -3320,6 +3342,7 @@ input UpdateSiteConfigInput {
   smart_telemetry_enabled: Boolean
   magnet_telemetry_enabled: Boolean
   online_battle_enabled: Boolean
+  welcome_message_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
 }
 

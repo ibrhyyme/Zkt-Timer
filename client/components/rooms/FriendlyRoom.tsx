@@ -83,6 +83,7 @@ import RoomClimateDrama from './climate/RoomClimateDrama';
 import { RoomChatSystemLine } from './RoomChat';
 import { isGifSearchAvailable } from '../../lib/klipy';
 import './FriendlyRoom.scss';
+import { soundAllowed } from '../../lib/sounds';
 
 interface ParamsType {
     // The /rooms/<segment> URL carries a slug ("cuma-aksami-yarisi"), or a raw id for
@@ -738,7 +739,7 @@ function FriendlyRoomContent() {
                 setSmartScrambleCompletedAt(new Date(event.at));
                 setSmartUndoMoves(null);
 
-                if (successAudioRef.current) {
+                if (successAudioRef.current && soundAllowed('smart_cube_scramble_sound')) {
                     successAudioRef.current.currentTime = 0;
                     successAudioRef.current.play().catch(e => console.warn('Audio play failed:', e));
                 }

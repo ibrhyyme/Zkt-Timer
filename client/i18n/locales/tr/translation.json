@@ -1312,6 +1312,9 @@
     "admin_disabled_banner": "{{page}} sayfası şu an kapalı — sadece admin (sen) görebilirsin",
     "online_battle_enabled": "Online Battle",
     "online_battle_enabled_desc": "Kuyruk, maçlar ve Sıralama. Kapalıyken sadece adminler ve aşağıdaki listedekiler oynayabilir. Menüde Sıralama'nın görünmesi için Rankings da açık olmalı.",
+    "welcome_message_enabled": "Hoş geldin mesajı",
+    "welcome_message_enabled_desc": "Yeni üye uygulamada yaklaşık bir dakika geçirince senin hesabından ona bir kez hoş geldin mesajı gider, altında \"nereden duydun\" seçenekleri olur. Gönderen, bu anahtarı açan admindir. Sadece son 3 günde kayıt olanlara gider.",
+    "welcome_stats_summary": "{{sent}} kişiye gönderildi, {{answered}} kişi cevapladı",
     "online_battle_enable_confirm": "Online Battle herkese açılacak: menüde Sıralama görünecek ve sayfa arama motorlarına açılacak. Devam edilsin mi?"
   },
   "offline": {
@@ -1625,6 +1628,7 @@
   "settings": {
     "page_title": "Ayarlar",
     "tab_timer": "Timer",
+    "tab_sounds": "Sesler",
     "tab_appearance": "Görünüm",
     "tab_colors": "Renkler",
     "tab_data": "Veri",
@@ -1745,8 +1749,12 @@
     "pb_confetti_desc": "Kişisel rekor kırdığında konfeti göster",
     "shortcut_hint": "Kısa yol bildirimi",
     "shortcut_hint_desc": "Karıştırmada çok kısa bir cross ya da XCross varsa çözümden sonra haber ver",
-    "shortcut_hint_voice": "Sesli söylesin",
+    "shortcut_hint_voice": "Kısa yol sesi",
     "shortcut_hint_voice_desc": "Kısa yol bildirimindeki lafı sesli de söyler",
+    "sounds_enabled": "Tüm sesler",
+    "sounds_enabled_desc": "Kapatınca uygulamadaki bütün sesler susar",
+    "smart_cube_scramble_sound": "Smart küp sesi",
+    "smart_cube_scramble_sound_desc": "Smart küpte karıştırma bitince kısa bir bip sesi çalar",
     "warmup_auto_save": "Isınmada otomatik kaydet",
     "warmup_auto_save_desc": "Isınma modunda seçtiğin çözümler kendiliğinden kaydedilir. Bir sonraki çözüme kadar geri alabilirsin.",
     "warmup_auto_save_off": "Kapalı",
@@ -1758,8 +1766,8 @@
     "use_3d_scramble_visual_desc": "Desteklenen bulmacalar için 3B önizleme göster",
     "inspection": "İnceleme",
     "inspection_desc": "Süre başlamadan önce yarışmadaki gibi inceleme süresi verir.",
-    "play_sound": "Ses çal",
-    "play_sound_desc": "8 ve 12 saniye geçtiğinde sesli uyarı ver",
+    "play_sound": "İnceleme sesi",
+    "play_sound_desc": "İncelemenin 8. ve 12. saniyesinde sesli uyarı verir",
     "inspection_auto_start": "İnceleme otomatik başlat",
     "inspection_auto_start_desc": "İnceleme süresi bittiğinde otomatik başlat",
     "inspection_except_bld": "BLD'de inceleme yok",
@@ -1800,6 +1808,7 @@
     "category_input": "Giriş",
     "category_confirmations": "Onaylar",
     "category_inspection": "İnceleme",
+    "category_sounds": "Sesler",
     "category_stackmat": "StackMat",
     "category_qiyi": "QiYi Timer",
     "qiyi_auto_inspection": "Restart tuşuyla inceleme başlat",
@@ -2876,6 +2885,7 @@
     "solves_section": "Çözümler",
     "action_required": "Aksiyon Gerekli",
     "online_now": "Şu An Online",
+    "send_message": "Mesaj gönder",
     "dau": "Günlük Aktif",
     "wau": "Haftalık Aktif",
     "mau": "Aylık Aktif",
@@ -3050,6 +3060,7 @@
       "remove_premium": "Premium Kaldır",
       "delete_user": "Kullanıcıyı Sil",
       "send_push": "Bildirim Gönder",
+      "send_message": "Mesaj gönder",
       "export_user_data": "Çözümleri JSON indir",
       "user_data_exported": "Kullanıcı verisi indirildi",
       "delete_confirm": "\"{{username}}\" kullanıcısını silmek istediğine emin misin? Bu işlem geri alınamaz.",
@@ -3514,6 +3525,7 @@
     "inspection": "İnceleme",
     "hide_time_when_solving": "Çözerken Süreyi Gizle",
     "haptic_feedback": "Titreşim",
+    "sounds": "Sesler",
     "slam_to_stop": "Bırakınca Durdur",
     "slam_sensitivity": "Hassasiyet",
     "slam_low": "Düşük",
@@ -5549,12 +5561,57 @@
     "request_accept": "Kabul et",
     "request_delete": "Sil",
     "awaiting_accept": "İsteğin kabul edilmesini bekliyorsun",
+    "reply_locked": "Bu sohbete cevap yazılamıyor",
     "error_request_pending": "Bu kişi isteğini kabul edene kadar yeni mesaj gönderemezsin.",
     "mute": "Sessize al",
     "unmute": "Sesi aç",
     "reply": "Yanıtla",
     "reply_to_self": "Kendine",
     "quote_removed": "Mesaj kaldırıldı"
+  },
+  "admin_templates": {
+    "button": "Hazır mesajlar",
+    "title": "Hazır mesajlar",
+    "items": {
+      "thanks": {
+        "label": "Teşekkür",
+        "text": "Merhaba {{username}}, umarım iyisindir. Uygulamamı kullandığın için teşekkür ederim. Bir sorun ya da önerin olursa Hesap Ayarları > Destek kısmından bana ulaşabilirsin."
+      },
+      "feedback": {
+        "label": "Görüş iste",
+        "text": "Merhaba {{username}}, ZKT Timer'ı nasıl buldun? En çok neyi sevdin, neyin değişmesini isterdin?"
+      },
+      "fixed": {
+        "label": "Sorun düzeldi",
+        "text": "Merhaba {{username}}, bildirdiğin sorunu düzelttim. Uygulamayı kapatıp yeniden açtıktan sonra bir daha dener misin? Haber verdiğin için teşekkürler."
+      },
+      "new_feature": {
+        "label": "Yeni özellik",
+        "text": "Merhaba {{username}}, uygulamaya yeni özellikler ekledim. Fırsatın olunca bir bak, beğeneceğini düşünüyorum."
+      },
+      "review": {
+        "label": "Yorum rica et",
+        "text": "Merhaba {{username}}, uygulamayı beğendiysen App Store ya da Google Play'de kısa bir yorum bırakman bana çok yardımcı olur. Şimdiden teşekkürler."
+      },
+      "record": {
+        "label": "Rekor tebriği",
+        "text": "Merhaba {{username}}, yeni rekorunu gördüm, tebrikler! Böyle devam."
+      }
+    }
+  },
+  "welcome_message": {
+    "body": "Merhaba {{name}}, nasılsın? Ben {{sender}}, timer'ın geliştiricisiyim. Umarım uygulamamı beğenirsin, birçok özellik seni bekliyor. Bir sorun ya da önerin olursa Hesap Ayarları > Destek kısmından bana ulaşabilirsin. Bu arada ZKT Timer'ı nereden duydun?",
+    "thanks": "Teşekkürler, iyi çözümler!",
+    "question": "Zkt-Timer'ı nereden duydun?",
+    "sources": {
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "friend": "Arkadaşımdan",
+      "search": "İnternet araması",
+      "app_store": "App Store / Google Play",
+      "competition": "Yarışmada",
+      "other": "Diğer"
+    }
   },
   "social": {
     "who_can_message": "Bana kim mesaj atabilir",
@@ -5564,6 +5621,7 @@
     "policy_known_hint": "Tanımadığın kişilerin ilk mesajı istek kutusuna düşer",
     "policy_nobody": "Kimse",
     "policy_nobody_hint": "Yeni sohbet açılamaz, mevcut sohbetler çalışmaya devam eder",
+    "policy_admin_note": "ZKT Timer yöneticileri bu ayardan bağımsız olarak sana mesaj gönderebilir. Bir yöneticiyi engellersen o da yazamaz.",
     "visibility": "Görünürlük",
     "searchable": "Mesaj aramasında görüneyim",
     "notifications": "Bildirimler",

@@ -48,7 +48,9 @@
 		height: var(--pfp-size);
 		aspect-ratio: 1;
 		border-radius: 50%;
-		overflow: hidden;
+		// Visible: AvatarImage's body already clips the photo to a circle, and the admin
+		// label sits across the ring's top edge, outside this box.
+		overflow: visible;
 		flex-shrink: 0;
 		// Flex, not block: AvatarImage is inline-flex, so a block parent puts it on a
 		// line box and sits it on the baseline. The strut comes from the inherited

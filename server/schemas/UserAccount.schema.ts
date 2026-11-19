@@ -143,6 +143,10 @@ class IUserAccount extends IPublicUserAccount {
 	@Field({nullable: true})
 	has_password?: boolean;
 
+	/** The member's own answer under the welcome message; only ever sent to themselves. */
+	@Field({nullable: true})
+	acquisition_source?: string;
+
 	@Field(() => TimerBackground)
 	timer_background?: TimerBackground;
 

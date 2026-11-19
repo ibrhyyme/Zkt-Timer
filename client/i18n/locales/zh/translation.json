@@ -1305,6 +1305,9 @@
     "admin_disabled_banner": "{{page}} 当前已禁用 — 只有管理员（你）可以看到此信息",
     "online_battle_enabled": "Online Battle",
     "online_battle_enabled_desc": "排队、对战和排行榜。关闭时只有管理员和下方列表中的用户可以玩。要在菜单中显示排行榜，还需要开启 Rankings。",
+    "welcome_message_enabled": "欢迎消息",
+    "welcome_message_enabled_desc": "新成员在应用中停留约一分钟后，你的账号会给他发送一次欢迎消息，下方附有“从哪里知道我们”的选项。发送者是开启此开关的管理员。只有最近 3 天内注册的账号会收到。",
+    "welcome_stats_summary": "已发送 {{sent}} 人，{{answered}} 人已回答",
     "online_battle_enable_confirm": "Online Battle 将向所有人开放：菜单中会出现排行榜，页面也会被搜索引擎收录。继续吗？"
   },
   "offline": {
@@ -1614,6 +1617,7 @@
   "settings": {
     "page_title": "设置",
     "tab_timer": "计时器",
+    "tab_sounds": "声音",
     "tab_appearance": "外观",
     "tab_colors": "颜色",
     "tab_data": "数据",
@@ -1734,8 +1738,12 @@
     "pb_confetti_desc": "打破个人最好成绩时显示礼花",
     "shortcut_hint": "捷径提示",
     "shortcut_hint_desc": "复原后提示打乱中是否有很短的十字或 XCross",
-    "shortcut_hint_voice": "语音播报",
+    "shortcut_hint_voice": "捷径语音",
     "shortcut_hint_voice_desc": "捷径提示同时读出这句话",
+    "sounds_enabled": "所有声音",
+    "sounds_enabled_desc": "关闭后应用不会播放任何声音",
+    "smart_cube_scramble_sound": "智能魔方提示音",
+    "smart_cube_scramble_sound_desc": "智能魔方打乱完成时播放一声短促的提示音",
     "warmup_auto_save": "热身时自动保存",
     "warmup_auto_save_desc": "热身模式下，符合条件的还原会自动保存，在下一次还原前都可以撤销。",
     "warmup_auto_save_off": "关闭",
@@ -1747,8 +1755,8 @@
     "use_3d_scramble_visual_desc": "为支持的魔方显示 3D 预览",
     "inspection": "观察",
     "inspection_desc": "开始计时前给你比赛式的观察时间。",
-    "play_sound": "播放声音",
-    "play_sound_desc": "在经过 8 秒和 12 秒时播放音频警报",
+    "play_sound": "观察提示音",
+    "play_sound_desc": "观察进行到第 8 秒和第 12 秒时播放提示音",
     "inspection_auto_start": "自动开始观察",
     "inspection_auto_start_desc": "在观察时间结束后自动开始",
     "inspection_except_bld": "BLD 不检视",
@@ -1789,6 +1797,7 @@
     "category_input": "输入",
     "category_confirmations": "确认",
     "category_inspection": "观察",
+    "category_sounds": "声音",
     "category_stackmat": "StackMat",
     "category_qiyi": "QiYi 计时器",
     "qiyi_auto_inspection": "按重启键开始观察",
@@ -2861,6 +2870,7 @@
     "solves_section": "还原",
     "action_required": "需要处理",
     "online_now": "当前在线",
+    "send_message": "发送消息",
     "dau": "日活跃",
     "wau": "周活跃",
     "mau": "月活跃",
@@ -3035,6 +3045,7 @@
       "remove_premium": "移除 Premium",
       "delete_user": "删除用户",
       "send_push": "发送通知",
+      "send_message": "发送消息",
       "export_user_data": "下载解法为 JSON",
       "user_data_exported": "用户数据已下载",
       "delete_confirm": "您确定要删除 \"{{username}}\" 吗？此操作无法撤销。",
@@ -3499,6 +3510,7 @@
     "inspection": "观察",
     "hide_time_when_solving": "拧的时候隐藏时间",
     "haptic_feedback": "触觉反馈",
+    "sounds": "声音",
     "slam_to_stop": "放下停止",
     "slam_sensitivity": "灵敏度",
     "slam_low": "低",
@@ -5534,12 +5546,57 @@
     "request_accept": "接受",
     "request_delete": "删除",
     "awaiting_accept": "等待对方接受你的请求",
+    "reply_locked": "此对话无法回复",
     "error_request_pending": "在对方接受请求之前，你无法再发送消息。",
     "mute": "静音",
     "unmute": "取消静音",
     "reply": "回复",
     "reply_to_self": "你自己",
     "quote_removed": "消息已删除"
+  },
+  "admin_templates": {
+    "button": "快捷回复",
+    "title": "快捷回复",
+    "items": {
+      "thanks": {
+        "label": "感谢",
+        "text": "你好 {{username}}，希望你一切都好。谢谢你使用我的应用。如果遇到问题或有建议，可以通过 账户设置 > 支持 联系我。"
+      },
+      "feedback": {
+        "label": "征求意见",
+        "text": "你好 {{username}}，你觉得 ZKT Timer 怎么样？最喜欢哪里，又想改变什么？"
+      },
+      "fixed": {
+        "label": "问题已修复",
+        "text": "你好 {{username}}，你反馈的问题我已经修复了。可以关掉应用重新打开，再试一次吗？谢谢你告诉我。"
+      },
+      "new_feature": {
+        "label": "新功能",
+        "text": "你好 {{username}}，我给应用加了一些新功能。有空去看看，我想你会喜欢的。"
+      },
+      "review": {
+        "label": "请求评价",
+        "text": "你好 {{username}}，如果你喜欢这个应用，在 App Store 或 Google Play 留个简短评价会对我帮助很大。先谢谢你。"
+      },
+      "record": {
+        "label": "祝贺纪录",
+        "text": "你好 {{username}}，看到你的新纪录了，恭喜！继续加油。"
+      }
+    }
+  },
+  "welcome_message": {
+    "body": "你好，{{name}}！最近怎么样？我是 {{sender}}，这个计时器的开发者。希望你喜欢我的应用，里面有很多功能等着你。如果遇到问题或有建议，可以通过 账户设置 > 支持 联系我。顺便问一下，你是从哪里知道 ZKT Timer 的？",
+    "thanks": "谢谢！祝你玩得开心！",
+    "question": "你是从哪里知道 Zkt-Timer 的？",
+    "sources": {
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "friend": "朋友推荐",
+      "search": "搜索引擎",
+      "app_store": "App Store / Google Play",
+      "competition": "比赛现场",
+      "other": "其他"
+    }
   },
   "social": {
     "who_can_message": "谁可以给我发消息",
@@ -5549,6 +5606,7 @@
     "policy_known_hint": "陌生人的第一条消息会进入请求",
     "policy_nobody": "没有人",
     "policy_nobody_hint": "不能发起新会话；现有会话仍可使用",
+    "policy_admin_note": "无论此设置如何，ZKT Timer 管理员都可以给你发消息。如果你屏蔽了某位管理员，他也无法给你发消息。",
     "visibility": "可见性",
     "searchable": "在消息搜索中显示我",
     "notifications": "通知",

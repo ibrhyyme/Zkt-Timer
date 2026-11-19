@@ -16,9 +16,12 @@ import {Link, useHistory, useLocation} from 'react-router-dom';
 import {X, PaperPlaneRight, ArrowSquareOut} from 'phosphor-react';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import MessageBody from '../message_body/MessageBody';
+import WelcomeSurvey from '../welcome_survey/WelcomeSurvey';
+import AdminTemplates from '../admin_templates/AdminTemplates';
+import {WELCOME_MESSAGE_KIND, insertByTime, reopensThread} from '../../../../shared/welcome';
 import GifMedia from '../../common/gif/GifMedia';
 import PresenceDot from '../presence_dot/PresenceDot';
-import {OPEN_CHAT_BUBBLE_EVENT, OpenChatBubbleDetail} from '../../../util/chat-bubbles';
+import {OPEN_CHAT_BUBBLE_EVENT, OpenChatBubbleDetail, bubblesAvailable, openChatBubble} from '../../../util/chat-bubbles';
 import {gqlMutateTyped, gqlQueryTyped} from '../../api';
 import {
 	DmMessagesDocument,
@@ -164,6 +167,8 @@ export default function ChatBubbles() {
 	// Requests no longer raise a bubble, but one stored before that rule existed can
 	// still be reopened from localStorage, so the window checks for itself.
 	const [threadAccepted, setThreadAccepted] = useState(false);
+	// Read-only for this side: the answered welcome message (shared/welcome.ts).
+	const [replyLocked, setReplyLocked] = useState(false);
 	const bottomRef = useRef<HTMLDivElement>(null);
 	// On a phone the open window is the whole screen, and the keyboard covers the bottom
 	// of it without resizing the WebView, so the composer has to be lifted by hand.
@@ -278,9 +283,25 @@ export default function ChatBubbles() {
 				// counts towards the request badge; it just waits in the request box.
 				if (incoming.request) return;
 
+				// On a wide screen the welcome message opens its window instead of waiting as a
+				// head: it arrives once, in a new member's first minute, and its choices are the
+				// point of it. On a phone the window would take the whole screen, so there it
+				// stays a head with its unread badge (owner, 2026-11-19). Never over a running
+				// solve either way (the render guard below hides everything).
+				if (incoming.kind === WELCOME_MESSAGE_KIND && incoming.conversation_id !== openId && bubblesAvailable()) {
+					openChatBubble({
+						conversationId: incoming.conversation_id,
+						userId: incoming.sender_id,
+						username: incoming.sender?.username || '',
+						user: incoming.sender,
+					});
+					return;
+				}
+
 				// Already reading this thread: append, do not bump the counter.
 				if (incoming.conversation_id === openId) {
 					setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+					if (reopensThread(incoming)) setReplyLocked(false);
 					void gqlMutateTyped(MarkConversationReadDocument, {conversationId: incoming.conversation_id}).catch(
 						() => {}
 					);
@@ -387,12 +408,14 @@ export default function ChatBubbles() {
 	async function loadThread(conversationId: string) {
 		setLoading(true);
 		setThreadAccepted(false);
+		setReplyLocked(false);
 		try {
 			const res = await gqlQueryTyped(DmMessagesDocument, {conversationId}, {fetchPolicy: 'no-cache'});
 			const rows = (res?.data?.messages?.messages || []) as DmMessage[];
 			// The query returns newest-first; the window reads oldest at the top.
 			setMessages([...rows].reverse());
 			setThreadAccepted(Boolean(res?.data?.messages?.accepted));
+			setReplyLocked(Boolean(res?.data?.messages?.reply_locked));
 			await gqlMutateTyped(MarkConversationReadDocument, {conversationId}).catch(() => {});
 			void refreshInbox();
 		} catch (e) {
@@ -697,16 +720,28 @@ export default function ChatBubbles() {
 										{getDateFromNow(m.created_at, true)}
 										{(m as any).edited_at && <span className={b('msg-edited')}>{t('messages.edited')}</span>}
 									</span>
+									{m.kind === WELCOME_MESSAGE_KIND && m.sender_id !== me.id && (
+										<WelcomeSurvey
+											messageId={m.id}
+											compact
+											onAnswered={(sent) => {
+												setMessages((prev) => insertByTime(prev, sent));
+												setReplyLocked(true);
+											}}
+										/>
+									)}
 								</div>
 							))}
 						<div ref={bottomRef} />
 					</div>
 
 					<div className={b('window-composer')}>
+						<AdminTemplates compact username={openBubble.username} onPick={setDraft} />
 						<textarea
 							className={b('window-input')}
 							value={draft}
-							placeholder={t('chat_bubbles.placeholder')}
+							disabled={replyLocked}
+							placeholder={replyLocked ? t('messages.reply_locked') : t('chat_bubbles.placeholder')}
 							onChange={(e) => setDraft(e.target.value)}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' && !e.shiftKey) {
@@ -718,7 +753,7 @@ export default function ChatBubbles() {
 						<button
 							type="button"
 							className={b('window-send')}
-							disabled={sending || !draft.trim()}
+							disabled={sending || replyLocked || !draft.trim()}
 							aria-label={t('chat_bubbles.send')}
 							onClick={() => void send()}
 						>

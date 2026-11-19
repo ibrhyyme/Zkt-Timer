@@ -24,6 +24,12 @@ export class SiteConfigResolver {
 
 		const updates: any = {...rest};
 
+		// The welcome message goes out as whoever switched it on. Recorded here, from the
+		// session, so no client can choose which account it speaks for.
+		if (rest.welcome_message_enabled === true) {
+			updates.welcome_sender_id = ctx.user.id;
+		}
+
 		if (featureOverrides !== undefined) {
 			const current = await getSiteConfig();
 			const merged: Record<string, any> = {...current.feature_overrides};

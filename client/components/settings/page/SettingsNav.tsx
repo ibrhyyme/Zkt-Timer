@@ -18,6 +18,7 @@ import {
 	Palette,
 	Database,
 	Translate,
+	SpeakerHigh,
 } from 'phosphor-react';
 import block from '../../../styles/bem';
 
@@ -42,6 +43,12 @@ export function useSettingsTabs(): SettingsTab[] {
 			link: '/settings/timer',
 			label: t('settings.tab_timer'),
 			icon: <Timer />,
+		},
+		{
+			id: 'sounds',
+			link: '/settings/sounds',
+			label: t('settings.tab_sounds'),
+			icon: <SpeakerHigh />,
 		},
 		{
 			id: 'input',

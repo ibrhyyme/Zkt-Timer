@@ -19,6 +19,7 @@ import {
 	VoiceLang,
 } from '../../../lib/shortcut_hint/pick';
 import {playClip, preloadClips} from '../../../util/native-audio';
+import {soundAllowed} from '../../../lib/sounds';
 import i18n from '../../../i18n/i18n';
 import ShortcutHintBadge from '../shortcut_hint/ShortcutHintBadge';
 import {displayTimerContent} from './notification';
@@ -145,7 +146,7 @@ export async function checkShortcutAfterSolve(solve: Solve): Promise<void> {
 		const punch = pickPunch(tone);
 		displayTimerContent(<ShortcutHintBadge finding={finding} punch={punch} full={full} />, HOLD_MS);
 		// The voice is Pro's own: the Basic teaser shows the card silently (owner, 2026-11-12).
-		if (full && punch && getSetting('shortcut_hint_voice')) speakPunch(punch);
+		if (full && punch && soundAllowed('shortcut_hint_voice')) speakPunch(punch);
 
 		if (!full) markTeaserShown();
 	} catch {
@@ -167,7 +168,7 @@ export function useShortcutHint(context: ITimerContext) {
 		!skip &&
 		isShortcutBucket(context.cubeType, context.scrambleSubset) &&
 		!!getSetting('shortcut_hint') &&
-		!!getSetting('shortcut_hint_voice');
+		soundAllowed('shortcut_hint_voice');
 	useEffect(() => {
 		if (want) preloadVoice();
 	}, [want, i18n.language]);

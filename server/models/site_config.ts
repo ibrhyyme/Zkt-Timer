@@ -36,6 +36,10 @@ export interface SiteConfigData {
 	online_battle_enabled?: boolean;
 	/** Missing on a config cached before the column existed; read as 0. */
 	method_steps_version?: number;
+	/** Missing on a config cached before the column existed; read as false. */
+	welcome_message_enabled?: boolean;
+	/** Internal: the admin the welcome message is sent as. Never exposed through GraphQL. */
+	welcome_sender_id?: string | null;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
 	featureOverrides: FeatureOverrideEntryData[];
 	updated_at: Date;
@@ -57,6 +61,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	magnet_telemetry_enabled: false,
 	online_battle_enabled: false,
 	method_steps_version: 0,
+	welcome_message_enabled: false,
 	feature_overrides: {},
 };
 
@@ -79,6 +84,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			smart_telemetry_enabled: false,
 			magnet_telemetry_enabled: false,
 			online_battle_enabled: false,
+			welcome_message_enabled: false,
 			feature_overrides: {},
 			featureOverrides: [],
 			updated_at: new Date(),

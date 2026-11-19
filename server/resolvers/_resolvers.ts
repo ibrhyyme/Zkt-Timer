@@ -44,6 +44,7 @@ export * from './CompetitionFollow.resolver';
 export * from './RecordWatch.resolver';
 export * from './Activity.resolver';
 export * from './Messaging.resolver';
+export * from './Welcome.resolver';
 export * from './SmartCubeTelemetry.resolver';
 export * from './MagnetTelemetry.resolver';
 export * from './Cube.resolver';
