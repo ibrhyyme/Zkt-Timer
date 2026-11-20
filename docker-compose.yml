@@ -63,6 +63,7 @@ services:
     image: redis:7
     container_name: zkt-timer-redis-1
     logging: *default-logging
+    restart: unless-stopped
     # Redis sadece Docker network icinde erisilebilir; yine de defansif olarak
     # production'da REDIS_PASSWORD set edilirse auth ile baslat
     command: ["sh", "-c", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-server --requirepass \"$$REDIS_PASSWORD\"; else redis-server; fi"]
@@ -75,6 +76,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
     container_name: zkt-timer-elasticsearch-1
     logging: *default-logging
+    restart: unless-stopped
     environment:
       - discovery.type=single-node
       # xpack.security: production'da auth zorunlu. Bos birakilirsa eski davranis korunur (geriye uyumluluk).
@@ -83,9 +85,6 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
 volumes:
-  # PostgreSQL 14 data, kept untouched as the rollback path after the 16 migration
-  # (2026-11). No service mounts it; delete it once 16 has run cleanly for two weeks.
-  postgres_data:
   postgres16_data:
   redis_data:
   npm_cache:
