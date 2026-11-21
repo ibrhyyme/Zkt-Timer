@@ -298,6 +298,7 @@ function redirectPage(routePath, route) {
 		const queryAt = url.indexOf('?');
 		const search = queryAt >= 0 ? url.slice(queryAt + 1) : '';
 
-		res.status(301).redirect(mergeRedirectQuery(target, search));
+		// Status goes in the call: Express's redirect() resets a preset status to 302.
+		res.redirect(301, mergeRedirectQuery(target, search));
 	});
 }
