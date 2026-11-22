@@ -692,6 +692,21 @@ body.timer-immersive-bg {
 		overflow: hidden;
 	}
 
+	// The page strip (app / signed-out), first in the phone layout under the header. Hidden
+	// but still in place during a solve, so the time does not shift when the timer starts.
+	&__mobile-banner {
+		flex-shrink: 0;
+		padding: 0 $zt-space-3;
+
+		&:empty {
+			display: none;
+		}
+
+		#{$self}--started & {
+			visibility: hidden;
+		}
+	}
+
 	&__mobile-layout {
 		display: flex;
 		flex-direction: column;

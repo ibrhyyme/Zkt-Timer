@@ -40,6 +40,7 @@ import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
+import BannerSlot from '../layout/app_banner/BannerSlot';
 import { isCancelSwipe } from './helpers/touch_gesture';
 import StreamerOverlay from './streamer/StreamerOverlay';
 import { useMagnetReversed } from '../../util/magnet-start/useMagnetReversed';
@@ -279,6 +280,12 @@ export default function Timer(props: TimerProps) {
 		<div className={b('mobile-container')}>
 			{/* Scrollable content area */}
 			<div className={b('mobile-layout', { manual: manualEntry })}>
+				{/* The page strip (app / signed-out). Wrapper skips it here: this fixed layer
+				    would cover it. In the flow under the header, kept in place during a solve. */}
+				<div className={b('mobile-banner')}>
+					<BannerSlot />
+				</div>
+
 				{/* Scramble area - text only, click to copy */}
 				<MobileTimerScramble />
 

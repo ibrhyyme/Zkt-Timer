@@ -8,9 +8,9 @@ import {useSettings} from '../../../util/hooks/useSettings';
 import {updateThemeColors} from '../themes';
 import ScrollReset from '../scroll_reset/ScrollReset';
 import ChatBubbles from '../../messages/chat_bubbles/ChatBubbles';
-import AnonBanner from '../anon/AnonBanner';
+import {useLocation} from 'react-router-dom';
 import AnonTransferPrompt from '../anon/AnonTransferPrompt';
-import AppBanner, {useAndroidAppBanner} from '../app_banner/AppBanner';
+import BannerSlot from '../app_banner/BannerSlot';
 
 const b = block('body');
 
@@ -33,7 +33,10 @@ export default function Wrapper(props: Props) {
 	const textColor = useSettings('text_color');
 	const solveTimeColor = useSettings('solve_time_color');
 	const solvePbColor = useSettings('solve_pb_color');
-	const appBanner = useAndroidAppBanner();
+	const {pathname} = useLocation();
+	// The phone timer is a fixed full-screen layer that covers this slot, so it hosts the
+	// strip inside its own layout (same `mobile_mode` flag as Timer.tsx).
+	const timerHostsBanner = mobileMode && pathname === '/timer';
 
 	useEffect(() => {
 		if (!appLoaded || typeof document === 'undefined') {
@@ -61,11 +64,9 @@ export default function Wrapper(props: Props) {
 				})}
 			>
 				<div className={b('content')}>
-					{/* One strip slot: the Play app strip on an Android browser, otherwise
-					    the signed-out strip (no-op for signed-in users). The transfer
-					    prompt only shows when a signed-in session finds solves left behind
-					    in the anonymous database. */}
-					{appBanner.visible ? <AppBanner onDismiss={appBanner.dismiss} /> : <AnonBanner />}
+					{/* The strip slot (see BannerSlot). The transfer prompt only shows when a
+					    signed-in session finds solves left behind in the anonymous database. */}
+					{!timerHostsBanner && <BannerSlot />}
 					{props.children}
 				</div>
 			</div>

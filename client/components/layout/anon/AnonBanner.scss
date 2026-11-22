@@ -1,6 +1,10 @@
 @import '../../../styles/config';
 
 .#{$namespace}-anon-banner {
+	// Its own layer: the desktop timer stretches its background (`zt-timer__background`,
+	// absolute, z-index 0) up behind the nav, which painted over this unpositioned strip.
+	position: relative;
+	z-index: 1;
 	display: flex;
 	align-items: center;
 	gap: 12px;
