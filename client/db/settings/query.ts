@@ -151,6 +151,14 @@ export interface AllSettings {
 	 * sanitizeHistoryColumns (modules/history/history_columns.ts).
 	 */
 	history_columns: number[];
+	/**
+	 * Rows of the timer's stats table, as window sizes ([3, 5, 12] = mo3, ao5, ao12). Null
+	 * until the user picks: then the old stats blocks or the default decide (resolveTableRows
+	 * in modules/quick_stats/stats_table.ts). Platform setting, no schema change.
+	 */
+	stats_table_rows: number[] | null;
+	/** Extra columns of the stats table (worst, bpa, wpa, target). Null works as for the rows. */
+	stats_table_columns: string[] | null;
 
 	hide_mobile_timer_footer: boolean;
 	timer_avg_main: string;
@@ -296,6 +304,8 @@ const defaultSettings: AllSettings = {
 		TimerModuleType.SCRAMBLE,
 	],
 	history_columns: [5, 12],
+	stats_table_rows: null,
+	stats_table_columns: null,
 
 	// Face orders are documented in util/cube_colors/palette.ts. Sourced from there rather
 	// than retyped, so a default only ever changes in one place.

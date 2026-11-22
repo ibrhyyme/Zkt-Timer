@@ -121,7 +121,10 @@ export const PRO_FEATURES: readonly ProFeature[] = [
 	// Gate: client AvatarImage `showProRing`. Cosmetic, but it reads is_pro off the
 	// server-issued account, so a local flag flip cannot fake it.
 	feature('pro_badge', Crown, 'personal'),
-	// Gate: client CustomizeStatsEditor `<FormSection proOnly>` (FormSection.tsx).
+	// Gate: client only. The stats table's extra columns (worst, BPA, WPA, target):
+	// quick_stats/stats_table.ts extraColumnsUnlocked, read by QuickStats (hides them) and
+	// CustomizeStats (locked rows open ProOnlyModal 'stats'). The rows stay open to everyone.
+	// Nothing to gate on the server: the numbers come from the user's own local solves.
 	feature('stats_customization', Sliders, 'analysis'),
 	// Gate: client NormalSolveLayout, share link rendered only when canReadSync().
 	feature('solve_sharing', ShareNetwork, 'analysis'),

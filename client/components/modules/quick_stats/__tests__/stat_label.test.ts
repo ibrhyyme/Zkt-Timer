@@ -57,20 +57,21 @@ describe('getStatLabel', () => {
 		});
 	});
 
-	it('has every label and editor text in all five languages', () => {
+	it('has every label and stats table text in all five languages', () => {
 		const tr = JSON.parse(
 			fs.readFileSync(path.join(__dirname, '../../../../i18n/locales/tr/translation.json'), 'utf8')
-		).timer_modules.stat_editor;
+		).timer_modules;
 		const leaves = (obj: any, prefix = ''): string[] =>
 			Object.entries(obj).flatMap(([k, v]) => (typeof v === 'object' ? leaves(v, `${prefix}${k}.`) : [`${prefix}${k}`]));
-		const editorKeys = leaves(tr);
+		const tableKeys = [...leaves(tr.stats_table, 'stats_table.'), ...leaves(tr.stats_table_editor, 'stats_table_editor.')];
+		expect(tableKeys.length).toBeGreaterThan(10);
 
 		for (const lang of ['tr', 'en', 'es', 'ru', 'zh']) {
 			const file = path.join(__dirname, '../../../../i18n/locales', lang, 'translation.json');
 			const modules = JSON.parse(fs.readFileSync(file, 'utf8')).timer_modules;
 			const labels = modules.stat_label;
-			for (const keyPath of editorKeys) {
-				const text = keyPath.split('.').reduce((o: any, k) => o?.[k], modules.stat_editor);
+			for (const keyPath of tableKeys) {
+				const text = keyPath.split('.').reduce((o: any, k) => o?.[k], modules);
 				expect([lang, keyPath, typeof text]).toEqual([lang, keyPath, 'string']);
 			}
 			for (const kind of STAT_LABEL_KINDS) {

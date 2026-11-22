@@ -2004,12 +2004,10 @@
     "live_analysis": "Canlı Evre",
     "none": "Hiçbiri",
     "customize_stats": "İstatistikleri Özelleştir",
-    "customize_stats_desc": "Buradan özelleştirin ve anında görün",
-    "add_block": "Blok Ekle",
+    "customize_stats_desc": "Tabloda hangi ortalamaların ve sütunların görüneceğini seç",
     "stat_avg_of": "{{num}} Ortalaması",
     "average_count_label": "Çözüm sayısı",
     "count_info": "3 ile 10.000 arasında bir sayı olmalı",
-    "error_save_failed": "Sunucuya kaydedilemedi. Daha sonra tekrar dene.",
     "no_solves_yet": "Henüz çözüm yok",
     "stackmat_place_hands": "Başlamak için ellerini StackMat üzerine koy",
     "audio_place_hands": "Başlamak için ellerini {{device}} üzerine koy",
@@ -2042,6 +2040,29 @@
     "solves_move_right": "Sağa taşı",
     "solves_remove_column": "Sütunu kaldır",
     "solves_done": "Bitti",
+    "stats_table": {
+      "single": "Tekli",
+      "size": "Tür",
+      "current": "Şu an",
+      "best": "En iyi",
+      "worst": "En kötü",
+      "bpa": "BPA",
+      "wpa": "WPA",
+      "target": "Hedef"
+    },
+    "stats_table_editor": {
+      "rows_title": "Satırlar",
+      "rows_help": "Bir satır, seansta o kadar çözüm olunca görünür. Tekli satırı her zaman vardır.",
+      "rows_limit": "En fazla {{max}} satır eklenebilir",
+      "columns_title": "Sütunlar",
+      "always": "Her zaman",
+      "help_current": "Son çözümlerin ortalaması.",
+      "help_best": "Seanstaki en hızlı ortalama.",
+      "help_worst": "Seanstaki en yavaş ortalama.",
+      "help_bpa": "Sıradaki çözüm kusursuz olursa ortalaman.",
+      "help_wpa": "Sıradaki çözüm DNF olursa ortalaman.",
+      "help_target": "Yeni en iyi ortalama için sıradaki çözümde geçmen gereken süre."
+    },
     "stat_label": {
       "best_single": "En iyi tekli",
       "worst_single": "En kötü tekli",
@@ -2077,49 +2098,6 @@
       "session_stdev_avg": "Seans σ ao{{n}}",
       "session_stdev": "Seans σ",
       "session_count": "Seans çözüm sayısı"
-    },
-    "stat_editor": {
-      "blocks": "Bloklar",
-      "reorder": "Sürükleyerek sırala",
-      "kind": "Tür",
-      "kinds": {
-        "single": "Tekli",
-        "ao": "aoN",
-        "mo": "moN",
-        "mean": "Ortalama",
-        "stdev": "σ",
-        "count": "Sayı"
-      },
-      "kind_help": {
-        "single": "Tek bir çözüm: en iyisi ya da en kötüsü.",
-        "ao": "Son N çözümün ortalaması. En hızlı ve en yavaş %5 atılır (WCA kuralı).",
-        "mo": "Son N çözümün kırpmasız ortalaması; içinde DNF varsa sonuç DNF olur. 6x6, 7x7 ve körlemenin resmi formatı.",
-        "mean": "Kapsamdaki bütün çözümlerin ortalaması. DNF'ler hesaba katılmaz.",
-        "stdev": "Standart sapma: süreler ne kadar dağınık. Küçük değer daha tutarlı demek. N seçersen güncel aoN'de sayılan çözümler, Tümü seçersen kapsamdaki bütün çözümler.",
-        "count": "Kapsamdaki çözüm sayısı. DNF varsa başarılı/toplam olarak yazılır."
-      },
-      "count": "Çözüm sayısı",
-      "count_all": "Tümü",
-      "count_custom": "Kendi sayın",
-      "value": "Değer",
-      "values": {
-        "current": "Güncel",
-        "best": "En iyi",
-        "worst": "En kötü",
-        "bpa": "BPA",
-        "wpa": "WPA",
-        "target": "Hedef"
-      },
-      "value_help": {
-        "bpa": "En iyi olası ortalama: sıradaki çözüm kusursuz olursa ortalamanın ulaşacağı değer.",
-        "wpa": "En kötü olası ortalama: sıradaki çözüm DNF olursa ortalamanın alacağı değer.",
-        "target": "Yeni en iyi ortalama için sıradaki çözümde geçmen gereken süre. ∞ her sürenin yettiğini, - bu çözümde mümkün olmadığını gösterir."
-      },
-      "scope": "Kapsam",
-      "scope_session": "Seans",
-      "scope_all": "Tüm zamanlar",
-      "color": "Renk",
-      "remove": "Bloğu kaldır"
     }
   },
   "mobile_modules": {
@@ -4099,7 +4077,7 @@
       },
       "stats_customization": {
         "title": "İstatistik özelleştirme",
-        "desc": "Timer'ın altındaki istatistik modüllerini sen seçersin. Ekleyebilir, çıkarabilir, sırasını değiştirebilirsin."
+        "desc": "Timer'ın istatistik tablosuna En kötü, BPA, WPA ve Hedef sütunlarını eklersin. Sıradaki çözümün ortalamanı nereye götürebileceğini önceden görürsün."
       },
       "solve_sharing": {
         "title": "Çözüm paylaşımı",
@@ -4701,7 +4679,7 @@
       },
       "stats": {
         "title": "İstatistik özelleştirme",
-        "desc": "Timer'ın altındaki istatistik modüllerini istediğin gibi düzenleyebilirsin."
+        "desc": "İstatistik tablosuna En kötü, BPA, WPA ve Hedef sütunlarını ekle."
       },
       "trainer_smart_cube": {
         "title": "Smart küple algoritma çalış",
@@ -4746,9 +4724,9 @@
       "themes_six": "Cyberpunk, Tokyo, Norman ve üç tema daha",
       "themes_colors": "Renkler ve arka plan değişir",
       "themes_atmosphere": "Temayı istediğin zaman değiştirirsin",
-      "stats_blocks": "Timer'ın altındaki modülleri sen seçersin",
-      "stats_charts": "Sadece baktığın sayılar ekranda kalır",
-      "stats_customize": "Modülleri ekle, çıkar, sırasını değiştir",
+      "stats_blocks": "En kötü: seanstaki en yavaş ortalama",
+      "stats_charts": "BPA, WPA ve Hedef: sıradaki çözümün etkisi",
+      "stats_customize": "İstatistik tablosunda Pro sütunlar",
       "trainer_ble": "Smart küp Bluetooth ile bağlanır",
       "trainer_feedback": "Her hamlenin doğruluğu ekranda görünür",
       "trainer_speed": "Süre kendiliğinden başlar ve durur",

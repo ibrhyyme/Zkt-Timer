@@ -2018,12 +2018,10 @@
     "live_analysis": "Live Phases",
     "none": "None",
     "customize_stats": "Customize Stats",
-    "customize_stats_desc": "Customize here and see immediately",
-    "add_block": "Add Block",
+    "customize_stats_desc": "Choose which averages and columns the table shows",
     "stat_avg_of": "Avg of {{num}}",
     "average_count_label": "Average of",
     "count_info": "Must be a number between 3 and 10,000",
-    "error_save_failed": "Failed to save to server. Please try again later.",
     "no_solves_yet": "No solves yet",
     "stackmat_place_hands": "Place your hands on the StackMat to start",
     "audio_place_hands": "Place your hands on the {{device}} to start",
@@ -2056,6 +2054,29 @@
     "solves_move_right": "Move right",
     "solves_remove_column": "Remove column",
     "solves_done": "Done",
+    "stats_table": {
+      "single": "Single",
+      "size": "Type",
+      "current": "Current",
+      "best": "Best",
+      "worst": "Worst",
+      "bpa": "BPA",
+      "wpa": "WPA",
+      "target": "Target"
+    },
+    "stats_table_editor": {
+      "rows_title": "Rows",
+      "rows_help": "A row appears once the session has that many solves. The single row is always there.",
+      "rows_limit": "You can add up to {{max}} rows",
+      "columns_title": "Columns",
+      "always": "Always",
+      "help_current": "The average of your latest solves.",
+      "help_best": "The fastest average in the session.",
+      "help_worst": "The slowest average in the session.",
+      "help_bpa": "Your average if the next solve is perfect.",
+      "help_wpa": "Your average if the next solve is a DNF.",
+      "help_target": "The time to beat on the next solve for a new best average."
+    },
     "stat_label": {
       "best_single": "Best single",
       "worst_single": "Worst single",
@@ -2091,49 +2112,6 @@
       "session_stdev_avg": "Session σ ao{{n}}",
       "session_stdev": "Session σ",
       "session_count": "Session solves"
-    },
-    "stat_editor": {
-      "blocks": "Blocks",
-      "reorder": "Drag to reorder",
-      "kind": "Type",
-      "kinds": {
-        "single": "Single",
-        "ao": "aoN",
-        "mo": "moN",
-        "mean": "Mean",
-        "stdev": "σ",
-        "count": "Count"
-      },
-      "kind_help": {
-        "single": "One solve: the best or the worst.",
-        "ao": "Average of the last N solves. The fastest and slowest 5% are dropped (WCA rule).",
-        "mo": "Untrimmed mean of the last N solves; a DNF among them makes it a DNF. The official format for 6x6, 7x7 and blindfolded.",
-        "mean": "Mean of every solve in scope. DNFs are left out.",
-        "stdev": "Standard deviation: how spread out your times are. Lower means more consistent. With N, the solves counted in the current aoN; with All, every solve in scope.",
-        "count": "Number of solves in scope. Shown as successful/total when there are DNFs."
-      },
-      "count": "Number of solves",
-      "count_all": "All",
-      "count_custom": "Your own count",
-      "value": "Value",
-      "values": {
-        "current": "Current",
-        "best": "Best",
-        "worst": "Worst",
-        "bpa": "BPA",
-        "wpa": "WPA",
-        "target": "Target"
-      },
-      "value_help": {
-        "bpa": "Best possible average: what the average becomes if the next solve is perfect.",
-        "wpa": "Worst possible average: what the average becomes if the next solve is a DNF.",
-        "target": "The time to beat on the next solve for a new best average. ∞ means any time will do, - means it cannot happen on this solve."
-      },
-      "scope": "Scope",
-      "scope_session": "Session",
-      "scope_all": "All time",
-      "color": "Colour",
-      "remove": "Remove block"
     }
   },
   "mobile_modules": {
@@ -4117,7 +4095,7 @@
       },
       "stats_customization": {
         "title": "Stats customization",
-        "desc": "You choose the stat modules below the timer. Add them, remove them or change their order."
+        "desc": "Add the Worst, BPA, WPA and Target columns to the timer's stats table, and see ahead what your next solve can do to your average."
       },
       "solve_sharing": {
         "title": "Solve sharing",
@@ -4721,7 +4699,7 @@
       },
       "stats": {
         "title": "Stats customization",
-        "desc": "Arrange the stat modules below the timer the way you like."
+        "desc": "Add the Worst, BPA, WPA and Target columns to the stats table."
       },
       "trainer_smart_cube": {
         "title": "Practice with your smart cube",
@@ -4766,9 +4744,9 @@
       "themes_six": "Cyberpunk, Tokyo, Norman and three more",
       "themes_colors": "Colors and background change",
       "themes_atmosphere": "Switch themes whenever you like",
-      "stats_blocks": "You choose the modules below the timer",
-      "stats_charts": "Only the numbers you look at stay on screen",
-      "stats_customize": "Add, remove, and reorder modules",
+      "stats_blocks": "Worst: the slowest average in the session",
+      "stats_charts": "BPA, WPA and Target: what your next solve can do",
+      "stats_customize": "Pro columns in the stats table",
       "trainer_ble": "Smart cube connects over Bluetooth",
       "trainer_feedback": "Each move's accuracy shows on screen",
       "trainer_speed": "The time starts and stops by itself",

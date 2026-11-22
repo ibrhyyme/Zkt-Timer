@@ -1,12 +1,9 @@
 import {fetchSolves, FilterSolvesOptions} from '../../../db/solves/query';
 import {StatsModuleBlock} from '../../../../server/schemas/StatsModule.schema';
 import {Solve} from '../../../../server/schemas/Solve.schema';
-import {getStore} from '../../store';
 import {getWorstTime} from '../../../db/solves/stats/solves/single/single_worst';
 import {getSinglePB} from '../../../db/solves/stats/solves/single/single_pb';
 import {getCurrentAverage} from '../../../db/solves/stats/solves/average/average';
-import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
-import {getAverageWorst} from '../../../db/solves/stats/solves/average/average_worst';
 import {
 	getCountingTimes,
 	getNextSolveOutlook,
@@ -14,11 +11,10 @@ import {
 } from '../../../db/solves/stats/solves/average/window_math';
 import {getSolveSummary} from '../../../db/solves/stats/solves/summary';
 import {getTimeString} from '../../../util/time';
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../../api';
 import i18n from '../../../i18n/i18n';
 import {getBlockCount, getBlockKind, getBlockValue, isMeanKind} from './block_options';
 import {getStatLabel} from './stat_label';
+import {getTableWindow} from './table_data';
 
 /** What a stats block shows, and the solves it opens when clicked. */
 export interface StatsBlockResult {
@@ -53,13 +49,17 @@ export function getStatsBlockDescription(block: StatsModuleBlock): string {
  * current session in this field, so nothing changes there.
  */
 function getBlockFilter(block: StatsModuleBlock, filterOptions: FilterSolvesOptions, currentSessionId?: string) {
-	const solvesFilter = {...filterOptions};
 	if (block.session) {
-		solvesFilter.session_id = filterOptions.session_id ?? currentSessionId;
-	} else {
-		delete solvesFilter.session_id;
+		return getSessionFilter(filterOptions, currentSessionId);
 	}
+	const solvesFilter = {...filterOptions};
+	delete solvesFilter.session_id;
 	return solvesFilter;
+}
+
+/** The filter narrowed to its own session, else to the current one. The stats table reads this. */
+export function getSessionFilter(filterOptions: FilterSolvesOptions, currentSessionId?: string): FilterSolvesOptions {
+	return {...filterOptions, session_id: filterOptions.session_id ?? currentSessionId};
 }
 
 /** BPA, WPA or target of the next aoN / moN; opens the count - 1 solves the next window keeps. */
@@ -75,11 +75,11 @@ function getNextSolveResult(
 	}
 
 	const previous = newest.slice(0, count - 1);
-	// A best to beat exists only once there has been a full window. getAveragePB is null both
+	// A best to beat exists only once there has been a full window. The best is null both
 	// before that and when every window was a DNF; the second is a best of DNF (-1).
 	let bestAverage: number | null = null;
 	if (value === 'target' && newest.length === count) {
-		bestAverage = getAveragePB(solvesFilter, count, mean)?.time ?? -1;
+		bestAverage = getTableWindow(solvesFilter, count, mean, 'best')?.time ?? -1;
 	}
 
 	const outlook = getNextSolveOutlook(
@@ -129,11 +129,10 @@ export function getStatsBlockValueFromFilter(
 		case 'ao':
 		case 'mo': {
 			const mean = isMeanKind(kind);
-			if (value === 'best') {
-				return getAveragePB(solvesFilter, count, mean);
-			}
-			if (value === 'worst') {
-				return getAverageWorst(solvesFilter, count, mean);
+			// Through the stats table's cache: one pass per size instead of a slide over the
+			// whole session per call (seconds on a large session for ao5000).
+			if (value === 'best' || value === 'worst') {
+				return getTableWindow(solvesFilter, count, mean, value);
 			}
 			if (value === 'bpa' || value === 'wpa' || value === 'target') {
 				return getNextSolveResult(solvesFilter, count, mean, value);
@@ -162,28 +161,4 @@ export function getStatsBlockValueFromFilter(
 			return mean === null ? null : {time: mean};
 		}
 	}
-}
-
-export async function saveStatsModuleBlocks() {
-	const store = getStore();
-	const me = store.getState().account?.me;
-	const blocks = store.getState().stats.blocks;
-
-	if (!me) {
-		return;
-	}
-
-	const query = gql`
-		mutation updateStatsModuleBlocks($blocks: [StatsModuleBlockInput]) {
-			updateStatsModuleBlocks(blocks: $blocks) {
-				blocks {
-					colorName
-				}
-			}
-		}
-	`;
-
-	await gqlMutate(query, {
-		blocks,
-	});
 }

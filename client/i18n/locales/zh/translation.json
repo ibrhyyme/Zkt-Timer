@@ -1993,12 +1993,10 @@
     "live_analysis": "实时分段",
     "none": "无",
     "customize_stats": "自定义统计",
-    "customize_stats_desc": "在此自定义并即时查看",
-    "add_block": "添加模块",
+    "customize_stats_desc": "选择表格显示哪些平均和列",
     "stat_avg_of": "{{num}} 次平均",
     "average_count_label": "平均次数",
     "count_info": "必须是 3 到 10,000 之间的数字",
-    "error_save_failed": "保存到服务器失败。请稍后再试。",
     "no_solves_yet": "还没有还原记录",
     "stackmat_place_hands": "将手放在 StackMat 上开始计时",
     "audio_place_hands": "将手放在 {{device}} 上开始计时",
@@ -2031,6 +2029,29 @@
     "solves_move_right": "右移",
     "solves_remove_column": "移除列",
     "solves_done": "完成",
+    "stats_table": {
+      "single": "单次",
+      "size": "类型",
+      "current": "当前",
+      "best": "最佳",
+      "worst": "最差",
+      "bpa": "BPA",
+      "wpa": "WPA",
+      "target": "目标"
+    },
+    "stats_table_editor": {
+      "rows_title": "行",
+      "rows_help": "本次会话的复原次数达到该数量时，该行才会出现。单次一行始终显示。",
+      "rows_limit": "最多可添加 {{max}} 行",
+      "columns_title": "列",
+      "always": "始终显示",
+      "help_current": "最近几次复原的平均。",
+      "help_best": "本次会话中最快的平均。",
+      "help_worst": "本次会话中最慢的平均。",
+      "help_bpa": "下一次复原完美时你的平均。",
+      "help_wpa": "下一次复原为 DNF 时你的平均。",
+      "help_target": "下一次复原需要打破的时间，才能创造新的最佳平均。"
+    },
     "stat_label": {
       "best_single": "最佳单次",
       "worst_single": "最差单次",
@@ -2066,49 +2087,6 @@
       "session_stdev_avg": "本组 σ ao{{n}}",
       "session_stdev": "本组 σ",
       "session_count": "本组复原次数"
-    },
-    "stat_editor": {
-      "blocks": "模块",
-      "reorder": "拖动以排序",
-      "kind": "类型",
-      "kinds": {
-        "single": "单次",
-        "ao": "aoN",
-        "mo": "moN",
-        "mean": "平均",
-        "stdev": "σ",
-        "count": "次数"
-      },
-      "kind_help": {
-        "single": "一次复原：最佳或最差。",
-        "ao": "最近 N 次复原的平均，去掉最快和最慢的 5%（WCA 规则）。",
-        "mo": "最近 N 次复原的不去尾平均；其中有 DNF 则结果为 DNF。6x6、7x7 和盲拧的正式格式。",
-        "mean": "范围内所有复原的平均，不计 DNF。",
-        "stdev": "标准差：成绩的离散程度，越小越稳定。选择 N 时为当前 aoN 计入的复原，选择全部时为范围内所有复原。",
-        "count": "范围内的复原次数。有 DNF 时显示为成功/总数。"
-      },
-      "count": "复原次数",
-      "count_all": "全部",
-      "count_custom": "自定义数量",
-      "value": "数值",
-      "values": {
-        "current": "当前",
-        "best": "最佳",
-        "worst": "最差",
-        "bpa": "BPA",
-        "wpa": "WPA",
-        "target": "目标"
-      },
-      "value_help": {
-        "bpa": "最佳可能平均：下一次复原完美时平均会达到的值。",
-        "wpa": "最差可能平均：下一次复原为 DNF 时平均会变成的值。",
-        "target": "下一次复原需要打破的时间，才能创造新的最佳平均。∞ 表示任何时间都可以，- 表示这一次不可能。"
-      },
-      "scope": "范围",
-      "scope_session": "本组",
-      "scope_all": "全部时间",
-      "color": "颜色",
-      "remove": "移除模块"
     }
   },
   "mobile_modules": {
@@ -4084,7 +4062,7 @@
       },
       "stats_customization": {
         "title": "统计自定义",
-        "desc": "计时器下方的统计模块由你选择，可以添加、移除和调整顺序。"
+        "desc": "在计时器的统计表中加入最差、BPA、WPA 和目标列，提前看到下一次复原会如何影响你的平均。"
       },
       "solve_sharing": {
         "title": "还原分享",
@@ -4688,7 +4666,7 @@
       },
       "stats": {
         "title": "统计数据自定义",
-        "desc": "按你喜欢的方式调整计时器下方的统计模块。"
+        "desc": "在统计表中加入最差、BPA、WPA 和目标列。"
       },
       "trainer_smart_cube": {
         "title": "使用智能魔方训练",
@@ -4733,9 +4711,9 @@
       "themes_six": "Cyberpunk、Tokyo、Norman 等 6 个主题",
       "themes_colors": "改变颜色和背景",
       "themes_atmosphere": "随时可以更换主题",
-      "stats_blocks": "计时器下方的模块由你选择",
-      "stats_charts": "屏幕上只留下你要看的数字",
-      "stats_customize": "添加、删除和重新排序模块",
+      "stats_blocks": "最差：本次会话中最慢的平均",
+      "stats_charts": "BPA、WPA 和目标：下一次复原的影响",
+      "stats_customize": "统计表中的 Pro 列",
       "trainer_ble": "智能魔方通过蓝牙连接",
       "trainer_feedback": "屏幕显示每一步是否正确",
       "trainer_speed": "计时自动开始和停止",

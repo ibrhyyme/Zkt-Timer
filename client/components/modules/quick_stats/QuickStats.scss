@@ -1,7 +1,10 @@
 @import '../../../styles/config';
+@import '../history/solve_grid';
 
-// The stats module: equal cells in rows (grid_layout.ts), split by hairlines rather than
-// drawn as filled boxes, so the numbers read like an instrument panel.
+// The stats module: cstimer's summary table drawn as the same sheet as the solves grid and
+// the phase analysis next to it (history/_solve_grid.scss): column lines, the heading's
+// rule, 32px rows, centred numbers.
+// The owner rejected a look of its own (2026-11-23: "diğer modüllerden farklı").
 .#{$namespace}-quick-stats {
 	display: flex;
 	flex-direction: column;
@@ -9,74 +12,70 @@
 	height: 100%;
 	min-height: 0;
 
-	&__row {
-		display: flex;
-		flex: 1 1 0;
+	&__list {
+		flex: 1 1 auto;
 		min-height: 0;
+		overflow: auto;
+	}
 
-		& + & {
-			border-top: 1px solid $zt-divider;
-		}
+	// The size column, then the value columns sharing what is left. A value keeps 3.6rem
+	// ("1:02.34" at the sheet's size); past that the list scrolls sideways instead of
+	// running the times into each other.
+	&__head,
+	&__row {
+		display: grid;
+		grid-template-columns: 4.6rem repeat(var(--zt-stats-values, 2), minmax(3.6rem, 1fr));
+		align-items: stretch;
+		min-width: max-content;
+		width: 100%;
+	}
+
+	&__head {
+		@include solve-grid-head;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+
+	&__row {
+		@include solve-grid-row;
+		// The row is not a link; its cells are.
+		cursor: default;
 	}
 
 	&__cell {
-		display: flex;
-		flex-direction: column;
-		flex: 1 1 0;
-		min-width: 0;
-		padding: $zt-space-1 $zt-space-2;
+		@include solve-grid-cell-value;
+		@include solve-grid-cell(4px);
 
-		& + & {
-			border-left: 1px solid $zt-divider;
+		&--head {
+			@include solve-grid-head-cell(4px);
+		}
+
+		&--size {
+			@include solve-grid-cell-index;
+			padding: 0 8px;
+			font-weight: 600;
+		}
+
+		&--head#{&}--size {
+			@include solve-grid-head-cell-index;
+			padding: 0 8px;
 		}
 	}
 
-	&__caption {
-		flex-shrink: 0;
-		overflow: hidden;
-		font-size: 0.8rem;
-		font-weight: 600;
-		line-height: 1.3;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		color: rgb(var(--text-color));
-	}
-
-	&__value-box {
-		display: flex;
-		flex: 1 1 auto;
-		align-items: center;
-		justify-content: center;
-		min-height: 0;
-	}
-
-	&__value {
+	&__open {
 		padding: 0;
 		border: 0;
-		border-bottom: 2px solid transparent;
 		background: none;
-		color: rgb(var(--text-color));
-		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
-		line-height: 1;
-		white-space: nowrap;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+		text-underline-offset: 3px;
 
-		&--action {
-			cursor: pointer;
-			transition: border-color $zt-transition;
-
-			&:hover {
-				border-bottom-color: currentColor;
-			}
-
-			@include zt-focus-ring;
+		&:hover {
+			text-decoration: underline;
 		}
-	}
 
-	@include reduced-motion {
-		&__value--action {
-			transition: none;
-		}
+		@include zt-focus-ring;
 	}
 }

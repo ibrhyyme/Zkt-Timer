@@ -2018,12 +2018,10 @@
     "live_analysis": "Fases en vivo",
     "none": "Ninguno",
     "customize_stats": "Personalizar estadísticas",
-    "customize_stats_desc": "Personaliza aquí y ve los cambios al instante",
-    "add_block": "Añadir bloque",
+    "customize_stats_desc": "Elige qué promedios y columnas muestra la tabla",
     "stat_avg_of": "Promedio de {{num}}",
     "average_count_label": "Media de",
     "count_info": "Debe ser un número entre 3 y 10.000",
-    "error_save_failed": "Error al guardar en el servidor. Inténtalo de nuevo más tarde.",
     "no_solves_yet": "Aún no hay resoluciones",
     "stackmat_place_hands": "Coloca tus manos en el StackMat para comenzar",
     "audio_place_hands": "Coloca tus manos en el {{device}} para comenzar",
@@ -2056,6 +2054,29 @@
     "solves_move_right": "Mover a la derecha",
     "solves_remove_column": "Quitar columna",
     "solves_done": "Listo",
+    "stats_table": {
+      "single": "Single",
+      "size": "Tipo",
+      "current": "Actual",
+      "best": "Mejor",
+      "worst": "Peor",
+      "bpa": "BPA",
+      "wpa": "WPA",
+      "target": "Objetivo"
+    },
+    "stats_table_editor": {
+      "rows_title": "Filas",
+      "rows_help": "Una fila aparece cuando la sesión llega a ese número de resoluciones. La fila de single siempre está.",
+      "rows_limit": "Puedes añadir hasta {{max}} filas",
+      "columns_title": "Columnas",
+      "always": "Siempre",
+      "help_current": "El promedio de tus últimas resoluciones.",
+      "help_best": "El promedio más rápido de la sesión.",
+      "help_worst": "El promedio más lento de la sesión.",
+      "help_bpa": "Tu promedio si la siguiente resolución es perfecta.",
+      "help_wpa": "Tu promedio si la siguiente resolución es DNF.",
+      "help_target": "El tiempo que debes superar en la siguiente resolución para un nuevo mejor promedio."
+    },
     "stat_label": {
       "best_single": "Mejor single",
       "worst_single": "Peor single",
@@ -2091,49 +2112,6 @@
       "session_stdev_avg": "σ ao{{n}} de la sesión",
       "session_stdev": "σ de la sesión",
       "session_count": "Resoluciones de la sesión"
-    },
-    "stat_editor": {
-      "blocks": "Bloques",
-      "reorder": "Arrastra para reordenar",
-      "kind": "Tipo",
-      "kinds": {
-        "single": "Single",
-        "ao": "aoN",
-        "mo": "moN",
-        "mean": "Media",
-        "stdev": "σ",
-        "count": "Cantidad"
-      },
-      "kind_help": {
-        "single": "Una resolución: la mejor o la peor.",
-        "ao": "Promedio de las últimas N resoluciones. Se descartan el 5% más rápido y el 5% más lento (regla WCA).",
-        "mo": "Media sin recortar de las últimas N resoluciones; un DNF entre ellas la convierte en DNF. Formato oficial de 6x6, 7x7 y a ciegas.",
-        "mean": "Media de todas las resoluciones del ámbito. Los DNF no se cuentan.",
-        "stdev": "Desviación estándar: cuánto varían tus tiempos. Un valor menor significa más constancia. Con N, las resoluciones que cuentan en el aoN actual; con Todas, todas las del ámbito.",
-        "count": "Número de resoluciones del ámbito. Con DNF se muestra como válidas/total."
-      },
-      "count": "Número de resoluciones",
-      "count_all": "Todas",
-      "count_custom": "Tu propio número",
-      "value": "Valor",
-      "values": {
-        "current": "Actual",
-        "best": "Mejor",
-        "worst": "Peor",
-        "bpa": "BPA",
-        "wpa": "WPA",
-        "target": "Objetivo"
-      },
-      "value_help": {
-        "bpa": "Mejor promedio posible: el valor del promedio si la siguiente resolución es perfecta.",
-        "wpa": "Peor promedio posible: el valor del promedio si la siguiente resolución es DNF.",
-        "target": "El tiempo que debes superar en la siguiente resolución para un nuevo mejor promedio. ∞ significa que cualquier tiempo sirve, - que no es posible en esta resolución."
-      },
-      "scope": "Ámbito",
-      "scope_session": "Sesión",
-      "scope_all": "Todo el historial",
-      "color": "Color",
-      "remove": "Eliminar bloque"
     }
   },
   "mobile_modules": {
@@ -4117,7 +4095,7 @@
       },
       "stats_customization": {
         "title": "Personalización de estadísticas",
-        "desc": "Tú eliges los módulos de estadísticas que hay debajo del cronómetro. Puedes añadirlos, quitarlos y cambiar su orden."
+        "desc": "Añade las columnas Peor, BPA, WPA y Objetivo a la tabla de estadísticas del cronómetro y ve de antemano qué puede hacer tu siguiente resolución con tu promedio."
       },
       "solve_sharing": {
         "title": "Compartir resoluciones",
@@ -4721,7 +4699,7 @@
       },
       "stats": {
         "title": "Personalización de estadísticas",
-        "desc": "Organiza como quieras los módulos de estadísticas de debajo del cronómetro."
+        "desc": "Añade las columnas Peor, BPA, WPA y Objetivo a la tabla de estadísticas."
       },
       "trainer_smart_cube": {
         "title": "Practica con tu cubo inteligente",
@@ -4766,9 +4744,9 @@
       "themes_six": "Cyberpunk, Tokyo, Norman y tres más",
       "themes_colors": "Cambian los colores y el fondo",
       "themes_atmosphere": "Cambia de tema cuando quieras",
-      "stats_blocks": "Tú eliges los módulos bajo el cronómetro",
-      "stats_charts": "En pantalla solo quedan los números que miras",
-      "stats_customize": "Añade, elimina y reordena módulos",
+      "stats_blocks": "Peor: el promedio más lento de la sesión",
+      "stats_charts": "BPA, WPA y Objetivo: lo que puede hacer tu siguiente resolución",
+      "stats_customize": "Columnas Pro en la tabla de estadísticas",
       "trainer_ble": "El cubo inteligente se conecta por Bluetooth",
       "trainer_feedback": "Cada movimiento se comprueba en pantalla",
       "trainer_speed": "El tiempo empieza y se detiene solo",

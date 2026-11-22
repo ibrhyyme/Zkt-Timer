@@ -1,219 +1,212 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
-import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
-import { DotsSixVertical, Plus } from 'phosphor-react';
-import jsonStr from 'json-stable-stringify';
+import { Check } from 'phosphor-react';
 import Button from '../../../common/button/Button';
-import CustomizeStatsEditor from './CustomizeStatsEditor';
+import Switch, { SwitchFace } from '../../../common/switch/Switch';
+import ProTag from '../../../common/pro_tag/ProTag';
+import { openProOnlyModal } from '../../../common/pro_only/openProOnlyModal';
+import { closeModal } from '../../../../actions/general';
+import { setSetting } from '../../../../db/settings/update';
+import { useSettings } from '../../../../util/hooks/useSettings';
+import { useMe } from '../../../../util/hooks/useMe';
 import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
-import {
-	addStatsModuleBlock,
-	moveStatsModuleBlock,
-	removeStatsModuleBlock,
-	resetStatsModuleBlocks,
-	updateStatsModuleBlock,
-} from '../../../../actions/stats';
 import { defaultStatsModuleBlocks } from '../../../../reducers/stats';
-import { toastError } from '../../../../util/toast';
-import { FilterSolvesOptions } from '../../../../db/solves/query';
-import { useSolveDb } from '../../../../util/hooks/useSolveDb';
-import { useActiveSessionId } from '../../../../util/hooks/useActiveSessionId';
-import { useGeneral } from '../../../../util/hooks/useGeneral';
-import { formatStatsBlockValue, getStatsBlockValueFromFilter, saveStatsModuleBlocks } from '../util';
-import { getStatLabel } from '../stat_label';
-import { MAX_STATS_BLOCKS } from '../block_options';
+import { parseHistoryColumnInput } from '../../history/history_columns';
+import {
+	DEFAULT_STATS_TABLE_ROWS,
+	extraColumnsUnlocked,
+	MAX_STATS_TABLE_ROWS,
+	resolveTableColumns,
+	resolveTableRows,
+	sanitizeTableRows,
+	STATS_TABLE_COLUMNS,
+	STATS_TABLE_SIZES,
+	StatsTableColumn,
+	tableRowLabel,
+} from '../stats_table';
 import block from '../../../../styles/bem';
 import './CustomizeStats.scss';
 
 const b = block('customize-stats');
 
-// Edits land in the store at once (the module behind the modal follows live); the server
-// write waits for a pause, so dragging through the count chips sends one request.
-const SAVE_DELAY_MS = 400;
-
-const DragHandle = SortableHandle<{ label: string }>(({ label }: { label: string }) => (
-	<span className={b('handle')} aria-label={label} title={label}>
-		<DotsSixVertical weight="bold" />
-	</span>
-));
-
-interface RowProps {
-	caption: string;
-	value: string;
-	selected: boolean;
-	reorderLabel: string;
-	onSelect: () => void;
-}
-
-const SortableRow = SortableElement<RowProps>(({ caption, value, selected, reorderLabel, onSelect }: RowProps) => (
-	<li className={b('row', { selected })}>
-		<DragHandle label={reorderLabel} />
-		<button type="button" className={b('row-main')} aria-pressed={selected} onClick={onSelect}>
-			<span className={b('row-caption')}>{caption}</span>
-			<span className={b('row-value')}>{value}</span>
-		</button>
-	</li>
-));
-
-const SortableRows = SortableContainer<{ children: React.ReactNode; label: string }>(
-	({ children, label }: { children: React.ReactNode; label: string }) => (
-		<ul className={b('rows')} aria-label={label}>
-			{children}
-		</ul>
-	)
-);
-
-interface Props {
-	filterOptions: FilterSolvesOptions;
-}
-
 /**
- * "Customize stats": the blocks of the stats module as a list on one side, the selected
- * block's settings on the other (stacked on a phone). The list shows each block's live value
- * and is reordered by dragging its handle.
+ * "Customize stats": two things only. Which averages get a row (one chip each, on or off,
+ * plus a size of one's own) and which columns the table shows (a row each, with what it
+ * means; the extra ones are Pro). Every change is saved at once and the table behind the
+ * modal follows live. The owner found the first version, with presets, a separate row list
+ * and a glossary, "aşırı kafa karıştırıcı" (2026-11-23).
  */
-export default function CustomizeStats(props: Props) {
-	const { filterOptions } = props;
-
+export default function CustomizeStats() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const mobileMode = useGeneral('mobile_mode');
-	const sessionId = useActiveSessionId();
-	const solveDb = useSolveDb();
-	const [selectedIndex, setSelectedIndex] = useState(0);
-	const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+	const me = useMe();
+	const storedRows = useSettings('stats_table_rows');
+	const storedColumns = useSettings('stats_table_columns');
+	const blocks = useSelector((state: RootStateOrAny) => state?.stats?.blocks) as StatsModuleBlock[] | undefined;
 
-	const stats = useSelector((state: RootStateOrAny) => state?.stats);
-	const blocks = (stats.blocks as StatsModuleBlock[]) || [];
-	const blockCount = blocks.length;
-	const canAddBlocks = blockCount < MAX_STATS_BLOCKS;
-	const selected = blocks[Math.min(selectedIndex, blockCount - 1)];
+	const rows = resolveTableRows(storedRows, blocks, defaultStatsModuleBlocks);
+	const columns = resolveTableColumns(storedColumns, blocks);
+	const unlocked = extraColumnsUnlocked(me);
+	const full = rows.length >= MAX_STATS_TABLE_ROWS;
+	// Every ready-made size, plus any size of one's own that is on.
+	const chips = sanitizeTableRows([...STATS_TABLE_SIZES, ...rows]);
 
-	const filterKey = jsonStr(filterOptions);
-	const values = useMemo(
-		() => blocks.map((statsBlock) => formatStatsBlockValue(getStatsBlockValueFromFilter(statsBlock, filterOptions, sessionId))),
-		[blocks, filterKey, sessionId, solveDb]
-	);
+	const [custom, setCustom] = useState('');
+	const [customError, setCustomError] = useState<string | null>(null);
 
-	useEffect(() => {
-		if (selectedIndex > blockCount - 1) {
-			setSelectedIndex(Math.max(0, blockCount - 1));
-		}
-	}, [blockCount]);
-
-	// A pending write still goes out when the modal closes before the pause ends.
-	function scheduleSave() {
-		if (saveTimer.current) {
-			clearTimeout(saveTimer.current);
-		}
-		saveTimer.current = setTimeout(() => {
-			saveTimer.current = undefined;
-			saveStatsModuleBlocks().catch(() => {
-				toastError(t('timer_modules.error_save_failed'));
-			});
-		}, SAVE_DELAY_MS);
+	function saveRows(next: number[]) {
+		setSetting('stats_table_rows', sanitizeTableRows(next));
 	}
 
-	function updateSelected(next: StatsModuleBlock) {
-		dispatch(updateStatsModuleBlock(selectedIndex, next));
-		scheduleSave();
+	function toggleRow(n: number) {
+		if (rows.includes(n)) {
+			saveRows(rows.filter((row) => row !== n));
+		} else if (!full) {
+			saveRows([...rows, n]);
+		}
 	}
 
-	function addBlock() {
-		if (!canAddBlocks) {
+	function addCustom(event?: React.FormEvent) {
+		event?.preventDefault();
+		const n = parseHistoryColumnInput(custom);
+		if (n === null) {
+			setCustomError(t('timer_modules.solves_custom_invalid'));
 			return;
 		}
-		dispatch(addStatsModuleBlock({ ...defaultStatsModuleBlocks[blockCount % defaultStatsModuleBlocks.length] }));
-		setSelectedIndex(blockCount);
-		scheduleSave();
-	}
-
-	function removeSelected() {
-		if (blockCount <= 1) {
+		if (rows.includes(n)) {
+			setCustomError(t('timer_modules.solves_custom_exists', { label: tableRowLabel(n) }));
 			return;
 		}
-		dispatch(removeStatsModuleBlock(selectedIndex));
-		setSelectedIndex(Math.max(0, selectedIndex - 1));
-		scheduleSave();
-	}
-
-	function resetToDefaults() {
-		dispatch(resetStatsModuleBlocks());
-		setSelectedIndex(0);
-		scheduleSave();
-	}
-
-	function onSortEnd({ oldIndex, newIndex }: { oldIndex: number; newIndex: number }) {
-		if (oldIndex === newIndex) {
+		if (full) {
+			setCustomError(t('timer_modules.stats_table_editor.rows_limit', { max: MAX_STATS_TABLE_ROWS }));
 			return;
 		}
-		dispatch(moveStatsModuleBlock(oldIndex, newIndex));
-		// The selection stays on the block it was on, wherever that moved.
-		if (selectedIndex === oldIndex) {
-			setSelectedIndex(newIndex);
-		} else if (oldIndex < selectedIndex && newIndex >= selectedIndex) {
-			setSelectedIndex(selectedIndex - 1);
-		} else if (oldIndex > selectedIndex && newIndex <= selectedIndex) {
-			setSelectedIndex(selectedIndex + 1);
-		}
-		scheduleSave();
+		saveRows([...rows, n]);
+		setCustom('');
+		setCustomError(null);
 	}
 
-	const reorderLabel = t('timer_modules.stat_editor.reorder');
+	function setColumn(column: StatsTableColumn, on: boolean) {
+		const next = on ? [...columns, column] : columns.filter((c) => c !== column);
+		setSetting('stats_table_columns', STATS_TABLE_COLUMNS.filter((c) => next.includes(c)));
+	}
+
+	function columnRow(column: 'current' | 'best' | StatsTableColumn, fixed: boolean) {
+		const name = t(`timer_modules.stats_table.${column}`);
+		const help = t(`timer_modules.stats_table_editor.help_${column}`);
+		const text = (
+			<span className={b('column-text')}>
+				<span className={b('column-name')}>
+					{name}
+					{!fixed && !unlocked && <ProTag />}
+				</span>
+				<span className={b('column-help')}>{help}</span>
+			</span>
+		);
+
+		if (fixed) {
+			return (
+				<li key={column} className={b('column')}>
+					{text}
+					<span className={b('always')}>{t('timer_modules.stats_table_editor.always')}</span>
+				</li>
+			);
+		}
+		const on = columns.includes(column as StatsTableColumn);
+		if (!unlocked) {
+			// The whole row leads to Pro; the switch shows the column is off.
+			return (
+				<li key={column}>
+					<button
+						type="button"
+						className={b('column', { locked: true })}
+						onClick={() => openProOnlyModal(dispatch, t, 'stats')}
+					>
+						{text}
+						<SwitchFace on={false} disabled />
+					</button>
+				</li>
+			);
+		}
+		return (
+			<li key={column}>
+				<label className={b('column', { toggle: true })}>
+					{text}
+					<Switch on={on} onChange={(value) => setColumn(column as StatsTableColumn, value)} />
+				</label>
+			</li>
+		);
+	}
 
 	return (
 		<div className={b()}>
-			<section className={b('list')}>
-				<h3 className={b('heading')}>{t('timer_modules.stat_editor.blocks')}</h3>
-				<SortableRows
-					label={t('timer_modules.stat_editor.blocks')}
-					useDragHandle
-					lockAxis="y"
-					lockToContainerEdges
-					distance={mobileMode ? 0 : 4}
-					helperClass={b('row', { dragging: true }).toString()}
-					onSortEnd={onSortEnd}
-				>
-					{blocks.map((statsBlock, index) => {
-						const { key, params } = getStatLabel(statsBlock);
+			<section className={b('section')}>
+				<div className={b('heading-row')}>
+					<h3 className={b('heading')}>{t('timer_modules.stats_table_editor.rows_title')}</h3>
+					<p className={b('note')}>{t('timer_modules.stats_table_editor.rows_help')}</p>
+				</div>
+				<div className={b('chips')}>
+					{chips.map((n) => {
+						const selected = rows.includes(n);
 						return (
-							<SortableRow
-								key={`stat-row-${index}`}
-								index={index}
-								caption={t(key, params)}
-								value={values[index]}
-								selected={index === selectedIndex}
-								reorderLabel={reorderLabel}
-								onSelect={() => setSelectedIndex(index)}
-							/>
+							<button
+								type="button"
+								key={n}
+								className={b('chip', { selected })}
+								aria-pressed={selected}
+								disabled={!selected && full}
+								onClick={() => toggleRow(n)}
+							>
+								{selected && <Check weight="bold" />}
+								{tableRowLabel(n)}
+							</button>
 						);
 					})}
-				</SortableRows>
-				<div className={b('list-actions')}>
-					<Button
-						small
-						gray
-						disabled={!canAddBlocks}
-						icon={<Plus weight="bold" />}
-						iconFirst
-						onClick={addBlock}
-						text={t('timer_modules.add_block')}
-					/>
-					<Button small transparent onClick={resetToDefaults} text={t('timer_modules.reset_to_defaults')} />
 				</div>
-			</section>
-			{selected && (
-				<section className={b('editor')}>
-					<CustomizeStatsEditor
-						key={selectedIndex}
-						stat={selected}
-						canRemove={blockCount > 1}
-						onChange={updateSelected}
-						onRemove={removeSelected}
+				<form className={b('custom')} onSubmit={addCustom}>
+					<span className={b('custom-prefix')}>ao</span>
+					<input
+						className={b('custom-input')}
+						inputMode="numeric"
+						value={custom}
+						placeholder={t('timer_modules.solves_custom_placeholder')}
+						aria-label={t('timer_modules.solves_custom_title')}
+						onChange={(event) => {
+							setCustom(event.target.value);
+							setCustomError(null);
+						}}
 					/>
-				</section>
-			)}
+					<Button type="submit" small gray disabled={!custom.trim() || full} text={t('timer_modules.solves_custom_add')} />
+					{(customError || full) && (
+						<span className={b('note', { error: !!customError })}>
+							{customError || t('timer_modules.stats_table_editor.rows_limit', { max: MAX_STATS_TABLE_ROWS })}
+						</span>
+					)}
+				</form>
+			</section>
+
+			<section className={b('section')}>
+				<h3 className={b('heading')}>{t('timer_modules.stats_table_editor.columns_title')}</h3>
+				<ul className={b('columns')}>
+					{columnRow('current', true)}
+					{columnRow('best', true)}
+					{STATS_TABLE_COLUMNS.map((column) => columnRow(column, false))}
+				</ul>
+			</section>
+
+			<div className={b('footer')}>
+				<Button
+					small
+					gray
+					onClick={() => {
+						saveRows(DEFAULT_STATS_TABLE_ROWS);
+						setSetting('stats_table_columns', []);
+					}}
+					text={t('timer_modules.reset_to_defaults')}
+				/>
+				<Button small primary onClick={() => dispatch(closeModal())} text={t('timer_modules.solves_done')} />
+			</div>
 		</div>
 	);
 }

@@ -570,14 +570,13 @@ export default function Sessions() {
 			{/* Columns of numbers, not charts: these two stay readable in a narrow
 			    track, so they take the space next to the settings panel. */}
 			<Module smallPadding>
-				{/* Same gear as the timer's stats module (K-12): one global list of blocks,
-				    edited in the same modal, previewed against this session's solves. */}
+				{/* Same gear as the timer's stats module (K-12): one table layout for both,
+				    edited in the same modal; here it reads the session being inspected. */}
 				<div className={b('quick-stats')}>
 					<div className={b('quick-stats-head')}>
 						<h3 className={b('quick-stats-title')}>{t('timer_modules.stats')}</h3>
 						<ModuleHeaderMenu
 							moduleType={TimerModuleType.STATS}
-							filterOptions={fetchFilter}
 							className={b('quick-stats-gear')}
 							align="right"
 						/>

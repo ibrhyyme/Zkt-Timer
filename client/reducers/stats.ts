@@ -1,6 +1,5 @@
 import {StatsModule, StatsModuleBlock} from '../../server/schemas/StatsModule.schema';
 import {withDefaults} from './with_defaults';
-import {moveBlock} from '../components/modules/quick_stats/block_options';
 
 function statsModuleBlock(
 	statType: StatsModuleBlock['statType'],
@@ -18,6 +17,10 @@ function statsModuleBlock(
 	};
 }
 
+// The stats blocks the stats module showed before it became a table (2026-11-23). Read
+// only now: the table takes its first rows from a user's customized blocks
+// (quick_stats/stats_table.ts resolveTableRows), and app builds older than the table still
+// read and write them on the server, so the shape stays.
 export const defaultStatsModuleBlocks = [
 	statsModuleBlock('single', 'best', true, 'green', 0), // ses. pb
 	statsModuleBlock('mean', 'current', true, 'text', 0), // ses. mean
@@ -41,58 +44,6 @@ export default (state = initialState, action) => {
 				...initialState,
 				...payload,
 				blocks: payload.blocks || initialState.blocks,
-			};
-		}
-
-		case 'ADD_STATS_MODULE_BLOCK': {
-			const {statOptions} = action.payload;
-
-			const blocks = [...state.blocks];
-			blocks.push(statOptions);
-
-			return {
-				...state,
-				blocks,
-			};
-		}
-
-		case 'REMOVE_STATS_MODULE_BLOCK': {
-			const {index} = action.payload;
-
-			const blocks = [...state.blocks];
-			blocks.splice(index, 1);
-
-			return {
-				...state,
-				blocks,
-			};
-		}
-
-		case 'UPDATE_STATS_MODULE_BLOCK': {
-			const {index, statOptions} = action.payload;
-
-			const blocks = [...state.blocks];
-			blocks[index] = statOptions;
-
-			return {
-				...state,
-				blocks,
-			};
-		}
-
-		case 'MOVE_STATS_MODULE_BLOCK': {
-			const {from, to} = action.payload;
-
-			return {
-				...state,
-				blocks: moveBlock(state.blocks, from, to),
-			};
-		}
-
-		case 'RESET_STATS_MODULE_BLOCKS': {
-			return {
-				...state,
-				blocks: [...defaultStatsModuleBlocks],
 			};
 		}
 
