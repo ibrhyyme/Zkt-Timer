@@ -71,7 +71,14 @@
 		width: 2.667rem;
 		height: 2.667rem;
 		flex-shrink: 0;
-		animation: cubeRotate 10s linear infinite;
+		// Spins only while the home link is hovered (owner, 2026-11-22). A logo spinning
+		// all the time made the browser draw every frame on an idle page: about half a
+		// CPU core on a 165 Hz desktop screen. Paused, it resumes from the same angle.
+		animation: cubeRotate 10s linear infinite paused;
+
+		a:hover > & {
+			animation-play-state: running;
+		}
 
 		.#{$namespace}-logo {
 			width: 100%;

@@ -17,6 +17,10 @@ const PLASTIC = 'rgba(8, 16, 26, 0.55)';
 
 const PARTICLE_COUNT = 60;
 const BASE_SPEED = 0.3;
+// Movement is a fixed step per drawn frame, so drawing at most 60 a second keeps the drift at
+// its intended speed on 120 and 165 Hz screens too, and spares them the extra frames. The
+// 2 ms slack keeps a 60 Hz screen at every frame.
+const MIN_FRAME_MS = 1000 / 60 - 2;
 
 interface Particle {
 	x: number;
@@ -45,6 +49,7 @@ export default function ParticleCanvas() {
 		let mouseX = width / 2;
 		let mouseY = height / 2;
 		let reqId: number;
+		let lastDraw = 0;
 
 		// Set canvas size
 		function resize() {
@@ -72,7 +77,12 @@ export default function ParticleCanvas() {
 			});
 		}
 
-		function render() {
+		function render(now: number) {
+			if (now - lastDraw < MIN_FRAME_MS) {
+				reqId = requestAnimationFrame(render);
+				return;
+			}
+			lastDraw = now;
 			ctx.clearRect(0, 0, width, height);
 
 			for (const p of particles) {

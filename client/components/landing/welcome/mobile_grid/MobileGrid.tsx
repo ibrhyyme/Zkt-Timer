@@ -9,8 +9,20 @@ import { APP_STORE_URL, PLAY_STORE_URL } from '../../../../util/store-links';
 import { isNative } from '../../../../util/platform';
 import NotationHeading from '../notation_heading/NotationHeading';
 
-if (typeof window !== 'undefined') {
+// While enabled, ScrollTrigger keeps an empty requestAnimationFrame loop running (its
+// _rafBugFix), so the browser renders every frame even on an idle page. Registered at
+// module scope it ran on every page of the bundle, the timer included. It is enabled
+// only while this section is mounted.
+let scrollTriggerRegistered = false;
+
+function enableScrollTrigger() {
+	if (scrollTriggerRegistered) {
+		ScrollTrigger.enable();
+		return;
+	}
+	// The first registration enables it as well.
 	gsap.registerPlugin(ScrollTrigger);
+	scrollTriggerRegistered = true;
 }
 
 const b = block('welcome-mobile-grid');
@@ -63,6 +75,7 @@ export default function MobileGrid() {
 		// The phones are visible by default; with reduced motion they simply stay put.
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
+		enableScrollTrigger();
 		const tweens: gsap.core.Tween[] = [];
 
 		// Phone items: stagger with rotation
@@ -95,6 +108,7 @@ export default function MobileGrid() {
 				tw.scrollTrigger?.kill();
 				tw.kill();
 			});
+			ScrollTrigger.disable();
 		};
 	}, []);
 

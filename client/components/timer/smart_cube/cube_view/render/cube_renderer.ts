@@ -25,6 +25,14 @@ export const GAP_FULLY_OPEN = 0.2;
 const SLOW_FRAME_MS = 38;
 const FAST_FRAME_MS = 20;
 const FRAMES_PER_VERDICT = 45;
+/**
+ * At most 60 drawn frames a second. A drawn frame is several WebGL passes (contact shadow,
+ * its blur, the cube), and a turn looks the same at 60 fps as at 120 or 165: a high refresh
+ * screen drew up to 2.75 times the work for nothing. It also keeps ORIENTATION_EASE, which
+ * is per frame, at the same speed on every screen. The 2 ms slack keeps a 60 Hz screen,
+ * whose frames arrive a hair early or late, at every frame.
+ */
+const MIN_FRAME_MS = 1000 / 60 - 2;
 
 export interface CubeRendererOptions {
 	size: PuzzleSize;
@@ -135,6 +143,7 @@ export class CubeRenderer {
 	private raf = 0;
 	private exposureShown = false;
 	private lastFrame = 0;
+	private lastDraw = 0;
 	private frameEma = 0;
 	private frameCount = 0;
 	/** Highest pixel ratio known to be too slow; never climbed back to. */
@@ -584,6 +593,11 @@ export class CubeRenderer {
 	private frame = (now: number) => {
 		this.raf = 0;
 		if (!this.active || this.disposed) return;
+		if (now - this.lastDraw < MIN_FRAME_MS) {
+			this.raf = requestAnimationFrame(this.frame);
+			return;
+		}
+		this.lastDraw = now;
 		let changed = this.dirty;
 		this.dirty = false;
 

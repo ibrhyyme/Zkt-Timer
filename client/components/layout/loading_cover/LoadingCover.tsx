@@ -15,6 +15,9 @@ const b = block('loading-cover');
 // open on a half-initialised settings DB fails worse than waiting.
 const STUCK_THRESHOLD_MS = 30_000;
 
+// The fadeOut transition in LoadingCover.scss: 0.4s delay + 0.15s fade.
+const FADE_OUT_MS = 550;
+
 interface Props {
 	fadeOut?: boolean;
 }
@@ -26,6 +29,18 @@ export default function LoadingCover(props: Props) {
 	const [style, setStyle] = React.useState<CSS.Properties>({});
 	const [stuck, setStuck] = React.useState(false);
 	const [loadedSolves, setLoadedSolves] = React.useState(0);
+	const [gone, setGone] = React.useState(false);
+
+	// A faded cover is invisible, yet its logo would keep spinning for as long as the
+	// tab is open and make the browser draw every frame. It leaves the DOM after the fade.
+	useEffect(() => {
+		if (!fadeOut) {
+			setGone(false);
+			return undefined;
+		}
+		const timer = setTimeout(() => setGone(true), FADE_OUT_MS);
+		return () => clearTimeout(timer);
+	}, [fadeOut]);
 
 	useEffect(() => {
 		if (fadeOut || typeof localStorage === 'undefined') return;
@@ -76,6 +91,8 @@ export default function LoadingCover(props: Props) {
 			removeEventListener('bootProgressEvent', onProgress);
 		};
 	}, [fadeOut]);
+
+	if (gone) return null;
 
 	return (
 		<div

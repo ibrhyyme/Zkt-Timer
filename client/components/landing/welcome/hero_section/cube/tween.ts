@@ -17,6 +17,14 @@ export type EasingFn = (t: number) => number;
 
 let uniqueID = 0;
 
+/**
+ * At most 60 frames a second. The hero cube floats and re-renders WebGL on every frame it
+ * is on screen; a 120 or 165 Hz screen drew it up to 2.75 times as often for no visible
+ * gain. Animations get the full delta, so a skipped frame changes no speed. The 2 ms slack
+ * keeps a 60 Hz screen at every frame.
+ */
+const MIN_FRAME_MS = 1000 / 60 - 2;
+
 class AnimationEngine {
 	private ids: number[] = [];
 	private animations: Record<number, Animation> = {};
@@ -27,6 +35,10 @@ class AnimationEngine {
 	private update = () => {
 		const now = performance.now();
 		const delta = now - this.time;
+		if (delta < MIN_FRAME_MS) {
+			this.raf = this.ids.length && !this.paused ? requestAnimationFrame(this.update) : 0;
+			return;
+		}
 		this.time = now;
 
 		let i = this.ids.length;
