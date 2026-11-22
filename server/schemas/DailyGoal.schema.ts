@@ -41,6 +41,44 @@ export class DailyGoalReminderResult {
 	// Whether room (Friendly Room) solves count toward daily goals + activity.
 	@Field({ nullable: true })
 	count_room_solves?: boolean;
+
+	// Whether warm-up mode solves count toward daily goals + activity.
+	@Field({ nullable: true })
+	count_warmup_solves?: boolean;
+}
+
+/** A warm-up mode solve as the daily goal counts it: no time, no scramble. */
+@InputType()
+export class WarmupSolveInput {
+	// The client's solve uuid: a retried upload of the same solve is skipped, not doubled.
+	@Field()
+	id: string;
+
+	@Field()
+	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
+
+	// Epoch milliseconds, like Solve.started_at.
+	@Field(() => Float)
+	started_at: number;
+}
+
+@ObjectType()
+export class WarmupSolveEntry {
+	@Field()
+	id: string;
+
+	@Field()
+	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
+
+	// Epoch milliseconds. Raw so the client buckets by day in its own timezone.
+	@Field(() => Float)
+	started_at: number;
 }
 
 @ObjectType()

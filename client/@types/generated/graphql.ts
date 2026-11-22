@@ -885,6 +885,7 @@ export type CustomTrainerCreateInput = {
 export type DailyGoalReminderResult = {
   __typename?: 'DailyGoalReminderResult';
   count_room_solves?: Maybe<Scalars['Boolean']>;
+  count_warmup_solves?: Maybe<Scalars['Boolean']>;
   enabled?: Maybe<Scalars['Boolean']>;
 };
 
@@ -1416,6 +1417,7 @@ export type Mutation = {
   addBadgeToUser?: Maybe<Badge>;
   addNewSmartDevice?: Maybe<SmartDevice>;
   addSupportTicketMessage?: Maybe<SupportTicketMessage>;
+  addWarmupSolves?: Maybe<Scalars['Boolean']>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
@@ -1511,6 +1513,7 @@ export type Mutation = {
   removeAlgSetItems?: Maybe<AlgSet>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
+  removeWarmupSolves?: Maybe<Scalars['Boolean']>;
   reopenSupportTicket?: Maybe<SupportTicket>;
   reorderAlgSetItems?: Maybe<AlgSet>;
   reorderSessions?: Maybe<Scalars['Void']>;
@@ -1534,6 +1537,7 @@ export type Mutation = {
   setCubeArchived?: Maybe<Cube>;
   setDailyGoal?: Maybe<DailyGoalType>;
   setDailyGoalCountRoomSolves?: Maybe<DailyGoalReminderResult>;
+  setDailyGoalCountWarmupSolves?: Maybe<DailyGoalReminderResult>;
   setDailyGoalReminder?: Maybe<DailyGoalReminderResult>;
   setMainCube?: Maybe<CubeMain>;
   setMessageReaction?: Maybe<Scalars['Boolean']>;
@@ -1621,6 +1625,11 @@ export type MutationAddSupportTicketMessageArgs = {
   attachments?: InputMaybe<Array<Scalars['Upload']>>;
   body?: InputMaybe<Scalars['String']>;
   ticketId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAddWarmupSolvesArgs = {
+  solves?: InputMaybe<Array<InputMaybe<WarmupSolveInput>>>;
 };
 
 
@@ -2072,6 +2081,11 @@ export type MutationRemoveDailyGoalArgs = {
 };
 
 
+export type MutationRemoveWarmupSolvesArgs = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
 export type MutationReopenSupportTicketArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -2196,6 +2210,11 @@ export type MutationSetDailyGoalArgs = {
 
 
 export type MutationSetDailyGoalCountRoomSolvesArgs = {
+  enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSetDailyGoalCountWarmupSolvesArgs = {
   enabled?: InputMaybe<Scalars['Boolean']>;
 };
 
@@ -2870,6 +2889,7 @@ export type Query = {
   mySolveFingerprints?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySolveIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySupportTickets?: Maybe<Array<Maybe<SupportTicket>>>;
+  myWarmupSolveEntries?: Maybe<Array<Maybe<WarmupSolveEntry>>>;
   myWcaCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
   myWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   myZktProfile?: Maybe<PublicZktProfile>;
@@ -3158,6 +3178,11 @@ export type QueryMyDeletedRecordsArgs = {
 
 
 export type QueryMyRoomSolveEntriesArgs = {
+  sinceDays?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryMyWarmupSolveEntriesArgs = {
   sinceDays?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4259,6 +4284,21 @@ export type VoidBattleMatchResult = {
   match_id?: Maybe<Scalars['String']>;
   reverted_a?: Maybe<Scalars['Boolean']>;
   reverted_b?: Maybe<Scalars['Boolean']>;
+};
+
+export type WarmupSolveEntry = {
+  __typename?: 'WarmupSolveEntry';
+  cube_type?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  scramble_subset?: Maybe<Scalars['String']>;
+  started_at?: Maybe<Scalars['Float']>;
+};
+
+export type WarmupSolveInput = {
+  cube_type?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  scramble_subset?: InputMaybe<Scalars['String']>;
+  started_at?: InputMaybe<Scalars['Float']>;
 };
 
 export type WcaAccount = {

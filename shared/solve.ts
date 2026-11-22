@@ -230,3 +230,9 @@ export function solveFingerprint(solve: SolveFingerprintFields): string {
 	const startedAt = solve.started_at === null || solve.started_at === undefined ? '' : String(solve.started_at);
 	return `${time}|${scramble}|${startedAt}`;
 }
+
+/**
+ * How long a warm-up solve counts toward the daily goal: one day past the activity heatmap's
+ * 365. The client drops older ones, the server refuses and deletes them (cleanup cron).
+ */
+export const WARMUP_SOLVE_RETENTION_DAYS = 366;

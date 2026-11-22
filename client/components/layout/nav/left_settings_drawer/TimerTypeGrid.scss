@@ -158,7 +158,8 @@
 		}
 
 		.#{$namespace}-quick-goals > p,
-		.#{$namespace}-quick-goals__heading {
+		.#{$namespace}-quick-goals__heading,
+		.#{$namespace}-quick-goals__count-note {
 			padding: $zt-space-3;
 		}
 
@@ -168,8 +169,10 @@
 			border-radius: 0 !important;
 		}
 
-		// A row's own padding, on the row or (the cube row) on the line inside it.
-		.py-4.px-4 {
+		// A row's own padding, on the row or (the cube row) on the line inside it. The goal
+		// counting toggles share one card, so their rows carry their own class.
+		.py-4.px-4,
+		.#{$namespace}-quick-goals__count-row {
 			min-height: 44px;
 			box-sizing: border-box;
 			padding: $zt-space-1 $zt-space-3 !important;

@@ -2,11 +2,13 @@ import {FilterSolvesOptions} from '../../../db/solves/query';
 import {getDailyGoalStorage} from './storage';
 import {getRoomDailyCounts} from './room-solves';
 import {getDeletedDailyCounts} from './deleted-solves';
+import {getWarmupDailyCounts} from './warmup-solves';
 
 /**
  * The per-day counts that sit on top of the solve DB for everything the daily goal
- * counts: Friendly Room solves and solves deleted since, each only while its own toggle
- * ("Odalardaki çözümleri say" / "Silinen çözümleri de say") is on.
+ * counts: Friendly Room solves, solves deleted since and warm-up solves, each only while
+ * its own toggle ("Odalardaki çözümleri say" / "Silinen çözümleri de say" / "Isınma
+ * çözümlerini de say") is on.
  *
  * One place, because every view that shows a goal has to count the same things the goal
  * does. The activity heatmap and the solves-per-day bars both read it; the goal progress
@@ -28,16 +30,16 @@ export function mergeDailyCounts(...maps: (Map<string, number> | undefined)[]): 
 }
 
 /**
- * Extra per-day counts for a solve filter, or undefined when both toggles are off.
+ * Extra per-day counts for a solve filter, or undefined when every toggle is off.
  *
  * The bucket is read off the filter the way the solve query matches solves: a cube type
  * narrows to it, and a subset (an explicit null included) narrows to that exact subset.
- * A session filter is NOT honoured — room solves have no session and the deleted tally
- * does not record one — so callers scoped to a single session decide for themselves
+ * A session filter is NOT honoured — room solves have no session and the deleted and
+ * warm-up tallies do not record one — so callers scoped to a single session decide for themselves
  * whether to ask at all.
  *
  * A cube filter (filter.cube_id, design magnet-cubes 8.3) gets nothing: room solves carry no
- * cube and the deleted tally does not record one, so adding them would count other cubes' days.
+ * cube and the tallies do not record one, so adding them would count other cubes' days.
  */
 export function getExtraDailyCounts(filter: FilterSolvesOptions): Map<string, number> | undefined {
 	if (filter.cube_id) {
@@ -45,7 +47,7 @@ export function getExtraDailyCounts(filter: FilterSolvesOptions): Map<string, nu
 	}
 
 	const storage = getDailyGoalStorage();
-	if (!storage.count_room_solves && !storage.count_deleted_solves) {
+	if (!storage.count_room_solves && !storage.count_deleted_solves && !storage.count_warmup_solves) {
 		return undefined;
 	}
 
@@ -59,5 +61,7 @@ export function getExtraDailyCounts(filter: FilterSolvesOptions): Map<string, nu
 	const room = storage.count_room_solves ? getRoomDailyCounts(cubeType, subset ?? null) : undefined;
 	const deleted = storage.count_deleted_solves ? getDeletedDailyCounts(cubeType, subset) : undefined;
 
-	return mergeDailyCounts(room, deleted);
+	const warmup = storage.count_warmup_solves ? getWarmupDailyCounts(cubeType, subset) : undefined;
+
+	return mergeDailyCounts(room, deleted, warmup);
 }

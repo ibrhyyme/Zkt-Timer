@@ -18,7 +18,7 @@ import {initEmailLogRetentionCronJob} from './cron_email_log_retention';
 import {initLogRetentionCronJob} from './cron_log_retention';
 import {initMessageRetentionCronJob} from './cron_message_retention';
 import {freezeOldArchives} from './CompetitionArchiveService';
-import {getBucketEventKey} from '../../shared/solve';
+import {getBucketEventKey, WARMUP_SOLVE_RETENTION_DAYS} from '../../shared/solve';
 
 const CUBE_NAMES: Record<string, string> = {
 	'222': '2x2', '333': '3x3', '444': '4x4', '555': '5x5',
@@ -48,6 +48,7 @@ export function initCronJobs() {
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();
+	initWarmupSolveCleanupCronJob();
 	initMessageRetentionCronJob();
 	initEmailLogRetentionCronJob();
 	initLogRetentionCronJob();
@@ -75,6 +76,30 @@ function initActivityHeartbeatCleanupCronJob() {
 		'America/Los_Angeles'
 	);
 	logger.debug('Initiated cron job for activity heartbeat cleanup.', {running: job.running});
+}
+
+function initWarmupSolveCleanupCronJob() {
+	// Daily 03:50 LA: warm-up solves older than the heatmap's window count toward nothing.
+	const job = new CronJob(
+		'0 50 3 * * *',
+		async () => {
+			try {
+				const cutoff = BigInt(Date.now() - WARMUP_SOLVE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+				const result = await getPrisma().warmupSolve.deleteMany({
+					where: {started_at: {lt: cutoff}},
+				});
+				if (result.count > 0) {
+					logger.info(`[WarmupSolveCleanup] Deleted ${result.count} old warm-up solve(s)`);
+				}
+			} catch (e) {
+				logger.error('[WarmupSolveCleanup] cron failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+	logger.debug('Initiated cron job for warm-up solve cleanup.', {running: job.running});
 }
 
 function initArchiveFreezeCronJob() {
@@ -311,6 +336,7 @@ async function checkDailyGoalReminders() {
 			select: {
 				id: true,
 				daily_goal_count_room_solves: true,
+				daily_goal_count_warmup_solves: true,
 				daily_goals: {where: {enabled: true}},
 			},
 		});
@@ -359,6 +385,17 @@ async function checkDailyGoalReminders() {
 
 				if (roomCountByKey) {
 					count += roomCountByKey[getBucketEventKey(goal.cube_type, goal.scramble_subset)] || 0;
+				}
+
+				// Warm-up solves, matched like the solve count above (cube type).
+				if (user.daily_goal_count_warmup_solves) {
+					count += await prisma.warmupSolve.count({
+						where: {
+							user_id: user.id,
+							cube_type: goal.cube_type,
+							started_at: {gte: todayStartMs},
+						},
+					});
 				}
 
 				if (count < goal.target) {

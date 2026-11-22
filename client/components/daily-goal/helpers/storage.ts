@@ -4,6 +4,7 @@ import {DailyGoal, DailyGoalStorage} from '../@types/interfaces';
 import {emitEvent} from '../../../util/event_handler';
 import {gqlMutate, gqlQuery} from '../../api';
 import {fetchRoomSolveCounts} from './room-solves';
+import {syncWarmupSolves} from './warmup-solves';
 import {toStoredSubset} from '../../../../shared/solve';
 
 const STORAGE_KEY = 'daily_goals';
@@ -14,6 +15,7 @@ const DEFAULT_STORAGE: DailyGoalStorage = {
 	last_reminder_time: null,
 	count_room_solves: false,
 	count_deleted_solves: false,
+	count_warmup_solves: false,
 };
 
 // A fresh object every time. Callers mutate what they get and write it back, and with
@@ -123,6 +125,27 @@ export function setCountDeletedSolves(enabled: boolean): void {
 	emitEvent('dailyGoalUpdatedEvent');
 }
 
+/**
+ * Warm-up toggle. Synced to UserAccount like the room one (the reminder cron reads it).
+ * The warm-up solves themselves are recorded either way; turning it on takes the server's
+ * list right away, so another device's warm-ups show without waiting for a tab switch.
+ */
+export function setCountWarmupSolves(enabled: boolean): void {
+	const storage = getDailyGoalStorage();
+	storage.count_warmup_solves = enabled;
+	setDailyGoalStorage(storage);
+	emitEvent('dailyGoalUpdatedEvent');
+	syncCountWarmupSolvesToServer(enabled);
+	if (enabled) {
+		void syncWarmupSolves(true, true);
+	}
+}
+
+/** Called when the tab or app comes back to the foreground (layout/init.ts). */
+export function refreshWarmupSolves(): void {
+	void syncWarmupSolves(getDailyGoalStorage().count_warmup_solves);
+}
+
 // --- Server sync (fire-and-forget) ---
 
 function syncGoalToServer(cubeType: string, target: number, enabled: boolean, scrambleSubset?: string | null): void {
@@ -187,6 +210,23 @@ function syncCountRoomSolvesToServer(enabled: boolean): void {
 	});
 }
 
+function syncCountWarmupSolvesToServer(enabled: boolean): void {
+	const me = getMe();
+	if (!me) return;
+
+	const mutation = gql`
+		mutation SetDailyGoalCountWarmupSolves($enabled: Boolean!) {
+			setDailyGoalCountWarmupSolves(enabled: $enabled) {
+				count_warmup_solves
+			}
+		}
+	`;
+
+	gqlMutate(mutation, {enabled}).catch((e) => {
+		console.error('Failed to sync count-warmup-solves setting to server', e);
+	});
+}
+
 function removeGoalFromServer(cubeType: string, scrambleSubset?: string | null): void {
 	const me = getMe();
 	if (!me) return;
@@ -218,6 +258,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 			dailyGoalReminderStatus {
 				enabled
 				count_room_solves
+				count_warmup_solves
 			}
 		}
 	`;
@@ -225,7 +266,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 	try {
 		const res = await gqlQuery<{
 			dailyGoals: Array<{id: string; cube_type: string; scramble_subset?: string | null; target: number; enabled: boolean}>;
-			dailyGoalReminderStatus: {enabled: boolean; count_room_solves: boolean};
+			dailyGoalReminderStatus: {enabled: boolean; count_room_solves: boolean; count_warmup_solves: boolean};
 		}>(query);
 		const serverGoals = res.data.dailyGoals;
 		const storage = getDailyGoalStorage();
@@ -233,6 +274,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 		// Get reminder + count-room-solves status from server (server wins)
 		storage.reminder_enabled = res.data.dailyGoalReminderStatus.enabled;
 		storage.count_room_solves = !!res.data.dailyGoalReminderStatus.count_room_solves;
+		storage.count_warmup_solves = !!res.data.dailyGoalReminderStatus.count_warmup_solves;
 
 		if (serverGoals.length === 0 && storage.goals.length > 0) {
 			// Migration: goal exists in localStorage but server is empty → push it
@@ -261,6 +303,8 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 		if (storage.count_room_solves) {
 			fetchRoomSolveCounts();
 		}
+		// Sends warm-ups recorded while offline; takes the server's list when they count.
+		void syncWarmupSolves(storage.count_warmup_solves, true);
 	} catch (e) {
 		console.error('Failed to sync daily goals from server', e);
 	}

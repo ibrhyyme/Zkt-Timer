@@ -11,11 +11,12 @@ import {
 	setReminderEnabled,
 	setCountRoomSolves,
 	setCountDeletedSolves,
+	setCountWarmupSolves,
 } from '../../daily-goal/helpers/storage';
 import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
 import {initPushNotifications} from '../../../util/push-notifications';
 import {useEventListener} from '../../../util/event_handler';
-import {Trash, Bell, BellSlash, Target, UsersThree, ClockCounterClockwise} from 'phosphor-react';
+import {Trash, Bell, BellSlash, Target, UsersThree, ClockCounterClockwise, Fire, IconProps} from 'phosphor-react';
 import Switch from '../../common/switch/Switch';
 
 function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
@@ -102,64 +103,42 @@ export default function GoalsTab() {
 				</>
 			)}
 
-			{/* Count room solves toggle */}
+			{/* What else counts toward the goal: room, warm-up and deleted solves. One card with
+			    one shared note, not a card each: the panel keeps its height (owner's condition)
+			    with the third toggle added. All three reach the daily goal and the activity graph
+			    only, never the session or stats, which is what the note says. */}
 			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
-						<UsersThree
-							size={18}
-							weight={storage.count_room_solves ? 'fill' : 'regular'}
-							className={`shrink-0 ${storage.count_room_solves ? 'text-primary' : 'text-text/70'}`}
-						/>
-						<div className="flex flex-col min-w-0">
-							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
-								{t('quick_controls.count_room_solves')}
-							</span>
-							{/* Spells out where these solves actually land. Without it the label reads as
-							    "count them everywhere" and people expect them in their session too. */}
-							<span className="text-xs text-text/70 mt-0.5">
-								{t('quick_controls.count_room_solves_desc')}
-							</span>
-						</div>
-					</div>
-					<Switch
+				<div className="rounded-xl bg-text/[0.035] border border-text/[0.09] divide-y divide-text/[0.09]">
+					<CountToggleRow
+						icon={UsersThree}
 						on={storage.count_room_solves}
-						ariaLabel={t('quick_controls.count_room_solves')}
+						label={t('quick_controls.count_room_solves')}
 						onChange={(on) => {
 							setCountRoomSolves(on);
 							refresh();
 						}}
 					/>
-				</div>
-			</div>
-
-			{/* Count deleted solves toggle. Same shape as the rooms toggle above, and the same
-			    reach: the daily goal and the activity graph only, never the session or stats. */}
-			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-text/[0.035] border border-text/[0.09] hover:border-text/[0.15] transition-all duration-200">
-					<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
-						<ClockCounterClockwise
-							size={18}
-							weight={storage.count_deleted_solves ? 'fill' : 'regular'}
-							className={`shrink-0 ${storage.count_deleted_solves ? 'text-primary' : 'text-text/70'}`}
-						/>
-						<div className="flex flex-col min-w-0">
-							<span className="font-medium text-text/80 group-hover:text-text transition-colors">
-								{t('quick_controls.count_deleted_solves')}
-							</span>
-							<span className="text-xs text-text/70 mt-0.5">
-								{t('quick_controls.count_deleted_solves_desc')}
-							</span>
-						</div>
-					</div>
-					<Switch
+					<CountToggleRow
+						icon={Fire}
+						on={storage.count_warmup_solves}
+						label={t('quick_controls.count_warmup_solves')}
+						onChange={(on) => {
+							setCountWarmupSolves(on);
+							refresh();
+						}}
+					/>
+					<CountToggleRow
+						icon={ClockCounterClockwise}
 						on={storage.count_deleted_solves}
-						ariaLabel={t('quick_controls.count_deleted_solves')}
+						label={t('quick_controls.count_deleted_solves')}
 						onChange={(on) => {
 							setCountDeletedSolves(on);
 							refresh();
 						}}
 					/>
+					<p className="zt-quick-goals__count-note px-4 py-2.5 text-xs text-text/70">
+						{t('quick_controls.count_extra_solves_desc')}
+					</p>
 				</div>
 			</div>
 
@@ -192,6 +171,25 @@ export default function GoalsTab() {
 					/>
 				</div>
 			</div>
+		</div>
+	);
+}
+
+interface CountToggleRowProps {
+	icon: React.ComponentType<IconProps>;
+	on: boolean;
+	label: string;
+	onChange: (on: boolean) => void;
+}
+
+function CountToggleRow({icon: Icon, on, label, onChange}: CountToggleRowProps) {
+	return (
+		<div className="zt-quick-goals__count-row group flex items-center justify-between py-2 px-4">
+			<div className="flex items-center space-x-3 min-w-0 flex-1 pr-3">
+				<Icon size={18} weight={on ? 'fill' : 'regular'} className={`shrink-0 ${on ? 'text-primary' : 'text-text/70'}`} />
+				<span className="font-medium text-text/80 group-hover:text-text transition-colors">{label}</span>
+			</div>
+			<Switch on={on} ariaLabel={label} onChange={onChange} />
 		</div>
 	);
 }

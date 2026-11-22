@@ -1,3 +1,4 @@
+import { unstable_batchedUpdates } from 'react-dom';
 import { createSolveDb, deleteSolveDb } from '../../../db/solves/update';
 import { buildBucketFilter, fetchLastSolve } from '../../../db/solves/query';
 import { getSetting } from '../../../db/settings/query';
@@ -18,6 +19,8 @@ import { warmupAutoSaveReason } from '../../../lib/warmup/auto_save';
 import type { Solve } from '../../../../server/schemas/Solve.schema';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { setTimerParam } from './params';
+import { recordWarmupSolve, unrecordWarmupSolve } from '../../daily-goal/helpers/warmup-solves';
+import { unrecordDeletedSolves } from '../../daily-goal/helpers/deleted-solves';
 
 /** A solve is under way or about to start: the mode must not change under it. */
 function timerBusy(): boolean {
@@ -84,7 +87,15 @@ export function warmupSolveBeatsPb(solve: Solve): boolean {
 
 /** The Save button: from here on the solve is an ordinary one, PB check included. */
 export function saveLastWarmupSolve() {
-	persistWarmupSolve(takeLastWarmupSolve());
+	const solve = takeLastWarmupSolve();
+	if (!solve) return;
+
+	// Out of the warm-up tally and into the solve DB in one render, so the goal bar never
+	// shows the step in between (a dip and rise across the target would fire the confetti).
+	unstable_batchedUpdates(() => {
+		unrecordWarmupSolve(solve);
+		persistWarmupSolve(solve);
+	});
 }
 
 /**
@@ -117,7 +128,15 @@ export function undoWarmupAutoSave() {
 	if (!solve) return;
 
 	hapticImpact('light');
-	void deleteSolveDb(solve, true);
+	// The solve is a warm-up solve again: deleteSolveDb tallies it as a deleted one, which it
+	// is not, so that comes back out and it goes into the warm-up tally instead. Both hold even
+	// when the solve was already deleted from the last solve card. confirmed=true skips the
+	// modal, so the delete runs synchronously inside the batch: one render, no step between.
+	unstable_batchedUpdates(() => {
+		void deleteSolveDb(solve, true);
+		unrecordDeletedSolves([solve]);
+		recordWarmupSolve(solve);
+	});
 }
 
 function persistWarmupSolve(solve: Solve | null) {

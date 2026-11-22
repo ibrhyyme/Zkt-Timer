@@ -21,6 +21,11 @@ jest.mock('../../../../util/event_handler', () => ({ emitEvent: jest.fn() }));
 jest.mock('../../../../util/native-plugins', () => ({ requestInAppReview: jest.fn(), hapticImpact: jest.fn() }));
 jest.mock('../../../../util/hooks/useSmartCubeStore', () => ({ getSmartCubeStore: () => null }));
 jest.mock('../../../../util/store/getTimer', () => ({ getTimerStore: (key: string) => mockStore[key] }));
+jest.mock('../../../daily-goal/helpers/warmup-solves', () => ({
+	recordWarmupSolve: jest.fn(),
+	unrecordWarmupSolve: jest.fn(),
+}));
+jest.mock('../../../daily-goal/helpers/deleted-solves', () => ({ unrecordDeletedSolves: jest.fn() }));
 jest.mock('../params', () => ({
 	setTimerParam: jest.fn((key: string, value: any) => { mockStore[key] = value; }),
 }));
@@ -31,6 +36,8 @@ import { getSinglePB } from '../../../../db/solves/stats/solves/single/single_pb
 import { noteCubeSolve } from '../../../../lib/cubes/store';
 import { emitEvent } from '../../../../util/event_handler';
 import { setTimerParam } from '../params';
+import { recordWarmupSolve, unrecordWarmupSolve } from '../../../daily-goal/helpers/warmup-solves';
+import { unrecordDeletedSolves } from '../../../daily-goal/helpers/deleted-solves';
 import { saveSolve } from '../save';
 import { saveLastWarmupSolve, sweepWarmup, toggleWarmup, undoWarmupAutoSave, warmupSolveBeatsPb } from '../warmup';
 import {
@@ -85,6 +92,8 @@ describe('saveSolve in warm-up mode', () => {
 		expect(emitEvent).not.toHaveBeenCalled();
 		expect(setTimerParam).not.toHaveBeenCalledWith('sessionSolveCount', expect.anything());
 		expect(getWarmupState().count).toBe(2);
+		// Only the opt-in daily goal tally hears about them.
+		expect(recordWarmupSolve).toHaveBeenCalledTimes(2);
 	});
 
 	it('leaves a room or battle solve alone', () => {
@@ -121,6 +130,9 @@ describe('the Save button', () => {
 		expect(saved.session_id).toBe('s1');
 		expect(noteCubeSolve).toHaveBeenCalledTimes(1);
 		expect(getWarmupState()).toMatchObject({ active: true, last: null, saved, autoSaved: null });
+		// Saved now, so it leaves the warm-up tally: the goal counts it from the solve DB.
+		expect(unrecordWarmupSolve).toHaveBeenCalledTimes(1);
+		expect(unrecordWarmupSolve).toHaveBeenCalledWith(saved);
 	});
 
 	it('is available again for the next solve', () => {
@@ -157,6 +169,8 @@ describe('auto-save', () => {
 		expect(saved.time).toBe(9.5);
 		expect(noteCubeSolve).toHaveBeenCalledTimes(1);
 		expect(getWarmupState()).toMatchObject({ count: 1, last: null, saved, autoSaved: 'pb' });
+		// In the solve DB from the start, so never in the warm-up tally.
+		expect(recordWarmupSolve).not.toHaveBeenCalled();
 
 		// The Save button has nothing left to save.
 		saveLastWarmupSolve();
@@ -189,6 +203,11 @@ describe('auto-save', () => {
 		expect(deleteSolveDb).toHaveBeenCalledTimes(1);
 		expect(deleteSolveDb).toHaveBeenCalledWith(saved, true);
 		expect(getWarmupState()).toMatchObject({ last: saved, saved: null, autoSaved: null });
+		// A warm-up solve again: out of the deleted tally, into the warm-up one, once each.
+		expect(unrecordDeletedSolves).toHaveBeenCalledTimes(1);
+		expect(unrecordDeletedSolves).toHaveBeenCalledWith([saved]);
+		expect(recordWarmupSolve).toHaveBeenCalledTimes(1);
+		expect(recordWarmupSolve).toHaveBeenCalledWith(saved);
 	});
 
 	it('Undo is gone after the next solve', () => {

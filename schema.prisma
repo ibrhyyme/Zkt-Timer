@@ -48,6 +48,7 @@ model UserAccount {
   daily_goal_reminder        Boolean     @default(false)
   last_daily_goal_reminder   DateTime?
   daily_goal_count_room_solves Boolean   @default(false)
+  daily_goal_count_warmup_solves Boolean @default(false)
   // Consent: timestamp when Privacy Policy + Terms of Service were accepted at signup,
   // and the policy version accepted. Null = legacy account created before consent gating.
   terms_accepted_at          DateTime?
@@ -133,6 +134,9 @@ model UserAccount {
 
   // Daily goals
   daily_goals                   DailyGoal[]
+
+  // Warm-up mode solves, counted toward daily goals when the user opts in
+  warmup_solves                 WarmupSolve[]
 
   // OLLCP recognition accuracy (per case)
   ollcp_stats                   OllcpStat[]
@@ -1515,6 +1519,22 @@ model DailyGoal {
   @@unique([user_id, cube_type, scramble_subset])
   @@index([user_id])
   @@map("daily_goal")
+}
+
+// One row per warm-up mode solve: never a Solve, only a count toward the daily goal and the
+// activity heatmap (opt-in, UserAccount.daily_goal_count_warmup_solves). The id is the
+// client's solve uuid, so a retried upload cannot count twice. Kept 366 days (cron).
+model WarmupSolve {
+  id              String      @id
+  user_id         String
+  cube_type       String
+  scramble_subset String?
+  started_at      BigInt
+  created_at      DateTime    @default(now())
+  user            UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, started_at])
+  @@map("warmup_solve")
 }
 
 model OllcpStat {

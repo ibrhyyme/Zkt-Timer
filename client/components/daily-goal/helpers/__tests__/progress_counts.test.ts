@@ -8,6 +8,7 @@ let mockStorage: any;
 let mockTimerCount = 0;
 let mockRoomCount = 0;
 let mockDeletedCount = 0;
+let mockWarmupCount = 0;
 
 jest.mock('../../../../db/solves/query', () => ({
 	fetchSolveCount: jest.fn(() => mockTimerCount),
@@ -23,8 +24,13 @@ jest.mock('../deleted-solves', () => ({
 	getDeletedCountForBucketToday: jest.fn(() => mockDeletedCount),
 }));
 
+jest.mock('../warmup-solves', () => ({
+	getWarmupCountForBucketToday: jest.fn(() => mockWarmupCount),
+}));
+
 import {getDailyGoalProgress, getTodaysSolveCount} from '../progress';
 import {getDeletedCountForBucketToday} from '../deleted-solves';
+import {getWarmupCountForBucketToday} from '../warmup-solves';
 import {fetchSolveCount} from '../../../../db/solves/query';
 
 beforeEach(() => {
@@ -32,12 +38,14 @@ beforeEach(() => {
 	mockTimerCount = 7;
 	mockRoomCount = 2;
 	mockDeletedCount = 3;
+	mockWarmupCount = 4;
 	mockStorage = {
 		goals: [{cube_type: '333', scramble_subset: null, target: 10, enabled: true}],
 		reminder_enabled: false,
 		last_reminder_time: null,
 		count_room_solves: false,
 		count_deleted_solves: false,
+		count_warmup_solves: false,
 	};
 });
 
@@ -45,6 +53,25 @@ describe('getTodaysSolveCount', () => {
 	it('counts only timer solves with both toggles off', () => {
 		expect(getTodaysSolveCount('333', null)).toBe(7);
 		expect(getDeletedCountForBucketToday).not.toHaveBeenCalled();
+		expect(getWarmupCountForBucketToday).not.toHaveBeenCalled();
+	});
+
+	it('treats storage written before the warm-up toggle existed as off', () => {
+		delete mockStorage.count_warmup_solves;
+		expect(getTodaysSolveCount('333', null)).toBe(7);
+	});
+
+	it('adds warm-up solves when that toggle is on', () => {
+		mockStorage.count_warmup_solves = true;
+		expect(getTodaysSolveCount('333', null)).toBe(11);
+		expect(getWarmupCountForBucketToday).toHaveBeenCalledWith('333', null);
+	});
+
+	it('adds all three sources when every toggle is on', () => {
+		mockStorage.count_room_solves = true;
+		mockStorage.count_deleted_solves = true;
+		mockStorage.count_warmup_solves = true;
+		expect(getTodaysSolveCount('333', null)).toBe(16);
 	});
 
 	it('treats storage written before the deleted toggle existed as off', () => {

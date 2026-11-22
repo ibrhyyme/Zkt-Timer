@@ -317,6 +317,7 @@ type Query {
   dailyGoals: [DailyGoalType]
   dailyGoalReminderStatus: DailyGoalReminderResult
   myRoomSolveEntries(sinceDays: Int): [RoomSolveEntry]
+  myWarmupSolveEntries(sinceDays: Int): [WarmupSolveEntry]
   myOllcpStats: [OllcpStatType]
   wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition]
   wcaSearchCompetitions(query: String): [WcaCompetition]
@@ -493,9 +494,12 @@ type Mutation {
   sendBulkEmail(input: SendBulkEmailInput): BulkEmailResult
   registerPushToken(input: RegisterPushTokenInput): PushTokenResult
   unregisterPushToken(token: String): PushTokenResult
+  addWarmupSolves(solves: [WarmupSolveInput]): Boolean
+  removeWarmupSolves(ids: [String]): Boolean
   setDailyGoal(input: SetDailyGoalInput): DailyGoalType
   setDailyGoalReminder(enabled: Boolean): DailyGoalReminderResult
   setDailyGoalCountRoomSolves(enabled: Boolean): DailyGoalReminderResult
+  setDailyGoalCountWarmupSolves(enabled: Boolean): DailyGoalReminderResult
   removeDailyGoal(scrambleSubset: String, cubeType: String): Boolean
   recordOllcpAttempt(correct: Boolean, algId: String): OllcpStatType
   mergeOllcpStats(entries: [OllcpStatInput]): Boolean
@@ -1713,6 +1717,14 @@ type DailyGoalType {
 type DailyGoalReminderResult {
   enabled: Boolean
   count_room_solves: Boolean
+  count_warmup_solves: Boolean
+}
+
+type WarmupSolveEntry {
+  id: String
+  cube_type: String
+  scramble_subset: String
+  started_at: Float
 }
 
 type RoomSolveEntry {
@@ -3385,6 +3397,13 @@ input SetDailyGoalInput {
   scramble_subset: String
   target: Int
   enabled: Boolean
+}
+
+input WarmupSolveInput {
+  id: String
+  cube_type: String
+  scramble_subset: String
+  started_at: Float
 }
 
 input OllcpStatInput {

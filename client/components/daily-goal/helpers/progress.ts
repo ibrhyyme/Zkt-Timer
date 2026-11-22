@@ -3,6 +3,7 @@ import {GoalProgress} from '../@types/interfaces';
 import {getGoalForCubeType, getDailyGoalStorage} from './storage';
 import {getRoomCountForBucketToday} from './room-solves';
 import {getDeletedCountForBucketToday} from './deleted-solves';
+import {getWarmupCountForBucketToday} from './warmup-solves';
 import {toStoredSubset} from '../../../../shared/solve';
 
 export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | null): number {
@@ -28,6 +29,12 @@ export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | 
 	// query above no longer finds them, so the two never count the same solve.
 	if (storage.count_deleted_solves) {
 		count += getDeletedCountForBucketToday(cubeType, scrambleSubset);
+	}
+
+	// And today's warm-up solves, which were never saved. One that was saved after all is
+	// out of this tally (helpers/warmup-solves.ts), so the query above is its only count.
+	if (storage.count_warmup_solves) {
+		count += getWarmupCountForBucketToday(cubeType, scrambleSubset);
 	}
 
 	return count;

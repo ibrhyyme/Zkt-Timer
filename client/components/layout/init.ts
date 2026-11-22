@@ -27,7 +27,7 @@ import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
 import { emitEvent } from '../../util/event_handler';
-import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
+import { refreshWarmupSolves, syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
 import { onVisibilityChange } from '../../util/app-visibility';
 import { isPro, isProEnabled } from '../../lib/pro';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
@@ -664,6 +664,8 @@ function initVisibilitySyncListener() {
 
 	onVisibilityChange((visible) => {
 		if (!visible) return;
+		// Before the read gate: a Basic user's pending warm-up uploads go out too.
+		refreshWarmupSolves();
 		if (!canReadSync()) return;
 
 		if (pendingBootReconcile) {

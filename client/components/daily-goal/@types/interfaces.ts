@@ -15,6 +15,9 @@ export interface DailyGoalStorage {
 	// heatmap (helpers/deleted-solves.ts). Device-local: there is no server column for it.
 	// Storage written before it existed lacks it, which reads as off.
 	count_deleted_solves: boolean;
+	// When true, warm-up mode solves (never saved) count toward daily goals + activity
+	// heatmap (helpers/warmup-solves.ts). Device-local, like count_deleted_solves.
+	count_warmup_solves: boolean;
 }
 
 export interface GoalProgress {
