@@ -10,6 +10,7 @@ import ScrollReset from '../scroll_reset/ScrollReset';
 import ChatBubbles from '../../messages/chat_bubbles/ChatBubbles';
 import AnonBanner from '../anon/AnonBanner';
 import AnonTransferPrompt from '../anon/AnonTransferPrompt';
+import AppBanner, {useAndroidAppBanner} from '../app_banner/AppBanner';
 
 const b = block('body');
 
@@ -32,6 +33,7 @@ export default function Wrapper(props: Props) {
 	const textColor = useSettings('text_color');
 	const solveTimeColor = useSettings('solve_time_color');
 	const solvePbColor = useSettings('solve_pb_color');
+	const appBanner = useAndroidAppBanner();
 
 	useEffect(() => {
 		if (!appLoaded || typeof document === 'undefined') {
@@ -59,10 +61,11 @@ export default function Wrapper(props: Props) {
 				})}
 			>
 				<div className={b('content')}>
-					{/* Both no-op unless they apply: the banner only for signed-out
-					    visitors, the transfer prompt only when a signed-in session finds
-					    solves left behind in the anonymous database. */}
-					<AnonBanner />
+					{/* One strip slot: the Play app strip on an Android browser, otherwise
+					    the signed-out strip (no-op for signed-in users). The transfer
+					    prompt only shows when a signed-in session finds solves left behind
+					    in the anonymous database. */}
+					{appBanner.visible ? <AppBanner onDismiss={appBanner.dismiss} /> : <AnonBanner />}
 					{props.children}
 				</div>
 			</div>

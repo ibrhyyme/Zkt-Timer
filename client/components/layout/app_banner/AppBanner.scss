@@ -1,0 +1,20 @@
+@import '../../../styles/config';
+
+.#{$namespace}-app-banner {
+	&__icon {
+		flex-shrink: 0;
+		width: 28px;
+		height: 28px;
+		border-radius: $zt-radius-sm;
+	}
+
+	// The signed-out strip puts its sentence on a row of its own on a phone. This one
+	// is a single short line, and wrapping would leave the icon alone on the first row.
+	@include bp-down($bp-md) {
+		flex-wrap: nowrap;
+
+		.#{$namespace}-anon-banner__text {
+			flex-basis: auto;
+		}
+	}
+}

@@ -6294,6 +6294,9 @@
     "android": "Get it on Google Play",
     "android_detail": "Android phones and tablets"
   },
+  "app_banner": {
+    "text": "ZKT Timer has an Android app"
+  },
   "anon": {
     "banner_text": "Your solves are saved on this device. Create an account to reach them anywhere.",
     "banner_text_with_count": "You have {{count}} solves on this device. Create an account so you do not lose them.",

@@ -6274,6 +6274,9 @@
     "android": "Google Play'den indir",
     "android_detail": "Android telefon ve tabletler"
   },
+  "app_banner": {
+    "text": "ZKT Timer'ın Android uygulaması var"
+  },
   "anon": {
     "banner_text": "Çözümlerin bu cihazda saklanıyor. Hesap açarsan her cihazdan erişirsin.",
     "banner_text_with_count": "Bu cihazda {{count}} çözümün var. Hesap aç, kaybetme.",

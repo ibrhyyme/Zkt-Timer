@@ -6259,6 +6259,9 @@
     "android": "在 Google Play 获取",
     "android_detail": "Android 手机和平板"
   },
+  "app_banner": {
+    "text": "ZKT Timer 有 Android 应用"
+  },
   "anon": {
     "banner_text": "你的还原记录保存在这台设备上。注册账号后可在任何设备查看。",
     "banner_text_with_count": "这台设备上有 {{count}} 次还原记录。注册账号，别弄丢它们。",
