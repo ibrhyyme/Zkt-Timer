@@ -90,3 +90,5 @@ CLAUDE.md
 out/
 # Local bug/feature feedback screenshots and backlog
 .feedback/
+# Dev server writes schema.graphql through this temp file (server/app.ts)
+schema.graphql.tmp

@@ -521,14 +521,22 @@ global.siteUrl = process.env.BASE_URI;
 	});
 
 	if (isDev) {
+		// schema.graphql is a committed build gate. A plain writeFile truncates first, and
+		// the dev watcher restarts the server on any JSON/TSX change or branch switch, so a
+		// restart mid-write left the file empty (2026-11-22, twice). Skip an unchanged
+		// schema, and write a temp file then rename it, so the file is never half written.
 		const schemaStr = printSchema(mergedSchema);
-		fs.writeFile('schema.graphql', schemaStr, (err) => {
-			if (err) {
-				logger.error('Error writing GraphQL schema to file', {
-					error: err
-				});
+		try {
+			const current = fs.existsSync('schema.graphql') ? fs.readFileSync('schema.graphql', 'utf8') : null;
+			if (current?.replace(/\r\n/g, '\n') !== schemaStr) {
+				fs.writeFileSync('schema.graphql.tmp', schemaStr);
+				fs.renameSync('schema.graphql.tmp', 'schema.graphql');
 			}
-		});
+		} catch (err) {
+			logger.error('Error writing GraphQL schema to file', {
+				error: err
+			});
+		}
 	}
 
 	if (isDev && process.env.HTTPS === 'true') {
