@@ -53,6 +53,7 @@ import {
 import { beginHoldStopPress, clearHoldStopPress } from '../../../util/magnet-start/hold_stop_store';
 import { markMagnetHoldHintSeen } from '../../../util/magnet-start/settings';
 import { isUiReversed, orientDelta } from '../../../util/reversed-ui';
+import { eventWallTime } from '../../../util/event-time';
 import { classifyTouchTarget } from '../helpers/touch_target';
 import { isCancelSwipe, isEdgeSwipe } from '../helpers/touch_gesture';
 import {
@@ -242,9 +243,9 @@ export default function KeyWatcher(props: Props) {
 			return;
 		}
 
-		// Capture touch event timestamp BEFORE DOM traversal — for mobile timing accuracy
-		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
-		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+		// Capture the touch moment BEFORE DOM traversal, on the Date.now() clock the running
+		// display counts on (see util/event-time for why the event's own clock is not used).
+		const eventTs = eventWallTime(e.timeStamp);
 
 		if (magnetOwnsInput) {
 			magnetTouchStart(e, eventTs);
@@ -329,8 +330,8 @@ export default function KeyWatcher(props: Props) {
 			return abandonTouch();
 		}
 
-		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
-		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+		// Touch moment on the Date.now() clock (see util/event-time).
+		const eventTs = eventWallTime(e.timeStamp);
 
 		touchStartX.current = null;
 		touchStartY.current = null;

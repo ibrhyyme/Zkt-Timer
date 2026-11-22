@@ -15,6 +15,7 @@ import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import LiveTime from '../common/live_time/LiveTime';
 import './RoomTimerOverlay.scss';
 import { soundAllowed } from '../../lib/sounds';
+import { eventMonotonicTime } from '../../util/event-time';
 
 // Timer phases
 const STATUS = {
@@ -401,8 +402,8 @@ export default function RoomTimerOverlay({
         hapticImpact('light');
         setStatus(STATUS.TIMING);
         statusRef.current = STATUS.TIMING;
-        // Touch event timestamp varsa onu kullan (iOS IPC gecikmesi icin daha dogru)
-        const startNow = startTs ? (startTs - performance.timeOrigin) : now();
+        // The touch moment, already on the performance.now() clock (util/event-time).
+        const startNow = startTs !== undefined ? startTs : now();
         setStartedAt(startNow);
         startedAtRef.current = startNow;
         setTime(0);
@@ -640,7 +641,7 @@ export default function RoomTimerOverlay({
                 if (timerRef.current) clearInterval(timerRef.current);
                 hapticImpact('medium');
                 // Exact stop time: touch event timestamp veya performance.now() (33ms tick yerine)
-                const stopNow = stopTs ? (stopTs - performance.timeOrigin) : now();
+                const stopNow = stopTs !== undefined ? stopTs : now();
                 if (startedAtRef.current !== null) {
                     setTime(stopNow - startedAtRef.current);
                 }
@@ -951,8 +952,8 @@ export default function RoomTimerOverlay({
         };
 
         const handleTouchStart = (e: TouchEvent) => {
-            // Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
-            const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+            // Touch moment on the performance.now() clock the room timer counts on (util/event-time).
+            const eventTs = eventMonotonicTime(e.timeStamp);
 
             const target = e.target as HTMLElement;
 
@@ -1064,8 +1065,8 @@ export default function RoomTimerOverlay({
             // This handles the case where a user accidentally touches with a 2nd finger and lifts one.
             if (e.touches.length > 0) return;
 
-            // Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
-            const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+            // Touch moment on the performance.now() clock (util/event-time).
+            const eventTs = eventMonotonicTime(e.timeStamp);
 
             // Clear delay timeout
             if (touchDelayTimeoutRef.current) {

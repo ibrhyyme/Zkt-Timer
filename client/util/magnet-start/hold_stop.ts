@@ -58,12 +58,10 @@ export function holdStopMoved(
 export const HOLD_STOP_MAX_EVENT_LAG_MS = 200;
 
 /**
- * When the press began, on the Date.now() clock. The event timestamp is
- * performance.timeOrigin + e.timeStamp, a monotonic clock that stops while the phone sleeps:
- * on a page kept open across screen locks it falls behind Date.now() by the time slept. A
- * stamp that far back would complete the hold the moment a finger lands (and clamp the
- * stop to the solve's first millisecond), so beyond a plausible input lag the handler's own
- * time is used instead.
+ * When the press began, on the Date.now() clock. A stamp far back would complete the hold
+ * the moment a finger lands (and clamp the stop to the solve's first millisecond), so beyond
+ * a plausible input lag the handler's own time is used instead. The stamp comes from
+ * util/event-time, which already keeps the phone's sleep drift out of it.
  */
 export function holdStopPressedAt(eventTs: number, now: number): number {
 	const lag = now - eventTs;
