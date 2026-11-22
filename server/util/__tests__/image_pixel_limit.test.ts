@@ -90,11 +90,14 @@ describe('getImageBufferFromFileStream pixel limit', () => {
 		);
 	});
 
+	// Jimp encodes, decodes and resizes in pure JS. At 640x480 this took 1.3 s alone and
+	// passed 5 s on the 2-core CI runner with 4 workers (2026-11-22 deploy). 320x240 still
+	// gets resized down to 256; the timeout covers a loaded runner.
 	it('still accepts a normal image right under the limit check', async () => {
-		const input = await new Jimp(640, 480, 0x00ff00ff).getBufferAsync(Jimp.MIME_PNG);
+		const input = await new Jimp(320, 240, 0x00ff00ff).getBufferAsync(Jimp.MIME_PNG);
 		const out = await getImageBufferFromFileStream('ok.png', streamFactory(input), opts);
 		const result = await Jimp.read(out);
 		expect(result.bitmap.width).toBe(256);
 		expect(MAX_IMAGE_PIXELS).toBe(40_000_000);
-	});
+	}, 20000);
 });
