@@ -100,8 +100,11 @@ export default function QiyiTimer() {
 			case QiyiTimerState.RUNNING:
 				// If cancelled via Escape, ignore RUNNING events from device
 				if (cancelledRef.current) return;
+				// The timer re-sends RUNNING mid-solve (interval varies by firmware). Calling
+				// startTimer() again reset the display to 0; the final time from STOPPED stays correct.
+				if (getTimerStore('solving')) return;
 				setTimerParams({canStart: false, spaceTimerStarted: 0});
-				startTimer();
+				startTimer(Date.now() - (event.elapsedMs ?? 0));
 				break;
 			case QiyiTimerState.STOPPED:
 				// If cancelled via Escape, don't save solve, reset flag for next loop

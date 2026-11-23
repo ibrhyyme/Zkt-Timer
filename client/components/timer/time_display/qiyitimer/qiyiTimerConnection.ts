@@ -235,6 +235,9 @@ export interface QiyiTimerEvent {
 	recordedTime?: QiyiTimerTime;
 	// cstimer: inspectTime (ms) — filled in record time event (cstimer dpId=1/dpType=1 bytes 12-15)
 	inspectionTime?: QiyiTimerTime;
+	// Elapsed solve time (ms) carried by RUNNING status packets. The timer re-sends RUNNING
+	// during a solve; cstimer (bttimer.js) re-anchors with startTime(now - solveTime).
+	elapsedMs?: number;
 }
 
 export interface QiyiTimerConnection {
@@ -461,6 +464,7 @@ function onReadEvent(value: DataView): void {
 		_eventSubject.next({
 			state,
 			recordedTime: state === QiyiTimerState.STOPPED ? makeTimeFromMs(solveTime) : undefined,
+			elapsedMs: state === QiyiTimerState.RUNNING ? solveTime : undefined,
 		});
 	} else if (dpId === 3 && dpType === 2) {
 		// V2 battery level message — dpLen=4, payload[4..7] big-endian u32 (0-100)
