@@ -28,7 +28,7 @@ const b = block('solve-page');
 // gets cropped to a thumbnail. This is the Open Graph spec size (1200x630, 1.91:1)
 // so the link renders as a full-width preview card instead.
 // resourceUri already carries the /public base, so the path must NOT repeat it.
-const SOLVE_SHARE_IMAGE = resourceUri('/images/og/solve-share.jpg');
+const SOLVE_SHARE_IMAGE = resourceUri('/images/og/timer-2026-11.jpg');
 
 /**
  * @param visitorIp Server render only. The prefetch reaches the API from localhost, so

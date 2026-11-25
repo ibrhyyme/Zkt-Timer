@@ -31,7 +31,11 @@ export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing time
 // was being published under `og:image:width 1200` / `height 630` below, so every
 // page but the landing handed Reddit, X and Facebook dimensions that did not match
 // the file they described.
-export const DEFAULT_FEATURED_IMAGE = resourceUri('/welcome/web/og-card.jpeg');
+//
+// A screenshot of the real timer, so it goes stale as the timer changes. Replace it
+// under a new file name: WhatsApp and the other link previewers cache by URL, and
+// an overwrite in place keeps showing the old picture for weeks.
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/og/timer-2026-11.jpg');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 
