@@ -2,7 +2,7 @@ import '../i18n/i18n';
 import React from 'react';
 import 'seedrandom';
 import thunk from 'redux-thunk';
-import ReactDOM from 'react-dom';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import promise from 'redux-promise-middleware';
 import { applyMiddleware, createStore } from 'redux';
 import { Provider } from 'react-redux';
@@ -39,7 +39,7 @@ import { DataProvider } from '../providers/DataProvider';
 // page view and error to CubeDesk's Sentry organisation (inherited with the
 // fork) and was removed on 2026-10-26; nothing replaces it by design.
 
-ReactDOM.hydrate(
+const tree = (
 	<ApolloProvider client={apolloClient}>
 		<Provider store={store as any}>
 			<Router>
@@ -48,7 +48,16 @@ ReactDOM.hydrate(
 				</DataProvider>
 			</Router>
 		</Provider>
-	</ApolloProvider>,
-	document.getElementById('app')
+	</ApolloProvider>
 );
+
+// The native bundle's generated index.html ships an empty #app (no SSR).
+// React 17's hydrate() quietly rendered into it; React 19's hydrateRoot() would
+// report a hydration error and re-render the whole tree on every launch.
+const container = document.getElementById('app');
+if (container.hasChildNodes()) {
+	hydrateRoot(container, tree);
+} else {
+	createRoot(container).render(tree);
+}
 /* eslint-enable */

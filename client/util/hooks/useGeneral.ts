@@ -1,4 +1,4 @@
-import { RootStateOrAny, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { IModalProps } from '../../components/common/modal/Modal';
 import { ReactNode } from 'react';
 
@@ -17,5 +17,5 @@ export interface GeneralAllParams {
 }
 
 export function useGeneral<T extends keyof GeneralAllParams>(key: T): GeneralAllParams[T] {
-	return useSelector((state: RootStateOrAny) => (state.general as GeneralAllParams)[key]);
+	return useSelector((state: any) => (state.general as GeneralAllParams)[key]);
 }

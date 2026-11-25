@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { RootStateOrAny, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useActiveSessionId } from '../../../util/hooks/useActiveSessionId';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { fetchSolves } from '../../../db/solves/query';
@@ -17,7 +17,7 @@ function SolveDiff() {
     const { timeStartedAt, solving } = context;
     // The countdown itself ticks every 100 ms and is not in TimerContext (see
     // FAST_TIMER_FIELDS); only whether any of it is left matters here.
-    const inspectionLeft = useSelector((state: RootStateOrAny) => state.timer.inspectionTimer > 0);
+    const inspectionLeft = useSelector((state: any) => state.timer.inspectionTimer > 0);
     const sessionId = useActiveSessionId();
     const warmupActive = useWarmup().active;
 

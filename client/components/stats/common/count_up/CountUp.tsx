@@ -91,7 +91,7 @@ export default function CountUp({
 
 	// Subscribe to spring value changes
 	useEffect(() => {
-		const unsubscribe = springValue.onChange((latest: number) => {
+		const unsubscribe = springValue.on('change', (latest: number) => {
 			if (ref.current) {
 				ref.current.textContent = formatValue(latest);
 			}

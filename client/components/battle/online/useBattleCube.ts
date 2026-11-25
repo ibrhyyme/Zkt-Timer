@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {useDispatch, useSelector, RootStateOrAny} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {getSmartCubeManager} from '../../../util/smart_cube/connection_manager';
 import {SmartSolveEngine, SmartEngineEvent, SolveResult} from '../../../util/smart_cube';
@@ -133,18 +133,18 @@ export function useBattleCube(round: BattleCubeRound | null, open: boolean, live
 	const dispatch = useDispatch();
 	const manager = getSmartCubeManager();
 
-	const connected = useSelector((s: RootStateOrAny) => !!s.smartCube?.smartCubeConnected);
-	const reconnecting = useSelector((s: RootStateOrAny) => !!s.smartCube?.smartReconnecting);
-	const deviceName = useSelector((s: RootStateOrAny) => s.smartCube?.smartDeviceName || null) as string | null;
-	const battery = useSelector((s: RootStateOrAny) => s.smartCube?.smartCubeBatteryLevel ?? null) as number | null;
-	const gyroSupported = useSelector((s: RootStateOrAny) => !!s.smartCube?.smartGyroSupported);
+	const connected = useSelector((s: any) => !!s.smartCube?.smartCubeConnected);
+	const reconnecting = useSelector((s: any) => !!s.smartCube?.smartReconnecting);
+	const deviceName = useSelector((s: any) => s.smartCube?.smartDeviceName || null) as string | null;
+	const battery = useSelector((s: any) => s.smartCube?.smartCubeBatteryLevel ?? null) as number | null;
+	const gyroSupported = useSelector((s: any) => !!s.smartCube?.smartGyroSupported);
 	const solvedState = useSelector(
-		(s: RootStateOrAny) => s.smartCube?.smartSolvedState || 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB'
+		(s: any) => s.smartCube?.smartSolvedState || 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB'
 	) as string;
-	const turns = useSelector((s: RootStateOrAny) => s.timer?.smartTurns || []) as SmartTurn[];
-	const currentFacelets = useSelector((s: RootStateOrAny) => s.smartCube?.smartCurrentState || null) as string | null;
-	const stateSeq = useSelector((s: RootStateOrAny) => s.smartCube?.smartStateSeq || 0) as number;
-	const scanError = useSelector((s: RootStateOrAny) => s.timer?.smartCubeScanError || null) as string | null;
+	const turns = useSelector((s: any) => s.timer?.smartTurns || []) as SmartTurn[];
+	const currentFacelets = useSelector((s: any) => s.smartCube?.smartCurrentState || null) as string | null;
+	const stateSeq = useSelector((s: any) => s.smartCube?.smartStateSeq || 0) as number;
+	const scanError = useSelector((s: any) => s.timer?.smartCubeScanError || null) as string | null;
 	const moveOrderFix = useSettings('smart_cube_move_order_fix');
 
 	const [phase, setPhase] = useState<BattleCubePhase>('waiting');

@@ -78,7 +78,7 @@ export default function CubeTopPatternView({pattern, layers, topFace = 'U', size
 	const W = layers === 2 ? 8 : 5; // side strip thickness
 	const off = W + G;
 
-	const rects: JSX.Element[] = [];
+	const rects: React.JSX.Element[] = [];
 
 	// Top face NxN grid
 	for (let row = 0; row < N; row++) {

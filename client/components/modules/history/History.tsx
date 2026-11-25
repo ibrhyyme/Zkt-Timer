@@ -312,7 +312,7 @@ export default function History(props: Props) {
 }
 
 interface SolveListProps {
-	renderRow: (index: number) => JSX.Element;
+	renderRow: (index: number) => React.JSX.Element;
 	length: number;
 	getScrollParent: (list: { getEl(): HTMLElement }) => HTMLElement | Window;
 }

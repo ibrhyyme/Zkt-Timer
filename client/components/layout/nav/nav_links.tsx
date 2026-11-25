@@ -17,11 +17,12 @@ import {
 	Sword,
 	Trophy,
 } from 'phosphor-react';
+import type {IconProps} from 'phosphor-react';
 
 
 export interface NavLinkProps {
 	name: string;
-	icon: React.ReactElement;
+	icon: React.ReactElement<IconProps>;
 	match: RegExp;
 	link: string;
 	newTag?: boolean;

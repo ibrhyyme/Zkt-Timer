@@ -1,4 +1,4 @@
-import {RootStateOrAny, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {SmartCubeStore} from '../../components/timer/@types/interfaces';
 import {getStore} from '../../components/store';
 
@@ -10,7 +10,7 @@ import {getStore} from '../../components/store';
  * only shows the battery percentage should not re-render for it.
  */
 export function useSmartCubeStore<T extends keyof SmartCubeStore>(key: T): SmartCubeStore[T] {
-	return useSelector((state: RootStateOrAny) => (state.smartCube as SmartCubeStore)?.[key]);
+	return useSelector((state: any) => (state.smartCube as SmartCubeStore)?.[key]);
 }
 
 /** Same field, read once at a single moment (no subscription). */

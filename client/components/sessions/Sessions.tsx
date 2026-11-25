@@ -13,8 +13,10 @@ import { openModal } from '../../actions/general';
 import CreateNewSession from './new_session/CreateNewSession';
 import SplitSession from './split_session/SplitSession';
 import { formatInteger } from '../../util/locale_format';
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
-import arrayMove from 'array-move';
+import { DndContext, DragEndEvent, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, rectSortingStrategy, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { CSS } from '@dnd-kit/utilities';
 import Session from './session/Session';
 import { fetchSessionById, fetchSessions, getCubeBucketsFromSession } from '../../db/sessions/query';
 import { fetchLastBucketForSession } from '../../db/solves/query';
@@ -50,48 +52,49 @@ interface SortableItemProps {
 	selecting: boolean;
 }
 
-interface SortableListProps {
-	sessions: any[];
-	selectedSessionId: string;
-	selectSession: (e: any, id: any) => void;
-	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
-	multiSelectedIds: Set<string>;
-	selecting: boolean;
+function SortableItem({ session, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds, selecting }: SortableItemProps) {
+	// No dragging while picking rows to delete: a tap is a toggle then
+	const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({ id: session.id, disabled: selecting });
+	return (
+		<Session
+			setSelectedSessionId={setSelectedSessionId}
+			session={session}
+			selectedSessionId={selectedSessionId}
+			selectSession={selectSession}
+			isMultiSelected={multiSelectedIds.has(session.id)}
+			selecting={selecting}
+			sortable={{
+				setNodeRef,
+				listeners,
+				// Translate, not Transform: rows differ in height and a scale would squash them
+				style: { transform: CSS.Translate.toString(transform), transition },
+				dragging: isDragging,
+			}}
+		/>
+	);
 }
 
-const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds, selecting }) => (
-	<Session
-		setSelectedSessionId={setSelectedSessionId}
-		session={session}
-		selectedSessionId={selectedSessionId}
-		selectSession={selectSession}
-		isMultiSelected={multiSelectedIds.has(session.id)}
-		selecting={selecting}
-	/>
-));
-
-const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds, selecting }) => {
-	return (
-		<div className={b('list')}>
-			{sessions.map((s, index) => (
-				<SortableItem
-					setSelectedSessionId={setSelectedSessionId}
-					session={s}
-					selectedSessionId={selectedSessionId}
-					selectSession={selectSession}
-					multiSelectedIds={multiSelectedIds}
-					selecting={selecting}
-					key={s.id}
-					index={index}
-				/>
-			))}
-		</div>
-	);
-});
-
-// react-sortable-hoc's own default: never start a drag from a form control (the "N types"
-// chip is a button).
+// Kept from react-sortable-hoc's default: never start a drag from a form control (the
+// "N types" chip is a button).
 const SORT_CANCEL_TAGS = ['input', 'textarea', 'select', 'option', 'button'];
+
+function startsOnFormControl(event: any) {
+	return SORT_CANCEL_TAGS.includes(String(event?.nativeEvent?.target?.tagName || '').toLowerCase());
+}
+
+class RowMouseSensor extends MouseSensor {
+	static activators: typeof MouseSensor.activators = MouseSensor.activators.map(({ eventName, handler }) => ({
+		eventName,
+		handler: (event, options) => !startsOnFormControl(event) && handler(event, options),
+	}));
+}
+
+class RowTouchSensor extends TouchSensor {
+	static activators: typeof TouchSensor.activators = TouchSensor.activators.map(({ eventName, handler }) => ({
+		eventName,
+		handler: (event, options) => !startsOnFormControl(event) && handler(event, options),
+	}));
+}
 
 export default function Sessions() {
 	const dispatch = useDispatch();
@@ -104,6 +107,13 @@ export default function Sessions() {
 
 	const mobileMode = useGeneral('mobile_mode');
 	const currentSessionId = useSettings('session_id');
+
+	// The thresholds react-sortable-hoc had: a 200 ms press on phones, a 5 px move on desktop
+	const activationConstraint = mobileMode ? { delay: 200, tolerance: 5 } : { distance: 5 };
+	const sensors = useSensors(
+		useSensor(RowMouseSensor, { activationConstraint }),
+		useSensor(RowTouchSensor, { activationConstraint })
+	);
 
 	const [selectedSessionId, setSelectedSessionId] = useState<string>(currentSessionId);
 	const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
@@ -222,8 +232,11 @@ export default function Sessions() {
 		);
 	}
 
-	function onSortEnd({ oldIndex, newIndex }) {
-		if (oldIndex === newIndex) return;
+	function onDragEnd({ active, over }: DragEndEvent) {
+		if (!over || active.id === over.id) return;
+		const oldIndex = allSessions.findIndex((s) => s.id === active.id);
+		const newIndex = allSessions.findIndex((s) => s.id === over.id);
+		if (oldIndex < 0 || newIndex < 0) return;
 
 		const sessions = arrayMove(allSessions, oldIndex, newIndex);
 		const sessionIds = sessions.map((s) => s.id).filter(Boolean);
@@ -629,9 +642,6 @@ export default function Sessions() {
 		</div>
 	);
 
-	const sortableConfig = mobileMode
-		? { pressDelay: 200, axis: 'xy' as const }
-		: { distance: 5, axis: 'y' as const };
 
 	return (
 		<div className={b({ mobile: mobileMode })}>
@@ -686,21 +696,32 @@ export default function Sessions() {
 							)}
 						</div>
 					)}
-					<SortableList
-						{...sortableConfig}
-						helperClass="zt-session-row--sortable-helper"
-						// No dragging while picking rows to delete: a tap is a toggle then
-						shouldCancelStart={(e: any) =>
-							selecting || SORT_CANCEL_TAGS.includes(String(e.target?.tagName || '').toLowerCase())
-						}
-						selectSession={selectSession}
-						setSelectedSessionId={setSelectedSessionId}
-						sessions={allSessions}
-						selectedSessionId={selectedSessionId}
-						multiSelectedIds={multiSelectedIds}
-						selecting={selecting}
-						onSortEnd={onSortEnd}
-					/>
+					<DndContext
+						sensors={sensors}
+						collisionDetection={closestCenter}
+						// Phones lay the list out in two columns, so a row may move both ways there
+						modifiers={mobileMode ? undefined : [restrictToVerticalAxis]}
+						onDragEnd={onDragEnd}
+					>
+						<SortableContext
+							items={allSessions.map((s) => s.id)}
+							strategy={mobileMode ? rectSortingStrategy : verticalListSortingStrategy}
+						>
+							<div className={b('list')}>
+								{allSessions.map((s) => (
+									<SortableItem
+										key={s.id}
+										setSelectedSessionId={setSelectedSessionId}
+										session={s}
+										selectedSessionId={selectedSessionId}
+										selectSession={selectSession}
+										multiSelectedIds={multiSelectedIds}
+										selecting={selecting}
+									/>
+								))}
+							</div>
+						</SortableContext>
+					</DndContext>
 				</div>
 				<div>{body}</div>
 			</div>

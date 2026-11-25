@@ -188,7 +188,9 @@ export default function NeonOtpInput({
 						<label key={i} className={b('box')} data-state={state} data-status={status}>
 							<span className={b('ring')} aria-hidden="true" />
 							<input
-								ref={(el) => (refs.current[i] = el)}
+								ref={(el) => {
+									refs.current[i] = el;
+								}}
 								className={b('input')}
 								type="text"
 								inputMode="numeric"

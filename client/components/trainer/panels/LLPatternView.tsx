@@ -128,7 +128,7 @@ export default function LLPatternView({ pattern, topFace, frontFace, stickering,
 	const W = 8;   // side strip thickness
 	const off = W + G; // offset for top face grid start
 
-	const rects: JSX.Element[] = [];
+	const rects: React.JSX.Element[] = [];
 
 	// Top face 3×3 grid
 	for (let row = 0; row < 3; row++) {

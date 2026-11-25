@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import jsonStr from 'json-stable-stringify';
 import { FilterSolvesOptions } from '../../../db/solves/query';
@@ -58,7 +58,7 @@ export default function QuickStats(props: Props) {
 	const solveDb = useSolveDb();
 	const storedRows = useSettings('stats_table_rows');
 	const storedColumns = useSettings('stats_table_columns');
-	const blocks = useSelector((state: RootStateOrAny) => state?.stats?.blocks) as StatsModuleBlock[] | undefined;
+	const blocks = useSelector((state: any) => state?.stats?.blocks) as StatsModuleBlock[] | undefined;
 	const [frame, setFrame] = useState(0);
 
 	const unlocked = extraColumnsUnlocked(me);

@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { RootStateOrAny, useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
@@ -65,7 +65,7 @@ export default function StatsBar() {
     const sessionId = useActiveSessionId();
     const manualEntry = useSettings('manual_entry');
     const keyboardOpen = useKeyboardOpen();
-    const stats = useSelector((state: RootStateOrAny) => state?.stats);
+    const stats = useSelector((state: any) => state?.stats);
 
     const [mobileAoCounts, setMobileAoCounts] = useState<number[]>(loadMobileAoCounts);
 

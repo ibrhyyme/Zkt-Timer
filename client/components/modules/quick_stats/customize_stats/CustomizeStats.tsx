@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'phosphor-react';
 import Button from '../../../common/button/Button';
 import Switch, { SwitchFace } from '../../../common/switch/Switch';
@@ -43,7 +43,7 @@ export default function CustomizeStats() {
 	const me = useMe();
 	const storedRows = useSettings('stats_table_rows');
 	const storedColumns = useSettings('stats_table_columns');
-	const blocks = useSelector((state: RootStateOrAny) => state?.stats?.blocks) as StatsModuleBlock[] | undefined;
+	const blocks = useSelector((state: any) => state?.stats?.blocks) as StatsModuleBlock[] | undefined;
 
 	const rows = resolveTableRows(storedRows, blocks, defaultStatsModuleBlocks);
 	const columns = resolveTableColumns(storedColumns, blocks);

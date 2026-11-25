@@ -31,7 +31,7 @@ describe('not_found.html', () => {
 	});
 
 	it('loads nothing from another host', () => {
-		const hosts = (html.match(/https?:\/\/[^\s"')]+/g) || []).filter((url) => !url.startsWith('http://www.w3.org/'));
+		const hosts = (html.match(/https?:\/\/[^\s"')]+/g) || ([] as string[])).filter((url) => !url.startsWith('http://www.w3.org/'));
 		expect(hosts).toEqual([]);
 	});
 

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import type { DraggableSyntheticListeners } from '@dnd-kit/core';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'phosphor-react';
 import './Session.scss';
@@ -39,12 +40,19 @@ interface Props {
 	isMultiSelected?: boolean;
 	/** Bulk delete mode: the row shows a check mark and a tap toggles it */
 	selecting?: boolean;
+	/** Drag-to-reorder wiring from the session list (dnd-kit useSortable) */
+	sortable?: {
+		setNodeRef: (el: HTMLElement | null) => void;
+		listeners: DraggableSyntheticListeners;
+		style: React.CSSProperties;
+		dragging: boolean;
+	};
 }
 
 export default function Session(props: Props) {
 	const { t, i18n } = useTranslation();
 
-	const { session, selectedSessionId, selectSession, isMultiSelected, selecting } = props;
+	const { session, selectedSessionId, selectSession, isMultiSelected, selecting, sortable } = props;
 
 	// The "N types" explanation used to be a title tooltip, which touch screens never show.
 	// A tap or click opens it (a mouse also by hovering); a tap anywhere else, scrolling or
@@ -54,6 +62,14 @@ export default function Session(props: Props) {
 	const [typesHint, setTypesHint] = useState<TypesHintPosition | null>(null);
 	const typesRef = useRef<HTMLDivElement>(null);
 	const rowRef = useRef<HTMLDivElement>(null);
+	const setSortableNode = sortable?.setNodeRef;
+	const setRowRef = useCallback(
+		(el: HTMLDivElement | null) => {
+			rowRef.current = el;
+			setSortableNode?.(el);
+		},
+		[setSortableNode]
+	);
 	useEffect(() => {
 		if (!typesHint) return;
 		const close = () => setTypesHint(null);
@@ -120,8 +136,15 @@ export default function Session(props: Props) {
 	return (
 		<div
 			key={session.id}
-			ref={rowRef}
-			className={b({ selected: sessionIsSelected, 'multi-selected': isMultiSelected, selecting })}
+			ref={setRowRef}
+			className={b({
+				selected: sessionIsSelected,
+				'multi-selected': isMultiSelected,
+				selecting,
+				'sortable-helper': !!sortable?.dragging,
+			})}
+			style={sortable?.style}
+			{...sortable?.listeners}
 			onPointerDown={(e) => selectSession(e, session.id)}
 		>
 			{selecting && (

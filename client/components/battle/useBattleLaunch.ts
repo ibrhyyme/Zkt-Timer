@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {RootStateOrAny, useSelector} from 'react-redux';
+import {useSelector} from 'react-redux';
 import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import {useMe} from '../../util/hooks/useMe';
 import {BATTLE_LAUNCH_SSR_KEY, BattleLaunch, battleLaunchFromConfig, readSeededBattleLaunch} from './battle_landing_modes';
@@ -13,7 +13,7 @@ import {BATTLE_LAUNCH_SSR_KEY, BattleLaunch, battleLaunchFromConfig, readSeededB
  * mount the live, polled site config takes over. null = not known yet.
  */
 export function useBattleLaunch(): BattleLaunch | null {
-	const seeded = useSelector((state: RootStateOrAny) => state?.ssr?.[BATTLE_LAUNCH_SSR_KEY]);
+	const seeded = useSelector((state: any) => state?.ssr?.[BATTLE_LAUNCH_SSR_KEY]);
 	const config = useSiteConfig();
 	const me = useMe();
 	const [mounted, setMounted] = useState(false);

@@ -250,7 +250,7 @@ function ProfileContent() {
 
 	useEffect(() => {
 		if (profileData && profileData?.user?.username === matchUsername) {
-			return null;
+			return;
 		}
 
 		if (!loading) {
