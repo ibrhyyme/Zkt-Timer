@@ -44,12 +44,12 @@ export type Scalars = {
   EmailAddress: any;
   /** A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier. */
   GUID: any;
-  /** A field whose value is a hex color code: https://en.wikipedia.org/wiki/Web_colors. */
-  HexColorCode: any;
   /** A field whose value is a CSS HSL color: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value#hsl()_and_hsla(). */
   HSL: any;
   /** A field whose value is a CSS HSLA color: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value#hsl()_and_hsla(). */
   HSLA: any;
+  /** A field whose value is a hex color code: https://en.wikipedia.org/wiki/Web_colors. */
+  HexColorCode: any;
   /** A field whose value is a IPv4 address: https://en.wikipedia.org/wiki/IPv4. */
   IPv4: any;
   /** A field whose value is a IPv6 address: https://en.wikipedia.org/wiki/IPv6. */
@@ -110,20 +110,20 @@ export type Scalars = {
   SafeInt: any;
   /** A time string at UTC, such as 10:15:30Z, compliant with the `full-time` format outlined in section 5.6 of the RFC 3339profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar. */
   Time: any;
+  /** A field whose value conforms to the standard URL format as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt. */
+  URL: any;
+  /** A currency string, such as $21.25 */
+  USCurrency: any;
+  /** A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier. */
+  UUID: any;
   /** Floats that will have a value of 0 or more. */
   UnsignedFloat: any;
   /** Integers that will have a value of 0 or more. */
   UnsignedInt: any;
   /** The `Upload` scalar type represents a file upload. */
   Upload: any;
-  /** A field whose value conforms to the standard URL format as specified in RFC3986: https://www.ietf.org/rfc/rfc3986.txt. */
-  URL: any;
-  /** A currency string, such as $21.25 */
-  USCurrency: any;
   /** A field whose value is a UTC Offset: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones */
   UtcOffset: any;
-  /** A field whose value is a generic Universally Unique Identifier: https://en.wikipedia.org/wiki/Universally_unique_identifier. */
-  UUID: any;
   /** Represents NULL values */
   Void: any;
 };
@@ -306,26 +306,6 @@ export type AdminUserSortInput = {
   field?: InputMaybe<AdminUserSortField>;
 };
 
-export type AlgorithmOverride = {
-  __typename?: 'AlgorithmOverride';
-  created_at?: Maybe<Scalars['DateTime']>;
-  cube_key?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  rotate?: Maybe<Scalars['Int']>;
-  scrambles?: Maybe<Scalars['String']>;
-  solution?: Maybe<Scalars['String']>;
-  user_id?: Maybe<Scalars['String']>;
-};
-
-export type AlgorithmOverrideInput = {
-  cube_key?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  rotate?: InputMaybe<Scalars['Int']>;
-  scrambles?: InputMaybe<Scalars['String']>;
-  solution?: InputMaybe<Scalars['String']>;
-};
-
 export type AlgSet = {
   __typename?: 'AlgSet';
   categories?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -402,6 +382,26 @@ export type AlgSetUpdateInput = {
   description?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibility?: InputMaybe<Scalars['String']>;
+};
+
+export type AlgorithmOverride = {
+  __typename?: 'AlgorithmOverride';
+  created_at?: Maybe<Scalars['DateTime']>;
+  cube_key?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  rotate?: Maybe<Scalars['Int']>;
+  scrambles?: Maybe<Scalars['String']>;
+  solution?: Maybe<Scalars['String']>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export type AlgorithmOverrideInput = {
+  cube_key?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  rotate?: InputMaybe<Scalars['Int']>;
+  scrambles?: InputMaybe<Scalars['String']>;
+  solution?: InputMaybe<Scalars['String']>;
 };
 
 export type Announcement = {
@@ -964,129 +964,7 @@ export type GrowthCountry = {
   country?: Maybe<Scalars['String']>;
 };
 
-export type IapStatus = {
-  __typename?: 'IapStatus';
-  can_purchase?: Maybe<Scalars['Boolean']>;
-  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
-  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
-  iap_paused_until?: Maybe<Scalars['DateTime']>;
-  iap_platform?: Maybe<Scalars['String']>;
-  iap_product_id?: Maybe<Scalars['String']>;
-  is_iap_pro?: Maybe<Scalars['Boolean']>;
-  is_pro?: Maybe<Scalars['Boolean']>;
-  pro_expires_at?: Maybe<Scalars['DateTime']>;
-};
-
 export type IInternalUserAccount = {
-  acquisition_source?: Maybe<Scalars['String']>;
-  admin?: Maybe<Scalars['Boolean']>;
-  badges?: Maybe<Array<Maybe<Badge>>>;
-  banned_forever?: Maybe<Scalars['Boolean']>;
-  banned_until?: Maybe<Scalars['DateTime']>;
-  bans?: Maybe<Array<Maybe<BanLog>>>;
-  created_at?: Maybe<Scalars['DateTime']>;
-  email?: Maybe<Scalars['String']>;
-  email_verified?: Maybe<Scalars['Boolean']>;
-  first_name?: Maybe<Scalars['String']>;
-  has_password?: Maybe<Scalars['Boolean']>;
-  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
-  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
-  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
-  iap_paused_until?: Maybe<Scalars['DateTime']>;
-  iap_platform?: Maybe<Scalars['String']>;
-  iap_product_id?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  integrations?: Maybe<Array<Maybe<Integration>>>;
-  is_premium?: Maybe<Scalars['Boolean']>;
-  is_pro?: Maybe<Scalars['Boolean']>;
-  join_country?: Maybe<Scalars['String']>;
-  join_ip?: Maybe<Scalars['String']>;
-  last_name?: Maybe<Scalars['String']>;
-  last_seen_at?: Maybe<Scalars['DateTime']>;
-  last_solve_at?: Maybe<Scalars['DateTime']>;
-  mod?: Maybe<Scalars['Boolean']>;
-  notification_preferences?: Maybe<NotificationPreference>;
-  offline_hash?: Maybe<Scalars['String']>;
-  pending_email?: Maybe<Scalars['String']>;
-  premium_expires_at?: Maybe<Scalars['DateTime']>;
-  pro_expires_at?: Maybe<Scalars['DateTime']>;
-  profile?: Maybe<Profile>;
-  pushTokens?: Maybe<Array<PushTokenInfo>>;
-  reports_for?: Maybe<Array<Maybe<Report>>>;
-  revenuecat_user_id?: Maybe<Scalars['String']>;
-  settings?: Maybe<Setting>;
-  summary?: Maybe<UserAccountSummary>;
-  timer_background?: Maybe<TimerBackground>;
-  top_averages?: Maybe<Array<Maybe<TopAverage>>>;
-  top_solves?: Maybe<Array<Maybe<TopSolve>>>;
-  username?: Maybe<Scalars['String']>;
-  verified?: Maybe<Scalars['Boolean']>;
-};
-
-export type Image = {
-  __typename?: 'Image';
-  created_at?: Maybe<Scalars['DateTime']>;
-  id?: Maybe<Scalars['String']>;
-  storage_path?: Maybe<Scalars['String']>;
-  url?: Maybe<Scalars['String']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-};
-
-export type InboxSummary = {
-  __typename?: 'InboxSummary';
-  request_count?: Maybe<Scalars['Int']>;
-  unread_total?: Maybe<Scalars['Int']>;
-};
-
-export type Integration = {
-  __typename?: 'Integration';
-  auth_expires_at?: Maybe<Scalars['BigInt']>;
-  created_at?: Maybe<Scalars['DateTime']>;
-  id?: Maybe<Scalars['String']>;
-  last_synced_at?: Maybe<Scalars['DateTime']>;
-  revoked_at?: Maybe<Scalars['DateTime']>;
-  service_name?: Maybe<IntegrationType>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-  wca_avatar_url?: Maybe<Scalars['String']>;
-  wca_competition_count?: Maybe<Scalars['Float']>;
-  wca_country_iso2?: Maybe<Scalars['String']>;
-  wca_id?: Maybe<Scalars['String']>;
-  wca_medal_bronze?: Maybe<Scalars['Float']>;
-  wca_medal_gold?: Maybe<Scalars['Float']>;
-  wca_medal_silver?: Maybe<Scalars['Float']>;
-  wca_name?: Maybe<Scalars['String']>;
-  wca_record_cr?: Maybe<Scalars['Float']>;
-  wca_record_nr?: Maybe<Scalars['Float']>;
-  wca_record_wr?: Maybe<Scalars['Float']>;
-  wca_show_competitions?: Maybe<Scalars['Boolean']>;
-  wca_show_medals?: Maybe<Scalars['Boolean']>;
-  wca_show_rank?: Maybe<Scalars['Boolean']>;
-  wca_show_records?: Maybe<Scalars['Boolean']>;
-  wca_show_results?: Maybe<Scalars['Boolean']>;
-  wca_user_id?: Maybe<Scalars['String']>;
-  zkt_avatar_url?: Maybe<Scalars['String']>;
-  zkt_country_iso2?: Maybe<Scalars['String']>;
-  zkt_id?: Maybe<Scalars['String']>;
-  zkt_member_no?: Maybe<Scalars['Float']>;
-  zkt_name?: Maybe<Scalars['String']>;
-  zkt_show_competitions?: Maybe<Scalars['Boolean']>;
-  zkt_show_medals?: Maybe<Scalars['Boolean']>;
-  zkt_show_pbs?: Maybe<Scalars['Boolean']>;
-  zkt_show_rank?: Maybe<Scalars['Boolean']>;
-  zkt_show_records?: Maybe<Scalars['Boolean']>;
-  zkt_show_results?: Maybe<Scalars['Boolean']>;
-  zkt_user_id?: Maybe<Scalars['String']>;
-};
-
-export enum IntegrationType {
-  Wca = 'wca',
-  Zkt = 'zkt'
-}
-
-export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IUserAccount & IUserAccountForAdmin & {
-  __typename?: 'InternalUserAccount';
   acquisition_source?: Maybe<Scalars['String']>;
   admin?: Maybe<Scalars['Boolean']>;
   badges?: Maybe<Array<Maybe<Badge>>>;
@@ -1188,6 +1066,128 @@ export type IUserAccount = {
 };
 
 export type IUserAccountForAdmin = {
+  acquisition_source?: Maybe<Scalars['String']>;
+  admin?: Maybe<Scalars['Boolean']>;
+  badges?: Maybe<Array<Maybe<Badge>>>;
+  banned_forever?: Maybe<Scalars['Boolean']>;
+  banned_until?: Maybe<Scalars['DateTime']>;
+  bans?: Maybe<Array<Maybe<BanLog>>>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
+  first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  integrations?: Maybe<Array<Maybe<Integration>>>;
+  is_premium?: Maybe<Scalars['Boolean']>;
+  is_pro?: Maybe<Scalars['Boolean']>;
+  join_country?: Maybe<Scalars['String']>;
+  join_ip?: Maybe<Scalars['String']>;
+  last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
+  last_solve_at?: Maybe<Scalars['DateTime']>;
+  mod?: Maybe<Scalars['Boolean']>;
+  notification_preferences?: Maybe<NotificationPreference>;
+  offline_hash?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
+  profile?: Maybe<Profile>;
+  pushTokens?: Maybe<Array<PushTokenInfo>>;
+  reports_for?: Maybe<Array<Maybe<Report>>>;
+  revenuecat_user_id?: Maybe<Scalars['String']>;
+  settings?: Maybe<Setting>;
+  summary?: Maybe<UserAccountSummary>;
+  timer_background?: Maybe<TimerBackground>;
+  top_averages?: Maybe<Array<Maybe<TopAverage>>>;
+  top_solves?: Maybe<Array<Maybe<TopSolve>>>;
+  username?: Maybe<Scalars['String']>;
+  verified?: Maybe<Scalars['Boolean']>;
+};
+
+export type IapStatus = {
+  __typename?: 'IapStatus';
+  can_purchase?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
+  is_iap_pro?: Maybe<Scalars['Boolean']>;
+  is_pro?: Maybe<Scalars['Boolean']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
+};
+
+export type Image = {
+  __typename?: 'Image';
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  storage_path?: Maybe<Scalars['String']>;
+  url?: Maybe<Scalars['String']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export type InboxSummary = {
+  __typename?: 'InboxSummary';
+  request_count?: Maybe<Scalars['Int']>;
+  unread_total?: Maybe<Scalars['Int']>;
+};
+
+export type Integration = {
+  __typename?: 'Integration';
+  auth_expires_at?: Maybe<Scalars['BigInt']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  last_synced_at?: Maybe<Scalars['DateTime']>;
+  revoked_at?: Maybe<Scalars['DateTime']>;
+  service_name?: Maybe<IntegrationType>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+  wca_avatar_url?: Maybe<Scalars['String']>;
+  wca_competition_count?: Maybe<Scalars['Float']>;
+  wca_country_iso2?: Maybe<Scalars['String']>;
+  wca_id?: Maybe<Scalars['String']>;
+  wca_medal_bronze?: Maybe<Scalars['Float']>;
+  wca_medal_gold?: Maybe<Scalars['Float']>;
+  wca_medal_silver?: Maybe<Scalars['Float']>;
+  wca_name?: Maybe<Scalars['String']>;
+  wca_record_cr?: Maybe<Scalars['Float']>;
+  wca_record_nr?: Maybe<Scalars['Float']>;
+  wca_record_wr?: Maybe<Scalars['Float']>;
+  wca_show_competitions?: Maybe<Scalars['Boolean']>;
+  wca_show_medals?: Maybe<Scalars['Boolean']>;
+  wca_show_rank?: Maybe<Scalars['Boolean']>;
+  wca_show_records?: Maybe<Scalars['Boolean']>;
+  wca_show_results?: Maybe<Scalars['Boolean']>;
+  wca_user_id?: Maybe<Scalars['String']>;
+  zkt_avatar_url?: Maybe<Scalars['String']>;
+  zkt_country_iso2?: Maybe<Scalars['String']>;
+  zkt_id?: Maybe<Scalars['String']>;
+  zkt_member_no?: Maybe<Scalars['Float']>;
+  zkt_name?: Maybe<Scalars['String']>;
+  zkt_show_competitions?: Maybe<Scalars['Boolean']>;
+  zkt_show_medals?: Maybe<Scalars['Boolean']>;
+  zkt_show_pbs?: Maybe<Scalars['Boolean']>;
+  zkt_show_rank?: Maybe<Scalars['Boolean']>;
+  zkt_show_records?: Maybe<Scalars['Boolean']>;
+  zkt_show_results?: Maybe<Scalars['Boolean']>;
+  zkt_user_id?: Maybe<Scalars['String']>;
+};
+
+export enum IntegrationType {
+  Wca = 'wca',
+  Zkt = 'zkt'
+}
+
+export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IUserAccount & IUserAccountForAdmin & {
+  __typename?: 'InternalUserAccount';
   acquisition_source?: Maybe<Scalars['String']>;
   admin?: Maybe<Scalars['Boolean']>;
   badges?: Maybe<Array<Maybe<Badge>>>;
@@ -1455,8 +1455,8 @@ export type Mutation = {
   createSolve?: Maybe<Solve>;
   createSupportTicket?: Maybe<SupportTicket>;
   createUserAccount?: Maybe<PublicUserAccount>;
-  deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAlgSet?: Maybe<Scalars['Boolean']>;
+  deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAllNotifications?: Maybe<Scalars['Int']>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
@@ -1562,9 +1562,9 @@ export type Mutation = {
   unsaveAlgSet?: Maybe<Scalars['Boolean']>;
   unsendMessage?: Maybe<Scalars['Boolean']>;
   unsubEmails?: Maybe<Scalars['Boolean']>;
-  updateAlgorithmOverride?: Maybe<AlgorithmOverride>;
   updateAlgSet?: Maybe<AlgSet>;
   updateAlgSetItem?: Maybe<AlgSetItem>;
+  updateAlgorithmOverride?: Maybe<AlgorithmOverride>;
   updateAnnouncement?: Maybe<Announcement>;
   updateCompetitionProCampaign?: Maybe<Scalars['Boolean']>;
   updateCube?: Maybe<Cube>;
@@ -1832,13 +1832,13 @@ export type MutationCreateUserAccountArgs = {
 };
 
 
-export type MutationDeleteAlgorithmOverrideArgs = {
-  algoKey?: InputMaybe<Scalars['String']>;
+export type MutationDeleteAlgSetArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
-export type MutationDeleteAlgSetArgs = {
-  id?: InputMaybe<Scalars['String']>;
+export type MutationDeleteAlgorithmOverrideArgs = {
+  algoKey?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2354,12 +2354,6 @@ export type MutationUnsubEmailsArgs = {
 };
 
 
-export type MutationUpdateAlgorithmOverrideArgs = {
-  algoKey?: InputMaybe<Scalars['String']>;
-  input?: InputMaybe<AlgorithmOverrideInput>;
-};
-
-
 export type MutationUpdateAlgSetArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<AlgSetUpdateInput>;
@@ -2369,6 +2363,12 @@ export type MutationUpdateAlgSetArgs = {
 export type MutationUpdateAlgSetItemArgs = {
   algorithm?: InputMaybe<Scalars['String']>;
   item_id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateAlgorithmOverrideArgs = {
+  algoKey?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<AlgorithmOverrideInput>;
 };
 
 
@@ -2676,6 +2676,18 @@ export type PaginationArgsInput = {
   searchQuery?: InputMaybe<Scalars['String']>;
 };
 
+export type ProGiftCompetitionOption = {
+  __typename?: 'ProGiftCompetitionOption';
+  campaign_id?: Maybe<Scalars['String']>;
+  date_end?: Maybe<Scalars['String']>;
+  date_start?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  results_published?: Maybe<Scalars['Boolean']>;
+  slug?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  zkt_competition_id?: Maybe<Scalars['String']>;
+};
+
 export type Profile = {
   __typename?: 'Profile';
   bio?: Maybe<Scalars['String']>;
@@ -2709,18 +2721,6 @@ export type ProfileInput = {
   twitch_link?: InputMaybe<Scalars['String']>;
   twitter_link?: InputMaybe<Scalars['String']>;
   youtube_link?: InputMaybe<Scalars['String']>;
-};
-
-export type ProGiftCompetitionOption = {
-  __typename?: 'ProGiftCompetitionOption';
-  campaign_id?: Maybe<Scalars['String']>;
-  date_end?: Maybe<Scalars['String']>;
-  date_start?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  results_published?: Maybe<Scalars['Boolean']>;
-  slug?: Maybe<Scalars['String']>;
-  status?: Maybe<Scalars['String']>;
-  zkt_competition_id?: Maybe<Scalars['String']>;
 };
 
 export type PromoCode = {
@@ -2824,8 +2824,8 @@ export type PushTokenResult = {
 export type Query = {
   __typename?: 'Query';
   adminActiveUsers?: Maybe<AdminActiveUsersResult>;
-  adminCubeCalibrations?: Maybe<Array<Maybe<AdminCubeCalibrationRow>>>;
   adminCubeCalibrationSummary?: Maybe<Array<Maybe<AdminCubeCalibrationSummary>>>;
+  adminCubeCalibrations?: Maybe<Array<Maybe<AdminCubeCalibrationRow>>>;
   adminDashboardStats?: Maybe<AdminDashboardStats>;
   adminExportUserData?: Maybe<Scalars['String']>;
   adminFlaggedBattleMatches?: Maybe<AdminBattleMatchPage>;
@@ -2836,8 +2836,8 @@ export type Query = {
   adminUserDailyActivity?: Maybe<UserDailyActivityResult>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   adminWelcomeStats?: Maybe<WelcomeStats>;
-  algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
   algSet?: Maybe<AlgSet>;
+  algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
   badgeTypes?: Maybe<Array<Maybe<BadgeType>>>;
   battleChallenge?: Maybe<BattleChallengeInfo>;
   battleHeadToHead?: Maybe<BattleHeadToHead>;
@@ -2897,8 +2897,8 @@ export type Query = {
   notifications?: Maybe<Array<Maybe<Notification>>>;
   onlineStats?: Maybe<OnlineStats>;
   onlineUsers?: Maybe<Array<Maybe<OnlineUser>>>;
-  profile: Profile;
   proGiftCompetitions?: Maybe<Array<Maybe<ProGiftCompetitionOption>>>;
+  profile: Profile;
   publicWcaProfile?: Maybe<PublicWcaProfile>;
   publicZktProfile?: Maybe<PublicZktProfile>;
   publicZktResults?: Maybe<ZktPersonResults>;
@@ -2942,8 +2942,8 @@ export type Query = {
   wcaStats?: Maybe<WcaStats>;
   youtubeSearch?: Maybe<Array<Maybe<YouTubeVideoResult>>>;
   zktJudgeBoard?: Maybe<Scalars['JSON']>;
-  zktJudgeHelpers?: Maybe<Scalars['JSON']>;
   zktJudgeHelperSearch?: Maybe<Scalars['JSON']>;
+  zktJudgeHelpers?: Maybe<Scalars['JSON']>;
   zktJudgeMe?: Maybe<Scalars['JSON']>;
   zktPersonBests?: Maybe<Array<ZktEventPb>>;
   zktPublicCompetition?: Maybe<ZktPublicCompetitionDetail>;
@@ -2961,6 +2961,11 @@ export type QueryAdminActiveUsersArgs = {
 };
 
 
+export type QueryAdminCubeCalibrationSummaryArgs = {
+  days?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryAdminCubeCalibrationsArgs = {
   deviceModel?: InputMaybe<Scalars['String']>;
   limit?: InputMaybe<Scalars['Int']>;
@@ -2968,11 +2973,6 @@ export type QueryAdminCubeCalibrationsArgs = {
   platform?: InputMaybe<Scalars['String']>;
   puzzle?: InputMaybe<Scalars['String']>;
   username?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryAdminCubeCalibrationSummaryArgs = {
-  days?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -3371,14 +3371,14 @@ export type QueryZktJudgeBoardArgs = {
 };
 
 
-export type QueryZktJudgeHelpersArgs = {
-  competitionId?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryZktJudgeHelperSearchArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
   query?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktJudgeHelpersArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -3534,18 +3534,18 @@ export type RoomSolveEntry = {
   cube_type?: Maybe<Scalars['String']>;
 };
 
+export type SaveRecordWatchInput = {
+  events?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  region?: InputMaybe<Scalars['String']>;
+  scope?: InputMaybe<Scalars['String']>;
+};
+
 export type SavedAlgSet = {
   __typename?: 'SavedAlgSet';
   saved_at?: Maybe<Scalars['DateTime']>;
   set?: Maybe<AlgSetSummary>;
   set_id?: Maybe<Scalars['String']>;
   unavailable?: Maybe<Scalars['Boolean']>;
-};
-
-export type SaveRecordWatchInput = {
-  events?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  region?: InputMaybe<Scalars['String']>;
-  scope?: InputMaybe<Scalars['String']>;
 };
 
 export type SendBulkEmailInput = {
@@ -3879,6 +3879,17 @@ export type SolveReplayData = {
   smart_gyro?: Maybe<Scalars['String']>;
 };
 
+export type SolveView = {
+  __typename?: 'SolveView';
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  solve_id?: Maybe<Scalars['String']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+  viewer?: Maybe<PublicUserAccount>;
+  viewer_id?: Maybe<Scalars['String']>;
+};
+
 export enum SolvesFilter {
   Dnf = 'DNF',
   Imported = 'IMPORTED',
@@ -3896,17 +3907,6 @@ export enum SolvesSortBy {
   TimeAsc = 'TIME_ASC',
   TimeDesc = 'TIME_DESC'
 }
-
-export type SolveView = {
-  __typename?: 'SolveView';
-  created_at?: Maybe<Scalars['DateTime']>;
-  id?: Maybe<Scalars['String']>;
-  solve_id?: Maybe<Scalars['String']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-  viewer?: Maybe<PublicUserAccount>;
-  viewer_id?: Maybe<Scalars['String']>;
-};
 
 export type Stats = {
   __typename?: 'Stats';
@@ -4350,8 +4350,8 @@ export type WcaCompetitionDetail = {
   myRegistrationStatus?: Maybe<Scalars['String']>;
   myWcaId?: Maybe<Scalars['String']>;
   schedule?: Maybe<Array<Maybe<WcaScheduleDay>>>;
-  wcaLiveCompetitors?: Maybe<Array<Maybe<WcaLiveCompetitor>>>;
   wcaLiveCompId?: Maybe<Scalars['String']>;
+  wcaLiveCompetitors?: Maybe<Array<Maybe<WcaLiveCompetitor>>>;
   wcaLiveRoundMap?: Maybe<Array<Maybe<WcaLiveRoundMapping>>>;
 };
 
@@ -4592,9 +4592,9 @@ export type WcaLiveRoundInfo = {
   isFinal?: Maybe<Scalars['Boolean']>;
   liveRoundId?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
-  number?: Maybe<Scalars['Int']>;
   numEntered?: Maybe<Scalars['Int']>;
   numResults?: Maybe<Scalars['Int']>;
+  number?: Maybe<Scalars['Int']>;
   open?: Maybe<Scalars['Boolean']>;
   timeLimit?: Maybe<WcaLiveTimeLimit>;
 };
@@ -4667,6 +4667,14 @@ export type WcaOAuthResult = {
   wcaName?: Maybe<Scalars['String']>;
 };
 
+export type WcaPersonInfo = {
+  __typename?: 'WcaPersonInfo';
+  avatar?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  role?: Maybe<Scalars['String']>;
+  wcaId?: Maybe<Scalars['String']>;
+};
+
 export type WcaPersonalBest = {
   __typename?: 'WcaPersonalBest';
   best?: Maybe<Scalars['Int']>;
@@ -4675,14 +4683,6 @@ export type WcaPersonalBest = {
   nationalRanking?: Maybe<Scalars['Int']>;
   type?: Maybe<Scalars['String']>;
   worldRanking?: Maybe<Scalars['Int']>;
-};
-
-export type WcaPersonInfo = {
-  __typename?: 'WcaPersonInfo';
-  avatar?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  role?: Maybe<Scalars['String']>;
-  wcaId?: Maybe<Scalars['String']>;
 };
 
 export type WcaRankingRow = {
@@ -4922,16 +4922,16 @@ export type ZktPersonResultRow = {
   solves?: Maybe<Array<Maybe<ZktPersonSolve>>>;
 };
 
-export type ZktPersonResults = {
-  __typename?: 'ZktPersonResults';
-  events?: Maybe<Array<Maybe<ZktPersonEventResults>>>;
-  totals?: Maybe<ZktPersonResultTotals>;
-};
-
 export type ZktPersonResultTotals = {
   __typename?: 'ZktPersonResultTotals';
   completedSolves?: Maybe<Scalars['Int']>;
   roundCount?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPersonResults = {
+  __typename?: 'ZktPersonResults';
+  events?: Maybe<Array<Maybe<ZktPersonEventResults>>>;
+  totals?: Maybe<ZktPersonResultTotals>;
 };
 
 export type ZktPersonSolve = {

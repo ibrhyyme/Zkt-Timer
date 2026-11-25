@@ -1,4 +1,4 @@
-import {ReadStream} from 'fs';
+import {Readable} from 'stream';
 import {v4 as uuid} from 'uuid';
 import {getPrisma} from '../database';
 import {uploadObject} from '../services/storage';
@@ -45,7 +45,7 @@ export interface UploadedSupportAttachment {
 export async function uploadSupportTicketAttachment(
 	messageId: string,
 	fileName: string,
-	fileStream: () => ReadStream,
+	fileStream: () => Readable,
 	declaredMime: string | null
 ): Promise<UploadedSupportAttachment> {
 	const stream = fileStream();

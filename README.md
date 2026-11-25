@@ -119,7 +119,7 @@ pipeline.
   <img src="docs/images/architecture.png" alt="ZKT Timer request flow architecture" width="900">
 </div>
 
-**Stack:** React 17 · custom esbuild SSR · type-graphql + Apollo Server · Prisma + PostgreSQL · Redis ·
+**Stack:** React 17 · custom esbuild SSR · type-graphql + graphql-yoga · Prisma + PostgreSQL · Redis ·
 Socket.IO · Elasticsearch · Capacitor 8 · TypeScript
 
 ## Local Development

@@ -1,5 +1,5 @@
 import {ErrorCode, ErrorMessage} from '../constants/errors';
-import {ApolloError} from 'apollo-server';
+import {GraphQLError as BaseGraphQLError} from 'graphql';
 
 const defaultErrorMessage = {
 	[ErrorCode.FORBIDDEN]: ErrorMessage.FORBIDDEN,
@@ -7,12 +7,13 @@ const defaultErrorMessage = {
 	[ErrorCode.NOT_FOUND]: ErrorMessage.RESOURCE_NOT_FOUND,
 };
 
-export default class GraphQLError extends ApolloError {
+// An error the client is meant to see: `code` (and any extra extensions such as
+// i18nKey) travel in `extensions`, the shape Apollo's ApolloError produced before.
+export default class GraphQLError extends BaseGraphQLError {
 	constructor(code: ErrorCode, message?: ErrorMessage | string, extensions?: {[key: string]: any}) {
-		super(message, code, extensions);
-
-		if (!message) {
-			this.message = defaultErrorMessage[code];
-		}
+		super(message || defaultErrorMessage[code], undefined, undefined, undefined, undefined, undefined, {
+			...extensions,
+			code,
+		});
 	}
 }

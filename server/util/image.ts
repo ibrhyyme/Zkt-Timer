@@ -1,6 +1,6 @@
 import Jimp from 'jimp';
 import {BufferListStream} from 'bl';
-import {ReadStream} from 'fs';
+import {Readable} from 'stream';
 
 export interface ImageFileToBuffer {
 	width: number; // -1 for auto
@@ -107,7 +107,7 @@ export function readImagePixelCount(buffer: Buffer, type: 'png' | 'jpeg' | 'gif'
 
 export async function getImageBufferFromFileStream(
 	fileName: string,
-	fileStream: () => ReadStream,
+	fileStream: () => Readable,
 	options: ImageFileToBuffer
 ): Promise<Buffer> {
 	const readStream = fileStream();
@@ -171,7 +171,7 @@ export function detectVideoType(buffer: Buffer): 'mp4' | 'webm' | 'quicktime' | 
 	return null;
 }
 
-export async function getFileStreamAsBufferStream(readStream: ReadStream): Promise<Buffer> {
+export async function getFileStreamAsBufferStream(readStream: Readable): Promise<Buffer> {
 	return new Promise((resolve, reject) => {
 		readStream.pipe(
 			BufferListStream((err: any, data: any) => {

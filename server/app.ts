@@ -8,9 +8,8 @@ import { getPrisma, initPrisma } from './database';
 // Never request-ip: it reads x-client-ip and the first X-Forwarded-For entry, both client-written.
 import { extractIp } from './util/request';
 import { initLogger, logger } from './services/logger';
-import { ApolloServer } from 'apollo-server-express';
+import { createGraphQLYoga } from './util/graphql_yoga';
 import { baseResolvers, baseScalars } from './graphql';
-import { randomBytes } from 'crypto';
 
 import { initLLStates } from '../shared/util/solve/ll_identification';
 import { initSocket } from './services/socket';
@@ -34,12 +33,9 @@ import bodyParser from 'body-parser';
 import { customAuthChecker } from './middlewares/auth';
 import { requireCsrfHeader } from './middlewares/csrf';
 import { checkRateLimit } from './services/rate_limit';
-import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
-import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
+import { GraphQLUpload } from './util/graphql_upload';
 import { ErrorCode, ErrorMessage } from './constants/errors';
 import { printSchema } from 'graphql';
-import depthLimit from 'graphql-depth-limit';
-import { getComplexity, simpleEstimator } from 'graphql-query-complexity';
 import { initRedisClient, createRedisKey, RedisNamespace, setKeyInRedis, getValueFromRedis, deleteKeyInRedis } from './services/redis';
 import { updateLastSeen } from './services/last_seen';
 
@@ -372,105 +368,19 @@ global.siteUrl = process.env.BASE_URI;
 		resolvers: oldResolver
 	});
 
-	// GraphQL DoS protection: reject queries deeper than 11 levels,
-	// reject if query complexity exceeds 1500 points
-	const MAX_QUERY_DEPTH = 11;
-	const MAX_QUERY_COMPLEXITY = 1500;
+	const path = '/graphql';
 
-	// Start server
-	let server: any = new ApolloServer({
-		uploads: false,
+	const yoga = createGraphQLYoga<{ req: express.Request; res: express.Response }, Record<string, any>>({
 		schema: mergedSchema,
-		playground: isDev,
-		// Apollo 2 infers this from NODE_ENV. Stated outright so a container that ships
-		// without NODE_ENV set cannot start attaching stack traces to error responses.
-		debug: isDev,
-		introspection: isDev, // Block API schema discovery in production
-		validationRules: [depthLimit(MAX_QUERY_DEPTH)],
-		plugins: [
-			{
-				requestDidStart: () => ({
-					didResolveOperation({request, document}: any) {
-						try {
-							const complexity = getComplexity({
-								schema: mergedSchema,
-								operationName: request.operationName,
-								query: document,
-								variables: request.variables,
-								estimators: [simpleEstimator({defaultComplexity: 1})],
-							});
-							if (complexity > MAX_QUERY_COMPLEXITY) {
-								throw new GraphQLError(
-									ErrorCode.BAD_INPUT,
-									`Query too complex: ${complexity} (max ${MAX_QUERY_COMPLEXITY})`
-								);
-							}
-						} catch (err) {
-							if (err instanceof GraphQLError) throw err;
-							// Complexity calculation error — silently continue, not validation
-						}
-					},
-				}),
-			},
-		],
-		formatError: (err: any) => {
-			if (isDev) return err;
-			// Production: don't leak stack traces and internal details
-			const code = err?.extensions?.code;
-			if (code === 'INTERNAL_SERVER_ERROR' || !code) {
-				// A short id generated here ties the code on the user's screen to this log
-				// line (it used to be the Sentry event id).
-				const traceId = randomBytes(6).toString('hex');
-				logger.error('GraphQL error', {
-					message: err?.message,
-					path: err?.path,
-					code,
-					traceId,
-				});
-				// The message reaches a screen, so it is Turkish and carries a code the
-				// organizer can read out. Details stay hidden; the trace id is what
-				// connects their screenshot to the server log.
-				return {
-					message: `Sunucu hatası oluştu. Hata kodu: ${traceId}`,
-					extensions: { code: 'INTERNAL_SERVER_ERROR', traceId },
-				};
-			}
-			// Expected errors (BAD_INPUT, FORBIDDEN, NOT_FOUND, etc.) are delivered to user,
-			// stack trace cleaned up. `i18nKey` is forwarded when a resolver set one so the
-			// client can render the message in the user's language instead of the raw
-			// server string; everything else in extensions stays server-side.
-			const i18nKey = err?.extensions?.i18nKey;
-			// addAlgSetItems / updateAlgSetItem name the refused cases (`category::case_name`)
-			// so the client can fall back to the library algorithm for just those (trainer-sets 5.5).
-			const rejected = err?.extensions?.rejected;
-			const rejectedList = Array.isArray(rejected) && rejected.every((r: unknown) => typeof r === 'string')
-				? rejected.slice(0, 500)
-				: null;
-			// Seconds until a cooldown lifts (the GIF spam brake), so the client can say
-			// "wait 5 minutes" instead of a bare refusal. A number only, nothing else.
-			const retryAfter = err?.extensions?.retry_after;
-			const safeRetryAfter = typeof retryAfter === 'number' && Number.isFinite(retryAfter) ? Math.max(0, Math.round(retryAfter)) : null;
-			// Expected errors are logged too, at warn: a solve that keeps failing to sync
-			// usually fails on one of these, and without a line here the only evidence is
-			// on the user's screen.
-			logger.warn('GraphQL rejected request', { message: err?.message, path: err?.path, code });
-			return {
-				message: err.message,
-				extensions: {
-					code,
-					...(i18nKey ? { i18nKey } : {}),
-					...(rejectedList ? { rejected: rejectedList } : {}),
-					...(safeRetryAfter !== null ? { retry_after: safeRetryAfter } : {}),
-				},
-				path: err.path,
-			};
-		},
+		isDev,
 		context: async ({ req, res }) => {
-			const user = await getMe(req);
+			const user = await getMe(req as any);
 			const ipAddress = extractIp(req);
 
 			if (user && (user.banned_until || user.banned_forever)) {
-				throw new GraphQLError(ErrorCode.FORBIDDEN, ErrorMessage.BANNED);
+				// 400, as Apollo 2 answered a failed context: the offline queue reads a 4xx
+				// as the server's verdict and halts on FORBIDDEN instead of retrying.
+				throw new GraphQLError(ErrorCode.FORBIDDEN, ErrorMessage.BANNED, { http: { status: 400 } });
 			}
 
 			if (user?.id) {
@@ -478,17 +388,10 @@ global.siteUrl = process.env.BASE_URI;
 			}
 
 			return { user, ipAddress, req, res, prisma: getPrisma() };
-		}
+		},
 	});
 
-	const path = '/graphql';
-
-	// Support ticket attachments: 30MB / 4 files. Profile picture + other uploads also count toward this limit.
-	// 42 MB, not 40: the video background cap is 40 MB and multipart framing adds to it, so a
-	// file exactly at the cap must still get through to the model's own check, which is the one
-	// that reports a usable error. Raising this alone is not enough in production — nginx's
-	// client_max_body_size sits in front of it and rejects the body first.
-	// Multipart is parsed (files spooled to disk) before any resolver checks auth, so an
+	// Multipart is parsed (files buffered in memory) before any resolver checks auth, so an
 	// anonymous request is turned away here, before the parser sees a byte. Every upload
 	// mutation requires a signed-in user anyway.
 	app.use(path, async (req, res, next) => {
@@ -500,13 +403,7 @@ global.siteUrl = process.env.BASE_URI;
 		}
 		res.status(401).json({ errors: [{ message: 'Unauthorized', extensions: { code: 'UNAUTHENTICATED' } }] });
 	});
-	app.use(path, graphqlUploadExpress({ maxFileSize: 42 * 1024 * 1024, maxFiles: 4 }));
-	// cors: false is load-bearing. Apollo v2 otherwise mounts its OWN cors on /graphql
-	// and overwrites our global middleware's header with Allow-Origin: * — which,
-	// combined with credentialed requests from the native shell (capacitor://localhost),
-	// is an illegal pair that WebKit rejects as "Load failed". Same-origin web traffic
-	// needs no ACAO at all; cross-origin is fully handled by the global cors above.
-	server.applyMiddleware({ app, path, cors: false });
+	app.use(path, yoga as unknown as express.RequestHandler);
 
 	// Setup code
 	initLLStates();
@@ -539,6 +436,7 @@ global.siteUrl = process.env.BASE_URI;
 		}
 	}
 
+	let server: any;
 	if (isDev && process.env.HTTPS === 'true') {
 		const options = {
 			key: fs.readFileSync('./certs/server.key'),
