@@ -1,21 +1,18 @@
-/* ───────────────────────────────────────────────────
-   Fonts — Inter Tight + JetBrains Mono
-   ───────────────────────────────────────────────────
-   Self-hosted with the rest of the app's fonts (styles/fonts-google.scss):
-   latin + latin-ext + cyrillic, ZH falls back. No request leaves our origin.
-   ─────────────────────────────────────────────────── */
 @import '../../../styles/config';
 
 /* ───────────────────────────────────────────────────
-   ZktAuthScene — top-level
+   ZktAuthScene: login, signup, OAuth callbacks and the legacy panes
+   (forgot, verify e-mail, WCA/ZKT signup).
    BEM: .zt-zkt-auth (block) + __element + --modifier
-   Tokens via :root in client/styles/index.scss
+
+   Same flat language as the timer (ui-design skill): one accent, hairlines
+   instead of shadows, no blur, no gradient, no glow, Archivo for words and
+   Roboto Mono for anything counted. The page's signature is the cube and the
+   scramble strip under it, which reads off the moves as the form is filled.
    ─────────────────────────────────────────────────── */
 
 .#{$namespace}-zkt-auth {
 	$self: &;
-	$font-display: 'Inter Tight', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-	$font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
 	position: relative;
 	width: 100%;
@@ -26,18 +23,18 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	font-family: $font-display;
-	background: rgb(12, 13, 20);
+	font-family: $defaultFontFamily;
+	background: rgb(var(--background-color));
 	color: rgb(var(--text-color));
-	padding: 28px 16px;
+	padding: 28px $zt-space-4;
 	isolation: isolate;
-	gap: 24px;
+	gap: $zt-space-5;
 
-	// Desktop: split — cube left, card right
+	// Desktop: split, cube left, card right
 	@include bp-up($bp-md) {
 		flex-direction: row;
-		gap: 48px;
-		padding: 28px 32px;
+		gap: $zt-space-7;
+		padding: 28px $zt-space-6;
 		align-items: center;
 		justify-content: center;
 	}
@@ -72,69 +69,23 @@
 	input:-webkit-autofill,
 	input:-webkit-autofill:focus {
 		-webkit-text-fill-color: rgb(var(--text-color));
-		-webkit-box-shadow: 0 0 0 1000px rgb(var(--module-color)) inset;
+		-webkit-box-shadow: 0 0 0 1000px rgb(var(--background-color)) inset;
 		caret-color: rgb(var(--text-color));
 		transition: background-color 9999s ease-in-out 0s;
 	}
 
-	/* ── Background ─────────────────────────────── */
-	&__bg {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 0;
-		overflow: hidden;
-
-		&::before {
-			content: '';
-			position: absolute;
-			inset: 0;
-			background:
-				radial-gradient(60% 50% at 50% 35%, rgba(var(--primary-color), 0.14), transparent 70%),
-				radial-gradient(50% 50% at 80% 90%, rgba(var(--auth-accent), 0.10), transparent 70%);
-		}
-	}
-
-	&__bg-orb {
-		position: absolute;
-		border-radius: 50%;
-		filter: blur(72px);
-		opacity: 0.55;
-		pointer-events: none;
-
-		&--variant-a {
-			width: 560px;
-			height: 560px;
-			background: radial-gradient(circle, rgba(var(--primary-color), 0.55), transparent 70%);
-			top: -10%;
-			left: -8%;
-			animation: zkt-auth-orb-a 12s ease-in-out infinite alternate;
-		}
-
-		&--variant-b {
-			width: 520px;
-			height: 520px;
-			background: radial-gradient(circle, rgba(var(--auth-accent), 0.42), transparent 70%);
-			bottom: -12%;
-			right: -8%;
-			animation: zkt-auth-orb-b 14s ease-in-out infinite alternate;
-		}
-	}
-
-	/* ── Cube stage — desktop only, left column, entry: slide from right.
-	   On mobile display:none — remains in DOM but hidden (guard in AuthCube
-	   skips Three.js init). This keeps SSR and client render consistent,
-	   avoids layout shift jank. */
+	/* ── Cube stage: desktop only, left column, entry: slide from right.
+	   On mobile display:none, it stays in the DOM (the guard in AuthCube skips
+	   Three.js init), so SSR and client render the same tree. */
 	&__stage-cube {
 		position: relative;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: $zt-space-2;
 		z-index: 1;
 		pointer-events: auto;
-		flex-shrink: 0;
-		width: auto;
-		height: auto;
 		flex: 1 1 0;
 		max-width: 720px;
 		min-width: 400px;
@@ -144,22 +95,20 @@
 			display: none;
 		}
 
-		// reduce-motion override — animation is brand identity, not user preference,
-		// but keep it brief.
 		@media (prefers-reduced-motion: reduce) {
 			animation: zkt-auth-cube-enter 0.5s ease-out 0s both;
 		}
 	}
 
-	/* Floating language switcher — top-right corner of page */
+	/* Floating language switcher, top-right corner of the page */
 	&__lang-floating {
 		position: absolute;
 		top: 18px;
-		right: 24px;
+		right: $zt-space-5;
 		z-index: 10;
 	}
 
-	/* ── Card stage (foreground) — entry: slide from top ── */
+	/* ── Card stage (foreground), entry: slide from top ── */
 	&__stage-card-wrap {
 		position: relative;
 		z-index: 3;
@@ -171,10 +120,9 @@
 			transform 0.9s cubic-bezier(0.6, 0.05, 0.05, 1),
 			opacity 0.6s ease;
 
-		// NO animation on mobile — card appears instantly, no movement
+		// No animation on mobile: the card appears instantly
 		animation: none;
 
-		// Desktop only (min-width 768): dramatic bouncy entry beside cube
 		@include bp-up($bp-md) {
 			flex: 0 0 440px;
 			animation: zkt-auth-card-enter 1.2s cubic-bezier(0.22, 1.2, 0.36, 1) 0.25s both;
@@ -200,64 +148,40 @@
 		animation: zkt-auth-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 	}
 
-	/* ── Card (glass) ──────────────────────────── */
+	/* ── Card ──────────────────────────────────── */
 	&__card {
 		position: relative;
 		width: 100%;
-		padding: 28px;
-		background:
-			linear-gradient(180deg, rgba(var(--auth-module-elevated), 0.92), rgba(var(--module-color), 0.88));
-		border: 1px solid rgba(var(--auth-module-border-strong), 1);
-		border-radius: 24px;
-		backdrop-filter: blur(22px) saturate(140%);
-		-webkit-backdrop-filter: blur(22px) saturate(140%);
-		box-shadow:
-			0 30px 80px rgba(0, 0, 0, 0.55),
-			0 2px 0 0 rgba(255, 255, 255, 0.04) inset,
-			0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+		// A step lighter than the page, never darker: a darker card read as a hole.
+		@include zt-card(28px);
 
-		&::before {
-			content: '';
-			position: absolute;
-			left: 18px;
-			right: 18px;
-			top: 0;
-			height: 1px;
-			background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-			pointer-events: none;
-		}
-	}
-
-	@include bp-down($bp-md) {
-		&__card {
+		@include bp-down($bp-md) {
 			padding: 22px;
-			border-radius: 22px;
 		}
 	}
 
-	/* ── Title + subtitle — only used in legacy and wca-callback modes
+	/* ── Title + subtitle: legacy and callback modes only
 	   (login/signup has logo + tabs, no title) ── */
 	&__title {
-		font-family: $font-display;
 		font-size: 22px;
 		font-weight: 800;
 		letter-spacing: -0.015em;
 		line-height: 1.15;
-		margin: 0 0 12px;
+		margin: 0 0 $zt-space-3;
 		color: rgb(var(--text-color));
 		text-align: center;
 	}
 
 	&__subtitle {
 		font-size: 13.5px;
-		font-weight: 600;
-		color: rgb(var(--auth-text-soft));
+		font-weight: 500;
+		line-height: 1.5;
+		color: $zt-text-muted;
 		margin: 0 0 18px;
 		text-align: center;
-		letter-spacing: 0.005em;
 	}
 
-	/* ── Logo (Zeka Kupu Turkiye) — top center in card ── */
+	/* ── Logo (Zeka Küpü Türkiye), top centre in the card ── */
 	&__logo-container {
 		display: flex;
 		justify-content: center;
@@ -265,19 +189,18 @@
 	}
 
 	&__logo {
-		width: 72px;
-		height: 72px;
+		width: 64px;
+		height: 64px;
 		object-fit: contain;
-		filter: drop-shadow(0 4px 12px rgba(var(--primary-color), 0.4));
 	}
 
-	/* ── Underline tabs ────────────────────────── */
+	/* ── Tabs: words over a hairline, the current one underlined in the accent ── */
 	&__tabs-underline {
 		display: flex;
 		justify-content: center;
 		gap: 2.5rem;
 		margin-bottom: 22px;
-		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+		border-bottom: 1px solid $zt-card-border;
 	}
 
 	&__tab-underline {
@@ -287,18 +210,18 @@
 		cursor: pointer;
 		font-size: 15px;
 		font-weight: 600;
-		color: rgb(var(--auth-text-soft));
-		padding: 0 4px 12px;
-		letter-spacing: 0.01em;
-		transition: color 0.25s ease;
+		color: $zt-text-muted;
+		padding: 0 $zt-space-1 $zt-space-3;
+		transition: color $motion-fast $ease-standard;
 		font-family: inherit;
+		@include zt-focus-ring;
 
 		&:hover {
 			color: rgb(var(--text-color));
 		}
 
 		&--active {
-			color: rgb(var(--primary-color));
+			color: rgb(var(--text-color));
 			font-weight: 700;
 
 			&::after {
@@ -308,7 +231,7 @@
 				left: 0;
 				right: 0;
 				height: 2px;
-				background: linear-gradient(90deg, transparent, rgb(var(--primary-color)), transparent);
+				background: rgb(var(--primary-color));
 			}
 		}
 	}
@@ -323,7 +246,6 @@
 		transform-origin: center top;
 		animation: zkt-auth-mode-morph 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 
-		// NO animation on mobile
 		@include bp-down($bp-md) {
 			animation: none;
 		}
@@ -339,7 +261,7 @@
 	&__form-row2 {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 12px;
+		gap: $zt-space-3;
 	}
 
 	&__form-actions {
@@ -356,42 +278,35 @@
 	}
 
 	&__field-label {
-		font-size: 12.5px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		color: rgb(var(--text-color));
-		text-transform: uppercase;
+		@include zt-eyebrow;
 	}
 
 	&__input {
 		height: 46px;
-		border-radius: 14px;
-		border: 1px solid rgb(var(--auth-module-border));
-		background: rgba(12, 13, 20, 0.6);
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-control-border;
+		background: $zt-card-bg;
 		color: rgb(var(--text-color));
 		padding: 0 14px;
 		font-size: 15px;
 		font-weight: 500;
-		transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+		transition: border-color $motion-fast $ease-standard;
 		width: 100%;
 		outline: none;
 		font-family: inherit;
 
 		&::placeholder {
-			color: rgb(var(--auth-text-mute));
-			font-weight: 500;
+			color: $zt-text-muted;
+			font-weight: 400;
+			opacity: 1;
+		}
+
+		&:hover:not(:focus) {
+			border-color: $zt-control-border-hover;
 		}
 
 		&:focus {
-			border-color: rgba(var(--primary-color), 0.9);
-			box-shadow:
-				0 0 0 4px rgba(var(--primary-color), 0.18),
-				0 0 24px rgba(var(--primary-color), 0.25);
-			background: rgba(12, 13, 20, 0.9);
-		}
-
-		&--filled {
-			border-color: rgba(var(--primary-color), 0.5);
+			border-color: rgb(var(--primary-color));
 		}
 	}
 
@@ -405,7 +320,7 @@
 
 	&__eye {
 		position: absolute;
-		right: 8px;
+		right: 5px;
 		top: 50%;
 		transform: translateY(-50%);
 		width: 36px;
@@ -415,94 +330,65 @@
 		background: transparent;
 		border: 0;
 		cursor: pointer;
-		color: rgb(var(--auth-text-soft));
-		border-radius: 10px;
+		color: $zt-text-muted;
+		border-radius: $zt-radius-md;
+		@include zt-focus-ring;
 
 		&:hover {
 			color: rgb(var(--text-color));
-			background: rgba(var(--text-color), 0.06);
 		}
 	}
 
 	/* ── Buttons ───────────────────────────────── */
 	&__btn {
-		height: 48px;
+		height: $zt-control-h-lg;
 		width: 100%;
-		border: 0;
+		border: 1px solid transparent;
 		cursor: pointer;
-		border-radius: 14px;
-		font-weight: 700;
+		border-radius: $zt-radius-md;
+		font-weight: 600;
 		font-size: 15px;
-		letter-spacing: 0.01em;
 		white-space: nowrap;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		gap: 10px;
-		transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s;
+		transition: background-color $motion-fast $ease-standard;
 		font-family: inherit;
 		color: rgb(var(--text-color));
+		background: $zt-control-bg;
+		@include zt-focus-ring;
 
-		&:active {
-			transform: translateY(1px);
+		&:hover:not(:disabled) {
+			background: $zt-control-bg-hover;
 		}
 
+		&:active:not(:disabled) {
+			background: $zt-control-bg-active;
+		}
+
+		// Unavailable, not faded (ui-design: never an opacity)
 		&:disabled {
-			opacity: 0.55;
 			cursor: not-allowed;
+			color: $zt-text-muted;
 		}
 
 		&--primary {
-			color: white;
-			background: linear-gradient(135deg, rgb(var(--primary-color)) 0%, rgb(var(--auth-accent)) 100%);
-			box-shadow:
-				0 12px 30px -8px rgba(var(--primary-color), 0.65),
-				0 0 0 1px rgba(255, 255, 255, 0.08) inset,
-				0 1px 0 rgba(255, 255, 255, 0.25) inset;
+			color: rgb(var(--theme-primary-opposite));
+			background: rgb(var(--primary-color));
 
 			&:hover:not(:disabled) {
-				box-shadow:
-					0 16px 36px -8px rgba(var(--primary-color), 0.8),
-					0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-					0 1px 0 rgba(255, 255, 255, 0.3) inset;
+				background: rgba(var(--primary-color), 0.88);
 			}
-		}
 
-		/* Same shape as the WCA button; the ZKT one carries a faint brand tint so
-		   the two providers are distinguishable without reading the label. */
-		&--zkt {
-			background: linear-gradient(
-					135deg,
-					rgba(var(--primary-color), 0.14),
-					rgba(var(--primary-color), 0.04) 60%
-				),
-				rgba(var(--auth-module-elevated), 0.85);
-			border: 1px solid rgba(var(--primary-color), 0.4);
-			box-shadow:
-				0 8px 24px -10px rgba(0, 0, 0, 0.6),
-				0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-
-			&:hover:not(:disabled) {
-				border-color: rgba(var(--primary-color), 0.75);
-				box-shadow:
-					0 0 0 4px rgba(var(--primary-color), 0.14),
-					0 8px 24px -10px rgba(0, 0, 0, 0.6);
+			&:active:not(:disabled) {
+				background: rgba(var(--primary-color), 0.76);
 			}
-		}
 
-		&--wca {
-			background: rgba(var(--auth-module-elevated), 0.85);
-			border: 1px solid rgba(var(--auth-module-border-strong), 1);
-			box-shadow:
-				0 8px 24px -10px rgba(0, 0, 0, 0.6),
-				0 0 0 1px rgba(255, 255, 255, 0.03) inset;
-
-			&:hover:not(:disabled) {
-				background: rgba(var(--auth-module-elevated), 1);
-				border-color: rgba(var(--primary-color), 0.6);
-				box-shadow:
-					0 0 0 4px rgba(var(--primary-color), 0.12),
-					0 8px 24px -10px rgba(0, 0, 0, 0.6);
+			// Same as the shared Button: neutral fill and muted text, never a faded accent
+			&:disabled {
+				color: $zt-text-muted;
+				background: $zt-control-bg;
 			}
 		}
 	}
@@ -510,8 +396,8 @@
 	&__btn-spinner {
 		width: 18px;
 		height: 18px;
-		border: 2px solid rgba(255, 255, 255, 0.35);
-		border-top-color: white;
+		border: 2px solid rgba(var(--text-color), 0.25);
+		border-top-color: rgb(var(--text-color));
 		border-radius: 50%;
 		animation: zkt-auth-spin 0.8s linear infinite;
 	}
@@ -520,27 +406,24 @@
 	&__divider {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: $zt-space-3;
+		@include zt-eyebrow;
 		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.18em;
-		color: rgb(var(--auth-text-soft));
-		text-transform: uppercase;
 
 		&::before,
 		&::after {
 			content: '';
 			flex: 1;
 			height: 1px;
-			background: linear-gradient(90deg, transparent, rgb(var(--auth-module-border-strong)), transparent);
+			background: $zt-card-border;
 		}
 	}
 
-	/* ── WCA Section ───────────────────────────── */
+	/* ── Provider buttons (ZKT, WCA) ───────────── */
 	&__wca-section {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: $zt-space-3;
 		margin-bottom: 14px;
 	}
 
@@ -549,18 +432,16 @@
 	&__wca-logo-img {
 		width: 22px;
 		height: 22px;
-		border-radius: 5px;
+		border-radius: $zt-radius-sm;
 		background: white;
 		padding: 2px;
 	}
 
-	/* The ZKT mark already carries its own dark ground and full-colour cubies.
-	   Putting it on the same white tile framed it in a bright box that fought
-	   the card and buried the logo — it needs nothing behind it. */
+	/* The ZKT mark already carries its own dark ground and full-colour cubies. */
 	&__zkt-logo-img {
 		width: 24px;
 		height: 24px;
-		border-radius: 6px;
+		border-radius: $zt-radius-sm;
 		object-fit: contain;
 	}
 
@@ -569,30 +450,31 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 10px;
-		font-weight: 600;
+		font-weight: 500;
 		font-size: 13.5px;
 		color: rgb(var(--text-color));
 		cursor: pointer;
 		background: transparent;
 		border: 0;
 		padding: 0;
+		@include zt-focus-ring;
 	}
 
 	&__checkbox-box {
 		width: 18px;
 		height: 18px;
-		border-radius: 5px;
-		border: 1px solid rgb(var(--auth-module-border-strong));
-		background: rgba(12, 13, 20, 0.5);
+		border-radius: $zt-radius-sm;
+		border: 1px solid $zt-control-border-hover;
+		background: transparent;
 		display: grid;
 		place-items: center;
-		transition: background 0.15s, border-color 0.15s;
-		color: white;
+		transition: background-color $motion-fast $ease-standard, border-color $motion-fast $ease-standard;
+		color: rgb(var(--theme-primary-opposite));
 	}
 
 	&__checkbox--on &__checkbox-box {
-		background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
-		border-color: transparent;
+		background: rgb(var(--primary-color));
+		border-color: rgb(var(--primary-color));
 	}
 
 	/* ── Link ──────────────────────────────────── */
@@ -600,15 +482,15 @@
 		background: transparent;
 		border: 0;
 		cursor: pointer;
-		font-weight: 600;
+		font-weight: 500;
 		font-size: 13px;
 		color: rgb(var(--text-color));
-		letter-spacing: 0.01em;
 		padding: 0;
 		text-decoration: none;
 
 		&:hover {
-			color: rgb(var(--auth-accent));
+			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 	}
 
@@ -617,14 +499,14 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		padding: 12px 14px;
-		border-radius: 14px;
+		padding: $zt-space-3 14px;
+		border-radius: $zt-radius-md;
 		font-size: 13px;
-		font-weight: 700;
-		border: 1px solid rgba(var(--error-color), 0.35);
-		background: rgba(var(--error-color), 0.12);
+		font-weight: 600;
+		border: 1px solid rgba(var(--error-color), 0.45);
+		background: rgba(var(--error-color), 0.1);
 		color: rgb(var(--text-color));
-		animation: zkt-auth-banner-in 0.4s cubic-bezier(0.5, 0.1, 0.2, 1);
+		animation: zkt-auth-banner-in 0.25s $ease-standard;
 	}
 
 	&__banner-dot {
@@ -632,7 +514,6 @@
 		height: 8px;
 		border-radius: 50%;
 		background: rgb(var(--error-color));
-		box-shadow: 0 0 12px rgb(var(--error-color));
 		flex-shrink: 0;
 	}
 
@@ -640,43 +521,42 @@
 	&__suggest {
 		margin-top: 2px;
 		font-size: 12.5px;
-		font-weight: 600;
+		font-weight: 500;
 		color: rgb(var(--text-color));
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		cursor: pointer;
-		padding: 4px 10px;
-		border-radius: 999px;
-		background: rgba(var(--warning-color), 0.12);
-		border: 1px solid rgba(var(--warning-color), 0.25);
+		padding: $zt-space-1 10px;
+		border-radius: $zt-radius-sm;
+		background: rgba(var(--warning-color), 0.1);
+		border: 1px solid rgba(var(--warning-color), 0.4);
 		align-self: flex-start;
 
 		b {
-			color: rgb(var(--warning-color));
-			font-weight: 800;
+			font-weight: 700;
 		}
 	}
 
 	/* ── Password strength wrapper (skin reuses PasswordStrength) ─ */
 	&__pwd-strength {
-		padding: 12px 14px;
-		border: 1px solid rgb(var(--auth-module-border));
-		border-radius: 14px;
-		background: rgba(12, 13, 20, 0.5);
+		padding: $zt-space-3 14px;
+		border: 1px solid $zt-card-border;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
 	}
 
 	/* ── Turnstile ─────────────────────────────── */
 	&__turnstile {
-		border-radius: 14px;
-		border: 1px solid rgb(var(--auth-module-border));
-		background: rgba(12, 13, 20, 0.5);
-		padding: 10px 12px;
+		border-radius: $zt-radius-md;
+		border: 1px solid $zt-card-border;
+		background: $zt-card-bg;
+		padding: 10px $zt-space-3;
 		display: flex;
 		align-items: center;
 		gap: 10px;
 		font-size: 12.5px;
-		font-weight: 600;
+		font-weight: 500;
 		color: rgb(var(--text-color));
 		flex-wrap: wrap;
 	}
@@ -684,12 +564,11 @@
 	&__turnstile-check {
 		width: 22px;
 		height: 22px;
-		border-radius: 5px;
-		background: rgba(var(--success-color), 0.2);
-		border: 1px solid rgba(var(--success-color), 0.55);
+		border-radius: $zt-radius-sm;
+		background: rgb(var(--success-color));
 		display: grid;
 		place-items: center;
-		color: rgb(var(--text-color));
+		color: rgb(var(--background-color));
 	}
 
 	&__turnstile-label {
@@ -702,7 +581,7 @@
 		align-items: flex-start;
 		gap: 10px;
 		font-size: 13px;
-		font-weight: 600;
+		font-weight: 500;
 		line-height: 1.45;
 		color: rgb(var(--text-color));
 		cursor: pointer;
@@ -715,15 +594,15 @@
 			width: 18px;
 			height: 18px;
 			margin: 1px 0 0;
-			border-radius: 5px;
-			border: 1px solid rgb(var(--auth-module-border-strong));
-			background: rgba(12, 13, 20, 0.5);
+			border-radius: $zt-radius-sm;
+			border: 1px solid $zt-control-border-hover;
+			background: transparent;
 			cursor: pointer;
-			transition: background 0.15s, border-color 0.15s;
+			transition: background-color $motion-fast $ease-standard, border-color $motion-fast $ease-standard;
 
 			&:checked {
-				background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
-				border-color: transparent;
+				background: rgb(var(--primary-color));
+				border-color: rgb(var(--primary-color));
 			}
 
 			&:checked::after {
@@ -733,22 +612,20 @@
 				top: 1px;
 				width: 5px;
 				height: 9px;
-				border: solid white;
+				border: solid rgb(var(--theme-primary-opposite));
 				border-width: 0 2px 2px 0;
 				transform: rotate(45deg);
 			}
 
-			&:focus-visible {
-				outline: 2px solid rgb(var(--primary-color));
-				outline-offset: 2px;
-			}
+			@include zt-focus-ring;
 		}
 
 		a {
-			color: rgb(var(--auth-accent));
-			font-weight: 700;
+			color: rgb(var(--text-color));
+			font-weight: 600;
 			text-decoration: underline;
-			text-underline-offset: 2px;
+			text-decoration-color: rgb(var(--primary-color));
+			text-underline-offset: 3px;
 
 			&:hover {
 				color: rgb(var(--primary-color));
@@ -756,9 +633,9 @@
 		}
 	}
 
-	/* ── WCA Callback step list ───────────────── */
+	/* ── OAuth callback step list ───────────────── */
 	&__wca-callback {
-		padding-top: 4px;
+		padding-top: $zt-space-1;
 	}
 
 	&__steps {
@@ -767,59 +644,46 @@
 		padding: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 10px;
 	}
 
 	&__step {
 		display: flex;
 		align-items: center;
 		gap: 14px;
-		padding: 14px 16px;
-		border-radius: 16px;
-		background: rgba(12, 13, 20, 0.5);
-		border: 1px solid rgb(var(--auth-module-border));
-		transition: all 0.35s ease;
+		padding: 14px $zt-space-4;
+		border-radius: $zt-radius-md;
+		background: $zt-card-bg;
+		border: 1px solid $zt-card-border;
+		transition: border-color 0.35s ease, background-color 0.35s ease;
 
 		&--active {
-			background: rgba(var(--primary-color), 0.12);
-			border-color: rgba(var(--primary-color), 0.55);
-			box-shadow:
-				0 0 0 4px rgba(var(--primary-color), 0.12),
-				0 0 24px rgba(var(--primary-color), 0.25);
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgb(var(--primary-color));
 		}
 
 		&--done {
-			background: rgba(var(--success-color), 0.08);
-			border-color: rgba(var(--success-color), 0.35);
+			border-color: rgba(var(--success-color), 0.5);
 		}
 	}
 
 	&__step-icon {
 		width: 32px;
 		height: 32px;
-		border-radius: 9px;
+		border-radius: $zt-radius-md;
 		display: grid;
 		place-items: center;
 		flex-shrink: 0;
-		background: rgba(var(--auth-module-border), 0.6);
+		background: $zt-control-bg;
 		color: rgb(var(--text-color));
-		font-weight: 800;
+		font-family: $zt-font-mono;
+		font-weight: 700;
 		font-size: 14px;
-		position: relative;
 	}
 
 	&__step--active &__step-icon {
-		background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
-		color: white;
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: -4px;
-			border-radius: 12px;
-			border: 1.5px solid rgba(var(--primary-color), 0.8);
-			animation: zkt-auth-step-ping 1.6s ease-out infinite;
-		}
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 	}
 
 	&__step--done &__step-icon {
@@ -840,8 +704,8 @@
 
 	&__step-sub {
 		font-size: 12.5px;
-		font-weight: 600;
-		color: rgb(var(--auth-text-soft));
+		font-weight: 500;
+		color: $zt-text-muted;
 		margin-top: 2px;
 	}
 
@@ -855,29 +719,27 @@
 		flex-shrink: 0;
 	}
 
-	/* ── WCA Conflict (already-linked) error scene ───────────── */
+	/* ── Conflict / failure / e-mail taken panes ───────────── */
 	&__wca-conflict {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		padding: 8px 4px 4px;
+		padding: $zt-space-2 $zt-space-1 $zt-space-1;
 		gap: 14px;
 	}
 
 	&__wca-conflict-icon {
-		width: 64px;
-		height: 64px;
-		border-radius: 18px;
+		width: 56px;
+		height: 56px;
+		border-radius: $zt-radius-md;
 		display: grid;
 		place-items: center;
-		background: linear-gradient(135deg, rgb(var(--danger-color)), rgb(var(--auth-accent)));
+		background: rgb(var(--error-color));
 		color: white;
-		box-shadow: 0 0 0 4px rgba(var(--danger-color), 0.18), 0 0 24px rgba(var(--danger-color), 0.32);
 	}
 
 	&__wca-conflict-title {
-		font-family: $font-display;
 		font-weight: 800;
 		font-size: 22px;
 		color: rgb(var(--text-color));
@@ -887,12 +749,12 @@
 	&__wca-conflict-subtitle {
 		font-weight: 700;
 		font-size: 14px;
-		color: rgb(var(--danger-color));
+		color: rgb(var(--error-color));
 		margin: 0;
 	}
 
 	&__wca-conflict-description {
-		font-weight: 600;
+		font-weight: 500;
 		font-size: 14px;
 		line-height: 1.55;
 		color: rgb(var(--text-color));
@@ -900,8 +762,8 @@
 		max-width: 360px;
 
 		strong {
-			font-weight: 800;
-			color: rgb(var(--primary-color));
+			font-weight: 700;
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -916,36 +778,32 @@
 	&__wca-conflict-primary,
 	&__wca-conflict-secondary {
 		width: 100%;
-		padding: 12px 18px;
-		border-radius: 14px;
-		font-weight: 800;
+		min-height: $zt-control-h-lg;
+		padding: $zt-space-3 18px;
+		border-radius: $zt-radius-md;
+		font-weight: 600;
 		font-size: 14.5px;
 		cursor: pointer;
 		border: none;
-		transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-
-		&:active {
-			transform: scale(0.98);
-		}
+		transition: background-color $motion-fast $ease-standard;
+		@include zt-focus-ring;
 	}
 
 	&__wca-conflict-primary {
-		background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
-		color: white;
-		box-shadow: 0 6px 20px rgba(var(--primary-color), 0.35);
+		background: rgb(var(--primary-color));
+		color: rgb(var(--theme-primary-opposite));
 
 		&:hover {
-			box-shadow: 0 8px 24px rgba(var(--primary-color), 0.48);
+			background: rgba(var(--primary-color), 0.88);
 		}
 	}
 
 	&__wca-conflict-secondary {
-		background: rgba(12, 13, 20, 0.5);
+		background: $zt-control-bg;
 		color: rgb(var(--text-color));
-		border: 1px solid rgb(var(--auth-module-border));
 
 		&:hover {
-			background: rgba(12, 13, 20, 0.7);
+			background: $zt-control-bg-hover;
 		}
 	}
 
@@ -970,116 +828,53 @@
 	}
 
 	&__timer-reveal-hint {
-		font-size: 11px;
-		font-weight: 800;
-		letter-spacing: 0.2em;
-		color: rgb(var(--auth-text-soft));
-		text-transform: uppercase;
+		@include zt-eyebrow;
 		margin-bottom: 14px;
 	}
 
 	&__timer-reveal-num {
-		font-family: $font-mono;
+		font-family: $zt-font-mono;
 		font-size: 120px;
-		font-weight: 800;
+		font-weight: 700;
 		letter-spacing: -0.04em;
-		background: linear-gradient(180deg, rgb(var(--text-color)), rgba(var(--text-color), 0.65));
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
-		text-shadow: 0 0 60px rgba(var(--primary-color), 0.35);
+		color: rgb(var(--text-color));
 		line-height: 1;
+		font-variant-numeric: tabular-nums;
+
+		@include bp-down($bp-md) {
+			font-size: 72px;
+		}
 	}
 
 	&__timer-reveal-event {
 		margin-top: 18px;
 		font-size: 13px;
-		font-weight: 700;
-		color: rgb(var(--text-color));
+		font-weight: 600;
+		color: $zt-text-muted;
 	}
 
-	@include bp-down($bp-md) {
-		&__timer-reveal-num {
-			font-size: 72px;
-		}
-	}
-
-	/* ───────────────────────────────────────────
-	   CUBE — CSS 3D + halo + sonar (HeroCube palette)
-	   ─────────────────────────────────────────── */
-
+	/* ── Cube (HeroCube engine) ─────────────────── */
 	&__cube-stage {
 		position: relative;
 		display: grid;
 		place-items: center;
-		perspective: 1600px;
-		perspective-origin: 50% 45%;
-		transform-style: preserve-3d;
 	}
 
-	&__cube-halo {
+	/* Contact shadow under the cube, at the cube's foot in the square canvas. The one
+	   gradient on this page, owner-approved 2026-11-26: black and soft like a shadow on
+	   a table, never a coloured halo. */
+	&__cube-floor {
 		position: absolute;
-		inset: -45%;
-		border-radius: 50%;
+		left: 50%;
+		top: 81%;
+		width: 58%;
+		height: 9%;
+		transform: translate(-50%, -50%);
+		background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
 		pointer-events: none;
-		background: radial-gradient(
-			circle at 50% 50%,
-			rgba(var(--primary-color), 0.65) 0%,
-			rgba(var(--auth-accent), 0.42) 35%,
-			transparent 72%
-		);
-		filter: blur(70px);
-		opacity: var(--cube-halo-opacity, 0.35);
-		transform: scale(var(--cube-halo-scale, 1));
-		transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-
-		&--inner {
-			inset: -10%;
-			filter: blur(38px);
-			background: radial-gradient(
-				circle at 50% 50%,
-				rgba(var(--auth-accent), 0.55) 0%,
-				transparent 60%
-			);
-			opacity: var(--cube-halo-inner-opacity, 0.4);
-			transform: none;
-		}
 	}
 
-	&__cube-sonar {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		pointer-events: none;
-
-		span {
-			position: absolute;
-			width: 70%;
-			height: 70%;
-			border-radius: 50%;
-			border: 1px solid rgba(var(--auth-accent), 0.55);
-			opacity: 0;
-			animation: zkt-auth-sonar 3.6s ease-out infinite;
-		}
-	}
-
-	&__cube-shadow {
-		position: absolute;
-		bottom: -2%;
-		left: 10%;
-		right: 10%;
-		height: 30px;
-		background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7), transparent 70%);
-		filter: blur(8px);
-		opacity: var(--cube-shadow-opacity, 0.5);
-		transition: opacity 0.6s ease;
-		z-index: -1;
-	}
-
-	/* HeroCube/CubeGame canvas wrapper — Three.js renderer.domElement is
-	   appended here. Container's pointer events allow user to drag cube;
-	   card overlaps when hovering. */
+	/* Three.js renderer.domElement is appended here. */
 	&__cube-canvas {
 		position: relative;
 		z-index: 1;
@@ -1088,9 +883,87 @@
 		pointer-events: auto;
 	}
 
-	&__cube-stage--solved &__cube-canvas {
-		filter: drop-shadow(0 0 30px rgba(var(--primary-color), 0.7));
-		transition: filter 0.5s ease;
+	/* ── Scramble sheet under the cube ─────────────
+	   The cube's own scramble in notation, framed like a competition scramble
+	   sheet. Each filled field undoes moves from the end of the line, so the
+	   solved ones go quiet from the right, the count climbs to 20/20 and the
+	   sheet's bottom edge fills in the accent. */
+	&__scramble {
+		position: relative;
+		width: 100%;
+		max-width: 420px;
+		// The cube canvas is square and the cube sits in its upper middle, so the sheet
+		// tucks up into the empty floor of the canvas.
+		margin-top: -$zt-space-7;
+		display: flex;
+		flex-direction: column;
+		gap: $zt-space-3;
+		overflow: hidden;
+		@include zt-card($zt-space-4 $zt-space-5 18px);
+		border-radius: $zt-radius-md;
+	}
+
+	&__scramble-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__scramble-label {
+		@include zt-eyebrow;
+	}
+
+	// Two even rows of ten, like a scramble sheet.
+	&__scramble-moves {
+		display: grid;
+		grid-template-columns: repeat(10, 1fr);
+		row-gap: $zt-space-1;
+		margin: 0;
+		font-family: $zt-font-mono;
+		font-size: 1.05rem;
+		font-weight: 500;
+		line-height: 1.5;
+	}
+
+	// The global reset sets a face and weight on every span, so they go here, not on the row.
+	&__scramble-move {
+		font-family: $zt-font-mono;
+		font-weight: 500;
+		text-align: center;
+		color: rgb(var(--text-color));
+		transition: color 0.3s $ease-standard;
+
+		&--done {
+			color: $zt-text-muted;
+			text-decoration: line-through;
+			// Muted, not the accent: a blue strike read as a highlighted row. The accent
+			// lives in the sheet's bottom edge.
+			text-decoration-color: $zt-text-muted;
+			text-decoration-thickness: 1px;
+		}
+	}
+
+	&__scramble-track {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 2px;
+	}
+
+	&__scramble-fill {
+		position: absolute;
+		inset: 0 auto 0 0;
+		background: rgb(var(--primary-color));
+		transition: width 0.4s $ease-standard;
+	}
+
+	&__scramble-count {
+		font-family: $zt-font-mono;
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: $zt-text-muted;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* ───────────────────────────────────────────
@@ -1111,28 +984,14 @@
    Keyframes
    ─────────────────────────────────────────────────── */
 
-@keyframes zkt-auth-orb-a {
-	to {
-		transform: translate(40px, 30px) scale(1.08);
-	}
-}
-
-@keyframes zkt-auth-orb-b {
-	to {
-		transform: translate(-30px, -40px) scale(1.1);
-	}
-}
-
 @keyframes zkt-auth-mode-morph {
 	from {
-		transform: scale(0.96);
+		transform: scale(0.98);
 		opacity: 0;
-		filter: blur(6px);
 	}
 	to {
 		transform: scale(1);
 		opacity: 1;
-		filter: blur(0);
 	}
 }
 
@@ -1162,65 +1021,9 @@
 	}
 }
 
-@keyframes zkt-auth-sonar {
-	0% {
-		transform: scale(0.6);
-		opacity: 0;
-	}
-	10% {
-		opacity: 0.8;
-	}
-	100% {
-		transform: scale(1.6);
-		opacity: 0;
-	}
-}
-
-@keyframes zkt-auth-cube-drift {
-	from {
-		transform: rotateY(0deg);
-	}
-	to {
-		transform: rotateY(360deg);
-	}
-}
-
-@keyframes zkt-auth-face-flash {
-	0% {
-		opacity: 0;
-	}
-	20% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
-}
-
-@keyframes zkt-auth-sticker-pulse {
-	0%,
-	100% {
-		filter: brightness(1);
-	}
-	50% {
-		filter: brightness(1.18);
-	}
-}
-
-@keyframes zkt-auth-step-ping {
-	0% {
-		transform: scale(0.85);
-		opacity: 1;
-	}
-	100% {
-		transform: scale(1.35);
-		opacity: 0;
-	}
-}
-
 @keyframes zkt-auth-banner-in {
 	from {
-		transform: translateY(-6px);
+		transform: translateY(-4px);
 		opacity: 0;
 	}
 	to {
@@ -1229,8 +1032,8 @@
 	}
 }
 
-/* Entry animations — on transition from landing to /login, cube slides from right, card from top.
-   Dramatic distance (cube 80vw, card -80vh) + bouncy easing → visible transition. */
+/* Entry animations: on the way in from the landing page the cube slides from the
+   right and the card from the top. */
 @keyframes zkt-auth-cube-enter {
 	from {
 		transform: translateX(80vw) scale(0.7);
@@ -1253,12 +1056,6 @@
 	}
 }
 
-/* Mobile card fade — opacity only, no transform → jank impossible */
-@keyframes zkt-auth-card-fade {
-	from { opacity: 0; }
-	to { opacity: 1; }
-}
-
 // Escape hatches under the auth card: the product is usable without an account,
 // so this screen should not read as a wall.
 .#{$namespace}-zkt-auth__escape-links {
@@ -1268,15 +1065,16 @@
 	gap: 10px;
 	margin-top: 18px;
 	font-size: 0.85rem;
-	color: rgba(var(--auth-text-mute), 1);
+	color: $zt-text-muted;
 
 	a {
-		color: rgba(var(--auth-text-soft), 1);
+		color: $zt-text-muted;
 		text-decoration: none;
 
 		&:hover {
 			color: rgb(var(--text-color));
 			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 	}
 }

@@ -195,12 +195,6 @@ export default function ZktAuthScene({
 			style={{ '--keyboard-h': `${keyboardInset}px` } as React.CSSProperties}
 			data-mode={mode}
 		>
-			{/* Background — orb ambient layer */}
-			<div className={b('bg')} aria-hidden="true">
-				<div className={b('bg-orb', { variant: 'a' })} />
-				<div className={b('bg-orb', { variant: 'b' })} />
-			</div>
-
 			{/* Language switcher — sayfa sag ust kosesi */}
 			<div className={b('lang-floating')}>
 				<LanguageSwitcher />

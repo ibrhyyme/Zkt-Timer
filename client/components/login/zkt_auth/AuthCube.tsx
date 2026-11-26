@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import block from '../../../styles/bem';
 
 const b = block('zkt-auth');
@@ -50,6 +51,7 @@ export default function AuthCube({
 }: AuthCubeProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const gameRef = useRef<any>(null);
+	const { t } = useTranslation();
 
 	// pendingTargetRef = target solve move count calculated from chaos diff.
 	// appliedSolveCountRef = actual move count sent to queue.
@@ -60,6 +62,8 @@ export default function AuthCube({
 	const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const rescrambleNeededRef = useRef<boolean>(false);
 	const [ready, setReady] = useState<boolean>(false);
+	// Mirror of appliedSolveCountRef for the scramble strip under the cube.
+	const [solvedCount, setSolvedCount] = useState<number>(0);
 
 	const stopPolling = useCallback(() => {
 		if (pollingRef.current) {
@@ -93,6 +97,7 @@ export default function AuthCube({
 			rescrambleNeededRef.current = false;
 			appliedSolveCountRef.current = 0;
 			pendingTargetRef.current = 0;
+			setSolvedCount(0);
 			game.applyMovesAnimated(AUTH_SCRAMBLE.slice());
 			ensurePolling();
 			return;
@@ -114,6 +119,7 @@ export default function AuthCube({
 		}
 
 		appliedSolveCountRef.current = target;
+		setSolvedCount(target);
 		game.applyMovesAnimated(chunk);
 		ensurePolling();
 	}, [stopPolling]);
@@ -195,26 +201,45 @@ export default function AuthCube({
 	}, [resetSignal, ready, tryDrain]);
 
 	return (
-		<div
-			className={b('cube-stage', { solved: solvedGlow })}
-			style={{ width: size, height: size }}
-		>
-			<div className={b('cube-halo')} />
-			<div className={b('cube-halo', { inner: true })} />
-
-			<div className={b('cube-sonar')} aria-hidden="true">
-				<span style={{ animationDelay: '0s' }} />
-				<span style={{ animationDelay: '1.2s' }} />
-				<span style={{ animationDelay: '2.4s' }} />
+		<>
+			<div className={b('cube-stage')} style={{ width: size, height: size }}>
+				{/* Contact shadow: the cube rests on a table, it does not glow. */}
+				<div className={b('cube-floor')} aria-hidden="true" />
+				<div
+					ref={containerRef}
+					className={b('cube-canvas')}
+					style={{ width: size, height: size }}
+				/>
 			</div>
 
-			<div
-				ref={containerRef}
-				className={b('cube-canvas')}
-				style={{ width: size, height: size }}
-			/>
-
-			<div className={b('cube-shadow')} />
-		</div>
+			{/* The scramble the cube is wearing, set like a competition scramble sheet.
+			    Solving undoes it from the last move back, so a move is "done" once it
+			    sits in the solved tail. */}
+			<div className={b('scramble')} aria-hidden="true">
+				<div className={b('scramble-head')}>
+					<span className={b('scramble-label')}>{t('timer_modules.scramble')}</span>
+					<span className={b('scramble-count')}>
+						{String(solvedCount).padStart(2, '0')}/{SCRAMBLE_LENGTH}
+					</span>
+				</div>
+				<p className={b('scramble-moves')}>
+					{AUTH_SCRAMBLE.map((move, i) => (
+						<span
+							key={i}
+							className={b('scramble-move', { done: i >= SCRAMBLE_LENGTH - solvedCount })}
+						>
+							{move}
+						</span>
+					))}
+				</p>
+				{/* The sheet's bottom edge fills with the solve. */}
+				<div className={b('scramble-track')}>
+					<div
+						className={b('scramble-fill')}
+						style={{ width: `${(solvedCount / SCRAMBLE_LENGTH) * 100}%` }}
+					/>
+				</div>
+			</div>
+		</>
 	);
 }

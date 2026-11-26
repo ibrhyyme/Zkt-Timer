@@ -12,9 +12,12 @@ import path from 'path';
 const CLIENT = path.resolve(__dirname, '../..');
 
 const BASELINE = {
-	scssBackdropBlur: 28,
+	// 26: the login/signup scene (zkt_auth) lost its orbs, halo, glass card, gradient button and glows (2026-11-26).
+	scssBackdropBlur: 26,
 	// 157: the competitions pages lost their loading-bar, search and skeleton gradients (2026-11-11).
-	scssGradient: 157,
+	// 138: the same auth scene pass (2026-11-26). 139: one back on purpose, the black contact
+	// shadow under the auth cube (owner-approved the same day; a shadow, not a halo).
+	scssGradient: 139,
 	tsxBackdropBlur: 9,
 	tsxBgGradient: 3,
 	tsxInlineEffect: 6,
@@ -27,9 +30,11 @@ const BASELINE = {
 	// 533: the competition list row and its old ZKT badge went onto tokens (2026-11-09).
 	// 443: the whole competitions section (list, competition, live, schedule) and the
 	// calendar button went onto tokens (2026-11-11).
-	scssHandRadius: 443,
+	// 425: the auth scene went onto the corner tokens (2026-11-26).
+	scssHandRadius: 425,
 	// 116: the WCA loading bar's glow went (2026-11-11).
-	scssDropShadow: 116,
+	// 103: the auth scene's glows went (2026-11-26).
+	scssDropShadow: 103,
 	tsxFixedTailwindColor: 67,
 	// 116: the competition list row's hover lost --button-color (2026-11-09).
 	// 103: the competitions section's rows and the calendar button left --button-color (2026-11-11).
