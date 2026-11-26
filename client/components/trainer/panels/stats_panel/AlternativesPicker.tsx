@@ -3,6 +3,7 @@ import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {expandNotation} from '../../../../util/trainer/algorithm_engine';
 import {fetchLibraryCategory, saveAlgorithm, getCustomAlternatives} from '../../hooks/useAlgorithmData';
+import {getAlgNotation} from '../../../../util/trainer/trainer_library';
 import {useTranslation} from 'react-i18next';
 import {Check} from 'phosphor-react';
 import {gqlQueryTyped} from '../../../api';
@@ -87,13 +88,17 @@ export default function AlternativesPicker() {
 			<div className={b('alt-picker-list')}>
 				{alternatives.map((alt, i) => {
 					const isSelected = expandNotation(alt) === expandNotation(currentAlgorithm.algorithm);
+					const written = getAlgNotation(currentAlgorithm.category, alt);
 					return (
 						<button
 							key={i}
 							className={b('alt-picker-item', {selected: isSelected})}
 							onClick={() => handleSelect(alt)}
 						>
-							<code>{alt}</code>
+							<span className={b('alt-texts')}>
+								<code>{alt}</code>
+								{written && <span className={b('alt-notation')}>{written}</span>}
+							</span>
 							{isSelected && <Check size={14} weight="bold" />}
 						</button>
 					);

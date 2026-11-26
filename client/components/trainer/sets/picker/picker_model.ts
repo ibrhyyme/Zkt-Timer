@@ -40,7 +40,7 @@ export interface PickerPuzzle {
 	categories: PickerCategory[];
 }
 
-const CATEGORY_PREFIXES = ['2x2 ', '4x4 ', 'Pyraminx ', 'SQ1 '];
+const CATEGORY_PREFIXES = ['2x2 ', '4x4 ', '5x5 ', 'Megaminx ', 'Pyraminx ', 'SQ1 ', 'FTO '];
 
 /** Category name under its puzzle heading. Same rule as the Algorithms tab's category tabs. */
 export function categoryShortName(category: string): string {

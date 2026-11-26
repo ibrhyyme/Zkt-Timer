@@ -20,7 +20,7 @@ import {
  * start; no cache to clear.
  */
 
-export type LibraryEntry = {name: string; algorithm: string; alternatives?: string[]};
+export type LibraryEntry = {name: string; algorithm: string; alternatives?: string[]; notation?: string[]};
 export type LibrarySubset = {subset: string; algorithms: LibraryEntry[]};
 export type Library = Record<string, LibrarySubset[]>;
 

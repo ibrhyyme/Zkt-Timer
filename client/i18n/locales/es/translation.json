@@ -633,6 +633,7 @@
     "hide_moves": "Ocultar movimientos",
     "ble_make_first_move": "Haz tu primer movimiento",
     "scramble_label": "Mezcla",
+    "notation_label": "Notación original:",
     "ble_scramble_first": "Primero mezcla el cubo",
     "option_random_order": "Orden aleatorio",
     "option_random_auf": "AUF aleatorio",
@@ -1111,7 +1112,67 @@
       },
       "4x4_oll_parity": {
         "title": "Paridad OLL de 4x4",
-        "desc": "En el 4x4 puede quedar volteado un solo par de aristas en la última capa, algo imposible en el 3x3. Se llama paridad OLL y se corrige con un algoritmo específico.\n\nEste set tiene 2 casos. Basic es corto y muy usado, pero también mueve las esquinas de la última capa. Pure corrige solo la arista volteada y deja todo lo demás en su sitio."
+        "desc": "En el 4x4 puede quedar volteado un solo par de aristas en la última capa, algo imposible en el 3x3. Se llama paridad OLL y se corrige con un algoritmo específico.\n\nEste set tiene 3 casos. Basic es corto y muy usado, pero también mueve las esquinas de la última capa. Pure corrige solo la arista volteada y deja todo lo demás en su sitio. M corrige la paridad OLL y la PLL a la vez."
+      },
+      "5x5_l2e": {
+        "title": "5x5 Últimas dos aristas",
+        "desc": "Al reducir el 5x5 a un 3x3 emparejas las aristas una a una. Cuando solo quedan dos, emparejarlas sin romper las demás se complica, y este set cubre ese momento. Tiene 13 casos.\n\nPara reconocer un caso, fíjate dónde están las piezas de las dos aristas."
+      },
+      "5x5_l2c": {
+        "title": "5x5 Últimos dos centros",
+        "desc": "En el 5x5, los dos últimos centros suelen ser la parte más lenta de los centros. Este set termina los dos que quedan cuando los otros cuatro ya están hechos. Tiene 18 casos.\n\nPara reconocer un caso, fíjate cómo están colocadas las piezas en los dos centros."
+      },
+      "megaminx_eo": {
+        "title": "Megaminx Orientación de aristas",
+        "desc": "El primer paso para resolver la última capa del Megaminx en cuatro pasos. Orientas las aristas de arriba y formas la estrella en la cara superior. Tiene 3 casos.\n\nLos siguientes pasos son orientación de esquinas (CO), permutación de aristas (EP) y permutación de esquinas (CP)."
+      },
+      "megaminx_co": {
+        "title": "Megaminx Orientación de esquinas",
+        "desc": "El segundo paso de la última capa en cuatro pasos. Con las aristas ya orientadas, orientas también las esquinas y dejas la cara superior de un solo color. Tiene 16 casos."
+      },
+      "megaminx_ep": {
+        "title": "Megaminx Permutación de aristas",
+        "desc": "El tercer paso de la última capa en cuatro pasos. Con la cara superior de un solo color, colocas las aristas de la última capa en su sitio. Tiene 5 casos."
+      },
+      "megaminx_cp": {
+        "title": "Megaminx Permutación de esquinas",
+        "desc": "El último paso de la última capa en cuatro pasos. Con las aristas en su sitio, colocas las esquinas y terminas el Megaminx. Tiene 15 casos."
+      },
+      "megaminx_oll": {
+        "title": "Megaminx OLL",
+        "desc": "Orientas todas las piezas de la última capa con un solo algoritmo, haciendo de una vez los dos primeros pasos del método en cuatro pasos. Tiene 174 casos, agrupados según la forma de la cara superior.\n\nAprenderlos todos lleva mucho tiempo, así que conviene saber antes el método en cuatro pasos."
+      },
+      "megaminx_pll": {
+        "title": "Megaminx PLL",
+        "desc": "Con la última capa orientada, colocas todas las piezas con un solo algoritmo, haciendo de una vez los dos últimos pasos del método en cuatro pasos. Tiene 151 casos, agrupados según los bloques y faros de los lados."
+      },
+      "sq1_co": {
+        "title": "Square-1 Orientación de esquinas",
+        "desc": "El paso que va después de la forma de cubo. Separas las esquinas para que las del color de arriba queden arriba y las del color de abajo, abajo. Tiene 7 casos.\n\nPara reconocer un caso, cuenta cuántas esquinas están en la capa equivocada arriba y abajo."
+      },
+      "sq1_parity": {
+        "title": "Square-1 Paridad",
+        "desc": "Al final de una resolución de Square-1 pueden quedar dos piezas intercambiadas. Eso se llama paridad. Este set tiene 5 algoritmos que la corrigen.\n\nNo tienes que dejar la paridad para el final: también puedes corregirla en la forma de cubo con CSP o con algoritmos de EP con paridad."
+      },
+      "sq1_lin": {
+        "title": "Square-1 Lin",
+        "desc": "En el método Lin resuelves primero la capa de abajo y luego terminas la de arriba. Este set tiene los algoritmos del último paso: Lin PLL (21 casos), Lin PLL con paridad (22 casos) y Lin PLL+1 (72 casos), que además coloca la última arista de abajo junto con la capa superior."
+      },
+      "2x2_tcll_plus": {
+        "title": "2x2 TCLL+",
+        "desc": "Cuando una esquina de la primera capa queda girada, resuelves la última capa junto con esa esquina en un solo algoritmo. En TCLL+ la esquina girada está abajo, delante a la derecha, con su color de abajo mirando hacia ti. Tiene 43 casos en 8 grupos, según el patrón de arriba.\n\nTiene más sentido cuando ya sabes EG completo. Los algoritmos vienen de la lista TCLL de Christopher Olson."
+      },
+      "2x2_tcll_minus": {
+        "title": "2x2 TCLL-",
+        "desc": "El gemelo de TCLL+: la esquina girada también está abajo, delante a la derecha, pero su color de abajo mira a la derecha. Tiene 43 casos en 8 grupos, según el patrón de arriba.\n\nLa mayoría de los algoritmos vienen de la lista TCLL de Christopher Olson. Los 9 casos que su lista no cubre usan la solución más corta que encontró nuestro solucionador."
+      },
+      "fto_1l3t": {
+        "title": "FTO 1L3T",
+        "desc": "Resuelves los últimos tres triples (L3T) del FTO con un solo algoritmo. Tiene 179 casos en 12 sets, cada uno dividido en par e impar.\n\nLos algoritmos vienen de la lista 1L3T de Zach Wegner. Su notación con rotaciones aparece aquí como giros de caras simples, con su propia escritura debajo de cada algoritmo. Cada algoritmo se comprobó con su caso."
+      },
+      "fto_lbt": {
+        "title": "FTO LBT",
+        "desc": "En el método Bencisco resuelves el último triple de abajo (LBT) con un solo algoritmo, estén donde estén la esquina y los triángulos. Tiene 95 casos en 6 secciones, según dónde están las piezas. Algunos algoritmos empiezan con un U o Uw de preparación.\n\nLos algoritmos vienen de la lista LBT de Zach Wegner, con su propia escritura debajo de cada algoritmo."
       }
     },
     "landing_ollcp_title": "Reconocimiento OLLCP",
@@ -1197,7 +1258,96 @@
       "corner_on_d_facing_side": "Esquina abajo, color hacia el lado",
       "cross_color_facing_front": "Color de la cruz al frente",
       "cross_color_facing_right": "Color de la cruz a la derecha",
-      "cross_color_facing_up": "Color de la cruz arriba"
+      "cross_color_facing_up": "Color de la cruz arriba",
+      "2_corner_co": "CO de 2 esquinas",
+      "3_corner_co": "CO de 3 esquinas",
+      "4_corner_co": "CO de 4 esquinas",
+      "5_corner_co": "CO de 5 esquinas",
+      "anchor_shapes": "Formas de ancla",
+      "t_shapes": "Formas T",
+      "c_shapes": "Formas C",
+      "s_shapes": "Formas S",
+      "pi_shapes": "Formas Pi",
+      "y_shapes": "Formas Y",
+      "hammerhead_shapes": "Formas de martillo",
+      "w_shapes": "Formas W",
+      "duckhead_shapes": "Formas de cabeza de pato",
+      "megaphone_shapes": "Formas de megáfono",
+      "claw_shapes": "Formas de garra",
+      "rabbit_shapes": "Formas de conejo",
+      "long_block": "Bloque largo",
+      "fox_head_shapes": "Formas de cabeza de zorro",
+      "scorpion_shapes": "Formas de escorpión",
+      "line_shapes": "Formas de línea",
+      "flower_shapes": "Formas de flor",
+      "chandelier_shapes": "Formas de candelabro",
+      "p_shapes": "Formas P",
+      "e_shapes": "Formas E",
+      "sprinter_shapes": "Formas de velocista",
+      "eagle_shapes": "Formas de águila",
+      "lobster_shapes": "Formas de langosta",
+      "lightning_shapes": "Formas de rayo",
+      "cobra_shapes": "Formas de cobra",
+      "hand_shapes": "Formas de mano",
+      "magic_lamp_shapes": "Formas de lámpara mágica",
+      "human_shapes": "Formas de persona",
+      "axe_shapes": "Formas de hacha",
+      "parrot_shapes": "Formas de loro",
+      "l_shapes": "Formas L",
+      "3_corner_cp": "CP de 3 esquinas",
+      "4_corner_cp": "CP de 4 esquinas",
+      "5_corner_cp": "CP de 5 esquinas",
+      "3_edge_ep": "EP de 3 aristas",
+      "4_edge_ep": "EP de 4 aristas",
+      "5_edge_ep": "EP de 5 aristas",
+      "5_piece_ep_cp": "EP/CP de 5 piezas",
+      "double_r_block": "Doble bloque R",
+      "r_block": "Bloque R",
+      "r_block_and_2x1": "Bloque R y 2x1",
+      "j_block": "Bloque J",
+      "2_2x1s_touching": "Dos 2x1 juntos",
+      "2_2x1s_not_touching": "Dos 2x1 separados",
+      "3x1_and_2x2": "3x1 y 2x2",
+      "3x1_and_2x1s": "3x1 y varios 2x1",
+      "2x1_and_headlights": "2x1 y faros",
+      "double_headlights_no_blocks": "Doble faro, sin bloques",
+      "2_3x1s": "Dos 3x1",
+      "5_2x1s": "Cinco 2x1",
+      "2_3_or_4_2x1s_in_these_patterns": "2, 3 o 4 bloques 2x1 en estos patrones",
+      "2x2_and_2x1": "2x2 y 2x1",
+      "2_2x2s": "Dos 2x2",
+      "no_blocks_or_headlights": "Sin bloques ni faros",
+      "2_2x1s_in_y_pattern_and_other_stuff": "Dos 2x1 en patrón Y y otros",
+      "lin_parity_pll": "Lin PLL con paridad",
+      "o_even": "O par",
+      "o_odd": "O impar",
+      "v_even": "V par",
+      "v_odd": "V impar",
+      "q_even": "Q par",
+      "q_odd": "Q impar",
+      "w_even": "W par",
+      "w_odd": "W impar",
+      "j_even": "J par",
+      "j_odd": "J impar",
+      "l_even": "L par",
+      "l_odd": "L impar",
+      "b_even": "B par",
+      "b_odd": "B impar",
+      "t_even": "T par",
+      "t_odd": "T impar",
+      "z_even": "Z par",
+      "z_odd": "Z impar",
+      "s_even": "S par",
+      "s_odd": "S impar",
+      "x_even": "X par",
+      "x_odd": "X impar",
+      "y_even": "Y par",
+      "y_odd": "Y impar",
+      "one_solved_corner_on_top": "Uno resuelto, esquina arriba",
+      "one_in_wrong_slot_corner_on_top": "Uno en hueco equivocado, esquina arriba",
+      "one_in_middle_corner_on_top": "Uno en el medio, esquina arriba",
+      "all_on_top": "Todo arriba",
+      "both_in_slot_corner_on_top": "Ambos en el hueco, esquina arriba"
     }
   },
   "account_nav": {

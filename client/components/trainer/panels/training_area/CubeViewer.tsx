@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import block from '../../../../styles/bem';
-import { getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, isLLCategory as isLLCategoryFn, isIsometricCategory as isIsometricCategoryFn, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
+import { getStickering, getOrientationRotation, twistyAlg, twistyCamera, twistyStickering, getPuzzleType, isCubeShapePuzzle, isLLCategory as isLLCategoryFn, isIsometricCategory as isIsometricCategoryFn, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
 import { getLLPattern, isLLPatternsLoaded, useLLPattern } from '../../../../util/trainer/ll_patterns';
 import { getIsometricPattern, isIsometricPatternsLoaded } from '../../../../util/trainer/isometric_patterns';
 import { getPuzzlePattern, isPuzzlePatternsLoaded } from '../../../../util/trainer/puzzle_patterns';
@@ -87,18 +87,19 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 			}
 
 			const rotation = isCube ? getOrientationRotation(topFace, effectiveFrontFace) : '';
-			const baseStickering = is3x3 ? stickering : 'full';
-			const customMask = baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
+			const baseStickering = category === 'custom' ? 'full' : twistyStickering(category);
+			const customMask = is3x3 && baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
 
 			const player = new TwistyPlayer({
 				puzzle: puzzleType as any,
 				visualization: '3D',
-				alg: algorithm,
+				alg: twistyAlg(category, algorithm),
 				experimentalSetupAnchor: 'end',
 				controlPanel: 'none',
 				hintFacelets: 'none',
 				experimentalDragInput: 'none',
 				background: 'none',
+				...twistyCamera(category),
 				...(rotation ? { experimentalSetupAlg: rotation } : {}),
 				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});

@@ -18,15 +18,15 @@
 	}
 
 	// The page's main choice, so a button per puzzle and not words over a hairline. One column per
-	// puzzle, full width, so Smart Cube mode's two buttons keep their size; a phone fits all seven
+	// puzzle, full width, so Smart Cube mode's two buttons keep their size; a phone fits all ten
 	// on two rows, none hidden behind a scroll.
 	&__puzzles {
 		display: grid;
-		grid-template-columns: repeat(7, minmax(0, 1fr));
+		grid-template-columns: repeat(10, minmax(0, 1fr));
 		gap: $zt-space-2;
 
 		@include bp-down($bp-sm) {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+			grid-template-columns: repeat(5, minmax(0, 1fr));
 		}
 	}
 

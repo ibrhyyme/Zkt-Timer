@@ -82,9 +82,12 @@ export const COMMUNITY_PUZZLES: {key: BuiltinPuzzleKey; label: string}[] = [
 	{key: '333', label: '3x3'},
 	{key: '222', label: '2x2'},
 	{key: '444', label: '4x4'},
+	{key: '555', label: '5x5'},
+	{key: 'minx', label: 'Megaminx'},
 	{key: 'pyram', label: 'Pyraminx'},
 	{key: 'skewb', label: 'Skewb'},
 	{key: 'sq1', label: 'Square-1'},
+	{key: 'fto', label: 'FTO'},
 ];
 
 export interface CommunityFilters {

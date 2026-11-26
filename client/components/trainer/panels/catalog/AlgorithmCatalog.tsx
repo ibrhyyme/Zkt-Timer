@@ -148,7 +148,8 @@ export default function AlgorithmCatalog() {
 							className={b('puzzle', {selected: p === puzzle})}
 							onClick={() => p !== puzzle && pickPuzzle(p)}
 						>
-							<span className={`cubing-icon event-${CUBE_TYPE_PUZZLE[p]} ${b('puzzle-icon')}`} aria-hidden="true" />
+							{/* FTO is not in the icon font's event set yet (unofficial-fto). */}
+							<span className={`cubing-icon ${CUBE_TYPE_PUZZLE[p] === 'fto' ? 'unofficial-fto' : `event-${CUBE_TYPE_PUZZLE[p]}`} ${b('puzzle-icon')}`} aria-hidden="true" />
 							{p}
 						</button>
 					))}

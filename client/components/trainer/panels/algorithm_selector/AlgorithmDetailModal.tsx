@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import block from '../../../../styles/bem';
-import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
+import {algToId, getStickering, getOrientationRotation, getPuzzleType, twistyAlg, twistyCamera, twistyStickering, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
 import {getLLPattern, isLLPatternsLoaded, useLLPattern} from '../../../../util/trainer/ll_patterns';
 import {getIsometricPattern, isIsometricPatternsLoaded} from '../../../../util/trainer/isometric_patterns';
 import {getPuzzlePattern, isPuzzlePatternsLoaded} from '../../../../util/trainer/puzzle_patterns';
@@ -14,6 +14,7 @@ import CubeTopPatternView from '../CubeTopPatternView';
 import PyraminxPatternView from '../PyraminxPatternView';
 import SkewbPatternView from '../SkewbPatternView';
 import SQ1PatternView from '../SQ1PatternView';
+import {getAlgNotation} from '../../../../util/trainer/trainer_library';
 import {saveAlgorithm, fetchDefaultAlgs, fetchLibraryCategory, getBestTime, averageOfFive, averageOfTwelve, getLastTimes, getCustomAlternatives, deleteCustomAlternative} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import {useTranslation} from 'react-i18next';
@@ -199,18 +200,19 @@ export default function AlgorithmDetailModal({
 
 			const isCube = isCubeShapePuzzle(category);
 			const rotation = isCube ? getOrientationRotation(topFace, effectiveFrontFace) : '';
-			const baseStickering = is3x3 ? getStickering(category) : 'full';
-			const customMask = baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
+			const baseStickering = twistyStickering(category);
+			const customMask = is3x3 && baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
 
 			const player = new TwistyPlayer({
 				puzzle: puzzleType as any,
 				visualization: '3D',
-				alg: editedAlg,
+				alg: twistyAlg(category, editedAlg),
 				experimentalSetupAnchor: 'end',
 				controlPanel: 'none',
 				hintFacelets: 'none',
 				experimentalDragInput: 'none',
 				background: 'none',
+				...twistyCamera(category),
 				...(rotation ? {experimentalSetupAlg: rotation} : {}),
 				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});
@@ -393,13 +395,17 @@ export default function AlgorithmDetailModal({
 								const isCustomLocal = allAlternatives.customSet.has(exp);
 								const isFromDb = allAlternatives.dbSet.has(exp);
 								const showDelete = isCustomLocal && !isFromDb;
+								const written = getAlgNotation(category, alt);
 								return (
 									<div key={i} className={b('alg-detail-custom-alt-row')}>
 										<button
 											className={b('alg-detail-alt-item', {selected: isSelected})}
 											onClick={() => handleSelectAlternative(alt)}
 										>
-											<code>{alt}</code>
+											<span className={b('alt-texts')}>
+												<code>{alt}</code>
+												{written && <span className={b('alt-notation')}>{written}</span>}
+											</span>
 											{isSelected && <Check size={14} weight="bold" />}
 										</button>
 										{showDelete && (

@@ -30,13 +30,17 @@ const MOVE_SLOT_CHARS = /[-]/g;
 // not read as "U22 R2". Spaces are dropped later, which is why this runs on the raw input.
 const LAYER_MOVE = /(^|[\s(])(\d+(?:-\d+)?(?:[RLFBUD]w|[RLFBUDrlfbud]))/g;
 const WIDE_MOVE = /[RLFBUD]w/g;
+// Megaminx faces named by two letters ("BR'", "DR2'"). Only a whole move counts, so a 3x3 text
+// typed without spaces ("RBR'") still reads as single faces.
+const MEGAMINX_FACE = /(^|[\s(])([BDF][RL])(?=[\d']*(?:[\s)]|$))/g;
 
 /**
  * Normalize and expand cube algorithm notation.
  * Cleans up various quote characters, brackets, spacing, and ensures consistent format.
  *
  * Wide moves ("Rw", "Uw2'"), layer prefixes ("2R2", "3Rw'", "2-3Rw") and turn counts other
- * than 2 ("R3", "(R U)3") are kept. Every text without them comes out exactly as before:
+ * than 2 ("R3", "(R U)3") and megaminx faces ("BR'", "DR2'") are kept. Every text without
+ * them comes out exactly as before:
  * algToId() keys the trainer stats by this output, and client/util/trainer/migrate_alg_ids.ts
  * moves the stats of the texts this changed (B-1).
  */
@@ -60,6 +64,7 @@ export function expandNotation(input: string): string {
 		return String.fromCharCode(MOVE_SLOT_BASE + slots.length - 1);
 	};
 	output = output.replace(LAYER_MOVE, (_m, before: string, move: string) => before + toSlot(move));
+	output = output.replace(MEGAMINX_FACE, (_m, before: string, move: string) => before + toSlot(move));
 	output = output.replace(WIDE_MOVE, toSlot);
 
 	// Remove characters not allowed
@@ -306,12 +311,56 @@ export function getPuzzleType(category: string): string {
 	if (CATEGORY_PUZZLE_TYPE[category]) return CATEGORY_PUZZLE_TYPE[category];
 	if (category.startsWith('2x2')) return '2x2x2';
 	if (category.startsWith('4x4')) return '4x4x4';
+	if (category.startsWith('5x5')) return '5x5x5';
+	if (category.startsWith('Megaminx')) return 'megaminx';
 	if (category.startsWith('Pyraminx')) return 'pyraminx';
 	if (category.startsWith('SQ1')) return 'square1';
+	if (category.startsWith('FTO')) return 'fto';
 	return '3x3x3';
 }
 
-const CUBE_SHAPE_PUZZLES = new Set(['3x3x3', '2x2x2', '4x4x4', 'skewb']);
+const CUBE_SHAPE_PUZZLES = new Set(['3x3x3', '2x2x2', '4x4x4', '5x5x5', 'skewb']);
+/** Cubes, where a half turn is the same either way (U2 = U2'). */
+const CUBE_PUZZLES = new Set(['3x3x3', '2x2x2', '4x4x4', '5x5x5']);
+
+// Megaminx last layer steps to cubing.js megaminx stickerings. The permutation steps show the
+// whole last layer: telling the cases apart needs the side colours.
+const MEGAMINX_STICKERING: Record<string, string> = {
+	'Megaminx EO': 'EOLL',
+	'Megaminx CO': 'OLL',
+	'Megaminx OLL': 'OLL',
+	'Megaminx EP': 'PLL',
+	'Megaminx CP': 'PLL',
+	'Megaminx PLL': 'PLL',
+};
+
+/** Stickering a cubing.js player gets for a category: 3x3 masks, megaminx last layer, else full. */
+export function twistyStickering(category: string): string {
+	const puzzleType = getPuzzleType(category);
+	if (puzzleType === '3x3x3') return getStickering(category);
+	if (puzzleType === 'megaminx') return MEGAMINX_STICKERING[category] ?? 'full';
+	if (category === 'FTO 1L3T') return 'experimental-fto-l3t';
+	return 'full';
+}
+
+/**
+ * Camera of a cubing.js player for a category. Megaminx last layer cases are seen from straight
+ * above, so all five sides of the last layer show (cubing.js stops the camera at 35 degrees
+ * unless the limit is raised).
+ */
+export function twistyCamera(category: string): {cameraLatitude?: number; cameraLatitudeLimit?: number} {
+	return getPuzzleType(category) === 'megaminx' ? {cameraLatitudeLimit: 90, cameraLatitude: 90} : {};
+}
+
+/**
+ * The algorithm as a cubing.js player reads it. Megaminx algorithms are written the way
+ * SpeedCubeDB writes them, where DR is the lower face touching F and R; cubing.js calls that
+ * face FR (and has a DR of its own elsewhere).
+ */
+export function twistyAlg(category: string, alg: string): string {
+	if (getPuzzleType(category) !== 'megaminx') return alg;
+	return alg.replace(/(^|[\s(])DR(?=[\d']*(?:[\s)]|$))/g, '$1FR');
+}
 
 /**
  * Cube-shaped puzzles support x,y,z rotations (orientation change).
@@ -614,14 +663,17 @@ export function cleanAlgorithmForCubing(alg: string): string {
  * Without expand, invert emits ugly nested "(R' F R F')'" group-inverse
  * notation that a human cannot reliably execute by reading it.
  */
-export async function computeSetupInverse(algorithm: string): Promise<string> {
+export async function computeSetupInverse(algorithm: string, category = ''): Promise<string> {
 	await ensureCubingReady();
 	const cleaned = cleanAlgorithmForCubing(algorithm);
 	const inverse = _Alg.fromString(cleaned).invert();
-	// invert() turns every U2 into U2'; written as U2 (see normalizeHalfTurns).
+	let text: string;
 	try {
-		return normalizeHalfTurns(inverse.expand().toString());
+		text = inverse.expand().toString();
 	} catch {
-		return normalizeHalfTurns(inverse.toString());
+		text = inverse.toString();
 	}
+	// invert() turns every U2 into U2'; written as U2 (see normalizeHalfTurns). Only on a cube:
+	// on a megaminx, FTO, Pyraminx or Skewb R2 and R2' are two different turns.
+	return CUBE_PUZZLES.has(getPuzzleType(category)) ? normalizeHalfTurns(text) : text;
 }

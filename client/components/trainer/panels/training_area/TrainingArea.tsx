@@ -5,6 +5,7 @@ import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse, getEffectiveOrientation, buildRandomAUFAlg, cleanAlgorithmForCubing, ensureCubingReady} from '../../../../util/trainer/algorithm_engine';
 import {generateLLPattern} from '../../../../util/trainer/pattern_utils';
 import {caseScramble} from '../../../../util/trainer/case_scramble';
+import {getAlgNotation} from '../../../../util/trainer/trainer_library';
 import {fetchDefaultAlgs, getLastTimes, getEffectiveTime, deleteTrainerSolve} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
@@ -111,8 +112,14 @@ export default function TrainingArea() {
 						if (!cancelled) setSetupAlg(entry.setup || null);
 						return;
 					}
+					// FTO: every library alternative solves the case of the main algorithm (data/fto
+					// build checks it), so the case's scramble serves; its inverse would give it away.
+					if (getPuzzleType(currentAlgorithm.category) === 'fto' && entry.setup) {
+						if (!cancelled) setSetupAlg(entry.setup);
+						return;
+					}
 					// Alternatif secilmisse runtime'da inverse hesapla
-					const inverse = await computeSetupInverse(currentAlgorithm.algorithm);
+					const inverse = await computeSetupInverse(currentAlgorithm.algorithm, currentAlgorithm.category);
 					if (!cancelled) setSetupAlg(inverse);
 					return;
 				}
@@ -284,6 +291,8 @@ export default function TrainingArea() {
 		aufState.baseAlg === currentAlgorithm.algorithm &&
 		aufState.category === currentAlgorithm.category;
 	const displayAlg = aufActive ? aufState!.alg : currentAlgorithm.algorithm;
+	// The source's own spelling (FTO: Wegner's notation), only for the library text as it is.
+	const writtenAlg = aufActive ? null : getAlgNotation(currentAlgorithm.category, currentAlgorithm.algorithm);
 	const llPatternOverride = aufActive ? aufState!.pattern : null;
 
 	return (
@@ -382,6 +391,11 @@ export default function TrainingArea() {
 						{!state.isMoveMasked && (
 							<div className={b('training-main-alg')}>
 								<code>{displayAlg}</code>
+								{writtenAlg && (
+									<div className={b('training-notation')}>
+										<span>{t('trainer.notation_label')}</span> <code>{writtenAlg}</code>
+									</div>
+								)}
 							</div>
 						)}
 					</>

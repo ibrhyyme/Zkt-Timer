@@ -14,6 +14,10 @@ export class TrainerLibraryEntry {
 	/** How many alternatives the case has; their texts need trainerLibraryAlternatives. */
 	@Field(() => Int)
 	alternativeCount: number;
+
+	/** The source's own spelling of the main algorithm, shown under it (FTO: Wegner's notation). */
+	@Field({nullable: true})
+	notation?: string;
 }
 
 @ObjectType()
@@ -52,6 +56,10 @@ export class TrainerCaseAlternatives {
 
 	@Field(() => [String])
 	alternatives: string[];
+
+	/** The source's own spelling of each alternative, same order ('' where it has none). */
+	@Field(() => [String], {nullable: true})
+	notations?: string[];
 }
 
 @ObjectType()

@@ -60,6 +60,11 @@ $bp-short-phone-height: 740px;
 // grids are converted, they at least share one source.
 $bp-grid-collapse: 900px;
 
+// The trainer's training column (scramble, 250px case cube, algorithm, timer) needs about
+// 700px of window height. Measured 2026-11-26: at 654px (a 1366x768 laptop with the browser
+// bars) the timer fell below the panel. Under this height the case cube takes the phone size.
+$bp-trainer-short-height: 760px;
+
 /// Below a breakpoint. bp-down($bp-md) -> max-width: 767.98px
 @mixin bp-down($width) {
 	@media (max-width: $width - $bp-step) {

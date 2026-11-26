@@ -188,7 +188,7 @@ export function commaListNeedle(value: string): string {
 // ---------------------------------------------------------------------------------------
 
 /** Puzzle headings of the trainer, in display order. The trainer writes "3x3" (design 8.7). */
-export const CUBE_TYPE_ORDER = ['3x3', '3x3 Roux', '2x2', '4x4', 'Pyraminx', 'Skewb', 'Square-1'] as const;
+export const CUBE_TYPE_ORDER = ['3x3', '3x3 Roux', '2x2', '4x4', '5x5', 'Megaminx', 'Pyraminx', 'Skewb', 'Square-1', 'FTO'] as const;
 
 export type TrainerCubeType = (typeof CUBE_TYPE_ORDER)[number];
 
@@ -208,8 +208,11 @@ export const CATEGORY_CUBE_TYPE: Readonly<Record<string, TrainerCubeType>> = {
 const CATEGORY_PREFIX_CUBE_TYPE: ReadonlyArray<[string, TrainerCubeType]> = [
 	['2x2 ', '2x2'],
 	['4x4 ', '4x4'],
+	['5x5 ', '5x5'],
+	['Megaminx ', 'Megaminx'],
 	['Pyraminx ', 'Pyraminx'],
 	['SQ1 ', 'Square-1'],
+	['FTO ', 'FTO'],
 ];
 
 /** Puzzle heading of a category. Anything unknown is 3x3, as the selector always did. */
@@ -228,9 +231,12 @@ export const CUBE_TYPE_PUZZLE: Readonly<Record<TrainerCubeType, BuiltinPuzzleKey
 	'3x3 Roux': '333',
 	'2x2': '222',
 	'4x4': '444',
+	'5x5': '555',
+	Megaminx: 'minx',
 	Pyraminx: 'pyram',
 	Skewb: 'skewb',
 	'Square-1': 'sq1',
+	FTO: 'fto',
 };
 
 /** Puzzle key of a trainer category (AlgSetItem.puzzle, AlgSet.puzzles). */
@@ -266,11 +272,17 @@ export function canonAlg(text: string | null | undefined): string {
 }
 
 // One move word per puzzle, before its suffix. Face turns, wide turns (`Rw`, lower case),
-// slices, cube rotations; 4x4 also takes layer prefixes (`2R2`, `3Rw'`, `2-3Rw`).
+// slices, cube rotations; 4x4 and 5x5 also take layer prefixes (`2R2`, `3Rw'`, `2-3Rw`).
+// Megaminx: faces as SpeedCubeDB names them (`BR`, `DR`...) and the y rotation. FTO: its eight
+// faces (`BR`, `BL` included) and middle layers.
 const MOVE_BODY: Readonly<Record<string, string>> = {
 	'333': "(?:[RLUDFB]w?|[rludfb]|[MES]|[xyz])",
 	'222': "(?:[RLUDFB]w?|[rludfb]|[xyz])",
 	'444': "(?:(?:\\d(?:-\\d)?)?(?:[RLUDFB]w?|[rludfb])|[MES]|[xyz])",
+	'555': "(?:(?:\\d(?:-\\d)?)?(?:[RLUDFB]w?|[rludfb])|[MES]|[xyz])",
+	minx: "(?:[BDF][RL]|[RLUDFB]|y)",
+	// FTO: the library writes plain face turns (data/fto/build-fto.mjs), middle layers as 2R.
+	fto: "(?:B[RL]|2?[RLUDFB])",
 	pyram: "(?:[RLUB]|[rlub]|[xyz])",
 	skewb: "(?:[RLUBFD]|[xyz])",
 };

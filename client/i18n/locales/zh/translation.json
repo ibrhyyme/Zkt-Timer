@@ -648,6 +648,7 @@
     "hide_moves": "隐藏步数",
     "ble_make_first_move": "进行你的第一步",
     "scramble_label": "打乱",
+    "notation_label": "原始写法：",
     "ble_scramble_first": "先打乱魔方",
     "export": "导出公式",
     "export_pdf": "导出为 PDF",
@@ -1090,7 +1091,67 @@
       },
       "4x4_oll_parity": {
         "title": "4x4 OLL 奇偶",
-        "desc": "在 4x4 上，顶层可能只剩一对棱块翻转，这在 3x3 上不可能出现。这叫 OLL 奇偶，需要用专门的公式解决。\n\n这个公式集有 2 种情况。Basic 短而常用，但会同时移动顶层角块。Pure 只修正翻转的棱块，其他部分保持不变。"
+        "desc": "在 4x4 上，顶层可能只剩一对棱块翻转，这在 3x3 上不可能出现。这叫 OLL 奇偶，需要用专门的公式解决。\n\n这个公式集有 3 种情况。Basic 短而常用，但会同时移动顶层角块。Pure 只修正翻转的棱块，其他部分保持不变。M 同时解决 OLL 和 PLL 奇偶。"
+      },
+      "5x5_l2e": {
+        "title": "5x5 最后两条棱",
+        "desc": "把 5x5 降阶成 3x3 时，要一条一条地配对棱块。只剩两条时，想不打乱其他棱块就配好它们会更难，这个公式集就是为这一步准备的。共 13 种情况。\n\n识别情况时，看两条棱的各个块在哪里。"
+      },
+      "5x5_l2c": {
+        "title": "5x5 最后两个中心",
+        "desc": "在 5x5 上，最后两个中心通常是还原中心时最慢的部分。这个公式集在其他四个中心完成后，还原剩下的两个。共 18 种情况。\n\n识别情况时，看两个中心上各块的排列。"
+      },
+      "megaminx_eo": {
+        "title": "五魔方 棱块翻色",
+        "desc": "四步还原五魔方顶层的第一步。把顶层棱块翻好色，在顶面拼出星形。共 3 种情况。\n\n后面几步依次是角块翻色（CO）、棱块换位（EP）和角块换位（CP）。"
+      },
+      "megaminx_co": {
+        "title": "五魔方 角块翻色",
+        "desc": "四步顶层的第二步。棱块翻好色后，再把角块翻好，让顶面变成同一种颜色。共 16 种情况。"
+      },
+      "megaminx_ep": {
+        "title": "五魔方 棱块换位",
+        "desc": "四步顶层的第三步。顶面同色后，把顶层棱块放到正确位置。共 5 种情况。"
+      },
+      "megaminx_cp": {
+        "title": "五魔方 角块换位",
+        "desc": "四步顶层的最后一步。棱块到位后，把角块放到正确位置，五魔方就还原了。共 15 种情况。"
+      },
+      "megaminx_oll": {
+        "title": "五魔方 OLL",
+        "desc": "用一个公式把顶层所有块翻好色，一次完成四步法的前两步。共 174 种情况，按顶面图案分组。\n\n全部学完要花很长时间，最好先掌握四步法。"
+      },
+      "megaminx_pll": {
+        "title": "五魔方 PLL",
+        "desc": "顶层翻好色后，用一个公式把所有块放到正确位置，一次完成四步法的后两步。共 151 种情况，按侧面的块和车灯分组。"
+      },
+      "sq1_co": {
+        "title": "Square-1 角块归位",
+        "desc": "复形之后的一步。把角块分开，让顶色角块都在上层，底色角块都在下层。共 7 种情况。\n\n识别情况时，数一数上下两层各有几个角块放错了层。"
+      },
+      "sq1_parity": {
+        "title": "Square-1 奇偶",
+        "desc": "Square-1 还原到最后，可能剩两个块互换了位置，这叫奇偶。这个公式集有 5 个解决奇偶的公式。\n\n奇偶不一定要留到最后：也可以在复形时用 CSP 解决，或者用带奇偶的 EP 公式。"
+      },
+      "sq1_lin": {
+        "title": "Square-1 Lin",
+        "desc": "Lin 法先还原底层，再完成顶层。这个公式集是最后一步的公式：Lin PLL（21 种）、带奇偶的 Lin PLL（22 种），以及 Lin PLL+1（72 种），它在还原顶层的同时把底层最后一条棱放好。"
+      },
+      "2x2_tcll_plus": {
+        "title": "2x2 TCLL+",
+        "desc": "首层有一个角块拧错方向时，用一个公式同时还原顶层和这个角块。TCLL+ 中，拧错的角块在底层右前方，底色朝向你。共 43 种情况，按顶面图案分成 8 组。\n\n学会完整 EG 之后再学更合适。公式来自 Christopher Olson 的 TCLL 列表。"
+      },
+      "2x2_tcll_minus": {
+        "title": "2x2 TCLL-",
+        "desc": "TCLL+ 的另一半：拧错的角块同样在底层右前方，但底色朝右。共 43 种情况，按顶面图案分成 8 组。\n\n大部分公式来自 Christopher Olson 的 TCLL 列表，他没有收录的 9 种情况使用我们求解器找到的最短解法。"
+      },
+      "fto_1l3t": {
+        "title": "FTO 1L3T",
+        "desc": "用一个公式还原 FTO 的最后三组三元块（L3T）。共 179 种情况，分为 12 组，每组再分偶数和奇数两类。\n\n公式来自 Zach Wegner 的 1L3T 列表。他带转体的写法在这里改写为不转体的面转动，每个公式下方都附有他的原始写法。每个公式都逐一检查过能否解决对应情况。"
+      },
+      "fto_lbt": {
+        "title": "FTO LBT",
+        "desc": "在 Bencisco 法中，无论角块和三角块在哪里，都用一个公式还原最后一组底层三元块（LBT）。共 95 种情况，按块的位置分成 6 部分。有些公式开头需要 U 或 Uw 预调整。\n\n公式来自 Zach Wegner 的 LBT 列表，每个公式下方都附有他的原始写法。"
       }
     },
     "landing_ollcp_title": "OLLCP 识别",
@@ -1176,7 +1237,96 @@
       "corner_on_d_facing_side": "角块在底层，颜色朝侧面",
       "cross_color_facing_front": "十字颜色朝前",
       "cross_color_facing_right": "十字颜色朝右",
-      "cross_color_facing_up": "十字颜色朝上"
+      "cross_color_facing_up": "十字颜色朝上",
+      "2_corner_co": "2 角 CO",
+      "3_corner_co": "3 角 CO",
+      "4_corner_co": "4 角 CO",
+      "5_corner_co": "5 角 CO",
+      "anchor_shapes": "锚形",
+      "t_shapes": "T 形",
+      "c_shapes": "C 形",
+      "s_shapes": "S 形",
+      "pi_shapes": "Pi 形",
+      "y_shapes": "Y 形",
+      "hammerhead_shapes": "锤头形",
+      "w_shapes": "W 形",
+      "duckhead_shapes": "鸭头形",
+      "megaphone_shapes": "喇叭形",
+      "claw_shapes": "爪形",
+      "rabbit_shapes": "兔形",
+      "long_block": "长块",
+      "fox_head_shapes": "狐狸头形",
+      "scorpion_shapes": "蝎形",
+      "line_shapes": "线形",
+      "flower_shapes": "花形",
+      "chandelier_shapes": "吊灯形",
+      "p_shapes": "P 形",
+      "e_shapes": "E 形",
+      "sprinter_shapes": "跑者形",
+      "eagle_shapes": "鹰形",
+      "lobster_shapes": "龙虾形",
+      "lightning_shapes": "闪电形",
+      "cobra_shapes": "眼镜蛇形",
+      "hand_shapes": "手形",
+      "magic_lamp_shapes": "神灯形",
+      "human_shapes": "人形",
+      "axe_shapes": "斧形",
+      "parrot_shapes": "鹦鹉形",
+      "l_shapes": "L 形",
+      "3_corner_cp": "3 角 CP",
+      "4_corner_cp": "4 角 CP",
+      "5_corner_cp": "5 角 CP",
+      "3_edge_ep": "3 棱 EP",
+      "4_edge_ep": "4 棱 EP",
+      "5_edge_ep": "5 棱 EP",
+      "5_piece_ep_cp": "5 块 EP/CP",
+      "double_r_block": "双 R 块",
+      "r_block": "R 块",
+      "r_block_and_2x1": "R 块和 2x1",
+      "j_block": "J 块",
+      "2_2x1s_touching": "两个相邻的 2x1",
+      "2_2x1s_not_touching": "两个不相邻的 2x1",
+      "3x1_and_2x2": "3x1 和 2x2",
+      "3x1_and_2x1s": "3x1 和几个 2x1",
+      "2x1_and_headlights": "2x1 和车灯",
+      "double_headlights_no_blocks": "双车灯，无块",
+      "2_3x1s": "两个 3x1",
+      "5_2x1s": "五个 2x1",
+      "2_3_or_4_2x1s_in_these_patterns": "这些图案中的 2 到 4 个 2x1",
+      "2x2_and_2x1": "2x2 和 2x1",
+      "2_2x2s": "两个 2x2",
+      "no_blocks_or_headlights": "无块无车灯",
+      "2_2x1s_in_y_pattern_and_other_stuff": "Y 形排列的两个 2x1 及其他",
+      "lin_parity_pll": "带奇偶的 Lin PLL",
+      "o_even": "O 偶数",
+      "o_odd": "O 奇数",
+      "v_even": "V 偶数",
+      "v_odd": "V 奇数",
+      "q_even": "Q 偶数",
+      "q_odd": "Q 奇数",
+      "w_even": "W 偶数",
+      "w_odd": "W 奇数",
+      "j_even": "J 偶数",
+      "j_odd": "J 奇数",
+      "l_even": "L 偶数",
+      "l_odd": "L 奇数",
+      "b_even": "B 偶数",
+      "b_odd": "B 奇数",
+      "t_even": "T 偶数",
+      "t_odd": "T 奇数",
+      "z_even": "Z 偶数",
+      "z_odd": "Z 奇数",
+      "s_even": "S 偶数",
+      "s_odd": "S 奇数",
+      "x_even": "X 偶数",
+      "x_odd": "X 奇数",
+      "y_even": "Y 偶数",
+      "y_odd": "Y 奇数",
+      "one_solved_corner_on_top": "一个已还原，角块在顶层",
+      "one_in_wrong_slot_corner_on_top": "一个在错误槽位，角块在顶层",
+      "one_in_middle_corner_on_top": "一个在中层，角块在顶层",
+      "all_on_top": "全部在顶层",
+      "both_in_slot_corner_on_top": "两个在槽位，角块在顶层"
     }
   },
   "account_nav": {

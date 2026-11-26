@@ -22,6 +22,33 @@ import type {AlgorithmSubset} from '../../components/trainer/types';
 export type Library = Record<string, AlgorithmSubset[]>;
 type AlternativesByName = Map<string, string[]>;
 
+// ---------------------------------------------------------------------------------------
+// Source notation: how the source writes a text the library had to rewrite for the engine
+// (FTO: Wegner's notation with rotations, the library holds plain face turns). Filled as the
+// mains and a category's alternatives arrive; read by the screens under the algorithm.
+// ---------------------------------------------------------------------------------------
+
+const notations = new Map<string, Map<string, string>>();
+const textKey = (text: string) => text.replace(/\s+/g, ' ').trim();
+
+function rememberNotation(category: string, text: string, written: string | null | undefined): void {
+	if (!written) return;
+	let byText = notations.get(category);
+	if (!byText) notations.set(category, (byText = new Map()));
+	byText.set(textKey(text), written);
+}
+
+function rememberMains(library: Library): void {
+	for (const [category, subsets] of Object.entries(library)) {
+		for (const sub of subsets) for (const entry of sub.algorithms || []) rememberNotation(category, entry.algorithm, entry.notation);
+	}
+}
+
+/** The source's own spelling of a library text, or null when the library text is the source's. */
+export function getAlgNotation(category: string, text: string): string | null {
+	return notations.get(category)?.get(textKey(text)) ?? null;
+}
+
 const PUBLIC_LIBRARY_URL = '/public/trainer/default-algs.json';
 const IDB_NAME = 'zkt-trainer-library';
 const IDB_STORE = 'entries';
@@ -140,7 +167,7 @@ let mainsFromServer = false;
 
 type ServerCategory = {
 	category: string;
-	subsets: {subset: string; algorithms: {name: string; algorithm: string; setup?: string | null; alternativeCount?: number | null}[]}[];
+	subsets: {subset: string; algorithms: {name: string; algorithm: string; setup?: string | null; alternativeCount?: number | null; notation?: string | null}[]}[];
 };
 
 function toLibrary(categories: ServerCategory[]): Library {
@@ -152,6 +179,7 @@ function toLibrary(categories: ServerCategory[]): Library {
 				const entry: AlgorithmSubset['algorithms'][number] = {name: a.name, algorithm: a.algorithm};
 				if (a.setup) entry.setup = a.setup;
 				if (a.alternativeCount) entry.alternativeCount = a.alternativeCount;
+				if (a.notation) entry.notation = a.notation;
 				return entry;
 			}),
 		}));
@@ -195,7 +223,10 @@ export function isLibraryComplete(): boolean {
 /** Every case's main algorithm and setup. Fetched once per page load. */
 export function fetchLibraryMains(): Promise<Library> {
 	if (!mains) {
-		mains = loadMains().catch((err) => {
+		mains = loadMains().then((library) => {
+			rememberMains(library);
+			return library;
+		}).catch((err) => {
 			mains = null;
 			throw err;
 		});
@@ -231,15 +262,25 @@ async function loadServerAlternatives(category: string): Promise<AlternativesByN
 	await fetchLibraryMains().catch(() => null);
 	const version = mainsVersion;
 	if (version) {
-		const stored = await idbGet<[string, string[]][]>(altsKey(version, category));
-		if (stored) return new Map(stored);
+		const stored = await idbGet<[string, string[], string[]?][]>(altsKey(version, category));
+		if (stored) return rememberAlternatives(category, stored);
 	}
 	const res = await gqlQueryTyped(TrainerLibraryAlternativesDocument, {category}, {fetchPolicy: 'no-cache'});
 	const data = res?.data?.trainerLibraryAlternatives;
 	if (!data) return null;
-	const pairs: [string, string[]][] = (data.cases || []).map((c) => [c.name, c.alternatives || []]);
-	idbPut(altsKey(data.version, category), pairs);
-	return new Map(pairs);
+	const rows: [string, string[], string[]?][] = (data.cases || []).map((c) => (c.notations?.length ? [c.name, c.alternatives || [], c.notations] : [c.name, c.alternatives || []]));
+	idbPut(altsKey(data.version, category), rows);
+	return rememberAlternatives(category, rows);
+}
+
+/** Rows [name, alternatives, notations?] to alternatives per name; notations are remembered. */
+function rememberAlternatives(category: string, rows: [string, string[], string[]?][]): AlternativesByName {
+	const out: AlternativesByName = new Map();
+	for (const [name, alternatives, written] of rows) {
+		out.set(name, alternatives);
+		alternatives.forEach((text, i) => rememberNotation(category, text, written?.[i]));
+	}
+	return out;
 }
 
 /** Alternatives per case name for one category (see the module comment for the source). */
@@ -281,5 +322,6 @@ export function resetTrainerLibraryForTests(): void {
 	mainsFromServer = false;
 	publicLibrary = null;
 	serverAlternatives.clear();
+	notations.clear();
 	dbPromise = null;
 }

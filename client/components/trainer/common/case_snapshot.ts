@@ -16,7 +16,7 @@
  * stored picture is read without a player or a slot. Bump SNAPSHOT_VERSION when the drawing
  * changes; older pictures are then ignored and pruned.
  */
-import {getOrientationRotation, getPuzzleType, getStickering, isCubeShapePuzzle} from '../../../util/trainer/algorithm_engine';
+import {getOrientationRotation, getPuzzleType, isCubeShapePuzzle, twistyAlg, twistyCamera, twistyStickering} from '../../../util/trainer/algorithm_engine';
 import {getRemappedMask} from '../../../util/trainer/stickering_remap';
 import {caseDrawing} from '../../../util/trainer/case_drawing';
 import {drawCubePicture} from '../../timer/smart_cube/cube_view/render/cube_pictures';
@@ -209,18 +209,19 @@ async function drawWithCubing(c: SnapshotCase): Promise<string | null> {
 	const {TwistyPlayer} = await import('cubing/twisty');
 	const puzzleType = getPuzzleType(c.category);
 	const rotation = isCubeShapePuzzle(c.category) ? getOrientationRotation(c.topFace, c.frontFace) : '';
-	const baseStickering = puzzleType === '3x3x3' ? getStickering(c.category) : 'full';
-	const customMask = baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
+	const baseStickering = twistyStickering(c.category);
+	const customMask = puzzleType === '3x3x3' && baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
 
 	const player = new TwistyPlayer({
 		puzzle: puzzleType as any,
 		visualization: '3D',
-		alg: c.algorithm,
+		alg: twistyAlg(c.category, c.algorithm),
 		experimentalSetupAnchor: 'end',
 		controlPanel: 'none',
 		hintFacelets: 'none',
 		experimentalDragInput: 'none',
 		background: 'none',
+		...twistyCamera(c.category),
 		...(rotation ? {experimentalSetupAlg: rotation} : {}),
 		...(baseStickering !== 'full' ? {experimentalStickering: baseStickering as any} : {}),
 	});
@@ -231,6 +232,8 @@ async function drawWithCubing(c: SnapshotCase): Promise<string | null> {
 	parent.appendChild(player);
 	try {
 		if (customMask) (player as any).experimentalStickeringMaskOrbits = customMask;
+		// A megaminx mask comes later than the first frame: wait for it before the capture.
+		if (baseStickering !== 'full') await (player as any).experimentalModel.twistySceneModel.stickeringMask.get();
 		await new Promise((r) => setTimeout(r, DRAW_WAIT_MS));
 		const url: string = await (player as any).experimentalScreenshot({width: SNAPSHOT_SIZE, height: SNAPSHOT_SIZE});
 		return url || null;

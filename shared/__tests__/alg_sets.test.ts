@@ -68,10 +68,16 @@ const EXPECTED_PUZZLE: Record<string, string> = {
 	'3x3 Roux': '333',
 	'2x2': '222',
 	'4x4': '444',
+	'5x5': '555',
+	Megaminx: 'minx',
 	Pyraminx: 'pyram',
 	Skewb: 'skewb',
 	'Square-1': 'sq1',
+	FTO: 'fto',
 };
+
+// Puzzles only the private library has (data/trainer/library.json, not in git).
+const PRIVATE_ONLY_CUBE_TYPES = ['5x5', 'Megaminx', 'FTO'];
 
 function libraryAlgorithms(): Array<{category: string; text: string}> {
 	const out: Array<{category: string; text: string}> = [];
@@ -113,7 +119,17 @@ describe('cubeTypeOfCategory and categoryPuzzle', () => {
 
 	it('lists every cube type a category can produce, in display order', () => {
 		const produced = new Set(Object.keys(library).map(cubeTypeOfCategory));
-		expect(CUBE_TYPE_ORDER.filter((ct) => produced.has(ct))).toEqual([...CUBE_TYPE_ORDER]);
+		expect(CUBE_TYPE_ORDER.filter((ct) => produced.has(ct))).toEqual(CUBE_TYPE_ORDER.filter((ct) => !PRIVATE_ONLY_CUBE_TYPES.includes(ct)));
+	});
+
+	it('maps the 5x5 and Megaminx categories of the private library', () => {
+		expect(cubeTypeOfCategory('5x5 L2C')).toBe('5x5');
+		expect(categoryPuzzle('5x5 L2E')).toBe('555');
+		expect(cubeTypeOfCategory('Megaminx PLL')).toBe('Megaminx');
+		expect(categoryPuzzle('Megaminx EO')).toBe('minx');
+		expect(categoryPuzzle('FTO 1L3T')).toBe('fto');
+		expect(isMoveSequence("(U) R BR' R L R' BR R L' R", 'fto')).toBe(true);
+		for (const ct of PRIVATE_ONLY_CUBE_TYPES) expect(isBuiltinPuzzleKey(EXPECTED_PUZZLE[ct])).toBe(true);
 	});
 });
 
@@ -189,6 +205,14 @@ describe('isMoveSequence', () => {
 
 	it('accepts 4x4 layer prefixes', () => {
 		expect(isMoveSequence("2R2 U2 2R2 Uw2 3Rw' 2-3Rw", '444')).toBe(true);
+		expect(isMoveSequence("Rw' U' R' U R' F R F' Rw 3Rw2", '555')).toBe(true);
+	});
+
+	it('accepts megaminx faces and the y rotation', () => {
+		expect(isMoveSequence("y2' R2' DR' R U2 R' DR R U2' R", 'minx')).toBe(true);
+		expect(isMoveSequence("BR' R' U L U' R' U L' U' R2 BR", 'minx')).toBe(true);
+		expect(isMoveSequence("x' R U R'", 'minx')).toBe(false);
+		expect(isMoveSequence("R U R' Rw", 'minx')).toBe(false);
 	});
 
 	it('accepts Square-1 with and without parentheses', () => {

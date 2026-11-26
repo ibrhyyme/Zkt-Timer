@@ -5,6 +5,8 @@ export interface AlgorithmEntry {
 	setup?: string;
 	/** Library cases: how many alternatives the served library has (the texts may need signing in). */
 	alternativeCount?: number;
+	/** The source's own spelling of the main algorithm (FTO: Wegner's notation), shown under it. */
+	notation?: string;
 }
 
 export interface AlgorithmSubset {

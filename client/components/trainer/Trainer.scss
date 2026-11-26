@@ -932,7 +932,8 @@
 		flex-direction: column;
 		padding: 0.75rem;
 		width: 100%;
-		height: 100%;
+		// At least the panel's height, taller when the content needs it: the panel scrolls then.
+		min-height: 100%;
 		position: relative;
 	}
 
@@ -1077,8 +1078,22 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		flex: 1;
-		min-height: 0;
+		// Never shorter than its content: centred content that does not fit spilled upward over
+		// the case name on short windows (a long scramble wraps to two lines).
+		flex: 1 0 auto;
+
+		// A short window: the phone's case cube size, so the timer stays in view.
+		@media (max-height: $bp-trainer-short-height) {
+			.#{$namespace}-trainer__case-cube,
+			.#{$namespace}-trainer__cube-viewer twisty-player {
+				width: 180px;
+				height: 180px;
+			}
+
+			.#{$namespace}-trainer__cube-viewer {
+				min-height: auto;
+			}
+		}
 	}
 
 	&__training-cube {
@@ -1116,6 +1131,33 @@
 			font-weight: 600;
 			color: rgb(var(--text-color));
 		}
+	}
+
+	// The source's own spelling under the algorithm (FTO: Wegner's notation with rotations).
+	&__training-notation {
+		margin-top: 0.35rem;
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.6);
+
+		code {
+			font-size: 0.9rem;
+			font-weight: 500;
+			color: rgba(var(--text-color), 0.8);
+		}
+	}
+
+	&__alt-texts {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__alt-notation {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.7rem;
+		color: rgba(var(--text-color), 0.55);
+		word-break: break-word;
 	}
 
 	&__training-chart-row {

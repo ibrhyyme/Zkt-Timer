@@ -332,6 +332,7 @@ query trainerLibrary($knownVersion: String) {
 					algorithm
 					setup
 					alternativeCount
+					notation
 				}
 			}
 		}
@@ -345,6 +346,7 @@ query trainerLibraryAlternatives($category: String!) {
 		cases {
 			name
 			alternatives
+			notations
 		}
 	}
 }

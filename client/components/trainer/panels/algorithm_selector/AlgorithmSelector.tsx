@@ -298,7 +298,8 @@ export default function AlgorithmSelector() {
 				const defaultAlts = entry?.alternatives || [];
 				const customAlts = getCustomAlternatives(selectedCategory, alg.subset, alg.name);
 				const allAlts = [...defaultAlts, ...customAlts];
-				return {...alg, alternatives: allAlts};
+				// The badge shows the group as the screen does: translated, none for the hidden Default.
+				return {...alg, subset: subsetLabel(t, alg.subset), alternatives: allAlts};
 			});
 
 			const description = t(`trainer.cat_info.${categoryInfoKey(selectedCategory)}.desc`, {defaultValue: ''});
@@ -310,6 +311,7 @@ export default function AlgorithmSelector() {
 				algorithms: algsToExport,
 				topFace: options.topFace,
 				frontFace: effectiveFrontFace,
+				notationLabel: t('trainer.notation_label'),
 			});
 		} finally {
 			setPdfLoading(false);

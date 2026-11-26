@@ -1671,6 +1671,7 @@ type TrainerLibraryEntry {
   algorithm: String
   setup: String
   alternativeCount: Int
+  notation: String
 }
 
 type TrainerLibrarySubset {
@@ -1691,6 +1692,7 @@ type TrainerLibrary {
 type TrainerCaseAlternatives {
   name: String
   alternatives: [String]
+  notations: [String!]
 }
 
 type TrainerLibraryAlternatives {

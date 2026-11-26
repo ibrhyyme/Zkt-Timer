@@ -15,12 +15,16 @@ import {
 	is2DPatternCategory,
 	getPuzzlePatternType,
 	getStickering,
+	twistyAlg,
+	twistyCamera,
+	twistyStickering,
 	getDefaultFrontFace,
 	isSQ1MirrorCategory,
 	getPuzzleType,
 	getOrientationRotation,
 	isCubeShapePuzzle,
 } from './algorithm_engine';
+import {getAlgNotation} from './trainer_library';
 import {caseDrawing, engineDrawsCase} from './case_drawing';
 import {drawCubePicture} from '../../components/timer/smart_cube/cube_view/render/cube_pictures';
 
@@ -507,14 +511,13 @@ async function captureWithCubing(
 		]);
 
 		const puzzleType = getPuzzleType(category);
-		const stickering = getStickering(category);
 		const is3x3 = puzzleType === '3x3x3';
 		const rotation = isCubeShapePuzzle(category) ? getOrientationRotation(topFace, frontFace) : '';
-		const baseStickering = is3x3 ? stickering : 'full';
+		const baseStickering = twistyStickering(category);
 
 		// Pre-compute custom mask once
 		let customMask: any = null;
-		if (baseStickering !== 'full' && rotation) {
+		if (is3x3 && baseStickering !== 'full' && rotation) {
 			customMask = await stickeringMod.getRemappedMask(baseStickering, rotation);
 		}
 
@@ -533,12 +536,13 @@ async function captureWithCubing(
 					const player = new TwistyPlayer({
 						puzzle: puzzleType as any,
 						visualization: '3D',
-						alg: algorithm,
+						alg: twistyAlg(category, algorithm),
 						experimentalSetupAnchor: 'end',
 						controlPanel: 'none',
 						hintFacelets: 'none',
 						experimentalDragInput: 'none',
 						background: 'white',
+						...twistyCamera(category),
 						...(rotation ? {experimentalSetupAlg: rotation} : {}),
 						...(baseStickering !== 'full' ? {experimentalStickering: baseStickering as any} : {}),
 					});
@@ -548,6 +552,7 @@ async function captureWithCubing(
 					}
 
 					container.appendChild(player);
+					if (baseStickering !== 'full') await (player as any).experimentalModel.twistySceneModel.stickeringMask.get();
 					await new Promise((r) => setTimeout(r, 300));
 
 					const rawDataURL: string = await (player as any).experimentalScreenshot({width: 300, height: 300});
@@ -683,12 +688,15 @@ async function loadFontAsArrayBuffer(url: string): Promise<ArrayBuffer | null> {
 export interface PdfExportParams {
 	category: string;
 	categoryDescription?: string;
+	/** `subset` is the badge text as shown on screen (translated; '' draws no badge). */
 	algorithms: {name: string; algorithm: string; subset: string; alternatives?: string[]}[];
 	topFace: CubeFace;
 	frontFace: CubeFace;
+	/** Label before the source's own spelling of an algorithm (FTO), e.g. "Original notation:". */
+	notationLabel?: string;
 }
 
-export async function generateTrainerPdf({category, categoryDescription, algorithms, topFace, frontFace}: PdfExportParams): Promise<void> {
+export async function generateTrainerPdf({category, categoryDescription, algorithms, topFace, frontFace, notationLabel = ''}: PdfExportParams): Promise<void> {
 	// Load jsPDF, logo, fonts, and pattern JSON in parallel
 	const [
 		{jsPDF},
@@ -819,18 +827,32 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 	const maxY = pageH - 16;
 	const contStartY = 20;
 
+	// The source's own spelling under a text (FTO: Wegner's notation), when the library has one.
+	const NOTE_LINE = 2.8;
+	function notationLines(text: string, width: number): string[] {
+		const written = getAlgNotation(category, text);
+		if (!written) return [];
+		doc.setFont(fontFamily, 'normal');
+		doc.setFontSize(6.5);
+		return doc.splitTextToSize(notationLabel ? `${notationLabel} ${written}` : written, width);
+	}
+
 	function getCardHeight(alg: {algorithm: string; alternatives?: string[]}): number {
 		let h = cardPadding;
 		h += 6; // name row
 
 		// Text column height: main alg + alternatives
+		const textW = colW - cardPadding * 2 - patternSize - 3;
 		doc.setFont(fontFamily, 'bold');
 		doc.setFontSize(8);
-		const algLines: string[] = doc.splitTextToSize(alg.algorithm, colW - cardPadding * 2 - patternSize - 3);
+		const algLines: string[] = doc.splitTextToSize(alg.algorithm, textW);
 		let textH = 5 + algLines.length * 3.2; // offset + lines
+		textH += notationLines(alg.algorithm, textW).length * NOTE_LINE;
 		const alts = alg.alternatives || [];
 		if (alts.length > 0) {
 			textH += 1 + alts.length * 3.5;
+			// one note line per alternative that has one (alternatives print their first line only)
+			textH += alts.filter((alt) => getAlgNotation(category, alt)).length * NOTE_LINE;
 		}
 
 		h += Math.max(patternSize, textH);
@@ -948,10 +970,18 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 		doc.setTextColor(30, 30, 30);
 		const algLines: string[] = doc.splitTextToSize(alg.algorithm, textMaxW);
 		doc.text(algLines, textX, iy + 5);
+		let algTextEndY = iy + 5 + algLines.length * 3.2;
+
+		// The source's own spelling under the main algorithm
+		const mainNote = notationLines(alg.algorithm, textMaxW);
+		if (mainNote.length) {
+			doc.setTextColor(120, 120, 120);
+			doc.text(mainNote, textX, algTextEndY - 0.6);
+			algTextEndY += mainNote.length * NOTE_LINE;
+		}
 
 		// Alternatives right below main algorithm text, same X alignment
 		const alts = alg.alternatives || [];
-		const algTextEndY = iy + 5 + algLines.length * 3.2;
 
 		if (alts.length > 0) {
 			let altY = algTextEndY + 1;
@@ -960,9 +990,18 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 			doc.setTextColor(110, 110, 110);
 
 			for (const alt of alts) {
+				doc.setFont(fontFamily, 'normal');
+				doc.setFontSize(7);
+				doc.setTextColor(110, 110, 110);
 				const altLines: string[] = doc.splitTextToSize(alt, textMaxW);
 				doc.text(altLines[0], textX, altY);
 				altY += 3.5;
+				const altNote = notationLines(alt, textMaxW);
+				if (altNote.length) {
+					doc.setTextColor(150, 150, 150);
+					doc.text(altNote[0], textX, altY - 0.6);
+					altY += NOTE_LINE;
+				}
 			}
 		}
 	}

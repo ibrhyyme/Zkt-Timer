@@ -17,10 +17,10 @@ import {logger} from '../services/logger';
  * users, one category per request (trainerLibraryAlternatives).
  */
 
-export type MainEntry = {name: string; algorithm: string; setup?: string; alternativeCount: number};
+export type MainEntry = {name: string; algorithm: string; setup?: string; alternativeCount: number; notation?: string};
 export type MainSubset = {subset: string; algorithms: MainEntry[]};
 export type MainCategory = {category: string; subsets: MainSubset[]};
-export type CaseAlternatives = {name: string; alternatives: string[]};
+export type CaseAlternatives = {name: string; alternatives: string[]; notations?: string[]};
 
 export type TrainerLibrary = {
 	version: string;
@@ -56,8 +56,14 @@ export function buildTrainerLibrary(raw: string, isPrivate: boolean): TrainerLib
 				if (!entry?.name || !entry.algorithm) continue;
 				const setup = (entry as {setup?: string}).setup;
 				const alternativeCount = entry.alternatives?.length || 0;
-				algorithms.push(setup ? {name: entry.name, algorithm: entry.algorithm, setup, alternativeCount} : {name: entry.name, algorithm: entry.algorithm, alternativeCount});
-				if (entry.alternatives?.length) alts.push({name: entry.name, alternatives: entry.alternatives});
+				// notation: the source's own spelling (FTO), index 0 the main algorithm, then the alternatives.
+				const notation = entry.notation;
+				const main: MainEntry = setup ? {name: entry.name, algorithm: entry.algorithm, setup, alternativeCount} : {name: entry.name, algorithm: entry.algorithm, alternativeCount};
+				if (notation?.[0]) main.notation = notation[0];
+				algorithms.push(main);
+				if (entry.alternatives?.length) {
+					alts.push(notation ? {name: entry.name, alternatives: entry.alternatives, notations: notation.slice(1)} : {name: entry.name, alternatives: entry.alternatives});
+				}
 			}
 			subsets.push({subset: sub.subset, algorithms});
 		}

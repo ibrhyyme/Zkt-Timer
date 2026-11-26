@@ -668,6 +668,7 @@
     "hide_moves": "Hide moves",
     "ble_make_first_move": "Make your first move",
     "scramble_label": "Scramble",
+    "notation_label": "Original notation:",
     "ble_scramble_first": "Scramble the cube first",
     "export": "Export algorithms",
     "export_pdf": "Export as PDF",
@@ -1111,7 +1112,67 @@
       },
       "4x4_oll_parity": {
         "title": "4x4 OLL Parity",
-        "desc": "On 4x4 a single edge pair can end up flipped on the last layer, which is impossible on 3x3. This is called OLL parity and is fixed with a dedicated algorithm.\n\nThis set has 2 cases. Basic is short and common but also moves the last layer corners. Pure fixes only the flipped edge and leaves everything else in place."
+        "desc": "On 4x4 a single edge pair can end up flipped on the last layer, which is impossible on 3x3. This is called OLL parity and is fixed with a dedicated algorithm.\n\nThis set has 3 cases. Basic is short and common but also moves the last layer corners. Pure fixes only the flipped edge and leaves everything else in place. M fixes OLL and PLL parity together."
+      },
+      "5x5_l2e": {
+        "title": "5x5 Last Two Edges",
+        "desc": "When you reduce a 5x5 to a 3x3 you pair the edges one by one. Once only two are left, pairing them without breaking the others gets harder, and this set covers that moment. There are 13 cases.\n\nTo recognize a case, look at where the pieces of the two edges sit."
+      },
+      "5x5_l2c": {
+        "title": "5x5 Last Two Centers",
+        "desc": "On 5x5 the last two centers are usually the slowest part of the centers. This set finishes the remaining two once the other four are done. There are 18 cases.\n\nTo recognize a case, look at how the pieces are laid out on the two centers."
+      },
+      "megaminx_eo": {
+        "title": "Megaminx Edge Orientation",
+        "desc": "The first step of solving the Megaminx last layer in four steps. You orient the top edges and make the star on the top face. There are 3 cases.\n\nThe next steps are corner orientation (CO), edge permutation (EP) and corner permutation (CP)."
+      },
+      "megaminx_co": {
+        "title": "Megaminx Corner Orientation",
+        "desc": "The second step of the four-step last layer. With the edges oriented, you orient the corners too and make the top face one color. There are 16 cases."
+      },
+      "megaminx_ep": {
+        "title": "Megaminx Edge Permutation",
+        "desc": "The third step of the four-step last layer. With the top face one color, you put the last layer edges in place. There are 5 cases."
+      },
+      "megaminx_cp": {
+        "title": "Megaminx Corner Permutation",
+        "desc": "The last step of the four-step last layer. With the edges in place, you put the corners in place and finish the Megaminx. There are 15 cases."
+      },
+      "megaminx_oll": {
+        "title": "Megaminx OLL",
+        "desc": "You orient every last layer piece with one algorithm, doing the first two steps of the four-step method at once. There are 174 cases, grouped by the shape on the top face.\n\nLearning them all takes a long time, so it helps to know the four-step method first."
+      },
+      "megaminx_pll": {
+        "title": "Megaminx PLL",
+        "desc": "With the last layer oriented, you put every piece in place with one algorithm, doing the last two steps of the four-step method at once. There are 151 cases, grouped by the blocks and headlights on the sides."
+      },
+      "sq1_co": {
+        "title": "Square-1 Corner Orientation",
+        "desc": "The step after cube shape. You sort the corners so the top color corners are all on top and the bottom color ones on the bottom. There are 7 cases.\n\nTo recognize a case, count how many corners are in the wrong layer on top and on the bottom."
+      },
+      "sq1_parity": {
+        "title": "Square-1 Parity",
+        "desc": "At the end of a Square-1 solve two pieces can be left swapped. This is called parity. This set has 5 algorithms that fix it.\n\nYou do not have to leave parity for the end: you can also fix it during cube shape with CSP or with parity EP algorithms."
+      },
+      "sq1_lin": {
+        "title": "Square-1 Lin",
+        "desc": "In the Lin method you solve the bottom layer first, then finish the top. This set has the algorithms for the last step: Lin PLL (21 cases), Lin PLL with parity (22 cases) and Lin PLL+1 (72 cases), which also places the last bottom edge along with the top layer."
+      },
+      "2x2_tcll_plus": {
+        "title": "2x2 TCLL+",
+        "desc": "When one corner of the first layer is left twisted, you solve the last layer and that corner with one algorithm. In TCLL+ the twisted corner sits front right on the bottom with its bottom color facing you. There are 43 cases in 8 groups, based on the pattern on top.\n\nIt makes most sense once you know full EG. The algorithms come from Christopher Olson's TCLL list."
+      },
+      "2x2_tcll_minus": {
+        "title": "2x2 TCLL-",
+        "desc": "The twin of TCLL+: the twisted corner again sits front right on the bottom, but its bottom color faces right. There are 43 cases in 8 groups, based on the pattern on top.\n\nMost algorithms come from Christopher Olson's TCLL list. The 9 cases his list does not cover use the shortest solution our solver found."
+      },
+      "fto_1l3t": {
+        "title": "FTO 1L3T",
+        "desc": "You solve the last three triples (L3T) of the FTO with one algorithm. There are 179 cases in 12 sets, each set split into even and odd.\n\nThe algorithms come from Zach Wegner's 1L3T list. His notation with rotations is written here as plain face turns, with his own spelling under every algorithm. Every algorithm was checked against its case."
+      },
+      "fto_lbt": {
+        "title": "FTO LBT",
+        "desc": "In the Bencisco method you solve the last bottom triple (LBT) with one algorithm, wherever the corner and triangles are. There are 95 cases in 6 sections, based on where the pieces sit. Some algorithms start with a U or Uw setup.\n\nThe algorithms come from Zach Wegner's LBT list, with his own spelling under every algorithm."
       }
     },
     "landing_ollcp_title": "OLLCP Recognition",
@@ -1197,7 +1258,96 @@
       "corner_on_d_facing_side": "Corner on bottom, color facing side",
       "cross_color_facing_front": "Cross color facing front",
       "cross_color_facing_right": "Cross color facing right",
-      "cross_color_facing_up": "Cross color facing up"
+      "cross_color_facing_up": "Cross color facing up",
+      "2_corner_co": "2 corner CO",
+      "3_corner_co": "3 corner CO",
+      "4_corner_co": "4 corner CO",
+      "5_corner_co": "5 corner CO",
+      "anchor_shapes": "Anchor shapes",
+      "t_shapes": "T shapes",
+      "c_shapes": "C shapes",
+      "s_shapes": "S shapes",
+      "pi_shapes": "Pi shapes",
+      "y_shapes": "Y shapes",
+      "hammerhead_shapes": "Hammerhead shapes",
+      "w_shapes": "W shapes",
+      "duckhead_shapes": "Duckhead shapes",
+      "megaphone_shapes": "Megaphone shapes",
+      "claw_shapes": "Claw shapes",
+      "rabbit_shapes": "Rabbit shapes",
+      "long_block": "Long block",
+      "fox_head_shapes": "Fox head shapes",
+      "scorpion_shapes": "Scorpion shapes",
+      "line_shapes": "Line shapes",
+      "flower_shapes": "Flower shapes",
+      "chandelier_shapes": "Chandelier shapes",
+      "p_shapes": "P shapes",
+      "e_shapes": "E shapes",
+      "sprinter_shapes": "Sprinter shapes",
+      "eagle_shapes": "Eagle shapes",
+      "lobster_shapes": "Lobster shapes",
+      "lightning_shapes": "Lightning shapes",
+      "cobra_shapes": "Cobra shapes",
+      "hand_shapes": "Hand shapes",
+      "magic_lamp_shapes": "Magic Lamp shapes",
+      "human_shapes": "Human shapes",
+      "axe_shapes": "Axe shapes",
+      "parrot_shapes": "Parrot shapes",
+      "l_shapes": "L shapes",
+      "3_corner_cp": "3 corner CP",
+      "4_corner_cp": "4 corner CP",
+      "5_corner_cp": "5 corner CP",
+      "3_edge_ep": "3 edge EP",
+      "4_edge_ep": "4 edge EP",
+      "5_edge_ep": "5 edge EP",
+      "5_piece_ep_cp": "5 piece EP/CP",
+      "double_r_block": "Double R block",
+      "r_block": "R block",
+      "r_block_and_2x1": "R block and 2x1",
+      "j_block": "J block",
+      "2_2x1s_touching": "2 2x1s touching",
+      "2_2x1s_not_touching": "2 2x1s, not touching",
+      "3x1_and_2x2": "3x1 and 2x2",
+      "3x1_and_2x1s": "3x1 and 2x1s",
+      "2x1_and_headlights": "2x1 and headlights",
+      "double_headlights_no_blocks": "Double headlights, no blocks",
+      "2_3x1s": "2 3x1s",
+      "5_2x1s": "5 2x1s",
+      "2_3_or_4_2x1s_in_these_patterns": "2,3 or 4 2x1s in these patterns",
+      "2x2_and_2x1": "2x2 and 2x1",
+      "2_2x2s": "2 2x2s",
+      "no_blocks_or_headlights": "No blocks or headlights",
+      "2_2x1s_in_y_pattern_and_other_stuff": "2 2x1s in Y pattern and other stuff",
+      "lin_parity_pll": "Lin PLL with parity",
+      "o_even": "O even",
+      "o_odd": "O odd",
+      "v_even": "V even",
+      "v_odd": "V odd",
+      "q_even": "Q even",
+      "q_odd": "Q odd",
+      "w_even": "W even",
+      "w_odd": "W odd",
+      "j_even": "J even",
+      "j_odd": "J odd",
+      "l_even": "L even",
+      "l_odd": "L odd",
+      "b_even": "B even",
+      "b_odd": "B odd",
+      "t_even": "T even",
+      "t_odd": "T odd",
+      "z_even": "Z even",
+      "z_odd": "Z odd",
+      "s_even": "S even",
+      "s_odd": "S odd",
+      "x_even": "X even",
+      "x_odd": "X odd",
+      "y_even": "Y even",
+      "y_odd": "Y odd",
+      "one_solved_corner_on_top": "One solved, corner on top",
+      "one_in_wrong_slot_corner_on_top": "One in wrong slot, corner on top",
+      "one_in_middle_corner_on_top": "One in middle, corner on top",
+      "all_on_top": "All on top",
+      "both_in_slot_corner_on_top": "Both in slot, corner on top"
     }
   },
   "account_nav": {

@@ -52,6 +52,15 @@ describe('buildTrainerLibrary', () => {
 		expect(lib.alternatives.get('PLL')).toEqual([{name: 'Aa perm', alternatives: ['A1', 'A2']}]);
 	});
 
+	it('splits the source notation between the main entry and its alternatives', () => {
+		const fto = {
+			'FTO 1L3T': [{subset: 'O Even', algorithms: [{name: 'Oc', algorithm: 'R U', alternatives: ['L U', 'B U'], notation: ['{L,F} Rs', 'H', '']}]}],
+		};
+		const lib = buildTrainerLibrary(JSON.stringify(fto), true);
+		expect(lib.mains[0].subsets[0].algorithms[0]).toEqual({name: 'Oc', algorithm: 'R U', alternativeCount: 2, notation: '{L,F} Rs'});
+		expect(lib.alternatives.get('FTO 1L3T')).toEqual([{name: 'Oc', alternatives: ['L U', 'B U'], notations: ['H', '']}]);
+	});
+
 	it('versions by content', () => {
 		const a = buildTrainerLibrary(JSON.stringify(LIBRARY), true).version;
 		const b = buildTrainerLibrary(JSON.stringify({...LIBRARY, OLL: []}), true).version;

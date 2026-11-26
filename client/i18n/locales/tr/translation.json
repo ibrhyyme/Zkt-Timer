@@ -619,6 +619,7 @@
     "hide_moves": "Hamleleri gizle",
     "ble_make_first_move": "İlk hamleyi yap",
     "scramble_label": "Karıştırma",
+    "notation_label": "Orijinal yazım:",
     "ble_scramble_first": "Önce küpü karıştır",
     "option_random_order": "Rastgele sıralama",
     "option_random_auf": "AUF rastgele",
@@ -1104,7 +1105,67 @@
       },
       "4x4_oll_parity": {
         "title": "4x4 OLL Paritesi",
-        "desc": "4x4'te son katmanda tek bir kenar çifti ters kalabilir; 3x3'te bu imkânsızdır. Bu duruma OLL paritesi denir ve özel bir algoritmayla düzeltilir.\n\nBu sette 2 vaka var. Basic kısa ve yaygındır ama son katmanın köşelerini de yerinden oynatır. Pure ise sadece ters kenarı düzeltir, geri kalan her şey yerinde kalır."
+        "desc": "4x4'te son katmanda tek bir kenar çifti ters kalabilir; 3x3'te bu imkânsızdır. Bu duruma OLL paritesi denir ve özel bir algoritmayla düzeltilir.\n\nBu sette 3 vaka var. Basic kısa ve yaygındır ama son katmanın köşelerini de yerinden oynatır. Pure ise sadece ters kenarı düzeltir, geri kalan her şey yerinde kalır. M, OLL ve PLL paritesini birlikte düzeltir."
+      },
+      "5x5_l2e": {
+        "title": "5x5 Son İki Kenar",
+        "desc": "5x5'i 3x3'e indirgerken kenarları tek tek eşleştirirsin. Son iki kenar kaldığında diğerlerini bozmadan eşleştirmek zorlaşır; bu set o an için. 13 vaka var.\n\nVakayı tanımak için iki kenarın parçalarının nerede durduğuna bakarsın."
+      },
+      "5x5_l2c": {
+        "title": "5x5 Son İki Merkez",
+        "desc": "5x5'te merkezleri çözerken son iki merkez genelde en çok vakit alan kısım olur. Bu set, dört merkez bittikten sonra kalan iki merkezi tamamlar. 18 vaka var.\n\nVakayı tanımak için iki merkezdeki parçaların dizilişine bakarsın."
+      },
+      "megaminx_eo": {
+        "title": "Megaminx Kenar Yönlendirme",
+        "desc": "Megaminx'in son katmanını dört adımda çözmenin ilk adımı. Üstteki kenarları yönlendirip üst yüzde yıldız şeklini yaparsın. 3 vaka var.\n\nSonraki adımlar sırayla köşe yönlendirme (CO), kenar yerleştirme (EP) ve köşe yerleştirme (CP)."
+      },
+      "megaminx_co": {
+        "title": "Megaminx Köşe Yönlendirme",
+        "desc": "Dört adımlı son katmanın ikinci adımı. Kenarlar yönlüyken köşeleri de yönlendirip üst yüzü tek renk yaparsın. 16 vaka var."
+      },
+      "megaminx_ep": {
+        "title": "Megaminx Kenar Yerleştirme",
+        "desc": "Dört adımlı son katmanın üçüncü adımı. Üst yüz tek renkken son katmanın kenarlarını yerine koyarsın. 5 vaka var."
+      },
+      "megaminx_cp": {
+        "title": "Megaminx Köşe Yerleştirme",
+        "desc": "Dört adımlı son katmanın son adımı. Kenarlar yerindeyken köşeleri yerine koyup Megaminx'i bitirirsin. 15 vaka var."
+      },
+      "megaminx_oll": {
+        "title": "Megaminx OLL",
+        "desc": "Son katmanın bütün parçalarını tek algoritmayla yönlendirirsin; dört adımlı yöntemin ilk iki adımını tek adımda yapar. 174 vaka var ve üst yüzde oluşan şekle göre gruplara ayrılır.\n\nHepsini öğrenmek uzun sürer, o yüzden önce dört adımlı yöntemi bilmek işine yarar."
+      },
+      "megaminx_pll": {
+        "title": "Megaminx PLL",
+        "desc": "Son katman yönlüyken bütün parçaları tek algoritmayla yerine koyarsın; dört adımlı yöntemin son iki adımını tek adımda yapar. 151 vaka var ve yanlarda oluşan blok ve farlara göre gruplara ayrılır."
+      },
+      "sq1_co": {
+        "title": "Square-1 Köşe Yönlendirme",
+        "desc": "Küp şeklinden sonra gelen adım. Köşeleri ayırıp üst renkteki köşeleri üste, alt renktekileri alta toplarsın. 7 vaka var.\n\nVakayı tanımak için üstte ve altta kaç köşenin yanlış katmanda olduğuna bakarsın."
+      },
+      "sq1_parity": {
+        "title": "Square-1 Paritesi",
+        "desc": "Square-1'in sonunda iki parça yer değiştirmiş kalabilir; bu duruma parite denir. Bu sette pariteyi düzelten 5 algoritma var.\n\nPariteyi sona bırakmak zorunda değilsin: CSP ile küp şeklinde ya da pariteli EP algoritmalarıyla da çözebilirsin."
+      },
+      "sq1_lin": {
+        "title": "Square-1 Lin",
+        "desc": "Lin yönteminde önce alt katmanı çözer, sonra üst katmanı tamamlarsın. Bu sette son adımın algoritmaları var: Lin PLL (21 vaka), pariteli Lin PLL (22 vaka) ve üst katmanla birlikte alttaki son kenarı da yerine koyan Lin PLL+1 (72 vaka)."
+      },
+      "2x2_tcll_plus": {
+        "title": "2x2 TCLL+",
+        "desc": "İlk katmanda bir köşe ters dönmüş kaldığında son katmanı o köşeyle birlikte tek algoritmada çözersin. TCLL+'da ters köşe sağ önde, altta durur ve alt rengi sana bakar. 43 vaka var, üst yüzdeki desene göre 8 gruba ayrılır.\n\nTam EG'yi öğrendikten sonra bakman daha mantıklı. Algoritmalar Christopher Olson'ın TCLL listesinden."
+      },
+      "2x2_tcll_minus": {
+        "title": "2x2 TCLL-",
+        "desc": "TCLL+'nın eşi: ters köşe yine sağ önde, altta durur ama alt rengi sağa bakar. 43 vaka var, üst yüzdeki desene göre 8 gruba ayrılır.\n\nAlgoritmaların çoğu Christopher Olson'ın TCLL listesinden. Listede olmayan 9 vakaya bizim çözücünün bulduğu en kısa çözüm konuldu."
+      },
+      "fto_1l3t": {
+        "title": "FTO 1L3T",
+        "desc": "FTO'nun son adımında kalan üç üçlüyü (L3T) tek algoritmayla çözersin. 179 vaka var; 12 sete ayrılır, her set de çift ve tek olarak ikiye bölünür.\n\nAlgoritmalar Zach Wegner'in 1L3T listesinden. Onun döndürmeli yazımı burada döndürmesiz yüz dönüşlerine çevrildi, kendi yazımı da her algoritmanın altında duruyor. Her algoritma kendi vakasını çözüyor mu diye tek tek denetlendi."
+      },
+      "fto_lbt": {
+        "title": "FTO LBT",
+        "desc": "Bencisco yönteminde son alt üçlüyü (LBT) köşe ve üçgenler nerede olursa olsun tek algoritmayla çözersin. 95 vaka var, parçaların durumuna göre 6 bölüme ayrılır. Bazı algoritmalar başta U ya da Uw kurulumu ister.\n\nAlgoritmalar Zach Wegner'in LBT listesinden; onun kendi yazımı her algoritmanın altında duruyor."
       }
     },
     "subset_case_n": "Vaka {{n}}",
@@ -1183,7 +1244,96 @@
       "corner_on_d_facing_side": "Köşe altta, renk yana bakıyor",
       "cross_color_facing_front": "Cross rengi önde",
       "cross_color_facing_right": "Cross rengi sağda",
-      "cross_color_facing_up": "Cross rengi üstte"
+      "cross_color_facing_up": "Cross rengi üstte",
+      "2_corner_co": "2 köşe CO",
+      "3_corner_co": "3 köşe CO",
+      "4_corner_co": "4 köşe CO",
+      "5_corner_co": "5 köşe CO",
+      "anchor_shapes": "Çapa şekilleri",
+      "t_shapes": "T şekilleri",
+      "c_shapes": "C şekilleri",
+      "s_shapes": "S şekilleri",
+      "pi_shapes": "Pi şekilleri",
+      "y_shapes": "Y şekilleri",
+      "hammerhead_shapes": "Çekiç başı şekilleri",
+      "w_shapes": "W şekilleri",
+      "duckhead_shapes": "Ördek başı şekilleri",
+      "megaphone_shapes": "Megafon şekilleri",
+      "claw_shapes": "Pençe şekilleri",
+      "rabbit_shapes": "Tavşan şekilleri",
+      "long_block": "Uzun blok",
+      "fox_head_shapes": "Tilki başı şekilleri",
+      "scorpion_shapes": "Akrep şekilleri",
+      "line_shapes": "Çizgi şekilleri",
+      "flower_shapes": "Çiçek şekilleri",
+      "chandelier_shapes": "Avize şekilleri",
+      "p_shapes": "P şekilleri",
+      "e_shapes": "E şekilleri",
+      "sprinter_shapes": "Koşucu şekilleri",
+      "eagle_shapes": "Kartal şekilleri",
+      "lobster_shapes": "Istakoz şekilleri",
+      "lightning_shapes": "Şimşek şekilleri",
+      "cobra_shapes": "Kobra şekilleri",
+      "hand_shapes": "El şekilleri",
+      "magic_lamp_shapes": "Sihirli lamba şekilleri",
+      "human_shapes": "İnsan şekilleri",
+      "axe_shapes": "Balta şekilleri",
+      "parrot_shapes": "Papağan şekilleri",
+      "l_shapes": "L şekilleri",
+      "3_corner_cp": "3 köşe CP",
+      "4_corner_cp": "4 köşe CP",
+      "5_corner_cp": "5 köşe CP",
+      "3_edge_ep": "3 kenar EP",
+      "4_edge_ep": "4 kenar EP",
+      "5_edge_ep": "5 kenar EP",
+      "5_piece_ep_cp": "5 parça EP/CP",
+      "double_r_block": "Çift R bloğu",
+      "r_block": "R bloğu",
+      "r_block_and_2x1": "R bloğu ve 2x1",
+      "j_block": "J bloğu",
+      "2_2x1s_touching": "Bitişik iki 2x1",
+      "2_2x1s_not_touching": "Ayrık iki 2x1",
+      "3x1_and_2x2": "3x1 ve 2x2",
+      "3x1_and_2x1s": "3x1 ve 2x1'ler",
+      "2x1_and_headlights": "2x1 ve far",
+      "double_headlights_no_blocks": "Çift far, blok yok",
+      "2_3x1s": "İki 3x1",
+      "5_2x1s": "Beş 2x1",
+      "2_3_or_4_2x1s_in_these_patterns": "Bu düzenlerde 2, 3 ya da 4 tane 2x1",
+      "2x2_and_2x1": "2x2 ve 2x1",
+      "2_2x2s": "İki 2x2",
+      "no_blocks_or_headlights": "Blok ya da far yok",
+      "2_2x1s_in_y_pattern_and_other_stuff": "Y düzeninde iki 2x1 ve diğerleri",
+      "lin_parity_pll": "Pariteli Lin PLL",
+      "o_even": "O çift",
+      "o_odd": "O tek",
+      "v_even": "V çift",
+      "v_odd": "V tek",
+      "q_even": "Q çift",
+      "q_odd": "Q tek",
+      "w_even": "W çift",
+      "w_odd": "W tek",
+      "j_even": "J çift",
+      "j_odd": "J tek",
+      "l_even": "L çift",
+      "l_odd": "L tek",
+      "b_even": "B çift",
+      "b_odd": "B tek",
+      "t_even": "T çift",
+      "t_odd": "T tek",
+      "z_even": "Z çift",
+      "z_odd": "Z tek",
+      "s_even": "S çift",
+      "s_odd": "S tek",
+      "x_even": "X çift",
+      "x_odd": "X tek",
+      "y_even": "Y çift",
+      "y_odd": "Y tek",
+      "one_solved_corner_on_top": "Biri çözülü, köşe üstte",
+      "one_in_wrong_slot_corner_on_top": "Biri yanlış yuvada, köşe üstte",
+      "one_in_middle_corner_on_top": "Biri ortada, köşe üstte",
+      "all_on_top": "Hepsi üstte",
+      "both_in_slot_corner_on_top": "İkisi yuvada, köşe üstte"
     }
   },
   "account_nav": {

@@ -29,7 +29,7 @@ export function catalogSections(categories: readonly string[], puzzle: TrainerCu
 	return {regular, large};
 }
 
-const NAME_PREFIXES = ['2x2 ', '4x4 ', 'Pyraminx ', 'SQ1 '];
+const NAME_PREFIXES = ['2x2 ', '4x4 ', '5x5 ', 'Megaminx ', 'Pyraminx ', 'SQ1 ', 'FTO '];
 
 /** A category's name under its puzzle tab: the puzzle prefix is already the tab ("2x2 CLL" → "CLL"). */
 export function categoryDisplayName(category: string): string {
