@@ -44,8 +44,16 @@ export interface SnapshotCase {
 	frontFace: CubeFace;
 }
 
+// Puzzles the trainer learned on 2026-11-26. A bundle from before read them as 3x3, and one
+// still cached on a device (service worker) stored 3x3 pictures of their cases under the same
+// key. Their keys carry the puzzle, so those pictures are never read again. Other keys stay
+// as they were, so no device redraws its pictures for this.
+const NEWER_PUZZLES = new Set(['megaminx', '5x5x5', 'fto']);
+
 export function snapshotKey({category, algorithm, topFace, frontFace}: SnapshotCase): string {
-	return `v${SNAPSHOT_VERSION}|${category}|${topFace}${frontFace}|${algorithm}`;
+	const puzzle = getPuzzleType(category);
+	const tag = NEWER_PUZZLES.has(puzzle) ? `|${puzzle}` : '';
+	return `v${SNAPSHOT_VERSION}|${category}|${topFace}${frontFace}|${algorithm}${tag}`;
 }
 
 /** The picture when it is already in memory (no wait). */
