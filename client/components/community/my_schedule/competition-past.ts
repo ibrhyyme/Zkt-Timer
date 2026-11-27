@@ -33,3 +33,23 @@ export function isPastCompetition(
 	if (!comp.end_date) return false;
 	return comp.end_date.slice(0, 10) < todayStr;
 }
+
+/**
+ * The ZKT status a card should show. The status is set by hand on the federation
+ * and an organizer does not always move it on, so the calendar corrects it: a
+ * competition whose last day has passed is finished, and one that has started
+ * no longer takes entries (WCA closes registration before the start date).
+ * The federation applies the same rule in `lib/zkt/registration-phase.ts`.
+ */
+export function displayZktStatus(
+	comp: {start_date?: string | null; end_date?: string | null; status?: string | null},
+	todayStr: string
+): string {
+	const status = (comp.status || '').toUpperCase();
+	const runUp = status === 'ANNOUNCED' || status === 'REGISTRATION_OPEN';
+	if (isPastCompetition(comp, todayStr) && (runUp || status === 'REGISTRATION_CLOSED' || status === 'ONGOING')) {
+		return 'FINISHED';
+	}
+	if (runUp && comp.start_date && comp.start_date.slice(0, 10) <= todayStr) return 'REGISTRATION_CLOSED';
+	return status;
+}

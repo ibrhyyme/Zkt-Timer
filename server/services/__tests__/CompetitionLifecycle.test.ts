@@ -443,6 +443,8 @@ describe('ZKT announcements', () => {
 	it('never announces cancelled, past or not-yet-announced competitions', () => {
 		expect(decideAnnouncement({status: 'CANCELLED', startDate: '2026-11-07', cancelled: true, now: noon})).toBe('skip');
 		expect(decideAnnouncement({status: 'ANNOUNCED', startDate: '2026-09-01', cancelled: false, now: noon})).toBe('skip');
+		// The competition day itself: registration is closed, "kayıt açık" would be false.
+		expect(decideAnnouncement({status: 'REGISTRATION_OPEN', startDate: '2026-10-05', cancelled: false, now: noon})).toBe('skip');
 		expect(decideAnnouncement({status: 'ONGOING', startDate: '2026-11-07', cancelled: false, now: noon})).toBe('skip');
 		expect(decideAnnouncement({status: 'REGISTRATION_OPEN', startDate: '2026-11-07', cancelled: false, now: noon})).toBe('send');
 	});

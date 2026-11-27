@@ -532,7 +532,9 @@ export function decideAnnouncement(args: {status: string; startDate: string; can
 	const {status, startDate, cancelled, now} = args;
 	if (cancelled || status === 'CANCELLED') return 'skip';
 	if (!ZKT_ANNOUNCEABLE_STATUSES.has(status)) return 'skip';
-	if (startDate && startDate.slice(0, 10) < dateInTimeZone(now, ANNOUNCE_TIMEZONE)) return 'skip';
+	// From the first competition day on there is nothing left to announce: WCA
+	// closes registration before the start date, and so does the federation.
+	if (startDate && startDate.slice(0, 10) <= dateInTimeZone(now, ANNOUNCE_TIMEZONE)) return 'skip';
 	if (isAnnounceQuietHours(now)) return 'wait';
 	return 'send';
 }

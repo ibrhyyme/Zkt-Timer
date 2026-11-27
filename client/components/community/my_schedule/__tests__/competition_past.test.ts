@@ -1,4 +1,4 @@
-import {isPastCompetition, localTodayStr} from '../competition-past';
+import {displayZktStatus, isPastCompetition, localTodayStr} from '../competition-past';
 
 const TODAY = '2026-09-08';
 
@@ -48,5 +48,23 @@ describe('localTodayStr', () => {
 
 	it('zero-pads month and day', () => {
 		expect(localTodayStr(new Date(2026, 0, 5))).toBe('2026-01-05');
+	});
+});
+
+describe('displayZktStatus', () => {
+	it('shows a finished competition left on "Kayıt açık" as finished', () => {
+		expect(displayZktStatus({start_date: '2026-08-15', end_date: '2026-08-16', status: 'REGISTRATION_OPEN'}, TODAY)).toBe('FINISHED');
+		expect(displayZktStatus({start_date: '2026-08-15', end_date: '2026-08-16', status: 'ONGOING'}, TODAY)).toBe('FINISHED');
+	});
+
+	it('closes registration on the first competition day', () => {
+		expect(displayZktStatus({start_date: '2026-09-08', end_date: '2026-09-09', status: 'REGISTRATION_OPEN'}, TODAY)).toBe('REGISTRATION_CLOSED');
+		expect(displayZktStatus({start_date: '2026-09-08', end_date: '2026-09-09', status: 'ONGOING'}, TODAY)).toBe('ONGOING');
+	});
+
+	it('shows statuses the calendar has not overtaken as set', () => {
+		expect(displayZktStatus({start_date: '2026-09-20', end_date: '2026-09-20', status: 'REGISTRATION_OPEN'}, TODAY)).toBe('REGISTRATION_OPEN');
+		expect(displayZktStatus({start_date: '2026-08-15', end_date: '2026-08-16', status: 'PUBLISHED'}, TODAY)).toBe('PUBLISHED');
+		expect(displayZktStatus({start_date: '2026-08-15', end_date: '2026-08-16', status: 'CANCELLED'}, TODAY)).toBe('CANCELLED');
 	});
 });

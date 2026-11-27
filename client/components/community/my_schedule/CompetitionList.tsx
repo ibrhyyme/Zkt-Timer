@@ -12,7 +12,7 @@ import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {oauthRedirectUri, openOAuthAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
-import {isPastCompetition, localTodayStr} from './competition-past';
+import {displayZktStatus, isPastCompetition, localTodayStr} from './competition-past';
 import CompEventFilter from './CompEventFilter';
 import {getEventFilter, setEventFilter} from './eventFilterStorage';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
@@ -553,7 +553,7 @@ export default function CompetitionList() {
 		const isOngoing = !isFinished && comp.start_date <= todayStr && comp.end_date >= todayStr;
 		// WCA competitions carry no lifecycle status, and on a "mine" card the
 		// registered pill already owns that slot.
-		const statusKey = isZkt && !opts.mine ? (comp.status || '').toLowerCase() : '';
+		const statusKey = isZkt && !opts.mine ? displayZktStatus(comp, todayStr).toLowerCase() : '';
 		// WCA payloads carry event_ids; the federation normalizer also builds
 		// `events`. Accept either so both sources render the icon strip.
 		const eventIds: string[] = (
