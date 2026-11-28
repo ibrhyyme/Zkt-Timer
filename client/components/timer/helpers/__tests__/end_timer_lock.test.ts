@@ -221,12 +221,16 @@ describe('next scramble before the save', () => {
 		}
 	}
 
-	it('shows the pre-generated scramble a step before the save re-renders the modules', () => {
+	it('shows the pre-generated scramble in the render that ends the solve, before the save', () => {
 		(consumePreGeneratedScramble as jest.Mock).mockReturnValueOnce("F R U' R'");
 		stop(timerContext());
 
-		runFirstStep();
+		// Already there when the scramble area comes back, not a step later.
 		expect(mockStore.scramble).toBe("F R U' R'");
+		expect(mockStore.timeStartedAt).toBeNull();
+
+		runFirstStep();
+		expect(resetScramble).not.toHaveBeenCalled();
 		expect(saveSolve).not.toHaveBeenCalled();
 
 		runDeferredSave();

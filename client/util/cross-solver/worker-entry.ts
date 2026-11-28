@@ -3,7 +3,7 @@
  * Ported from cstimer's IDA* and gSolver algorithms.
  * Built as a separate esbuild entry -> dist/cross-solver-worker.js (iife).
  */
-import {initCross, solveCross, solveXCross, getEasyCross, getEasyXCross, fullInit} from './cross-solver';
+import {initCross, solveCross, solveXCross, getEasyCross, getEasyXCross} from './cross-solver';
 import {initEOLine, solveEOLine, solveEOCross} from './eoline-solver';
 import {initRoux1, solveRoux1} from './roux1-solver';
 import {
@@ -27,9 +27,10 @@ function initAll(): void {
 	initCross();
 	initEOLine();
 	initRoux1();
-	// Pre-warm full pruning table (getEasyCross/getEasyXCross) on init —
-	// otherwise first rare-length scramble request causes ~100-300ms synchronous block.
-	fullInit();
+	// The full cross pruning table is left out: only getEasyCross/getEasyXCross (the
+	// trainer's easy-cross scrambles) read it, and they build it on first use. Built here,
+	// it held up the solver module's first answer on every page load for a table it
+	// never reads.
 	initialized = true;
 }
 

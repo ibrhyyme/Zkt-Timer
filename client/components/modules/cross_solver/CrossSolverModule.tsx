@@ -5,7 +5,7 @@ import block from '../../../styles/bem';
 import {useGeneral} from '../../../util/hooks/useGeneral';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import {TimerContext} from '../../timer/Timer';
-import {solveCrossAsync, isCrossSolverAvailable} from '../../../util/cross-solver/worker-manager';
+import {solveCrossAsync, isCrossSolverAvailable, initCrossSolverWorker} from '../../../util/cross-solver/worker-manager';
 import {SolverResult, SolverType, STEP_SOLVER_TYPES, CUBE_ORIENTATIONS} from '../../../util/cross-solver/types';
 import {CaretDown} from 'phosphor-react';
 import TileMenu from '../../timer/tiles/TileMenu';
@@ -99,6 +99,14 @@ export default function CrossSolverModule() {
 		const index = NXN_FACES.indexOf(label.charAt(0) as (typeof NXN_FACES)[number]);
 		return index === -1 ? null : palette.nxn[index];
 	};
+
+	// The worker starts with the module, not with the first scramble. On a fresh page the
+	// first scramble itself comes out of the scramble worker, so starting this one only once
+	// it arrived ran the two workers' downloads and table builds one after the other.
+	useEffect(() => {
+		if (!isCrossSolverAvailable()) return;
+		initCrossSolverWorker().catch(() => { /* the first solve reports it */ });
+	}, []);
 
 	useEffect(() => {
 		if (availableSolvers.length > 0 && !availableSolvers.find((s) => s.key === solverType)) {

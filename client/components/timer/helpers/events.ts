@@ -234,7 +234,15 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 	stopTimer(START_TIMEOUT);
 	clearInspectionTimers(false, true);
 
-	// Single dispatch: solving state + stats + timer reset
+	// The next scramble, when the solve made it in time (startTimer), goes into the same
+	// render that ends the solve. That render brings the scramble area back from hidden, so
+	// the area reappears with the new scramble already in it. Committed a step later, the
+	// old scramble came back first and was replaced in front of the solver, visibly so
+	// whenever the stop landed late in a frame (owner, 2026-11-28).
+	const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
+	const nextScrambleServed = !!preScramble && !context.scrambleLocked && !context.customScrambleFunc;
+
+	// Single dispatch: solving state + stats + timer reset (+ the next scramble)
 	setTimerParams({
 		solving: false,
 		finalTime,
@@ -248,19 +256,13 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		addTwoToSolve: false,
 		phaseSplits: [],
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
+		...(nextScrambleServed ? { scramble: preScramble, originalScramble: preScramble, smartTurnOffset: 0 } : {}),
 	});
 
-	// What the stop still owes once the display is frozen: the next scramble, then the save.
+	// What the stop still owes once the display is frozen: the next scramble when the solve
+	// did not have one ready (made in the worker now), then the save.
 	const nextScramble = () => {
-		// If pre-generated scramble exists, swap immediately; otherwise generate it in the worker
-		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
-		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
-			setTimerParams({
-				scramble: preScramble,
-				originalScramble: preScramble,
-				smartTurnOffset: 0,
-			});
-		} else {
+		if (!nextScrambleServed) {
 			resetScramble(context);
 		}
 	};
@@ -342,8 +344,9 @@ function stopLockedSolve(context: ITimerContext, finalTimeMilli?: number, overri
 		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now, false, false, overridesCombined);
 	};
 
-	// Two steps, each batched for the same reason as endTimer. The new scramble goes first, in
-	// a render of its own, and reaches the screen before the save: the save re-renders the
+	// Two steps, each batched for the same reason as endTimer. A scramble the stop render did
+	// not already carry goes first, in a render of its own, and reaches the screen before the
+	// save: the save re-renders the
 	// modules (solve list, averages, charts), and with the scramble in that same render the
 	// next scramble showed up only once all of them were done, about half a second after the
 	// stop on a phone (owner, 2026-10-13). afterNextPaint never waits for a hidden page.
